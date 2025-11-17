@@ -639,7 +639,7 @@ export function createValidateRequest({ applyCorsHeaders }) {
  */
 function getAuthorizationHeaderFromGetter(req) {
   if (typeof req?.get === 'function') {
-    return req.get('Authorization');
+    return req.get('Authorization') ?? req.get('authorization');
   }
 
   return undefined;
@@ -655,22 +655,6 @@ function resolveAuthorizationHeader(req) {
 
   if (typeof getterHeader === 'string') {
     return getterHeader;
-  }
-
-  // Explicit empty else branch to satisfy branch coverage tooling.
-
-  const headers = req?.headers;
-
-  if (headers && typeof headers === 'object') {
-    const header = headers.Authorization ?? headers.authorization;
-
-    if (Array.isArray(header)) {
-      return header[0] ?? '';
-    }
-
-    if (typeof header === 'string') {
-      return header;
-    }
   }
 
   return '';
