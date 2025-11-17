@@ -1170,14 +1170,11 @@ async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
  */
 async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
   try {
-    const authorRef = resolveAuthorRef(db, variant.authorId);
-    const authorSnap = await authorRef.get();
-
-    const { uuid } = authorSnap.data();
-
-    const authorPath = `a/${uuid}.html`;
-    const file = bucket.file(authorPath);
-    const [exists] = await file.exists();
+    const { authorPath, file, exists } = await resolveAuthorFile({
+      variant,
+      db,
+      bucket,
+    });
 
     if (!exists) {
       await writeAuthorLandingPage(variant, file);
@@ -1200,6 +1197,23 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
  */
 function resolveAuthorRef(db, authorId) {
   return db.doc(`authors/${authorId}`);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.variant
+ * @param root0.db
+ * @param root0.bucket
+ */
+async function resolveAuthorFile({ variant, db, bucket }) {
+  const authorRef = resolveAuthorRef(db, variant.authorId);
+  const authorSnap = await authorRef.get();
+  const { uuid } = authorSnap.data();
+  const authorPath = `a/${uuid}.html`;
+  const file = bucket.file(authorPath);
+  const [exists] = await file.exists();
+  return { authorPath, file, exists };
 }
 
 /**
