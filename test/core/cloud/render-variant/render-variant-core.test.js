@@ -476,6 +476,32 @@ describe('resolveStoryMetadata', () => {
     );
     expect(result.firstPageUrl).toBeUndefined();
   });
+
+  it('swallows root lookup failures when consoleError is missing', async () => {
+    const rootPageRef = {
+      get: jest.fn().mockRejectedValue(new Error('missing logger')),
+      collection: jest.fn(),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story', rootPage: rootPageRef }),
+    };
+    const pageSnap = {
+      ref: {
+        parent: { parent: { get: jest.fn().mockResolvedValue(storySnap) } },
+      },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: { incomingOption: true },
+    });
+
+    expect(result).toEqual({
+      storyTitle: 'Story',
+      firstPageUrl: undefined,
+    });
+  });
 });
 
 describe('extractStoryRef', () => {
