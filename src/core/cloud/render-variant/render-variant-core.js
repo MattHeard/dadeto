@@ -1180,13 +1180,7 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
     const [exists] = await file.exists();
 
     if (!exists) {
-      const authorName = deriveAuthorName(variant);
-      const authorHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite - ${escapeHtml(
-        authorName
-      )}</title><link rel="icon" href="/favicon.ico" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(
-        authorName
-      )}</h1></main></body></html>`;
-      await file.save(authorHtml, { contentType: 'text/html' });
+      await writeAuthorLandingPage(variant, file);
     }
 
     return `/${authorPath}`;
@@ -1206,6 +1200,22 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
  */
 function resolveAuthorRef(db, authorId) {
   return db.doc(`authors/${authorId}`);
+}
+
+/**
+ *
+ * @param variant
+ * @param file
+ */
+async function writeAuthorLandingPage(variant, file) {
+  const authorName = deriveAuthorName(variant);
+  const authorHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite - ${escapeHtml(
+    authorName
+  )}</title><link rel="icon" href="/favicon.ico" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(
+    authorName
+  )}</h1></main></body></html>`;
+
+  await file.save(authorHtml, { contentType: 'text/html' });
 }
 
 /**
