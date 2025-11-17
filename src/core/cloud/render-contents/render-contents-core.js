@@ -653,11 +653,11 @@ function getAuthorizationHeaderFromGetter(req) {
 function resolveAuthorizationHeader(req) {
   const getterHeader = getAuthorizationHeaderFromGetter(req);
 
-  if (typeof getterHeader === 'string') {
-    return getterHeader;
+  if (getterHeader === undefined || getterHeader === null) {
+    return '';
   }
 
-  return '';
+  return getterHeader;
 }
 
 /**
@@ -666,16 +666,9 @@ function resolveAuthorizationHeader(req) {
  * @returns {string} Bearer token or an empty string if none found.
  */
 function extractBearerToken(header) {
-  if (typeof header !== 'string') {
-    return '';
-  }
-
-  const match = header.match(/^Bearer (.+)$/);
-
-  if (match) {
-    return match[1];
-  }
-  return '';
+  const headerValue = typeof header === 'string' ? header : '';
+  const match = headerValue.match(/^Bearer (.+)$/);
+  return match ? match[1] : '';
 }
 
 /**

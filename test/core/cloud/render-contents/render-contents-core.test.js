@@ -650,6 +650,25 @@ describe('buildHandleRenderRequest', () => {
     expect(res.status).toHaveBeenCalledWith(401);
   });
 
+  it('rejects non-string getter responses', async () => {
+    const handler = build();
+    const req = {
+      get: jest.fn().mockImplementation(header => {
+        if (header === 'Authorization') {
+          return [123];
+        }
+        return undefined;
+      }),
+    };
+    const res = makeResponse();
+
+    await handler(req, res);
+
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Missing token');
+  });
+
   it('throws when adminUid is missing', () => {
     expect(() =>
       buildHandleRenderRequest({
