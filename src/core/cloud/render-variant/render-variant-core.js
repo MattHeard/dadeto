@@ -1175,10 +1175,6 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
 
     const { uuid } = authorSnap.data();
 
-    if (!uuid) {
-      return undefined;
-    }
-
     const authorPath = `a/${uuid}.html`;
     const file = bucket.file(authorPath);
     const [exists] = await file.exists();
