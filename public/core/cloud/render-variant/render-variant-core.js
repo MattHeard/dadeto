@@ -1057,29 +1057,50 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storySnap = await storyRef.get();
   const storyData = storySnap.data();
   const storyTitle = storyData.title;
-  let firstPageUrl;
-
-  if (page.incomingOption && storyData.rootPage) {
-    try {
-      const rootPageSnap = await storyData.rootPage.get();
-
-      if (rootPageSnap.exists) {
-        const rootVariantSnap = await storyData.rootPage
-          .collection('variants')
-          .orderBy('name')
-          .limit(1)
-          .get();
-
-        firstPageUrl = `/p/${rootPageSnap.data().number}${
-          rootVariantSnap.docs[0].data().name
-        }.html`;
-      }
-    } catch (error) {
-      consoleError('root page lookup failed', error?.message || error);
-    }
-  }
+  const firstPageUrl = await resolveFirstPageUrl({
+    page,
+    storyData,
+    consoleError,
+  });
 
   return { storyTitle, firstPageUrl };
+}
+
+/**
+ * Determine the parent route for a story when the variant was created from an option.
+ * @param {object} options - Inputs describing the page and story context.
+ * @param {Record<string, any>} options.page Raw page document data.
+ * @param {Record<string, any>} options.storyData Story metadata that includes a rootPage reference.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] Optional logger for recoverable failures.
+ * @returns {Promise<string | undefined>} URL for the first published page when resolvable.
+ */
+async function resolveFirstPageUrl({ page, storyData, consoleError }) {
+  if (!page.incomingOption || !storyData.rootPage) {
+    return undefined;
+  }
+
+  try {
+    const rootPageSnap = await storyData.rootPage.get();
+
+    if (!rootPageSnap.exists) {
+      return undefined;
+    }
+
+    const rootVariantSnap = await storyData.rootPage
+      .collection('variants')
+      .orderBy('name')
+      .limit(1)
+      .get();
+
+    return `/p/${rootPageSnap.data().number}${
+      rootVariantSnap.docs[0].data().name
+    }.html`;
+  } catch (error) {
+    if (consoleError) {
+      consoleError('root page lookup failed', error?.message || error);
+    }
+    return undefined;
+  }
 }
 
 /**
