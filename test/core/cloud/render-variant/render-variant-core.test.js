@@ -476,6 +476,60 @@ describe('resolveStoryMetadata', () => {
     );
     expect(result.firstPageUrl).toBeUndefined();
   });
+
+  it('returns empty metadata when the story snapshot is missing', async () => {
+    const pageSnap = {
+      ref: {
+        parent: {
+          parent: {
+            get: jest.fn().mockResolvedValue({ exists: false }),
+          },
+        },
+      },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: {},
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({ storyTitle: '', firstPageUrl: undefined });
+  });
+
+  it('returns empty metadata when story data is not callable', async () => {
+    const pageSnap = {
+      ref: {
+        parent: {
+          parent: {
+            get: jest.fn().mockResolvedValue({
+              exists: true,
+              data: 'not-a-function',
+            }),
+          },
+        },
+      },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: {},
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({ storyTitle: '', firstPageUrl: undefined });
+  });
+
+  it('returns empty metadata when the page snapshot lacks a story ref', async () => {
+    const pageSnap = { ref: { parent: {} } };
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: {},
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({ storyTitle: '', firstPageUrl: undefined });
+  });
 });
 
 describe('extractStoryRef', () => {

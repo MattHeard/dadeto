@@ -1055,11 +1055,17 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = extractStoryRef(pageSnap);
 
+  if (!storyRef) {
+    return { storyTitle: '', firstPageUrl: undefined };
+  }
+
   const storySnap = await storyRef.get();
-  const storyData =
-    storySnap.exists && typeof storySnap.data === 'function'
-      ? storySnap.data()
-      : {};
+
+  if (!storySnap?.exists || typeof storySnap.data !== 'function') {
+    return { storyTitle: '', firstPageUrl: undefined };
+  }
+
+  const storyData = storySnap.data();
   const storyTitle = storyData.title || '';
   let firstPageUrl;
 
