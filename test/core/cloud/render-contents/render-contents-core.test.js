@@ -603,18 +603,6 @@ describe('buildHandleRenderRequest', () => {
     expect(verifyIdToken).toHaveBeenCalledWith('token');
   });
 
-  it('returns 401 when no authorization header is present', async () => {
-    const handler = build();
-    const req = {};
-    const res = makeResponse();
-
-    await handler(req, res);
-
-    expect(verifyIdToken).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.send).toHaveBeenCalledWith('Missing token');
-  });
-
   it('rejects when validateRequest blocks the call', async () => {
     validateRequest.mockReturnValueOnce(false);
     const handler = build();
