@@ -1157,6 +1157,18 @@ async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
     return undefined;
   }
 
+  return lookupAuthorUrl({ variant, db, bucket, consoleError });
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.variant
+ * @param root0.db
+ * @param root0.bucket
+ * @param root0.consoleError
+ */
+async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
   try {
     const authorRef = db.doc(`authors/${variant.authorId}`);
     const authorSnap = await authorRef.get();
