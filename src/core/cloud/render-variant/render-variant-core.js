@@ -1053,7 +1053,11 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
-  const storyRef = pageSnap.ref.parent.parent;
+  const storyRef = extractStoryRef(pageSnap);
+
+  if (!storyRef) {
+    return { storyTitle: '', firstPageUrl: undefined };
+  }
 
   const storySnap = await storyRef.get();
   const storyData =
@@ -1084,6 +1088,15 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   }
 
   return { storyTitle, firstPageUrl };
+}
+
+/**
+ * Determine the owning story reference for the provided page snapshot.
+ * @param {{ref?: {parent?: {parent?: any}}}} pageSnap Firestore snapshot describing a page document.
+ * @returns {object|null} Story reference when available, otherwise null.
+ */
+function extractStoryRef(pageSnap) {
+  return pageSnap?.ref?.parent?.parent ?? null;
 }
 
 /**
