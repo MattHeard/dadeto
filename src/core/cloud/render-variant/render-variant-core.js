@@ -1054,11 +1054,6 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = extractStoryRef(pageSnap);
-
-  if (!storyRef) {
-    return { storyTitle: '', firstPageUrl: undefined };
-  }
-
   const storySnap = await storyRef.get();
 
   if (!storySnap?.exists || typeof storySnap.data !== 'function') {

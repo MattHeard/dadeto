@@ -476,6 +476,27 @@ describe('resolveStoryMetadata', () => {
     );
     expect(result.firstPageUrl).toBeUndefined();
   });
+});
+
+describe('extractStoryRef', () => {
+  it('returns null when the page snapshot lacks a story reference', () => {
+    expect(RenderVariantCore.extractStoryRef({})).toBeNull();
+    expect(RenderVariantCore.extractStoryRef({ ref: null })).toBeNull();
+    expect(
+      RenderVariantCore.extractStoryRef({ ref: { parent: { parent: null } } })
+    ).toBeNull();
+  });
+
+  it('returns the mapped story reference when present', () => {
+    const storyRef = { id: 'story-1' };
+    const pageSnap = {
+      ref: {
+        parent: { parent: storyRef },
+      },
+    };
+
+    expect(RenderVariantCore.extractStoryRef(pageSnap)).toBe(storyRef);
+  });
 
   it('returns empty metadata when the story snapshot is missing', async () => {
     const pageSnap = {
@@ -518,38 +539,6 @@ describe('resolveStoryMetadata', () => {
     });
 
     expect(result).toEqual({ storyTitle: '', firstPageUrl: undefined });
-  });
-
-  it('returns empty metadata when the page snapshot lacks a story ref', async () => {
-    const pageSnap = { ref: { parent: {} } };
-    const result = await resolveStoryMetadata({
-      pageSnap,
-      page: {},
-      consoleError: jest.fn(),
-    });
-
-    expect(result).toEqual({ storyTitle: '', firstPageUrl: undefined });
-  });
-});
-
-describe('extractStoryRef', () => {
-  it('returns null when the page snapshot lacks a story reference', () => {
-    expect(RenderVariantCore.extractStoryRef({})).toBeNull();
-    expect(RenderVariantCore.extractStoryRef({ ref: null })).toBeNull();
-    expect(
-      RenderVariantCore.extractStoryRef({ ref: { parent: { parent: null } } })
-    ).toBeNull();
-  });
-
-  it('returns the mapped story reference when present', () => {
-    const storyRef = { id: 'story-1' };
-    const pageSnap = {
-      ref: {
-        parent: { parent: storyRef },
-      },
-    };
-
-    expect(RenderVariantCore.extractStoryRef(pageSnap)).toBe(storyRef);
   });
 });
 
