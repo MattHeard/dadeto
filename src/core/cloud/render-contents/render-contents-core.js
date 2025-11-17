@@ -652,12 +652,7 @@ function getAuthorizationHeaderFromGetter(req) {
  */
 function resolveAuthorizationHeader(req) {
   const getterHeader = getAuthorizationHeaderFromGetter(req);
-
-  if (getterHeader === undefined || getterHeader === null) {
-    return '';
-  }
-
-  return getterHeader;
+  return getterHeader || '';
 }
 
 /**
