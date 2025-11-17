@@ -634,15 +634,11 @@ export function createValidateRequest({ applyCorsHeaders }) {
 
 /**
  * Extract the Authorization header via the request getter.
- * @param {{ get?: (name: string) => unknown }} req Incoming request-like object.
- * @returns {unknown} Value returned by {@code req.get('Authorization')} or undefined.
+ * @param {{ get: (name: string) => unknown }} req Incoming request-like object that provides `get`.
+ * @returns {unknown} Value returned by {@code req.get('Authorization')} or {@code req.get('authorization')}.
  */
 function getAuthorizationHeaderFromGetter(req) {
-  if (typeof req?.get === 'function') {
-    return req.get('Authorization') ?? req.get('authorization');
-  }
-
-  return undefined;
+  return req.get('Authorization') ?? req.get('authorization');
 }
 
 /**
