@@ -1173,10 +1173,6 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
     const authorRef = resolveAuthorRef(db, variant.authorId);
     const authorSnap = await authorRef.get();
 
-    if (!authorSnap.exists) {
-      return undefined;
-    }
-
     const { uuid } = authorSnap.data();
 
     if (!uuid) {
