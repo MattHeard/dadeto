@@ -1056,12 +1056,10 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = pageSnap.ref.parent.parent;
 
   const storySnap = await storyRef.get();
-
-  if (!storySnap.exists) {
-    return { storyTitle: '', firstPageUrl: undefined };
-  }
-
-  const storyData = storySnap.data();
+  const storyData =
+    storySnap.exists && typeof storySnap.data === 'function'
+      ? storySnap.data()
+      : {};
   const storyTitle = storyData.title || '';
   let firstPageUrl;
 
