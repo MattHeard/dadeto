@@ -1056,7 +1056,7 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = extractStoryRef(pageSnap);
   const storySnap = await storyRef.get();
   const storyData = storySnap.data();
-  const storyTitle = storyData.title || '';
+  const storyTitle = storyData.title;
   let firstPageUrl;
 
   if (page.incomingOption && storyData.rootPage) {
