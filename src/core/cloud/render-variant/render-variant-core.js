@@ -1170,7 +1170,7 @@ async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
  */
 async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
   try {
-    const authorRef = db.doc(`authors/${variant.authorId}`);
+    const authorRef = resolveAuthorRef(db, variant.authorId);
     const authorSnap = await authorRef.get();
 
     if (!authorSnap.exists) {
@@ -1204,6 +1204,16 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
     }
     return undefined;
   }
+}
+
+/**
+ * Resolve a Firestore reference for an author document.
+ * @param {{ doc: (path: string) => unknown }} db Firestore-like client.
+ * @param {string | undefined} authorId Identifier for the author.
+ * @returns {unknown} Firestore document reference for the author path.
+ */
+function resolveAuthorRef(db, authorId) {
+  return db.doc(`authors/${authorId}`);
 }
 
 /**
