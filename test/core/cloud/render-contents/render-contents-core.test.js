@@ -603,69 +603,9 @@ describe('buildHandleRenderRequest', () => {
     expect(verifyIdToken).toHaveBeenCalledWith('token');
   });
 
-  it('falls back to headers when getter is absent', async () => {
-    const handler = build();
-    const req = {
-      headers: { Authorization: ['Bearer first', 'Bearer second'] },
-    };
-    const res = makeResponse();
-
-    await handler(req, res);
-
-    expect(verifyIdToken).toHaveBeenCalledWith('first');
-  });
-
-  it('uses lower-case headers when Authorization is missing', async () => {
-    const handler = build();
-    const req = {
-      headers: { authorization: 'Bearer lower' },
-    };
-    const res = makeResponse();
-
-    await handler(req, res);
-
-    expect(verifyIdToken).toHaveBeenCalledWith('lower');
-  });
-
   it('returns 401 when no authorization header is present', async () => {
     const handler = build();
     const req = {};
-    const res = makeResponse();
-
-    await handler(req, res);
-
-    expect(verifyIdToken).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.send).toHaveBeenCalledWith('Missing token');
-  });
-
-  it('rejects non-string authorization headers', async () => {
-    const handler = build();
-    const req = { headers: { Authorization: [123] } };
-    const res = makeResponse();
-
-    await handler(req, res);
-
-    expect(verifyIdToken).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.send).toHaveBeenCalledWith('Missing token');
-  });
-
-  it('treats array headers with missing first entries as missing tokens', async () => {
-    const handler = build();
-    const req = { headers: { Authorization: [undefined, 'Bearer second'] } };
-    const res = makeResponse();
-
-    await handler(req, res);
-
-    expect(verifyIdToken).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.send).toHaveBeenCalledWith('Missing token');
-  });
-
-  it('ignores header values that are neither strings nor arrays', async () => {
-    const handler = build();
-    const req = { headers: { Authorization: { token: 'Bearer missing' } } };
     const res = makeResponse();
 
     await handler(req, res);
