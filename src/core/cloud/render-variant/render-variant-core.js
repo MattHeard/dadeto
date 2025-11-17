@@ -1537,6 +1537,7 @@ export {
   buildOptionMetadata,
   loadOptions,
   resolveStoryMetadata,
+  extractStoryRef,
   resolveAuthorMetadata,
   fetchParentSnapshots,
   buildParentRoute,

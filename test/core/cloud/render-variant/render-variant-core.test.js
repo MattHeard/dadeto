@@ -478,6 +478,27 @@ describe('resolveStoryMetadata', () => {
   });
 });
 
+describe('extractStoryRef', () => {
+  it('returns null when the page snapshot lacks a story reference', () => {
+    expect(RenderVariantCore.extractStoryRef({})).toBeNull();
+    expect(RenderVariantCore.extractStoryRef({ ref: null })).toBeNull();
+    expect(
+      RenderVariantCore.extractStoryRef({ ref: { parent: { parent: null } } })
+    ).toBeNull();
+  });
+
+  it('returns the mapped story reference when present', () => {
+    const storyRef = { id: 'story-1' };
+    const pageSnap = {
+      ref: {
+        parent: { parent: storyRef },
+      },
+    };
+
+    expect(RenderVariantCore.extractStoryRef(pageSnap)).toBe(storyRef);
+  });
+});
+
 describe('resolveAuthorMetadata', () => {
   it('creates a landing page when the author uuid is missing from storage', async () => {
     const authorFile = {
