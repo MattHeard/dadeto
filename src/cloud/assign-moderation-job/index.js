@@ -115,7 +115,7 @@ function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
  * @param {Record<string, unknown>} environment Process environment variables.
  * @returns {string | null} The configured database identifier when available.
  */
-function resolveFirestoreDatabaseId(environment = getEnvironmentVariables()) {
+function resolveFirestoreDatabaseId(environment) {
   const rawConfig = environment?.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {

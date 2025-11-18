@@ -51,7 +51,7 @@ const getAllowedOrigins = environmentVariables => {
 
 const PRODUCTION_DATABASE_ID = '(default)';
 
-const resolveFirestoreDatabaseId = (environment = process.env) => {
+const resolveFirestoreDatabaseId = environment => {
   const rawConfig = environment?.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {

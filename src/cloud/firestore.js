@@ -10,7 +10,7 @@ const { ensureFirebaseApp, resetFirebaseInitializationState } =
  * @param {Record<string, unknown>} environment Process environment variables.
  * @returns {string | null} The configured database identifier when available.
  */
-export function resolveFirestoreDatabaseId(environment = process.env) {
+export function resolveFirestoreDatabaseId(environment) {
   const rawConfig = environment?.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
