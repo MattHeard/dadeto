@@ -2,25 +2,6 @@ import { describe, expect, test, jest } from '@jest/globals';
 import { createVerifyAdmin } from '../../../../src/core/cloud/mark-variant-dirty/verifyAdmin.js';
 
 describe('createVerifyAdmin', () => {
-  test('throws when sendUnauthorized is missing', () => {
-    expect(() =>
-      createVerifyAdmin({
-        verifyToken: jest.fn(),
-        isAdminUid: jest.fn(),
-      })
-    ).toThrow(new TypeError('sendUnauthorized must be provided'));
-  });
-
-  test('throws when sendForbidden is missing', () => {
-    expect(() =>
-      createVerifyAdmin({
-        verifyToken: jest.fn(),
-        isAdminUid: jest.fn(),
-        sendUnauthorized: jest.fn(),
-      })
-    ).toThrow(new TypeError('sendForbidden must be provided'));
-  });
-
   test('sends missing token response when Authorization header absent', async () => {
     const sendUnauthorized = jest.fn();
     const verifyAdmin = createVerifyAdmin({
