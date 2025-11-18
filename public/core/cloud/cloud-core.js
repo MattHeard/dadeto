@@ -104,13 +104,6 @@ export function createVerifyAdmin({
   sendUnauthorized,
   sendForbidden,
 } = {}) {
-  if (typeof sendUnauthorized !== 'function') {
-    throw new TypeError('sendUnauthorized must be provided');
-  }
-  if (typeof sendForbidden !== 'function') {
-    throw new TypeError('sendForbidden must be provided');
-  }
-
   return async function verifyAdmin(req, res) {
     const authHeader = getAuthHeader(req);
     const match = matchAuthHeader(authHeader);
