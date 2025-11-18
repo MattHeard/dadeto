@@ -103,7 +103,7 @@ export function createVerifyAdmin({
   isAdminUid,
   sendUnauthorized,
   sendForbidden,
-} = {}) {
+}) {
   return async function verifyAdmin(req, res) {
     const authHeader = getAuthHeader(req);
     const match = matchAuthHeader(authHeader);
