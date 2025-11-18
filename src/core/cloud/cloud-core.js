@@ -96,7 +96,6 @@ function defaultInvalidTokenMessage(error) {
  * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
  * @param {(res: import('express').Response, message: string) => void} deps.sendUnauthorized Sends 401 responses.
  * @param {(res: import('express').Response) => void} deps.sendForbidden Sends 403 responses.
- * @param {string} [deps.missingTokenMessage] Message when the Authorization header is missing.
  * @param {(error: unknown) => string} [deps.getInvalidTokenMessage] Custom invalid token message.
  * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
  */
@@ -105,7 +104,6 @@ export function createVerifyAdmin({
   isAdminUid,
   sendUnauthorized,
   sendForbidden,
-  missingTokenMessage = defaultMissingTokenMessage,
   getInvalidTokenMessage = defaultInvalidTokenMessage,
 } = {}) {
   if (typeof verifyToken !== 'function') {
@@ -126,7 +124,7 @@ export function createVerifyAdmin({
     const match = matchAuthHeader(authHeader);
     const token = match?.[1] || '';
     if (!token) {
-      sendUnauthorized(res, missingTokenMessage);
+      sendUnauthorized(res, defaultMissingTokenMessage);
       return false;
     }
 

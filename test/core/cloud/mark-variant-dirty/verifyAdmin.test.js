@@ -42,7 +42,6 @@ describe('createVerifyAdmin', () => {
       isAdminUid: jest.fn(),
       sendUnauthorized,
       sendForbidden: jest.fn(),
-      missingTokenMessage: 'Need token',
     });
 
     const req = { get: jest.fn().mockReturnValue('') };
@@ -51,7 +50,7 @@ describe('createVerifyAdmin', () => {
     const authorised = await verifyAdmin(req, res);
 
     expect(authorised).toBe(false);
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Need token');
+    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Missing token');
   });
 
   test('uses default header reader when request lacks get function', async () => {

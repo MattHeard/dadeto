@@ -63,7 +63,6 @@ describe('createGenerateStatsCore', () => {
       sendForbidden: response => {
         response.status(403).send('Forbidden');
       },
-      missingTokenMessage: 'Missing token',
       getInvalidTokenMessage: error => {
         const candidate = error?.message;
         return ['Invalid token', candidate][
@@ -93,7 +92,7 @@ describe('createGenerateStatsCore', () => {
           const match = matchAuthHeader(authHeader);
           const token = match?.[1] || '';
           if (!token) {
-            deps.sendUnauthorized(res, deps.missingTokenMessage);
+            deps.sendUnauthorized(res, 'Missing token');
             return false;
           }
 
