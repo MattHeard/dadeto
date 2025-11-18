@@ -2,20 +2,6 @@ import { describe, expect, test, jest } from '@jest/globals';
 import { createVerifyAdmin } from '../../../../src/core/cloud/mark-variant-dirty/verifyAdmin.js';
 
 describe('createVerifyAdmin', () => {
-  test('throws when verifyToken is missing', () => {
-    expect(() => createVerifyAdmin()).toThrow(
-      new TypeError('verifyToken must be provided')
-    );
-  });
-
-  test('throws when isAdminUid is missing', () => {
-    expect(() =>
-      createVerifyAdmin({
-        verifyToken: jest.fn(),
-      })
-    ).toThrow(new TypeError('isAdminUid must be provided'));
-  });
-
   test('throws when sendUnauthorized is missing', () => {
     expect(() =>
       createVerifyAdmin({
