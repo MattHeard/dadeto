@@ -136,10 +136,9 @@ describe('createVerifyAdmin', () => {
     expect(sendForbidden).toHaveBeenCalledWith(res);
   });
 
-  test('uses injected invalid token message on verification failure', async () => {
+  test('uses built-in invalid token message when error lacks detail', async () => {
     const error = new Error('bad token');
     const verifyToken = jest.fn().mockRejectedValue(error);
-    const getInvalidTokenMessage = jest.fn().mockReturnValue('Nope');
     const sendUnauthorized = jest.fn();
 
     const verifyAdmin = createVerifyAdmin({
@@ -147,7 +146,6 @@ describe('createVerifyAdmin', () => {
       isAdminUid: jest.fn(),
       sendUnauthorized,
       sendForbidden: jest.fn(),
-      getInvalidTokenMessage,
     });
 
     const req = { get: jest.fn().mockReturnValue('Bearer nope') };
@@ -156,35 +154,10 @@ describe('createVerifyAdmin', () => {
     const authorised = await verifyAdmin(req, res);
 
     expect(authorised).toBe(false);
-    expect(getInvalidTokenMessage).toHaveBeenCalledWith(error);
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'Nope');
+    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'bad token');
   });
 
-  test('falls back to default invalid token message when custom handler is empty', async () => {
-    const error = new Error('token exploded');
-    const verifyToken = jest.fn().mockRejectedValue(error);
-    const getInvalidTokenMessage = jest.fn().mockReturnValue('');
-    const sendUnauthorized = jest.fn();
-
-    const verifyAdmin = createVerifyAdmin({
-      verifyToken,
-      isAdminUid: jest.fn(),
-      sendUnauthorized,
-      sendForbidden: jest.fn(),
-      getInvalidTokenMessage,
-    });
-
-    const req = { get: jest.fn().mockReturnValue('Bearer nope') };
-    const res = {};
-
-    const authorised = await verifyAdmin(req, res);
-
-    expect(authorised).toBe(false);
-    expect(getInvalidTokenMessage).toHaveBeenCalledWith(error);
-    expect(sendUnauthorized).toHaveBeenCalledWith(res, 'token exploded');
-  });
-
-  test('uses built-in invalid token message when error lacks detail', async () => {
+  test('uses generic invalid token message when error lacks detail', async () => {
     const verifyToken = jest.fn().mockRejectedValue({});
     const sendUnauthorized = jest.fn();
 

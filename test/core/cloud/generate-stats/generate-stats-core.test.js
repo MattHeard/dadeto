@@ -63,18 +63,6 @@ describe('createGenerateStatsCore', () => {
       sendForbidden: response => {
         response.status(403).send('Forbidden');
       },
-      getInvalidTokenMessage: error => {
-        const candidate = error?.message;
-        return ['Invalid token', candidate][
-          Number(typeof candidate === 'string')
-        ];
-      },
-      defaultInvalidTokenMessage: error => {
-        const candidate = error?.message;
-        return ['Invalid token', candidate][
-          Number(typeof candidate === 'string')
-        ];
-      },
     };
 
     core = createGenerateStatsCore({
@@ -104,9 +92,9 @@ describe('createGenerateStatsCore', () => {
               return false;
             }
           } catch (error) {
+            const candidate = error?.message;
             const message =
-              deps.getInvalidTokenMessage(error) ||
-              deps.defaultInvalidTokenMessage(error);
+              typeof candidate === 'string' ? candidate : 'Invalid token';
             deps.sendUnauthorized(res, message);
             return false;
           }
