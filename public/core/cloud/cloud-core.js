@@ -104,12 +104,6 @@ export function createVerifyAdmin({
   sendUnauthorized,
   sendForbidden,
 } = {}) {
-  if (typeof verifyToken !== 'function') {
-    throw new TypeError('verifyToken must be provided');
-  }
-  if (typeof isAdminUid !== 'function') {
-    throw new TypeError('isAdminUid must be provided');
-  }
   if (typeof sendUnauthorized !== 'function') {
     throw new TypeError('sendUnauthorized must be provided');
   }
