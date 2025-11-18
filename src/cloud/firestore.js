@@ -11,7 +11,7 @@ const { ensureFirebaseApp, resetFirebaseInitializationState } =
  * @returns {string | null} The configured database identifier when available.
  */
 export function resolveFirestoreDatabaseId(environment) {
-  const rawConfig = environment?.FIREBASE_CONFIG;
+  const rawConfig = environment.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
     return null;

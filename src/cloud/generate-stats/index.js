@@ -52,7 +52,7 @@ const getAllowedOrigins = environmentVariables => {
 const PRODUCTION_DATABASE_ID = '(default)';
 
 const resolveFirestoreDatabaseId = environment => {
-  const rawConfig = environment?.FIREBASE_CONFIG;
+  const rawConfig = environment.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
     return null;
