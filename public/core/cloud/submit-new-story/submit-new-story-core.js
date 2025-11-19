@@ -433,7 +433,7 @@ function getMethods(options) {
  * @param {object} options Options.
  * @returns {{ allowedOrigins: string[], methods: string[] }} Normalized options.
  */
-function normalizeCorsOptions(options) {
+export function normalizeCorsOptions(options) {
   const opts = options || {};
   return {
     allowedOrigins: getAllowedOrigins(opts),
@@ -697,7 +697,7 @@ function extractBody(req) {
  * @param {SubmitNewStoryRequest} request Request.
  * @returns {Record<string, unknown>} Body.
  */
-function getRequestBody(request) {
+export function getRequestBody(request) {
   const req = request || {};
   return extractBody(req);
 }

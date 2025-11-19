@@ -1537,7 +1537,7 @@ export function createRenderVariant({
  * @param {object} snap Snap.
  * @returns {boolean} True if valid.
  */
-function isSnapValid(snap) {
+export function isSnapValid(snap) {
   if (!snap) return true;
   if (!('exists' in snap)) return true;
   return snap.exists;
