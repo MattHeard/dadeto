@@ -62,9 +62,7 @@ function validateAdminTokenActionOptions({
  * @returns {void}
  */
 function ensureGoogleAuth(googleAuth) {
-  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
-    throw new TypeError('googleAuth must provide a getIdToken function');
-  }
+  ensureFunctionDefined(googleAuth?.getIdToken, 'googleAuth.getIdToken');
 }
 
 /**

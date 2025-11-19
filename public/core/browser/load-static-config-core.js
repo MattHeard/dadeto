@@ -23,8 +23,9 @@ export async function parseStaticConfigResponse(response) {
 }
 
 /**
- *
- * @param response
+ * Determine whether the static config response succeeded.
+ * @param {StaticConfigResponse | null | undefined} response - Raw response from config fetch.
+ * @returns {boolean} `true` when the fetch reported an OK response.
  */
 function isResponseOk(response) {
   return Boolean(response?.ok);
@@ -43,20 +44,16 @@ function ensureStaticConfigResponseOk(response) {
 }
 
 /**
- *
- * @param response
- */
-function getStatusFromResponse(response) {
-  return response?.status ?? 'unknown';
-}
-
-/**
  * Build an error describing why static config was not retrieved.
  * @param {StaticConfigResponse | null | undefined} response Response that triggered the error.
  * @returns {Error} Error describing why the fetch failed.
  */
 function createStaticConfigError(response) {
-  const status = getStatusFromResponse(response);
+  const status = response?.status;
+  if (status === undefined) {
+    return new Error('Failed to load static config: unknown');
+  }
+
   return new Error(`Failed to load static config: ${status}`);
 }
 

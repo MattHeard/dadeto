@@ -175,6 +175,9 @@ export function createCopyToInfraCore({
    * @returns {Promise<void>} Resolves when all files are copied.
    */
   async function copyDeclaredFiles(copyPlan, io, messageLogger) {
+    if (!copyPlan?.files?.length) {
+      return;
+    }
     const { sourceDir, targetDir, files } = copyPlan;
     await io.ensureDirectory(targetDir);
 
@@ -228,7 +231,7 @@ export function createCopyToInfraCore({
   async function runCopyToInfra({
     directoryCopies,
     fileCopies,
-    individualFileCopies,
+    individualFileCopies = [],
     io,
     messageLogger,
   }) {
@@ -236,13 +239,8 @@ export function createCopyToInfraCore({
       await copyDirectory(directory, io, messageLogger);
     }
 
-    if (fileCopies) {
-      await copyDeclaredFiles(fileCopies, io, messageLogger);
-    }
-
-    if (individualFileCopies?.length) {
-      await copyIndividualFiles(individualFileCopies, io, messageLogger);
-    }
+    await copyDeclaredFiles(fileCopies, io, messageLogger);
+    await copyIndividualFiles(individualFileCopies, io, messageLogger);
   }
 
   return {
