@@ -4,7 +4,9 @@ import {
   createCorsOptions,
   createHandleSubmitNewStory,
   createSubmitNewStoryResponder,
+  normalizeCorsOptions,
   resolveAuthorId,
+  getRequestBody,
 } from '../../../../src/core/cloud/submit-new-story/submit-new-story-core.js';
 
 describe('submit-new-story core', () => {
@@ -262,6 +264,17 @@ describe('submit-new-story core', () => {
     });
   });
 
+  describe('getRequestBody', () => {
+    it('returns an empty object when the request is missing', () => {
+      expect(getRequestBody(undefined)).toEqual({});
+    });
+
+    it('reads the provided body object when available', () => {
+      const body = { foo: 'bar' };
+      expect(getRequestBody({ body })).toBe(body);
+    });
+  });
+
   describe('CORS helpers', () => {
     it('allows configured origins', () => {
       const options = createCorsOptions({
@@ -330,6 +343,13 @@ describe('submit-new-story core', () => {
       options.origin('https://allowed.example', callback);
 
       expect(callback).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it('uses normalization defaults when no config is provided', () => {
+      expect(normalizeCorsOptions(undefined)).toEqual({
+        allowedOrigins: [],
+        methods: ['POST'],
+      });
     });
   });
 });

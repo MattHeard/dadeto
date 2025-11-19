@@ -16,6 +16,8 @@ import {
   escapeHtml,
   fetchPageData,
   getPageSnapFromRef,
+  resolveRenderPlan,
+  isSnapValid,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('createInvalidatePaths', () => {
@@ -2177,5 +2179,28 @@ describe('fetchPageData', () => {
     const result = await fetchPageData(snap);
 
     expect(result).toBeNull();
+  });
+});
+
+describe('isSnapValid', () => {
+  it('allows falsy snapshots', () => {
+    expect(isSnapValid(null)).toBe(true);
+    expect(isSnapValid(undefined)).toBe(true);
+  });
+
+  it('treats snapshots without an exists flag as valid', () => {
+    expect(isSnapValid({ data: () => ({}) })).toBe(true);
+  });
+
+  it('rejects snapshots that explicitly mark existence as false', () => {
+    expect(isSnapValid({ exists: false })).toBe(false);
+  });
+});
+
+describe('resolveRenderPlan', () => {
+  it('short-circuits when the snapshot is invalid', async () => {
+    await expect(
+      resolveRenderPlan({ snap: { exists: false } })
+    ).resolves.toBeNull();
   });
 });
