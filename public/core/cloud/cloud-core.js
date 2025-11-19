@@ -90,8 +90,9 @@ function defaultInvalidTokenMessage(error) {
 }
 
 /**
- *
- * @param req
+ * Extract the bearer token string from the request.
+ * @param {import('express').Request} req Incoming HTTP request.
+ * @returns {string} Bearer token string or an empty string when missing.
  */
 function extractTokenFromRequest(req) {
   const authHeader = getAuthHeader(req);
@@ -100,14 +101,16 @@ function extractTokenFromRequest(req) {
 }
 
 /**
- *
- * @param root0
- * @param root0.token
- * @param root0.verifyToken
- * @param root0.isAdminUid
- * @param root0.sendUnauthorized
- * @param root0.sendForbidden
- * @param root0.res
+ * Ensure the provided token belongs to an administrator and report errors.
+ * @param {{
+ *   token: string,
+ *   verifyToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>,
+ *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
+ *   sendUnauthorized: (res: import('express').Response, message: string) => void,
+ *   sendForbidden: (res: import('express').Response) => void,
+ *   res: import('express').Response,
+ * }} deps Dependencies for validating the token and sending HTTP errors.
+ * @returns {Promise<boolean>} True when the token is authorized for an admin request.
  */
 async function authorizeAdminToken({
   token,

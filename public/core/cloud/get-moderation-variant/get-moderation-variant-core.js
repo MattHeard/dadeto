@@ -411,7 +411,7 @@ async function buildSuccessVariantResponse(variantSnapshot) {
 
 /**
  * Build the HTTP response payload for a successful variant lookup.
- * @param {{ storyTitle: string, variantData: VariantData, options: VariantOption[] }} params Response data.
+ * @param {{ storyTitle: string, variantData: Record<string, unknown>, options: VariantOption[] }} params Response data.
  * @returns {ResponderResult} Successful response payload.
  */
 function buildVariantResponsePayload({ storyTitle, variantData, options }) {
@@ -429,7 +429,7 @@ function buildVariantResponsePayload({ storyTitle, variantData, options }) {
 /**
  * Extract the non-null variant data from a snapshot.
  * @param {VariantSnapshot} variantSnapshot Snapshot describing the assigned variant.
- * @returns {VariantData} Valid variant document data.
+ * @returns {Record<string, unknown>} Valid variant document data.
  */
 function extractVariantData(variantSnapshot) {
   const { variantSnap } = variantSnapshot;

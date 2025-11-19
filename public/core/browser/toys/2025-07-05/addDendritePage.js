@@ -28,8 +28,9 @@ function areFieldsValid(obj) {
 }
 
 /**
- *
- * @param obj
+ * Validate that the payload contains the required Dendrite page fields.
+ * @param {{ optionId?: string, content?: string } | null | undefined} obj Parsed page payload.
+ * @returns {boolean} True when the payload is usable.
  */
 function isValidInput(obj) {
   return doesObjectExist(obj) && areFieldsValid(obj);
@@ -51,9 +52,10 @@ export function addDendritePage(input, env) {
 }
 
 /**
- *
- * @param parsed
- * @param env
+ * Persist the parsed page data into the temporary storage.
+ * @param {{ optionId: string, content: string }} parsed Parsed page payload.
+ * @param {Map<string, Function>} env Environment helpers used to get UUIDs and persist data.
+ * @returns {string} JSON string containing the new page and option entries.
  */
 function persistDendritePage(parsed, env) {
   const getter = env.get.bind(env);
