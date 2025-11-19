@@ -293,15 +293,35 @@ export function initializeFirebaseApp(initFn) {
 /** @typedef {import('node:process').ProcessEnv} ProcessEnv */
 
 /**
+ * Determine whether a value is a non-empty string.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is a trimmed string.
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/**
+ * Ensure the environment object is usable for lookups.
+ * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @returns {ProcessEnv | Record<string, string | undefined> | null} Normalized env map.
+ */
+function resolveEnv(env) {
+  if (!env || typeof env !== 'object') {
+    return null;
+  }
+
+  return env;
+}
+
+/**
  * Derive the Google Cloud project identifier from environment variables.
  * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string | undefined} Project identifier if present.
  */
 export function getProjectFromEnv(env) {
-  if (!env || typeof env !== 'object') {
-    return undefined;
-  }
-  return env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT;
+  const resolved = resolveEnv(env);
+  return resolved?.GOOGLE_CLOUD_PROJECT ?? resolved?.GCLOUD_PROJECT;
 }
 
 /**
@@ -310,11 +330,8 @@ export function getProjectFromEnv(env) {
  * @returns {string} URL map identifier.
  */
 export function getUrlMapFromEnv(env) {
-  if (!env || typeof env !== 'object') {
-    return DEFAULT_URL_MAP;
-  }
-
-  return env.URL_MAP || DEFAULT_URL_MAP;
+  const resolved = resolveEnv(env);
+  return resolved?.URL_MAP ?? DEFAULT_URL_MAP;
 }
 
 /**
@@ -323,16 +340,9 @@ export function getUrlMapFromEnv(env) {
  * @returns {string} CDN host name.
  */
 export function getCdnHostFromEnv(env) {
-  if (!env || typeof env !== 'object') {
-    return DEFAULT_CDN_HOST;
-  }
-
-  const cdnHost = env.CDN_HOST;
-  if (typeof cdnHost === 'string' && cdnHost.trim()) {
-    return cdnHost;
-  }
-
-  return DEFAULT_CDN_HOST;
+  const resolved = resolveEnv(env);
+  const candidate = resolved?.CDN_HOST;
+  return isNonEmptyString(candidate) ? candidate : DEFAULT_CDN_HOST;
 }
 
 /**
