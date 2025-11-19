@@ -111,8 +111,9 @@ function extractFirstString(arr) {
 }
 
 /**
- *
- * @param value
+ * Coerce a raw header value into a normalized string token.
+ * @param {unknown} value Header value sourced from Express request metadata.
+ * @returns {string | null} String representation of the header or null when unavailable.
  */
 function coerceAuthorizationHeader(value) {
   if (typeof value === 'string') {
@@ -143,8 +144,9 @@ function findAuthInHeaders(headers) {
 }
 
 /**
- *
- * @param headers
+ * Parse the Authorization header from a raw headers object.
+ * @param {Record<string, unknown> | null | undefined} headers Headers provided by the HTTP adapter.
+ * @returns {string | null} Normalized Authorization value or null when absent.
  */
 function readAuthorizationFromHeaders(headers) {
   if (!headers || typeof headers !== 'object') {
@@ -187,8 +189,9 @@ function matchBearerPattern(header) {
 }
 
 /**
- *
- * @param header
+ * Extract the bearer token from a normalized Authorization header.
+ * @param {string | null} header Authorization header content.
+ * @returns {string | null} Extracted token or null when the header is invalid.
  */
 function extractBearerToken(header) {
   if (typeof header !== 'string') {
@@ -222,16 +225,9 @@ function validateAllowedOrigin(origin, allowedOrigins) {
 }
 
 /**
- * Create configuration consumed by the CORS middleware.
- * @param {{ allowedOrigins?: string[] | null, methods?: string[] }} root0 Options controlling CORS behavior.
- * @param {string[] | null | undefined} root0.allowedOrigins Origins that may access the endpoint.
- * @param {string[]} [root0.methods] HTTP methods supported by the endpoint. Defaults to ['POST'].
- * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS configuration compatible with Express middleware.
- */
-/**
- * Normalize origins.
- * @param {unknown} allowedOrigins Origins.
- * @returns {string[]} Normalized origins.
+ * Normalize origins defined in the configuration.
+ * @param {unknown} allowedOrigins Raw origins value.
+ * @returns {string[]} Array of origin strings.
  */
 function normalizeOrigins(allowedOrigins) {
   if (Array.isArray(allowedOrigins)) {
@@ -241,10 +237,15 @@ function normalizeOrigins(allowedOrigins) {
 }
 
 /**
- *
- * @param root0
- * @param root0.allowedOrigins
- * @param root0.methods
+ * Build CORS options consumed by the moderation responder.
+ * @param {{
+ *   allowedOrigins?: string[] | null,
+ *   methods?: string[]
+ * }} config Configuration values for CORS behavior.
+ * @returns {{
+ *   origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void,
+ *   methods: string[]
+ * }} Express-compatible CORS configuration.
  */
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   const origins = normalizeOrigins(allowedOrigins);
@@ -449,9 +450,10 @@ function buildAssignmentResult(assignment) {
 }
 
 /**
- *
- * @param fetchModeratorAssignment
- * @param uid
+ * Resolve the moderator assignment for a verified user identifier.
+ * @param {SubmitModerationRatingDependencies['fetchModeratorAssignment']} fetchModeratorAssignment Function that fetches pending assignments.
+ * @param {string} uid Verified user identifier extracted from the token.
+ * @returns {Promise<ModeratorAssignment | null>} Assignment metadata when available or null when missing.
  */
 async function resolveModeratorAssignment(fetchModeratorAssignment, uid) {
   const assignment = await fetchModeratorAssignment(uid);
@@ -556,8 +558,9 @@ function extractIsApproved(body) {
 }
 
 /**
- *
- * @param body
+ * Validate the submitted rating payload.
+ * @param {unknown} body Request body parsed by the HTTP handler.
+ * @returns {{ isApproved?: boolean, error?: SubmitModerationRatingResponse }} Validation outcome containing the normalized approval flag or an error response.
  */
 function validateRatingBody(body) {
   const isApproved = extractIsApproved(body);
@@ -621,11 +624,13 @@ async function resolveAssignmentAndBuildContext(fetchModeratorAssignment, uid) {
 }
 
 /**
- *
- * @param root0
- * @param root0.verifyIdToken
- * @param root0.fetchModeratorAssignment
- * @param root0.token
+ * Resolve the moderator context based on the provided token and helpers.
+ * @param {{
+ *   verifyIdToken: SubmitModerationRatingDependencies['verifyIdToken'],
+ *   fetchModeratorAssignment: SubmitModerationRatingDependencies['fetchModeratorAssignment'],
+ *   token: string
+ * }} deps Dependencies required to validate the token and load the assignment.
+ * @returns {Promise<{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }>} Resulting context or an error response.
  */
 async function resolveModeratorContext({
   verifyIdToken,
