@@ -90,6 +90,16 @@ function defaultInvalidTokenMessage(error) {
 }
 
 /**
+ *
+ * @param req
+ */
+function extractTokenFromRequest(req) {
+  const authHeader = getAuthHeader(req);
+  const match = matchAuthHeader(authHeader);
+  return match?.[1] || '';
+}
+
+/**
  * Create a reusable admin guard.
  * @param {object} deps Authorization collaborators.
  * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token validator.
@@ -105,9 +115,7 @@ export function createVerifyAdmin({
   sendForbidden,
 }) {
   return async function verifyAdmin(req, res) {
-    const authHeader = getAuthHeader(req);
-    const match = matchAuthHeader(authHeader);
-    const token = match?.[1] || '';
+    const token = extractTokenFromRequest(req);
     if (!token) {
       sendUnauthorized(res, defaultMissingTokenMessage);
       return false;
