@@ -4,6 +4,7 @@ import {
   createCorsOptions,
   createHandleSubmitNewStory,
   createSubmitNewStoryResponder,
+  resolveAuthorId,
 } from '../../../../src/core/cloud/submit-new-story/submit-new-story-core.js';
 
 describe('submit-new-story core', () => {
@@ -129,6 +130,27 @@ describe('submit-new-story core', () => {
     });
   });
 
+  describe('resolveAuthorId', () => {
+    it('returns null when the request is falsy', async () => {
+      const verifyIdToken = jest.fn();
+
+      await expect(
+        resolveAuthorId(undefined, verifyIdToken)
+      ).resolves.toBeNull();
+      expect(verifyIdToken).not.toHaveBeenCalled();
+    });
+
+    it('returns null when verification resolves without decoded data', async () => {
+      const verifyIdToken = jest.fn().mockResolvedValue(undefined);
+      const request = {
+        get: () => 'Bearer secret',
+      };
+
+      await expect(resolveAuthorId(request, verifyIdToken)).resolves.toBeNull();
+      expect(verifyIdToken).toHaveBeenCalledWith('secret');
+    });
+  });
+
   describe('createHandleSubmitNewStory', () => {
     it('sends JSON responses using Express semantics', async () => {
       const responder = jest.fn().mockResolvedValue({
@@ -248,6 +270,17 @@ describe('submit-new-story core', () => {
       const callback = jest.fn();
 
       options.origin('https://allowed.example', callback);
+
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('allows missing origin values', () => {
+      const options = createCorsOptions({
+        allowedOrigins: ['https://allowed.example'],
+      });
+      const callback = jest.fn();
+
+      options.origin(undefined, callback);
 
       expect(callback).toHaveBeenCalledWith(null, true);
     });

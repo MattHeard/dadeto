@@ -14,6 +14,8 @@ import {
   getVisibleVariants,
   loadOptions,
   escapeHtml,
+  fetchPageData,
+  getPageSnapFromRef,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('createInvalidatePaths', () => {
@@ -2128,5 +2130,52 @@ describe('createHandleVariantWrite', () => {
       handler({ before: { exists: true }, after: { exists: false } }, {})
     ).resolves.toBeNull();
     expect(renderVariant).not.toHaveBeenCalled();
+  });
+});
+
+describe('getPageSnapFromRef', () => {
+  it('resolves the nested page snapshot when parents exist', async () => {
+    const pageSnap = { exists: true };
+    const grandparent = { get: jest.fn().mockResolvedValue(pageSnap) };
+    const snap = { ref: { parent: { parent: grandparent } } };
+
+    const result = await getPageSnapFromRef(snap);
+
+    expect(result).toBe(pageSnap);
+    expect(grandparent.get).toHaveBeenCalled();
+  });
+
+  it('returns undefined when the parent chain is missing', async () => {
+    const result = await getPageSnapFromRef({ ref: { parent: {} } });
+
+    expect(result).toBeUndefined();
+  });
+
+  it('returns undefined when the variant snapshot lacks a parent ref', async () => {
+    const result = await getPageSnapFromRef({ ref: {} });
+
+    expect(result).toBeUndefined();
+  });
+});
+
+describe('fetchPageData', () => {
+  it('returns a page snap when it exists', async () => {
+    const pageSnap = { exists: true };
+    const grandparent = { get: jest.fn().mockResolvedValue(pageSnap) };
+    const snap = { ref: { parent: { parent: grandparent } } };
+
+    const result = await fetchPageData(snap);
+
+    expect(result).toBe(pageSnap);
+    expect(grandparent.get).toHaveBeenCalled();
+  });
+
+  it('returns null when no page snap is found', async () => {
+    const grandparent = { get: jest.fn().mockResolvedValue(null) };
+    const snap = { ref: { parent: { parent: grandparent } } };
+
+    const result = await fetchPageData(snap);
+
+    expect(result).toBeNull();
   });
 });

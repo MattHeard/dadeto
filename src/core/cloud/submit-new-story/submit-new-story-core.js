@@ -359,7 +359,7 @@ async function verifyTokenSafe(token, verifyIdToken) {
  * @param {SubmitNewStoryDependencies['verifyIdToken']} verifyIdToken - Token verification dependency.
  * @returns {Promise<string | null>} Resolved author identifier when verification succeeds.
  */
-async function resolveAuthorId(request, verifyIdToken) {
+export async function resolveAuthorId(request, verifyIdToken) {
   const header = getAuthorizationHeader(request);
   const token = extractBearerToken(header);
 

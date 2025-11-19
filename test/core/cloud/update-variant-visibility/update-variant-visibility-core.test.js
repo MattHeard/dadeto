@@ -55,11 +55,23 @@ describe('calculateUpdatedVisibility', () => {
 
     expect(result).toBeCloseTo((0 * 1 + 1) / 2);
   });
+
+  it('defaults to zero when variant data is absent', () => {
+    const result = calculateUpdatedVisibility(undefined, 1);
+
+    expect(result).toBe(1);
+  });
 });
 
 describe('createUpdateVariantVisibilityHandler', () => {
   const createSnapshot = data => ({
     data: () => data,
+  });
+
+  it('throws when db is missing', () => {
+    expect(() => createUpdateVariantVisibilityHandler({ db: null })).toThrow(
+      new TypeError('db must expose a doc helper')
+    );
   });
 
   it('throws when db is missing doc helper', () => {
