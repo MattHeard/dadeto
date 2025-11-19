@@ -46,17 +46,32 @@ export function resolveFirestoreEnvironment(
 }
 
 /**
- * Determine whether the caller supplied custom Firestore dependencies.
- * @param {{
- *   options: Record<string, unknown> | undefined,
- *   defaultEnsureFn: () => void,
- *   defaultGetFirestoreFn: (
- *     app?: import('firebase-admin/app').App,
- *     databaseId?: string
- *   ) => import('firebase-admin/firestore').Firestore,
- *   providedEnvironment: Record<string, unknown> | undefined,
- * }} params - Dependencies used to evaluate the Firestore configuration.
- * @returns {boolean} True when custom dependencies should be used.
+ * Check if ensure function is custom.
+ * @param {Function} ensureAppFn Ensure function.
+ * @param {Function} defaultEnsureFn Default.
+ * @returns {boolean} True if custom.
+ */
+function isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) {
+  return ensureAppFn && ensureAppFn !== defaultEnsureFn;
+}
+
+/**
+ * Check if get firestore function is custom.
+ * @param {Function} getFirestoreFn Get function.
+ * @param {Function} defaultGetFirestoreFn Default.
+ * @returns {boolean} True if custom.
+ */
+function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
+  return getFirestoreFn && getFirestoreFn !== defaultGetFirestoreFn;
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.options
+ * @param root0.defaultEnsureFn
+ * @param root0.defaultGetFirestoreFn
+ * @param root0.providedEnvironment
  */
 export function shouldUseCustomFirestoreDependencies({
   options,
@@ -67,8 +82,8 @@ export function shouldUseCustomFirestoreDependencies({
   const { ensureAppFn, getFirestoreFn } = options ?? {};
 
   return (
-    (ensureAppFn && ensureAppFn !== defaultEnsureFn) ||
-    (getFirestoreFn && getFirestoreFn !== defaultGetFirestoreFn) ||
+    isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) ||
+    isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) ||
     providedEnvironment !== undefined
   );
 }
@@ -98,23 +113,49 @@ export function createFirebaseInitialization() {
 }
 
 /**
- * Resolve the allowed origins for the assign moderation endpoint.
- * @param {Record<string, unknown>} [environmentVariables] Environment variables used to derive the configuration.
- * @returns {string[]} List of origins permitted to call the endpoint.
+ * Check if environment is production.
+ * @param {unknown} environment Environment.
+ * @returns {boolean} True if prod.
+ */
+function isProductionEnvironment(environment) {
+  return environment === 'prod';
+}
+
+/**
+ * Check if environment is test.
+ * @param {unknown} environment Environment.
+ * @returns {boolean} True if test.
+ */
+function isTestEnvironment(environment) {
+  return typeof environment === 'string' && environment.startsWith('t-');
+}
+
+/**
+ * Get test origins.
+ * @param {unknown} playwrightOrigin Playwright origin.
+ * @returns {string[]} Origins.
+ */
+function getTestOrigins(playwrightOrigin) {
+  if (playwrightOrigin) {
+    return [playwrightOrigin];
+  }
+  return [];
+}
+
+/**
+ *
+ * @param environmentVariables
  */
 export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
-  if (environment === 'prod') {
+  if (isProductionEnvironment(environment)) {
     return productionOrigins;
   }
 
-  if (typeof environment === 'string' && environment.startsWith('t-')) {
-    if (playwrightOrigin) {
-      return [playwrightOrigin];
-    }
-    return [];
+  if (isTestEnvironment(environment)) {
+    return getTestOrigins(playwrightOrigin);
   }
 
   return productionOrigins;
@@ -192,18 +233,31 @@ function getIdTokenGuardResult(idToken) {
  * @param {{ verifyIdToken: (token: string) => Promise<unknown> }} authInstance Firebase auth instance.
  * @returns {(context: { idToken: string }) => Promise<GuardResult>} Guard ensuring the token is valid.
  */
+/**
+ * Create token error.
+ * @param {unknown} err Error.
+ * @returns {object} Error result.
+ */
+function createTokenError(err) {
+  return {
+    error: {
+      status: 401,
+      body: err?.message ?? 'Invalid or expired token',
+    },
+  };
+}
+
+/**
+ *
+ * @param authInstance
+ */
 function createEnsureValidIdToken(authInstance) {
   return async function ensureValidIdToken({ idToken }) {
     try {
       const decoded = await authInstance.verifyIdToken(idToken);
       return { context: { decoded } };
     } catch (err) {
-      return {
-        error: {
-          status: 401,
-          body: err?.message ?? 'Invalid or expired token',
-        },
-      };
+      return createTokenError(err);
     }
   };
 }
@@ -219,12 +273,7 @@ function createEnsureUserRecord(authInstance) {
       const userRecord = await authInstance.getUser(decoded.uid);
       return { context: { userRecord } };
     } catch (err) {
-      return {
-        error: {
-          status: 401,
-          body: err?.message ?? 'Invalid or expired token',
-        },
-      };
+      return createTokenError(err);
     }
   };
 }
@@ -262,15 +311,26 @@ export function random() {
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void}
  * Express CORS origin handler.
  */
+/**
+ * Check if origin is allowed.
+ * @param {string | undefined} origin Origin.
+ * @param {string[]} allowedOrigins Allowed origins.
+ * @returns {boolean} True if allowed.
+ */
+function isOriginAllowed(origin, allowedOrigins) {
+  return !origin || allowedOrigins.includes(origin);
+}
+
+/**
+ *
+ * @param allowedOrigins
+ */
 export function createCorsOriginHandler(allowedOrigins) {
   return function corsOriginHandler(origin, cb) {
-    const isOriginAllowed = !origin || allowedOrigins.includes(origin);
-
-    if (isOriginAllowed) {
+    if (isOriginAllowed(origin, allowedOrigins)) {
       cb(null, true);
       return;
     }
-
     cb(new Error('CORS'));
   };
 }
@@ -417,12 +477,25 @@ export function configureUrlencodedBodyParser(appInstance, expressModule) {
  * @param {{ empty: boolean, docs?: unknown[] }} snapshot Query snapshot containing candidate documents.
  * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document or an error message.
  */
+/**
+ * Check if snapshot is empty.
+ * @param {object} snapshot Snapshot.
+ * @param {unknown} variantDoc Variant doc.
+ * @returns {boolean} True if empty.
+ */
+function isSnapshotEmpty(snapshot, variantDoc) {
+  return !variantDoc || snapshot?.empty;
+}
+
+/**
+ *
+ * @param snapshot
+ */
 export function selectVariantDoc(snapshot) {
   const [variantDoc] = snapshot?.docs ?? [];
-  if (!variantDoc || snapshot?.empty) {
+  if (isSnapshotEmpty(snapshot, variantDoc)) {
     return { errorMessage: 'Variant fetch failed 🤷' };
   }
-
   return { variantDoc };
 }
 
@@ -633,17 +706,44 @@ export function createFetchVariantSnapshotFromDbFactory(
  * @returns {(initialContext: GuardContext) => Promise<{ error?: GuardError, context?: GuardContext }>}
  * Guard chain executor that resolves with either the accumulated context or the failure details.
  */
+/**
+ * Process guard result.
+ * @param {object} result Result.
+ * @param {object} context Context.
+ * @returns {object} Updated context.
+ */
+function processGuardResult(result, context) {
+  return { ...context, ...(result?.context ?? {}) };
+}
+
+/**
+ * Execute single guard.
+ * @param {Function} guard Guard.
+ * @param {object} context Context.
+ * @returns {Promise<object>} Result.
+ */
+async function executeSingleGuard(guard, context) {
+  const result = await guard(context);
+  if (result?.error) {
+    return { error: result.error };
+  }
+  return { context: processGuardResult(result, context) };
+}
+
+/**
+ *
+ * @param guards
+ */
 function createGuardChain(guards) {
   return async function runChain(initialContext) {
     let context = initialContext;
     for (const guard of guards) {
-      const result = await guard(context);
-      if (result?.error) {
-        return { error: result.error };
+      const guardResult = await executeSingleGuard(guard, context);
+      if (guardResult.error) {
+        return guardResult;
       }
-      context = { ...context, ...(result?.context ?? {}) };
+      context = guardResult.context;
     }
-
     return { context };
   };
 }
@@ -690,36 +790,86 @@ export function createAssignModerationWorkflow({
   now,
   random,
 }) {
-  return async function assignModerationWorkflow({ req }) {
-    const guardResult = await runGuards({ req });
+  /**
+   * Create guard error response.
+   * @param {object} error Error.
+   * @returns {object} Response.
+   */
+  function createGuardErrorResponse(error) {
+    return {
+      status: error.status,
+      body: error.body,
+    };
+  }
 
-    if (guardResult?.error) {
-      return {
-        status: guardResult.error.status,
-        body: guardResult.error.body,
-      };
-    }
-
-    const { userRecord } = guardResult.context ?? {};
-
+  /**
+   * Validate user record.
+   * @param {object} userRecord User record.
+   * @returns {object | null} Error response or null.
+   */
+  function validateUserRecord(userRecord) {
     if (!userRecord?.uid) {
       return { status: 500, body: 'Moderator lookup failed' };
     }
+    return null;
+  }
 
-    const randomValue = random();
+  /**
+   * Fetch and select variant.
+   * @param {object} deps Dependencies.
+   * @param {number} randomValue Random value.
+   * @returns {Promise<object>} Result.
+   */
+  async function fetchAndSelectVariant(deps, randomValue) {
+    const { fetchVariantSnapshot, selectVariantDoc } = deps;
     const variantSnapshot = await fetchVariantSnapshot(randomValue);
-    const { errorMessage, variantDoc } = selectVariantDoc(variantSnapshot);
+    return selectVariantDoc(variantSnapshot);
+  }
 
-    if (errorMessage) {
-      return { status: 500, body: errorMessage };
-    }
-
+  /**
+   * Persist assignment.
+   * @param {object} deps Dependencies.
+   * @param {object} data Data.
+   * @returns {Promise<void>} Promise.
+   */
+  async function persistAssignment(deps, data) {
+    const { createModeratorRef, now } = deps;
+    const { userRecord, variantDoc } = data;
     const moderatorRef = createModeratorRef(userRecord.uid);
     const createdAt = now();
     await moderatorRef.set({
       variant: variantDoc.ref,
       createdAt,
     });
+  }
+
+  return async function assignModerationWorkflow({ req }) {
+    const guardResult = await runGuards({ req });
+
+    if (guardResult?.error) {
+      return createGuardErrorResponse(guardResult.error);
+    }
+
+    const { userRecord } = guardResult.context ?? {};
+    const userError = validateUserRecord(userRecord);
+    if (userError) {
+      return userError;
+    }
+
+    const randomValue = random();
+    const { errorMessage, variantDoc } = await fetchAndSelectVariant(
+      { fetchVariantSnapshot, selectVariantDoc },
+      randomValue
+    );
+
+    if (errorMessage) {
+      return { status: 500, body: errorMessage };
+    }
+
+    await persistAssignment(
+      { createModeratorRef, now },
+      { userRecord, variantDoc }
+    );
 
     return { status: 201, body: '' };
   };

@@ -40,6 +40,19 @@ function extractCsvRows(input) {
  * @param {string} input - Raw CSV text.
  * @returns {string[]|null} Trimmed lines when there are at least two rows, otherwise null.
  */
+/**
+ * Check if lines are sufficient.
+ * @param {string[]} lines Lines.
+ * @returns {boolean} True if sufficient.
+ */
+function areLinesufficient(lines) {
+  return lines.length >= 2;
+}
+
+/**
+ *
+ * @param input
+ */
 function normalizeInputLines(input) {
   if (typeof input !== 'string') {
     return null;
@@ -48,11 +61,7 @@ function normalizeInputLines(input) {
   const normalizedInput = input.replace(/\r\n?/g, '\n');
   const trimmedLines = removeTrailingEmptyLines(normalizedInput.split('\n'));
 
-  if (trimmedLines.length < 2) {
-    return null;
-  }
-
-  return trimmedLines;
+  return areLinesufficient(trimmedLines) ? trimmedLines : null;
 }
 
 /**
@@ -77,13 +86,24 @@ function buildRowsFromLines(trimmedLines) {
  * }} headerInfo - Parsed header metadata with remaining data lines.
  * @returns {Array<Record<string, string>>|null} Parsed row objects or null when none could be built.
  */
+/**
+ * Check if rows exist.
+ * @param {Array} rows Rows.
+ * @returns {boolean} True if exist.
+ */
+function doRowsExist(rows) {
+  return rows?.length > 0;
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.dataLines
+ * @param root0.headerEntries
+ */
 function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
   const rows = buildRows(dataLines, headerEntries);
-  if (rows?.length) {
-    return rows;
-  }
-
-  return null;
+  return doRowsExist(rows) ? rows : null;
 }
 
 /**
@@ -91,12 +111,24 @@ function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
  * @param {string[]} lines - Raw CSV lines including potential trailing blanks.
  * @returns {string[]} A slice of the original lines without trailing blanks.
  */
+/**
+ * Check if line is empty.
+ * @param {string} line Line.
+ * @returns {boolean} True if empty.
+ */
+function isLineEmpty(line) {
+  return line.trim().length === 0;
+}
+
+/**
+ *
+ * @param lines
+ */
 function removeTrailingEmptyLines(lines) {
   let endIndex = lines.length - 1;
-  while (endIndex >= 0 && lines[endIndex].trim().length === 0) {
+  while (endIndex >= 0 && isLineEmpty(lines[endIndex])) {
     endIndex -= 1;
   }
-
   return lines.slice(0, endIndex + 1);
 }
 
@@ -106,6 +138,19 @@ function removeTrailingEmptyLines(lines) {
  * @returns {{headerEntries: Array<{name: string, index: number}>, dataLines: string[]}|null}
  * Returns header metadata plus remaining data lines, or null when parsing fails.
  */
+/**
+ * Check if header entries exist.
+ * @param {Array} entries Entries.
+ * @returns {boolean} True if exist.
+ */
+function doHeaderEntriesExist(entries) {
+  return entries.length > 0;
+}
+
+/**
+ *
+ * @param lines
+ */
 function parseHeaderEntries(lines) {
   const parsedHeader = getParsedHeaderLines(lines);
   if (!parsedHeader) {
@@ -113,11 +158,9 @@ function parseHeaderEntries(lines) {
   }
 
   const headerEntries = buildHeaderEntries(parsedHeader.headers);
-  if (headerEntries.length === 0) {
-    return null;
-  }
-
-  return { headerEntries, dataLines: parsedHeader.dataLines };
+  return doHeaderEntriesExist(headerEntries)
+    ? { headerEntries, dataLines: parsedHeader.dataLines }
+    : null;
 }
 
 /**
@@ -140,13 +183,22 @@ function getParsedHeaderLines(lines) {
  * @param {string | undefined} headerLine - Raw header text from the CSV input.
  * @returns {string|null} Trimmed header string when content exists, otherwise null.
  */
-function getTrimmedHeaderLine(headerLine) {
-  if (!headerLine) {
-    return null;
-  }
+/**
+ * Get trimmed value.
+ * @param {string} header Header.
+ * @returns {string | null} Trimmed or null.
+ */
+function getTrimmedValue(header) {
+  const trimmed = header.trim();
+  return trimmed || null;
+}
 
-  const trimmedHeader = headerLine.trim();
-  return trimmedHeader || null;
+/**
+ *
+ * @param headerLine
+ */
+function getTrimmedHeaderLine(headerLine) {
+  return headerLine ? getTrimmedValue(headerLine) : null;
 }
 
 /**
@@ -181,15 +233,28 @@ function buildHeaderEntries(headers) {
  * @param {Array<{name: string, index: number}>} headerEntries - Header metadata describing column order.
  * @returns {Array<Record<string, string>>|null} An array of row objects, or null when parsing fails.
  */
+/**
+ * Check if record is invalid.
+ * @param {unknown} record Record.
+ * @returns {boolean} True if invalid.
+ */
+function isRecordInvalid(record) {
+  return record === null;
+}
+
+/**
+ *
+ * @param dataLines
+ * @param headerEntries
+ */
 function buildRows(dataLines, headerEntries) {
   const rows = [];
 
   for (const rawLine of dataLines) {
     const record = createRecordForLine(rawLine, headerEntries);
-    if (record === null) {
+    if (isRecordInvalid(record)) {
       return null;
     }
-
     pushRecordIfNotEmpty(rows, record);
   }
 
@@ -202,17 +267,24 @@ function buildRows(dataLines, headerEntries) {
  * @param {Record<string, string> | undefined | null} record - Parsed row data.
  * @returns {void}
  */
+/**
+ * Check if record has values.
+ * @param {object} record Record.
+ * @returns {boolean} True if has values.
+ */
+function doesRecordHaveValues(record) {
+  return record && Object.keys(record).length > 0;
+}
+
+/**
+ *
+ * @param rows
+ * @param record
+ */
 function pushRecordIfNotEmpty(rows, record) {
-  if (!record) {
-    return;
+  if (doesRecordHaveValues(record)) {
+    rows.push(record);
   }
-
-  const valueKeys = Object.keys(record);
-  if (valueKeys.length === 0) {
-    return;
-  }
-
-  rows.push(record);
 }
 
 /**
@@ -268,9 +340,26 @@ function buildRecordFromLine(line, headerEntries) {
  * @param {Array<string>} values - Parsed CSV values for the row.
  * @returns {void}
  */
+/**
+ * Check if value is non-empty.
+ * @param {string} value Value.
+ * @returns {boolean} True if non-empty.
+ */
+function isValueNonEmpty(value) {
+  return value.length > 0;
+}
+
+/**
+ *
+ * @param record
+ * @param root0
+ * @param root0.name
+ * @param root0.index
+ * @param values
+ */
 function assignRecordValue(record, { name, index }, values) {
   const value = String(values[index] ?? '').trim();
-  if (value.length > 0) {
+  if (isValueNonEmpty(value)) {
     record[name] = value;
   }
 }

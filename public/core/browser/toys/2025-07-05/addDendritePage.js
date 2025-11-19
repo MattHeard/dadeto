@@ -9,10 +9,30 @@ import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
  * @param {string} obj.content - Page content.
  * @returns {boolean} True when valid.
  */
+/**
+ * Check if object exists.
+ * @param {object} obj Object.
+ * @returns {boolean} True if exists.
+ */
+function doesObjectExist(obj) {
+  return Boolean(obj);
+}
+
+/**
+ * Check if fields are valid.
+ * @param {object} obj Object.
+ * @returns {boolean} True if valid.
+ */
+function areFieldsValid(obj) {
+  return isValidString(obj.optionId) && isValidString(obj.content);
+}
+
+/**
+ *
+ * @param obj
+ */
 function isValidInput(obj) {
-  return (
-    Boolean(obj) && isValidString(obj.optionId) && isValidString(obj.content)
-  );
+  return doesObjectExist(obj) && areFieldsValid(obj);
 }
 
 /**

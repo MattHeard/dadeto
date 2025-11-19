@@ -1,4 +1,87 @@
 /**
+ * Split option string into parts.
+ * @param {string} str String.
+ * @returns {string[]} Parts.
+ */
+function splitOptionString(str) {
+  return String(str)
+    .split(/[^0-9a-zA-Z]+/)
+    .filter(Boolean);
+}
+
+/**
+ * Validate variant name.
+ * @param {string} variantName Variant name.
+ * @returns {boolean} True if valid.
+ */
+function isValidVariantName(variantName) {
+  return /^[a-zA-Z]+$/.test(variantName);
+}
+
+/**
+ * Validate parsed numbers.
+ * @param {number} pageNumber Page number.
+ * @param {number} optionNumber Option number.
+ * @returns {boolean} True if valid.
+ */
+function areValidNumbers(pageNumber, optionNumber) {
+  return Number.isInteger(pageNumber) && Number.isInteger(optionNumber);
+}
+
+/**
+ * Validate parts count.
+ * @param {string[]} parts Parts.
+ * @returns {boolean} True if valid.
+ */
+function hasValidPartsCount(parts) {
+  return parts.length === 3;
+}
+
+/**
+ * Validate numbers and create info.
+ * @param {number} pageNumber Page number.
+ * @param {number} optionNumber Option number.
+ * @param {string} variantName Variant name.
+ * @returns {object | null} Option info.
+ */
+function validateAndCreateInfo(pageNumber, optionNumber, variantName) {
+  if (!areValidNumbers(pageNumber, optionNumber)) {
+    return null;
+  }
+  return { pageNumber, variantName, optionNumber };
+}
+
+/**
+ * Create option info from parts.
+ * @param {string} pageStr Page string.
+ * @param {string} variantName Variant name.
+ * @param {string} optionStr Option string.
+ * @returns {object | null} Option info.
+ */
+function createOptionInfo(pageStr, variantName, optionStr) {
+  const pageNumber = Number.parseInt(pageStr, 10);
+  const optionNumber = Number.parseInt(optionStr, 10);
+
+  if (!isValidVariantName(variantName)) {
+    return null;
+  }
+  return validateAndCreateInfo(pageNumber, optionNumber, variantName);
+}
+
+/**
+ * Parse parts into option info.
+ * @param {string[]} parts Parts.
+ * @returns {object | null} Parsed info.
+ */
+function parseParts(parts) {
+  if (!hasValidPartsCount(parts)) {
+    return null;
+  }
+  const [pageStr, variantName, optionStr] = parts;
+  return createOptionInfo(pageStr, variantName, optionStr);
+}
+
+/**
  * Parse a user supplied incoming option reference.
  * @param {string} str Raw option string.
  * @returns {{pageNumber: number, variantName: string, optionNumber: number}|null}
@@ -8,23 +91,86 @@ export function parseIncomingOption(str) {
   if (!str) {
     return null;
   }
-  const parts = String(str)
-    .split(/[^0-9a-zA-Z]+/)
-    .filter(Boolean);
-  if (parts.length !== 3) {
+  const parts = splitOptionString(str);
+  return parseParts(parts);
+}
+
+/**
+ * Find page by number.
+ * @param {object} db Database.
+ * @param {number} pageNumber Page number.
+ * @returns {Promise<object | null>} Page ref.
+ */
+async function findPageByNumber(db, pageNumber) {
+  const pageSnap = await db
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+  if (pageSnap.empty) {
     return null;
   }
-  const [pageStr, variantName, optionStr] = parts;
-  const pageNumber = Number.parseInt(pageStr, 10);
-  const optionNumber = Number.parseInt(optionStr, 10);
-  if (!/^[a-zA-Z]+$/.test(variantName)) {
+  return pageSnap.docs[0].ref;
+}
+
+/**
+ * Find variant by name.
+ * @param {object} pageRef Page ref.
+ * @param {string} variantName Variant name.
+ * @returns {Promise<object | null>} Variant ref.
+ */
+async function findVariantByName(pageRef, variantName) {
+  const variantSnap = await pageRef
+    .collection('variants')
+    .where('name', '==', variantName)
+    .limit(1)
+    .get();
+  if (variantSnap.empty) {
     return null;
   }
-  if (!Number.isInteger(pageNumber) || !Number.isInteger(optionNumber)) {
+  return variantSnap.docs[0].ref;
+}
+
+/**
+ * Find option by position.
+ * @param {object} variantRef Variant ref.
+ * @param {number} optionNumber Option number.
+ * @returns {Promise<string | null>} Option path.
+ */
+async function findOptionByPosition(variantRef, optionNumber) {
+  const optionsSnap = await variantRef
+    .collection('options')
+    .where('position', '==', optionNumber)
+    .limit(1)
+    .get();
+  if (optionsSnap.empty) {
     return null;
   }
-  const parsed = { pageNumber, variantName, optionNumber };
-  return parsed;
+  return optionsSnap.docs[0].ref.path;
+}
+
+/**
+ * Resolve variant and option.
+ * @param {object} pageRef Page ref.
+ * @param {object} info Info.
+ * @returns {Promise<string | null>} Option path.
+ */
+async function resolveVariantAndOption(pageRef, info) {
+  const variantRef = await findVariantByName(pageRef, info.variantName);
+  if (!variantRef) {
+    return null;
+  }
+  return findOptionByPosition(variantRef, info.optionNumber);
+}
+
+/**
+ * Validate inputs.
+ * @param {object} db Database.
+ * @param {object} info Info.
+ * @returns {boolean} True if valid.
+ */
+function areInputsValid(db, info) {
+  return Boolean(db) && Boolean(info);
 }
 
 /**
@@ -35,36 +181,47 @@ export function parseIncomingOption(str) {
  * @returns {Promise<string|null>} Option document path or null when not found.
  */
 export async function findExistingOption(db, info) {
-  if (!db || !info) {
+  if (!areInputsValid(db, info)) {
     return null;
   }
-  const pageSnap = await db
-    .collectionGroup('pages')
-    .where('number', '==', info.pageNumber)
-    .limit(1)
-    .get();
-  if (pageSnap.empty) {
+  const pageRef = await findPageByNumber(db, info.pageNumber);
+  if (!pageRef) {
     return null;
   }
-  const pageRef = pageSnap.docs[0].ref;
-  const variantSnap = await pageRef
-    .collection('variants')
-    .where('name', '==', info.variantName)
-    .limit(1)
-    .get();
-  if (variantSnap.empty) {
+  return resolveVariantAndOption(pageRef, info);
+}
+
+/**
+ * Check if page has variants.
+ * @param {object} pageRef Page ref.
+ * @returns {Promise<boolean>} True if has variants.
+ */
+async function pageHasVariants(pageRef) {
+  const variantsSnap = await pageRef.collection('variants').limit(1).get();
+  return !variantsSnap.empty;
+}
+
+/**
+ * Validate and get page path.
+ * @param {object} pageRef Page ref.
+ * @returns {Promise<string | null>} Page path.
+ */
+async function validateAndGetPagePath(pageRef) {
+  const hasVariants = await pageHasVariants(pageRef);
+  if (!hasVariants) {
     return null;
   }
-  const variantRef = variantSnap.docs[0].ref;
-  const optionsSnap = await variantRef
-    .collection('options')
-    .where('position', '==', info.optionNumber)
-    .limit(1)
-    .get();
-  if (optionsSnap.empty) {
-    return null;
-  }
-  return optionsSnap.docs[0].ref.path;
+  return pageRef.path;
+}
+
+/**
+ * Validate page inputs.
+ * @param {object} db Database.
+ * @param {number} pageNumber Page number.
+ * @returns {boolean} True if valid.
+ */
+function arePageInputsValid(db, pageNumber) {
+  return Boolean(db) && Number.isInteger(pageNumber);
 }
 
 /**
@@ -74,21 +231,12 @@ export async function findExistingOption(db, info) {
  * @returns {Promise<string|null>} Page document path or null when not found.
  */
 export async function findExistingPage(db, pageNumber) {
-  if (!db || !Number.isInteger(pageNumber)) {
+  if (!arePageInputsValid(db, pageNumber)) {
     return null;
   }
-  const pageSnap = await db
-    .collectionGroup('pages')
-    .where('number', '==', pageNumber)
-    .limit(1)
-    .get();
-  if (pageSnap.empty) {
+  const pageRef = await findPageByNumber(db, pageNumber);
+  if (!pageRef) {
     return null;
   }
-  const pageRef = pageSnap.docs[0].ref;
-  const variantsSnap = await pageRef.collection('variants').limit(1).get();
-  if (variantsSnap.empty) {
-    return null;
-  }
-  return pageRef.path;
+  return validateAndGetPagePath(pageRef);
 }

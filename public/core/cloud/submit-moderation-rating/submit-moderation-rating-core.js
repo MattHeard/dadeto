@@ -54,6 +54,33 @@ function normalizeMethod(method) {
 }
 
 /**
+ * Get header from getter.
+ * @param {Function} getter Getter.
+ * @param {string} name Name.
+ * @returns {string | null} Header.
+ */
+function getHeaderFromGetter(getter, name) {
+  const header = getter(name);
+  if (typeof header === 'string') {
+    return header;
+  }
+  return null;
+}
+
+/**
+ * Try authorization headers.
+ * @param {Function} getter Getter.
+ * @returns {string | null} Header.
+ */
+function tryAuthorizationHeaders(getter) {
+  const uppercase = getHeaderFromGetter(getter, 'Authorization');
+  if (uppercase) {
+    return uppercase;
+  }
+  return getHeaderFromGetter(getter, 'authorization');
+}
+
+/**
  * Resolve the Authorization header from Express-like request shapes.
  * @param {SubmitModerationRatingRequest | undefined} request Request object supplied by the adapter.
  * @returns {string | null} Raw Authorization header value or null when absent.
@@ -62,17 +89,7 @@ function readAuthorizationFromGetter(request) {
   if (!request || typeof request.get !== 'function') {
     return null;
   }
-
-  const header = request.get('Authorization');
-  if (typeof header === 'string') {
-    return header;
-  }
-
-  const fallback = request.get('authorization');
-  if (typeof fallback === 'string') {
-    return fallback;
-  }
-  return null;
+  return tryAuthorizationHeaders(request.get);
 }
 
 /**
@@ -80,16 +97,13 @@ function readAuthorizationFromGetter(request) {
  * @param {unknown} value Header value to normalize.
  * @returns {string | null} String header representation or null when unavailable.
  */
-function coerceAuthorizationHeader(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  if (!Array.isArray(value)) {
-    return null;
-  }
-
-  const [first] = value;
+/**
+ * Extract first string from array.
+ * @param {unknown[]} arr Array.
+ * @returns {string | null} First string.
+ */
+function extractFirstString(arr) {
+  const [first] = arr;
   if (typeof first === 'string') {
     return first;
   }
@@ -97,22 +111,46 @@ function coerceAuthorizationHeader(value) {
 }
 
 /**
+ *
+ * @param value
+ */
+function coerceAuthorizationHeader(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (!Array.isArray(value)) {
+    return null;
+  }
+  return extractFirstString(value);
+}
+
+/**
  * Resolve the Authorization header from a headers object.
  * @param {Record<string, unknown> | null | undefined} headers Raw headers provided by the caller.
  * @returns {string | null} Header value when present, otherwise null.
+ */
+/**
+ * Find auth in headers.
+ * @param {Record<string, unknown>} headers Headers.
+ * @returns {string | null} Auth header.
+ */
+function findAuthInHeaders(headers) {
+  const lowercase = coerceAuthorizationHeader(headers.authorization);
+  if (lowercase !== null) {
+    return lowercase;
+  }
+  return coerceAuthorizationHeader(headers.Authorization);
+}
+
+/**
+ *
+ * @param headers
  */
 function readAuthorizationFromHeaders(headers) {
   if (!headers || typeof headers !== 'object') {
     return null;
   }
-
-  const lowercase = coerceAuthorizationHeader(headers.authorization);
-  if (lowercase !== null) {
-    return lowercase;
-  }
-
-  const uppercase = coerceAuthorizationHeader(headers.Authorization);
-  return uppercase;
+  return findAuthInHeaders(headers);
 }
 
 /**
@@ -135,16 +173,28 @@ function getAuthorizationHeader(request) {
  * @param {string | null} header Authorization header retrieved from the request.
  * @returns {string | null} Bearer token contained in the header or null when invalid.
  */
-function extractBearerToken(header) {
-  if (typeof header !== 'string') {
-    return null;
-  }
-
+/**
+ * Match bearer pattern.
+ * @param {string} header Header.
+ * @returns {string | null} Token.
+ */
+function matchBearerPattern(header) {
   const match = header.match(/^Bearer (.+)$/);
   if (match) {
     return match[1];
   }
   return null;
+}
+
+/**
+ *
+ * @param header
+ */
+function extractBearerToken(header) {
+  if (typeof header !== 'string') {
+    return null;
+  }
+  return matchBearerPattern(header);
 }
 
 /**
@@ -178,13 +228,26 @@ function validateAllowedOrigin(origin, allowedOrigins) {
  * @param {string[]} [root0.methods] HTTP methods supported by the endpoint. Defaults to ['POST'].
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS configuration compatible with Express middleware.
  */
-export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
-  let origins;
+/**
+ * Normalize origins.
+ * @param {unknown} allowedOrigins Origins.
+ * @returns {string[]} Normalized origins.
+ */
+function normalizeOrigins(allowedOrigins) {
   if (Array.isArray(allowedOrigins)) {
-    origins = allowedOrigins;
-  } else {
-    origins = [];
+    return allowedOrigins;
   }
+  return [];
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.allowedOrigins
+ * @param root0.methods
+ */
+export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
+  const origins = normalizeOrigins(allowedOrigins);
 
   return {
     origin: (origin, cb) => {
@@ -295,6 +358,49 @@ function ensureBoolean(value) {
 }
 
 /**
+ * Validate decoded UID.
+ * @param {object} decoded Decoded token.
+ * @returns {string | null} UID or null.
+ */
+function validateDecodedUid(decoded) {
+  if (decoded && typeof decoded.uid === 'string' && decoded.uid) {
+    return decoded.uid;
+  }
+  return null;
+}
+
+/**
+ * Create token error.
+ * @param {unknown} err Error.
+ * @returns {Error} Token error.
+ */
+function createTokenError(err) {
+  const message = err?.message || 'Invalid or expired token';
+  const error = Object.assign(new Error(message), { code: 'invalid-token' });
+  if (message === 'Invalid or expired token') {
+    delete error.message;
+  }
+  return error;
+}
+
+/**
+ * Verify token and get UID.
+ * @param {Function} verifyIdToken Verifier.
+ * @param {string} token Token.
+ * @returns {Promise<string>} UID.
+ */
+async function verifyAndGetUid(verifyIdToken, token) {
+  const decoded = await verifyIdToken(token);
+  const uid = validateDecodedUid(decoded);
+  if (uid) {
+    return uid;
+  }
+  throw Object.assign(new Error('Invalid or expired token'), {
+    code: 'invalid-token',
+  });
+}
+
+/**
  * Resolve a user ID from an ID token.
  * @param {SubmitModerationRatingDependencies['verifyIdToken']} verifyIdToken Function that verifies the token.
  * @param {string} token Bearer token extracted from the request.
@@ -303,30 +409,49 @@ function ensureBoolean(value) {
  */
 async function resolveUid(verifyIdToken, token) {
   try {
-    const decoded = await verifyIdToken(token);
-
-    if (decoded && typeof decoded.uid === 'string' && decoded.uid) {
-      return decoded.uid;
-    }
+    return await verifyAndGetUid(verifyIdToken, token);
   } catch (err) {
-    const message = err?.message || 'Invalid or expired token';
-    const error = Object.assign(new Error(message), { code: 'invalid-token' });
-    if (message === 'Invalid or expired token') {
-      delete error.message;
-    }
-    throw error;
+    throw createTokenError(err);
   }
-
-  throw Object.assign(new Error('Invalid or expired token'), {
-    code: 'invalid-token',
-  });
 }
 
 /**
- * Normalize the moderator assignment into a predictable shape.
- * @param {SubmitModerationRatingDependencies['fetchModeratorAssignment']} fetchModeratorAssignment Dependency that fetches the assignment.
- * @param {string} uid Identifier of the moderator.
- * @returns {Promise<ModeratorAssignment | null>} Assignment details or null when none exists.
+ * Validate variant ID.
+ * @param {string} variantId Variant ID.
+ * @returns {boolean} True if valid.
+ */
+function isValidVariantId(variantId) {
+  return typeof variantId === 'string' && variantId.length > 0;
+}
+
+/**
+ * Normalize clear assignment.
+ * @param {unknown} clearAssignment Clear assignment.
+ * @returns {Function | null} Normalized.
+ */
+function normalizeClearAssignment(clearAssignment) {
+  if (typeof clearAssignment === 'function') {
+    return clearAssignment;
+  }
+  return null;
+}
+
+/**
+ * Build assignment result.
+ * @param {object} assignment Assignment.
+ * @returns {object} Result.
+ */
+function buildAssignmentResult(assignment) {
+  return {
+    variantId: assignment.variantId,
+    clearAssignment: normalizeClearAssignment(assignment.clearAssignment),
+  };
+}
+
+/**
+ *
+ * @param fetchModeratorAssignment
+ * @param uid
  */
 async function resolveModeratorAssignment(fetchModeratorAssignment, uid) {
   const assignment = await fetchModeratorAssignment(uid);
@@ -337,20 +462,11 @@ async function resolveModeratorAssignment(fetchModeratorAssignment, uid) {
 
   const { variantId } = assignment;
 
-  if (typeof variantId !== 'string' || variantId.length === 0) {
+  if (!isValidVariantId(variantId)) {
     return null;
   }
 
-  const clearAssignment = assignment.clearAssignment;
-
-  let normalizedClearAssignment = null;
-  if (typeof clearAssignment === 'function') {
-    normalizedClearAssignment = clearAssignment;
-  }
-  return {
-    variantId,
-    clearAssignment: normalizedClearAssignment,
-  };
+  return buildAssignmentResult(assignment);
 }
 
 /**
@@ -370,6 +486,30 @@ export function createSubmitModerationRatingResponder({
   assertFunction(recordModerationRating, 'recordModerationRating');
   assertFunction(randomUUID, 'randomUUID');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
+
+  /**
+   * Process valid rating.
+   * @param {object} deps Dependencies.
+   * @param {object} context Context.
+   * @returns {Promise<object>} Response.
+   */
+  async function processValidRating(deps, context) {
+    const { recordModerationRating, randomUUID, getServerTimestamp } = deps;
+    const { contextResult, bodyResult } = context;
+
+    const ratingId = randomUUID();
+    await recordModerationRating({
+      id: ratingId,
+      moderatorId: contextResult.uid,
+      variantId: contextResult.assignment.variantId,
+      isApproved: bodyResult.isApproved,
+      ratedAt: getServerTimestamp(),
+    });
+
+    await clearAssignment(contextResult.assignment);
+
+    return createResponse(201, {});
+  }
 
   return async function submitModerationRatingResponder(request = {}) {
     if (normalizeMethod(request.method) !== 'POST') {
@@ -396,33 +536,31 @@ export function createSubmitModerationRatingResponder({
       return contextResult.error;
     }
 
-    const ratingId = randomUUID();
-    await recordModerationRating({
-      id: ratingId,
-      moderatorId: contextResult.uid,
-      variantId: contextResult.assignment.variantId,
-      isApproved: bodyResult.isApproved,
-      ratedAt: getServerTimestamp(),
-    });
-
-    await clearAssignment(contextResult.assignment);
-
-    return createResponse(201, {});
+    return processValidRating(
+      { recordModerationRating, randomUUID, getServerTimestamp },
+      { contextResult, bodyResult }
+    );
   };
 }
 
 /**
- * Validate the incoming request body and extract the approval flag.
- * @param {SubmitModerationRatingRequest['body']} body Request body provided by the caller.
- * @returns {{ isApproved: boolean } | { error: SubmitModerationRatingResponse }} Result containing the approval flag or an error response.
+ * Extract is approved from body.
+ * @param {unknown} body Body.
+ * @returns {unknown} Is approved.
+ */
+function extractIsApproved(body) {
+  if (body && typeof body === 'object') {
+    return body.isApproved;
+  }
+  return undefined;
+}
+
+/**
+ *
+ * @param body
  */
 function validateRatingBody(body) {
-  let isApproved;
-  if (body && typeof body === 'object') {
-    isApproved = body.isApproved;
-  } else {
-    isApproved = undefined;
-  }
+  const isApproved = extractIsApproved(body);
 
   if (!ensureBoolean(isApproved)) {
     return { error: INVALID_BODY_RESPONSE };
@@ -448,23 +586,28 @@ function resolveAuthorizationToken(request) {
 }
 
 /**
- * Resolve the moderator identity and assignment for a verified request.
- * @param {{ verifyIdToken: SubmitModerationRatingDependencies['verifyIdToken'], fetchModeratorAssignment: SubmitModerationRatingDependencies['fetchModeratorAssignment'], token: string }} options Dependencies and request token used to fetch the moderator context.
- * @returns {Promise<{ uid: string, assignment: ModeratorAssignment } | { error: SubmitModerationRatingResponse }>} Resolves with moderator context or an error response.
+ * Resolve UID safely.
+ * @param {Function} verifyIdToken Verifier.
+ * @param {string} token Token.
+ * @returns {Promise<object>} Result.
  */
-async function resolveModeratorContext({
-  verifyIdToken,
-  fetchModeratorAssignment,
-  token,
-}) {
-  let uid;
+async function resolveUidSafely(verifyIdToken, token) {
   try {
-    uid = await resolveUid(verifyIdToken, token);
+    const uid = await resolveUid(verifyIdToken, token);
+    return { uid };
   } catch (err) {
     const message = err?.message || 'Invalid or expired token';
     return { error: createResponse(401, message) };
   }
+}
 
+/**
+ * Resolve assignment and build context.
+ * @param {Function} fetchModeratorAssignment Fetcher.
+ * @param {string} uid UID.
+ * @returns {Promise<object>} Result.
+ */
+async function resolveAssignmentAndBuildContext(fetchModeratorAssignment, uid) {
   const assignment = await resolveModeratorAssignment(
     fetchModeratorAssignment,
     uid
@@ -475,6 +618,29 @@ async function resolveModeratorContext({
   }
 
   return { uid, assignment };
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.verifyIdToken
+ * @param root0.fetchModeratorAssignment
+ * @param root0.token
+ */
+async function resolveModeratorContext({
+  verifyIdToken,
+  fetchModeratorAssignment,
+  token,
+}) {
+  const uidResult = await resolveUidSafely(verifyIdToken, token);
+  if (uidResult.error) {
+    return uidResult;
+  }
+
+  return resolveAssignmentAndBuildContext(
+    fetchModeratorAssignment,
+    uidResult.uid
+  );
 }
 
 /**
