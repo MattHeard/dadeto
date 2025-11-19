@@ -66,12 +66,14 @@ function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
 }
 
 /**
- *
- * @param root0
- * @param root0.options
- * @param root0.defaultEnsureFn
- * @param root0.defaultGetFirestoreFn
- * @param root0.providedEnvironment
+ * Determine whether custom Firebase dependencies or a provided environment should be honored.
+ * @param {{
+ *   options?: { ensureAppFn?: Function, getFirestoreFn?: Function },
+ *   defaultEnsureFn: Function,
+ *   defaultGetFirestoreFn: Function,
+ *   providedEnvironment?: unknown,
+ * }} deps Dependency bag containing overrides and helpers.
+ * @returns {boolean} True when custom dependencies or provided environment supersede defaults.
  */
 export function shouldUseCustomFirestoreDependencies({
   options,
@@ -143,8 +145,9 @@ function getTestOrigins(playwrightOrigin) {
 }
 
 /**
- *
- * @param environmentVariables
+ * Determine allowed origins from the environment configuration.
+ * @param {{ DENDRITE_ENVIRONMENT?: string, PLAYWRIGHT_ORIGIN?: string } | undefined} environmentVariables Runtime environment variables.
+ * @returns {string[]} Origin values permitted to use the moderation endpoint.
  */
 export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
@@ -248,8 +251,9 @@ function createTokenError(err) {
 }
 
 /**
- *
- * @param authInstance
+ * Build a guard that verifies Firebase ID tokens using the provided auth instance.
+ * @param {{ verifyIdToken: (token: string) => Promise<unknown> }} authInstance Firebase auth helper used to validate tokens.
+ * @returns {(context: { idToken: string }) => Promise<GuardResult>} Guard that enforces token validity.
  */
 function createEnsureValidIdToken(authInstance) {
   return async function ensureValidIdToken({ idToken }) {
@@ -322,8 +326,9 @@ function isOriginAllowed(origin, allowedOrigins) {
 }
 
 /**
- *
- * @param allowedOrigins
+ * Build an Express-compatible origin handler from the resolved allow-list.
+ * @param {string[]} allowedOrigins Origins permitted to call the moderation API.
+ * @returns {CorsOriginHandler} Origin handler used by CORS middleware.
  */
 export function createCorsOriginHandler(allowedOrigins) {
   return function corsOriginHandler(origin, cb) {
@@ -473,11 +478,6 @@ export function configureUrlencodedBodyParser(appInstance, expressModule) {
 }
 
 /**
- * Select the first document from a snapshot when available.
- * @param {{ empty: boolean, docs?: unknown[] }} snapshot Query snapshot containing candidate documents.
- * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document or an error message.
- */
-/**
  * Check if snapshot is empty.
  * @param {object} snapshot Snapshot.
  * @param {unknown} variantDoc Variant doc.
@@ -488,8 +488,9 @@ function isSnapshotEmpty(snapshot, variantDoc) {
 }
 
 /**
- *
- * @param snapshot
+ * Select the primary variant document from a query snapshot when it exists.
+ * @param {{ empty: boolean, docs?: unknown[] }} snapshot Query snapshot containing candidate documents.
+ * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document when present or an error message when missing.
  */
 export function selectVariantDoc(snapshot) {
   const [variantDoc] = snapshot?.docs ?? [];
@@ -701,26 +702,20 @@ export function createFetchVariantSnapshotFromDbFactory(
  */
 
 /**
- * Compose a sequence of guard functions that short-circuit on failure.
- * @param {GuardFunction[]} guards Guard functions to execute in order.
- * @returns {(initialContext: GuardContext) => Promise<{ error?: GuardError, context?: GuardContext }>}
- * Guard chain executor that resolves with either the accumulated context or the failure details.
- */
-/**
- * Process guard result.
- * @param {object} result Result.
- * @param {object} context Context.
- * @returns {object} Updated context.
+ * Merge guard results into the running context.
+ * @param {GuardResult} result Result produced by a guard.
+ * @param {GuardContext} context Current context to enrich.
+ * @returns {GuardContext} Combined context with accumulated data.
  */
 function processGuardResult(result, context) {
   return { ...context, ...(result?.context ?? {}) };
 }
 
 /**
- * Execute single guard.
- * @param {Function} guard Guard.
- * @param {object} context Context.
- * @returns {Promise<object>} Result.
+ * Execute a single guard function and normalize the outcome.
+ * @param {GuardFunction} guard Guard function to run.
+ * @param {GuardContext} context Context supplied to the guard.
+ * @returns {Promise<{ context?: GuardContext, error?: GuardError }>} Execution result.
  */
 async function executeSingleGuard(guard, context) {
   const result = await guard(context);
@@ -731,8 +726,10 @@ async function executeSingleGuard(guard, context) {
 }
 
 /**
- *
- * @param guards
+ * Compose a sequence of guards that short-circuit on failure.
+ * @param {GuardFunction[]} guards Guard functions executed in order.
+ * @returns {(initialContext: GuardContext) => Promise<{ error?: GuardError, context?: GuardContext }>}
+ * Guard chain executor that resolves with either the accumulated context or the failure details.
  */
 function createGuardChain(guards) {
   return async function runChain(initialContext) {
