@@ -205,7 +205,7 @@ describe('createTriggerRender', () => {
         fetchFn: jest.fn(),
         showMessage: jest.fn(),
       })
-    ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
+    ).toThrow(new TypeError('googleAuth.getIdToken must be a function'));
   });
 });
 
@@ -289,7 +289,7 @@ describe('createTriggerStats', () => {
         fetchFn: jest.fn(),
         showMessage: jest.fn(),
       })
-    ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
+    ).toThrow(new TypeError('googleAuth.getIdToken must be a function'));
   });
 });
 
