@@ -159,7 +159,7 @@ function doHeaderEntriesExist(entries) {
 /**
  * Parse header entries from normalized CSV lines.
  * @param {string[]} lines - Normalized CSV lines beginning with the header row.
- * @returns {{headerEntries: Array<{name: string, index: number}>, dataLines: string[]} | null}
+ * @returns {{headerEntries: Array<{name: string, index: number}>, dataLines: string[]} | null} Header metadata and remaining data lines when the header is valid, otherwise null.
  */
 function parseHeaderEntries(lines) {
   const parsedHeader = getParsedHeaderLines(lines);
@@ -173,7 +173,7 @@ function parseHeaderEntries(lines) {
 /**
  * Build header metadata when entries exist.
  * @param {{ headers: string[], dataLines: string[] }} parsedHeader - Parsed header tokens and remaining lines.
- * @returns {{headerEntries: Array<{name: string, index: number}>, dataLines: string[]} | null}
+ * @returns {{headerEntries: Array<{name: string, index: number}>, dataLines: string[]} | null} Header metadata and data lines when the header entries exist, otherwise null.
  */
 function buildHeaderEntriesResult(parsedHeader) {
   const headerEntries = buildHeaderEntries(parsedHeader.headers);

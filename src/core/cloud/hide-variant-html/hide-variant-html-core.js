@@ -261,11 +261,13 @@ export function createHandleVariantVisibilityChange({
 }
 
 /**
- *
- * @param root0
- * @param root0.removeVariantHtmlForSnapshot
- * @param root0.getVisibility
- * @param root0.visibilityThreshold
+ * Create a handler that responds to visibility transitions crossing the threshold.
+ * @param {{
+ *   removeVariantHtmlForSnapshot: (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>,
+ *   getVisibility: (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => number,
+ *   visibilityThreshold: number,
+ * }} params Transition dependencies.
+ * @returns {(change: { before: import('firebase-admin/firestore').DocumentSnapshot, after: { exists: boolean } }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
  */
 function createVisibilityTransitionHandler({
   removeVariantHtmlForSnapshot,

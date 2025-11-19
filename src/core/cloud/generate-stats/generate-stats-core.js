@@ -513,15 +513,6 @@ export function createGenerateStatsCore({
 
   /**
    * Generate the stats page HTML and upload it to Cloud Storage.
-   * @param {{
-   *   storyCountFn?: () => Promise<number>,
-   *   pageCountFn?: () => Promise<number>,
-   *   unmoderatedPageCountFn?: () => Promise<number>,
-   *   topStoriesFn?: () => Promise<Array<{ title: string, variantCount: number }>>,
-   *   storageInstance?: import('@google-cloud/storage').Storage,
-   *   bucketName?: string,
-   *   invalidatePathsFn?: (paths: string[]) => Promise<void>,
-   * }} deps - Optional dependency overrides.
    * @returns {Promise<null>} Resolves with null for compatibility.
    */
   async function generate() {
