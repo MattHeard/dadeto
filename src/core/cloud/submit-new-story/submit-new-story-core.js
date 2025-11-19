@@ -517,7 +517,6 @@ function normalizeCorsErrorHandlerOptions(options) {
 export function createCorsErrorHandler(options) {
   const normalized = normalizeCorsErrorHandlerOptions(options);
 
-  // eslint-disable-next-line max-params
   return function corsErrorHandler(err, req, res, next) {
     if (isCorsError(err)) {
       sendCorsError(res, normalized.status, normalized.body);
