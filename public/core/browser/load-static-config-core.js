@@ -49,12 +49,30 @@ function ensureStaticConfigResponseOk(response) {
  * @returns {Error} Error describing why the fetch failed.
  */
 function createStaticConfigError(response) {
-  const status = response?.status;
-  if (status === undefined) {
-    return new Error('Failed to load static config: unknown');
+  const status = resolveStaticConfigStatus(response);
+  return new Error(`Failed to load static config: ${status}`);
+}
+
+/**
+ * Resolve the HTTP status code exposed by the fetch response.
+ * @param {StaticConfigResponse | null | undefined} response Response that issued the status.
+ * @returns {StaticConfigResponse['status'] | 'unknown'} Status code or `'unknown'` when unavailable.
+ */
+function resolveStaticConfigStatus(response) {
+  if (!isStatusDefined(response)) {
+    return 'unknown';
   }
 
-  return new Error(`Failed to load static config: ${status}`);
+  return response.status;
+}
+
+/**
+ * Determine whether a response exposes a defined status.
+ * @param {StaticConfigResponse | null | undefined} response Response that may declare a status.
+ * @returns {boolean} True when a defined status is available.
+ */
+function isStatusDefined(response) {
+  return Boolean(response && response.status !== undefined);
 }
 
 /**

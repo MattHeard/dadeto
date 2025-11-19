@@ -177,11 +177,19 @@ function resolveStoryStatsRef(db, storyRef) {
  *   Firestore document reference for the author or null when unavailable.
  */
 function resolveAuthorRef(db, authorId) {
-  if (!authorId || typeof authorId !== 'string') {
+  if (!isAuthorIdentifier(authorId)) {
     return null;
   }
 
   return db.doc(`authors/${authorId}`);
+}
+
+/**
+ *
+ * @param value
+ */
+function isAuthorIdentifier(value) {
+  return typeof value === 'string' && value.length > 0;
 }
 
 /**

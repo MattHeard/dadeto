@@ -366,15 +366,25 @@ export function createTriggerRender({
 }
 
 /**
+ * Assert that the provided condition is satisfied.
+ * @param {boolean} condition - Condition evaluated by the caller.
+ * @param {string} message - Error message used when the assertion fails.
+ * @returns {void}
+ */
+function requireCondition(condition, message) {
+  if (!condition) {
+    throw new TypeError(message);
+  }
+}
+
+/**
  * Ensure the value is a callable function.
  * @param {*} value - Value that should be a function.
  * @param {string} name - Error message target when validation fails.
  * @returns {void}
  */
 function requireFunction(value, name) {
-  if (typeof value !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
+  requireCondition(typeof value === 'function', `${name} must be a function`);
 }
 
 /**
@@ -384,9 +394,10 @@ function requireFunction(value, name) {
  * @returns {void}
  */
 function requireDocumentLike(value, name = 'doc') {
-  if (!isDocumentLike(value)) {
-    throw new TypeError(`${name} must be a Document-like object`);
-  }
+  requireCondition(
+    isDocumentLike(value),
+    `${name} must be a Document-like object`
+  );
 }
 
 /**

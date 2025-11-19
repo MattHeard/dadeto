@@ -174,6 +174,19 @@ function areInputsValid(db, info) {
 }
 
 /**
+ * Resolve a page reference when the option info is valid.
+ * @param {object} db Database.
+ * @param {{pageNumber: number}} info Option info carrying the page number.
+ * @returns {Promise<object | null>} Page reference or null when not found.
+ */
+async function resolvePageRefForInfo(db, info) {
+  if (!areInputsValid(db, info)) {
+    return null;
+  }
+  return findPageByNumber(db, info.pageNumber);
+}
+
+/**
  * Resolve an option document by page, variant and option indices.
  * @param {object} db Firestore database instance.
  * @param {{pageNumber: number, variantName: string, optionNumber: number}} info
@@ -181,13 +194,11 @@ function areInputsValid(db, info) {
  * @returns {Promise<string|null>} Option document path or null when not found.
  */
 export async function findExistingOption(db, info) {
-  if (!areInputsValid(db, info)) {
-    return null;
-  }
-  const pageRef = await findPageByNumber(db, info.pageNumber);
+  const pageRef = await resolvePageRefForInfo(db, info);
   if (!pageRef) {
     return null;
   }
+
   return resolveVariantAndOption(pageRef, info);
 }
 
@@ -225,18 +236,29 @@ function arePageInputsValid(db, pageNumber) {
 }
 
 /**
+ * Resolve a page reference when the page number is valid.
+ * @param {object} db Database.
+ * @param {number} pageNumber Page number.
+ * @returns {Promise<object | null>} Page reference or null when not found.
+ */
+async function resolvePageRefForNumber(db, pageNumber) {
+  if (!arePageInputsValid(db, pageNumber)) {
+    return null;
+  }
+  return findPageByNumber(db, pageNumber);
+}
+
+/**
  * Resolve a page document that already has at least one variant.
  * @param {object} db Firestore database instance.
  * @param {number} pageNumber Page number to look up.
  * @returns {Promise<string|null>} Page document path or null when not found.
  */
 export async function findExistingPage(db, pageNumber) {
-  if (!arePageInputsValid(db, pageNumber)) {
-    return null;
-  }
-  const pageRef = await findPageByNumber(db, pageNumber);
+  const pageRef = await resolvePageRefForNumber(db, pageNumber);
   if (!pageRef) {
     return null;
   }
+
   return validateAndGetPagePath(pageRef);
 }
