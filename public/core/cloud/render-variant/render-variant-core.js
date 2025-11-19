@@ -1161,14 +1161,6 @@ async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
 }
 
 /**
- *
- * @param root0
- * @param root0.variant
- * @param root0.db
- * @param root0.bucket
- * @param root0.consoleError
- */
-/**
  * Write author page if needed.
  * @param {object} authorFile Author file data.
  * @param {object} variant Variant.
@@ -1183,12 +1175,14 @@ async function writeAuthorPageIfNeeded(authorFile, variant) {
 }
 
 /**
- *
- * @param root0
- * @param root0.variant
- * @param root0.db
- * @param root0.bucket
- * @param root0.consoleError
+ * Lookup or create an author landing page and return its URL.
+ * @param {{
+ *   variant: { authorId?: string },
+ *   db: { doc: (path: string) => { get: () => Promise<{ data: () => Record<string, any> }> } },
+ *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
+ *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
+ * }} options Dependencies for author lookup.
+ * @returns {Promise<string | undefined>} Author URL when the lookup succeeds.
  */
 async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
   try {
@@ -1217,11 +1211,13 @@ function resolveAuthorRef(db, authorId) {
 }
 
 /**
- *
- * @param root0
- * @param root0.variant
- * @param root0.db
- * @param root0.bucket
+ * Resolve the bucket file used to persist the author's landing page.
+ * @param {{
+ *   variant: { authorId?: string },
+ *   db: { doc: (path: string) => { get: () => Promise<{ data: () => (Record<string, unknown> & { uuid: string }) }> } },
+ *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
+ * }} options Dependencies for author file resolution.
+ * @returns {Promise<{ authorPath: string, file: { exists: () => Promise<[boolean]>, save: Function }, exists: boolean }>} Metadata used to write the landing page.
  */
 async function resolveAuthorFile({ variant, db, bucket }) {
   const authorRef = resolveAuthorRef(db, variant.authorId);
@@ -1234,9 +1230,10 @@ async function resolveAuthorFile({ variant, db, bucket }) {
 }
 
 /**
- *
- * @param variant
- * @param file
+ * Write the author landing page HTML to storage.
+ * @param {{ name?: string }} variant Variant metadata.
+ * @param {{ save: (content: string, options: { contentType: string }) => Promise<unknown> }} file Cloud storage file handle.
+ * @returns {Promise<void>} Promise resolved after writing the file.
  */
 async function writeAuthorLandingPage(variant, file) {
   const authorName = deriveAuthorName(variant);
@@ -1277,8 +1274,9 @@ function areParentRefsValid(parentVariantRef, parentPageRef) {
 }
 
 /**
- *
- * @param optionRef
+ * Resolve the parent variant and page references from an option document.
+ * @param {{ parent?: { parent?: { parent?: { parent?: any } } } } | null | undefined} optionRef Option reference from Firestore.
+ * @returns {{ parentVariantRef: { get: Function }, parentPageRef: { get: Function } } | null} Parent references when resolvable.
  */
 export function resolveParentReferences(optionRef) {
   if (!optionRef) {
@@ -1311,9 +1309,10 @@ function doSnapshotsExist(parentVariantSnap, parentPageSnap) {
 }
 
 /**
- *
- * @param parentVariantRef
- * @param parentPageRef
+ * Fetch the snapshots for the variant and page parents.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} parentVariantRef Firestore reference to the parent variant.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} parentPageRef Firestore reference to the parent page.
+ * @returns {Promise<{ parentVariantSnap: { exists: boolean, data: () => Record<string, any> }, parentPageSnap: { exists: boolean, data: () => Record<string, any> } } | null>} Snapshots or null when missing.
  */
 async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
   const [parentVariantSnap, parentPageSnap] = await Promise.all([
@@ -1329,12 +1328,6 @@ async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
 }
 
 /**
- * Create the parent route slug from snapshot data.
- * @param {{ data: () => Record<string, any> }} parentVariantSnap Variant snapshot.
- * @param {{ data: () => Record<string, any> }} parentPageSnap Page snapshot.
- * @returns {string | null} Route path when identifiers can be derived, otherwise null.
- */
-/**
  * Validate route data.
  * @param {string} parentName Parent name.
  * @param {number} parentNumber Parent number.
@@ -1345,9 +1338,10 @@ function isRouteDataValid(parentName, parentNumber) {
 }
 
 /**
- *
- * @param parentVariantSnap
- * @param parentPageSnap
+ * Create the parent route slug from snapshot data.
+ * @param {{ data: () => Record<string, any> }} parentVariantSnap Variant snapshot.
+ * @param {{ data: () => Record<string, any> }} parentPageSnap Page snapshot.
+ * @returns {string | null} Route path when identifiers can be derived, otherwise null.
  */
 function buildParentRoute(parentVariantSnap, parentPageSnap) {
   const parentData = parentVariantSnap.data();
@@ -1402,11 +1396,13 @@ function buildRouteFromSnapshots(snapshots) {
 }
 
 /**
- *
- * @param root0
- * @param root0.variant
- * @param root0.db
- * @param root0.consoleError
+ * Resolve the canonical URL for the parent variant, if one exists.
+ * @param {{
+ *   variant: { incomingOption?: string },
+ *   db: { doc: (path: string) => { get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> } },
+ *   consoleError: (message?: unknown, ...optionalParams: unknown[]) => void
+ * }} options Dependencies for parent resolution.
+ * @returns {Promise<string | undefined>} Parent URL when resolvable.
  */
 async function resolveParentUrl({ variant, db, consoleError }) {
   if (!variant.incomingOption) {
@@ -1558,8 +1554,9 @@ export async function getPageSnapFromRef(snap) {
 }
 
 /**
- *
- * @param snap
+ * Fetch the parent page snapshot for the renderer's variant.
+ * @param {{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean, data: () => Record<string, any> }> } } } }} snap Variant snapshot.
+ * @returns {Promise<{ exists?: boolean, data: () => Record<string, any> } | null>} Page snapshot when available.
  */
 export async function fetchPageData(snap) {
   const pageSnap = await getPageSnapFromRef(snap);
@@ -1666,13 +1663,22 @@ async function fetchAndValidatePage(snap) {
 }
 
 /**
- *
- * @param root0
- * @param root0.snap
- * @param root0.db
- * @param root0.bucket
- * @param root0.consoleError
- * @param root0.visibilityThreshold
+ * Resolve the render plan for a variant snapshot.
+ * @param {{
+ *   snap: { exists?: boolean, data: () => Record<string, any>, ref: { parent?: { parent?: any } } },
+ *   db: { doc: Function },
+ *   bucket: { file: Function },
+ *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void,
+ *   visibilityThreshold: number
+ * }} options Inputs required to assemble the render plan.
+ * @returns {Promise<null | {
+ *   variant: Record<string, any>,
+ *   page: Record<string, any>,
+ *   parentUrl: string | undefined,
+ *   html: string,
+ *   filePath: string,
+ *   openVariant: boolean
+ * }>} Render plan when the variant should be materialized.
  */
 async function resolveRenderPlan({
   snap,
@@ -1794,18 +1800,20 @@ function buildInvalidationPaths(altsPath, filePath, parentUrl) {
 }
 
 /**
- *
- * @param root0
- * @param root0.snap
- * @param root0.context
- * @param root0.bucket
- * @param root0.invalidatePaths
- * @param root0.variant
- * @param root0.page
- * @param root0.parentUrl
- * @param root0.html
- * @param root0.filePath
- * @param root0.openVariant
+ * Persist rendered HTML, related metadata, and cache invalidation paths.
+ * @param {{
+ *   snap: { ref: { parent?: { parent?: any } } },
+ *   context: { params?: Record<string, string> },
+ *   bucket: { file: (path: string) => { save: Function } },
+ *   invalidatePaths: (paths: string[]) => Promise<unknown>,
+ *   variant: Record<string, any>,
+ *   page: Record<string, any>,
+ *   parentUrl?: string,
+ *   html: string,
+ *   filePath: string,
+ *   openVariant: boolean
+ * }} options Inputs for persisting the render plan.
+ * @returns {Promise<void>} Void promise.
  */
 async function persistRenderPlan({
   snap,
