@@ -129,11 +129,12 @@ function isLineEmpty(line) {
  * @returns {string[]} A slice of the original lines without trailing blanks.
  */
 function removeTrailingEmptyLines(lines) {
-  let endIndex = lines.length - 1;
-  while (endIndex >= 0 && isLineEmpty(lines[endIndex])) {
-    endIndex -= 1;
+  const lastIndex = lines.findLastIndex(line => !isLineEmpty(line));
+  if (lastIndex === -1) {
+    return [];
   }
-  return lines.slice(0, endIndex + 1);
+
+  return lines.slice(0, lastIndex + 1);
 }
 
 /**
@@ -354,8 +355,49 @@ function isValueNonEmpty(value) {
  * @returns {void}
  */
 function assignRecordValue(record, { name, index }, values) {
-  const value = String(values[index] ?? '').trim();
-  if (isValueNonEmpty(value)) {
-    record[name] = value;
+  assignParsedValue(record, name, values[index]);
+}
+
+/**
+ *
+ * @param record
+ * @param name
+ * @param rawValue
+ */
+/**
+ * Assign a parsed and trimmed CSV cell value to the record when present.
+ * @param {Record<string, string>} record - Target record collecting parsed fields.
+ * @param {string} name - Field name derived from the header entry.
+ * @param {unknown} rawValue - Value extracted from the parsed line.
+ * @returns {void}
+ */
+function assignParsedValue(record, name, rawValue) {
+  const value = normalizeCsvValue(rawValue);
+  if (!isValueNonEmpty(value)) {
+    return;
   }
+
+  record[name] = value;
+}
+
+/**
+ * Normalize a parsed CSV cell value into a trimmed string.
+ * @param {unknown} rawValue - Value extracted from the parsed line.
+ * @returns {string} Trimmed string ready for assignment.
+ */
+function normalizeCsvValue(rawValue) {
+  if (isCsvValueMissing(rawValue)) {
+    return '';
+  }
+
+  return String(rawValue).trim();
+}
+
+/**
+ * Determine whether a CSV cell value is absent.
+ * @param {unknown} value - Value extracted from the parsed line.
+ * @returns {boolean} True when the value is `null` or `undefined`.
+ */
+function isCsvValueMissing(value) {
+  return value === undefined || value === null;
 }

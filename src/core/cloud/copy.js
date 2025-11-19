@@ -168,14 +168,27 @@ export function createCopyToInfraCore({
   }
 
   /**
+   * Determine whether a copy plan actually enumerates files.
+   * @param {object | null | undefined} copyPlan - Plan describing the files to copy.
+   * @returns {boolean} True when the copy plan contains at least one file.
+   */
+  function hasDeclaredFiles(copyPlan) {
+    if (copyPlan && copyPlan.files) {
+      return copyPlan.files.length > 0;
+    }
+
+    return false;
+  }
+
+  /**
    * Copy a declared list of files into the target directory.
-   * @param {{ sourceDir: string, targetDir: string, files: string[] }} copyPlan - Copy configuration.
-   * @param {{ ensureDirectory: (target: string) => Promise<void>, copyFile: (source: string, destination: string) => Promise<void> }} io - Filesystem adapters.
-   * @param {{ info: (message: string) => void }} messageLogger - Logger to report progress.
+   * @param {object} copyPlan - Copy configuration.
+   * @param {object} io - Filesystem adapters.
+   * @param {object} messageLogger - Logger to report progress.
    * @returns {Promise<void>} Resolves when all files are copied.
    */
   async function copyDeclaredFiles(copyPlan, io, messageLogger) {
-    if (!copyPlan?.files?.length) {
+    if (!hasDeclaredFiles(copyPlan)) {
       return;
     }
     const { sourceDir, targetDir, files } = copyPlan;
@@ -214,6 +227,19 @@ export function createCopyToInfraCore({
   }
 
   /**
+   * Copy every configured directory using the provided helper.
+   * @param {object[]} directories - Directory copy plans.
+   * @param {object} io - Filesystem adapters.
+   * @param {object} messageLogger - Logger for progress events.
+   * @returns {Promise<void>} Resolves once every directory copy finishes.
+   */
+  async function copyDirectories(directories, io, messageLogger) {
+    for (const directory of directories) {
+      await copyDirectory(directory, io, messageLogger);
+    }
+  }
+
+  /**
    * Execute the copy workflow using the provided configuration.
    * @param {{
    *   directoryCopies: { source: string, target: string }[],
@@ -235,10 +261,7 @@ export function createCopyToInfraCore({
     io,
     messageLogger,
   }) {
-    for (const directory of directoryCopies) {
-      await copyDirectory(directory, io, messageLogger);
-    }
-
+    await copyDirectories(directoryCopies, io, messageLogger);
     await copyDeclaredFiles(fileCopies, io, messageLogger);
     await copyIndividualFiles(individualFileCopies, io, messageLogger);
   }
