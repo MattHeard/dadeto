@@ -1,11 +1,30 @@
 /**
+ * Ensure the provided Firestore instance is truthy.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ */
+function assertDbExists(db) {
+  if (!db) {
+    throw new TypeError('db must expose a doc helper');
+  }
+}
+
+/**
+ * Ensure the provided Firestore instance has a doc method.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ */
+function assertDbHasDoc(db) {
+  if (typeof db.doc !== 'function') {
+    throw new TypeError('db must expose a doc helper');
+  }
+}
+
+/**
  * Ensure the provided Firestore instance exposes the expected helpers.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client to validate.
  */
 function assertDb(db) {
-  if (!db || typeof db.doc !== 'function') {
-    throw new TypeError('db must expose a doc helper');
-  }
+  assertDbExists(db);
+  assertDbHasDoc(db);
 }
 
 /**
@@ -14,7 +33,10 @@ function assertDb(db) {
  * @returns {boolean} True when the snapshot exposes the Firestore getter API.
  */
 function assertDocumentSnapshot(snapshot) {
-  return Boolean(snapshot && typeof snapshot.get === 'function');
+  if (!snapshot) {
+    return false;
+  }
+  return typeof snapshot.get === 'function';
 }
 
 /**
@@ -48,6 +70,19 @@ export function normalizeVariantPath(variantId) {
 }
 
 /**
+ * Get a numeric property from an object safely.
+ * @param {Record<string, unknown>} data Object to read from.
+ * @param {string} key Property key.
+ * @returns {number} Numeric value or 0.
+ */
+function getSafeNumber(data, key) {
+  if (!data) {
+    return 0;
+  }
+  return toNumber(data[key]);
+}
+
+/**
  * Calculate the updated visibility score based on the new rating.
  * @param {{
  *   visibility?: number,
@@ -58,18 +93,158 @@ export function normalizeVariantPath(variantId) {
  * @returns {number} Updated visibility score.
  */
 export function calculateUpdatedVisibility(variantData, newRating) {
-  const currentVisibility = toNumber(variantData?.visibility);
-  const currentCount = toNumber(variantData?.moderationRatingCount);
-  const currentReputationSum = toNumber(variantData?.moderatorReputationSum);
+  const currentVisibility = getSafeNumber(variantData, 'visibility');
+  const currentCount = getSafeNumber(variantData, 'moderationRatingCount');
+  const currentReputationSum = getSafeNumber(
+    variantData,
+    'moderatorReputationSum'
+  );
 
   const numerator = currentVisibility * currentReputationSum + newRating;
   const denominator = currentCount + 1;
 
+  return safeDivide(numerator, denominator);
+}
+
+/**
+ * Divide two numbers, returning 0 if the denominator is 0.
+ * @param {number} numerator Numerator.
+ * @param {number} denominator Denominator.
+ * @returns {number} Result of division.
+ */
+function safeDivide(numerator, denominator) {
   if (denominator === 0) {
     return 0;
   }
-
   return numerator / denominator;
+}
+
+/**
+ * Determine the new rating based on approval status.
+ * @param {boolean} isApproved Whether the variant is approved.
+ * @returns {number} 1 if approved, 0 otherwise.
+ */
+function getNewRating(isApproved) {
+  if (isApproved) {
+    return 1;
+  }
+  return 0;
+}
+
+/**
+ * Check if the approval status is valid.
+ * @param {unknown} isApproved Approval status.
+ * @returns {boolean} True if boolean.
+ */
+function isValidApproval(isApproved) {
+  return typeof isApproved === 'boolean';
+}
+
+/**
+ * Update the variant document with new stats.
+ * @param {import('firebase-admin/firestore').DocumentReference} ref Document reference.
+ * @param {{ visibility: number, count: number, reputation: number }} stats New stats.
+ * @returns {Promise<void>} Promise.
+ */
+async function updateVariantStats(ref, { visibility, count, reputation }) {
+  await ref.update({
+    visibility,
+    moderatorRatingCount: count,
+    moderatorReputationSum: reputation,
+  });
+}
+
+/**
+ * Calculate new stats from data and rating.
+ * @param {Record<string, unknown>} variantData Variant data.
+ * @param {number} newRating New rating.
+ * @returns {{ visibility: number, count: number, reputation: number }} New stats.
+ */
+function calculateNewStats(variantData, newRating) {
+  const updatedVisibility = calculateUpdatedVisibility(variantData, newRating);
+  const moderationRatingCount = getSafeNumber(
+    variantData,
+    'moderationRatingCount'
+  );
+  const moderatorReputationSum = getSafeNumber(
+    variantData,
+    'moderatorReputationSum'
+  );
+
+  return {
+    visibility: updatedVisibility,
+    count: moderationRatingCount + 1,
+    reputation: moderatorReputationSum + 1,
+  };
+}
+
+/**
+ * Check if snapshot is valid and exists.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
+ * @returns {boolean} True if valid.
+ */
+function isValidSnapshot(snapshot) {
+  if (!assertDocumentSnapshot(snapshot)) {
+    return false;
+  }
+  return snapshot.exists;
+}
+
+/**
+ * Process the variant update if the snapshot is valid.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} variantSnap Variant snapshot.
+ * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant reference.
+ * @param {boolean} isApproved Approval status.
+ * @returns {Promise<void>} Promise.
+ */
+async function processVariantUpdate(variantSnap, variantRef, isApproved) {
+  if (!isValidSnapshot(variantSnap)) {
+    return;
+  }
+
+  const variantData = variantSnap.data();
+  const newRating = getNewRating(isApproved);
+  const newStats = calculateNewStats(variantData, newRating);
+
+  await updateVariantStats(variantRef, newStats);
+}
+
+/**
+ * Validate approval status.
+ * @param {unknown} isApproved Approval status.
+ * @returns {boolean} True if valid.
+ */
+function validateApproval(isApproved) {
+  return isValidApproval(isApproved);
+}
+
+/**
+ * Resolve variant path and reference.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore.
+ * @param {string} variantId Variant ID.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Reference or null.
+ */
+function resolveVariantRef(db, variantId) {
+  const normalizedVariantPath = normalizeVariantPath(variantId);
+
+  if (!normalizedVariantPath) {
+    return null;
+  }
+  return db.doc(normalizedVariantPath);
+}
+
+/**
+ * Validate inputs and resolve reference.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore.
+ * @param {string} variantId Variant ID.
+ * @param {unknown} isApproved Approval status.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Reference or null.
+ */
+function validateAndResolve(db, variantId, isApproved) {
+  if (!validateApproval(isApproved)) {
+    return null;
+  }
+  return resolveVariantRef(db, variantId);
 }
 
 /**
@@ -82,46 +257,15 @@ export function createUpdateVariantVisibilityHandler({ db }) {
 
   return async function handleUpdateVariantVisibility(snapshot) {
     const data = snapshot.data();
-    const variantId = data.variantId;
-    const isApproved = data.isApproved;
+    const { variantId, isApproved } = data;
 
-    if (typeof isApproved !== 'boolean') {
+    const variantRef = validateAndResolve(db, variantId, isApproved);
+    if (!variantRef) {
       return null;
     }
 
-    const normalizedVariantPath = normalizeVariantPath(variantId);
-
-    if (!normalizedVariantPath) {
-      return null;
-    }
-
-    const variantRef = db.doc(normalizedVariantPath);
     const variantSnap = await variantRef.get();
-
-    if (!assertDocumentSnapshot(variantSnap) || !variantSnap.exists) {
-      return null;
-    }
-
-    const variantData = variantSnap.data();
-    let newRating;
-    if (isApproved) {
-      newRating = 1;
-    } else {
-      newRating = 0;
-    }
-
-    const updatedVisibility = calculateUpdatedVisibility(
-      variantData,
-      newRating
-    );
-    const moderationRatingCount = toNumber(variantData.moderationRatingCount);
-    const moderatorReputationSum = toNumber(variantData.moderatorReputationSum);
-
-    await variantRef.update({
-      visibility: updatedVisibility,
-      moderatorRatingCount: moderationRatingCount + 1,
-      moderatorReputationSum: moderatorReputationSum + 1,
-    });
+    await processVariantUpdate(variantSnap, variantRef, isApproved);
 
     return null;
   };

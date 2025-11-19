@@ -1,0 +1,290 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/admin/core.js
+   386:1   warning  Function 'requireDocumentLike' has a complexity of 3. Maximum allowed is 2                 complexity
+   609:10  warning  Async arrow function has a complexity of 3. Maximum allowed is 2                           complexity
+   770:1   warning  Function 'buildNormalizedGoogleSignInDeps' has a complexity of 4. Maximum allowed is 2     complexity
+   890:1   warning  Function 'resolveGetIdToken' has a complexity of 3. Maximum allowed is 2                   complexity
+   927:1   warning  Function 'resolveSignInTheme' has a complexity of 3. Maximum allowed is 2                  complexity
+   972:10  warning  Function 'initGoogleSignIn' has a complexity of 3. Maximum allowed is 2                    complexity
+  1078:1   warning  Function 'validateRegenerateVariantDeps' has a complexity of 3. Maximum allowed is 2       complexity
+  1147:1   warning  Function 'resolveRegenerationPayload' has a complexity of 3. Maximum allowed is 2          complexity
+  1166:1   warning  Function 'preventDefaultEvent' has a complexity of 3. Maximum allowed is 2                 complexity
+  1252:1   warning  Function 'getTrimmedInputValue' has a complexity of 3. Maximum allowed is 2                complexity
+  1289:1   warning  Async function 'sendRegenerateVariantRequest' has a complexity of 3. Maximum allowed is 2  complexity
+  1495:8   warning  Function 'getCurrentUser' has a complexity of 3. Maximum allowed is 2                      complexity
+  1561:1   warning  Function 'setupSignInButtonRenderer' has a complexity of 3. Maximum allowed is 2           complexity
+  1608:1   warning  Function 'setElementVisibility' has a complexity of 3. Maximum allowed is 2                complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/admin/token-action.js
+  64:1  warning  Function 'ensureGoogleAuth' has a complexity of 3. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/load-static-config-core.js
+  30:1  warning  Function 'ensureStaticConfigResponseOk' has a complexity of 3. Maximum allowed is 2  complexity
+  43:1  warning  Function 'createStaticConfigError' has a complexity of 3. Maximum allowed is 2       complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-05/addDendritePage.js
+  12:1  warning  Function 'isValidInput' has a complexity of 3. Maximum allowed is 2  complexity
+  33:1  warning  Missing JSDoc @returns declaration                                   jsdoc/require-returns
+  35:1  warning  Missing JSDoc @param "parsed" description                            jsdoc/require-param-description
+  35:1  warning  Missing JSDoc @param "parsed" type                                   jsdoc/require-param-type
+  36:1  warning  Missing JSDoc @param "env" description                               jsdoc/require-param-description
+  36:1  warning  Missing JSDoc @param "env" type                                      jsdoc/require-param-type
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-10-19/csvToJsonArray.js
+   43:1  warning  Function 'normalizeInputLines' has a complexity of 3. Maximum allowed is 2       complexity
+   80:1  warning  Function 'getRowsFromHeaderInfo' has a complexity of 3. Maximum allowed is 2     complexity
+   94:1  warning  Function 'removeTrailingEmptyLines' has a complexity of 3. Maximum allowed is 2  complexity
+  109:1  warning  Function 'parseHeaderEntries' has a complexity of 3. Maximum allowed is 2        complexity
+  143:1  warning  Function 'getTrimmedHeaderLine' has a complexity of 3. Maximum allowed is 2      complexity
+  184:1  warning  Function 'buildRows' has a complexity of 3. Maximum allowed is 2                 complexity
+  205:1  warning  Function 'pushRecordIfNotEmpty' has a complexity of 3. Maximum allowed is 2      complexity
+  271:1  warning  Function 'assignRecordValue' has a complexity of 3. Maximum allowed is 2         complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/assign-moderation-job/assign-moderation-job-core.js
+   61:8   warning  Function 'shouldUseCustomFirestoreDependencies' has a complexity of 6. Maximum allowed is 2  complexity
+  105:8   warning  Function 'getAllowedOrigins' has a complexity of 7. Maximum allowed is 2                     complexity
+  196:10  warning  Async function 'ensureValidIdToken' has a complexity of 4. Maximum allowed is 2              complexity
+  217:10  warning  Async function 'ensureUserRecord' has a complexity of 4. Maximum allowed is 2                complexity
+  266:10  warning  Function 'corsOriginHandler' has a complexity of 3. Maximum allowed is 2                     complexity
+  420:8   warning  Function 'selectVariantDoc' has a complexity of 6. Maximum allowed is 2                      complexity
+  637:10  warning  Async function 'runChain' has a complexity of 6. Maximum allowed is 2                        complexity
+  693:10  warning  Async function 'assignModerationWorkflow' has a complexity of 7. Maximum allowed is 2        complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js
+   67:8   warning  Function 'getAuthHeader' has a complexity of 4. Maximum allowed is 2              complexity
+   92:1   warning  Missing JSDoc @returns declaration                                                jsdoc/require-returns
+   94:1   warning  Missing JSDoc @param "req" description                                            jsdoc/require-param-description
+   94:1   warning  Missing JSDoc @param "req" type                                                   jsdoc/require-param-type
+   96:1   warning  Function 'extractTokenFromRequest' has a complexity of 3. Maximum allowed is 2    complexity
+  102:1   warning  Missing JSDoc @returns declaration                                                jsdoc/require-returns
+  104:1   warning  Missing JSDoc @param "root0" description                                          jsdoc/require-param-description
+  104:1   warning  Missing JSDoc @param "root0" type                                                 jsdoc/require-param-type
+  105:1   warning  Missing JSDoc @param "root0.token" description                                    jsdoc/require-param-description
+  105:1   warning  Missing JSDoc @param "root0.token" type                                           jsdoc/require-param-type
+  106:1   warning  Missing JSDoc @param "root0.verifyToken" description                              jsdoc/require-param-description
+  106:1   warning  Missing JSDoc @param "root0.verifyToken" type                                     jsdoc/require-param-type
+  107:1   warning  Missing JSDoc @param "root0.isAdminUid" description                               jsdoc/require-param-description
+  107:1   warning  Missing JSDoc @param "root0.isAdminUid" type                                      jsdoc/require-param-type
+  108:1   warning  Missing JSDoc @param "root0.sendUnauthorized" description                         jsdoc/require-param-description
+  108:1   warning  Missing JSDoc @param "root0.sendUnauthorized" type                                jsdoc/require-param-type
+  109:1   warning  Missing JSDoc @param "root0.sendForbidden" description                            jsdoc/require-param-description
+  109:1   warning  Missing JSDoc @param "root0.sendForbidden" type                                   jsdoc/require-param-type
+  110:1   warning  Missing JSDoc @param "root0.res" description                                      jsdoc/require-param-description
+  110:1   warning  Missing JSDoc @param "root0.res" type                                             jsdoc/require-param-type
+  112:1   warning  Async function 'authorizeAdminToken' has a complexity of 3. Maximum allowed is 2  complexity
+  151:10  warning  Async function 'verifyAdmin' has a complexity of 3. Maximum allowed is 2          complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/copy.js
+  228:3  warning  Async function 'runCopyToInfra' has a complexity of 5. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js
+  264:8   warning  Function 'isDuplicateAppError' has a complexity of 4. Maximum allowed is 2            complexity
+  283:8   warning  Function 'initializeFirebaseApp' has a complexity of 3. Maximum allowed is 2          complexity
+  300:8   warning  Function 'getProjectFromEnv' has a complexity of 4. Maximum allowed is 2              complexity
+  312:8   warning  Function 'getUrlMapFromEnv' has a complexity of 4. Maximum allowed is 2               complexity
+  325:8   warning  Function 'getCdnHostFromEnv' has a complexity of 5. Maximum allowed is 2              complexity
+  375:8   warning  Function 'createGenerateStatsCore' has a complexity of 7. Maximum allowed is 2        complexity
+  445:3   warning  Async function 'getTopStories' has a complexity of 3. Maximum allowed is 2            complexity
+  452:26  warning  Async arrow function has a complexity of 4. Maximum allowed is 2                      complexity
+  487:17  warning  Async arrow function has a complexity of 7. Maximum allowed is 2                      complexity
+  516:1   warning  @param "deps" does not match an existing function parameter                           jsdoc/check-param-names
+  622:3   warning  Async function 'handleAuthorizedRequest' has a complexity of 6. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js
+   37:1   warning  Function 'matchPathUuid' has a complexity of 3. Maximum allowed is 2                   complexity
+   66:8   warning  Function 'extractUuid' has a complexity of 4. Maximum allowed is 2                     complexity
+   96:8   warning  Function 'createGetApiKeyCreditV2Handler' has a complexity of 6. Maximum allowed is 2  complexity
+  115:10  warning  Async function 'handleRequest' has a complexity of 7. Maximum allowed is 2             complexity
+  165:10  warning  Async function 'fetchCredit' has a complexity of 4. Maximum allowed is 2               complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-moderation-variant/get-moderation-variant-core.js
+  110:1  warning  Function 'assertFirestoreInstance' has a complexity of 3. Maximum allowed is 2        complexity
+  121:1  warning  Function 'assertAuthInstance' has a complexity of 3. Maximum allowed is 2             complexity
+  132:1  warning  Function 'parseAuthorizationHeader' has a complexity of 3. Maximum allowed is 2       complexity
+  171:1  warning  Async function 'fetchVariantSnapshot' has a complexity of 5. Maximum allowed is 2     complexity
+  211:1  warning  Function 'mapOptionDoc' has a complexity of 3. Maximum allowed is 2                   complexity
+  241:8  warning  Function 'getAllowedOrigins' has a complexity of 7. Maximum allowed is 2              complexity
+  314:1  warning  Async function 'handleAuthorizedRequest' has a complexity of 3. Maximum allowed is 2  complexity
+  330:1  warning  Async function 'resolveUidFromToken' has a complexity of 4. Maximum allowed is 2      complexity
+  344:1  warning  Function 'createInvalidTokenResponse' has a complexity of 3. Maximum allowed is 2     complexity
+  414:1  warning  The type 'VariantData' is undefined                                                   jsdoc/no-undefined-types
+  432:1  warning  The type 'VariantData' is undefined                                                   jsdoc/no-undefined-types
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/hide-variant-html/hide-variant-html-core.js
+   22:8   warning  Function 'normalizeRemoveVariantLoadResult' has a complexity of 7. Maximum allowed is 2     complexity
+   49:1   warning  Function 'resolveVariantData' has a complexity of 4. Maximum allowed is 2                   complexity
+   97:10  warning  Async function 'removeVariantHtml' has a complexity of 4. Maximum allowed is 2              complexity
+  142:8   warning  Function 'createBucketFileRemover' has a complexity of 6. Maximum allowed is 2              complexity
+  153:10  warning  Function 'deleteRenderedFile' has a complexity of 3. Maximum allowed is 2                   complexity
+  171:8   warning  Function 'buildVariantPath' has a complexity of 5. Maximum allowed is 2                     complexity
+  193:10  warning  Function 'removeVariantHtmlForSnapshot' has a complexity of 7. Maximum allowed is 2         complexity
+  217:8   warning  Function 'getVariantVisibility' has a complexity of 5. Maximum allowed is 2                 complexity
+  240:8   warning  Function 'createHandleVariantVisibilityChange' has a complexity of 3. Maximum allowed is 2  complexity
+  263:1   warning  Missing JSDoc @returns declaration                                                          jsdoc/require-returns
+  265:1   warning  Missing JSDoc @param "root0" description                                                    jsdoc/require-param-description
+  265:1   warning  Missing JSDoc @param "root0" type                                                           jsdoc/require-param-type
+  266:1   warning  Missing JSDoc @param "root0.removeVariantHtmlForSnapshot" description                       jsdoc/require-param-description
+  266:1   warning  Missing JSDoc @param "root0.removeVariantHtmlForSnapshot" type                              jsdoc/require-param-type
+  267:1   warning  Missing JSDoc @param "root0.getVisibility" description                                      jsdoc/require-param-description
+  267:1   warning  Missing JSDoc @param "root0.getVisibility" type                                             jsdoc/require-param-type
+  268:1   warning  Missing JSDoc @param "root0.visibilityThreshold" description                                jsdoc/require-param-description
+  268:1   warning  Missing JSDoc @param "root0.visibilityThreshold" type                                       jsdoc/require-param-type
+  275:10  warning  Async function 'visibilityTransition' has a complexity of 3. Maximum allowed is 2           complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js
+   10:8   warning  Function 'getAllowedOrigins' has a complexity of 8. Maximum allowed is 2            complexity
+   54:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                          complexity
+   70:8   warning  Function 'createCorsOptions' has a complexity of 3. Maximum allowed is 2            complexity
+  100:8   warning  Function 'refFromSnap' has a complexity of 5. Maximum allowed is 2                  complexity
+  114:8   warning  Async function 'findPageRef' has a complexity of 4. Maximum allowed is 2            complexity
+  151:8   warning  Async function 'findVariantRef' has a complexity of 7. Maximum allowed is 2         complexity
+  200:8   warning  Async function 'markVariantDirtyImpl' has a complexity of 6. Maximum allowed is 2   complexity
+  255:1   warning  Function 'enforceAllowedMethod' has a complexity of 3. Maximum allowed is 2         complexity
+  271:1   warning  Function 'parseValidRequest' has a complexity of 4. Maximum allowed is 2            complexity
+  292:1   warning  Async function 'markVariantAndRespond' has a complexity of 5. Maximum allowed is 2  complexity
+  324:8   warning  Function 'parseMarkVariantRequestBody' has a complexity of 4. Maximum allowed is 2  complexity
+  343:8   warning  Function 'createHandleRequest' has a complexity of 5. Maximum allowed is 2          complexity
+  356:10  warning  Async function 'handleRequest' has a complexity of 7. Maximum allowed is 2          complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/process-new-page/process-new-page-core.js
+    6:8  warning  Function 'incrementVariantName' has a complexity of 6. Maximum allowed is 2                complexity
+   52:1  warning  Function 'assertFieldValue' has a complexity of 4. Maximum allowed is 2                    complexity
+   87:1  warning  Function 'ensureDocumentReference' has a complexity of 3. Maximum allowed is 2             complexity
+  109:8  warning  Async function 'findAvailablePageNumber' has a complexity of 3. Maximum allowed is 2       complexity
+  153:1  warning  Function 'resolvePageFromTarget' has a complexity of 3. Maximum allowed is 2               complexity
+  179:1  warning  Function 'resolveAuthorRef' has a complexity of 3. Maximum allowed is 2                    complexity
+  226:1  warning  Async function 'resolveIncomingOptionContext' has a complexity of 4. Maximum allowed is 2  complexity
+  277:1  warning  Async function 'resolveExistingPageContext' has a complexity of 4. Maximum allowed is 2    complexity
+  470:1  warning  Async function 'ensureAuthorRecordExists' has a complexity of 4. Maximum allowed is 2      complexity
+  488:1  warning  Function 'getLatestVariantName' has a complexity of 4. Maximum allowed is 2                complexity
+  519:1  warning  Function 'resolveVariantRef' has a complexity of 3. Maximum allowed is 2                   complexity
+  531:1  warning  Function 'buildVariantPayload' has too many parameters (4). Maximum allowed is 3           max-params
+  531:1  warning  Function 'buildVariantPayload' has a complexity of 3. Maximum allowed is 2                 complexity
+  655:1  warning  Async function 'finalizeSubmission' has a complexity of 3. Maximum allowed is 2            complexity
+  712:1  warning  Async function 'processUnprocessedSubmission' has a complexity of 3. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/process-new-story/process-new-story-core.js
+   16:1   warning  Function 'assertDb' has a complexity of 4. Maximum allowed is 2                      complexity
+   27:1   warning  Function 'assertFieldValue' has a complexity of 4. Maximum allowed is 2              complexity
+   64:1   warning  Function 'getSubmissionData' has a complexity of 3. Maximum allowed is 2             complexity
+  100:1   warning  Function 'resolveAuthorRef' has a complexity of 3. Maximum allowed is 2              complexity
+  113:1   warning  Function 'normalizeIdentifier' has a complexity of 3. Maximum allowed is 2           complexity
+  132:1   warning  Function 'resolveStoryId' has a complexity of 6. Maximum allowed is 2                complexity
+  220:1   warning  Function 'queueSubmissionWrites' has a complexity of 3. Maximum allowed is 2         complexity
+  277:1   warning  Async function 'ensureAuthorRecord' has a complexity of 4. Maximum allowed is 2      complexity
+  301:8   warning  Function 'createProcessNewStoryHandler' has a complexity of 4. Maximum allowed is 2  complexity
+  319:10  warning  Async function 'handleProcessNewStory' has a complexity of 4. Maximum allowed is 2   complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/render-contents/render-contents-core.js
+   26:1   warning  Function 'assertDb' has a complexity of 3. Maximum allowed is 2                              complexity
+   37:1   warning  Function 'assertStorage' has a complexity of 3. Maximum allowed is 2                         complexity
+  261:10  warning  Async function 'fetchStoryInfo' has a complexity of 8. Maximum allowed is 2                  complexity
+  301:1   warning  Function 'createInvalidatePaths' has a complexity of 3. Maximum allowed is 2                 complexity
+  341:17  warning  Async arrow function has a complexity of 7. Maximum allowed is 2                             complexity
+  384:8   warning  Function 'createRenderContents' has a complexity of 4. Maximum allowed is 2                  complexity
+  424:3   warning  Function 'resolveFetcher' has a complexity of 5. Maximum allowed is 2                        complexity
+  454:3   warning  Async function 'buildStoryItems' has a complexity of 3. Maximum allowed is 2                 complexity
+  475:3   warning  Async function 'publishStoryPages' has a complexity of 4. Maximum allowed is 2               complexity
+  544:8   warning  Function 'getAllowedOrigins' has a complexity of 4. Maximum allowed is 2                     complexity
+  571:10  warning  Function 'applyCorsHeaders' has a complexity of 5. Maximum allowed is 2                      complexity
+  607:10  warning  Function 'validateRequest' has a complexity of 6. Maximum allowed is 2                       complexity
+  659:1   warning  Function 'extractBearerToken' has a complexity of 3. Maximum allowed is 2                    complexity
+  660:23  warning  Ternary operator used                                                                        no-ternary
+  662:10  warning  Ternary operator used                                                                        no-ternary
+  680:10  warning  Async function 'authorizeRequest' has a complexity of 7. Maximum allowed is 2                complexity
+  747:3   warning  Async function 'executeRenderRequestAfterGuard' has a complexity of 4. Maximum allowed is 2  complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/render-variant/render-variant-core.js
+   473:1   warning  Function 'buildAuthorHtml' has a complexity of 3. Maximum allowed is 2                complexity
+   802:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
+   813:1   warning  Function 'assertDb' has a complexity of 3. Maximum allowed is 2                       complexity
+   824:1   warning  Function 'assertStorage' has a complexity of 3. Maximum allowed is 2                  complexity
+   841:8   warning  Function 'createInvalidatePaths' has a complexity of 4. Maximum allowed is 2          complexity
+   875:10  warning  Async function 'invalidatePaths' has a complexity of 3. Maximum allowed is 2          complexity
+   884:17  warning  Async arrow function has a complexity of 7. Maximum allowed is 2                      complexity
+   945:1   warning  Async function 'resolveTargetMetadata' has a complexity of 3. Maximum allowed is 2    complexity
+   979:1   warning  Async function 'fetchTargetPageMetadata' has a complexity of 7. Maximum allowed is 2  complexity
+  1077:1   warning  Async function 'resolveFirstPageUrl' has a complexity of 8. Maximum allowed is 2      complexity
+  1111:1   warning  Function 'extractStoryRef' has a complexity of 5. Maximum allowed is 2                complexity
+  1120:1   warning  Function 'deriveAuthorName' has a complexity of 3. Maximum allowed is 2               complexity
+  1163:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1165:1   warning  Missing JSDoc @param "root0" description                                              jsdoc/require-param-description
+  1165:1   warning  Missing JSDoc @param "root0" type                                                     jsdoc/require-param-type
+  1166:1   warning  Missing JSDoc @param "root0.variant" description                                      jsdoc/require-param-description
+  1166:1   warning  Missing JSDoc @param "root0.variant" type                                             jsdoc/require-param-type
+  1167:1   warning  Missing JSDoc @param "root0.db" description                                           jsdoc/require-param-description
+  1167:1   warning  Missing JSDoc @param "root0.db" type                                                  jsdoc/require-param-type
+  1168:1   warning  Missing JSDoc @param "root0.bucket" description                                       jsdoc/require-param-description
+  1168:1   warning  Missing JSDoc @param "root0.bucket" type                                              jsdoc/require-param-type
+  1169:1   warning  Missing JSDoc @param "root0.consoleError" description                                 jsdoc/require-param-description
+  1169:1   warning  Missing JSDoc @param "root0.consoleError" type                                        jsdoc/require-param-type
+  1171:1   warning  Async function 'lookupAuthorUrl' has a complexity of 6. Maximum allowed is 2          complexity
+  1202:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1204:1   warning  Missing JSDoc @param "root0" description                                              jsdoc/require-param-description
+  1204:1   warning  Missing JSDoc @param "root0" type                                                     jsdoc/require-param-type
+  1205:1   warning  Missing JSDoc @param "root0.variant" description                                      jsdoc/require-param-description
+  1205:1   warning  Missing JSDoc @param "root0.variant" type                                             jsdoc/require-param-type
+  1206:1   warning  Missing JSDoc @param "root0.db" description                                           jsdoc/require-param-description
+  1206:1   warning  Missing JSDoc @param "root0.db" type                                                  jsdoc/require-param-type
+  1207:1   warning  Missing JSDoc @param "root0.bucket" description                                       jsdoc/require-param-description
+  1207:1   warning  Missing JSDoc @param "root0.bucket" type                                              jsdoc/require-param-type
+  1221:1   warning  Missing JSDoc @param "variant" description                                            jsdoc/require-param-description
+  1221:1   warning  Missing JSDoc @param "variant" type                                                   jsdoc/require-param-type
+  1222:1   warning  Missing JSDoc @param "file" description                                               jsdoc/require-param-description
+  1222:1   warning  Missing JSDoc @param "file" type                                                      jsdoc/require-param-type
+  1241:8   warning  Function 'resolveParentReferences' has a complexity of 7. Maximum allowed is 2        complexity
+  1262:1   warning  Async function 'fetchParentSnapshots' has a complexity of 3. Maximum allowed is 2     complexity
+  1281:1   warning  Function 'buildParentRoute' has a complexity of 3. Maximum allowed is 2               complexity
+  1303:1   warning  Async function 'resolveParentUrl' has a complexity of 8. Maximum allowed is 2         complexity
+  1357:8   warning  Function 'createRenderVariant' has a complexity of 4. Maximum allowed is 2            complexity
+  1384:10  warning  Async function 'render' has a complexity of 3. Maximum allowed is 2                   complexity
+  1425:1   warning  Async function 'resolveRenderPlan' has a complexity of 8. Maximum allowed is 2        complexity
+  1498:1   warning  Async function 'persistRenderPlan' has a complexity of 8. Maximum allowed is 2        complexity
+  1560:10  warning  Async function 'handleVariantWrite' has a complexity of 6. Maximum allowed is 2       complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js
+   61:1   warning  Function 'readAuthorizationFromGetter' has a complexity of 5. Maximum allowed is 2            complexity
+   83:1   warning  Function 'coerceAuthorizationHeader' has a complexity of 4. Maximum allowed is 2              complexity
+  104:1   warning  Function 'readAuthorizationFromHeaders' has a complexity of 4. Maximum allowed is 2           complexity
+  123:1   warning  Function 'getAuthorizationHeader' has a complexity of 3. Maximum allowed is 2                 complexity
+  138:1   warning  Function 'extractBearerToken' has a complexity of 3. Maximum allowed is 2                     complexity
+  181:8   warning  Function 'createCorsOptions' has a complexity of 3. Maximum allowed is 2                      complexity
+  304:1   warning  Async function 'resolveUid' has a complexity of 8. Maximum allowed is 2                       complexity
+  331:1   warning  Async function 'resolveModeratorAssignment' has a complexity of 5. Maximum allowed is 2       complexity
+  374:10  warning  Async function 'submitModerationRatingResponder' has a complexity of 6. Maximum allowed is 2  complexity
+  419:1   warning  Function 'validateRatingBody' has a complexity of 4. Maximum allowed is 2                     complexity
+  455:1   warning  Async function 'resolveModeratorContext' has a complexity of 5. Maximum allowed is 2          complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/helpers.js
+   7:8  warning  Function 'parseIncomingOption' has a complexity of 6. Maximum allowed is 2       complexity
+  37:8  warning  Async function 'findExistingOption' has a complexity of 6. Maximum allowed is 2  complexity
+  76:8  warning  Async function 'findExistingPage' has a complexity of 5. Maximum allowed is 2    complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js
+    8:1   warning  Function 'normalizeSubmissionBody' has a complexity of 3. Maximum allowed is 2        complexity
+   35:1   warning  Async function 'resolveSubmissionTarget' has a complexity of 7. Maximum allowed is 2  complexity
+   89:1   warning  Async function 'resolveAuthorId' has a complexity of 4. Maximum allowed is 2          complexity
+  107:1   warning  Function 'collectOptions' has a complexity of 5. Maximum allowed is 2                 complexity
+  145:10  warning  Async function 'handleSubmit' has a complexity of 5. Maximum allowed is 2             complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js
+   57:1   warning  Function 'normalizeAuthorizationCandidate' has a complexity of 4. Maximum allowed is 2  complexity
+   79:1   warning  Function 'readAuthorizationFromGetter' has a complexity of 4. Maximum allowed is 2      complexity
+   98:1   warning  Function 'readAuthorizationFromHeadersBag' has a complexity of 4. Maximum allowed is 2  complexity
+  116:1   warning  Function 'getAuthorizationHeader' has a complexity of 3. Maximum allowed is 2           complexity
+  130:1   warning  Function 'extractBearerToken' has a complexity of 3. Maximum allowed is 2               complexity
+  160:1   warning  Function 'collectOptions' has a complexity of 6. Maximum allowed is 2                   complexity
+  187:1   warning  Async function 'resolveAuthorId' has a complexity of 6. Maximum allowed is 2            complexity
+  225:8   warning  Function 'createCorsOptions' has a complexity of 3. Maximum allowed is 2                complexity
+  234:13  warning  Method 'origin' has a complexity of 3. Maximum allowed is 2                             complexity
+  252:8   warning  Function 'createCorsErrorHandler' has a complexity of 4. Maximum allowed is 2           complexity
+  256:10  warning  Function 'corsErrorHandler' has a complexity of 3. Maximum allowed is 2                 complexity
+  374:10  warning  Async function 'submitNewStoryResponder' has a complexity of 7. Maximum allowed is 2    complexity
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/update-variant-visibility/update-variant-visibility-core.js
+   5:1   warning  Function 'assertDb' has a complexity of 3. Maximum allowed is 2                             complexity
+  60:8   warning  Function 'calculateUpdatedVisibility' has a complexity of 5. Maximum allowed is 2           complexity
+  83:10  warning  Async function 'handleUpdateVariantVisibility' has a complexity of 6. Maximum allowed is 2  complexity
+
+✖ 243 problems (0 errors, 243 warnings)
+

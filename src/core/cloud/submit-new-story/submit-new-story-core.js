@@ -50,6 +50,32 @@ function normalizeMethod(method) {
 }
 
 /**
+ * Extract the first string from a candidate array.
+ * @param {unknown[]} candidate - Array to check.
+ * @returns {string | null} First string element or null.
+ */
+function extractStringFromCandidateArray(candidate) {
+  const [first] = candidate;
+
+  if (typeof first === 'string') {
+    return first;
+  }
+  return null;
+}
+
+/**
+ * Normalize non-string candidate.
+ * @param {unknown} candidate Candidate.
+ * @returns {string | null} Normalized string.
+ */
+function normalizeNonStringCandidate(candidate) {
+  if (Array.isArray(candidate)) {
+    return extractStringFromCandidateArray(candidate);
+  }
+  return null;
+}
+
+/**
  * Convert a header candidate into a normalized string value.
  * @param {unknown} candidate - Raw header candidate.
  * @returns {string | null} Normalized string when available.
@@ -58,17 +84,39 @@ function normalizeAuthorizationCandidate(candidate) {
   if (typeof candidate === 'string') {
     return candidate;
   }
+  return normalizeNonStringCandidate(candidate);
+}
 
-  if (Array.isArray(candidate)) {
-    const [first] = candidate;
+/**
+ * Try to retrieve a header using a getter function.
+ * @param {(name: string) => string | undefined} getter - Header getter.
+ * @param {string} name - Header name.
+ * @returns {string | null} Normalized header value.
+ */
+function tryGetHeader(getter, name) {
+  return normalizeAuthorizationCandidate(getter(name));
+}
 
-    if (typeof first === 'string') {
-      return first;
-    }
-    return null;
+/**
+ * Get getter function from request.
+ * @param {SubmitNewStoryRequest} request Request.
+ * @returns {Function | undefined} Getter.
+ */
+function getRequestGetter(request) {
+  return request?.get;
+}
+
+/**
+ * Get auth header from getter.
+ * @param {Function} getter Getter.
+ * @returns {string | null} Auth header.
+ */
+function getAuthFromGetter(getter) {
+  const uppercase = tryGetHeader(getter, 'Authorization');
+  if (uppercase) {
+    return uppercase;
   }
-
-  return null;
+  return tryGetHeader(getter, 'authorization');
 }
 
 /**
@@ -77,17 +125,45 @@ function normalizeAuthorizationCandidate(candidate) {
  * @returns {string | null} Header value when available.
  */
 function readAuthorizationFromGetter(request) {
-  const getter = request?.get;
+  const getter = getRequestGetter(request);
   if (typeof getter !== 'function') {
     return null;
   }
+  return getAuthFromGetter(getter);
+}
 
-  const uppercase = normalizeAuthorizationCandidate(getter('Authorization'));
-  if (uppercase) {
-    return uppercase;
+/**
+ * Check if headers object is valid.
+ * @param {unknown} headers Headers.
+ * @returns {boolean} True if valid.
+ */
+function isValidHeaders(headers) {
+  return Boolean(headers) && typeof headers === 'object';
+}
+
+/**
+ * Validate headers object.
+ * @param {unknown} headers Headers.
+ * @returns {Record<string, unknown> | null} Headers or null.
+ */
+function validateHeaders(headers) {
+  if (isValidHeaders(headers)) {
+    return headers;
   }
+  return null;
+}
 
-  return normalizeAuthorizationCandidate(getter('authorization'));
+/**
+ * Find authorization header in headers object.
+ * @param {Record<string, unknown>} headers Headers.
+ * @returns {string | null} Auth header.
+ */
+function findAuthInHeaders(headers) {
+  const lowercase = normalizeAuthorizationCandidate(headers.authorization);
+  if (lowercase) {
+    return lowercase;
+  }
+  return normalizeAuthorizationCandidate(headers.Authorization);
 }
 
 /**
@@ -96,16 +172,23 @@ function readAuthorizationFromGetter(request) {
  * @returns {string | null} Header value when present.
  */
 function readAuthorizationFromHeadersBag(headers) {
-  if (!headers || typeof headers !== 'object') {
+  const validHeaders = validateHeaders(headers);
+  if (!validHeaders) {
     return null;
   }
+  return findAuthInHeaders(validHeaders);
+}
 
-  const lowercase = normalizeAuthorizationCandidate(headers.authorization);
-  if (lowercase) {
-    return lowercase;
+/**
+ * Get headers bag from request.
+ * @param {SubmitNewStoryRequest | undefined} request Request.
+ * @returns {SubmitNewStoryRequest['headers']} Headers.
+ */
+function getHeadersBag(request) {
+  if (!request) {
+    return undefined;
   }
-
-  return normalizeAuthorizationCandidate(headers.Authorization);
+  return request.headers;
 }
 
 /**
@@ -119,7 +202,32 @@ function getAuthorizationHeader(request) {
     return getterHeader;
   }
 
-  return readAuthorizationFromHeadersBag(request?.headers);
+  return readAuthorizationFromHeadersBag(getHeadersBag(request));
+}
+
+/**
+ * Match bearer token.
+ * @param {string} header Header.
+ * @returns {string | null} Token or null.
+ */
+function matchBearerToken(header) {
+  const match = header.match(/^Bearer (.+)$/);
+  if (match) {
+    return match[1];
+  }
+  return null;
+}
+
+/**
+ * Validate header string.
+ * @param {unknown} header Header.
+ * @returns {string | null} String or null.
+ */
+function validateHeaderString(header) {
+  if (typeof header !== 'string') {
+    return null;
+  }
+  return header;
 }
 
 /**
@@ -128,15 +236,12 @@ function getAuthorizationHeader(request) {
  * @returns {string | null} Bearer token value when present.
  */
 function extractBearerToken(header) {
-  if (typeof header !== 'string') {
+  const validHeader = validateHeaderString(header);
+  if (!validHeader) {
     return null;
   }
 
-  const match = header.match(/^Bearer (.+)$/);
-  if (match) {
-    return match[1];
-  }
-  return null;
+  return matchBearerToken(validHeader);
 }
 
 /**
@@ -152,30 +257,100 @@ function normalizeContent(value, maxLength) {
 }
 
 /**
+ * Get raw option.
+ * @param {Record<string, unknown>} body Body.
+ * @param {string} key Key.
+ * @returns {unknown} Raw value.
+ */
+function getRawOption(body, key) {
+  return body?.[key];
+}
+
+/**
+ * Check if raw option is present.
+ * @param {unknown} raw Raw option.
+ * @returns {boolean} True if present.
+ */
+function isOptionPresent(raw) {
+  return raw !== null && raw !== undefined;
+}
+
+/**
+ * Process a single option candidate.
+ * @param {Record<string, unknown>} body - Request body.
+ * @param {number} index - Option index.
+ * @param {number} maxLength - Max length.
+ * @returns {string | null} Normalized option or null.
+ */
+function processOption(body, index, maxLength) {
+  const key = `option${index}`;
+  const raw = getRawOption(body, key);
+
+  if (!isOptionPresent(raw)) {
+    return null;
+  }
+
+  return normalizeString(raw, maxLength);
+}
+
+/**
  * Gather optional poll choices from the incoming request body.
  * @param {Record<string, unknown> | undefined} body - Request body containing poll options.
  * @param {number} maxLength - Maximum number of characters per option.
  * @returns {string[]} Normalized non-empty poll options.
  */
 function collectOptions(body, maxLength) {
-  const options = [];
+  return [0, 1, 2, 3]
+    .map(index => processOption(body, index, maxLength))
+    .filter(Boolean);
+}
 
-  for (let index = 0; index < 4; index += 1) {
-    const key = `option${index}`;
-    const raw = body?.[key];
+/**
+ * Check if UID is valid string.
+ * @param {unknown} uid UID.
+ * @returns {boolean} True if valid.
+ */
+function isValidUid(uid) {
+  return typeof uid === 'string' && uid !== '';
+}
 
-    if (raw === undefined || raw === null) {
-      continue;
-    }
-
-    const value = normalizeString(raw, maxLength);
-
-    if (value) {
-      options.push(value);
-    }
+/**
+ * Get valid UID.
+ * @param {unknown} uid UID.
+ * @returns {string | null} UID or null.
+ */
+function getValidUid(uid) {
+  if (isValidUid(uid)) {
+    return uid;
   }
+  return null;
+}
 
-  return options;
+/**
+ * Validate decoded token.
+ * @param {object} decoded Decoded token.
+ * @returns {string | null} UID or null.
+ */
+function validateDecodedToken(decoded) {
+  if (!decoded) {
+    return null;
+  }
+  return getValidUid(decoded.uid);
+}
+
+/**
+ * Verify a token and return the UID if valid.
+ * @param {string} token - Token to verify.
+ * @param {SubmitNewStoryDependencies['verifyIdToken']} verifyIdToken - Verification function.
+ * @returns {Promise<string | null>} UID or null.
+ */
+async function verifyTokenSafe(token, verifyIdToken) {
+  try {
+    const decoded = await verifyIdToken(token);
+    return validateDecodedToken(decoded);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -192,17 +367,7 @@ async function resolveAuthorId(request, verifyIdToken) {
     return null;
   }
 
-  try {
-    const decoded = await verifyIdToken(token);
-
-    if (decoded && typeof decoded.uid === 'string' && decoded.uid) {
-      return decoded.uid;
-    }
-  } catch {
-    // ignore invalid tokens
-  }
-
-  return null;
+  return verifyTokenSafe(token, verifyIdToken);
 }
 
 /**
@@ -216,29 +381,129 @@ function createResponse(status, body) {
 }
 
 /**
+ * Check if origin is allowed.
+ * @param {string} origin Origin.
+ * @param {string[]} allowedOrigins Allowed origins.
+ * @returns {boolean} True if allowed.
+ */
+function isOriginAllowed(origin, allowedOrigins) {
+  if (!origin) {
+    return true;
+  }
+  return allowedOrigins.includes(origin);
+}
+
+/**
+ * Handle origin check callback.
+ * @param {string} origin Origin.
+ * @param {string[]} allowedOrigins Allowed origins.
+ * @param {(err: Error | null, allow?: boolean) => void} cb Callback.
+ */
+function handleOriginCheck(origin, allowedOrigins, cb) {
+  if (isOriginAllowed(origin, allowedOrigins)) {
+    cb(null, true);
+  } else {
+    cb(new Error('CORS'));
+  }
+}
+
+/**
+ * Get allowed origins from options.
+ * @param {object} options Options.
+ * @returns {string[]} Allowed origins.
+ */
+function getAllowedOrigins(options) {
+  if (Array.isArray(options.allowedOrigins)) {
+    return options.allowedOrigins;
+  }
+  return [];
+}
+
+/**
+ * Get methods from options.
+ * @param {object} options Options.
+ * @returns {string[]} Methods.
+ */
+function getMethods(options) {
+  return options.methods || ['POST'];
+}
+
+/**
+ * Normalize CORS options.
+ * @param {object} options Options.
+ * @returns {{ allowedOrigins: string[], methods: string[] }} Normalized options.
+ */
+function normalizeCorsOptions(options) {
+  const opts = options || {};
+  return {
+    allowedOrigins: getAllowedOrigins(opts),
+    methods: getMethods(opts),
+  };
+}
+
+/**
  * Build CORS configuration for the submit-new-story endpoint.
  * @param {object} config - CORS configuration values.
  * @param {string[]} [config.allowedOrigins] - Whitelisted origins permitted to access the endpoint.
  * @param {string[]} [config.methods] - Allowed HTTP methods for the route. Defaults to ['POST'].
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} Express-compatible CORS options.
  */
-export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
-  let origins;
-  if (Array.isArray(allowedOrigins)) {
-    origins = allowedOrigins;
-  } else {
-    origins = [];
-  }
+export function createCorsOptions(config) {
+  const { allowedOrigins, methods } = normalizeCorsOptions(config);
 
   return {
-    origin: (origin, cb) => {
-      if (!origin || origins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('CORS'));
-      }
-    },
+    origin: (origin, cb) => handleOriginCheck(origin, allowedOrigins, cb),
     methods,
+  };
+}
+
+/**
+ * Check if the error is a CORS error.
+ * @param {unknown} err Error object.
+ * @returns {boolean} True if CORS error.
+ */
+function isCorsError(err) {
+  return err instanceof Error && err.message === 'CORS';
+}
+
+/**
+ * Handle CORS error response.
+ * @param {object} res Response object.
+ * @param {number} status Status code.
+ * @param {unknown} body Response body.
+ */
+function sendCorsError(res, status, body) {
+  res.status(status).json(body);
+}
+
+/**
+ * Get status from options.
+ * @param {object} options Options.
+ * @returns {number} Status.
+ */
+function getStatus(options) {
+  return options.status || 403;
+}
+
+/**
+ * Get body from options.
+ * @param {object} options Options.
+ * @returns {unknown} Body.
+ */
+function getBody(options) {
+  return options.body || { error: 'Origin not allowed' };
+}
+
+/**
+ * Normalize CORS error handler options.
+ * @param {object} options Options.
+ * @returns {{ status: number, body: unknown }} Normalized options.
+ */
+function normalizeCorsErrorHandlerOptions(options) {
+  const opts = options || {};
+  return {
+    status: getStatus(opts),
+    body: getBody(opts),
   };
 }
 
@@ -249,35 +514,30 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
  * @param {unknown} [options.body] - JSON payload sent on origin rejection. Defaults to { error: 'Origin not allowed' }.
  * @returns {(err: unknown, req: object, res: { status: (code: number) => { json: (payload: unknown) => void } }, next: (error?: unknown) => void) => void} Express-style error middleware.
  */
-export function createCorsErrorHandler({
-  status = 403,
-  body = { error: 'Origin not allowed' },
-} = {}) {
-  return function corsErrorHandler(...args) {
-    const [err, , res, next] = args;
-    if (err instanceof Error && err.message === 'CORS') {
-      res.status(status).json(body);
+export function createCorsErrorHandler(options) {
+  const normalized = normalizeCorsErrorHandlerOptions(options);
+
+  // eslint-disable-next-line max-params
+  return function corsErrorHandler(err, req, res, next) {
+    if (isCorsError(err)) {
+      sendCorsError(res, normalized.status, normalized.body);
       return;
     }
-
     next(err);
   };
 }
 
 /**
- * Adapt a domain responder into an Express request handler.
- * @param {(request: SubmitNewStoryRequest) => Promise<HttpResponse>} responder - Domain-specific request handler.
- * @returns {(req: SubmitNewStoryRequest, res: { status: (code: number) => { json: (payload: unknown) => void, send: (payload: unknown) => void, sendStatus: (code: number) => void } }) => Promise<void>} Express-compatible route handler.
+ * Resolve the header getter from an Express request when available.
+ * @param {SubmitNewStoryRequest} req - Incoming Express request.
+ * @returns {SubmitNewStoryRequest['get']} Header getter.
  */
-export function createHandleSubmitNewStory(responder) {
-  assertFunction(responder, 'responder');
+function resolveRequestGetter(req) {
+  if (typeof req.get !== 'function') {
+    return undefined;
+  }
 
-  return async function handleSubmitNewStory(req, res) {
-    const request = mapSubmitNewStoryRequest(req);
-    const result = await responder(request);
-
-    sendResponderResult(res, result.status, result.body);
-  };
+  return name => req.get(name);
 }
 
 /**
@@ -314,6 +574,19 @@ const responderKeyByType = {
 };
 
 /**
+ * Determine whether a responder body should be serialized as JSON.
+ * @param {unknown} body - Response body candidate.
+ * @returns {body is Record<string, unknown>} Whether the body is a JSON object.
+ */
+function isObjectBody(body) {
+  if (!body) {
+    return false;
+  }
+
+  return typeof body === 'object';
+}
+
+/**
  * Send an HTTP response based on the responder result payload.
  * @param {import('express').Response} res - Response instance used to send data.
  * @param {number} status - HTTP status code emitted to the client.
@@ -330,29 +603,124 @@ function sendResponderResult(res, status, body) {
 }
 
 /**
- * Resolve the header getter from an Express request when available.
- * @param {SubmitNewStoryRequest} req - Incoming Express request.
- * @returns {SubmitNewStoryRequest['get']} Header getter.
+ * Adapt a domain responder into an Express request handler.
+ * @param {(request: SubmitNewStoryRequest) => Promise<HttpResponse>} responder - Domain-specific request handler.
+ * @returns {(req: SubmitNewStoryRequest, res: { status: (code: number) => { json: (payload: unknown) => void, send: (payload: unknown) => void, sendStatus: (code: number) => void } }) => Promise<void>} Express-compatible route handler.
  */
-function resolveRequestGetter(req) {
-  if (typeof req.get !== 'function') {
-    return undefined;
-  }
+export function createHandleSubmitNewStory(responder) {
+  assertFunction(responder, 'responder');
 
-  return name => req.get(name);
+  return async function handleSubmitNewStory(req, res) {
+    const request = mapSubmitNewStoryRequest(req);
+    const result = await responder(request);
+
+    sendResponderResult(res, result.status, result.body);
+  };
 }
 
 /**
- * Determine whether a responder body should be serialized as JSON.
- * @param {unknown} body - Response body candidate.
- * @returns {body is Record<string, unknown>} Whether the body is a JSON object.
+ * Normalize title.
+ * @param {string} title Raw title.
+ * @returns {string} Normalized title.
  */
-function isObjectBody(body) {
-  if (!body) {
-    return false;
-  }
+function normalizeTitle(title) {
+  return normalizeString(title ?? 'Untitled', 120);
+}
 
-  return typeof body === 'object';
+/**
+ * Normalize content.
+ * @param {string} content Raw content.
+ * @returns {string} Normalized content.
+ */
+function normalizeContentBody(content) {
+  return normalizeContent(content ?? '', 10_000);
+}
+
+/**
+ * Normalize author.
+ * @param {string} author Raw author.
+ * @returns {string} Normalized author.
+ */
+function normalizeAuthor(author) {
+  return normalizeString(author ?? '???', 120);
+}
+
+/**
+ * Normalize submission data from request body.
+ * @param {Record<string, unknown>} body - Request body.
+ * @returns {object} Normalized data.
+ */
+function normalizeSubmissionData(body) {
+  const title = normalizeTitle(body.title);
+  const content = normalizeContentBody(body.content);
+  const author = normalizeAuthor(body.author);
+  const options = collectOptions(body, 120);
+
+  return { title, content, author, options };
+}
+
+/**
+ * Validate request method.
+ * @param {string} method Request method.
+ * @returns {boolean} True if POST.
+ */
+function isPostMethod(method) {
+  return normalizeMethod(method) === 'POST';
+}
+
+/**
+ * Save the submission.
+ * @param {object} deps Dependencies.
+ * @param {string} id ID.
+ * @param {object} data Data.
+ * @returns {Promise<void>} Promise.
+ */
+async function saveNewStory(deps, id, data) {
+  const { saveSubmission, getServerTimestamp } = deps;
+  await saveSubmission(id, {
+    ...data,
+    createdAt: getServerTimestamp(),
+  });
+}
+
+/**
+ * Extract body from request.
+ * @param {Record<string, unknown>} req Request.
+ * @returns {Record<string, unknown>} Body.
+ */
+function extractBody(req) {
+  return req.body || {};
+}
+
+/**
+ * Get request body.
+ * @param {SubmitNewStoryRequest} request Request.
+ * @returns {Record<string, unknown>} Body.
+ */
+function getRequestBody(request) {
+  const req = request || {};
+  return extractBody(req);
+}
+
+/**
+ * Process the submission request.
+ * @param {SubmitNewStoryDependencies} deps Dependencies.
+ * @param {SubmitNewStoryRequest} request Request.
+ * @returns {Promise<HttpResponse>} Response.
+ */
+async function processSubmission(deps, request) {
+  const { verifyIdToken, randomUUID } = deps;
+  const body = getRequestBody(request);
+  const data = normalizeSubmissionData(body);
+  const authorId = await resolveAuthorId(request, verifyIdToken);
+
+  const id = randomUUID();
+  await saveNewStory(deps, id, { ...data, authorId });
+
+  return createResponse(201, {
+    id,
+    ...data,
+  });
 }
 
 /**
@@ -360,45 +728,20 @@ function isObjectBody(body) {
  * @param {SubmitNewStoryDependencies} dependencies - Injectable services used by the responder.
  * @returns {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} Domain responder for new story submissions.
  */
-export function createSubmitNewStoryResponder({
-  verifyIdToken,
-  saveSubmission,
-  randomUUID,
-  getServerTimestamp,
-}) {
+export function createSubmitNewStoryResponder(dependencies) {
+  const { verifyIdToken, saveSubmission, randomUUID, getServerTimestamp } =
+    dependencies;
+
   assertFunction(verifyIdToken, 'verifyIdToken');
   assertFunction(saveSubmission, 'saveSubmission');
   assertFunction(randomUUID, 'randomUUID');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
   return async function submitNewStoryResponder(request) {
-    if (normalizeMethod(request.method) !== 'POST') {
+    if (!isPostMethod(request.method)) {
       return METHOD_NOT_ALLOWED_RESPONSE;
     }
 
-    const body = request?.body ?? {};
-    const title = normalizeString(body.title ?? 'Untitled', 120);
-    const content = normalizeContent(body.content ?? '', 10_000);
-    const author = normalizeString(body.author ?? '???', 120);
-    const options = collectOptions(body, 120);
-    const authorId = await resolveAuthorId(request, verifyIdToken);
-
-    const id = randomUUID();
-    await saveSubmission(id, {
-      title,
-      content,
-      author,
-      authorId,
-      options,
-      createdAt: getServerTimestamp(),
-    });
-
-    return createResponse(201, {
-      id,
-      title,
-      content,
-      author,
-      options,
-    });
+    return processSubmission(dependencies, request);
   };
 }

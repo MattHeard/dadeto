@@ -100,6 +100,40 @@ function extractTokenFromRequest(req) {
 }
 
 /**
+ *
+ * @param root0
+ * @param root0.token
+ * @param root0.verifyToken
+ * @param root0.isAdminUid
+ * @param root0.sendUnauthorized
+ * @param root0.sendForbidden
+ * @param root0.res
+ */
+async function authorizeAdminToken({
+  token,
+  verifyToken,
+  isAdminUid,
+  sendUnauthorized,
+  sendForbidden,
+  res,
+}) {
+  try {
+    const decoded = await verifyToken(token);
+    const isAdmin = Boolean(isAdminUid(decoded));
+    if (!isAdmin) {
+      sendForbidden(res);
+      return false;
+    }
+  } catch (error) {
+    const message = defaultInvalidTokenMessage(error);
+    sendUnauthorized(res, message);
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Create a reusable admin guard.
  * @param {object} deps Authorization collaborators.
  * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token validator.
@@ -121,16 +155,16 @@ export function createVerifyAdmin({
       return false;
     }
 
-    try {
-      const decoded = await verifyToken(token);
-      const isAdmin = Boolean(isAdminUid(decoded));
-      if (!isAdmin) {
-        sendForbidden(res);
-        return false;
-      }
-    } catch (error) {
-      const message = defaultInvalidTokenMessage(error);
-      sendUnauthorized(res, message);
+    const authorized = await authorizeAdminToken({
+      token,
+      verifyToken,
+      isAdminUid,
+      sendUnauthorized,
+      sendForbidden,
+      res,
+    });
+
+    if (!authorized) {
       return false;
     }
 

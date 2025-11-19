@@ -1168,19 +1168,36 @@ async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
  * @param root0.bucket
  * @param root0.consoleError
  */
+/**
+ * Write author page if needed.
+ * @param {object} authorFile Author file data.
+ * @param {object} variant Variant.
+ * @returns {Promise<string>} Author path.
+ */
+async function writeAuthorPageIfNeeded(authorFile, variant) {
+  const { authorPath, file, exists } = authorFile;
+  if (!exists) {
+    await writeAuthorLandingPage(variant, file);
+  }
+  return `/${authorPath}`;
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.variant
+ * @param root0.db
+ * @param root0.bucket
+ * @param root0.consoleError
+ */
 async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
   try {
-    const { authorPath, file, exists } = await resolveAuthorFile({
+    const authorFile = await resolveAuthorFile({
       variant,
       db,
       bucket,
     });
-
-    if (!exists) {
-      await writeAuthorLandingPage(variant, file);
-    }
-
-    return `/${authorPath}`;
+    return await writeAuthorPageIfNeeded(authorFile, variant);
   } catch (error) {
     if (consoleError) {
       consoleError('author lookup failed', error?.message || error);
@@ -1238,15 +1255,39 @@ async function writeAuthorLandingPage(variant, file) {
  * @returns {{ parentVariantRef: { get: Function, parent?: { parent?: any } }, parentPageRef: { get: Function } } | null} Parent
  * references when the hierarchy can be resolved, otherwise null.
  */
+/**
+ * Extract parent refs.
+ * @param {object} optionRef Option ref.
+ * @returns {object | null} Refs.
+ */
+function extractParentRefs(optionRef) {
+  const parentVariantRef = optionRef.parent?.parent;
+  const parentPageRef = parentVariantRef?.parent?.parent;
+  return { parentVariantRef, parentPageRef };
+}
+
+/**
+ * Validate parent refs.
+ * @param {object} parentVariantRef Variant ref.
+ * @param {object} parentPageRef Page ref.
+ * @returns {boolean} True if valid.
+ */
+function areParentRefsValid(parentVariantRef, parentPageRef) {
+  return Boolean(parentVariantRef) && Boolean(parentPageRef);
+}
+
+/**
+ *
+ * @param optionRef
+ */
 export function resolveParentReferences(optionRef) {
   if (!optionRef) {
     return null;
   }
 
-  const parentVariantRef = optionRef.parent?.parent;
-  const parentPageRef = parentVariantRef?.parent?.parent;
+  const { parentVariantRef, parentPageRef } = extractParentRefs(optionRef);
 
-  if (!parentVariantRef || !parentPageRef) {
+  if (!areParentRefsValid(parentVariantRef, parentPageRef)) {
     return null;
   }
 
@@ -1259,13 +1300,28 @@ export function resolveParentReferences(optionRef) {
  * @param {{ get: () => Promise<{ exists: boolean }> }} parentPageRef Firestore-like document reference.
  * @returns {Promise<{ parentVariantSnap: { exists: boolean, data: () => Record<string, any> }, parentPageSnap: { exists: boolean, data: () => Record<string, any> } } | null>} Snapshot tuple when both documents exist, otherwise null.
  */
+/**
+ * Check if snapshots exist.
+ * @param {object} parentVariantSnap Variant snap.
+ * @param {object} parentPageSnap Page snap.
+ * @returns {boolean} True if exist.
+ */
+function doSnapshotsExist(parentVariantSnap, parentPageSnap) {
+  return parentVariantSnap.exists && parentPageSnap.exists;
+}
+
+/**
+ *
+ * @param parentVariantRef
+ * @param parentPageRef
+ */
 async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
   const [parentVariantSnap, parentPageSnap] = await Promise.all([
     parentVariantRef.get(),
     parentPageRef.get(),
   ]);
 
-  if (!parentVariantSnap.exists || !parentPageSnap.exists) {
+  if (!doSnapshotsExist(parentVariantSnap, parentPageSnap)) {
     return null;
   }
 
@@ -1278,13 +1334,28 @@ async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
  * @param {{ data: () => Record<string, any> }} parentPageSnap Page snapshot.
  * @returns {string | null} Route path when identifiers can be derived, otherwise null.
  */
+/**
+ * Validate route data.
+ * @param {string} parentName Parent name.
+ * @param {number} parentNumber Parent number.
+ * @returns {boolean} True if valid.
+ */
+function isRouteDataValid(parentName, parentNumber) {
+  return Boolean(parentName) && parentNumber !== undefined;
+}
+
+/**
+ *
+ * @param parentVariantSnap
+ * @param parentPageSnap
+ */
 function buildParentRoute(parentVariantSnap, parentPageSnap) {
   const parentData = parentVariantSnap.data();
   const pageData = parentPageSnap.data();
   const parentName = parentData.name;
   const parentNumber = pageData.number;
 
-  if (!parentName || parentNumber === undefined) {
+  if (!isRouteDataValid(parentName, parentNumber)) {
     return null;
   }
 
@@ -1300,33 +1371,55 @@ function buildParentRoute(parentVariantSnap, parentPageSnap) {
  * }} options Inputs for parent resolution.
  * @returns {Promise<string | undefined>} URL to the parent variant when it can be resolved.
  */
+/**
+ * Fetch parent data.
+ * @param {object} db Database.
+ * @param {string} incomingOption Incoming option.
+ * @returns {Promise<object | null>} Parent data.
+ */
+async function fetchParentData(db, incomingOption) {
+  const optionRef = db.doc(incomingOption);
+  const references = resolveParentReferences(optionRef);
+  if (!references) {
+    return null;
+  }
+  return fetchParentSnapshots(
+    references.parentVariantRef,
+    references.parentPageRef
+  );
+}
+
+/**
+ * Build route from snapshots.
+ * @param {object} snapshots Snapshots.
+ * @returns {string | null} Route.
+ */
+function buildRouteFromSnapshots(snapshots) {
+  return buildParentRoute(
+    snapshots.parentVariantSnap,
+    snapshots.parentPageSnap
+  );
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.variant
+ * @param root0.db
+ * @param root0.consoleError
+ */
 async function resolveParentUrl({ variant, db, consoleError }) {
   if (!variant.incomingOption) {
     return undefined;
   }
 
   try {
-    const optionRef = db.doc(variant.incomingOption);
-    const references = resolveParentReferences(optionRef);
-
-    if (!references) {
-      return undefined;
-    }
-
-    const snapshots = await fetchParentSnapshots(
-      references.parentVariantRef,
-      references.parentPageRef
-    );
-
+    const snapshots = await fetchParentData(db, variant.incomingOption);
     if (!snapshots) {
       return undefined;
     }
 
-    const route = buildParentRoute(
-      snapshots.parentVariantSnap,
-      snapshots.parentPageSnap
-    );
-
+    const route = buildRouteFromSnapshots(snapshots);
     if (route === null) {
       return undefined;
     }
@@ -1334,7 +1427,6 @@ async function resolveParentUrl({ variant, db, consoleError }) {
     return route;
   } catch (error) {
     consoleError('parent lookup failed', error?.message || error);
-
     return undefined;
   }
 }
@@ -1381,7 +1473,17 @@ export function createRenderVariant({
     consoleError,
   });
 
-  return async function render(snap, context = {}) {
+  /**
+   * Execute render workflow.
+   * @param {object} deps Dependencies.
+   * @param {object} snap Snap.
+   * @param {object} context Context.
+   * @returns {Promise<null>} Null.
+   */
+  async function executeRenderWorkflow(deps, snap, context) {
+    const { db, bucket, consoleError, visibilityThreshold, invalidatePaths } =
+      deps;
+
     const renderPlan = await resolveRenderPlan({
       snap,
       db,
@@ -1402,6 +1504,14 @@ export function createRenderVariant({
       ...renderPlan,
     });
     return null;
+  }
+
+  return async function render(snap, context = {}) {
+    return executeRenderWorkflow(
+      { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+      snap,
+      context
+    );
   };
 }
 
@@ -1422,25 +1532,60 @@ export function createRenderVariant({
  *   openVariant: boolean
  * }>} Render plan describing the variant artefacts.
  */
-async function resolveRenderPlan({
-  snap,
-  db,
-  bucket,
-  consoleError,
-  visibilityThreshold,
-}) {
-  if (snap && 'exists' in snap && !snap.exists) {
-    return null;
-  }
+/**
+ * Validate snap exists.
+ * @param {object} snap Snap.
+ * @returns {boolean} True if valid.
+ */
+function isSnapValid(snap) {
+  if (!snap) return true;
+  if (!('exists' in snap)) return true;
+  return snap.exists;
+}
 
-  const variant = snap.data();
-  const pageSnap = await snap.ref.parent?.parent?.get();
+/**
+ * Fetch page data.
+ * @param {object} snap Snap.
+ * @returns {Promise<object | null>} Page snap.
+ */
+/**
+ * Get page snap from ref.
+ * @param {object} snap Snap.
+ * @returns {Promise<object | null>} Page snap.
+ */
+async function getPageSnapFromRef(snap) {
+  return snap.ref.parent?.parent?.get();
+}
 
+/**
+ *
+ * @param snap
+ */
+async function fetchPageData(snap) {
+  const pageSnap = await getPageSnapFromRef(snap);
   if (!pageSnap?.exists) {
     return null;
   }
+  return pageSnap;
+}
 
-  const page = pageSnap.data();
+/**
+ * Gather metadata.
+ * @param {object} deps Dependencies.
+ * @returns {Promise<object>} Metadata.
+ */
+async function gatherMetadata(deps) {
+  const {
+    snap,
+    db,
+    bucket,
+    pageSnap,
+    page,
+    consoleError,
+    visibilityThreshold,
+    variant,
+  } = deps;
+
   const options = await loadOptions({
     snap,
     visibilityThreshold,
@@ -1459,6 +1604,33 @@ async function resolveRenderPlan({
     consoleError,
   });
   const parentUrl = await resolveParentUrl({ variant, db, consoleError });
+
+  return {
+    options,
+    storyTitle,
+    firstPageUrl,
+    authorName,
+    authorUrl,
+    parentUrl,
+  };
+}
+
+/**
+ * Build render output.
+ * @param {object} data Data.
+ * @returns {object} Output.
+ */
+function buildRenderOutput(data) {
+  const {
+    page,
+    variant,
+    options,
+    storyTitle,
+    authorName,
+    authorUrl,
+    parentUrl,
+    firstPageUrl,
+  } = data;
 
   const html = buildHtml({
     pageNumber: page.number,
@@ -1481,6 +1653,60 @@ async function resolveRenderPlan({
 }
 
 /**
+ * Fetch and validate page.
+ * @param {object} snap Snap.
+ * @returns {Promise<object | null>} Page data.
+ */
+async function fetchAndValidatePage(snap) {
+  const pageSnap = await fetchPageData(snap);
+  if (!pageSnap) {
+    return null;
+  }
+  return { pageSnap, page: pageSnap.data() };
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.snap
+ * @param root0.db
+ * @param root0.bucket
+ * @param root0.consoleError
+ * @param root0.visibilityThreshold
+ */
+async function resolveRenderPlan({
+  snap,
+  db,
+  bucket,
+  consoleError,
+  visibilityThreshold,
+}) {
+  if (!isSnapValid(snap)) {
+    return null;
+  }
+
+  const variant = snap.data();
+  const pageData = await fetchAndValidatePage(snap);
+  if (!pageData) {
+    return null;
+  }
+
+  const { pageSnap, page } = pageData;
+  const metadata = await gatherMetadata({
+    snap,
+    db,
+    bucket,
+    pageSnap,
+    page,
+    consoleError,
+    visibilityThreshold,
+    variant,
+  });
+
+  return buildRenderOutput({ page, variant, ...metadata });
+}
+
+/**
  * Persist rendered variant artefacts and trigger CDN invalidation.
  * @param {object} options - Artefacts and dependencies used for persistence.
  * @param {{exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}} options.snap - Variant snapshot.
@@ -1495,6 +1721,92 @@ async function resolveRenderPlan({
  * @param {boolean} options.openVariant - Indicates whether the variant is open (no target page).
  * @returns {Promise<void>} Resolves when artefacts are persisted and caches invalidated.
  */
+/**
+ * Save variant HTML.
+ * @param {object} bucket Bucket.
+ * @param {string} filePath File path.
+ * @param {string} html HTML.
+ * @param {boolean} openVariant Open variant.
+ * @returns {Promise<void>} Promise.
+ */
+async function saveVariantHtml(bucket, filePath, html, openVariant) {
+  await bucket.file(filePath).save(html, {
+    contentType: 'text/html',
+    ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
+  });
+}
+
+/**
+ * Save alts HTML.
+ * @param {object} deps Dependencies.
+ * @returns {Promise<void>} Promise.
+ */
+async function saveAltsHtml(deps) {
+  const { snap, bucket, page } = deps;
+  const variantsSnap = await snap.ref.parent.get();
+  const variants = getVisibleVariants(variantsSnap.docs);
+  const altsHtml = buildAltsHtml(page.number, variants);
+  const altsPath = `p/${page.number}-alts.html`;
+  await bucket.file(altsPath).save(altsHtml, { contentType: 'text/html' });
+  return altsPath;
+}
+
+/**
+ * Resolve pending name.
+ * @param {object} variant Variant.
+ * @param {object} context Context.
+ * @returns {string | undefined} Pending name.
+ */
+function resolvePendingName(variant, context) {
+  return variant.incomingOption
+    ? context?.params?.variantId
+    : context?.params?.storyId;
+}
+
+/**
+ * Save pending file.
+ * @param {object} bucket Bucket.
+ * @param {string} pendingName Pending name.
+ * @param {string} filePath File path.
+ * @returns {Promise<void>} Promise.
+ */
+async function savePendingFile(bucket, pendingName, filePath) {
+  const pendingPath = `pending/${pendingName}.json`;
+  await bucket.file(pendingPath).save(JSON.stringify({ path: filePath }), {
+    contentType: 'application/json',
+    metadata: { cacheControl: 'no-store' },
+  });
+}
+
+/**
+ * Build invalidation paths.
+ * @param {string} altsPath Alts path.
+ * @param {string} filePath File path.
+ * @param {string | undefined} parentUrl Parent URL.
+ * @returns {string[]} Paths.
+ */
+function buildInvalidationPaths(altsPath, filePath, parentUrl) {
+  const paths = [`/${altsPath}`, `/${filePath}`];
+  if (parentUrl) {
+    paths.push(parentUrl);
+  }
+  return paths;
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.snap
+ * @param root0.context
+ * @param root0.bucket
+ * @param root0.invalidatePaths
+ * @param root0.variant
+ * @param root0.page
+ * @param root0.parentUrl
+ * @param root0.html
+ * @param root0.filePath
+ * @param root0.openVariant
+ */
 async function persistRenderPlan({
   snap,
   context,
@@ -1507,37 +1819,13 @@ async function persistRenderPlan({
   filePath,
   openVariant,
 }) {
-  await bucket.file(filePath).save(html, {
-    contentType: 'text/html',
-    ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
-  });
+  await saveVariantHtml(bucket, filePath, html, openVariant);
+  const altsPath = await saveAltsHtml({ snap, bucket, page });
 
-  const variantsSnap = await snap.ref.parent.get();
-  const variants = getVisibleVariants(variantsSnap.docs);
-  const altsHtml = buildAltsHtml(page.number, variants);
-  const altsPath = `p/${page.number}-alts.html`;
+  const pendingName = resolvePendingName(variant, context);
+  await savePendingFile(bucket, pendingName, filePath);
 
-  await bucket.file(altsPath).save(altsHtml, { contentType: 'text/html' });
-
-  let pendingName;
-  if (variant.incomingOption) {
-    pendingName = context?.params?.variantId;
-  } else {
-    pendingName = context?.params?.storyId;
-  }
-  const pendingPath = `pending/${pendingName}.json`;
-
-  await bucket.file(pendingPath).save(JSON.stringify({ path: filePath }), {
-    contentType: 'application/json',
-    metadata: { cacheControl: 'no-store' },
-  });
-
-  const paths = [`/${altsPath}`, `/${filePath}`];
-
-  if (parentUrl) {
-    paths.push(parentUrl);
-  }
-
+  const paths = buildInvalidationPaths(altsPath, filePath, parentUrl);
   await invalidatePaths(paths);
 }
 
@@ -1557,6 +1845,40 @@ export function createHandleVariantWrite({
   assertFunction(renderVariant, 'renderVariant');
   assertFunction(getDeleteSentinel, 'getDeleteSentinel');
 
+  /**
+   * Handle dirty variant.
+   * @param {object} change Change.
+   * @param {object} context Context.
+   * @param {Function} renderVariant Render function.
+   * @param {Function} getDeleteSentinel Get sentinel.
+   * @returns {Promise<null>} Null.
+   */
+  async function handleDirtyVariant(
+    change,
+    context,
+    renderVariant,
+    getDeleteSentinel
+  ) {
+    await renderVariant(change.after, context);
+    await change.after.ref.update({ dirty: getDeleteSentinel() });
+    return null;
+  }
+
+  /**
+   * Check visibility crossed threshold.
+   * @param {number} beforeVisibility Before.
+   * @param {number} afterVisibility After.
+   * @param {number} threshold Threshold.
+   * @returns {boolean} True if crossed.
+   */
+  function didCrossVisibilityThreshold(
+    beforeVisibility,
+    afterVisibility,
+    threshold
+  ) {
+    return beforeVisibility < threshold && afterVisibility >= threshold;
+  }
+
   return async function handleVariantWrite(change, context) {
     if (!change.after.exists) {
       return null;
@@ -1565,9 +1887,12 @@ export function createHandleVariantWrite({
     const data = change.after.data();
 
     if (Object.prototype.hasOwnProperty.call(data, 'dirty')) {
-      await renderVariant(change.after, context);
-      await change.after.ref.update({ dirty: getDeleteSentinel() });
-      return null;
+      return handleDirtyVariant(
+        change,
+        context,
+        renderVariant,
+        getDeleteSentinel
+      );
     }
 
     if (!change.before.exists) {
@@ -1578,8 +1903,11 @@ export function createHandleVariantWrite({
     const afterVisibility = data.visibility;
 
     if (
-      beforeVisibility < visibilityThreshold &&
-      afterVisibility >= visibilityThreshold
+      didCrossVisibilityThreshold(
+        beforeVisibility,
+        afterVisibility,
+        visibilityThreshold
+      )
     ) {
       return renderVariant(change.after, context);
     }
