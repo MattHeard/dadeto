@@ -1553,7 +1553,7 @@ function isSnapValid(snap) {
  * @param {object} snap Snap.
  * @returns {Promise<object | null>} Page snap.
  */
-async function getPageSnapFromRef(snap) {
+export async function getPageSnapFromRef(snap) {
   return snap.ref.parent?.parent?.get();
 }
 
@@ -1561,7 +1561,7 @@ async function getPageSnapFromRef(snap) {
  *
  * @param snap
  */
-async function fetchPageData(snap) {
+export async function fetchPageData(snap) {
   const pageSnap = await getPageSnapFromRef(snap);
   if (!pageSnap?.exists) {
     return null;
