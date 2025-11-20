@@ -1054,10 +1054,7 @@ function extractBearerToken(header) {
  * @returns {string} Header string or empty when unavailable.
  */
 function normalizeHeaderString(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-  return '';
+  return String(value ?? '');
 }
 
 /**
