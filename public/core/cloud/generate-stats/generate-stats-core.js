@@ -342,7 +342,10 @@ export function getUrlMapFromEnv(env) {
 export function getCdnHostFromEnv(env) {
   const resolved = resolveEnv(env);
   const candidate = resolved?.CDN_HOST;
-  return isNonEmptyString(candidate) ? candidate : DEFAULT_CDN_HOST;
+  if (isNonEmptyString(candidate)) {
+    return candidate;
+  }
+  return DEFAULT_CDN_HOST;
 }
 
 /**

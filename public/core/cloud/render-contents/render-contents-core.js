@@ -24,7 +24,28 @@ const DEFAULT_PAGE_SIZE = 100;
  * @returns {void}
  */
 function assertDb(db) {
-  if (!db || typeof db.collection !== 'function') {
+  ensureDbValue(db);
+  ensureCollectionHelper(db);
+}
+
+/**
+ * Assert that a database instance value exists before validating helpers.
+ * @param {unknown} db Candidate database value.
+ * @returns {void}
+ */
+function ensureDbValue(db) {
+  if (!db) {
+    throw new TypeError('db must provide a collection helper');
+  }
+}
+
+/**
+ * Assert the provided database exposes a collection helper.
+ * @param {{ collection?: Function }} db Firestore-like instance to inspect.
+ * @returns {void}
+ */
+function ensureCollectionHelper(db) {
+  if (typeof db.collection !== 'function') {
     throw new TypeError('db must provide a collection helper');
   }
 }
@@ -35,7 +56,28 @@ function assertDb(db) {
  * @returns {void}
  */
 function assertStorage(storage) {
-  if (!storage || typeof storage.bucket !== 'function') {
+  ensureStorageValue(storage);
+  ensureBucketHelper(storage);
+}
+
+/**
+ * Assert that a storage value is provided before checking helpers.
+ * @param {unknown} storage Candidate storage helper.
+ * @returns {void}
+ */
+function ensureStorageValue(storage) {
+  if (!storage) {
+    throw new TypeError('storage must provide a bucket helper');
+  }
+}
+
+/**
+ * Assert the provided storage exposes a bucket helper.
+ * @param {{ bucket?: Function }} storage Storage-like instance to inspect.
+ * @returns {void}
+ */
+function ensureBucketHelper(storage) {
+  if (typeof storage.bucket !== 'function') {
     throw new TypeError('storage must provide a bucket helper');
   }
 }
@@ -260,30 +302,53 @@ export function createFetchStoryInfo(db) {
 
   return async function fetchStoryInfo(storyId) {
     const storySnap = await db.collection('stories').doc(storyId).get();
+    return buildStoryInfoFromSnap(storySnap);
+  };
+}
 
-    if (!storySnap.exists) {
-      return null;
-    }
+/**
+ * Build summary metadata from a story snapshot when it exists.
+ * @param {{ exists?: boolean, data: () => Record<string, any> }} storySnap Story document snapshot.
+ * @returns {StoryInfo | null} Story info with title and page number or null when missing.
+ */
+function buildStoryInfoFromSnap(storySnap) {
+  if (!storySnap.exists) {
+    return null;
+  }
 
-    const story = storySnap.data();
-    const rootRef = story?.rootPage;
+  return resolveStoryInfoFromStory(storySnap.data());
+}
 
-    if (!rootRef) {
-      return null;
-    }
+/**
+ * Resolve a story's metadata once the document is present.
+ * @param {Record<string, any>} story Firestore story document data.
+ * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
+ */
+async function resolveStoryInfoFromStory(story) {
+  const rootRef = story?.rootPage;
+  if (!rootRef) {
+    return null;
+  }
 
-    const pageSnap = await rootRef.get();
+  return resolveStoryInfoFromRoot(rootRef, story);
+}
 
-    if (!pageSnap.exists) {
-      return null;
-    }
+/**
+ * Resolve the root page data for the story.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} rootRef Document reference for the root page.
+ * @param {Record<string, any>} story Firestore story document data.
+ * @returns {Promise<StoryInfo | null>} Story info describing title and page number.
+ */
+async function resolveStoryInfoFromRoot(rootRef, story) {
+  const pageSnap = await rootRef.get();
+  if (!pageSnap.exists) {
+    return null;
+  }
 
-    const page = pageSnap.data();
-
-    return {
-      title: story?.title || '',
-      pageNumber: page?.number,
-    };
+  const page = pageSnap.data();
+  return {
+    title: story?.title || '',
+    pageNumber: page?.number,
   };
 }
 
@@ -311,59 +376,188 @@ function createInvalidatePaths({
 
   const host = cdnHost || 'www.dendritestories.co.nz';
   const urlMap = urlMapName || 'prod-dendrite-url-map';
-
-  /**
-   * Resolve the service account access token used to call the compute API.
-   * @returns {Promise<string>} OAuth access token for compute operations.
-   */
-  async function getAccessToken() {
-    const response = await fetchFn(
-      'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
-      { headers: { 'Metadata-Flavor': 'Google' } }
-    );
-
-    if (!response.ok) {
-      throw new Error(`metadata token: HTTP ${response.status}`);
-    }
-
-    const { access_token: accessToken } = await response.json();
-
-    return accessToken;
-  }
+  const invalidateUrl = `https://compute.googleapis.com/compute/v1/projects/${projectId || ''}/global/urlMaps/${urlMap}/invalidateCache`;
 
   return async function invalidatePaths(paths) {
-    const token = await getAccessToken();
-    const url = `https://compute.googleapis.com/compute/v1/projects/${
-      projectId || ''
-    }/global/urlMaps/${urlMap}/invalidateCache`;
+    if (!isValidPaths(paths)) {
+      return;
+    }
+
+    const token = await getAccessToken(fetchFn);
 
     await Promise.all(
-      paths.map(async path => {
-        try {
-          const response = await fetchFn(url, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              host,
-              path,
-              requestId: randomUUID(),
-            }),
-          });
-
-          if (!response.ok && consoleError) {
-            consoleError(`invalidate ${path} failed: ${response.status}`);
-          }
-        } catch (error) {
-          if (consoleError) {
-            consoleError(`invalidate ${path} error`, error?.message || error);
-          }
-        }
-      })
+      paths.map(path =>
+        invalidatePathItem({
+          path,
+          token,
+          url: invalidateUrl,
+          host,
+          fetchFn,
+          randomUUID,
+          consoleError,
+        })
+      )
     );
   };
+}
+
+/**
+ * Confirm the invalidation helper received an array of paths.
+ * @param {unknown} paths Candidate path list.
+ * @returns {boolean} True when the input is a non-empty array.
+ */
+function isValidPaths(paths) {
+  if (!Array.isArray(paths)) {
+    return false;
+  }
+  return paths.length > 0;
+}
+
+/**
+ * Acquire an access token from the metadata service.
+ * @param {(input: string, init?: object) => Promise<Response>} fetchFn Fetch implementation.
+ * @returns {Promise<string>} OAuth access token.
+ */
+async function getAccessToken(fetchFn) {
+  const response = await fetchFn(
+    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+    { headers: { 'Metadata-Flavor': 'Google' } }
+  );
+
+  ensureResponseOk(response, 'metadata token');
+
+  return extractAccessToken(response);
+}
+
+/**
+ * Throw when the response is not successful.
+ * @param {Response} response Fetch response to inspect.
+ * @param {string} label Context label for the thrown error.
+ * @returns {void}
+ */
+function ensureResponseOk(response, label) {
+  if (!response.ok) {
+    throw new Error(`${label}: HTTP ${response.status}`);
+  }
+}
+
+/**
+ * Extract the access token string from the metadata response.
+ * @param {Response} response Response that contains JSON with an access_token property.
+ * @returns {Promise<string>} Resolved token string.
+ */
+async function extractAccessToken(response) {
+  const { access_token: accessToken } = await response.json();
+  return accessToken;
+}
+
+/**
+ * Send an invalidation request for a single path item.
+ * @param {object} options Invalidation helpers.
+ * @param {string} options.path CDN path to invalidate.
+ * @param {string} options.token OAuth bearer token.
+ * @param {string} options.url Compute URL map invalidation endpoint.
+ * @param {string} options.host CDN host name.
+ * @param {(input: string, init?: object) => Promise<Response>} options.fetchFn Fetch implementation.
+ * @param {() => string} options.randomUUID UUID generator for request IDs.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [options.consoleError] Error logger.
+ * @returns {Promise<void>} Resolves when the invalidation request completes.
+ */
+async function invalidatePathItem({
+  path,
+  token,
+  url,
+  host,
+  fetchFn,
+  randomUUID,
+  consoleError,
+}) {
+  return fetchFn(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      host,
+      path,
+      requestId: randomUUID(),
+    }),
+  })
+    .then(response => logInvalidateResponse(response, path, consoleError))
+    .catch(error => {
+      handleInvalidateError(error, path, consoleError);
+    });
+}
+
+/**
+ * Log invalidation failures when the response is not OK.
+ * @param {Response} response Fetch response object.
+ * @param {string} path Path that was invalidated.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional error logger.
+ * @returns {void}
+ */
+function logInvalidateResponse(response, path, consoleError) {
+  if (response.ok) {
+    return;
+  }
+  logInvalidateFailure(path, response.status, consoleError);
+}
+
+/**
+ * Report an invalidation error when the logger is available.
+ * @param {string} path CDN path.
+ * @param {number} status HTTP status code.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @returns {void}
+ */
+function logInvalidateFailure(path, status, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  consoleError(`invalidate ${path} failed: ${status}`);
+}
+
+/**
+ * Report invalidation errors via the provided logger.
+ * @param {unknown} error Error or rejection reason.
+ * @param {string} path Path that triggered the failure.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @returns {void}
+ */
+function handleInvalidateError(error, path, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  consoleError(`invalidate ${path} error`, extractMessageFromError(error));
+}
+
+/**
+ * Normalize an error into a displayable message string.
+ * @param {unknown} error Error-like value.
+ * @returns {string|unknown} Message extracted from the error or the original value.
+ */
+function extractMessageFromError(error) {
+  const message = getMessageFromError(error);
+  if (message !== undefined) {
+    return message;
+  }
+  return error;
+}
+
+/**
+ * Try to read a message string from an error-like value.
+ * @param {unknown} error Error candidate.
+ * @returns {string|undefined} Message string when present.
+ */
+function getMessageFromError(error) {
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+  if ('message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+  return undefined;
 }
 
 /**
@@ -432,17 +626,27 @@ export function createRenderContents({
       return provided;
     }
 
+    return getOrCreateFetcher({ cache, database, factory, setCache });
+  }
+
+  /**
+   * Return the cached fetcher or create a new one via the factory.
+   * @param {(() => Promise<any[]>) | undefined} cache Cached fetcher.
+   * @param {{ collection?: Function } | undefined} database Database dependency.
+   * @param {(db: { collection: Function }) => () => Promise<any[]>} factory Fetcher factory.
+   * @param {(fn: () => Promise<any[]>) => void} setCache Cache setter.
+   * @returns {() => Promise<any[]>} Fetch implementation.
+   */
+  /**
+   * Return the existing fetcher or create and cache a new one.
+   * @param {{ cache?: () => Promise<any[]>, database?: { collection?: Function }, factory: (db: { collection: Function }) => () => Promise<any[]>, setCache: (fn: () => Promise<any[]>) => void }} options Lookup inputs.
+   * @returns {() => Promise<any[]>} Fetch implementation.
+   */
+  function getOrCreateFetcher({ cache, database, factory, setCache }) {
     if (cache) {
       return cache;
     }
-
-    if (!database || typeof database.collection !== 'function') {
-      throw new TypeError('db must provide a collection helper');
-    }
-
-    const created = factory(database);
-    setCache(created);
-    return created;
+    return createFetcherFromDatabase(database, factory, setCache);
   }
 
   /**
@@ -457,13 +661,27 @@ export function createRenderContents({
 
     for (const id of ids) {
       const info = await loadInfo(id);
-
-      if (info) {
-        items.push(info);
-      }
+      pushIfPresent(items, info);
     }
 
     return items;
+  }
+
+  /**
+   *
+   * @param collection
+   * @param value
+   */
+  /**
+   * Push values into the collection when they are present.
+   * @param {any[]} collection Array accumulating results.
+   * @param {any} value Potential item to add.
+   * @returns {void}
+   */
+  function pushIfPresent(collection, value) {
+    if (value) {
+      collection.push(value);
+    }
   }
 
   /**
@@ -484,23 +702,40 @@ export function createRenderContents({
       const start = (page - 1) * size;
       const pageItems = items.slice(start, start + size);
       const html = buildHtml(pageItems);
-      let filePath;
-      if (page === 1) {
-        filePath = 'index.html';
-      } else {
-        filePath = `contents/${page}.html`;
-      }
-      const options = { contentType: 'text/html' };
-
-      if (page === totalPages) {
-        options.metadata = { cacheControl: 'no-cache' };
-      }
+      const filePath = resolvePageFilePath(page);
+      const options = buildPageSaveOptions(page, totalPages);
 
       await targetBucket.file(filePath).save(html, options);
       paths.push(`/${filePath}`);
     }
 
     return paths;
+
+    /**
+     * Generate the file path for a rendered contents page.
+     * @param {number} pageNumber Page index being rendered.
+     * @returns {string} Storage location for the generated HTML.
+     */
+    function resolvePageFilePath(pageNumber) {
+      if (pageNumber === 1) {
+        return 'index.html';
+      }
+      return `contents/${pageNumber}.html`;
+    }
+
+    /**
+     * Build the save options for a rendered page file.
+     * @param {number} pageNumber Current page index.
+     * @param {number} maxPages Total number of pages to determine caching.
+     * @returns {{ contentType: string, metadata?: { cacheControl: string } }} Storage options.
+     */
+    function buildPageSaveOptions(pageNumber, maxPages) {
+      const options = { contentType: 'text/html' };
+      if (pageNumber === maxPages) {
+        options.metadata = { cacheControl: 'no-cache' };
+      }
+      return options;
+    }
   }
 
   return async function render(deps = {}) {
@@ -537,6 +772,26 @@ export function createRenderContents({
 }
 
 /**
+ *
+ * @param database
+ * @param factory
+ * @param setCache
+ */
+/**
+ * Create a cached fetcher when none is provided.
+ * @param {{ collection?: Function }} database Firestore-like instance used by the factory.
+ * @param {(db: { collection: Function }) => () => Promise<any[]>} factory Factory that produces the fetcher.
+ * @param {(fn: () => Promise<any[]>) => void} setCache Setter for caching the created fetcher.
+ * @returns {() => Promise<any[]>} Newly created fetch implementation.
+ */
+function createFetcherFromDatabase(database, factory, setCache) {
+  assertDb(database);
+  const created = factory(database);
+  setCache(created);
+  return created;
+}
+
+/**
  * Resolve the list of allowed origins for the render-contents endpoint.
  * @param {{ [key: string]: string | undefined } | undefined} environmentVariables Environment variables map.
  * @returns {string[]} Whitelist of allowed origins.
@@ -544,15 +799,30 @@ export function createRenderContents({
 export function getAllowedOrigins(environmentVariables) {
   const configuredOrigins =
     environmentVariables?.RENDER_CONTENTS_ALLOWED_ORIGINS;
-
-  if (typeof configuredOrigins === 'string' && configuredOrigins.trim()) {
-    return configuredOrigins
-      .split(',')
-      .map(origin => origin.trim())
-      .filter(Boolean);
+  const parsedOrigins = parseAllowedOrigins(configuredOrigins);
+  if (parsedOrigins.length > 0) {
+    return parsedOrigins;
   }
-
   return [...productionOrigins];
+}
+
+/**
+ *
+ * @param value
+ */
+/**
+ * Parse a comma-separated list of allowed origins from an environment variable.
+ * @param {string | undefined} value Raw environment value.
+ * @returns {string[]} Normalized list of origins.
+ */
+function parseAllowedOrigins(value) {
+  if (typeof value !== 'string' || !value.trim()) {
+    return [];
+  }
+  return value
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
 }
 
 /**
@@ -569,31 +839,76 @@ export function createApplyCorsHeaders({ allowedOrigins }) {
   }
 
   return function applyCorsHeaders(req, res) {
-    let origin;
-    if (typeof req?.get === 'function') {
-      origin = req.get('Origin');
-    } else {
-      origin = undefined;
-    }
-    let originAllowed = false;
-
-    if (!origin) {
-      res.set('Access-Control-Allow-Origin', '*');
-      originAllowed = true;
-    } else if (origins.includes(origin)) {
-      res.set('Access-Control-Allow-Origin', origin);
-      res.set('Vary', 'Origin');
-      originAllowed = true;
-    } else {
-      res.set('Access-Control-Allow-Origin', 'null');
-      res.set('Vary', 'Origin');
-    }
-
-    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Authorization');
-
+    const origin = resolveOriginHeader(req);
+    const originAllowed = respondToOrigin(res, origin, origins);
+    setStaticCorsHeaders(res);
     return originAllowed;
   };
+}
+
+/**
+ * Extract the Origin header when available on the request object.
+ * @param {{ get?: (name: string) => unknown }} req Request-like helper.
+ * @returns {string | undefined} Origin header string, when present.
+ */
+function resolveOriginHeader(req) {
+  if (typeof req?.get === 'function') {
+    return req.get('Origin');
+  }
+  return undefined;
+}
+
+/**
+ * Apply the appropriate Access-Control response based on the resolved origin.
+ * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @param {string | undefined} origin Origin header value.
+ * @param {string[]} origins Allowlist of origins.
+ * @returns {boolean} True when the origin is considered allowed.
+ */
+function respondToOrigin(res, origin, origins) {
+  if (!origin) {
+    setWildcardOrigin(res);
+    return true;
+  }
+  return handleKnownOrigin(res, origin, origins);
+}
+
+/**
+ * Apply origin-specific headers for allowed or denied origins.
+ * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @param {string} origin Incoming origin header.
+ * @param {string[]} origins Allowlist of origins.
+ * @returns {boolean} True when the origin is permitted.
+ */
+function handleKnownOrigin(res, origin, origins) {
+  if (origins.includes(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+    res.set('Vary', 'Origin');
+    return true;
+  }
+
+  res.set('Access-Control-Allow-Origin', 'null');
+  res.set('Vary', 'Origin');
+  return false;
+}
+
+/**
+ * Apply a wildcard Access-Control-Allow-Origin header when no origin is provided.
+ * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @returns {void}
+ */
+function setWildcardOrigin(res) {
+  res.set('Access-Control-Allow-Origin', '*');
+}
+
+/**
+ * Set headers that are constant regardless of origin.
+ * @param {{ set: (name: string, value: string) => void }} res Response helper.
+ * @returns {void}
+ */
+function setStaticCorsHeaders(res) {
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Authorization');
 }
 
 /**
@@ -607,29 +922,70 @@ export function createValidateRequest({ applyCorsHeaders }) {
   return function validateRequest(req, res) {
     const originAllowed = applyCorsHeaders(req, res);
 
-    const method = req?.method;
-
-    if (method === 'OPTIONS') {
-      if (originAllowed) {
-        res.status(204).send('');
-      } else {
-        res.status(403).send('');
-      }
+    if (handlePreflight(req, res, originAllowed)) {
       return false;
     }
 
-    if (!originAllowed) {
-      res.status(403).send('CORS');
-      return false;
-    }
-
-    if (method !== 'POST') {
-      res.status(405).send('POST only');
-      return false;
-    }
-
-    return true;
+    return ensureOriginAndMethodAllowed(req, res, originAllowed);
   };
+}
+
+/**
+ * Handle OPTIONS preflight requests.
+ * @param {{ method?: string }} req Incoming request.
+ * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {boolean} originAllowed Whether the request origin passed CORS checks.
+ * @returns {boolean} True when the request was handled and no further processing is needed.
+ */
+function handlePreflight(req, res, originAllowed) {
+  if (req?.method !== 'OPTIONS') {
+    return false;
+  }
+  respondToPreflight(res, originAllowed);
+  return true;
+}
+
+/**
+ * Send the preflight response body and status.
+ * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {boolean} originAllowed Whether the origin was authorized.
+ * @returns {void}
+ */
+function respondToPreflight(res, originAllowed) {
+  if (originAllowed) {
+    res.status(204).send('');
+    return;
+  }
+  res.status(403).send('');
+}
+
+/**
+ * Enforce that the origin is allowed and the method is POST.
+ * @param {{ method?: string }} req Incoming request helper.
+ * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {boolean} originAllowed Whether the origin is allowed.
+ * @returns {boolean} True when the request should continue.
+ */
+function ensureOriginAndMethodAllowed(req, res, originAllowed) {
+  if (!originAllowed) {
+    res.status(403).send('CORS');
+    return false;
+  }
+  return ensurePostMethod(req, res);
+}
+
+/**
+ * Ensure the request uses the POST method.
+ * @param {{ method?: string }} req Request helper.
+ * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @returns {boolean} True when the method is POST.
+ */
+function ensurePostMethod(req, res) {
+  if (req?.method === 'POST') {
+    return true;
+  }
+  res.status(405).send('POST only');
+  return false;
 }
 
 /**
@@ -648,7 +1004,10 @@ function getAuthorizationHeaderFromGetter(req) {
  */
 function resolveAuthorizationHeader(req) {
   const getterHeader = getAuthorizationHeaderFromGetter(req);
-  return getterHeader || '';
+  if (typeof getterHeader === 'string' && getterHeader.length > 0) {
+    return getterHeader;
+  }
+  return '';
 }
 
 /**
@@ -657,9 +1016,24 @@ function resolveAuthorizationHeader(req) {
  * @returns {string} Bearer token or an empty string if none found.
  */
 function extractBearerToken(header) {
-  const headerValue = typeof header === 'string' ? header : '';
+  const headerValue = normalizeHeaderString(header);
   const match = headerValue.match(/^Bearer (.+)$/);
-  return match ? match[1] : '';
+  if (match) {
+    return match[1];
+  }
+  return '';
+}
+
+/**
+ * Normalize a header value into a string that can be inspected.
+ * @param {unknown} value Candidate header value.
+ * @returns {string} Header string or empty when unavailable.
+ */
+function normalizeHeaderString(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+  return '';
 }
 
 /**
@@ -686,20 +1060,42 @@ export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
       return null;
     }
 
-    try {
-      const decoded = await verifyIdToken(token);
-
-      if (!decoded || decoded.uid !== adminUid) {
-        res.status(403).send('Forbidden');
-        return null;
-      }
-
-      return decoded;
-    } catch (error) {
-      res.status(401).send(error?.message || 'Invalid token');
-      return null;
-    }
+    return verifyIdToken(token)
+      .then(decoded => ensureAdminIdentity(decoded, adminUid, res))
+      .catch(error => handleAuthError(error, res));
   };
+}
+
+/**
+ * Confirm the decoded token matches the configured admin UID.
+ * @param {{ uid?: string } | null} decoded Decoded token payload.
+ * @param {string} adminUid Expected admin user ID.
+ * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @returns {{ uid?: string } | null} Decoded payload when the UID matches.
+ */
+function ensureAdminIdentity(decoded, adminUid, res) {
+  if (!decoded || decoded.uid !== adminUid) {
+    res.status(403).send('Forbidden');
+    return null;
+  }
+  return decoded;
+}
+
+/**
+ * Respond to verification failures with a standard error body.
+ * @param {unknown} error Error produced by the verifier.
+ * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @returns {null} Always returns null so the caller can abort processing.
+ */
+function handleAuthError(error, res) {
+  const message = extractMessageFromError(error);
+  if (typeof message === 'string' && message.length > 0) {
+    res.status(401).send(message);
+    return null;
+  }
+
+  res.status(401).send('Invalid token');
+  return null;
 }
 
 /**
@@ -744,13 +1140,19 @@ export function buildHandleRenderRequest({
    * @param {import('express').Response} res - Response object for success/failure updates.
    * @returns {Promise<void>}
    */
-  async function executeRenderRequestAfterGuard(res) {
-    try {
-      await render();
-      res.status(200).json({ ok: true });
-    } catch (error) {
-      res.status(500).json({ error: error?.message || 'render failed' });
-    }
+  function executeRenderRequestAfterGuard(res) {
+    return render()
+      .then(() => {
+        res.status(200).json({ ok: true });
+      })
+      .catch(error => {
+        const message = extractMessageFromError(error);
+        if (typeof message === 'string' && message.length > 0) {
+          res.status(500).json({ error: message });
+          return;
+        }
+        res.status(500).json({ error: 'render failed' });
+      });
   }
 
   return async function handleRenderRequest(req, res) {

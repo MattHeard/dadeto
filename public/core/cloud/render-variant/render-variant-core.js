@@ -825,14 +825,26 @@ function mapDocToVariant(doc) {
 }
 
 /**
+ * Normalize a variant string value, providing a default when missing.
+ * @param {unknown} value Value extracted from variant data.
+ * @returns {string} Normalized string, empty when the supplied value is not a string.
+ */
+function normalizeVariantString(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+  return '';
+}
+
+/**
  * Build variant object from data.
  * @param {object} data Variant data.
  * @returns {object} Variant object.
  */
 function buildVariantObject(data) {
   return {
-    name: data.name || '',
-    content: data.content || '',
+    name: normalizeVariantString(data?.name),
+    content: normalizeVariantString(data?.content),
   };
 }
 
@@ -881,147 +893,14 @@ function checkStorageBucketHelper(storage) {
 }
 
 /**
- * Build a helper that invalidates CDN paths via the Google Compute API.
- * @param {object} options - Configuration for cache invalidation.
- * @param {(url: string, init?: object) => Promise<{ok: boolean, status: number, json: () => Promise<object>}>} options.fetchFn - Fetch implementation used to communicate with the metadata and compute APIs.
- * @param {string} [options.projectId] - Google Cloud project identifier owning the URL map.
- * @param {string} [options.urlMapName] - Name of the URL map whose cache should be invalidated.
- * @param {string} [options.cdnHost] - Hostname associated with the CDN-backed site.
- * @param {() => string} options.randomUUID - UUID generator for cache invalidation requests.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger invoked when invalidation fails.
- * @returns {(paths: string[]) => Promise<void>} Invalidation routine that accepts absolute paths to purge.
- */
-/**
- * Get access token.
- * @param {Function} fetchFn Fetch.
- * @returns {Promise<string>} Token.
- */
-async function getAccessToken(fetchFn) {
-  const response = await fetchFn(
-    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
-    { headers: { 'Metadata-Flavor': 'Google' } }
-  );
-
-  if (!response.ok) {
-    throw new Error(`metadata token: HTTP ${response.status}`);
-  }
-
-  const { access_token: accessToken } = await response.json();
-  return accessToken;
-}
-
-/**
- * Invalidate single path.
- * @param {object} params Params.
- * @param {string} params.path Path to invalidate.
- * @param {string} params.token Auth token.
- * @param {string} params.url Invalidation URL.
- * @param {string} params.host Host header.
- * @param {Function} params.fetchFn Fetch function.
- * @param {Function} params.randomUUID UUID generator.
- * @param {Function} params.consoleError Error logger.
- * @returns {Promise<void>} Void.
- */
-async function invalidatePathItem({
-  path,
-  token,
-  url,
-  host,
-  fetchFn,
-  randomUUID,
-  consoleError,
-}) {
-  try {
-    const response = await fetchFn(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        host,
-        path,
-        requestId: randomUUID(),
-      }),
-    });
-
-    handleInvalidateResponse(response, path, consoleError);
-  } catch (error) {
-    handleInvalidateError(error, path, consoleError);
-  }
-}
-
-/**
- * Handle invalidate response.
- * @param {object} response Response.
- * @param {string} path Path.
- * @param {Function} consoleError Error logger.
- */
-function handleInvalidateResponse(response, path, consoleError) {
-  if (response.ok) {
-    return;
-  }
-  logInvalidateFailure(response, path, consoleError);
-}
-
-/**
- * Log invalidation failure.
- * @param {object} response Response.
- * @param {string} path Path.
- * @param {Function} consoleError Error logger.
- */
-function logInvalidateFailure(response, path, consoleError) {
-  if (consoleError) {
-    consoleError(`invalidate ${path} failed: ${response.status}`);
-  }
-}
-
-/**
- * Handle invalidate error.
- * @param {Error} error Error.
- * @param {string} path Path.
- * @param {Function} consoleError Error logger.
- */
-function handleInvalidateError(error, path, consoleError) {
-  if (!consoleError) {
-    return;
-  }
-  logInvalidateError(error, path, consoleError);
-}
-
-/**
- * Log invalidation error message.
- * @param {Error} error Error object.
- * @param {string} path Path that failed.
- * @param {Function} consoleError Error logger.
- */
-function logInvalidateError(error, path, consoleError) {
-  const message = getErrorMessage(error);
-  consoleError(`invalidate ${path} error`, message);
-}
-
-/**
- * Extract error message from error object.
- * @param {Error|any} error Error object or value.
- * @returns {string|any} Error message.
- */
-function getErrorMessage(error) {
-  if (error?.message) {
-    return error.message;
-  }
-  return error;
-}
-
-/**
  * Create invalidation function.
  * @param {object} root0 Dependencies.
  * @param {Function} root0.fetchFn Fetch function.
  * @param {string} root0.projectId Project ID.
  * @param {string} root0.urlMapName URL map name.
- * @param {string} root0.cdnHost CDN host.
- * @param {Function} root0.randomUUID UUID generator.
- * @param {Function} root0.consoleError Error logger.
- * @returns {Function} Invalidation function.
+ * @param root0.cdnHost
+ * @param root0.randomUUID
+ * @param root0.consoleError
  */
 export function createInvalidatePaths({
   fetchFn,
@@ -1066,18 +945,7 @@ function createInvalidatePathsImpl({
   const resolvedProjectId = projectId || '';
   const resolvedCdnHost = cdnHost || 'www.dendritestories.co.nz';
   const resolvedUrlMapName = urlMapName || 'prod-dendrite-url-map';
-
-  /**
-   * Check if paths array is valid.
-   * @param {any} paths Paths to validate.
-   * @returns {boolean} True if valid.
-   */
-  function isValidPaths(paths) {
-    if (!Array.isArray(paths)) {
-      return false;
-    }
-    return paths.length > 0;
-  }
+  const invalidateUrl = `https://compute.googleapis.com/compute/v1/projects/${resolvedProjectId}/global/urlMaps/${resolvedUrlMapName}/invalidateCache`;
 
   return async function invalidatePaths(paths) {
     if (!isValidPaths(paths)) {
@@ -1085,12 +953,13 @@ function createInvalidatePathsImpl({
     }
 
     const token = await getAccessToken(fetchFn);
+
     await Promise.all(
       paths.map(path =>
         invalidatePathItem({
           path,
           token,
-          url: `https://compute.googleapis.com/compute/v1/projects/${resolvedProjectId}/global/urlMaps/${resolvedUrlMapName}/invalidateCache`,
+          url: invalidateUrl,
           host: resolvedCdnHost,
           fetchFn,
           randomUUID,
@@ -1099,6 +968,144 @@ function createInvalidatePathsImpl({
       )
     );
   };
+}
+
+/**
+ *
+ * @param paths
+ */
+function isValidPaths(paths) {
+  if (!Array.isArray(paths)) {
+    return false;
+  }
+  return paths.length > 0;
+}
+
+/**
+ *
+ * @param fetchFn
+ */
+async function getAccessToken(fetchFn) {
+  const response = await fetchFn(
+    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+    { headers: { 'Metadata-Flavor': 'Google' } }
+  );
+
+  ensureResponseOk(response, 'metadata token');
+
+  return extractAccessToken(response);
+}
+
+/**
+ *
+ * @param response
+ * @param label
+ */
+function ensureResponseOk(response, label) {
+  if (!response.ok) {
+    throw new Error(`${label}: HTTP ${response.status}`);
+  }
+}
+
+/**
+ *
+ * @param response
+ */
+async function extractAccessToken(response) {
+  const { access_token: accessToken } = await response.json();
+  return accessToken;
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.path
+ * @param root0.token
+ * @param root0.url
+ * @param root0.host
+ * @param root0.fetchFn
+ * @param root0.randomUUID
+ * @param root0.consoleError
+ */
+async function invalidatePathItem({
+  path,
+  token,
+  url,
+  host,
+  fetchFn,
+  randomUUID,
+  consoleError,
+}) {
+  return fetchFn(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      host,
+      path,
+      requestId: randomUUID(),
+    }),
+  })
+    .then(response => logInvalidateResponse(response, path, consoleError))
+    .catch(error => {
+      handleInvalidateError(error, path, consoleError);
+    });
+}
+
+/**
+ *
+ * @param response
+ * @param path
+ * @param consoleError
+ */
+function logInvalidateResponse(response, path, consoleError) {
+  if (response.ok || !consoleError) {
+    return;
+  }
+  consoleError(`invalidate ${path} failed: ${response.status}`);
+}
+
+/**
+ * Report invalidation errors via the optional logger.
+ * @param {unknown} error Error or rejection reason.
+ * @param {string} path Path that failed.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @returns {void}
+ */
+function handleInvalidateError(error, path, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  consoleError(`invalidate ${path} error`, getErrorMessage(error));
+}
+/**
+ * Safely read the `message` property from an error-like object.
+ * @param {unknown} error Candidate error object.
+ * @returns {string | undefined} Error message string when present.
+ */
+function getMessageFromError(error) {
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+  if ('message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+  return undefined;
+}
+
+/**
+ * Resolve a normalized error message for logging.
+ * @param {unknown} error Error candidate.
+ * @returns {unknown} Message string when available or the original value.
+ */
+function getErrorMessage(error) {
+  const message = getMessageFromError(error);
+  if (message !== undefined) {
+    return message;
+  }
+  return error;
 }
 
 /**
@@ -1143,6 +1150,14 @@ async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
     );
   }
 
+  return resolveTargetPageNumber(data);
+}
+
+/**
+ *
+ * @param data
+ */
+function resolveTargetPageNumber(data) {
   if (data.targetPageNumber !== undefined) {
     return { targetPageNumber: data.targetPageNumber };
   }
@@ -1166,16 +1181,18 @@ async function fetchTargetPageMetadata(
   visibilityThreshold,
   consoleError
 ) {
-  try {
-    const targetSnap = await targetPage.get();
-    if (!targetSnap.exists) {
+  return targetPage
+    .get()
+    .then(targetSnap => {
+      if (!targetSnap.exists) {
+        return {};
+      }
+      return processTargetSnap(targetSnap, targetPage, visibilityThreshold);
+    })
+    .catch(error => {
+      handleTargetPageError(error, consoleError);
       return {};
-    }
-    return processTargetSnap(targetSnap, targetPage, visibilityThreshold);
-  } catch (error) {
-    handleTargetPageError(error, consoleError);
-    return {};
-  }
+    });
 }
 
 /**
@@ -1300,16 +1317,32 @@ async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
  * @returns {Promise<string | undefined>} URL for the first published page when resolvable.
  */
 async function resolveFirstPageUrl({ page, storyData, consoleError }) {
-  if (!page.incomingOption || !storyData.rootPage) {
+  if (!shouldResolveFirstPageUrl(page, storyData)) {
     return undefined;
   }
 
-  try {
-    return await fetchRootPageUrl(storyData);
-  } catch (error) {
+  return resolveRootPageUrl(storyData, consoleError);
+}
+
+/**
+ *
+ * @param page
+ * @param storyData
+ */
+function shouldResolveFirstPageUrl(page, storyData) {
+  return Boolean(page.incomingOption && storyData.rootPage);
+}
+
+/**
+ *
+ * @param storyData
+ * @param consoleError
+ */
+function resolveRootPageUrl(storyData, consoleError) {
+  return fetchRootPageUrl(storyData).catch(error => {
     handleRootPageError(error, consoleError);
     return undefined;
-  }
+  });
 }
 
 /**
@@ -1363,13 +1396,7 @@ async function fetchRootPageUrl(storyData) {
  * @returns {object|null} Story reference when available, otherwise null.
  */
 function extractStoryRef(pageSnap) {
-  if (!pageSnap) {
-    return null;
-  }
-  if (!pageSnap.ref) {
-    return null;
-  }
-  if (!pageSnap.ref.parent) {
+  if (!pageSnap || !pageSnap.ref || !pageSnap.ref.parent) {
     return null;
   }
   return pageSnap.ref.parent.parent ?? null;
@@ -1381,7 +1408,10 @@ function extractStoryRef(pageSnap) {
  * @returns {string} Author name or fallback identifier.
  */
 function deriveAuthorName(variant) {
-  return variant.authorName || variant.author || '';
+  const candidate = [variant.authorName, variant.author].find(
+    value => typeof value === 'string' && value.length > 0
+  );
+  return candidate ?? '';
 }
 
 /**
@@ -1553,12 +1583,10 @@ async function writeAuthorLandingPage(variant, file) {
  * @returns {object | null} Refs.
  */
 function extractParentRefs(optionRef) {
-  if (!optionRef) {
+  if (!optionRef || !optionRef.parent) {
     return { parentVariantRef: undefined, parentPageRef: undefined };
   }
-  if (!optionRef.parent) {
-    return { parentVariantRef: undefined, parentPageRef: undefined };
-  }
+
   const parentVariantRef = optionRef.parent.parent;
   const parentPageRef = parentVariantRef?.parent?.parent;
   return { parentVariantRef, parentPageRef };
@@ -1700,16 +1728,14 @@ function buildRouteFromSnapshots(snapshots) {
  * @returns {Promise<string | undefined>} Parent URL when resolvable.
  */
 async function resolveParentUrl({ variant, db, consoleError }) {
-  if (!variant.incomingOption) {
+  if (!variant?.incomingOption) {
     return undefined;
   }
 
-  try {
-    return await fetchAndBuildParentUrl(db, variant.incomingOption);
-  } catch (error) {
+  return fetchAndBuildParentUrl(db, variant.incomingOption).catch(error => {
     handleParentLookupError(error, consoleError);
     return undefined;
-  }
+  });
 }
 
 /**
@@ -1747,7 +1773,7 @@ async function fetchAndBuildParentUrl(db, incomingOption) {
   }
 
   const route = buildRouteFromSnapshots(snapshots);
-  return route || undefined;
+  return route ?? undefined;
 }
 
 /**
@@ -1955,16 +1981,10 @@ export async function getPageSnapFromRef(snap) {
  * @returns {boolean} True when the snapshot contains a reachable page reference.
  */
 function isSnapRefValid(snap) {
-  if (!snap) {
+  if (!snap || !snap.ref || !snap.ref.parent || !snap.ref.parent.parent) {
     return false;
   }
-  if (!snap.ref) {
-    return false;
-  }
-  if (!snap.ref.parent) {
-    return false;
-  }
-  return Boolean(snap.ref.parent.parent);
+  return true;
 }
 
 /**
