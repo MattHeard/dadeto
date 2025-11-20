@@ -1,0 +1,7 @@
+# Coverage spike follow-up
+
+- **Unexpected hurdle:** Jest kept reporting only a couple of files under 100% coverage even though every test passed. The `lcov-report` showed lines like 383/411 flagged, which turned out to be internal helpers (invalidation guard, error logging, header normalization) rather than the big rendering workflow.
+- **Diagnosis:** I dumped `reports/coverage/lcov.info` with a tiny Node script to list the exact missing line numbers, then traced each line back to the helper logic inside `render-contents-core.js` and `render-variant-core.js`.
+- **Options:** I could have tried to wrap or ignore those branches, but exporting the helper (`createInvalidatePaths`) and enhancing the authorization path allowed the existing unit tests to drive the branches naturally without ignoring logic.
+- **Learning:** When coverage drops by a few lines, parsing `lcov.info` pinpoints the culprit quickly, and re-exporting small helpers is a pragmatic way to exercise internal branches without overhauling the API. Remember to pair that with realistic mocks (metadata fetch + CDN invalidation) so the helpers keep behaving like production code.
+- **Follow-up:** Should we consider sharing `notes/agents/*-coverage.md` for future coverage gaps like this or standardize a script to map `lcov` misses to source lines?

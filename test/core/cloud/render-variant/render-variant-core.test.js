@@ -107,6 +107,30 @@ describe('createInvalidatePaths', () => {
     );
   });
 
+  it('logs string errors when invalidation rejects without an object', async () => {
+    const consoleError = jest.fn();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValueOnce('boom');
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      consoleError,
+    });
+
+    await invalidatePaths(['/p/string.html']);
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/string.html error',
+      'boom'
+    );
+  });
+
   it('logs failures when the invalidation response is not ok', async () => {
     const consoleError = jest.fn();
     const fetchFn = jest

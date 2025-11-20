@@ -4,6 +4,7 @@ import {
   createFetchTopStoryIds,
   createFetchStoryInfo,
   createRenderContents,
+  createInvalidatePaths,
   getAllowedOrigins,
   createApplyCorsHeaders,
   createValidateRequest,
@@ -39,6 +40,12 @@ describe('createFetchTopStoryIds', () => {
     expect(() => createFetchTopStoryIds(null)).toThrow(
       new TypeError('db must provide a collection helper')
     );
+  });
+
+  it('throws when db.collection is not a function', () => {
+    expect(() =>
+      createFetchTopStoryIds({ collection: 'not-a-function' })
+    ).toThrow(new TypeError('db must provide a collection helper'));
   });
 
   it('orders and limits story stats', async () => {
@@ -155,6 +162,15 @@ describe('createRenderContents', () => {
       createRenderContents({
         db: { collection: jest.fn() },
         storage: null,
+        fetchFn,
+        randomUUID,
+      })
+    ).toThrow(new TypeError('storage must provide a bucket helper'));
+
+    expect(() =>
+      createRenderContents({
+        db: { collection: jest.fn() },
+        storage: { bucket: 'not-a-function' },
         fetchFn,
         randomUUID,
       })
@@ -457,6 +473,72 @@ describe('createRenderContents', () => {
   });
 });
 
+describe('createInvalidatePaths', () => {
+  it('returns early when paths are missing or empty', async () => {
+    const fetchFn = jest.fn();
+    const randomUUID = jest.fn(() => 'uuid');
+    const invalidatePaths = createInvalidatePaths({ fetchFn, randomUUID });
+
+    await invalidatePaths(undefined);
+    await invalidatePaths([]);
+
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('ignores logging when invalidation responses are not ok without a logger', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      });
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      projectId: 'proj',
+      urlMapName: 'map',
+      cdnHost: 'cdn.example.com',
+    });
+
+    await expect(invalidatePaths(['/p/1a.html'])).resolves.toBeUndefined();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('logs raw error values when messages are unavailable', async () => {
+    const consoleError = jest.fn();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockRejectedValueOnce('boom');
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      projectId: 'proj',
+      urlMapName: 'map',
+      cdnHost: 'cdn.example.com',
+      consoleError,
+    });
+
+    await invalidatePaths(['/p/error.html']);
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/error.html error',
+      'boom'
+    );
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('getAllowedOrigins', () => {
   it('returns configured origins when present', () => {
     const origins = getAllowedOrigins({
@@ -625,6 +707,20 @@ describe('buildHandleRenderRequest', () => {
     res.status.mockClear();
     await handler(req, res);
     expect(res.status).toHaveBeenCalledWith(403);
+  });
+
+  it('falls back to headers and handles non-string authorization values', async () => {
+    const handler = build();
+    const res = makeResponse();
+    const req = {
+      get: jest.fn(() => undefined),
+      headers: { authorization: 123 },
+    };
+
+    await handler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith('Missing token');
   });
 
   it('returns 401 when verification throws', async () => {
