@@ -723,6 +723,19 @@ describe('buildHandleRenderRequest', () => {
     expect(res.send).toHaveBeenCalledWith('Missing token');
   });
 
+  it('extracts bearer tokens from headers when getter is absent', async () => {
+    const handler = build();
+    const req = {
+      get: jest.fn(() => undefined),
+      headers: { authorization: 'Bearer header-token' },
+    };
+    const res = makeResponse();
+
+    await handler(req, res);
+
+    expect(verifyIdToken).toHaveBeenCalledWith('header-token');
+  });
+
   it('returns 401 when verification throws', async () => {
     const handler = build();
     const req = makeRequest('Bearer token');
