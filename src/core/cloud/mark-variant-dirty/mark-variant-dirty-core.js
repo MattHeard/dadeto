@@ -1,6 +1,7 @@
 import { productionOrigins } from '../cloud-core.js';
 
 const POST_METHOD = 'POST';
+const TEST_ENV_PREFIX = 't-';
 
 /**
  * Derive the set of allowed origins for the admin endpoint.
@@ -9,20 +10,47 @@ const POST_METHOD = 'POST';
  */
 export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
-  const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
-
-  if (environment === 'prod') {
+  if (isProdEnvironment(environment)) {
     return productionOrigins;
   }
 
-  if (typeof environment === 'string' && environment.startsWith('t-')) {
-    if (typeof playwrightOrigin === 'string' && playwrightOrigin) {
-      return [playwrightOrigin];
-    }
-    return [];
+  if (isTestEnvironment(environment)) {
+    return resolvePlaywrightOrigin(environmentVariables?.PLAYWRIGHT_ORIGIN);
   }
 
   return productionOrigins;
+}
+
+/**
+ * Detect whether the current environment should use the production origins.
+ * @param {unknown} environment Raw environment label.
+ * @returns {environment is string} True when the label is exactly `prod`.
+ */
+function isProdEnvironment(environment) {
+  return environment === 'prod';
+}
+
+/**
+ * Detect whether the environment label indicates a Playwright test run.
+ * @param {unknown} environment Raw environment label.
+ * @returns {environment is string} True when the label starts with the test prefix.
+ */
+function isTestEnvironment(environment) {
+  return (
+    typeof environment === 'string' && environment.startsWith(TEST_ENV_PREFIX)
+  );
+}
+
+/**
+ * Resolve the Playwright origin when provided.
+ * @param {unknown} origin Candidate override.
+ * @returns {string[]} Either a singleton list or an empty array.
+ */
+function resolvePlaywrightOrigin(origin) {
+  if (typeof origin === 'string' && origin) {
+    return [origin];
+  }
+  return [];
 }
 
 export { getAuthHeader, matchAuthHeader } from '../cloud-core.js';
