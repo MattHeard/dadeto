@@ -969,7 +969,11 @@ function isDarkMode(mediaQueryList) {
  * @param mediaQueryList
  */
 function resolveSignInTheme(mediaQueryList) {
-  return isDarkMode(mediaQueryList) ? 'filled_black' : 'filled_blue';
+  if (isDarkMode(mediaQueryList)) {
+    return 'filled_black';
+  }
+
+  return 'filled_blue';
 }
 
 /**
