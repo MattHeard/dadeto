@@ -185,8 +185,9 @@ function resolveAuthorRef(db, authorId) {
 }
 
 /**
- *
- * @param value
+ * Determine whether the provided value can serve as an author identifier.
+ * @param {unknown} value - Candidate identifier value.
+ * @returns {boolean} True when the value is a non-empty string.
  */
 function isAuthorIdentifier(value) {
   return typeof value === 'string' && value.length > 0;

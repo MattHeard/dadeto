@@ -1149,8 +1149,9 @@ export function createRegenerateVariant(options) {
 }
 
 /**
- *
- * @param googleAuth
+ * Check whether the provided auth helper exposes `getIdToken`.
+ * @param {{ getIdToken?: () => string | null | undefined } | undefined | null} googleAuth - Candidate auth helper.
+ * @returns {boolean} True when `getIdToken` is callable.
  */
 function hasGetIdToken(googleAuth) {
   return typeof googleAuth.getIdToken === 'function';
