@@ -618,7 +618,7 @@ function attachSignOutLinks(doc, googleAuth) {
  */
 function createSignOutClickHandler(googleAuth) {
   return async event => {
-    event?.preventDefault?.();
+    preventDefaultEvent(event);
     await googleAuth.signOut();
   };
 }
@@ -791,11 +791,19 @@ function buildNormalizedGoogleSignInDeps(deps) {
     logger: source.logger,
   };
 
-  if (normalized.logger === undefined || normalized.logger === null) {
-    normalized.logger = console;
-  }
+  return ensureLogger(normalized);
+}
 
-  return normalized;
+/**
+ * Ensure logger exists.
+ * @param {object} deps Deps.
+ * @returns {object} Deps with logger.
+ */
+function ensureLogger(deps) {
+  if (deps.logger === undefined || deps.logger === null) {
+    deps.logger = console;
+  }
+  return deps;
 }
 
 /**
@@ -898,12 +906,24 @@ async function handleCredentialSignIn(
  * @param {{ getIdToken?: () => Promise<string> | () => string | null | undefined } | null | undefined} currentUser - Auth user object.
  * @returns {() => Promise<string>} Function returning a promised token.
  */
-function resolveGetIdToken(currentUser) {
-  const getter = currentUser?.getIdToken;
+/**
+ * Validate get id token.
+ * @param {Function} getter Getter.
+ * @returns {void}
+ */
+function validateGetIdToken(getter) {
   if (typeof getter !== 'function') {
     throw new TypeError('auth.currentUser.getIdToken must be a function');
   }
+}
 
+/**
+ *
+ * @param currentUser
+ */
+function resolveGetIdToken(currentUser) {
+  const getter = currentUser?.getIdToken;
+  validateGetIdToken(getter);
   return () => getter.call(currentUser);
 }
 
@@ -935,12 +955,21 @@ function getSignInButtonElements(querySelectorAll) {
  * @param {{ matches: boolean } | undefined} mediaQueryList - Optional media query list controlling dark mode.
  * @returns {'filled_blue' | 'filled_black'} Theme name passed to the Google button renderer.
  */
-function resolveSignInTheme(mediaQueryList) {
-  if (mediaQueryList?.matches) {
-    return 'filled_black';
-  }
+/**
+ * Check if dark mode.
+ * @param {object} mediaQueryList List.
+ * @returns {boolean} True if dark.
+ */
+function isDarkMode(mediaQueryList) {
+  return Boolean(mediaQueryList?.matches);
+}
 
-  return 'filled_blue';
+/**
+ *
+ * @param mediaQueryList
+ */
+function resolveSignInTheme(mediaQueryList) {
+  return isDarkMode(mediaQueryList) ? 'filled_black' : 'filled_blue';
 }
 
 /**
@@ -981,40 +1010,55 @@ export function createInitGoogleSignIn(deps) {
   const normalizedDeps = normalizeGoogleSignInDeps(deps);
 
   return function initGoogleSignIn({ onSignIn } = {}) {
-    const {
-      resolveGoogleAccountsId,
+    return initGoogleSignInCore(normalizedDeps, onSignIn);
+  };
+}
+
+/**
+ *
+ * @param deps
+ * @param onSignIn
+ */
+function initGoogleSignInCore(deps, onSignIn) {
+  const {
+    resolveGoogleAccountsId,
+    credentialFactory,
+    signInWithCredential,
+    auth,
+    storage,
+    matchMedia,
+    querySelectorAll,
+    safeLogger,
+  } = deps;
+
+  const accountsId = resolveGoogleAccountsId();
+
+  if (ensureGoogleIdentityAvailable(accountsId, safeLogger)) {
+    initializeGoogleSignIn(accountsId, {
       credentialFactory,
       signInWithCredential,
       auth,
       storage,
-      matchMedia,
-      querySelectorAll,
-      safeLogger,
-    } = normalizedDeps;
-
-    const accountsId = resolveGoogleAccountsId();
-
-    if (!ensureGoogleIdentityAvailable(accountsId, safeLogger)) {
-      return;
-    }
-
-    accountsId.initialize({
-      ['client_id']:
-        '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-      callback: options =>
-        handleCredentialSignIn(options, {
-          credentialFactory,
-          signInWithCredential,
-          auth,
-          storage,
-          onSignIn,
-        }),
-      ['ux_mode']: 'popup',
+      onSignIn,
     });
 
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
     setupSignInButtonRenderer(accountsId, querySelectorAll, mediaQueryList);
-  };
+  }
+}
+
+/**
+ *
+ * @param accountsId
+ * @param options
+ */
+function initializeGoogleSignIn(accountsId, options) {
+  accountsId.initialize({
+    ['client_id']:
+      '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
+    callback: cred => handleCredentialSignIn(cred, options),
+    ['ux_mode']: 'popup',
+  });
 }
 
 /**
@@ -1086,6 +1130,51 @@ export function createRegenerateVariant(options) {
  * }} deps - Dependencies required for regenerating a variant.
  * @returns {void}
  */
+/**
+ * Ensure google auth.
+ * @param {object} googleAuth Auth.
+ * @returns {void}
+ */
+/**
+ * Check if auth has token method.
+ * @param {object} googleAuth Auth.
+ * @returns {boolean} True if valid.
+ */
+function hasGetIdToken(googleAuth) {
+  return typeof googleAuth.getIdToken === 'function';
+}
+
+/**
+ *
+ * @param googleAuth
+ */
+function ensureGoogleAuth(googleAuth) {
+  if (!isValidAuth(googleAuth)) {
+    throw new TypeError('googleAuth must provide a getIdToken function');
+  }
+}
+
+/**
+ * Check if auth is valid.
+ * @param {object} googleAuth Auth.
+ * @returns {boolean} True if valid.
+ */
+function isValidAuth(googleAuth) {
+  if (!googleAuth) {
+    return false;
+  }
+  return hasGetIdToken(googleAuth);
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.googleAuth
+ * @param root0.doc
+ * @param root0.showMessage
+ * @param root0.getAdminEndpointsFn
+ * @param root0.fetchFn
+ */
 function validateRegenerateVariantDeps({
   googleAuth,
   doc,
@@ -1093,9 +1182,7 @@ function validateRegenerateVariantDeps({
   getAdminEndpointsFn,
   fetchFn,
 }) {
-  if (!googleAuth || typeof googleAuth.getIdToken !== 'function') {
-    throw new TypeError('googleAuth must provide a getIdToken function');
-  }
+  ensureGoogleAuth(googleAuth);
   requireDocumentLike(doc);
   requireFunction(showMessage, 'showMessage');
   requireFunction(getAdminEndpointsFn, 'getAdminEndpointsFn');
@@ -1155,18 +1242,42 @@ function resolveValidPageVariant(doc, showMessage) {
  * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Auth helper that supplies the token.
  * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null} Structured payload or null when a dependency is missing.
  */
+/**
+ * Get token safely.
+ * @param {object} googleAuth Auth.
+ * @returns {string | null} Token.
+ */
+function getTokenSafely(googleAuth) {
+  return googleAuth.getIdToken() || null;
+}
+
+/**
+ *
+ * @param doc
+ * @param showMessage
+ * @param googleAuth
+ */
 function resolveRegenerationPayload(doc, showMessage, googleAuth) {
-  const token = googleAuth.getIdToken();
+  const token = getTokenSafely(googleAuth);
   if (!token) {
     return null;
   }
 
-  const pageVariant = resolveValidPageVariant(doc, showMessage);
-  if (!pageVariant) {
-    return null;
-  }
+  return resolvePageVariantPayload(doc, showMessage, token);
+}
 
-  return { token, pageVariant };
+/**
+ *
+ * @param doc
+ * @param showMessage
+ * @param token
+ */
+function resolvePageVariantPayload(doc, showMessage, token) {
+  const pageVariant = resolveValidPageVariant(doc, showMessage);
+  if (pageVariant) {
+    return { token, pageVariant };
+  }
+  return null;
 }
 
 /**
@@ -1174,8 +1285,23 @@ function resolveRegenerationPayload(doc, showMessage, googleAuth) {
  * @param {{ preventDefault?: () => void } | null | undefined} event - Event-like object.
  * @returns {void}
  */
+/**
+ * Check if event can default.
+ * @param {object} event Event.
+ * @returns {boolean} True if can default.
+ */
+function canPreventDefault(event) {
+  return Boolean(event && typeof event.preventDefault === 'function');
+}
+
+/**
+ *
+ * @param event
+ */
 function preventDefaultEvent(event) {
-  event?.preventDefault?.();
+  if (canPreventDefault(event)) {
+    event.preventDefault();
+  }
 }
 
 /**
@@ -1260,17 +1386,25 @@ function parsePageVariantInput(inputElement) {
  * @param {HTMLInputElement | null | undefined} inputElement - Potential regenerate input element.
  * @returns {string} Trimmed value or an empty string when unavailable.
  */
+/**
+ * Get value from input.
+ * @param {object} inputElement Input.
+ * @returns {string} Value.
+ */
+function getValueFromInput(inputElement) {
+  const { value } = inputElement;
+  return typeof value === 'string' ? value : '';
+}
+
+/**
+ *
+ * @param inputElement
+ */
 function getTrimmedInputValue(inputElement) {
   if (!inputElement) {
     return '';
   }
-
-  const { value } = inputElement;
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  return value.trim();
+  return getValueFromInput(inputElement).trim();
 }
 
 /**
@@ -1297,6 +1431,38 @@ function parsePageVariantValue(value) {
  * }} options - Dependencies and payload for the regenerate request.
  * @returns {Promise<void>} Promise that resolves when the request succeeds.
  */
+/**
+ * Ensure response is ok.
+ * @param {object} res Response.
+ * @returns {void}
+ */
+/**
+ * Check if response is ok.
+ * @param {object} res Response.
+ * @returns {boolean} True if ok.
+ */
+function isResponseOk(res) {
+  return Boolean(res && res.ok);
+}
+
+/**
+ *
+ * @param res
+ */
+function ensureResponseOk(res) {
+  if (!isResponseOk(res)) {
+    throw new Error('fail');
+  }
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.fetchFn
+ * @param root0.getAdminEndpointsFn
+ * @param root0.token
+ * @param root0.pageVariant
+ */
 async function sendRegenerateVariantRequest({
   fetchFn,
   getAdminEndpointsFn,
@@ -1313,9 +1479,7 @@ async function sendRegenerateVariantRequest({
     body: JSON.stringify(pageVariant),
   });
 
-  if (!res?.ok) {
-    throw new Error('fail');
-  }
+  ensureResponseOk(res);
 }
 
 /**
@@ -1503,9 +1667,36 @@ export function getSignOutSections(doc) {
  * @param {() => { currentUser: unknown } | null | undefined} getAuthFn - Getter for the auth instance.
  * @returns {unknown | null} Current user when available.
  */
+/**
+ * Get current user safely.
+ * @param {object} auth Auth.
+ * @returns {object | null} User.
+ */
+function getCurrentUserSafely(auth) {
+  if (!auth) {
+    return null;
+  }
+  return getAuthUser(auth);
+}
+
+/**
+ *
+ * @param auth
+ */
+function getAuthUser(auth) {
+  if (auth.currentUser) {
+    return auth.currentUser;
+  }
+  return null;
+}
+
+/**
+ *
+ * @param getAuthFn
+ */
 export function getCurrentUser(getAuthFn) {
   const auth = resolveAuthInstance(getAuthFn);
-  return auth?.currentUser ?? null;
+  return getCurrentUserSafely(auth);
 }
 
 /**
@@ -1569,6 +1760,38 @@ function ensureGoogleIdentityAvailable(accountsId, logger) {
  * @param {{ matches: boolean, addEventListener?: (type: string, listener: () => void) => void } | undefined} mediaQueryList - Optional media query list for theme switching.
  * @returns {void}
  */
+/**
+ * Attach change listener.
+ * @param {object} list List.
+ * @param {Function} listener Listener.
+ * @returns {void}
+ */
+/**
+ * Check if list can listen.
+ * @param {object} list List.
+ * @returns {boolean} True if can listen.
+ */
+function canListen(list) {
+  return Boolean(list && typeof list.addEventListener === 'function');
+}
+
+/**
+ *
+ * @param list
+ * @param listener
+ */
+function attachChangeListener(list, listener) {
+  if (canListen(list)) {
+    list.addEventListener('change', listener);
+  }
+}
+
+/**
+ *
+ * @param accountsId
+ * @param querySelectorAll
+ * @param mediaQueryList
+ */
 function setupSignInButtonRenderer(
   accountsId,
   querySelectorAll,
@@ -1578,7 +1801,7 @@ function setupSignInButtonRenderer(
     renderSignInButtons(accountsId, querySelectorAll, mediaQueryList);
 
   renderButton();
-  mediaQueryList?.addEventListener?.('change', renderButton);
+  attachChangeListener(mediaQueryList, renderButton);
 }
 
 /**
@@ -1616,14 +1839,28 @@ function isAdminUser(user) {
  * @param {boolean} visible - True to display the element, false to hide it.
  * @returns {void}
  */
-function setElementVisibility(element, visible) {
-  if (!element) {
-    return;
-  }
-
+/**
+ * Apply visibility style.
+ * @param {object} element Element.
+ * @param {boolean} visible Visible.
+ * @returns {void}
+ */
+function applyVisibility(element, visible) {
   if (visible) {
     element.style.display = '';
   } else {
     element.style.display = 'none';
   }
+}
+
+/**
+ *
+ * @param element
+ * @param visible
+ */
+function setElementVisibility(element, visible) {
+  if (!element) {
+    return;
+  }
+  applyVisibility(element, visible);
 }

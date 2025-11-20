@@ -471,7 +471,18 @@ function buildHeadTitle(storyTitle) {
  * @returns {string} Author credits HTML.
  */
 function buildAuthorHtml(author, authorUrl) {
-  if (!author) return '';
+  if (!author) {
+    return '';
+  }
+  return buildAuthorLink(author, authorUrl);
+}
+
+/**
+ *
+ * @param author
+ * @param authorUrl
+ */
+function buildAuthorLink(author, authorUrl) {
   if (authorUrl) {
     return `<p>By <a href="${authorUrl}">${escapeHtml(author)}</a></p>`;
   }
@@ -799,10 +810,29 @@ export function buildAltsHtml(pageNumber, variants) {
 export function getVisibleVariants(docs) {
   return docs
     .filter(doc => (doc.data().visibility ?? 1) >= VISIBILITY_THRESHOLD)
-    .map(doc => ({
-      name: doc.data().name || '',
-      content: doc.data().content || '',
-    }));
+    .map(mapDocToVariant);
+}
+
+/**
+ * Map document to variant object.
+ * @param {object} doc Document.
+ * @returns {object} Variant object.
+ */
+function mapDocToVariant(doc) {
+  const data = doc.data();
+  return buildVariantObject(data);
+}
+
+/**
+ * Build variant object from data.
+ * @param {object} data Variant data.
+ * @returns {object} Variant object.
+ */
+function buildVariantObject(data) {
+  return {
+    name: data.name || '',
+    content: data.content || '',
+  };
 }
 
 /**
@@ -811,7 +841,18 @@ export function getVisibleVariants(docs) {
  * @throws {TypeError} When the provided database does not expose a `doc` function.
  */
 function assertDb(db) {
-  if (!db || typeof db.doc !== 'function') {
+  if (!db) {
+    throw new TypeError('db must provide a doc helper');
+  }
+  checkDbDocHelper(db);
+}
+
+/**
+ * Check if db has doc helper.
+ * @param {object} db Database.
+ */
+function checkDbDocHelper(db) {
+  if (typeof db.doc !== 'function') {
     throw new TypeError('db must provide a doc helper');
   }
 }
@@ -822,7 +863,18 @@ function assertDb(db) {
  * @throws {TypeError} When the provided storage does not expose a `bucket` function.
  */
 function assertStorage(storage) {
-  if (!storage || typeof storage.bucket !== 'function') {
+  if (!storage) {
+    throw new TypeError('storage must provide a bucket helper');
+  }
+  checkStorageBucketHelper(storage);
+}
+
+/**
+ * Check if storage has bucket helper.
+ * @param {object} storage Storage.
+ */
+function checkStorageBucketHelper(storage) {
+  if (typeof storage.bucket !== 'function') {
     throw new TypeError('storage must provide a bucket helper');
   }
 }
@@ -838,6 +890,138 @@ function assertStorage(storage) {
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger invoked when invalidation fails.
  * @returns {(paths: string[]) => Promise<void>} Invalidation routine that accepts absolute paths to purge.
  */
+/**
+ * Get access token.
+ * @param {Function} fetchFn Fetch.
+ * @returns {Promise<string>} Token.
+ */
+async function getAccessToken(fetchFn) {
+  const response = await fetchFn(
+    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+    { headers: { 'Metadata-Flavor': 'Google' } }
+  );
+
+  if (!response.ok) {
+    throw new Error(`metadata token: HTTP ${response.status}`);
+  }
+
+  const { access_token: accessToken } = await response.json();
+  return accessToken;
+}
+
+/**
+ * Invalidate single path.
+ * @param {object} params Params.
+ * @param {string} params.path Path to invalidate.
+ * @param {string} params.token Auth token.
+ * @param {string} params.url Invalidation URL.
+ * @param {string} params.host Host header.
+ * @param {Function} params.fetchFn Fetch function.
+ * @param {Function} params.randomUUID UUID generator.
+ * @param {Function} params.consoleError Error logger.
+ * @returns {Promise<void>} Void.
+ */
+async function invalidatePathItem({
+  path,
+  token,
+  url,
+  host,
+  fetchFn,
+  randomUUID,
+  consoleError,
+}) {
+  try {
+    const response = await fetchFn(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        host,
+        path,
+        requestId: randomUUID(),
+      }),
+    });
+
+    handleInvalidateResponse(response, path, consoleError);
+  } catch (error) {
+    handleInvalidateError(error, path, consoleError);
+  }
+}
+
+/**
+ * Handle invalidate response.
+ * @param {object} response Response.
+ * @param {string} path Path.
+ * @param {Function} consoleError Error logger.
+ */
+function handleInvalidateResponse(response, path, consoleError) {
+  if (response.ok) {
+    return;
+  }
+  logInvalidateFailure(response, path, consoleError);
+}
+
+/**
+ * Log invalidation failure.
+ * @param {object} response Response.
+ * @param {string} path Path.
+ * @param {Function} consoleError Error logger.
+ */
+function logInvalidateFailure(response, path, consoleError) {
+  if (consoleError) {
+    consoleError(`invalidate ${path} failed: ${response.status}`);
+  }
+}
+
+/**
+ * Handle invalidate error.
+ * @param {Error} error Error.
+ * @param {string} path Path.
+ * @param {Function} consoleError Error logger.
+ */
+function handleInvalidateError(error, path, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  logInvalidateError(error, path, consoleError);
+}
+
+/**
+ * Log invalidation error message.
+ * @param {Error} error Error object.
+ * @param {string} path Path that failed.
+ * @param {Function} consoleError Error logger.
+ */
+function logInvalidateError(error, path, consoleError) {
+  const message = getErrorMessage(error);
+  consoleError(`invalidate ${path} error`, message);
+}
+
+/**
+ * Extract error message from error object.
+ * @param {Error|any} error Error object or value.
+ * @returns {string|any} Error message.
+ */
+function getErrorMessage(error) {
+  if (error?.message) {
+    return error.message;
+  }
+  return error;
+}
+
+/**
+ * Create invalidation function.
+ * @param {object} root0 Dependencies.
+ * @param {Function} root0.fetchFn Fetch function.
+ * @param {string} root0.projectId Project ID.
+ * @param {string} root0.urlMapName URL map name.
+ * @param {string} root0.cdnHost CDN host.
+ * @param {Function} root0.randomUUID UUID generator.
+ * @param {Function} root0.consoleError Error logger.
+ * @returns {Function} Invalidation function.
+ */
 export function createInvalidatePaths({
   fetchFn,
   projectId,
@@ -849,62 +1033,69 @@ export function createInvalidatePaths({
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
-  const host = cdnHost || 'www.dendritestories.co.nz';
-  const urlMap = urlMapName || 'prod-dendrite-url-map';
+  return createInvalidatePathsImpl({
+    fetchFn,
+    projectId,
+    urlMapName,
+    cdnHost,
+    randomUUID,
+    consoleError,
+  });
+}
+
+/**
+ * Implementation of invalidate paths creator.
+ * @param {object} root0 Dependencies.
+ * @param {Function} root0.fetchFn Fetch function.
+ * @param {string} root0.projectId Project ID.
+ * @param {string} root0.urlMapName URL map name.
+ * @param {string} root0.cdnHost CDN host.
+ * @param {Function} root0.randomUUID UUID generator.
+ * @param {Function} root0.consoleError Error logger.
+ * @returns {Function} Invalidation function.
+ */
+function createInvalidatePathsImpl({
+  fetchFn,
+  projectId,
+  urlMapName,
+  cdnHost,
+  randomUUID,
+  consoleError,
+}) {
   const resolvedProjectId = projectId || '';
+  const resolvedCdnHost = cdnHost || 'www.dendritestories.co.nz';
+  const resolvedUrlMapName = urlMapName || 'prod-dendrite-url-map';
 
   /**
-   * Retrieve an access token from the metadata server for authenticated requests.
-   * @returns {Promise<string>} Resolves with a short-lived OAuth access token.
+   * Check if paths array is valid.
+   * @param {any} paths Paths to validate.
+   * @returns {boolean} True if valid.
    */
-  async function getAccessToken() {
-    const response = await fetchFn(
-      'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
-      { headers: { 'Metadata-Flavor': 'Google' } }
-    );
-
-    if (!response.ok) {
-      throw new Error(`metadata token: HTTP ${response.status}`);
+  function isValidPaths(paths) {
+    if (!Array.isArray(paths)) {
+      return false;
     }
-
-    const { access_token: accessToken } = await response.json();
-
-    return accessToken;
+    return paths.length > 0;
   }
 
   return async function invalidatePaths(paths) {
-    if (!Array.isArray(paths) || paths.length === 0) {
+    if (!isValidPaths(paths)) {
       return;
     }
 
-    const token = await getAccessToken();
-    const url = `https://compute.googleapis.com/compute/v1/projects/${resolvedProjectId}/global/urlMaps/${urlMap}/invalidateCache`;
-
+    const token = await getAccessToken(fetchFn);
     await Promise.all(
-      paths.map(async path => {
-        try {
-          const response = await fetchFn(url, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              host,
-              path,
-              requestId: randomUUID(),
-            }),
-          });
-
-          if (!response.ok && consoleError) {
-            consoleError(`invalidate ${path} failed: ${response.status}`);
-          }
-        } catch (error) {
-          if (consoleError) {
-            consoleError(`invalidate ${path} error`, error?.message || error);
-          }
-        }
-      })
+      paths.map(path =>
+        invalidatePathItem({
+          path,
+          token,
+          url: `https://compute.googleapis.com/compute/v1/projects/${resolvedProjectId}/global/urlMaps/${resolvedUrlMapName}/invalidateCache`,
+          host: resolvedCdnHost,
+          fetchFn,
+          randomUUID,
+          consoleError,
+        })
+      )
     );
   };
 }
@@ -943,26 +1134,19 @@ async function buildOptionMetadata({
  * @returns {Promise<{targetPageNumber?: number, targetVariantName?: string, targetVariants?: {name: string, weight: number}[]}>} Target metadata derived from the option.
  */
 async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
-  let targetPageNumber;
-  let targetVariantName;
-  let targetVariants;
-
   if (data.targetPage) {
-    ({ targetPageNumber, targetVariantName, targetVariants } =
-      await fetchTargetPageMetadata(
-        data.targetPage,
-        visibilityThreshold,
-        consoleError
-      ));
-  } else if (data.targetPageNumber !== undefined) {
-    targetPageNumber = data.targetPageNumber;
+    return fetchTargetPageMetadata(
+      data.targetPage,
+      visibilityThreshold,
+      consoleError
+    );
   }
 
-  return {
-    targetPageNumber,
-    targetVariantName,
-    targetVariants,
-  };
+  if (data.targetPageNumber !== undefined) {
+    return { targetPageNumber: data.targetPageNumber };
+  }
+
+  return {};
 }
 
 /**
@@ -983,41 +1167,81 @@ async function fetchTargetPageMetadata(
 ) {
   try {
     const targetSnap = await targetPage.get();
-
     if (!targetSnap.exists) {
       return {};
     }
-
-    const targetPageNumber = targetSnap.data().number;
-    const variantSnap = await targetPage
-      .collection('variants')
-      .orderBy('name')
-      .get();
-    const visible = variantSnap.docs.filter(
-      doc => (doc.data().visibility ?? 1) >= visibilityThreshold
-    );
-
-    if (!visible.length) {
-      return { targetPageNumber };
-    }
-
-    const targetVariantName = visible[0].data().name;
-    const targetVariants = visible.map(doc => ({
-      name: doc.data().name,
-      weight: doc.data().visibility ?? 1,
-    }));
-
-    return {
-      targetPageNumber,
-      targetVariantName,
-      targetVariants,
-    };
+    return processTargetSnap(targetSnap, targetPage, visibilityThreshold);
   } catch (error) {
-    if (consoleError) {
-      consoleError('target page lookup failed', error?.message || error);
-    }
+    handleTargetPageError(error, consoleError);
     return {};
   }
+}
+
+/**
+ * Handle target page error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function handleTargetPageError(error, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  logTargetPageError(error, consoleError);
+}
+
+/**
+ * Log target page error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function logTargetPageError(error, consoleError) {
+  const message = getErrorMessage(error);
+  consoleError('target page lookup failed', message);
+}
+
+/**
+ * Process target snap.
+ * @param {object} targetSnap Target snap.
+ * @param {object} targetPage Target page.
+ * @param {number} visibilityThreshold Visibility threshold.
+ * @returns {Promise<object>} Target metadata.
+ */
+async function processTargetSnap(targetSnap, targetPage, visibilityThreshold) {
+  const targetPageNumber = targetSnap.data().number;
+  const variantSnap = await targetPage
+    .collection('variants')
+    .orderBy('name')
+    .get();
+
+  const visible = variantSnap.docs.filter(
+    doc => (doc.data().visibility ?? 1) >= visibilityThreshold
+  );
+
+  if (!visible.length) {
+    return { targetPageNumber };
+  }
+
+  return buildTargetMetadata(targetPageNumber, visible);
+}
+
+/**
+ * Build target metadata.
+ * @param {number} targetPageNumber Target page number.
+ * @param {object[]} visible Visible variants.
+ * @returns {object} Target metadata.
+ */
+function buildTargetMetadata(targetPageNumber, visible) {
+  const targetVariantName = visible[0].data().name;
+  const targetVariants = visible.map(doc => ({
+    name: doc.data().name,
+    weight: doc.data().visibility ?? 1,
+  }));
+
+  return {
+    targetPageNumber,
+    targetVariantName,
+    targetVariants,
+  };
 }
 
 /**
@@ -1080,27 +1304,56 @@ async function resolveFirstPageUrl({ page, storyData, consoleError }) {
   }
 
   try {
-    const rootPageSnap = await storyData.rootPage.get();
-
-    if (!rootPageSnap.exists) {
-      return undefined;
-    }
-
-    const rootVariantSnap = await storyData.rootPage
-      .collection('variants')
-      .orderBy('name')
-      .limit(1)
-      .get();
-
-    return `/p/${rootPageSnap.data().number}${
-      rootVariantSnap.docs[0].data().name
-    }.html`;
+    return await fetchRootPageUrl(storyData);
   } catch (error) {
-    if (consoleError) {
-      consoleError('root page lookup failed', error?.message || error);
-    }
+    handleRootPageError(error, consoleError);
     return undefined;
   }
+}
+
+/**
+ * Handle root page error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function handleRootPageError(error, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  logRootPageError(error, consoleError);
+}
+
+/**
+ * Log root page error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function logRootPageError(error, consoleError) {
+  const message = getErrorMessage(error);
+  consoleError('root page lookup failed', message);
+}
+
+/**
+ * Fetch root page URL.
+ * @param {object} storyData Story data.
+ * @returns {Promise<string|undefined>} Root page URL.
+ */
+async function fetchRootPageUrl(storyData) {
+  const rootPageSnap = await storyData.rootPage.get();
+
+  if (!rootPageSnap.exists) {
+    return undefined;
+  }
+
+  const rootVariantSnap = await storyData.rootPage
+    .collection('variants')
+    .orderBy('name')
+    .limit(1)
+    .get();
+
+  return `/p/${rootPageSnap.data().number}${
+    rootVariantSnap.docs[0].data().name
+  }.html`;
 }
 
 /**
@@ -1109,7 +1362,16 @@ async function resolveFirstPageUrl({ page, storyData, consoleError }) {
  * @returns {object|null} Story reference when available, otherwise null.
  */
 function extractStoryRef(pageSnap) {
-  return pageSnap?.ref?.parent?.parent ?? null;
+  if (!pageSnap) {
+    return null;
+  }
+  if (!pageSnap.ref) {
+    return null;
+  }
+  if (!pageSnap.ref.parent) {
+    return null;
+  }
+  return pageSnap.ref.parent.parent ?? null;
 }
 
 /**
@@ -1186,18 +1448,50 @@ async function writeAuthorPageIfNeeded(authorFile, variant) {
  */
 async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
   try {
-    const authorFile = await resolveAuthorFile({
-      variant,
-      db,
-      bucket,
-    });
-    return await writeAuthorPageIfNeeded(authorFile, variant);
+    return await performAuthorLookup({ variant, db, bucket });
   } catch (error) {
-    if (consoleError) {
-      consoleError('author lookup failed', error?.message || error);
-    }
+    handleAuthorLookupError(error, consoleError);
     return undefined;
   }
+}
+
+/**
+ * Handle author lookup error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function handleAuthorLookupError(error, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  logAuthorLookupError(error, consoleError);
+}
+
+/**
+ * Log author lookup error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function logAuthorLookupError(error, consoleError) {
+  const message = getErrorMessage(error);
+  consoleError('author lookup failed', message);
+}
+
+/**
+ * Perform author lookup.
+ * @param {object} root0 Dependencies.
+ * @param {object} root0.variant Variant.
+ * @param {object} root0.db Database.
+ * @param {object} root0.bucket Bucket.
+ * @returns {Promise<string|undefined>} Author URL.
+ */
+async function performAuthorLookup({ variant, db, bucket }) {
+  const authorFile = await resolveAuthorFile({
+    variant,
+    db,
+    bucket,
+  });
+  return writeAuthorPageIfNeeded(authorFile, variant);
 }
 
 /**
@@ -1258,7 +1552,13 @@ async function writeAuthorLandingPage(variant, file) {
  * @returns {object | null} Refs.
  */
 function extractParentRefs(optionRef) {
-  const parentVariantRef = optionRef.parent?.parent;
+  if (!optionRef) {
+    return { parentVariantRef: undefined, parentPageRef: undefined };
+  }
+  if (!optionRef.parent) {
+    return { parentVariantRef: undefined, parentPageRef: undefined };
+  }
+  const parentVariantRef = optionRef.parent.parent;
   const parentPageRef = parentVariantRef?.parent?.parent;
   return { parentVariantRef, parentPageRef };
 }
@@ -1279,16 +1579,10 @@ function areParentRefsValid(parentVariantRef, parentPageRef) {
  * @returns {{ parentVariantRef: { get: Function }, parentPageRef: { get: Function } } | null} Parent references when resolvable.
  */
 export function resolveParentReferences(optionRef) {
-  if (!optionRef) {
-    return null;
-  }
-
   const { parentVariantRef, parentPageRef } = extractParentRefs(optionRef);
-
   if (!areParentRefsValid(parentVariantRef, parentPageRef)) {
     return null;
   }
-
   return { parentVariantRef, parentPageRef };
 }
 
@@ -1410,21 +1704,49 @@ async function resolveParentUrl({ variant, db, consoleError }) {
   }
 
   try {
-    const snapshots = await fetchParentData(db, variant.incomingOption);
-    if (!snapshots) {
-      return undefined;
-    }
-
-    const route = buildRouteFromSnapshots(snapshots);
-    if (route === null) {
-      return undefined;
-    }
-
-    return route;
+    return await fetchAndBuildParentUrl(db, variant.incomingOption);
   } catch (error) {
-    consoleError('parent lookup failed', error?.message || error);
+    handleParentLookupError(error, consoleError);
     return undefined;
   }
+}
+
+/**
+ * Handle parent lookup error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function handleParentLookupError(error, consoleError) {
+  if (!consoleError) {
+    return;
+  }
+  logParentLookupError(error, consoleError);
+}
+
+/**
+ * Log parent lookup error.
+ * @param {Error} error Error.
+ * @param {Function} consoleError Error logger.
+ */
+function logParentLookupError(error, consoleError) {
+  const message = getErrorMessage(error);
+  consoleError('parent lookup failed', message);
+}
+
+/**
+ * Fetch and build parent URL.
+ * @param {object} db Database.
+ * @param {string} incomingOption Incoming option.
+ * @returns {Promise<string|undefined>} Parent URL.
+ */
+async function fetchAndBuildParentUrl(db, incomingOption) {
+  const snapshots = await fetchParentData(db, incomingOption);
+  if (!snapshots) {
+    return undefined;
+  }
+
+  const route = buildRouteFromSnapshots(snapshots);
+  return route || undefined;
 }
 
 /**
@@ -1442,7 +1764,64 @@ async function resolveParentUrl({ variant, db, consoleError }) {
  * @param {number} [dependencies.visibilityThreshold] - Minimum visibility used when publishing variants.
  * @returns {(snap: {exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}, context?: {params?: Record<string, string>}) => Promise<null>} Async renderer for variant snapshots.
  */
-export function createRenderVariant({
+export function createRenderVariant(dependencies) {
+  validateDependencies(dependencies);
+
+  const {
+    db,
+    storage,
+    fetchFn,
+    randomUUID,
+    projectId,
+    urlMapName,
+    cdnHost,
+    consoleError = console.error,
+    bucketName = DEFAULT_BUCKET_NAME,
+    visibilityThreshold = VISIBILITY_THRESHOLD,
+  } = dependencies;
+
+  return createRenderVariantHandler({
+    db,
+    storage,
+    fetchFn,
+    randomUUID,
+    projectId,
+    urlMapName,
+    cdnHost,
+    consoleError,
+    bucketName,
+    visibilityThreshold,
+  });
+}
+
+/**
+ *
+ * @param dependencies
+ */
+function validateDependencies(dependencies) {
+  const { db, storage, fetchFn, randomUUID } = dependencies;
+  assertDb(db);
+  assertStorage(storage);
+  assertFunction(fetchFn, 'fetchFn');
+  assertFunction(randomUUID, 'randomUUID');
+}
+
+/**
+ * Create render variant handler.
+ * @param {object} root0 Dependencies.
+ * @param {object} root0.db Database.
+ * @param {object} root0.storage Storage.
+ * @param {Function} root0.fetchFn Fetch function.
+ * @param {Function} root0.randomUUID UUID generator.
+ * @param {string} root0.projectId Project ID.
+ * @param {string} root0.urlMapName URL map name.
+ * @param {string} root0.cdnHost CDN host.
+ * @param {Function} root0.consoleError Error logger.
+ * @param {string} root0.bucketName Bucket name.
+ * @param {number} root0.visibilityThreshold Visibility threshold.
+ * @returns {Function} Render function.
+ */
+function createRenderVariantHandler({
   db,
   storage,
   fetchFn,
@@ -1450,16 +1829,11 @@ export function createRenderVariant({
   projectId,
   urlMapName,
   cdnHost,
-  consoleError = console.error,
-  bucketName = DEFAULT_BUCKET_NAME,
-  visibilityThreshold = VISIBILITY_THRESHOLD,
+  consoleError,
+  bucketName,
+  visibilityThreshold,
 }) {
-  assertDb(db);
-  assertStorage(storage);
-  assertFunction(fetchFn, 'fetchFn');
-  assertFunction(randomUUID, 'randomUUID');
-
-  const bucket = storage.bucket(bucketName);
+  const bucket = storage.bucket(bucketName || DEFAULT_BUCKET_NAME);
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     projectId,
@@ -1468,7 +1842,6 @@ export function createRenderVariant({
     randomUUID,
     consoleError,
   });
-
   /**
    * Execute render workflow.
    * @param {object} deps Dependencies.
@@ -1534,9 +1907,22 @@ export function createRenderVariant({
  * @returns {boolean} True if valid.
  */
 export function isSnapValid(snap) {
-  if (!snap) return true;
-  if (!('exists' in snap)) return true;
-  return snap.exists;
+  if (!snap) {
+    return true;
+  }
+  return checkSnapExists(snap);
+}
+
+/**
+ * Check snap exists.
+ * @param {object} snap Snap.
+ * @returns {boolean} True if exists.
+ */
+function checkSnapExists(snap) {
+  if ('exists' in snap) {
+    return snap.exists;
+  }
+  return true;
 }
 
 /**
@@ -1550,7 +1936,27 @@ export function isSnapValid(snap) {
  * @returns {Promise<object | null>} Page snap.
  */
 export async function getPageSnapFromRef(snap) {
-  return snap.ref.parent?.parent?.get();
+  if (!isSnapRefValid(snap)) {
+    return undefined;
+  }
+  return snap.ref.parent.parent.get();
+}
+
+/**
+ *
+ * @param snap
+ */
+function isSnapRefValid(snap) {
+  if (!snap) {
+    return false;
+  }
+  if (!snap.ref) {
+    return false;
+  }
+  if (!snap.ref.parent) {
+    return false;
+  }
+  return Boolean(snap.ref.parent.parent);
 }
 
 /**
@@ -1560,10 +1966,21 @@ export async function getPageSnapFromRef(snap) {
  */
 export async function fetchPageData(snap) {
   const pageSnap = await getPageSnapFromRef(snap);
-  if (!pageSnap?.exists) {
+  if (!isPageSnapValid(pageSnap)) {
     return null;
   }
   return pageSnap;
+}
+
+/**
+ *
+ * @param pageSnap
+ */
+function isPageSnapValid(pageSnap) {
+  if (!pageSnap) {
+    return false;
+  }
+  return pageSnap.exists;
 }
 
 /**
@@ -1680,24 +2097,50 @@ async function fetchAndValidatePage(snap) {
  *   openVariant: boolean
  * }>} Render plan when the variant should be materialized.
  */
-async function resolveRenderPlan({
-  snap,
-  db,
-  bucket,
-  consoleError,
-  visibilityThreshold,
-}) {
+async function resolveRenderPlan(options) {
+  const { snap } = options;
   if (!isSnapValid(snap)) {
     return null;
   }
 
-  const variant = snap.data();
+  return buildRenderPlanIfPageValid(options);
+}
+
+/**
+ *
+ * @param options
+ */
+async function buildRenderPlanIfPageValid(options) {
+  const { snap } = options;
   const pageData = await fetchAndValidatePage(snap);
   if (!pageData) {
     return null;
   }
 
+  return buildRenderPlan({ ...options, pageData });
+}
+
+/**
+ * Build render plan.
+ * @param {object} root0 Options.
+ * @param {object} root0.snap Snap.
+ * @param {object} root0.pageData Page data.
+ * @param {object} root0.db Database.
+ * @param {object} root0.bucket Bucket.
+ * @param {Function} root0.consoleError Error logger.
+ * @param {number} root0.visibilityThreshold Visibility threshold.
+ * @returns {Promise<object>} Render plan.
+ */
+async function buildRenderPlan({
+  snap,
+  pageData,
+  db,
+  bucket,
+  consoleError,
+  visibilityThreshold,
+}) {
   const { pageSnap, page } = pageData;
+  const variant = snap.data();
   const metadata = await gatherMetadata({
     snap,
     db,
@@ -1729,13 +2172,14 @@ async function resolveRenderPlan({
  */
 /**
  * Save variant HTML.
- * @param {object} bucket Bucket.
- * @param {string} filePath File path.
- * @param {string} html HTML.
- * @param {boolean} openVariant Open variant.
+ * @param {object} bucket Bucket object.
+ * @param {object} bucket.bucket Storage bucket.
+ * @param {string} bucket.filePath File path.
+ * @param {string} bucket.html HTML content.
+ * @param {boolean} bucket.openVariant Is open variant.
  * @returns {Promise<void>} Promise.
  */
-async function saveVariantHtml(bucket, filePath, html, openVariant) {
+async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
   await bucket.file(filePath).save(html, {
     contentType: 'text/html',
     ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
@@ -1764,9 +2208,10 @@ async function saveAltsHtml(deps) {
  * @returns {string | undefined} Pending name.
  */
 function resolvePendingName(variant, context) {
-  return variant.incomingOption
-    ? context?.params?.variantId
-    : context?.params?.storyId;
+  if (variant.incomingOption) {
+    return context?.params?.variantId;
+  }
+  return context?.params?.storyId;
 }
 
 /**
@@ -1827,7 +2272,7 @@ async function persistRenderPlan({
   filePath,
   openVariant,
 }) {
-  await saveVariantHtml(bucket, filePath, html, openVariant);
+  await saveVariantHtml({ bucket, filePath, html, openVariant });
   const altsPath = await saveAltsHtml({ snap, bucket, page });
 
   const pendingName = resolvePendingName(variant, context);
@@ -1855,18 +2300,19 @@ export function createHandleVariantWrite({
 
   /**
    * Handle dirty variant.
-   * @param {object} change Change.
-   * @param {object} context Context.
-   * @param {Function} renderVariant Render function.
-   * @param {Function} getDeleteSentinel Get sentinel.
+   * @param {object} root0 Options.
+   * @param {object} root0.change Firestore change.
+   * @param {object} root0.context Event context.
+   * @param {Function} root0.renderVariant Render function.
+   * @param {Function} root0.getDeleteSentinel Sentinel function.
    * @returns {Promise<null>} Null.
    */
-  async function handleDirtyVariant(
+  async function handleDirtyVariant({
     change,
     context,
     renderVariant,
-    getDeleteSentinel
-  ) {
+    getDeleteSentinel,
+  }) {
     await renderVariant(change.after, context);
     await change.after.ref.update({ dirty: getDeleteSentinel() });
     return null;
@@ -1891,37 +2337,61 @@ export function createHandleVariantWrite({
     if (!change.after.exists) {
       return null;
     }
+    return processExistingVariant(change, context);
+  };
 
+  /**
+   *
+   * @param change
+   * @param context
+   */
+  async function processExistingVariant(change, context) {
     const data = change.after.data();
-
-    if (Object.prototype.hasOwnProperty.call(data, 'dirty')) {
-      return handleDirtyVariant(
+    if (data.dirty) {
+      return handleDirtyVariant({
         change,
         context,
         renderVariant,
-        getDeleteSentinel
-      );
+        getDeleteSentinel,
+      });
     }
 
-    if (!change.before.exists) {
+    return handleCleanVariant(change, context, data);
+  }
+
+  /**
+   *
+   * @param change
+   * @param context
+   * @param data
+   */
+  async function handleCleanVariant(change, context, data) {
+    if (shouldRenderVariant(change, data, visibilityThreshold)) {
       return renderVariant(change.after, context);
+    }
+    return null;
+  }
+
+  /**
+   *
+   * @param change
+   * @param data
+   * @param visibilityThreshold
+   */
+  function shouldRenderVariant(change, data, visibilityThreshold) {
+    if (!change.before.exists) {
+      return true;
     }
 
     const beforeVisibility = change.before.data().visibility;
     const afterVisibility = data.visibility;
 
-    if (
-      didCrossVisibilityThreshold(
-        beforeVisibility,
-        afterVisibility,
-        visibilityThreshold
-      )
-    ) {
-      return renderVariant(change.after, context);
-    }
-
-    return null;
-  };
+    return didCrossVisibilityThreshold(
+      beforeVisibility,
+      afterVisibility,
+      visibilityThreshold
+    );
+  }
 }
 
 export {
