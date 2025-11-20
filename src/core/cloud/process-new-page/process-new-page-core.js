@@ -438,7 +438,7 @@ async function createVariantWithOptions({
 
   batch.set(
     newVariantRef,
-    buildVariantPayload(nextName, submission, random, getServerTimestamp)
+    buildVariantPayload(nextName, submission, { random, getServerTimestamp })
   );
 
   normalizeOptions(submission.options).forEach((text, position) => {
@@ -533,11 +533,14 @@ function resolveVariantRef({ pageDocRef, snapshotRef, randomUUID }) {
  * Build the variant document payload written to Firestore.
  * @param {string} nextName Name assigned to the new variant.
  * @param {object} submission Submission payload containing variant content.
- * @param {() => number} random Random source for variant ordering.
- * @param {() => unknown} getServerTimestamp Firestore server timestamp helper.
+ * @param {{
+ *   random: () => number,
+ *   getServerTimestamp: () => unknown,
+ * }} helpers Helpers that supply randomization and timestamps.
  * @returns {object} Data stored in the new variant document.
  */
-function buildVariantPayload(nextName, submission, random, getServerTimestamp) {
+function buildVariantPayload(nextName, submission, helpers) {
+  const { random, getServerTimestamp } = helpers;
   return {
     name: nextName,
     content: submission.content,
