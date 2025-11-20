@@ -1003,35 +1003,16 @@ function getAuthorizationHeaderFromGetter(req) {
  * @returns {string} Authorization header or an empty string.
  */
 function resolveAuthorizationHeader(req) {
-  const getterHeader = normalizeHeaderCandidate(
-    getAuthorizationHeaderFromGetter(req)
-  );
-  if (getterHeader) {
+  const getterHeader = getAuthorizationHeaderFromGetter(req);
+  if (typeof getterHeader === 'string' && getterHeader.length > 0) {
     return getterHeader;
   }
-
-  return normalizeHeaderCandidate(getHeaderFromHeaders(req));
-}
-
-/**
- * Normalize an authorization header candidate into a string.
- * @param {unknown} value Candidate header value.
- * @returns {string} Header string when valid or empty string otherwise.
- */
-function normalizeHeaderCandidate(value) {
-  if (typeof value === 'string' && value.length > 0) {
-    return value;
+  const headerFromHeaders =
+    req?.headers?.Authorization ?? req?.headers?.authorization;
+  if (headerFromHeaders !== undefined) {
+    return headerFromHeaders;
   }
   return '';
-}
-
-/**
- * Read the Authorization header when it lives in the request headers map.
- * @param {{ headers?: object }} req Request holding the headers object.
- * @returns {unknown} Authorization header value found in the headers object.
- */
-function getHeaderFromHeaders(req) {
-  return req?.headers?.Authorization ?? req?.headers?.authorization;
 }
 
 /**
