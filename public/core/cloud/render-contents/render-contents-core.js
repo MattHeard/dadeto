@@ -363,7 +363,7 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
  * @param {(message: string, error?: unknown) => void} [root0.consoleError] Logger for failures.
  * @returns {(paths: string[]) => Promise<void>} Path invalidation routine.
  */
-function createInvalidatePaths({
+export function createInvalidatePaths({
   fetchFn,
   projectId,
   urlMapName,
@@ -1006,6 +1006,11 @@ function resolveAuthorizationHeader(req) {
   const getterHeader = getAuthorizationHeaderFromGetter(req);
   if (typeof getterHeader === 'string' && getterHeader.length > 0) {
     return getterHeader;
+  }
+  const headerFromHeaders =
+    req?.headers?.Authorization ?? req?.headers?.authorization;
+  if (headerFromHeaders !== undefined) {
+    return headerFromHeaders;
   }
   return '';
 }
