@@ -76,33 +76,57 @@ describe('createGenerateStatsCore', () => {
       console: mockConsole, // Inject mockConsole
       createVerifyAdmin: deps => {
         return async (req, res) => {
-          const authHeader = deps.getAuthHeader(req);
-          const match = matchAuthHeader(authHeader);
-          const token = match?.[1] || '';
+          const token = extractTokenFromRequest(deps, req);
           if (!token) {
             deps.sendUnauthorized(res, 'Missing token');
             return false;
           }
-
-          try {
-            const decoded = await deps.verifyToken(token);
-            const isAdmin = Boolean(deps.isAdminUid(decoded));
-            if (!isAdmin) {
-              deps.sendForbidden(res);
-              return false;
-            }
-          } catch (error) {
-            const candidate = error?.message;
-            const message =
-              typeof candidate === 'string' ? candidate : 'Invalid token';
-            deps.sendUnauthorized(res, message);
-            return false;
-          }
-          return true;
+          return authorizeToken(deps, token, res);
         };
       },
     });
   });
+
+  /**
+   * Extract the bearer token from the request using the injected helpers.
+   * @param {{ getAuthHeader: (req: object) => string }} deps Dependency bundle supplied to helpers.
+   * @param {object} req Request object containing headers.
+   * @returns {string} Bearer token or an empty string.
+   */
+  function extractTokenFromRequest(deps, req) {
+    const authHeader = deps.getAuthHeader(req);
+    const match = matchAuthHeader(authHeader);
+    return match?.[1] || '';
+  }
+
+  /**
+   * Validate the decoded token and ensure the caller is an admin.
+   * @param {{
+   *   verifyToken: (token: string) => Promise<{ uid?: string }>,
+   *   isAdminUid: (decoded: { uid?: string }) => boolean,
+   *   sendForbidden: (res: object) => void,
+   *   sendUnauthorized: (res: object, message: string) => void,
+   * }} deps Dependency bundle.
+   * @param {string} token Bearer token to validate.
+   * @param {object} res Response helper used to send errors.
+   * @returns {Promise<boolean>} True when the token is valid and the user is admin.
+   */
+  async function authorizeToken(deps, token, res) {
+    try {
+      const decoded = await deps.verifyToken(token);
+      if (!deps.isAdminUid(decoded)) {
+        deps.sendForbidden(res);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      const candidate = error?.message;
+      const message =
+        typeof candidate === 'string' ? candidate : 'Invalid token';
+      deps.sendUnauthorized(res, message);
+      return false;
+    }
+  }
 
   describe('handleRequest', () => {
     let mockReq;
