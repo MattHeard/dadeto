@@ -800,7 +800,7 @@ function buildNormalizedGoogleSignInDeps(deps) {
  * @returns {object} Deps with logger.
  */
 function ensureLogger(deps) {
-  if (deps.logger == null) {
+  if (deps.logger === undefined || deps.logger === null) {
     deps.logger = console;
   }
 
@@ -919,8 +919,11 @@ function validateGetIdToken(getter) {
 }
 
 /**
- *
- * @param currentUser
+ * Resolve a safe getter for the current user's ID token method.
+ * @param {{
+ *   getIdToken?: (() => Promise<string> | string | null | undefined) | undefined,
+ * } | null | undefined} currentUser - Auth user object that may expose `getIdToken`.
+ * @returns {() => Promise<string>} Function that returns a promised ID token.
  */
 function resolveGetIdToken(currentUser) {
   const getter = currentUser?.getIdToken;
@@ -952,22 +955,18 @@ function getSignInButtonElements(querySelectorAll) {
 }
 
 /**
- * Resolve the button theme based on the provided media-query match.
- * @param {{ matches: boolean } | undefined} mediaQueryList - Optional media query list controlling dark mode.
- * @returns {'filled_blue' | 'filled_black'} Theme name passed to the Google button renderer.
- */
-/**
  * Check if dark mode.
- * @param {object} mediaQueryList List.
- * @returns {boolean} True if dark.
+ * @param {{ matches?: boolean } | undefined} mediaQueryList Media query list capturing dark-mode preference.
+ * @returns {boolean} True when dark mode is preferred.
  */
 function isDarkMode(mediaQueryList) {
   return Boolean(mediaQueryList?.matches);
 }
 
 /**
- *
- * @param mediaQueryList
+ * Resolve the Google sign-in button theme from the current media query.
+ * @param {{ matches?: boolean } | undefined} mediaQueryList Media query list that may indicate dark mode.
+ * @returns {'filled_blue' | 'filled_black'} Theme name used by the button renderer.
  */
 function resolveSignInTheme(mediaQueryList) {
   if (isDarkMode(mediaQueryList)) {
@@ -1020,9 +1019,24 @@ export function createInitGoogleSignIn(deps) {
 }
 
 /**
- *
- * @param deps
- * @param onSignIn
+ * Wire the Google Identity button renderer with the normalized dependencies.
+ * @param {{
+ *   resolveGoogleAccountsId: () => GoogleAccountsClient | undefined,
+ *   credentialFactory: (credential: string) => unknown,
+ *   signInWithCredential: (
+ *     auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *     credential: unknown
+ *   ) => Promise<void> | void,
+ *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage: { setItem: (key: string, value: string) => void },
+ *   matchMedia: (
+ *     query: string
+ *   ) => { matches: boolean; addEventListener?: (type: string, listener: () => void) => void },
+ *   querySelectorAll: (selector: string) => NodeList,
+ *   safeLogger: { error?: (message: string) => void },
+ * }} deps - Normalized Google sign-in dependencies.
+ * @param {(token: string) => void | undefined} [onSignIn] - Optional callback invoked with the obtained ID token.
+ * @returns {void}
  */
 function initGoogleSignInCore(deps, onSignIn) {
   const {
@@ -1053,9 +1067,19 @@ function initGoogleSignInCore(deps, onSignIn) {
 }
 
 /**
- *
- * @param accountsId
- * @param options
+ * Prepare the Google Identity client with credentials and callbacks.
+ * @param {GoogleAccountsClient} accountsId - Google Identity client exposing `initialize`.
+ * @param {{
+ *   credentialFactory: (credential: string) => unknown,
+ *   signInWithCredential: (
+ *     auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *     credential: unknown
+ *   ) => Promise<void> | void,
+ *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
+ *   storage: { setItem: (key: string, value: string) => void },
+ *   onSignIn?: (token: string) => void,
+ * }} options - Dependencies for acquiring and storing the ID token.
+ * @returns {void}
  */
 function initializeGoogleSignIn(accountsId, options) {
   accountsId.initialize({
