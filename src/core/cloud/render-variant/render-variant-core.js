@@ -478,9 +478,10 @@ function buildAuthorHtml(author, authorUrl) {
 }
 
 /**
- *
- * @param author
- * @param authorUrl
+ * Build the author credit markup, linking to the author when a URL is provided.
+ * @param {string} author - Name of the author to display.
+ * @param {string | undefined} authorUrl - Optional URL pointing to the author profile.
+ * @returns {string} HTML snippet that credits the author.
  */
 function buildAuthorLink(author, authorUrl) {
   if (authorUrl) {
@@ -1795,8 +1796,14 @@ export function createRenderVariant(dependencies) {
 }
 
 /**
- *
- * @param dependencies
+ * Ensure the render pipeline dependencies expose the helpers it relies on.
+ * @param {{
+ *   db: { doc: Function },
+ *   storage: { bucket: Function },
+ *   fetchFn: Function,
+ *   randomUUID: Function
+ * }} dependencies - Required services for rendering.
+ * @returns {void}
  */
 function validateDependencies(dependencies) {
   const { db, storage, fetchFn, randomUUID } = dependencies;
@@ -1943,8 +1950,9 @@ export async function getPageSnapFromRef(snap) {
 }
 
 /**
- *
- * @param snap
+ * Determine whether the variant snapshot exposes the expected parent chain.
+ * @param {{ ref?: { parent?: { parent?: unknown } } } | null | undefined} snap - Variant snapshot passed to the renderer.
+ * @returns {boolean} True when the snapshot contains a reachable page reference.
  */
 function isSnapRefValid(snap) {
   if (!snap) {
@@ -1973,8 +1981,9 @@ export async function fetchPageData(snap) {
 }
 
 /**
- *
- * @param pageSnap
+ * Confirm the fetched page snapshot is present before continuing.
+ * @param {{ exists?: boolean } | null | undefined} pageSnap - Snapshot representing the parent page.
+ * @returns {boolean} True when the snapshot exists.
  */
 function isPageSnapValid(pageSnap) {
   if (!pageSnap) {
@@ -2107,8 +2116,9 @@ async function resolveRenderPlan(options) {
 }
 
 /**
- *
- * @param options
+ * Attempt to build a render plan only when the variant page data is valid.
+ * @param {object} options - Inputs that include the variant snapshot and dependencies.
+ * @returns {Promise<null | object>} The render plan when the page is valid or `null` otherwise.
  */
 async function buildRenderPlanIfPageValid(options) {
   const { snap } = options;
@@ -2341,9 +2351,10 @@ export function createHandleVariantWrite({
   };
 
   /**
-   *
-   * @param change
-   * @param context
+   * Process a variant change when the document still exists.
+   * @param {object} change - Firestore change payload describing the variant update.
+   * @param {object} context - Cloud Functions context for the trigger.
+   * @returns {Promise<null>} Result of the processing workflow.
    */
   async function processExistingVariant(change, context) {
     const data = change.after.data();
@@ -2360,10 +2371,11 @@ export function createHandleVariantWrite({
   }
 
   /**
-   *
-   * @param change
-   * @param context
-   * @param data
+   * Handle the clean variant path when rendering is driven by visibility changes.
+   * @param {object} change - Firestore change payload.
+   * @param {object} context - Cloud Functions context for the trigger.
+   * @param {object} data - Variant data captured from the latest snapshot.
+   * @returns {Promise<null>} Result of attempting to render or `null` when skipped.
    */
   async function handleCleanVariant(change, context, data) {
     if (shouldRenderVariant(change, data, visibilityThreshold)) {
@@ -2373,10 +2385,11 @@ export function createHandleVariantWrite({
   }
 
   /**
-   *
-   * @param change
-   * @param data
-   * @param visibilityThreshold
+   * Decide if a variant should be rendered based on visibility threshold crossings.
+   * @param {object} change - Firestore change describing the before/after visibility values.
+   * @param {object} data - New variant data provided by the snapshot.
+   * @param {number} visibilityThreshold - Visibility threshold that must be exceeded.
+   * @returns {boolean} True when the threshold was crossed and rendering is required.
    */
   function shouldRenderVariant(change, data, visibilityThreshold) {
     if (!change.before.exists) {
