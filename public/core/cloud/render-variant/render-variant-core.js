@@ -898,9 +898,10 @@ function checkStorageBucketHelper(storage) {
  * @param {Function} root0.fetchFn Fetch function.
  * @param {string} root0.projectId Project ID.
  * @param {string} root0.urlMapName URL map name.
- * @param root0.cdnHost
- * @param root0.randomUUID
- * @param root0.consoleError
+ * @param {string} [root0.cdnHost] CDN host override.
+ * @param {() => string} root0.randomUUID UUID generator for requests.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [root0.consoleError] Logger for failures.
+ * @returns {(paths: string[]) => Promise<void>} Invalidation helper.
  */
 export function createInvalidatePaths({
   fetchFn,
@@ -971,8 +972,9 @@ function createInvalidatePathsImpl({
 }
 
 /**
- *
- * @param paths
+ * Confirm the helper received something that looks like a path list.
+ * @param {unknown} paths Candidate list of paths.
+ * @returns {boolean} True when the input is a non-empty array.
  */
 function isValidPaths(paths) {
   if (!Array.isArray(paths)) {
@@ -982,8 +984,9 @@ function isValidPaths(paths) {
 }
 
 /**
- *
- * @param fetchFn
+ * Acquire an access token for the CDN invalidation endpoint.
+ * @param {(input: string, init?: object) => Promise<Response>} fetchFn Fetch implementation.
+ * @returns {Promise<string>} OAuth access token.
  */
 async function getAccessToken(fetchFn) {
   const response = await fetchFn(
@@ -997,9 +1000,10 @@ async function getAccessToken(fetchFn) {
 }
 
 /**
- *
- * @param response
- * @param label
+ * Ensure the fetch response is successful.
+ * @param {Response} response Response returned by the metadata endpoint.
+ * @param {string} label Context label used for errors.
+ * @returns {void}
  */
 function ensureResponseOk(response, label) {
   if (!response.ok) {
@@ -1008,8 +1012,9 @@ function ensureResponseOk(response, label) {
 }
 
 /**
- *
- * @param response
+ * Extract the metadata access token from the response body.
+ * @param {Response} response Metadata response containing `access_token`.
+ * @returns {Promise<string>} Parsed token string.
  */
 async function extractAccessToken(response) {
   const { access_token: accessToken } = await response.json();
@@ -1017,15 +1022,16 @@ async function extractAccessToken(response) {
 }
 
 /**
- *
- * @param root0
- * @param root0.path
- * @param root0.token
- * @param root0.url
- * @param root0.host
- * @param root0.fetchFn
- * @param root0.randomUUID
- * @param root0.consoleError
+ * Request CDN invalidation for a single path.
+ * @param {object} root0 Invalidation options.
+ * @param {string} root0.path CDN path to invalidate.
+ * @param {string} root0.token OAuth bearer token.
+ * @param {string} root0.url Compute URL map invalidation endpoint.
+ * @param {string} root0.host CDN host to invalidate.
+ * @param {(input: string, init?: object) => Promise<Response>} root0.fetchFn Fetch implementation.
+ * @param {() => string} root0.randomUUID UUID generator for request identifiers.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [root0.consoleError] Optional error logger.
+ * @returns {Promise<void>} Resolves after the invalidation completes.
  */
 async function invalidatePathItem({
   path,
@@ -1055,10 +1061,11 @@ async function invalidatePathItem({
 }
 
 /**
- *
- * @param response
- * @param path
- * @param consoleError
+ * Log invalidation failures when the response is not OK.
+ * @param {Response} response Fetch response for the invalidation call.
+ * @param {string} path CDN path that was requested.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @returns {void}
  */
 function logInvalidateResponse(response, path, consoleError) {
   if (response.ok || !consoleError) {
@@ -1154,8 +1161,9 @@ async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
 }
 
 /**
- *
- * @param data
+ * Derive the resolved page number metadata when no target reference exists.
+ * @param {object} data Option document payload.
+ * @returns {{targetPageNumber?: number}} Metadata containing the target page number when set.
  */
 function resolveTargetPageNumber(data) {
   if (data.targetPageNumber !== undefined) {
@@ -1325,18 +1333,20 @@ async function resolveFirstPageUrl({ page, storyData, consoleError }) {
 }
 
 /**
- *
- * @param page
- * @param storyData
+ * Determine whether there is an incoming option that points at a story root.
+ * @param {Record<string, any>} page Page document data.
+ * @param {Record<string, any>} storyData Story metadata that may include a rootPage reference.
+ * @returns {boolean} True when we should resolve a root page URL.
  */
 function shouldResolveFirstPageUrl(page, storyData) {
   return Boolean(page.incomingOption && storyData.rootPage);
 }
 
 /**
- *
- * @param storyData
- * @param consoleError
+ * Resolve the root page URL while gracefully handling errors.
+ * @param {Record<string, any>} storyData Story metadata containing the root page.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for failures.
+ * @returns {Promise<string | undefined>} Root page URL when available.
  */
 function resolveRootPageUrl(storyData, consoleError) {
   return fetchRootPageUrl(storyData).catch(error => {
