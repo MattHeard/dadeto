@@ -1,0 +1,155 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/render-variant/render-variant-core.js
+   473:1   warning  Function 'buildAuthorHtml' has a complexity of 3. Maximum allowed is 2                complexity
+   802:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
+   813:1   warning  Function 'assertDb' has a complexity of 3. Maximum allowed is 2                       complexity
+   824:1   warning  Function 'assertStorage' has a complexity of 3. Maximum allowed is 2                  complexity
+   863:1   warning  Missing JSDoc @param "params.path" description                                        jsdoc/require-param-description
+   863:1   warning  Missing JSDoc @param "params.path" type                                               jsdoc/require-param-type
+   864:1   warning  Missing JSDoc @param "params.token" description                                       jsdoc/require-param-description
+   864:1   warning  Missing JSDoc @param "params.token" type                                              jsdoc/require-param-type
+   865:1   warning  Missing JSDoc @param "params.url" description                                         jsdoc/require-param-description
+   865:1   warning  Missing JSDoc @param "params.url" type                                                jsdoc/require-param-type
+   866:1   warning  Missing JSDoc @param "params.host" description                                        jsdoc/require-param-description
+   866:1   warning  Missing JSDoc @param "params.host" type                                               jsdoc/require-param-type
+   867:1   warning  Missing JSDoc @param "params.fetchFn" description                                     jsdoc/require-param-description
+   867:1   warning  Missing JSDoc @param "params.fetchFn" type                                            jsdoc/require-param-type
+   868:1   warning  Missing JSDoc @param "params.randomUUID" description                                  jsdoc/require-param-description
+   868:1   warning  Missing JSDoc @param "params.randomUUID" type                                         jsdoc/require-param-type
+   869:1   warning  Missing JSDoc @param "params.consoleError" description                                jsdoc/require-param-description
+   869:1   warning  Missing JSDoc @param "params.consoleError" type                                       jsdoc/require-param-type
+   872:1   warning  Async function 'invalidatePathItem' has a complexity of 7. Maximum allowed is 2       complexity
+   905:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+   907:1   warning  Missing JSDoc @param "root0" description                                              jsdoc/require-param-description
+   907:1   warning  Missing JSDoc @param "root0" type                                                     jsdoc/require-param-type
+   908:1   warning  Missing JSDoc @param "root0.fetchFn" description                                      jsdoc/require-param-description
+   908:1   warning  Missing JSDoc @param "root0.fetchFn" type                                             jsdoc/require-param-type
+   909:1   warning  Missing JSDoc @param "root0.projectId" description                                    jsdoc/require-param-description
+   909:1   warning  Missing JSDoc @param "root0.projectId" type                                           jsdoc/require-param-type
+   910:1   warning  Missing JSDoc @param "root0.urlMapName" description                                   jsdoc/require-param-description
+   910:1   warning  Missing JSDoc @param "root0.urlMapName" type                                          jsdoc/require-param-type
+   911:1   warning  Missing JSDoc @param "root0.cdnHost" description                                      jsdoc/require-param-description
+   911:1   warning  Missing JSDoc @param "root0.cdnHost" type                                             jsdoc/require-param-type
+   912:1   warning  Missing JSDoc @param "root0.randomUUID" description                                   jsdoc/require-param-description
+   912:1   warning  Missing JSDoc @param "root0.randomUUID" type                                          jsdoc/require-param-type
+   913:1   warning  Missing JSDoc @param "root0.consoleError" description                                 jsdoc/require-param-description
+   913:1   warning  Missing JSDoc @param "root0.consoleError" type                                        jsdoc/require-param-type
+   915:8   warning  Function 'createInvalidatePaths' has a complexity of 4. Maximum allowed is 2          complexity
+   930:10  warning  Async function 'invalidatePaths' has a complexity of 3. Maximum allowed is 2          complexity
+   987:1   warning  Async function 'resolveTargetMetadata' has a complexity of 3. Maximum allowed is 2    complexity
+  1014:1   warning  Async function 'fetchTargetPageMetadata' has a complexity of 6. Maximum allowed is 2  complexity
+  1033:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1035:1   warning  Missing JSDoc @param "targetSnap" description                                         jsdoc/require-param-description
+  1035:1   warning  Missing JSDoc @param "targetSnap" type                                                jsdoc/require-param-type
+  1036:1   warning  Missing JSDoc @param "targetPage" description                                         jsdoc/require-param-description
+  1036:1   warning  Missing JSDoc @param "targetPage" type                                                jsdoc/require-param-type
+  1037:1   warning  Missing JSDoc @param "visibilityThreshold" description                                jsdoc/require-param-description
+  1037:1   warning  Missing JSDoc @param "visibilityThreshold" type                                       jsdoc/require-param-type
+  1057:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1059:1   warning  Missing JSDoc @param "targetPageNumber" description                                   jsdoc/require-param-description
+  1059:1   warning  Missing JSDoc @param "targetPageNumber" type                                          jsdoc/require-param-type
+  1060:1   warning  Missing JSDoc @param "visible" description                                            jsdoc/require-param-description
+  1060:1   warning  Missing JSDoc @param "visible" type                                                   jsdoc/require-param-type
+  1130:1   warning  Async function 'resolveFirstPageUrl' has a complexity of 7. Maximum allowed is 2      complexity
+  1145:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1147:1   warning  Missing JSDoc @param "storyData" description                                          jsdoc/require-param-description
+  1147:1   warning  Missing JSDoc @param "storyData" type                                                 jsdoc/require-param-type
+  1162:45  warning  Insert `⏎····`                                                                        prettier/prettier
+  1163:1   warning  Delete `··`                                                                           prettier/prettier
+  1171:1   warning  Function 'extractStoryRef' has a complexity of 5. Maximum allowed is 2                complexity
+  1183:1   warning  Function 'deriveAuthorName' has a complexity of 3. Maximum allowed is 2               complexity
+  1253:1   warning  Async function 'lookupAuthorUrl' has a complexity of 5. Maximum allowed is 2          complexity
+  1264:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1266:1   warning  Missing JSDoc @param "root0" description                                              jsdoc/require-param-description
+  1266:1   warning  Missing JSDoc @param "root0" type                                                     jsdoc/require-param-type
+  1267:1   warning  Missing JSDoc @param "root0.variant" description                                      jsdoc/require-param-description
+  1267:1   warning  Missing JSDoc @param "root0.variant" type                                             jsdoc/require-param-type
+  1268:1   warning  Missing JSDoc @param "root0.db" description                                           jsdoc/require-param-description
+  1268:1   warning  Missing JSDoc @param "root0.db" type                                                  jsdoc/require-param-type
+  1269:1   warning  Missing JSDoc @param "root0.bucket" description                                       jsdoc/require-param-description
+  1269:1   warning  Missing JSDoc @param "root0.bucket" type                                              jsdoc/require-param-type
+  1337:1   warning  Function 'extractParentRefs' has a complexity of 5. Maximum allowed is 2              complexity
+  1361:8   warning  Function 'resolveParentReferences' has a complexity of 3. Maximum allowed is 2        complexity
+  1486:1   warning  Async function 'resolveParentUrl' has a complexity of 5. Maximum allowed is 2         complexity
+  1499:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1501:1   warning  Missing JSDoc @param "db" description                                                 jsdoc/require-param-description
+  1501:1   warning  Missing JSDoc @param "db" type                                                        jsdoc/require-param-type
+  1502:1   warning  Missing JSDoc @param "incomingOption" description                                     jsdoc/require-param-description
+  1502:1   warning  Missing JSDoc @param "incomingOption" type                                            jsdoc/require-param-type
+  1504:1   warning  Async function 'fetchAndBuildParentUrl' has a complexity of 3. Maximum allowed is 2   complexity
+  1529:8   warning  Function 'createRenderVariant' has a complexity of 4. Maximum allowed is 2            complexity
+  1560:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1562:1   warning  Missing JSDoc @param "root0" description                                              jsdoc/require-param-description
+  1562:1   warning  Missing JSDoc @param "root0" type                                                     jsdoc/require-param-type
+  1563:1   warning  Missing JSDoc @param "root0.db" description                                           jsdoc/require-param-description
+  1563:1   warning  Missing JSDoc @param "root0.db" type                                                  jsdoc/require-param-type
+  1564:1   warning  Missing JSDoc @param "root0.storage" description                                      jsdoc/require-param-description
+  1564:1   warning  Missing JSDoc @param "root0.storage" type                                             jsdoc/require-param-type
+  1565:1   warning  Missing JSDoc @param "root0.fetchFn" description                                      jsdoc/require-param-description
+  1565:1   warning  Missing JSDoc @param "root0.fetchFn" type                                             jsdoc/require-param-type
+  1566:1   warning  Missing JSDoc @param "root0.randomUUID" description                                   jsdoc/require-param-description
+  1566:1   warning  Missing JSDoc @param "root0.randomUUID" type                                          jsdoc/require-param-type
+  1567:1   warning  Missing JSDoc @param "root0.projectId" description                                    jsdoc/require-param-description
+  1567:1   warning  Missing JSDoc @param "root0.projectId" type                                           jsdoc/require-param-type
+  1568:1   warning  Missing JSDoc @param "root0.urlMapName" description                                   jsdoc/require-param-description
+  1568:1   warning  Missing JSDoc @param "root0.urlMapName" type                                          jsdoc/require-param-type
+  1569:1   warning  Missing JSDoc @param "root0.cdnHost" description                                      jsdoc/require-param-description
+  1569:1   warning  Missing JSDoc @param "root0.cdnHost" type                                             jsdoc/require-param-type
+  1570:1   warning  Missing JSDoc @param "root0.consoleError" description                                 jsdoc/require-param-description
+  1570:1   warning  Missing JSDoc @param "root0.consoleError" type                                        jsdoc/require-param-type
+  1571:1   warning  Missing JSDoc @param "root0.bucketName" description                                   jsdoc/require-param-description
+  1571:1   warning  Missing JSDoc @param "root0.bucketName" type                                          jsdoc/require-param-type
+  1572:1   warning  Missing JSDoc @param "root0.visibilityThreshold" description                          jsdoc/require-param-description
+  1572:1   warning  Missing JSDoc @param "root0.visibilityThreshold" type                                 jsdoc/require-param-type
+  1666:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1668:1   warning  Missing JSDoc @param "snap" description                                               jsdoc/require-param-description
+  1668:1   warning  Missing JSDoc @param "snap" type                                                      jsdoc/require-param-type
+  1687:8   warning  Async function 'getPageSnapFromRef' has a complexity of 5. Maximum allowed is 2       complexity
+  1699:8   warning  Async function 'fetchPageData' has a complexity of 3. Maximum allowed is 2            complexity
+  1821:1   warning  Async function 'resolveRenderPlan' has a complexity of 3. Maximum allowed is 2        complexity
+  1847:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  1849:1   warning  Missing JSDoc @param "root0" description                                              jsdoc/require-param-description
+  1849:1   warning  Missing JSDoc @param "root0" type                                                     jsdoc/require-param-type
+  1850:1   warning  Missing JSDoc @param "root0.snap" description                                         jsdoc/require-param-description
+  1850:1   warning  Missing JSDoc @param "root0.snap" type                                                jsdoc/require-param-type
+  1851:1   warning  Missing JSDoc @param "root0.pageData" description                                     jsdoc/require-param-description
+  1851:1   warning  Missing JSDoc @param "root0.pageData" type                                            jsdoc/require-param-type
+  1852:1   warning  Missing JSDoc @param "root0.db" description                                           jsdoc/require-param-description
+  1852:1   warning  Missing JSDoc @param "root0.db" type                                                  jsdoc/require-param-type
+  1853:1   warning  Missing JSDoc @param "root0.bucket" description                                       jsdoc/require-param-description
+  1853:1   warning  Missing JSDoc @param "root0.bucket" type                                              jsdoc/require-param-type
+  1854:1   warning  Missing JSDoc @param "root0.consoleError" description                                 jsdoc/require-param-description
+  1854:1   warning  Missing JSDoc @param "root0.consoleError" type                                        jsdoc/require-param-type
+  1855:1   warning  Missing JSDoc @param "root0.visibilityThreshold" description                          jsdoc/require-param-description
+  1855:1   warning  Missing JSDoc @param "root0.visibilityThreshold" type                                 jsdoc/require-param-type
+  1898:1   warning  Missing JSDoc @param "bucket.bucket" description                                      jsdoc/require-param-description
+  1898:1   warning  Missing JSDoc @param "bucket.bucket" type                                             jsdoc/require-param-type
+  1900:1   warning  @param "filePath" does not match an existing function parameter                       jsdoc/check-param-names
+  1903:1   warning  Missing JSDoc @param "bucket.filePath" description                                    jsdoc/require-param-description
+  1903:1   warning  Missing JSDoc @param "bucket.filePath" type                                           jsdoc/require-param-type
+  1904:1   warning  Missing JSDoc @param "bucket.html" description                                        jsdoc/require-param-description
+  1904:1   warning  Missing JSDoc @param "bucket.html" type                                               jsdoc/require-param-type
+  1905:1   warning  Missing JSDoc @param "bucket.openVariant" description                                 jsdoc/require-param-description
+  1905:1   warning  Missing JSDoc @param "bucket.openVariant" type                                        jsdoc/require-param-type
+  1936:1   warning  Function 'resolvePendingName' has a complexity of 6. Maximum allowed is 2             complexity
+  2029:1   warning  Missing JSDoc @param "change.change" description                                      jsdoc/require-param-description
+  2029:1   warning  Missing JSDoc @param "change.change" type                                             jsdoc/require-param-type
+  2031:1   warning  @param "context" does not match an existing function parameter                        jsdoc/check-param-names
+  2034:1   warning  Missing JSDoc @param "change.context" description                                     jsdoc/require-param-description
+  2034:1   warning  Missing JSDoc @param "change.context" type                                            jsdoc/require-param-type
+  2035:1   warning  Missing JSDoc @param "change.renderVariant" description                               jsdoc/require-param-description
+  2035:1   warning  Missing JSDoc @param "change.renderVariant" type                                      jsdoc/require-param-type
+  2036:1   warning  Missing JSDoc @param "change.getDeleteSentinel" description                           jsdoc/require-param-description
+  2036:1   warning  Missing JSDoc @param "change.getDeleteSentinel" type                                  jsdoc/require-param-type
+  2065:10  warning  Async function 'handleVariantWrite' has a complexity of 4. Maximum allowed is 2       complexity
+  2088:3   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  2090:1   warning  Missing JSDoc @param "change" description                                             jsdoc/require-param-description
+  2090:1   warning  Missing JSDoc @param "change" type                                                    jsdoc/require-param-type
+  2091:1   warning  Missing JSDoc @param "data" description                                               jsdoc/require-param-description
+  2091:1   warning  Missing JSDoc @param "data" type                                                      jsdoc/require-param-type
+  2092:1   warning  Missing JSDoc @param "visibilityThreshold" description                                jsdoc/require-param-description
+  2092:1   warning  Missing JSDoc @param "visibilityThreshold" type                                       jsdoc/require-param-type
+
+✖ 149 problems (0 errors, 149 warnings)
+  0 errors and 2 warnings potentially fixable with the `--fix` option.
+

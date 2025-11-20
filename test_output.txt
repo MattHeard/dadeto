@@ -1,0 +1,421 @@
+
+> blog-generator@1.0.0 test
+> node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false test/core/cloud/render-variant/render-variant-core.test.js
+
+(node:95059) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL test/core/cloud/render-variant/render-variant-core.test.js
+  createInvalidatePaths
+    ✓ returns early when paths are not provided (1 ms)
+    ✓ logs errors when the invalidation request rejects (1 ms)
+    ✓ swallows invalidation errors when no logger is provided (1 ms)
+    ✓ logs raw errors when invalidation rejects without a message (1 ms)
+    ✓ uses the empty project path when a falsy projectId is supplied
+    ✓ rejects when metadata token endpoint returns a failure (32 ms)
+  escapeHtml
+    ✓ coerces falsy values to their string equivalents
+  buildOptionMetadata
+    ✓ derives target metadata when the target page exists
+    ✓ logs when the target page lookup fails (1 ms)
+    ✓ logs the raw error when no message property exists
+    ✓ quietly ignores failures when no logger is supplied
+    ✓ returns bare metadata when the target page snapshot is missing
+    ✓ skips variant metadata when no visible variants are found
+    ✓ falls back to a provided target page number
+  loadOptions
+    ✓ defaults missing variant visibility to 1 when building targets (1 ms)
+  resolveStoryMetadata
+    ✓ builds the parent URL when the story exposes a root page
+    ✓ logs when the root page lookup rejects
+    ✓ logs raw error when rejection message is falsy
+    ✓ swallows root lookup failures when consoleError is missing
+  extractStoryRef
+    ✓ returns null when the page snapshot lacks a story reference
+    ✓ returns the mapped story reference when present
+  resolveAuthorMetadata
+    ✓ creates a landing page when the author uuid is missing from storage
+    ✓ reuses the existing author file when present
+    ✓ logs and recovers when author lookups fail
+    ✓ logs raw errors when lookup rejects without a message (1 ms)
+    ✓ silently ignores author lookup failures when no logger is provided
+  buildParentRoute
+    ✓ returns null when parent identifiers are missing
+    ✓ returns a formatted parent path when identifiers exist
+  resolveParentUrl
+    ✓ returns undefined when the incoming option is not provided
+    ✓ logs lookup failures when parent resolution throws (1 ms)
+    ✓ logs raw errors when lookup rejects without a message
+  createRenderVariant
+    ✓ validates required dependencies (3 ms)
+    ✕ renders variants, writes artefacts, and invalidates caches (1 ms)
+    ✕ skips rendering when the page snapshot is missing
+    ✕ logs when the root page lookup fails
+    ✕ does not fetch root variants when the submission is direct
+    ✕ handles missing root page snapshots without logging
+    ✕ constructs story metadata and parent route for closed variants (1 ms)
+    ✕ skips author landing page creation when uuid is missing
+    ✕ returns null when the variant snapshot no longer exists
+    ✕ skips parent url when parent route cannot be constructed
+    ✕ logs and skips parent url when lookup fails
+    ✕ resolves parent references with null when the option ref is unavailable
+    ✕ omits parent invalidation when parent snapshots are missing
+    ✓ filters variants below the visibility threshold
+    ✓ treats missing fields as defaults (1 ms)
+  createHandleVariantWrite
+    ✓ renders dirty variants and clears the flag
+    ✓ renders newly visible variants and ignores unchanged ones
+    ✓ returns early when the variant snapshot is deleted
+  getPageSnapFromRef
+    ✓ resolves the nested page snapshot when parents exist
+    ✓ returns undefined when the parent chain is missing
+    ✓ returns undefined when the variant snapshot lacks a parent ref
+  fetchPageData
+    ✓ returns a page snap when it exists
+    ✓ returns null when no page snap is found
+  isSnapValid
+    ✓ allows falsy snapshots
+    ✓ treats snapshots without an exists flag as valid
+    ✓ rejects snapshots that explicitly mark existence as false
+  resolveRenderPlan
+    ✓ short-circuits when the snapshot is invalid
+
+  ● createRenderVariant › renders variants, writes artefacts, and invalidates caches
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1004:11)
+
+  ● createRenderVariant › skips rendering when the page snapshot is missing
+
+    expect(received).resolves.toBeNull()
+
+    Received promise rejected instead of resolved
+    Rejected to value: [ReferenceError: bucket is not defined]
+
+      1049 |     };
+      1050 |
+    > 1051 |     await expect(renderVariant(snap)).resolves.toBeNull();
+           |           ^
+      1052 |     expect(storage.bucket).toHaveBeenCalled();
+      1053 |   });
+      1054 |
+
+      at expect (node_modules/expect/build/index.js:113:15)
+      at Object.expect (test/core/cloud/render-variant/render-variant-core.test.js:1051:11)
+
+  ● createRenderVariant › logs when the root page lookup fails
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1144:11)
+
+  ● createRenderVariant › does not fetch root variants when the submission is direct
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1226:11)
+
+  ● createRenderVariant › handles missing root page snapshots without logging
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1310:11)
+
+  ● createRenderVariant › constructs story metadata and parent route for closed variants
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1468:11)
+
+  ● createRenderVariant › skips author landing page creation when uuid is missing
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1581:11)
+
+  ● createRenderVariant › returns null when the variant snapshot no longer exists
+
+    expect(received).resolves.toBeNull()
+
+    Received promise rejected instead of resolved
+    Rejected to value: [ReferenceError: bucket is not defined]
+
+      1593 |     });
+      1594 |
+    > 1595 |     await expect(
+           |           ^
+      1596 |       renderVariant({ exists: false, ref: {} }, { params: {} })
+      1597 |     ).resolves.toBeNull();
+      1598 |     expect(storage.bucket).toHaveBeenCalledTimes(1);
+
+      at expect (node_modules/expect/build/index.js:113:15)
+      at Object.expect (test/core/cloud/render-variant/render-variant-core.test.js:1595:11)
+
+  ● createRenderVariant › skips parent url when parent route cannot be constructed
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1690:11)
+
+  ● createRenderVariant › logs and skips parent url when lookup fails
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1791:11)
+
+  ● createRenderVariant › resolves parent references with null when the option ref is unavailable
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1885:11)
+
+  ● createRenderVariant › omits parent invalidation when parent snapshots are missing
+
+    ReferenceError: bucket is not defined
+
+      1619 |   return async function render(snap, context = {}) {
+      1620 |     return executeRenderWorkflow(
+    > 1621 |       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
+           |             ^
+      1622 |       snap,
+      1623 |       context
+      1624 |     );
+
+      at bucket (src/core/cloud/render-variant/render-variant-core.js:1621:13)
+      at Object.renderVariant (test/core/cloud/render-variant/render-variant-core.test.js:1997:11)
+
+--------------------------------------|---------|----------|---------|---------|----------------------------------------------------------------------------------------------------------
+File                                  | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                        
+--------------------------------------|---------|----------|---------|---------|----------------------------------------------------------------------------------------------------------
+All files                             |    4.17 |     6.17 |    3.54 |    4.22 |                                                                                                          
+ core                                 |    1.25 |        0 |       0 |     1.3 |                                                                                                          
+  admin-config.js                     |       0 |        0 |       0 |       0 |                                                                                                          
+  common-core.js                      |     100 |      100 |     100 |     100 |                                                                                                          
+  copy.js                             |       0 |        0 |       0 |       0 | 1-606                                                                                                    
+  encoding.js                         |       0 |      100 |       0 |       0 | 10-14                                                                                                    
+  jsonUtils.js                        |       0 |        0 |       0 |       0 | 7-34                                                                                                     
+  logging.js                          |       0 |        0 |       0 |       0 | 8-21                                                                                                     
+  objectUtils.js                      |       0 |        0 |       0 |       0 | 8-49                                                                                                     
+  regexUtils.js                       |       0 |        0 |       0 |       0 | 1-59                                                                                                     
+  str.js                              |       0 |        0 |       0 |       0 | 9-30                                                                                                     
+  validation.js                       |       0 |        0 |       0 |       0 | 8-51                                                                                                     
+ core/browser                         |       0 |        0 |       0 |       0 |                                                                                                          
+  audio-controls.js                   |       0 |        0 |       0 |       0 | 1-97                                                                                                     
+  beta.js                             |       0 |        0 |       0 |       0 | 6-10                                                                                                     
+  browser-core.js                     |       0 |        0 |       0 |       0 | 1-104                                                                                                    
+  common-core.js                      |       0 |        0 |       0 |       0 |                                                                                                          
+  common.js                           |       0 |        0 |       0 |       0 | 9-18                                                                                                     
+  createSectionSetter.js              |       0 |        0 |       0 |       0 | 11-75                                                                                                    
+  data.js                             |       0 |        0 |       0 |       0 | 51-583                                                                                                   
+  inputValueStore.js                  |       0 |        0 |       0 |       0 | 1-60                                                                                                     
+  load-static-config-core.js          |       0 |        0 |       0 |       0 | 22-143                                                                                                   
+  setOutput.js                        |       0 |      100 |     100 |       0 | 3                                                                                                        
+  tags.js                             |       0 |        0 |       0 |       0 | 9-126                                                                                                    
+ core/browser/admin                   |       0 |        0 |       0 |       0 |                                                                                                          
+  core.js                             |       0 |        0 |       0 |       0 | 35-1865                                                                                                  
+  token-action.js                     |       0 |        0 |       0 |       0 | 36-100                                                                                                   
+ core/browser/inputHandlers           |       0 |        0 |       0 |       0 |                                                                                                          
+  createDendriteHandler.js            |       0 |        0 |       0 |       0 | 23-181                                                                                                   
+  default.js                          |       0 |      100 |       0 |       0 | 17-21                                                                                                    
+  dendritePage.js                     |       0 |      100 |     100 |       0 | 3-12                                                                                                     
+  dendriteStory.js                    |       0 |      100 |     100 |       0 | 3-12                                                                                                     
+  disposeHelpers.js                   |       0 |        0 |       0 |       0 | 7-31                                                                                                     
+  inputState.js                       |       0 |      100 |       0 |       0 | 7-18                                                                                                     
+  number.js                           |       0 |        0 |       0 |       0 | 11-79                                                                                                    
+  removeElements.js                   |       0 |      100 |       0 |       0 | 15-39                                                                                                    
+  text.js                             |       0 |      100 |       0 |       0 | 17-21                                                                                                    
+  textarea.js                         |       0 |        0 |       0 |       0 | 12-110                                                                                                   
+ core/browser/moderation              |       0 |        0 |       0 |       0 |                                                                                                          
+  authedFetch.js                      |       0 |        0 |       0 |       0 | 11-180                                                                                                   
+  endpoints.js                        |       0 |        0 |       0 |       0 | 1-216                                                                                                    
+ core/browser/presenters              |       0 |        0 |       0 |       0 |                                                                                                          
+  battleshipSolitaireClues.js         |       0 |        0 |       0 |       0 | 35-179                                                                                                   
+  battleshipSolitaireFleet.js         |       0 |        0 |       0 |       0 | 26-273                                                                                                   
+  paragraph.js                        |       0 |      100 |       0 |       0 | 8-10                                                                                                     
+  pre.js                              |       0 |        0 |       0 |       0 | 10-61                                                                                                    
+  ticTacToeBoard.js                   |       0 |        0 |       0 |       0 | 9-131                                                                                                    
+ core/browser/toys                    |       0 |        0 |       0 |       0 |                                                                                                          
+  toys-core.js                        |       0 |        0 |       0 |       0 | 7-139                                                                                                    
+ core/browser/toys/2024-10-02         |       0 |      100 |       0 |       0 |                                                                                                          
+  hello.js                            |       0 |      100 |       0 |       0 | 6                                                                                                        
+ core/browser/toys/2025-03-19         |       0 |      100 |       0 |       0 |                                                                                                          
+  identity.js                         |       0 |      100 |       0 |       0 | 7                                                                                                        
+ core/browser/toys/2025-03-21         |       0 |        0 |       0 |       0 |                                                                                                          
+  booleanCoercer.js                   |       0 |        0 |       0 |       0 | 9-50                                                                                                     
+  italics.js                          |       0 |        0 |       0 |       0 | 2-320                                                                                                    
+ core/browser/toys/2025-03-26         |       0 |        0 |       0 |       0 |                                                                                                          
+  prettyFloat.js                      |       0 |        0 |       0 |       0 | 7-248                                                                                                    
+ core/browser/toys/2025-03-28         |       0 |      100 |       0 |       0 |                                                                                                          
+  rand.js                             |       0 |      100 |       0 |       0 | 11-14                                                                                                    
+ core/browser/toys/2025-03-29         |       0 |        0 |       0 |       0 |                                                                                                          
+  fishingGame.js                      |       0 |        0 |       0 |       0 | 9-271                                                                                                    
+  get.js                              |       0 |        0 |       0 |       0 | 7-339                                                                                                    
+  setTemporary.js                     |       0 |      100 |     100 |       0 | 3                                                                                                        
+ core/browser/toys/2025-03-30         |       0 |        0 |       0 |       0 |                                                                                                          
+  cyberpunkAdventure.js               |       0 |        0 |       0 |       0 | 9-371                                                                                                    
+ core/browser/toys/2025-04-05         |       0 |      100 |       0 |       0 |                                                                                                          
+  httpRequest.js                      |       0 |      100 |       0 |       0 | 7-12                                                                                                     
+ core/browser/toys/2025-04-06         |       0 |        0 |       0 |       0 |                                                                                                          
+  ticTacToe.js                        |       0 |        0 |       0 |       0 | 7-724                                                                                                    
+ core/browser/toys/2025-04-16         |       0 |        0 |       0 |       0 |                                                                                                          
+  colorPalette.js                     |       0 |        0 |       0 |       0 | 8-15                                                                                                     
+ core/browser/toys/2025-05-08         |       0 |        0 |       0 |       0 |                                                                                                          
+  battleshipSolitaireFleet.js         |       0 |        0 |       0 |       0 | 24-760                                                                                                   
+ core/browser/toys/2025-05-11         |       0 |        0 |       0 |       0 |                                                                                                          
+  battleshipSolitaireClues.js         |       0 |        0 |       0 |       0 | 18-165                                                                                                   
+ core/browser/toys/2025-05-13         |       0 |      100 |       0 |       0 |                                                                                                          
+  base64Encoder.js                    |       0 |      100 |       0 |       0 | 11-12                                                                                                    
+ core/browser/toys/2025-05-15         |       0 |        0 |       0 |       0 |                                                                                                          
+  stringToJsonArray.js                |       0 |        0 |       0 |       0 | 15-23                                                                                                    
+ core/browser/toys/2025-06-09         |       0 |        0 |       0 |       0 |                                                                                                          
+  startLocalDendriteStory.js          |       0 |        0 |       0 |       0 | 3-90                                                                                                     
+  uuid.js                             |       0 |      100 |       0 |       0 | 10-11                                                                                                    
+ core/browser/toys/2025-07-04         |       0 |        0 |       0 |       0 |                                                                                                          
+  transformDendriteStory.js           |       0 |        0 |       0 |       0 | 13-61                                                                                                    
+ core/browser/toys/2025-07-05         |       0 |        0 |       0 |       0 |                                                                                                          
+  addDendritePage.js                  |       0 |        0 |       0 |       0 | 18-102                                                                                                   
+  getDend2Titles.js                   |       0 |        0 |       0 |       0 | 10-72                                                                                                    
+  setPermanentData.js                 |       0 |      100 |       0 |       0 | 11-17                                                                                                    
+ core/browser/toys/2025-10-19         |       0 |        0 |       0 |       0 |                                                                                                          
+  csvToJsonArray.js                   |       0 |        0 |       0 |       0 | 19-402                                                                                                   
+  csvToJsonObject.js                  |       0 |        0 |       0 |       0 | 16-80                                                                                                    
+  toys-core.js                        |       0 |        0 |       0 |       0 |                                                                                                          
+ core/browser/toys/2025-11-01         |       0 |        0 |       0 |       0 |                                                                                                          
+  textAppendList.js                   |       0 |        0 |       0 |       0 | 4-139                                                                                                    
+ core/browser/toys/utils              |       0 |        0 |       0 |       0 |                                                                                                          
+  dendriteHelpers.js                  |       0 |        0 |       0 |       0 | 5-77                                                                                                     
+ core/cloud                           |    5.71 |     8.33 |    4.34 |    5.71 |                                                                                                          
+  cloud-core.js                       |   10.81 |    11.11 |    9.09 |   10.81 | 22-48,68-77,88-174                                                                                       
+  common-core.js                      |       0 |        0 |       0 |       0 |                                                                                                          
+  copy.js                             |       0 |        0 |       0 |       0 | 3-259                                                                                                    
+ core/cloud/assign-moderation-job     |       0 |        0 |       0 |       0 |                                                                                                          
+  assign-moderation-job-core.js       |       0 |        0 |       0 |       0 | 41-976                                                                                                   
+ core/cloud/generate-stats            |       0 |        0 |       0 |       0 |                                                                                                          
+  generate-stats-core.js              |       0 |        0 |       0 |       0 | 13-655                                                                                                   
+  verifyAdmin.js                      |       0 |        0 |       0 |       0 |                                                                                                          
+ core/cloud/get-api-key-credit        |       0 |        0 |       0 |       0 |                                                                                                          
+  create-db.js                        |       0 |        0 |       0 |       0 |                                                                                                          
+  get-api-key-credit-core.js          |       0 |        0 |       0 |       0 | 4-178                                                                                                    
+ core/cloud/get-api-key-credit-v2     |       0 |        0 |       0 |       0 |                                                                                                          
+  create-db.js                        |       0 |      100 |       0 |       0 | 7                                                                                                        
+  get-api-key-credit-snapshot.js      |       0 |      100 |       0 |       0 | 8                                                                                                        
+  get-api-key-credit-v2-core.js       |       0 |        0 |       0 |       0 | 7-168                                                                                                    
+ core/cloud/get-moderation-variant    |       0 |        0 |       0 |       0 |                                                                                                          
+  cors.js                             |       0 |        0 |       0 |       0 | 8-22                                                                                                     
+  get-moderation-variant-core.js      |       0 |        0 |       0 |       0 | 91-436                                                                                                   
+ core/cloud/hide-variant-html         |       0 |        0 |       0 |       0 |                                                                                                          
+  hide-variant-html-core.js           |       0 |        0 |       0 |       0 | 3-310                                                                                                    
+ core/cloud/mark-variant-dirty        |       0 |        0 |       0 |       0 |                                                                                                          
+  mark-variant-dirty-core.js          |       0 |        0 |       0 |       0 | 3-380                                                                                                    
+  verifyAdmin.js                      |       0 |        0 |       0 |       0 |                                                                                                          
+ core/cloud/process-new-page          |       0 |        0 |       0 |       0 |                                                                                                          
+  process-new-page-core.js            |       0 |        0 |       0 |       0 | 7-804                                                                                                    
+ core/cloud/process-new-story         |       0 |        0 |       0 |       0 |                                                                                                          
+  process-new-story-core.js           |       0 |        0 |       0 |       0 | 17-347                                                                                                   
+ core/cloud/render-contents           |       0 |        0 |       0 |       0 |                                                                                                          
+  render-contents-core.js             |       0 |        0 |       0 |       0 | 7-758                                                                                                    
+ core/cloud/render-variant            |   51.03 |    63.95 |   48.59 |   51.35 |                                                                                                          
+  render-variant-core.js              |   51.03 |    63.95 |   48.59 |   51.35 | 234-593,627-657,896,1000,1132,1153,1187,1223,1338-1406,1455-1471,1506-1511,1595-1616,1713-1791,1823-1999 
+ core/cloud/report-for-moderation     |       0 |        0 |       0 |       0 |                                                                                                          
+  report-for-moderation-core.js       |       0 |        0 |       0 |       0 | 9-203                                                                                                    
+ core/cloud/submit-moderation-rating  |       0 |        0 |       0 |       0 |                                                                                                          
+  submit-moderation-rating-core.js    |       0 |        0 |       0 |       0 | 3-658                                                                                                    
+ core/cloud/submit-new-page           |       0 |        0 |       0 |       0 |                                                                                                          
+  helpers.js                          |       0 |        0 |       0 |       0 | 7-263                                                                                                    
+  submit-new-page-core.js             |       0 |        0 |       0 |       0 | 14-410                                                                                                   
+ core/cloud/submit-new-story          |       0 |        0 |       0 |       0 |                                                                                                          
+  submit-new-story-core.js            |       0 |        0 |       0 |       0 | 37-745                                                                                                   
+ core/cloud/update-variant-visibility |       0 |        0 |       0 |       0 |                                                                                                          
+  update-variant-visibility-core.js   |       0 |        0 |       0 |       0 | 6-270                                                                                                    
+ core/constants                       |       0 |      100 |       0 |       0 |                                                                                                          
+  markdown.js                         |       0 |      100 |       0 |       0 | 7-78                                                                                                     
+  selectors.js                        |       0 |      100 |     100 |       0 | 4-7                                                                                                      
+ core/scripts/generate                |       0 |        0 |       0 |       0 |                                                                                                          
+  writeFormattedHtml.js               |       0 |        0 |       0 |       0 | 11-73                                                                                                    
+--------------------------------------|---------|----------|---------|---------|----------------------------------------------------------------------------------------------------------
+Test Suites: 1 failed, 1 total
+Tests:       12 failed, 46 passed, 58 total
+Snapshots:   0 total
+Time:        1.55 s
+Ran all test suites matching /test\/core\/cloud\/render-variant\/render-variant-core.test.js/i.

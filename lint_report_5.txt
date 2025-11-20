@@ -1,0 +1,47 @@
+
+/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/render-variant/render-variant-core.js
+   480:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+   808:10  warning  Arrow function has a complexity of 3. Maximum allowed is 2                            complexity
+   826:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+   844:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+   934:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+   946:1   warning  Function 'handleInvalidateError' has a complexity of 4. Maximum allowed is 2          complexity
+   952:1   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+   962:8   warning  Function 'createInvalidatePaths' has a complexity of 4. Maximum allowed is 2          complexity
+   973:9   warning  'host' is assigned a value but never used                                             no-unused-vars
+   974:9   warning  'urlMap' is assigned a value but never used                                           no-unused-vars
+   977:3   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+  1039:1   warning  Async function 'resolveTargetMetadata' has a complexity of 3. Maximum allowed is 2    complexity
+  1066:1   warning  Async function 'fetchTargetPageMetadata' has a complexity of 3. Maximum allowed is 2  complexity
+  1088:1   warning  Function 'handleTargetPageError' has a complexity of 4. Maximum allowed is 2          complexity
+  1193:1   warning  Async function 'resolveFirstPageUrl' has a complexity of 4. Maximum allowed is 2      complexity
+  1211:1   warning  Function 'handleRootPageError' has a complexity of 4. Maximum allowed is 2            complexity
+  1235:45  warning  Insert `⏎····`                                                                        prettier/prettier
+  1236:1   warning  Delete `··`                                                                           prettier/prettier
+  1244:1   warning  Function 'extractStoryRef' has a complexity of 5. Maximum allowed is 2                complexity
+  1262:1   warning  Function 'deriveAuthorName' has a complexity of 3. Maximum allowed is 2               complexity
+  1343:1   warning  Function 'handleAuthorLookupError' has a complexity of 4. Maximum allowed is 2        complexity
+  1423:1   warning  Function 'extractParentRefs' has a complexity of 5. Maximum allowed is 2              complexity
+  1570:1   warning  Async function 'resolveParentUrl' has a complexity of 3. Maximum allowed is 2         complexity
+  1588:1   warning  Function 'handleParentLookupError' has a complexity of 4. Maximum allowed is 2        complexity
+  1600:1   warning  Async function 'fetchAndBuildParentUrl' has a complexity of 3. Maximum allowed is 2   complexity
+  1625:8   warning  Function 'createRenderVariant' has a complexity of 4. Maximum allowed is 2            complexity
+  1655:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+  1799:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+  1799:1   warning  Function 'isSnapRefValid' has a complexity of 4. Maximum allowed is 2                 complexity
+  1825:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+  1955:1   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+  2052:1   warning  Function 'resolvePendingName' has a complexity of 6. Maximum allowed is 2             complexity
+  2185:3   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+  2199:3   warning  Missing JSDoc comment                                                                 jsdoc/require-jsdoc
+  2206:3   warning  Missing JSDoc @returns declaration                                                    jsdoc/require-returns
+  2208:1   warning  Missing JSDoc @param "change" description                                             jsdoc/require-param-description
+  2208:1   warning  Missing JSDoc @param "change" type                                                    jsdoc/require-param-type
+  2209:1   warning  Missing JSDoc @param "data" description                                               jsdoc/require-param-description
+  2209:1   warning  Missing JSDoc @param "data" type                                                      jsdoc/require-param-type
+  2210:1   warning  Missing JSDoc @param "visibilityThreshold" description                                jsdoc/require-param-description
+  2210:1   warning  Missing JSDoc @param "visibilityThreshold" type                                       jsdoc/require-param-type
+
+✖ 41 problems (0 errors, 41 warnings)
+  0 errors and 13 warnings potentially fixable with the `--fix` option.
+

@@ -107,6 +107,62 @@ describe('createInvalidatePaths', () => {
     );
   });
 
+  it('logs failures when the invalidation response is not ok', async () => {
+    const consoleError = jest.fn();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      });
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      projectId: 'proj',
+      urlMapName: 'map',
+      cdnHost: 'cdn.example.com',
+      consoleError,
+    });
+
+    await invalidatePaths(['/p/1a.html']);
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/1a.html failed: 500'
+    );
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores failures when no console logger is provided', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+      });
+
+    const invalidatePaths = createInvalidatePaths({
+      fetchFn,
+      randomUUID: jest.fn(() => 'uuid'),
+      projectId: 'proj',
+      urlMapName: 'map',
+      cdnHost: 'cdn.example.com',
+    });
+
+    await expect(invalidatePaths(['/p/1a.html'])).resolves.toBeUndefined();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
   it('uses the empty project path when a falsy projectId is supplied', async () => {
     const fetchFn = jest
       .fn()
@@ -510,8 +566,12 @@ describe('resolveStoryMetadata', () => {
 
 describe('extractStoryRef', () => {
   it('returns null when the page snapshot lacks a story reference', () => {
+    expect(RenderVariantCore.extractStoryRef(null)).toBeNull();
     expect(RenderVariantCore.extractStoryRef({})).toBeNull();
     expect(RenderVariantCore.extractStoryRef({ ref: null })).toBeNull();
+    expect(
+      RenderVariantCore.extractStoryRef({ ref: { parent: null } })
+    ).toBeNull();
     expect(
       RenderVariantCore.extractStoryRef({ ref: { parent: { parent: null } } })
     ).toBeNull();
@@ -717,6 +777,21 @@ describe('resolveParentUrl', () => {
 
     expect(consoleError).toHaveBeenCalledWith('parent lookup failed', rawError);
   });
+
+  it('silently ignores lookup failures without a console error handler', async () => {
+    const db = {
+      doc: jest.fn(() => {
+        throw new Error('boom');
+      }),
+    };
+
+    await expect(
+      resolveParentUrl({
+        variant: { incomingOption: 'options/1' },
+        db,
+      })
+    ).resolves.toBeUndefined();
+  });
 });
 
 describe('createRenderVariant', () => {
@@ -760,6 +835,60 @@ describe('createRenderVariant', () => {
         randomUUID: null,
       })
     ).toThrow(new TypeError('randomUUID must be a function'));
+
+    expect(() =>
+      createRenderVariant({
+        db: { doc: 'not a function' },
+        storage,
+        fetchFn,
+        randomUUID,
+      })
+    ).toThrow(new TypeError('db must provide a doc helper'));
+
+    expect(() =>
+      createRenderVariant({
+        db: { doc: jest.fn() },
+        storage: { bucket: 'not a function' },
+        fetchFn,
+        randomUUID,
+      })
+    ).toThrow(new TypeError('storage must provide a bucket helper'));
+  });
+
+  it('resolves the configured bucket name when supplied', () => {
+    const storage = {
+      bucket: jest.fn(() => ({ file: jest.fn() })),
+    };
+    const fetchFn = jest.fn();
+    const randomUUID = jest.fn();
+
+    createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn,
+      randomUUID,
+      bucketName: 'custom-bucket',
+    });
+
+    expect(storage.bucket).toHaveBeenCalledWith('custom-bucket');
+  });
+
+  it('falls back to the default bucket when a falsy name is given', () => {
+    const storage = {
+      bucket: jest.fn(() => ({ file: jest.fn() })),
+    };
+    const fetchFn = jest.fn();
+    const randomUUID = jest.fn();
+
+    createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn,
+      randomUUID,
+      bucketName: '',
+    });
+
+    expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
   });
 
   it('renders variants, writes artefacts, and invalidates caches', async () => {
@@ -2145,6 +2274,14 @@ describe('getPageSnapFromRef', () => {
 
     expect(result).toBe(pageSnap);
     expect(grandparent.get).toHaveBeenCalled();
+  });
+
+  it('returns undefined when no snapshot is supplied', async () => {
+    await expect(getPageSnapFromRef(null)).resolves.toBeUndefined();
+  });
+
+  it('returns undefined when the snapshot lacks a ref helper', async () => {
+    await expect(getPageSnapFromRef({})).resolves.toBeUndefined();
   });
 
   it('returns undefined when the parent chain is missing', async () => {

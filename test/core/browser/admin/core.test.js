@@ -335,10 +335,59 @@ describe('createRegenerateVariant', () => {
     expect(showMessage).toHaveBeenCalledWith('Regeneration triggered');
   });
 
+  it('works even when the event lacks preventDefault', async () => {
+    const getIdToken = jest.fn().mockReturnValue('token');
+    const googleAuth = { getIdToken };
+    const input = { value: '12Ab ' };
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(input),
+    };
+    const showMessage = jest.fn();
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ markVariantDirtyUrl });
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+
+    const regenerateVariant = createRegenerateVariant({
+      googleAuth,
+      doc,
+      showMessage,
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+    });
+
+    await regenerateVariant({});
+
+    expect(doc.getElementById).toHaveBeenCalledWith('regenInput');
+    expect(getIdToken).toHaveBeenCalledTimes(1);
+    expect(getAdminEndpoints).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(markVariantDirtyUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ page: 12, variant: 'Ab' }),
+    });
+    expect(showMessage).toHaveBeenCalledWith('Regeneration triggered');
+  });
+
   it('throws when googleAuth is missing getIdToken', () => {
     expect(() =>
       createRegenerateVariant({
         googleAuth: {},
+        doc: { getElementById: jest.fn() },
+        showMessage: jest.fn(),
+        getAdminEndpointsFn: jest.fn(),
+        fetchFn: jest.fn(),
+      })
+    ).toThrow(new TypeError('googleAuth must provide a getIdToken function'));
+  });
+
+  it('throws when googleAuth is not provided', () => {
+    expect(() =>
+      createRegenerateVariant({
+        googleAuth: null,
         doc: { getElementById: jest.fn() },
         showMessage: jest.fn(),
         getAdminEndpointsFn: jest.fn(),
