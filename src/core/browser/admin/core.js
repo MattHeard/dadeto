@@ -800,9 +800,10 @@ function buildNormalizedGoogleSignInDeps(deps) {
  * @returns {object} Deps with logger.
  */
 function ensureLogger(deps) {
-  if (deps.logger === undefined || deps.logger === null) {
+  if (deps.logger == null) {
     deps.logger = console;
   }
+
   return deps;
 }
 

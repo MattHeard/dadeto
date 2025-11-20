@@ -36,7 +36,11 @@ function execUuidPathPattern(value) {
  */
 function matchPathUuid(path) {
   const match = execUuidPathPattern(path);
-  return typeof match?.[1] === 'string' ? match[1] : '';
+  if (typeof match?.[1] === 'string') {
+    return match[1];
+  }
+
+  return '';
 }
 
 /**
