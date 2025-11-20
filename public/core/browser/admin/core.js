@@ -1149,33 +1149,17 @@ export function createRegenerateVariant(options) {
 }
 
 /**
- * Validate dependencies before producing the regenerate variant handler.
- * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
- *   doc: Document,
- *   showMessage: (text: string) => void,
- *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
- *   fetchFn: FetchFn,
- * }} deps - Dependencies required for regenerating a variant.
- * @returns {void}
- */
-/**
- * Ensure google auth.
- * @param {object} googleAuth Auth.
- * @returns {void}
- */
-/**
- * Check if auth has token method.
- * @param {object} googleAuth Auth.
- * @returns {boolean} True if valid.
+ *
+ * @param googleAuth
  */
 function hasGetIdToken(googleAuth) {
   return typeof googleAuth.getIdToken === 'function';
 }
 
 /**
- *
- * @param googleAuth
+ * Validate the Google auth helper exposes `getIdToken`.
+ * @param {{ getIdToken?: () => string | null | undefined } | undefined | null} googleAuth - Auth helper provided by Google.
+ * @returns {void}
  */
 function ensureGoogleAuth(googleAuth) {
   if (!isValidAuth(googleAuth)) {
@@ -1196,13 +1180,15 @@ function isValidAuth(googleAuth) {
 }
 
 /**
- *
- * @param root0
- * @param root0.googleAuth
- * @param root0.doc
- * @param root0.showMessage
- * @param root0.getAdminEndpointsFn
- * @param root0.fetchFn
+ * Validate dependencies before producing the regenerate variant handler.
+ * @param {{
+ *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   doc: Document,
+ *   showMessage: (text: string) => void,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   fetchFn: FetchFn,
+ * }} deps - Dependencies required for regenerating a variant.
+ * @returns {void}
  */
 function validateRegenerateVariantDeps({
   googleAuth,
@@ -1281,10 +1267,11 @@ function getTokenSafely(googleAuth) {
 }
 
 /**
- *
- * @param doc
- * @param showMessage
- * @param googleAuth
+ * Assemble the token and page/variant pair when both pieces are available.
+ * @param {Document} doc - Document containing the regeneration form.
+ * @param {(text: string) => void} showMessage - Reporter for validation errors.
+ * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Auth helper that supplies the ID token.
+ * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null} Payload when ready, otherwise null.
  */
 function resolveRegenerationPayload(doc, showMessage, googleAuth) {
   const token = getTokenSafely(googleAuth);
@@ -1296,10 +1283,12 @@ function resolveRegenerationPayload(doc, showMessage, googleAuth) {
 }
 
 /**
- *
- * @param doc
- * @param showMessage
- * @param token
+ * Create the payload for regeneration when the document input parses successfully.
+ * @param {Document} doc - Document containing the regeneration form.
+ * @param {(text: string) => void} showMessage - Reporter when the input is invalid.
+ * @param {string} token - ID token resolved from Google auth.
+ * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null}
+ *   Structured payload with the page/variant pair and token, or null when parsing fails.
  */
 function resolvePageVariantPayload(doc, showMessage, token) {
   const pageVariant = resolveValidPageVariant(doc, showMessage);
@@ -1324,8 +1313,9 @@ function canPreventDefault(event) {
 }
 
 /**
- *
- * @param event
+ * Prevent the default action when the event supports it.
+ * @param {{ preventDefault?: () => void } | null | undefined} event - Event-like object supplied by the DOM.
+ * @returns {void}
  */
 function preventDefaultEvent(event) {
   if (canPreventDefault(event)) {
@@ -1422,17 +1412,22 @@ function parsePageVariantInput(inputElement) {
  */
 function getValueFromInput(inputElement) {
   const { value } = inputElement;
-  return typeof value === 'string' ? value : '';
+  if (typeof value === 'string') {
+    return value;
+  }
+  return '';
 }
 
 /**
- *
- * @param inputElement
+ * Retrieve and trim the value from the regenerate input element.
+ * @param {HTMLInputElement | null | undefined} inputElement - Element that may hold the regeneration string.
+ * @returns {string} Trimmed value or an empty string when input is missing.
  */
 function getTrimmedInputValue(inputElement) {
   if (!inputElement) {
     return '';
   }
+
   return getValueFromInput(inputElement).trim();
 }
 
@@ -1451,32 +1446,18 @@ function parsePageVariantValue(value) {
 }
 
 /**
- * Submit a request to mark a variant dirty for regeneration.
- * @param {{
- *   fetchFn: FetchFn,
- *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
- *   token: string,
- *   pageVariant: { page: number, variant: string },
- * }} options - Dependencies and payload for the regenerate request.
- * @returns {Promise<void>} Promise that resolves when the request succeeds.
- */
-/**
- * Ensure response is ok.
- * @param {object} res Response.
- * @returns {void}
- */
-/**
- * Check if response is ok.
- * @param {object} res Response.
- * @returns {boolean} True if ok.
+ * Determine whether the response indicates a successful fetch.
+ * @param {Response | null | undefined} res - Response returned by the request.
+ * @returns {boolean} True when the response exists and has an `ok` status.
  */
 function isResponseOk(res) {
   return Boolean(res && res.ok);
 }
 
 /**
- *
- * @param res
+ * Ensure the response from the regeneration request succeeded.
+ * @param {Response | null | undefined} res - Response returned from the fetch call.
+ * @returns {void}
  */
 function ensureResponseOk(res) {
   if (!isResponseOk(res)) {
@@ -1485,12 +1466,14 @@ function ensureResponseOk(res) {
 }
 
 /**
- *
- * @param root0
- * @param root0.fetchFn
- * @param root0.getAdminEndpointsFn
- * @param root0.token
- * @param root0.pageVariant
+ * Submit a regenerate request to the admin endpoint.
+ * @param {{
+ *   fetchFn: FetchFn,
+ *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
+ *   token: string,
+ *   pageVariant: { page: number, variant: string },
+ * }} options - Dependencies and payload for the regenerate request.
+ * @returns {Promise<void>}
  */
 async function sendRegenerateVariantRequest({
   fetchFn,
@@ -1692,14 +1675,9 @@ export function getSignOutSections(doc) {
 }
 
 /**
- * Safely access the current authenticated user.
- * @param {() => { currentUser: unknown } | null | undefined} getAuthFn - Getter for the auth instance.
- * @returns {unknown | null} Current user when available.
- */
-/**
- * Get current user safely.
- * @param {object} auth Auth.
- * @returns {object | null} User.
+ * Safely access the current authenticated user object when available.
+ * @param {{ currentUser?: unknown } | null | undefined} auth - Auth object retrieved from Firebase.
+ * @returns {unknown | null} Current user when present, otherwise null.
  */
 function getCurrentUserSafely(auth) {
   if (!auth) {
@@ -1709,8 +1687,9 @@ function getCurrentUserSafely(auth) {
 }
 
 /**
- *
- * @param auth
+ * Extract the `currentUser` entry from the auth object.
+ * @param {{ currentUser?: unknown }} auth - Auth object that may expose a current user.
+ * @returns {unknown | null} Current user when the property exists.
  */
 function getAuthUser(auth) {
   if (auth.currentUser) {
@@ -1720,8 +1699,9 @@ function getAuthUser(auth) {
 }
 
 /**
- *
- * @param getAuthFn
+ * Resolve the current user via the provided auth getter.
+ * @param {() => { currentUser?: unknown } | null | undefined} getAuthFn - Function that returns the auth object.
+ * @returns {unknown | null} Current user when available through the getter.
  */
 export function getCurrentUser(getAuthFn) {
   const auth = resolveAuthInstance(getAuthFn);
@@ -1790,24 +1770,21 @@ function ensureGoogleIdentityAvailable(accountsId, logger) {
  * @returns {void}
  */
 /**
- * Attach change listener.
- * @param {object} list List.
- * @param {Function} listener Listener.
- * @returns {void}
- */
-/**
- * Check if list can listen.
- * @param {object} list List.
- * @returns {boolean} True if can listen.
+ * Determine whether a list-like object supports event listeners.
+ * @param {{ addEventListener?: (type: string, listener: () => void) => void } | undefined} list - Candidate object for listening to events.
+ * @returns {boolean} True when event listeners can be attached.
  */
 function canListen(list) {
   return Boolean(list && typeof list.addEventListener === 'function');
 }
 
 /**
- *
- * @param list
- * @param listener
+ * Attach tooling to refresh the rendered buttons when the media query changes.
+ * @param {{
+ *   addEventListener?: (type: string, listener: () => void) => void,
+ * } | undefined} list - Media query list for subscribing to theme changes.
+ * @param {() => void} listener - Callback invoked when the media query matches changes.
+ * @returns {void}
  */
 function attachChangeListener(list, listener) {
   if (canListen(list)) {
@@ -1816,10 +1793,11 @@ function attachChangeListener(list, listener) {
 }
 
 /**
- *
- * @param accountsId
- * @param querySelectorAll
- * @param mediaQueryList
+ * Initialize the sign-in button renderer and keep it synchronized with the color scheme.
+ * @param {GoogleAccountsClient} accountsId - Google Identity client used to render buttons.
+ * @param {(selector: string) => NodeList} querySelectorAll - DOM helper for locating button targets.
+ * @param {{ matches?: boolean, addEventListener?: (type: string, listener: () => void) => void } | undefined} mediaQueryList - Media query that informs dark-mode styling.
+ * @returns {void}
  */
 function setupSignInButtonRenderer(
   accountsId,
@@ -1863,15 +1841,9 @@ function isAdminUser(user) {
 }
 
 /**
- * Toggle the visibility of an element.
- * @param {HTMLElement | null | undefined} element - Element to show or hide.
- * @param {boolean} visible - True to display the element, false to hide it.
- * @returns {void}
- */
-/**
- * Apply visibility style.
- * @param {object} element Element.
- * @param {boolean} visible Visible.
+ * Set the element's display style based on the visibility flag.
+ * @param {HTMLElement | null | undefined} element - Element whose visibility should change.
+ * @param {boolean} visible - True to show the element, false to hide it.
  * @returns {void}
  */
 function applyVisibility(element, visible) {
@@ -1883,9 +1855,10 @@ function applyVisibility(element, visible) {
 }
 
 /**
- *
- * @param element
- * @param visible
+ * Conditionally apply visibility updates when the element is present.
+ * @param {HTMLElement | null | undefined} element - Element targeted for visibility changes.
+ * @param {boolean} visible - Desired visibility state.
+ * @returns {void}
  */
 function setElementVisibility(element, visible) {
   if (!element) {
