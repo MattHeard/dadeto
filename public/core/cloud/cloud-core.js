@@ -65,7 +65,42 @@ export const productionOrigins = [
  * @returns {string} Authorization header or an empty string.
  */
 export function getAuthHeader(req) {
-  return req?.get?.('Authorization') || '';
+  return normalizeAuthorizationValue(resolveAuthorizationHeader(req));
+}
+
+/**
+ * Normalize the Authorization header so the caller always receives a string.
+ * @param {unknown} value Header value extracted from the request.
+ * @returns {string} Header text or empty string when missing or invalid.
+ */
+function normalizeAuthorizationValue(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value;
+}
+
+/**
+ * Safely resolve the Authorization header from the request getter.
+ * @param {import('express').Request} req HTTP request object.
+ * @returns {unknown} Resolved header value or undefined when unavailable.
+ */
+function resolveAuthorizationHeader(req) {
+  return callAuthorizationGetter(req?.get);
+}
+
+/**
+ * Invoke the optional getter when available.
+ * @param {unknown} getter Candidate `get` helper from Express.
+ * @returns {unknown} Authorization header or undefined.
+ */
+function callAuthorizationGetter(getter) {
+  if (typeof getter !== 'function') {
+    return undefined;
+  }
+
+  return getter('Authorization');
 }
 
 /**
