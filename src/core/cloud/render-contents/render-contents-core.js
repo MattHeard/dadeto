@@ -1040,21 +1040,12 @@ function getHeaderFromHeaders(req) {
  * @returns {string} Bearer token or an empty string if none found.
  */
 function extractBearerToken(header) {
-  const headerValue = normalizeHeaderString(header);
+  const headerValue = String(header);
   const match = headerValue.match(/^Bearer (.+)$/);
   if (match) {
     return match[1];
   }
   return '';
-}
-
-/**
- * Normalize a header value into a string that can be inspected.
- * @param {unknown} value Candidate header value.
- * @returns {string} Header string or empty when unavailable.
- */
-function normalizeHeaderString(value) {
-  return String(value);
 }
 
 /**
