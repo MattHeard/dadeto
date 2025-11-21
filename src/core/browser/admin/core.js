@@ -800,11 +800,35 @@ function buildNormalizedGoogleSignInDeps(deps) {
  * @returns {object} Deps with logger.
  */
 function ensureLogger(deps) {
-  if (deps.logger === undefined || deps.logger === null) {
+  applyDefaultLogger(deps);
+  return deps;
+}
+
+/**
+ * Assign the default console logger when no logger has been provided.
+ * @param {object} deps Dependency bag to update.
+ * @returns {void}
+ */
+function applyDefaultLogger(deps) {
+  if (!hasLogger(deps.logger)) {
     deps.logger = console;
   }
+}
 
-  return deps;
+/**
+ * Determine whether a logger instance is already configured.
+ * @param {object | null | undefined} logger Candidate logger.
+ * @returns {boolean} True when a logger value exists.
+ */
+function hasLogger(logger) {
+  if (logger === undefined) {
+    return false;
+  }
+  if (logger === null) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
