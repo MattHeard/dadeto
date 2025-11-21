@@ -821,14 +821,15 @@ function applyDefaultLogger(deps) {
  * @returns {boolean} True when a logger value exists.
  */
 function hasLogger(logger) {
-  if (logger === undefined) {
-    return false;
-  }
-  if (logger === null) {
-    return false;
-  }
+  return !isMissingLogger(logger);
+}
 
-  return true;
+/**
+ *
+ * @param logger
+ */
+function isMissingLogger(logger) {
+  return logger === undefined || logger === null;
 }
 
 /**
