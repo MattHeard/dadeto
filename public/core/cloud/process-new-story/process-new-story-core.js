@@ -153,21 +153,27 @@ function isNonEmptyString(value) {
  * @returns {string} Story identifier.
  */
 function resolveStoryId(snapshot, context, randomUUID) {
-  return (
-    pickFirstIdentifier([
-      normalizeIdentifier(context?.params?.subId),
-      normalizeIdentifier(snapshot?.id),
-    ]) ?? randomUUID()
-  );
+  const candidate = resolvePreferredStoryIdentifier(snapshot, context);
+  if (candidate) {
+    return candidate;
+  }
+
+  return randomUUID();
 }
 
 /**
- * Pick the first truthy identifier from the provided list.
- * @param {(string | null)[]} identifiers Candidate identifiers.
- * @returns {string | null} First truthy identifier or null.
+ * Resolve the preferred story identifier from context, then snapshot.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot captured by the trigger.
+ * @param {{ params?: Record<string, string> } | undefined} context Trigger execution context.
+ * @returns {string | null} Identifier when available.
  */
-function pickFirstIdentifier(identifiers) {
-  return identifiers.find(Boolean) ?? null;
+function resolvePreferredStoryIdentifier(snapshot, context) {
+  const contextId = normalizeIdentifier(context?.params?.subId);
+  if (contextId) {
+    return contextId;
+  }
+
+  return normalizeIdentifier(snapshot?.id);
 }
 
 /**
