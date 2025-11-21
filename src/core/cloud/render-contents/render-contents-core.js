@@ -551,13 +551,37 @@ function extractMessageFromError(error) {
  * @returns {string|undefined} Message string when present.
  */
 function getMessageFromError(error) {
-  if (!error || typeof error !== 'object') {
+  if (!hasStringMessage(error)) {
     return undefined;
   }
-  if ('message' in error && typeof error.message === 'string') {
-    return error.message;
-  }
-  return undefined;
+  return error.message;
+}
+
+/**
+ * Determine whether a value represents an error object with a string message.
+ * @param {unknown} value Candidate value.
+ * @returns {value is { message: string }} True when the payload exposes a string message.
+ */
+function hasStringMessage(value) {
+  return isObject(value) && isStringMessage(value.message);
+}
+
+/**
+ * Detect whether the candidate value is an object.
+ * @param {unknown} value Candidate value.
+ * @returns {value is Record<string, unknown>} True when the input is a non-null object.
+ */
+function isObject(value) {
+  return value !== null && typeof value === 'object';
+}
+
+/**
+ * Detect whether the candidate value is a string message.
+ * @param {unknown} candidate Candidate value.
+ * @returns {candidate is string} True when the input is a string.
+ */
+function isStringMessage(candidate) {
+  return typeof candidate === 'string';
 }
 
 /**
@@ -1101,13 +1125,34 @@ function ensureAdminIdentity(decoded, adminUid, res) {
  */
 function handleAuthError(error, res) {
   const message = extractMessageFromError(error);
-  if (typeof message === 'string' && message.length > 0) {
-    res.status(401).send(message);
-    return null;
+  res.status(401).send(formatInvalidTokenMessage(message));
+  return null;
+}
+
+/**
+ * Pick a payload for authorization failures.
+ * @param {unknown} message Candidate message produced by the verifier.
+ * @returns {string} Value emitted to the client.
+ */
+function formatInvalidTokenMessage(message) {
+  if (hasNonEmptyString(message)) {
+    return message;
   }
 
-  res.status(401).send('Invalid token');
-  return null;
+  return 'Invalid token';
+}
+
+/**
+ * Confirm the candidate is a non-empty string.
+ * @param {unknown} input Candidate value.
+ * @returns {input is string} True when the input is a non-empty string.
+ */
+function hasNonEmptyString(input) {
+  if (typeof input !== 'string') {
+    return false;
+  }
+
+  return input.length > 0;
 }
 
 /**
