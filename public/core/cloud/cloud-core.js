@@ -122,17 +122,35 @@ async function authorizeAdminToken({
 }) {
   try {
     const decoded = await verifyToken(token);
-    const isAdmin = Boolean(isAdminUid(decoded));
-    if (!isAdmin) {
-      sendForbidden(res);
-      return false;
-    }
+    return ensureAdminIdentity({
+      decoded,
+      isAdminUid,
+      sendForbidden,
+      res,
+    });
   } catch (error) {
     const message = defaultInvalidTokenMessage(error);
     sendUnauthorized(res, message);
     return false;
   }
+}
 
+/**
+ * Confirm the decoded token belongs to an admin and respond when it does not.
+ * @param {{
+ *   decoded: import('firebase-admin/auth').DecodedIdToken,
+ *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
+ *   sendForbidden: (res: import('express').Response) => void,
+ *   res: import('express').Response,
+ * }} deps Authorization helpers.
+ * @returns {boolean} True when the decoded token matches the admin UID.
+ */
+function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
+  const isAdmin = Boolean(isAdminUid(decoded));
+  if (!isAdmin) {
+    sendForbidden(res);
+    return false;
+  }
   return true;
 }
 
@@ -158,7 +176,7 @@ export function createVerifyAdmin({
       return false;
     }
 
-    const authorized = await authorizeAdminToken({
+    return authorizeAdminToken({
       token,
       verifyToken,
       isAdminUid,
@@ -166,11 +184,5 @@ export function createVerifyAdmin({
       sendForbidden,
       res,
     });
-
-    if (!authorized) {
-      return false;
-    }
-
-    return true;
   };
 }
