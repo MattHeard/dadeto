@@ -266,10 +266,25 @@ export function isDuplicateAppError(error) {
     return false;
   }
 
-  const hasDuplicateIdentifier =
-    error.code === 'app/duplicate-app' || typeof error.message === 'string';
+  return hasDuplicateIdentifier(error) && messageIndicatesDuplicate(error);
+}
 
-  if (!hasDuplicateIdentifier) {
+/**
+ *
+ * @param error
+ */
+function hasDuplicateIdentifier(error) {
+  return (
+    error.code === 'app/duplicate-app' || typeof error.message === 'string'
+  );
+}
+
+/**
+ *
+ * @param error
+ */
+function messageIndicatesDuplicate(error) {
+  if (typeof error.message !== 'string') {
     return false;
   }
 
