@@ -24,18 +24,64 @@ export function normalizeRemoveVariantLoadResult(loadResult) {
     return { page: null, variant: null };
   }
 
+  return normalizeLoadResultValue(loadResult);
+}
+
+/**
+ *
+ * @param loadResult
+ */
+function normalizeLoadResultValue(loadResult) {
   if (typeof loadResult !== 'object') {
     return { page: loadResult, variant: null };
   }
 
-  if ('page' in loadResult || 'variant' in loadResult) {
-    return {
-      page: loadResult.page ?? null,
-      variant: loadResult.variant ?? null,
-    };
+  return normalizeObjectLoadResult(loadResult);
+}
+
+/**
+ *
+ * @param loadResult
+ */
+function normalizeObjectLoadResult(loadResult) {
+  if (!hasPageOrVariant(loadResult)) {
+    return { page: loadResult, variant: undefined };
   }
 
-  return { page: loadResult, variant: undefined };
+  return {
+    page: normalizeNullableField(loadResult.page),
+    variant: normalizeNullableField(loadResult.variant),
+  };
+}
+
+/**
+ *
+ * @param value
+ */
+function hasPageOrVariant(value) {
+  if ('page' in value) {
+    return true;
+  }
+  return 'variant' in value;
+}
+
+/**
+ *
+ * @param value
+ */
+function normalizeNullableField(value) {
+  if (isNullish(value)) {
+    return null;
+  }
+  return value;
+}
+
+/**
+ *
+ * @param value
+ */
+function isNullish(value) {
+  return value === undefined || value === null;
 }
 
 /**
@@ -51,11 +97,19 @@ function resolveVariantData({ hasProvidedData, providedData, loadedVariant }) {
     return providedData;
   }
 
-  if (loadedVariant !== undefined) {
-    return loadedVariant ?? null;
+  return resolveLoadedVariant(loadedVariant);
+}
+
+/**
+ *
+ * @param loadedVariant
+ */
+function resolveLoadedVariant(loadedVariant) {
+  if (loadedVariant === undefined) {
+    return undefined;
   }
 
-  return undefined;
+  return loadedVariant;
 }
 
 /**
