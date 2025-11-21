@@ -50,6 +50,7 @@ export default [
       'no-unused-expressions': 'warn',
       'prettier/prettier': 'warn',
       // Add other project-specific rules here if needed
+      'no-unreachable-loop': 'warn',
     },
   },
   eslintConfigPrettier,
