@@ -760,6 +760,15 @@ describe('generate stats helpers', () => {
     expect(isDuplicateAppError(null)).toBe(false);
   });
 
+  it('rejects duplicate errors when the message is not a string', () => {
+    expect(
+      isDuplicateAppError({
+        code: 'app/duplicate-app',
+        message: { error: 'Already exists' },
+      })
+    ).toBe(false);
+  });
+
   it('returns false when duplicate identifiers are absent', () => {
     expect(
       isDuplicateAppError({
