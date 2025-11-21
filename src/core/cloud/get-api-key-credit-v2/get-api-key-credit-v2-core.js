@@ -36,10 +36,25 @@ function execUuidPathPattern(value) {
  */
 function matchPathUuid(path) {
   const match = execUuidPathPattern(path);
-  if (typeof match?.[1] === 'string') {
-    return match[1];
-  }
+  return extractUuidFromMatch(match);
+}
 
+/**
+ *
+ * @param match
+ */
+function extractUuidFromMatch(match) {
+  return sanitizeMatchUuid(match?.[1]);
+}
+
+/**
+ *
+ * @param value
+ */
+function sanitizeMatchUuid(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
   return '';
 }
 
@@ -62,7 +77,22 @@ function readUuid(value) {
  *   params?: Record<string, unknown>,
  *   query?: Record<string, unknown>,
  * }} [request] Incoming request data.
+ * @param resolvers
  * @returns {string} Extracted UUID or an empty string when missing.
+ */
+function resolveFirstValue(resolvers) {
+  let value = '';
+  resolvers.find(resolve => {
+    value = resolve();
+    return Boolean(value);
+  });
+
+  return value;
+}
+
+/**
+ *
+ * @param request
  */
 export function extractUuid(request = {}) {
   const resolvers = [
@@ -71,14 +101,7 @@ export function extractUuid(request = {}) {
     () => readUuid(request.query?.uuid),
   ];
 
-  for (const resolve of resolvers) {
-    const value = resolve();
-    if (value) {
-      return value;
-    }
-  }
-
-  return '';
+  return resolveFirstValue(resolvers);
 }
 
 /**
@@ -94,66 +117,186 @@ export function extractUuid(request = {}) {
  *   headers?: Record<string, string>,
  * }>} Handler producing HTTP response metadata.
  */
-export function createGetApiKeyCreditV2Handler({
-  fetchCredit,
-  getUuid = extractUuid,
-  logError,
-} = {}) {
+export function createGetApiKeyCreditV2Handler(deps = {}) {
+  const { fetchCredit, resolveUuid, errorLogger } =
+    resolveV2HandlerDependencies(deps);
+
+  return async function handleRequest(request = {}) {
+    const method = deriveRequestMethod(request.method);
+    const uuid = resolveUuid(request);
+    const validationError = resolveRequestValidationError(method, uuid);
+
+    return resolveRequestResponse(validationError, () =>
+      fetchCreditResponse(fetchCredit, uuid, errorLogger)
+    );
+  };
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.fetchCredit
+ * @param root0.getUuid
+ * @param root0.logError
+ */
+function resolveV2HandlerDependencies({ fetchCredit, getUuid, logError } = {}) {
+  ensureFetchCredit(fetchCredit);
+
+  return {
+    fetchCredit,
+    resolveUuid: resolveUuidDependency(getUuid),
+    errorLogger: resolveErrorLogger(logError),
+  };
+}
+
+/**
+ *
+ * @param fetchCredit
+ */
+function ensureFetchCredit(fetchCredit) {
   if (typeof fetchCredit !== 'function') {
     throw new TypeError('fetchCredit must be a function');
   }
+}
 
-  let resolveUuid = extractUuid;
+/**
+ *
+ * @param getUuid
+ */
+function resolveUuidDependency(getUuid) {
   if (typeof getUuid === 'function') {
-    resolveUuid = getUuid;
+    return getUuid;
   }
 
-  let errorLogger = () => {};
+  return extractUuid;
+}
+
+/**
+ *
+ * @param logError
+ */
+function resolveErrorLogger(logError) {
   if (typeof logError === 'function') {
-    errorLogger = logError;
+    return logError;
   }
 
-  return async function handleRequest(request = {}) {
-    let method = '';
-    if (typeof request.method === 'string') {
-      method = request.method;
-    }
-    if (method !== 'GET') {
-      return {
-        status: 405,
-        body: 'Method Not Allowed',
-        headers: { Allow: 'GET' },
-      };
-    }
+  return () => {};
+}
 
-    const uuid = resolveUuid(request);
-    if (!uuid) {
-      return {
-        status: 400,
-        body: 'Missing UUID',
-      };
-    }
+/**
+ *
+ * @param method
+ */
+function deriveRequestMethod(method) {
+  return typeof method === 'string' ? method : '';
+}
 
-    try {
-      const credit = await fetchCredit(uuid);
-      if (credit === null) {
-        return {
-          status: 404,
-          body: 'Not found',
-        };
-      }
+/**
+ *
+ * @param method
+ */
+function resolveMethodError(method) {
+  if (method !== 'GET') {
+    return {
+      status: 405,
+      body: 'Method Not Allowed',
+      headers: { Allow: 'GET' },
+    };
+  }
 
-      return {
-        status: 200,
-        body: { credit },
-      };
-    } catch (error) {
-      errorLogger(error);
-      return {
-        status: 500,
-        body: 'Internal error',
-      };
-    }
+  return null;
+}
+
+/**
+ *
+ * @param method
+ * @param uuid
+ */
+function resolveRequestValidationError(method, uuid) {
+  const methodError = resolveMethodError(method);
+  if (methodError) {
+    return methodError;
+  }
+
+  return resolveUuidPresence(uuid);
+}
+
+/**
+ *
+ * @param validationError
+ * @param onSuccess
+ */
+function resolveRequestResponse(validationError, onSuccess) {
+  if (validationError) {
+    return validationError;
+  }
+
+  return onSuccess();
+}
+
+/**
+ *
+ * @param uuid
+ */
+function resolveUuidPresence(uuid) {
+  if (!uuid) {
+    return missingUuidResponse();
+  }
+
+  return null;
+}
+
+/**
+ *
+ */
+function missingUuidResponse() {
+  return {
+    status: 400,
+    body: 'Missing UUID',
+  };
+}
+
+/**
+ *
+ * @param fetchCredit
+ * @param uuid
+ * @param errorLogger
+ */
+async function fetchCreditResponse(fetchCredit, uuid, errorLogger) {
+  try {
+    const credit = await fetchCredit(uuid);
+    return resolveCreditPayload(credit);
+  } catch (error) {
+    errorLogger(error);
+    return internalErrorResponse();
+  }
+}
+
+/**
+ *
+ * @param credit
+ */
+function resolveCreditPayload(credit) {
+  if (credit === null) {
+    return {
+      status: 404,
+      body: 'Not found',
+    };
+  }
+
+  return {
+    status: 200,
+    body: { credit },
+  };
+}
+
+/**
+ *
+ */
+function internalErrorResponse() {
+  return {
+    status: 500,
+    body: 'Internal error',
   };
 }
 
@@ -165,10 +308,19 @@ export function createGetApiKeyCreditV2Handler({
 export function createFetchCredit(db) {
   return async function fetchCredit(uuid) {
     const snap = await getApiKeyCreditSnapshot(db, uuid);
-    if (!snap.exists) {
-      return null;
-    }
-    const data = snap.data() || {};
-    return data.credit ?? 0;
+    return getCreditFromSnapshot(snap);
   };
+}
+
+/**
+ *
+ * @param snap
+ */
+function getCreditFromSnapshot(snap) {
+  if (!snap.exists) {
+    return null;
+  }
+
+  const data = snap.data() || {};
+  return data.credit ?? 0;
 }
