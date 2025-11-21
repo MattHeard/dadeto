@@ -134,12 +134,17 @@ function parseAuthorizationHeader(authHeader) {
     return null;
   }
 
-  const match = authHeader.match(/^Bearer (.+)$/);
+  return extractBearerToken(authHeader);
+}
 
-  if (match) {
-    return match[1];
-  }
-  return null;
+/**
+ * Extracts the bearer token value from a header string already known to be a string.
+ * @param {string} value Authorization header value.
+ * @returns {string | null} Token when the header matches the Bearer pattern.
+ */
+function extractBearerToken(value) {
+  const match = value.match(/^Bearer (.+)$/);
+  return match ? match[1] : null;
 }
 /**
  * Reads the Authorization header from an Express-style request object.
