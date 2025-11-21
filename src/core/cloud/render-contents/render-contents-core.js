@@ -1054,7 +1054,7 @@ function extractBearerToken(header) {
  * @returns {string} Header string or empty when unavailable.
  */
 function normalizeHeaderString(value) {
-  return String(value ?? '');
+  return String(value);
 }
 
 /**
