@@ -96,8 +96,19 @@ function defaultInvalidTokenMessage(error) {
  */
 function extractTokenFromRequest(req) {
   const authHeader = getAuthHeader(req);
-  const match = matchAuthHeader(authHeader);
-  return match?.[1] || '';
+  return getBearerTokenFromMatch(matchAuthHeader(authHeader));
+}
+
+/**
+ * Pull the bearer token out of the regex match info if it exists.
+ * @param {string[] | null} match Result of `matchAuthHeader`.
+ * @returns {string} Extracted bearer token or empty string when absent.
+ */
+function getBearerTokenFromMatch(match) {
+  if (!match) {
+    return '';
+  }
+  return match[1];
 }
 
 /**
