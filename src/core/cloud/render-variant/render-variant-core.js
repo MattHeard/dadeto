@@ -1093,12 +1093,30 @@ function handleInvalidateError(error, path, consoleError) {
  * @returns {string | undefined} Error message string when present.
  */
 function getMessageFromError(error) {
-  if (!error || typeof error !== 'object') {
+  if (!isObject(error)) {
     return undefined;
   }
+
+  return extractMessageProperty(error);
+}
+
+/**
+ *
+ * @param value
+ */
+function isObject(value) {
+  return Boolean(value && typeof value === 'object');
+}
+
+/**
+ *
+ * @param error
+ */
+function extractMessageProperty(error) {
   if ('message' in error && typeof error.message === 'string') {
     return error.message;
   }
+
   return undefined;
 }
 
