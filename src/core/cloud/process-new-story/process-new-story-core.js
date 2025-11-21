@@ -14,7 +14,17 @@ import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../pr
  * @returns {void}
  */
 function assertDb(db) {
-  if (!db || typeof db.doc !== 'function' || typeof db.batch !== 'function') {
+  ensureFirestoreHelperMethod(db, 'doc');
+  ensureFirestoreHelperMethod(db, 'batch');
+}
+
+/**
+ * Ensure the Firestore helper exposes the named method.
+ * @param {{ [key: string]: unknown }} db Candidate Firestore instance.
+ * @param {string} method Method name to validate.
+ */
+function ensureFirestoreHelperMethod(db, method) {
+  if (typeof db?.[method] !== 'function') {
     throw new TypeError('db must expose doc and batch helpers');
   }
 }
@@ -25,12 +35,27 @@ function assertDb(db) {
  * @returns {void}
  */
 function assertFieldValue(fieldValue) {
-  if (!fieldValue || typeof fieldValue.serverTimestamp !== 'function') {
-    throw new TypeError('fieldValue.serverTimestamp must be a function');
-  }
+  ensureFieldValueMethod(
+    fieldValue,
+    'serverTimestamp',
+    'fieldValue.serverTimestamp must be a function'
+  );
+  ensureFieldValueMethod(
+    fieldValue,
+    'increment',
+    'fieldValue.increment must be a function'
+  );
+}
 
-  if (typeof fieldValue.increment !== 'function') {
-    throw new TypeError('fieldValue.increment must be a function');
+/**
+ * Ensure the helper exposes the required method.
+ * @param {{ [key: string]: unknown }} fieldValue FieldValue helper candidate.
+ * @param {string} method Method name to validate.
+ * @param {string} errorMessage Error message when the helper is missing the method.
+ */
+function ensureFieldValueMethod(fieldValue, method, errorMessage) {
+  if (typeof fieldValue?.[method] !== 'function') {
+    throw new TypeError(errorMessage);
   }
 }
 
@@ -62,11 +87,7 @@ function assertRandomUuid(randomUUID) {
  * @returns {Record<string, unknown> | null} Submission payload when available.
  */
 function getSubmissionData(snapshot) {
-  if (!snapshot || typeof snapshot.data !== 'function') {
-    return null;
-  }
-
-  return snapshot.data();
+  return typeof snapshot?.data === 'function' ? snapshot.data() : null;
 }
 
 /**
@@ -98,11 +119,12 @@ function normalizeOptions(options) {
  * @returns {DocumentReference | null} Reference to the author document or null when unavailable.
  */
 function resolveAuthorRef(db, authorId) {
-  if (!authorId || typeof authorId !== 'string') {
+  const normalizedId = normalizeIdentifier(authorId);
+  if (!normalizedId) {
     return null;
   }
 
-  return db.doc(`authors/${authorId}`);
+  return db.doc(`authors/${normalizedId}`);
 }
 
 /**
@@ -111,15 +133,16 @@ function resolveAuthorRef(db, authorId) {
  * @returns {string | null} Identifier when valid.
  */
 function normalizeIdentifier(value) {
-  if (typeof value !== 'string') {
-    return null;
-  }
+  return isNonEmptyString(value) ? value : null;
+}
 
-  if (!value) {
-    return null;
-  }
-
-  return value;
+/**
+ * Determine whether a value is a non-empty string.
+ * @param {unknown} value Candidate value.
+ * @returns {value is string} True when the value is a non-empty string.
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value !== '';
 }
 
 /**
@@ -130,17 +153,21 @@ function normalizeIdentifier(value) {
  * @returns {string} Story identifier.
  */
 function resolveStoryId(snapshot, context, randomUUID) {
-  const contextId = normalizeIdentifier(context?.params?.subId);
-  if (contextId) {
-    return contextId;
-  }
+  return (
+    pickFirstIdentifier([
+      normalizeIdentifier(context?.params?.subId),
+      normalizeIdentifier(snapshot?.id),
+    ]) ?? randomUUID()
+  );
+}
 
-  const snapshotId = normalizeIdentifier(snapshot?.id);
-  if (snapshotId) {
-    return snapshotId;
-  }
-
-  return randomUUID();
+/**
+ * Pick the first truthy identifier from the provided list.
+ * @param {(string | null)[]} identifiers Candidate identifiers.
+ * @returns {string | null} First truthy identifier or null.
+ */
+function pickFirstIdentifier(identifiers) {
+  return identifiers.find(Boolean) ?? null;
 }
 
 /**
