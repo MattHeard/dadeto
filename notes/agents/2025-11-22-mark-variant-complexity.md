@@ -1,0 +1,3 @@
+`markVariantAndRespond` was flagged (complexity 5) because it handled both the 404 response and fallback error messaging. By moving the message normalization into `resolveUpdateErrorMessage`, the exported helper now has only one branch, satisfying ESLint without altering behavior and keeping error messages accurate. After rerunning `npm test`, coverage stayed at 100%, and a fresh `npm run lint` run shows 206 complexity warnings remain under `src/core/`, so the reduction is trackable.
+
+Open question: should we generalize these small error-normalizer helpers so future async handlers can reuse them and avoid touching every response helper when responding to exceptions?

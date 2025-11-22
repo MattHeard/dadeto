@@ -327,12 +327,22 @@ async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
 
     res.status(200).json({ ok: true });
   } catch (error) {
-    let message = 'update failed';
-    if (typeof error?.message === 'string') {
-      message = error.message;
-    }
+    const message = resolveUpdateErrorMessage(error);
     res.status(500).json({ error: message });
   }
+}
+
+/**
+ * Normalize the error message for variant update failures.
+ * @param {unknown} error Error thrown while marking a variant dirty.
+ * @returns {string} Message that can be surfaced to the client.
+ */
+function resolveUpdateErrorMessage(error) {
+  if (typeof error?.message === 'string') {
+    return error.message;
+  }
+
+  return 'update failed';
 }
 
 /**
