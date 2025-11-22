@@ -824,10 +824,7 @@ export function getAllowedOrigins(environmentVariables) {
   const configuredOrigins =
     environmentVariables?.RENDER_CONTENTS_ALLOWED_ORIGINS;
   const parsedOrigins = parseAllowedOrigins(configuredOrigins);
-  if (parsedOrigins.length > 0) {
-    return parsedOrigins;
-  }
-  return [...productionOrigins];
+  return chooseAllowedOrigins(parsedOrigins);
 }
 
 /**
@@ -847,6 +844,19 @@ function parseAllowedOrigins(value) {
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
+}
+
+/**
+ * Select the origins list that should be returned to callers.
+ * @param {string[]} parsedOrigins Parsed configuration origins.
+ * @returns {string[]} Either the parsed origins or the production fallback.
+ */
+function chooseAllowedOrigins(parsedOrigins) {
+  if (parsedOrigins.length > 0) {
+    return parsedOrigins;
+  }
+
+  return [...productionOrigins];
 }
 
 /**
