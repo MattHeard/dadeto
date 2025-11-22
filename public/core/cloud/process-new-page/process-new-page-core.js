@@ -50,12 +50,41 @@ function assertRandom(random) {
  * }} fieldValue FieldValue helper used to write metadata.
  */
 function assertFieldValue(fieldValue) {
-  if (!fieldValue || typeof fieldValue.serverTimestamp !== 'function') {
+  ensureFieldValueHasTimestamp(fieldValue);
+  ensureFieldValueHasIncrement(fieldValue);
+}
+
+/**
+ * Validate that the FieldValue helper provides a timestamp helper.
+ * @param {{ serverTimestamp?: unknown }} fieldValue FieldValue helper candidate.
+ * @returns {void}
+ */
+function ensureFieldValueHasTimestamp(fieldValue) {
+  if (!fieldValue) {
     throw new TypeError('fieldValue.serverTimestamp must be a function');
   }
 
-  if (typeof fieldValue.increment !== 'function') {
-    throw new TypeError('fieldValue.increment must be a function');
+  ensureFunction('fieldValue.serverTimestamp', fieldValue.serverTimestamp);
+}
+
+/**
+ * Validate that the FieldValue helper provides an increment helper.
+ * @param {{ increment?: unknown }} fieldValue FieldValue helper candidate.
+ * @returns {void}
+ */
+function ensureFieldValueHasIncrement(fieldValue) {
+  ensureFunction('fieldValue.increment', fieldValue.increment);
+}
+
+/**
+ * Assert that a candidate value is a function.
+ * @param {string} name Human-readable name for the value.
+ * @param {unknown} value Candidate value.
+ * @returns {void}
+ */
+function ensureFunction(name, value) {
+  if (typeof value !== 'function') {
+    throw new TypeError(`${name} must be a function`);
   }
 }
 
