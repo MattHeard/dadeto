@@ -139,7 +139,7 @@ export function createGetApiKeyCreditV2Handler(deps = {}) {
  * @param root0.getUuid
  * @param root0.logError
  */
-function resolveV2HandlerDependencies({ fetchCredit, getUuid, logError } = {}) {
+function resolveV2HandlerDependencies({ fetchCredit, getUuid, logError }) {
   ensureFetchCredit(fetchCredit);
 
   return {
