@@ -168,6 +168,36 @@ export function createCopyToInfraCore({
   }
 
   /**
+   * Extract the declared files from the copy plan.
+   * @param {{ files?: string[] } | undefined} copyPlan - Copy configuration that may list files.
+   * @returns {string[] | undefined} The declared files or undefined when none are provided.
+   */
+  function extractDeclaredFiles(copyPlan) {
+    return copyPlan?.files;
+  }
+
+  /**
+   * Check whether the provided value is a non-empty array.
+   * @param {unknown} value - Value to inspect.
+   * @returns {boolean} True when the value is an array with at least one item.
+   */
+  function isNonEmptyArray(value) {
+    if (!Array.isArray(value)) {
+      return false;
+    }
+    return value.length > 0;
+  }
+
+  /**
+   * Determine whether the copy plan includes files to duplicate.
+   * @param {{ files?: string[] } | undefined} copyPlan - Copy configuration that may omit files.
+   * @returns {boolean} True when there are declared files.
+   */
+  function shouldCopyDeclaredFiles(copyPlan) {
+    return isNonEmptyArray(extractDeclaredFiles(copyPlan));
+  }
+
+  /**
    * Copy a declared list of files into the target directory.
    * @param {object} copyPlan - Copy configuration.
    * @param {object} io - Filesystem adapters.
@@ -175,11 +205,11 @@ export function createCopyToInfraCore({
    * @returns {Promise<void>} Resolves when all files are copied.
    */
   async function copyDeclaredFiles(copyPlan, io, messageLogger) {
-    const files = copyPlan?.files;
-    if (!files?.length) {
+    if (!shouldCopyDeclaredFiles(copyPlan)) {
       return;
     }
     const { sourceDir, targetDir } = copyPlan;
+    const files = extractDeclaredFiles(copyPlan);
     await io.ensureDirectory(targetDir);
 
     await Promise.all(
