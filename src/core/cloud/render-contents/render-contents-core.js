@@ -326,11 +326,7 @@ function buildStoryInfoFromSnap(storySnap) {
  */
 async function resolveStoryInfoFromStory(story) {
   const rootRef = story?.rootPage;
-  if (!rootRef) {
-    return null;
-  }
-
-  return resolveStoryInfoFromRoot(rootRef, story);
+  return rootRef ? resolveStoryInfoFromRoot(rootRef, story) : null;
 }
 
 /**
@@ -341,7 +337,17 @@ async function resolveStoryInfoFromStory(story) {
  */
 async function resolveStoryInfoFromRoot(rootRef, story) {
   const pageSnap = await rootRef.get();
-  if (!pageSnap.exists) {
+  return buildStoryInfoFromPage(pageSnap, story);
+}
+
+/**
+ * Build story info from a retrieved page snapshot.
+ * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
+ * @param {Record<string, any>} story Story document data that owns the page.
+ * @returns {StoryInfo | null} Story metadata or null when the page is missing.
+ */
+function buildStoryInfoFromPage(pageSnap, story) {
+  if (!pageSnap?.exists) {
     return null;
   }
 
