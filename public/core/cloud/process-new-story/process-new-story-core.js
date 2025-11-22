@@ -168,12 +168,20 @@ function resolveStoryId(snapshot, context, randomUUID) {
  * @returns {string | null} Identifier when available.
  */
 function resolvePreferredStoryIdentifier(snapshot, context) {
-  const contextId = normalizeIdentifier(context?.params?.subId);
-  if (contextId) {
-    return contextId;
-  }
+  return selectPreferredIdentifier(
+    normalizeIdentifier(context?.params?.subId),
+    () => normalizeIdentifier(snapshot?.id)
+  );
+}
 
-  return normalizeIdentifier(snapshot?.id);
+/**
+ * Return the preferred identifier from the primary value or the fallback.
+ * @param {string | null} primary Primary identifier candidate.
+ * @param {() => string | null} fallback Fallback resolver invoked when primary is absent.
+ * @returns {string | null} Chosen identifier.
+ */
+function selectPreferredIdentifier(primary, fallback) {
+  return primary || fallback();
 }
 
 /**
@@ -338,14 +346,13 @@ export function createProcessNewStoryHandler({
   random = Math.random,
   findAvailablePageNumberFn = defaultFindAvailablePageNumber,
 }) {
-  assertDb(db);
-  assertFieldValue(fieldValue);
-  assertRandom(random);
-  assertRandomUuid(randomUUID);
-
-  if (typeof findAvailablePageNumberFn !== 'function') {
-    throw new TypeError('findAvailablePageNumber must be a function');
-  }
+  validateCreateProcessNewStoryHandlerOptions({
+    db,
+    fieldValue,
+    random,
+    randomUUID,
+    findAvailablePageNumberFn,
+  });
 
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
@@ -379,4 +386,31 @@ export function createProcessNewStoryHandler({
     await batch.commit();
     return null;
   };
+}
+
+/**
+ * Validate the dependencies for the process-new-story handler.
+ * @param {object} options Handler dependencies.
+ * @param {Firestore} options.db Firestore instance.
+ * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper.
+ * @param {() => number} options.random Random source.
+ * @param {() => string} options.randomUUID UUID source.
+ * @param {(db: Firestore, random?: () => number) => Promise<number>} options.findAvailablePageNumberFn Page-number resolver.
+ * @returns {void}
+ */
+function validateCreateProcessNewStoryHandlerOptions({
+  db,
+  fieldValue,
+  random,
+  randomUUID,
+  findAvailablePageNumberFn,
+}) {
+  assertDb(db);
+  assertFieldValue(fieldValue);
+  assertRandom(random);
+  assertRandomUuid(randomUUID);
+
+  if (typeof findAvailablePageNumberFn !== 'function') {
+    throw new TypeError('findAvailablePageNumber must be a function');
+  }
 }
