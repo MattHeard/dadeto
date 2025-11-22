@@ -161,13 +161,26 @@ function readAuthorizationFromHeaders(headers) {
  * @returns {string | null} Header value when present, otherwise null.
  */
 function getAuthorizationHeader(request) {
-  const headerFromGetter = readAuthorizationFromGetter(request);
+  return resolveFirstNonNullValue(
+    () => readAuthorizationFromGetter(request),
+    () => readAuthorizationFromHeaders(request?.headers)
+  );
+}
 
-  if (headerFromGetter !== null) {
-    return headerFromGetter;
+/**
+ * Iterate through resolver callbacks until a non-null string is returned.
+ * @param {...() => string | null} resolvers Resolver callbacks evaluated in order.
+ * @returns {string | null} First non-null result or null when none match.
+ */
+function resolveFirstNonNullValue(...resolvers) {
+  for (const resolver of resolvers) {
+    const value = resolver();
+    if (value !== null) {
+      return value;
+    }
   }
 
-  return readAuthorizationFromHeaders(request?.headers);
+  return null;
 }
 
 /**
