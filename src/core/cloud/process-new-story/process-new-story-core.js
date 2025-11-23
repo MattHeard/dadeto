@@ -9,79 +9,6 @@ import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../pr
  */
 
 /**
- * Ensure the provided database exposes the Firestore helpers used by the handler.
- * @param {{ doc: (path: string) => DocumentReference, batch: () => WriteBatch }} db Firestore instance to assert.
- * @returns {void}
- */
-function assertDb(db) {
-  ensureFirestoreHelperMethod(db, 'doc');
-  ensureFirestoreHelperMethod(db, 'batch');
-}
-
-/**
- * Ensure the Firestore helper exposes the named method.
- * @param {{ [key: string]: unknown }} db Candidate Firestore instance.
- * @param {string} method Method name to validate.
- */
-function ensureFirestoreHelperMethod(db, method) {
-  if (typeof db?.[method] !== 'function') {
-    throw new TypeError('db must expose doc and batch helpers');
-  }
-}
-
-/**
- * Ensure the provided FieldValue helper offers the required APIs.
- * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} fieldValue FieldValue helper to assert.
- * @returns {void}
- */
-function assertFieldValue(fieldValue) {
-  ensureFieldValueMethod(
-    fieldValue,
-    'serverTimestamp',
-    'fieldValue.serverTimestamp must be a function'
-  );
-  ensureFieldValueMethod(
-    fieldValue,
-    'increment',
-    'fieldValue.increment must be a function'
-  );
-}
-
-/**
- * Ensure the helper exposes the required method.
- * @param {{ [key: string]: unknown }} fieldValue FieldValue helper candidate.
- * @param {string} method Method name to validate.
- * @param {string} errorMessage Error message when the helper is missing the method.
- */
-function ensureFieldValueMethod(fieldValue, method, errorMessage) {
-  if (typeof fieldValue?.[method] !== 'function') {
-    throw new TypeError(errorMessage);
-  }
-}
-
-/**
- * Ensure the provided random helper is callable.
- * @param {() => number} random Random number generator to assert.
- * @returns {void}
- */
-function assertRandom(random) {
-  if (typeof random !== 'function') {
-    throw new TypeError('random must be a function');
-  }
-}
-
-/**
- * Ensure the provided UUID helper is callable.
- * @param {() => string} randomUUID UUID generator to assert.
- * @returns {void}
- */
-function assertRandomUuid(randomUUID) {
-  if (typeof randomUUID !== 'function') {
-    throw new TypeError('randomUUID must be a function');
-  }
-}
-
-/**
  * Extract submission data from an incoming Firestore snapshot.
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot captured by the trigger.
  * @returns {Record<string, unknown> | null} Submission payload when available.
@@ -346,14 +273,6 @@ export function createProcessNewStoryHandler({
   random = Math.random,
   findAvailablePageNumberFn = defaultFindAvailablePageNumber,
 }) {
-  validateCreateProcessNewStoryHandlerOptions({
-    db,
-    fieldValue,
-    random,
-    randomUUID,
-    findAvailablePageNumberFn,
-  });
-
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewStory(snapshot, context = {}) {
@@ -386,31 +305,4 @@ export function createProcessNewStoryHandler({
     await batch.commit();
     return null;
   };
-}
-
-/**
- * Validate the dependencies for the process-new-story handler.
- * @param {object} options Handler dependencies.
- * @param {Firestore} options.db Firestore instance.
- * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper.
- * @param {() => number} options.random Random source.
- * @param {() => string} options.randomUUID UUID source.
- * @param {(db: Firestore, random?: () => number) => Promise<number>} options.findAvailablePageNumberFn Page-number resolver.
- * @returns {void}
- */
-function validateCreateProcessNewStoryHandlerOptions({
-  db,
-  fieldValue,
-  random,
-  randomUUID,
-  findAvailablePageNumberFn,
-}) {
-  assertDb(db);
-  assertFieldValue(fieldValue);
-  assertRandom(random);
-  assertRandomUuid(randomUUID);
-
-  if (typeof findAvailablePageNumberFn !== 'function') {
-    throw new TypeError('findAvailablePageNumber must be a function');
-  }
 }
