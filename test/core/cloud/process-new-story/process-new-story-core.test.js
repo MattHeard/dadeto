@@ -90,6 +90,18 @@ describe('createProcessNewStoryHandler', () => {
     ).toThrow(new TypeError('fieldValue.increment must be a function'));
   });
 
+  it('throws when fieldValue is falsy', () => {
+    const db = { doc: jest.fn(), batch: jest.fn() };
+
+    expect(() =>
+      createProcessNewStoryHandler({
+        db,
+        fieldValue: null,
+        randomUUID: () => 'uuid',
+      })
+    ).toThrow(new TypeError('fieldValue.serverTimestamp must be a function'));
+  });
+
   it('throws when random helpers are invalid', () => {
     const db = { doc: jest.fn(), batch: jest.fn() };
 
