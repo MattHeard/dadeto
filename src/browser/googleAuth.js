@@ -12,13 +12,15 @@ setupFirebase(initializeApp);
 
 const auth = getAuth();
 
+const removeItemFromSessionStorage = key => {
+  const storage = globalThis.sessionStorage;
+  if (storage && typeof storage.removeItem === 'function') {
+    storage.removeItem(key);
+  }
+};
+
 const sessionStorageAdapter = {
-  removeItem(key) {
-    const storage = globalThis.sessionStorage;
-    if (storage && typeof storage.removeItem === 'function') {
-      storage.removeItem(key);
-    }
-  },
+  removeItem: removeItemFromSessionStorage,
 };
 
 export const initGoogleSignIn = createInitGoogleSignIn({
