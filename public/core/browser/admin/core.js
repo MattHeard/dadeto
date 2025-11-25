@@ -1824,6 +1824,44 @@ export function createGoogleAccountsId(scope = globalThis) {
 }
 
 /**
+ * Build a matchMedia helper that validates the vendor API.
+ * @param {typeof globalThis} scope - Global scope exposing `window`.
+ * @returns {(query: string) => MediaQueryList} matchMedia wrapper.
+ */
+export function createMatchMedia(scope = globalThis) {
+  return query => {
+    const win = scope?.window;
+    if (!win) {
+      throw new Error('window is not available');
+    }
+
+    const matchMedia = win.matchMedia;
+    if (typeof matchMedia !== 'function') {
+      throw new Error('window.matchMedia is not a function');
+    }
+
+    return matchMedia.call(win, query);
+  };
+}
+
+/**
+ * Create a credential factory from the supplied Google Auth provider.
+ * @param {{ credential?: (token: string) => string } | null | undefined} provider
+ * @returns {(token: string) => string} Credential factory.
+ */
+export function createCredentialFactory(provider) {
+  if (!provider) {
+    throw new TypeError('GoogleAuthProvider must be provided');
+  }
+
+  if (typeof provider.credential !== 'function') {
+    throw new TypeError('GoogleAuthProvider must expose credential');
+  }
+
+  return provider.credential;
+}
+
+/**
  * Ensure the Google Identity client exposes the expected interface before usage.
  * @param {GoogleAccountsClient | undefined} accountsId - Candidate Google Identity client.
  * @param {{ error?: (message: string) => void }} logger - Logger used to report missing scripts.
