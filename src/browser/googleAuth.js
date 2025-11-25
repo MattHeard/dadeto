@@ -6,6 +6,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { createGoogleSignOut } from './browser-core.js';
 import {
+  createGoogleAccountsId,
   createInitGoogleSignIn,
   createSessionStorageHandler,
   setupFirebase,
@@ -17,9 +18,10 @@ setupFirebase(initializeApp);
 const auth = getAuth();
 
 const sessionStorageAdapter = createSessionStorageHandler(globalThis);
+const getGoogleAccountsId = createGoogleAccountsId(globalThis);
 
 export const initGoogleSignIn = createInitGoogleSignIn({
-  googleAccountsId: () => window.google?.accounts?.id,
+  googleAccountsId: getGoogleAccountsId,
   credentialFactory: GoogleAuthProvider.credential,
   signInWithCredential,
   auth,
