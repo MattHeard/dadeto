@@ -5,16 +5,10 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { createGoogleSignOut } from './browser-core.js';
-import { createInitGoogleSignIn } from './admin-core.js';
+import { createInitGoogleSignIn, setupFirebase } from './admin-core.js';
 import { ADMIN_UID } from './common-core.js';
 
-(function setupFirebase(initApp) {
-  initApp({
-    apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ',
-    authDomain: 'irien-465710.firebaseapp.com',
-    projectId: 'irien-465710',
-  });
-})(initializeApp);
+setupFirebase(initializeApp);
 
 const auth = getAuth();
 
