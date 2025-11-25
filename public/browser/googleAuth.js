@@ -12,16 +12,21 @@ setupFirebase(initializeApp);
 
 const auth = getAuth();
 
-const createRemoveItem = storage => key => {
-  if (storage && typeof storage.removeItem === 'function') {
-    storage.removeItem(key);
+const createRemoveItem = getStorage => key => {
+  const storage = getStorage();
+  if (!storage) {
+    throw new Error('sessionStorage is not available');
   }
+
+  if (typeof storage.removeItem !== 'function') {
+    throw new Error('sessionStorage.removeItem is not a function');
+  }
+
+  storage.removeItem(key);
 };
 
 const sessionStorageAdapter = {
-  removeItem(key) {
-    createRemoveItem(globalThis.sessionStorage)(key);
-  },
+  removeItem: createRemoveItem(() => globalThis.sessionStorage),
 };
 
 export const initGoogleSignIn = createInitGoogleSignIn({
