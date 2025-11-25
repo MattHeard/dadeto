@@ -40,3 +40,12 @@ export function createSessionStorageHandler(scope = globalThis) {
     removeItem: createRemoveItem(() => scope?.sessionStorage),
   };
 }
+
+/**
+ * Produce the helper that returns the current Google Accounts client if present.
+ * @param {typeof globalThis} scope - Global scope that should hold `window`.
+ * @returns {() => object | undefined} Getter for `google.accounts.id`.
+ */
+export function createGoogleAccountsId(scope = globalThis) {
+  return () => scope?.window?.google?.accounts?.id;
+}
