@@ -2,7 +2,7 @@ import {
   createRegenerateVariant,
   createShowMessage,
   getStatusParagraph,
-} from '../../../../src/core/browser/admin/core.js';
+} from '../../../../src/core/browser/admin-core.js';
 
 describe('createRegenerateVariant', () => {
   let mockGoogleAuthModule;

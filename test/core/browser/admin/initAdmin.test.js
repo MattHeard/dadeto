@@ -1,4 +1,4 @@
-import { initAdmin } from '../../../../src/core/browser/admin/core.js';
+import { initAdmin } from '../../../../src/core/browser/admin-core.js';
 
 describe('initAdmin', () => {
   it('should throw TypeError if googleAuthModule does not provide initGoogleSignIn function', () => {

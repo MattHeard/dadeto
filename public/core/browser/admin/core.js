@@ -1,5 +1,5 @@
 import { ADMIN_UID } from '../common-core.js';
-import { createAdminTokenAction } from './token-action.js';
+import { createAdminTokenAction } from '../token-action.js';
 
 /**
  * @typedef {object} FetchRequestOptions

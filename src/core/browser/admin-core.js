@@ -1,5 +1,6 @@
 import { ADMIN_UID } from '../common-core.js';
 import { createAdminTokenAction } from './token-action.js';
+import { getIdToken } from '../browser/browser-core.js';
 
 /**
  * @typedef {object} FetchRequestOptions
@@ -47,6 +48,30 @@ const DEFAULT_ADMIN_ENDPOINTS = {
  */
 export function getDefaultAdminEndpointsCopy() {
   return { ...DEFAULT_ADMIN_ENDPOINTS };
+}
+
+/**
+ * Determine whether the provided storage and helpers yield an admin token.
+ * @param {Storage} storage - Storage object holding the cached ID token.
+ * @param {typeof JSON} jsonParser - JSON helper with a `parse` method.
+ * @param {(value: string) => string} decodeBase64 - Base64 decoder (typically `atob`).
+ * @returns {boolean} True when the stored token belongs to the admin UID.
+ */
+export function isAdminWithDeps(storage, jsonParser, decodeBase64) {
+  const token = getIdToken(storage);
+  if (!token) {
+    return false;
+  }
+
+  try {
+    const payload = token.split('.')[1];
+    const json = jsonParser.parse(
+      decodeBase64(payload.replace(/-/g, '+').replace(/_/g, '/'))
+    );
+    return json.sub === ADMIN_UID;
+  } catch {
+    return false;
+  }
 }
 
 /**

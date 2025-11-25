@@ -92,7 +92,7 @@ const packageFileCopies = functionDirectories.flatMap(name =>
   }))
 );
 
-const adminCoreSource = join(srcCoreBrowserDir, 'admin', 'core.js');
+const adminCoreSource = join(srcCoreBrowserDir, 'admin-core.js');
 const adminConfigSource = join(srcCoreDir, 'admin-config.js');
 
 const assignModerationCoreSource = join(

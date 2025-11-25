@@ -26,8 +26,8 @@ import {
   updateAuthControlsDisplay,
   createCheckAccess,
   initAdmin,
-} from '../../../../src/core/browser/admin/core.js';
-import { createAdminTokenAction } from '../../../../src/core/browser/admin/token-action.js';
+} from '../../../../src/core/browser/admin-core.js';
+import { createAdminTokenAction } from '../../../../src/core/browser/token-action.js';
 
 const createConfig = overrides => ({
   triggerRenderContentsUrl: 'https://example.com/render',

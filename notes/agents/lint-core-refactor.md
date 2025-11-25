@@ -3,7 +3,7 @@
 Ran through the src/core lint report after removing the `max-params` suppression, fixed the handlers that were easiest to rework, and kept diligent notes on the runtime commands and failures. Specific takeaways:
 
 - `load-static-config-core.js`: replaced the removed helper with inline logic, handled missing responses with an early `return`, and kept the error message consistent while keeping complexity low.
-- `admin/token-action.js`: reused `ensureFunctionDefined` so we no longer duplicate the `getIdToken` guard or trigger its own complexity warning; updated the admin core tests to expect the new message.
+- `token-action.js`: reused `ensureFunctionDefined` so we no longer duplicate the `getIdToken` guard or trigger its own complexity warning; updated the admin core tests to expect the new message.
 - `copy.js`: made the optional plans defensive so `runCopyToInfra` no longer needs `if` guards; now `copyDeclaredFiles` simply no-ops when nothing is wired.
 - `csvToJsonArray.js`: normalized trailing-line trimming and record assignment via helpers so the lint rule now sees a single guard and the new helper is documented.
 - `submit-new-page/helpers.js`: extracted the page-ref resolution logic into helpers so `findExistingOption` and `findExistingPage` keep exactly one branch each while still caching the existing Firestore lookups.
