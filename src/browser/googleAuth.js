@@ -27,10 +27,11 @@ export const initGoogleSignIn = createGoogleSignInInit(
   signInWithCredential
 );
 
-export const getIdToken = () => sessionStorage.getItem('id_token');
+export const getIdToken = (storage = sessionStorage) =>
+  storage.getItem('id_token');
 
 export const isAdmin = () => {
-  const token = getIdToken();
+  const token = getIdToken(sessionStorage);
   if (!token) return false;
   try {
     const payload = token.split('.')[1];
