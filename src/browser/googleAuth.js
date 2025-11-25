@@ -6,8 +6,10 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { createGoogleSignOut } from './browser-core.js';
 import {
+  createCredentialFactory,
   createGoogleAccountsId,
   createInitGoogleSignIn,
+  createMatchMedia,
   createSessionStorageHandler,
   setupFirebase,
 } from './admin-core.js';
@@ -19,14 +21,16 @@ const auth = getAuth();
 
 const sessionStorageAdapter = createSessionStorageHandler(globalThis);
 const getGoogleAccountsId = createGoogleAccountsId(globalThis);
+const getMatchMedia = createMatchMedia(globalThis);
+const credentialFactory = createCredentialFactory(GoogleAuthProvider);
 
 export const initGoogleSignIn = createInitGoogleSignIn({
   googleAccountsId: getGoogleAccountsId,
-  credentialFactory: GoogleAuthProvider.credential,
+  credentialFactory,
   signInWithCredential,
   auth,
   storage: sessionStorage,
-  matchMedia: query => window.matchMedia(query),
+  matchMedia: getMatchMedia,
   querySelectorAll: selector => document.querySelectorAll(selector),
   logger: console,
 });
