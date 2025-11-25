@@ -26,16 +26,20 @@ const getMatchMedia = createMatchMedia(globalThis);
 const getQuerySelectorAll = createQuerySelectorAll(globalThis);
 const credentialFactory = createCredentialFactory(GoogleAuthProvider);
 
-export const initGoogleSignIn = createInitGoogleSignIn({
+const buildGoogleSignInDeps = (auth, storage, logger) => ({
   googleAccountsId: getGoogleAccountsId,
   credentialFactory,
   signInWithCredential,
   auth,
-  storage: sessionStorage,
+  storage,
   matchMedia: getMatchMedia,
   querySelectorAll: getQuerySelectorAll,
-  logger: console,
+  logger,
 });
+
+export const initGoogleSignIn = createInitGoogleSignIn(
+  buildGoogleSignInDeps(auth, sessionStorage, console)
+);
 
 export const getIdToken = () => sessionStorage.getItem('id_token');
 
