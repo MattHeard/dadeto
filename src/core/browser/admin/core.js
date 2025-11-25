@@ -1845,6 +1845,26 @@ export function createMatchMedia(scope = globalThis) {
 }
 
 /**
+ * Build a querySelectorAll helper for the provided document.
+ * @param {typeof globalThis} scope - Global scope that should provide `document`.
+ * @returns {(selector: string) => NodeListOf<Element>} querySelectorAll wrapper.
+ */
+export function createQuerySelectorAll(scope = globalThis) {
+  return selector => {
+    const doc = scope?.document;
+    if (!doc) {
+      throw new Error('document is not available');
+    }
+
+    if (typeof doc.querySelectorAll !== 'function') {
+      throw new Error('document.querySelectorAll is not a function');
+    }
+
+    return doc.querySelectorAll(selector);
+  };
+}
+
+/**
  * Create a credential factory from the supplied Google Auth provider.
  * @param {{ credential?: (token: string) => string } | null | undefined} provider
  * @returns {(token: string) => string} Credential factory.
