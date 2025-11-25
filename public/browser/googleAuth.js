@@ -10,6 +10,7 @@ import {
   createGoogleAccountsId,
   createInitGoogleSignIn,
   createMatchMedia,
+  createQuerySelectorAll,
   createSessionStorageHandler,
   setupFirebase,
 } from './admin-core.js';
@@ -22,6 +23,7 @@ const auth = getAuth();
 const sessionStorageAdapter = createSessionStorageHandler(globalThis);
 const getGoogleAccountsId = createGoogleAccountsId(globalThis);
 const getMatchMedia = createMatchMedia(globalThis);
+const getQuerySelectorAll = createQuerySelectorAll(globalThis);
 const credentialFactory = createCredentialFactory(GoogleAuthProvider);
 
 export const initGoogleSignIn = createInitGoogleSignIn({
@@ -31,7 +33,7 @@ export const initGoogleSignIn = createInitGoogleSignIn({
   auth,
   storage: sessionStorage,
   matchMedia: getMatchMedia,
-  querySelectorAll: selector => document.querySelectorAll(selector),
+  querySelectorAll: getQuerySelectorAll,
   logger: console,
 });
 
