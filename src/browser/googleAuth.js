@@ -21,24 +21,21 @@ setupFirebase(initializeApp);
 const auth = getAuth();
 
 const sessionStorageAdapter = createSessionStorageHandler(globalThis);
-const getGoogleAccountsId = createGoogleAccountsId(globalThis);
-const getMatchMedia = createMatchMedia(globalThis);
-const getQuerySelectorAll = createQuerySelectorAll(globalThis);
 const credentialFactory = createCredentialFactory(GoogleAuthProvider);
 
-const buildGoogleSignInDeps = (auth, storage, logger) => ({
-  googleAccountsId: getGoogleAccountsId,
+const buildGoogleSignInDeps = (auth, storage, logger, globalObject) => ({
+  googleAccountsId: createGoogleAccountsId(globalObject),
   credentialFactory,
   signInWithCredential,
   auth,
   storage,
-  matchMedia: getMatchMedia,
-  querySelectorAll: getQuerySelectorAll,
+  matchMedia: createMatchMedia(globalObject),
+  querySelectorAll: createQuerySelectorAll(globalObject),
   logger,
 });
 
 export const initGoogleSignIn = createInitGoogleSignIn(
-  buildGoogleSignInDeps(auth, sessionStorage, console)
+  buildGoogleSignInDeps(auth, sessionStorage, console, globalThis)
 );
 
 export const getIdToken = () => sessionStorage.getItem('id_token');
