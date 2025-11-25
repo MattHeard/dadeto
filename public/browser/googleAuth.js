@@ -6,8 +6,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { createGoogleSignOut } from './browser-core.js';
 import {
-  buildGoogleSignInDeps,
-  createInitGoogleSignIn,
+  createGoogleSignInInit,
   createSessionStorageHandler,
   setupFirebase,
 } from './admin-core.js';
@@ -18,35 +17,6 @@ setupFirebase(initializeApp);
 const auth = getAuth();
 
 const sessionStorageAdapter = createSessionStorageHandler(globalThis);
-
-/**
- *
- * @param authInstance
- * @param storage
- * @param logger
- * @param globalObject
- * @param authProvider
- * @param signInCredential
- */
-export function createGoogleSignInInit(
-  authInstance,
-  storage,
-  logger,
-  globalObject,
-  authProvider,
-  signInCredential
-) {
-  return createInitGoogleSignIn(
-    buildGoogleSignInDeps(
-      authInstance,
-      storage,
-      logger,
-      globalObject,
-      authProvider,
-      signInCredential
-    )
-  );
-}
 
 export const initGoogleSignIn = createGoogleSignInInit(
   auth,
