@@ -1906,6 +1906,36 @@ export function buildGoogleSignInDeps(
 }
 
 /**
+ * Build the configured initializer for Google sign-in when provided concrete dependencies.
+ * @param {object} auth - Firebase Auth instance.
+ * @param {Storage} storage - Storage implementation for persisting tokens.
+ * @param {{ error?: (message: string) => void }} logger - Logger for reporting errors.
+ * @param {typeof globalThis} globalObject - Global scope used for DOM helpers.
+ * @param {{ credential?: (token: string) => string }} authProvider - GoogleAuthProvider instance.
+ * @param {(auth: object, credential: unknown) => Promise<void> | void} signInCredential - `signInWithCredential` helper.
+ * @returns {(options?: GoogleSignInOptions) => Promise<void> | void} Initialized sign-in function.
+ */
+export function createGoogleSignInInit(
+  auth,
+  storage,
+  logger,
+  globalObject,
+  authProvider,
+  signInCredential
+) {
+  return createInitGoogleSignIn(
+    buildGoogleSignInDeps(
+      auth,
+      storage,
+      logger,
+      globalObject,
+      authProvider,
+      signInCredential
+    )
+  );
+}
+
+/**
  * Create a credential factory from the supplied Google Auth provider.
  * @param {{ credential?: (token: string) => string } | null | undefined} provider
  * @returns {(token: string) => string} Credential factory.
