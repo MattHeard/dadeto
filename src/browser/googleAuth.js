@@ -5,29 +5,18 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { createGoogleSignOut } from './browser-core.js';
-import { createInitGoogleSignIn, setupFirebase } from './admin-core.js';
+import {
+  createInitGoogleSignIn,
+  createSessionStorageHandler,
+  setupFirebase,
+} from './admin-core.js';
 import { ADMIN_UID } from './common-core.js';
 
 setupFirebase(initializeApp);
 
 const auth = getAuth();
 
-const createRemoveItem = getStorage => key => {
-  const storage = getStorage();
-  if (!storage) {
-    throw new Error('sessionStorage is not available');
-  }
-
-  if (typeof storage.removeItem !== 'function') {
-    throw new Error('sessionStorage.removeItem is not a function');
-  }
-
-  storage.removeItem(key);
-};
-
-const sessionStorageAdapter = {
-  removeItem: createRemoveItem(() => globalThis.sessionStorage),
-};
+const sessionStorageAdapter = createSessionStorageHandler(globalThis);
 
 export const initGoogleSignIn = createInitGoogleSignIn({
   googleAccountsId: () => window.google?.accounts?.id,
