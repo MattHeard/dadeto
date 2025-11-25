@@ -218,6 +218,16 @@ function mapOptionDoc(doc) {
   const content = normalizeString(data.content);
   const { targetPageNumber } = data;
 
+  return buildVariantOptionPayload(content, targetPageNumber);
+}
+
+/**
+ * Build a variant option payload, including the target page when supplied.
+ * @param {string} content Normalized option content.
+ * @param {number | undefined} targetPageNumber Optional target page indicator.
+ * @returns {VariantOption} Normalized option payload.
+ */
+function buildVariantOptionPayload(content, targetPageNumber) {
   if (targetPageNumber !== undefined) {
     return {
       content,
