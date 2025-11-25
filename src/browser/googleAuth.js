@@ -4,7 +4,7 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
-import { createGoogleSignOut } from './browser-core.js';
+import { createGoogleSignOut, getIdToken } from './browser-core.js';
 import {
   createGoogleSignInInit,
   createSessionStorageHandler,
@@ -26,9 +26,6 @@ export const initGoogleSignIn = createGoogleSignInInit(
   GoogleAuthProvider,
   signInWithCredential
 );
-
-export const getIdToken = (storage = sessionStorage) =>
-  storage.getItem('id_token');
 
 export const isAdmin = () => {
   const token = getIdToken(sessionStorage);
@@ -56,3 +53,5 @@ export const signOut = createGoogleSignOut({
     }
   },
 });
+
+export { getIdToken };
