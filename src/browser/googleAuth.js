@@ -53,5 +53,3 @@ export const signOut = createGoogleSignOut({
     }
   },
 });
-
-export { getIdToken };
