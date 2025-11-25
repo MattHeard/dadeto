@@ -216,26 +216,6 @@ describe('createProcessNewPageHandler', () => {
     jest.clearAllMocks();
   });
 
-  it('validates dependencies before creating the handler', () => {
-    expect(() =>
-      createProcessNewPageHandler({
-        db: { doc: jest.fn(), batch: jest.fn() },
-        fieldValue: { increment: () => {} },
-        randomUUID: () => 'uuid',
-        random: Math.random,
-      })
-    ).toThrow(new TypeError('fieldValue.serverTimestamp must be a function'));
-
-    expect(() =>
-      createProcessNewPageHandler({
-        db: { doc: jest.fn(), batch: jest.fn() },
-        fieldValue: { serverTimestamp: () => {} },
-        randomUUID: () => 'uuid',
-        random: Math.random,
-      })
-    ).toThrow(new TypeError('fieldValue.increment must be a function'));
-  });
-
   it('returns early when the submission is already processed', async () => {
     const handler = createProcessNewPageHandler({
       db: { doc: jest.fn(), batch: jest.fn(() => createBatch()) },

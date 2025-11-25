@@ -37,58 +37,6 @@ function assertRandom(random) {
 }
 
 /**
- * Retrieve a new write batch from the provided Firestore-like database.
- * @param {{ batch: () => import('firebase-admin/firestore').WriteBatch }} database Database reference
- * that exposes a {@link import('firebase-admin/firestore').WriteBatch} factory.
- * @returns {import('firebase-admin/firestore').WriteBatch} Newly created write batch.
- */
-/**
- * Validate that the provided FieldValue helper exposes the expected methods.
- * @param {{
- *   serverTimestamp: () => unknown,
- *   increment: (value: number) => unknown,
- * }} fieldValue FieldValue helper used to write metadata.
- */
-function assertFieldValue(fieldValue) {
-  ensureFieldValueHasTimestamp(fieldValue);
-  ensureFieldValueHasIncrement(fieldValue);
-}
-
-/**
- * Validate that the FieldValue helper provides a timestamp helper.
- * @param {{ serverTimestamp?: unknown }} fieldValue FieldValue helper candidate.
- * @returns {void}
- */
-function ensureFieldValueHasTimestamp(fieldValue) {
-  if (!fieldValue) {
-    throw new TypeError('fieldValue.serverTimestamp must be a function');
-  }
-
-  ensureFunction('fieldValue.serverTimestamp', fieldValue.serverTimestamp);
-}
-
-/**
- * Validate that the FieldValue helper provides an increment helper.
- * @param {{ increment?: unknown }} fieldValue FieldValue helper candidate.
- * @returns {void}
- */
-function ensureFieldValueHasIncrement(fieldValue) {
-  ensureFunction('fieldValue.increment', fieldValue.increment);
-}
-
-/**
- * Assert that a candidate value is a function.
- * @param {string} name Human-readable name for the value.
- * @param {unknown} value Candidate value.
- * @returns {void}
- */
-function ensureFunction(name, value) {
-  if (typeof value !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
-
-/**
  * Ensure a UUID generator function is provided.
  * @param {() => string} randomUUID Function that returns a UUID string.
  */
@@ -824,8 +772,6 @@ export function createProcessNewPageHandler({
   randomUUID,
   random,
 }) {
-  assertFieldValue(fieldValue);
-
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewPage(snapshot) {
