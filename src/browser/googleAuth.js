@@ -18,15 +18,43 @@ setupFirebase(initializeApp);
 const auth = getAuth();
 
 const sessionStorageAdapter = createSessionStorageHandler(globalThis);
-export const initGoogleSignIn = createInitGoogleSignIn(
-  buildGoogleSignInDeps(
-    auth,
-    sessionStorage,
-    console,
-    globalThis,
-    GoogleAuthProvider,
-    signInWithCredential
-  )
+
+/**
+ *
+ * @param authInstance
+ * @param storage
+ * @param logger
+ * @param globalObject
+ * @param authProvider
+ * @param signInCredential
+ */
+export function createGoogleSignInInit(
+  authInstance,
+  storage,
+  logger,
+  globalObject,
+  authProvider,
+  signInCredential
+) {
+  return createInitGoogleSignIn(
+    buildGoogleSignInDeps(
+      authInstance,
+      storage,
+      logger,
+      globalObject,
+      authProvider,
+      signInCredential
+    )
+  );
+}
+
+export const initGoogleSignIn = createGoogleSignInInit(
+  auth,
+  sessionStorage,
+  console,
+  globalThis,
+  GoogleAuthProvider,
+  signInWithCredential
 );
 
 export const getIdToken = () => sessionStorage.getItem('id_token');
