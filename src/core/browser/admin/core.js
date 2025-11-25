@@ -1877,29 +1877,30 @@ export function createQuerySelectorAll(scope = globalThis) {
  *   logger: { error?: (message: string) => void },
  * } | undefined} deps - Raw dependency bag to normalize.
  * @param scope
+ * @param auth
+ * @param storage
+ * @param logger
+ * @param globalObject
+ * @param authProvider
+ * @param signInCredential
  * @returns {object} Normalized dependency bag for `createInitGoogleSignIn`.
  */
 export function buildGoogleSignInDeps(
-  {
-    googleAccountsId,
-    credentialFactory,
-    signInWithCredential,
-    auth,
-    storage,
-    matchMedia,
-    querySelectorAll,
-    logger,
-  } = {},
-  scope = globalThis
+  auth,
+  storage,
+  logger,
+  globalObject = globalThis,
+  authProvider,
+  signInCredential
 ) {
   return {
-    googleAccountsId: googleAccountsId ?? createGoogleAccountsId(scope),
-    credentialFactory,
-    signInWithCredential,
+    googleAccountsId: createGoogleAccountsId(globalObject),
+    credentialFactory: createCredentialFactory(authProvider),
+    signInWithCredential: signInCredential,
     auth,
     storage,
-    matchMedia,
-    querySelectorAll,
+    matchMedia: createMatchMedia(globalObject),
+    querySelectorAll: createQuerySelectorAll(globalObject),
     logger,
   };
 }
