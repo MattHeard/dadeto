@@ -1,5 +1,22 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 
+let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
+
+/**
+ * Override the page-number resolver, primarily used in tests.
+ * @param {(db: Firestore, random?: () => number) => Promise<number>} resolver Resolver to invoke.
+ */
+export function setFindAvailablePageNumberResolver(resolver) {
+  findAvailablePageNumberResolver = resolver;
+}
+
+/**
+ * Reset the resolver back to the production implementation.
+ */
+export function resetFindAvailablePageNumberResolver() {
+  findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
+}
+
 /**
  * @typedef {import('firebase-admin/firestore').Firestore} Firestore
  * @typedef {import('firebase-admin/firestore').FieldValue} FieldValue
@@ -263,7 +280,6 @@ async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
  * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper with timestamp and increment helpers.
  * @param {() => string} options.randomUUID UUID generator.
  * @param {() => number} [options.random] Random number generator (defaults to Math.random).
- * @param {(db: Firestore, random?: () => number) => Promise<number>} [options.findAvailablePageNumberFn] Resolver that returns an unused page number. Defaults to defaultFindAvailablePageNumber.
  * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler.
  */
 export function createProcessNewStoryHandler({
@@ -271,7 +287,6 @@ export function createProcessNewStoryHandler({
   fieldValue,
   randomUUID,
   random = Math.random,
-  findAvailablePageNumberFn = defaultFindAvailablePageNumber,
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
@@ -283,7 +298,7 @@ export function createProcessNewStoryHandler({
     }
 
     const identifiers = resolveStoryIdentifiers(snapshot, context, randomUUID);
-    const pageNumber = await findAvailablePageNumberFn(db, random);
+    const pageNumber = await findAvailablePageNumberResolver(db, random);
     const refs = createStoryReferences(db, identifiers);
     const batch = db.batch();
 

@@ -1,5 +1,9 @@
 import { jest } from '@jest/globals';
-import { createProcessNewStoryHandler } from '../../../../src/core/cloud/process-new-story/process-new-story-core.js';
+import {
+  createProcessNewStoryHandler,
+  setFindAvailablePageNumberResolver,
+  resetFindAvailablePageNumberResolver,
+} from '../../../../src/core/cloud/process-new-story/process-new-story-core.js';
 
 /**
  * Build a fake Firestore database for story handler tests.
@@ -57,19 +61,20 @@ describe('createProcessNewStoryHandler', () => {
   };
 
   afterEach(() => {
+    resetFindAvailablePageNumberResolver();
     jest.clearAllMocks();
   });
 
   it('returns early when the submission is already processed', async () => {
     const { db } = createFakeDb();
     const randomUUID = jest.fn(() => 'id');
-    const findAvailablePageNumberFn = jest.fn();
+    const findAvailablePageNumberFn = jest.fn().mockResolvedValue(1);
+    setFindAvailablePageNumberResolver(findAvailablePageNumberFn);
 
     const handler = createProcessNewStoryHandler({
       db,
       fieldValue: baseFieldValue,
       randomUUID,
-      findAvailablePageNumberFn,
     });
 
     const snapshot = {
@@ -92,6 +97,7 @@ describe('createProcessNewStoryHandler', () => {
       .mockReturnValueOnce('option-2')
       .mockReturnValueOnce('author-uuid');
     const findAvailablePageNumberFn = jest.fn().mockResolvedValue(87);
+    setFindAvailablePageNumberResolver(findAvailablePageNumberFn);
     const fieldValue = {
       serverTimestamp: jest.fn(() => 'timestamp'),
       increment: jest.fn(() => 'increment'),
@@ -102,7 +108,6 @@ describe('createProcessNewStoryHandler', () => {
       fieldValue,
       randomUUID,
       random,
-      findAvailablePageNumberFn,
     });
 
     const submission = {
@@ -174,6 +179,7 @@ describe('createProcessNewStoryHandler', () => {
   it('handles missing snapshots and defaults context quietly', async () => {
     const { db } = createFakeDb();
     const findAvailablePageNumberFn = jest.fn().mockResolvedValue(5);
+    setFindAvailablePageNumberResolver(findAvailablePageNumberFn);
     const randomUUID = jest
       .fn()
       .mockReturnValueOnce('story-id')
@@ -186,7 +192,6 @@ describe('createProcessNewStoryHandler', () => {
       fieldValue: baseFieldValue,
       randomUUID,
       random,
-      findAvailablePageNumberFn,
     });
 
     await expect(handler(null)).resolves.toBeNull();
@@ -203,12 +208,12 @@ describe('createProcessNewStoryHandler', () => {
       .mockReturnValueOnce('page-id')
       .mockReturnValueOnce('variant-id');
     const findAvailablePageNumberFn = jest.fn().mockResolvedValue(11);
+    setFindAvailablePageNumberResolver(findAvailablePageNumberFn);
 
     const handler = createProcessNewStoryHandler({
       db,
       fieldValue: baseFieldValue,
       randomUUID,
-      findAvailablePageNumberFn,
     });
 
     const submission = {
@@ -227,6 +232,7 @@ describe('createProcessNewStoryHandler', () => {
     await handler(snapshot, {});
 
     const batch = db.batch.mock.results[0].value;
+    expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, Math.random);
     expect(db.doc).toHaveBeenCalledWith('stories/snapshot-story');
     expect(batch.set.mock.calls.some(([, data]) => data.position === 0)).toBe(
       false
@@ -245,12 +251,12 @@ describe('createProcessNewStoryHandler', () => {
       .mockReturnValueOnce('page-id')
       .mockReturnValueOnce('variant-id');
     const findAvailablePageNumberFn = jest.fn().mockResolvedValue(5);
+    setFindAvailablePageNumberResolver(findAvailablePageNumberFn);
 
     const handler = createProcessNewStoryHandler({
       db,
       fieldValue: baseFieldValue,
       randomUUID,
-      findAvailablePageNumberFn,
     });
 
     const snapshotRef = getDoc('submissions/random-story');
@@ -262,6 +268,7 @@ describe('createProcessNewStoryHandler', () => {
 
     await handler(snapshot, {});
 
+    expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, Math.random);
     expect(db.doc).toHaveBeenCalledWith('stories/generated-story');
     expect(randomUUID).toHaveBeenCalledTimes(3);
   });
