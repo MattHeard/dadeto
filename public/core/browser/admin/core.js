@@ -1865,6 +1865,46 @@ export function createQuerySelectorAll(scope = globalThis) {
 }
 
 /**
+ * Build normalized dependencies for `createInitGoogleSignIn`.
+ * @param {{
+ *   googleAccountsId?: () => GoogleAccountsClient | undefined,
+ *   credentialFactory: (token: string) => unknown,
+ *   signInWithCredential: (auth: object, credential: unknown) => Promise<void> | void,
+ *   auth: object,
+ *   storage: { setItem?: (key: string, value: string) => void },
+ *   matchMedia: (query: string) => MediaQueryList,
+ *   querySelectorAll: (selector: string) => NodeList,
+ *   logger: { error?: (message: string) => void },
+ * } | undefined} deps - Raw dependency bag to normalize.
+ * @param scope
+ * @returns {object} Normalized dependency bag for `createInitGoogleSignIn`.
+ */
+export function buildGoogleSignInDeps(
+  {
+    googleAccountsId,
+    credentialFactory,
+    signInWithCredential,
+    auth,
+    storage,
+    matchMedia,
+    querySelectorAll,
+    logger,
+  } = {},
+  scope = globalThis
+) {
+  return {
+    googleAccountsId: googleAccountsId ?? createGoogleAccountsId(scope),
+    credentialFactory,
+    signInWithCredential,
+    auth,
+    storage,
+    matchMedia,
+    querySelectorAll,
+    logger,
+  };
+}
+
+/**
  * Create a credential factory from the supplied Google Auth provider.
  * @param {{ credential?: (token: string) => string } | null | undefined} provider
  * @returns {(token: string) => string} Credential factory.
