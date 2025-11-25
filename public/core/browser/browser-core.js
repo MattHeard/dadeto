@@ -11,6 +11,15 @@ export const createGoogleSignOut = ({
 };
 
 /**
+ * Return the current Google ID token stored in session storage.
+ * @param {Storage} storage - Storage object that holds the token.
+ * @returns {string|null} The stored ID token, or null when unset.
+ */
+export function getIdToken(storage = sessionStorage) {
+  return storage.getItem('id_token');
+}
+
+/**
  * Safely parse a JSON string.
  * @param {string} input - JSON string to parse.
  * @returns {{ok: boolean, message?: string, data?: object}} Parsed result.
