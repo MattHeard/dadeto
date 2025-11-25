@@ -8,7 +8,7 @@ import { createGoogleSignOut } from './browser-core.js';
 import { createInitGoogleSignIn } from './admin-core.js';
 import { ADMIN_UID } from './common-core.js';
 
-(initApp => {
+(function setupFirebase(initApp) {
   initApp({
     apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ',
     authDomain: 'irien-465710.firebaseapp.com',
