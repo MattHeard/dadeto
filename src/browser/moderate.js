@@ -1,4 +1,3 @@
-import { initGoogleSignIn, signOut } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createAuthedFetch } from './authedFetch.js';
 import {
@@ -6,10 +5,49 @@ import {
   DEFAULT_MODERATION_ENDPOINTS,
 } from './moderation/endpoints.js';
 import { getIdToken } from '../core/browser/browser-core.js';
-import { isAdminWithDeps, setupFirebase } from './admin-core.js';
+import {
+  createGoogleSignInInit,
+  createSignOut,
+  isAdminWithDeps,
+  setupFirebase,
+} from './admin-core.js';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithCredential,
+} from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 
 setupFirebase(initializeApp);
+
+let initGoogleSignInHandler;
+const getInitGoogleSignInHandler = () => {
+  if (!initGoogleSignInHandler) {
+    const auth = getAuth();
+    initGoogleSignInHandler = createGoogleSignInInit(
+      auth,
+      sessionStorage,
+      console,
+      globalThis,
+      GoogleAuthProvider,
+      signInWithCredential
+    );
+  }
+  return initGoogleSignInHandler;
+};
+
+const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
+
+let signOutHandler;
+const getSignOutHandler = () => {
+  if (!signOutHandler) {
+    const auth = getAuth();
+    signOutHandler = createSignOut(auth, globalThis);
+  }
+  return signOutHandler;
+};
+
+const signOut = () => getSignOutHandler()();
 
 const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 
