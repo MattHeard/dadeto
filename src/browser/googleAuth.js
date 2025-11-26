@@ -15,8 +15,6 @@ setupFirebase(initializeApp);
 
 const auth = getAuth();
 
-const sessionStorageAdapter = createSessionStorageHandler(globalThis);
-
 export const initGoogleSignIn = createGoogleSignInInit(
   auth,
   sessionStorage,
@@ -30,7 +28,7 @@ export const initGoogleSignIn = createGoogleSignInInit(
 // `src/browser/moderate.js` that expect it to live on the googleAuth module.
 export const signOut = createGoogleSignOut({
   authSignOut: auth.signOut.bind(auth),
-  storage: sessionStorageAdapter,
+  storage: createSessionStorageHandler(globalThis),
   disableAutoSelect: () => {
     const disable = globalThis.google?.accounts?.id?.disableAutoSelect;
     if (typeof disable === 'function') {
