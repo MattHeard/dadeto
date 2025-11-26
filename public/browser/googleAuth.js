@@ -24,15 +24,24 @@ export const initGoogleSignIn = createGoogleSignInInit(
   signInWithCredential
 );
 
+/**
+ * Build a disable hook that uses the provided global scope accessor.
+ * @param {Window & typeof globalThis} globalScope - Global scope object containing the Google helpers.
+ * @returns {() => void} Handler disabling the auto-select feature.
+ */
+function createDisableAutoSelect(globalScope) {
+  return () => {
+    const disable = globalScope.google?.accounts?.id?.disableAutoSelect;
+    if (typeof disable === 'function') {
+      disable();
+    }
+  };
+}
+
 // Keep exporting the pre-configured sign-out helper for callers such as
 // `src/browser/moderate.js` that expect it to live on the googleAuth module.
 export const signOut = createGoogleSignOut({
   authSignOut: auth.signOut.bind(auth),
   storage: createSessionStorageHandler(globalThis),
-  disableAutoSelect: () => {
-    const disable = globalThis.google?.accounts?.id?.disableAutoSelect;
-    if (typeof disable === 'function') {
-      disable();
-    }
-  },
+  disableAutoSelect: createDisableAutoSelect(globalThis),
 });
