@@ -51,6 +51,20 @@ export function getDefaultAdminEndpointsCopy() {
 }
 
 /**
+ * Create a disable handler that uses the provided global scope.
+ * @param {Window & typeof globalThis} globalScope - Global scope containing Google helpers.
+ * @returns {() => void} Function that disables auto-select.
+ */
+export function createDisableAutoSelect(globalScope) {
+  return () => {
+    const disable = globalScope.google?.accounts?.id?.disableAutoSelect;
+    if (typeof disable === 'function') {
+      disable();
+    }
+  };
+}
+
+/**
  * Determine whether the provided storage and helpers yield an admin token.
  * @param {Storage} storage - Storage object holding the cached ID token.
  * @param {typeof JSON} jsonParser - JSON helper with a `parse` method.
