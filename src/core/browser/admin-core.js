@@ -1,6 +1,6 @@
 import { ADMIN_UID } from '../common-core.js';
 import { createAdminTokenAction } from './token-action.js';
-import { getIdToken } from '../browser/browser-core.js';
+import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
 
 /**
  * @typedef {object} FetchRequestOptions
@@ -62,6 +62,20 @@ export function createDisableAutoSelect(globalScope) {
       disable();
     }
   };
+}
+
+/**
+ * Build a sign-out helper for the provided auth client and globals.
+ * @param {{ signOut: () => Promise<void> | void }} authInstance - Auth client exposing `signOut`.
+ * @param {typeof globalThis} globalScope - Global scope that includes `sessionStorage`.
+ * @returns {() => Promise<void>} Sign-out helper that removes the cached token.
+ */
+export function createSignOut(authInstance, globalScope) {
+  return createGoogleSignOut({
+    authSignOut: authInstance.signOut.bind(authInstance),
+    storage: createSessionStorageHandler(globalScope),
+    disableAutoSelect: createDisableAutoSelect(globalScope),
+  });
 }
 
 /**

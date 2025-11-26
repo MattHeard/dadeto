@@ -1,43 +1,38 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
-import { createGoogleSignOut } from './browser-core.js';
-import {
-  createDisableAutoSelect,
-  createGoogleSignInInit,
-  createSessionStorageHandler,
-  setupFirebase,
-} from './admin-core.js';
+import { createSignOut, createGoogleSignInInit } from './admin-core.js';
 
-setupFirebase(initializeApp);
+let initGoogleSignInHandler;
+const getInitGoogleSignInHandler = () => {
+  if (!initGoogleSignInHandler) {
+    const auth = getAuth();
+    initGoogleSignInHandler = createGoogleSignInInit(
+      auth,
+      sessionStorage,
+      console,
+      globalThis,
+      GoogleAuthProvider,
+      signInWithCredential
+    );
+  }
+  return initGoogleSignInHandler;
+};
 
-const auth = getAuth();
+export const initGoogleSignIn = options =>
+  getInitGoogleSignInHandler()(options);
 
-export const initGoogleSignIn = createGoogleSignInInit(
-  auth,
-  sessionStorage,
-  console,
-  globalThis,
-  GoogleAuthProvider,
-  signInWithCredential
-);
-
-/**
- *
- * @param authInstance
- * @param globalScope
- */
-function createSignOut(authInstance, globalScope) {
-  return createGoogleSignOut({
-    authSignOut: authInstance.signOut.bind(authInstance),
-    storage: createSessionStorageHandler(globalScope),
-    disableAutoSelect: createDisableAutoSelect(globalScope),
-  });
-}
+let signOutHandler;
+const getSignOutHandler = () => {
+  if (!signOutHandler) {
+    const auth = getAuth();
+    signOutHandler = createSignOut(auth, globalThis);
+  }
+  return signOutHandler;
+};
 
 // Keep exporting the pre-configured sign-out helper for callers such as
 // `src/browser/moderate.js` that expect it to live on the googleAuth module.
-export const signOut = createSignOut(auth, globalThis);
+export const signOut = () => getSignOutHandler()();

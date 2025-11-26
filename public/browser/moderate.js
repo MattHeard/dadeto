@@ -6,7 +6,10 @@ import {
   DEFAULT_MODERATION_ENDPOINTS,
 } from './moderation/endpoints.js';
 import { getIdToken } from '../core/browser/browser-core.js';
-import { isAdminWithDeps } from './admin-core.js';
+import { isAdminWithDeps, setupFirebase } from './admin-core.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+
+setupFirebase(initializeApp);
 
 const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 
