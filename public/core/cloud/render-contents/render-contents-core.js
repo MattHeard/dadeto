@@ -106,14 +106,7 @@ function listItemHtml(pageNumber, title) {
   return `<li><a href="./p/${pageNumber}a.html">${title}</a></li>`;
 }
 
-/**
- * Build the full HTML page shell for the contents list.
- * @param {string} list Pre-rendered ordered list markup.
- * @returns {string} Page HTML string.
- */
-export const PAGE_HTML = list => `<!doctype html>
-<html lang="en">
-  <head>
+const HEAD_HTML = `  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dendrite</title>
@@ -123,9 +116,9 @@ export const PAGE_HTML = list => `<!doctype html>
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
     />
     <link rel="stylesheet" href="/dendrite.css" />
-  </head>
-  <body>
-    <header class="site-header">
+  </head>`;
+
+const HEADER_HTML = `    <header class="site-header">
       <a class="brand" href="/">
         <img src="/img/logo.png" alt="Dendrite logo" />
         Dendrite
@@ -144,9 +137,9 @@ export const PAGE_HTML = list => `<!doctype html>
       </nav>
 
       <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">☰</button>
-    </header>
+    </header>`;
 
-    <!-- Mobile menu -->
+const MOBILE_MENU_HTML = `    <!-- Mobile menu -->
     <div id="mobile-menu" class="menu-overlay" hidden aria-hidden="true">
       <div class="menu-sheet" role="dialog" aria-modal="true">
         <button class="menu-close" aria-label="Close menu">✕</button>
@@ -178,12 +171,14 @@ export const PAGE_HTML = list => `<!doctype html>
           </div>
         </nav>
       </div>
-    </div>
-    <main>
+    </div>`;
+
+const MAIN_HTML = list => `    <main>
       <h1>Contents</h1>
       <ol class="contents">${list}</ol>
-    </main>
-    <script src="https://accounts.google.com/gsi/client" defer></script>
+    </main>`;
+
+const GOOGLE_AUTH_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>
     <script type="module">
       import {
         initGoogleSignIn,
@@ -218,8 +213,9 @@ export const PAGE_HTML = list => `<!doctype html>
       if (getIdToken()) {
         showSignedIn();
       }
-    </script>
-    <script>
+    </script>`;
+
+const MENU_TOGGLE_SCRIPT = `    <script>
       (function () {
         const toggle = document.querySelector('.menu-toggle');
         const overlay = document.getElementById('mobile-menu');
@@ -256,7 +252,23 @@ export const PAGE_HTML = list => `<!doctype html>
           if (e.key === 'Escape' && !overlay.hidden) closeMenu();
         });
       })();
-    </script>
+    </script>`;
+
+/**
+ * Build the full HTML page shell for the contents list.
+ * @param {string} list Pre-rendered ordered list markup.
+ * @returns {string} Page HTML string.
+ */
+export const PAGE_HTML = list => `<!doctype html>
+<html lang="en">
+${HEAD_HTML}
+  <body>
+${HEADER_HTML}
+
+${MOBILE_MENU_HTML}
+${MAIN_HTML(list)}
+${GOOGLE_AUTH_SCRIPT}
+${MENU_TOGGLE_SCRIPT}
   </body>
 </html>`;
 
