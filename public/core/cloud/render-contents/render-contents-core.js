@@ -178,8 +178,9 @@ const MAIN_HTML = list => `    <main>
       <ol class="contents">${list}</ol>
     </main>`;
 
-const GOOGLE_AUTH_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module">
+const GOOGLE_AUTH_CLIENT_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>`;
+
+const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module">
       import {
         initGoogleSignIn,
         signOut,
@@ -267,7 +268,8 @@ ${HEADER_HTML}
 
 ${MOBILE_MENU_HTML}
 ${MAIN_HTML(list)}
-${GOOGLE_AUTH_SCRIPT}
+${GOOGLE_AUTH_CLIENT_SCRIPT}
+${GOOGLE_AUTH_MODULE_SCRIPT}
 ${MENU_TOGGLE_SCRIPT}
   </body>
 </html>`;
