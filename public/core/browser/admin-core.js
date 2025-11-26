@@ -1,9 +1,6 @@
 import { ADMIN_UID } from '../common-core.js';
 import { createAdminTokenAction } from './token-action.js';
-import {
-  createGoogleSignOut,
-  getIdToken,
-} from '../browser/browser-core.js';
+import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
 
 /**
  * @typedef {object} FetchRequestOptions

@@ -33,4 +33,6 @@ const getSignOutHandler = () => {
   return signOutHandler;
 };
 
+// Keep exporting the pre-configured sign-out helper for callers such as
+// `src/browser/moderate.js` that expect it to live on the googleAuth module.
 export const signOut = () => getSignOutHandler()();
