@@ -25,10 +25,19 @@ export const initGoogleSignIn = createGoogleSignInInit(
   signInWithCredential
 );
 
+/**
+ *
+ * @param authInstance
+ * @param globalScope
+ */
+function createSignOut(authInstance, globalScope) {
+  return createGoogleSignOut({
+    authSignOut: authInstance.signOut.bind(authInstance),
+    storage: createSessionStorageHandler(globalScope),
+    disableAutoSelect: createDisableAutoSelect(globalScope),
+  });
+}
+
 // Keep exporting the pre-configured sign-out helper for callers such as
 // `src/browser/moderate.js` that expect it to live on the googleAuth module.
-export const signOut = createGoogleSignOut({
-  authSignOut: auth.signOut.bind(auth),
-  storage: createSessionStorageHandler(globalThis),
-  disableAutoSelect: createDisableAutoSelect(globalThis),
-});
+export const signOut = createSignOut(auth, globalThis);
