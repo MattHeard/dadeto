@@ -4,12 +4,11 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
-import { createGoogleSignOut, getIdToken } from './browser-core.js';
+import { createGoogleSignOut } from './browser-core.js';
 import {
   createGoogleSignInInit,
   createSessionStorageHandler,
   setupFirebase,
-  isAdminWithDeps,
 } from './admin-core.js';
 
 setupFirebase(initializeApp);
@@ -26,8 +25,6 @@ export const initGoogleSignIn = createGoogleSignInInit(
   GoogleAuthProvider,
   signInWithCredential
 );
-
-export const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 
 // Keep exporting the pre-configured sign-out helper for callers such as
 // `src/browser/moderate.js` that expect it to live on the googleAuth module.

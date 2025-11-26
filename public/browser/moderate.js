@@ -1,4 +1,4 @@
-import { initGoogleSignIn, signOut, isAdmin } from './googleAuth.js';
+import { initGoogleSignIn, signOut } from './googleAuth.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createAuthedFetch } from './authedFetch.js';
 import {
@@ -6,6 +6,9 @@ import {
   DEFAULT_MODERATION_ENDPOINTS,
 } from './moderation/endpoints.js';
 import { getIdToken } from '../core/browser/browser-core.js';
+import { isAdminWithDeps } from './admin-core.js';
+
+const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 
 const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   loadStaticConfig,
