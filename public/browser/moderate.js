@@ -36,8 +36,7 @@ const getInitGoogleSignInHandler = () => {
   return initGoogleSignInHandler;
 };
 
-const initGoogleSignIn = options =>
-  getInitGoogleSignInHandler()(options);
+const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
 
 let signOutHandler;
 const getSignOutHandler = () => {
