@@ -680,8 +680,27 @@ function handleInvalidateResponse(res, path, logger) {
  * @returns {void}
  */
 function logInvalidateError(logger, path, err) {
-  const message = err?.message ?? err;
-  logger.error?.(`invalidate ${path} error`, message);
+  if (typeof logger.error !== 'function') {
+    return;
+  }
+
+  logger.error(`invalidate ${path} error`, getLogMessage(err));
+}
+
+/**
+ * Normalize an error payload into a message string when available.
+ * @param {unknown} err Error object.
+ * @returns {string | unknown} Message text or original payload.
+ */
+function getLogMessage(err) {
+  if (err && typeof err === 'object' && err !== null) {
+    const message = err.message;
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+
+  return err;
 }
 
 /**

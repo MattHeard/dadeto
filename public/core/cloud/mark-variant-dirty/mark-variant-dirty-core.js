@@ -174,8 +174,8 @@ function getDocRef(doc) {
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Page doc ref.
  */
 export async function findPageRef(database, pageNumber, firebase = {}) {
-  const findPagesSnapFn = firebase.findPagesSnap ?? findPagesSnap;
-  const refFromSnapFn = firebase.refFromSnap ?? refFromSnap;
+  const findPagesSnapFn = chooseHelper(firebase.findPagesSnap, findPagesSnap);
+  const refFromSnapFn = chooseHelper(firebase.refFromSnap, refFromSnap);
 
   const pagesSnap = await findPagesSnapFn(database, pageNumber);
   return refFromSnapFn(pagesSnap);

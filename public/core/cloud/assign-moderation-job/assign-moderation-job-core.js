@@ -559,11 +559,26 @@ function isSnapshotEmpty(snapshot, variantDoc) {
  * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document when present or an error message when missing.
  */
 export function selectVariantDoc(snapshot) {
-  const [variantDoc] = snapshot?.docs ?? [];
+  const docs = resolveSnapshotDocs(snapshot);
+  const [variantDoc] = docs;
+
   if (isSnapshotEmpty(snapshot, variantDoc)) {
     return { errorMessage: 'Variant fetch failed 🤷' };
   }
   return { variantDoc };
+}
+
+/**
+ *
+ * @param {{ docs?: unknown[] } | undefined} snapshot
+ * @returns {unknown[]}
+ */
+function resolveSnapshotDocs(snapshot) {
+  if (!snapshot || !Array.isArray(snapshot.docs)) {
+    return [];
+  }
+
+  return snapshot.docs;
 }
 
 /**

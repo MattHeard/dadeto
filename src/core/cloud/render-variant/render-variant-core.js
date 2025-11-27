@@ -1661,11 +1661,7 @@ function extractParentRefs(optionRef) {
  * @param optionRef
  */
 function getParentVariantRef(optionRef) {
-  if (!optionRef?.parent?.parent) {
-    return null;
-  }
-
-  return optionRef.parent.parent;
+  return getAncestorRef(optionRef, 2);
 }
 
 /**
@@ -1673,11 +1669,21 @@ function getParentVariantRef(optionRef) {
  * @param parentVariantRef
  */
 function getParentPageRef(parentVariantRef) {
-  if (!parentVariantRef?.parent?.parent) {
-    return null;
+  return getAncestorRef(parentVariantRef, 2);
+}
+
+/**
+ * Walk up a reference chain a fixed number of steps.
+ * @param {{ parent?: any } | null | undefined} ref Reference to walk.
+ * @param {number} steps Number of parent hops to follow.
+ * @returns {any | null} Ancestor reference or null when the chain breaks.
+ */
+function getAncestorRef(ref, steps) {
+  if (!ref || steps === 0) {
+    return ref ?? null;
   }
 
-  return parentVariantRef.parent.parent;
+  return getAncestorRef(ref.parent, steps - 1);
 }
 
 /**
@@ -1881,7 +1887,15 @@ async function fetchAndBuildParentUrl(db, incomingOption) {
  */
 export function createRenderVariant(dependencies) {
   validateDependencies(dependencies);
+  return createRenderVariantHandler(buildRenderVariantOptions(dependencies));
+}
 
+/**
+ * Build the options object consumed by the renderer factory.
+ * @param {object} dependencies Renderer dependencies.
+ * @returns {object} Normalized options for the renderer.
+ */
+function buildRenderVariantOptions(dependencies) {
   const {
     db,
     storage,
@@ -1895,7 +1909,7 @@ export function createRenderVariant(dependencies) {
     visibilityThreshold = VISIBILITY_THRESHOLD,
   } = dependencies;
 
-  return createRenderVariantHandler({
+  return {
     db,
     storage,
     fetchFn,
@@ -1906,7 +1920,7 @@ export function createRenderVariant(dependencies) {
     consoleError,
     bucketName,
     visibilityThreshold,
-  });
+  };
 }
 
 /**
@@ -2069,11 +2083,7 @@ export async function getPageSnapFromRef(snap) {
  * @returns {boolean} True when the snapshot contains a reachable page reference.
  */
 function isSnapRefValid(snap) {
-  if (!snap || !snap.ref || !snap.ref.parent) {
-    return false;
-  }
-
-  return Boolean(snap.ref.parent.parent);
+  return Boolean(snap?.ref?.parent?.parent);
 }
 
 /**
