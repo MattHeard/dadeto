@@ -726,9 +726,10 @@ function normalizeVariantString(value) {
  * @returns {object} Variant object.
  */
 function buildVariantObject(data) {
+  const { name, content } = data ?? {};
   return {
-    name: normalizeVariantString(data?.name),
-    content: normalizeVariantString(data?.content),
+    name: normalizeVariantString(name),
+    content: normalizeVariantString(content),
   };
 }
 
@@ -837,22 +838,39 @@ function createInvalidatePathsImpl({
       return;
     }
 
-    const token = await getAccessToken(fetchFn);
-
-    await Promise.all(
-      paths.map(path =>
-        invalidatePathItem({
-          path,
-          token,
-          url: invalidateUrl,
-          host: resolvedCdnHost,
-          fetchFn,
-          randomUUID,
-          consoleError,
-        })
-      )
-    );
+    await executeInvalidation(paths, {
+      url: invalidateUrl,
+      host: resolvedCdnHost,
+      fetchFn,
+      randomUUID,
+      consoleError,
+    });
   };
+}
+
+/**
+ * Execute cache invalidations for the supplied paths.
+ * @param {string[]} paths Paths to purge from the CDN cache.
+ * @param {{url: string, host: string, fetchFn: (input: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError: (message: string, ...optionalParams: unknown[]) => void}} options Invalidation dependencies.
+ * @returns {Promise<void>} Resolves after every invalidation request completes.
+ */
+async function executeInvalidation(paths, options) {
+  const { url, host, fetchFn, randomUUID, consoleError } = options;
+  const token = await getAccessToken(fetchFn);
+
+  await Promise.all(
+    paths.map(path =>
+      invalidatePathItem({
+        path,
+        token,
+        url,
+        host,
+        fetchFn,
+        randomUUID,
+        consoleError,
+      })
+    )
+  );
 }
 
 /**
@@ -1940,16 +1958,7 @@ export async function getPageSnapFromRef(snap) {
  * @returns {boolean} True when the snapshot contains a reachable page reference.
  */
 function isSnapRefValid(snap) {
-  if (!snap || !snap.ref) {
-    return false;
-  }
-
-  const parent = snap.ref.parent;
-  if (!parent) {
-    return false;
-  }
-
-  return Boolean(parent.parent);
+  return Boolean(snap?.ref?.parent?.parent);
 }
 
 /**
@@ -2203,11 +2212,35 @@ async function saveAltsHtml(deps) {
  * @returns {string | undefined} Pending name.
  */
 function resolvePendingName(variant, context) {
-  const params = context?.params;
+  const params = resolvePendingParams(context);
   if (variant.incomingOption) {
-    return params?.variantId;
+    return resolvePendingVariantId(params);
   }
 
+  return resolvePendingStoryId(params);
+}
+
+/**
+ *
+ * @param context
+ */
+function resolvePendingParams(context) {
+  return context?.params;
+}
+
+/**
+ *
+ * @param params
+ */
+function resolvePendingVariantId(params) {
+  return params?.variantId;
+}
+
+/**
+ *
+ * @param params
+ */
+function resolvePendingStoryId(params) {
   return params?.storyId;
 }
 
