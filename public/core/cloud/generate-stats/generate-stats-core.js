@@ -81,6 +81,10 @@ const TOP_STORIES_INVOCATION_SCRIPT = dataStr => `    <script type="module">
       renderTopStories(${dataStr});
     </script>`;
 
+/**
+ *
+ * @param dataStr
+ */
 function buildTopStoriesScript(dataStr) {
   return `${TOP_STORIES_INVOCATION_SCRIPT(dataStr)}`;
 }

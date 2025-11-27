@@ -1,7 +1,13 @@
 /** @param {Array<{ title: string, variantCount: number }>} data */
 export function renderTopStories(data) {
   const root = document.getElementById('topStories');
-  if (!root || !Array.isArray(data) || !data.length || typeof d3 === 'undefined' || !d3.sankey) {
+  if (
+    !root ||
+    !Array.isArray(data) ||
+    !data.length ||
+    typeof d3 === 'undefined' ||
+    !d3.sankey
+  ) {
     return;
   }
 
@@ -33,13 +39,11 @@ export function renderTopStories(data) {
 
   const svg = d3
     .create('svg')
-    .attr('viewBox', '0 0 ' + W + ' ' + H)
+    .attr('viewBox', `0 0 ${W} ${H}`)
     .attr('width', W)
     .attr('height', H);
 
-  const g = svg
-    .append('g')
-    .attr('transform', 'rotate(90) scale(-1,1)');
+  const g = svg.append('g').attr('transform', 'rotate(90) scale(-1,1)');
 
   g.append('g')
     .attr('fill', 'none')
@@ -52,11 +56,7 @@ export function renderTopStories(data) {
     .attr('stroke-linecap', 'round')
     .attr('stroke-opacity', 0.6);
 
-  const node = g
-    .append('g')
-    .selectAll('g')
-    .data(graph.nodes)
-    .join('g');
+  const node = g.append('g').selectAll('g').data(graph.nodes).join('g');
 
   node
     .append('rect')
