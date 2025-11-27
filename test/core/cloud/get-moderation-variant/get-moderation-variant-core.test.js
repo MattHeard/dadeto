@@ -292,6 +292,22 @@ describe('createGetModerationVariantResponder', () => {
     ).resolves.toEqual({ status: 404, body: 'No moderation job' });
   });
 
+  it('returns no job when the moderator document has no data', async () => {
+    const moderatorSnap = {
+      exists: true,
+      data: () => undefined,
+    };
+    const db = createDb(moderatorSnap);
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ Authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({ status: 404, body: 'No moderation job' });
+  });
+
   it('propagates variant level errors from Firestore', async () => {
     const variantNotFoundResponse = { status: 404, body: 'Variant not found' };
     const moderatorSnap = {
