@@ -332,7 +332,16 @@ function extractSnapshotData(snapshot) {
  * @returns {*} Page ref or null.
  */
 function resolvePageRef(snapshot) {
-  return snapshot?.ref?.parent?.parent ?? null;
+  const ref = snapshot?.ref;
+  return resolveParentPageRef(ref);
+}
+
+function resolveParentPageRef(ref) {
+  if (!ref || !ref.parent || !ref.parent.parent) {
+    return null;
+  }
+
+  return ref.parent.parent;
 }
 
 /**
@@ -341,11 +350,19 @@ function resolvePageRef(snapshot) {
  * @returns {number} Visibility value or zero when unavailable.
  */
 export function getVariantVisibility(snapshot) {
+  const data = resolveSnapshotData(snapshot);
+  return extractVisibility(data);
+}
+
+function resolveSnapshotData(snapshot) {
   if (!snapshot || typeof snapshot.data !== 'function') {
-    return 0;
+    return null;
   }
 
-  const data = snapshot.data();
+  return snapshot.data();
+}
+
+function extractVisibility(data) {
   if (data && typeof data.visibility === 'number') {
     return data.visibility;
   }
