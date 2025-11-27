@@ -358,31 +358,14 @@ export function createInvalidatePaths({
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
-  const host = cdnHost || 'www.dendritestories.co.nz';
-  const urlMap = urlMapName || 'prod-dendrite-url-map';
-  const invalidateUrl = `https://compute.googleapis.com/compute/v1/projects/${projectId || ''}/global/urlMaps/${urlMap}/invalidateCache`;
+  const config = buildInvalidationConfig({ projectId, urlMapName, cdnHost });
 
-  return async function invalidatePaths(paths) {
-    if (!isValidPaths(paths)) {
-      return;
-    }
-
-    const token = await getAccessToken(fetchFn);
-
-    await Promise.all(
-      paths.map(path =>
-        invalidatePathItem({
-          path,
-          token,
-          url: invalidateUrl,
-          host,
-          fetchFn,
-          randomUUID,
-          consoleError,
-        })
-      )
-    );
-  };
+  return createPathInvalidationRunner({
+    fetchFn,
+    randomUUID,
+    consoleError,
+    config,
+  });
 }
 
 /**
@@ -395,6 +378,63 @@ function isValidPaths(paths) {
     return false;
   }
   return paths.length > 0;
+}
+
+/**
+ * Build the configuration required to send CDN invalidation requests.
+ * @param {{
+ *   projectId?: string,
+ *   urlMapName?: string,
+ *   cdnHost?: string,
+ * }} params Invalidation options.
+ * @returns {{ host: string, url: string }} Validation configuration.
+ */
+function buildInvalidationConfig({ projectId, urlMapName, cdnHost }) {
+  const host = cdnHost || 'www.dendritestories.co.nz';
+  const urlMap = urlMapName || 'prod-dendrite-url-map';
+
+  return {
+    host,
+    url: `https://compute.googleapis.com/compute/v1/projects/${projectId || ''}/global/urlMaps/${urlMap}/invalidateCache`,
+  };
+}
+
+/**
+ * Create the actual path invalidation routine.
+ * @param {object} params Runner options.
+ * @param {(input: string, init?: object) => Promise<Response>} params.fetchFn Fetch implementation.
+ * @param {() => string} params.randomUUID UUID generator.
+ * @param {(message: string, error?: unknown) => void} [params.consoleError] Logger.
+ * @param {{ host: string, url: string }} params.config Invalidation configuration.
+ * @returns {(paths: string[]) => Promise<void>} Invalidation handler.
+ */
+function createPathInvalidationRunner({
+  fetchFn,
+  randomUUID,
+  consoleError,
+  config,
+}) {
+  return async function invalidatePaths(paths) {
+    if (!isValidPaths(paths)) {
+      return;
+    }
+
+    const token = await getAccessToken(fetchFn);
+
+    await Promise.all(
+      paths.map(path =>
+        invalidatePathItem({
+          path,
+          token,
+          url: config.url,
+          host: config.host,
+          fetchFn,
+          randomUUID,
+          consoleError,
+        })
+      )
+    );
+  };
 }
 
 /**

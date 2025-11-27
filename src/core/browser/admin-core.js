@@ -99,17 +99,13 @@ function getDisableAutoSelectCandidate(globalScope) {
  * @returns {unknown} Value at the path or undefined when any segment is missing.
  */
 function getNestedProperty(source, ...keys) {
-  let cursor = source;
-
-  for (const key of keys) {
-    if (!cursor || typeof cursor !== 'object') {
-      return undefined;
-    }
-
-    cursor = /** @type {{ [x: string]: unknown }} */ (cursor)[key];
-  }
-
-  return cursor;
+  return keys.reduce(
+    (cursor, key) =>
+      cursor && typeof cursor === 'object'
+        ? /** @type {{ [x: string]: unknown }} */ (cursor)[key]
+        : undefined,
+    source
+  );
 }
 
 /**
