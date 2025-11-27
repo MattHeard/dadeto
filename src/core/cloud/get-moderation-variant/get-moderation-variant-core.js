@@ -180,7 +180,8 @@ async function fetchVariantSnapshot(db, uid) {
     return null;
   }
 
-  const variantRef = moderatorSnap.data()?.variant;
+  const moderatorData = moderatorSnap.data();
+  const variantRef = moderatorData ? moderatorData.variant : null;
   if (!variantRef) {
     return null;
   }
@@ -252,8 +253,11 @@ export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
-  const environmentType = normalizeEnvironmentType(environment);
-  if (environmentType === 'test') {
+  if (isProdEnvironment(environment)) {
+    return productionOrigins;
+  }
+
+  if (isTestEnvironment(environment)) {
     return buildTestOrigins(playwrightOrigin);
   }
 
@@ -267,23 +271,6 @@ export function getAllowedOrigins(environmentVariables) {
  */
 function isProdEnvironment(environment) {
   return environment === 'prod';
-}
-
-/**
- * Normalize environment.
- * @param {string | undefined} environment Environment.
- * @returns {'prod' | 'test' | 'other'} Type.
- */
-function normalizeEnvironmentType(environment) {
-  if (isProdEnvironment(environment)) {
-    return 'prod';
-  }
-
-  if (isTestEnvironment(environment)) {
-    return 'test';
-  }
-
-  return 'other';
 }
 
 /**

@@ -56,12 +56,22 @@ export function getDefaultAdminEndpointsCopy() {
  * @returns {() => void} Function that disables auto-select.
  */
 export function createDisableAutoSelect(globalScope) {
+  const disable = readDisableAutoSelect(globalScope);
   return () => {
-    const disable = globalScope.google?.accounts?.id?.disableAutoSelect;
-    if (typeof disable === 'function') {
+    if (disable) {
       disable();
     }
   };
+}
+
+/**
+ * Read disableAutoSelect from global scope.
+ * @param {Window & typeof globalThis} globalScope Global.
+ * @returns {(() => void) | null} Disable fn.
+ */
+function readDisableAutoSelect(globalScope) {
+  const disable = globalScope.google?.accounts?.id?.disableAutoSelect;
+  return typeof disable === 'function' ? disable : null;
 }
 
 /**
@@ -2006,7 +2016,14 @@ export function createSessionStorageHandler(scope = globalThis) {
  * @returns {() => object | undefined} Getter for `google.accounts.id`.
  */
 export function createGoogleAccountsId(scope = globalThis) {
-  return () => scope?.window?.google?.accounts?.id;
+  return () => {
+    const win = scope?.window;
+    if (!win || !win.google || !win.google.accounts) {
+      return undefined;
+    }
+
+    return win.google.accounts.id;
+  };
 }
 
 /**

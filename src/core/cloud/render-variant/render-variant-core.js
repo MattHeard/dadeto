@@ -1313,11 +1313,11 @@ function extractStoryRef(pageSnap) {
   }
 
   const parent = pageSnap.ref.parent;
-  if (!parent || !parent.parent) {
+  if (!parent) {
     return null;
   }
 
-  return parent.parent;
+  return parent.parent || null;
 }
 
 /**
@@ -1506,14 +1506,12 @@ function extractParentRefs(optionRef) {
   }
 
   const parentVariantRef = optionRef.parent.parent;
-  if (!parentVariantRef || !parentVariantRef.parent) {
-    return { parentVariantRef, parentPageRef: undefined };
+  if (!parentVariantRef) {
+    return { parentVariantRef: undefined, parentPageRef: undefined };
   }
 
-  return {
-    parentVariantRef,
-    parentPageRef: parentVariantRef.parent.parent,
-  };
+  const parentPageRef = parentVariantRef.parent?.parent;
+  return { parentVariantRef, parentPageRef };
 }
 
 /**

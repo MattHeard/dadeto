@@ -10,13 +10,12 @@ const TEST_ENV_PREFIX = 't-';
  */
 export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
-  const isTest = isTestEnvironment(environment);
-  const isProd = isProdEnvironment(environment);
-  if (!isTest || isProd) {
-    return productionOrigins;
+  const envType = classifyEnvironment(environment);
+  if (envType === 'test') {
+    return resolvePlaywrightOrigin(environmentVariables?.PLAYWRIGHT_ORIGIN);
   }
 
-  return resolvePlaywrightOrigin(environmentVariables?.PLAYWRIGHT_ORIGIN);
+  return productionOrigins;
 }
 
 /**
@@ -37,6 +36,23 @@ function isTestEnvironment(environment) {
   return (
     typeof environment === 'string' && environment.startsWith(TEST_ENV_PREFIX)
   );
+}
+
+/**
+ * Classify environment label.
+ * @param {unknown} environment Environment.
+ * @returns {'prod' | 'test' | 'other'} Type.
+ */
+function classifyEnvironment(environment) {
+  if (isProdEnvironment(environment)) {
+    return 'prod';
+  }
+
+  if (isTestEnvironment(environment)) {
+    return 'test';
+  }
+
+  return 'other';
 }
 
 /**
@@ -129,7 +145,11 @@ export function refFromSnap(snap) {
   }
 
   const [first] = snap.docs;
-  return first?.ref ?? null;
+  if (first && first.ref) {
+    return first.ref;
+  }
+
+  return null;
 }
 
 /**
