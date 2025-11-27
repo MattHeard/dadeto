@@ -276,17 +276,11 @@ export function createGenerateStatsCore({
   cryptoModule,
   console = globalThis.console,
 }) {
-  let envRef = {};
-  if (env && typeof env === 'object') {
-    envRef = env;
-  }
+  const envRef = normalizeEnvObject(env);
   const project = getProjectFromEnv(envRef);
-  const resolvedUrlMap = urlMap || getUrlMapFromEnv(envRef);
-  const resolvedCdnHost = getCdnHostFromEnv(envRef);
-  const fetchImpl = fetchFn ?? globalThis.fetch;
-  if (typeof fetchImpl !== 'function') {
-    throw new Error('fetch implementation required');
-  }
+  const resolvedUrlMap = resolveUrlMap(urlMap, envRef);
+  const resolvedCdnHost = resolveCdnHost(envRef);
+  const fetchImpl = resolveFetchImpl(fetchFn);
 
   const metadataTokenUrl =
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token';
@@ -378,30 +372,18 @@ export function createGenerateStatsCore({
   async function invalidatePaths(paths, logger = console) {
     const token = await getAccessTokenFromMetadata();
     await Promise.all(
-      paths.map(async path => {
-        try {
-          const res = await fetchImpl(
-            `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                host: resolvedCdnHost,
-                path,
-                requestId: cryptoModule.randomUUID(),
-              }),
-            }
-          );
-          if (!res.ok) {
-            logger.error?.(`invalidate ${path} failed: ${res.status}`);
-          }
-        } catch (err) {
-          logger.error?.(`invalidate ${path} error`, err?.message || err);
-        }
-      })
+      paths.map(path =>
+        invalidateSinglePath({
+          path,
+          fetchImpl,
+          project,
+          resolvedUrlMap,
+          resolvedCdnHost,
+          randomUUID: cryptoModule.randomUUID,
+          logger,
+          token,
+        })
+      )
     );
   }
 
@@ -505,21 +487,12 @@ export function createGenerateStatsCore({
    * @returns {Promise<void>} Resolves when the request finishes.
    */
   async function handleAuthorizedRequest(req, res) {
-    const isCron = req.get('X-Appengine-Cron') === 'true';
-
-    if (!isCron) {
-      const isAuthorized = await verifyAdmin(req, res);
-      if (!isAuthorized) {
-        return;
-      }
+    const isAuthorized = await ensureAuthorizedRequest(req, res, verifyAdmin);
+    if (!isAuthorized) {
+      return;
     }
 
-    try {
-      await generate();
-      res.status(200).json({ ok: true });
-    } catch (err) {
-      res.status(500).json({ error: err?.message || 'generate failed' });
-    }
+    await respondWithGenerate(res, generate);
   }
 
   /**
@@ -546,4 +519,184 @@ export function createGenerateStatsCore({
     generate,
     handleRequest,
   };
+}
+
+/**
+ * Normalize environment to object.
+ * @param {unknown} env Env.
+ * @returns {Record<string, string | undefined>} Env object.
+ */
+function normalizeEnvObject(env) {
+  if (env && typeof env === 'object') {
+    return env;
+  }
+
+  return {};
+}
+
+/**
+ * Resolve URL map.
+ * @param {string | undefined} urlMap Url map.
+ * @param {Record<string, string | undefined>} envRef Env ref.
+ * @returns {string | undefined} Url map.
+ */
+function resolveUrlMap(urlMap, envRef) {
+  if (urlMap) {
+    return urlMap;
+  }
+
+  return getUrlMapFromEnv(envRef);
+}
+
+/**
+ * Resolve CDN host.
+ * @param {Record<string, string | undefined>} envRef Env ref.
+ * @returns {string | undefined} CDN host.
+ */
+function resolveCdnHost(envRef) {
+  return getCdnHostFromEnv(envRef);
+}
+
+/**
+ * Resolve fetch implementation.
+ * @param {unknown} fetchFn Fetch fn.
+ * @returns {Function} Fetch.
+ */
+function resolveFetchImpl(fetchFn) {
+  const candidate = fetchFn ?? globalThis.fetch;
+  if (typeof candidate !== 'function') {
+    throw new Error('fetch implementation required');
+  }
+
+  return candidate;
+}
+
+/**
+ * Invalidate a single CDN path.
+ * @param {object} deps Deps.
+ * @param {string} deps.path Path.
+ * @param {Function} deps.fetchImpl Fetch.
+ * @param {string} deps.project Project.
+ * @param {string} deps.resolvedUrlMap Url map.
+ * @param {string} deps.resolvedCdnHost Host.
+ * @param {Function} deps.randomUUID UUID.
+ * @param {{ error?: (message: string, ...args: any[]) => void }} deps.logger Logger.
+ * @param {string} deps.token Token.
+ * @returns {Promise<void>} Promise.
+ */
+async function invalidateSinglePath({
+  path,
+  fetchImpl,
+  project,
+  resolvedUrlMap,
+  resolvedCdnHost,
+  randomUUID,
+  logger,
+  token,
+}) {
+  try {
+    const res = await sendInvalidateRequest({
+      fetchImpl,
+      project,
+      resolvedUrlMap,
+      resolvedCdnHost,
+      randomUUID,
+      token,
+      path,
+    });
+    handleInvalidateResponse(res, path, logger);
+  } catch (err) {
+    logInvalidateError(logger, path, err);
+  }
+}
+
+/**
+ * Send invalidate request.
+ * @param {object} deps Deps.
+ * @returns {Promise<Response>} Response.
+ */
+function sendInvalidateRequest({
+  fetchImpl,
+  project,
+  resolvedUrlMap,
+  resolvedCdnHost,
+  randomUUID,
+  token,
+  path,
+}) {
+  return fetchImpl(
+    `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        host: resolvedCdnHost,
+        path,
+        requestId: randomUUID(),
+      }),
+    }
+  );
+}
+
+/**
+ * Handle invalidate response.
+ * @param {{ ok: boolean, status: number }} res Response.
+ * @param {string} path Path.
+ * @param {{ error?: (message: string, ...args: any[]) => void }} logger Logger.
+ * @returns {void}
+ */
+function handleInvalidateResponse(res, path, logger) {
+  if (!res.ok) {
+    logger.error?.(`invalidate ${path} failed: ${res.status}`);
+  }
+}
+
+/**
+ * Log invalidate error.
+ * @param {{ error?: (message: string, ...args: any[]) => void }} logger Logger.
+ * @param {string} path Path.
+ * @param {unknown} err Error.
+ * @returns {void}
+ */
+function logInvalidateError(logger, path, err) {
+  logger.error?.(`invalidate ${path} error`, err?.message || err);
+}
+
+/**
+ * Check authorization for incoming request.
+ * @param {import('express').Request} req Req.
+ * @param {import('express').Response} res Res.
+ * @param {(req: import('express').Request, res: import('express').Response) => Promise<boolean>} verifyAdmin Verify fn.
+ * @returns {Promise<boolean>} Authorization result.
+ */
+async function ensureAuthorizedRequest(req, res, verifyAdmin) {
+  if (isCronRequest(req)) {
+    return true;
+  }
+
+  return verifyAdmin(req, res);
+}
+
+/**
+ * Determine if request is cron.
+ * @param {import('express').Request} req Req.
+ * @returns {boolean} True if cron.
+ */
+function isCronRequest(req) {
+  return req.get('X-Appengine-Cron') === 'true';
+}
+
+/**
+ * Run generate and respond.
+ * @param {import('express').Response} res Res.
+ * @param {() => Promise<unknown>} generate Generate fn.
+ * @returns {Promise<void>} Promise.
+ */
+function respondWithGenerate(res, generate) {
+  return generate()
+    .then(() => res.status(200).json({ ok: true }))
+    .catch(err => res.status(500).json({ error: err?.message || 'generate failed' }));
 }

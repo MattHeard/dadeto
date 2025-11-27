@@ -9,21 +9,57 @@ export function incrementVariantName(name) {
   }
 
   const letters = name.split('');
-  let index = letters.length - 1;
+  return incrementLetters(letters, letters.length - 1);
+}
 
-  while (index >= 0) {
-    const code = letters[index].charCodeAt(0);
-
-    if (code >= 97 && code < 122) {
-      letters[index] = String.fromCharCode(code + 1);
-      return letters.join('');
-    }
-
-    letters[index] = 'a';
-    index -= 1;
+/**
+ * Increment letters recursively.
+ * @param {string[]} letters Letters.
+ * @param {number} index Index.
+ * @returns {string} Next name.
+ */
+function incrementLetters(letters, index) {
+  if (index < 0) {
+    return buildCarryResult(letters);
   }
 
-  return 'a'.repeat(name.length + 1);
+  if (isBetweenAandY(letters[index])) {
+    return incrementAtIndex(letters, index);
+  }
+
+  letters[index] = 'a';
+  return incrementLetters(letters, index - 1);
+}
+
+/**
+ * Check if letter is between a and y.
+ * @param {string} letter Letter.
+ * @returns {boolean} True if between.
+ */
+function isBetweenAandY(letter) {
+  const code = letter.charCodeAt(0);
+  return code >= 97 && code < 122;
+}
+
+/**
+ * Increment letter and return name.
+ * @param {string[]} letters Letters.
+ * @param {number} index Index.
+ * @returns {string} Name.
+ */
+function incrementAtIndex(letters, index) {
+  const code = letters[index].charCodeAt(0);
+  letters[index] = String.fromCharCode(code + 1);
+  return letters.join('');
+}
+
+/**
+ * Build carry result.
+ * @param {string[]} letters Letters.
+ * @returns {string} Result.
+ */
+function buildCarryResult(letters) {
+  return 'a'.repeat(letters.length + 1);
 }
 
 /**

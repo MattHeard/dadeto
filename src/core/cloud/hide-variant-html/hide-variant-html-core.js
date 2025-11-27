@@ -197,24 +197,53 @@ export function createBucketFileRemover({
   storage,
   bucketName = DEFAULT_BUCKET_NAME,
 }) {
-  if (!storage || typeof storage.bucket !== 'function') {
-    throw new TypeError('storage.bucket must be a function');
-  }
-  if (typeof bucketName !== 'string' || bucketName.trim() === '') {
-    throw new TypeError('bucketName must be a non-empty string');
-  }
+  const validatedBucketName = validateBucketName(bucketName);
+  validateStorage(storage);
 
   return function deleteRenderedFile(path) {
-    if (typeof path !== 'string' || path.length === 0) {
+    if (!isValidPath(path)) {
       return Promise.resolve();
     }
 
     return storage
-      .bucket(bucketName)
+      .bucket(validatedBucketName)
       .file(path)
       .delete({ ignoreNotFound: true })
       .then(() => undefined);
   };
+}
+
+/**
+ * Validate bucket name.
+ * @param {unknown} bucketName Bucket name.
+ * @returns {string} Bucket.
+ */
+function validateBucketName(bucketName) {
+  if (typeof bucketName !== 'string' || bucketName.trim() === '') {
+    throw new TypeError('bucketName must be a non-empty string');
+  }
+
+  return bucketName;
+}
+
+/**
+ * Validate storage exposes bucket helper.
+ * @param {unknown} storage Storage.
+ * @returns {void}
+ */
+function validateStorage(storage) {
+  if (!storage || typeof storage.bucket !== 'function') {
+    throw new TypeError('storage.bucket must be a function');
+  }
+}
+
+/**
+ * Check path validity.
+ * @param {unknown} path Path.
+ * @returns {boolean} True if valid.
+ */
+function isValidPath(path) {
+  return typeof path === 'string' && path.length > 0;
 }
 
 /**
@@ -249,18 +278,48 @@ export function createRemoveVariantHtmlForSnapshot(removeVariantHtml) {
       return removeVariantHtml();
     }
 
-    let data;
-    if (typeof snapshot.data === 'function') {
-      data = snapshot.data();
-    }
-    const pageRef = snapshot.ref?.parent?.parent ?? null;
-
-    return removeVariantHtml({
-      variantId: snapshot.id ?? null,
-      variantData: data,
-      pageRef,
-    });
+    return removeVariantHtml(buildRemovePayload(snapshot));
   };
+}
+
+/**
+ * Build removal payload.
+ * @param {{ id?: string, data?: () => *, ref?: { parent?: { parent?: * } } }} snapshot Snapshot.
+ * @returns {{ variantId: string | null, variantData: *, pageRef: * }} Payload.
+ */
+function buildRemovePayload(snapshot) {
+  return {
+    variantId: snapshot.id ?? null,
+    variantData: extractSnapshotData(snapshot),
+    pageRef: resolvePageRef(snapshot),
+  };
+}
+
+/**
+ * Extract snapshot data when available.
+ * @param {{ data?: () => * }} snapshot Snapshot.
+ * @returns {*} Data or undefined.
+ */
+function extractSnapshotData(snapshot) {
+  if (typeof snapshot.data === 'function') {
+    return snapshot.data();
+  }
+
+  return undefined;
+}
+
+/**
+ * Resolve page reference from snapshot.
+ * @param {{ ref?: { parent?: { parent?: * } } }} snapshot Snapshot.
+ * @returns {*} Page ref or null.
+ */
+function resolvePageRef(snapshot) {
+  const parent = snapshot && snapshot.ref && snapshot.ref.parent;
+  if (parent && parent.parent) {
+    return parent.parent;
+  }
+
+  return null;
 }
 
 /**

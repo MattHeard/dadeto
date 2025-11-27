@@ -182,22 +182,43 @@ export async function findVariantRef({
   variantName,
   firebase = {},
 }) {
-  const findPageRefFn = firebase.findPageRef ?? findPageRef;
-  const findVariantsSnapFn = firebase.findVariantsSnap ?? findVariantsSnap;
-  const findPagesSnapFn = firebase.findPagesSnap ?? findPagesSnap;
-  const refFromSnapFn = firebase.refFromSnap ?? refFromSnap;
-
-  const pageRef = await findPageRefFn(database, pageNumber, {
-    findPagesSnap: findPagesSnapFn,
-    refFromSnap: refFromSnapFn,
+  const helpers = resolveVariantHelpers(firebase);
+  const pageRef = await helpers.findPageRef(database, pageNumber, {
+    findPagesSnap: helpers.findPagesSnap,
+    refFromSnap: helpers.refFromSnap,
   });
 
   if (!pageRef) {
     return null;
   }
 
-  const variantsSnap = await findVariantsSnapFn(pageRef, variantName);
-  return refFromSnapFn(variantsSnap);
+  return findVariantRefFromPage(helpers, pageRef, variantName);
+}
+
+/**
+ * Resolve variant helpers from overrides.
+ * @param {object} firebase Firebase helpers.
+ * @returns {object} Helpers.
+ */
+function resolveVariantHelpers(firebase) {
+  return {
+    findPageRef: firebase.findPageRef ?? findPageRef,
+    findVariantsSnap: firebase.findVariantsSnap ?? findVariantsSnap,
+    findPagesSnap: firebase.findPagesSnap ?? findPagesSnap,
+    refFromSnap: firebase.refFromSnap ?? refFromSnap,
+  };
+}
+
+/**
+ * Find variant ref from page ref.
+ * @param {object} helpers Helpers.
+ * @param {import('firebase-admin/firestore').DocumentReference} pageRef Page ref.
+ * @param {string} variantName Variant name.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant ref.
+ */
+async function findVariantRefFromPage(helpers, pageRef, variantName) {
+  const variantsSnap = await helpers.findVariantsSnap(pageRef, variantName);
+  return helpers.refFromSnap(variantsSnap);
 }
 
 /**
@@ -228,9 +249,7 @@ export function updateVariantDirty(variantRef) {
 export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
   const { db, firebase = {}, updateVariantDirty: updateVariantDirtyFn } = deps;
 
-  if (!db) {
-    throw new TypeError('db must be provided');
-  }
+  enforceDatabase(db);
 
   const variantRef = await findVariantRef({
     database: db,
@@ -247,6 +266,17 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
   await updateFn(variantRef);
 
   return true;
+}
+
+/**
+ * Ensure db is provided.
+ * @param {unknown} db Db.
+ * @returns {void}
+ */
+function enforceDatabase(db) {
+  if (!db) {
+    throw new TypeError('db must be provided');
+  }
 }
 
 /**
@@ -392,28 +422,48 @@ export function createHandleRequest({
   }
 
   return async function handleRequest(req, res, deps = {}) {
-    if (!enforceAllowedMethod(req, res, allowedMethod)) {
-      return;
-    }
+    return processHandleRequest({
+      req,
+      res,
+      deps,
+      verifyAdmin,
+      markVariantDirty,
+      parseRequestBody,
+      allowedMethod,
+    });
+  };
+}
 
-    let verifyAdminFn = verifyAdmin;
-    if (typeof deps.verifyAdmin === 'function') {
-      verifyAdminFn = deps.verifyAdmin;
-    }
+const REQUEST_HANDLED = Symbol('request-handled');
 
-    if (!(await verifyAdminFn(req, res))) {
-      return;
-    }
+/**
+ * Process handleRequest with reduced branching.
+ * @param {object} params Params.
+ * @param params.req
+ * @param params.res
+ * @param params.deps
+ * @param params.verifyAdmin
+ * @param params.markVariantDirty
+ * @param params.parseRequestBody
+ * @param params.allowedMethod
+ * @returns {Promise<void>} Promise.
+ */
+async function processHandleRequest({
+  req,
+  res,
+  deps,
+  verifyAdmin,
+  markVariantDirty,
+  parseRequestBody,
+  allowedMethod,
+}) {
+  const verifyAdminFn = pickVerifyAdminFn(verifyAdmin, deps);
+  const markFn = pickMarkFn(markVariantDirty, deps);
 
-    const parsed = parseValidRequest(req, res, parseRequestBody);
-    if (!parsed) {
-      return;
-    }
-
-    let markFn = markVariantDirty;
-    if (typeof deps.markFn === 'function') {
-      markFn = deps.markFn;
-    }
+  try {
+    enforceMethodOrThrow(req, res, allowedMethod);
+    await ensureAuthorizedOrThrow(verifyAdminFn, req, res);
+    const parsed = parseRequestOrThrow(req, res, parseRequestBody);
 
     await markVariantAndRespond({
       res,
@@ -421,5 +471,81 @@ export function createHandleRequest({
       pageNumber: parsed.pageNumber,
       variantName: parsed.variantName,
     });
-  };
+  } catch (err) {
+    if (err === REQUEST_HANDLED) {
+      return;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Pick verifyAdmin override.
+ * @param {Function} verifyAdmin Default verify.
+ * @param {object} deps Deps.
+ * @returns {Function} Verify fn.
+ */
+function pickVerifyAdminFn(verifyAdmin, deps) {
+  if (typeof deps.verifyAdmin === 'function') {
+    return deps.verifyAdmin;
+  }
+
+  return verifyAdmin;
+}
+
+/**
+ * Pick markFn override.
+ * @param {Function} markVariantDirty Default mark.
+ * @param {object} deps Deps.
+ * @returns {Function} Mark fn.
+ */
+function pickMarkFn(markVariantDirty, deps) {
+  if (typeof deps.markFn === 'function') {
+    return deps.markFn;
+  }
+
+  return markVariantDirty;
+}
+
+/**
+ * Enforce method or throw sentinel.
+ * @param {import('express').Request} req Req.
+ * @param {import('express').Response} res Res.
+ * @param {string} allowedMethod Allowed method.
+ * @returns {void}
+ */
+function enforceMethodOrThrow(req, res, allowedMethod) {
+  if (!enforceAllowedMethod(req, res, allowedMethod)) {
+    throw REQUEST_HANDLED;
+  }
+}
+
+/**
+ * Ensure authorization or throw sentinel.
+ * @param {Function} verifyAdminFn Verify fn.
+ * @param {import('express').Request} req Req.
+ * @param {import('express').Response} res Res.
+ * @returns {Promise<void>} Promise.
+ */
+async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
+  const authorized = await verifyAdminFn(req, res);
+  if (!authorized) {
+    throw REQUEST_HANDLED;
+  }
+}
+
+/**
+ * Parse request or throw sentinel.
+ * @param {import('express').Request} req Req.
+ * @param {import('express').Response} res Res.
+ * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Parser.
+ * @returns {{ pageNumber: number, variantName: string }} Parsed.
+ */
+function parseRequestOrThrow(req, res, parseRequestBody) {
+  const parsed = parseValidRequest(req, res, parseRequestBody);
+  if (!parsed) {
+    throw REQUEST_HANDLED;
+  }
+
+  return parsed;
 }

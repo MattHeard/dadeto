@@ -787,89 +787,129 @@ export function createAssignModerationWorkflow({
   now,
   random,
 }) {
-  /**
-   * Create guard error response.
-   * @param {object} error Error.
-   * @returns {object} Response.
-   */
-  function createGuardErrorResponse(error) {
-    return {
-      status: error.status,
-      body: error.body,
-    };
-  }
-
-  /**
-   * Validate user record.
-   * @param {object} userRecord User record.
-   * @returns {object | null} Error response or null.
-   */
-  function validateUserRecord(userRecord) {
-    if (!userRecord?.uid) {
-      return { status: 500, body: 'Moderator lookup failed' };
-    }
-    return null;
-  }
-
-  /**
-   * Fetch and select variant.
-   * @param {object} deps Dependencies.
-   * @param {number} randomValue Random value.
-   * @returns {Promise<object>} Result.
-   */
-  async function fetchAndSelectVariant(deps, randomValue) {
-    const { fetchVariantSnapshot, selectVariantDoc } = deps;
-    const variantSnapshot = await fetchVariantSnapshot(randomValue);
-    return selectVariantDoc(variantSnapshot);
-  }
-
-  /**
-   * Persist assignment.
-   * @param {object} deps Dependencies.
-   * @param {object} data Data.
-   * @returns {Promise<void>} Promise.
-   */
-  async function persistAssignment(deps, data) {
-    const { createModeratorRef, now } = deps;
-    const { userRecord, variantDoc } = data;
-    const moderatorRef = createModeratorRef(userRecord.uid);
-    const createdAt = now();
-    await moderatorRef.set({
-      variant: variantDoc.ref,
-      createdAt,
-    });
-  }
-
   return async function assignModerationWorkflow({ req }) {
-    const guardResult = await runGuards({ req });
+    try {
+      const context = await resolveGuardContext(runGuards, req);
+      const userRecord = resolveUserRecord(context);
+      const variantDoc = await resolveVariantDoc({
+        fetchVariantSnapshot,
+        selectVariantDoc,
+        random,
+      });
 
-    if (guardResult?.error) {
-      return createGuardErrorResponse(guardResult.error);
+      await persistAssignment(
+        { createModeratorRef, now },
+        { userRecord, variantDoc }
+      );
+
+      return { status: 201, body: '' };
+    } catch (err) {
+      if (isResponse(err)) {
+        return err;
+      }
+
+      throw err;
     }
-
-    const { userRecord } = guardResult.context ?? {};
-    const userError = validateUserRecord(userRecord);
-    if (userError) {
-      return userError;
-    }
-
-    const randomValue = random();
-    const { errorMessage, variantDoc } = await fetchAndSelectVariant(
-      { fetchVariantSnapshot, selectVariantDoc },
-      randomValue
-    );
-
-    if (errorMessage) {
-      return { status: 500, body: errorMessage };
-    }
-
-    await persistAssignment(
-      { createModeratorRef, now },
-      { userRecord, variantDoc }
-    );
-
-    return { status: 201, body: '' };
   };
+}
+
+/**
+ * Create guard error response.
+ * @param {object} error Error.
+ * @returns {object} Response.
+ */
+function createGuardErrorResponse(error) {
+  return {
+    status: error.status,
+    body: error.body,
+  };
+}
+
+/**
+ * Ensure guard result has no error or throw.
+ * @param {Function} runGuards Guards runner.
+ * @param {object} req Request.
+ * @returns {Promise<object>} Guard context.
+ */
+async function resolveGuardContext(runGuards, req) {
+  const guardResult = await runGuards({ req });
+
+  if (guardResult?.error) {
+    throw createGuardErrorResponse(guardResult.error);
+  }
+
+  return guardResult.context ?? {};
+}
+
+/**
+ * Validate user record or throw.
+ * @param {object} userRecord User record.
+ * @returns {object} Validated record.
+ */
+function requireUserRecord(userRecord) {
+  if (!userRecord?.uid) {
+    throw { status: 500, body: 'Moderator lookup failed' };
+  }
+
+  return userRecord;
+}
+
+/**
+ * Resolve user record from guard context.
+ * @param {{ userRecord?: { uid?: string } }} context Context.
+ * @returns {{ uid: string }} User record.
+ */
+function resolveUserRecord(context) {
+  return requireUserRecord(context?.userRecord);
+}
+
+/**
+ * Fetch and select variant.
+ * @param {object} deps Dependencies.
+ * @param deps.fetchVariantSnapshot
+ * @param deps.selectVariantDoc
+ * @param deps.random
+ * @returns {Promise<object>} Variant doc.
+ */
+async function resolveVariantDoc({
+  fetchVariantSnapshot,
+  selectVariantDoc,
+  random,
+}) {
+  const variantSnapshot = await fetchVariantSnapshot(random());
+  const { errorMessage, variantDoc } = selectVariantDoc(variantSnapshot);
+
+  if (errorMessage) {
+    throw { status: 500, body: errorMessage };
+  }
+
+  return variantDoc;
+}
+
+/**
+ * Persist assignment.
+ * @param {object} deps Dependencies.
+ * @param {object} data Data.
+ * @returns {Promise<void>} Promise.
+ */
+async function persistAssignment(deps, data) {
+  const { createModeratorRef, now } = deps;
+  const { userRecord, variantDoc } = data;
+  const moderatorRef = createModeratorRef(userRecord.uid);
+  const createdAt = now();
+  await moderatorRef.set({
+    variant: variantDoc.ref,
+    createdAt,
+  });
+}
+
+/**
+ * Determine if value is a response object.
+ * @param {unknown} value Value.
+ * @returns {value is { status: number, body?: string }} True if response.
+ */
+function isResponse(value) {
+  return Boolean(value && typeof value.status === 'number');
 }
 
 /**

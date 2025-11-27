@@ -257,18 +257,46 @@ export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
-  if (environment === 'prod') {
+  if (isProdEnvironment(environment)) {
     return productionOrigins;
   }
 
-  if (typeof environment === 'string' && environment.startsWith('t-')) {
-    if (playwrightOrigin) {
-      return [playwrightOrigin];
-    }
-    return [];
+  if (isTestEnvironment(environment)) {
+    return buildTestOrigins(playwrightOrigin);
   }
 
   return productionOrigins;
+}
+
+/**
+ * Check prod environment.
+ * @param {string | undefined} environment Environment.
+ * @returns {boolean} True if prod.
+ */
+function isProdEnvironment(environment) {
+  return environment === 'prod';
+}
+
+/**
+ * Check test environment.
+ * @param {string | undefined} environment Environment.
+ * @returns {boolean} True if test.
+ */
+function isTestEnvironment(environment) {
+  return typeof environment === 'string' && environment.startsWith('t-');
+}
+
+/**
+ * Build test origins.
+ * @param {string | undefined} playwrightOrigin Origin.
+ * @returns {string[]} Origins.
+ */
+function buildTestOrigins(playwrightOrigin) {
+  if (playwrightOrigin) {
+    return [playwrightOrigin];
+  }
+
+  return [];
 }
 /**
  * Builds a CORS origin handler backed by the shared allow list predicate.

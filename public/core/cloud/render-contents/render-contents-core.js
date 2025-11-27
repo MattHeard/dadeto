@@ -290,15 +290,50 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
  * @returns {StoryInfo | null} Story metadata or null when the page is missing.
  */
 function buildStoryInfoFromPage(pageSnap, story) {
-  if (!pageSnap?.exists) {
+  if (!hasPageSnapshot(pageSnap)) {
     return null;
   }
 
   const page = pageSnap.data();
   return {
-    title: story?.title || '',
-    pageNumber: page?.number,
+    title: extractStoryTitle(story),
+    pageNumber: extractPageNumber(page),
   };
+}
+
+/**
+ * Check that the page snapshot exists.
+ * @param {{ exists?: boolean }} pageSnap Snapshot.
+ * @returns {boolean} True when exists.
+ */
+function hasPageSnapshot(pageSnap) {
+  return Boolean(pageSnap && pageSnap.exists);
+}
+
+/**
+ * Extract story title.
+ * @param {Record<string, any>} story Story.
+ * @returns {string} Title.
+ */
+function extractStoryTitle(story) {
+  if (story && typeof story.title === 'string') {
+    return story.title;
+  }
+
+  return '';
+}
+
+/**
+ * Extract page number.
+ * @param {Record<string, any>} page Page.
+ * @returns {number | undefined} Page number.
+ */
+function extractPageNumber(page) {
+  if (page && typeof page.number === 'number') {
+    return page.number;
+  }
+
+  return undefined;
 }
 
 /**
@@ -1014,7 +1049,12 @@ function normalizeHeaderCandidate(value) {
  * @returns {unknown} Authorization header value found in the headers object.
  */
 function getHeaderFromHeaders(req) {
-  return req?.headers?.Authorization ?? req?.headers?.authorization;
+  const headers = req && req.headers;
+  if (!headers) {
+    return undefined;
+  }
+
+  return headers.Authorization ?? headers.authorization;
 }
 
 /**
