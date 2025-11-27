@@ -977,6 +977,11 @@ function logInvalidateResponse(response, path, consoleError) {
   consoleError(`invalidate ${path} failed: ${response.status}`);
 }
 
+/**
+ *
+ * @param response
+ * @param consoleError
+ */
 function shouldLogInvalidateResponse(response, consoleError) {
   return !response.ok && Boolean(consoleError);
 }
@@ -1027,11 +1032,13 @@ function extractMessageProperty(error) {
   return undefined;
 }
 
+/**
+ *
+ * @param error
+ */
 function hasStringMessage(error) {
   return Boolean(
-    error &&
-      'message' in error &&
-      typeof error.message === 'string'
+    error && 'message' in error && typeof error.message === 'string'
   );
 }
 
