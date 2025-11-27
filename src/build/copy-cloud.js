@@ -327,6 +327,10 @@ const individualFileCopies = [
     target: join(infraDir, 'admin-core.js'),
   },
   {
+    source: commonCoreSource,
+    target: join(infraDir, 'common-core.js'),
+  },
+  {
     source: adminConfigSource,
     target: join(infraDir, 'core', 'admin-config.js'),
   },

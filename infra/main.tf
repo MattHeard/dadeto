@@ -169,6 +169,11 @@ locals {
       source       = "${path.module}/admin-core.js"
       content_type = "application/javascript"
     }
+    dendrite_common_core_js = {
+      name         = "common-core.js"
+      source       = "${path.module}/common-core.js"
+      content_type = "application/javascript"
+    }
     dendrite_load_static_config_js = {
       name          = "loadStaticConfig.js"
       source        = "${path.module}/loadStaticConfig.js"
