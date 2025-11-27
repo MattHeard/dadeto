@@ -2063,6 +2063,41 @@ export function createGoogleSignInInit(
 }
 
 /**
+ * Create a lazily initialized helper that provides the configured Google sign-in handler.
+ * @param {() => unknown} getAuthFn - Getter returning the Firebase auth instance.
+ * @param {Storage} sessionStorageObj - Storage for cached tokens.
+ * @param {{ error?: (message: string) => void }} consoleObj - Logger for reporting errors.
+ * @param {typeof globalThis} globalThisObj - Global scope with DOM helpers.
+ * @param {{ credential?: (token: string) => string }} googleAuthProviderFn - Google auth provider helper.
+ * @param {(auth: unknown, credential: unknown) => Promise<void> | void} signInWithCredentialFn - Function sending credentials to Firebase.
+ * @returns {() => (options?: GoogleSignInOptions) => Promise<void> | void} Factory for the init handler.
+ */
+export function createInitGoogleSignInHandlerFactory(
+  getAuthFn,
+  sessionStorageObj,
+  consoleObj,
+  globalThisObj,
+  googleAuthProviderFn,
+  signInWithCredentialFn
+) {
+  let initGoogleSignInHandler;
+  return () => {
+    if (!initGoogleSignInHandler) {
+      const auth = getAuthFn();
+      initGoogleSignInHandler = createGoogleSignInInit(
+        auth,
+        sessionStorageObj,
+        consoleObj,
+        globalThisObj,
+        googleAuthProviderFn,
+        signInWithCredentialFn
+      );
+    }
+    return initGoogleSignInHandler;
+  };
+}
+
+/**
  * Create a credential factory from the supplied Google Auth provider.
  * @param {{ credential?: (token: string) => string } | null | undefined} provider
  * @returns {(token: string) => string} Credential factory.
