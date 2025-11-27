@@ -4,6 +4,9 @@
   const sheet = overlay.querySelector('.menu-sheet');
   const closeBtn = overlay.querySelector('.menu-close');
 
+  /**
+   *
+   */
   function openMenu() {
     overlay.hidden = false;
     overlay.setAttribute('aria-hidden', 'false');
@@ -13,6 +16,9 @@
     if (first) first.focus();
   }
 
+  /**
+   *
+   */
   function closeMenu() {
     overlay.setAttribute('aria-hidden', 'true');
     toggle.setAttribute('aria-expanded', 'false');
