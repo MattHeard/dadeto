@@ -481,6 +481,13 @@ function assertFunctionDependency(name, candidate) {
  * @param params.markVariantDirty
  * @param params.parseRequestBody
  * @param params.allowedMethod
+ * @param req
+ * @param res
+ * @param deps
+ * @param verifyAdmin
+ * @param markVariantDirty
+ * @param parseRequestBody
+ * @param allowedMethod
  * @returns {Promise<void>} Promise.
  */
 async function processHandleRequest(
