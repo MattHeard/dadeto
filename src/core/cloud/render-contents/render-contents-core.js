@@ -180,41 +180,7 @@ const MAIN_HTML = list => `    <main>
 
 const GOOGLE_AUTH_CLIENT_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>`;
 
-const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module">
-      import {
-        initGoogleSignIn,
-        signOut,
-        getIdToken,
-        isAdmin,
-      } from './googleAuth.js';
-        const sbs = document.querySelectorAll('#signinButton');
-        const sws = document.querySelectorAll('#signoutWrap');
-        const sos = document.querySelectorAll('#signoutLink');
-        const als = document.querySelectorAll('.admin-link');
-      function showSignedIn() {
-        sbs.forEach(el => (el.style.display = 'none'));
-        sws.forEach(el => (el.style.display = ''));
-        if (isAdmin()) als.forEach(el => (el.style.display = ''));
-      }
-      function showSignedOut() {
-        sbs.forEach(el => (el.style.display = ''));
-        sws.forEach(el => (el.style.display = 'none'));
-        als.forEach(el => (el.style.display = 'none'));
-      }
-      initGoogleSignIn({
-        onSignIn: showSignedIn,
-      });
-      sos.forEach(link => {
-        link.addEventListener('click', async e => {
-          e.preventDefault();
-          await signOut();
-          showSignedOut();
-        });
-      });
-      if (getIdToken()) {
-        showSignedIn();
-      }
-    </script>`;
+const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="./contentsGoogleAuthModule.js"></script>`;
 
 const MENU_TOGGLE_SCRIPT = `    <script>
       (function () {

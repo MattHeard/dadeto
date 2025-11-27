@@ -1,5 +1,15 @@
 import { describe, test, expect } from '@jest/globals';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { PAGE_HTML } from '../../src/core/cloud/render-contents/render-contents-core.js';
+
+const contentsGoogleAuthModulePath = fileURLToPath(
+  new URL('../../src/browser/contentsGoogleAuthModule.js', import.meta.url)
+);
+const contentsGoogleAuthModule = readFileSync(
+  contentsGoogleAuthModulePath,
+  'utf8'
+);
 
 describe('PAGE_HTML', () => {
   test('places navigation links above the contents heading', () => {
@@ -25,12 +35,15 @@ describe('PAGE_HTML', () => {
     expect(html).toContain('<div id="signoutWrap"');
     expect(html).toContain('id="signoutLink"');
     expect(html).toContain('https://accounts.google.com/gsi/client');
-    expect(html).toContain('import {');
-    expect(html).toContain('initGoogleSignIn');
-    expect(html).toContain('signOut');
-    expect(html).toContain('getIdToken');
-    expect(html).toContain('isAdmin');
-    expect(html).toContain("from './googleAuth.js'");
+    expect(html).toContain(
+      '<script type="module" src="./contentsGoogleAuthModule.js"></script>'
+    );
+    expect(contentsGoogleAuthModule).toContain('import {');
+    expect(contentsGoogleAuthModule).toContain('initGoogleSignIn');
+    expect(contentsGoogleAuthModule).toContain('signOut');
+    expect(contentsGoogleAuthModule).toContain('getIdToken');
+    expect(contentsGoogleAuthModule).toContain('isAdmin');
+    expect(contentsGoogleAuthModule).toContain("from './googleAuth.js'");
   });
 
   test('references Pico CSS before the local stylesheet', () => {

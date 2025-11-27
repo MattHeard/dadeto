@@ -63,6 +63,7 @@ const sharedBrowserFiles = [
   'googleAuth.js',
   'moderate.js',
   'loadStaticConfig.js',
+  'contentsGoogleAuthModule.js',
 ];
 
 const browserFileCopies = sharedBrowserFiles.map(name => ({

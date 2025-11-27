@@ -109,6 +109,11 @@ locals {
       source       = "${path.module}/googleAuth.js"
       content_type = "application/javascript"
     }
+    dendrite_contents_google_auth_module_js = {
+      name         = "contentsGoogleAuthModule.js"
+      source       = "${path.module}/contentsGoogleAuthModule.js"
+      content_type = "application/javascript"
+    }
     dendrite_moderate_js = {
       name         = "moderate.js"
       source       = "${path.module}/moderate.js"
