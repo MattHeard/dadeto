@@ -389,7 +389,6 @@ function buildRewriteLink(pageNumber) {
  * @returns {string} Report link HTML snippet.
  */
 function buildReportHtml(pageNumber, variantName) {
-  const variantSlug = `${pageNumber}${variantName}`;
   const reportScript = `<script>
 document.getElementById('reportLink').onclick = async e => {
   e.preventDefault();
@@ -397,7 +396,7 @@ document.getElementById('reportLink').onclick = async e => {
     await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ variant: '${variantSlug}' }),
+      body: JSON.stringify({ variant: '${pageNumber}${variantName}' }),
     });
     alert('Thanks for your report.');
   } catch (e) {
