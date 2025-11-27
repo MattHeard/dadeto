@@ -115,15 +115,14 @@ export function createGoogleAuthModule(
   Provider,
   credentialFactory
 ) {
-  const getInitGoogleSignInHandler =
-    createInitGoogleSignInHandlerFactory(
-      getAuthFn,
-      storage,
-      consoleObj,
-      globalScope,
-      Provider,
-      credentialFactory
-    );
+  const getInitGoogleSignInHandler = createInitGoogleSignInHandlerFactory(
+    getAuthFn,
+    storage,
+    consoleObj,
+    globalScope,
+    Provider,
+    credentialFactory
+  );
 
   const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
 
