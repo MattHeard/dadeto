@@ -332,16 +332,7 @@ function extractSnapshotData(snapshot) {
  * @returns {*} Page ref or null.
  */
 function resolvePageRef(snapshot) {
-  if (!snapshot || !snapshot.ref) {
-    return null;
-  }
-
-  const parent = snapshot.ref.parent;
-  if (!parent || !parent.parent) {
-    return null;
-  }
-
-  return parent.parent;
+  return snapshot?.ref?.parent?.parent ?? null;
 }
 
 /**
@@ -350,20 +341,8 @@ function resolvePageRef(snapshot) {
  * @returns {number} Visibility value or zero when unavailable.
  */
 export function getVariantVisibility(snapshot) {
-  if (!snapshot) {
-    return 0;
-  }
-
-  if (typeof snapshot.data !== 'function') {
-    return 0;
-  }
-
-  const data = snapshot.data();
-  if (data && typeof data.visibility === 'number') {
-    return data.visibility;
-  }
-
-  return 0;
+  const data = snapshot?.data?.();
+  return typeof data?.visibility === 'number' ? data.visibility : 0;
 }
 
 /**

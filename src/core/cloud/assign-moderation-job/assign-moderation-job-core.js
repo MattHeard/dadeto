@@ -153,15 +153,29 @@ export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
-  if (!isTestEnvironment(environment)) {
-    return productionOrigins;
+  const environmentType = normalizeEnvironmentType(environment);
+  if (environmentType === 'test') {
+    return getTestOrigins(playwrightOrigin);
   }
 
+  return productionOrigins;
+}
+
+/**
+ * Normalize environment label to a category.
+ * @param {unknown} environment Environment label.
+ * @returns {'prod' | 'test' | 'other'} Environment type.
+ */
+function normalizeEnvironmentType(environment) {
   if (isProductionEnvironment(environment)) {
-    return productionOrigins;
+    return 'prod';
   }
 
-  return getTestOrigins(playwrightOrigin);
+  if (isTestEnvironment(environment)) {
+    return 'test';
+  }
+
+  return 'other';
 }
 
 /**
