@@ -838,7 +838,7 @@ describe('generate stats helpers', () => {
 
   it('renders Stats page even when top stories are absent', () => {
     const html = buildHtml(4, 5, 6);
-    expect(html).toContain('const data = [];');
+    expect(html).toContain('renderTopStories([]);');
     expect(html).toContain('Number of pages: 5');
     expect(html).not.toContain('Story 1');
   });
