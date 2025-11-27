@@ -1906,6 +1906,7 @@ export function setupFirebase(initApp) {
  * @param {typeof globalThis} globalThisObj - Global scope used for Google APIs and DOM helpers.
  * @param {Document} documentObj - Document object containing the admin UI.
  * @param {FetchFn} fetchObj - Fetch-like function for HTTP requests.
+ * @param {(handlers: { initGoogleSignIn: (options?: GoogleSignInOptions) => void, signOut: () => Promise<void> }) => void} [onHandlersReady] - Optional hook for tests to access memoized handlers.
  */
 export function initAdminApp(
   loadStaticConfigFn,
@@ -1918,7 +1919,8 @@ export function initAdminApp(
   consoleObj,
   globalThisObj,
   documentObj,
-  fetchObj
+  fetchObj,
+  onHandlersReady
 ) {
   setupFirebase(initializeAppFn);
 
@@ -1956,6 +1958,8 @@ export function initAdminApp(
     signOut,
     getIdToken,
   };
+
+  onHandlersReady?.(googleAuth);
 
   initAdmin({
     googleAuthModule: googleAuth,
