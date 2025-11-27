@@ -2220,14 +2220,26 @@ function resolvePendingName(variant, context) {
   return resolvePendingStoryId(params);
 }
 
+/**
+ *
+ * @param context
+ */
 function resolvePendingParams(context) {
   return context?.params;
 }
 
+/**
+ *
+ * @param params
+ */
 function resolvePendingVariantId(params) {
   return params?.variantId;
 }
 
+/**
+ *
+ * @param params
+ */
 function resolvePendingStoryId(params) {
   return params?.storyId;
 }
