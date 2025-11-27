@@ -390,7 +390,7 @@ function buildRewriteLink(pageNumber) {
  */
 function buildReportHtml(pageNumber, variantName) {
   const reportScript = `<script>
-document.getElementById('reportLink').onclick = async e => {
+const handleReportClick = async e => {
   e.preventDefault();
   try {
     await fetch('https://europe-west1-irien-465710.cloudfunctions.net/prod-report-for-moderation', {
@@ -403,6 +403,7 @@ document.getElementById('reportLink').onclick = async e => {
     alert('Sorry, something went wrong.');
   }
 };
+document.getElementById('reportLink').onclick = handleReportClick;
 </script>`;
   return `<p><a id="reportLink" href="#">⚑ Report</a></p>${reportScript}`;
 }
