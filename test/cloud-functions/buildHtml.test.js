@@ -181,7 +181,8 @@ describe('buildHtml', () => {
   test('includes report link and script', () => {
     const html = buildHtml(makeInput({ content: 'content' }));
     expect(html).toContain('<a id="reportLink" href="#">⚑ Report</a>');
-    expect(html).toContain("JSON.stringify({variant:'1a'})");
+    const normalizedHtml = html.replace(/\s+/g, ' ');
+    expect(normalizedHtml).toContain("JSON.stringify({ variant: '1a' })");
     expect(html).toContain('prod-report-for-moderation');
   });
 
