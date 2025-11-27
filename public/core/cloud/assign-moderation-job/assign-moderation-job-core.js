@@ -66,6 +66,39 @@ function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
 }
 
 /**
+ * Detect whether any Firebase dependency overrides have been provided.
+ * @param {{
+ *   options?: { ensureAppFn?: Function, getFirestoreFn?: Function },
+ *   defaultEnsureFn: Function,
+ *   defaultGetFirestoreFn: Function,
+ * }} deps Dependency bag containing overrides.
+ * @returns {boolean} True when a dependency override exists.
+ */
+function hasCustomFirestoreFunctionOverrides({
+  options,
+  defaultEnsureFn,
+  defaultGetFirestoreFn,
+}) {
+  const { ensureAppFn, getFirestoreFn } = options ?? {};
+
+  const checks = [
+    isCustomEnsureFunction(ensureAppFn, defaultEnsureFn),
+    isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn),
+  ];
+
+  return checks.some(Boolean);
+}
+
+/**
+ * Check whether the caller supplied an environment override.
+ * @param {{ providedEnvironment?: unknown }} deps Dependency bag with optional environment.
+ * @returns {boolean} True when an override exists.
+ */
+function hasProvidedEnvironment({ providedEnvironment }) {
+  return providedEnvironment !== undefined;
+}
+
+/**
  * Determine whether custom Firebase dependencies or a provided environment should be honored.
  * @param {{
  *   options?: { ensureAppFn?: Function, getFirestoreFn?: Function },
@@ -81,13 +114,17 @@ export function shouldUseCustomFirestoreDependencies({
   defaultGetFirestoreFn,
   providedEnvironment,
 }) {
-  const { ensureAppFn, getFirestoreFn } = options ?? {};
+  const hasOverrides = hasCustomFirestoreFunctionOverrides({
+    options,
+    defaultEnsureFn,
+    defaultGetFirestoreFn,
+  });
 
-  return (
-    isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) ||
-    isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) ||
-    providedEnvironment !== undefined
-  );
+  if (hasProvidedEnvironment({ providedEnvironment })) {
+    return true;
+  }
+
+  return hasOverrides;
 }
 
 /**
@@ -145,17 +182,36 @@ function getTestOrigins(playwrightOrigin) {
 }
 
 /**
+ *
+ * @param environment
+ */
+function resolveTestEnvironmentType(environment) {
+  if (isTestEnvironment(environment)) {
+    return 'test';
+  }
+
+  return 'other';
+}
+
+/**
+ *
+ * @param environmentVariables
+ */
+function isTestDeploymentEnvironment(environmentVariables) {
+  return (
+    normalizeEnvironmentType(environmentVariables?.DENDRITE_ENVIRONMENT) ===
+    'test'
+  );
+}
+
+/**
  * Determine allowed origins from the environment configuration.
  * @param {{ DENDRITE_ENVIRONMENT?: string, PLAYWRIGHT_ORIGIN?: string } | undefined} environmentVariables Runtime environment variables.
  * @returns {string[]} Origin values permitted to use the moderation endpoint.
  */
 export function getAllowedOrigins(environmentVariables) {
-  const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
-  const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
-
-  const environmentType = normalizeEnvironmentType(environment);
-  if (environmentType === 'test') {
-    return getTestOrigins(playwrightOrigin);
+  if (isTestDeploymentEnvironment(environmentVariables)) {
+    return getTestOrigins(environmentVariables?.PLAYWRIGHT_ORIGIN);
   }
 
   return productionOrigins;
@@ -171,11 +227,7 @@ function normalizeEnvironmentType(environment) {
     return 'prod';
   }
 
-  if (isTestEnvironment(environment)) {
-    return 'test';
-  }
-
-  return 'other';
+  return resolveTestEnvironmentType(environment);
 }
 
 /**

@@ -83,7 +83,33 @@ function readDisableAutoSelect(globalScope) {
  * @param globalScope
  */
 function getDisableAutoSelectCandidate(globalScope) {
-  return globalScope.google?.accounts?.id?.disableAutoSelect;
+  return getNestedProperty(
+    globalScope,
+    'google',
+    'accounts',
+    'id',
+    'disableAutoSelect'
+  );
+}
+
+/**
+ * Safely read a nested property path from the provided object.
+ * @param {Record<string, unknown> | undefined} source Root object.
+ * @param {...string} keys Property path.
+ * @returns {unknown} Value at the path or undefined when any segment is missing.
+ */
+function getNestedProperty(source, ...keys) {
+  let cursor = source;
+
+  for (const key of keys) {
+    if (!cursor || typeof cursor !== 'object') {
+      return undefined;
+    }
+
+    cursor = /** @type {{ [x: string]: unknown }} */ (cursor)[key];
+  }
+
+  return cursor;
 }
 
 /**
