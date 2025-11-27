@@ -22,6 +22,11 @@ import { getIdToken } from '../core/browser/browser-core.js';
  * @param onAuthStateChangedFn
  * @param signInWithCredentialFn
  * @param initializeAppFn
+ * @param sessionStorageObj
+ * @param consoleObj
+ * @param globalThisObj
+ * @param documentObj
+ * @param fetchObj
  */
 function initAdminApp(
   loadStaticConfigFn,
@@ -29,7 +34,12 @@ function initAdminApp(
   GoogleAuthProviderFn,
   onAuthStateChangedFn,
   signInWithCredentialFn,
-  initializeAppFn
+  initializeAppFn,
+  sessionStorageObj,
+  consoleObj,
+  globalThisObj,
+  documentObj,
+  fetchObj
 ) {
   setupFirebase(initializeAppFn);
 
@@ -39,9 +49,9 @@ function initAdminApp(
       const auth = getAuthFn();
       initGoogleSignInHandler = createGoogleSignInInit(
         auth,
-        sessionStorage,
-        console,
-        globalThis,
+        sessionStorageObj,
+        consoleObj,
+        globalThisObj,
         GoogleAuthProviderFn,
         signInWithCredentialFn
       );
@@ -55,7 +65,7 @@ function initAdminApp(
   const getSignOutHandler = () => {
     if (!signOutHandler) {
       const auth = getAuthFn();
-      signOutHandler = createSignOut(auth, globalThis);
+      signOutHandler = createSignOut(auth, globalThisObj);
     }
     return signOutHandler;
   };
@@ -73,8 +83,8 @@ function initAdminApp(
     loadStaticConfigFn: loadStaticConfigFn,
     getAuthFn: getAuthFn,
     onAuthStateChangedFn: onAuthStateChangedFn,
-    doc: document,
-    fetchFn: fetch,
+    doc: documentObj,
+    fetchFn: fetchObj,
   });
 }
 
@@ -84,5 +94,10 @@ initAdminApp(
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
-  initializeApp
+  initializeApp,
+  sessionStorage,
+  console,
+  globalThis,
+  document,
+  fetch
 );
