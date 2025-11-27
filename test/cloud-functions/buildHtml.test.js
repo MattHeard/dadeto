@@ -20,6 +20,14 @@ const variantGoogleSignInPath = fileURLToPath(
   new URL('../../src/browser/variantGoogleSignIn.js', import.meta.url)
 );
 const variantGoogleSignIn = readFileSync(variantGoogleSignInPath, 'utf8');
+const variantMenuTogglePath = fileURLToPath(
+  new URL('../../src/browser/variantMenuToggle.js', import.meta.url)
+);
+const variantMenuToggle = readFileSync(variantMenuTogglePath, 'utf8');
+const variantRedirectPath = fileURLToPath(
+  new URL('../../src/browser/variantRedirect.js', import.meta.url)
+);
+const variantRedirect = readFileSync(variantRedirectPath, 'utf8');
 
 describe('buildHtml', () => {
   test('sets default head title when story title missing', () => {
@@ -111,7 +119,7 @@ describe('buildHtml', () => {
     expect(html).toContain(
       '<li><a class="variant-link" data-link-id="5-a-0" href="/p/10a.html" data-variants="10a:1,10b:2">Go elsewhere</a></li>'
     );
-    expect(html).toContain('a.variant-link[data-variants]');
+    expect(html).toContain('data-variants="10a:1,10b:2"');
   });
 
   test('includes author below options when provided', () => {
@@ -225,14 +233,20 @@ describe('buildHtml', () => {
     const html = buildHtml(makeInput({ content: 'content' }));
     expect(html).toContain('<nav class="nav-inline"');
     expect(html).toContain('id="signinButton"');
+    expect(html).toContain('<script src="/variantMenuToggle.js"></script>');
     expect(html).toContain(
       '<script type="module" src="/variantGoogleSignIn.js"></script>'
     );
+    expect(html).toContain('<script src="/variantRedirect.js"></script>');
     expect(variantGoogleSignIn).toContain('import {');
     expect(variantGoogleSignIn).toContain('initGoogleSignIn');
     expect(variantGoogleSignIn).toContain('getIdToken');
     expect(variantGoogleSignIn).toContain('isAdmin');
     expect(variantGoogleSignIn).toContain("from './googleAuth.js'");
+    expect(variantMenuToggle).toContain('const toggle');
+    expect(variantMenuToggle).toContain("addEventListener('keydown'");
+    expect(variantRedirect).toContain('function pickWeighted');
+    expect(variantRedirect).toContain('crypto.getRandomValues');
   });
 
   test('includes favicon link', () => {
