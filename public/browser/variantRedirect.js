@@ -1,4 +1,8 @@
 (function () {
+  /**
+   *
+   * @param pairs
+   */
   function pickWeighted(pairs) {
     let total = 0;
     for (const p of pairs) {
@@ -20,6 +24,10 @@
     return pairs[pairs.length - 1]?.slug ?? null;
   }
 
+  /**
+   *
+   * @param attr
+   */
   function parseVariants(attr) {
     if (!attr) return [];
     const trimmed = attr.trim();
@@ -40,6 +48,10 @@
       .filter(x => x.slug);
   }
 
+  /**
+   *
+   * @param a
+   */
   function rewriteLink(a) {
     const raw = a.getAttribute('data-variants');
     const pairs = parseVariants(raw);
@@ -50,13 +62,16 @@
       const href = new URL(a.getAttribute('href', 2), location.href);
       const chosenUrl = new URL(href, location.href);
       const parts = chosenUrl.pathname.split('/');
-      parts[parts.length - 1] = chosen + '.html';
+      parts[parts.length - 1] = `${chosen}.html`;
       chosenUrl.pathname = parts.join('/');
       a.setAttribute('href', chosenUrl.toString());
       a.setAttribute('data-chosen-variant', chosen);
     } catch {}
   }
 
+  /**
+   *
+   */
   function init() {
     const links = document.querySelectorAll('a.variant-link[data-variants]');
     links.forEach(rewriteLink);
