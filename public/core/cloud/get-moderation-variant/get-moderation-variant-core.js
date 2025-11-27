@@ -184,6 +184,10 @@ async function fetchVariantSnapshot(db, uid) {
   return fetchVariantResponse(variantRef);
 }
 
+/**
+ *
+ * @param moderatorSnap
+ */
 function resolveModeratorVariantRef(moderatorSnap) {
   if (!moderatorSnap.exists) {
     return null;
@@ -193,6 +197,10 @@ function resolveModeratorVariantRef(moderatorSnap) {
   return moderatorData ? moderatorData.variant : null;
 }
 
+/**
+ *
+ * @param variantRef
+ */
 async function fetchVariantResponse(variantRef) {
   const variantSnap = await variantRef.get();
   return variantSnap.exists
