@@ -1,4 +1,4 @@
-Pulled the static HTML pieces out of `buildHtml` so the template literal only interpolates the dynamic counts and top-story data, and the large header/menu/script blobs now live in reusable constants. Having the constants near the top makes it obvious which sections never change (header, Google auth script, Sankey script shell, and mobile-menu toggler) while keeping the actual `buildHtml` return value easier to skim and reason about.
+Pulled the static HTML pieces out of `buildHtml` so the template literal only interpolates the dynamic counts and top-story data, and moved every `<script>` block into its own constant (the entrypoint helper scripts, analytics-free Sankey wiring, and the menu toggler). Having the constants near the top highlights which sections never change while keeping the actual `buildHtml` return value easier to skim and reason about.
 
 Lessons:
 

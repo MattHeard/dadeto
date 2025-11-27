@@ -68,10 +68,13 @@ const SITE_HEADER_HTML = `  <body>
       </div>
     </div>`;
 
-const GOOGLE_AUTH_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12/dist/d3-sankey.min.js"></script>
-    <script type="module">
+const GOOGLE_CLIENT_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>`;
+
+const D3_SCRIPT = `    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>`;
+
+const D3_SANKEY_SCRIPT = `    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12/dist/d3-sankey.min.js"></script>`;
+
+const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module">
       import {
         initGoogleSignIn,
         getIdToken,
@@ -105,11 +108,10 @@ const GOOGLE_AUTH_SCRIPT = `    <script src="https://accounts.google.com/gsi/cli
       }
     </script>`;
 
-const TOP_STORIES_SCRIPT_PREFIX = `    <script>
+function buildTopStoriesScript(dataStr) {
+  return `    <script>
       (function () {
-        const data = `;
-
-const TOP_STORIES_SCRIPT_SUFFIX = `;
+        const data = ${dataStr};
         const root = document.getElementById("topStories");
         if (
           !root ||
@@ -203,6 +205,7 @@ const TOP_STORIES_SCRIPT_SUFFIX = `;
         root.appendChild(svg.node());
       })();
     </script>`;
+}
 
 const MENU_SCRIPT = `    <script>
       (function () {
@@ -261,8 +264,11 @@ ${SITE_HEADER_HTML}
       <p>Number of unmoderated pages: ${unmoderatedCount}</p>
       <div id="topStories"></div>
     </main>
-${GOOGLE_AUTH_SCRIPT}
-${TOP_STORIES_SCRIPT_PREFIX}${JSON.stringify(resolvedTopStories)}${TOP_STORIES_SCRIPT_SUFFIX}
+${GOOGLE_CLIENT_SCRIPT}
+${D3_SCRIPT}
+${D3_SANKEY_SCRIPT}
+${GOOGLE_AUTH_MODULE_SCRIPT}
+${buildTopStoriesScript(JSON.stringify(resolvedTopStories))}
 ${MENU_SCRIPT}`;
 }
 
