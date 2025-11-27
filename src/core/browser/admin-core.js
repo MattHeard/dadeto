@@ -79,6 +79,25 @@ export function createSignOut(authInstance, globalScope) {
 }
 
 /**
+ * Create a memoized sign-out handler that lazily instantiates the helper.
+ * @param {() => { signOut: () => Promise<void> | void }} getAuthFn - Getter for the auth client.
+ * @param {typeof globalThis} globalScope - Global scope passed through to the helper.
+ * @returns {() => () => Promise<void>} Memoized factory returning the sign-out handler.
+ */
+export function createSignOutHandlerFactory(getAuthFn, globalScope) {
+  let signOutHandler;
+
+  return () => {
+    if (!signOutHandler) {
+      const auth = getAuthFn();
+      signOutHandler = createSignOut(auth, globalScope);
+    }
+
+    return signOutHandler;
+  };
+}
+
+/**
  * Determine whether the provided storage and helpers yield an admin token.
  * @param {Storage} storage - Storage object holding the cached ID token.
  * @param {typeof JSON} jsonParser - JSON helper with a `parse` method.

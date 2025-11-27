@@ -4,8 +4,8 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import {
-  createSignOut,
   createInitGoogleSignInHandlerFactory,
+  createSignOutHandlerFactory,
 } from './admin-core.js';
 
 const getInitGoogleSignInHandler = createInitGoogleSignInHandlerFactory(
@@ -19,17 +19,6 @@ const getInitGoogleSignInHandler = createInitGoogleSignInHandlerFactory(
 
 export const initGoogleSignIn = options =>
   getInitGoogleSignInHandler()(options);
-
-const createSignOutHandlerFactory = (getAuthFn, globalThisObj) => {
-  let signOutHandler;
-  return () => {
-    if (!signOutHandler) {
-      const auth = getAuthFn();
-      signOutHandler = createSignOut(auth, globalThisObj);
-    }
-    return signOutHandler;
-  };
-};
 
 const getSignOutHandler = createSignOutHandlerFactory(getAuth, globalThis);
 
