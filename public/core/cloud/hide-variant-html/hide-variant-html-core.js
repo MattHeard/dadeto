@@ -336,6 +336,10 @@ function resolvePageRef(snapshot) {
   return resolveParentPageRef(ref);
 }
 
+/**
+ *
+ * @param ref
+ */
 function resolveParentPageRef(ref) {
   if (!ref || !ref.parent || !ref.parent.parent) {
     return null;
@@ -354,6 +358,10 @@ export function getVariantVisibility(snapshot) {
   return extractVisibility(data);
 }
 
+/**
+ *
+ * @param snapshot
+ */
 function resolveSnapshotData(snapshot) {
   if (!snapshot || typeof snapshot.data !== 'function') {
     return null;
@@ -362,6 +370,10 @@ function resolveSnapshotData(snapshot) {
   return snapshot.data();
 }
 
+/**
+ *
+ * @param data
+ */
 function extractVisibility(data) {
   if (data && typeof data.visibility === 'number') {
     return data.visibility;
