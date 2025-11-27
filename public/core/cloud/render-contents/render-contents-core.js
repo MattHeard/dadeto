@@ -390,13 +390,30 @@ function isValidPaths(paths) {
  * @returns {{ host: string, url: string }} Validation configuration.
  */
 function buildInvalidationConfig({ projectId, urlMapName, cdnHost }) {
-  const host = cdnHost || 'www.dendritestories.co.nz';
+  return {
+    host: resolveCdnHost(cdnHost),
+    url: buildInvalidateUrl(projectId, urlMapName),
+  };
+}
+
+/**
+ *
+ * @param cdnHost
+ */
+function resolveCdnHost(cdnHost) {
+  return cdnHost || 'www.dendritestories.co.nz';
+}
+
+/**
+ *
+ * @param projectId
+ * @param urlMapName
+ */
+function buildInvalidateUrl(projectId, urlMapName) {
+  const projectSegment = projectId ? `projects/${projectId}` : 'projects';
   const urlMap = urlMapName || 'prod-dendrite-url-map';
 
-  return {
-    host,
-    url: `https://compute.googleapis.com/compute/v1/projects/${projectId || ''}/global/urlMaps/${urlMap}/invalidateCache`,
-  };
+  return `https://compute.googleapis.com/compute/v1/${projectSegment}/global/urlMaps/${urlMap}/invalidateCache`;
 }
 
 /**
@@ -1089,12 +1106,8 @@ function normalizeHeaderCandidate(value) {
  * @returns {unknown} Authorization header value found in the headers object.
  */
 function getHeaderFromHeaders(req) {
-  const headers = req && req.headers;
-  if (!headers) {
-    return undefined;
-  }
-
-  return headers.Authorization ?? headers.authorization;
+  const headers = req?.headers;
+  return headers?.Authorization ?? headers?.authorization;
 }
 
 /**
