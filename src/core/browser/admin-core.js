@@ -70,8 +70,28 @@ export function createDisableAutoSelect(globalScope) {
  * @returns {(() => void) | null} Disable fn.
  */
 function readDisableAutoSelect(globalScope) {
-  const disable = globalScope.google?.accounts?.id?.disableAutoSelect;
-  return typeof disable === 'function' ? disable : null;
+  const disableCandidate = getDisableAutoSelectCandidate(globalScope);
+  if (isDisableAutoSelectFunction(disableCandidate)) {
+    return disableCandidate;
+  }
+
+  return null;
+}
+
+/**
+ *
+ * @param globalScope
+ */
+function getDisableAutoSelectCandidate(globalScope) {
+  return globalScope.google?.accounts?.id?.disableAutoSelect;
+}
+
+/**
+ *
+ * @param value
+ */
+function isDisableAutoSelectFunction(value) {
+  return typeof value === 'function';
 }
 
 /**
