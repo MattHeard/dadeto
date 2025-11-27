@@ -295,24 +295,39 @@ export function updateVariantDirty(variantRef) {
  * @returns {Promise<boolean>} True if the variant was updated.
  */
 export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
-  const { db, firebase = {}, updateVariantDirty: updateVariantDirtyFn } = deps;
-
-  enforceDatabase(db);
-
-  const variantRef = await findVariantRef({
-    database: db,
+  const variantRef = await resolveVariantReference(
+    deps,
     pageNumber,
-    variantName,
-    firebase,
-  });
+    variantName
+  );
 
   if (!variantRef) {
     return false;
   }
 
-  await applyUpdateFn(updateVariantDirtyFn, variantRef);
+  await applyUpdateFn(deps.updateVariantDirty, variantRef);
 
   return true;
+}
+
+/**
+ * Gather the variant reference needed for marking dirty.
+ * @param {object} deps Dependencies required to resolve the variant.
+ * @param {number} pageNumber Target page number.
+ * @param {string} variantName Variant name to look up.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Resolved variant reference.
+ */
+async function resolveVariantReference(deps, pageNumber, variantName) {
+  const { db, firebase = {} } = deps;
+
+  enforceDatabase(db);
+
+  return findVariantRef({
+    database: db,
+    pageNumber,
+    variantName,
+    firebase,
+  });
 }
 
 /**
@@ -385,14 +400,23 @@ function enforceAllowedMethod(req, res, allowedMethod) {
  * @returns {{ pageNumber: number, variantName: string } | null} Parsed parameters or null when invalid.
  */
 function parseValidRequest(req, res, parseRequestBody) {
-  const { pageNumber, variantName } = parseRequestBody(req?.body);
-
-  if (Number.isInteger(pageNumber) && variantName) {
-    return { pageNumber, variantName };
+  const parsed = parseRequestBody(req?.body);
+  if (!isValidMarkRequest(parsed)) {
+    res.status(400).json({ error: 'Invalid input' });
+    return null;
   }
 
-  res.status(400).json({ error: 'Invalid input' });
-  return null;
+  return parsed;
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.pageNumber
+ * @param root0.variantName
+ */
+function isValidMarkRequest({ pageNumber, variantName }) {
+  return Number.isInteger(pageNumber) && Boolean(variantName);
 }
 
 /**
@@ -448,13 +472,18 @@ export function createIsAdminUid(adminUid) {
  * @returns {{ pageNumber: number, variantName: string }} Parsed parameters.
  */
 export function parseMarkVariantRequestBody(body) {
-  const pageNumber = Number(body?.page);
-  let variantName = '';
-  if (typeof body?.variant === 'string') {
-    variantName = body.variant;
-  }
+  return {
+    pageNumber: Number(body?.page),
+    variantName: resolveVariantName(body?.variant),
+  };
+}
 
-  return { pageNumber, variantName };
+/**
+ *
+ * @param candidate
+ */
+function resolveVariantName(candidate) {
+  return typeof candidate === 'string' ? candidate : '';
 }
 
 /**

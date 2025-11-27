@@ -201,8 +201,19 @@ function resolveEnv(env) {
  * @returns {string | undefined} Project identifier if present.
  */
 export function getProjectFromEnv(env) {
-  const resolved = resolveEnv(env);
-  return resolved?.GOOGLE_CLOUD_PROJECT ?? resolved?.GCLOUD_PROJECT;
+  return resolveProjectId(resolveEnv(env));
+}
+
+/**
+ *
+ * @param resolved
+ */
+function resolveProjectId(resolved) {
+  if (!resolved) {
+    return undefined;
+  }
+
+  return resolved.GOOGLE_CLOUD_PROJECT ?? resolved.GCLOUD_PROJECT;
 }
 
 /**
@@ -669,7 +680,8 @@ function handleInvalidateResponse(res, path, logger) {
  * @returns {void}
  */
 function logInvalidateError(logger, path, err) {
-  logger.error?.(`invalidate ${path} error`, err?.message || err);
+  const message = err?.message ?? err;
+  logger.error?.(`invalidate ${path} error`, message);
 }
 
 /**

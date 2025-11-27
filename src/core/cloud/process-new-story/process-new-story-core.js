@@ -261,13 +261,21 @@ function queueSubmissionWrites({
  */
 async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
   const authorRef = resolveAuthorRef(db, submission.authorId);
-
   if (!authorRef) {
     return;
   }
 
-  const authorSnap = await authorRef.get();
+  await addAuthorRecordIfMissing(authorRef, batch, randomUUID);
+}
 
+/**
+ *
+ * @param authorRef
+ * @param batch
+ * @param randomUUID
+ */
+async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
+  const authorSnap = await authorRef.get();
   if (!authorSnap?.exists) {
     batch.set(authorRef, { uuid: randomUUID() });
   }

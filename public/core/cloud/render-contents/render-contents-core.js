@@ -1106,8 +1106,20 @@ function normalizeHeaderCandidate(value) {
  * @returns {unknown} Authorization header value found in the headers object.
  */
 function getHeaderFromHeaders(req) {
-  const headers = req?.headers;
-  return headers?.Authorization ?? headers?.authorization;
+  return resolveHeaderValue(req?.headers);
+}
+
+/**
+ * Read the Authorization header value from the provided map.
+ * @param {{ Authorization?: unknown, authorization?: unknown } | undefined} headers Header map.
+ * @returns {unknown} Header value when present.
+ */
+function resolveHeaderValue(headers) {
+  if (!headers) {
+    return undefined;
+  }
+
+  return headers.Authorization ?? headers.authorization;
 }
 
 /**

@@ -1661,7 +1661,11 @@ function extractParentRefs(optionRef) {
  * @param optionRef
  */
 function getParentVariantRef(optionRef) {
-  return optionRef?.parent?.parent ?? null;
+  if (!optionRef?.parent?.parent) {
+    return null;
+  }
+
+  return optionRef.parent.parent;
 }
 
 /**
@@ -1669,7 +1673,11 @@ function getParentVariantRef(optionRef) {
  * @param parentVariantRef
  */
 function getParentPageRef(parentVariantRef) {
-  return parentVariantRef?.parent?.parent ?? null;
+  if (!parentVariantRef?.parent?.parent) {
+    return null;
+  }
+
+  return parentVariantRef.parent.parent;
 }
 
 /**

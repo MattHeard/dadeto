@@ -267,27 +267,70 @@ async function resolveIncomingOptionContext({
 
   const storyRef = initialStoryRef;
   const optionData = optionSnap.data();
-  const targetPage = resolvePageFromTarget(optionData.targetPage);
+  const targetPage = resolvePageFromTarget(optionData?.targetPage);
 
-  const existingContext = await resolveExistingPageContext(targetPage);
-  const pageContext =
-    existingContext ??
-    (await createPageContext({
-      storyRef,
-      db,
-      random,
-      randomUUID,
-      batch,
-      optionRef,
-      incomingOptionFullName,
-      getServerTimestamp,
-    }));
+  const pageContext = await resolveIncomingOptionPageContext({
+    targetPage,
+    db,
+    batch,
+    random,
+    randomUUID,
+    optionRef,
+    incomingOptionFullName,
+    getServerTimestamp,
+    storyRef,
+  });
 
   return {
     ...pageContext,
     storyRef,
     variantRef,
   };
+}
+
+/**
+ * Attempt to reuse an existing page context or create a new one.
+ * @param {object} params Parameters describing the request.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} params.targetPage Page reference to reuse when available.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance for lookups.
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch collecting updates.
+ * @param {() => number} params.random Random number generator.
+ * @param {() => string} params.randomUUID UUID generator for new documents.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef Option reference involved in the submission.
+ * @param {string} params.incomingOptionFullName Full document path for the option.
+ * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} params.storyRef Story reference targeting the submission.
+ * @returns {Promise<{
+ *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
+ *   pageNumber: number | null,
+ * }>} Resolved context.
+ */
+async function resolveIncomingOptionPageContext({
+  targetPage,
+  db,
+  batch,
+  random,
+  randomUUID,
+  optionRef,
+  incomingOptionFullName,
+  getServerTimestamp,
+  storyRef,
+}) {
+  const existingContext = await resolveExistingPageContext(targetPage);
+  if (existingContext) {
+    return existingContext;
+  }
+
+  return createPageContext({
+    storyRef,
+    db,
+    random,
+    randomUUID,
+    batch,
+    optionRef,
+    incomingOptionFullName,
+    getServerTimestamp,
+  });
 }
 
 /**
@@ -501,11 +544,20 @@ function fetchExistingVariants(pageDocRef) {
  */
 async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
   const authorRef = resolveAuthorRef(db, submission.authorId);
-
   if (!authorRef) {
     return;
   }
 
+  await addAuthorRecordIfMissing(authorRef, batch, randomUUID);
+}
+
+/**
+ *
+ * @param authorRef
+ * @param batch
+ * @param randomUUID
+ */
+async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
   const authorSnap = await authorRef.get();
   if (!authorSnap?.exists) {
     batch.set(authorRef, { uuid: randomUUID() });
@@ -518,7 +570,30 @@ async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
  * @returns {string} Latest variant name or an empty string when none exist.
  */
 function getLatestVariantName(variantsSnap) {
-  return variantsSnap.docs[0]?.data()?.name ?? '';
+  const latestDoc = variantsSnap.docs[0];
+  return extractVariantNameFromDoc(latestDoc);
+}
+
+/**
+ *
+ * @param doc
+ */
+function extractVariantNameFromDoc(doc) {
+  const data = getDocumentData(doc);
+  return data?.name ?? '';
+}
+
+/**
+ * Retrieve the document data when available.
+ * @param {{ data: () => Record<string, unknown> } | null | undefined} doc Firestore document snapshot.
+ * @returns {Record<string, unknown> | null} Data object or null when missing.
+ */
+function getDocumentData(doc) {
+  if (!doc) {
+    return null;
+  }
+
+  return doc.data();
 }
 
 /**
