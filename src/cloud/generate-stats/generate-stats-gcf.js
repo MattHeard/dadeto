@@ -1,5 +1,7 @@
+import functions from 'firebase-functions/v1';
+
 export { Storage } from '@google-cloud/storage';
-export * as functions from 'firebase-functions/v1';
+export { functions };
 export { default as express } from 'express';
 export { default as cors } from 'cors';
 export { initializeApp } from 'firebase-admin/app';

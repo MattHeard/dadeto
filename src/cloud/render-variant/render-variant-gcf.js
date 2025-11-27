@@ -1,4 +1,6 @@
-export * as functions from 'firebase-functions/v1';
+import functions from 'firebase-functions/v1';
+
+export { functions };
 export { FieldValue } from 'firebase-admin/firestore';
 export { Storage } from '@google-cloud/storage';
 export { createFirebaseAppManager } from './common-gcf.js';

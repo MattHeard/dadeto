@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { functions } from 'firebase-functions/v1';
+import functions from 'firebase-functions/v1';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getFirestoreInstance } from './firestore.js';
 import { createProcessNewPageHandler } from './process-new-page-core.js';
