@@ -253,15 +253,28 @@ export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
-  if (isProdEnvironment(environment)) {
-    return productionOrigins;
-  }
+  const environmentType = classifyEnvironmentType(environment);
+  return resolveOriginsForEnvironmentType(environmentType, playwrightOrigin);
+}
 
-  if (isTestEnvironment(environment)) {
+function resolveOriginsForEnvironmentType(environmentType, playwrightOrigin) {
+  if (environmentType === 'test') {
     return buildTestOrigins(playwrightOrigin);
   }
 
   return productionOrigins;
+}
+
+function classifyEnvironmentType(environment) {
+  if (isTestEnvironment(environment)) {
+    return 'test';
+  }
+
+  if (isProdEnvironment(environment)) {
+    return 'prod';
+  }
+
+  return 'prod';
 }
 
 /**
