@@ -1308,7 +1308,29 @@ async function fetchRootPageUrl(storyData) {
  * @returns {object|null} Story reference when available, otherwise null.
  */
 function extractStoryRef(pageSnap) {
-  return pageSnap?.ref?.parent?.parent ?? null;
+  const pageRef = getPageRef(pageSnap);
+  return resolveStoryFromPageRef(pageRef);
+}
+
+function getPageRef(pageSnap) {
+  return pageSnap?.ref ?? null;
+}
+
+function resolveStoryFromPageRef(pageRef) {
+  const parent = getPageParent(pageRef);
+  if (!parent) {
+    return null;
+  }
+
+  return getParentParent(parent);
+}
+
+function getPageParent(pageRef) {
+  return pageRef?.parent ?? null;
+}
+
+function getParentParent(parent) {
+  return parent.parent ?? null;
 }
 
 /**
@@ -1492,9 +1514,17 @@ async function writeAuthorLandingPage(variant, file) {
  * @returns {object | null} Refs.
  */
 function extractParentRefs(optionRef) {
-  const parentVariantRef = optionRef?.parent?.parent;
-  const parentPageRef = parentVariantRef?.parent?.parent;
+  const parentVariantRef = getParentVariantRef(optionRef);
+  const parentPageRef = getParentPageRef(parentVariantRef);
   return { parentVariantRef, parentPageRef };
+}
+
+function getParentVariantRef(optionRef) {
+  return optionRef?.parent?.parent ?? null;
+}
+
+function getParentPageRef(parentVariantRef) {
+  return parentVariantRef?.parent?.parent ?? null;
 }
 
 /**

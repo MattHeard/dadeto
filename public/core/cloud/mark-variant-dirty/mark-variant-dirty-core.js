@@ -140,16 +140,19 @@ export function findPagesSnap(database, pageNumber) {
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Document ref.
  */
 export function refFromSnap(snap) {
+  return getDocRefFromSnapshot(snap);
+}
+
+function getDocRefFromSnapshot(snap) {
   if (!snap || !Array.isArray(snap.docs)) {
     return null;
   }
 
-  const [first] = snap.docs;
-  if (first && first.ref) {
-    return first.ref;
-  }
+  return getDocRef(snap.docs[0]);
+}
 
-  return null;
+function getDocRef(doc) {
+  return doc?.ref ?? null;
 }
 
 /**
