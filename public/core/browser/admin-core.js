@@ -2039,6 +2039,10 @@ export function createGoogleAccountsId(scope = globalThis) {
   return () => resolveGoogleAccountsId(scope);
 }
 
+/**
+ *
+ * @param scope
+ */
 function resolveGoogleAccountsId(scope) {
   const win = scope?.window;
   if (!hasGoogleAccounts(win)) {
@@ -2048,6 +2052,10 @@ function resolveGoogleAccountsId(scope) {
   return win.google.accounts.id;
 }
 
+/**
+ *
+ * @param win
+ */
 function hasGoogleAccounts(win) {
   return Boolean(win?.google?.accounts);
 }
