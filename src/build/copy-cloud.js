@@ -309,6 +309,11 @@ const adminConfigFunctionCopies = adminConfigFunctionDirectories.map(name => ({
   target: join(infraFunctionsDir, name, 'admin-config.js'),
 }));
 
+const firebaseFunctionsCopies = functionDirectories.map(name => ({
+  source: join(srcCloudDir, 'firebase-functions.js'),
+  target: join(infraFunctionsDir, name, 'firebase-functions.js'),
+}));
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
@@ -338,6 +343,7 @@ const individualFileCopies = [
     source: join(srcCloudDir, 'firebase-functions.js'),
     target: join(infraFunctionsDir, 'firebase-functions.js'),
   },
+  ...firebaseFunctionsCopies,
   {
     source: cloudCoreSource,
     target: join(infraFunctionsDir, 'cloud-core.js'),

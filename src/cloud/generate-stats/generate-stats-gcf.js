@@ -1,4 +1,4 @@
-import functions from '../firebase-functions.js';
+import functions from './firebase-functions.js';
 
 export { Storage } from '@google-cloud/storage';
 export { functions };
