@@ -60,11 +60,33 @@ function normalizeMethod(method) {
  * @returns {string | null} Header.
  */
 function getHeaderFromGetter(getter, name) {
-  const header = getter(name);
-  if (typeof header === 'string') {
-    return header;
+  if (!isFunction(getter)) {
+    return null;
   }
+
+  return normalizeHeaderValue(getter(name));
+}
+
+/**
+ * Normalize raw header values to strings when possible.
+ * @param {unknown} value Value.
+ * @returns {string | null} Normalized string.
+ */
+function normalizeHeaderValue(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
   return null;
+}
+
+/**
+ * Determine whether value is a function.
+ * @param {unknown} value Value.
+ * @returns {value is Function} True when function.
+ */
+function isFunction(value) {
+  return typeof value === 'function';
 }
 
 /**
@@ -86,10 +108,7 @@ function tryAuthorizationHeaders(getter) {
  * @returns {string | null} Raw Authorization header value or null when absent.
  */
 function readAuthorizationFromGetter(request) {
-  if (!request || typeof request.get !== 'function') {
-    return null;
-  }
-  return tryAuthorizationHeaders(request.get);
+  return tryAuthorizationHeaders(request?.get);
 }
 
 /**
@@ -119,10 +138,21 @@ function coerceAuthorizationHeader(value) {
   if (typeof value === 'string') {
     return value;
   }
-  if (!Array.isArray(value)) {
-    return null;
+
+  return coerceHeaderArray(value);
+}
+
+/**
+ * Extract header from array-like values.
+ * @param {unknown} value Value.
+ * @returns {string | null} Header.
+ */
+function coerceHeaderArray(value) {
+  if (Array.isArray(value)) {
+    return extractFirstString(value);
   }
-  return extractFirstString(value);
+
+  return null;
 }
 
 /**
@@ -149,10 +179,25 @@ function findAuthInHeaders(headers) {
  * @returns {string | null} Normalized Authorization value or null when absent.
  */
 function readAuthorizationFromHeaders(headers) {
-  if (!headers || typeof headers !== 'object') {
+  const normalizedHeaders = normalizeHeadersObject(headers);
+  if (!normalizedHeaders) {
     return null;
   }
-  return findAuthInHeaders(headers);
+
+  return findAuthInHeaders(normalizedHeaders);
+}
+
+/**
+ * Normalize headers to an object when possible.
+ * @param {unknown} headers Headers.
+ * @returns {Record<string, unknown> | null} Headers or null.
+ */
+function normalizeHeadersObject(headers) {
+  if (!isNonNullObject(headers)) {
+    return null;
+  }
+
+  return headers;
 }
 
 /**
@@ -173,14 +218,13 @@ function getAuthorizationHeader(request) {
  * @returns {string | null} First non-null result or null when none match.
  */
 function resolveFirstNonNullValue(...resolvers) {
-  for (const resolver of resolvers) {
-    const value = resolver();
-    if (value !== null) {
-      return value;
+  return resolvers.reduce((result, resolver) => {
+    if (result === null) {
+      return resolver();
     }
-  }
 
-  return null;
+    return result;
+  }, null);
 }
 
 /**
@@ -377,9 +421,45 @@ function ensureBoolean(value) {
  * @returns {string | null} UID or null.
  */
 function validateDecodedUid(decoded) {
-  if (decoded && typeof decoded.uid === 'string' && decoded.uid) {
-    return decoded.uid;
+  return normalizeUid(decoded?.uid);
+}
+
+/**
+ * Check for non-empty string.
+ * @param {unknown} value Value.
+ * @returns {value is string} True if non-empty string.
+ */
+function isNonEmptyString(value) {
+  if (typeof value !== 'string') {
+    return false;
   }
+
+  return value.length > 0;
+}
+
+/**
+ * Check for non-null object.
+ * @param {unknown} value Value.
+ * @returns {value is object} True when non-null object.
+ */
+function isNonNullObject(value) {
+  if (typeof value !== 'object') {
+    return false;
+  }
+
+  return value !== null;
+}
+
+/**
+ * Normalize UID to string or null.
+ * @param {unknown} uid UID.
+ * @returns {string | null} UID or null.
+ */
+function normalizeUid(uid) {
+  if (isNonEmptyString(uid)) {
+    return uid;
+  }
+
   return null;
 }
 
@@ -389,12 +469,45 @@ function validateDecodedUid(decoded) {
  * @returns {Error} Token error.
  */
 function createTokenError(err) {
-  const message = err?.message || 'Invalid or expired token';
+  const message = getTokenErrorMessage(err);
   const error = Object.assign(new Error(message), { code: 'invalid-token' });
+  stripDefaultTokenMessage(error, message);
+  return error;
+}
+
+/**
+ * Resolve token error message.
+ * @param {unknown} err Error.
+ * @returns {string} Message.
+ */
+function getTokenErrorMessage(err) {
+  const message = extractErrorMessage(err);
+  if (isNonEmptyString(message)) {
+    return message;
+  }
+
+  return 'Invalid or expired token';
+}
+
+/**
+ * Extract message from unknown error.
+ * @param {unknown} err Error.
+ * @returns {string | undefined} Message.
+ */
+function extractErrorMessage(err) {
+  return err?.message;
+}
+
+/**
+ * Remove default token message when needed.
+ * @param {Error} error Error.
+ * @param {string} message Message.
+ * @returns {void}
+ */
+function stripDefaultTokenMessage(error, message) {
   if (message === 'Invalid or expired token') {
     delete error.message;
   }
-  return error;
 }
 
 /**
@@ -471,17 +584,24 @@ function buildAssignmentResult(assignment) {
 async function resolveModeratorAssignment(fetchModeratorAssignment, uid) {
   const assignment = await fetchModeratorAssignment(uid);
 
-  if (!assignment) {
-    return null;
-  }
-
-  const { variantId } = assignment;
-
-  if (!isValidVariantId(variantId)) {
+  if (!isValidAssignment(assignment)) {
     return null;
   }
 
   return buildAssignmentResult(assignment);
+}
+
+/**
+ * Validate assignment shape.
+ * @param {ModeratorAssignment | null | undefined} assignment Assignment.
+ * @returns {assignment is ModeratorAssignment} True if valid.
+ */
+function isValidAssignment(assignment) {
+  if (!assignment) {
+    return false;
+  }
+
+  return isValidVariantId(assignment.variantId);
 }
 
 /**
@@ -526,36 +646,92 @@ export function createSubmitModerationRatingResponder({
     return createResponse(201, {});
   }
 
-  return async function submitModerationRatingResponder(request = {}) {
-    if (normalizeMethod(request.method) !== 'POST') {
-      return METHOD_NOT_ALLOWED_RESPONSE;
-    }
-
-    const bodyResult = validateRatingBody(request.body);
-    if (bodyResult.error) {
-      return bodyResult.error;
-    }
-
-    const tokenResult = resolveAuthorizationToken(request);
-    if (tokenResult.error) {
-      return tokenResult.error;
-    }
-
-    const contextResult = await resolveModeratorContext({
-      verifyIdToken,
-      fetchModeratorAssignment,
-      token: tokenResult.token,
-    });
-
+  /**
+   * Resolve response after context lookup.
+   * @param {object} deps Dependencies.
+   * @param {{ isApproved: boolean }} bodyResult Body result.
+   * @param {{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }} contextResult Context result.
+   * @returns {Promise<SubmitModerationRatingResponse>} Response.
+   */
+  function resolveResponseFromContext(deps, bodyResult, contextResult) {
     if (contextResult.error) {
-      return contextResult.error;
+      return Promise.resolve(contextResult.error);
     }
 
-    return processValidRating(
+    return processValidRating(deps, { contextResult, bodyResult });
+  }
+
+  return async function submitModerationRatingResponder(request = {}) {
+    const prerequisiteResult = resolveRequestPrerequisites(request);
+    const contextResult = await resolveContextResult(prerequisiteResult);
+
+    return resolveResponseFromContext(
       { recordModerationRating, randomUUID, getServerTimestamp },
-      { contextResult, bodyResult }
+      prerequisiteResult.bodyResult,
+      contextResult
     );
   };
+
+  /**
+   * Resolve context result or propagate prerequisite error.
+   * @param {{ error?: SubmitModerationRatingResponse, token?: string }} prerequisiteResult Prerequisite result.
+   * @returns {Promise<{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }>} Context result.
+   */
+  function resolveContextResult(prerequisiteResult) {
+    if (prerequisiteResult.error) {
+      return Promise.resolve({ error: prerequisiteResult.error });
+    }
+
+    return resolveModeratorContext({
+      verifyIdToken,
+      fetchModeratorAssignment,
+      token: prerequisiteResult.token,
+    });
+  }
+}
+
+/**
+ * Validate incoming request method.
+ * @param {unknown} method Method.
+ * @returns {SubmitModerationRatingResponse | null} Error when invalid.
+ */
+function validateRequestMethod(method) {
+  if (normalizeMethod(method) === 'POST') {
+    return null;
+  }
+
+  return METHOD_NOT_ALLOWED_RESPONSE;
+}
+
+/**
+ * Resolve prerequisites needed for further processing.
+ * @param {SubmitModerationRatingRequest} request Request.
+ * @returns {{ error?: SubmitModerationRatingResponse, bodyResult?: { isApproved: boolean }, token?: string }} Result.
+ */
+function resolveRequestPrerequisites(request) {
+  const methodError = validateRequestMethod(request.method);
+  const bodyResult = validateRatingBody(request.body);
+  const tokenResult = resolveAuthorizationToken(request);
+  const error = findFirstError([
+    methodError,
+    bodyResult.error,
+    tokenResult.error,
+  ]);
+
+  if (error) {
+    return { error };
+  }
+
+  return { bodyResult, token: tokenResult.token };
+}
+
+/**
+ * Find the first error in a list.
+ * @param {Array<SubmitModerationRatingResponse | undefined | null>} errors Errors.
+ * @returns {SubmitModerationRatingResponse | undefined} First error.
+ */
+function findFirstError(errors) {
+  return errors.find(error => Boolean(error));
 }
 
 /**
@@ -564,10 +740,11 @@ export function createSubmitModerationRatingResponder({
  * @returns {unknown} Is approved.
  */
 function extractIsApproved(body) {
-  if (body && typeof body === 'object') {
-    return body.isApproved;
+  if (!isNonNullObject(body)) {
+    return undefined;
   }
-  return undefined;
+
+  return body.isApproved;
 }
 
 /**
@@ -608,13 +785,9 @@ function resolveAuthorizationToken(request) {
  * @returns {Promise<object>} Result.
  */
 async function resolveUidSafely(verifyIdToken, token) {
-  try {
-    const uid = await resolveUid(verifyIdToken, token);
-    return { uid };
-  } catch (err) {
-    const message = err?.message || 'Invalid or expired token';
-    return { error: createResponse(401, message) };
-  }
+  return resolveUid(verifyIdToken, token)
+    .then(uid => ({ uid }))
+    .catch(err => ({ error: createResponse(401, getTokenErrorMessage(err)) }));
 }
 
 /**
