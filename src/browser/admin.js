@@ -14,14 +14,23 @@ import {
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 
-((
+/**
+ *
+ * @param loadStaticConfigFn
+ * @param getAuthFn
+ * @param GoogleAuthProviderFn
+ * @param onAuthStateChangedFn
+ * @param signInWithCredentialFn
+ * @param initializeAppFn
+ */
+function initAdminApp(
   loadStaticConfigFn,
   getAuthFn,
   GoogleAuthProviderFn,
   onAuthStateChangedFn,
   signInWithCredentialFn,
   initializeAppFn
-) => {
+) {
   setupFirebase(initializeAppFn);
 
   let initGoogleSignInHandler;
@@ -67,7 +76,9 @@ import { getIdToken } from '../core/browser/browser-core.js';
     doc: document,
     fetchFn: fetch,
   });
-})(
+}
+
+initAdminApp(
   loadStaticConfig,
   getAuth,
   GoogleAuthProvider,
