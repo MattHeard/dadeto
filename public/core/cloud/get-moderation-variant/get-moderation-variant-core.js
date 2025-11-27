@@ -257,6 +257,11 @@ export function getAllowedOrigins(environmentVariables) {
   return resolveOriginsForEnvironmentType(environmentType, playwrightOrigin);
 }
 
+/**
+ *
+ * @param environmentType
+ * @param playwrightOrigin
+ */
 function resolveOriginsForEnvironmentType(environmentType, playwrightOrigin) {
   if (environmentType === 'test') {
     return buildTestOrigins(playwrightOrigin);
@@ -265,6 +270,10 @@ function resolveOriginsForEnvironmentType(environmentType, playwrightOrigin) {
   return productionOrigins;
 }
 
+/**
+ *
+ * @param environment
+ */
 function classifyEnvironmentType(environment) {
   if (isTestEnvironment(environment)) {
     return 'test';
