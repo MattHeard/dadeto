@@ -2036,14 +2036,28 @@ export function createSessionStorageHandler(scope = globalThis) {
  * @returns {() => object | undefined} Getter for `google.accounts.id`.
  */
 export function createGoogleAccountsId(scope = globalThis) {
-  return () => {
-    const win = scope?.window;
-    if (!win || !win.google || !win.google.accounts) {
-      return undefined;
-    }
+  return () => resolveGoogleAccountsId(scope);
+}
 
-    return win.google.accounts.id;
-  };
+/**
+ *
+ * @param scope
+ */
+function resolveGoogleAccountsId(scope) {
+  const win = scope?.window;
+  if (!hasGoogleAccounts(win)) {
+    return undefined;
+  }
+
+  return win.google.accounts.id;
+}
+
+/**
+ *
+ * @param win
+ */
+function hasGoogleAccounts(win) {
+  return Boolean(win?.google?.accounts);
 }
 
 /**
