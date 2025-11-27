@@ -78,10 +78,18 @@ function readDisableAutoSelect(globalScope) {
   return null;
 }
 
+/**
+ *
+ * @param globalScope
+ */
 function getDisableAutoSelectCandidate(globalScope) {
   return globalScope.google?.accounts?.id?.disableAutoSelect;
 }
 
+/**
+ *
+ * @param value
+ */
 function isDisableAutoSelectFunction(value) {
   return typeof value === 'function';
 }
