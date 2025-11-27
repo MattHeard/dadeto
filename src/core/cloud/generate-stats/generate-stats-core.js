@@ -2,17 +2,7 @@ import { createVerifyAdmin } from './verifyAdmin.js';
 import { ADMIN_UID } from './common-core.js';
 import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
-export { productionOrigins } from './cloud-core.js';
-
-/**
- * Build stats HTML page.
- * @param {...unknown} args Rendering inputs: storyCount, pageCount, unmoderatedCount, and optional topStories.
- * @returns {string} HTML page.
- */
-export function buildHtml(...args) {
-  const [storyCount, pageCount, unmoderatedCount, topStories] = args;
-  const resolvedTopStories = topStories ?? [];
-  return `<!doctype html>
+const STATS_PAGE_HEAD = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -20,8 +10,9 @@ export function buildHtml(...args) {
     <title>Dendrite stats</title>
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="/dendrite.css" />
-  </head>
-  <body>
+  </head>`;
+
+const SITE_HEADER_HTML = `  <body>
     <header class="site-header">
       <a class="brand" href="/">
         <img src="/img/logo.png" alt="Dendrite logo" />
@@ -75,15 +66,9 @@ export function buildHtml(...args) {
           </div>
         </nav>
       </div>
-    </div>
-    <main>
-      <h1>Stats</h1>
-      <p>Number of stories: ${storyCount}</p>
-      <p>Number of pages: ${pageCount}</p>
-      <p>Number of unmoderated pages: ${unmoderatedCount}</p>
-      <div id="topStories"></div>
-    </main>
-    <script src="https://accounts.google.com/gsi/client" defer></script>
+    </div>`;
+
+const GOOGLE_AUTH_SCRIPT = `    <script src="https://accounts.google.com/gsi/client" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12/dist/d3-sankey.min.js"></script>
     <script type="module">
@@ -118,10 +103,13 @@ export function buildHtml(...args) {
       if (getIdToken()) {
         showSignedIn();
       }
-    </script>
-    <script>
+    </script>`;
+
+const TOP_STORIES_SCRIPT_PREFIX = `    <script>
       (function () {
-        const data = ${JSON.stringify(resolvedTopStories)};
+        const data = `;
+
+const TOP_STORIES_SCRIPT_SUFFIX = `;
         const root = document.getElementById("topStories");
         if (
           !root ||
@@ -214,8 +202,9 @@ export function buildHtml(...args) {
 
         root.appendChild(svg.node());
       })();
-    </script>
-    <script>
+    </script>`;
+
+const MENU_SCRIPT = `    <script>
       (function () {
         const toggle = document.querySelector('.menu-toggle');
         const overlay = document.getElementById('mobile-menu');
@@ -252,6 +241,29 @@ export function buildHtml(...args) {
     </script>
   </body>
 </html>`;
+
+export { productionOrigins } from './cloud-core.js';
+
+/**
+ * Build stats HTML page.
+ * @param {...unknown} args Rendering inputs: storyCount, pageCount, unmoderatedCount, and optional topStories.
+ * @returns {string} HTML page.
+ */
+export function buildHtml(...args) {
+  const [storyCount, pageCount, unmoderatedCount, topStories] = args;
+  const resolvedTopStories = topStories ?? [];
+  return `${STATS_PAGE_HEAD}
+${SITE_HEADER_HTML}
+    <main>
+      <h1>Stats</h1>
+      <p>Number of stories: ${storyCount}</p>
+      <p>Number of pages: ${pageCount}</p>
+      <p>Number of unmoderated pages: ${unmoderatedCount}</p>
+      <div id="topStories"></div>
+    </main>
+${GOOGLE_AUTH_SCRIPT}
+${TOP_STORIES_SCRIPT_PREFIX}${JSON.stringify(resolvedTopStories)}${TOP_STORIES_SCRIPT_SUFFIX}
+${MENU_SCRIPT}`;
 }
 
 const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
