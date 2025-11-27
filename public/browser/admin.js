@@ -14,20 +14,20 @@ import {
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 
-(() => {
-  setupFirebase(initializeApp);
+((loadStaticConfigFn, getAuthFn, GoogleAuthProviderFn, onAuthStateChangedFn, signInWithCredentialFn, initializeAppFn) => {
+  setupFirebase(initializeAppFn);
 
   let initGoogleSignInHandler;
   const getInitGoogleSignInHandler = () => {
     if (!initGoogleSignInHandler) {
-      const auth = getAuth();
+      const auth = getAuthFn();
       initGoogleSignInHandler = createGoogleSignInInit(
         auth,
         sessionStorage,
         console,
         globalThis,
-        GoogleAuthProvider,
-        signInWithCredential
+        GoogleAuthProviderFn,
+        signInWithCredentialFn
       );
     }
     return initGoogleSignInHandler;
@@ -38,7 +38,7 @@ import { getIdToken } from '../core/browser/browser-core.js';
   let signOutHandler;
   const getSignOutHandler = () => {
     if (!signOutHandler) {
-      const auth = getAuth();
+      const auth = getAuthFn();
       signOutHandler = createSignOut(auth, globalThis);
     }
     return signOutHandler;
@@ -54,10 +54,17 @@ import { getIdToken } from '../core/browser/browser-core.js';
 
   initAdmin({
     googleAuthModule: googleAuth,
-    loadStaticConfigFn: loadStaticConfig,
-    getAuthFn: getAuth,
-    onAuthStateChangedFn: onAuthStateChanged,
+    loadStaticConfigFn: loadStaticConfigFn,
+    getAuthFn: getAuthFn,
+    onAuthStateChangedFn: onAuthStateChangedFn,
     doc: document,
     fetchFn: fetch,
   });
-})();
+})(
+  loadStaticConfig,
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithCredential,
+  initializeApp
+);
