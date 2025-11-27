@@ -19,6 +19,7 @@ import {
   resolveRenderPlan,
   isSnapValid,
   extractStoryRef,
+  buildAltsHtml,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('createInvalidatePaths', () => {
@@ -247,6 +248,20 @@ describe('escapeHtml', () => {
     expect(escapeHtml(undefined)).toBe('');
     expect(escapeHtml(0)).toBe('0');
     expect(escapeHtml(false)).toBe('false');
+  });
+});
+
+describe('buildAltsHtml', () => {
+  it('drops undefined content in the preview and still escapes HTML', () => {
+    const html = buildAltsHtml(9, [
+      { name: 'alpha', content: undefined },
+      { name: 'beta', content: '<em>safe</em>' },
+    ]);
+
+    expect(html).toContain('<li><a href="/p/9alpha.html"></a></li>');
+    expect(html).toContain(
+      '<li><a href="/p/9beta.html">&lt;em&gt;safe&lt;/em&gt;</a></li>'
+    );
   });
 });
 
@@ -2196,6 +2211,25 @@ describe('createRenderVariant', () => {
       { name: '', content: '' },
       { name: 'ok', content: 'Text' },
     ]);
+  });
+
+  it('handles docs whose data function returns undefined on the second access', () => {
+    let callCount = 0;
+    const docs = [
+      {
+        data: () => {
+          callCount += 1;
+          if (callCount === 1) {
+            return { visibility: VISIBILITY_THRESHOLD };
+          }
+
+          return undefined;
+        },
+      },
+    ];
+
+    expect(getVisibleVariants(docs)).toEqual([{ name: '', content: '' }]);
+    expect(callCount).toBeGreaterThanOrEqual(2);
   });
 });
 
