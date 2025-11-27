@@ -1,0 +1,5 @@
+## Lessons from extracting page scripts
+- **Unexpected**: the render-contents HTML tests were checking for inline snippets such as `import {` and the `menu-toggle` listener, so pulling the scripts into their own files meant the tests had to switch to reading the new modules instead of inspecting the generated page string.
+- **Diagnosis**: keeping the assertions focused on the visible shell while reading the extracted files from `src/browser` let us stay confident we still ship the same behavior without reintroducing inline HTML.
+- **Learning**: when extracting inline assets to static files, remember to update both the deployment pipeline (copy + Terraform) and the verification logic; relying on `readFileSync` of the source module is a good pattern for tests that need to ensure the file contains expected logic.
+- **Open questions**: should there be a shared helper for asserting these static JS files in future tests, or a lint rule that flags when inline scripts are broken into separate files without test updates?

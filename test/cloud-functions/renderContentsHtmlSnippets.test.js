@@ -10,6 +10,13 @@ const contentsGoogleAuthModule = readFileSync(
   contentsGoogleAuthModulePath,
   'utf8'
 );
+const contentsMenuToggleModulePath = fileURLToPath(
+  new URL('../../src/browser/contentsMenuToggle.js', import.meta.url)
+);
+const contentsMenuToggleModule = readFileSync(
+  contentsMenuToggleModulePath,
+  'utf8'
+);
 
 describe('PAGE_HTML', () => {
   test('places navigation links above the contents heading', () => {
@@ -38,12 +45,15 @@ describe('PAGE_HTML', () => {
     expect(html).toContain(
       '<script type="module" src="./contentsGoogleAuthModule.js"></script>'
     );
+    expect(html).toContain('<script src="./contentsMenuToggle.js"></script>');
     expect(contentsGoogleAuthModule).toContain('import {');
     expect(contentsGoogleAuthModule).toContain('initGoogleSignIn');
     expect(contentsGoogleAuthModule).toContain('signOut');
     expect(contentsGoogleAuthModule).toContain('getIdToken');
     expect(contentsGoogleAuthModule).toContain('isAdmin');
     expect(contentsGoogleAuthModule).toContain("from './googleAuth.js'");
+    expect(contentsMenuToggleModule).toContain('const toggle');
+    expect(contentsMenuToggleModule).toContain("addEventListener('keydown'");
   });
 
   test('references Pico CSS before the local stylesheet', () => {
