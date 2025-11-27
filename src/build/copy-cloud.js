@@ -335,6 +335,14 @@ const individualFileCopies = [
     target: join(infraDir, 'core', 'browser', 'moderation', 'authedFetch.js'),
   },
   {
+    source: join(srcCloudDir, 'firebase-functions.js'),
+    target: join(infraFunctionsDir, 'firebase-functions.js'),
+  },
+  {
+    source: cloudCoreSource,
+    target: join(infraFunctionsDir, 'cloud-core.js'),
+  },
+  {
     source: assignModerationCoreSource,
     target: join(
       infraDir,
