@@ -1100,4 +1100,23 @@ await Promise.all([
     '../cloud-core.js',
     './mark-variant-dirty-verifyAdmin.js'
   ),
+  rewriteImport(
+    join(infraFunctionsDir, 'mark-variant-dirty', 'mark-variant-dirty-core.js'),
+    '../cloud-core.js',
+    './cloud-core.js'
+  ),
+  rewriteImport(
+    join(infraFunctionsDir, 'mark-variant-dirty', 'verifyAdmin.js'),
+    '../cloud-core.js',
+    './cloud-core.js'
+  ),
+  rewriteImport(
+    join(
+      infraFunctionsDir,
+      'generate-stats',
+      'mark-variant-dirty-verifyAdmin.js'
+    ),
+    '../cloud-core.js',
+    './cloud-core.js'
+  ),
 ]);
