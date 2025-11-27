@@ -17,13 +17,13 @@ export function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-const HEADER_HTML = `
-    <header class="site-header">
+const HEADER_BRAND_HTML = `
       <a class="brand" href="/">
         <img src="/img/logo.png" alt="Dendrite logo" />
         Dendrite
-      </a>
+      </a>`;
 
+const HEADER_NAV_HTML = `
       <nav class="nav-inline" aria-label="Primary">
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
@@ -33,11 +33,12 @@ const HEADER_HTML = `
         <div id="signoutWrap" style="display:none">
           <a id="signoutLink" href="#">Sign out</a>
         </div>
-      </nav>
+      </nav>`;
 
-      <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">☰</button>
-    </header>
+const HEADER_MENU_BUTTON_HTML = `
+      <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">☰</button>`;
 
+const MOBILE_MENU_HTML = `
     <!-- Mobile menu -->
     <div id="mobile-menu" class="menu-overlay" hidden aria-hidden="true">
       <div class="menu-sheet" role="dialog" aria-modal="true">
@@ -70,7 +71,17 @@ const HEADER_HTML = `
           </div>
         </nav>
       </div>
-    </div>
+    </div>`;
+
+const HEADER_HTML = `
+    <header class="site-header">${HEADER_BRAND_HTML}
+
+${HEADER_NAV_HTML}
+
+${HEADER_MENU_BUTTON_HTML}
+    </header>
+
+${MOBILE_MENU_HTML}
 `;
 
 const GOOGLE_SIGNIN_SCRIPTS = `
