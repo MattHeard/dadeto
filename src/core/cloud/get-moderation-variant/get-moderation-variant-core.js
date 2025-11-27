@@ -180,20 +180,15 @@ async function fetchVariantSnapshot(db, uid) {
     return null;
   }
 
-  const moderatorData = moderatorSnap.data();
-  const variantRef = moderatorData?.variant;
-
+  const variantRef = moderatorSnap.data()?.variant;
   if (!variantRef) {
     return null;
   }
 
   const variantSnap = await variantRef.get();
-
-  if (!variantSnap.exists) {
-    return VARIANT_NOT_FOUND_RESPONSE;
-  }
-
-  return { variantSnap, variantRef };
+  return variantSnap.exists
+    ? { variantSnap, variantRef }
+    : VARIANT_NOT_FOUND_RESPONSE;
 }
 /**
  * Fetches the story title that owns the provided variant reference.
@@ -257,15 +252,15 @@ export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
+  if (!isTestEnvironment(environment)) {
+    return productionOrigins;
+  }
+
   if (isProdEnvironment(environment)) {
     return productionOrigins;
   }
 
-  if (isTestEnvironment(environment)) {
-    return buildTestOrigins(playwrightOrigin);
-  }
-
-  return productionOrigins;
+  return buildTestOrigins(playwrightOrigin);
 }
 
 /**

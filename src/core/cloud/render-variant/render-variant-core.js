@@ -1308,10 +1308,16 @@ async function fetchRootPageUrl(storyData) {
  * @returns {object|null} Story reference when available, otherwise null.
  */
 function extractStoryRef(pageSnap) {
-  if (!pageSnap || !pageSnap.ref || !pageSnap.ref.parent) {
+  if (!pageSnap || !pageSnap.ref) {
     return null;
   }
-  return pageSnap.ref.parent.parent ?? null;
+
+  const parent = pageSnap.ref.parent;
+  if (!parent || !parent.parent) {
+    return null;
+  }
+
+  return parent.parent;
 }
 
 /**
@@ -1500,8 +1506,14 @@ function extractParentRefs(optionRef) {
   }
 
   const parentVariantRef = optionRef.parent.parent;
-  const parentPageRef = parentVariantRef?.parent?.parent;
-  return { parentVariantRef, parentPageRef };
+  if (!parentVariantRef || !parentVariantRef.parent) {
+    return { parentVariantRef, parentPageRef: undefined };
+  }
+
+  return {
+    parentVariantRef,
+    parentPageRef: parentVariantRef.parent.parent,
+  };
 }
 
 /**
@@ -1893,10 +1905,16 @@ export async function getPageSnapFromRef(snap) {
  * @returns {boolean} True when the snapshot contains a reachable page reference.
  */
 function isSnapRefValid(snap) {
-  if (!snap || !snap.ref || !snap.ref.parent || !snap.ref.parent.parent) {
+  if (!snap || !snap.ref) {
     return false;
   }
-  return true;
+
+  const parent = snap.ref.parent;
+  if (!parent) {
+    return false;
+  }
+
+  return Boolean(parent.parent);
 }
 
 /**

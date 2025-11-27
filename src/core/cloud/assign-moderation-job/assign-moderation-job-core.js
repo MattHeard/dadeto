@@ -153,15 +153,15 @@ export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
 
+  if (!isTestEnvironment(environment)) {
+    return productionOrigins;
+  }
+
   if (isProductionEnvironment(environment)) {
     return productionOrigins;
   }
 
-  if (isTestEnvironment(environment)) {
-    return getTestOrigins(playwrightOrigin);
-  }
-
-  return productionOrigins;
+  return getTestOrigins(playwrightOrigin);
 }
 
 /**

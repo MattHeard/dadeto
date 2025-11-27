@@ -10,15 +10,13 @@ const TEST_ENV_PREFIX = 't-';
  */
 export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
-  if (isProdEnvironment(environment)) {
+  const isTest = isTestEnvironment(environment);
+  const isProd = isProdEnvironment(environment);
+  if (!isTest || isProd) {
     return productionOrigins;
   }
 
-  if (isTestEnvironment(environment)) {
-    return resolvePlaywrightOrigin(environmentVariables?.PLAYWRIGHT_ORIGIN);
-  }
-
-  return productionOrigins;
+  return resolvePlaywrightOrigin(environmentVariables?.PLAYWRIGHT_ORIGIN);
 }
 
 /**
@@ -126,7 +124,12 @@ export function findPagesSnap(database, pageNumber) {
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Document ref.
  */
 export function refFromSnap(snap) {
-  return snap?.docs?.[0]?.ref || null;
+  if (!snap || !Array.isArray(snap.docs)) {
+    return null;
+  }
+
+  const [first] = snap.docs;
+  return first?.ref ?? null;
 }
 
 /**
@@ -202,11 +205,25 @@ export async function findVariantRef({
  */
 function resolveVariantHelpers(firebase) {
   return {
-    findPageRef: firebase.findPageRef ?? findPageRef,
-    findVariantsSnap: firebase.findVariantsSnap ?? findVariantsSnap,
-    findPagesSnap: firebase.findPagesSnap ?? findPagesSnap,
-    refFromSnap: firebase.refFromSnap ?? refFromSnap,
+    findPageRef: chooseHelper(firebase.findPageRef, findPageRef),
+    findVariantsSnap: chooseHelper(firebase.findVariantsSnap, findVariantsSnap),
+    findPagesSnap: chooseHelper(firebase.findPagesSnap, findPagesSnap),
+    refFromSnap: chooseHelper(firebase.refFromSnap, refFromSnap),
   };
+}
+
+/**
+ * Choose helper override.
+ * @param {unknown} override Override.
+ * @param {Function} fallback Fallback.
+ * @returns {Function} Helper.
+ */
+function chooseHelper(override, fallback) {
+  if (typeof override === 'function') {
+    return override;
+  }
+
+  return fallback;
 }
 
 /**
@@ -262,8 +279,7 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
     return false;
   }
 
-  const updateFn = updateVariantDirtyFn ?? updateVariantDirty;
-  await updateFn(variantRef);
+  await applyUpdateFn(updateVariantDirtyFn, variantRef);
 
   return true;
 }
@@ -277,6 +293,17 @@ function enforceDatabase(db) {
   if (!db) {
     throw new TypeError('db must be provided');
   }
+}
+
+/**
+ * Apply update function with fallback.
+ * @param {Function | undefined} updateVariantDirtyFn Update override.
+ * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant ref.
+ * @returns {Promise<void>} Promise.
+ */
+function applyUpdateFn(updateVariantDirtyFn, variantRef) {
+  const updateFn = updateVariantDirtyFn ?? updateVariantDirty;
+  return updateFn(variantRef);
 }
 
 /**
@@ -414,27 +441,35 @@ export function createHandleRequest({
   parseRequestBody = parseMarkVariantRequestBody,
   allowedMethod = POST_METHOD,
 }) {
-  if (typeof verifyAdmin !== 'function') {
-    throw new TypeError('verifyAdmin must be a function');
-  }
-  if (typeof markVariantDirty !== 'function') {
-    throw new TypeError('markVariantDirty must be a function');
-  }
+  assertFunctionDependency('verifyAdmin', verifyAdmin);
+  assertFunctionDependency('markVariantDirty', markVariantDirty);
 
   return async function handleRequest(req, res, deps = {}) {
-    return processHandleRequest({
+    return processHandleRequest(
       req,
       res,
       deps,
       verifyAdmin,
       markVariantDirty,
       parseRequestBody,
-      allowedMethod,
-    });
+      allowedMethod
+    );
   };
 }
 
 const REQUEST_HANDLED = Symbol('request-handled');
+
+/**
+ * Validate dependency shape.
+ * @param {string} name Name.
+ * @param {unknown} candidate Candidate.
+ * @returns {void}
+ */
+function assertFunctionDependency(name, candidate) {
+  if (typeof candidate !== 'function') {
+    throw new TypeError(`${name} must be a function`);
+  }
+}
 
 /**
  * Process handleRequest with reduced branching.
@@ -446,17 +481,24 @@ const REQUEST_HANDLED = Symbol('request-handled');
  * @param params.markVariantDirty
  * @param params.parseRequestBody
  * @param params.allowedMethod
+ * @param req
+ * @param res
+ * @param deps
+ * @param verifyAdmin
+ * @param markVariantDirty
+ * @param parseRequestBody
+ * @param allowedMethod
  * @returns {Promise<void>} Promise.
  */
-async function processHandleRequest({
+async function processHandleRequest(
   req,
   res,
   deps,
   verifyAdmin,
   markVariantDirty,
   parseRequestBody,
-  allowedMethod,
-}) {
+  allowedMethod
+) {
   const verifyAdminFn = pickVerifyAdminFn(verifyAdmin, deps);
   const markFn = pickMarkFn(markVariantDirty, deps);
 

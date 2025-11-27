@@ -252,17 +252,35 @@ function isValidPath(path) {
  * @returns {string} Relative path to the rendered HTML file.
  */
 export function buildVariantPath({ page, variantData }) {
-  let pageNumber = '';
-  if (typeof page?.number === 'number') {
-    pageNumber = page.number;
-  }
-
-  let variantName = '';
-  if (typeof variantData?.name === 'string') {
-    variantName = variantData.name;
-  }
-
+  const pageNumber = extractPageNumber(page);
+  const variantName = extractVariantName(variantData);
   return `p/${pageNumber}${variantName}.html`;
+}
+
+/**
+ * Extract page number string.
+ * @param {{ number?: unknown }} page Page.
+ * @returns {string} Page number segment.
+ */
+function extractPageNumber(page) {
+  if (page && typeof page.number === 'number') {
+    return String(page.number);
+  }
+
+  return '';
+}
+
+/**
+ * Extract variant name.
+ * @param {{ name?: unknown }} variantData Variant data.
+ * @returns {string} Variant name segment.
+ */
+function extractVariantName(variantData) {
+  if (variantData && typeof variantData.name === 'string') {
+    return variantData.name;
+  }
+
+  return '';
 }
 
 /**
@@ -314,12 +332,16 @@ function extractSnapshotData(snapshot) {
  * @returns {*} Page ref or null.
  */
 function resolvePageRef(snapshot) {
-  const parent = snapshot && snapshot.ref && snapshot.ref.parent;
-  if (parent && parent.parent) {
-    return parent.parent;
+  if (!snapshot || !snapshot.ref) {
+    return null;
   }
 
-  return null;
+  const parent = snapshot.ref.parent;
+  if (!parent || !parent.parent) {
+    return null;
+  }
+
+  return parent.parent;
 }
 
 /**
@@ -328,15 +350,17 @@ function resolvePageRef(snapshot) {
  * @returns {number} Visibility value or zero when unavailable.
  */
 export function getVariantVisibility(snapshot) {
-  if (!snapshot || typeof snapshot.data !== 'function') {
+  if (!snapshot) {
+    return 0;
+  }
+
+  if (typeof snapshot.data !== 'function') {
     return 0;
   }
 
   const data = snapshot.data();
-  const visibility = data?.visibility;
-
-  if (typeof visibility === 'number') {
-    return visibility;
+  if (data && typeof data.visibility === 'number') {
+    return data.visibility;
   }
 
   return 0;
