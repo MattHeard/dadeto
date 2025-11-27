@@ -537,5 +537,23 @@ describe('mark-variant-dirty core helpers', () => {
       expect(parseRequestBody).toHaveBeenCalledWith({ ignored: true });
       expect(markVariantDirty).toHaveBeenCalledWith(21, 'parsed');
     });
+
+    it('rethrows unexpected errors from the request pipeline', async () => {
+      const verifyAdmin = jest.fn().mockResolvedValue(true);
+      const markVariantDirty = jest.fn();
+      const parseRequestBody = () => {
+        throw new Error('parse failure');
+      };
+      const handle = createHandleRequest({
+        verifyAdmin,
+        markVariantDirty,
+        parseRequestBody,
+      });
+      const res = createResponse();
+
+      await expect(
+        handle({ method: 'POST', body: { page: 1 } }, res)
+      ).rejects.toThrow('parse failure');
+    });
   });
 });

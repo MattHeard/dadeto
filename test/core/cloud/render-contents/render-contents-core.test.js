@@ -140,6 +140,31 @@ describe('createFetchStoryInfo', () => {
       pageNumber: 2,
     });
   });
+
+  it('returns undefined page numbers when the root page has no numeric value', async () => {
+    const rootPageSnap = {
+      exists: true,
+      data: () => ({}),
+    };
+    const rootPageRef = {
+      get: jest.fn().mockResolvedValue(rootPageSnap),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ rootPage: rootPageRef }),
+    };
+    const db = {
+      collection: jest.fn(() => ({
+        doc: () => ({ get: jest.fn().mockResolvedValue(storySnap) }),
+      })),
+    };
+
+    const fetchStoryInfo = createFetchStoryInfo(db);
+    await expect(fetchStoryInfo('missing-number')).resolves.toEqual({
+      title: '',
+      pageNumber: undefined,
+    });
+  });
 });
 
 describe('createRenderContents', () => {

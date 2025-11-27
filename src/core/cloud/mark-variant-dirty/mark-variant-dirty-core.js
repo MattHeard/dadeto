@@ -463,13 +463,17 @@ async function processHandleRequest({
   try {
     enforceMethodOrThrow(req, res, allowedMethod);
     await ensureAuthorizedOrThrow(verifyAdminFn, req, res);
-    const parsed = parseRequestOrThrow(req, res, parseRequestBody);
+    const { pageNumber, variantName } = parseRequestOrThrow(
+      req,
+      res,
+      parseRequestBody
+    );
 
     await markVariantAndRespond({
       res,
       markFn,
-      pageNumber: parsed.pageNumber,
-      variantName: parsed.variantName,
+      pageNumber,
+      variantName,
     });
   } catch (err) {
     if (err === REQUEST_HANDLED) {

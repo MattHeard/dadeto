@@ -2150,26 +2150,12 @@ async function saveAltsHtml(deps) {
  * @returns {string | undefined} Pending name.
  */
 function resolvePendingName(variant, context) {
-  const params = extractParams(context);
-
+  const params = context?.params;
   if (variant.incomingOption) {
-    return params.variantId;
+    return params?.variantId;
   }
 
-  return params.storyId;
-}
-
-/**
- * Extract params safely.
- * @param {object} context Context.
- * @returns {{ variantId?: string, storyId?: string }} Params.
- */
-function extractParams(context) {
-  if (context && context.params) {
-    return context.params;
-  }
-
-  return {};
+  return params?.storyId;
 }
 
 /**

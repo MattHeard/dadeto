@@ -779,6 +779,16 @@ describe('createAssignModerationWorkflow', () => {
       createdAt: 'now',
     });
   });
+
+  test('rejects unexpected errors from the workflow', async () => {
+    const deps = createDeps();
+    deps.set.mockRejectedValue(new Error('set failed'));
+    const assignModerationWorkflow = createAssignModerationWorkflow(deps);
+
+    await expect(
+      assignModerationWorkflow({ req: { method: 'POST' } })
+    ).rejects.toThrow('set failed');
+  });
 });
 
 describe('createHandleAssignModerationJobCore', () => {
