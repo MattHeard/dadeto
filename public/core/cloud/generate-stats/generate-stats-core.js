@@ -108,6 +108,10 @@ const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module">
       }
     </script>`;
 
+/**
+ *
+ * @param dataStr
+ */
 function buildTopStoriesScript(dataStr) {
   return `    <script>
       (function () {
