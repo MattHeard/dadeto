@@ -828,24 +828,97 @@ function createInvalidatePathsImpl({
   randomUUID,
   consoleError,
 }) {
-  const resolvedProjectId = projectId || '';
-  const resolvedCdnHost = cdnHost || 'www.dendritestories.co.nz';
-  const resolvedUrlMapName = urlMapName || 'prod-dendrite-url-map';
-  const invalidateUrl = `https://compute.googleapis.com/compute/v1/projects/${resolvedProjectId}/global/urlMaps/${resolvedUrlMapName}/invalidateCache`;
+  const resolvedProjectId = resolveProjectId(projectId);
+  const resolvedUrlMapName = resolveUrlMapName(urlMapName);
+  const resolvedCdnHost = resolveCdnHost(cdnHost);
+  const invalidateUrl = buildInvalidateUrl(
+    resolvedProjectId,
+    resolvedUrlMapName
+  );
 
+  return createInvalidateHandler({
+    url: invalidateUrl,
+    host: resolvedCdnHost,
+    fetchFn,
+    randomUUID,
+    consoleError,
+  });
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.url
+ * @param root0.host
+ * @param root0.fetchFn
+ * @param root0.randomUUID
+ * @param root0.consoleError
+ */
+function createInvalidateHandler({
+  url,
+  host,
+  fetchFn,
+  randomUUID,
+  consoleError,
+}) {
   return async function invalidatePaths(paths) {
     if (!isValidPaths(paths)) {
       return;
     }
 
     await executeInvalidation(paths, {
-      url: invalidateUrl,
-      host: resolvedCdnHost,
+      url,
+      host,
       fetchFn,
       randomUUID,
       consoleError,
     });
   };
+}
+
+/**
+ *
+ * @param projectId
+ */
+function resolveProjectId(projectId) {
+  if (projectId) {
+    return projectId;
+  }
+
+  return '';
+}
+
+/**
+ *
+ * @param urlMapName
+ */
+function resolveUrlMapName(urlMapName) {
+  if (urlMapName) {
+    return urlMapName;
+  }
+
+  return 'prod-dendrite-url-map';
+}
+
+/**
+ *
+ * @param cdnHost
+ */
+function resolveCdnHost(cdnHost) {
+  if (cdnHost) {
+    return cdnHost;
+  }
+
+  return 'www.dendritestories.co.nz';
+}
+
+/**
+ *
+ * @param projectId
+ * @param urlMapName
+ */
+function buildInvalidateUrl(projectId, urlMapName) {
+  return `https://compute.googleapis.com/compute/v1/projects/${projectId}/global/urlMaps/${urlMapName}/invalidateCache`;
 }
 
 /**
@@ -1037,9 +1110,11 @@ function extractMessageProperty(error) {
  * @param error
  */
 function hasStringMessage(error) {
-  return Boolean(
-    error && 'message' in error && typeof error.message === 'string'
-  );
+  if (!isObject(error) || !('message' in error)) {
+    return false;
+  }
+
+  return typeof error.message === 'string';
 }
 
 /**
@@ -1355,7 +1430,11 @@ function extractStoryRef(pageSnap) {
  * @param pageSnap
  */
 function getPageRef(pageSnap) {
-  return pageSnap?.ref ?? null;
+  if (!pageSnap?.ref) {
+    return null;
+  }
+
+  return pageSnap.ref;
 }
 
 /**
@@ -1376,7 +1455,11 @@ function resolveStoryFromPageRef(pageRef) {
  * @param pageRef
  */
 function getPageParent(pageRef) {
-  return pageRef?.parent ?? null;
+  if (!pageRef?.parent) {
+    return null;
+  }
+
+  return pageRef.parent;
 }
 
 /**
@@ -1578,7 +1661,12 @@ function extractParentRefs(optionRef) {
  * @param optionRef
  */
 function getParentVariantRef(optionRef) {
-  return optionRef?.parent?.parent ?? null;
+  const parent = optionRef?.parent;
+  if (!parent || !parent.parent) {
+    return null;
+  }
+
+  return parent.parent;
 }
 
 /**
@@ -1586,7 +1674,12 @@ function getParentVariantRef(optionRef) {
  * @param parentVariantRef
  */
 function getParentPageRef(parentVariantRef) {
-  return parentVariantRef?.parent?.parent ?? null;
+  const parent = parentVariantRef?.parent;
+  if (!parent || !parent.parent) {
+    return null;
+  }
+
+  return parent.parent;
 }
 
 /**
@@ -1978,7 +2071,11 @@ export async function getPageSnapFromRef(snap) {
  * @returns {boolean} True when the snapshot contains a reachable page reference.
  */
 function isSnapRefValid(snap) {
-  return Boolean(snap?.ref?.parent?.parent);
+  if (!snap || !snap.ref || !snap.ref.parent) {
+    return false;
+  }
+
+  return Boolean(snap.ref.parent.parent);
 }
 
 /**
