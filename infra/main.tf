@@ -144,6 +144,11 @@ locals {
       source       = "${path.module}/statsTopStories.js"
       content_type = "application/javascript"
     }
+    dendrite_stats_menu_js = {
+      name         = "statsMenu.js"
+      source       = "${path.module}/statsMenu.js"
+      content_type = "application/javascript"
+    }
     dendrite_moderate_js = {
       name         = "moderate.js"
       source       = "${path.module}/moderate.js"
