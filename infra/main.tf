@@ -134,6 +134,11 @@ locals {
       source       = "${path.module}/variantRedirect.js"
       content_type = "application/javascript"
     }
+    dendrite_stats_google_auth_module_js = {
+      name         = "statsGoogleAuthModule.js"
+      source       = "${path.module}/statsGoogleAuthModule.js"
+      content_type = "application/javascript"
+    }
     dendrite_moderate_js = {
       name         = "moderate.js"
       source       = "${path.module}/moderate.js"

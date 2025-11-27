@@ -68,6 +68,7 @@ const sharedBrowserFiles = [
   'variantGoogleSignIn.js',
   'variantMenuToggle.js',
   'variantRedirect.js',
+  'statsGoogleAuthModule.js',
 ];
 
 const browserFileCopies = sharedBrowserFiles.map(name => ({

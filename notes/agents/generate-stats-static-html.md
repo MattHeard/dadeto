@@ -1,4 +1,4 @@
-Pulled the static HTML pieces out of `buildHtml` so the template literal only interpolates the dynamic counts and top-story data, and moved every `<script>` block into its own constant (the entrypoint helper scripts, analytics-free Sankey wiring, and the menu toggler). Having the constants near the top highlights which sections never change while keeping the actual `buildHtml` return value easier to skim and reason about.
+Pulled the static HTML pieces out of `buildHtml` so the template literal only interpolates the dynamic counts and top-story data, moved every `<script>` block into its own constant (the entrypoint helper scripts, analytics-free Sankey wiring, and the menu toggler), and split the inline Google auth logic into `src/browser/statsGoogleAuthModule.js`. Having the constants near the top highlights which sections never change while keeping the actual `buildHtml` return value easier to skim and reason about.
 
 Lessons:
 

@@ -74,39 +74,7 @@ const D3_SCRIPT = `    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.mi
 
 const D3_SANKEY_SCRIPT = `    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12/dist/d3-sankey.min.js"></script>`;
 
-const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module">
-      import {
-        initGoogleSignIn,
-        getIdToken,
-        isAdmin,
-        signOut,
-      } from './googleAuth.js';
-      const als = document.querySelectorAll('.admin-link');
-      const sbs = document.querySelectorAll('#signinButton');
-      const sws = document.querySelectorAll('#signoutWrap');
-      const sos = document.querySelectorAll('#signoutLink');
-      function showSignedIn() {
-        sbs.forEach(el => (el.style.display = 'none'));
-        sws.forEach(el => (el.style.display = ''));
-        if (isAdmin()) als.forEach(el => (el.style.display = ''));
-      }
-      function showSignedOut() {
-        sbs.forEach(el => (el.style.display = ''));
-        sws.forEach(el => (el.style.display = 'none'));
-        als.forEach(el => (el.style.display = 'none'));
-      }
-      initGoogleSignIn({ onSignIn: showSignedIn });
-      sos.forEach(link => {
-        link.addEventListener('click', async e => {
-          e.preventDefault();
-          await signOut();
-          showSignedOut();
-        });
-      });
-      if (getIdToken()) {
-        showSignedIn();
-      }
-    </script>`;
+const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="/statsGoogleAuthModule.js"></script>`;
 
 /**
  *
