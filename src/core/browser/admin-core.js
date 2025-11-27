@@ -98,6 +98,42 @@ export function createSignOutHandlerFactory(getAuthFn, globalScope) {
 }
 
 /**
+ * Compose the browser Google Auth helpers into a reusable module.
+ * @param {() => { signOut: () => Promise<void> | void }} getAuthFn - Getter for the auth client.
+ * @param {Storage} storage - Session storage reference.
+ * @param {Console} consoleObj - Console object passed through to init helper.
+ * @param {Window & typeof globalThis} globalScope - Global scope with Google helpers.
+ * @param {typeof GoogleAuthProvider} Provider - Firebase GoogleAuthProvider class.
+ * @param {(credentials: FirebaseAuthCredential) => AuthCredential} credentialFactory - Credential builder.
+ * @returns {{ initGoogleSignIn: (options: object) => void, signOut: () => Promise<void> }} Public helpers for Google auth flows.
+ */
+export function createGoogleAuthModule(
+  getAuthFn,
+  storage,
+  consoleObj,
+  globalScope,
+  Provider,
+  credentialFactory
+) {
+  const getInitGoogleSignInHandler = createInitGoogleSignInHandlerFactory(
+    getAuthFn,
+    storage,
+    consoleObj,
+    globalScope,
+    Provider,
+    credentialFactory
+  );
+
+  const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
+
+  const getSignOutHandler = createSignOutHandlerFactory(getAuthFn, globalScope);
+
+  const signOut = () => getSignOutHandler()();
+
+  return { initGoogleSignIn, signOut };
+}
+
+/**
  * Determine whether the provided storage and helpers yield an admin token.
  * @param {Storage} storage - Storage object holding the cached ID token.
  * @param {typeof JSON} jsonParser - JSON helper with a `parse` method.
