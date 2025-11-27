@@ -65,6 +65,7 @@ const sharedBrowserFiles = [
   'loadStaticConfig.js',
   'contentsGoogleAuthModule.js',
   'contentsMenuToggle.js',
+  'variantGoogleSignIn.js',
 ];
 
 const browserFileCopies = sharedBrowserFiles.map(name => ({

@@ -1,5 +1,7 @@
 import { describe, test, expect } from '@jest/globals';
 import { JSDOM } from 'jsdom';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { buildHtml } from '../../src/core/cloud/render-variant/render-variant-core.js';
 
 const defaultInput = {
@@ -13,6 +15,11 @@ const makeInput = overrides => ({
   ...overrides,
   options: overrides?.options ?? [],
 });
+
+const variantGoogleSignInPath = fileURLToPath(
+  new URL('../../src/browser/variantGoogleSignIn.js', import.meta.url)
+);
+const variantGoogleSignIn = readFileSync(variantGoogleSignInPath, 'utf8');
 
 describe('buildHtml', () => {
   test('sets default head title when story title missing', () => {
@@ -218,11 +225,14 @@ describe('buildHtml', () => {
     const html = buildHtml(makeInput({ content: 'content' }));
     expect(html).toContain('<nav class="nav-inline"');
     expect(html).toContain('id="signinButton"');
-    expect(html).toContain('import {');
-    expect(html).toContain('initGoogleSignIn');
-    expect(html).toContain('getIdToken');
-    expect(html).toContain('isAdmin');
-    expect(html).toContain("from '../googleAuth.js'");
+    expect(html).toContain(
+      '<script type="module" src="/variantGoogleSignIn.js"></script>'
+    );
+    expect(variantGoogleSignIn).toContain('import {');
+    expect(variantGoogleSignIn).toContain('initGoogleSignIn');
+    expect(variantGoogleSignIn).toContain('getIdToken');
+    expect(variantGoogleSignIn).toContain('isAdmin');
+    expect(variantGoogleSignIn).toContain("from './googleAuth.js'");
   });
 
   test('includes favicon link', () => {

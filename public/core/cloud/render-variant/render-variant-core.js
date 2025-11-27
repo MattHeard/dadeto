@@ -86,39 +86,7 @@ ${MOBILE_MENU_HTML}
 
 const GOOGLE_SIGNIN_SCRIPTS = `
     <script src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module">
-      import {
-        initGoogleSignIn,
-        getIdToken,
-        isAdmin,
-        signOut,
-      } from '../googleAuth.js';
-      const als = document.querySelectorAll('.admin-link');
-      const sbs = document.querySelectorAll('#signinButton');
-      const sws = document.querySelectorAll('#signoutWrap');
-      const sos = document.querySelectorAll('#signoutLink');
-      function showSignedIn() {
-        sbs.forEach(el => (el.style.display = 'none'));
-        sws.forEach(el => (el.style.display = ''));
-        if (isAdmin()) als.forEach(el => (el.style.display = ''));
-      }
-      function showSignedOut() {
-        sbs.forEach(el => (el.style.display = ''));
-        sws.forEach(el => (el.style.display = 'none'));
-        als.forEach(el => (el.style.display = 'none'));
-      }
-      initGoogleSignIn({ onSignIn: showSignedIn });
-      sos.forEach(link => {
-        link.addEventListener('click', async e => {
-          e.preventDefault();
-          await signOut();
-          showSignedOut();
-        });
-      });
-      if (getIdToken()) {
-        showSignedIn();
-      }
-    </script>
+    <script type="module" src="/variantGoogleSignIn.js"></script>
 `;
 
 const MENU_TOGGLE_SCRIPT = `
