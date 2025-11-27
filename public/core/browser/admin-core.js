@@ -1839,6 +1839,80 @@ export function setupFirebase(initApp) {
 }
 
 /**
+ * Initialize the admin UI with the provided auth helpers and globals.
+ * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for static config values.
+ * @param {() => unknown} getAuthFn - Factory returning the Firebase auth instance.
+ * @param {{ credential?: (token: string) => string }} GoogleAuthProviderFn - Firebase provider helper.
+ * @param {(auth: unknown, callback: () => void) => void} onAuthStateChangedFn - Firebase listener binder.
+ * @param {(auth: unknown, credential: unknown) => Promise<void> | void} signInWithCredentialFn - Credential signer.
+ * @param {(config: { apiKey: string, authDomain: string, projectId: string }) => void} initializeAppFn - Firebase initializer.
+ * @param {Storage} sessionStorageObj - Storage object for caching tokens.
+ * @param {{ error?: (message: string) => void }} consoleObj - Logger for reporting sign-in issues.
+ * @param {typeof globalThis} globalThisObj - Global scope used for Google APIs and DOM helpers.
+ * @param {Document} documentObj - Document object containing the admin UI.
+ * @param {FetchFn} fetchObj - Fetch-like function for HTTP requests.
+ */
+export function initAdminApp(
+  loadStaticConfigFn,
+  getAuthFn,
+  GoogleAuthProviderFn,
+  onAuthStateChangedFn,
+  signInWithCredentialFn,
+  initializeAppFn,
+  sessionStorageObj,
+  consoleObj,
+  globalThisObj,
+  documentObj,
+  fetchObj
+) {
+  setupFirebase(initializeAppFn);
+
+  let initGoogleSignInHandler;
+  const getInitGoogleSignInHandler = () => {
+    if (!initGoogleSignInHandler) {
+      const auth = getAuthFn();
+      initGoogleSignInHandler = createGoogleSignInInit(
+        auth,
+        sessionStorageObj,
+        consoleObj,
+        globalThisObj,
+        GoogleAuthProviderFn,
+        signInWithCredentialFn
+      );
+    }
+    return initGoogleSignInHandler;
+  };
+
+  const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
+
+  let signOutHandler;
+  const getSignOutHandler = () => {
+    if (!signOutHandler) {
+      const auth = getAuthFn();
+      signOutHandler = createSignOut(auth, globalThisObj);
+    }
+    return signOutHandler;
+  };
+
+  const signOut = () => getSignOutHandler()();
+
+  const googleAuth = {
+    initGoogleSignIn,
+    signOut,
+    getIdToken,
+  };
+
+  initAdmin({
+    googleAuthModule: googleAuth,
+    loadStaticConfigFn,
+    getAuthFn,
+    onAuthStateChangedFn,
+    doc: documentObj,
+    fetchFn: fetchObj,
+  });
+}
+
+/**
  * Create a removeItem helper that reads storage lazily and validates its API.
  * @param {() => Storage | null | undefined} getStorage - Factory for the storage object.
  * @returns {(key: string) => void} Function that removes an item using the provided storage.
