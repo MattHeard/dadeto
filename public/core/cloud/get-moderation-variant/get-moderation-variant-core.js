@@ -175,17 +175,25 @@ function resolveTokenFromRequest(request) {
  */
 async function fetchVariantSnapshot(db, uid) {
   const moderatorSnap = await db.collection('moderators').doc(uid).get();
+  const variantRef = resolveModeratorVariantRef(moderatorSnap);
 
+  if (!variantRef) {
+    return null;
+  }
+
+  return fetchVariantResponse(variantRef);
+}
+
+function resolveModeratorVariantRef(moderatorSnap) {
   if (!moderatorSnap.exists) {
     return null;
   }
 
   const moderatorData = moderatorSnap.data();
-  const variantRef = moderatorData ? moderatorData.variant : null;
-  if (!variantRef) {
-    return null;
-  }
+  return moderatorData ? moderatorData.variant : null;
+}
 
+async function fetchVariantResponse(variantRef) {
   const variantSnap = await variantRef.get();
   return variantSnap.exists
     ? { variantSnap, variantRef }
