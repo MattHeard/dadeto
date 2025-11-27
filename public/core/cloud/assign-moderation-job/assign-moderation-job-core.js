@@ -791,9 +791,11 @@ export function createAssignModerationWorkflow({
     try {
       const context = await resolveGuardContext(runGuards, req);
       const userRecord = resolveUserRecord(context);
-      const variantDoc = await resolveVariantDoc(
-        { fetchVariantSnapshot, selectVariantDoc, random }
-      );
+      const variantDoc = await resolveVariantDoc({
+        fetchVariantSnapshot,
+        selectVariantDoc,
+        random,
+      });
 
       await persistAssignment(
         { createModeratorRef, now },
@@ -864,6 +866,9 @@ function resolveUserRecord(context) {
 /**
  * Fetch and select variant.
  * @param {object} deps Dependencies.
+ * @param deps.fetchVariantSnapshot
+ * @param deps.selectVariantDoc
+ * @param deps.random
  * @returns {Promise<object>} Variant doc.
  */
 async function resolveVariantDoc({

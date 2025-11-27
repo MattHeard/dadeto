@@ -439,6 +439,13 @@ const REQUEST_HANDLED = Symbol('request-handled');
 /**
  * Process handleRequest with reduced branching.
  * @param {object} params Params.
+ * @param params.req
+ * @param params.res
+ * @param params.deps
+ * @param params.verifyAdmin
+ * @param params.markVariantDirty
+ * @param params.parseRequestBody
+ * @param params.allowedMethod
  * @returns {Promise<void>} Promise.
  */
 async function processHandleRequest({

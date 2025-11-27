@@ -613,6 +613,13 @@ async function invalidateSinglePath({
 /**
  * Send invalidate request.
  * @param {object} deps Deps.
+ * @param deps.fetchImpl
+ * @param deps.project
+ * @param deps.resolvedUrlMap
+ * @param deps.resolvedCdnHost
+ * @param deps.randomUUID
+ * @param deps.token
+ * @param deps.path
  * @returns {Promise<Response>} Response.
  */
 function sendInvalidateRequest({
@@ -698,5 +705,7 @@ function isCronRequest(req) {
 function respondWithGenerate(res, generate) {
   return generate()
     .then(() => res.status(200).json({ ok: true }))
-    .catch(err => res.status(500).json({ error: err?.message || 'generate failed' }));
+    .catch(err =>
+      res.status(500).json({ error: err?.message || 'generate failed' })
+    );
 }
