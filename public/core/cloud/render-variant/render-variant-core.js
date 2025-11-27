@@ -970,10 +970,15 @@ async function invalidatePathItem({
  * @returns {void}
  */
 function logInvalidateResponse(response, path, consoleError) {
-  if (response.ok || !consoleError) {
+  if (!shouldLogInvalidateResponse(response, consoleError)) {
     return;
   }
+
   consoleError(`invalidate ${path} failed: ${response.status}`);
+}
+
+function shouldLogInvalidateResponse(response, consoleError) {
+  return !response.ok && Boolean(consoleError);
 }
 
 /**
@@ -1015,11 +1020,19 @@ function isObject(value) {
  * @param error
  */
 function extractMessageProperty(error) {
-  if ('message' in error && typeof error.message === 'string') {
+  if (hasStringMessage(error)) {
     return error.message;
   }
 
   return undefined;
+}
+
+function hasStringMessage(error) {
+  return Boolean(
+    error &&
+      'message' in error &&
+      typeof error.message === 'string'
+  );
 }
 
 /**
