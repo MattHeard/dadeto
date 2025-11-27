@@ -1,9 +1,8 @@
-import {
-  initGoogleSignIn,
-  signOut,
-  getIdToken,
-  isAdmin,
-} from './googleAuth.js';
+import { initGoogleSignIn, signOut } from './googleAuth.js';
+import { getIdToken } from '../core/browser/browser-core.js';
+import { isAdminWithDeps } from './admin-core.js';
+
+const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 
 const adminLinks = document.querySelectorAll('.admin-link');
 const signInButtons = document.querySelectorAll('#signinButton');
