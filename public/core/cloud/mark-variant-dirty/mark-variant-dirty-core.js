@@ -143,6 +143,10 @@ export function refFromSnap(snap) {
   return getDocRefFromSnapshot(snap);
 }
 
+/**
+ *
+ * @param snap
+ */
 function getDocRefFromSnapshot(snap) {
   if (!snap || !Array.isArray(snap.docs)) {
     return null;
@@ -151,6 +155,10 @@ function getDocRefFromSnapshot(snap) {
   return getDocRef(snap.docs[0]);
 }
 
+/**
+ *
+ * @param doc
+ */
 function getDocRef(doc) {
   return doc?.ref ?? null;
 }

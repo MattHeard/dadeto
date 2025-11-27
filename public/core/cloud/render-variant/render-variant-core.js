@@ -1312,10 +1312,18 @@ function extractStoryRef(pageSnap) {
   return resolveStoryFromPageRef(pageRef);
 }
 
+/**
+ *
+ * @param pageSnap
+ */
 function getPageRef(pageSnap) {
   return pageSnap?.ref ?? null;
 }
 
+/**
+ *
+ * @param pageRef
+ */
 function resolveStoryFromPageRef(pageRef) {
   const parent = getPageParent(pageRef);
   if (!parent) {
@@ -1325,10 +1333,18 @@ function resolveStoryFromPageRef(pageRef) {
   return getParentParent(parent);
 }
 
+/**
+ *
+ * @param pageRef
+ */
 function getPageParent(pageRef) {
   return pageRef?.parent ?? null;
 }
 
+/**
+ *
+ * @param parent
+ */
 function getParentParent(parent) {
   return parent.parent ?? null;
 }
@@ -1519,10 +1535,18 @@ function extractParentRefs(optionRef) {
   return { parentVariantRef, parentPageRef };
 }
 
+/**
+ *
+ * @param optionRef
+ */
 function getParentVariantRef(optionRef) {
   return optionRef?.parent?.parent ?? null;
 }
 
+/**
+ *
+ * @param parentVariantRef
+ */
 function getParentPageRef(parentVariantRef) {
   return parentVariantRef?.parent?.parent ?? null;
 }
