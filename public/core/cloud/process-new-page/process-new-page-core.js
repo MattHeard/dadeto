@@ -301,7 +301,17 @@ async function resolveExistingPageContext(targetPage) {
     return null;
   }
 
-  const existingPageSnap = await safeGetPage(targetPage);
+  return buildExistingPageContext(await safeGetPage(targetPage), targetPage);
+}
+
+/**
+ * Build the context object from an existing page snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot | null} existingPageSnap Snapshot to inspect.
+ * @param {import('firebase-admin/firestore').DocumentReference} targetPage Page reference.
+ * @returns {{ pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null } | null}
+ * Context object when the snapshot represents an existing page.
+ */
+function buildExistingPageContext(existingPageSnap, targetPage) {
   if (!existingPageSnap?.exists) {
     return null;
   }
