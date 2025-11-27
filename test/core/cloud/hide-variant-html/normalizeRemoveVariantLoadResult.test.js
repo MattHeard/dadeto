@@ -1,5 +1,8 @@
 import { jest } from '@jest/globals';
-import { normalizeRemoveVariantLoadResult } from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
+import {
+  normalizeRemoveVariantLoadResult,
+  createRemoveVariantHtmlForSnapshot,
+} from '../../../../src/core/cloud/hide-variant-html/hide-variant-html-core.js';
 
 describe('normalizeRemoveVariantLoadResult', () => {
   it('should return null for page and variant when loadResult is null', () => {
@@ -45,6 +48,21 @@ describe('normalizeRemoveVariantLoadResult', () => {
     expect(normalizeRemoveVariantLoadResult(loadResult)).toEqual({
       page: { id: 3 },
       variant: undefined,
+    });
+  });
+});
+
+describe('resolvePageRef', () => {
+  it('returns null when the snapshot lacks a ref chain', () => {
+    const removeVariantHtml = jest.fn().mockResolvedValue(null);
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+
+    return adapter({ ref: {} }).then(() => {
+      expect(removeVariantHtml).toHaveBeenCalledWith({
+        variantId: null,
+        variantData: undefined,
+        pageRef: null,
+      });
     });
   });
 });

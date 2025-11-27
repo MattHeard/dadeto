@@ -332,16 +332,7 @@ function extractSnapshotData(snapshot) {
  * @returns {*} Page ref or null.
  */
 function resolvePageRef(snapshot) {
-  if (!snapshot || !snapshot.ref) {
-    return null;
-  }
-
-  const parent = snapshot.ref.parent;
-  if (!parent || !parent.parent) {
-    return null;
-  }
-
-  return parent.parent;
+  return snapshot?.ref?.parent?.parent ?? null;
 }
 
 /**

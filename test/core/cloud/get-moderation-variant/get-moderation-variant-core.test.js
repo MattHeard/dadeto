@@ -477,6 +477,25 @@ describe('createGetModerationVariantResponder', () => {
       },
     });
   });
+
+  it('returns no job when the moderator record is missing a variant reference', async () => {
+    const moderatorSnap = {
+      exists: true,
+      data: () => ({}),
+    };
+    const db = createDb(moderatorSnap);
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({
+      status: 404,
+      body: 'No moderation job',
+    });
+  });
 });
 
 it('re-exports the shared origin predicate', () => {

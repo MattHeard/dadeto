@@ -18,6 +18,7 @@ import {
   getPageSnapFromRef,
   resolveRenderPlan,
   isSnapValid,
+  extractStoryRef,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 describe('createInvalidatePaths', () => {
@@ -234,6 +235,12 @@ describe('createInvalidatePaths', () => {
   });
 });
 
+describe('helper edge cases', () => {
+  it('extracts null story ref when the snapshot lacks a ref chain', () => {
+    expect(extractStoryRef(undefined)).toBeNull();
+    expect(extractStoryRef({})).toBeNull();
+  });
+});
 describe('escapeHtml', () => {
   it('coerces falsy values to their string equivalents', () => {
     expect(escapeHtml(null)).toBe('');

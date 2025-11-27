@@ -1308,16 +1308,7 @@ async function fetchRootPageUrl(storyData) {
  * @returns {object|null} Story reference when available, otherwise null.
  */
 function extractStoryRef(pageSnap) {
-  if (!pageSnap || !pageSnap.ref) {
-    return null;
-  }
-
-  const parent = pageSnap.ref.parent;
-  if (!parent) {
-    return null;
-  }
-
-  return parent.parent || null;
+  return pageSnap?.ref?.parent?.parent ?? null;
 }
 
 /**
@@ -1501,16 +1492,8 @@ async function writeAuthorLandingPage(variant, file) {
  * @returns {object | null} Refs.
  */
 function extractParentRefs(optionRef) {
-  if (!optionRef || !optionRef.parent) {
-    return { parentVariantRef: undefined, parentPageRef: undefined };
-  }
-
-  const parentVariantRef = optionRef.parent.parent;
-  if (!parentVariantRef) {
-    return { parentVariantRef: undefined, parentPageRef: undefined };
-  }
-
-  const parentPageRef = parentVariantRef.parent?.parent;
+  const parentVariantRef = optionRef?.parent?.parent;
+  const parentPageRef = parentVariantRef?.parent?.parent;
   return { parentVariantRef, parentPageRef };
 }
 
