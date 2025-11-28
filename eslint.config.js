@@ -71,5 +71,11 @@ export default [
         ...globals.jest,
       },
     },
+    rules: {
+      complexity: 'off',
+      'no-ternary': 'off',
+      camelcase: 'off',
+      'max-params': 'off',
+    },
   },
 ];
