@@ -82,11 +82,12 @@ const TOP_STORIES_INVOCATION_SCRIPT = dataStr => `    <script type="module">
     </script>`;
 
 /**
- *
- * @param dataStr
+ * Emit the script that renders the top stories list.
+ * @param {string} dataStr Serialized top stories payload.
+ * @returns {string} Script tag that bootstraps the top stories renderer.
  */
 function buildTopStoriesScript(dataStr) {
-  return `${TOP_STORIES_INVOCATION_SCRIPT(dataStr)}`;
+  return TOP_STORIES_INVOCATION_SCRIPT(dataStr);
 }
 
 const MENU_SCRIPT = `    <script type="module" src="/statsMenu.js"></script>
@@ -132,12 +133,17 @@ export function isDuplicateAppError(error) {
     return false;
   }
 
-  return hasDuplicateIdentifier(error) && messageIndicatesDuplicate(error);
+  if (!hasDuplicateIdentifier(error)) {
+    return false;
+  }
+
+  return messageIndicatesDuplicate(error);
 }
 
 /**
- *
- * @param error
+ * Decide if the error payload identifies a duplicate Firebase app.
+ * @param {{ code?: string, message?: unknown }} error Error details from initializeApp.
+ * @returns {boolean} True when a duplicate app identifier is present.
  */
 function hasDuplicateIdentifier(error) {
   return (
@@ -146,8 +152,9 @@ function hasDuplicateIdentifier(error) {
 }
 
 /**
- *
- * @param error
+ * Confirm the error message mentions an existing app.
+ * @param {{ message?: unknown }} error Error details to inspect.
+ * @returns {boolean} True when the message explicitly notes the app already exists.
  */
 function messageIndicatesDuplicate(error) {
   if (typeof error.message !== 'string') {
@@ -205,8 +212,9 @@ export function getProjectFromEnv(env) {
 }
 
 /**
- *
- * @param resolved
+ * Extract the project identifier from resolved environment variables.
+ * @param {ProcessEnv | Record<string, string | undefined> | null} resolved Sanitized environment map.
+ * @returns {string | undefined} Resolved project identifier if available.
  */
 function resolveProjectId(resolved) {
   if (!resolved) {
@@ -348,15 +356,23 @@ export function createGenerateStatsCore({
       .limit(limit)
       .get();
     const stories = await Promise.all(
-      statsSnap.docs.map(async doc => {
-        const storyDoc = await dbRef.collection('stories').doc(doc.id).get();
-        return {
-          title: storyDoc.data()?.title || doc.id,
-          variantCount: doc.data().variantCount || 0,
-        };
-      })
+      statsSnap.docs.map(doc => buildTopStoryFromStatsDoc(dbRef, doc))
     );
     return stories;
+  }
+
+  /**
+   * Build the metadata payload for a top story entry.
+   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore reference.
+   * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} statsDoc Document from the storyStats collection.
+   * @returns {Promise<{ title: string, variantCount: number }>} Story metadata.
+   */
+  async function buildTopStoryFromStatsDoc(dbRef, statsDoc) {
+    const storyDoc = await dbRef.collection('stories').doc(statsDoc.id).get();
+    return {
+      title: storyDoc.data()?.title || statsDoc.id,
+      variantCount: statsDoc.data().variantCount || 0,
+    };
   }
 
   /**
@@ -533,30 +549,26 @@ export function createGenerateStatsCore({
 }
 
 /**
- * Normalize environment to object.
- * @param {unknown} env Env.
+ * Normalize the provided environment reference into an object map.
+ * @param {unknown} env Env source.
  * @returns {Record<string, string | undefined>} Env object.
  */
 function normalizeEnvObject(env) {
-  if (env && typeof env === 'object') {
-    return env;
+  if (!(env && typeof env === 'object')) {
+    return {};
   }
 
-  return {};
+  return env;
 }
 
 /**
- * Resolve URL map.
- * @param {string | undefined} urlMap Url map.
- * @param {Record<string, string | undefined>} envRef Env ref.
+ * Resolve the URL map identifier.
+ * @param {string | undefined} urlMap Url map override.
+ * @param {Record<string, string | undefined>} envRef Normalized environment.
  * @returns {string | undefined} Url map.
  */
 function resolveUrlMap(urlMap, envRef) {
-  if (urlMap) {
-    return urlMap;
-  }
-
-  return getUrlMapFromEnv(envRef);
+  return urlMap ?? getUrlMapFromEnv(envRef);
 }
 
 /**
@@ -569,17 +581,20 @@ function resolveCdnHost(envRef) {
 }
 
 /**
- * Resolve fetch implementation.
- * @param {unknown} fetchFn Fetch fn.
- * @returns {Function} Fetch.
+ * Resolve the fetch implementation required for HTTP requests.
+ * @param {unknown} fetchFn Optional fetch override.
+ * @returns {Function} Fetch implementation.
  */
 function resolveFetchImpl(fetchFn) {
-  const candidate = fetchFn ?? globalThis.fetch;
-  if (typeof candidate !== 'function') {
-    throw new Error('fetch implementation required');
+  if (typeof fetchFn === 'function') {
+    return fetchFn;
   }
 
-  return candidate;
+  if (typeof globalThis.fetch === 'function') {
+    return globalThis.fetch.bind(globalThis);
+  }
+
+  throw new Error('fetch implementation required');
 }
 
 /**
@@ -624,14 +639,14 @@ async function invalidateSinglePath({
 /**
  * Send invalidate request.
  * @param {object} deps Deps.
- * @param deps.fetchImpl
- * @param deps.project
- * @param deps.resolvedUrlMap
- * @param deps.resolvedCdnHost
- * @param deps.randomUUID
- * @param deps.token
- * @param deps.path
- * @returns {Promise<Response>} Response.
+ * @param {Function} deps.fetchImpl HTTP client.
+ * @param {string} deps.project Google Cloud project name.
+ * @param {string} deps.resolvedUrlMap CDN URL map.
+ * @param {string} deps.resolvedCdnHost CDN host header.
+ * @param {() => string} deps.randomUUID Request ID generator.
+ * @param {string} deps.token Metadata access token.
+ * @param {string} deps.path CDN path to invalidate.
+ * @returns {Promise<unknown>} Response.
  */
 function sendInvalidateRequest({
   fetchImpl,
@@ -684,21 +699,16 @@ function logInvalidateError(logger, path, err) {
 }
 
 /**
- * Normalize an error payload into a message string when available.
+ * Normalize an error payload into a usable message.
  * @param {unknown} err Error object.
  * @returns {string | unknown} Message text or original payload.
  */
 function getLogMessage(err) {
-  if (err && typeof err === 'object') {
-    const message = err.message;
-    if (typeof message === 'string') {
-      return message;
-    } else {
-      return err;
-    }
-  } else {
-    return err;
+  if (err && typeof err === 'object' && typeof err.message === 'string') {
+    return err.message;
   }
+
+  return err;
 }
 
 /**
@@ -726,15 +736,16 @@ function isCronRequest(req) {
 }
 
 /**
- * Run generate and respond.
+ * Run generation and respond appropriately.
  * @param {import('express').Response} res Res.
  * @param {() => Promise<unknown>} generate Generate fn.
  * @returns {Promise<void>} Promise.
  */
-function respondWithGenerate(res, generate) {
-  return generate()
-    .then(() => res.status(200).json({ ok: true }))
-    .catch(err =>
-      res.status(500).json({ error: err?.message || 'generate failed' })
-    );
+async function respondWithGenerate(res, generate) {
+  try {
+    await generate();
+    res.status(200).json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err?.message || 'generate failed' });
+  }
 }

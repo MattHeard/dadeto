@@ -185,8 +185,9 @@ async function fetchVariantSnapshot(db, uid) {
 }
 
 /**
- *
- * @param moderatorSnap
+ * Determine the variant reference linked to a moderator document.
+ * @param {FirestoreDocumentSnapshot} moderatorSnap Moderator document snapshot.
+ * @returns {FirestoreDocumentReference | null} Variant reference or null when not assigned.
  */
 function resolveModeratorVariantRef(moderatorSnap) {
   if (!moderatorSnap.exists) {
@@ -198,14 +199,17 @@ function resolveModeratorVariantRef(moderatorSnap) {
 }
 
 /**
- *
- * @param variantRef
+ * Resolve a variant response payload from the variant reference.
+ * @param {FirestoreDocumentReference} variantRef Variant reference.
+ * @returns {Promise<VariantSnapshot | ResponderResult>} Variant snapshot or error response.
  */
 async function fetchVariantResponse(variantRef) {
   const variantSnap = await variantRef.get();
-  return variantSnap.exists
-    ? { variantSnap, variantRef }
-    : VARIANT_NOT_FOUND_RESPONSE;
+  if (variantSnap.exists) {
+    return { variantSnap, variantRef };
+  }
+
+  return VARIANT_NOT_FOUND_RESPONSE;
 }
 /**
  * Fetches the story title that owns the provided variant reference.
@@ -274,9 +278,10 @@ export function getAllowedOrigins(environmentVariables) {
 }
 
 /**
- *
- * @param environmentType
- * @param playwrightOrigin
+ * Select the allowed origins based on the deployment environment.
+ * @param {'test' | 'prod'} environmentType Resolved environment classification.
+ * @param {string | undefined} playwrightOrigin Optional Playwright-origin override.
+ * @returns {string[]} Approved origins for the current environment.
  */
 function resolveOriginsForEnvironmentType(environmentType, playwrightOrigin) {
   if (environmentType === 'test') {
@@ -287,8 +292,9 @@ function resolveOriginsForEnvironmentType(environmentType, playwrightOrigin) {
 }
 
 /**
- *
- * @param environment
+ * Classify the environment tag into a known environment type.
+ * @param {string | undefined} environment Environment string read from the runtime.
+ * @returns {'test' | 'prod'} Normalized environment type used for routing decisions.
  */
 function classifyEnvironmentType(environment) {
   if (isTestEnvironment(environment)) {

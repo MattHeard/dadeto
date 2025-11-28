@@ -1,0 +1,8 @@
+# Lint warning reduction reflection
+- **Unexpected obstacle:** the sheer number of lint warnings was dominated by missing JSDoc and complexity flags across a handful of deep cloud helpers, so the hardest part was deciding where to invest time without reshaping the whole repo.
+- **Diagnostics/choices:** I captured the existing warnings with `npm run lint`, then incrementally documented and simplified `src/core/cloud/generate-stats/generate-stats-core.js` and `src/core/cloud/get-moderation-variant/get-moderation-variant-core.js` to remove dozens of warnings while leaving the flagged `complexity` rules for later. Maintaining doc hygiene in those modules immediately trimmed ~40 warnings, the largest win with minimal behavior change, while keeping all public APIs stable.
+- **Lessons:** the `complexity` rule counts short-circuit operators (`&&`, `??`, optional chaining) as additional paths, so one quick win can be to avoid nested expressions in favor of small early-return helpers; also, replacing terse ternaries with clearer branches keeps behavior explicit and satisfies `no-ternary` without disabling rules.
+- **Next ideas:** consider carving similar doc and guard-cleanup sweeps through the other large cloud modules or adjusting exported helper signatures (e.g., bundling dependency objects) when complexity warnings persist; note that relaxing complexity thresholds might be necessary once these modules evolve further.
+- **Open questions:** is there appetite for introducing shared doc helpers or types so it is easier to keep 100% JSDoc coverage across the cloud helpers, or should future lint reductions focus on refactoring to reduce `complexity` instead of documenting more?
+
+**Testing:** `npm run lint`, `npm test`
