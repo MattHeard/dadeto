@@ -35,6 +35,8 @@ const {
   createFirebaseInitialization,
 } = assignModerationCore;
 
+const ID_TOKEN_KEY = 'id_token';
+
 describe('createFirebaseInitialization', () => {
   test('should return an object with hasBeenInitialized, markInitialized, and reset methods', () => {
     const initialization = createFirebaseInitialization();
@@ -413,9 +415,11 @@ describe('configureUrlencodedBodyParser', () => {
 
 describe('getBodyFromRequest', () => {
   test('returns the request body when present', () => {
-    const req = { body: { id_token: 'token-value' } };
+    const req = { body: { [ID_TOKEN_KEY]: 'token-value' } };
 
-    expect(getBodyFromRequest(req)).toStrictEqual({ id_token: 'token-value' });
+    expect(getBodyFromRequest(req)).toStrictEqual({
+      [ID_TOKEN_KEY]: 'token-value',
+    });
   });
 
   test('returns undefined when the request body is missing', () => {
@@ -427,7 +431,7 @@ describe('getBodyFromRequest', () => {
 
 describe('getIdTokenFromRequest', () => {
   test('returns the id token when present on the request body', () => {
-    const req = { body: { id_token: 'token-value' } };
+    const req = { body: { [ID_TOKEN_KEY]: 'token-value' } };
 
     expect(getIdTokenFromRequest(req)).toBe('token-value');
   });
@@ -472,7 +476,7 @@ describe('createRunGuards', () => {
     const runGuards = createRunGuards({ verifyIdToken, getUser });
 
     const result = await runGuards({
-      req: { method: 'POST', body: { id_token: 'token' } },
+      req: { method: 'POST', body: { [ID_TOKEN_KEY]: 'token' } },
     });
 
     expect(result).toStrictEqual({
@@ -487,7 +491,7 @@ describe('createRunGuards', () => {
     const runGuards = createRunGuards({ verifyIdToken, getUser });
 
     const result = await runGuards({
-      req: { method: 'POST', body: { id_token: 'token' } },
+      req: { method: 'POST', body: { [ID_TOKEN_KEY]: 'token' } },
     });
 
     expect(result).toStrictEqual({
@@ -500,7 +504,7 @@ describe('createRunGuards', () => {
     const runGuards = createRunGuards({ verifyIdToken, getUser: jest.fn() });
 
     const result = await runGuards({
-      req: { method: 'POST', body: { id_token: 'token' } },
+      req: { method: 'POST', body: { [ID_TOKEN_KEY]: 'token' } },
     });
 
     expect(result).toStrictEqual({
@@ -514,7 +518,7 @@ describe('createRunGuards', () => {
     const runGuards = createRunGuards({ verifyIdToken, getUser });
 
     const result = await runGuards({
-      req: { method: 'POST', body: { id_token: 'token' } },
+      req: { method: 'POST', body: { [ID_TOKEN_KEY]: 'token' } },
     });
 
     expect(result).toStrictEqual({
@@ -528,7 +532,7 @@ describe('createRunGuards', () => {
     const getUser = jest.fn().mockResolvedValue(userRecord);
     const runGuards = createRunGuards({ verifyIdToken, getUser });
 
-    const req = { method: 'POST', body: { id_token: 'token' } };
+    const req = { method: 'POST', body: { [ID_TOKEN_KEY]: 'token' } };
     const result = await runGuards({ req });
 
     expect(result).toMatchObject({

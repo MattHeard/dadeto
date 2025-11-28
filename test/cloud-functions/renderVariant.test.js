@@ -8,6 +8,8 @@ import {
 import { mockDoc } from 'firebase-admin/firestore';
 import { render } from '../../src/cloud/render-variant/index.js';
 
+const ACCESS_TOKEN_KEY = 'access_token';
+
 /**
  * Create a mock Firestore snapshot for the render function tests.
  * @param {Array<object>} optionData Option documents exposed by the snapshot.
@@ -72,7 +74,7 @@ describe('render', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true });
   });
@@ -131,7 +133,7 @@ describe('render', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce(new Error('network'))
       .mockResolvedValue({ ok: false, status: 500 });

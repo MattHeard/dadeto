@@ -7,6 +7,8 @@ import {
 } from '@google-cloud/storage';
 import { render } from '../../src/cloud/render-contents/index.js';
 
+const ACCESS_TOKEN_KEY = 'access_token';
+
 describe('render contents', () => {
   beforeEach(() => {
     mockSave.mockClear();
@@ -17,7 +19,7 @@ describe('render contents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true });
   });
@@ -47,7 +49,7 @@ describe('render contents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce(new Error('network'))
       .mockResolvedValue({ ok: false, status: 500 });

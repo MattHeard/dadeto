@@ -14,6 +14,8 @@ import {
   productionOrigins,
 } from '../../../../src/core/cloud/render-contents/render-contents-core.js';
 
+const ACCESS_TOKEN_KEY = 'access_token';
+
 describe('buildHtml', () => {
   it('escapes titles and renders list items', () => {
     const html = buildHtml([
@@ -237,7 +239,7 @@ describe('createRenderContents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
 
@@ -307,7 +309,7 @@ describe('createRenderContents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 't' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 't' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
     const randomUUID = jest.fn().mockReturnValue('uuid');
@@ -333,7 +335,7 @@ describe('createRenderContents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 't' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 't' }),
       })
       .mockResolvedValue({ ok: false, status: 500, json: async () => ({}) });
     const randomUUID = jest.fn().mockReturnValue('uuid');
@@ -386,7 +388,7 @@ describe('createRenderContents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 't' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 't' }),
       })
       .mockRejectedValueOnce(thrownError);
     const randomUUID = jest.fn().mockReturnValue('uuid');
@@ -417,7 +419,7 @@ describe('createRenderContents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce(new Error('boom'));
     const randomUUID = jest.fn().mockReturnValue('uuid');
@@ -450,7 +452,7 @@ describe('createRenderContents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -485,7 +487,7 @@ describe('createRenderContents', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
     const randomUUID = jest.fn().mockReturnValue('uuid');
@@ -523,7 +525,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -553,7 +555,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce('boom');
 

@@ -22,6 +22,8 @@ import {
   buildAltsHtml,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
+const ACCESS_TOKEN_KEY = 'access_token';
+
 describe('createInvalidatePaths', () => {
   it('returns early when paths are not provided', async () => {
     const fetchFn = jest.fn();
@@ -41,7 +43,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce(new Error('boom'));
 
@@ -68,7 +70,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce(new Error('network'));
 
@@ -88,7 +90,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce(rawError);
 
@@ -115,7 +117,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockRejectedValueOnce('boom');
 
@@ -139,7 +141,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -169,7 +171,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -194,7 +196,7 @@ describe('createInvalidatePaths', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({
         ok: true,
@@ -986,7 +988,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({
         ok: true,
@@ -1258,7 +1260,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
 
@@ -1341,7 +1343,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
     const randomUUID = jest.fn(() => 'uuid');
@@ -1417,7 +1419,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
     const randomUUID = jest.fn(() => 'uuid');
@@ -1519,7 +1521,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
 
@@ -1685,7 +1687,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
 
@@ -1785,7 +1787,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
 
@@ -1901,7 +1903,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
 
@@ -1995,7 +1997,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
     const randomUUID = jest.fn(() => 'uuid');
@@ -2089,7 +2091,7 @@ describe('createRenderVariant', () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'token' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
       })
       .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
 
