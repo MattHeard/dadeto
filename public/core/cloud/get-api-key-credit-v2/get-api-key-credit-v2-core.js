@@ -321,7 +321,11 @@ function getCreditFromSnapshot(snap) {
     return null;
   }
 
-  const data = typeof snap.data === 'function' ? snap.data() : undefined;
+  let data;
+  if (typeof snap.data === 'function') {
+    data = snap.data();
+  }
+
   if (data && typeof data.credit === 'number') {
     return data.credit;
   }

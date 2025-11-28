@@ -65,6 +65,17 @@ describe('createFetchCredit', () => {
     const fetchCredit = createFetchCredit(database);
     await expect(fetchCredit('user-999')).resolves.toBe(0);
   });
+
+  it('returns zero when snapshot data is not a function', async () => {
+    const snapshot = {
+      exists: true,
+      data: { credit: 42 },
+    };
+    const database = createDatabaseMock(snapshot);
+
+    const fetchCredit = createFetchCredit(database);
+    await expect(fetchCredit('user-abc')).resolves.toBe(0);
+  });
 });
 
 describe('getApiKeyCreditSnapshot', () => {
