@@ -322,7 +322,6 @@ describe('submit-new-story core', () => {
 
     it('passes non-CORS errors to the next middleware', () => {
       const handler = createCorsErrorHandler();
-      const status = jest.fn();
       const json = jest.fn();
       const res = { status: jest.fn().mockReturnValue({ json }) };
       const next = jest.fn();

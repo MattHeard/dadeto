@@ -1,8 +1,4 @@
-import {
-  createTriggerStats,
-  createShowMessage,
-  getStatusParagraph,
-} from '../../../../src/core/browser/admin-core.js';
+import { createTriggerStats } from '../../../../src/core/browser/admin-core.js';
 
 describe('createTriggerStats', () => {
   let mockGoogleAuthModule;

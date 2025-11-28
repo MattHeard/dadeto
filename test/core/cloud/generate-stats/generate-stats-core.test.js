@@ -452,10 +452,6 @@ describe('createGenerateStatsCore', () => {
 
   describe('generate', () => {
     it('should generate and save HTML, then invalidate paths', async () => {
-      const mockStoryCountFn = () => Promise.resolve(1);
-      const mockPageCountFn = () => Promise.resolve(2);
-      const mockUnmoderatedPageCountFn = () => Promise.resolve(0);
-      const mockTopStoriesFn = () => Promise.resolve([]);
       const mockStorageInstance = {
         bucket: () => mockStorageInstance,
         file: () => mockStorageInstance,

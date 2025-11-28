@@ -251,7 +251,7 @@ describe('createProcessNewPageHandler', () => {
 
   it('creates a new variant for a direct page submission', async () => {
     const optionDocs = [];
-    const { pageDocRef, storyRef } = createStoryHierarchy({ optionDocs });
+    const { pageDocRef } = createStoryHierarchy({ optionDocs });
 
     const batch = createBatch();
 
@@ -322,7 +322,7 @@ describe('createProcessNewPageHandler', () => {
 
   it('does nothing when the author document already exists', async () => {
     const optionDocs = [];
-    const { pageDocRef, storyRef } = createStoryHierarchy({ optionDocs });
+    const { pageDocRef } = createStoryHierarchy({ optionDocs });
     const batch = createBatch();
     const authorDoc = createAuthorDoc({ exists: true });
 
@@ -662,7 +662,7 @@ describe('createProcessNewPageHandler', () => {
 
   it('recovers when reading a target page fails by creating a replacement page', async () => {
     const optionDocs = [];
-    const { storyRef, pageDocRef, variantDoc } = createStoryHierarchy({
+    const { storyRef, variantDoc } = createStoryHierarchy({
       optionDocs,
     });
 

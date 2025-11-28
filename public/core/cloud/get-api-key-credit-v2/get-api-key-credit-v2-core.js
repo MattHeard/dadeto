@@ -40,16 +40,18 @@ function matchPathUuid(path) {
 }
 
 /**
- *
- * @param match
+ * Extract the UUID capture from a regex match result.
+ * @param {RegExpExecArray | null} match Result of applying the UUID path regex.
+ * @returns {string} Normalized UUID string when the match succeeds.
  */
 function extractUuidFromMatch(match) {
   return sanitizeMatchUuid(match?.[1]);
 }
 
 /**
- *
- * @param value
+ * Normalize the captured UUID value, returning an empty string when invalid.
+ * @param {unknown} value Candidate UUID value.
+ * @returns {string} Valid UUID string or an empty string.
  */
 function sanitizeMatchUuid(value) {
   if (typeof value === 'string') {
@@ -71,14 +73,9 @@ function readUuid(value) {
 }
 
 /**
- * Extract an API key UUID from a request-like object.
- * @param {{
- *   path?: string,
- *   params?: Record<string, unknown>,
- *   query?: Record<string, unknown>,
- * }} [request] Incoming request data.
- * @param resolvers
- * @returns {string} Extracted UUID or an empty string when missing.
+ * Invoke resolvers until one produces a value.
+ * @param {Array<() => string>} resolvers Candidate value resolvers.
+ * @returns {string} First non-empty string returned by a resolver.
  */
 function resolveFirstValue(resolvers) {
   let value = '';
@@ -91,8 +88,13 @@ function resolveFirstValue(resolvers) {
 }
 
 /**
- *
- * @param request
+ * Extract an API key UUID from a request-like object.
+ * @param {{
+ *   path?: string,
+ *   params?: Record<string, unknown>,
+ *   query?: Record<string, unknown>,
+ * }} [request] Incoming request data.
+ * @returns {string} Extracted UUID or an empty string when missing.
  */
 export function extractUuid(request = {}) {
   const resolvers = [
@@ -133,11 +135,17 @@ export function createGetApiKeyCreditV2Handler(deps = {}) {
 }
 
 /**
- *
- * @param root0
- * @param root0.fetchCredit
- * @param root0.getUuid
- * @param root0.logError
+ * Resolve runtime dependencies for the API handler.
+ * @param {{
+ *   fetchCredit: (uuid: string) => Promise<number | null>,
+ *   getUuid?: (request: unknown) => string,
+ *   logError?: (error: unknown) => void,
+ * }} deps Handler dependencies.
+ * @returns {{
+ *   fetchCredit: (uuid: string) => Promise<number | null>,
+ *   resolveUuid: (request: unknown) => string,
+ *   errorLogger: (error: unknown) => void,
+ * }} Runtime helpers for the handler.
  */
 function resolveV2HandlerDependencies({ fetchCredit, getUuid, logError }) {
   ensureFetchCredit(fetchCredit);
@@ -150,8 +158,9 @@ function resolveV2HandlerDependencies({ fetchCredit, getUuid, logError }) {
 }
 
 /**
- *
- * @param fetchCredit
+ * Ensure a fetchCredit dependency is provided.
+ * @param {unknown} fetchCredit Candidate dependency.
+ * @returns {void}
  */
 function ensureFetchCredit(fetchCredit) {
   if (typeof fetchCredit !== 'function') {
@@ -160,8 +169,9 @@ function ensureFetchCredit(fetchCredit) {
 }
 
 /**
- *
- * @param getUuid
+ * Use a custom UUID resolver or default to the internal extractor.
+ * @param {((request: unknown) => string) | undefined} getUuid Optional resolver.
+ * @returns {(request: unknown) => string} UUID resolver to run.
  */
 function resolveUuidDependency(getUuid) {
   if (typeof getUuid === 'function') {
@@ -172,8 +182,9 @@ function resolveUuidDependency(getUuid) {
 }
 
 /**
- *
- * @param logError
+ * Select a logger for handler errors.
+ * @param {(error: unknown) => void | undefined} logError Optional logger.
+ * @returns {(error: unknown) => void} Logger that safely ignores errors.
  */
 function resolveErrorLogger(logError) {
   if (typeof logError === 'function') {
@@ -184,16 +195,18 @@ function resolveErrorLogger(logError) {
 }
 
 /**
- *
- * @param method
+ * Normalize the HTTP method before validation.
+ * @param {unknown} method Candidate HTTP method.
+ * @returns {string} Method string when valid, otherwise an empty string.
  */
 function deriveRequestMethod(method) {
   return typeof method === 'string' ? method : '';
 }
 
 /**
- *
- * @param method
+ * Validate that the method is allowed.
+ * @param {string} method Normalized HTTP method.
+ * @returns {{ status: number, body: string, headers?: Record<string, string> } | null} Error response when invalid.
  */
 function resolveMethodError(method) {
   if (method !== 'GET') {
@@ -208,9 +221,10 @@ function resolveMethodError(method) {
 }
 
 /**
- *
- * @param method
- * @param uuid
+ * Validate the request payload.
+ * @param {string} method Normalized HTTP method.
+ * @param {string} uuid Extracted UUID string.
+ * @returns {{ status: number, body: string, headers?: Record<string, string> } | null} Validation error metadata.
  */
 function resolveRequestValidationError(method, uuid) {
   const methodError = resolveMethodError(method);
@@ -222,9 +236,14 @@ function resolveRequestValidationError(method, uuid) {
 }
 
 /**
- *
- * @param validationError
- * @param onSuccess
+ * Build the response after validation.
+ * @param {{ status: number, body: string, headers?: Record<string, string> } | null} validationError Validation result.
+ * @param {() => {
+ *   status: number,
+ *   body: string | { credit: number },
+ *   headers?: Record<string, string>,
+ * }} onSuccess Success callback returning HTTP metadata.
+ * @returns {{ status: number, body: string | { credit: number }, headers?: Record<string, string> }} HTTP response information.
  */
 function resolveRequestResponse(validationError, onSuccess) {
   if (validationError) {
@@ -235,8 +254,9 @@ function resolveRequestResponse(validationError, onSuccess) {
 }
 
 /**
- *
- * @param uuid
+ * Ensure a UUID string exists and return an error when missing.
+ * @param {string} uuid UUID extracted from the request.
+ * @returns {{ status: number, body: string } | null} Missing UUID error when absent.
  */
 function resolveUuidPresence(uuid) {
   if (!uuid) {
@@ -247,7 +267,8 @@ function resolveUuidPresence(uuid) {
 }
 
 /**
- *
+ * Build the standard missing UUID response.
+ * @returns {{ status: number, body: string }} HTTP error metadata.
  */
 function missingUuidResponse() {
   return {
@@ -257,10 +278,11 @@ function missingUuidResponse() {
 }
 
 /**
- *
- * @param fetchCredit
- * @param uuid
- * @param errorLogger
+ * Fetch credit for a UUID and translate it into a JSON payload.
+ * @param {(uuid: string) => Promise<number | null>} fetchCredit Function to fetch credit totals.
+ * @param {string} uuid UUID used for the lookup.
+ * @param {(error: unknown) => void} errorLogger Logger invoked when fetch attempts fail.
+ * @returns {Promise<{ status: number, body: string | { credit: number } }>} HTTP response metadata.
  */
 async function fetchCreditResponse(fetchCredit, uuid, errorLogger) {
   try {
@@ -273,8 +295,9 @@ async function fetchCreditResponse(fetchCredit, uuid, errorLogger) {
 }
 
 /**
- *
- * @param credit
+ * Format the credit lookup result into an HTTP response.
+ * @param {number | null} credit Credit total returned from Firestore.
+ * @returns {{ status: number, body: string | { credit: number } }} Response metadata.
  */
 function resolveCreditPayload(credit) {
   if (credit === null) {
@@ -291,7 +314,8 @@ function resolveCreditPayload(credit) {
 }
 
 /**
- *
+ * Produce a generic internal error response payload.
+ * @returns {{ status: number, body: string }} HTTP error metadata.
  */
 function internalErrorResponse() {
   return {
@@ -313,8 +337,9 @@ export function createFetchCredit(db) {
 }
 
 /**
- *
- * @param snap
+ * Extract the credit number from a Firestore snapshot.
+ * @param {import('@google-cloud/firestore').DocumentSnapshot} snap Snapshot containing credit data.
+ * @returns {number | null} Stored credit total when present.
  */
 function getCreditFromSnapshot(snap) {
   if (!snap.exists) {
