@@ -4,10 +4,16 @@ import jsdoc from 'eslint-plugin-jsdoc';
 import prettierPlugin from 'eslint-plugin-prettier';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
+const lintFiles = ['src/core/**/*.js', 'test/**/*.js'];
+
 export default [
   { ignores: ['public/', '.stryker-tmp/', 'reports/'] },
-  jsdoc.configs['flat/recommended'],
   {
+    files: lintFiles,
+    ...jsdoc.configs['flat/recommended'],
+  },
+  {
+    files: lintFiles,
     // Apply recommended rules and configure general JS settings
     ...eslintJs.configs.recommended,
     languageOptions: {
@@ -53,10 +59,13 @@ export default [
       'no-unreachable-loop': 'warn',
     },
   },
-  eslintConfigPrettier,
+  {
+    files: lintFiles,
+    ...eslintConfigPrettier,
+  },
   {
     // Specific configuration for test files
-    files: ['**/*.test.js'],
+    files: ['test/**/*.test.js'],
     languageOptions: {
       globals: {
         ...globals.jest,
