@@ -108,7 +108,11 @@ const VARIANT_NOT_FOUND_RESPONSE = { status: 404, body: 'Variant not found' };
  * @throws {TypeError} When the dependency is missing the expected API surface.
  */
 function assertFirestoreInstance(db) {
-  if (!db || typeof db.collection !== 'function') {
+  if (!db) {
+    throw new TypeError('db must provide a collection method');
+  }
+
+  if (typeof db.collection !== 'function') {
     throw new TypeError('db must provide a collection method');
   }
 }
@@ -119,7 +123,11 @@ function assertFirestoreInstance(db) {
  * @throws {TypeError} When the dependency is missing the verifyIdToken method.
  */
 function assertAuthInstance(auth) {
-  if (!auth || typeof auth.verifyIdToken !== 'function') {
+  if (!auth) {
+    throw new TypeError('auth.verifyIdToken must be a function');
+  }
+
+  if (typeof auth.verifyIdToken !== 'function') {
     throw new TypeError('auth.verifyIdToken must be a function');
   }
 }
@@ -144,7 +152,11 @@ function parseAuthorizationHeader(authHeader) {
  */
 function extractBearerToken(value) {
   const match = value.match(/^Bearer (.+)$/);
-  return match ? match[1] : null;
+  if (match) {
+    return match[1];
+  }
+
+  return null;
 }
 /**
  * Reads the Authorization header from an Express-style request object.
@@ -195,7 +207,11 @@ function resolveModeratorVariantRef(moderatorSnap) {
   }
 
   const moderatorData = moderatorSnap.data();
-  return moderatorData ? moderatorData.variant : null;
+  if (moderatorData) {
+    return moderatorData.variant;
+  }
+
+  return null;
 }
 
 /**
@@ -301,20 +317,7 @@ function classifyEnvironmentType(environment) {
     return 'test';
   }
 
-  if (isProdEnvironment(environment)) {
-    return 'prod';
-  }
-
   return 'prod';
-}
-
-/**
- * Check prod environment.
- * @param {string | undefined} environment Environment.
- * @returns {boolean} True if prod.
- */
-function isProdEnvironment(environment) {
-  return environment === 'prod';
 }
 
 /**

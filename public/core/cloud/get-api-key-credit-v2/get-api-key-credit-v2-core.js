@@ -350,11 +350,29 @@ function getCreditFromSnapshot(snap) {
     return null;
   }
 
-  let data;
-  if (typeof snap.data === 'function') {
-    data = snap.data();
+  const data = resolveSnapshotData(snap);
+  return resolveCreditValue(data);
+}
+
+/**
+ * Safely read the Firestore snapshot payload when available.
+ * @param {import('@google-cloud/firestore').DocumentSnapshot} snap Firestore snapshot to inspect.
+ * @returns {Record<string, unknown> | undefined} Document data or undefined when unavailable.
+ */
+function resolveSnapshotData(snap) {
+  if (typeof snap.data !== 'function') {
+    return undefined;
   }
 
+  return snap.data();
+}
+
+/**
+ * Extract the numeric credit value from normalized data.
+ * @param {Record<string, unknown> | undefined} data Data payload.
+ * @returns {number} The stored credit when present, otherwise zero.
+ */
+function resolveCreditValue(data) {
   if (typeof data?.credit === 'number') {
     return data.credit;
   }
