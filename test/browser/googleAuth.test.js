@@ -3,13 +3,6 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 let initGoogleSignIn;
 let signOut;
 
-const encode = obj =>
-  Buffer.from(JSON.stringify(obj))
-    .toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-
 describe('googleAuth', () => {
   beforeEach(async () => {
     global.sessionStorage = {
