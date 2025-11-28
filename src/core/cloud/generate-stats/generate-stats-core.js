@@ -693,10 +693,12 @@ function getLogMessage(err) {
     const message = err.message;
     if (typeof message === 'string') {
       return message;
+    } else {
+      return err;
     }
+  } else {
+    return err;
   }
-
-  return err;
 }
 
 /**

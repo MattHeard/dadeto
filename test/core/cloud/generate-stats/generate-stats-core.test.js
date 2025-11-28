@@ -719,6 +719,22 @@ describe('createGenerateStatsCore', () => {
         rawError
       );
     });
+
+    it('should log primitive rejection values directly', async () => {
+      mockFetchFn.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: 'token' }),
+        })
+      );
+      mockFetchFn.mockImplementationOnce(() => Promise.reject('boom'));
+
+      await core.invalidatePaths(['/path1']);
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        'invalidate /path1 error',
+        'boom'
+      );
+    });
   });
 
   it('throws when fetch implementation is not provided', () => {
