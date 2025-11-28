@@ -411,6 +411,7 @@ describe('createRenderContents', () => {
   it('supports missing consoleError handlers when invalidation throws', async () => {
     const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
     const storage = { bucket: jest.fn(() => bucket) };
+    const consoleError = jest.fn();
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce({
@@ -424,7 +425,7 @@ describe('createRenderContents', () => {
       storage,
       fetchFn,
       randomUUID,
-      consoleError: null,
+      consoleError,
     });
 
     await expect(
@@ -433,6 +434,11 @@ describe('createRenderContents', () => {
         fetchStoryInfo: async () => ({ title: 'One', pageNumber: 1 }),
       })
     ).resolves.toBeNull();
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /index.html error',
+      'boom'
+    );
   });
 
   it('logs failed invalidation responses when provided', async () => {
