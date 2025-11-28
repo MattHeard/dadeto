@@ -674,16 +674,12 @@ function handleInvalidateResponse(res, path, logger) {
 
 /**
  * Log invalidate error.
- * @param {{ error?: (message: string, ...args: any[]) => void }} logger Logger.
+ * @param {{ error: (message: string, ...args: any[]) => void }} logger Logger.
  * @param {string} path Path.
  * @param {unknown} err Error.
  * @returns {void}
  */
 function logInvalidateError(logger, path, err) {
-  if (typeof logger.error !== 'function') {
-    return;
-  }
-
   logger.error(`invalidate ${path} error`, getLogMessage(err));
 }
 
