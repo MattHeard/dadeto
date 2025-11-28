@@ -6,5 +6,6 @@
 - **Open questions:** is there appetite for introducing shared doc helpers or types so it is easier to keep 100% JSDoc coverage across the cloud helpers, or should future lint reductions focus on refactoring to reduce `complexity` instead of documenting more?
 - **Branch coverage note:** Adding a quick smoke test that instantiates `createGenerateStatsCore` without a provided `fetchFn` forced the global `fetch` fallback branch to execute, which took the stats core from 98% branch coverage back to 100% without touching production behavior.
 - **Recent steps:** fleshed out the `assign-moderation-job` environment helpers and snapshot/variant selectors with descriptive `@param`/`@returns` text so the jsdoc complaints there vanish and lint now reports 159 warnings; the remaining warnings are still dominated by complexity guards, so future passes should focus on smaller helper extractions there.
+- **Additional win:** simplified `src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js` by replacing the ternary in `deriveRequestMethod` with an explicit branch and collapsing the snapshot data resolution into a straight sequence; complexity warnings slipped from 160 to 158 while removing the `no-ternary` error for that file.
 
 **Testing:** `npm run lint`, `npm test`

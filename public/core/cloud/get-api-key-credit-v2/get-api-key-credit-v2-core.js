@@ -200,7 +200,11 @@ function resolveErrorLogger(logError) {
  * @returns {string} Method string when valid, otherwise an empty string.
  */
 function deriveRequestMethod(method) {
-  return typeof method === 'string' ? method : '';
+  if (typeof method === 'string') {
+    return method;
+  }
+
+  return '';
 }
 
 /**
@@ -351,7 +355,7 @@ function getCreditFromSnapshot(snap) {
     data = snap.data();
   }
 
-  if (data && typeof data.credit === 'number') {
+  if (typeof data?.credit === 'number') {
     return data.credit;
   }
 
