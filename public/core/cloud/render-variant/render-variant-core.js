@@ -1087,16 +1087,18 @@ function getMessageFromError(error) {
 }
 
 /**
- *
- * @param value
+ * Verify that a value is an object (not null).
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is an object.
  */
 function isObject(value) {
   return Boolean(value && typeof value === 'object');
 }
 
 /**
- *
- * @param error
+ * Extract the `message` property when it exists on an object.
+ * @param {unknown} error Candidate error object.
+ * @returns {string | undefined} The message string if present.
  */
 function extractMessageProperty(error) {
   if (hasStringMessage(error)) {
@@ -1107,8 +1109,9 @@ function extractMessageProperty(error) {
 }
 
 /**
- *
- * @param error
+ * Check that a value exposes a string-valued `message` property.
+ * @param {unknown} error Candidate message holder.
+ * @returns {boolean} True when a string message exists.
  */
 function hasStringMessage(error) {
   if (!isObject(error) || !('message' in error)) {
@@ -1427,8 +1430,9 @@ function extractStoryRef(pageSnap) {
 }
 
 /**
- *
- * @param pageSnap
+ * Return the Firestore reference for a page snapshot.
+ * @param {{ ref?: unknown } | undefined | null} pageSnap Firestore page snapshot.
+ * @returns {object | null} Document reference or null.
  */
 function getPageRef(pageSnap) {
   if (!pageSnap?.ref) {
@@ -1439,8 +1443,9 @@ function getPageRef(pageSnap) {
 }
 
 /**
- *
- * @param pageRef
+ * Derive the story reference that owns a page.
+ * @param {{ parent?: unknown } | null} pageRef Reference to the page document.
+ * @returns {object | null} Story reference when available.
  */
 function resolveStoryFromPageRef(pageRef) {
   const parent = getPageParent(pageRef);
@@ -1452,8 +1457,9 @@ function resolveStoryFromPageRef(pageRef) {
 }
 
 /**
- *
- * @param pageRef
+ * Access the parent reference from a page document.
+ * @param {{ parent?: unknown } | null} pageRef Page reference.
+ * @returns {object | null} Parent reference or null.
  */
 function getPageParent(pageRef) {
   if (!pageRef?.parent) {
@@ -1464,8 +1470,9 @@ function getPageParent(pageRef) {
 }
 
 /**
- *
- * @param parent
+ * Return the grandparent of a reference chain.
+ * @param {{ parent?: unknown } | null} parent Reference whose parent is inspected.
+ * @returns {object | null} Grandparent reference or null when missing.
  */
 function getParentParent(parent) {
   return parent.parent ?? null;
@@ -1658,16 +1665,18 @@ function extractParentRefs(optionRef) {
 }
 
 /**
- *
- * @param optionRef
+ * Retrieve the variant-level ancestor for an option.
+ * @param {{ parent?: unknown } | null | undefined} optionRef Option document reference.
+ * @returns {unknown | null} Ancestor variant reference or null.
  */
 function getParentVariantRef(optionRef) {
   return getAncestorRef(optionRef, 2);
 }
 
 /**
- *
- * @param parentVariantRef
+ * Retrieve the parent page reference for a variant.
+ * @param {{ parent?: unknown } | null | undefined} parentVariantRef Variant reference.
+ * @returns {unknown | null} Page reference ancestor or null.
  */
 function getParentPageRef(parentVariantRef) {
   return getAncestorRef(parentVariantRef, 2);
@@ -1675,9 +1684,9 @@ function getParentPageRef(parentVariantRef) {
 
 /**
  * Walk up a reference chain a fixed number of steps.
- * @param {{ parent?: any } | null | undefined} ref Reference to walk.
+ * @param {{ parent?: unknown } | null | undefined} ref Reference to walk.
  * @param {number} steps Number of parent hops to follow.
- * @returns {any | null} Ancestor reference or null when the chain breaks.
+ * @returns {unknown | null} Ancestor reference or null when the chain breaks.
  */
 function getAncestorRef(ref, steps) {
   if (shouldStopWalking(ref, steps)) {
@@ -1688,20 +1697,20 @@ function getAncestorRef(ref, steps) {
 }
 
 /**
- * Determine whether the walk should stop.
- * @param {{ parent?: any } | null | undefined} ref Reference destination.
- * @param {number} steps Remaining parent hops.
- * @returns {boolean} True when no further walking should occur.
+ * Determine whether the reference walk should end.
+ * @param {{ parent?: unknown } | null | undefined} ref Reference visited.
+ * @param {number} steps Remaining hops allowed.
+ * @returns {boolean} True when no further walking is possible.
  */
 function shouldStopWalking(ref, steps) {
   return !ref || steps === 0;
 }
 
 /**
- * Validate parent refs.
- * @param {object} parentVariantRef Variant ref.
- * @param {object} parentPageRef Page ref.
- * @returns {boolean} True if valid.
+ * Confirm that the required parent references exist.
+ * @param {unknown} parentVariantRef Variant ref candidate.
+ * @param {unknown} parentPageRef Page ref candidate.
+ * @returns {boolean} True when both references are truthy.
  */
 function areParentRefsValid(parentVariantRef, parentPageRef) {
   return Boolean(parentVariantRef) && Boolean(parentPageRef);
@@ -2357,24 +2366,27 @@ function resolvePendingName(variant, context) {
 }
 
 /**
- *
- * @param context
+ * Extract request parameters from the render context.
+ * @param {{ params?: Record<string, string> } | undefined | null} context Rendering context.
+ * @returns {Record<string, string> | undefined} Parameters when available.
  */
 function resolvePendingParams(context) {
   return context?.params;
 }
 
 /**
- *
- * @param params
+ * Read the pending variant identifier from params.
+ * @param {Record<string, string> | undefined} params Parameters bag.
+ * @returns {string | undefined} Variant identifier when present.
  */
 function resolvePendingVariantId(params) {
   return params?.variantId;
 }
 
 /**
- *
- * @param params
+ * Read the pending story identifier from params.
+ * @param {Record<string, string> | undefined} params Parameters bag.
+ * @returns {string | undefined} Story identifier when present.
  */
 function resolvePendingStoryId(params) {
   return params?.storyId;
