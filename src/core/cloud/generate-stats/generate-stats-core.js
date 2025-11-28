@@ -689,7 +689,7 @@ function logInvalidateError(logger, path, err) {
  * @returns {string | unknown} Message text or original payload.
  */
 function getLogMessage(err) {
-  if (err && typeof err === 'object' && err !== null) {
+  if (err && typeof err === 'object') {
     const message = err.message;
     if (typeof message === 'string') {
       return message;
