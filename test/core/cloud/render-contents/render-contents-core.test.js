@@ -224,7 +224,7 @@ describe('createRenderContents', () => {
   });
 
   it('renders pages with provided fetchers and invalidates caches', async () => {
-    const bucketFile = jest.fn(path => ({
+    const bucketFile = jest.fn(() => ({
       save: jest.fn().mockResolvedValue(undefined),
     }));
     const bucket = { file: bucketFile };

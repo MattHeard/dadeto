@@ -1327,10 +1327,6 @@ describe('createRenderVariant', () => {
   });
 
   it('does not fetch root variants when the submission is direct', async () => {
-    const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
-    const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
-    const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
-
     const bucket = {
       file: jest.fn(() => ({
         save: jest.fn().mockResolvedValue(undefined),
@@ -1777,7 +1773,7 @@ describe('createRenderVariant', () => {
 
   it('skips parent url when parent route cannot be constructed', async () => {
     const bucket = {
-      file: jest.fn(path => ({
+      file: jest.fn(() => ({
         save: jest.fn().mockResolvedValue(undefined),
         exists: jest.fn().mockResolvedValue([true]),
       })),
