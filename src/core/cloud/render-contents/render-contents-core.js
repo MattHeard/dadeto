@@ -553,9 +553,6 @@ function logInvalidateResponse(response, path, consoleError) {
  * @returns {void}
  */
 function logInvalidateFailure(path, status, consoleError) {
-  if (!consoleError) {
-    return;
-  }
   consoleError(`invalidate ${path} failed: ${status}`);
 }
 
@@ -567,9 +564,6 @@ function logInvalidateFailure(path, status, consoleError) {
  * @returns {void}
  */
 function handleInvalidateError(error, path, consoleError) {
-  if (!consoleError) {
-    return;
-  }
   consoleError(`invalidate ${path} error`, extractMessageFromError(error));
 }
 
@@ -1286,3 +1280,5 @@ export function buildHandleRenderRequest({
     }
   };
 }
+
+export { handleInvalidateError };

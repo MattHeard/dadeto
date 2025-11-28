@@ -5,6 +5,7 @@ import {
   createFetchStoryInfo,
   createRenderContents,
   createInvalidatePaths,
+  handleInvalidateError,
   getAllowedOrigins,
   createApplyCorsHeaders,
   createValidateRequest,
@@ -516,7 +517,8 @@ describe('createInvalidatePaths', () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  it('ignores logging when invalidation responses are not ok without a logger', async () => {
+  it('logs invalidate failures when a logger is provided', async () => {
+    const consoleError = jest.fn();
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce({
@@ -535,10 +537,14 @@ describe('createInvalidatePaths', () => {
       projectId: 'proj',
       urlMapName: 'map',
       cdnHost: 'cdn.example.com',
+      consoleError,
     });
 
     await expect(invalidatePaths(['/p/1a.html'])).resolves.toBeUndefined();
-    expect(fetchFn).toHaveBeenCalledTimes(2);
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/1a.html failed: 500'
+    );
   });
 
   it('logs raw error values when messages are unavailable', async () => {
@@ -567,6 +573,16 @@ describe('createInvalidatePaths', () => {
       'boom'
     );
     expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports errors when handleInvalidateError is passed a logger', () => {
+    const consoleError = jest.fn();
+    handleInvalidateError(new Error('boom'), '/p/test.html', consoleError);
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'invalidate /p/test.html error',
+      'boom'
+    );
   });
 });
 
