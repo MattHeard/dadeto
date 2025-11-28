@@ -373,8 +373,22 @@ function resolveSnapshotData(snap) {
  * @returns {number} The stored credit when present, otherwise zero.
  */
 function resolveCreditValue(data) {
-  if (typeof data?.credit === 'number') {
-    return data.credit;
+  if (!data) {
+    return 0;
+  }
+
+  return extractNumericCredit(data);
+}
+
+/**
+ * Normalize raw data into a numeric credit value.
+ * @param {Record<string, unknown>} data Data payload containing the credit.
+ * @returns {number} Numeric credit value or zero when absent.
+ */
+function extractNumericCredit(data) {
+  const credit = data.credit;
+  if (typeof credit === 'number') {
+    return credit;
   }
 
   return 0;

@@ -108,11 +108,7 @@ const VARIANT_NOT_FOUND_RESPONSE = { status: 404, body: 'Variant not found' };
  * @throws {TypeError} When the dependency is missing the expected API surface.
  */
 function assertFirestoreInstance(db) {
-  if (!db) {
-    throw new TypeError('db must provide a collection method');
-  }
-
-  if (typeof db.collection !== 'function') {
+  if (!isFirestoreInstance(db)) {
     throw new TypeError('db must provide a collection method');
   }
 }
@@ -123,13 +119,35 @@ function assertFirestoreInstance(db) {
  * @throws {TypeError} When the dependency is missing the verifyIdToken method.
  */
 function assertAuthInstance(auth) {
-  if (!auth) {
+  if (!isAuthInstance(auth)) {
     throw new TypeError('auth.verifyIdToken must be a function');
+  }
+}
+
+/**
+ * Determine whether the Firestore dependency exposes the expected collection API.
+ * @param {FirestoreLike | null | undefined} db Dependency to validate.
+ * @returns {boolean} True when the dependency offers a collection method.
+ */
+function isFirestoreInstance(db) {
+  if (!db) {
+    return false;
   }
 
-  if (typeof auth.verifyIdToken !== 'function') {
-    throw new TypeError('auth.verifyIdToken must be a function');
+  return typeof db.collection === 'function';
+}
+
+/**
+ * Determine whether the auth dependency can verify ID tokens.
+ * @param {AuthLike | null | undefined} auth Authentication helper under inspection.
+ * @returns {boolean} True when verifyIdToken is a function.
+ */
+function isAuthInstance(auth) {
+  if (!auth) {
+    return false;
   }
+
+  return typeof auth.verifyIdToken === 'function';
 }
 
 /**
@@ -202,13 +220,47 @@ async function fetchVariantSnapshot(db, uid) {
  * @returns {FirestoreDocumentReference | null} Variant reference or null when not assigned.
  */
 function resolveModeratorVariantRef(moderatorSnap) {
-  if (!moderatorSnap.exists) {
+  if (isModeratorSnapMissing(moderatorSnap)) {
     return null;
   }
 
-  const moderatorData = moderatorSnap.data();
-  if (moderatorData) {
-    return moderatorData.variant;
+  return extractVariantReference(moderatorSnap.data());
+}
+
+/**
+ * Determine whether the moderator snapshot is missing or unassigned.
+ * @param {FirestoreDocumentSnapshot | null | undefined} moderatorSnap Snapshot to inspect.
+ * @returns {boolean} True when the moderator document is unavailable.
+ */
+function isModeratorSnapMissing(moderatorSnap) {
+  if (!moderatorSnap) {
+    return true;
+  }
+
+  return !moderatorSnap.exists;
+}
+
+/**
+ * Extract the variant reference stored on the moderator document.
+ * @param {Record<string, unknown> | null | undefined} moderatorData Moderator document data.
+ * @returns {FirestoreDocumentReference | null} Assigned variant reference or null.
+ */
+function extractVariantReference(moderatorData) {
+  if (!moderatorData) {
+    return null;
+  }
+
+  return resolveVariantFromData(moderatorData.variant);
+}
+
+/**
+ * Derive the stored variant reference from a raw field value.
+ * @param {FirestoreDocumentReference | null | undefined} variant Raw variant field.
+ * @returns {FirestoreDocumentReference | null} Valid reference or null.
+ */
+function resolveVariantFromData(variant) {
+  if (variant !== undefined) {
+    return variant;
   }
 
   return null;
@@ -286,11 +338,36 @@ function buildOptions(variantRef) {
  * @returns {string[]} List of allowed origins.
  */
 export function getAllowedOrigins(environmentVariables) {
-  const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
-  const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
+  return resolveOriginsForEnvironmentType(
+    classifyEnvironmentType(getEnvironmentTag(environmentVariables)),
+    getPlaywrightOrigin(environmentVariables)
+  );
+}
 
-  const environmentType = classifyEnvironmentType(environment);
-  return resolveOriginsForEnvironmentType(environmentType, playwrightOrigin);
+/**
+ * Read the environment tag from the runtime variables.
+ * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment map.
+ * @returns {string | undefined} Environment tag extracted from the runtime.
+ */
+function getEnvironmentTag(environmentVariables) {
+  if (!environmentVariables) {
+    return undefined;
+  }
+
+  return environmentVariables.DENDRITE_ENVIRONMENT;
+}
+
+/**
+ * Read the optional Playwright origin override from the runtime variables.
+ * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment map.
+ * @returns {string | undefined} Playwright override origin.
+ */
+function getPlaywrightOrigin(environmentVariables) {
+  if (!environmentVariables) {
+    return undefined;
+  }
+
+  return environmentVariables.PLAYWRIGHT_ORIGIN;
 }
 
 /**
@@ -398,13 +475,54 @@ export function createGetModerationVariantResponder({ db, auth }) {
  * @returns {Promise<ResponderResult>} Response payload for the authorized request.
  */
 async function handleAuthorizedRequest({ db, auth, token }) {
-  const { uid, error } = await resolveUidFromToken(auth, token);
+  const uidResult = await resolveUidFromToken(auth, token);
+  const invalidResponse = getInvalidTokenResponseFromResult(uidResult);
 
-  if (error || !uid) {
+  if (invalidResponse) {
+    return invalidResponse;
+  }
+
+  return buildVariantResponse({ db, uid: uidResult.uid });
+}
+
+/**
+ * Return an invalid token response when verification fails.
+ * @param {{ uid: string | null | undefined, error: unknown }} uidResult Result from token verification.
+ * @returns {ResponderResult | null} Response to send or null when the token is valid.
+ */
+function getInvalidTokenResponseFromResult(uidResult) {
+  const errorResponse = getErrorResponse(uidResult.error);
+  if (errorResponse) {
+    return errorResponse;
+  }
+
+  return getMissingUidResponse(uidResult.uid);
+}
+
+/**
+ * Build an invalid token response when an error is present.
+ * @param {unknown} error Error raised by the verification process.
+ * @returns {ResponderResult | null} Response to send when an error exists.
+ */
+function getErrorResponse(error) {
+  if (error) {
     return createInvalidTokenResponse(error);
   }
 
-  return buildVariantResponse({ db, uid });
+  return null;
+}
+
+/**
+ * Build an invalid token response when the UID is missing.
+ * @param {string | null | undefined} uid UID decoded from the token.
+ * @returns {ResponderResult | null} Response to send when the UID is absent.
+ */
+function getMissingUidResponse(uid) {
+  if (!uid) {
+    return createInvalidTokenResponse(null);
+  }
+
+  return null;
 }
 
 /**
@@ -413,13 +531,68 @@ async function handleAuthorizedRequest({ db, auth, token }) {
  * @param {string} token ID token string.
  * @returns {Promise<{ uid: string | undefined | null, error: unknown }>} UID result and any verification error.
  */
-async function resolveUidFromToken(auth, token) {
-  try {
-    const decoded = await auth.verifyIdToken(token);
-    return { uid: decoded?.uid ?? null, error: null };
-  } catch (error) {
-    return { uid: null, error };
+function resolveUidFromToken(auth, token) {
+  return auth
+    .verifyIdToken(token)
+    .then(buildDecodedUidResult)
+    .catch(buildUidErrorResult);
+}
+
+/**
+ * Build the UID result when token verification succeeds.
+ * @param {{ uid?: string | null }} decoded Decoded token payload.
+ * @returns {{ uid: string | null, error: null }} Normalized UID result.
+ */
+function buildDecodedUidResult(decoded) {
+  return { uid: getDecodedUidValue(decoded), error: null };
+}
+
+/**
+ * Extract a UID string from a decoded token payload when available.
+ * @param {{ uid?: string | null } | null | undefined} decoded Decoded token payload.
+ * @returns {string | null} Normalized UID or null when missing.
+ */
+function getDecodedUidValue(decoded) {
+  if (!isDecodedObject(decoded)) {
+    return null;
   }
+
+  return extractStringUid(decoded);
+}
+
+/**
+ * Check whether the decoded payload resembles an object with fields.
+ * @param {unknown} decoded Value returned from decoding the token.
+ * @returns {boolean} True when the decoded value is an object.
+ */
+function isDecodedObject(decoded) {
+  if (!decoded) {
+    return false;
+  }
+
+  return typeof decoded === 'object';
+}
+
+/**
+ * Return the uid field when it is a string.
+ * @param {{ uid?: string | null }} decoded Decoded payload that contains the uid.
+ * @returns {string | null} UID string when valid.
+ */
+function extractStringUid(decoded) {
+  if (typeof decoded.uid === 'string') {
+    return decoded.uid;
+  }
+
+  return null;
+}
+
+/**
+ * Build the UID result when token verification fails.
+ * @param {unknown} error Verification error raised by Firebase Auth.
+ * @returns {{ uid: null, error: unknown }} Error result for the resolver.
+ */
+function buildUidErrorResult(error) {
+  return { uid: null, error };
 }
 
 /**
@@ -430,8 +603,31 @@ async function resolveUidFromToken(auth, token) {
 function createInvalidTokenResponse(error) {
   return {
     ...INVALID_TOKEN_RESPONSE,
-    body: normalizeString(error?.message) || INVALID_TOKEN_RESPONSE.body,
+    body: getInvalidTokenMessage(error),
   };
+}
+
+/**
+ * Normalize an error message for invalid token responses.
+ * @param {unknown} error Error raised while verifying the token.
+ * @returns {string} Message displayed to the client.
+ */
+function getInvalidTokenMessage(error) {
+  const normalized = normalizeString(error?.message);
+  return selectInvalidTokenMessage(normalized);
+}
+
+/**
+ * Choose between a normalized message and the default response body.
+ * @param {string | undefined} message Normalized error text.
+ * @returns {string} Message to return to the client.
+ */
+function selectInvalidTokenMessage(message) {
+  if (message) {
+    return message;
+  }
+
+  return INVALID_TOKEN_RESPONSE.body;
 }
 
 /**
