@@ -1,6 +1,8 @@
 import { jest } from '@jest/globals';
 import { createHandleSubmit } from '../../../../src/core/cloud/submit-new-page/submit-new-page-core.js';
 
+const INCOMING_OPTION_KEY = 'incoming_option';
+
 /**
  * Create a mock request tailored for the submit-new-page handler.
  * @param {object} [body] Body payload provided to the handler.
@@ -36,7 +38,7 @@ describe('createHandleSubmit', () => {
 
     const request = createRequest(
       {
-        incoming_option: ' Option 1 ',
+        [INCOMING_OPTION_KEY]: ' Option 1 ',
         content: 'Line1\r\nLine2',
         author: ' Alice ',
         option0: ' First ',
@@ -80,7 +82,7 @@ describe('createHandleSubmit', () => {
     const handler = createHandleSubmit(deps);
 
     const result = await handler(
-      createRequest({ incoming_option: 'one', page: '2' })
+      createRequest({ [INCOMING_OPTION_KEY]: 'one', page: '2' })
     );
 
     expect(result).toEqual({
@@ -97,7 +99,9 @@ describe('createHandleSubmit', () => {
     deps.parseIncomingOption.mockReturnValue(null);
     const handler = createHandleSubmit(deps);
 
-    const result = await handler(createRequest({ incoming_option: 'bad' }));
+    const result = await handler(
+      createRequest({ [INCOMING_OPTION_KEY]: 'bad' })
+    );
 
     expect(result).toEqual({
       status: 400,
@@ -111,7 +115,9 @@ describe('createHandleSubmit', () => {
     deps.findExistingOption.mockResolvedValue(null);
     const handler = createHandleSubmit(deps);
 
-    const result = await handler(createRequest({ incoming_option: 'missing' }));
+    const result = await handler(
+      createRequest({ [INCOMING_OPTION_KEY]: 'missing' })
+    );
 
     expect(result).toEqual({
       status: 400,

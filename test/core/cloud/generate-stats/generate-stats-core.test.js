@@ -1,4 +1,6 @@
 import { jest } from '@jest/globals';
+
+const ACCESS_TOKEN_KEY = 'access_token';
 import {
   createGenerateStatsCore,
   isDuplicateAppError,
@@ -23,7 +25,6 @@ describe('createGenerateStatsCore', () => {
   let mockUrlMap;
   let mockCryptoModule;
   let core;
-  let mockVerifyAdmin;
 
   let mockConsoleError;
 
@@ -52,18 +53,6 @@ describe('createGenerateStatsCore', () => {
     mockCryptoModule = { randomUUID: () => 'some-uuid' };
     mockConsoleError = jest.fn(); // Initialize mockConsoleError
     const mockConsole = { error: mockConsoleError }; // Create mockConsole object
-
-    // Mock the createVerifyAdmin function
-    mockVerifyAdmin = {
-      verifyToken: token => Promise.resolve({ uid: 'some-admin-uid' }),
-      isAdminUid: decoded => decoded.uid === 'some-admin-uid',
-      sendUnauthorized: (response, message) => {
-        response.status(401).send(message);
-      },
-      sendForbidden: response => {
-        response.status(403).send('Forbidden');
-      },
-    };
 
     core = createGenerateStatsCore({
       db: mockDb,
@@ -227,7 +216,7 @@ describe('createGenerateStatsCore', () => {
     const createFetchMock = ({
       metadataResponse = {
         ok: true,
-        json: async () => ({ access_token: 'token-123' }),
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
       },
       invalidateResponse = { ok: true },
     } = {}) => {
@@ -564,7 +553,7 @@ describe('createGenerateStatsCore', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ access_token: 'token-123' }),
+          json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
         })
         .mockResolvedValueOnce({ ok: true });
 
@@ -613,7 +602,8 @@ describe('createGenerateStatsCore', () => {
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+          json: () =>
+            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
         })
       );
       const token = await core.getAccessTokenFromMetadata();
@@ -638,7 +628,8 @@ describe('createGenerateStatsCore', () => {
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+          json: () =>
+            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
         })
       );
       mockFetchFn.mockImplementationOnce(() =>
@@ -669,7 +660,8 @@ describe('createGenerateStatsCore', () => {
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+          json: () =>
+            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
         })
       );
       mockFetchFn.mockImplementationOnce(() =>
@@ -689,7 +681,8 @@ describe('createGenerateStatsCore', () => {
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: 'test-access-token' }),
+          json: () =>
+            Promise.resolve({ [ACCESS_TOKEN_KEY]: 'test-access-token' }),
         })
       );
       mockFetchFn.mockImplementationOnce(() =>
@@ -708,7 +701,7 @@ describe('createGenerateStatsCore', () => {
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: 'token' }),
+          json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
         })
       );
       mockFetchFn.mockImplementationOnce(() => Promise.reject(rawError));
@@ -724,7 +717,7 @@ describe('createGenerateStatsCore', () => {
       mockFetchFn.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: 'token' }),
+          json: () => Promise.resolve({ [ACCESS_TOKEN_KEY]: 'token' }),
         })
       );
       mockFetchFn.mockImplementationOnce(() => Promise.reject('boom'));
