@@ -146,6 +146,24 @@ describe('createGetModerationVariantResponder', () => {
     ).toThrow(new TypeError('auth.verifyIdToken must be a function'));
   });
 
+  it('requires a Firestore dependency with a collection function', () => {
+    expect(() =>
+      createGetModerationVariantResponder({
+        db: { collection: true },
+        auth: { verifyIdToken: jest.fn() },
+      })
+    ).toThrow(new TypeError('db must provide a collection method'));
+  });
+
+  it('requires an auth dependency with a verifyIdToken function', () => {
+    expect(() =>
+      createGetModerationVariantResponder({
+        db: { collection: jest.fn() },
+        auth: { verifyIdToken: true },
+      })
+    ).toThrow(new TypeError('auth.verifyIdToken must be a function'));
+  });
+
   it('returns a missing authorization response when no header is present', async () => {
     const db = { collection: jest.fn() };
     const auth = { verifyIdToken: jest.fn() };
