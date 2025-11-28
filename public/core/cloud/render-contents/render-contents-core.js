@@ -397,17 +397,19 @@ function buildInvalidationConfig({ projectId, urlMapName, cdnHost }) {
 }
 
 /**
- *
- * @param cdnHost
+ * Return the CDN hostname or the default value when missing.
+ * @param {string | undefined} cdnHost Candidate CDN host value.
+ * @returns {string} Resolved CDN host.
  */
 function resolveCdnHost(cdnHost) {
   return cdnHost || 'www.dendritestories.co.nz';
 }
 
 /**
- *
- * @param projectId
- * @param urlMapName
+ * Build the URL used to invalidate cache entries.
+ * @param {string | undefined} projectId Project ID used to scope the URL.
+ * @param {string | undefined} urlMapName URL map resource name.
+ * @returns {string} Cache invalidation endpoint.
  */
 function buildInvalidateUrl(projectId, urlMapName) {
   const projectSegment = projectId ? `projects/${projectId}` : 'projects';

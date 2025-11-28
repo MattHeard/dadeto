@@ -552,10 +552,11 @@ async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
 }
 
 /**
- *
- * @param authorRef
- * @param batch
- * @param randomUUID
+ * Create the author document when it does not already exist.
+ * @param {import('firebase-admin/firestore').DocumentReference} authorRef Reference to the author document.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used to write the new author record.
+ * @param {() => string} randomUUID Function that generates a UUID for new records.
+ * @returns {Promise<void>} Resolves once the write has been queued.
  */
 async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
   const authorSnap = await authorRef.get();
@@ -575,8 +576,9 @@ function getLatestVariantName(variantsSnap) {
 }
 
 /**
- *
- * @param doc
+ * Read the variant name from a document snapshot.
+ * @param {{ data: () => Record<string, unknown> } | null | undefined} doc Document snapshot to query.
+ * @returns {string} Name of the variant or an empty string when not available.
  */
 function extractVariantNameFromDoc(doc) {
   const data = getDocumentData(doc);

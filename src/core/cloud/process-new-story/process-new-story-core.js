@@ -269,10 +269,11 @@ async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
 }
 
 /**
- *
- * @param authorRef
- * @param batch
- * @param randomUUID
+ * Create an author document when the reference is missing.
+ * @param {import('@google-cloud/firestore').DocumentReference} authorRef Author document reference.
+ * @param {import('@google-cloud/firestore').WriteBatch} batch Write batch used to queue the creation.
+ * @param {() => string} randomUUID UUID generator for new documents.
+ * @returns {Promise<void>} Resolves once the author record has been scheduled for insertion.
  */
 async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
   const authorSnap = await authorRef.get();
