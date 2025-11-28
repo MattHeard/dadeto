@@ -748,6 +748,32 @@ describe('createGenerateStatsCore', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('falls back to the global fetch when no override is provided', () => {
+    const db = { collection: jest.fn(), collectionGroup: jest.fn() };
+    const auth = { verifyIdToken: jest.fn() };
+    const storage = { bucket: jest.fn() };
+    const cryptoModule = { randomUUID: jest.fn() };
+    const originalFetch = globalThis.fetch;
+    const fallbackFetch = jest.fn();
+    globalThis.fetch = fallbackFetch;
+
+    try {
+      const core = createGenerateStatsCore({
+        db,
+        auth,
+        storage,
+        cryptoModule,
+      });
+      expect(core.generate).toEqual(expect.any(Function));
+    } finally {
+      if (originalFetch === undefined) {
+        delete globalThis.fetch;
+      } else {
+        globalThis.fetch = originalFetch;
+      }
+    }
+  });
 });
 
 describe('generate stats helpers', () => {
