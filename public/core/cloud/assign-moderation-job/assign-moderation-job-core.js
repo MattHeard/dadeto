@@ -182,8 +182,9 @@ function getTestOrigins(playwrightOrigin) {
 }
 
 /**
- *
- * @param environment
+ * Determine whether the environment label represents a test deployment.
+ * @param {unknown} environment Environment label from runtime config.
+ * @returns {'test' | 'other'} Normalized environment type for deployment routing.
  */
 function resolveTestEnvironmentType(environment) {
   if (isTestEnvironment(environment)) {
@@ -194,8 +195,9 @@ function resolveTestEnvironmentType(environment) {
 }
 
 /**
- *
- * @param environmentVariables
+ * Determine whether the running deployment is a Playwright test run.
+ * @param {{ DENDRITE_ENVIRONMENT?: string } | undefined} environmentVariables Environment variables exposed to the function.
+ * @returns {boolean} True when the deployment is tagged as a test environment.
  */
 function isTestDeploymentEnvironment(environmentVariables) {
   return (
@@ -569,9 +571,9 @@ export function selectVariantDoc(snapshot) {
 }
 
 /**
- *
- * @param {{ docs?: unknown[] } | undefined} snapshot
- * @returns {unknown[]}
+ * Safely extract document snapshots from a query result.
+ * @param {{ docs?: unknown[] } | undefined} snapshot Firestore query snapshot that may contain docs.
+ * @returns {unknown[]} Document snapshots if present, otherwise an empty array.
  */
 function resolveSnapshotDocs(snapshot) {
   if (!snapshot || !Array.isArray(snapshot.docs)) {
@@ -953,12 +955,12 @@ function resolveUserRecord(context) {
 }
 
 /**
- * Fetch and select variant.
- * @param {object} deps Dependencies.
- * @param deps.fetchVariantSnapshot
- * @param deps.selectVariantDoc
- * @param deps.random
- * @returns {Promise<object>} Variant doc.
+ * Fetch a candidate variant snapshot and resolve the selected variant document.
+ * @param {object} deps Dependencies required for variant resolution.
+ * @param {Function} deps.fetchVariantSnapshot Function that loads a variant snapshot based on the provided candidate.
+ * @param {Function} deps.selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
+ * @param {() => number} deps.random Random number generator used to pick a variant candidate.
+ * @returns {Promise<unknown>} Variant document snapshot resolved for the current moderator.
  */
 async function resolveVariantDoc({
   fetchVariantSnapshot,
