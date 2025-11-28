@@ -234,12 +234,13 @@ describe('createRunVariantQuery', () => {
 
 describe('createCorsOriginFactory', () => {
   test('returns a factory that builds the origin handler from environment variables', () => {
-    const originHandler = jest.fn();
     const environmentVariables = { DENDRITE_ENVIRONMENT: 'test' };
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
     const getEnvironmentVariables = jest
       .fn()
       .mockReturnValue(environmentVariables);
+
+    const originHandler = Symbol('cors-origin-handler');
 
     const createCorsOriginHandlerFn = jest.fn(() => originHandler);
 
@@ -320,7 +321,6 @@ describe('createCreateCorsOriginFromEnvironment', () => {
 
 describe('createCorsOriginFromEnvironment', () => {
   test('resolves the origin handler directly from environment helpers', () => {
-    const originHandler = jest.fn();
     const environmentVariables = { DENDRITE_ENVIRONMENT: 'test' };
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
     const getEnvironmentVariables = jest
