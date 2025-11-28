@@ -265,6 +265,20 @@ describe('createGetModerationVariantResponder', () => {
     expect(db.collection).not.toHaveBeenCalled();
   });
 
+  it('returns invalid token response when the decoded payload is falsy', async () => {
+    const db = { collection: jest.fn() };
+    const auth = { verifyIdToken: jest.fn().mockResolvedValue(null) };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ Authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({
+      status: 401,
+      body: 'Invalid or expired token',
+    });
+    expect(db.collection).not.toHaveBeenCalled();
+  });
+
   it('ignores non-string headers in the header map', async () => {
     const db = { collection: jest.fn() };
     const auth = { verifyIdToken: jest.fn() };
@@ -289,6 +303,18 @@ describe('createGetModerationVariantResponder', () => {
 
     await expect(
       responder(createRequestWithHeaders({ Authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({ status: 404, body: 'No moderation job' });
+  });
+
+  it('returns no job when the moderator snapshot cannot be read', async () => {
+    const db = createDb(undefined);
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
     ).resolves.toEqual({ status: 404, body: 'No moderation job' });
   });
 
