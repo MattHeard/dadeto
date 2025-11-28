@@ -28,8 +28,9 @@ export function normalizeRemoveVariantLoadResult(loadResult) {
 }
 
 /**
- *
- * @param loadResult
+ * Normalize the primitive load result when it is not an object.
+ * @param {*} loadResult Value returned from the page loader.
+ * @returns {{ page: *, variant: * | undefined }} Normalized placeholder.
  */
 function normalizeLoadResultValue(loadResult) {
   if (typeof loadResult !== 'object') {
@@ -40,8 +41,9 @@ function normalizeLoadResultValue(loadResult) {
 }
 
 /**
- *
- * @param loadResult
+ * Normalize the loader payload when the result is already an object.
+ * @param {{ page?: *, variant?: * }} loadResult Loader response.
+ * @returns {{ page: *, variant: * | null }} Normalized reminder.
  */
 function normalizeObjectLoadResult(loadResult) {
   if (!hasPageOrVariant(loadResult)) {
@@ -55,8 +57,9 @@ function normalizeObjectLoadResult(loadResult) {
 }
 
 /**
- *
- * @param value
+ * Determine whether the loader object exposes page or variant helpers.
+ * @param {{ page?: *, variant?: * }} value Loader value.
+ * @returns {boolean} Whether page or variant keys exist.
  */
 function hasPageOrVariant(value) {
   if ('page' in value) {
@@ -66,8 +69,9 @@ function hasPageOrVariant(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize nullable fields to `null`.
+ * @param {*} value Field value.
+ * @returns {*} Null when the value is undefined; otherwise returns the value.
  */
 function normalizeNullableField(value) {
   if (isNullish(value)) {
@@ -77,8 +81,9 @@ function normalizeNullableField(value) {
 }
 
 /**
- *
- * @param value
+ * Check for a nullish value.
+ * @param {*} value Value to evaluate.
+ * @returns {boolean} True when the value is `undefined` or `null`.
  */
 function isNullish(value) {
   return value === undefined || value === null;
@@ -101,8 +106,9 @@ function resolveVariantData({ hasProvidedData, providedData, loadedVariant }) {
 }
 
 /**
- *
- * @param loadedVariant
+ * Resolve the data for a loaded variant when available.
+ * @param {*} loadedVariant Variant data returned by the loader.
+ * @returns {*} The raw variant data when present; otherwise undefined.
  */
 function resolveLoadedVariant(loadedVariant) {
   if (loadedVariant === undefined) {
@@ -337,8 +343,9 @@ function resolvePageRef(snapshot) {
 }
 
 /**
- *
- * @param ref
+ * Resolve the parent page reference from a Firestore reference chain.
+ * @param {{ parent?: { parent?: * } } | null | undefined} ref Reference object.
+ * @returns {*} The grandparent reference when available or `null`.
  */
 function resolveParentPageRef(ref) {
   if (!hasParentWithGrandparent(ref)) {
@@ -368,8 +375,9 @@ export function getVariantVisibility(snapshot) {
 }
 
 /**
- *
- * @param snapshot
+ * Resolve snapshot data when the Firestore snapshot exposes a data method.
+ * @param {{ data?: () => * } | null | undefined} snapshot Snapshot to inspect.
+ * @returns {*} The snapshot data or `null` when missing.
  */
 function resolveSnapshotData(snapshot) {
   if (!snapshot || typeof snapshot.data !== 'function') {
@@ -380,8 +388,9 @@ function resolveSnapshotData(snapshot) {
 }
 
 /**
- *
- * @param data
+ * Extract the numeric visibility value from the snapshot data.
+ * @param {{ visibility?: number } | null | undefined} data Visibility payload.
+ * @returns {number} The visibility score or zero when unavailable.
  */
 function extractVisibility(data) {
   if (data && typeof data.visibility === 'number') {

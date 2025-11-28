@@ -157,8 +157,9 @@ export function refFromSnap(snap) {
 }
 
 /**
- *
- * @param snap
+ * Extract the first document reference from a query snapshot.
+ * @param {import('firebase-admin/firestore').QuerySnapshot | null | undefined} snap Query snapshot.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference or null.
  */
 function getDocRefFromSnapshot(snap) {
   if (!snap || !Array.isArray(snap.docs)) {
@@ -169,8 +170,9 @@ function getDocRefFromSnapshot(snap) {
 }
 
 /**
- *
- * @param doc
+ * Pick the reference from a Firestore document.
+ * @param {import('firebase-admin/firestore').QueryDocumentSnapshot | null | undefined} doc Document snapshot.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference.
  */
 function getDocRef(doc) {
   return doc?.ref ?? null;
@@ -423,10 +425,9 @@ function parseValidRequest(req, res, parseRequestBody) {
 }
 
 /**
- *
- * @param root0
- * @param root0.pageNumber
- * @param root0.variantName
+ * Validate that the parsed request contains numeric page and variant values.
+ * @param {{ pageNumber?: unknown, variantName?: unknown }} payload Parsed body result.
+ * @returns {boolean} True when the page number and variant name are valid.
  */
 function isValidMarkRequest({ pageNumber, variantName }) {
   return Number.isInteger(pageNumber) && Boolean(variantName);
@@ -492,8 +493,9 @@ export function parseMarkVariantRequestBody(body) {
 }
 
 /**
- *
- * @param candidate
+ * Resolve the variant name from the incoming payload.
+ * @param {unknown} candidate Candidate variant identifier.
+ * @returns {string} Variant name or empty string.
  */
 function resolveVariantName(candidate) {
   return typeof candidate === 'string' ? candidate : '';
@@ -545,23 +547,15 @@ function assertFunctionDependency(name, candidate) {
 }
 
 /**
- * Process handleRequest with reduced branching.
- * @param {object} params Params.
- * @param params.req
- * @param params.res
- * @param params.deps
- * @param params.verifyAdmin
- * @param params.markVariantDirty
- * @param params.parseRequestBody
- * @param params.allowedMethod
- * @param req
- * @param res
- * @param deps
- * @param verifyAdmin
- * @param markVariantDirty
- * @param parseRequestBody
- * @param allowedMethod
- * @returns {Promise<void>} Promise.
+ * Core handler workflow that validates the request, authorizes the caller, and marks the variant dirty.
+ * @param {import('express').Request} req Express request.
+ * @param {import('express').Response} res Express response.
+ * @param {object} deps Optional overrides.
+ * @param {Function} verifyAdmin Admin verification function.
+ * @param {Function} markVariantDirty Variant mutation helper.
+ * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Request parser.
+ * @param {string} allowedMethod Allowed HTTP method.
+ * @returns {Promise<void>} Promise resolved once handling completes.
  */
 async function processHandleRequest(
   req,

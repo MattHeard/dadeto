@@ -810,15 +810,15 @@ export function createInvalidatePaths({
 }
 
 /**
- * Implementation of invalidate paths creator.
- * @param {object} root0 Dependencies.
- * @param {Function} root0.fetchFn Fetch function.
- * @param {string} root0.projectId Project ID.
- * @param {string} root0.urlMapName URL map name.
- * @param {string} root0.cdnHost CDN host.
- * @param {Function} root0.randomUUID UUID generator.
- * @param {Function} root0.consoleError Error logger.
- * @returns {Function} Invalidation function.
+ * Build the CDN invalidation helper configured with the resolved dependencies.
+ * @param {object} deps Invalidation dependencies.
+ * @param {(input: string, init?: object) => Promise<Response>} deps.fetchFn Fetch implementation.
+ * @param {string | undefined} deps.projectId Optional GCP project identifier.
+ * @param {string | undefined} deps.urlMapName URL map name used for the CDN.
+ * @param {string | undefined} deps.cdnHost CDN host that will be purged.
+ * @param {() => string} deps.randomUUID UUID generator used for request IDs.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [deps.consoleError] Optional error logger.
+ * @returns {(paths: string[]) => Promise<void>} Handler that invalidates the provided paths.
  */
 function createInvalidatePathsImpl({
   fetchFn,
@@ -846,13 +846,9 @@ function createInvalidatePathsImpl({
 }
 
 /**
- *
- * @param root0
- * @param root0.url
- * @param root0.host
- * @param root0.fetchFn
- * @param root0.randomUUID
- * @param root0.consoleError
+ * Create the CDN invalidation handler bound to a resolved URL and host.
+ * @param {{ url: string, host: string, fetchFn: (input: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void }} deps Handler dependencies.
+ * @returns {(paths: string[]) => Promise<void>} Handler that invalidates each path.
  */
 function createInvalidateHandler({
   url,
@@ -877,8 +873,9 @@ function createInvalidateHandler({
 }
 
 /**
- *
- * @param projectId
+ * Resolve the GCP project identifier used by the CDN invalidation URL.
+ * @param {string | undefined} projectId Optional project ID.
+ * @returns {string} Project identifier or empty string when not provided.
  */
 function resolveProjectId(projectId) {
   if (projectId) {
@@ -889,8 +886,9 @@ function resolveProjectId(projectId) {
 }
 
 /**
- *
- * @param urlMapName
+ * Resolve the URL map name for CDN invalidation.
+ * @param {string | undefined} urlMapName Optional URL map override.
+ * @returns {string} URL map name.
  */
 function resolveUrlMapName(urlMapName) {
   if (urlMapName) {
@@ -901,8 +899,9 @@ function resolveUrlMapName(urlMapName) {
 }
 
 /**
- *
- * @param cdnHost
+ * Resolve the CDN host used in invalidation payloads.
+ * @param {string | undefined} cdnHost Optional CDN host override.
+ * @returns {string} CDN hostname.
  */
 function resolveCdnHost(cdnHost) {
   if (cdnHost) {
@@ -913,9 +912,10 @@ function resolveCdnHost(cdnHost) {
 }
 
 /**
- *
- * @param projectId
- * @param urlMapName
+ * Build the complete Compute Engine invalidation URL for a CDN.
+ * @param {string} projectId Resolved project identifier.
+ * @param {string} urlMapName Resolved URL map name.
+ * @returns {string} Compute Engine invalidation endpoint.
  */
 function buildInvalidateUrl(projectId, urlMapName) {
   return `https://compute.googleapis.com/compute/v1/projects/${projectId}/global/urlMaps/${urlMapName}/invalidateCache`;
@@ -1051,9 +1051,10 @@ function logInvalidateResponse(response, path, consoleError) {
 }
 
 /**
- *
- * @param response
- * @param consoleError
+ * Determine if the invalidation response should be logged.
+ * @param {Response} response Fetch response for the invalidation call.
+ * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @returns {boolean} True when the response is not OK and a logger is provided.
  */
 function shouldLogInvalidateResponse(response, consoleError) {
   return !response.ok && Boolean(consoleError);
