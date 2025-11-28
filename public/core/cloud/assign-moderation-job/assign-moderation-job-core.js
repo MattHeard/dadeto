@@ -914,7 +914,15 @@ function createGuardErrorResponse(error) {
  */
 async function resolveGuardContext(runGuards, req) {
   const guardResult = await runGuards({ req });
+  return extractGuardContext(guardResult);
+}
 
+/**
+ * Ensure a guard context is available or throw the associated response.
+ * @param {object} guardResult Guard runner output.
+ * @returns {object} Guard context.
+ */
+function extractGuardContext(guardResult) {
   if (guardResult?.error) {
     throw createGuardErrorResponse(guardResult.error);
   }

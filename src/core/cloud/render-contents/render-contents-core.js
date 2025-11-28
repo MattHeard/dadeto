@@ -648,22 +648,26 @@ export function createRenderContents({
   projectId,
   urlMapName,
   cdnHost,
-  consoleError = console.error,
-  bucketName = DEFAULT_BUCKET_NAME,
-  pageSize = DEFAULT_PAGE_SIZE,
+  consoleError,
+  bucketName,
+  pageSize,
 }) {
   assertStorage(storage);
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
-  const bucket = storage.bucket(bucketName);
+  const resolvedConsoleError = consoleError ?? console.error;
+  const resolvedBucketName = bucketName ?? DEFAULT_BUCKET_NAME;
+  const resolvedPageSize = pageSize ?? DEFAULT_PAGE_SIZE;
+
+  const bucket = storage.bucket(resolvedBucketName);
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     projectId,
     urlMapName,
     cdnHost,
     randomUUID,
-    consoleError,
+    consoleError: resolvedConsoleError,
   });
 
   let fetchTopStoryIds;
@@ -827,7 +831,7 @@ export function createRenderContents({
     const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
     const paths = await publishStoryPages({
       items,
-      pageSize,
+      pageSize: resolvedPageSize,
       bucket,
     });
 

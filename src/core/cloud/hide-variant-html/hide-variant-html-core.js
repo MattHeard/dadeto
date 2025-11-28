@@ -341,11 +341,20 @@ function resolvePageRef(snapshot) {
  * @param ref
  */
 function resolveParentPageRef(ref) {
-  if (!ref || !ref.parent || !ref.parent.parent) {
+  if (!hasParentWithGrandparent(ref)) {
     return null;
   }
 
   return ref.parent.parent;
+}
+
+/**
+ * Detect whether a reference has a grandparent document.
+ * @param {{ parent?: { parent?: unknown } } | null | undefined} ref Reference chain.
+ * @returns {boolean} True when two parent hops exist.
+ */
+function hasParentWithGrandparent(ref) {
+  return Boolean(ref?.parent?.parent);
 }
 
 /**

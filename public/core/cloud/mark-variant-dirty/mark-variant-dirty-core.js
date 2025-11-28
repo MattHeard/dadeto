@@ -11,8 +11,21 @@ const TEST_ENV_PREFIX = 't-';
 export function getAllowedOrigins(environmentVariables) {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const envType = classifyEnvironment(environment);
+  return resolveAllowedOrigins(
+    envType,
+    environmentVariables?.PLAYWRIGHT_ORIGIN
+  );
+}
+
+/**
+ * Select a whitelist based on the detected environment type.
+ * @param {'prod' | 'test' | 'other'} envType Classified environment.
+ * @param {unknown} playwrightOrigin Candidate override for tests.
+ * @returns {string[]} Allowed origins for the environment.
+ */
+function resolveAllowedOrigins(envType, playwrightOrigin) {
   if (envType === 'test') {
-    return resolvePlaywrightOrigin(environmentVariables?.PLAYWRIGHT_ORIGIN);
+    return resolvePlaywrightOrigin(playwrightOrigin);
   }
 
   return productionOrigins;

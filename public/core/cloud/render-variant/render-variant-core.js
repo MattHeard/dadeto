@@ -1679,11 +1679,21 @@ function getParentPageRef(parentVariantRef) {
  * @returns {any | null} Ancestor reference or null when the chain breaks.
  */
 function getAncestorRef(ref, steps) {
-  if (!ref || steps === 0) {
+  if (shouldStopWalking(ref, steps)) {
     return ref ?? null;
   }
 
   return getAncestorRef(ref.parent, steps - 1);
+}
+
+/**
+ * Determine whether the walk should stop.
+ * @param {{ parent?: any } | null | undefined} ref Reference destination.
+ * @param {number} steps Remaining parent hops.
+ * @returns {boolean} True when no further walking should occur.
+ */
+function shouldStopWalking(ref, steps) {
+  return !ref || steps === 0;
 }
 
 /**
