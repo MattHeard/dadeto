@@ -129,15 +129,9 @@ const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
  * @returns {boolean} True when the error represents an existing app instance.
  */
 export function isDuplicateAppError(error) {
-  if (!error) {
-    return false;
-  }
-
-  if (!hasDuplicateIdentifier(error)) {
-    return false;
-  }
-
-  return messageIndicatesDuplicate(error);
+  return Boolean(
+    error && hasDuplicateIdentifier(error) && messageIndicatesDuplicate(error)
+  );
 }
 
 /**
@@ -172,9 +166,21 @@ export function initializeFirebaseApp(initFn) {
   try {
     initFn();
   } catch (error) {
-    if (!isDuplicateAppError(error)) {
-      throw error;
-    }
+    handleInitializeError(error);
+  }
+}
+
+/**
+ *
+ * @param error
+ */
+/**
+ * Rethrow non-duplicate app errors during initialization.
+ * @param {unknown} error Error raised while initializing Firebase.
+ */
+function handleInitializeError(error) {
+  if (!isDuplicateAppError(error)) {
+    throw error;
   }
 }
 
@@ -195,11 +201,24 @@ function isNonEmptyString(value) {
  * @returns {ProcessEnv | Record<string, string | undefined> | null} Normalized env map.
  */
 function resolveEnv(env) {
-  if (!env || typeof env !== 'object') {
+  if (!isEnvLike(env)) {
     return null;
   }
 
   return env;
+}
+
+/**
+ *
+ * @param env
+ */
+/**
+ * Check whether the provided value resembles an environment object.
+ * @param {unknown} env Candidate value extracted from runtime.
+ * @returns {env is Record<string, string | undefined>} True when the value is a non-null object.
+ */
+function isEnvLike(env) {
+  return Boolean(env) && typeof env === 'object';
 }
 
 /**
@@ -225,6 +244,19 @@ function resolveProjectId(resolved) {
 }
 
 /**
+ *
+ * @param {...any} candidates
+ */
+/**
+ * Return the first non-empty string among the supplied candidates.
+ * @param {...(string | undefined)} candidates Candidate strings to inspect.
+ * @returns {string | undefined} The first valid string, or undefined when none exist.
+ */
+function getFirstNonEmptyString(...candidates) {
+  return candidates.find(isNonEmptyString);
+}
+
+/**
  * Resolve the URL map identifier used for CDN invalidations.
  * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} URL map identifier.
@@ -241,11 +273,7 @@ export function getUrlMapFromEnv(env) {
  */
 export function getCdnHostFromEnv(env) {
   const resolved = resolveEnv(env);
-  const candidate = resolved?.CDN_HOST;
-  if (isNonEmptyString(candidate)) {
-    return candidate;
-  }
-  return DEFAULT_CDN_HOST;
+  return getFirstNonEmptyString(resolved?.CDN_HOST) ?? DEFAULT_CDN_HOST;
 }
 
 /**
@@ -355,10 +383,7 @@ export function createGenerateStatsCore({
       .orderBy('variantCount', 'desc')
       .limit(limit)
       .get();
-    const stories = await Promise.all(
-      statsSnap.docs.map(doc => buildTopStoryFromStatsDoc(dbRef, doc))
-    );
-    return stories;
+    return buildTopStoriesFromDocs(dbRef, statsSnap.docs);
   }
 
   /**
@@ -370,9 +395,32 @@ export function createGenerateStatsCore({
   async function buildTopStoryFromStatsDoc(dbRef, statsDoc) {
     const storyDoc = await dbRef.collection('stories').doc(statsDoc.id).get();
     return {
-      title: storyDoc.data()?.title || statsDoc.id,
+      title: getStoryTitle(storyDoc.data(), statsDoc.id),
       variantCount: statsDoc.data().variantCount || 0,
     };
+  }
+
+  /**
+   * Build metadata payloads for a collection of stats documents.
+   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance used for lookups.
+   * @param {import('firebase-admin/firestore').QueryDocumentSnapshot[]} docs Story stats documents to process.
+   * @returns {Promise<Array<{ title: string, variantCount: number }>>} Top story metadata.
+   */
+  function buildTopStoriesFromDocs(dbRef, docs) {
+    return Promise.all(
+      docs.map(statDoc => buildTopStoryFromStatsDoc(dbRef, statDoc))
+    );
+  }
+
+  /**
+   * Normalize the title stored on a story document.
+   * @param {{ title?: unknown }} data Document data read from Firestore.
+   * @param {string} fallback Identifier used when the title is missing.
+   * @returns {string} Story title.
+   */
+  function getStoryTitle(data, fallback) {
+    const title = data?.title;
+    return isNonEmptyString(title) ? title : fallback;
   }
 
   /**
@@ -383,11 +431,25 @@ export function createGenerateStatsCore({
     const response = await fetchImpl(metadataTokenUrl, {
       headers: { 'Metadata-Flavor': 'Google' },
     });
-    if (!response.ok) {
-      throw new Error(`metadata token: HTTP ${response.status}`);
-    }
+    validateMetadataResponse(response);
     const { access_token: accessToken } = await response.json();
     return accessToken;
+  }
+
+  /**
+   *
+   * @param response
+   */
+  /**
+   * Ensure the metadata response succeeded.
+   * @param {Response} response Metadata server response.
+   */
+  function validateMetadataResponse(response) {
+    if (response.ok) {
+      return;
+    }
+
+    throw new Error(`metadata token: HTTP ${response.status}`);
   }
 
   /**
@@ -554,7 +616,7 @@ export function createGenerateStatsCore({
  * @returns {Record<string, string | undefined>} Env object.
  */
 function normalizeEnvObject(env) {
-  if (!(env && typeof env === 'object')) {
+  if (!isEnvLike(env)) {
     return {};
   }
 
@@ -590,6 +652,14 @@ function resolveFetchImpl(fetchFn) {
     return fetchFn;
   }
 
+  return resolveGlobalFetch();
+}
+
+/**
+ * Obtain a globally available `fetch` implementation when no override is provided.
+ * @returns {typeof fetch} Bound fetch implementation.
+ */
+function resolveGlobalFetch() {
   if (typeof globalThis.fetch === 'function') {
     return globalThis.fetch.bind(globalThis);
   }
@@ -682,9 +752,27 @@ function sendInvalidateRequest({
  * @returns {void}
  */
 function handleInvalidateResponse(res, path, logger) {
-  if (!res.ok) {
-    logger.error?.(`invalidate ${path} failed: ${res.status}`);
+  if (res.ok) {
+    return;
   }
+
+  logInvalidateFailure(logger, path, res.status);
+}
+
+/**
+ *
+ * @param logger
+ * @param path
+ * @param status
+ */
+/**
+ * Emit a log message when an invalidation fails.
+ * @param {{ error?: (message: string, ...args: any[]) => void }} logger Logger used to surface problems.
+ * @param {string} path CDN path that triggered the failure.
+ * @param {number} status HTTP status code returned by the failed invalidation.
+ */
+function logInvalidateFailure(logger, path, status) {
+  logger.error?.(`invalidate ${path} failed: ${status}`);
 }
 
 /**
@@ -704,11 +792,26 @@ function logInvalidateError(logger, path, err) {
  * @returns {string | unknown} Message text or original payload.
  */
 function getLogMessage(err) {
-  if (err && typeof err === 'object' && typeof err.message === 'string') {
+  if (isErrorWithMessage(err)) {
     return err.message;
   }
 
   return err;
+}
+
+/**
+ *
+ * @param err
+ */
+/**
+ * Decide whether the candidate payload exposes a string message.
+ * @param {unknown} err Potential error value.
+ * @returns {err is { message: string }} True when the payload carries a message.
+ */
+function isErrorWithMessage(err) {
+  return Boolean(
+    err && typeof err === 'object' && typeof err.message === 'string'
+  );
 }
 
 /**

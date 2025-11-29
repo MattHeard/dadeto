@@ -5,6 +5,7 @@
 - Focused on the `get-moderation-variant` path: simplified the Firestore/auth guards, split the UID resolution flow (`buildDecodedUidResult` + helpers) to keep cyclomatic complexity under the 2‑limit, and routed token responses through small helpers so the linter saw only single-branch functions.
 - Added a pair of helpers around the `upload-report` script to isolate directory recursion, error logging, and logging payloads so the complexity warning went away and the new functions could be documented.
 - Split `resolveCreditValue` so the numeric guard lives in its own helper, and added JSDoc comments for every new utility so the JSdoc rules stay happy.
+- Restructured `generate-stats-core.js`: split `getTopStories`/`buildTopStoryFromStatsDoc`, normalized CDN/URL lookups via helper collection logic, added response validation utilities, and documented the new helpers so the rule set no longer flagged them. This brought the total lint warnings down from 170 to 141 while keeping feature behavior unchanged.
 - Verified the full suite (`npm run lint` and `npm test`), confirming the refactors didn’t regress behavior or coverage.
 
 ## Lessons learned & follow-ups

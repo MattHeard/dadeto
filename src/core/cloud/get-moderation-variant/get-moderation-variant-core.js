@@ -566,11 +566,7 @@ function getDecodedUidValue(decoded) {
  * @returns {boolean} True when the decoded value is an object.
  */
 function isDecodedObject(decoded) {
-  if (!decoded) {
-    return false;
-  }
-
-  return typeof decoded === 'object';
+  return Boolean(decoded) && typeof decoded === 'object';
 }
 
 /**
