@@ -1114,11 +1114,7 @@ function extractMessageProperty(error) {
  * @returns {boolean} True when a string message exists.
  */
 function hasStringMessage(error) {
-  if (!isObject(error) || !('message' in error)) {
-    return false;
-  }
-
-  return typeof error.message === 'string';
+  return isObject(error) && typeof error.message === 'string';
 }
 
 /**
@@ -1435,11 +1431,7 @@ function extractStoryRef(pageSnap) {
  * @returns {object | null} Document reference or null.
  */
 function getPageRef(pageSnap) {
-  if (!pageSnap?.ref) {
-    return null;
-  }
-
-  return pageSnap.ref;
+  return pageSnap?.ref ?? null;
 }
 
 /**
@@ -1462,11 +1454,7 @@ function resolveStoryFromPageRef(pageRef) {
  * @returns {object | null} Parent reference or null.
  */
 function getPageParent(pageRef) {
-  if (!pageRef?.parent) {
-    return null;
-  }
-
-  return pageRef.parent;
+  return pageRef?.parent ?? null;
 }
 
 /**
@@ -1689,21 +1677,15 @@ function getParentPageRef(parentVariantRef) {
  * @returns {unknown | null} Ancestor reference or null when the chain breaks.
  */
 function getAncestorRef(ref, steps) {
-  if (shouldStopWalking(ref, steps)) {
-    return ref ?? null;
+  let current = ref;
+  let remaining = steps;
+
+  while (current && remaining > 0) {
+    current = current.parent;
+    remaining -= 1;
   }
 
-  return getAncestorRef(ref.parent, steps - 1);
-}
-
-/**
- * Determine whether the reference walk should end.
- * @param {{ parent?: unknown } | null | undefined} ref Reference visited.
- * @param {number} steps Remaining hops allowed.
- * @returns {boolean} True when no further walking is possible.
- */
-function shouldStopWalking(ref, steps) {
-  return !ref || steps === 0;
+  return current ?? null;
 }
 
 /**

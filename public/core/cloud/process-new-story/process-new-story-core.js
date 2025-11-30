@@ -31,7 +31,11 @@ export function resetFindAvailablePageNumberResolver() {
  * @returns {Record<string, unknown> | null} Submission payload when available.
  */
 function getSubmissionData(snapshot) {
-  return typeof snapshot?.data === 'function' ? snapshot.data() : null;
+  if (typeof snapshot?.data !== 'function') {
+    return null;
+  }
+
+  return snapshot.data();
 }
 
 /**
@@ -77,7 +81,11 @@ function resolveAuthorRef(db, authorId) {
  * @returns {string | null} Identifier when valid.
  */
 function normalizeIdentifier(value) {
-  return isNonEmptyString(value) ? value : null;
+  if (!isNonEmptyString(value)) {
+    return null;
+  }
+
+  return value;
 }
 
 /**
@@ -125,7 +133,11 @@ function resolvePreferredStoryIdentifier(snapshot, context) {
  * @returns {string | null} Chosen identifier.
  */
 function selectPreferredIdentifier(primary, fallback) {
-  return primary || fallback();
+  if (primary) {
+    return primary;
+  }
+
+  return fallback();
 }
 
 /**

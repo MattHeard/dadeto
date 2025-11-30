@@ -203,14 +203,14 @@ describe('admin-core additional coverage', () => {
       const authProvider = { credential: jest.fn() };
       const signInWithCredential = jest.fn();
 
-      const deps = buildGoogleSignInDeps(
+      const deps = buildGoogleSignInDeps({
         auth,
         storage,
         logger,
-        globalScope,
+        globalObject: globalScope,
         authProvider,
-        signInWithCredential
-      );
+        signInCredential: signInWithCredential,
+      });
 
       expect(deps.googleAccountsId()).toBe(
         globalScope.window.google.accounts.id
@@ -232,14 +232,14 @@ describe('admin-core additional coverage', () => {
 
       delete globalThis.window;
 
-      const deps = buildGoogleSignInDeps(
+      const deps = buildGoogleSignInDeps({
         auth,
         storage,
         logger,
-        undefined,
+        globalObject: undefined,
         authProvider,
-        jest.fn()
-      );
+        signInCredential: jest.fn(),
+      });
       expect(() => deps.matchMedia('(prefers-color-scheme: dark)')).toThrow(
         new Error('window is not available')
       );

@@ -517,7 +517,8 @@ function normalizeCorsErrorHandlerOptions(options) {
 export function createCorsErrorHandler(options) {
   const normalized = normalizeCorsErrorHandlerOptions(options);
 
-  return function corsErrorHandler(err, _req, res, next) {
+  return function corsErrorHandler(...args) {
+    const [err, , res, next] = args;
     if (isCorsError(err)) {
       sendCorsError(res, normalized.status, normalized.body);
       return;

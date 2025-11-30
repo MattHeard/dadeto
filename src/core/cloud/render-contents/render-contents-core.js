@@ -268,12 +268,11 @@ function buildStoryInfoFromSnap(storySnap) {
  * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
  */
 async function resolveStoryInfoFromStory(story) {
-  const rootRef = story?.rootPage;
-  if (!rootRef) {
+  if (!story || !story.rootPage) {
     return null;
   }
 
-  return resolveStoryInfoFromRoot(rootRef, story);
+  return resolveStoryInfoFromRoot(story.rootPage, story);
 }
 
 /**
@@ -410,23 +409,50 @@ function resolveCdnHost(cdnHost) {
 }
 
 /**
+ *
+ * @param value
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/**
  * Build the URL used to invalidate cache entries.
  * @param {string | undefined} projectId Project ID used to scope the URL.
  * @param {string | undefined} urlMapName URL map resource name.
  * @returns {string} Cache invalidation endpoint.
  */
 function buildInvalidateUrl(projectId, urlMapName) {
-  let projectSegment = 'projects';
-  if (projectId) {
-    projectSegment = `projects/${projectId}`;
-  }
-
-  let urlMap = 'prod-dendrite-url-map';
-  if (urlMapName) {
-    urlMap = urlMapName;
-  }
+  const projectSegment = resolveProjectSegment(projectId);
+  const urlMap = resolveUrlMapName(urlMapName);
 
   return `https://compute.googleapis.com/compute/v1/${projectSegment}/global/urlMaps/${urlMap}/invalidateCache`;
+}
+
+/**
+ * Resolve the project segment used in the invalidation URL.
+ * @param {string | undefined} projectId Candidate project ID.
+ * @returns {string} Resolved project segment.
+ */
+function resolveProjectSegment(projectId) {
+  if (!isNonEmptyString(projectId)) {
+    return 'projects';
+  }
+
+  return `projects/${projectId}`;
+}
+
+/**
+ * Resolve the URL map identifier for invalidation.
+ * @param {string | undefined} urlMapName Candidate map name.
+ * @returns {string} Resolved URL map name.
+ */
+function resolveUrlMapName(urlMapName) {
+  if (!isNonEmptyString(urlMapName)) {
+    return 'prod-dendrite-url-map';
+  }
+
+  return urlMapName;
 }
 
 /**
@@ -874,7 +900,8 @@ function createFetcherFromDatabase(database, factory, setCache) {
  */
 export function getAllowedOrigins(environmentVariables) {
   const configuredOrigins =
-    environmentVariables?.RENDER_CONTENTS_ALLOWED_ORIGINS;
+    environmentVariables &&
+    environmentVariables.RENDER_CONTENTS_ALLOWED_ORIGINS;
   const parsedOrigins = parseAllowedOrigins(configuredOrigins);
   return chooseAllowedOrigins(parsedOrigins);
 }
@@ -938,10 +965,11 @@ export function createApplyCorsHeaders({ allowedOrigins }) {
  * @returns {string | undefined} Origin header string, when present.
  */
 function resolveOriginHeader(req) {
-  if (typeof req?.get === 'function') {
-    return req.get('Origin');
+  if (!req || typeof req.get !== 'function') {
+    return undefined;
   }
-  return undefined;
+
+  return req.get('Origin');
 }
 
 /**
@@ -1067,9 +1095,10 @@ function ensureOriginAndMethodAllowed(req, res, originAllowed) {
  * @returns {boolean} True when the method is POST.
  */
 function ensurePostMethod(req, res) {
-  if (req?.method === 'POST') {
+  if (req && req.method === 'POST') {
     return true;
   }
+
   res.status(405).send('POST only');
   return false;
 }
@@ -1080,7 +1109,11 @@ function ensurePostMethod(req, res) {
  * @returns {unknown} Value returned by {@code req.get('Authorization')} or {@code req.get('authorization')}.
  */
 function getAuthorizationHeaderFromGetter(req) {
-  return req.get('Authorization') ?? req.get('authorization');
+  const authorizationHeader = req.get('Authorization');
+  if (authorizationHeader === undefined || authorizationHeader === null) {
+    return req.get('authorization');
+  }
+  return authorizationHeader;
 }
 
 /**
@@ -1117,7 +1150,11 @@ function normalizeHeaderCandidate(value) {
  * @returns {unknown} Authorization header value found in the headers object.
  */
 function getHeaderFromHeaders(req) {
-  return resolveHeaderValue(req?.headers);
+  if (!req || !req.headers) {
+    return undefined;
+  }
+
+  return resolveHeaderValue(req.headers);
 }
 
 /**
@@ -1126,11 +1163,15 @@ function getHeaderFromHeaders(req) {
  * @returns {unknown} Header value when present.
  */
 function resolveHeaderValue(headers) {
-  if (!headers) {
-    return undefined;
+  if (headers.Authorization !== undefined && headers.Authorization !== null) {
+    return headers.Authorization;
   }
 
-  return headers.Authorization ?? headers.authorization;
+  if (headers.authorization !== undefined && headers.authorization !== null) {
+    return headers.authorization;
+  }
+
+  return undefined;
 }
 
 /**

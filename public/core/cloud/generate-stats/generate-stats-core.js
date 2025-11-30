@@ -287,7 +287,21 @@ function selectUrlMap(resolved) {
     return DEFAULT_URL_MAP;
   }
 
-  return resolved.URL_MAP ?? DEFAULT_URL_MAP;
+  return extractUrlMapFromResolved(resolved);
+}
+
+/**
+ * Extract the URL map identifier from a resolved environment map.
+ * @param {ProcessEnv | Record<string, string | undefined>} resolved Normalized env.
+ * @returns {string} URL map identifier.
+ */
+function extractUrlMapFromResolved(resolved) {
+  const candidate = resolved.URL_MAP;
+  if (!isNonEmptyString(candidate)) {
+    return DEFAULT_URL_MAP;
+  }
+
+  return candidate;
 }
 
 /**

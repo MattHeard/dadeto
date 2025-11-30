@@ -526,15 +526,15 @@ export function createHandleRequest({
   assertFunctionDependency('markVariantDirty', markVariantDirty);
 
   return async function handleRequest(req, res, deps = {}) {
-    return processHandleRequest(
+    return processHandleRequest({
       req,
       res,
       deps,
       verifyAdmin,
       markVariantDirty,
       parseRequestBody,
-      allowedMethod
-    );
+      allowedMethod,
+    });
   };
 }
 
@@ -554,24 +554,25 @@ function assertFunctionDependency(name, candidate) {
 
 /**
  * Core handler workflow that validates the request, authorizes the caller, and marks the variant dirty.
- * @param {import('express').Request} req Express request.
- * @param {import('express').Response} res Express response.
- * @param {object} deps Optional overrides.
- * @param {Function} verifyAdmin Admin verification function.
- * @param {Function} markVariantDirty Variant mutation helper.
- * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Request parser.
- * @param {string} allowedMethod Allowed HTTP method.
+ * @param {object} options Handler dependencies.
+ * @param {import('express').Request} options.req Express request.
+ * @param {import('express').Response} options.res Express response.
+ * @param {object} options.deps Optional overrides.
+ * @param {Function} options.verifyAdmin Admin verification function.
+ * @param {Function} options.markVariantDirty Variant mutation helper.
+ * @param {(body: unknown) => { pageNumber: number, variantName: string }} options.parseRequestBody Request parser.
+ * @param {string} options.allowedMethod Allowed HTTP method.
  * @returns {Promise<void>} Promise resolved once handling completes.
  */
-async function processHandleRequest(
+async function processHandleRequest({
   req,
   res,
   deps,
   verifyAdmin,
   markVariantDirty,
   parseRequestBody,
-  allowedMethod
-) {
+  allowedMethod,
+}) {
   const verifyAdminFn = pickVerifyAdminFn(verifyAdmin, deps);
   const markFn = pickMarkFn(markVariantDirty, deps);
 

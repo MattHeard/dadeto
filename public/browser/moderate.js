@@ -24,14 +24,14 @@ let initGoogleSignInHandler;
 const getInitGoogleSignInHandler = () => {
   if (!initGoogleSignInHandler) {
     const auth = getAuth();
-    initGoogleSignInHandler = createGoogleSignInInit(
+    initGoogleSignInHandler = createGoogleSignInInit({
       auth,
-      sessionStorage,
-      console,
-      globalThis,
-      GoogleAuthProvider,
-      signInWithCredential
-    );
+      storage: sessionStorage,
+      logger: console,
+      globalObject: globalThis,
+      authProvider: GoogleAuthProvider,
+      signInCredential: signInWithCredential,
+    });
   }
   return initGoogleSignInHandler;
 };
