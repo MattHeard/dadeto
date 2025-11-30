@@ -174,9 +174,7 @@ function getDocRefFromSnapshot(snap) {
  * @param {import('firebase-admin/firestore').QueryDocumentSnapshot | null | undefined} doc Document snapshot.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference.
  */
-function getDocRef(doc) {
-  return doc?.ref ?? null;
-}
+const getDocRef = doc => doc?.ref ?? null;
 
 /**
  * Find a reference to the page document.
@@ -430,7 +428,11 @@ function parseValidRequest(req, res, parseRequestBody) {
  * @returns {boolean} True when the page number and variant name are valid.
  */
 function isValidMarkRequest({ pageNumber, variantName }) {
-  return Number.isInteger(pageNumber) && Boolean(variantName);
+  if (!Number.isInteger(pageNumber)) {
+    return false;
+  }
+
+  return Boolean(variantName);
 }
 
 /**

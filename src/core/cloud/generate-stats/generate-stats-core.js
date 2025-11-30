@@ -129,9 +129,15 @@ const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
  * @returns {boolean} True when the error represents an existing app instance.
  */
 export function isDuplicateAppError(error) {
-  return Boolean(
-    error && hasDuplicateIdentifier(error) && messageIndicatesDuplicate(error)
-  );
+  if (!error) {
+    return false;
+  }
+
+  if (!hasDuplicateIdentifier(error)) {
+    return false;
+  }
+
+  return messageIndicatesDuplicate(error);
 }
 
 /**
@@ -420,7 +426,11 @@ export function createGenerateStatsCore({
    */
   function getStoryTitle(data, fallback) {
     const title = data?.title;
-    return isNonEmptyString(title) ? title : fallback;
+    if (!isNonEmptyString(title)) {
+      return fallback;
+    }
+
+    return title;
   }
 
   /**
@@ -809,9 +819,11 @@ function getLogMessage(err) {
  * @returns {err is { message: string }} True when the payload carries a message.
  */
 function isErrorWithMessage(err) {
-  return Boolean(
-    err && typeof err === 'object' && typeof err.message === 'string'
-  );
+  if (!err || typeof err !== 'object') {
+    return false;
+  }
+
+  return typeof err.message === 'string';
 }
 
 /**

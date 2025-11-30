@@ -269,7 +269,11 @@ function buildStoryInfoFromSnap(storySnap) {
  */
 async function resolveStoryInfoFromStory(story) {
   const rootRef = story?.rootPage;
-  return rootRef ? resolveStoryInfoFromRoot(rootRef, story) : null;
+  if (!rootRef) {
+    return null;
+  }
+
+  return resolveStoryInfoFromRoot(rootRef, story);
 }
 
 /**
@@ -316,11 +320,11 @@ function hasPageSnapshot(pageSnap) {
  * @returns {string} Title.
  */
 function extractStoryTitle(story) {
-  if (story && typeof story.title === 'string') {
-    return story.title;
+  if (!story || typeof story.title !== 'string') {
+    return '';
   }
 
-  return '';
+  return story.title;
 }
 
 /**
@@ -329,11 +333,11 @@ function extractStoryTitle(story) {
  * @returns {number | undefined} Page number.
  */
 function extractPageNumber(page) {
-  if (page && typeof page.number === 'number') {
-    return page.number;
+  if (!page || typeof page.number !== 'number') {
+    return undefined;
   }
 
-  return undefined;
+  return page.number;
 }
 
 /**
@@ -412,8 +416,15 @@ function resolveCdnHost(cdnHost) {
  * @returns {string} Cache invalidation endpoint.
  */
 function buildInvalidateUrl(projectId, urlMapName) {
-  const projectSegment = projectId ? `projects/${projectId}` : 'projects';
-  const urlMap = urlMapName || 'prod-dendrite-url-map';
+  let projectSegment = 'projects';
+  if (projectId) {
+    projectSegment = `projects/${projectId}`;
+  }
+
+  let urlMap = 'prod-dendrite-url-map';
+  if (urlMapName) {
+    urlMap = urlMapName;
+  }
 
   return `https://compute.googleapis.com/compute/v1/${projectSegment}/global/urlMaps/${urlMap}/invalidateCache`;
 }

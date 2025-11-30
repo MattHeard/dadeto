@@ -313,9 +313,21 @@ function createTokenError(err) {
   return {
     error: {
       status: 401,
-      body: err?.message ?? 'Invalid or expired token',
+      body: resolveTokenErrorMessage(err),
     },
   };
+}
+
+/**
+ *
+ * @param err
+ */
+function resolveTokenErrorMessage(err) {
+  if (err && typeof err.message === 'string') {
+    return err.message;
+  }
+
+  return 'Invalid or expired token';
 }
 
 /**
@@ -552,7 +564,11 @@ export function configureUrlencodedBodyParser(appInstance, expressModule) {
  * @returns {boolean} True if empty.
  */
 function isSnapshotEmpty(snapshot, variantDoc) {
-  return !variantDoc || snapshot?.empty;
+  if (!variantDoc) {
+    return true;
+  }
+
+  return Boolean(snapshot?.empty);
 }
 
 /**
@@ -576,11 +592,23 @@ export function selectVariantDoc(snapshot) {
  * @returns {unknown[]} Document snapshots if present, otherwise an empty array.
  */
 function resolveSnapshotDocs(snapshot) {
-  if (!snapshot || !Array.isArray(snapshot.docs)) {
+  if (!hasSnapshotDocs(snapshot)) {
     return [];
   }
 
   return snapshot.docs;
+}
+
+/**
+ *
+ * @param snapshot
+ */
+function hasSnapshotDocs(snapshot) {
+  if (!snapshot) {
+    return false;
+  }
+
+  return Array.isArray(snapshot.docs);
 }
 
 /**
@@ -791,7 +819,12 @@ export function createFetchVariantSnapshotFromDbFactory(
  * @returns {GuardContext} Combined context with accumulated data.
  */
 function processGuardResult(result, context) {
-  return { ...context, ...(result?.context ?? {}) };
+  const guardContext = result?.context;
+  if (!guardContext) {
+    return context;
+  }
+
+  return { ...context, ...guardContext };
 }
 
 /**
@@ -802,9 +835,10 @@ function processGuardResult(result, context) {
  */
 async function executeSingleGuard(guard, context) {
   const result = await guard(context);
-  if (result?.error) {
+  if (result && result.error) {
     return { error: result.error };
   }
+
   return { context: processGuardResult(result, context) };
 }
 
@@ -938,7 +972,7 @@ function extractGuardContext(guardResult) {
  * @returns {object} Validated record.
  */
 function requireUserRecord(userRecord) {
-  if (!userRecord?.uid) {
+  if (!userRecord || !userRecord.uid) {
     throw { status: 500, body: 'Moderator lookup failed' };
   }
 
