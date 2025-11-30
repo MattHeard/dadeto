@@ -624,6 +624,8 @@ export function createHandleRequest({
   };
 }
 
+export { getRequestBody, getRequestMethod, hasStringMessage };
+
 const REQUEST_HANDLED = Symbol('request-handled');
 
 /**

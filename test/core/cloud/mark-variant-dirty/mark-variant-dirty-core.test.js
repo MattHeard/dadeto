@@ -18,6 +18,9 @@ const {
   createIsAdminUid,
   parseMarkVariantRequestBody,
   createHandleRequest,
+  getRequestBody,
+  getRequestMethod,
+  hasStringMessage,
 } = markVariantDirtyCore;
 import { productionOrigins } from '../../../../src/core/cloud/cloud-core.js';
 
@@ -46,6 +49,10 @@ describe('mark-variant-dirty core helpers', () => {
       expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })).toEqual(
         productionOrigins
       );
+    });
+
+    it('falls back when environment config is missing', () => {
+      expect(getAllowedOrigins()).toEqual(productionOrigins);
     });
   });
 
@@ -383,6 +390,10 @@ describe('mark-variant-dirty core helpers', () => {
         pageNumber: Number.NaN,
         variantName: '',
       });
+      expect(parseMarkVariantRequestBody()).toEqual({
+        pageNumber: Number.NaN,
+        variantName: '',
+      });
     });
   });
 
@@ -554,6 +565,29 @@ describe('mark-variant-dirty core helpers', () => {
       await expect(
         handle({ method: 'POST', body: { page: 1 } }, res)
       ).rejects.toThrow('parse failure');
+    });
+  });
+
+  describe('request helpers', () => {
+    it('guards when requests are absent', () => {
+      expect(getRequestBody()).toBeUndefined();
+      expect(getRequestMethod()).toBeUndefined();
+    });
+
+    it('returns body and method when request exists', () => {
+      const body = { page: 1 };
+      const req = { body, method: 'POST' };
+
+      expect(getRequestBody(req)).toBe(body);
+      expect(getRequestMethod(req)).toBe('POST');
+    });
+  });
+
+  describe('error inspection helpers', () => {
+    it('detects string messages', () => {
+      expect(hasStringMessage({ message: 'hello' })).toBe(true);
+      expect(hasStringMessage({ message: 123 })).toBe(false);
+      expect(hasStringMessage(null)).toBe(false);
     });
   });
 });
