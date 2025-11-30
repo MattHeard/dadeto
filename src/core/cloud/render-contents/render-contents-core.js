@@ -267,6 +267,11 @@ function buildStoryInfoFromSnap(storySnap) {
  * @param {Record<string, any>} story Firestore story document data.
  * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
  */
+/**
+ * Resolve a story's metadata once the document is present.
+ * @param {Record<string, any>} story Firestore story document data.
+ * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
+ */
 async function resolveStoryInfoFromStory(story) {
   if (!hasStoryRootPage(story)) {
     return null;
@@ -281,6 +286,12 @@ async function resolveStoryInfoFromStory(story) {
  * @param {Record<string, any>} story Firestore story document data.
  * @returns {Promise<StoryInfo | null>} Story info describing title and page number.
  */
+/**
+ * Resolve story information once the root page return value arrives.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} rootRef Document reference for the root page.
+ * @param {Record<string, any>} story Firestore story document data.
+ * @returns {Promise<StoryInfo | null>} Story metadata or null when the page snapshot is missing.
+ */
 async function resolveStoryInfoFromRoot(rootRef, story) {
   const pageSnap = await rootRef.get();
   return buildStoryInfoFromPage(pageSnap, story);
@@ -288,6 +299,12 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
 
 /**
  * Build story info from a retrieved page snapshot.
+ * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
+ * @param {Record<string, any>} story Story document data that owns the page.
+ * @returns {StoryInfo | null} Story metadata or null when the page is missing.
+ */
+/**
+ * Build story metadata once the page snapshot has been fetched.
  * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
  * @param {Record<string, any>} story Story document data that owns the page.
  * @returns {StoryInfo | null} Story metadata or null when the page is missing.
@@ -318,6 +335,11 @@ function hasPageSnapshot(pageSnap) {
  * @param {Record<string, any>} story Story.
  * @returns {string} Title.
  */
+/**
+ * Extract the story title when present.
+ * @param {Record<string, any>} story Story document data.
+ * @returns {string} Title string or empty string when missing.
+ */
 function extractStoryTitle(story) {
   if (!hasTitle(story)) {
     return '';
@@ -331,6 +353,11 @@ function extractStoryTitle(story) {
  * @param {Record<string, any>} page Page.
  * @returns {number | undefined} Page number.
  */
+/**
+ * Extract the numeric page number from a page document.
+ * @param {Record<string, any>} page Page document data.
+ * @returns {number | undefined} Numeric page number or undefined when missing.
+ */
 function extractPageNumber(page) {
   if (!hasPageNumber(page)) {
     return undefined;
@@ -340,24 +367,27 @@ function extractPageNumber(page) {
 }
 
 /**
- *
- * @param story
+ * Determine if story data exposes a root page reference.
+ * @param {Record<string, any>} story Story document data.
+ * @returns {boolean} True when the story includes a root page reference.
  */
 function hasStoryRootPage(story) {
   return Boolean(story?.rootPage);
 }
 
 /**
- *
- * @param story
+ * Check whether the story exposes a title string.
+ * @param {Record<string, any>} story Story document data.
+ * @returns {boolean} True when the title is a string.
  */
 function hasTitle(story) {
   return typeof story?.title === 'string';
 }
 
 /**
- *
- * @param page
+ * Check whether the page data provides a numeric page number.
+ * @param {Record<string, any>} page Page document data.
+ * @returns {boolean} True when the page number is numeric.
  */
 function hasPageNumber(page) {
   return typeof page?.number === 'number';
@@ -1013,6 +1043,11 @@ export function getAllowedOrigins(environmentVariables) {
  * @param {string | undefined} value Raw environment value.
  * @returns {string[]} Normalized list of origins.
  */
+/**
+ * Parse a comma-separated list of allowed origins from the environment value.
+ * @param {string | undefined} value Raw environment value containing origins.
+ * @returns {string[]} Normalized list of allowed origins.
+ */
 function parseAllowedOrigins(value) {
   const normalized = normalizeAllowedOriginsValue(value);
   if (!normalized) {
@@ -1028,6 +1063,11 @@ function parseAllowedOrigins(value) {
 /**
  *
  * @param value
+ */
+/**
+ * Normalize the raw environment string used for allowed origins.
+ * @param {string | undefined} value Candidate origin list string.
+ * @returns {string} Trimmed string or empty string when invalid.
  */
 function normalizeAllowedOriginsValue(value) {
   if (typeof value !== 'string') {
@@ -1179,8 +1219,8 @@ function handlePreflight(req, res, originAllowed) {
  * @returns {void}
  */
 function respondToPreflight(res, originAllowed) {
-  const status = originAllowed ? 204 : 403;
-  res.status(status).send('');
+  const status = originAllowed && 204;
+  res.status(status || 403).send('');
 }
 
 /**
@@ -1276,6 +1316,11 @@ function normalizeHeaderCandidate(value) {
  * @param {{ headers?: object }} req Request holding the headers object.
  * @returns {unknown} Authorization header value found in the headers object.
  */
+/**
+ * Read the Authorization header when it lives in the request headers map.
+ * @param {{ headers?: object }} req Request holding the headers object.
+ * @returns {unknown} Authorization header value when present.
+ */
 export function getHeaderFromHeaders(req) {
   if (!hasHeaders(req)) {
     return undefined;
@@ -1288,6 +1333,11 @@ export function getHeaderFromHeaders(req) {
  * Read the Authorization header value from the provided map.
  * @param {{ Authorization?: unknown, authorization?: unknown } | undefined} headers Header map.
  * @returns {unknown} Header value when present.
+ */
+/**
+ * Read and normalize the Authorization header value from a header map.
+ * @param {{ Authorization?: unknown, authorization?: unknown } | undefined} headers Header map value.
+ * @returns {unknown} Header value when present; otherwise undefined.
  */
 export function resolveHeaderValue(headers) {
   if (!headers) {
@@ -1304,6 +1354,11 @@ export function resolveHeaderValue(headers) {
 /**
  *
  * @param req
+ */
+/**
+ * Determine whether the provided request contains headers.
+ * @param {{ headers?: object } | undefined} req Request-like helper.
+ * @returns {boolean} True when the request exposes a headers object.
  */
 function hasHeaders(req) {
   return Boolean(req?.headers);
