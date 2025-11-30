@@ -2327,6 +2327,20 @@ describe('createHandleVariantWrite', () => {
   });
 });
 
+describe('getAncestorRef', () => {
+  const grandParent = { value: 'grand' };
+  const parent = { parent: grandParent };
+  const child = { parent };
+
+  it('returns the ancestor when steps are provided', () => {
+    expect(RenderVariantCore.getAncestorRef(child, 2)).toBe(grandParent);
+  });
+
+  it('uses zero steps when none are supplied', () => {
+    expect(RenderVariantCore.getAncestorRef(child)).toBe(child);
+  });
+});
+
 describe('getPageSnapFromRef', () => {
   it('resolves the nested page snapshot when parents exist', async () => {
     const pageSnap = { exists: true };

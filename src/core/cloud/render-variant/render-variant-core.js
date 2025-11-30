@@ -1676,8 +1676,8 @@ function getParentPageRef(parentVariantRef) {
  * @param {number} steps Number of parent hops to follow.
  * @returns {unknown | null} Ancestor reference or null when the chain breaks.
  */
-function getAncestorRef(ref, steps) {
-  const normalizedSteps = Math.max(steps ?? 0, 0);
+function getAncestorRef(ref, steps = 0) {
+  const normalizedSteps = Math.max(steps, 0);
   const ancestor = Array.from({ length: normalizedSteps }).reduce(current => {
     if (!current) {
       return null;
@@ -1688,6 +1688,8 @@ function getAncestorRef(ref, steps) {
 
   return ancestor ?? null;
 }
+
+export { getAncestorRef };
 
 /**
  * Confirm that the required parent references exist.

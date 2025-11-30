@@ -227,6 +227,12 @@ describe('createRenderContents', () => {
     ).toThrow(new TypeError('randomUUID must be a function'));
   });
 
+  it('throws when called without options', () => {
+    expect(() => createRenderContents()).toThrow(
+      new TypeError('storage must provide a bucket helper')
+    );
+  });
+
   it('renders pages with provided fetchers and invalidates caches', async () => {
     const bucketFile = jest.fn(() => ({
       save: jest.fn().mockResolvedValue(undefined),
