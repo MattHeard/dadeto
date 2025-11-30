@@ -412,6 +412,11 @@ function resolveCdnHost(cdnHost) {
  *
  * @param value
  */
+/**
+ * Confirm the provided value is a non-empty string.
+ * @param {unknown} value Candidate value.
+ * @returns {value is string} True when the value is a trimmed string.
+ */
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }

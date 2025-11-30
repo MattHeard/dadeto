@@ -10,6 +10,7 @@ import {
   createApplyCorsHeaders,
   createValidateRequest,
   buildHandleRenderRequest,
+  createAuthorizeRequest,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
 } from '../../../../src/core/cloud/render-contents/render-contents-core.js';
@@ -504,6 +505,67 @@ describe('createRenderContents', () => {
         fetchStoryInfo: async () => null,
       })
     ).resolves.toBeNull();
+  });
+});
+
+describe('createAuthorizeRequest', () => {
+  const mockRes = () => ({
+    status: jest.fn(() => ({ send: jest.fn() })),
+  });
+
+  it('authorizes using the Authorization header', async () => {
+    const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'admin' });
+    const authorizeRequest = createAuthorizeRequest({
+      verifyIdToken,
+      adminUid: 'admin',
+    });
+    const req = {
+      get: jest.fn(() => undefined),
+      headers: { Authorization: 'Bearer abc123' },
+    };
+    const res = mockRes();
+
+    await expect(authorizeRequest({ req, res })).resolves.toEqual({
+      uid: 'admin',
+    });
+    expect(verifyIdToken).toHaveBeenCalledWith('abc123');
+  });
+
+  it('authorizes using the lowercase authorization header', async () => {
+    const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'admin' });
+    const authorizeRequest = createAuthorizeRequest({
+      verifyIdToken,
+      adminUid: 'admin',
+    });
+    const req = {
+      get: jest.fn(() => undefined),
+      headers: { authorization: 'Bearer xyz789' },
+    };
+    const res = mockRes();
+
+    await expect(authorizeRequest({ req, res })).resolves.toEqual({
+      uid: 'admin',
+    });
+    expect(verifyIdToken).toHaveBeenCalledWith('xyz789');
+  });
+
+  it('treats header objects without credentials as missing tokens', async () => {
+    const verifyIdToken = jest.fn();
+    const authorizeRequest = createAuthorizeRequest({
+      verifyIdToken,
+      adminUid: 'admin',
+    });
+    const req = {
+      get: jest.fn(() => undefined),
+      headers: { foo: 'bar' },
+    };
+    const res = mockRes();
+
+    await expect(authorizeRequest({ req, res })).resolves.toBeNull();
+    expect(res.status).toHaveBeenCalledWith(401);
+    const statusResponse = res.status.mock.results[0].value;
+    expect(statusResponse.send).toHaveBeenCalledWith('Missing token');
+    expect(verifyIdToken).not.toHaveBeenCalled();
   });
 });
 
