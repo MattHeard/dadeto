@@ -1958,20 +1958,21 @@ export function setupFirebase(initApp) {
 
 /**
  * Initialize the admin UI with the provided auth helpers and globals.
- * @param {() => Promise<Record<string, string>>} loadStaticConfigFn - Loader for static config values.
- * @param {() => unknown} getAuthFn - Factory returning the Firebase auth instance.
- * @param {{ credential?: (token: string) => string }} GoogleAuthProviderFn - Firebase provider helper.
- * @param {(auth: unknown, callback: () => void) => void} onAuthStateChangedFn - Firebase listener binder.
- * @param {(auth: unknown, credential: unknown) => Promise<void> | void} signInWithCredentialFn - Credential signer.
- * @param {(config: { apiKey: string, authDomain: string, projectId: string }) => void} initializeAppFn - Firebase initializer.
- * @param {Storage} sessionStorageObj - Storage object for caching tokens.
- * @param {{ error?: (message: string) => void }} consoleObj - Logger for reporting sign-in issues.
- * @param {typeof globalThis} globalThisObj - Global scope used for Google APIs and DOM helpers.
- * @param {Document} documentObj - Document object containing the admin UI.
- * @param {FetchFn} fetchObj - Fetch-like function for HTTP requests.
- * @param {(handlers: { initGoogleSignIn: (options?: GoogleSignInOptions) => void, signOut: () => Promise<void> }) => void} [onHandlersReady] - Optional hook for tests to access memoized handlers.
+ * @param {object} deps - Dependency bag describing the required environment.
+ * @param {() => Promise<Record<string, string>>} deps.loadStaticConfigFn - Loader for static config values.
+ * @param {() => unknown} deps.getAuthFn - Factory returning the Firebase auth instance.
+ * @param {{ credential?: (token: string) => string }} deps.GoogleAuthProviderFn - Firebase provider helper.
+ * @param {(auth: unknown, callback: () => void) => void} deps.onAuthStateChangedFn - Firebase listener binder.
+ * @param {(auth: unknown, credential: unknown) => Promise<void> | void} deps.signInWithCredentialFn - Credential signer.
+ * @param {(config: { apiKey: string, authDomain: string, projectId: string }) => void} deps.initializeAppFn - Firebase initializer.
+ * @param {Storage} deps.sessionStorageObj - Storage object for caching tokens.
+ * @param {{ error?: (message: string) => void }} deps.consoleObj - Logger for reporting sign-in issues.
+ * @param {typeof globalThis} deps.globalThisObj - Global scope used for Google APIs and DOM helpers.
+ * @param {Document} deps.documentObj - Document object containing the admin UI.
+ * @param {FetchFn} deps.fetchObj - Fetch-like function for HTTP requests.
+ * @param {(handlers: { initGoogleSignIn: (options?: GoogleSignInOptions) => void, signOut: () => Promise<void> }) => void} [deps.onHandlersReady] - Optional hook for tests to access memoized handlers.
  */
-export function initAdminApp(
+export function initAdminApp({
   loadStaticConfigFn,
   getAuthFn,
   GoogleAuthProviderFn,
@@ -1983,8 +1984,8 @@ export function initAdminApp(
   globalThisObj,
   documentObj,
   fetchObj,
-  onHandlersReady
-) {
+  onHandlersReady,
+}) {
   setupFirebase(initializeAppFn);
 
   let initGoogleSignInHandler;

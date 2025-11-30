@@ -350,22 +350,22 @@ describe('admin-core additional coverage', () => {
       text: jest.fn().mockResolvedValue(''),
     });
 
-    await initAdminApp(
-      loadStaticConfig,
-      getAuth,
-      GoogleAuthProvider,
-      onAuthStateChanged,
-      signInWithCredential,
-      initializeApp,
-      sessionStorage,
-      console,
-      globalScope,
-      doc,
-      fetchFn,
-      handlers => {
+    await initAdminApp({
+      loadStaticConfigFn: loadStaticConfig,
+      getAuthFn: getAuth,
+      GoogleAuthProviderFn: GoogleAuthProvider,
+      onAuthStateChangedFn: onAuthStateChanged,
+      signInWithCredentialFn: signInWithCredential,
+      initializeAppFn: initializeApp,
+      sessionStorageObj: sessionStorage,
+      consoleObj: console,
+      globalThisObj: globalScope,
+      documentObj: doc,
+      fetchObj: fetchFn,
+      onHandlersReady: handlers => {
         googleAuthModule = handlers;
-      }
-    );
+      },
+    });
 
     expect(initializeApp).toHaveBeenCalledTimes(1);
     expect(onAuthStateChanged).toHaveBeenCalledTimes(1);
