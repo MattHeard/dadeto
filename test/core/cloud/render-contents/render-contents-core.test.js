@@ -11,6 +11,9 @@ import {
   createValidateRequest,
   buildHandleRenderRequest,
   createAuthorizeRequest,
+  resolveAuthorizationHeader,
+  getHeaderFromHeaders,
+  resolveHeaderValue,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
 } from '../../../../src/core/cloud/render-contents/render-contents-core.js';
@@ -566,6 +569,62 @@ describe('createAuthorizeRequest', () => {
     const statusResponse = res.status.mock.results[0].value;
     expect(statusResponse.send).toHaveBeenCalledWith('Missing token');
     expect(verifyIdToken).not.toHaveBeenCalled();
+  });
+});
+
+describe('resolveAuthorizationHeader', () => {
+  it('prefers the getter Authorization header when available', () => {
+    const req = {
+      get: jest.fn(name =>
+        name === 'Authorization' ? 'Bearer getter' : undefined
+      ),
+      headers: { authorization: 'Bearer fallback' },
+    };
+
+    const header = resolveAuthorizationHeader(req);
+
+    expect(header).toBe('Bearer getter');
+    expect(req.get).toHaveBeenCalledWith('Authorization');
+  });
+
+  it('supports missing headers by returning an empty string', () => {
+    const req = {
+      get: jest.fn(() => undefined),
+    };
+
+    expect(resolveAuthorizationHeader(req)).toBe('');
+  });
+});
+
+describe('getHeaderFromHeaders', () => {
+  it('returns undefined when headers are missing', () => {
+    expect(getHeaderFromHeaders({})).toBeUndefined();
+    expect(getHeaderFromHeaders({ headers: null })).toBeUndefined();
+    expect(getHeaderFromHeaders(null)).toBeUndefined();
+  });
+
+  it('prefers the Authorization header value', () => {
+    const req = { headers: { Authorization: 'Bearer upper' } };
+    expect(getHeaderFromHeaders(req)).toBe('Bearer upper');
+  });
+
+  it('falls back to lowercase authorization keys', () => {
+    const req = { headers: { authorization: 'Bearer lower' } };
+    expect(getHeaderFromHeaders(req)).toBe('Bearer lower');
+  });
+});
+
+describe('resolveHeaderValue', () => {
+  it('returns undefined when headers are absent', () => {
+    expect(resolveHeaderValue(undefined)).toBeUndefined();
+  });
+
+  it('returns the first header value when present', () => {
+    const headers = {
+      Authorization: 'Bearer upper',
+      authorization: 'Bearer lower',
+    };
+    expect(resolveHeaderValue(headers)).toBe('Bearer upper');
   });
 });
 

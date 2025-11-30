@@ -409,10 +409,6 @@ function resolveCdnHost(cdnHost) {
 }
 
 /**
- *
- * @param value
- */
-/**
  * Confirm the provided value is a non-empty string.
  * @param {unknown} value Candidate value.
  * @returns {value is string} True when the value is a trimmed string.
@@ -711,140 +707,6 @@ export function createRenderContents({
   let fetchTopStoryIds;
   let fetchStoryInfo;
 
-  /**
-   * Resolve an asynchronous fetcher from provided dependencies or cached factories.
-   * @param {{
-   *   provided: (() => Promise<any[]>) | undefined,
-   *   cache: (() => Promise<any[]>) | undefined,
-   *   setCache: (fn: () => Promise<any[]>) => void,
-   *   factory: (db: { collection: Function }) => () => Promise<any[]>,
-   *   db: { collection?: Function } | undefined
-   * }} options Fetcher resolution inputs.
-   * @returns {() => Promise<any[]>} Fetch implementation to use.
-   */
-  function resolveFetcher({
-    provided,
-    cache,
-    setCache,
-    factory,
-    db: database,
-  }) {
-    if (typeof provided === 'function') {
-      return provided;
-    }
-
-    return getOrCreateFetcher({ cache, database, factory, setCache });
-  }
-
-  /**
-   * Return the cached fetcher or create a new one via the factory.
-   * @param {(() => Promise<any[]>) | undefined} cache Cached fetcher.
-   * @param {{ collection?: Function } | undefined} database Database dependency.
-   * @param {(db: { collection: Function }) => () => Promise<any[]>} factory Fetcher factory.
-   * @param {(fn: () => Promise<any[]>) => void} setCache Cache setter.
-   * @returns {() => Promise<any[]>} Fetch implementation.
-   */
-  /**
-   * Return the existing fetcher or create and cache a new one.
-   * @param {{ cache?: () => Promise<any[]>, database?: { collection?: Function }, factory: (db: { collection: Function }) => () => Promise<any[]>, setCache: (fn: () => Promise<any[]>) => void }} options Lookup inputs.
-   * @returns {() => Promise<any[]>} Fetch implementation.
-   */
-  function getOrCreateFetcher({ cache, database, factory, setCache }) {
-    if (cache) {
-      return cache;
-    }
-    return createFetcherFromDatabase(database, factory, setCache);
-  }
-
-  /**
-   * Load story metadata for rendering.
-   * @param {() => Promise<string[]>} loadIds Loader for top story identifiers.
-   * @param {(id: string) => Promise<Record<string, any> | null>} loadInfo Loader for story details.
-   * @returns {Promise<Record<string, any>[]>} Collected story data.
-   */
-  async function buildStoryItems(loadIds, loadInfo) {
-    const ids = await loadIds();
-    const items = [];
-
-    for (const id of ids) {
-      const info = await loadInfo(id);
-      pushIfPresent(items, info);
-    }
-
-    return items;
-  }
-
-  /**
-   *
-   * @param collection
-   * @param value
-   */
-  /**
-   * Push values into the collection when they are present.
-   * @param {any[]} collection Array accumulating results.
-   * @param {any} value Potential item to add.
-   * @returns {void}
-   */
-  function pushIfPresent(collection, value) {
-    if (value) {
-      collection.push(value);
-    }
-  }
-
-  /**
-   * Publish paginated story listings and return the invalidation paths.
-   * @param {{ items: Record<string, any>[], pageSize: number, bucket: { file: (path: string) => { save: Function } } }} options
-   * Rendering configuration.
-   * @returns {Promise<string[]>} Paths that were written and need invalidation.
-   */
-  async function publishStoryPages({
-    items,
-    pageSize: size,
-    bucket: targetBucket,
-  }) {
-    const totalPages = Math.max(1, Math.ceil(items.length / size));
-    const paths = [];
-
-    for (let page = 1; page <= totalPages; page += 1) {
-      const start = (page - 1) * size;
-      const pageItems = items.slice(start, start + size);
-      const html = buildHtml(pageItems);
-      const filePath = resolvePageFilePath(page);
-      const options = buildPageSaveOptions(page, totalPages);
-
-      await targetBucket.file(filePath).save(html, options);
-      paths.push(`/${filePath}`);
-    }
-
-    return paths;
-
-    /**
-     * Generate the file path for a rendered contents page.
-     * @param {number} pageNumber Page index being rendered.
-     * @returns {string} Storage location for the generated HTML.
-     */
-    function resolvePageFilePath(pageNumber) {
-      if (pageNumber === 1) {
-        return 'index.html';
-      }
-      return `contents/${pageNumber}.html`;
-    }
-
-    /**
-     * Build the save options for a rendered page file.
-     * @param {number} pageNumber Current page index.
-     * @param {number} maxPages Total number of pages to determine caching.
-     * @returns {{ contentType: string, metadata?: { cacheControl: string } }} Storage options.
-     */
-    function buildPageSaveOptions(pageNumber, maxPages) {
-      const options = { contentType: 'text/html' };
-      if (pageNumber === maxPages) {
-        options.metadata = { cacheControl: 'no-cache' };
-      }
-      return options;
-    }
-  }
-
   return async function render(deps = {}) {
     const loadStoryIds = resolveFetcher({
       provided: deps.fetchTopStoryIds,
@@ -876,6 +738,129 @@ export function createRenderContents({
     await invalidatePaths(paths);
     return null;
   };
+}
+
+/**
+ * Resolve an asynchronous fetcher from the provided override or cached factory.
+ * @param {{
+ *   provided?: () => Promise<any[]>,
+ *   cache?: () => Promise<any[]>,
+ *   setCache: (fn: () => Promise<any[]>) => void,
+ *   factory: (db: { collection: Function }) => () => Promise<any[]>,
+ *   db?: { collection?: Function }
+ * }} options Fetcher resolution inputs.
+ * @returns {() => Promise<any[]>} Fetch implementation to use.
+ */
+function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
+  if (typeof provided === 'function') {
+    return provided;
+  }
+
+  return getOrCreateFetcher({ cache, database, factory, setCache });
+}
+
+/**
+ * Return the cached fetcher or create a new one via the factory helper.
+ * @param {{
+ *   cache?: () => Promise<any[]>,
+ *   database?: { collection?: Function },
+ *   factory: (db: { collection: Function }) => () => Promise<any[]>,
+ *   setCache: (fn: () => Promise<any[]>) => void
+ * }} options Fetcher lookup inputs.
+ * @returns {() => Promise<any[]>} Fetch implementation.
+ */
+function getOrCreateFetcher({ cache, database, factory, setCache }) {
+  if (cache) {
+    return cache;
+  }
+  return createFetcherFromDatabase(database, factory, setCache);
+}
+
+/**
+ * Build story metadata items from Story ID loaders.
+ * @param {() => Promise<string[]>} loadIds Loader returning top story identifiers.
+ * @param {(id: string) => Promise<Record<string, any> | null>} loadInfo Loader returning story metadata.
+ * @returns {Promise<Record<string, any>[]>} Collected story data.
+ */
+async function buildStoryItems(loadIds, loadInfo) {
+  const ids = await loadIds();
+  const items = [];
+
+  for (const id of ids) {
+    const info = await loadInfo(id);
+    pushIfPresent(items, info);
+  }
+
+  return items;
+}
+
+/**
+ * Append the provided value when it is present.
+ * @param {any[]} collection Array collecting items.
+ * @param {any} value Item to add when truthy.
+ * @returns {void}
+ */
+function pushIfPresent(collection, value) {
+  if (value) {
+    collection.push(value);
+  }
+}
+
+/**
+ * Write paginated story HTML to storage and return invalidation paths.
+ * @param {{
+ *   items: Record<string, any>[],
+ *   pageSize: number,
+ *   bucket: { file: (path: string) => { save: (content: string, options: object) => Promise<unknown> } }
+ * }} options Publishing inputs.
+ * @returns {Promise<string[]>} Paths that were saved.
+ */
+async function publishStoryPages({
+  items,
+  pageSize: size,
+  bucket: targetBucket,
+}) {
+  const totalPages = Math.max(1, Math.ceil(items.length / size));
+  const paths = [];
+
+  for (let page = 1; page <= totalPages; page += 1) {
+    const start = (page - 1) * size;
+    const pageItems = items.slice(start, start + size);
+    const html = buildHtml(pageItems);
+    const filePath = resolvePageFilePath(page);
+    const options = buildPageSaveOptions(page, totalPages);
+
+    await targetBucket.file(filePath).save(html, options);
+    paths.push(`/${filePath}`);
+  }
+
+  return paths;
+}
+
+/**
+ * Resolve the file path used for a rendered contents page.
+ * @param {number} pageNumber Page index being written.
+ * @returns {string} Storage path for the rendered page.
+ */
+function resolvePageFilePath(pageNumber) {
+  if (pageNumber === 1) {
+    return 'index.html';
+  }
+  return `contents/${pageNumber}.html`;
+}
+
+/**
+ * Build the storage options for a rendered contents page.
+ * @param {number} pageNumber Current page number being written.
+ * @param {number} maxPages Total number of pages to determine caching behavior.
+ * @returns {{ contentType: string, metadata?: { cacheControl: string } }} Storage options.
+ */
+function buildPageSaveOptions(pageNumber, maxPages) {
+  const options = { contentType: 'text/html' };
+  if (pageNumber === maxPages) {
+    options.metadata = { cacheControl: 'no-cache' };
+  }
+  return options;
 }
 
 /**
@@ -1061,6 +1046,7 @@ function handlePreflight(req, res, originAllowed) {
     return false;
   }
   respondToPreflight(res, originAllowed);
+
   return true;
 }
 
@@ -1126,7 +1112,7 @@ function getAuthorizationHeaderFromGetter(req) {
  * @param {{ get?: (name: string) => unknown, headers?: object }} req Incoming request object.
  * @returns {string} Authorization header or an empty string.
  */
-function resolveAuthorizationHeader(req) {
+export function resolveAuthorizationHeader(req) {
   const getterHeader = normalizeHeaderCandidate(
     getAuthorizationHeaderFromGetter(req)
   );
@@ -1154,7 +1140,7 @@ function normalizeHeaderCandidate(value) {
  * @param {{ headers?: object }} req Request holding the headers object.
  * @returns {unknown} Authorization header value found in the headers object.
  */
-function getHeaderFromHeaders(req) {
+export function getHeaderFromHeaders(req) {
   if (!req || !req.headers) {
     return undefined;
   }
@@ -1167,16 +1153,12 @@ function getHeaderFromHeaders(req) {
  * @param {{ Authorization?: unknown, authorization?: unknown } | undefined} headers Header map.
  * @returns {unknown} Header value when present.
  */
-function resolveHeaderValue(headers) {
-  if (headers.Authorization !== undefined && headers.Authorization !== null) {
-    return headers.Authorization;
+export function resolveHeaderValue(headers) {
+  if (!headers) {
+    return undefined;
   }
 
-  if (headers.authorization !== undefined && headers.authorization !== null) {
-    return headers.authorization;
-  }
-
-  return undefined;
+  return headers.Authorization ?? headers.authorization;
 }
 
 /**
