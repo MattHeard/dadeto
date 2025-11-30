@@ -319,8 +319,9 @@ function createTokenError(err) {
 }
 
 /**
- *
- * @param err
+ * Normalize token errors into a user-friendly message.
+ * @param {unknown} err Error captured while processing the token.
+ * @returns {string} Message that explains the failure.
  */
 function resolveTokenErrorMessage(err) {
   if (err && typeof err.message === 'string') {
@@ -600,8 +601,9 @@ function resolveSnapshotDocs(snapshot) {
 }
 
 /**
- *
- * @param snapshot
+ * Check whether the snapshot exposes document entries.
+ * @param {{ docs?: unknown[] } | undefined} snapshot Snapshot to inspect.
+ * @returns {boolean} True when an array of docs exists.
  */
 function hasSnapshotDocs(snapshot) {
   if (!snapshot) {

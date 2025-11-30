@@ -500,7 +500,11 @@ export function parseMarkVariantRequestBody(body) {
  * @returns {string} Variant name or empty string.
  */
 function resolveVariantName(candidate) {
-  return typeof candidate === 'string' ? candidate : '';
+  if (typeof candidate === 'string') {
+    return candidate;
+  }
+
+  return '';
 }
 
 /**
