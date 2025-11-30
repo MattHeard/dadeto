@@ -1,0 +1,6 @@
+# Lint Complexity Reflection
+
+- **Unexpected hurdle:** ESLint’s `complexity` rule treated inline boolean chains (`&&`, `??`, etc.) as separate branches, so my first attempt to simplify `isDuplicateAppError` and similar helpers actually kept the warning alive. I diagnosed it by rerunning lint and watching the same functions reported even though the code looked simpler.
+- **Approach:** I wound back to splitting the checks into multiple tiny helpers, each with at most one conditional. That required adding documentation and `sendGenerateFailure` helpers to avoid the `||` branch, which added churn but satisfied the rule without disabling it.
+- **Lesson:** When wrestling with aggressive complexity limits, prefer narrowing each function to a single decision point instead of relying on `&&`/`||` expressions; expect to add descriptive helpers and JSDoc notes as you break apart logic.
+- **Follow-up:** Keep an eye on other files that hit these rules—there are still >90 warnings overall—and consider whether the team wants to loosen `complexity` thresholds or provide more helper utilities to keep cognitive load manageable.

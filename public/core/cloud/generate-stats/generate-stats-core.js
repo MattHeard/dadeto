@@ -133,6 +133,15 @@ export function isDuplicateAppError(error) {
     return false;
   }
 
+  return hasDuplicateAppIdentifierMessage(error);
+}
+
+/**
+ * Determine whether the error carries the duplicate-app identifier and message.
+ * @param {{ code?: string, message?: unknown }} error Firebase initialization error.
+ * @returns {boolean} True when the error represents a duplicate app.
+ */
+function hasDuplicateAppIdentifierMessage(error) {
   if (!hasDuplicateIdentifier(error)) {
     return false;
   }
@@ -246,20 +255,16 @@ function resolveProjectId(resolved) {
     return undefined;
   }
 
-  return resolved.GOOGLE_CLOUD_PROJECT ?? resolved.GCLOUD_PROJECT;
+  return extractProjectIdFromResolved(resolved);
 }
 
 /**
- *
- * @param {...any} candidates
+ * Extract the project identifier from a resolved environment map.
+ * @param {ProcessEnv | Record<string, string | undefined>} resolved Normalized environment variables.
+ * @returns {string | undefined} Project identifier when available.
  */
-/**
- * Return the first non-empty string among the supplied candidates.
- * @param {...(string | undefined)} candidates Candidate strings to inspect.
- * @returns {string | undefined} The first valid string, or undefined when none exist.
- */
-function getFirstNonEmptyString(...candidates) {
-  return candidates.find(isNonEmptyString);
+function extractProjectIdFromResolved(resolved) {
+  return resolved.GOOGLE_CLOUD_PROJECT ?? resolved.GCLOUD_PROJECT;
 }
 
 /**
@@ -269,7 +274,20 @@ function getFirstNonEmptyString(...candidates) {
  */
 export function getUrlMapFromEnv(env) {
   const resolved = resolveEnv(env);
-  return resolved?.URL_MAP ?? DEFAULT_URL_MAP;
+  return selectUrlMap(resolved);
+}
+
+/**
+ * Derive the URL map identifier from the resolved environment data.
+ * @param {ProcessEnv | Record<string, string | undefined> | null} resolved Normalized environment map.
+ * @returns {string} Resolved URL map identifier.
+ */
+function selectUrlMap(resolved) {
+  if (!resolved) {
+    return DEFAULT_URL_MAP;
+  }
+
+  return resolved.URL_MAP ?? DEFAULT_URL_MAP;
 }
 
 /**
@@ -279,7 +297,20 @@ export function getUrlMapFromEnv(env) {
  */
 export function getCdnHostFromEnv(env) {
   const resolved = resolveEnv(env);
-  return getFirstNonEmptyString(resolved?.CDN_HOST) ?? DEFAULT_CDN_HOST;
+  return selectCdnHost(resolved?.CDN_HOST);
+}
+
+/**
+ * Resolve the CDN host or fall back to the default.
+ * @param {string | undefined} candidate Candidate host value.
+ * @returns {string} Resolved CDN host.
+ */
+function selectCdnHost(candidate) {
+  if (isNonEmptyString(candidate)) {
+    return candidate;
+  }
+
+  return DEFAULT_CDN_HOST;
 }
 
 /**
@@ -425,12 +456,21 @@ export function createGenerateStatsCore({
    * @returns {string} Story title.
    */
   function getStoryTitle(data, fallback) {
-    const title = data?.title;
-    if (!isNonEmptyString(title)) {
+    return resolveStoryTitle(data?.title, fallback);
+  }
+
+  /**
+   * Normalize a story title candidate.
+   * @param {unknown} candidate Title candidate read from Firestore.
+   * @param {string} fallback Identifier to use when the title is missing.
+   * @returns {string} Resolved story title.
+   */
+  function resolveStoryTitle(candidate, fallback) {
+    if (!isNonEmptyString(candidate)) {
       return fallback;
     }
 
-    return title;
+    return candidate;
   }
 
   /**
@@ -819,11 +859,20 @@ function getLogMessage(err) {
  * @returns {err is { message: string }} True when the payload carries a message.
  */
 function isErrorWithMessage(err) {
-  if (!err || typeof err !== 'object') {
+  if (!isNonNullObject(err)) {
     return false;
   }
 
   return typeof err.message === 'string';
+}
+
+/**
+ * Check whether the provided value is a non-null object.
+ * @param {unknown} value Candidate value.
+ * @returns {value is Record<string, unknown>} True when the value is an object.
+ */
+function isNonNullObject(value) {
+  return Boolean(value) && typeof value === 'object';
 }
 
 /**
@@ -859,8 +908,40 @@ function isCronRequest(req) {
 async function respondWithGenerate(res, generate) {
   try {
     await generate();
-    res.status(200).json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err?.message || 'generate failed' });
+    sendGenerateFailure(res, err);
+    return;
   }
+
+  sendGenerateSuccess(res);
+}
+
+/**
+ * Send a success response after generation completes.
+ * @param {import('express').Response} res Express response helper.
+ */
+function sendGenerateSuccess(res) {
+  res.status(200).json({ ok: true });
+}
+
+/**
+ * Send a failure response when generation throws.
+ * @param {import('express').Response} res Express response helper.
+ * @param {unknown} err Error raised during generation.
+ */
+function sendGenerateFailure(res, err) {
+  res.status(500).json({ error: getGenerateErrorMessage(err) });
+}
+
+/**
+ * Build the error message returned to clients when generation fails.
+ * @param {unknown} err Generation error payload.
+ * @returns {string} Message sent in the response.
+ */
+function getGenerateErrorMessage(err) {
+  if (isErrorWithMessage(err)) {
+    return err.message;
+  }
+
+  return 'generate failed';
 }
