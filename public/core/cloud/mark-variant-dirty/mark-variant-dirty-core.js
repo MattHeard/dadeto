@@ -9,12 +9,12 @@ const TEST_ENV_PREFIX = 't-';
  * @returns {string[]} Whitelisted origins.
  */
 export function getAllowedOrigins(environmentVariables) {
-  const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
+  const {
+    DENDRITE_ENVIRONMENT: environment,
+    PLAYWRIGHT_ORIGIN: playwrightOrigin,
+  } = environmentVariables ?? {};
   const envType = classifyEnvironment(environment);
-  return resolveAllowedOrigins(
-    envType,
-    environmentVariables?.PLAYWRIGHT_ORIGIN
-  );
+  return resolveAllowedOrigins(envType, playwrightOrigin);
 }
 
 /**
@@ -61,6 +61,15 @@ function classifyEnvironment(environment) {
     return 'prod';
   }
 
+  return classifyNonProdEnvironment(environment);
+}
+
+/**
+ * Classify environments that are not production.
+ * @param {unknown} environment Environment label.
+ * @returns {'test' | 'other'} Classification.
+ */
+function classifyNonProdEnvironment(environment) {
   if (isTestEnvironment(environment)) {
     return 'test';
   }
@@ -74,10 +83,24 @@ function classifyEnvironment(environment) {
  * @returns {string[]} Either a singleton list or an empty array.
  */
 function resolvePlaywrightOrigin(origin) {
-  if (typeof origin === 'string' && origin) {
-    return [origin];
+  const normalized = normalizeString(origin);
+  if (normalized) {
+    return [normalized];
   }
   return [];
+}
+
+/**
+ * Normalize the provided value into a string.
+ * @param {unknown} candidate Candidate origin.
+ * @returns {string} The value when it is a string; otherwise an empty string.
+ */
+function normalizeString(candidate) {
+  if (typeof candidate !== 'string') {
+    return '';
+  }
+
+  return candidate;
 }
 
 export { getAuthHeader, matchAuthHeader } from '../cloud-core.js';
@@ -123,9 +146,7 @@ export function createHandleCorsOrigin(isAllowedOriginFn, allowedOrigins) {
  * @returns {{ origin: typeof handleCorsOrigin, methods: string[] }} Express CORS configuration.
  */
 export function createCorsOptions(handleCorsOrigin, methods = [POST_METHOD]) {
-  if (typeof handleCorsOrigin !== 'function') {
-    throw new TypeError('handleCorsOrigin must be a function');
-  }
+  assertFunctionDependency('handleCorsOrigin', handleCorsOrigin);
 
   return {
     origin: handleCorsOrigin,
@@ -162,11 +183,24 @@ export function refFromSnap(snap) {
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference or null.
  */
 function getDocRefFromSnapshot(snap) {
-  if (!snap || !Array.isArray(snap.docs)) {
+  if (!hasSnapshotDocs(snap)) {
     return null;
   }
 
   return getDocRef(snap.docs[0]);
+}
+
+/**
+ * Determine if the snapshot returned documents.
+ * @param {import('firebase-admin/firestore').QuerySnapshot | null | undefined} snap Snapshot.
+ * @returns {boolean} `true` when the snapshot has docs.
+ */
+function hasSnapshotDocs(snap) {
+  if (!snap) {
+    return false;
+  }
+
+  return Array.isArray(snap.docs);
 }
 
 /**
@@ -397,7 +431,7 @@ export function sendForbidden(res) {
  * @returns {boolean} True when the method is allowed.
  */
 function enforceAllowedMethod(req, res, allowedMethod) {
-  if (req?.method === allowedMethod) {
+  if (getRequestMethod(req) === allowedMethod) {
     return true;
   }
 
@@ -413,13 +447,37 @@ function enforceAllowedMethod(req, res, allowedMethod) {
  * @returns {{ pageNumber: number, variantName: string } | null} Parsed parameters or null when invalid.
  */
 function parseValidRequest(req, res, parseRequestBody) {
-  const parsed = parseRequestBody(req?.body);
+  const parsed = parseRequestBody(getRequestBody(req));
   if (!isValidMarkRequest(parsed)) {
     res.status(400).json({ error: 'Invalid input' });
     return null;
   }
 
   return parsed;
+}
+/**
+ * Retrieve the request body when the request exists.
+ * @param {import('express').Request | undefined} req Express request.
+ * @returns {unknown | undefined} Body payload or `undefined`.
+ */
+function getRequestBody(req) {
+  if (!req) {
+    return undefined;
+  }
+
+  return req.body;
+}
+/**
+ * Access the HTTP method from the request, if present.
+ * @param {import('express').Request | undefined} req Express request.
+ * @returns {string | undefined} HTTP method or `undefined`.
+ */
+function getRequestMethod(req) {
+  if (!req) {
+    return undefined;
+  }
+
+  return req.method;
 }
 
 /**
@@ -466,11 +524,38 @@ async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
  * @returns {string} Message that can be surfaced to the client.
  */
 function resolveUpdateErrorMessage(error) {
-  if (typeof error?.message === 'string') {
-    return error.message;
+  const message = extractErrorMessage(error);
+  if (message) {
+    return message;
   }
 
   return 'update failed';
+}
+
+/**
+ * Normalize the provided error message when available.
+ * @param {unknown} error Possible error object.
+ * @returns {string} Error message or empty string when none is found.
+ */
+function extractErrorMessage(error) {
+  if (!hasStringMessage(error)) {
+    return '';
+  }
+
+  return error.message;
+}
+
+/**
+ * Test whether the input exposes a string message.
+ * @param {unknown} error Candidate error object.
+ * @returns {error is { message: string }} True when a string message exists.
+ */
+function hasStringMessage(error) {
+  if (!error) {
+    return false;
+  }
+
+  return typeof error.message === 'string';
 }
 
 /**
@@ -488,9 +573,10 @@ export function createIsAdminUid(adminUid) {
  * @returns {{ pageNumber: number, variantName: string }} Parsed parameters.
  */
 export function parseMarkVariantRequestBody(body) {
+  const { page, variant } = body ?? {};
   return {
-    pageNumber: Number(body?.page),
-    variantName: resolveVariantName(body?.variant),
+    pageNumber: Number(page),
+    variantName: resolveVariantName(variant),
   };
 }
 
