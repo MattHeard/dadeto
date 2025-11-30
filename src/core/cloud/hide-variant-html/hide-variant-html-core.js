@@ -119,6 +119,19 @@ function resolveLoadedVariant(loadedVariant) {
 }
 
 /**
+ * Normalize variant identifiers so undefined becomes null for downstream helpers.
+ * @param {string | null | undefined} variantId Candidate variant identifier.
+ * @returns {string | null} Normalized identifier or null when undefined.
+ */
+function resolveVariantId(variantId) {
+  if (variantId === undefined) {
+    return null;
+  }
+
+  return variantId;
+}
+
+/**
  * @typedef {object} RemoveVariantHtmlPayload
  * @property {string | null | undefined} [variantId] Optional variant identifier.
  * @property {*} [variantData] Raw variant details required to locate the page.
@@ -179,7 +192,7 @@ export function createRemoveVariantHtml({
     });
 
     const path = await buildVariantPath({
-      variantId: variantId ?? null,
+      variantId: resolveVariantId(variantId),
       variantData: resolvedVariantData,
       page,
     });

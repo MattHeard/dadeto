@@ -2097,22 +2097,70 @@ function hasGoogleAccounts(win) {
 }
 
 /**
+ * Resolve the `window` reference exposed by the provided scope.
+ * @param {typeof globalThis} scope Global scope that should expose `window`.
+ * @returns {Window} Resolved window object.
+ */
+function resolveScopeWindow(scope) {
+  const win = scope?.window;
+  if (!win) {
+    throw new Error('window is not available');
+  }
+
+  return win;
+}
+
+/**
+ * Retrieve the `matchMedia` helper off the provided window.
+ * @param {Window} win Window object exposing `matchMedia`.
+ * @returns {(query: string) => MediaQueryList} Validated matchMedia function.
+ */
+function resolveMatchMediaFunction(win) {
+  const matchMedia = win.matchMedia;
+  if (typeof matchMedia !== 'function') {
+    throw new Error('window.matchMedia is not a function');
+  }
+
+  return matchMedia;
+}
+
+/**
+ * Resolve the `document` reference exposed by the provided scope.
+ * @param {typeof globalThis} scope Global scope that should expose `document`.
+ * @returns {Document} Resolved document object.
+ */
+function resolveScopeDocument(scope) {
+  const doc = scope?.document;
+  if (!doc) {
+    throw new Error('document is not available');
+  }
+
+  return doc;
+}
+
+/**
+ * Retrieve the `querySelectorAll` helper off the provided document.
+ * @param {Document} doc Document exposing `querySelectorAll`.
+ * @returns {(selector: string) => NodeList} Validated querySelectorAll function.
+ */
+function resolveQuerySelectorAllFunction(doc) {
+  const querySelectorAll = doc.querySelectorAll;
+  if (typeof querySelectorAll !== 'function') {
+    throw new Error('document.querySelectorAll is not a function');
+  }
+
+  return querySelectorAll;
+}
+
+/**
  * Build a matchMedia helper that validates the vendor API.
  * @param {typeof globalThis} scope - Global scope exposing `window`.
  * @returns {(query: string) => MediaQueryList} matchMedia wrapper.
  */
 export function createMatchMedia(scope = globalThis) {
   return query => {
-    const win = scope?.window;
-    if (!win) {
-      throw new Error('window is not available');
-    }
-
-    const matchMedia = win.matchMedia;
-    if (typeof matchMedia !== 'function') {
-      throw new Error('window.matchMedia is not a function');
-    }
-
+    const win = resolveScopeWindow(scope);
+    const matchMedia = resolveMatchMediaFunction(win);
     return matchMedia.call(win, query);
   };
 }
@@ -2124,16 +2172,9 @@ export function createMatchMedia(scope = globalThis) {
  */
 export function createQuerySelectorAll(scope = globalThis) {
   return selector => {
-    const doc = scope?.document;
-    if (!doc) {
-      throw new Error('document is not available');
-    }
-
-    if (typeof doc.querySelectorAll !== 'function') {
-      throw new Error('document.querySelectorAll is not a function');
-    }
-
-    return doc.querySelectorAll(selector);
+    const doc = resolveScopeDocument(scope);
+    const querySelectorAll = resolveQuerySelectorAllFunction(doc);
+    return querySelectorAll(selector);
   };
 }
 

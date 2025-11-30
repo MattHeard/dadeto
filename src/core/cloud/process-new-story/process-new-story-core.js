@@ -39,6 +39,16 @@ function getSubmissionData(snapshot) {
 }
 
 /**
+ * Normalize the incoming snapshot data to always return an object.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot to normalize.
+ * @returns {Record<string, unknown>} Submission data when present; otherwise an empty object.
+ */
+function resolveSubmission(snapshot) {
+  const submission = getSubmissionData(snapshot);
+  return submission ?? {};
+}
+
+/**
  * Detect whether the snapshot exposes a data method.
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot to inspect.
  * @returns {snapshot is { data: () => Record<string, unknown> }} True when snapshot exposes data.
@@ -339,7 +349,7 @@ export function createProcessNewStoryHandler({
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewStory(snapshot, context = {}) {
-    const submission = getSubmissionData(snapshot) ?? {};
+    const submission = resolveSubmission(snapshot);
 
     if (submission.processed) {
       return null;

@@ -961,11 +961,25 @@ async function resolveGuardContext(runGuards, req) {
  * @returns {object} Guard context.
  */
 function extractGuardContext(guardResult) {
-  if (guardResult?.error) {
-    throw createGuardErrorResponse(guardResult.error);
+  const guardError = guardResult?.error;
+  if (guardError) {
+    throw createGuardErrorResponse(guardError);
   }
 
-  return guardResult.context ?? {};
+  return normalizeGuardContext(guardResult);
+}
+
+/**
+ * Normalize the guard runner output to ensure a context object is returned.
+ * @param {object | null | undefined} guardResult Guard runner output to normalize.
+ * @returns {object} Guard context object when available; otherwise an empty object.
+ */
+function normalizeGuardContext(guardResult) {
+  if (!guardResult || typeof guardResult.context === 'undefined') {
+    return {};
+  }
+
+  return guardResult.context;
 }
 
 /**
