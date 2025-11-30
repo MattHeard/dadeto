@@ -28,6 +28,11 @@ import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
  */
 
 /**
+ * @typedef {object} Logger
+ * @property {(message?: unknown, ...optionalParams: unknown[]) => void} error - Reporter used for logging errors.
+ */
+
+/**
  * @typedef {object} GoogleAccountsClient
  * @property {(config: object) => void} initialize - Initializes the Google sign-in client.
  * @property {(element: HTMLElement, options: object) => void} renderButton - Renders a sign-in button.
@@ -79,8 +84,9 @@ function readDisableAutoSelect(globalScope) {
 }
 
 /**
- *
- * @param globalScope
+ * Probe the global scope for the disableAutoSelect helper.
+ * @param {Window & typeof globalThis} globalScope Global scope to inspect.
+ * @returns {unknown} Candidate disable helper or undefined when absent.
  */
 function getDisableAutoSelectCandidate(globalScope) {
   return getNestedProperty(
@@ -109,8 +115,9 @@ function getNestedProperty(source, ...keys) {
 }
 
 /**
- *
- * @param value
+ * Determine whether the candidate value is callable.
+ * @param {unknown} value Candidate to evaluate.
+ * @returns {value is () => void} True when the value is a function.
  */
 function isDisableAutoSelectFunction(value) {
   return typeof value === 'function';
@@ -153,10 +160,10 @@ export function createSignOutHandlerFactory(getAuthFn, globalScope) {
  * Compose the browser Google Auth helpers into a reusable module.
  * @param {() => { signOut: () => Promise<void> | void }} getAuthFn - Getter for the auth client.
  * @param {Storage} storage - Session storage reference.
- * @param {Console} consoleObj - Console object passed through to init helper.
+ * @param {Logger} consoleObj - Logger passed through to init helpers.
  * @param {Window & typeof globalThis} globalScope - Global scope with Google helpers.
- * @param {typeof GoogleAuthProvider} Provider - Firebase GoogleAuthProvider class.
- * @param {(credentials: FirebaseAuthCredential) => AuthCredential} credentialFactory - Credential builder.
+ * @param {{ credential?: (token: string) => string }} Provider - Firebase provider helper exposing `credential`.
+ * @param {(credentials: string) => unknown} credentialFactory - Credential builder invoked with the Google credential.
  * @returns {{ initGoogleSignIn: (options: object) => void, signOut: () => Promise<void> }} Public helpers for Google auth flows.
  */
 export function createGoogleAuthModule(
@@ -985,8 +992,9 @@ function hasLogger(logger) {
 }
 
 /**
- *
- * @param logger
+ * Determine whether the logger value is missing.
+ * @param {unknown} logger Candidate logger reference.
+ * @returns {boolean} True when the logger is undefined or null.
  */
 function isMissingLogger(logger) {
   return logger === undefined || logger === null;
@@ -2062,8 +2070,9 @@ export function createGoogleAccountsId(scope = globalThis) {
 }
 
 /**
- *
- * @param scope
+ * Resolve the Google Accounts helper from the global scope.
+ * @param {typeof globalThis} scope Global scope containing `window`.
+ * @returns {GoogleAccountsClient | undefined} Google Accounts client when available.
  */
 function resolveGoogleAccountsId(scope) {
   const win = scope?.window;
@@ -2075,8 +2084,9 @@ function resolveGoogleAccountsId(scope) {
 }
 
 /**
- *
- * @param win
+ * Check whether the provided window exposes Google Accounts helpers.
+ * @param {Window | undefined} win Candidate window object.
+ * @returns {boolean} True when `google.accounts` exists.
  */
 function hasGoogleAccounts(win) {
   return Boolean(win?.google?.accounts);
@@ -2106,7 +2116,7 @@ export function createMatchMedia(scope = globalThis) {
 /**
  * Build a querySelectorAll helper for the provided document.
  * @param {typeof globalThis} scope - Global scope that should provide `document`.
- * @returns {(selector: string) => NodeListOf<Element>} querySelectorAll wrapper.
+ * @returns {(selector: string) => NodeList} querySelectorAll wrapper.
  */
 export function createQuerySelectorAll(scope = globalThis) {
   return selector => {
@@ -2125,23 +2135,12 @@ export function createQuerySelectorAll(scope = globalThis) {
 
 /**
  * Build normalized dependencies for `createInitGoogleSignIn`.
- * @param {{
- *   googleAccountsId?: () => GoogleAccountsClient | undefined,
- *   credentialFactory: (token: string) => unknown,
- *   signInWithCredential: (auth: object, credential: unknown) => Promise<void> | void,
- *   auth: object,
- *   storage: { setItem?: (key: string, value: string) => void },
- *   matchMedia: (query: string) => MediaQueryList,
- *   querySelectorAll: (selector: string) => NodeList,
- *   logger: { error?: (message: string) => void },
- * } | undefined} deps - Raw dependency bag to normalize.
- * @param scope
- * @param auth
- * @param storage
- * @param logger
- * @param globalObject
- * @param authProvider
- * @param signInCredential
+ * @param {object} auth - Firebase Auth instance that exposes `currentUser`.
+ * @param {Storage} storage - Storage implementation used to cache ID tokens.
+ * @param {Logger} logger - Logger used for reporting initialization errors.
+ * @param {typeof globalThis} [globalObject] - Global scope providing DOM helpers.
+ * @param {{ credential?: (token: string) => string }} authProvider - Google auth provider helper.
+ * @param {(auth: object, credential: unknown) => Promise<void> | void} signInCredential - Credential signer.
  * @returns {object} Normalized dependency bag for `createInitGoogleSignIn`.
  */
 export function buildGoogleSignInDeps(
@@ -2231,7 +2230,7 @@ export function createInitGoogleSignInHandlerFactory(
 
 /**
  * Create a credential factory from the supplied Google Auth provider.
- * @param {{ credential?: (token: string) => string } | null | undefined} provider
+ * @param {{ credential?: (token: string) => string } | null | undefined} provider - Provider exposing the credential helper.
  * @returns {(token: string) => string} Credential factory.
  */
 export function createCredentialFactory(provider) {
