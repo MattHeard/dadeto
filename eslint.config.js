@@ -29,7 +29,7 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
-      complexity: ['warn', { max: 4 }],
+      complexity: ['warn', { max: 3 }],
       'no-ternary': 'warn',
       'no-unused-vars': [
         'warn',
