@@ -268,7 +268,7 @@ function buildStoryInfoFromSnap(storySnap) {
  * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
  */
 async function resolveStoryInfoFromStory(story) {
-  if (!story || !story.rootPage) {
+  if (!hasStoryRootPage(story)) {
     return null;
   }
 
@@ -319,7 +319,7 @@ function hasPageSnapshot(pageSnap) {
  * @returns {string} Title.
  */
 function extractStoryTitle(story) {
-  if (!story || typeof story.title !== 'string') {
+  if (!hasTitle(story)) {
     return '';
   }
 
@@ -332,11 +332,35 @@ function extractStoryTitle(story) {
  * @returns {number | undefined} Page number.
  */
 function extractPageNumber(page) {
-  if (!page || typeof page.number !== 'number') {
+  if (!hasPageNumber(page)) {
     return undefined;
   }
 
   return page.number;
+}
+
+/**
+ *
+ * @param story
+ */
+function hasStoryRootPage(story) {
+  return Boolean(story?.rootPage);
+}
+
+/**
+ *
+ * @param story
+ */
+function hasTitle(story) {
+  return typeof story?.title === 'string';
+}
+
+/**
+ *
+ * @param page
+ */
+function hasPageNumber(page) {
+  return typeof page?.number === 'number';
 }
 
 /**
@@ -990,13 +1014,27 @@ export function getAllowedOrigins(environmentVariables) {
  * @returns {string[]} Normalized list of origins.
  */
 function parseAllowedOrigins(value) {
-  if (typeof value !== 'string' || !value.trim()) {
+  const normalized = normalizeAllowedOriginsValue(value);
+  if (!normalized) {
     return [];
   }
-  return value
+
+  return normalized
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
+}
+
+/**
+ *
+ * @param value
+ */
+function normalizeAllowedOriginsValue(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim();
 }
 
 /**
@@ -1126,11 +1164,11 @@ export function createValidateRequest({ applyCorsHeaders }) {
  * @returns {boolean} True when the request was handled and no further processing is needed.
  */
 function handlePreflight(req, res, originAllowed) {
-  if (req?.method !== 'OPTIONS') {
+  if (!isOptionsRequest(req)) {
     return false;
   }
-  respondToPreflight(res, originAllowed);
 
+  respondToPreflight(res, originAllowed);
   return true;
 }
 
@@ -1141,11 +1179,8 @@ function handlePreflight(req, res, originAllowed) {
  * @returns {void}
  */
 function respondToPreflight(res, originAllowed) {
-  if (originAllowed) {
-    res.status(204).send('');
-    return;
-  }
-  res.status(403).send('');
+  const status = originAllowed ? 204 : 403;
+  res.status(status).send('');
 }
 
 /**
@@ -1170,12 +1205,28 @@ function ensureOriginAndMethodAllowed(req, res, originAllowed) {
  * @returns {boolean} True when the method is POST.
  */
 function ensurePostMethod(req, res) {
-  if (req && req.method === 'POST') {
+  if (isPostRequest(req)) {
     return true;
   }
 
   res.status(405).send('POST only');
   return false;
+}
+
+/**
+ *
+ * @param req
+ */
+function isOptionsRequest(req) {
+  return req?.method === 'OPTIONS';
+}
+
+/**
+ *
+ * @param req
+ */
+function isPostRequest(req) {
+  return req?.method === 'POST';
 }
 
 /**
@@ -1213,9 +1264,10 @@ export function resolveAuthorizationHeader(req) {
  * @returns {string} Header string when valid or empty string otherwise.
  */
 function normalizeHeaderCandidate(value) {
-  if (typeof value === 'string' && value.length > 0) {
+  if (isNonEmptyString(value)) {
     return value;
   }
+
   return '';
 }
 
@@ -1225,7 +1277,7 @@ function normalizeHeaderCandidate(value) {
  * @returns {unknown} Authorization header value found in the headers object.
  */
 export function getHeaderFromHeaders(req) {
-  if (!req || !req.headers) {
+  if (!hasHeaders(req)) {
     return undefined;
   }
 
@@ -1242,7 +1294,19 @@ export function resolveHeaderValue(headers) {
     return undefined;
   }
 
-  return headers.Authorization ?? headers.authorization;
+  if ('Authorization' in headers) {
+    return headers.Authorization;
+  }
+
+  return headers.authorization;
+}
+
+/**
+ *
+ * @param req
+ */
+function hasHeaders(req) {
+  return Boolean(req?.headers);
 }
 
 /**
