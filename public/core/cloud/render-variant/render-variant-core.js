@@ -1677,15 +1677,16 @@ function getParentPageRef(parentVariantRef) {
  * @returns {unknown | null} Ancestor reference or null when the chain breaks.
  */
 function getAncestorRef(ref, steps) {
-  let current = ref;
-  let remaining = steps;
+  const normalizedSteps = Math.max(steps ?? 0, 0);
+  const ancestor = Array.from({ length: normalizedSteps }).reduce(current => {
+    if (!current) {
+      return null;
+    }
 
-  while (current && remaining > 0) {
-    current = current.parent;
-    remaining -= 1;
-  }
+    return current.parent;
+  }, ref);
 
-  return current ?? null;
+  return ancestor ?? null;
 }
 
 /**
@@ -1898,18 +1899,8 @@ export function createRenderVariant(dependencies) {
  * @returns {object} Normalized options for the renderer.
  */
 function buildRenderVariantOptions(dependencies) {
-  const {
-    db,
-    storage,
-    fetchFn,
-    randomUUID,
-    projectId,
-    urlMapName,
-    cdnHost,
-    consoleError = console.error,
-    bucketName = DEFAULT_BUCKET_NAME,
-    visibilityThreshold = VISIBILITY_THRESHOLD,
-  } = dependencies;
+  const { db, storage, fetchFn, randomUUID, projectId, urlMapName, cdnHost } =
+    dependencies;
 
   return {
     db,
@@ -1919,10 +1910,39 @@ function buildRenderVariantOptions(dependencies) {
     projectId,
     urlMapName,
     cdnHost,
-    consoleError,
-    bucketName,
-    visibilityThreshold,
+    consoleError: resolveRenderVariantConsoleError(dependencies.consoleError),
+    bucketName: resolveRenderVariantBucketName(dependencies.bucketName),
+    visibilityThreshold: resolveRenderVariantVisibilityThreshold(
+      dependencies.visibilityThreshold
+    ),
   };
+}
+
+/**
+ * Provide a concrete error logger for the render variant pipeline.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void | undefined} value Logger provided by the caller.
+ * @returns {(message?: unknown, ...optionalParams: unknown[]) => void} Resolved console error helper.
+ */
+function resolveRenderVariantConsoleError(value) {
+  return value ?? console.error;
+}
+
+/**
+ * Normalize the bucket name used for rendered variants.
+ * @param {string | undefined} value Candidate bucket name.
+ * @returns {string} Bucket name for rendering output.
+ */
+function resolveRenderVariantBucketName(value) {
+  return value ?? DEFAULT_BUCKET_NAME;
+}
+
+/**
+ * Normalize the visibility threshold configuration.
+ * @param {number | undefined} value Visibility threshold provided by the caller.
+ * @returns {number} Applied visibility threshold.
+ */
+function resolveRenderVariantVisibilityThreshold(value) {
+  return value ?? VISIBILITY_THRESHOLD;
 }
 
 /**
@@ -2085,7 +2105,25 @@ export async function getPageSnapFromRef(snap) {
  * @returns {boolean} True when the snapshot contains a reachable page reference.
  */
 function isSnapRefValid(snap) {
-  return Boolean(snap?.ref?.parent?.parent);
+  const variantRef = resolveSnapshotRef(snap);
+  if (!variantRef) {
+    return false;
+  }
+
+  return Boolean(getAncestorRef(variantRef, 2));
+}
+
+/**
+ * Extract the `ref` property from a snapshot when present.
+ * @param {{ ref?: { parent?: any } } | null | undefined} snap Candidate snapshot.
+ * @returns {{ parent?: any } | null} Snapshot ref when available; otherwise null.
+ */
+function resolveSnapshotRef(snap) {
+  if (!snap) {
+    return null;
+  }
+
+  return snap.ref ?? null;
 }
 
 /**

@@ -661,48 +661,132 @@ function isStringMessage(candidate) {
 
 /**
  * Create the primary render function that updates the moderation contents listing.
- * @param {object} root0 Dependencies required to render content pages.
- * @param {{ collection: Function }} [root0.db] Firestore-like instance used for lookup helpers.
- * @param {{ bucket: Function }} root0.storage Cloud storage-like instance.
- * @param {(input: string, init?: object) => Promise<{ ok: boolean, status: number, json: () => Promise<any> }>} root0.fetchFn Fetch implementation.
- * @param {() => string} root0.randomUUID UUID generator for cache invalidation.
- * @param {string} [root0.projectId] Google Cloud project identifier.
- * @param {string} [root0.urlMapName] Compute URL map identifier.
- * @param {string} [root0.cdnHost] CDN host name used for invalidation requests.
- * @param {(message: string, error?: unknown) => void} [root0.consoleError] Logger for invalidate failures.
- * @param {string} [root0.bucketName] Target bucket name for rendered files.
- * @param {number} [root0.pageSize] Number of items per generated page.
+ * @param {object} options Dependencies required to render content pages.
+ * @param {{ collection: Function }} [options.db] Firestore-like instance used for lookup helpers.
+ * @param {{ bucket: Function }} [options.storage] Cloud storage-like instance.
+ * @param {(input: string, init?: object) => Promise<{ ok: boolean, status: number, json: () => Promise<any> }>} options.fetchFn Fetch implementation.
+ * @param {() => string} options.randomUUID UUID generator for cache invalidation.
+ * @param {string} [options.projectId] Google Cloud project identifier.
+ * @param {string} [options.urlMapName] Compute URL map identifier.
+ * @param {string} [options.cdnHost] CDN host name used for invalidation requests.
+ * @param {(message: string, error?: unknown) => void} [options.consoleError] Logger for invalidate failures.
+ * @param {string} [options.bucketName] Target bucket name for rendered files.
+ * @param {number} [options.pageSize] Number of items per generated page.
  * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer.
  */
-export function createRenderContents({
-  db,
-  storage,
-  fetchFn,
-  randomUUID,
-  projectId,
-  urlMapName,
-  cdnHost,
-  consoleError,
-  bucketName,
-  pageSize,
-}) {
+export function createRenderContents(options) {
+  const normalized = normalizeRenderContentsOptions(options);
+  return instantiateRenderContents(normalized);
+}
+
+/**
+ * Normalize incoming render dependencies so assertions and defaults are grouped together.
+ * @param {object} params Raw dependencies supplied by callers.
+ * @returns {object} Dependencies with defaults and validation applied.
+ */
+function normalizeRenderContentsOptions(params = {}) {
+  const {
+    db,
+    storage,
+    fetchFn,
+    randomUUID,
+    projectId,
+    urlMapName,
+    cdnHost,
+    consoleError,
+    bucketName,
+    pageSize,
+  } = params;
+
   assertStorage(storage);
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
-  const resolvedConsoleError = consoleError ?? console.error;
-  const resolvedBucketName = bucketName ?? DEFAULT_BUCKET_NAME;
-  const resolvedPageSize = pageSize ?? DEFAULT_PAGE_SIZE;
+  return {
+    db,
+    storage,
+    fetchFn,
+    randomUUID,
+    projectId,
+    urlMapName,
+    cdnHost,
+    consoleError: resolveRenderContentsConsoleError(consoleError),
+    bucketName: resolveRenderContentsBucketName(bucketName),
+    pageSize: resolveRenderContentsPageSize(pageSize),
+  };
+}
 
-  const bucket = storage.bucket(resolvedBucketName);
+/**
+ * Ensure a console error helper is available for logging.
+ * @param {(message: string, error?: unknown) => void | undefined} value Candidate logger.
+ * @returns {(message: string, error?: unknown) => void} Resolved console error helper.
+ */
+function resolveRenderContentsConsoleError(value) {
+  return value ?? console.error;
+}
+
+/**
+ * Normalize the bucket name for rendered content.
+ * @param {string | undefined} value Candidate bucket name.
+ * @returns {string} Bucket name that should be used.
+ */
+function resolveRenderContentsBucketName(value) {
+  return value ?? DEFAULT_BUCKET_NAME;
+}
+
+/**
+ * Normalize the page size used when paginating rendered content.
+ * @param {number | undefined} value Candidate page size.
+ * @returns {number} Page size that should be used.
+ */
+function resolveRenderContentsPageSize(value) {
+  return value ?? DEFAULT_PAGE_SIZE;
+}
+
+/**
+ * Instantiate the renderer after defaults and validations are applied.
+ * @param {object} deps Normalized render dependencies.
+ * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer factory.
+ */
+function instantiateRenderContents(deps) {
+  const {
+    db,
+    storage,
+    fetchFn,
+    randomUUID,
+    projectId,
+    urlMapName,
+    cdnHost,
+    consoleError,
+    bucketName,
+    pageSize,
+  } = deps;
+
+  const bucket = storage.bucket(bucketName);
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     projectId,
     urlMapName,
     cdnHost,
     randomUUID,
-    consoleError: resolvedConsoleError,
+    consoleError,
   });
+
+  return createRenderContentsHandler({
+    db,
+    bucket,
+    invalidatePaths,
+    pageSize,
+  });
+}
+
+/**
+ * Build the renderer closure that caches fetchers between invocations.
+ * @param {object} config Handler dependencies.
+ * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer factory.
+ */
+function createRenderContentsHandler(config) {
+  const { db, bucket, invalidatePaths, pageSize } = config;
 
   let fetchTopStoryIds;
   let fetchStoryInfo;
@@ -731,7 +815,7 @@ export function createRenderContents({
     const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
     const paths = await publishStoryPages({
       items,
-      pageSize: resolvedPageSize,
+      pageSize,
       bucket,
     });
 
