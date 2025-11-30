@@ -580,6 +580,12 @@ describe('selectVariantDoc', () => {
       errorMessage: 'Variant fetch failed 🤷',
     });
   });
+
+  test('returns an error when the snapshot is undefined', () => {
+    expect(selectVariantDoc(undefined)).toEqual({
+      errorMessage: 'Variant fetch failed 🤷',
+    });
+  });
 });
 
 describe('createModeratorRefFactory', () => {
