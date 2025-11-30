@@ -1,4 +1,3 @@
-/* eslint complexity: ["warn", 5] */
 import { productionOrigins } from '../cloud-core.js';
 
 const POST_METHOD = 'POST';

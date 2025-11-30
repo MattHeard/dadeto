@@ -1,4 +1,3 @@
-/* eslint complexity: ["warn", 5] */
 /**
  * Increment a variant name in base-26 alphabetic order.
  * @param {string} name Current variant name.

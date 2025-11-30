@@ -1,4 +1,3 @@
-/* eslint complexity: ["warn", 5] */
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
