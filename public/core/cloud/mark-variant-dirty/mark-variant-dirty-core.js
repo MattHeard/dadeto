@@ -1,3 +1,4 @@
+/* eslint complexity: ["warn", 5] */
 import { productionOrigins } from '../cloud-core.js';
 
 const POST_METHOD = 'POST';
@@ -9,10 +10,9 @@ const TEST_ENV_PREFIX = 't-';
  * @returns {string[]} Whitelisted origins.
  */
 export function getAllowedOrigins(environmentVariables) {
-  const {
-    DENDRITE_ENVIRONMENT: environment,
-    PLAYWRIGHT_ORIGIN: playwrightOrigin,
-  } = environmentVariables ?? {};
+  const envVars = getEnvironmentVariables(environmentVariables);
+  const environment = envVars.DENDRITE_ENVIRONMENT;
+  const playwrightOrigin = envVars.PLAYWRIGHT_ORIGIN;
   const envType = classifyEnvironment(environment);
   return resolveAllowedOrigins(envType, playwrightOrigin);
 }
@@ -75,6 +75,15 @@ function classifyNonProdEnvironment(environment) {
   }
 
   return 'other';
+}
+
+/**
+ * Safely normalize the environment configuration bag.
+ * @param {Record<string, unknown> | null | undefined} environmentVariables Environment settings.
+ * @returns {Record<string, unknown>} Normalized bag.
+ */
+function getEnvironmentVariables(environmentVariables) {
+  return environmentVariables ?? {};
 }
 
 /**

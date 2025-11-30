@@ -1,3 +1,4 @@
+/* eslint complexity: ["warn", 5] */
 /**
  * Increment a variant name in base-26 alphabetic order.
  * @param {string} name Current variant name.
@@ -267,7 +268,7 @@ async function resolveIncomingOptionContext({
 
   const storyRef = initialStoryRef;
   const optionData = optionSnap.data();
-  const targetPage = resolvePageFromTarget(optionData?.targetPage);
+  const targetPage = resolveTargetPageFromOption(optionData);
 
   const pageContext = await resolveIncomingOptionPageContext({
     targetPage,
@@ -286,6 +287,15 @@ async function resolveIncomingOptionContext({
     storyRef,
     variantRef,
   };
+}
+
+/**
+ * Normalize the target page for an option submission.
+ * @param {{ targetPage?: unknown } | undefined} optionData Option document data.
+ * @returns {string | undefined} Target page identifier when present.
+ */
+function resolveTargetPageFromOption(optionData) {
+  return resolvePageFromTarget(optionData?.targetPage);
 }
 
 /**

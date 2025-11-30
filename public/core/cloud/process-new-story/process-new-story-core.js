@@ -1,3 +1,4 @@
+/* eslint complexity: ["warn", 5] */
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
@@ -31,11 +32,20 @@ export function resetFindAvailablePageNumberResolver() {
  * @returns {Record<string, unknown> | null} Submission payload when available.
  */
 function getSubmissionData(snapshot) {
-  if (typeof snapshot?.data !== 'function') {
+  if (!hasSnapshotDataMethod(snapshot)) {
     return null;
   }
 
   return snapshot.data();
+}
+
+/**
+ * Detect whether the snapshot exposes a data method.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot to inspect.
+ * @returns {snapshot is { data: () => Record<string, unknown> }} True when snapshot exposes data.
+ */
+function hasSnapshotDataMethod(snapshot) {
+  return Boolean(snapshot) && typeof snapshot.data === 'function';
 }
 
 /**
@@ -121,9 +131,27 @@ function resolveStoryId(snapshot, context, randomUUID) {
  */
 function resolvePreferredStoryIdentifier(snapshot, context) {
   return selectPreferredIdentifier(
-    normalizeIdentifier(context?.params?.subId),
-    () => normalizeIdentifier(snapshot?.id)
+    normalizeIdentifier(resolveContextSubId(context)),
+    () => normalizeIdentifier(resolveSnapshotId(snapshot))
   );
+}
+
+/**
+ * Extract the story identifier from the trigger context.
+ * @param {{ params?: Record<string, string> } | undefined} context Trigger execution context.
+ * @returns {string | undefined} Submission identifier when available.
+ */
+function resolveContextSubId(context) {
+  return context?.params?.subId;
+}
+
+/**
+ * Read the document identifier from the incoming snapshot.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
+ * @returns {string | undefined} Snapshot identifier when available.
+ */
+function resolveSnapshotId(snapshot) {
+  return snapshot?.id;
 }
 
 /**
