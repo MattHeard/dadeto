@@ -3,7 +3,24 @@ import {
   createProcessNewStoryHandler,
   setFindAvailablePageNumberResolver,
   resetFindAvailablePageNumberResolver,
+  resolveContextSubId,
 } from '../../../../src/core/cloud/process-new-story/process-new-story-core.js';
+
+describe('resolveContextSubId', () => {
+  it('returns undefined when context is missing', () => {
+    expect(resolveContextSubId(undefined)).toBeUndefined();
+  });
+
+  it('returns undefined when params are missing', () => {
+    expect(resolveContextSubId({})).toBeUndefined();
+  });
+
+  it('extracts the subId when provided in params', () => {
+    expect(resolveContextSubId({ params: { subId: 'story-123' } })).toBe(
+      'story-123'
+    );
+  });
+});
 
 /**
  * Build a fake Firestore database for story handler tests.

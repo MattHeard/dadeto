@@ -1114,16 +1114,18 @@ export function createProcessNewPageHandler({
 
     if (submission.processed) {
       return null;
-    } else {
-      return processUnprocessedSubmission({
-        submission,
-        snapshot,
-        db,
-        randomUUID,
-        random,
-        getServerTimestamp,
-        fieldValue,
-      });
     }
+
+    return processUnprocessedSubmission({
+      submission,
+      snapshot,
+      db,
+      randomUUID,
+      random,
+      getServerTimestamp,
+      fieldValue,
+    });
   };
 }
+
+export { resolveVariantDocumentId };

@@ -158,6 +158,8 @@ function resolveContextSubId(context) {
   return resolveParamsSubId(context.params);
 }
 
+export { resolveContextSubId };
+
 /**
  * Read the sub identifier from the trigger params when available.
  * @param {{ [key: string]: string } | undefined} params Trigger parameters.

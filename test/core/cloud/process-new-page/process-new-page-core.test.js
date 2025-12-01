@@ -3,6 +3,7 @@ import {
   incrementVariantName,
   findAvailablePageNumber,
   createProcessNewPageHandler,
+  resolveVariantDocumentId,
 } from '../../../../src/core/cloud/process-new-page/process-new-page-core.js';
 
 describe('incrementVariantName', () => {
@@ -72,6 +73,26 @@ describe('findAvailablePageNumber', () => {
     await expect(
       findAvailablePageNumber({} /* db never used */, 'not-a-function')
     ).rejects.toThrow('random must be a function');
+  });
+});
+
+describe('resolveVariantDocumentId', () => {
+  const randomUUID = jest.fn(() => 'random-id');
+
+  afterEach(() => {
+    randomUUID.mockClear();
+  });
+
+  it('returns the snapshot id when available', () => {
+    const result = resolveVariantDocumentId({ id: 'existing-id' }, randomUUID);
+    expect(result).toBe('existing-id');
+    expect(randomUUID).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the random generator when the snapshot is missing', () => {
+    const result = resolveVariantDocumentId(undefined, randomUUID);
+    expect(result).toBe('random-id');
+    expect(randomUUID).toHaveBeenCalledTimes(1);
   });
 });
 
