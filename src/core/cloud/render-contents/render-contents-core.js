@@ -1035,15 +1035,6 @@ export function getAllowedOrigins(environmentVariables) {
 }
 
 /**
- *
- * @param value
- */
-/**
- * Parse a comma-separated list of allowed origins from an environment variable.
- * @param {string | undefined} value Raw environment value.
- * @returns {string[]} Normalized list of origins.
- */
-/**
  * Parse a comma-separated list of allowed origins from the environment value.
  * @param {string | undefined} value Raw environment value containing origins.
  * @returns {string[]} Normalized list of allowed origins.
@@ -1060,10 +1051,6 @@ function parseAllowedOrigins(value) {
     .filter(Boolean);
 }
 
-/**
- *
- * @param value
- */
 /**
  * Normalize the raw environment string used for allowed origins.
  * @param {string | undefined} value Candidate origin list string.
@@ -1117,11 +1104,7 @@ export function createApplyCorsHeaders({ allowedOrigins }) {
  * @returns {string | undefined} Origin header string, when present.
  */
 function resolveOriginHeader(req) {
-  if (!req || typeof req.get !== 'function') {
-    return undefined;
-  }
-
-  return req.get('Origin');
+  return callHeaderGetter(req?.get, 'Origin');
 }
 
 /**
@@ -1219,8 +1202,12 @@ function handlePreflight(req, res, originAllowed) {
  * @returns {void}
  */
 function respondToPreflight(res, originAllowed) {
-  const status = originAllowed && 204;
-  res.status(status || 403).send('');
+  if (originAllowed) {
+    res.status(204).send('');
+    return;
+  }
+
+  res.status(403).send('');
 }
 
 /**
@@ -1254,16 +1241,18 @@ function ensurePostMethod(req, res) {
 }
 
 /**
- *
- * @param req
+ * Check whether the incoming request is an OPTIONS preflight.
+ * @param {{ method?: string } | undefined} req Incoming request object.
+ * @returns {boolean} True when the method is OPTIONS.
  */
 function isOptionsRequest(req) {
   return req?.method === 'OPTIONS';
 }
 
 /**
- *
- * @param req
+ * Confirm the request uses the POST method.
+ * @param {{ method?: string } | undefined} req Incoming request object.
+ * @returns {boolean} True when the method is POST.
  */
 function isPostRequest(req) {
   return req?.method === 'POST';
@@ -1275,11 +1264,22 @@ function isPostRequest(req) {
  * @returns {unknown} Value returned by {@code req.get('Authorization')} or {@code req.get('authorization')}.
  */
 function getAuthorizationHeaderFromGetter(req) {
-  const authorizationHeader = req.get('Authorization');
-  if (authorizationHeader === undefined || authorizationHeader === null) {
-    return req.get('authorization');
+  const getter = req.get;
+  const authorizationHeader = callHeaderGetter(getter, 'Authorization');
+  if (isDefined(authorizationHeader)) {
+    return authorizationHeader;
   }
-  return authorizationHeader;
+
+  return callHeaderGetter(getter, 'authorization');
+}
+
+/**
+ * Determine whether the provided value is neither undefined nor null.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is defined.
+ */
+function isDefined(value) {
+  return value !== undefined && value !== null;
 }
 
 /**
@@ -1299,6 +1299,20 @@ export function resolveAuthorizationHeader(req) {
 }
 
 /**
+ * Safely invoke a header getter when a function is provided.
+ * @param {(name: string) => unknown | undefined} getter Header getter helper.
+ * @param {string} key Header name to read.
+ * @returns {unknown} Header value when available.
+ */
+function callHeaderGetter(getter, key) {
+  if (typeof getter !== 'function') {
+    return undefined;
+  }
+
+  return getter(key);
+}
+
+/**
  * Normalize an authorization header candidate into a string.
  * @param {unknown} value Candidate header value.
  * @returns {string} Header string when valid or empty string otherwise.
@@ -1314,11 +1328,6 @@ function normalizeHeaderCandidate(value) {
 /**
  * Read the Authorization header when it lives in the request headers map.
  * @param {{ headers?: object }} req Request holding the headers object.
- * @returns {unknown} Authorization header value found in the headers object.
- */
-/**
- * Read the Authorization header when it lives in the request headers map.
- * @param {{ headers?: object }} req Request holding the headers object.
  * @returns {unknown} Authorization header value when present.
  */
 export function getHeaderFromHeaders(req) {
@@ -1330,11 +1339,6 @@ export function getHeaderFromHeaders(req) {
 }
 
 /**
- * Read the Authorization header value from the provided map.
- * @param {{ Authorization?: unknown, authorization?: unknown } | undefined} headers Header map.
- * @returns {unknown} Header value when present.
- */
-/**
  * Read and normalize the Authorization header value from a header map.
  * @param {{ Authorization?: unknown, authorization?: unknown } | undefined} headers Header map value.
  * @returns {unknown} Header value when present; otherwise undefined.
@@ -1344,17 +1348,10 @@ export function resolveHeaderValue(headers) {
     return undefined;
   }
 
-  if ('Authorization' in headers) {
-    return headers.Authorization;
-  }
-
-  return headers.authorization;
+  const { Authorization, authorization } = headers;
+  return Authorization ?? authorization;
 }
 
-/**
- *
- * @param req
- */
 /**
  * Determine whether the provided request contains headers.
  * @param {{ headers?: object } | undefined} req Request-like helper.
@@ -1416,10 +1413,16 @@ export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
  * @returns {{ uid?: string } | null} Decoded payload when the UID matches.
  */
 function ensureAdminIdentity(decoded, adminUid, res) {
-  if (!decoded || decoded.uid !== adminUid) {
+  if (!decoded) {
     res.status(403).send('Forbidden');
     return null;
   }
+
+  if (decoded.uid !== adminUid) {
+    res.status(403).send('Forbidden');
+    return null;
+  }
+
   return decoded;
 }
 
@@ -1508,14 +1511,31 @@ export function buildHandleRenderRequest({
       .then(() => {
         res.status(200).json({ ok: true });
       })
-      .catch(error => {
-        const message = extractMessageFromError(error);
-        if (typeof message === 'string' && message.length > 0) {
-          res.status(500).json({ error: message });
-          return;
-        }
-        res.status(500).json({ error: 'render failed' });
-      });
+      .catch(error => handleRenderFailure(res, error));
+  }
+
+  /**
+   * Send the failure response when rendering fails.
+   * @param {{ status: (code: number) => { json: (body: object) => void } }} res Response object used to send errors.
+   * @param {unknown} error Error thrown by the renderer.
+   * @returns {void}
+   */
+  function handleRenderFailure(res, error) {
+    const message = extractMessageFromError(error);
+    res.status(500).json({ error: resolveRenderFailureMessage(message) });
+  }
+
+  /**
+   * Choose a user-facing error message when rendering fails.
+   * @param {unknown} message Candidate message produced by the renderer.
+   * @returns {string} Message returned to the client.
+   */
+  function resolveRenderFailureMessage(message) {
+    if (hasNonEmptyString(message)) {
+      return message;
+    }
+
+    return 'render failed';
   }
 
   return async function handleRenderRequest(req, res) {

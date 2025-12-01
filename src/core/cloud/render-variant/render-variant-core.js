@@ -1431,7 +1431,7 @@ function extractStoryRef(pageSnap) {
  * @returns {object | null} Document reference or null.
  */
 function getPageRef(pageSnap) {
-  return pageSnap?.ref ?? null;
+  return readNullableProperty(pageSnap, 'ref');
 }
 
 /**
@@ -1454,7 +1454,7 @@ function resolveStoryFromPageRef(pageRef) {
  * @returns {object | null} Parent reference or null.
  */
 function getPageParent(pageRef) {
-  return pageRef?.parent ?? null;
+  return readNullableProperty(pageRef, 'parent');
 }
 
 /**
@@ -1463,7 +1463,7 @@ function getPageParent(pageRef) {
  * @returns {object | null} Grandparent reference or null when missing.
  */
 function getParentParent(parent) {
-  return parent.parent ?? null;
+  return readNullableProperty(parent, 'parent');
 }
 
 /**
@@ -2121,11 +2121,22 @@ function isSnapRefValid(snap) {
  * @returns {{ parent?: any } | null} Snapshot ref when available; otherwise null.
  */
 function resolveSnapshotRef(snap) {
-  if (!snap) {
+  return readNullableProperty(snap, 'ref');
+}
+
+/**
+ * Safely read a nested property from the provided object.
+ * @param {{ [key: string]: unknown } | null | undefined} source Source object.
+ * @param {string} key Property key to resolve.
+ * @returns {unknown | null} Property value or null when unavailable.
+ */
+function readNullableProperty(source, key) {
+  if (!source) {
     return null;
   }
 
-  return snap.ref ?? null;
+  const value = /** @type {{ [key: string]: unknown }} */ (source)[key];
+  return value ?? null;
 }
 
 /**
