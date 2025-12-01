@@ -328,8 +328,9 @@ function extractTokenErrorMessage(err) {
 }
 
 /**
- *
- * @param err
+ * Extract the message text from the provided error object when available.
+ * @param {unknown} err Error captured during token validation.
+ * @returns {string} Error message string or an empty string.
  */
 function resolveTokenMessage(err) {
   if (err && typeof err.message === 'string') {
@@ -999,8 +1000,9 @@ function ensureNoGuardError(guardResult) {
 }
 
 /**
- *
- * @param guardError
+ * Throw a response when a guard has reported an error.
+ * @param {{ status: number, body?: string } | undefined} guardError Guard error response.
+ * @returns {void}
  */
 function ensureGuardError(guardError) {
   if (guardError) {
@@ -1018,8 +1020,9 @@ function normalizeGuardContext(guardResult) {
 }
 
 /**
- *
- * @param guardResult
+ * Normalize the guard runner output into a context object.
+ * @param {{ context?: GuardContext } | null | undefined} guardResult Guard runner output.
+ * @returns {GuardContext} Guard context when available, otherwise an empty object.
  */
 function resolveGuardContextPayload(guardResult) {
   if (!guardResult || typeof guardResult.context === 'undefined') {
@@ -1049,8 +1052,9 @@ function ensureUserRecord(userRecord) {
 }
 
 /**
- *
- * @param userRecord
+ * Throw when the guard context lacks a moderator user record.
+ * @param {object | undefined} userRecord Moderation user record.
+ * @returns {void}
  */
 function ensureUserRecordContext(userRecord) {
   if (!userRecord || !userRecord.uid) {
