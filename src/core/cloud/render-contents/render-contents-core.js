@@ -1545,4 +1545,4 @@ export function buildHandleRenderRequest({
   };
 }
 
-export { handleInvalidateError };
+export { handleInvalidateError, ensureAdminIdentity };

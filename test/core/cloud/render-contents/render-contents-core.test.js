@@ -14,6 +14,7 @@ import {
   resolveAuthorizationHeader,
   getHeaderFromHeaders,
   resolveHeaderValue,
+  ensureAdminIdentity,
   DEFAULT_BUCKET_NAME,
   productionOrigins,
 } from '../../../../src/core/cloud/render-contents/render-contents-core.js';
@@ -576,6 +577,25 @@ describe('createAuthorizeRequest', () => {
     expect(statusResponse.send).toHaveBeenCalledWith('Missing token');
     expect(verifyIdToken).not.toHaveBeenCalled();
   });
+
+  it('rejects tokens that resolve to null payloads', async () => {
+    const verifyIdToken = jest.fn().mockResolvedValue(null);
+    const authorizeRequest = createAuthorizeRequest({
+      verifyIdToken,
+      adminUid: 'admin',
+    });
+
+    const req = {
+      get: jest.fn(() => undefined),
+      headers: { Authorization: 'Bearer deadbeef' },
+    };
+    const res = mockRes();
+
+    await expect(authorizeRequest({ req, res })).resolves.toBeNull();
+    expect(res.status).toHaveBeenCalledWith(403);
+    const statusResponse = res.status.mock.results[0].value;
+    expect(statusResponse.send).toHaveBeenCalledWith('Forbidden');
+  });
 });
 
 describe('resolveAuthorizationHeader', () => {
@@ -599,6 +619,17 @@ describe('resolveAuthorizationHeader', () => {
     };
 
     expect(resolveAuthorizationHeader(req)).toBe('');
+  });
+});
+
+describe('ensureAdminIdentity', () => {
+  it('rejects when the decoded payload is missing', () => {
+    const res = { status: jest.fn(() => ({ send: jest.fn() })) };
+    expect(ensureAdminIdentity(null, 'foo', res)).toBeNull();
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.status.mock.results[0].value.send).toHaveBeenCalledWith(
+      'Forbidden'
+    );
   });
 });
 
