@@ -319,16 +319,34 @@ function createTokenError(err) {
 }
 
 /**
+ * Retrieve a string message when present on an error object.
+ * @param {unknown} err Error captured during token validation.
+ * @returns {string} Extracted message when available, otherwise an empty string.
+ */
+function extractTokenErrorMessage(err) {
+  return resolveTokenMessage(err);
+}
+
+/**
+ *
+ * @param err
+ */
+function resolveTokenMessage(err) {
+  if (err && typeof err.message === 'string') {
+    return err.message;
+  }
+
+  return '';
+}
+
+/**
  * Normalize token errors into a user-friendly message.
  * @param {unknown} err Error captured while processing the token.
  * @returns {string} Message that explains the failure.
  */
 function resolveTokenErrorMessage(err) {
-  if (err && typeof err.message === 'string') {
-    return err.message;
-  }
-
-  return 'Invalid or expired token';
+  const message = extractTokenErrorMessage(err);
+  return message || 'Invalid or expired token';
 }
 
 /**
@@ -565,11 +583,7 @@ export function configureUrlencodedBodyParser(appInstance, expressModule) {
  * @returns {boolean} True if empty.
  */
 function isSnapshotEmpty(snapshot, variantDoc) {
-  if (!variantDoc) {
-    return true;
-  }
-
-  return Boolean(snapshot?.empty);
+  return !variantDoc || Boolean(snapshot?.empty);
 }
 
 /**
@@ -826,6 +840,16 @@ function processGuardResult(result, context) {
     return context;
   }
 
+  return mergeContexts(context, guardContext);
+}
+
+/**
+ * Merge guard contexts while preserving existing data.
+ * @param {GuardContext} context Current context.
+ * @param {GuardContext} guardContext New context data returned by a guard.
+ * @returns {GuardContext} Combined context object.
+ */
+function mergeContexts(context, guardContext) {
   return { ...context, ...guardContext };
 }
 
@@ -961,12 +985,27 @@ async function resolveGuardContext(runGuards, req) {
  * @returns {object} Guard context.
  */
 function extractGuardContext(guardResult) {
-  const guardError = guardResult?.error;
+  ensureNoGuardError(guardResult);
+  return normalizeGuardContext(guardResult);
+}
+
+/**
+ * Throw when the guard runner produced an error.
+ * @param {object | null | undefined} guardResult Guard runner output.
+ * @returns {void}
+ */
+function ensureNoGuardError(guardResult) {
+  ensureGuardError(guardResult?.error);
+}
+
+/**
+ *
+ * @param guardError
+ */
+function ensureGuardError(guardError) {
   if (guardError) {
     throw createGuardErrorResponse(guardError);
   }
-
-  return normalizeGuardContext(guardResult);
 }
 
 /**
@@ -975,6 +1014,14 @@ function extractGuardContext(guardResult) {
  * @returns {object} Guard context object when available; otherwise an empty object.
  */
 function normalizeGuardContext(guardResult) {
+  return resolveGuardContextPayload(guardResult);
+}
+
+/**
+ *
+ * @param guardResult
+ */
+function resolveGuardContextPayload(guardResult) {
   if (!guardResult || typeof guardResult.context === 'undefined') {
     return {};
   }
@@ -988,11 +1035,27 @@ function normalizeGuardContext(guardResult) {
  * @returns {object} Validated record.
  */
 function requireUserRecord(userRecord) {
+  ensureUserRecord(userRecord);
+  return userRecord;
+}
+
+/**
+ * Ensure the guard context contains a moderator user record.
+ * @param {object | undefined} userRecord Moderation user record.
+ * @returns {void}
+ */
+function ensureUserRecord(userRecord) {
+  ensureUserRecordContext(userRecord);
+}
+
+/**
+ *
+ * @param userRecord
+ */
+function ensureUserRecordContext(userRecord) {
   if (!userRecord || !userRecord.uid) {
     throw { status: 500, body: 'Moderator lookup failed' };
   }
-
-  return userRecord;
 }
 
 /**

@@ -181,26 +181,59 @@ export function createRemoveVariantHtml({
     });
     const { page, variant } = normalizeRemoveVariantLoadResult(loadResult);
 
-    if (!page) {
-      return null;
-    }
-
-    const resolvedVariantData = resolveVariantData({
-      hasProvidedData: hasVariantData,
-      providedData: variantData,
-      loadedVariant: variant,
-    });
-
-    const path = await buildVariantPath({
-      variantId: resolveVariantId(variantId),
-      variantData: resolvedVariantData,
+    return removeVariantPayload({
       page,
+      variantId,
+      hasVariantData,
+      variantData,
+      variant,
+      buildVariantPath,
+      deleteRenderedFile,
     });
-
-    await deleteRenderedFile(path);
-
-    return null;
   };
+}
+
+/**
+ * Remove rendered HTML when a page context is available.
+ * @param {{
+ *   page: *,
+ *   variantId: string | null | undefined,
+ *   hasVariantData: boolean,
+ *   variantData: *,
+ *   variant: *,
+ *   buildVariantPath: (payload: { variantId: string | null, variantData: *, page: * }) => Promise<string> | string,
+ *   deleteRenderedFile: (path: string) => Promise<*>,
+ * }} params Context required to delete the rendered file.
+ * @returns {Promise<null>} Resolves once deletion completes or when no page exists.
+ */
+async function removeVariantPayload({
+  page,
+  variantId,
+  hasVariantData,
+  variantData,
+  variant,
+  buildVariantPath,
+  deleteRenderedFile,
+}) {
+  if (!page) {
+    return null;
+  }
+
+  const resolvedVariantData = resolveVariantData({
+    hasProvidedData: hasVariantData,
+    providedData: variantData,
+    loadedVariant: variant,
+  });
+
+  const path = await buildVariantPath({
+    variantId: resolveVariantId(variantId),
+    variantData: resolvedVariantData,
+    page,
+  });
+
+  await deleteRenderedFile(path);
+
+  return null;
 }
 
 /**
@@ -220,15 +253,13 @@ export function createBucketFileRemover({
   validateStorage(storage);
 
   return function deleteRenderedFile(path) {
-    if (!isValidPath(path)) {
-      return Promise.resolve();
-    }
-
-    return storage
-      .bucket(validatedBucketName)
-      .file(path)
-      .delete({ ignoreNotFound: true })
-      .then(() => undefined);
+    return deleteIfPathValid(path, () =>
+      storage
+        .bucket(validatedBucketName)
+        .file(path)
+        .delete({ ignoreNotFound: true })
+        .then(() => undefined)
+    );
   };
 }
 
@@ -238,10 +269,7 @@ export function createBucketFileRemover({
  * @returns {string} Bucket.
  */
 function validateBucketName(bucketName) {
-  if (typeof bucketName !== 'string' || bucketName.trim() === '') {
-    throw new TypeError('bucketName must be a non-empty string');
-  }
-
+  ensureBucketName(bucketName);
   return bucketName;
 }
 
@@ -251,9 +279,7 @@ function validateBucketName(bucketName) {
  * @returns {void}
  */
 function validateStorage(storage) {
-  if (!storage || typeof storage.bucket !== 'function') {
-    throw new TypeError('storage.bucket must be a function');
-  }
+  ensureStorageBucketComponent(storage);
 }
 
 /**
@@ -263,6 +289,68 @@ function validateStorage(storage) {
  */
 function isValidPath(path) {
   return typeof path === 'string' && path.length > 0;
+}
+
+/**
+ * Delete the rendered file only when the path is valid.
+ * @param {unknown} path Candidate path string.
+ * @param {() => Promise<*>} deleteFn Deletion action executed when the path passes validation.
+ * @returns {Promise<*>} Promise resolved either immediately or after deletion.
+ */
+function deleteIfPathValid(path, deleteFn) {
+  if (!isValidPath(path)) {
+    return Promise.resolve();
+  }
+
+  return deleteFn();
+}
+
+/**
+ * Ensure the provided bucket name is a non-empty string.
+ * @param {unknown} bucketName Candidate bucket name.
+ * @returns {void}
+ */
+function ensureBucketName(bucketName) {
+  if (typeof bucketName !== 'string' || bucketName.trim() === '') {
+    throw new TypeError('bucketName must be a non-empty string');
+  }
+}
+
+/**
+ * Ensure the storage dependency exposes the expected bucket helper.
+ * @param {unknown} storage Storage client to validate.
+ * @returns {void}
+ */
+function ensureStorageBucketComponent(storage) {
+  if (!storage || typeof storage.bucket !== 'function') {
+    throw new TypeError('storage.bucket must be a function');
+  }
+}
+
+/**
+ * Convert a numeric page identifier to a string segment.
+ * @param {unknown} value Candidate page number.
+ * @returns {string} Page number string when valid, otherwise empty string.
+ */
+function formatPageNumber(value) {
+  if (typeof value !== 'number') {
+    return '';
+  }
+
+  return String(value);
+}
+
+/**
+ * Normalize a variant name when available.
+ * @param {unknown} value Candidate variant name.
+ * @returns {string} Variant name string or empty string when invalid.
+ */
+function formatVariantName(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value;
 }
 
 /**
@@ -282,11 +370,7 @@ export function buildVariantPath({ page, variantData }) {
  * @returns {string} Page number segment.
  */
 function extractPageNumber(page) {
-  if (page && typeof page.number === 'number') {
-    return String(page.number);
-  }
-
-  return '';
+  return formatPageNumber(page?.number);
 }
 
 /**
@@ -295,11 +379,7 @@ function extractPageNumber(page) {
  * @returns {string} Variant name segment.
  */
 function extractVariantName(variantData) {
-  if (variantData && typeof variantData.name === 'string') {
-    return variantData.name;
-  }
-
-  return '';
+  return formatVariantName(variantData?.name);
 }
 
 /**
