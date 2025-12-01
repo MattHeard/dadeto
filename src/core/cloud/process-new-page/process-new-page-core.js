@@ -4,7 +4,7 @@
  * @returns {string} Next variant name.
  */
 export function incrementVariantName(name) {
-  if (typeof name !== 'string' || name.length === 0) {
+  if (!isNonEmptyString(name)) {
     return 'a';
   }
 
@@ -23,12 +23,31 @@ function incrementLetters(letters, index) {
     return buildCarryResult(letters);
   }
 
+  return handleLetterIncrement(letters, index);
+}
+
+/**
+ * Increment the letter at the current index or carry to the next.
+ * @param {string[]} letters Letters from the current variant name.
+ * @param {number} index Current index being processed.
+ * @returns {string} Updated variant name fragment.
+ */
+function handleLetterIncrement(letters, index) {
   if (isBetweenAandY(letters[index])) {
     return incrementAtIndex(letters, index);
   }
 
   letters[index] = 'a';
   return incrementLetters(letters, index - 1);
+}
+
+/**
+ * Determine if a value is a non-empty string.
+ * @param {unknown} value Candidate value.
+ * @returns {value is string} True when the value is a non-empty string.
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.length > 0;
 }
 
 /**
@@ -98,11 +117,20 @@ function normalizeOptions(options) {
  * @returns {import('firebase-admin/firestore').DocumentReference<T>} The validated Firestore reference.
  */
 function ensureDocumentReference(reference, message) {
-  if (!reference || typeof reference.collection !== 'function') {
+  if (!isDocumentReference(reference)) {
     throw new TypeError(message);
   }
 
   return reference;
+}
+
+/**
+ * Ensure the reference exposes the collection helper.
+ * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} reference Candidate reference.
+ * @returns {boolean} True when the reference is valid.
+ */
+function isDocumentReference(reference) {
+  return Boolean(reference && typeof reference.collection === 'function');
 }
 
 /**
@@ -131,6 +159,32 @@ export async function findAvailablePageNumber(db, random, depth = 0) {
     .limit(1)
     .get();
 
+  return resolveAvailablePageResult({
+    existing,
+    candidate,
+    db,
+    random,
+    depth,
+  });
+}
+
+/**
+ * Choose the next available page number or recurse when busy.
+ * @param {object} params Inputs describing the current candidate.
+ * @param {import('firebase-admin/firestore').QuerySnapshot} params.existing Snapshot of existing matches.
+ * @param {number} params.candidate Candidate page number.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
+ * @param {() => number} params.random Random number generator.
+ * @param {number} params.depth Current recursion depth.
+ * @returns {Promise<number>} Page number that can be assigned.
+ */
+function resolveAvailablePageResult({
+  existing,
+  candidate,
+  db,
+  random,
+  depth,
+}) {
   if (existing.empty) {
     return candidate;
   }
@@ -164,11 +218,20 @@ function resolveStoryRefFromOption(optionRef) {
  *   A page reference when valid, otherwise null.
  */
 function resolvePageFromTarget(targetPage) {
-  if (targetPage && typeof targetPage.get === 'function') {
+  if (isPageReference(targetPage)) {
     return targetPage;
   }
 
   return null;
+}
+
+/**
+ * Confirm that the target page reference exposes the expected API.
+ * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage Candidate page reference.
+ * @returns {boolean} True when the reference is valid.
+ */
+function isPageReference(targetPage) {
+  return Boolean(targetPage && typeof targetPage.get === 'function');
 }
 
 /**
@@ -257,8 +320,8 @@ async function resolveIncomingOptionContext({
   const optionRef = db.doc(incomingOptionFullName);
   const optionSnap = await optionRef.get();
 
-  if (!optionSnap?.exists) {
-    await snapshot.ref.update({ processed: true });
+  if (!isSnapshotPresent(optionSnap)) {
+    await markSubmissionProcessed(snapshot);
     return null;
   }
 
@@ -364,7 +427,7 @@ async function resolveExistingPageContext(targetPage) {
  * Context object when the snapshot represents an existing page.
  */
 function buildExistingPageContext(existingPageSnap, targetPage) {
-  if (!existingPageSnap?.exists) {
+  if (!isSnapshotPresent(existingPageSnap)) {
     return null;
   }
 
@@ -372,6 +435,15 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
     pageDocRef: targetPage,
     pageNumber: existingPageSnap.data().number,
   };
+}
+
+/**
+ * Confirm that a Firestore snapshot exists.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot | null | undefined} snapshot Snapshot candidate.
+ * @returns {boolean} True when the snapshot is available.
+ */
+function isSnapshotPresent(snapshot) {
+  return Boolean(snapshot && snapshot.exists);
 }
 
 /**
@@ -569,7 +641,7 @@ async function ensureAuthorRecordExists({ db, batch, submission, randomUUID }) {
  */
 async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
   const authorSnap = await authorRef.get();
-  if (!authorSnap?.exists) {
+  if (!isSnapshotPresent(authorSnap)) {
     batch.set(authorRef, { uuid: randomUUID() });
   }
 }
@@ -591,7 +663,11 @@ function getLatestVariantName(variantsSnap) {
  */
 function extractVariantNameFromDoc(doc) {
   const data = getDocumentData(doc);
-  return data?.name ?? '';
+  if (!hasNamedProperty(data)) {
+    return '';
+  }
+
+  return data.name;
 }
 
 /**
@@ -605,6 +681,15 @@ function getDocumentData(doc) {
   }
 
   return doc.data();
+}
+
+/**
+ * Confirm that the data contains a valid name.
+ * @param {Record<string, unknown> | null} value Data candidate.
+ * @returns {value is { name: string }} True when a name exists.
+ */
+function hasNamedProperty(value) {
+  return Boolean(value && typeof value.name === 'string');
 }
 
 /**
@@ -635,7 +720,32 @@ function calculateNextVariantName(
  * @returns {import('firebase-admin/firestore').DocumentReference} Newly minted variant reference.
  */
 function resolveVariantRef({ pageDocRef, snapshotRef, randomUUID }) {
-  return getVariantCollection(pageDocRef).doc(snapshotRef?.id ?? randomUUID());
+  const variantId = resolveVariantDocumentId(snapshotRef, randomUUID);
+  return getVariantCollection(pageDocRef).doc(variantId);
+}
+
+/**
+ * Choose the identifier used for the variant document.
+ * @param {{ id?: string } | null | undefined} snapshotRef Optional snapshot reference.
+ * @param {() => string} randomUUID UUID generator fallback.
+ * @returns {string} Document identifier.
+ */
+function resolveVariantDocumentId(snapshotRef, randomUUID) {
+  const snapshotId = getSnapshotDocumentId(snapshotRef);
+  return snapshotId || randomUUID();
+}
+
+/**
+ * Extract the identifier from a snapshot when one exists.
+ * @param {{ id?: string } | null | undefined} snapshotRef Optional snapshot reference.
+ * @returns {string | undefined} Snapshot identifier when available.
+ */
+function getSnapshotDocumentId(snapshotRef) {
+  if (!snapshotRef) {
+    return undefined;
+  }
+
+  return snapshotRef.id;
 }
 
 /**
@@ -653,13 +763,26 @@ function buildVariantPayload(nextName, submission, helpers) {
   return {
     name: nextName,
     content: submission.content,
-    authorId: submission.authorId || null,
+    authorId: normalizeOptionalString(submission.authorId),
     authorName: submission.author,
-    incomingOption: submission.incomingOptionFullName || null,
+    incomingOption: normalizeOptionalString(submission.incomingOptionFullName),
     moderatorReputationSum: 0,
     rand: random(),
     createdAt: getServerTimestamp(),
   };
+}
+
+/**
+ * Normalize optional values to either the real value or null.
+ * @param {unknown} value Candidate value.
+ * @returns {unknown} Same value when defined, otherwise null.
+ */
+function normalizeOptionalString(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return null;
 }
 
 /**
@@ -805,14 +928,23 @@ async function finalizeSubmission({
     { merge: true }
   );
 
-  if (variantRef) {
-    batch.update(variantRef, { dirty: null });
-  }
+  queueVariantDirtyReset(batch, variantRef);
 
   batch.update(snapshot?.ref, { processed: true });
   await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
 
   await batch.commit();
+}
+
+/**
+ * Queue the variant dirty reset when a reference exists.
+ * @param {import('firebase-admin/firestore').WriteBatch} batch Batch used for updates.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} variantRef Variant reference.
+ */
+function queueVariantDirtyReset(batch, variantRef) {
+  if (variantRef) {
+    batch.update(variantRef, { dirty: null });
+  }
 }
 
 /**
@@ -842,12 +974,83 @@ async function processUnprocessedSubmission({
   const incomingOptionFullName = submission.incomingOptionFullName;
   const directPageNumber = submission.pageNumber;
 
-  if (shouldSkipSubmission({ incomingOptionFullName, directPageNumber })) {
-    await markSubmissionProcessed(snapshot);
+  if (
+    await shouldSkipAndMarkSubmission({
+      incomingOptionFullName,
+      directPageNumber,
+      snapshot,
+    })
+  ) {
     return null;
   }
 
   const batch = db.batch();
+
+  return processSubmissionWithContext({
+    submission,
+    snapshot,
+    db,
+    batch,
+    randomUUID,
+    random,
+    getServerTimestamp,
+    fieldValue,
+    incomingOptionFullName,
+    directPageNumber,
+  });
+}
+
+/**
+ * Skip and mark submissions that lack enough context.
+ * @param {object} params Inputs to evaluate and mark the submission.
+ * @param {string | undefined} params.incomingOptionFullName Incoming option document path.
+ * @param {number | undefined} params.directPageNumber Direct page number from the submission.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot to update.
+ * @returns {Promise<boolean>} True when the submission was skipped and marked.
+ */
+async function shouldSkipAndMarkSubmission({
+  incomingOptionFullName,
+  directPageNumber,
+  snapshot,
+}) {
+  if (shouldSkipSubmission({ incomingOptionFullName, directPageNumber })) {
+    await markSubmissionProcessed(snapshot);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Continue processing once the submission has enough context.
+ * @param {object} params Parameters required to resolve and finalize the submission.
+ * @param {object} params.submission Submission payload.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot.
+ * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used for updates.
+ * @param {() => string} params.randomUUID UUID generator for new documents.
+ * @param {() => number} params.random Random number generator for variant ordering.
+ * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
+ * @param {{
+ *   serverTimestamp: () => unknown,
+ *   increment: (value: number) => unknown,
+ * }} params.fieldValue FieldValue helpers used for stats updates.
+ * @param {string | undefined} params.incomingOptionFullName Option document path.
+ * @param {number | undefined} params.directPageNumber Direct page number.
+ * @returns {Promise<null>} Null once processing completes.
+ */
+async function processSubmissionWithContext({
+  submission,
+  snapshot,
+  db,
+  batch,
+  randomUUID,
+  random,
+  getServerTimestamp,
+  fieldValue,
+  incomingOptionFullName,
+  directPageNumber,
+}) {
   const pageContext = await resolveSubmissionPageContext({
     db,
     incomingOptionFullName,

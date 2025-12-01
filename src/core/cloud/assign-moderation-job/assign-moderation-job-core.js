@@ -333,11 +333,11 @@ function extractTokenErrorMessage(err) {
  * @returns {string} Error message string or an empty string.
  */
 function resolveTokenMessage(err) {
-  if (err && typeof err.message === 'string') {
-    return err.message;
+  if (!err || typeof err.message !== 'string') {
+    return '';
   }
 
-  return '';
+  return err.message;
 }
 
 /**
@@ -837,11 +837,7 @@ export function createFetchVariantSnapshotFromDbFactory(
  */
 function processGuardResult(result, context) {
   const guardContext = result?.context;
-  if (!guardContext) {
-    return context;
-  }
-
-  return mergeContexts(context, guardContext);
+  return (guardContext && mergeContexts(context, guardContext)) || context;
 }
 
 /**
@@ -986,21 +982,12 @@ async function resolveGuardContext(runGuards, req) {
  * @returns {object} Guard context.
  */
 function extractGuardContext(guardResult) {
-  ensureNoGuardError(guardResult);
-  return normalizeGuardContext(guardResult);
+  ensureGuardError(guardResult?.error);
+  return guardResult?.context ?? {};
 }
 
 /**
  * Throw when the guard runner produced an error.
- * @param {object | null | undefined} guardResult Guard runner output.
- * @returns {void}
- */
-function ensureNoGuardError(guardResult) {
-  ensureGuardError(guardResult?.error);
-}
-
-/**
- * Throw a response when a guard has reported an error.
  * @param {{ status: number, body?: string } | undefined} guardError Guard error response.
  * @returns {void}
  */
@@ -1011,55 +998,16 @@ function ensureGuardError(guardError) {
 }
 
 /**
- * Normalize the guard runner output to ensure a context object is returned.
- * @param {object | null | undefined} guardResult Guard runner output to normalize.
- * @returns {object} Guard context object when available; otherwise an empty object.
- */
-function normalizeGuardContext(guardResult) {
-  return resolveGuardContextPayload(guardResult);
-}
-
-/**
- * Normalize the guard runner output into a context object.
- * @param {{ context?: GuardContext } | null | undefined} guardResult Guard runner output.
- * @returns {GuardContext} Guard context when available, otherwise an empty object.
- */
-function resolveGuardContextPayload(guardResult) {
-  if (!guardResult || typeof guardResult.context === 'undefined') {
-    return {};
-  }
-
-  return guardResult.context;
-}
-
-/**
  * Validate user record or throw.
  * @param {object} userRecord User record.
  * @returns {object} Validated record.
  */
 function requireUserRecord(userRecord) {
-  ensureUserRecord(userRecord);
-  return userRecord;
-}
-
-/**
- * Ensure the guard context contains a moderator user record.
- * @param {object | undefined} userRecord Moderation user record.
- * @returns {void}
- */
-function ensureUserRecord(userRecord) {
-  ensureUserRecordContext(userRecord);
-}
-
-/**
- * Throw when the guard context lacks a moderator user record.
- * @param {object | undefined} userRecord Moderation user record.
- * @returns {void}
- */
-function ensureUserRecordContext(userRecord) {
   if (!userRecord || !userRecord.uid) {
     throw { status: 500, body: 'Moderator lookup failed' };
   }
+
+  return userRecord;
 }
 
 /**

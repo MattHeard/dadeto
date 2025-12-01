@@ -151,7 +151,24 @@ function resolvePreferredStoryIdentifier(snapshot, context) {
  * @returns {string | undefined} Submission identifier when available.
  */
 function resolveContextSubId(context) {
-  return context?.params?.subId;
+  if (!context) {
+    return undefined;
+  }
+
+  return resolveParamsSubId(context.params);
+}
+
+/**
+ * Read the sub identifier from the trigger params when available.
+ * @param {{ [key: string]: string } | undefined} params Trigger parameters.
+ * @returns {string | undefined} Identifier when present.
+ */
+function resolveParamsSubId(params) {
+  if (!params) {
+    return undefined;
+  }
+
+  return params.subId;
 }
 
 /**
@@ -280,7 +297,7 @@ function queueSubmissionWrites({
   batch.set(variantRef, {
     name: 'a',
     content: submission.content,
-    authorId: submission.authorId || null,
+    authorId: normalizeOptionalString(submission.authorId),
     authorName: submission.author,
     moderatorReputationSum: 0,
     rand: random(),
@@ -296,7 +313,57 @@ function queueSubmissionWrites({
   });
 
   batch.set(db.doc(`storyStats/${storyId}`), { variantCount: 1 });
-  batch.update(snapshot?.ref, { processed: true });
+  markSnapshotAsProcessed(batch, snapshot);
+}
+
+/**
+ * Normalize optional values to null when undefined.
+ * @param {unknown} value Candidate value.
+ * @returns {unknown} Null when value is undefined or null.
+ */
+function normalizeOptionalString(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return null;
+}
+
+/**
+ * Enqueue the processed marker on the snapshot document when available.
+ * @param {WriteBatch} batch Firestore batch instance.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
+ * @returns {void}
+ */
+function markSnapshotAsProcessed(batch, snapshot) {
+  const snapshotRef = getSnapshotReference(snapshot);
+  if (!snapshotRef) {
+    return;
+  }
+
+  batch.update(snapshotRef, { processed: true });
+}
+
+/**
+ * Resolve the Firestore document reference for a snapshot when available.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference when present.
+ */
+function getSnapshotReference(snapshot) {
+  if (!snapshot) {
+    return null;
+  }
+
+  return snapshot.ref;
+}
+
+/**
+ * Confirm that a Firestore snapshot exists.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Candidate snapshot.
+ * @returns {boolean} True when the snapshot and ref exist.
+ */
+function isSnapshotAvailable(snapshot) {
+  return Boolean(snapshot && snapshot.exists);
 }
 
 /**
@@ -326,7 +393,7 @@ async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
  */
 async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
   const authorSnap = await authorRef.get();
-  if (!authorSnap?.exists) {
+  if (!isSnapshotAvailable(authorSnap)) {
     batch.set(authorRef, { uuid: randomUUID() });
   }
 }
@@ -351,31 +418,63 @@ export function createProcessNewStoryHandler({
   return async function handleProcessNewStory(snapshot, context = {}) {
     const submission = resolveSubmission(snapshot);
 
-    if (submission.processed) {
-      return null;
-    }
-
-    const identifiers = resolveStoryIdentifiers(snapshot, context, randomUUID);
-    const pageNumber = await findAvailablePageNumberResolver(db, random);
-    const refs = createStoryReferences(db, identifiers);
-    const batch = db.batch();
-
-    queueSubmissionWrites({
-      batch,
-      db,
-      refs,
+    return processStorySubmission({
       submission,
-      pageNumber,
-      random,
-      randomUUID,
-      getServerTimestamp,
-      storyId: identifiers.storyId,
       snapshot,
+      context,
+      db,
+      randomUUID,
+      random,
+      getServerTimestamp,
     });
-
-    await ensureAuthorRecord({ batch, db, submission, randomUUID });
-
-    await batch.commit();
-    return null;
   };
+}
+
+/**
+ * Orchestrate the steps required to persist a new story submission.
+ * @param {object} params Parameters required to process the submission.
+ * @param {Record<string, unknown>} params.submission Submission payload.
+ * @param {FirestoreDocumentSnapshot | null | undefined} params.snapshot Trigger snapshot.
+ * @param {{ params?: Record<string, string> } | undefined} params.context Trigger context.
+ * @param {Firestore} params.db Firestore instance.
+ * @param {() => string} params.randomUUID UUID generator.
+ * @param {() => number} params.random Random number generator.
+ * @param {() => FieldValue} params.getServerTimestamp Server timestamp helper.
+ * @returns {Promise<null>} Null once work completes.
+ */
+async function processStorySubmission({
+  submission,
+  snapshot,
+  context,
+  db,
+  randomUUID,
+  random,
+  getServerTimestamp,
+}) {
+  if (submission.processed) {
+    return null;
+  }
+
+  const identifiers = resolveStoryIdentifiers(snapshot, context, randomUUID);
+  const pageNumber = await findAvailablePageNumberResolver(db, random);
+  const refs = createStoryReferences(db, identifiers);
+  const batch = db.batch();
+
+  queueSubmissionWrites({
+    batch,
+    db,
+    refs,
+    submission,
+    pageNumber,
+    random,
+    randomUUID,
+    getServerTimestamp,
+    storyId: identifiers.storyId,
+    snapshot,
+  });
+
+  await ensureAuthorRecord({ batch, db, submission, randomUUID });
+
+  await batch.commit();
+  return null;
 }
