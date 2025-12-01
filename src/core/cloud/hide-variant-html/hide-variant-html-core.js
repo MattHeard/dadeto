@@ -311,9 +311,18 @@ function deleteIfPathValid(path, deleteFn) {
  * @returns {void}
  */
 function ensureBucketName(bucketName) {
-  if (typeof bucketName !== 'string' || bucketName.trim() === '') {
+  if (!isValidBucketName(bucketName)) {
     throw new TypeError('bucketName must be a non-empty string');
   }
+}
+
+/**
+ * Confirm the bucket name is a trimmed string.
+ * @param {unknown} value Candidate bucket name.
+ * @returns {boolean} True when the value is a filled string.
+ */
+function isValidBucketName(value) {
+  return typeof value === 'string' && value.trim() !== '';
 }
 
 /**
@@ -322,9 +331,18 @@ function ensureBucketName(bucketName) {
  * @returns {void}
  */
 function ensureStorageBucketComponent(storage) {
-  if (!storage || typeof storage.bucket !== 'function') {
+  if (!hasBucketFunction(storage)) {
     throw new TypeError('storage.bucket must be a function');
   }
+}
+
+/**
+ * Determine whether the storage helper exposes a bucket method.
+ * @param {unknown} storage Storage dependency.
+ * @returns {boolean} True when storage.bucket is callable.
+ */
+function hasBucketFunction(storage) {
+  return Boolean(storage && typeof storage.bucket === 'function');
 }
 
 /**
@@ -473,11 +491,20 @@ export function getVariantVisibility(snapshot) {
  * @returns {*} The snapshot data or `null` when missing.
  */
 function resolveSnapshotData(snapshot) {
-  if (!snapshot || typeof snapshot.data !== 'function') {
+  if (!hasSnapshotData(snapshot)) {
     return null;
   }
 
   return snapshot.data();
+}
+
+/**
+ * Confirm the snapshot exposes a callable data method.
+ * @param {{ data?: unknown } | null | undefined} snapshot Snapshot candidate.
+ * @returns {boolean} True when the snapshot data helper exists.
+ */
+function hasSnapshotData(snapshot) {
+  return Boolean(snapshot && typeof snapshot.data === 'function');
 }
 
 /**
@@ -486,11 +513,20 @@ function resolveSnapshotData(snapshot) {
  * @returns {number} The visibility score or zero when unavailable.
  */
 function extractVisibility(data) {
-  if (data && typeof data.visibility === 'number') {
+  if (hasVisibilityValue(data)) {
     return data.visibility;
   }
 
   return 0;
+}
+
+/**
+ * Check whether the data contains a numeric visibility value.
+ * @param {{ visibility?: unknown } | null | undefined} data Snapshot payload.
+ * @returns {data is { visibility: number }} True when a numeric visibility is available.
+ */
+function hasVisibilityValue(data) {
+  return Boolean(data && typeof data.visibility === 'number');
 }
 
 /**
@@ -501,27 +537,61 @@ function extractVisibility(data) {
  * @param {number} [options.visibilityThreshold] Threshold at which the HTML remains visible.
  * @returns {(change: { before: *, after: { exists: boolean } }) => Promise<null>} Firestore change handler.
  */
-export function createHandleVariantVisibilityChange({
+export function createHandleVariantVisibilityChange(options) {
+  const dependencies = buildVariantVisibilityDependencies(options);
+
+  return createVisibilityChangeHandler(
+    dependencies.removeVariantHtmlForSnapshot,
+    dependencies.visibilityTransition
+  );
+}
+
+/**
+ * Validate dependencies required by the visibility change handler.
+ * @param {object} options Handler configuration.
+ * @param {(snapshot: *) => Promise<null>} options.removeVariantHtmlForSnapshot Renderer remover.
+ * @param {(snapshot: *) => number} [options.getVisibility] Optional visibility extractor.
+ * @param {number} [options.visibilityThreshold] Visibility cutoff.
+ * @returns {{
+ *   removeVariantHtmlForSnapshot: (snapshot: *) => Promise<null>,
+ *   visibilityTransition: (change: { before: *, after: * }) => Promise<null>,
+ * }} Validated dependencies.
+ */
+function buildVariantVisibilityDependencies({
   removeVariantHtmlForSnapshot,
   getVisibility = getVariantVisibility,
   visibilityThreshold = DEFAULT_VISIBILITY_THRESHOLD,
 }) {
+  assertVariantVisibilityDependencies(
+    removeVariantHtmlForSnapshot,
+    getVisibility
+  );
+
+  return {
+    removeVariantHtmlForSnapshot,
+    visibilityTransition: createVisibilityTransitionHandler({
+      removeVariantHtmlForSnapshot,
+      getVisibility,
+      visibilityThreshold,
+    }),
+  };
+}
+
+/**
+ * Assert that the required variant visibility helpers are provided.
+ * @param {(snapshot: *) => Promise<null>} removeVariantHtmlForSnapshot Render helper.
+ * @param {(snapshot: *) => number} getVisibility Visibility extractor.
+ * @returns {void}
+ */
+function assertVariantVisibilityDependencies(
+  removeVariantHtmlForSnapshot,
+  getVisibility
+) {
   assertFunctionDependency(
     'removeVariantHtmlForSnapshot',
     removeVariantHtmlForSnapshot
   );
   assertFunctionDependency('getVisibility', getVisibility);
-
-  const visibilityTransition = createVisibilityTransitionHandler({
-    removeVariantHtmlForSnapshot,
-    getVisibility,
-    visibilityThreshold,
-  });
-
-  return createVisibilityChangeHandler(
-    removeVariantHtmlForSnapshot,
-    visibilityTransition
-  );
 }
 
 /**
@@ -543,8 +613,11 @@ function createVisibilityTransitionHandler({
     const afterVisibility = getVisibility(after);
 
     if (
-      beforeVisibility >= visibilityThreshold &&
-      afterVisibility < visibilityThreshold
+      shouldRemoveRenderedHtml(
+        beforeVisibility,
+        afterVisibility,
+        visibilityThreshold
+      )
     ) {
       return removeVariantHtmlForSnapshot(after);
     }
@@ -567,10 +640,34 @@ function createVisibilityChangeHandler(
     const before = change.before;
     const after = change.after;
 
-    if (!after.exists) {
+    if (wasDocumentDeleted(after)) {
       return removeVariantHtmlForSnapshot(before);
     }
 
     return visibilityTransition({ before, after });
   };
+}
+
+/**
+ * Determine whether the document after snapshot indicates deletion.
+ * @param {{ exists?: boolean } | null | undefined} after After snapshot.
+ * @returns {boolean} True when the document no longer exists.
+ */
+function wasDocumentDeleted(after) {
+  return Boolean(after && !after.exists);
+}
+
+/**
+ * Decide whether the visibility change should remove rendered HTML.
+ * @param {number} beforeVisibility Visibility before the update.
+ * @param {number} afterVisibility Visibility after the update.
+ * @param {number} threshold Threshold for removal.
+ * @returns {boolean} True when visibility dropped below the threshold.
+ */
+function shouldRemoveRenderedHtml(
+  beforeVisibility,
+  afterVisibility,
+  threshold
+) {
+  return beforeVisibility >= threshold && afterVisibility < threshold;
 }
