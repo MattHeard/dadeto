@@ -2076,14 +2076,32 @@ export function initAdminApp({
 export function createRemoveItem(getStorage) {
   return key => {
     const storage = getStorage();
-    if (!storage) {
-      throw new Error('sessionStorage is not available');
-    }
-    if (typeof storage.removeItem !== 'function') {
-      throw new Error('sessionStorage.removeItem is not a function');
-    }
+    ensureStorageAvailable(storage);
+    ensureRemoveItemFunction(storage);
     storage.removeItem(key);
   };
+}
+
+/**
+ * Ensure the provided storage object exists.
+ * @param {Storage | null | undefined} storage Candidate session storage object.
+ * @returns {void}
+ */
+function ensureStorageAvailable(storage) {
+  if (!storage) {
+    throw new Error('sessionStorage is not available');
+  }
+}
+
+/**
+ * Ensure the provided storage exposes a removeItem function.
+ * @param {Storage} storage Session storage object exposing removeItem.
+ * @returns {void}
+ */
+function ensureRemoveItemFunction(storage) {
+  if (typeof storage.removeItem !== 'function') {
+    throw new Error('sessionStorage.removeItem is not a function');
+  }
 }
 
 /**
