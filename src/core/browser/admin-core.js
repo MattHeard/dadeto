@@ -2162,7 +2162,15 @@ function hasGoogleAccounts(win) {
  * @returns {Window} Resolved window object.
  */
 function resolveScopeWindow(scope) {
-  const win = scope?.window;
+  return ensureWindowAvailable(scope?.window);
+}
+
+/**
+ * Throw when the provided window reference is missing.
+ * @param {Window | undefined} win Candidate window object.
+ * @returns {Window} Verified window object.
+ */
+function ensureWindowAvailable(win) {
   if (!win) {
     throw new Error('window is not available');
   }
