@@ -166,14 +166,20 @@ export function createSignOut(authInstance, globalScope) {
 export function createSignOutHandlerFactory(getAuthFn, globalScope) {
   let signOutHandler;
 
-  return () => {
+  return () => ensureSignOutHandler();
+
+  /**
+   * Ensure the sign-out handler has been initialized.
+   * @returns {() => Promise<void>} Sign-out handler.
+   */
+  function ensureSignOutHandler() {
     if (!signOutHandler) {
       const auth = getAuthFn();
       signOutHandler = createSignOut(auth, globalScope);
     }
 
     return signOutHandler;
-  };
+  }
 }
 
 /**
@@ -2107,6 +2113,15 @@ export function createGoogleAccountsId(scope = globalThis) {
  */
 function resolveGoogleAccountsId(scope) {
   const win = scope?.window;
+  return getGoogleAccountsIdFromWindow(win);
+}
+
+/**
+ * Read the Google Accounts client off the provided window when available.
+ * @param {Window | undefined} win Candidate window object.
+ * @returns {GoogleAccountsClient | undefined} Google Accounts client or undefined.
+ */
+function getGoogleAccountsIdFromWindow(win) {
   if (!hasGoogleAccounts(win)) {
     return undefined;
   }
