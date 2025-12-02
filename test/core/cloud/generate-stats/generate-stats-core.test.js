@@ -442,11 +442,19 @@ describe('createGenerateStatsCore', () => {
       mockDb.doc = docMock;
       mockDb.get = getMock;
 
-      const topStories = await core.getTopStories();
+      const recordedLimit = { value: null };
+      const originalLimit = mockDb.limit.bind(mockDb);
+      mockDb.limit = limit => {
+        recordedLimit.value = limit;
+        return originalLimit(limit);
+      };
+
+      const topStories = await core.getTopStories(mockDb, 10);
       expect(topStories).toEqual([
         { title: 'Story One', variantCount: 5 },
         { title: 'story2', variantCount: 0 },
       ]);
+      expect(recordedLimit.value).toBe(10);
     });
   });
 
