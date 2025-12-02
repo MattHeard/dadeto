@@ -428,8 +428,22 @@ export function createGenerateStatsCore({
    * @param {number} [limit] - Maximum number of stories to fetch. Defaults to 5.
    * @returns {Promise<Array<{ title: string, variantCount: number }>>} Top stories data.
    */
-  async function getTopStories(dbRef = db, limit = 5) {
-    return loadTopStories(dbRef, limit);
+  async function getTopStories(dbRef = db, limit) {
+    const resolvedLimit = resolveTopStoriesLimit(limit);
+    return loadTopStories(dbRef, resolvedLimit);
+  }
+
+  /**
+   * Resolve the limit used when fetching top stories.
+   * @param {number | undefined} limitCandidate Candidate limit provided by the caller.
+   * @returns {number} Limit guaranteed to be a finite number.
+   */
+  function resolveTopStoriesLimit(limitCandidate) {
+    if (limitCandidate === undefined) {
+      return 5;
+    }
+
+    return limitCandidate;
   }
 
   /**
