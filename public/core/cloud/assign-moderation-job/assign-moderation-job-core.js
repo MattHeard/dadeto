@@ -930,9 +930,27 @@ async function executeSingleGuard(guard, context) {
  * @param {GuardResult} result Guard evaluation output.
  */
 function handleGuardError(result) {
-  if (result && result.error) {
-    throw result;
+  const error = getGuardError(result);
+  if (error) {
+    throwGuardError(error);
   }
+}
+
+/**
+ * Determine whether the guard result contains an error.
+ * @param {GuardResult} result Guard execution outcome.
+ * @returns {GuardError | undefined} Guard error when present.
+ */
+function getGuardError(result) {
+  return result?.error;
+}
+
+/**
+ * Throw the guard result error.
+ * @param {GuardError} error Guard error to throw.
+ */
+function throwGuardError(error) {
+  throw { error };
 }
 
 /**
@@ -1095,17 +1113,21 @@ function getGuardContextValue(guardResult) {
 }
 
 /**
- * Resolve the guard context when it exists.
- * @param {GuardResult | undefined} guardResult Guard runner output.
- * @returns {GuardContext} Guard context or empty object.
+ * Resolve the guard context while providing a safe fallback.
+ * @param {GuardResult | undefined} guardResult Guard execution output.
+ * @returns {GuardContext} Guard context when available; otherwise empty object.
  */
 function resolveGuardContextValue(guardResult) {
-  const guardContext = guardResult?.context;
-  if (!guardContext) {
-    return {};
-  }
+  return getContextOrDefault(guardResult?.context);
+}
 
-  return guardContext;
+/**
+ * Return the provided context or an empty object.
+ * @param {GuardContext | undefined} context Guard context candidate.
+ * @returns {GuardContext} Context when provided; otherwise an empty object.
+ */
+function getContextOrDefault(context) {
+  return context ?? {};
 }
 
 /**
