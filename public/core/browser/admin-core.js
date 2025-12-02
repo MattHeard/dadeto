@@ -204,10 +204,17 @@ export function createGoogleAuthModule(deps) {
  */
 export function isAdminWithDeps(storage, jsonParser, decodeBase64) {
   const token = getIdToken(storage);
-  if (!token) {
-    return false;
-  }
+  return Boolean(token && isAdminToken(token, jsonParser, decodeBase64));
+}
 
+/**
+ * Determine whether the provided token belongs to the admin UID.
+ * @param {string} token JWT token string.
+ * @param {typeof JSON} jsonParser JSON helper with `parse`.
+ * @param {(value: string) => string} decodeBase64 Base64 decoder.
+ * @returns {boolean} True when the token payload contains the admin UID.
+ */
+function isAdminToken(token, jsonParser, decodeBase64) {
   try {
     const payload = token.split('.')[1];
     const json = jsonParser.parse(
