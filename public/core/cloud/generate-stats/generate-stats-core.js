@@ -429,6 +429,16 @@ export function createGenerateStatsCore({
    * @returns {Promise<Array<{ title: string, variantCount: number }>>} Top stories data.
    */
   async function getTopStories(dbRef = db, limit = 5) {
+    return loadTopStories(dbRef, limit);
+  }
+
+  /**
+   * Load story stats documents ready for conversion into metadata.
+   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+   * @param {number} limit Maximum number of entries to fetch.
+   * @returns {Promise<Array<{ title: string, variantCount: number }>>} Story metadata.
+   */
+  async function loadTopStories(dbRef, limit) {
     const statsSnap = await dbRef
       .collection('storyStats')
       .orderBy('variantCount', 'desc')

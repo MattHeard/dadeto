@@ -2268,10 +2268,31 @@ export function createInitGoogleSignInHandlerFactory(deps) {
  * @returns {(token: string) => string} Credential factory.
  */
 export function createCredentialFactory(provider) {
+  ensureGoogleAuthProvider(provider);
+  return validateCredentialFactory(provider);
+}
+
+/**
+ * Ensure the Google Auth provider is available.
+ * @param {{ credential?: (token: string) => string } | null | undefined} provider - Provider under validation.
+ * @returns {{ credential?: (token: string) => string }} Validated provider reference.
+ * @throws {TypeError} When the provider is missing.
+ */
+function ensureGoogleAuthProvider(provider) {
   if (!provider) {
     throw new TypeError('GoogleAuthProvider must be provided');
   }
 
+  return provider;
+}
+
+/**
+ * Validate the credential helper exposed by the Google Auth provider.
+ * @param {{ credential?: (token: string) => string }} provider - Provider exposing the credential helper.
+ * @returns {(token: string) => string} Credential factory extracted from the provider.
+ * @throws {TypeError} When the credential helper is not a function.
+ */
+function validateCredentialFactory(provider) {
   if (typeof provider.credential !== 'function') {
     throw new TypeError('GoogleAuthProvider must expose credential');
   }
