@@ -2198,7 +2198,15 @@ function resolveMatchMediaFunction(win) {
  * @returns {Document} Resolved document object.
  */
 function resolveScopeDocument(scope) {
-  const doc = scope?.document;
+  return ensureDocumentAvailable(scope?.document);
+}
+
+/**
+ * Throw when the provided document reference is missing.
+ * @param {Document | undefined} doc Candidate document object.
+ * @returns {Document} Verified document object.
+ */
+function ensureDocumentAvailable(doc) {
   if (!doc) {
     throw new Error('document is not available');
   }
