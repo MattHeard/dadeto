@@ -1413,17 +1413,22 @@ export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
  * @returns {{ uid?: string } | null} Decoded payload when the UID matches.
  */
 function ensureAdminIdentity(decoded, adminUid, res) {
-  if (!decoded) {
-    res.status(403).send('Forbidden');
-    return null;
-  }
-
-  if (decoded.uid !== adminUid) {
+  if (isInvalidAdminIdentity(decoded, adminUid)) {
     res.status(403).send('Forbidden');
     return null;
   }
 
   return decoded;
+}
+
+/**
+ * Determine whether the decoded token is missing or does not match the expected admin UID.
+ * @param {{ uid?: string } | null} decoded Decoded token payload.
+ * @param {string} adminUid Expected admin user identifier.
+ * @returns {boolean} True when the decoded payload is invalid for admin use.
+ */
+function isInvalidAdminIdentity(decoded, adminUid) {
+  return !decoded || decoded.uid !== adminUid;
 }
 
 /**
