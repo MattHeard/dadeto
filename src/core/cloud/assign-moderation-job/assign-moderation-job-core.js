@@ -328,12 +328,21 @@ function extractTokenErrorMessage(err) {
 }
 
 /**
+ * Determine whether the error exposes a string message.
+ * @param {unknown} err Error captured during token validation.
+ * @returns {boolean} True when the message can be read as a string.
+ */
+function hasTokenMessage(err) {
+  return Boolean(err && typeof err.message === 'string');
+}
+
+/**
  * Extract the message text from the provided error object when available.
  * @param {unknown} err Error captured during token validation.
  * @returns {string} Error message string or an empty string.
  */
 function resolveTokenMessage(err) {
-  if (!err || typeof err.message !== 'string') {
+  if (!hasTokenMessage(err)) {
     return '';
   }
 
