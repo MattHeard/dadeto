@@ -566,11 +566,10 @@ export function createHandleVariantVisibilityChange(options) {
  *   visibilityTransition: (change: { before: *, after: * }) => Promise<null>,
  * }} Validated dependencies.
  */
-function buildVariantVisibilityDependencies({
-  removeVariantHtmlForSnapshot,
-  getVisibility = getVariantVisibility,
-  visibilityThreshold = DEFAULT_VISIBILITY_THRESHOLD,
-}) {
+function buildVariantVisibilityDependencies(options) {
+  const { removeVariantHtmlForSnapshot, getVisibility, visibilityThreshold } =
+    resolveVariantVisibilityOptions(options);
+
   assertVariantVisibilityDependencies(
     removeVariantHtmlForSnapshot,
     getVisibility
@@ -584,6 +583,56 @@ function buildVariantVisibilityDependencies({
       visibilityThreshold,
     }),
   };
+}
+
+/**
+ * Resolve visibility dependency defaults.
+ * @param {object} options Handler config.
+ * @param {(snapshot: *) => Promise<null>} options.removeVariantHtmlForSnapshot Renderer remover.
+ * @param {(snapshot: *) => number} [options.getVisibility] Optional visibility extractor.
+ * @param {number} [options.visibilityThreshold] Visibility cutoff.
+ * @returns {{
+ *   removeVariantHtmlForSnapshot: (snapshot: *) => Promise<null>,
+ *   getVisibility: (snapshot: *) => number,
+ *   visibilityThreshold: number,
+ * }} Normalized dependency set.
+ */
+function resolveVariantVisibilityOptions({
+  removeVariantHtmlForSnapshot,
+  getVisibility,
+  visibilityThreshold,
+}) {
+  return {
+    removeVariantHtmlForSnapshot,
+    getVisibility: selectVisibilityExtractor(getVisibility),
+    visibilityThreshold: selectVisibilityThreshold(visibilityThreshold),
+  };
+}
+
+/**
+ * Choose the visibility extractor, defaulting to the built-in helper.
+ * @param {(snapshot: *) => number | undefined} getVisibility Candidate extractor.
+ * @returns {(snapshot: *) => number} Resolved extractor function.
+ */
+function selectVisibilityExtractor(getVisibility) {
+  if (typeof getVisibility === 'function') {
+    return getVisibility;
+  }
+
+  return getVariantVisibility;
+}
+
+/**
+ * Resolve the visibility threshold, falling back to the default.
+ * @param {number | undefined} visibilityThreshold Candidate threshold.
+ * @returns {number} Resolved visibility threshold.
+ */
+function selectVisibilityThreshold(visibilityThreshold) {
+  if (visibilityThreshold === undefined) {
+    return DEFAULT_VISIBILITY_THRESHOLD;
+  }
+
+  return visibilityThreshold;
 }
 
 /**
