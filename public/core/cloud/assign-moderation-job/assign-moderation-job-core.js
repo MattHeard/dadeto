@@ -594,7 +594,25 @@ export function configureUrlencodedBodyParser(appInstance, expressModule) {
  * @returns {boolean} True if empty.
  */
 function isSnapshotEmpty(snapshot, variantDoc) {
-  return !variantDoc || Boolean(snapshot?.empty);
+  return isMissingVariantDoc(variantDoc) || snapshotIsEmpty(snapshot);
+}
+
+/**
+ * Determine whether a variant document is missing from the snapshot.
+ * @param {unknown} variantDoc Candidate document.
+ * @returns {boolean} True when no variant document was returned.
+ */
+function isMissingVariantDoc(variantDoc) {
+  return !variantDoc;
+}
+
+/**
+ * Resolve whether the snapshot explicitly marked itself empty.
+ * @param {{ empty?: unknown } | undefined} snapshot Snapshot candidate.
+ * @returns {boolean} True when the snapshot declares itself empty.
+ */
+function snapshotIsEmpty(snapshot) {
+  return Boolean(snapshot?.empty);
 }
 
 /**
@@ -882,11 +900,21 @@ function mergeContexts(context, guardContext) {
  */
 async function executeSingleGuard(guard, context) {
   const result = await guard(context);
-  if (result && result.error) {
-    return { error: result.error };
+  const error = extractGuardError(result);
+  if (error) {
+    return { error };
   }
 
   return { context: processGuardResult(result, context) };
+}
+
+/**
+ * Extract the guard error when it exists.
+ * @param {GuardResult} result Guard execution outcome.
+ * @returns {GuardError | undefined} Error to short-circuit the chain.
+ */
+function extractGuardError(result) {
+  return result?.error;
 }
 
 /**
@@ -900,13 +928,22 @@ function createGuardChain(guards) {
     let context = initialContext;
     for (const guard of guards) {
       const guardResult = await executeSingleGuard(guard, context);
-      if (guardResult.error) {
+      if (shouldShortCircuit(guardResult)) {
         return guardResult;
       }
       context = guardResult.context;
     }
     return { context };
   };
+}
+
+/**
+ * Determine whether the guard chain should halt early.
+ * @param {{ error?: GuardError }} guardResult Guard execution outcome.
+ * @returns {boolean} True when an error occurred.
+ */
+function shouldShortCircuit(guardResult) {
+  return Boolean(guardResult.error);
 }
 
 /**
