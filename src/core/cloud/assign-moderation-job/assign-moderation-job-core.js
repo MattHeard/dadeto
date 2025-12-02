@@ -212,11 +212,12 @@ function isTestDeploymentEnvironment(environmentVariables) {
  * @returns {string[]} Origin values permitted to use the moderation endpoint.
  */
 export function getAllowedOrigins(environmentVariables) {
+  let allowedOrigins = productionOrigins;
   if (isTestDeploymentEnvironment(environmentVariables)) {
-    return getTestOrigins(environmentVariables?.PLAYWRIGHT_ORIGIN);
+    allowedOrigins = getTestOrigins(environmentVariables?.PLAYWRIGHT_ORIGIN);
   }
 
-  return productionOrigins;
+  return allowedOrigins;
 }
 
 /**
@@ -845,8 +846,22 @@ export function createFetchVariantSnapshotFromDbFactory(
  * @returns {GuardContext} Combined context with accumulated data.
  */
 function processGuardResult(result, context) {
-  const guardContext = result?.context;
-  return (guardContext && mergeContexts(context, guardContext)) || context;
+  return mergeGuardContext(result?.context, context);
+}
+
+/**
+ * Merge guard context when available.
+ * @param {GuardContext | undefined} guardContext New context data, if provided.
+ * @param {GuardContext} context Context to enrich.
+ * @returns {GuardContext} Enriched context when guardContext exists; otherwise the original context.
+ */
+function mergeGuardContext(guardContext, context) {
+  let mergedContext = context;
+  if (guardContext) {
+    mergedContext = mergeContexts(context, guardContext);
+  }
+
+  return mergedContext;
 }
 
 /**
