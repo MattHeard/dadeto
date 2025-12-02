@@ -2144,21 +2144,21 @@ function getGoogleAccountsIdFromWindow(win) {
 }
 
 /**
- * Check whether the provided window exposes Google Accounts helpers.
- * @param {Window | undefined} win Candidate window object.
- * @returns {boolean} True when `google.accounts` exists.
- */
-function hasGoogleAccounts(win) {
-  return Boolean(getGoogleAccountsCandidate(win));
-}
-
-/**
  * Retrieve the Google Accounts object from the window when available.
  * @param {Window | undefined} win Candidate window object.
  * @returns {unknown} Google Accounts object or `undefined`.
  */
 function getGoogleAccountsCandidate(win) {
-  return win?.google?.accounts;
+  return getGoogleObj(win)?.accounts;
+}
+
+/**
+ * Pull the `google` namespace off the window when available.
+ * @param {Window | undefined} win Candidate window object.
+ * @returns {unknown} Google helper object.
+ */
+function getGoogleObj(win) {
+  return win?.google;
 }
 
 /**
