@@ -1344,7 +1344,29 @@ export function getHeaderFromHeaders(req) {
  * @returns {unknown} Header value when present; otherwise undefined.
  */
 export function resolveHeaderValue(headers) {
-  return headers?.Authorization ?? headers?.authorization;
+  return getAuthorizationValue(headers);
+}
+
+/**
+ * Retrieve the authorization header value from the provided headers map.
+ * @param {{ Authorization?: unknown, authorization?: unknown } | undefined} headers Candidate headers object.
+ * @returns {unknown} Header value when present; otherwise `undefined`.
+ */
+function getAuthorizationValue(headers) {
+  if (!headers) {
+    return undefined;
+  }
+
+  return getAuthorizationCandidate(headers);
+}
+
+/**
+ * Look up the authorization candidate on the headers map.
+ * @param {{ Authorization?: unknown, authorization?: unknown }} headers Header map guaranteed to be defined.
+ * @returns {unknown} Authorization header value when present; otherwise `undefined`.
+ */
+function getAuthorizationCandidate(headers) {
+  return headers.Authorization ?? headers.authorization;
 }
 
 /**
