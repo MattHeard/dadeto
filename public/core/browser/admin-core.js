@@ -2140,11 +2140,7 @@ function resolveGoogleAccountsId(scope) {
  * @returns {GoogleAccountsClient | undefined} Google Accounts client or undefined.
  */
 function getGoogleAccountsIdFromWindow(win) {
-  if (!hasGoogleAccounts(win)) {
-    return undefined;
-  }
-
-  return win.google.accounts.id;
+  return getGoogleAccountsCandidate(win)?.id;
 }
 
 /**
@@ -2153,7 +2149,16 @@ function getGoogleAccountsIdFromWindow(win) {
  * @returns {boolean} True when `google.accounts` exists.
  */
 function hasGoogleAccounts(win) {
-  return Boolean(win?.google?.accounts);
+  return Boolean(getGoogleAccountsCandidate(win));
+}
+
+/**
+ * Retrieve the Google Accounts object from the window when available.
+ * @param {Window | undefined} win Candidate window object.
+ * @returns {unknown} Google Accounts object or `undefined`.
+ */
+function getGoogleAccountsCandidate(win) {
+  return win?.google?.accounts;
 }
 
 /**
@@ -2184,12 +2189,20 @@ function ensureWindowAvailable(win) {
  * @returns {(query: string) => MediaQueryList} Validated matchMedia function.
  */
 function resolveMatchMediaFunction(win) {
-  const matchMedia = win.matchMedia;
-  if (typeof matchMedia !== 'function') {
+  return ensureMatchMediaFunction(win.matchMedia);
+}
+
+/**
+ * Throw when the provided matchMedia helper is invalid.
+ * @param {((query: string) => MediaQueryList) | undefined} matchMediaCandidate Candidate helper.
+ * @returns {(query: string) => MediaQueryList} Verified matchMedia helper.
+ */
+function ensureMatchMediaFunction(matchMediaCandidate) {
+  if (typeof matchMediaCandidate !== 'function') {
     throw new Error('window.matchMedia is not a function');
   }
 
-  return matchMedia;
+  return matchMediaCandidate;
 }
 
 /**
