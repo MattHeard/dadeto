@@ -212,12 +212,32 @@ function isTestDeploymentEnvironment(environmentVariables) {
  * @returns {string[]} Origin values permitted to use the moderation endpoint.
  */
 export function getAllowedOrigins(environmentVariables) {
-  let allowedOrigins = productionOrigins;
-  if (isTestDeploymentEnvironment(environmentVariables)) {
-    allowedOrigins = getTestOrigins(environmentVariables?.PLAYWRIGHT_ORIGIN);
+  return resolveAllowedOrigins(environmentVariables);
+}
+
+/**
+ * Determine the allowed origins based on the deployment.
+ * @param {{ DENDRITE_ENVIRONMENT?: string, PLAYWRIGHT_ORIGIN?: string } | undefined} environmentVariables Runtime environment variables.
+ * @returns {string[]} Whitelisted origins.
+ */
+function resolveAllowedOrigins(environmentVariables) {
+  return getEnvironmentOrigins({
+    isTestDeployment: isTestDeploymentEnvironment(environmentVariables),
+    playwrightOrigin: environmentVariables?.PLAYWRIGHT_ORIGIN,
+  });
+}
+
+/**
+ * Choose between test or production origins.
+ * @param {{ isTestDeployment: boolean, playwrightOrigin?: string }} params Decision inputs.
+ * @returns {string[]} Resolved origins list.
+ */
+function getEnvironmentOrigins({ isTestDeployment, playwrightOrigin }) {
+  if (isTestDeployment) {
+    return getTestOrigins(playwrightOrigin);
   }
 
-  return allowedOrigins;
+  return productionOrigins;
 }
 
 /**
@@ -925,16 +945,26 @@ function extractGuardError(result) {
  */
 function createGuardChain(guards) {
   return async function runChain(initialContext) {
-    let context = initialContext;
-    for (const guard of guards) {
-      const guardResult = await executeSingleGuard(guard, context);
-      if (shouldShortCircuit(guardResult)) {
-        return guardResult;
-      }
-      context = guardResult.context;
-    }
-    return { context };
+    return executeGuardSequence(guards, initialContext);
   };
+}
+
+/**
+ * Execute guards sequentially.
+ * @param {GuardFunction[]} guards Guard list.
+ * @param {GuardContext} initialContext Starting context.
+ * @returns {Promise<{ error?: GuardError, context?: GuardContext }>} Guard chain result.
+ */
+async function executeGuardSequence(guards, initialContext) {
+  let context = initialContext;
+  for (const guard of guards) {
+    const guardResult = await executeSingleGuard(guard, context);
+    if (shouldShortCircuit(guardResult)) {
+      return guardResult;
+    }
+    context = guardResult.context;
+  }
+  return { context };
 }
 
 /**
@@ -1005,13 +1035,22 @@ export function createAssignModerationWorkflow({
 
       return { status: 201, body: '' };
     } catch (err) {
-      if (isResponse(err)) {
-        return err;
-      }
-
-      throw err;
+      return handleAssignmentError(err);
     }
   };
+}
+
+/**
+ * Resolve assignment errors.
+ * @param {unknown} err Error thrown during assignment.
+ * @returns {{ status: number, body: string } | never} Summary response when the error is a response; otherwise rethrows.
+ */
+function handleAssignmentError(err) {
+  if (isResponse(err)) {
+    return err;
+  }
+
+  throw err;
 }
 
 /**
@@ -1043,7 +1082,25 @@ async function resolveGuardContext(runGuards, req) {
  * @returns {object} Guard context.
  */
 function extractGuardContext(guardResult) {
+  ensureGuardErrorFromResult(guardResult);
+  return getGuardContextValue(guardResult);
+}
+
+/**
+ * Ensure the guard result exposes no errors.
+ * @param {GuardResult | undefined} guardResult Guard runner output.
+ * @returns {void}
+ */
+function ensureGuardErrorFromResult(guardResult) {
   ensureGuardError(guardResult?.error);
+}
+
+/**
+ * Retrieve the guard context when available.
+ * @param {GuardResult | undefined} guardResult Guard runner output.
+ * @returns {GuardContext} Guard context or fallback.
+ */
+function getGuardContextValue(guardResult) {
   return guardResult?.context ?? {};
 }
 
@@ -1064,11 +1121,20 @@ function ensureGuardError(guardError) {
  * @returns {object} Validated record.
  */
 function requireUserRecord(userRecord) {
-  if (!userRecord || !userRecord.uid) {
+  if (!isValidUserRecord(userRecord)) {
     throw { status: 500, body: 'Moderator lookup failed' };
   }
 
   return userRecord;
+}
+
+/**
+ * Determine whether the user record contains a UID.
+ * @param {{ uid?: string } | undefined} userRecord Candidate user record.
+ * @returns {userRecord is { uid: string }} True when the record exposes a UID.
+ */
+function isValidUserRecord(userRecord) {
+  return Boolean(userRecord && userRecord.uid);
 }
 
 /**
