@@ -959,15 +959,10 @@ function createGuardChain(guards) {
  */
 async function executeGuardSequence(guards, initialContext) {
   let context = initialContext;
-  try {
-    for (const guard of guards) {
-      const guardResult = await executeSingleGuard(guard, context);
-      context = guardResult.context;
-    }
-  } catch (guardResult) {
-    return guardResult;
+  for (const guard of guards) {
+    const guardResult = await executeSingleGuard(guard, context);
+    context = guardResult.context;
   }
-
   return { context };
 }
 
