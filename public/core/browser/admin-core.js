@@ -105,13 +105,33 @@ function getDisableAutoSelectCandidate(globalScope) {
  * @returns {unknown} Value at the path or undefined when any segment is missing.
  */
 function getNestedProperty(source, ...keys) {
-  return keys.reduce((cursor, key) => {
-    if (cursor && typeof cursor === 'object') {
-      return /** @type {{ [x: string]: unknown }} */ (cursor)[key];
-    }
+  return keys.reduce(
+    (cursor, key) => resolveNestedProperty(cursor, key),
+    source
+  );
+}
 
+/**
+ * Resolve the next segment in a nested property path when the cursor is an object.
+ * @param {unknown} cursor Current traversal position.
+ * @param {string} key Next key to read.
+ * @returns {unknown} Value at the key when traversable, otherwise `undefined`.
+ */
+function resolveNestedProperty(cursor, key) {
+  if (!isTraversable(cursor)) {
     return undefined;
-  }, source);
+  }
+
+  return /** @type {{ [x: string]: unknown }} */ (cursor)[key];
+}
+
+/**
+ * Determine whether the cursor can be traversed for nested properties.
+ * @param {unknown} cursor Candidate traversal target.
+ * @returns {boolean} True when the cursor is an object and not `null`.
+ */
+function isTraversable(cursor) {
+  return Boolean(cursor && typeof cursor === 'object');
 }
 
 /**
