@@ -472,7 +472,16 @@ function resolveParentPageRef(ref) {
  * @returns {boolean} True when two parent hops exist.
  */
 function hasParentWithGrandparent(ref) {
-  return Boolean(ref?.parent?.parent);
+  return hasGrandparent(ref?.parent);
+}
+
+/**
+ * Detect whether the provided reference exposes a parent document.
+ * @param {{ parent?: unknown } | null | undefined} ref Reference candidate.
+ * @returns {boolean} True when the reference has a parent property.
+ */
+function hasGrandparent(ref) {
+  return Boolean(ref && ref.parent);
 }
 
 /**
