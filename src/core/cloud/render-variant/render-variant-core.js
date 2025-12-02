@@ -2131,12 +2131,27 @@ function resolveSnapshotRef(snap) {
  * @returns {unknown | null} Property value or null when unavailable.
  */
 function readNullableProperty(source, key) {
-  if (!source) {
+  const normalizedSource = getNormalizedSource(source);
+  const value = normalizedSource[key];
+
+  if (value === undefined) {
     return null;
   }
 
-  const value = /** @type {{ [key: string]: unknown }} */ (source)[key];
-  return value ?? null;
+  return value;
+}
+
+/**
+ * Normalize the provided source so it can be safely indexed.
+ * @param {{ [key: string]: unknown } | null | undefined} source Candidate object.
+ * @returns {{ [key: string]: unknown }} Safe object mapping.
+ */
+function getNormalizedSource(source) {
+  if (!source || typeof source !== 'object') {
+    return {};
+  }
+
+  return /** @type {{ [key: string]: unknown }} */ (source);
 }
 
 /**

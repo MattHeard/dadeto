@@ -1344,12 +1344,7 @@ export function getHeaderFromHeaders(req) {
  * @returns {unknown} Header value when present; otherwise undefined.
  */
 export function resolveHeaderValue(headers) {
-  if (!headers) {
-    return undefined;
-  }
-
-  const { Authorization, authorization } = headers;
-  return Authorization ?? authorization;
+  return headers?.Authorization ?? headers?.authorization;
 }
 
 /**
