@@ -920,21 +920,19 @@ function mergeContexts(context, guardContext) {
  */
 async function executeSingleGuard(guard, context) {
   const result = await guard(context);
-  const error = extractGuardError(result);
-  if (error) {
-    return { error };
-  }
+  handleGuardError(result);
 
   return { context: processGuardResult(result, context) };
 }
 
 /**
- * Extract the guard error when it exists.
- * @param {GuardResult} result Guard execution outcome.
- * @returns {GuardError | undefined} Error to short-circuit the chain.
+ * Throw when the guard output contains an error.
+ * @param {GuardResult} result Guard evaluation output.
  */
-function extractGuardError(result) {
-  return result?.error;
+function handleGuardError(result) {
+  if (result && result.error) {
+    throw result;
+  }
 }
 
 /**
@@ -945,7 +943,11 @@ function extractGuardError(result) {
  */
 function createGuardChain(guards) {
   return async function runChain(initialContext) {
-    return executeGuardSequence(guards, initialContext);
+    try {
+      return await executeGuardSequence(guards, initialContext);
+    } catch (guardResult) {
+      return guardResult;
+    }
   };
 }
 
@@ -957,23 +959,16 @@ function createGuardChain(guards) {
  */
 async function executeGuardSequence(guards, initialContext) {
   let context = initialContext;
-  for (const guard of guards) {
-    const guardResult = await executeSingleGuard(guard, context);
-    if (shouldShortCircuit(guardResult)) {
-      return guardResult;
+  try {
+    for (const guard of guards) {
+      const guardResult = await executeSingleGuard(guard, context);
+      context = guardResult.context;
     }
-    context = guardResult.context;
+  } catch (guardResult) {
+    return guardResult;
   }
-  return { context };
-}
 
-/**
- * Determine whether the guard chain should halt early.
- * @param {{ error?: GuardError }} guardResult Guard execution outcome.
- * @returns {boolean} True when an error occurred.
- */
-function shouldShortCircuit(guardResult) {
-  return Boolean(guardResult.error);
+  return { context };
 }
 
 /**
@@ -1101,7 +1096,21 @@ function ensureGuardErrorFromResult(guardResult) {
  * @returns {GuardContext} Guard context or fallback.
  */
 function getGuardContextValue(guardResult) {
-  return guardResult?.context ?? {};
+  return resolveGuardContextValue(guardResult);
+}
+
+/**
+ * Resolve the guard context when it exists.
+ * @param {GuardResult | undefined} guardResult Guard runner output.
+ * @returns {GuardContext} Guard context or empty object.
+ */
+function resolveGuardContextValue(guardResult) {
+  const guardContext = guardResult?.context;
+  if (!guardContext) {
+    return {};
+  }
+
+  return guardContext;
 }
 
 /**
