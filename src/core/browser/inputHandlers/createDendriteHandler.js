@@ -20,8 +20,9 @@ export function createDendriteHandler(fields) {
    * @returns {void}
    */
   function disposeIfPossible(node) {
-    if (typeof node._dispose === 'function') {
-      node._dispose();
+    const disposer = node._dispose;
+    if (typeof disposer === 'function') {
+      disposer();
     }
   }
 
