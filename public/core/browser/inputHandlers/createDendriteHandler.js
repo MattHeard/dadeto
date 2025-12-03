@@ -61,6 +61,16 @@ export function createDendriteHandler(fields) {
   }
 
   /**
+   * Create an appender for a specific wrapper element.
+   * @param {object} dom - DOM helpers.
+   * @param {HTMLElement} wrapper - Container to append into.
+   * @returns {(child: HTMLElement) => void} Appender function that keeps the wrapper fixed.
+   */
+  function createWrapperAppender(dom, wrapper) {
+    return child => dom.appendChild(wrapper, child);
+  }
+
+  /**
    * Create an input element for a given field key.
    * @param {object} dom - DOM utilities.
    * @param {string} key - Field name.
@@ -152,8 +162,9 @@ export function createDendriteHandler(fields) {
     });
     dom.addEventListener(input, 'input', onInput);
     disposers.push(createInputListenerDisposer(dom, input, onInput));
-    dom.appendChild(wrapper, label);
-    dom.appendChild(wrapper, input);
+    const appendToWrapper = createWrapperAppender(dom, wrapper);
+    appendToWrapper(label);
+    appendToWrapper(input);
     dom.appendChild(form, wrapper);
   }
 
