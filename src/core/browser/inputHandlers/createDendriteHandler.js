@@ -1,10 +1,10 @@
 import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
-import { parseJsonOrDefault } from '../browser-core.js';
 import {
-  maybeRemoveNumber,
   maybeRemoveKV,
-  maybeRemoveTextarea,
-} from './removeElements.js';
+  maybeRemoveNumber,
+  parseJsonOrDefault,
+} from '../browser-core.js';
+import { maybeRemoveTextarea } from './removeElements.js';
 import { hideAndDisable } from './inputState.js';
 import { getInputValue, setInputValue } from '../inputValueStore.js';
 

@@ -6,6 +6,7 @@ Unexpected hurdles:
 Learnings:
 - When adding dependency injection to a utility like JSON parsing, keep overrides localized to the functions that actually swap behavior; if you later remove the default, make sure every consumer supplies a parser so nothing breaks.
 
-Open questions:
-- Should other modules that call `safeParseJson` be updated to pass their own parser as well, or is indexing the three explicitly requested sites enough for now?
+- After relocating `parseJsonOrDefault` to `src/core/browser/browser-core.js`, should any other helpers consume it directly instead of through the shared `jsonUtils` re-export?
+- Does the `maybeRemoveNumber` cleanup helper deserve a more central home like `browser-core` since it’s shared between UI handlers, or should it stay next to the other selectors? I moved it into `browser-core` and updated the inputs/tests accordingly so the number remover is still reusable by `text`, `default`, `textarea`, `dendrite`, and later `handleKVType`.
+- Now that `maybeRemoveKV` also lives in `browser-core`, the UI handlers share a single KV cleanup helper alongside the number remover—worth noting in case more selector-specific cleanup gets centralized further.
 - After relocating `parseJsonOrDefault` to `src/core/browser/browser-core.js`, should any other helpers consume it directly instead of through the shared `jsonUtils` re-export?

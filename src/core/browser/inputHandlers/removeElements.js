@@ -1,9 +1,5 @@
 import { maybeRemoveElement } from './disposeHelpers.js';
-import {
-  NUMBER_INPUT_SELECTOR,
-  KV_CONTAINER_SELECTOR,
-  TEXTAREA_SELECTOR,
-} from '../../constants/selectors.js';
+import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
 import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
 
 /**
@@ -21,13 +17,6 @@ function createElementRemover(selector) {
 /**
  * Removes a number input element if present.
  */
-export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
-
-/**
- * Removes a key-value container if present.
- */
-export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
-
 /**
  * Removes a dendrite form if present.
  */

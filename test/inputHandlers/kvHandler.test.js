@@ -1,6 +1,6 @@
 import { describe, test, expect, jest } from '@jest/globals';
+import { maybeRemoveNumber } from '../../src/core/browser/browser-core.js';
 import {
-  maybeRemoveNumber,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
 } from '../../src/core/browser/inputHandlers/removeElements.js';

@@ -1,7 +1,7 @@
 /**
  * Parses a JSON string or returns a fallback value if parsing fails
  * @param {string} json - The JSON string to parse
- * @param {function} parseJsonValue - Parser to run on the input
+ * @param {Function} parseJsonValue - Parser to run on the input
  * @returns {*} The parsed value, or `undefined` on failure
  */
 export function safeParseJson(json, parseJsonValue) {

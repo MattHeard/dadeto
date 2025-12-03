@@ -1,5 +1,8 @@
 import { safeParseJson, valueOr } from '../jsonUtils.js';
 
+import { maybeRemoveElement } from './inputHandlers/disposeHelpers.js';
+import { NUMBER_INPUT_SELECTOR } from '../constants/selectors.js';
+
 export const createGoogleSignOut = ({
   authSignOut,
   storage,
@@ -47,6 +50,18 @@ export function parseJsonOrDefault(json, fallback = {}) {
   const parseJsonValue = x => JSON.parse(x);
   return valueOr(safeParseJson(json, parseJsonValue), fallback);
 }
+
+function createElementRemover(selector) {
+  return (container, dom) => {
+    const element = dom.querySelector(container, selector);
+    maybeRemoveElement(element, container, dom);
+  };
+}
+
+export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
+
+const KV_CONTAINER_SELECTOR = '.kv-container';
+export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
 
 /**
  * Check if a value is a non-null object.

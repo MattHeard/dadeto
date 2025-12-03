@@ -165,11 +165,8 @@ import { numberHandler } from './inputHandlers/number.js';
 import { defaultHandler } from './inputHandlers/default.js';
 import { dendriteStoryHandler } from './inputHandlers/dendriteStory.js';
 import { dendritePageHandler } from './inputHandlers/dendritePage.js';
-import {
-  maybeRemoveNumber,
-  maybeRemoveDendrite,
-  maybeRemoveTextarea,
-} from './inputHandlers/removeElements.js';
+import { maybeRemoveDendrite, maybeRemoveTextarea } from './inputHandlers/removeElements.js';
+import { maybeRemoveNumber } from './browser-core.js';
 import { KV_CONTAINER_SELECTOR } from './constants/selectors.js';
 import { hideAndDisable } from './inputHandlers/inputState.js';
 
