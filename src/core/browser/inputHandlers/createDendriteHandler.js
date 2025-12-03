@@ -228,18 +228,12 @@ function cleanContainer(dom, container) {
 }
 
 /**
- * Create a handler for rendering and managing a dendrite form.
+ * Create the buildForm implementation bound to a set of fields.
  * @param {Array<[string, string]>} fields - Field definitions to render.
- * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
+ * @returns {(dom: object, options: {container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}) => HTMLElement} Form builder bound to `fields`.
  */
-export function createDendriteHandler(fields) {
-  /**
-   * Build the interactive dendrite form and insert it after the text input.
-   * @param {object} dom - DOM utilities.
-   * @param {{container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}} options - Configuration options.
-   * @returns {HTMLElement} The created form element.
-   */
-  function buildForm(dom, { container, textInput, data, disposers }) {
+function createBuildForm(fields) {
+  return function buildForm(dom, { container, textInput, data, disposers }) {
     const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
     const form = dom.createElement('div');
     dom.setClassName(form, dendriteFormClassName);
@@ -263,7 +257,16 @@ export function createDendriteHandler(fields) {
     };
 
     return form;
-  }
+  };
+}
+
+/**
+ * Create a handler for rendering and managing a dendrite form.
+ * @param {Array<[string, string]>} fields - Field definitions to render.
+ * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
+ */
+export function createDendriteHandler(fields) {
+  const buildForm = createBuildForm(fields);
 
   /**
    * Create and insert a dendrite form for editing data.
