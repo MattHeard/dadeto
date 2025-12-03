@@ -1,8 +1,11 @@
 import { maybeRemoveDendrite } from './removeElements.js';
-import { maybeRemoveKV, maybeRemoveNumber } from '../browser-core.js';
+import {
+  createRemoveListener,
+  maybeRemoveKV,
+  maybeRemoveNumber,
+} from '../browser-core.js';
 import { hideAndDisable, revealAndEnable } from './inputState.js';
 import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
-import { createRemoveListener } from '../browser-core.js';
 import { getInputValue } from '../inputValueStore.js';
 import { createUpdateTextInputValue } from './number.js';
 

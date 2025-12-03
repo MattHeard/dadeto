@@ -52,8 +52,9 @@ export function parseJsonOrDefault(json, fallback = {}) {
 }
 
 /**
- *
- * @param selector
+ * Create a remover callback for the provided selector.
+ * @param {string} selector - Selector used to locate the element to remove.
+ * @returns {Function} Callback that removes the selected element when found.
  */
 function createElementRemover(selector) {
   return (container, dom) => {
