@@ -245,11 +245,24 @@ function getDocRef(doc) {
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference or null.
  */
 function extractDocReference(doc) {
-  if (!doc || !doc.ref) {
+  if (!hasDocReference(doc)) {
     return null;
   }
 
   return doc.ref;
+}
+
+/**
+ * Detect whether a document snapshot exposes a reference.
+ * @param {import('firebase-admin/firestore').QueryDocumentSnapshot | null | undefined} doc Document snapshot.
+ * @returns {boolean} True when a document reference exists.
+ */
+function hasDocReference(doc) {
+  if (!doc) {
+    return false;
+  }
+
+  return Boolean(doc.ref);
 }
 
 /**
@@ -674,15 +687,63 @@ function resolveVariantName(candidate) {
  * @param {string} [options.allowedMethod] Allowed HTTP method.
  * @returns {(req: import('express').Request, res: import('express').Response, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof options.verifyAdmin }) => Promise<void>} Express request handler.
  */
-export function createHandleRequest({
-  verifyAdmin,
-  markVariantDirty,
-  parseRequestBody = parseMarkVariantRequestBody,
-  allowedMethod = POST_METHOD,
-}) {
+export function createHandleRequest(options = {}) {
+  const { verifyAdmin, markVariantDirty } = options;
+  const parseRequestBody = resolveParseRequestBody(options.parseRequestBody);
+  const allowedMethod = resolveAllowedMethod(options.allowedMethod);
+
   assertFunctionDependency('verifyAdmin', verifyAdmin);
   assertFunctionDependency('markVariantDirty', markVariantDirty);
 
+  return buildHandleRequest({
+    verifyAdmin,
+    markVariantDirty,
+    parseRequestBody,
+    allowedMethod,
+  });
+}
+
+/**
+ * Resolve the parser to use for incoming requests.
+ * @param {Function | undefined} parser Candidate parser.
+ * @returns {Function} Body parser.
+ */
+function resolveParseRequestBody(parser) {
+  if (typeof parser === 'function') {
+    return parser;
+  }
+
+  return parseMarkVariantRequestBody;
+}
+
+/**
+ * Resolve the allowed HTTP method for requests.
+ * @param {string | undefined} method Candidate HTTP method.
+ * @returns {string} HTTP method.
+ */
+function resolveAllowedMethod(method) {
+  if (typeof method === 'string') {
+    return method;
+  }
+
+  return POST_METHOD;
+}
+
+/**
+ * Build the HTTP handler once the inputs are normalized.
+ * @param {object} options Normalized handler dependencies.
+ * @param {Function} options.verifyAdmin Admin check.
+ * @param {Function} options.markVariantDirty Variant mutation helper.
+ * @param {Function} options.parseRequestBody Body parser.
+ * @param {string} options.allowedMethod Allowed HTTP method.
+ * @returns {(req: import('express').Request, res: import('express').Response, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof options.verifyAdmin }) => Promise<void>} Express request handler.
+ */
+function buildHandleRequest({
+  verifyAdmin,
+  markVariantDirty,
+  parseRequestBody,
+  allowedMethod,
+}) {
   return async function handleRequest(req, res, deps = {}) {
     return processHandleRequest({
       req,
