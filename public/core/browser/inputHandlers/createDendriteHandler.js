@@ -94,8 +94,8 @@ export function createDendriteHandler(fields) {
   function syncHiddenInput(dom, textInput, data) {
     const serialised = JSON.stringify(data);
     const setValue = createSetValueFactory(dom);
-    setValue(textInput, serialised);
-    setInputValue(textInput, serialised);
+    const syncFns = [setValue, setInputValue];
+    syncFns.forEach(fn => fn(textInput, serialised));
   }
 
   /**
