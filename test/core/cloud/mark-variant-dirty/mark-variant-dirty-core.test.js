@@ -420,6 +420,12 @@ describe('mark-variant-dirty core helpers', () => {
       ).toThrow(new TypeError('markVariantDirty must be a function'));
     });
 
+    it('throws when invoked without any options', () => {
+      expect(() => createHandleRequest()).toThrow(
+        new TypeError('verifyAdmin must be a function')
+      );
+    });
+
     it('rejects disallowed HTTP methods', async () => {
       const verifyAdmin = jest.fn();
       const markVariantDirty = jest.fn();
