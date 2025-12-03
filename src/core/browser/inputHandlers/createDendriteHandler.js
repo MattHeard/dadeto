@@ -152,7 +152,7 @@ function createField(
   { key, placeholder, data, textInput, disposers }
 ) {
   const createElement = createElementFactory(dom);
-  const wrapper = createElement('div');
+  const fieldWrapper = createElement('div');
   const label = createElement('label');
   dom.setTextContent(label, placeholder);
 
@@ -170,6 +170,7 @@ function createField(
   });
   dom.addEventListener(input, 'input', onInput);
   disposers.push(createInputListenerDisposer(dom, input, onInput));
+  const wrapper = fieldWrapper;
   const appendToWrapper = createWrapperAppender(dom, wrapper);
   appendToWrapper(label);
   appendToWrapper(input);
@@ -200,21 +201,39 @@ function buildField({
 }
 
 /**
+ * Render a specific field tuple with the given helpers.
+ * @param {{dom: object, form: HTMLElement, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Rendering helpers.
+ * @param {[string, string]} field - Tuple describing the field key and placeholder.
+ * @returns {void}
+ */
+function renderField(
+  { dom, form, data, textInput, disposers },
+  [key, placeholder]
+) {
+  buildField({
+    dom,
+    form,
+    key,
+    placeholder,
+    data,
+    textInput,
+    disposers,
+  });
+}
+
+/**
  * Build a renderer for the field definitions list.
  * @param {{dom: object, form: HTMLElement, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Rendering helpers.
  * @returns {(field: [string, string]) => void} Renderer for each field tuple.
  */
 function createFieldRenderer({ dom, form, data, textInput, disposers }) {
-  return ([key, placeholder]) =>
-    buildField({
-      dom,
-      form,
-      key,
-      placeholder,
-      data,
-      textInput,
-      disposers,
-    });
+  return renderField.bind(null, {
+    dom,
+    form,
+    data,
+    textInput,
+    disposers,
+  });
 }
 
 /**
@@ -224,6 +243,17 @@ function createFieldRenderer({ dom, form, data, textInput, disposers }) {
  */
 function runDisposer(fn) {
   fn();
+}
+
+/**
+ * Build a disposer that runs over the registered disposers array.
+ * @param {Function[]} disposers - Disposer functions to invoke.
+ * @returns {() => void} Form-level dispose handler.
+ */
+function createDisposeForm(disposers) {
+  return () => {
+    disposers.forEach(runDisposer);
+  };
 }
 
 /**
@@ -248,6 +278,17 @@ function runRemover(fn, container, dom) {
 }
 
 /**
+ * Run a remover helper bound to a specific container and DOM utilities.
+ * @param {HTMLElement} container - Container element.
+ * @param {object} dom - DOM helpers.
+ * @param {Function} remover - Remover helper to invoke.
+ * @returns {void}
+ */
+function runRemoverForContainer(container, dom, remover) {
+  runRemover(remover, container, dom);
+}
+
+/**
  *
  * @param dom
  * @param container
@@ -265,7 +306,8 @@ function cleanContainer(dom, container) {
     maybeRemoveTextarea,
     removeExistingForm,
   ];
-  removers.forEach(remover => runRemover(remover, container, dom));
+  const runForContainer = runRemoverForContainer.bind(null, container, dom);
+  removers.forEach(runForContainer);
 }
 
 /**
@@ -292,9 +334,8 @@ function createBuildForm(fields) {
 
     syncHiddenInput(dom, textInput, data);
 
-    form._dispose = () => {
-      disposers.forEach(runDisposer);
-    };
+    const disposeForm = createDisposeForm(disposers);
+    form._dispose = disposeForm;
 
     return form;
   };
