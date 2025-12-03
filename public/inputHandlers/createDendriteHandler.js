@@ -111,6 +111,17 @@ export function createDendriteHandler(fields) {
   }
 
   /**
+   * Build a disposer that removes the last registered input listener.
+   * @param {object} dom - DOM helpers.
+   * @param {HTMLElement} input - Input element to clean up.
+   * @param {Function} handler - Handler previously registered.
+   * @returns {() => void} Disposer that removes the listener.
+   */
+  function createInputListenerDisposer(dom, input, handler) {
+    return () => dom.removeEventListener(input, 'input', handler);
+  }
+
+  /**
    * Add a labeled input field to the dendrite form.
    * @param {object} dom - DOM helpers.
    * @param {HTMLElement} form - Form container.
@@ -140,7 +151,7 @@ export function createDendriteHandler(fields) {
       data,
     });
     dom.addEventListener(input, 'input', onInput);
-    disposers.push(() => dom.removeEventListener(input, 'input', onInput));
+    disposers.push(createInputListenerDisposer(dom, input, onInput));
     dom.appendChild(wrapper, label);
     dom.appendChild(wrapper, input);
     dom.appendChild(form, wrapper);
