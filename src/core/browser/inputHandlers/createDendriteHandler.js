@@ -240,15 +240,15 @@ function createBuildForm(fields) {
     const nextSibling = dom.getNextSibling(textInput);
     dom.insertBefore(container, form, nextSibling);
 
-    fields.forEach(([key, placeholder]) =>
+    const renderField = ([key, placeholder]) =>
       createField(dom, form, {
         key,
         placeholder,
         data,
         textInput,
         disposers,
-      })
-    );
+      });
+    fields.forEach(renderField);
 
     syncHiddenInput(dom, textInput, data);
 
