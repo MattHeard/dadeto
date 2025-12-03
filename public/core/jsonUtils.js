@@ -4,8 +4,9 @@
  * @returns {*} The parsed value, or `undefined` on failure
  */
 export function safeParseJson(json) {
+  const parseJsonValue = x => JSON.parse(x);
   try {
-    return JSON.parse(json);
+    return parseJsonValue(json);
   } catch {
     return undefined;
   }
