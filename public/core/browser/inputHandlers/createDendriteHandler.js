@@ -122,8 +122,9 @@ export function createDendriteHandler(fields) {
     form,
     { key, placeholder, data, textInput, disposers }
   ) {
-    const wrapper = dom.createElement('div');
-    const label = dom.createElement('label');
+    const createElement = createElementFactory(dom);
+    const wrapper = createElement('div');
+    const label = createElement('label');
     dom.setTextContent(label, placeholder);
 
     const input = createInputElement(dom, key);
