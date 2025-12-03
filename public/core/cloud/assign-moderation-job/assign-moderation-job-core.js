@@ -930,12 +930,18 @@ async function executeSingleGuard(guard, context) {
  * @param {GuardResult} result Guard evaluation output.
  */
 function handleGuardError(result) {
-  const error = result?.error;
-  if (!error) {
-    return;
+  if (hasGuardError(result)) {
+    throw result;
   }
+}
 
-  throw result;
+/**
+ * Detect when the guard result exposes an error.
+ * @param {GuardResult} result Guard evaluation output.
+ * @returns {boolean} True when an error should be thrown.
+ */
+function hasGuardError(result) {
+  return Boolean(result?.error);
 }
 
 /**
@@ -1094,7 +1100,16 @@ function ensureGuardErrorFromResult(guardResult) {
  * @returns {GuardContext} Guard context or fallback.
  */
 function getGuardContextValue(guardResult) {
-  return guardResult?.context ?? {};
+  return getContextOrFallback(guardResult?.context);
+}
+
+/**
+ * Provide the guard context or an empty fallback.
+ * @param {GuardContext | undefined} context Guard context candidate.
+ * @returns {GuardContext} Guard context or safe fallback.
+ */
+function getContextOrFallback(context) {
+  return context ?? {};
 }
 
 /**
