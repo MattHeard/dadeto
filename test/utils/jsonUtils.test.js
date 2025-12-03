@@ -1,17 +1,16 @@
 import { describe, test, expect } from '@jest/globals';
-import {
-  safeParseJson,
-  valueOr,
-  parseJsonOrDefault,
-} from '../../src/core/jsonUtils.js';
+import { safeParseJson, valueOr } from '../../src/core/jsonUtils.js';
+import { parseJsonOrDefault } from '../../src/core/browser/browser-core.js';
+
+const parseJsonValue = x => JSON.parse(x);
 
 describe('safeParseJson', () => {
   test('parses valid JSON strings', () => {
-    expect(safeParseJson('{"a":1}')).toEqual({ a: 1 });
+    expect(safeParseJson('{"a":1}', parseJsonValue)).toEqual({ a: 1 });
   });
 
   test('returns undefined for invalid JSON', () => {
-    expect(safeParseJson('invalid')).toBeUndefined();
+    expect(safeParseJson('invalid', parseJsonValue)).toBeUndefined();
   });
 });
 

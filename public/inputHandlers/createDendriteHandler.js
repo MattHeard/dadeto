@@ -1,5 +1,5 @@
 import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
-import { parseJsonOrDefault } from '../../jsonUtils.js';
+import { parseJsonOrDefault } from '../browser-core.js';
 import {
   maybeRemoveNumber,
   maybeRemoveKV,

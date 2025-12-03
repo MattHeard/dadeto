@@ -132,7 +132,8 @@ function buildColumnDigitMatrix(colClues) {
  * @returns {{rowClues: number[], colClues: number[]}} Parsed clues object.
  */
 function parseCluesOrDefault(inputString) {
-  const obj = safeParseJson(inputString);
+  const parseJsonValue = x => JSON.parse(x);
+  const obj = safeParseJson(inputString, parseJsonValue);
   if (INVALID_CLUE_CHECKS.some(fn => fn(obj))) {
     return DEFAULT_CLUES;
   }

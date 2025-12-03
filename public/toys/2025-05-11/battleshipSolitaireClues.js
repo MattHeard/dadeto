@@ -120,7 +120,8 @@ function isValidY(y, board) {
  * @returns {*} - description
  */
 function parseFleet(input) {
-  const fleet = safeParseJson(input);
+  const parseJsonValue = x => JSON.parse(x);
+  const fleet = safeParseJson(input, parseJsonValue);
   const error = computeFleetError(fleet);
   if (error) {
     return { error };

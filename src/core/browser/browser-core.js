@@ -1,3 +1,5 @@
+import { safeParseJson, valueOr } from '../jsonUtils.js';
+
 export const createGoogleSignOut = ({
   authSignOut,
   storage,
@@ -33,6 +35,17 @@ export function safeJsonParse(input) {
       message: `Error: Invalid JSON input. ${parseError.message}`,
     };
   }
+}
+
+/**
+ * Parses JSON or returns a provided default when parsing fails.
+ * @param {string} json - JSON string to parse.
+ * @param {object} [fallback] - Default value when parsing fails.
+ * @returns {object} Parsed object or fallback.
+ */
+export function parseJsonOrDefault(json, fallback = {}) {
+  const parseJsonValue = x => JSON.parse(x);
+  return valueOr(safeParseJson(json, parseJsonValue), fallback);
 }
 
 /**
