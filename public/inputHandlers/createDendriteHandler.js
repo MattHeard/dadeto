@@ -79,14 +79,10 @@ export function createDendriteHandler(fields) {
 
   /**
    * Create a closure for responding to user input on a field.
-   * @param {object} dom - DOM helpers.
-   * @param {string} key - Field name whose value is tracked.
-   * @param {HTMLElement} input - Field input element.
-   * @param {HTMLInputElement} textInput - Hidden JSON input element.
-   * @param {object} data - Current payload snapshot.
+   * @param {{dom: object, key: string, input: HTMLElement, textInput: HTMLInputElement, data: object}} options - Handler configuration.
    * @returns {() => void} Event handler that keeps the payload in sync.
    */
-  function createFieldInputHandler(dom, key, input, textInput, data) {
+  function createFieldInputHandler({ dom, key, input, textInput, data }) {
     return () => {
       data[key] = dom.getValue(input);
       syncHiddenInput(dom, textInput, data);
@@ -114,7 +110,13 @@ export function createDendriteHandler(fields) {
     if (Object.hasOwn(data, key)) {
       dom.setValue(input, data[key]);
     }
-    const onInput = createFieldInputHandler(dom, key, input, textInput, data);
+    const onInput = createFieldInputHandler({
+      dom,
+      key,
+      input,
+      textInput,
+      data,
+    });
     dom.addEventListener(input, 'input', onInput);
     disposers.push(() => dom.removeEventListener(input, 'input', onInput));
     dom.appendChild(wrapper, label);
