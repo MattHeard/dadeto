@@ -2,9 +2,9 @@ import { maybeRemoveElement } from './disposeHelpers.js';
 import {
   NUMBER_INPUT_SELECTOR,
   KV_CONTAINER_SELECTOR,
-  DENDRITE_FORM_SELECTOR,
   TEXTAREA_SELECTOR,
 } from '../../constants/selectors.js';
+import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
 
 /**
  * Factory that removes an element matching a selector when it exists.

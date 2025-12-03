@@ -1,4 +1,4 @@
-import { DENDRITE_FORM_SELECTOR } from '../../constants/selectors.js';
+import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
 import { parseJsonOrDefault } from '../../jsonUtils.js';
 import {
   maybeRemoveNumber,
@@ -327,9 +327,8 @@ function createDendriteForm({ buildForm, dom, container, textInput }) {
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
  */
 export function createDendriteHandler(fields) {
-  const buildForm = createBuildForm(fields);
-
   return function dendriteHandler(dom, container, textInput) {
+    const buildForm = createBuildForm(fields);
     hideAndDisable(textInput, dom);
     cleanContainer(dom, container);
     return createDendriteForm({ buildForm, dom, container, textInput });
