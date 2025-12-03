@@ -14,7 +14,7 @@ function normalizeInputValue(value) {
  * @param {HTMLElement} element - Input element acting as the key.
  * @returns {string} Stored value when present otherwise the normalized live value.
  */
-function readStoredOrElementValue(element) {
+export function readStoredOrElementValue(element) {
   return inputValueStore.get(element) ?? normalizeInputValue(element.value);
 }
 
@@ -28,18 +28,6 @@ export function setInputValue(element, value) {
     return;
   }
   inputValueStore.set(element, normalizeInputValue(value));
-}
-
-/**
- * Retrieve the stored value for an element, falling back to the element's value property.
- * @param {HTMLElement} element - Input element to look up.
- * @returns {string} The stored value or element.value when absent.
- */
-export function getInputValue(element) {
-  if (!element) {
-    return '';
-  }
-  return readStoredOrElementValue(element);
 }
 
 /**

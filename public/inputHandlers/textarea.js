@@ -4,10 +4,10 @@ import {
   hideAndDisable,
   maybeRemoveKV,
   maybeRemoveNumber,
+  getInputValue,
 } from '../browser-core.js';
 import { revealAndEnable } from './inputState.js';
 import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
-import { getInputValue } from '../inputValueStore.js';
 import { createUpdateTextInputValue } from './number.js';
 
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);

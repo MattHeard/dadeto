@@ -5,8 +5,9 @@ import {
   hideAndDisable,
   maybeRemoveKV,
   maybeRemoveTextarea,
+  getInputValue,
+  setInputValue,
 } from '../browser-core.js';
-import { getInputValue, setInputValue } from '../inputValueStore.js';
 
 const createBaseNumberInput = dom => {
   const input = dom.createElement('input');

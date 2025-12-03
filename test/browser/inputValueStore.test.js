@@ -1,10 +1,10 @@
 import { describe, it, expect } from '@jest/globals';
 import {
   setInputValue,
-  getInputValue,
   hasInputValue,
   clearInputValue,
 } from '../../src/core/browser/inputValueStore.js';
+import { getInputValue } from '../../src/core/browser/browser-core.js';
 
 describe('inputValueStore', () => {
   it('ignores falsy elements when storing or clearing', () => {

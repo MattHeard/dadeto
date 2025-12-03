@@ -1,9 +1,15 @@
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
-import { createRemoveListener } from '../core/browser/browser-core.js';
 import { parseJsonOrDefault } from './jsonUtils.js';
 import { deepClone } from './objectUtils.js';
-import { getInputValue, setInputValue } from './inputValueStore.js';
+import {
+  createRemoveListener,
+  getInputValue,
+  hideAndDisable,
+  maybeRemoveNumber,
+  maybeRemoveTextarea,
+  setInputValue,
+} from './browser-core.js';
 
 /**
  * Determines whether a value is a key/value pair object.
@@ -166,11 +172,6 @@ import { defaultHandler } from './inputHandlers/default.js';
 import { dendriteStoryHandler } from './inputHandlers/dendriteStory.js';
 import { dendritePageHandler } from './inputHandlers/dendritePage.js';
 import { maybeRemoveDendrite } from './inputHandlers/removeElements.js';
-import {
-  hideAndDisable,
-  maybeRemoveNumber,
-  maybeRemoveTextarea,
-} from './browser-core.js';
 import { KV_CONTAINER_SELECTOR } from './constants/selectors.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {

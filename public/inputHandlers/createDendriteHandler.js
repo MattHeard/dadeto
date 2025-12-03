@@ -1,12 +1,13 @@
 import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
 import {
   hideAndDisable,
+  getInputValue,
   maybeRemoveKV,
   maybeRemoveNumber,
   maybeRemoveTextarea,
   parseJsonOrDefault,
+  setInputValue,
 } from '../browser-core.js';
-import { getInputValue, setInputValue } from '../inputValueStore.js';
 
 /**
  * Call a node's _dispose method when available.

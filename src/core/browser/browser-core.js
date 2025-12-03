@@ -1,4 +1,5 @@
 import { safeParseJson, valueOr } from '../jsonUtils.js';
+import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 
 import { maybeRemoveElement } from './inputHandlers/disposeHelpers.js';
 import {
@@ -83,6 +84,20 @@ export function hideAndDisable(element, dom) {
   dom.hide(element);
   dom.disable(element);
 }
+
+/**
+ * Retrieve the stored value for an element, falling back to the element's value property.
+ * @param {HTMLElement} element - Input element to look up.
+ * @returns {string} The stored value or element.value when absent.
+ */
+export function getInputValue(element) {
+  if (!element) {
+    return '';
+  }
+  return readStoredOrElementValue(element);
+}
+
+export { setInputValue };
 
 /**
  * Check if a value is a non-null object.
