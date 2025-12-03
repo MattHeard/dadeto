@@ -202,10 +202,13 @@ function prepareTextInput(dom, textInput) {
  * @returns {void}
  */
 function cleanContainer(dom, container) {
-  maybeRemoveNumber(container, dom);
-  maybeRemoveKV(container, dom);
-  maybeRemoveTextarea(container, dom);
-  removeExistingForm(container, dom);
+  const removers = [
+    maybeRemoveNumber,
+    maybeRemoveKV,
+    maybeRemoveTextarea,
+    removeExistingForm,
+  ];
+  removers.forEach(fn => fn(container, dom));
 }
 
 /**
