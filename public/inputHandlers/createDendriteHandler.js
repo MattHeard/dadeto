@@ -304,8 +304,7 @@ function createBuildForm(fields) {
 
     syncHiddenInput(dom, textInput, data);
 
-    const disposeForm = createDisposeForm(disposers);
-    form._dispose = disposeForm;
+    form._dispose = createDisposeForm(disposers);
 
     return form;
   };
