@@ -11,6 +11,7 @@ These instructions apply to everything under `infra/`.
 - Harden changes defensively by checking for nulls, sanitizing inputs, and addressing lint warnings directly so deployments behave predictably.
 - Keep these instructions cohesive with the root guidelines when adding new infra policies, and document lessons learned in retrospectives for future reference.
 - Communicate clearly through descriptive commits and PR summaries that outline the intent, testing, and any deployment considerations.
+- If core paths are renamed or moved, update Terraform references and any copy scripts in the same change—don’t assume infra will stay in sync automatically.
 
 ## Static vs generated HTML
 

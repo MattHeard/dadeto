@@ -4,6 +4,7 @@ import { parseJsonOrDefault } from './jsonUtils.js';
 import { deepClone } from './objectUtils.js';
 import {
   createRemoveListener,
+  defaultHandler,
   getInputValue,
   hideAndDisable,
   maybeRemoveNumber,
@@ -168,7 +169,6 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 import { textHandler } from './inputHandlers/text.js';
 import { textareaHandler } from './inputHandlers/textarea.js';
 import { numberHandler } from './inputHandlers/number.js';
-import { defaultHandler } from './inputHandlers/default.js';
 import { dendriteStoryHandler } from './inputHandlers/dendriteStory.js';
 import { dendritePageHandler } from './inputHandlers/dendritePage.js';
 import { maybeRemoveDendrite } from './inputHandlers/removeElements.js';

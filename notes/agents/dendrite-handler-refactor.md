@@ -1,7 +1,0 @@
-# Dendrite Handler Refactor
-
-- **Unexpected hurdle:** Moving the wrapper definition down (per the request) shifted the `dom.createElement` call order, which broke tests that look for the first rendered input at `elements[3]`. I preserved the early `div` creation by keeping a `fieldWrapper` reference and aliasing it to `wrapper` right before usage so the DOM order stayed the same while the `wrapper` binding lives near its first use.
-- **Diagnosis/option considered:** I ran the failing tests, inspected the `elements` log, and confirmed the index shift. Changing the tests would have had knock-on effects on the expectations about how many elements each form renders, so I opted to keep the index stable via the alias.
-- **Learning/actionable note:** When refactoring DOM factory helpers, be aware that tests may hardcode element creation order; adding an alias lets you relocate the developer-facing binding while keeping the actual creation timeline intact.
-- **Open questions/follow-up:** None surfaced, but if the DOM creation order needs to become more flexible in the future, consider softening the tests so they look for elements by role rather than by index.
-- **Recent lesson:** Extracting `createDendriteForm` to module scope clarified its dependencies (build factory + container context) and made the handler lighter, but also required switching to an options object so the `max-params` rule stayed satisfied; future moves of helper logic should keep lint constraints in mind.

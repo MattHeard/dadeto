@@ -1,3 +1,0 @@
-Both `resolveStoryInfoFromStory` and `resolveStoryInfoFromRoot` were flagged for complexity because they mixed guard clauses with construction logic. I moved the root-page null check into `buildStoryInfoFromPage` and made the story-level resolver return `rootRef ? ... : null`, so the original function now just pipes through the helper. The helper owns the `if (!pageSnap?.exists)` guard, which keeps the exported entry under the max-2 threshold without changing the flow or tests.
-
-Ran `npm test` and `npm run lint`; the latest lint report still shows 207 remaining `src/core/` warnings so future agents can track progress. Could we add a lint-count script or reuse the one I wrote earlier so counting directory-specific warnings doesn't require rerunning `rg` each time?

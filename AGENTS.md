@@ -3,6 +3,7 @@
 ## General Recommendations for Future Agents
 - **Consult guidelines and past notes first.** Review relevant documentation, retrospectives, and prior changes before starting work so your approach aligns with established patterns and known pitfalls.
 - **Plan broad changes carefully.** Script repetitive edits, break large refactors into incremental steps, update related docs, and validate each phase—especially configs and tests—before moving on.
+- **Map renames before moving code.** Scope the blast radius of any file move or rename with a global search (source, tests, scripts, infra) and update all references in the same change; jot a short retrospective so the rationale stays discoverable.
 - **Test and lint early and often.** Run the suite and lint checks throughout your work, address failures immediately, and record the commands and outcomes in your PR notes.
 - **Practice defensive programming.** Anticipate edge cases, validate inputs, prefer safe defaults, and resolve lint findings instead of disabling rules so the system fails gracefully when surprises occur.
 - **Keep project guidelines cohesive.** When you add or revise rules, integrate them with existing sections, update references after structural changes, and maintain the established tone and formatting.
@@ -30,12 +31,20 @@
 - Keep generator utilities composable, documented with JSDoc, and defensive (null checks, `escapeHtml` for user content).
 - Run Prettier through the configured ESLint integration; never add `eslint-disable` comments.
 
+## Refactoring & Complexity
+- Treat ESLint complexity warnings as actionable; optional chaining, ternaries, and nested callbacks all count, so extract helpers until functions sit comfortably below the threshold.
+- Refactor in small steps, running `npm run lint` (and targeted tests) after each extraction to catch new hotspots introduced by helpers.
+- Keep helpers single-purpose with clear branching, and prefer early returns to avoid hidden decision points that push complexity back up.
+
 ## Testing Guidelines
 - Tests run under Jest + jsdom. Name files `*.test.js` and colocate them with the modules they exercise.
 - Avoid `jest.resetModules`, `jest.unstable_mockModule`, and `import.meta.url`; they break mutation testing.
 - Always run `npm test` and `npm run lint` before pushing. If they fail, document the failure and corrective steps in your PR.
 - If any files under `src/core/` are modified, run `npm test` after your changes to ensure the core logic remains stable.
-- Use exported entry points instead of loading internals via `eval` or dynamic imports; export helpers when deeper testing is required.
+- Use exported entry points instead of loading internals via `eval` or dynamic imports; export pure helpers (clearly marked as internal/test-only) when deeper testing is required.
+- Prefer focused unit tests for helper logic over piling edge cases into a single integration test; keep integration coverage for the main flow and let unit tests exercise the branches.
+- Build reusable fixture builders for complex object graphs (e.g., nested Firestore-style document chains) so tests share consistent setups and avoid missing links.
+- When Watchman causes Jest issues, rerun with `--watchman=false` to keep targeted suites running; capture any such flags in your PR notes.
 
 ## Commit & Pull Request Guidelines
 - Write concise commit messages that summarize the change and its intent.
@@ -53,3 +62,4 @@
 ## Automation & Deployment Notes
 - Terraform changes are applied by `.github/workflows/gcp-prod.yml`; modify the workflow to adjust behavior instead of running Terraform manually.
 - Mutation analysis and quality gates rely on Stryker and Sonar scripts—run `npm run stryker` or `npm run sonar-issues` only when coordinated with maintainers, and capture their reports under `reports/` if shared.
+- If tool output is hard to interpret, use more targeted options (e.g., ESLint JSON output with a lower local complexity threshold) to surface hot spots before broader refactors.

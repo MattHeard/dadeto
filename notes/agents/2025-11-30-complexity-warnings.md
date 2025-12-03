@@ -1,8 +1,0 @@
-# Complexity Warning Sprint
-
-- **Unexpected hurdle:** Pumping the `complexity` max down to 3 surfaced a handful of functions that technically complied before but became noisy after the threshold change. I discovered that even simple helpers with `??` or optional chaining count toward the cyclomatic complexity tally, so the majority of the noise came from common defaulting patterns rather than deep branching.
-- **How I diagnosed it:** Ran `npm run lint` to see the new warnings, then inspected each flagged function to spot conditional-like operators (`??`, optional chains) or defaulted parameters and extracted the offending expressions into dedicated helpers. Each extracted helper also needed full JSDoc so that the added code didn’t trigger `jsdoc/require-*` noise.
-- **Options I considered:** (1) Leaving those warnings until we could refactor larger modules, (2) tweaking ESLint per-file (disallowed), (3) splitting helpers to push decision points into new functions. I chose option 3 because it met the requirement and kept the lint profile honest.
-- **Learning & guidance:** When you lower complexity limits this low, the defaulting helpers implicitly increase the decision count; plan to use small delegates or normalize data sooner to keep functions under the limit without duplicating logic.
-- **Coverage note:** Pushed coverage back to 100% by exercising the newly exposed `getAncestorRef` logic and the defaulted `createRenderContents` entry point so every branch and helper is validated.
-- **Open questions:** The render-contents and render-variant helpers still report complexity >3. Consider whether those are candidates for a genuine refactor that splits responsibilities so each piece stays simple, or whether the threshold should be revisited. 

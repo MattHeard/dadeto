@@ -1,4 +1,0 @@
-## Variant redirect extraction
-- **Unexpected**: `buildHtml.test.js` used to look for inline variant redirect logic, so when the script moved into `variantRedirect.js` we needed to assert both the new `<script src="/variantRedirect.js">` tag and the file contents (e.g., `pickWeighted` and `crypto.getRandomValues`).
-- **Diagnosis**: the rendered HTML now references three distinct static helpers (`variantGoogleSignIn.js`, `variantMenuToggle.js`, `variantRedirect.js`) that all get copied into `infra/` and listed in `infra/main.tf`, so the deployed site has the same behavior with simpler templates.
-- **Learning**: turning inline `<script>` blocks into standalone JS assets means updating tests to read those files. That keeps the assertions aligned with real production bundles and prevents regressions when future agents refactor the scripts again.
