@@ -21,26 +21,26 @@ function disposeIfPossible(node) {
 }
 
 /**
+ * Remove any previously rendered dendrite form from the container.
+ * @param {HTMLElement} container - Wrapper element.
+ * @param {object} dom - DOM helpers.
+ * @returns {void}
+ */
+function removeExistingForm(container, dom) {
+  const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
+  if (existing) {
+    disposeIfPossible(existing);
+    dom.removeChild(container, existing);
+  }
+}
+
+/**
  * Create a handler for rendering and managing a dendrite form.
  * @param {Array<[string, string]>} fields - Field definitions to render.
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
  */
 export function createDendriteHandler(fields) {
   const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
-
-  /**
-   * Remove any previously rendered dendrite form from the container.
-   * @param {HTMLElement} container - Wrapper element.
-   * @param {object} dom - DOM helpers.
-   * @returns {void}
-   */
-  function removeExistingForm(container, dom) {
-    const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
-    if (existing) {
-      disposeIfPossible(existing);
-      dom.removeChild(container, existing);
-    }
-  }
 
   /**
    * Parse JSON data stored in the hidden text input.
