@@ -1678,15 +1678,34 @@ function getParentPageRef(parentVariantRef) {
  */
 function getAncestorRef(ref, steps = 0) {
   const normalizedSteps = Math.max(steps, 0);
-  const ancestor = Array.from({ length: normalizedSteps }).reduce(current => {
-    if (!current) {
-      return null;
-    }
+  return walkReferenceChain(ref, normalizedSteps);
+}
 
-    return current.parent;
-  }, ref);
+/**
+ * Walk the reference chain for a fixed number of steps.
+ * @param {{ parent?: unknown } | null} reference Starting reference.
+ * @param {number} remainingSteps Steps left to traverse.
+ * @returns {{ parent?: unknown } | null} Resolved ancestor or null.
+ */
+function walkReferenceChain(reference, remainingSteps) {
+  if (remainingSteps <= 0) {
+    return reference;
+  }
 
-  return ancestor ?? null;
+  return walkReferenceChain(getParentRef(reference), remainingSteps - 1);
+}
+
+/**
+ * Return the parent reference when available.
+ * @param {{ parent?: unknown } | null} reference Candidate reference.
+ * @returns {{ parent?: unknown } | null} Parent reference or null.
+ */
+function getParentRef(reference) {
+  if (!reference) {
+    return null;
+  }
+
+  return reference.parent;
 }
 
 export { getAncestorRef };
@@ -1826,14 +1845,11 @@ function buildRouteFromSnapshots(snapshots) {
  * }} options Dependencies for parent resolution.
  * @returns {Promise<string | undefined>} Parent URL when resolvable.
  */
-async function resolveParentUrl({ variant, db, consoleError }) {
-  if (!variant?.incomingOption) {
-    return undefined;
-  }
-
-  return fetchAndBuildParentUrl(db, variant.incomingOption).catch(error => {
-    handleParentLookupError(error, consoleError);
-    return undefined;
+async function resolveParentUrl(options) {
+  return resolveParentLookupPromise({
+    incomingOption: options.variant?.incomingOption,
+    db: options.db,
+    consoleError: options.consoleError,
   });
 }
 
@@ -1867,12 +1883,58 @@ function logParentLookupError(error, consoleError) {
  */
 async function fetchAndBuildParentUrl(db, incomingOption) {
   const snapshots = await fetchParentData(db, incomingOption);
+  return resolveParentRoute(snapshots);
+}
+
+/**
+ * Safely resolve a parent route or fall back to undefined.
+ * @param {{ parentVariantSnap?: unknown, parentPageSnap?: unknown } | null} snapshots Snapshot bundle.
+ * @returns {string | undefined} Route string when resolvable.
+ */
+function resolveParentRoute(snapshots) {
   if (!snapshots) {
     return undefined;
   }
 
-  const route = buildRouteFromSnapshots(snapshots);
-  return route ?? undefined;
+  return normalizeRoute(buildRouteFromSnapshots(snapshots));
+}
+
+/**
+ * Normalize a parent route value.
+ * @param {string | null} route Route candidate.
+ * @returns {string | undefined} Route when present.
+ */
+function normalizeRoute(route) {
+  if (!isRoutePresent(route)) {
+    return undefined;
+  }
+
+  return route;
+}
+
+/**
+ * Determine if a route value is present.
+ * @param {string | null | undefined} route Candidate.
+ * @returns {boolean} True when the route can be returned.
+ */
+function isRoutePresent(route) {
+  return route !== null && route !== undefined;
+}
+
+/**
+ * Resolve the parent lookup promise, handling missing incoming options.
+ * @param {{ incomingOption?: string, db: object, consoleError: Function }} options Lookup dependencies.
+ * @returns {Promise<string | undefined>} Parent URL when available.
+ */
+function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
+  if (!incomingOption) {
+    return Promise.resolve(undefined);
+  }
+
+  return fetchAndBuildParentUrl(db, incomingOption).catch(error => {
+    handleParentLookupError(error, consoleError);
+    return undefined;
+  });
 }
 
 /**
@@ -2147,11 +2209,20 @@ function readNullableProperty(source, key) {
  * @returns {{ [key: string]: unknown }} Safe object mapping.
  */
 function getNormalizedSource(source) {
-  if (!source || typeof source !== 'object') {
+  if (!isObjectLike(source)) {
     return {};
   }
 
   return /** @type {{ [key: string]: unknown }} */ (source);
+}
+
+/**
+ * Determine if the provided value is an object.
+ * @param {unknown} value Candidate.
+ * @returns {value is Record<string, unknown>} True when the value can be indexed.
+ */
+function isObjectLike(value) {
+  return value !== null && typeof value === 'object';
 }
 
 /**
