@@ -103,7 +103,18 @@ function syncHiddenInput(dom, textInput, data) {
   const serialised = JSON.stringify(data);
   const setValue = createSetValueFactory(dom);
   const syncFns = [setValue, setInputValue];
-  syncFns.forEach(fn => fn(textInput, serialised));
+  const executeSyncFn = createExecuteSyncFn(textInput, serialised);
+  syncFns.forEach(executeSyncFn);
+}
+
+/**
+ * Create a helper to execute sync functions with the shared args.
+ * @param {HTMLInputElement} textInput - Hidden JSON input.
+ * @param {string} serialised - Serialized data payload.
+ * @returns {(fn: Function) => void} Executor for sync functions.
+ */
+function createExecuteSyncFn(textInput, serialised) {
+  return fn => fn(textInput, serialised);
 }
 
 /**
@@ -152,8 +163,8 @@ function createField(
   { key, placeholder, data, textInput, disposers }
 ) {
   const createElement = createElementFactory(dom);
-  const fieldWrapper = createElement('div');
-  const label = createElement('label');
+  const wrapperTagNames = ['div', 'label'];
+  const [fieldWrapper, label] = wrapperTagNames.map(createElement);
   dom.setTextContent(label, placeholder);
 
   const input = createInputElement(dom, key);
@@ -169,7 +180,8 @@ function createField(
     data,
   });
   dom.addEventListener(input, 'input', onInput);
-  disposers.push(createInputListenerDisposer(dom, input, onInput));
+  const inputDisposer = createInputListenerDisposer(dom, input, onInput);
+  disposers.push(inputDisposer);
   const wrapper = fieldWrapper;
   const appendToWrapper = createWrapperAppender(dom, wrapper);
   appendToWrapper(label);
