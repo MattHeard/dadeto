@@ -196,6 +196,22 @@ function prepareTextInput(dom, textInput) {
 }
 
 /**
+ * Invoke a remover helper with the shared container/dom args.
+ * @param {Function} fn - Remover function to execute.
+ * @param {HTMLElement} container - Container element to clean up.
+ * @param {object} dom - DOM helpers.
+ * @returns {void}
+ */
+function runRemover(fn, container, dom) {
+  fn(container, dom);
+}
+
+/**
+ *
+ * @param dom
+ * @param container
+ */
+/**
  * Remove existing inputs and forms from the container.
  * @param {object} dom - DOM utilities.
  * @param {HTMLElement} container - Container element.
@@ -208,7 +224,7 @@ function cleanContainer(dom, container) {
     maybeRemoveTextarea,
     removeExistingForm,
   ];
-  removers.forEach(fn => fn(container, dom));
+  removers.forEach(remover => runRemover(remover, container, dom));
 }
 
 /**
@@ -217,8 +233,6 @@ function cleanContainer(dom, container) {
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
  */
 export function createDendriteHandler(fields) {
-  const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
-
   /**
    * Build the interactive dendrite form and insert it after the text input.
    * @param {object} dom - DOM utilities.
@@ -226,6 +240,7 @@ export function createDendriteHandler(fields) {
    * @returns {HTMLElement} The created form element.
    */
   function buildForm(dom, { container, textInput, data, disposers }) {
+    const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
     const form = dom.createElement('div');
     dom.setClassName(form, dendriteFormClassName);
     const nextSibling = dom.getNextSibling(textInput);
