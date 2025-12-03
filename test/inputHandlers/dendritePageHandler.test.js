@@ -1,4 +1,4 @@
-import { dendritePageHandler } from '../../src/core/browser/inputHandlers/dendritePage.js';
+import { dendritePageHandler } from '../../src/core/browser/browser-core.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('dendritePageHandler', () => {
