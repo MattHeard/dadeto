@@ -177,6 +177,29 @@ function createField(
 }
 
 /**
+ * Render a single field inside a form.
+ * @param {{dom: object, form: HTMLElement, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render options.
+ * @returns {void}
+ */
+function buildField({
+  dom,
+  form,
+  key,
+  placeholder,
+  data,
+  textInput,
+  disposers,
+}) {
+  createField(dom, form, {
+    key,
+    placeholder,
+    data,
+    textInput,
+    disposers,
+  });
+}
+
+/**
  * Invoke a disposer function.
  * @param {Function} fn - Disposer to invoke.
  * @returns {void}
@@ -241,7 +264,9 @@ function createBuildForm(fields) {
     dom.insertBefore(container, form, nextSibling);
 
     const renderField = ([key, placeholder]) =>
-      createField(dom, form, {
+      buildField({
+        dom,
+        form,
         key,
         placeholder,
         data,
