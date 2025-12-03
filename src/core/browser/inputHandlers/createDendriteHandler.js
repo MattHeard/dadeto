@@ -52,16 +52,26 @@ export function createDendriteHandler(fields) {
   }
 
   /**
+   * Build a dom element creation helper for this dom helper bucket.
+   * @param {object} dom - DOM utilities.
+   * @returns {(tag: string) => HTMLElement} Factory that creates DOM nodes.
+   */
+  function createElementFactory(dom) {
+    return tag => dom.createElement(tag);
+  }
+
+  /**
    * Create an input element for a given field key.
    * @param {object} dom - DOM utilities.
    * @param {string} key - Field name.
    * @returns {HTMLElement} The created element.
    */
   function createInputElement(dom, key) {
+    const createElement = createElementFactory(dom);
     if (key === 'content') {
-      return dom.createElement('textarea');
+      return createElement('textarea');
     }
-    const element = dom.createElement('input');
+    const element = createElement('input');
     dom.setType(element, 'text');
     return element;
   }
