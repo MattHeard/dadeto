@@ -1,1 +1,1 @@
-export * from '../../core/browser/inputHandlers/default.js';
+export { defaultHandler } from '../../core/browser/browser-core.js';

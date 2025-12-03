@@ -2,6 +2,7 @@ import { safeParseJson, valueOr } from '../jsonUtils.js';
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 
 import { maybeRemoveElement } from './inputHandlers/disposeHelpers.js';
+import { maybeRemoveDendrite } from './inputHandlers/removeElements.js';
 import {
   NUMBER_INPUT_SELECTOR,
   TEXTAREA_SELECTOR,
@@ -83,6 +84,21 @@ export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
 export function hideAndDisable(element, dom) {
   dom.hide(element);
   dom.disable(element);
+}
+
+/**
+ * Handle a field with no special input type by clearing related widgets.
+ * @param {object} dom - DOM helper utilities.
+ * @param {HTMLElement} container - Container element housing the input.
+ * @param {HTMLInputElement} textInput - The text input element.
+ * @returns {void}
+ */
+export function defaultHandler(dom, container, textInput) {
+  hideAndDisable(textInput, dom);
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+  maybeRemoveDendrite(container, dom);
+  maybeRemoveTextarea(container, dom);
 }
 
 /**
