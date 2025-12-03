@@ -14,6 +14,7 @@ import { getInputValue, setInputValue } from '../inputValueStore.js';
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
  */
 export function createDendriteHandler(fields) {
+  const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
   /**
    * Call a node's _dispose method when available.
    * @param {{_dispose?: Function}} node - Node to clean up.
@@ -189,7 +190,7 @@ export function createDendriteHandler(fields) {
    */
   function buildForm(dom, { container, textInput, data, disposers }) {
     const form = dom.createElement('div');
-    dom.setClassName(form, DENDRITE_FORM_SELECTOR.slice(1));
+    dom.setClassName(form, dendriteFormClassName);
     const nextSibling = dom.getNextSibling(textInput);
     dom.insertBefore(container, form, nextSibling);
 
