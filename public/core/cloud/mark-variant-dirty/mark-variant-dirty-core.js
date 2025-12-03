@@ -137,14 +137,33 @@ export function createHandleCorsOrigin(isAllowedOriginFn, allowedOrigins) {
     throw new TypeError('isAllowedOrigin must be a function');
   }
 
-  return (origin, cb) => {
-    if (isAllowedOriginFn(origin ?? null, allowedOrigins)) {
-      cb(null, true);
-      return;
-    }
+  return (origin, cb) =>
+    respondToCorsOrigin(
+      { origin: origin ?? null, allowedOrigins, isAllowedOriginFn },
+      cb
+    );
+}
 
-    cb(new Error('CORS'));
-  };
+/**
+ * Respond to a CORS origin lookup using the configured predicate.
+ * @param {{
+ *   origin: string | null | undefined,
+ *   allowedOrigins: string[],
+ *   isAllowedOriginFn: (origin: string | null | undefined, origins: string[]) => boolean,
+ * }} config CORS inputs.
+ * @param {(err: Error | null, allow?: boolean) => void} cb Response callback.
+ * @returns {void}
+ */
+function respondToCorsOrigin(
+  { origin, allowedOrigins, isAllowedOriginFn },
+  cb
+) {
+  if (isAllowedOriginFn(origin, allowedOrigins)) {
+    cb(null, true);
+    return;
+  }
+
+  cb(new Error('CORS'));
 }
 
 /**
@@ -216,7 +235,22 @@ function hasSnapshotDocs(snap) {
  * @param {import('firebase-admin/firestore').QueryDocumentSnapshot | null | undefined} doc Document snapshot.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference.
  */
-const getDocRef = doc => doc?.ref ?? null;
+function getDocRef(doc) {
+  return extractDocReference(doc);
+}
+
+/**
+ * Extract the Firestore document reference when available.
+ * @param {import('firebase-admin/firestore').QueryDocumentSnapshot | null | undefined} doc Document snapshot.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference or null.
+ */
+function extractDocReference(doc) {
+  if (!doc || !doc.ref) {
+    return null;
+  }
+
+  return doc.ref;
+}
 
 /**
  * Find a reference to the page document.
@@ -277,6 +311,17 @@ export async function findVariantRef({
     refFromSnap: helpers.refFromSnap,
   });
 
+  return resolveVariantRefFromPage(helpers, pageRef, variantName);
+}
+
+/**
+ * Resolve the variant reference when a page ref is present.
+ * @param {object} helpers Firebase helpers.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} pageRef Page ref candidate.
+ * @param {string} variantName Variant name.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant ref or null.
+ */
+function resolveVariantRefFromPage(helpers, pageRef, variantName) {
   if (!pageRef) {
     return null;
   }
@@ -356,12 +401,21 @@ export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
     variantName
   );
 
+  return updateVariantIfPresent(deps.updateVariantDirty, variantRef);
+}
+
+/**
+ * Apply the update helper when a reference exists.
+ * @param {Function | undefined} updateVariantDirtyFn Update override.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} variantRef Candidate ref.
+ * @returns {Promise<boolean>} True when the update ran.
+ */
+async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
   if (!variantRef) {
     return false;
   }
 
-  await applyUpdateFn(deps.updateVariantDirty, variantRef);
-
+  await applyUpdateFn(updateVariantDirtyFn, variantRef);
   return true;
 }
 
@@ -514,16 +568,26 @@ function isValidMarkRequest({ pageNumber, variantName }) {
 async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
   try {
     const ok = await markFn(pageNumber, variantName);
-    if (!ok) {
-      res.status(404).json({ error: 'Variant not found' });
-      return;
-    }
-
-    res.status(200).json({ ok: true });
+    respondToVariantResult(res, ok);
   } catch (error) {
     const message = resolveUpdateErrorMessage(error);
     res.status(500).json({ error: message });
   }
+}
+
+/**
+ * Send the response for the variant update result.
+ * @param {import('express').Response} res Response object.
+ * @param {boolean} ok Marker of success.
+ * @returns {void}
+ */
+function respondToVariantResult(res, ok) {
+  if (!ok) {
+    res.status(404).json({ error: 'Variant not found' });
+    return;
+  }
+
+  res.status(200).json({ ok: true });
 }
 
 /**
@@ -688,11 +752,21 @@ async function processHandleRequest({
       variantName,
     });
   } catch (err) {
-    if (err === REQUEST_HANDLED) {
-      return;
-    }
-    throw err;
+    handleProcessError(err);
   }
+}
+
+/**
+ * Handle the sentinel error thrown when request handling was already responded to.
+ * @param {unknown} err Error thrown during processing.
+ * @returns {void}
+ */
+function handleProcessError(err) {
+  if (err === REQUEST_HANDLED) {
+    return;
+  }
+
+  throw err;
 }
 
 /**
