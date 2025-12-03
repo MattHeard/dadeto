@@ -1,12 +1,13 @@
-Moved the `parseJsonValue` wrapper around `JSON.parse` into dependency-injected call sites and then removed the fallback inside `safeParseJson`, requiring every consumer to supply its own parser.
+Moved the `parseJsonValue` wrapper around `JSON.parse` into dependency-injected call sites, then relocated `parseJsonOrDefault`, `maybeRemoveNumber`, `maybeRemoveKV`, and `hideAndDisable` into `src/core/browser/browser-core.js` so the browser helpers rely on a centralized utility layer while `safeParseJson` still guards parsing failures.
 
 Unexpected hurdles:
-- I had to juggle the repeated `parseJsonValue` definition across modules because `parseCluesOrDefault` and `parseFleet` live outside `jsonUtils`, yet the change request wanted them to inject a parser into `safeParseJson`. I kept a local arrow in each function and removed the inline fallback from `safeParseJson`, so now every caller must pass a parser explicitly.
+- I had to juggle the repeated `parseJsonValue` definition across modules because `parseCluesOrDefault` and `parseFleet` live outside `jsonUtils`, yet the change request wanted them to inject a parser into `safeParseJson`. Keeping a local arrow in each function and removing the inline fallback meant every caller now passes a parser explicitly.
+- Moving `hideAndDisable` into `browser-core` required re-exporting it from `inputState.js` so the generated `public` handlers could continue to import from there without regressions.
 
 Learnings:
 - When adding dependency injection to a utility like JSON parsing, keep overrides localized to the functions that actually swap behavior; if you later remove the default, make sure every consumer supplies a parser so nothing breaks.
+- Re-exporting a new central helper through legacy modules can keep generated artifacts working while the real implementation moves elsewhere.
 
-- After relocating `parseJsonOrDefault` to `src/core/browser/browser-core.js`, should any other helpers consume it directly instead of through the shared `jsonUtils` re-export?
-- Does the `maybeRemoveNumber` cleanup helper deserve a more central home like `browser-core` since it’s shared between UI handlers, or should it stay next to the other selectors? I moved it into `browser-core` and updated the inputs/tests accordingly so the number remover is still reusable by `text`, `default`, `textarea`, `dendrite`, and later `handleKVType`.
-- Now that `maybeRemoveKV` also lives in `browser-core`, the UI handlers share a single KV cleanup helper alongside the number remover—worth noting in case more selector-specific cleanup gets centralized further.
-- After relocating `parseJsonOrDefault` to `src/core/browser/browser-core.js`, should any other helpers consume it directly instead of through the shared `jsonUtils` re-export?
+Open questions:
+- Should more helpers start consuming `parseJsonOrDefault` directly from `browser-core` instead of the `jsonUtils` re-export?
+- Do other selector-specific cleanup helpers also belong in `browser-core`, or should we keep ejecting them near the DOM selectors they reference?

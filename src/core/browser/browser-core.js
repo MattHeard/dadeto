@@ -1,7 +1,10 @@
 import { safeParseJson, valueOr } from '../jsonUtils.js';
 
 import { maybeRemoveElement } from './inputHandlers/disposeHelpers.js';
-import { NUMBER_INPUT_SELECTOR } from '../constants/selectors.js';
+import {
+  NUMBER_INPUT_SELECTOR,
+  TEXTAREA_SELECTOR,
+} from '../constants/selectors.js';
 
 export const createGoogleSignOut = ({
   authSignOut,
@@ -67,6 +70,19 @@ export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
 
 const KV_CONTAINER_SELECTOR = '.kv-container';
 export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
+
+export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
+
+/**
+ * Hide and disable a DOM element.
+ * @param {HTMLElement} element - Element to hide.
+ * @param {object} dom - DOM utilities.
+ * @returns {void}
+ */
+export function hideAndDisable(element, dom) {
+  dom.hide(element);
+  dom.disable(element);
+}
 
 /**
  * Check if a value is a non-null object.

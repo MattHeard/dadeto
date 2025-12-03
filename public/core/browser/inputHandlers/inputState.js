@@ -1,12 +1,6 @@
-/**
- * Hide and disable a DOM element.
- * @param {HTMLElement} element - Element to hide.
- * @param {object} dom - DOM utilities.
- */
-export function hideAndDisable(element, dom) {
-  dom.hide(element);
-  dom.disable(element);
-}
+import { hideAndDisable as browserHideAndDisable } from '../browser-core.js';
+
+export const hideAndDisable = browserHideAndDisable;
 
 /**
  * Reveal and enable a DOM element.

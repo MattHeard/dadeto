@@ -1,7 +1,11 @@
-import { maybeRemoveDendrite, maybeRemoveTextarea } from './removeElements.js';
+import { maybeRemoveDendrite } from './removeElements.js';
 import { NUMBER_INPUT_SELECTOR } from '../../constants/selectors.js';
-import { hideAndDisable } from './inputState.js';
-import { createRemoveListener, maybeRemoveKV } from '../browser-core.js';
+import {
+  createRemoveListener,
+  hideAndDisable,
+  maybeRemoveKV,
+  maybeRemoveTextarea,
+} from '../browser-core.js';
 import { getInputValue, setInputValue } from '../inputValueStore.js';
 
 const createBaseNumberInput = dom => {

@@ -1,5 +1,4 @@
 import { maybeRemoveElement } from './disposeHelpers.js';
-import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
 import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
 
 /**
@@ -21,8 +20,3 @@ function createElementRemover(selector) {
  * Removes a dendrite form if present.
  */
 export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
-
-/**
- * Removes a textarea input element if present.
- */
-export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);

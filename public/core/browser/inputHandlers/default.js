@@ -1,6 +1,10 @@
-import { maybeRemoveDendrite, maybeRemoveTextarea } from './removeElements.js';
-import { maybeRemoveKV, maybeRemoveNumber } from '../browser-core.js';
-import { hideAndDisable } from './inputState.js';
+import { maybeRemoveDendrite } from './removeElements.js';
+import {
+  hideAndDisable,
+  maybeRemoveKV,
+  maybeRemoveNumber,
+  maybeRemoveTextarea,
+} from '../browser-core.js';
 
 /**
  * Handle a field with no special input type.

@@ -1,5 +1,9 @@
-import { maybeRemoveDendrite, maybeRemoveTextarea } from './removeElements.js';
-import { maybeRemoveKV, maybeRemoveNumber } from '../browser-core.js';
+import { maybeRemoveDendrite } from './removeElements.js';
+import {
+  maybeRemoveKV,
+  maybeRemoveNumber,
+  maybeRemoveTextarea,
+} from '../browser-core.js';
 import { revealAndEnable } from './inputState.js';
 
 /**
