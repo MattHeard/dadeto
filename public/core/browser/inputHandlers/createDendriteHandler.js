@@ -200,6 +200,24 @@ function buildField({
 }
 
 /**
+ * Build a renderer for the field definitions list.
+ * @param {{dom: object, form: HTMLElement, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Rendering helpers.
+ * @returns {(field: [string, string]) => void} Renderer for each field tuple.
+ */
+function createFieldRenderer({ dom, form, data, textInput, disposers }) {
+  return ([key, placeholder]) =>
+    buildField({
+      dom,
+      form,
+      key,
+      placeholder,
+      data,
+      textInput,
+      disposers,
+    });
+}
+
+/**
  * Invoke a disposer function.
  * @param {Function} fn - Disposer to invoke.
  * @returns {void}
@@ -263,16 +281,13 @@ function createBuildForm(fields) {
     const nextSibling = dom.getNextSibling(textInput);
     dom.insertBefore(container, form, nextSibling);
 
-    const renderField = ([key, placeholder]) =>
-      buildField({
-        dom,
-        form,
-        key,
-        placeholder,
-        data,
-        textInput,
-        disposers,
-      });
+    const renderField = createFieldRenderer({
+      dom,
+      form,
+      data,
+      textInput,
+      disposers,
+    });
     fields.forEach(renderField);
 
     syncHiddenInput(dom, textInput, data);
