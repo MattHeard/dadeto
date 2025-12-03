@@ -11,6 +11,7 @@ import {
   maybeRemoveTextarea,
   setInputValue,
   dendritePageHandler,
+  dendriteStoryHandler,
 } from './browser-core.js';
 
 /**
@@ -170,7 +171,6 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 import { textHandler } from './inputHandlers/text.js';
 import { textareaHandler } from './inputHandlers/textarea.js';
 import { numberHandler } from './inputHandlers/number.js';
-import { dendriteStoryHandler } from './inputHandlers/dendriteStory.js';
 import { maybeRemoveDendrite } from './inputHandlers/removeElements.js';
 import { KV_CONTAINER_SELECTOR } from './constants/selectors.js';
 

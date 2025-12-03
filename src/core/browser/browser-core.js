@@ -85,6 +85,15 @@ const DENDRITE_PAGE_FIELDS = [
   ['fourthOption', 'Fourth option'],
 ];
 
+const DENDRITE_FIELDS = [
+  ['title', 'Title'],
+  ['content', 'Content'],
+  ['firstOption', 'First option'],
+  ['secondOption', 'Second option'],
+  ['thirdOption', 'Third option'],
+  ['fourthOption', 'Fourth option'],
+];
+
 /**
  * Hide and disable a DOM element.
  * @param {HTMLElement} element - Element to hide.
@@ -112,6 +121,7 @@ export function defaultHandler(dom, container, textInput) {
 }
 
 export const dendritePageHandler = createDendriteHandler(DENDRITE_PAGE_FIELDS);
+export const dendriteStoryHandler = createDendriteHandler(DENDRITE_FIELDS);
 
 /**
  * Retrieve the stored value for an element, falling back to the element's value property.

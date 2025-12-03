@@ -1,4 +1,4 @@
-import { dendriteStoryHandler } from '../../src/core/browser/inputHandlers/dendriteStory.js';
+import { dendriteStoryHandler } from '../../src/core/browser/browser-core.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('dendriteStoryHandler', () => {
