@@ -1,1 +1,1 @@
-export * from '../../core/browser/inputHandlers/dendritePage.js';
+export { dendritePageHandler } from '../../core/browser/browser-core.js';

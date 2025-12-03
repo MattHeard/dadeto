@@ -7,6 +7,7 @@ import {
   NUMBER_INPUT_SELECTOR,
   TEXTAREA_SELECTOR,
 } from '../constants/selectors.js';
+import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 
 export const createGoogleSignOut = ({
   authSignOut,
@@ -75,6 +76,15 @@ export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
 
 export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
 
+const DENDRITE_PAGE_FIELDS = [
+  ['optionId', 'Option ID'],
+  ['content', 'Content'],
+  ['firstOption', 'First option'],
+  ['secondOption', 'Second option'],
+  ['thirdOption', 'Third option'],
+  ['fourthOption', 'Fourth option'],
+];
+
 /**
  * Hide and disable a DOM element.
  * @param {HTMLElement} element - Element to hide.
@@ -100,6 +110,8 @@ export function defaultHandler(dom, container, textInput) {
   maybeRemoveDendrite(container, dom);
   maybeRemoveTextarea(container, dom);
 }
+
+export const dendritePageHandler = createDendriteHandler(DENDRITE_PAGE_FIELDS);
 
 /**
  * Retrieve the stored value for an element, falling back to the element's value property.
