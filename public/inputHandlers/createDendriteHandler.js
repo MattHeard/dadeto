@@ -77,6 +77,15 @@ export function createDendriteHandler(fields) {
   }
 
   /**
+   * Build a factory that sets DOM input values for this dom helper bucket.
+   * @param {object} dom - DOM utilities.
+   * @returns {(input: HTMLInputElement, value: string) => void} Setter helper.
+   */
+  function createSetValueFactory(dom) {
+    return (textInput, serialised) => dom.setValue(textInput, serialised);
+  }
+
+  /**
    * Serialize the user data and mirror it in the hidden JSON input.
    * @param {object} dom - DOM helpers.
    * @param {HTMLInputElement} textInput - Hidden input element.
@@ -84,7 +93,8 @@ export function createDendriteHandler(fields) {
    */
   function syncHiddenInput(dom, textInput, data) {
     const serialised = JSON.stringify(data);
-    dom.setValue(textInput, serialised);
+    const setValue = createSetValueFactory(dom);
+    setValue(textInput, serialised);
     setInputValue(textInput, serialised);
   }
 
