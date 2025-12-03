@@ -151,17 +151,19 @@ function createWrapperAppender(dom, wrapper) {
 }
 
 /**
- * Add a labeled input field to the dendrite form.
- * @param {object} dom - DOM helpers.
- * @param {HTMLElement} form - Form container.
- * @param {{key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field options.
+ * Render a single field inside a form.
+ * @param {{dom: object, form: HTMLElement, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render options.
  * @returns {void}
  */
-function createField(
+function buildField({
   dom,
   form,
-  { key, placeholder, data, textInput, disposers }
-) {
+  key,
+  placeholder,
+  data,
+  textInput,
+  disposers,
+}) {
   const createElement = createElementFactory(dom);
   const wrapperTagNames = ['div', 'label'];
   const [fieldWrapper, label] = wrapperTagNames.map(createElement);
@@ -184,32 +186,9 @@ function createField(
   disposers.push(inputDisposer);
   const wrapper = fieldWrapper;
   const appendToWrapper = createWrapperAppender(dom, wrapper);
-  appendToWrapper(label);
-  appendToWrapper(input);
+  const fieldElements = [label, input];
+  fieldElements.forEach(appendToWrapper);
   dom.appendChild(form, wrapper);
-}
-
-/**
- * Render a single field inside a form.
- * @param {{dom: object, form: HTMLElement, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render options.
- * @returns {void}
- */
-function buildField({
-  dom,
-  form,
-  key,
-  placeholder,
-  data,
-  textInput,
-  disposers,
-}) {
-  createField(dom, form, {
-    key,
-    placeholder,
-    data,
-    textInput,
-    disposers,
-  });
 }
 
 /**
@@ -218,34 +197,23 @@ function buildField({
  * @param {[string, string]} field - Tuple describing the field key and placeholder.
  * @returns {void}
  */
-function renderField(
-  { dom, form, data, textInput, disposers },
-  [key, placeholder]
-) {
-  buildField({
-    dom,
-    form,
-    key,
-    placeholder,
-    data,
-    textInput,
-    disposers,
-  });
-}
-
 /**
  * Build a renderer for the field definitions list.
  * @param {{dom: object, form: HTMLElement, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Rendering helpers.
  * @returns {(field: [string, string]) => void} Renderer for each field tuple.
  */
 function createFieldRenderer({ dom, form, data, textInput, disposers }) {
-  return renderField.bind(null, {
-    dom,
-    form,
-    data,
-    textInput,
-    disposers,
-  });
+  return function renderFieldForTuple([key, placeholder]) {
+    buildField({
+      dom,
+      form,
+      key,
+      placeholder,
+      data,
+      textInput,
+      disposers,
+    });
+  };
 }
 
 /**
