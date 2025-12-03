@@ -9,23 +9,24 @@ import { hideAndDisable } from './inputState.js';
 import { getInputValue, setInputValue } from '../inputValueStore.js';
 
 /**
+ * Call a node's _dispose method when available.
+ * @param {{_dispose?: Function}} node - Node to clean up.
+ * @returns {void}
+ */
+function disposeIfPossible(node) {
+  const disposer = node._dispose;
+  if (typeof disposer === 'function') {
+    disposer();
+  }
+}
+
+/**
  * Create a handler for rendering and managing a dendrite form.
  * @param {Array<[string, string]>} fields - Field definitions to render.
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
  */
 export function createDendriteHandler(fields) {
   const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
-  /**
-   * Call a node's _dispose method when available.
-   * @param {{_dispose?: Function}} node - Node to clean up.
-   * @returns {void}
-   */
-  function disposeIfPossible(node) {
-    const disposer = node._dispose;
-    if (typeof disposer === 'function') {
-      disposer();
-    }
-  }
 
   /**
    * Remove any previously rendered dendrite form from the container.
