@@ -237,16 +237,6 @@ function createDisposeForm(disposers) {
 }
 
 /**
- * Hide and disable the hidden JSON input element.
- * @param {object} dom - DOM helpers.
- * @param {HTMLInputElement} textInput - Input to hide.
- * @returns {void}
- */
-function prepareTextInput(dom, textInput) {
-  hideAndDisable(textInput, dom);
-}
-
-/**
  * Invoke a remover helper with the shared container/dom args.
  * @param {Function} fn - Remover function to execute.
  * @param {HTMLElement} container - Container element to clean up.
@@ -322,6 +312,17 @@ function createBuildForm(fields) {
 }
 
 /**
+ * Create and insert a dendrite form for editing data.
+ * @param {{buildForm: Function, dom: object, container: HTMLElement, textInput: HTMLInputElement}} options - Form creation inputs.
+ * @returns {HTMLElement} Newly created form.
+ */
+function createDendriteForm({ buildForm, dom, container, textInput }) {
+  const disposers = [];
+  const data = parseDendriteData(dom, textInput);
+  return buildForm(dom, { container, textInput, data, disposers });
+}
+
+/**
  * Create a handler for rendering and managing a dendrite form.
  * @param {Array<[string, string]>} fields - Field definitions to render.
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
@@ -329,22 +330,9 @@ function createBuildForm(fields) {
 export function createDendriteHandler(fields) {
   const buildForm = createBuildForm(fields);
 
-  /**
-   * Create and insert a dendrite form for editing data.
-   * @param {object} dom - DOM utilities.
-   * @param {HTMLElement} container - Container to insert into.
-   * @param {HTMLInputElement} textInput - Hidden JSON input.
-   * @returns {HTMLElement} Newly created form.
-   */
-  function createDendriteForm(dom, container, textInput) {
-    const disposers = [];
-    const data = parseDendriteData(dom, textInput);
-    return buildForm(dom, { container, textInput, data, disposers });
-  }
-
   return function dendriteHandler(dom, container, textInput) {
-    prepareTextInput(dom, textInput);
+    hideAndDisable(textInput, dom);
     cleanContainer(dom, container);
-    return createDendriteForm(dom, container, textInput);
+    return createDendriteForm({ buildForm, dom, container, textInput });
   };
 }
