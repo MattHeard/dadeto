@@ -132,6 +132,19 @@ export function createDendriteHandler(fields) {
   }
 
   /**
+   *
+   * @param fn
+   */
+  /**
+   * Invoke a disposer function.
+   * @param {Function} fn - Disposer to invoke.
+   * @returns {void}
+   */
+  function runDisposer(fn) {
+    fn();
+  }
+
+  /**
    * Add a labeled input field to the dendrite form.
    * @param {object} dom - DOM helpers.
    * @param {HTMLElement} form - Form container.
@@ -193,7 +206,7 @@ export function createDendriteHandler(fields) {
     syncHiddenInput(dom, textInput, data);
 
     form._dispose = () => {
-      disposers.forEach(fn => fn());
+      disposers.forEach(runDisposer);
     };
 
     return form;
