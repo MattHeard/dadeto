@@ -35,6 +35,180 @@ function removeExistingForm(container, dom) {
 }
 
 /**
+ *
+ * @param dom
+ * @param textInput
+ */
+/**
+ * Parse JSON data stored in the hidden text input.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLInputElement} textInput - Hidden input element.
+ * @returns {object} Parsed dendrite data.
+ */
+function parseDendriteData(dom, textInput) {
+  const value = getInputValue(textInput) || '{}';
+  return parseJsonOrDefault(value, {});
+}
+
+/**
+ *
+ * @param dom
+ */
+/**
+ * Build a dom element creation helper for this dom helper bucket.
+ * @param {object} dom - DOM utilities.
+ * @returns {(tag: string) => HTMLElement} Factory that creates DOM nodes.
+ */
+function createElementFactory(dom) {
+  return tag => dom.createElement(tag);
+}
+
+/**
+ *
+ * @param dom
+ * @param key
+ */
+/**
+ * Create an input element for a given field key.
+ * @param {object} dom - DOM utilities.
+ * @param {string} key - Field name.
+ * @returns {HTMLElement} The created element.
+ */
+function createInputElement(dom, key) {
+  const createElement = createElementFactory(dom);
+  if (key === 'content') {
+    return createElement('textarea');
+  }
+  const element = createElement('input');
+  dom.setType(element, 'text');
+  return element;
+}
+
+/**
+ * Build a factory that sets DOM input values for this dom helper bucket.
+ * @param {object} dom - DOM utilities.
+ * @returns {(input: HTMLInputElement, value: string) => void} Setter helper.
+ */
+function createSetValueFactory(dom) {
+  return (textInput, serialised) => dom.setValue(textInput, serialised);
+}
+
+/**
+ * Serialize the user data and mirror it in the hidden JSON input.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLInputElement} textInput - Hidden input element.
+ * @param {object} data - Current payload snapshot.
+ */
+function syncHiddenInput(dom, textInput, data) {
+  const serialised = JSON.stringify(data);
+  const setValue = createSetValueFactory(dom);
+  const syncFns = [setValue, setInputValue];
+  syncFns.forEach(fn => fn(textInput, serialised));
+}
+
+/**
+ * Create a closure for responding to user input on a field.
+ * @param {{dom: object, key: string, input: HTMLElement, textInput: HTMLInputElement, data: object}} options - Handler configuration.
+ * @returns {() => void} Event handler that keeps the payload in sync.
+ */
+function createFieldInputHandler({ dom, key, input, textInput, data }) {
+  return () => {
+    data[key] = dom.getValue(input);
+    syncHiddenInput(dom, textInput, data);
+  };
+}
+
+/**
+ * Build a disposer that removes the last registered input listener.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLElement} input - Input element to clean up.
+ * @param {Function} handler - Handler previously registered.
+ * @returns {() => void} Disposer that removes the listener.
+ */
+function createInputListenerDisposer(dom, input, handler) {
+  return () => dom.removeEventListener(input, 'input', handler);
+}
+
+/**
+ * Create an appender for a specific wrapper element.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLElement} wrapper - Container to append into.
+ * @returns {(child: HTMLElement) => void} Appender function that keeps the wrapper fixed.
+ */
+function createWrapperAppender(dom, wrapper) {
+  return child => dom.appendChild(wrapper, child);
+}
+
+/**
+ * Add a labeled input field to the dendrite form.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLElement} form - Form container.
+ * @param {{key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field options.
+ * @returns {void}
+ */
+function createField(
+  dom,
+  form,
+  { key, placeholder, data, textInput, disposers }
+) {
+  const createElement = createElementFactory(dom);
+  const wrapper = createElement('div');
+  const label = createElement('label');
+  dom.setTextContent(label, placeholder);
+
+  const input = createInputElement(dom, key);
+  dom.setPlaceholder(input, placeholder);
+  if (Object.hasOwn(data, key)) {
+    dom.setValue(input, data[key]);
+  }
+  const onInput = createFieldInputHandler({
+    dom,
+    key,
+    input,
+    textInput,
+    data,
+  });
+  dom.addEventListener(input, 'input', onInput);
+  disposers.push(createInputListenerDisposer(dom, input, onInput));
+  const appendToWrapper = createWrapperAppender(dom, wrapper);
+  appendToWrapper(label);
+  appendToWrapper(input);
+  dom.appendChild(form, wrapper);
+}
+
+/**
+ * Invoke a disposer function.
+ * @param {Function} fn - Disposer to invoke.
+ * @returns {void}
+ */
+function runDisposer(fn) {
+  fn();
+}
+
+/**
+ * Hide and disable the hidden JSON input element.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLInputElement} textInput - Input to hide.
+ * @returns {void}
+ */
+function prepareTextInput(dom, textInput) {
+  hideAndDisable(textInput, dom);
+}
+
+/**
+ * Remove existing inputs and forms from the container.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} container - Container element.
+ * @returns {void}
+ */
+function cleanContainer(dom, container) {
+  maybeRemoveNumber(container, dom);
+  maybeRemoveKV(container, dom);
+  maybeRemoveTextarea(container, dom);
+  removeExistingForm(container, dom);
+}
+
+/**
  * Create a handler for rendering and managing a dendrite form.
  * @param {Array<[string, string]>} fields - Field definitions to render.
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => HTMLElement} Generated handler function.
@@ -43,150 +217,9 @@ export function createDendriteHandler(fields) {
   const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
 
   /**
-   * Parse JSON data stored in the hidden text input.
-   * @param {object} dom - DOM utilities.
-   * @param {HTMLInputElement} textInput - Hidden input element.
-   * @returns {object} Parsed dendrite data.
-   */
-  function parseDendriteData(dom, textInput) {
-    const value = getInputValue(textInput) || '{}';
-    return parseJsonOrDefault(value, {});
-  }
-
-  /**
-   * Build a dom element creation helper for this dom helper bucket.
-   * @param {object} dom - DOM utilities.
-   * @returns {(tag: string) => HTMLElement} Factory that creates DOM nodes.
-   */
-  function createElementFactory(dom) {
-    return tag => dom.createElement(tag);
-  }
-
-  /**
-   * Create an appender for a specific wrapper element.
-   * @param {object} dom - DOM helpers.
-   * @param {HTMLElement} wrapper - Container to append into.
-   * @returns {(child: HTMLElement) => void} Appender function that keeps the wrapper fixed.
-   */
-  function createWrapperAppender(dom, wrapper) {
-    return child => dom.appendChild(wrapper, child);
-  }
-
-  /**
-   * Create an input element for a given field key.
-   * @param {object} dom - DOM utilities.
-   * @param {string} key - Field name.
-   * @returns {HTMLElement} The created element.
-   */
-  function createInputElement(dom, key) {
-    const createElement = createElementFactory(dom);
-    if (key === 'content') {
-      return createElement('textarea');
-    }
-    const element = createElement('input');
-    dom.setType(element, 'text');
-    return element;
-  }
-
-  /**
-   * Build a factory that sets DOM input values for this dom helper bucket.
-   * @param {object} dom - DOM utilities.
-   * @returns {(input: HTMLInputElement, value: string) => void} Setter helper.
-   */
-  function createSetValueFactory(dom) {
-    return (textInput, serialised) => dom.setValue(textInput, serialised);
-  }
-
-  /**
-   * Serialize the user data and mirror it in the hidden JSON input.
-   * @param {object} dom - DOM helpers.
-   * @param {HTMLInputElement} textInput - Hidden input element.
-   * @param {object} data - Current payload snapshot.
-   */
-  function syncHiddenInput(dom, textInput, data) {
-    const serialised = JSON.stringify(data);
-    const setValue = createSetValueFactory(dom);
-    const syncFns = [setValue, setInputValue];
-    syncFns.forEach(fn => fn(textInput, serialised));
-  }
-
-  /**
-   * Create a closure for responding to user input on a field.
-   * @param {{dom: object, key: string, input: HTMLElement, textInput: HTMLInputElement, data: object}} options - Handler configuration.
-   * @returns {() => void} Event handler that keeps the payload in sync.
-   */
-  function createFieldInputHandler({ dom, key, input, textInput, data }) {
-    return () => {
-      data[key] = dom.getValue(input);
-      syncHiddenInput(dom, textInput, data);
-    };
-  }
-
-  /**
-   * Build a disposer that removes the last registered input listener.
-   * @param {object} dom - DOM helpers.
-   * @param {HTMLElement} input - Input element to clean up.
-   * @param {Function} handler - Handler previously registered.
-   * @returns {() => void} Disposer that removes the listener.
-   */
-  function createInputListenerDisposer(dom, input, handler) {
-    return () => dom.removeEventListener(input, 'input', handler);
-  }
-
-  /**
-   *
-   * @param fn
-   */
-  /**
-   * Invoke a disposer function.
-   * @param {Function} fn - Disposer to invoke.
-   * @returns {void}
-   */
-  function runDisposer(fn) {
-    fn();
-  }
-
-  /**
-   * Add a labeled input field to the dendrite form.
-   * @param {object} dom - DOM helpers.
-   * @param {HTMLElement} form - Form container.
-   * @param {{key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field options.
-   * @returns {void}
-   */
-  function createField(
-    dom,
-    form,
-    { key, placeholder, data, textInput, disposers }
-  ) {
-    const createElement = createElementFactory(dom);
-    const wrapper = createElement('div');
-    const label = createElement('label');
-    dom.setTextContent(label, placeholder);
-
-    const input = createInputElement(dom, key);
-    dom.setPlaceholder(input, placeholder);
-    if (Object.hasOwn(data, key)) {
-      dom.setValue(input, data[key]);
-    }
-    const onInput = createFieldInputHandler({
-      dom,
-      key,
-      input,
-      textInput,
-      data,
-    });
-    dom.addEventListener(input, 'input', onInput);
-    disposers.push(createInputListenerDisposer(dom, input, onInput));
-    const appendToWrapper = createWrapperAppender(dom, wrapper);
-    appendToWrapper(label);
-    appendToWrapper(input);
-    dom.appendChild(form, wrapper);
-  }
-
-  /**
    * Build the interactive dendrite form and insert it after the text input.
    * @param {object} dom - DOM utilities.
-   * @param {{container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}} param0 - Configuration options.
+   * @param {{container: HTMLElement, textInput: HTMLInputElement, data: object, disposers: Function[]}} options - Configuration options.
    * @returns {HTMLElement} The created form element.
    */
   function buildForm(dom, { container, textInput, data, disposers }) {
@@ -215,29 +248,6 @@ export function createDendriteHandler(fields) {
   }
 
   /**
-   * Hide and disable the hidden JSON input element.
-   * @param {object} dom - DOM helpers.
-   * @param {HTMLInputElement} textInput - Input to hide.
-   * @returns {void}
-   */
-  function prepareTextInput(dom, textInput) {
-    hideAndDisable(textInput, dom);
-  }
-
-  /**
-   * Remove existing inputs and forms from the container.
-   * @param {object} dom - DOM utilities.
-   * @param {HTMLElement} container - Container element.
-   * @returns {void}
-   */
-  function cleanContainer(dom, container) {
-    maybeRemoveNumber(container, dom);
-    maybeRemoveKV(container, dom);
-    maybeRemoveTextarea(container, dom);
-    removeExistingForm(container, dom);
-  }
-
-  /**
    * Create and insert a dendrite form for editing data.
    * @param {object} dom - DOM utilities.
    * @param {HTMLElement} container - Container to insert into.
@@ -250,13 +260,6 @@ export function createDendriteHandler(fields) {
     return buildForm(dom, { container, textInput, data, disposers });
   }
 
-  /**
-   * Initialize the dendrite editor inside a container.
-   * @param {object} dom - DOM utilities.
-   * @param {HTMLElement} container - Element that will host the form.
-   * @param {HTMLInputElement} textInput - Hidden JSON input element.
-   * @returns {HTMLElement} The created form element.
-   */
   return function dendriteHandler(dom, container, textInput) {
     prepareTextInput(dom, textInput);
     cleanContainer(dom, container);
