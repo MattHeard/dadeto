@@ -3,7 +3,10 @@ import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 
 import { maybeRemoveElement } from './inputHandlers/disposeHelpers.js';
 import { maybeRemoveDendrite } from './inputHandlers/removeElements.js';
-import { NUMBER_INPUT_SELECTOR, TEXTAREA_SELECTOR } from '../constants/selectors.js';
+import {
+  NUMBER_INPUT_SELECTOR,
+  TEXTAREA_SELECTOR,
+} from '../constants/selectors.js';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 
 export const createGoogleSignOut = ({
