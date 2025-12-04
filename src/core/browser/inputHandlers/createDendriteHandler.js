@@ -185,11 +185,10 @@ function buildField({
   dom.addEventListener(input, 'input', onInput);
   const inputDisposer = createInputListenerDisposer(dom, input, onInput);
   disposers.push(inputDisposer);
-  const wrapper = fieldWrapper;
-  const appendToWrapper = createWrapperAppender(dom, wrapper);
+  const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
   const fieldElements = [label, input];
   fieldElements.forEach(appendToWrapper);
-  dom.appendChild(form, wrapper);
+  dom.appendChild(form, fieldWrapper);
 }
 
 /**
