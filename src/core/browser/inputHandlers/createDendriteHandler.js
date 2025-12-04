@@ -93,6 +93,20 @@ function createInputElement(dom, key) {
 }
 
 /**
+ * Set an input's value from the data object when the key exists.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} input - Input element to update.
+ * @param {object} data - Payload object for form values.
+ * @param {string} key - Field key to look up in the data object.
+ * @returns {void}
+ */
+function setInputValueFromData(dom, input, data, key) {
+  if (Object.hasOwn(data, key)) {
+    dom.setValue(input, data[key]);
+  }
+}
+
+/**
  * Build a factory that sets DOM input values for this dom helper bucket.
  * @param {object} dom - DOM utilities.
  * @returns {(input: HTMLInputElement, value: string) => void} Setter helper.
@@ -177,9 +191,7 @@ function buildField({
 
   const input = createInputElement(dom, key);
   dom.setPlaceholder(input, placeholder);
-  if (Object.hasOwn(data, key)) {
-    dom.setValue(input, data[key]);
-  }
+  setInputValueFromData(dom, input, data, key);
   const onInput = createFieldInputHandler({
     dom,
     key,
