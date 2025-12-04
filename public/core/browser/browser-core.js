@@ -1,8 +1,6 @@
 import { safeParseJson, valueOr } from '../jsonUtils.js';
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
-
-import { maybeRemoveElement } from './inputHandlers/disposeHelpers.js';
-import { maybeRemoveDendrite } from './inputHandlers/removeElements.js';
+import { DENDRITE_FORM_SELECTOR } from './inputHandlers/browserInputHandlersCore.js';
 import {
   NUMBER_INPUT_SELECTOR,
   TEXTAREA_SELECTOR,
@@ -58,6 +56,40 @@ export function parseJsonOrDefault(json, fallback = {}) {
 }
 
 /**
+ * Determine if an element exposes a dispose function.
+ * @param {HTMLElement} element - The element to check.
+ * @returns {boolean} True when the element has a _dispose method.
+ */
+export function isDisposable(element) {
+  return Boolean(element) && typeof element._dispose === 'function';
+}
+
+/**
+ * Call the dispose method on an element and remove it from the DOM.
+ * @param {HTMLElement} element - The element to dispose.
+ * @param {HTMLElement} container - Parent container element.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
+ */
+export function disposeAndRemove(element, container, dom) {
+  element._dispose();
+  dom.removeChild(container, element);
+}
+
+/**
+ * Remove an element if it exposes a dispose method.
+ * @param {HTMLElement} element - Element that may be disposable.
+ * @param {HTMLElement} container - Parent container element.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
+ */
+export function maybeRemoveElement(element, container, dom) {
+  if (isDisposable(element)) {
+    disposeAndRemove(element, container, dom);
+  }
+}
+
+/**
  * Create a remover callback for the provided selector.
  * @param {string} selector - Selector used to locate the element to remove.
  * @returns {Function} Callback that removes the selected element when found.
@@ -75,6 +107,7 @@ const KV_CONTAINER_SELECTOR = '.kv-container';
 export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
 
 export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
+export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
 
 const DENDRITE_PAGE_FIELDS = [
   ['optionId', 'Option ID'],
