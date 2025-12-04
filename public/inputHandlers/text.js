@@ -4,7 +4,7 @@ import {
   maybeRemoveNumber,
   maybeRemoveTextarea,
 } from '../browser-core.js';
-import { revealAndEnable } from './inputState.js';
+import { revealAndEnable } from './browserInputHandlersCore.js';
 
 /**
  * Handle a plain text input field.

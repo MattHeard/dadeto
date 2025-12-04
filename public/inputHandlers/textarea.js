@@ -6,7 +6,7 @@ import {
   maybeRemoveNumber,
   getInputValue,
 } from '../browser-core.js';
-import { revealAndEnable } from './inputState.js';
+import { revealAndEnable } from './browserInputHandlersCore.js';
 import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
 import { createUpdateTextInputValue } from './number.js';
 
