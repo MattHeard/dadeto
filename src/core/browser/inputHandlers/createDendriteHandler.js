@@ -173,6 +173,33 @@ function createWrapperAppender(dom, wrapper) {
 }
 
 /**
+ * Build and wire up an input element for a field.
+ * @param {object} dom - DOM helpers.
+ * @param {string} key - Field key.
+ * @param {string} placeholder - Placeholder text for the input.
+ * @param {object} data - Payload data for initial values.
+ * @param {HTMLInputElement} textInput - JSON input mirror.
+ * @param {Function[]} disposers - Disposers list to register cleanup.
+ * @returns {HTMLElement} Initialized input element.
+ */
+function createFieldInput(dom, key, placeholder, data, textInput, disposers) {
+  const input = createInputElement(dom, key);
+  dom.setPlaceholder(input, placeholder);
+  setInputValueFromData(dom, input, data, key);
+  const onInput = createFieldInputHandler({
+    dom,
+    key,
+    input,
+    textInput,
+    data,
+  });
+  dom.addEventListener(input, 'input', onInput);
+  const inputDisposer = createInputListenerDisposer(dom, input, onInput);
+  disposers.push(inputDisposer);
+  return input;
+}
+
+/**
  * Render a single field inside a form.
  * @param {{dom: object, form: HTMLElement, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render options.
  * @returns {void}
@@ -189,19 +216,14 @@ function buildField({
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, placeholder);
 
-  const input = createInputElement(dom, key);
-  dom.setPlaceholder(input, placeholder);
-  setInputValueFromData(dom, input, data, key);
-  const onInput = createFieldInputHandler({
+  const input = createFieldInput(
     dom,
     key,
-    input,
-    textInput,
+    placeholder,
     data,
-  });
-  dom.addEventListener(input, 'input', onInput);
-  const inputDisposer = createInputListenerDisposer(dom, input, onInput);
-  disposers.push(inputDisposer);
+    textInput,
+    disposers
+  );
   const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
   const fieldElements = [label, input];
   fieldElements.forEach(appendToWrapper);
