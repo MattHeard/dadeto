@@ -1,5 +1,5 @@
-import { maybeRemoveDendrite } from '../browser-core.js';
 import {
+  maybeRemoveDendrite,
   maybeRemoveKV,
   maybeRemoveNumber,
   maybeRemoveTextarea,

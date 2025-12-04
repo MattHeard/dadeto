@@ -1,13 +1,13 @@
-import { maybeRemoveDendrite } from '../browser-core.js';
-import { NUMBER_INPUT_SELECTOR } from '../../constants/selectors.js';
 import {
   createRemoveListener,
+  getInputValue,
   hideAndDisable,
+  maybeRemoveDendrite,
   maybeRemoveKV,
   maybeRemoveTextarea,
-  getInputValue,
   setInputValue,
 } from '../browser-core.js';
+import { NUMBER_INPUT_SELECTOR } from '../../constants/selectors.js';
 
 const createBaseNumberInput = dom => {
   const input = dom.createElement('input');

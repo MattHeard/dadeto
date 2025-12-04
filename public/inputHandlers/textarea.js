@@ -1,10 +1,10 @@
-import { maybeRemoveDendrite } from '../browser-core.js';
 import {
   createRemoveListener,
+  getInputValue,
   hideAndDisable,
+  maybeRemoveDendrite,
   maybeRemoveKV,
   maybeRemoveNumber,
-  getInputValue,
 } from '../browser-core.js';
 import { revealAndEnable } from './browserInputHandlersCore.js';
 import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
