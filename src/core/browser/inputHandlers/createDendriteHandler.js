@@ -94,13 +94,10 @@ function createInputElement(dom, key) {
 
 /**
  * Set an input's value from the data object when the key exists.
- * @param {object} dom - DOM utilities.
- * @param {HTMLElement} input - Input element to update.
- * @param {object} data - Payload object for form values.
- * @param {string} key - Field key to look up in the data object.
+ * @param {{dom: object, input: HTMLElement, data: object, key: string}} options - Configuration for the helper.
  * @returns {void}
  */
-function setInputValueFromData(dom, input, data, key) {
+function setInputValueFromData({ dom, input, data, key }) {
   if (Object.hasOwn(data, key)) {
     dom.setValue(input, data[key]);
   }
@@ -174,18 +171,20 @@ function createWrapperAppender(dom, wrapper) {
 
 /**
  * Build and wire up an input element for a field.
- * @param {object} dom - DOM helpers.
- * @param {string} key - Field key.
- * @param {string} placeholder - Placeholder text for the input.
- * @param {object} data - Payload data for initial values.
- * @param {HTMLInputElement} textInput - JSON input mirror.
- * @param {Function[]} disposers - Disposers list to register cleanup.
+ * @param {{dom: object, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Input setup parameters.
  * @returns {HTMLElement} Initialized input element.
  */
-function createFieldInput(dom, key, placeholder, data, textInput, disposers) {
+function createFieldInput({
+  dom,
+  key,
+  placeholder,
+  data,
+  textInput,
+  disposers,
+}) {
   const input = createInputElement(dom, key);
   dom.setPlaceholder(input, placeholder);
-  setInputValueFromData(dom, input, data, key);
+  setInputValueFromData({ dom, input, data, key });
   const onInput = createFieldInputHandler({
     dom,
     key,
@@ -216,14 +215,14 @@ function buildField({
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, placeholder);
 
-  const input = createFieldInput(
+  const input = createFieldInput({
     dom,
     key,
     placeholder,
     data,
     textInput,
-    disposers
-  );
+    disposers,
+  });
   const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
   const fieldElements = [label, input];
   fieldElements.forEach(appendToWrapper);
