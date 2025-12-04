@@ -1,4 +1,4 @@
-import { maybeRemoveDendrite } from './removeElements.js';
+import { maybeRemoveDendrite } from '../browser-core.js';
 import { NUMBER_INPUT_SELECTOR } from '../../constants/selectors.js';
 import {
   createRemoveListener,

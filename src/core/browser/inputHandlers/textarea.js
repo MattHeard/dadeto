@@ -1,4 +1,4 @@
-import { maybeRemoveDendrite } from './removeElements.js';
+import { maybeRemoveDendrite } from '../browser-core.js';
 import {
   createRemoveListener,
   hideAndDisable,
