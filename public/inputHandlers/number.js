@@ -7,7 +7,8 @@ import {
   maybeRemoveTextarea,
   setInputValue,
 } from '../browser-core.js';
-import { NUMBER_INPUT_SELECTOR } from '../../constants/selectors.js';
+
+const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
 const createBaseNumberInput = dom => {
   const input = dom.createElement('input');
