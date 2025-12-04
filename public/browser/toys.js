@@ -9,6 +9,7 @@ import {
   hideAndDisable,
   maybeRemoveNumber,
   maybeRemoveTextarea,
+  maybeRemoveDendrite,
   setInputValue,
   dendritePageHandler,
   dendriteStoryHandler,
@@ -171,7 +172,6 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 import { textHandler } from './inputHandlers/text.js';
 import { textareaHandler } from './inputHandlers/textarea.js';
 import { numberHandler } from './inputHandlers/number.js';
-import { maybeRemoveDendrite } from './inputHandlers/removeElements.js';
 import { KV_CONTAINER_SELECTOR } from './constants/selectors.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
