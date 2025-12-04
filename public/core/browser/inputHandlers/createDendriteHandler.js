@@ -65,10 +65,17 @@ function createElementFactory(dom) {
 }
 
 /**
- *
- * @param dom
- * @param key
+ * Build the wrapper container and label used for field rendering.
+ * @param {object} dom - DOM helpers.
+ * @returns {{fieldWrapper: HTMLElement, label: HTMLElement}} Elements for the field.
  */
+function createFieldWrapper(dom) {
+  const createElement = createElementFactory(dom);
+  const tagNames = ['div', 'label'];
+  const [fieldWrapper, label] = tagNames.map(createElement);
+  return { fieldWrapper, label };
+}
+
 /**
  * Create an input element for a given field key.
  * @param {object} dom - DOM utilities.
@@ -165,9 +172,7 @@ function buildField({
   textInput,
   disposers,
 }) {
-  const createElement = createElementFactory(dom);
-  const wrapperTagNames = ['div', 'label'];
-  const [fieldWrapper, label] = wrapperTagNames.map(createElement);
+  const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, placeholder);
 
   const input = createInputElement(dom, key);
