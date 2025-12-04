@@ -199,13 +199,12 @@ function createFieldInput({
 }
 
 /**
- * Render a single field inside a form.
- * @param {{dom: object, form: HTMLElement, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render options.
- * @returns {void}
+ * Create the wrapper, label, and input elements for a field and append them.
+ * @param {{dom: object, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render inputs.
+ * @returns {{fieldWrapper: HTMLElement}} Wrapped elements ready for insertion.
  */
-function buildField({
+function createFieldElements({
   dom,
-  form,
   key,
   placeholder,
   data,
@@ -224,8 +223,33 @@ function buildField({
     disposers,
   });
   const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
-  const fieldElements = [label, input];
-  fieldElements.forEach(appendToWrapper);
+  [label, input].forEach(appendToWrapper);
+
+  return { fieldWrapper };
+}
+
+/**
+ * Render a single field inside a form.
+ * @param {{dom: object, form: HTMLElement, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render options.
+ * @returns {void}
+ */
+function buildField({
+  dom,
+  form,
+  key,
+  placeholder,
+  data,
+  textInput,
+  disposers,
+}) {
+  const { fieldWrapper } = createFieldElements({
+    dom,
+    key,
+    placeholder,
+    data,
+    textInput,
+    disposers,
+  });
   dom.appendChild(form, fieldWrapper);
 }
 
