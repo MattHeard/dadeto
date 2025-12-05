@@ -15,8 +15,11 @@ import { revealAndEnable } from './browserInputHandlersCore.js';
  */
 export function textHandler(dom, container, textInput) {
   revealAndEnable(textInput, dom);
-  maybeRemoveNumber(container, dom);
-  maybeRemoveKV(container, dom);
-  maybeRemoveDendrite(container, dom);
-  maybeRemoveTextarea(container, dom);
+  const containerHandlers = [
+    maybeRemoveNumber,
+    maybeRemoveKV,
+    maybeRemoveDendrite,
+    maybeRemoveTextarea,
+  ];
+  containerHandlers.forEach(handler => handler(container, dom));
 }
