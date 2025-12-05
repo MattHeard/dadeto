@@ -7,9 +7,9 @@ import {
   maybeRemoveNumber,
 } from '../browser-core.js';
 import { revealAndEnable } from './browserInputHandlersCore.js';
-import { TEXTAREA_SELECTOR } from '../../constants/selectors.js';
 import { createUpdateTextInputValue } from './number.js';
 
+const TEXTAREA_SELECTOR = '.toy-textarea';
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
 
 const hasDomGetValue = dom => typeof dom?.getValue === 'function';
