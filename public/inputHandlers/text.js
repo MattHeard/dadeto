@@ -21,5 +21,9 @@ export function textHandler(dom, container, textInput) {
     maybeRemoveDendrite,
     maybeRemoveTextarea,
   ];
-  containerHandlers.forEach(handler => handler(container, dom));
+  const invokeContainerHandler = createContainerHandlerInvoker(container, dom);
+  containerHandlers.forEach(invokeContainerHandler);
 }
+
+const createContainerHandlerInvoker = (container, dom) => handler =>
+  handler(container, dom);
