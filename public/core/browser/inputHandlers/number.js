@@ -5,8 +5,8 @@ import {
   maybeRemoveDendrite,
   maybeRemoveKV,
   maybeRemoveTextarea,
-  setInputValue,
 } from '../browser-core.js';
+import { createUpdateTextInputValue } from './browserInputHandlersCore.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
@@ -47,27 +47,6 @@ const maybeSetNumberInputValue = (dom, input, value) => {
   if (value) {
     dom.setValue(input, value);
   }
-};
-
-const createDomValueSetter = dom => (textInput, targetValue) => {
-  dom.setValue(textInput, targetValue);
-};
-
-const createTargetApplier = textInput => targetValue => handler =>
-  handler(textInput, targetValue);
-
-const createTextInputUpdater =
-  (dom, applyTargetToHandlers, updateHandlers) => event => {
-    const targetValue = dom.getTargetValue(event);
-    const callWithTarget = applyTargetToHandlers(targetValue);
-    updateHandlers.forEach(callWithTarget);
-  };
-
-export const createUpdateTextInputValue = (textInput, dom) => {
-  const setTextInputValue = createDomValueSetter(dom);
-  const updateHandlers = [setTextInputValue, setInputValue];
-  const applyTargetToHandlers = createTargetApplier(textInput);
-  return createTextInputUpdater(dom, applyTargetToHandlers, updateHandlers);
 };
 
 const positionNumberInput = ({ container, textInput, numberInput, dom }) => {

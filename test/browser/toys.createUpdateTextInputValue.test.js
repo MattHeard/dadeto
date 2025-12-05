@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { createUpdateTextInputValue } from '../../src/core/browser/inputHandlers/number.js';
+import { createUpdateTextInputValue } from '../../src/core/browser/inputHandlers/browserInputHandlersCore.js';
 
 describe('createUpdateTextInputValue', () => {
   let textInput;

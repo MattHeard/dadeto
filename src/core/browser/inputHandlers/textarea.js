@@ -6,8 +6,10 @@ import {
   maybeRemoveKV,
   maybeRemoveNumber,
 } from '../browser-core.js';
-import { revealAndEnable } from './browserInputHandlersCore.js';
-import { createUpdateTextInputValue } from './number.js';
+import {
+  createUpdateTextInputValue,
+  revealAndEnable,
+} from './browserInputHandlersCore.js';
 
 const TEXTAREA_SELECTOR = '.toy-textarea';
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
