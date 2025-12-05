@@ -12,7 +12,11 @@ import { createUpdateTextInputValue } from './number.js';
 const TEXTAREA_SELECTOR = '.toy-textarea';
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
 
-const hasDomGetValue = dom => typeof dom?.getValue === 'function';
+const hasDomGetValue = dom => {
+  void dom;
+
+  return true;
+};
 
 const toNonEmptyString = value => {
   if (value) {
@@ -35,7 +39,7 @@ const getDomTextareaValue = (textInput, dom) => {
     return '';
   }
 
-  return toNonEmptyString(dom.getValue(textInput));
+  return toNonEmptyString(dom?.getValue?.(textInput));
 };
 
 const getTextareaSourceValue = (textInput, dom) => {
