@@ -78,21 +78,28 @@ const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
 const queryNumberInput = (dom, container) =>
   dom.querySelector(container, NUMBER_INPUT_SELECTOR);
 
+const createAndPositionNumberInput = (container, textInput, dom) => {
+  const numberInput = createNumberInput(
+    getInputValue(textInput),
+    createUpdateTextInputValue(textInput, dom),
+    dom
+  );
+
+  positionNumberInput({
+    container,
+    textInput,
+    numberInput,
+    dom,
+  });
+
+  return numberInput;
+};
+
 export const ensureNumberInput = (container, textInput, dom) => {
-  let numberInput = queryNumberInput(dom, container);
+  const numberInput = queryNumberInput(dom, container);
 
   if (!numberInput) {
-    numberInput = createNumberInput(
-      getInputValue(textInput),
-      createUpdateTextInputValue(textInput, dom),
-      dom
-    );
-    positionNumberInput({
-      container,
-      textInput,
-      numberInput,
-      dom,
-    });
+    return createAndPositionNumberInput(container, textInput, dom);
   }
 
   return numberInput;
@@ -107,8 +114,11 @@ export const ensureNumberInput = (container, textInput, dom) => {
  */
 export function numberHandler(dom, container, textInput) {
   hideAndDisable(textInput, dom);
-  maybeRemoveKV(container, dom);
-  maybeRemoveDendrite(container, dom);
-  maybeRemoveTextarea(container, dom);
+  const containerHandlers = [
+    maybeRemoveKV,
+    maybeRemoveDendrite,
+    maybeRemoveTextarea,
+  ];
+  containerHandlers.forEach(handler => handler(container, dom));
   ensureNumberInput(container, textInput, dom);
 }
