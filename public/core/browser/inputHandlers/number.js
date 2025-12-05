@@ -35,10 +35,17 @@ export const createNumberInput = (value, onChange, dom) => {
   return input;
 };
 
-export const createUpdateTextInputValue = (textInput, dom) => event => {
-  const targetValue = dom.getTargetValue(event);
+const createDomValueSetter = dom => (textInput, targetValue) => {
   dom.setValue(textInput, targetValue);
-  setInputValue(textInput, targetValue);
+};
+
+export const createUpdateTextInputValue = (textInput, dom) => {
+  const setTextInputValue = createDomValueSetter(dom);
+  return event => {
+    const targetValue = dom.getTargetValue(event);
+    setTextInputValue(textInput, targetValue);
+    setInputValue(textInput, targetValue);
+  };
 };
 
 const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
