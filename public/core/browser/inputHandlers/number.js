@@ -16,14 +16,17 @@ const createBaseNumberInput = dom => {
   return input;
 };
 
-const setupInputEvents = (input, onChange, dom) => {
-  dom.addEventListener(input, 'input', onChange);
-  input._dispose = createRemoveListener({
+const createInputDisposer = (dom, input, onChange) =>
+  createRemoveListener({
     dom,
     el: input,
     event: 'input',
     handler: onChange,
   });
+
+const setupInputEvents = (input, onChange, dom) => {
+  dom.addEventListener(input, 'input', onChange);
+  input._dispose = createInputDisposer(dom, input, onChange);
 };
 
 export const createNumberInput = (value, onChange, dom) => {
@@ -42,14 +45,18 @@ const createDomValueSetter = dom => (textInput, targetValue) => {
 const createTargetApplier = textInput => targetValue => handler =>
   handler(textInput, targetValue);
 
+const createTextInputUpdater =
+  (dom, applyTargetToHandlers, updateHandlers) => event => {
+    const targetValue = dom.getTargetValue(event);
+    const callWithTarget = applyTargetToHandlers(targetValue);
+    updateHandlers.forEach(callWithTarget);
+  };
+
 export const createUpdateTextInputValue = (textInput, dom) => {
   const setTextInputValue = createDomValueSetter(dom);
   const updateHandlers = [setTextInputValue, setInputValue];
-  return event => {
-    const targetValue = dom.getTargetValue(event);
-    const callWithTarget = createTargetApplier(textInput)(targetValue);
-    updateHandlers.forEach(callWithTarget);
-  };
+  const applyTargetToHandlers = createTargetApplier(textInput);
+  return createTextInputUpdater(dom, applyTargetToHandlers, updateHandlers);
 };
 
 const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
