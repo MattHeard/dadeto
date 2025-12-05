@@ -30,8 +30,16 @@ const shouldSetTextareaValue = (value, skipEmpty) => {
   return true;
 };
 
-const getDomTextareaValue = (textInput, dom) =>
-  toNonEmptyString(dom?.getValue?.(textInput));
+const getDomTextareaValue = (textInput, dom) => {
+  if (!canReadTextareaValue(dom)) {
+    return '';
+  }
+
+  return toNonEmptyString(dom.getValue(textInput));
+};
+
+const canReadTextareaValue = dom =>
+  Boolean(dom) && typeof dom.getValue === 'function';
 
 const getTextareaSourceValue = (textInput, dom) => {
   const storedValue = getInputValue(textInput);

@@ -1,6 +1,26 @@
 {
   "posts": [
     {
+      "key": "DVC1",
+      "title": "Dendrite Visibility Calculator",
+      "publicationDate": "2025-11-15",
+      "content": [
+        "Calculates visibility for a Dendrite page by blending moderator agreement with admin influence.",
+        "Respects admin overrides, the single-rating rule, and paths discovered via Dijkstra's algorithm."
+      ],
+      "toy": {
+        "modulePath": "/toys/2025-11-15/index.js",
+        "functionName": "calculateVisibility",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "dendrite",
+        "graph",
+        "moderation"
+      ]
+    },
+    {
       "key": "LIST1",
       "title": "Text Append List",
       "publicationDate": "2025-11-01",
