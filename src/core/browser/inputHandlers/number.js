@@ -41,10 +41,10 @@ const createDomValueSetter = dom => (textInput, targetValue) => {
 
 export const createUpdateTextInputValue = (textInput, dom) => {
   const setTextInputValue = createDomValueSetter(dom);
+  const updateHandlers = [setTextInputValue, setInputValue];
   return event => {
     const targetValue = dom.getTargetValue(event);
-    setTextInputValue(textInput, targetValue);
-    setInputValue(textInput, targetValue);
+    updateHandlers.forEach(fn => fn(textInput, targetValue));
   };
 };
 
