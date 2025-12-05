@@ -10,9 +10,13 @@ import {
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
+const createInputElement = dom => dom.createElement('input');
+
+const setNumberInputType = (dom, input) => dom.setType(input, 'number');
+
 const createBaseNumberInput = dom => {
-  const input = dom.createElement('input');
-  dom.setType(input, 'number');
+  const input = createInputElement(dom);
+  setNumberInputType(dom, input);
   return input;
 };
 
@@ -24,18 +28,25 @@ const createInputDisposer = (dom, input, onChange) =>
     handler: onChange,
   });
 
-const setupInputEvents = (input, onChange, dom) => {
+const addInputListener = (dom, input, onChange) =>
   dom.addEventListener(input, 'input', onChange);
+
+const setupInputEvents = (input, onChange, dom) => {
+  addInputListener(dom, input, onChange);
   input._dispose = createInputDisposer(dom, input, onChange);
 };
 
 export const createNumberInput = (value, onChange, dom) => {
   const input = createBaseNumberInput(dom);
+  maybeSetNumberInputValue(dom, input, value);
+  setupInputEvents(input, onChange, dom);
+  return input;
+};
+
+const maybeSetNumberInputValue = (dom, input, value) => {
   if (value) {
     dom.setValue(input, value);
   }
-  setupInputEvents(input, onChange, dom);
-  return input;
 };
 
 const createDomValueSetter = dom => (textInput, targetValue) => {
