@@ -119,6 +119,10 @@ export function numberHandler(dom, container, textInput) {
     maybeRemoveDendrite,
     maybeRemoveTextarea,
   ];
-  containerHandlers.forEach(handler => handler(container, dom));
+  const invokeContainerHandler = createContainerHandlerInvoker(container, dom);
+  containerHandlers.forEach(invokeContainerHandler);
   ensureNumberInput(container, textInput, dom);
 }
+
+const createContainerHandlerInvoker = (container, dom) => handler =>
+  handler(container, dom);
