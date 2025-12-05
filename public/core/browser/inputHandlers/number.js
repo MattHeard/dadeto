@@ -75,8 +75,11 @@ const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
   container.insertBefore(numberInput, nextSibling);
 };
 
+const queryNumberInput = (dom, container) =>
+  dom.querySelector(container, NUMBER_INPUT_SELECTOR);
+
 export const ensureNumberInput = (container, textInput, dom) => {
-  let numberInput = dom.querySelector(container, NUMBER_INPUT_SELECTOR);
+  let numberInput = queryNumberInput(dom, container);
 
   if (!numberInput) {
     numberInput = createNumberInput(
