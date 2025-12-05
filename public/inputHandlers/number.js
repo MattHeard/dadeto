@@ -39,14 +39,15 @@ const createDomValueSetter = dom => (textInput, targetValue) => {
   dom.setValue(textInput, targetValue);
 };
 
+const createTargetApplier = textInput => targetValue => handler =>
+  handler(textInput, targetValue);
+
 export const createUpdateTextInputValue = (textInput, dom) => {
   const setTextInputValue = createDomValueSetter(dom);
   const updateHandlers = [setTextInputValue, setInputValue];
-  const applyWithTarget = targetValue => handler =>
-    handler(textInput, targetValue);
   return event => {
     const targetValue = dom.getTargetValue(event);
-    const callWithTarget = applyWithTarget(targetValue);
+    const callWithTarget = createTargetApplier(textInput)(targetValue);
     updateHandlers.forEach(callWithTarget);
   };
 };
