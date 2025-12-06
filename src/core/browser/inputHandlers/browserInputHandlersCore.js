@@ -37,6 +37,33 @@ export const createContainerHandlerInvoker = (container, dom) => handler =>
   handler(container, dom);
 
 /**
+ * Build a factory that creates a specialized input (e.g., number) with synced value/handler.
+ * @param {object} options - Factory parameters.
+ * @param {HTMLElement} options.textInput - The hidden/text input element whose value drives the special input.
+ * @param {object} options.dom - DOM utilities.
+ * @param {Function} options.createNumberInput - Function that instantiates the specialized input.
+ * @param {Function} options.getValue - Reads the source value that seeds the specialized input.
+ * @returns {Function} Factory that yields the specialized input element when invoked.
+ */
+export const createSpecialInputFactory =
+  ({ textInput, dom, createNumberInput, getValue }) =>
+  () => {
+    const inputValue = getValue(textInput);
+    const updateTextInputValue = createUpdateTextInputValue(textInput, dom);
+    return createNumberInput(inputValue, updateTextInputValue, dom);
+  };
+
+/**
+ * Build a disposer that removes a registered input listener.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} el - Element that had the listener attached.
+ * @param {Function} handler - Handler previously registered.
+ * @returns {() => void} Clean-up function.
+ */
+export const createInputDisposer = (dom, el, handler) => () =>
+  dom.removeEventListener(el, 'input', handler);
+
+/**
  * Reveal and enable a DOM element.
  * @param {HTMLElement} element - Element to show.
  * @param {object} dom - DOM utilities.

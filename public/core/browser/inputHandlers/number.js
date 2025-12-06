@@ -1,5 +1,4 @@
 import {
-  createRemoveListener,
   getInputValue,
   hideAndDisable,
   maybeRemoveDendrite,
@@ -8,7 +7,8 @@ import {
 } from '../browser-core.js';
 import {
   createContainerHandlerInvoker,
-  createUpdateTextInputValue,
+  createInputDisposer,
+  createSpecialInputFactory,
 } from './browserInputHandlersCore.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
@@ -22,14 +22,6 @@ const createBaseNumberInput = dom => {
   setNumberInputType(dom, input);
   return input;
 };
-
-const createInputDisposer = (dom, el, handler) =>
-  createRemoveListener({
-    dom,
-    el,
-    event: 'input',
-    handler,
-  });
 
 const addInputListener = (dom, input, onChange) =>
   dom.addEventListener(input, 'input', onChange);
@@ -52,39 +44,37 @@ const maybeSetNumberInputValue = (dom, input, value) => {
   }
 };
 
-const positionNumberInput = ({ container, textInput, numberInput, dom }) => {
+const positionSpecialInput = ({ container, textInput, specialInput, dom }) => {
   const nextSibling = dom.getNextSibling(textInput);
-  container.insertBefore(numberInput, nextSibling);
+  container.insertBefore(specialInput, nextSibling);
 };
 
-const queryNumberInput = (dom, container) =>
-  dom.querySelector(container, NUMBER_INPUT_SELECTOR);
+const createNumberSpecialInputFactory = (textInput, dom) =>
+  createSpecialInputFactory({
+    textInput,
+    dom,
+    createNumberInput,
+    getValue: getInputValue,
+  });
 
-const createAndPositionNumberInput = (container, textInput, dom) => {
-  const numberInput = createNumberInput(
-    getInputValue(textInput),
-    createUpdateTextInputValue(textInput, dom),
-    dom
-  );
+export const ensureNumberInput = (container, textInput, dom) => {
+  const selector = NUMBER_INPUT_SELECTOR;
+  const specialInput = dom.querySelector(container, selector);
 
-  positionNumberInput({
+  if (specialInput) {
+    return specialInput;
+  }
+
+  const newSpecialInput = createNumberSpecialInputFactory(textInput, dom)();
+
+  positionSpecialInput({
     container,
     textInput,
-    numberInput,
+    specialInput: newSpecialInput,
     dom,
   });
 
-  return numberInput;
-};
-
-export const ensureNumberInput = (container, textInput, dom) => {
-  const numberInput = queryNumberInput(dom, container);
-
-  if (!numberInput) {
-    return createAndPositionNumberInput(container, textInput, dom);
-  }
-
-  return numberInput;
+  return newSpecialInput;
 };
 
 /**

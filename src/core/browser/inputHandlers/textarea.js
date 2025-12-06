@@ -1,5 +1,4 @@
 import {
-  createRemoveListener,
   getInputValue,
   hideAndDisable,
   maybeRemoveDendrite,
@@ -7,6 +6,7 @@ import {
   maybeRemoveNumber,
 } from '../browser-core.js';
 import {
+  createInputDisposer,
   createUpdateTextInputValue,
   revealAndEnable,
 } from './browserInputHandlersCore.js';
@@ -58,16 +58,8 @@ const positionTextarea = ({ container, textInput, textarea, dom }) => {
 const setupTextarea = ({ textarea, textInput, dom }) => {
   const handleInput = createUpdateTextInputValue(textInput, dom);
   dom.addEventListener(textarea, 'input', handleInput);
-  textarea._dispose = createTextareaDisposer(dom, textarea, handleInput);
+  textarea._dispose = createInputDisposer(dom, textarea, handleInput);
 };
-
-const createTextareaDisposer = (dom, el, handler) =>
-  createRemoveListener({
-    dom,
-    el,
-    event: 'input',
-    handler,
-  });
 
 const createTextarea = ({ container, textInput, dom }) => {
   const textarea = dom.createElement('textarea');
