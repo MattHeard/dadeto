@@ -1,5 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import {
+  createBlogDataController,
   getLocalPermanentData,
   setLocalPermanentData,
 } from '../../src/core/browser/data.js';
@@ -120,6 +121,52 @@ describe('getLocalPermanentData', () => {
     const logError = jest.fn();
 
     expect(getLocalPermanentData({ logError }, storage)).toEqual({});
+    expect(logError).toHaveBeenCalledWith(
+      'Failed to read permanent data:',
+      expect.any(SyntaxError)
+    );
+  });
+});
+
+describe('createBlogDataController', () => {
+  it('exposes getLocalPermanentData that reads from storage', () => {
+    const logError = jest.fn();
+    const logInfo = jest.fn();
+    const storage = { getItem: jest.fn().mockReturnValue('{"stored":true}') };
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo, logError },
+      storage,
+    }));
+
+    expect(controller.getLocalPermanentData()).toEqual({ stored: true });
+    expect(storage.getItem).toHaveBeenCalledWith('permanentData');
+    expect(logError).not.toHaveBeenCalled();
+  });
+
+  it('returns empty object when storage is undefined', () => {
+    const logError = jest.fn();
+    const logInfo = jest.fn();
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo, logError },
+    }));
+
+    expect(controller.getLocalPermanentData()).toEqual({});
+    expect(logError).not.toHaveBeenCalled();
+  });
+
+  it('logs when storage contains invalid JSON', () => {
+    const logError = jest.fn();
+    const logInfo = jest.fn();
+    const storage = { getItem: jest.fn().mockReturnValue('nope') };
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo, logError },
+      storage,
+    }));
+
+    expect(controller.getLocalPermanentData()).toEqual({});
     expect(logError).toHaveBeenCalledWith(
       'Failed to read permanent data:',
       expect.any(SyntaxError)
