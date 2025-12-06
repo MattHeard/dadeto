@@ -41,6 +41,6 @@ export const createContainerHandlerInvoker = (container, dom) => handler =>
  * @param {object} dom - DOM utilities.
  */
 export function revealAndEnable(element, dom) {
-  dom.reveal(element);
-  dom.enable(element);
+  const actions = [dom.reveal, dom.enable];
+  actions.forEach(action => action.call(dom, element));
 }
