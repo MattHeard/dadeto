@@ -58,13 +58,16 @@ const positionTextarea = ({ container, textInput, textarea, dom }) => {
 const setupTextarea = ({ textarea, textInput, dom }) => {
   const handleInput = createUpdateTextInputValue(textInput, dom);
   dom.addEventListener(textarea, 'input', handleInput);
-  textarea._dispose = createRemoveListener({
+  textarea._dispose = createTextareaDisposer(dom, textarea, handleInput);
+};
+
+const createTextareaDisposer = (dom, textarea, handler) =>
+  createRemoveListener({
     dom,
     el: textarea,
     event: 'input',
-    handler: handleInput,
+    handler,
   });
-};
 
 const createTextarea = ({ container, textInput, dom }) => {
   const textarea = dom.createElement('textarea');
