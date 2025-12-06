@@ -370,6 +370,17 @@ function loadPermanentData(storage, logError) {
 }
 
 /**
+ * Read the stored permanent data while ensuring the logError helper exists.
+ * @param {object} loggers - Logging helpers that must include `logError`.
+ * @param {Storage} [storage] - Storage implementation to read from.
+ * @returns {object} Stored permanent data (or empty object on failure).
+ */
+function readLocalPermanentData(loggers, storage) {
+  const logError = ensureLoggerFunction(loggers, 'logError');
+  return loadPermanentData(storage, logError);
+}
+
+/**
  * Read and parse permanent data from storage.
  * @param {Storage} storage - Storage used to persist data.
  * @param {Function} logError - Error logger.
@@ -566,6 +577,10 @@ export function createBlogDataController(createDependencies) {
       const { loggers, storage } = getDependencies();
       return setLocalPermanentDataCore(desired, loggers, storage);
     },
+    getLocalPermanentData() {
+      const { loggers, storage } = getDependencies();
+      return readLocalPermanentData(loggers, storage);
+    },
   };
 }
 
@@ -581,3 +596,4 @@ const setLocalPermanentDataCore = (desired, loggers, storage) => {
 };
 
 export const setLocalPermanentData = setLocalPermanentDataCore;
+export const getLocalPermanentData = readLocalPermanentData;

@@ -50,6 +50,8 @@ Most toys treat the input as plain text (the site always passes a string from th
 
 * **setLocalPermanentData(obj)** – Persists data to localStorage and returns the merged result[[5]](../../../public/2025-07-05/setPermanentData.js)[[7]](../../../browser/main.js). Toys use this to save state that persists across sessions (the site passes in localStorage under the hood). For instance, the **“Set Permanent Data”** toy parses a JSON string from the user and calls this function to store it; it returns the updated JSON as output[[3]](../../../public/2025-07-05/setPermanentData.js)[[4]](../../../public/2025-07-05/setPermanentData.js).
 
+* **getLocalPermanentData()** – Reads the current permanent state from storage, so a toy can inspect what’s been saved without mutating it.
+
 * **getRandomNumber()** – Returns a random number (the site’s utility, often just wrapping Math.random). For example, a **“Random Number”** toy can call env.get('getRandomNumber')() and return that value as a string.
 
 * **getUuid()** – Generates a UUID string (unique identifier). A **“UUID”** toy uses this to output a new UUID each time.

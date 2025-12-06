@@ -1,5 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { setLocalPermanentData } from '../../src/core/browser/data.js';
+import {
+  getLocalPermanentData,
+  setLocalPermanentData,
+} from '../../src/core/browser/data.js';
 
 describe('setLocalPermanentData', () => {
   it('merges with stored data and persists', () => {
@@ -88,5 +91,38 @@ describe('setLocalPermanentData', () => {
       JSON.stringify({ foo: 'bar' })
     );
     expect(logError).not.toHaveBeenCalled();
+  });
+});
+
+describe('getLocalPermanentData', () => {
+  it('reads the persisted JSON when storage is available', () => {
+    const storage = { getItem: jest.fn().mockReturnValue('{"existing":true}') };
+    const logError = jest.fn();
+
+    expect(getLocalPermanentData({ logError }, storage)).toEqual({
+      existing: true,
+    });
+    expect(storage.getItem).toHaveBeenCalledWith('permanentData');
+    expect(logError).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty object when storage is missing', () => {
+    const logError = jest.fn();
+
+    expect(getLocalPermanentData({ logError })).toEqual({});
+    expect(logError).not.toHaveBeenCalled();
+  });
+
+  it('logs when stored data is invalid JSON', () => {
+    const storage = {
+      getItem: jest.fn().mockReturnValue('not-json'),
+    };
+    const logError = jest.fn();
+
+    expect(getLocalPermanentData({ logError }, storage)).toEqual({});
+    expect(logError).toHaveBeenCalledWith(
+      'Failed to read permanent data:',
+      expect.any(SyntaxError)
+    );
   });
 });

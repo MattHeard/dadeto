@@ -1,0 +1,6 @@
+## Reflecting on `getLocalPermanentData`
+
+- **What surprised me**: the only existing path for reading stored perm data was to call `setLocalPermanentData({})`, which conflates reading with a write/merge flow. I expected there to be a dedicated getter, so I scoped the work around reusing the existing loader/validator helpers to avoid duplicating parsing/logging logic.
+- **How I diagnosed and resolved it**: I traced the data controller (`src/core/browser/data.js`) to see how `localStorage` is read and realized `loadPermanentData` already handled missing storage and JSON parse errors. By wrapping it with `ensureLoggerFunction` there were no more ad-hoc fallback loggers needed, so I could expose the helper via the controller and the browser env. The doc and toys AGENTS markdown was updated to capture the new utility, and `npm test -- test/browser/setLocalPermanentData.test.js` now covers the getter along with the setter.
+- **Lessons**: When adding new env helpers, make the behavior explicitly available to both the controller and the docs so future toys don’t have to infer or reuse harmless-but-weird side effects (like calling the setter to read).
+- **Open questions**: Should we also provide a reusable lens/helper for reading temporary state without cloning the whole `globalState`, or is the current getter + setter combo enough?

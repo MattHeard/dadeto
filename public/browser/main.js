@@ -56,6 +56,7 @@ const {
   getData: getBlogData,
   setLocalTemporaryData: applyLocalTemporaryData,
   setLocalPermanentData: applyLocalPermanentData,
+  getLocalPermanentData: fetchLocalPermanentData,
 } = createBlogDataController(createBlogDependencies);
 
 /**
@@ -74,6 +75,7 @@ function createEnv() {
         applyLocalTemporaryData({ desired: newData, current: globalState }),
     ],
     ['setLocalPermanentData', newData => applyLocalPermanentData(newData)],
+    ['getLocalPermanentData', () => fetchLocalPermanentData()],
     ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
   ]);
 }
