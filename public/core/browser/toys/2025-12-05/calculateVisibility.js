@@ -260,6 +260,17 @@ function getAdminDecision(ratings, adminId, pageId) {
 }
 
 /**
+ * Return the raw rating map for the specified admin, defaulting to an empty object.
+ * @param {Record<string, Record<string, boolean>>} ratings - Normalized ratings map.
+ * @param {string} adminId - Admin identifier.
+ * @returns {Record<string, boolean>} Rating map for the admin.
+ */
+function getAdminRatings(ratings, adminId) {
+  const adminRatings = ratings[adminId];
+  return adminRatings ?? {};
+}
+
+/**
  * Check whether the admin has rated the page.
  * @param {Record<string, Record<string, boolean>>} ratings - Normalized ratings map.
  * @param {string} adminId - Admin identifier.
@@ -267,8 +278,7 @@ function getAdminDecision(ratings, adminId, pageId) {
  * @returns {boolean} True when a rating exists.
  */
 function hasAdminRating(ratings, adminId, pageId) {
-  const adminRatings = ratings?.[adminId] ?? {};
-  return Object.hasOwn(adminRatings, pageId);
+  return Object.hasOwn(getAdminRatings(ratings, adminId), pageId);
 }
 
 /**
