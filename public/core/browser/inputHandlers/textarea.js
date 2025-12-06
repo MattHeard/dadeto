@@ -61,10 +61,10 @@ const setupTextarea = ({ textarea, textInput, dom }) => {
   textarea._dispose = createTextareaDisposer(dom, textarea, handleInput);
 };
 
-const createTextareaDisposer = (dom, textarea, handler) =>
+const createTextareaDisposer = (dom, el, handler) =>
   createRemoveListener({
     dom,
-    el: textarea,
+    el,
     event: 'input',
     handler,
   });

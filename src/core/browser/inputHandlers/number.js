@@ -23,10 +23,10 @@ const createBaseNumberInput = dom => {
   return input;
 };
 
-const createInputDisposer = (dom, input, handler) =>
+const createInputDisposer = (dom, el, handler) =>
   createRemoveListener({
     dom,
-    el: input,
+    el,
     event: 'input',
     handler,
   });
