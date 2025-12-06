@@ -1,5 +1,9 @@
 import { describe, expect, it } from '@jest/globals';
-import { calculateVisibility } from '../../../src/core/browser/toys/2025-12-05/calculateVisibility.js';
+import {
+  calculateVisibility,
+  clampDistance,
+  hasAdminRating,
+} from '../../../src/core/browser/toys/2025-12-05/calculateVisibility.js';
 
 const scenarios = [
   {
@@ -312,5 +316,77 @@ describe('calculateVisibility', () => {
   it('defaults to visible on malformed input', () => {
     expect(calculateVisibility('not-json')).toBe('1');
     expect(calculateVisibility(42)).toBe('1');
+  });
+
+  it('returns default when identifiers are invalid', () => {
+    const payload = {
+      pageId: '',
+      adminId: 'matt',
+      ratings: {
+        alice: { 'page-P': true },
+      },
+    };
+    const result = calculateVisibility(JSON.stringify(payload));
+    expect(result).toBe('1');
+  });
+
+  it('adds an admin entry when ratings are missing', () => {
+    const payload = {
+      pageId: 'page-P',
+      adminId: 'matt',
+      ratings: {
+        alice: { 'page-P': true },
+      },
+    };
+    const result = calculateVisibility(JSON.stringify(payload));
+    expect(result).toBe('1');
+  });
+
+  it('ignores invalid moderator rating objects', () => {
+    const payload = {
+      pageId: 'page-P',
+      adminId: 'matt',
+      ratings: {
+        alice: null,
+        bob: 'invalid',
+      },
+    };
+    const result = calculateVisibility(JSON.stringify(payload));
+    expect(result).toBe('1');
+  });
+
+  it('defaults when ratings payload is not a plain object', () => {
+    const payload = {
+      pageId: 'page-P',
+      adminId: 'matt',
+      ratings: 'not-an-object',
+    };
+    expect(calculateVisibility(JSON.stringify(payload))).toBe('1');
+  });
+
+  it('ignores non-boolean page scores', () => {
+    const payload = {
+      pageId: 'page-P',
+      adminId: 'matt',
+      ratings: {
+        kate: { 'page-P': 'maybe' },
+        lily: { 'page-P': true },
+      },
+    };
+    const result = calculateVisibility(JSON.stringify(payload));
+    expect(result).toBe('1');
+  });
+});
+
+describe('clampDistance', () => {
+  it('returns the fallback for non-finite distances', () => {
+    expect(clampDistance(Infinity)).toBe(1);
+    expect(clampDistance(NaN)).toBe(1);
+  });
+});
+
+describe('hasAdminRating', () => {
+  it('returns false when the normalized list lacks an admin entry', () => {
+    expect(hasAdminRating({}, 'matt', 'page-P')).toBe(false);
   });
 });

@@ -302,3 +302,5 @@ function createInitialState(moderatorId) {
 function isPlainObject(value) {
   return Boolean(value) && value.constructor === Object;
 }
+
+export { guardStopDistance };

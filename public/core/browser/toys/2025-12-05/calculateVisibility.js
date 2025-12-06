@@ -267,10 +267,7 @@ function getAdminDecision(ratings, adminId, pageId) {
  * @returns {boolean} True when a rating exists.
  */
 function hasAdminRating(ratings, adminId, pageId) {
-  const adminRatings = ratings[adminId];
-  if (!isPlainObject(adminRatings)) {
-    return false;
-  }
+  const adminRatings = ratings?.[adminId] ?? {};
   return Object.hasOwn(adminRatings, pageId);
 }
 
@@ -363,7 +360,7 @@ function mapBooleanToVisibility(value) {
  * @param {number} distance - Computed distance.
  * @returns {number} Distance in [0, 1].
  */
-function clampDistance(distance) {
+export function clampDistance(distance) {
   if (!Number.isFinite(distance)) {
     return NO_PATH_DISTANCE;
   }
@@ -380,3 +377,5 @@ function clampDistance(distance) {
 function isPlainObject(value) {
   return Boolean(value) && value.constructor === Object;
 }
+
+export { hasAdminRating };
