@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { calculateVisibility } from '../../../src/core/browser/toys/2025-11-15/calculateVisibility.js';
+import { calculateVisibility } from '../../../src/core/browser/toys/2025-12-05/calculateVisibility.js';
 
 const scenarios = [
   {
