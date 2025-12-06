@@ -1,4 +1,4 @@
-import { isValidString } from '../../../validation.js';
+import { isValidString } from '../../../common-core.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
 
 const DEFAULT_VISIBILITY = '1';
@@ -7,12 +7,19 @@ const NO_PATH_DISTANCE = 1;
 /**
  * Calculate the visibility score for a Dendrite page.
  * @param {string} input - JSON string containing pageId, adminId, and ratings.
- * @param {Map<string, Function>} [env] - Environment helpers (unused).
  * @returns {string} Visibility score between "0" and "1".
  */
-export function calculateVisibility(input, env) {
-  void env;
+export function calculateVisibility(input) {
   const parsed = parseInput(input);
+  return resolveParsedResult(parsed);
+}
+
+/**
+ * Resolve visibility once input has been parsed.
+ * @param {{ pageId: string, adminId: string, ratings: object } | null} parsed - Parsed payload or null.
+ * @returns {string} Visibility score or fallback.
+ */
+function resolveParsedResult(parsed) {
   if (!parsed) {
     return DEFAULT_VISIBILITY;
   }

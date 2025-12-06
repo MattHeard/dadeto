@@ -4,7 +4,10 @@ import {
   maybeRemoveNumber,
   maybeRemoveTextarea,
 } from '../browser-core.js';
-import { revealAndEnable } from './browserInputHandlersCore.js';
+import {
+  createContainerHandlerInvoker,
+  revealAndEnable,
+} from './browserInputHandlersCore.js';
 
 /**
  * Handle a plain text input field.
@@ -24,6 +27,3 @@ export function textHandler(dom, container, textInput) {
   const invokeContainerHandler = createContainerHandlerInvoker(container, dom);
   containerHandlers.forEach(invokeContainerHandler);
 }
-
-const createContainerHandlerInvoker = (container, dom) => handler =>
-  handler(container, dom);

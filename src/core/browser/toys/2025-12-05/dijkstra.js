@@ -1,4 +1,4 @@
-import { isValidString } from '../../../validation.js';
+import { isValidString } from '../../../common-core.js';
 import { calculateEdgeWeight } from './edgeWeight.js';
 
 const NO_PATH_DISTANCE = 1;

@@ -1,4 +1,4 @@
-import { isValidString } from '../../../validation.js';
+import { isValidString } from '../../../common-core.js';
 
 const NO_CONNECTION_WEIGHT = 1;
 

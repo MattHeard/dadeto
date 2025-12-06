@@ -28,6 +28,14 @@ export const createUpdateTextInputValue = (textInput, dom) => {
 };
 
 /**
+ * Build a helper that invokes cleanup callbacks with shared container/dom args.
+ * @param {HTMLElement} container - Element hosting the inputs.
+ * @param {object} dom - DOM utilities.
+ */
+export const createContainerHandlerInvoker = (container, dom) => handler =>
+  handler(container, dom);
+
+/**
  * Reveal and enable a DOM element.
  * @param {HTMLElement} element - Element to show.
  * @param {object} dom - DOM utilities.

@@ -6,7 +6,10 @@ import {
   maybeRemoveKV,
   maybeRemoveTextarea,
 } from '../browser-core.js';
-import { createUpdateTextInputValue } from './browserInputHandlersCore.js';
+import {
+  createContainerHandlerInvoker,
+  createUpdateTextInputValue,
+} from './browserInputHandlersCore.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
@@ -102,6 +105,3 @@ export function numberHandler(dom, container, textInput) {
   containerHandlers.forEach(invokeContainerHandler);
   ensureNumberInput(container, textInput, dom);
 }
-
-const createContainerHandlerInvoker = (container, dom) => handler =>
-  handler(container, dom);

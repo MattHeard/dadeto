@@ -9,15 +9,6 @@ export function isType(value, type) {
 }
 
 /**
- * Checks if a string is valid (non-empty)
- * @param {string} str - The string to check
- * @returns {boolean} True if the string is valid
- */
-export function isValidString(str) {
-  return typeof str === 'string' && str.length > 0;
-}
-
-/**
  * Checks if a value is strictly a boolean
  * @param {*} value - The value to check
  * @returns {boolean} True if the value is of boolean type
