@@ -8,7 +8,7 @@ import {
 import {
   createContainerHandlerInvoker,
   createInputDisposer,
-  createSpecialInputFactory,
+  createUpdateTextInputValue,
 } from './browserInputHandlersCore.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
@@ -49,13 +49,11 @@ const positionSpecialInput = ({ container, textInput, specialInput, dom }) => {
   container.insertBefore(specialInput, nextSibling);
 };
 
-const createNumberSpecialInputFactory = (textInput, dom) =>
-  createSpecialInputFactory({
-    textInput,
-    dom,
-    createNumberInput,
-    getValue: getInputValue,
-  });
+const createNumberSpecialInputFactory = (textInput, dom) => () => {
+  const inputValue = getInputValue(textInput);
+  const updateTextInputValue = createUpdateTextInputValue(textInput, dom);
+  return createNumberInput(inputValue, updateTextInputValue, dom);
+};
 
 export const ensureNumberInput = (container, textInput, dom) => {
   const selector = NUMBER_INPUT_SELECTOR;

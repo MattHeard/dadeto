@@ -45,14 +45,6 @@ export const createContainerHandlerInvoker = (container, dom) => handler =>
  * @param {Function} options.getValue - Reads the source value that seeds the specialized input.
  * @returns {Function} Factory that yields the specialized input element when invoked.
  */
-export const createSpecialInputFactory =
-  ({ textInput, dom, createNumberInput, getValue }) =>
-  () => {
-    const inputValue = getValue(textInput);
-    const updateTextInputValue = createUpdateTextInputValue(textInput, dom);
-    return createNumberInput(inputValue, updateTextInputValue, dom);
-  };
-
 /**
  * Build a disposer that removes a registered input listener.
  * @param {object} dom - DOM utilities.
