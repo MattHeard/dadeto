@@ -37,15 +37,6 @@ export const createContainerHandlerInvoker = (container, dom) => handler =>
   handler(container, dom);
 
 /**
- * Build a factory that creates a specialized input (e.g., number) with synced value/handler.
- * @param {object} options - Factory parameters.
- * @param {HTMLElement} options.textInput - The hidden/text input element whose value drives the special input.
- * @param {object} options.dom - DOM utilities.
- * @param {Function} options.createNumberInput - Function that instantiates the specialized input.
- * @param {Function} options.getValue - Reads the source value that seeds the specialized input.
- * @returns {Function} Factory that yields the specialized input element when invoked.
- */
-/**
  * Build a disposer that removes a registered input listener.
  * @param {object} dom - DOM utilities.
  * @param {HTMLElement} el - Element that had the listener attached.
@@ -54,6 +45,42 @@ export const createContainerHandlerInvoker = (container, dom) => handler =>
  */
 export const createInputDisposer = (dom, el, handler) => () =>
   dom.removeEventListener(el, 'input', handler);
+
+/**
+ * Attach shared lifecycle wiring for inputs that mirror the text input value.
+ * @param {object} dom - DOM utilities.
+ * @param {HTMLElement} input - The special input element to observe.
+ * @param {Function} handler - Handler called when the input value changes.
+ * @returns {void}
+ */
+export const setupInputEvents = (dom, input, handler) => {
+  dom.addEventListener(input, 'input', handler);
+  input._dispose = createInputDisposer(dom, input, handler);
+};
+
+/**
+ * Insert an element right before the text input's next sibling.
+ * @param {object} options - Insertion parameters.
+ * @param {HTMLElement} options.container - Parent container holding the inputs.
+ * @param {HTMLElement} options.textInput - Text input element to anchor positioning.
+ * @param {HTMLElement} options.element - Element to insert.
+ * @param {object} options.dom - DOM utilities.
+ * @returns {void}
+ */
+export const insertBeforeNextSibling = ({
+  container,
+  textInput,
+  element,
+  dom,
+}) => {
+  const nextSibling = dom.getNextSibling(textInput);
+  if (typeof dom.insertBefore === 'function') {
+    dom.insertBefore(container, element, nextSibling);
+    return;
+  }
+
+  container.insertBefore(element, nextSibling);
+};
 
 /**
  * Reveal and enable a DOM element.

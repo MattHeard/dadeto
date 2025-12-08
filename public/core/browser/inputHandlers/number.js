@@ -7,9 +7,10 @@ import {
 } from '../browser-core.js';
 import {
   createContainerHandlerInvoker,
-  createInputDisposer,
-  createUpdateTextInputValue,
+  insertBeforeNextSibling,
+  setupInputEvents,
 } from './browserInputHandlersCore.js';
+import { setInputValue } from '../inputValueStore.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
@@ -23,18 +24,10 @@ const createBaseNumberInput = dom => {
   return input;
 };
 
-const addInputListener = (dom, input, onChange) =>
-  dom.addEventListener(input, 'input', onChange);
-
-const setupInputEvents = (input, onChange, dom) => {
-  addInputListener(dom, input, onChange);
-  input._dispose = createInputDisposer(dom, input, onChange);
-};
-
 export const createNumberInput = (value, onChange, dom) => {
   const input = createBaseNumberInput(dom);
   maybeSetNumberInputValue(dom, input, value);
-  setupInputEvents(input, onChange, dom);
+  setupInputEvents(dom, input, onChange);
   return input;
 };
 
@@ -42,17 +35,6 @@ const maybeSetNumberInputValue = (dom, input, value) => {
   if (value) {
     dom.setValue(input, value);
   }
-};
-
-const positionSpecialInput = ({ container, textInput, specialInput, dom }) => {
-  const nextSibling = dom.getNextSibling(textInput);
-  container.insertBefore(specialInput, nextSibling);
-};
-
-const createNumberSpecialInputFactory = (textInput, dom) => () => {
-  const inputValue = getInputValue(textInput);
-  const updateTextInputValue = createUpdateTextInputValue(textInput, dom);
-  return createNumberInput(inputValue, updateTextInputValue, dom);
 };
 
 export const ensureNumberInput = (container, textInput, dom) => {
@@ -63,12 +45,22 @@ export const ensureNumberInput = (container, textInput, dom) => {
     return specialInput;
   }
 
-  const newSpecialInput = createNumberSpecialInputFactory(textInput, dom)();
+  const inputValue = getInputValue(textInput);
+  const updateTextInputValue = event => {
+    const targetValue = dom.getTargetValue(event);
+    dom.setValue(textInput, targetValue);
+    setInputValue(textInput, targetValue);
+  };
+  const newSpecialInput = createNumberInput(
+    inputValue,
+    updateTextInputValue,
+    dom
+  );
 
-  positionSpecialInput({
+  insertBeforeNextSibling({
     container,
     textInput,
-    specialInput: newSpecialInput,
+    element: newSpecialInput,
     dom,
   });
 

@@ -6,9 +6,10 @@ import {
   maybeRemoveNumber,
 } from '../browser-core.js';
 import {
-  createInputDisposer,
   createUpdateTextInputValue,
+  insertBeforeNextSibling,
   revealAndEnable,
+  setupInputEvents,
 } from './browserInputHandlersCore.js';
 
 const TEXTAREA_SELECTOR = '.toy-textarea';
@@ -20,14 +21,6 @@ const toNonEmptyString = value => {
   }
 
   return '';
-};
-
-const shouldSetTextareaValue = (value, skipEmpty) => {
-  if (skipEmpty) {
-    return Boolean(value);
-  }
-
-  return true;
 };
 
 const getDomTextareaValue = (textInput, dom) => {
@@ -50,45 +43,44 @@ const getTextareaSourceValue = (textInput, dom) => {
   return getDomTextareaValue(textInput, dom);
 };
 
-const positionTextarea = ({ container, textInput, textarea, dom }) => {
-  const nextSibling = dom.getNextSibling(textInput);
-  dom.insertBefore(container, textarea, nextSibling);
-};
-
 const setupTextarea = ({ textarea, textInput, dom }) => {
   const handleInput = createUpdateTextInputValue(textInput, dom);
-  dom.addEventListener(textarea, 'input', handleInput);
-  textarea._dispose = createInputDisposer(dom, textarea, handleInput);
+  setupInputEvents(dom, textarea, handleInput);
 };
 
-const createTextarea = ({ container, textInput, dom }) => {
+const getOrCreateTextarea = (specialInput, { container, textInput, dom }) => {
+  if (specialInput) {
+    return specialInput;
+  }
+
   const textarea = dom.createElement('textarea');
   dom.setClassName(textarea, TEXTAREA_CLASS);
-  positionTextarea({ container, textInput, textarea, dom });
+  insertBeforeNextSibling({
+    container,
+    textInput,
+    element: textarea,
+    dom,
+  });
   setupTextarea({ textarea, textInput, dom });
   return textarea;
 };
 
-const syncTextareaValue = ({ textarea, textInput, dom, skipEmpty }) => {
-  const value = getTextareaSourceValue(textInput, dom);
-  if (!shouldSetTextareaValue(value, skipEmpty)) {
-    return;
-  }
-
-  dom.setValue(textarea, value);
-};
+const shouldSetTextareaValue = (specialInput, value) =>
+  Boolean(specialInput) || Boolean(value);
 
 export const ensureTextareaInput = (container, textInput, dom) => {
-  const existingTextarea = dom.querySelector(container, TEXTAREA_SELECTOR);
-  const textarea =
-    existingTextarea ?? createTextarea({ container, textInput, dom });
-
-  syncTextareaValue({
-    textarea,
+  const selector = TEXTAREA_SELECTOR;
+  const specialInput = dom.querySelector(container, selector);
+  const textarea = getOrCreateTextarea(specialInput, {
+    container,
     textInput,
     dom,
-    skipEmpty: !existingTextarea,
   });
+
+  const value = getTextareaSourceValue(textInput, dom);
+  if (shouldSetTextareaValue(specialInput, value)) {
+    dom.setValue(textarea, value);
+  }
   revealAndEnable(textarea, dom);
 
   return textarea;
