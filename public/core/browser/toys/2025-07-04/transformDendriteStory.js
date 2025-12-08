@@ -1,6 +1,7 @@
 import { deepClone } from '../../../objectUtils.js';
 import { isValidString } from '../../../common-core.js';
 import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
+import { getEnvHelpers } from '../browserToysCore.js';
 
 /**
  * Validate the parsed story input.
@@ -38,9 +39,18 @@ export function transformDendriteStory(input, env) {
     return JSON.stringify({ stories: [], pages: [], options: [] });
   }
 
-  const getUuid = env.get('getUuid');
-  const getData = env.get('getData');
-  const setLocalTemporaryData = env.get('setLocalTemporaryData');
+  return createAndPersistStory(parsed, env);
+}
+
+/**
+ * Persist a parsed story into the temporary DEND2 structure.
+ * @param {object} parsed - Validated story object.
+ * @param {Map<string, Function>} env - Environment map providing helpers.
+ * @returns {string} JSON string with the newly persisted story data.
+ */
+function createAndPersistStory(parsed, env) {
+  const { getUuid, getData, setLocalTemporaryData } = getEnvHelpers(env);
+
   const storyId = getUuid();
   const pageId = getUuid();
   const opts = createOptions(parsed, getUuid).map(o => ({

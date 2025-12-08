@@ -16,7 +16,7 @@
     "build:cloud": "node src/build/copy-cloud.js",
     "build:browser": "npm run copy && npm run generate",
     "build": "npm run build:browser",
-    "duplication": "jscpd src --mode strict --min-tokens 50 --reporters html,json --output reports/duplication --ignore \\\"**/.stryker-tmp/**\\\"",
+    "duplication": "jscpd src/core --mode strict --min-tokens 50 --reporters html,json --output reports/duplication",
     "start": "npx serve public"
   },
   "devDependencies": {

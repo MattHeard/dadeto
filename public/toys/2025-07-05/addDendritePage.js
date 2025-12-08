@@ -1,6 +1,7 @@
 import { deepClone } from './objectUtils.js';
 import { isValidString } from '../../../common-core.js';
 import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
+import { getEnvHelpers } from '../browserToysCore.js';
 
 /**
  * Validate the parsed page input.
@@ -58,10 +59,7 @@ export function addDendritePage(input, env) {
  * @returns {string} JSON string containing the new page and option entries.
  */
 function persistDendritePage(parsed, env) {
-  const getter = env.get.bind(env);
-  const getUuid = getter('getUuid');
-  const getData = getter('getData');
-  const setLocalTemporaryData = getter('setLocalTemporaryData');
+  const { getUuid, getData, setLocalTemporaryData } = getEnvHelpers(env);
 
   const pageId = getUuid();
   const opts = createOptions(parsed, getUuid, pageId);
