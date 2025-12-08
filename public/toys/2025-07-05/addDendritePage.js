@@ -1,7 +1,11 @@
-import { deepClone } from './objectUtils.js';
 import { isValidString } from '../../../common-core.js';
-import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
-import { getEnvHelpers } from '../browserToysCore.js';
+import { createOptions } from '../utils/dendriteHelpers.js';
+import {
+  getEnvHelpers,
+  cloneTemporaryDend2Data,
+  appendPageAndSave,
+  buildPageResponse,
+} from '../browserToysCore.js';
 
 /**
  * Validate the parsed page input.
@@ -69,14 +73,10 @@ function persistDendritePage(parsed, env) {
     content: parsed.content,
   };
 
-  const currentData = getData();
-  const newData = deepClone(currentData);
-  ensureDend2(newData);
-  newData.temporary.DEND2.pages.push(page);
-  newData.temporary.DEND2.options.push(...opts);
-  setLocalTemporaryData(newData);
+  const newData = cloneTemporaryDend2Data(getData);
+  appendPageAndSave(newData, page, opts, setLocalTemporaryData);
 
-  return JSON.stringify({ pages: [page], options: opts });
+  return JSON.stringify(buildPageResponse(page, opts));
 }
 
 /**
@@ -97,5 +97,12 @@ function safeParseJson(input) {
  * @returns {string} JSON string representing no pages/options.
  */
 function emptyResponse() {
-  return JSON.stringify({ pages: [], options: [] });
+  return JSON.stringify(buildPageResponse(undefined, []));
 }
+
+/**
+ * Construct the JSON payload for a newly added page and its options.
+ * @param {object} page The persisted page object.
+ * @param {Array<object>} opts Option objects tied to the page.
+ * @returns {{pages: object[], options: object[]}} Payload for the toy response.
+ */

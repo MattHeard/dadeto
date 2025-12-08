@@ -1,7 +1,11 @@
-import { deepClone } from '../../../objectUtils.js';
 import { isValidString } from '../../../common-core.js';
-import { ensureDend2, createOptions } from '../utils/dendriteHelpers.js';
-import { getEnvHelpers } from '../browserToysCore.js';
+import { createOptions } from '../utils/dendriteHelpers.js';
+import {
+  getEnvHelpers,
+  cloneTemporaryDend2Data,
+  appendPageAndSave,
+  buildPageResponse,
+} from '../browserToysCore.js';
 
 /**
  * Validate the parsed story input.
@@ -60,13 +64,11 @@ function createAndPersistStory(parsed, env) {
   const story = { id: storyId, title: parsed.title };
   const page = { id: pageId, storyId, content: parsed.content };
 
-  const currentData = getData();
-  const newData = deepClone(currentData);
-  ensureDend2(newData);
+  const newData = cloneTemporaryDend2Data(getData);
   newData.temporary.DEND2.stories.push(story);
-  newData.temporary.DEND2.pages.push(page);
-  newData.temporary.DEND2.options.push(...opts);
-  setLocalTemporaryData(newData);
+  appendPageAndSave(newData, page, opts, setLocalTemporaryData);
 
-  return JSON.stringify({ stories: [story], pages: [page], options: opts });
+  const pageResponse = buildPageResponse(page, opts);
+  const responsePayload = { ...pageResponse, stories: [story] };
+  return JSON.stringify(responsePayload);
 }
