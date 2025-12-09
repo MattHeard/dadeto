@@ -7,6 +7,7 @@
  */
 
 import { parseCsvLine } from './toys-core.js';
+import { whenString } from '../browserToysCore.js';
 
 /**
  * Convert a multi-row CSV string into a JSON array string.
@@ -50,11 +51,7 @@ function areLinesufficient(lines) {
  * @returns {string[]|null} Trimmed lines when there are at least two rows, otherwise null.
  */
 function normalizeInputLines(input) {
-  if (typeof input !== 'string') {
-    return null;
-  }
-
-  return getTrimmedLines(input);
+  return whenString(input, getTrimmedLines);
 }
 
 /**

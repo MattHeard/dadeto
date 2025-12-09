@@ -4,6 +4,21 @@ import { isValidString } from '../../common-core.js';
 import { valueOr } from '../../jsonUtils.js';
 
 /**
+ * Run a callback when the input value is a string.
+ * @param {unknown} value Candidate value.
+ * @param {(value: string) => T} fn Callback that consumes the string.
+ * @returns {T | null} Result of the callback or null when the input is not a string.
+ * @template T
+ */
+export function whenString(value, fn) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  return fn(value);
+}
+
+/**
  * Helper utilities shared by browser toys.
  * @param {Map<string, Function>} env Environment map that exposes helpers.
  * @returns {{getUuid: Function, getData: Function, setLocalTemporaryData: Function}} Accessors.
