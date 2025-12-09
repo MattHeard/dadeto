@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T09:20:59.889Z",
+    "detectionDate": "2025-12-09T09:27:02.406Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -392,11 +392,11 @@
             "lines": 738,
             "tokens": 3105,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 48,
+            "percentage": 1.9,
+            "percentageTokens": 1.55,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -428,11 +428,11 @@
             "lines": 833,
             "tokens": 3442,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 48,
+            "percentage": 1.68,
+            "percentageTokens": 1.39,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -440,11 +440,11 @@
             "lines": 204,
             "tokens": 886,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 48,
+            "percentage": 5.39,
+            "percentageTokens": 5.42,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -488,11 +488,11 @@
             "lines": 715,
             "tokens": 2707,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 48,
+            "percentage": 1.54,
+            "percentageTokens": 1.77,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1029,11 +1029,11 @@
           "lines": 17576,
           "tokens": 78454,
           "sources": 85,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 2,
+          "duplicatedLines": 25,
+          "duplicatedTokens": 96,
+          "percentage": 0.14,
+          "percentageTokens": 0.12,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1083,14 +1083,87 @@
       "lines": 17823,
       "tokens": 83969,
       "sources": 87,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 2,
+      "duplicatedLines": 25,
+      "duplicatedTokens": 96,
+      "percentage": 0.14,
+      "percentageTokens": 0.11,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": []
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 15,
+      "fragment": "\nfunction normalizeMethod(method) {\n  if (typeof method !== 'string') {\n    return '';\n  }\n\n  return method.toUpperCase();\n}\n\n/**\n * Get header from getter.\n * @param {Function} getter Getter.\n * @param {string} name Name.\n * @returns {string | null} Header.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 47,
+        "end": 61,
+        "startLoc": {
+          "line": 47,
+          "column": 4,
+          "position": 125
+        },
+        "endLoc": {
+          "line": 61,
+          "column": 4,
+          "position": 173
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
+        "start": 47,
+        "end": 60,
+        "startLoc": {
+          "line": 47,
+          "column": 4,
+          "position": 62
+        },
+        "endLoc": {
+          "line": 60,
+          "column": 4,
+          "position": 110
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 12,
+      "fragment": "(origin, origins)) {\n      cb(null, true);\n    } else {\n      cb(new Error('CORS'));\n    }\n  };\n}\n/**\n * Creates the CORS configuration consumed by the moderation variant endpoint.\n * @param {HandleCorsOrigin} handleCorsOrigin Origin handler used to vet requests.\n * @returns {{ origin: HandleCorsOrigin, methods: string[] }} Configuration object passed to cors().\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
+        "start": 429,
+        "end": 440,
+        "startLoc": {
+          "line": 429,
+          "column": 16,
+          "position": 1510
+        },
+        "endLoc": {
+          "line": 440,
+          "column": 4,
+          "position": 1558
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
+        "start": 106,
+        "end": 114,
+        "startLoc": {
+          "line": 106,
+          "column": 20,
+          "position": 459
+        },
+        "endLoc": {
+          "line": 114,
+          "column": 1,
+          "position": 507
+        }
+      }
+    }
+  ]
 }
