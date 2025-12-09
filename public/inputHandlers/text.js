@@ -5,7 +5,7 @@ import {
   maybeRemoveTextarea,
 } from '../browser-core.js';
 import {
-  createContainerHandlerInvoker,
+  invokeContainerHandlers,
   revealAndEnable,
 } from './browserInputHandlersCore.js';
 
@@ -24,6 +24,5 @@ export function textHandler(dom, container, textInput) {
     maybeRemoveDendrite,
     maybeRemoveTextarea,
   ];
-  const invokeContainerHandler = createContainerHandlerInvoker(container, dom);
-  containerHandlers.forEach(invokeContainerHandler);
+  invokeContainerHandlers(container, dom, containerHandlers);
 }

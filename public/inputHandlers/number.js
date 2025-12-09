@@ -6,8 +6,8 @@ import {
   maybeRemoveTextarea,
 } from '../browser-core.js';
 import {
-  createContainerHandlerInvoker,
   insertBeforeNextSibling,
+  invokeContainerHandlers,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
 import { setInputValue } from '../inputValueStore.js';
@@ -81,7 +81,6 @@ export function numberHandler(dom, container, textInput) {
     maybeRemoveDendrite,
     maybeRemoveTextarea,
   ];
-  const invokeContainerHandler = createContainerHandlerInvoker(container, dom);
-  containerHandlers.forEach(invokeContainerHandler);
+  invokeContainerHandlers(container, dom, containerHandlers);
   ensureNumberInput(container, textInput, dom);
 }

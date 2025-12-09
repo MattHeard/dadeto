@@ -37,6 +37,18 @@ export const createContainerHandlerInvoker = (container, dom) => handler =>
   handler(container, dom);
 
 /**
+ * Invoke a set of cleanup handlers for the supplied container/dom pair.
+ * @param {HTMLElement} container Element hosting the inputs.
+ * @param {object} dom DOM helper utilities.
+ * @param {Array<Function>} handlers Handlers to invoke with the shared args.
+ * @returns {void}
+ */
+export function invokeContainerHandlers(container, dom, handlers) {
+  const invoke = createContainerHandlerInvoker(container, dom);
+  handlers.forEach(invoke);
+}
+
+/**
  * Build a disposer that removes a registered input listener.
  * @param {object} dom - DOM utilities.
  * @param {HTMLElement} el - Element that had the listener attached.
