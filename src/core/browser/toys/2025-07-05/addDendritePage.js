@@ -10,30 +10,18 @@ import {
 const ALL_REQUIRED_FIELDS = ['optionId', 'content'];
 
 /**
- * Validate the parsed page input.
- * @param {object} [obj] - Parsed object.
- * @param {string} obj.optionId - Option identifier.
- * @param {string} obj.content - Page content.
- * @returns {boolean} True when valid.
- */
-/**
- * Check if object exists.
- * @param {object} obj Object.
- * @returns {boolean} True if exists.
- */
-/**
- * Check if fields are valid.
- * @param {object} obj Object.
- * @returns {boolean} True if valid.
+ * Determine whether the payload defines every required field as a string.
+ * @param {{ optionId?: string, content?: string }} obj Parsed payload.
+ * @returns {boolean} True when each required field is a valid string.
  */
 function areFieldsValid(obj) {
   return ALL_REQUIRED_FIELDS.every(field => isValidString(obj[field]));
 }
 
 /**
- * Validate that the payload contains the required Dendrite page fields.
- * @param {{ optionId?: string, content?: string } | null | undefined} obj Parsed page payload.
- * @returns {boolean} True when the payload is usable.
+ * Validate that the parsed page payload is usable for persistence.
+ * @param {{ optionId?: string, content?: string } | null | undefined} obj Candidate payload.
+ * @returns {boolean} True when we can safely persist the page data.
  */
 function isValidInput(obj) {
   return Boolean(obj) && areFieldsValid(obj);
@@ -97,10 +85,3 @@ function safeParseJson(input) {
 function emptyResponse() {
   return JSON.stringify(buildPageResponse(undefined, []));
 }
-
-/**
- * Construct the JSON payload for a newly added page and its options.
- * @param {object} page The persisted page object.
- * @param {Array<object>} opts Option objects tied to the page.
- * @returns {{pages: object[], options: object[]}} Payload for the toy response.
- */
