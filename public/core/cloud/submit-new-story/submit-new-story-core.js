@@ -1,4 +1,8 @@
-import { assertFunction, matchBearerToken, normalizeString } from './cloud-core.js';
+import {
+  assertFunction,
+  matchBearerToken,
+  normalizeString,
+} from './cloud-core.js';
 
 /**
  * @typedef {object} SubmitNewStoryRequest
