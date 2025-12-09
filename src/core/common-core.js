@@ -41,6 +41,21 @@ export function ensureString(value) {
 }
 
 /**
+ * Return the provided string when available; otherwise use the fallback.
+ * @param {unknown} value Candidate value that may be a string.
+ * @param {string} fallback Replacement when the value is not a string.
+ * @returns {string} String value or fallback.
+ */
+export function stringOrDefault(value, fallback) {
+  const normalized = stringOrNull(value);
+  if (normalized !== null) {
+    return normalized;
+  }
+
+  return fallback;
+}
+
+/**
  * Converts a non-string value into a string, defaulting to empty when nullish.
  * @param {unknown} value Candidate value.
  * @returns {string} Safe string representation.

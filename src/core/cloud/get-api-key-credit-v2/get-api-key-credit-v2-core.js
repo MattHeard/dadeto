@@ -1,6 +1,6 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 import { productionOrigins } from './cloud-core.js';
-import { ensureString } from '../../common-core.js';
+import { ensureString, stringOrDefault } from '../../common-core.js';
 
 export { createDb } from './create-db.js';
 export { productionOrigins };
@@ -182,11 +182,7 @@ function resolveErrorLogger(logError) {
  * @returns {string} Method string when valid, otherwise an empty string.
  */
 function deriveRequestMethod(method) {
-  if (typeof method === 'string') {
-    return method;
-  }
-
-  return '';
+  return stringOrDefault(method, '');
 }
 
 /**

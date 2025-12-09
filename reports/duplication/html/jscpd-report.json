@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T15:02:05.261Z",
+    "detectionDate": "2025-12-09T15:05:35.722Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -461,14 +461,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 778,
-            "tokens": 3054,
+            "lines": 774,
+            "tokens": 3038,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 34,
-            "percentage": 0.64,
-            "percentageTokens": 1.11,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -509,14 +509,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js": {
-            "lines": 377,
-            "tokens": 1460,
+            "lines": 373,
+            "tokens": 1444,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 34,
-            "percentage": 1.33,
-            "percentageTokens": 2.33,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1037,27 +1037,27 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/common-core.js": {
-            "lines": 82,
-            "tokens": 299,
+            "lines": 97,
+            "tokens": 360,
             "sources": 1,
             "clones": 2,
             "duplicatedLines": 10,
             "duplicatedTokens": 68,
-            "percentage": 12.2,
-            "percentageTokens": 22.74,
+            "percentage": 10.31,
+            "percentageTokens": 18.89,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
         },
         "total": {
-          "lines": 17549,
-          "tokens": 78406,
+          "lines": 17556,
+          "tokens": 78435,
           "sources": 87,
-          "clones": 9,
-          "duplicatedLines": 60,
-          "duplicatedTokens": 288,
-          "percentage": 0.34,
-          "percentageTokens": 0.37,
+          "clones": 8,
+          "duplicatedLines": 55,
+          "duplicatedTokens": 254,
+          "percentage": 0.31,
+          "percentageTokens": 0.32,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,14 +1104,14 @@
       }
     },
     "total": {
-      "lines": 17796,
-      "tokens": 83921,
+      "lines": 17803,
+      "tokens": 83950,
       "sources": 89,
-      "clones": 9,
-      "duplicatedLines": 60,
-      "duplicatedTokens": 288,
-      "percentage": 0.34,
-      "percentageTokens": 0.34,
+      "clones": 8,
+      "duplicatedLines": 55,
+      "duplicatedTokens": 254,
+      "percentage": 0.31,
+      "percentageTokens": 0.3,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1150,42 +1150,6 @@
           "line": 278,
           "column": 3,
           "position": 1199
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "(method) {\n  if (typeof method === 'string') {\n    return method;\n  }\n\n  return ''",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
-        "start": 184,
-        "end": 189,
-        "startLoc": {
-          "line": 184,
-          "column": 20,
-          "position": 701
-        },
-        "endLoc": {
-          "line": 189,
-          "column": 3,
-          "position": 735
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 612,
-        "end": 617,
-        "startLoc": {
-          "line": 612,
-          "column": 21,
-          "position": 2375
-        },
-        "endLoc": {
-          "line": 617,
-          "column": 12,
-          "position": 2409
         }
       }
     },
@@ -1412,17 +1376,17 @@
       "tokens": 0,
       "firstFile": {
         "name": "src/core/common-core.js",
-        "start": 61,
-        "end": 66,
+        "start": 76,
+        "end": 81,
         "startLoc": {
-          "line": 61,
+          "line": 76,
           "column": 13,
-          "position": 201
+          "position": 262
         },
         "endLoc": {
-          "line": 66,
+          "line": 81,
           "column": 5,
-          "position": 235
+          "position": 296
         }
       },
       "secondFile": {

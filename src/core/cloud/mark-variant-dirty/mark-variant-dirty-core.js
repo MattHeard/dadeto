@@ -9,7 +9,7 @@ import {
   buildPageByNumberQuery,
   buildVariantByNameQuery,
 } from '../firestore-helpers.js';
-import { ensureString } from '../common-core.js';
+import { ensureString, stringOrDefault } from '../common-core.js';
 
 const POST_METHOD = 'POST';
 /**
@@ -610,11 +610,7 @@ function resolveParseRequestBody(parser) {
  * @returns {string} HTTP method.
  */
 function resolveAllowedMethod(method) {
-  if (typeof method === 'string') {
-    return method;
-  }
-
-  return POST_METHOD;
+  return stringOrDefault(method, POST_METHOD);
 }
 
 /**
