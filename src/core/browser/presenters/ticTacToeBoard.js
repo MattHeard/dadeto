@@ -1,4 +1,5 @@
 import { isObject } from '../common.js';
+import { createPreFromContent } from './browserPresentersCore.js';
 
 /**
  * Extract the player from a move object.
@@ -126,9 +127,7 @@ function renderTicTacToeBoardFromData(data, dom) {
   const content = rowStrings.join('\n---+---+---\n');
 
   // 5. Package in a <pre> element
-  const pre = dom.createElement('pre');
-  dom.setTextContent(pre, content);
-  return pre;
+  return createPreFromContent(content, dom);
 }
 
 export { getPlayer, getPosition };

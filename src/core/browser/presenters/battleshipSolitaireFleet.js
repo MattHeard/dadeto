@@ -17,6 +17,8 @@
  *   ]
  * }
  */
+import { createPreFromContent } from './browserPresentersCore.js';
+
 /**
  * Validate that a fleet object has the required properties.
  * @param {object} fleet - Parsed fleet object.
@@ -268,7 +270,5 @@ function renderFleetBoard(fleet, dom) {
   const content = joinRows(rowStrings);
 
   // 5. Wrap in <pre>
-  const pre = dom.createElement('pre');
-  dom.setTextContent(pre, content);
-  return pre;
+  return createPreFromContent(content, dom);
 }

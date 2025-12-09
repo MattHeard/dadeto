@@ -1,0 +1,3 @@
+Moved the shared `<pre>` creation helper out of `pre.js` and into a dedicated `browserPresentersCore.js` file so other presenters can import it without dragging in the bracketed-list formatting utilities. This keeps each presenter focused on its own content generation and makes the helper easier to reuse in the wider presenter suite.
+
+Duplication, lint, and Jest all pass after the move; we now reference `createPreFromContent` from `browserPresentersCore` in each file that needs it. Future work could look at other presenter helpers that are small DOM wrappers and consolidate them into `browserPresentersCore` as well to shrink the duplication report further.

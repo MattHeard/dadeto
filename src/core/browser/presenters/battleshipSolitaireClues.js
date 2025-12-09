@@ -25,6 +25,7 @@
 
 import { isObject } from '../common.js';
 import { safeParseJson } from '../browser-core.js';
+import { createPreFromContent } from './browserPresentersCore.js';
 
 /**
  * Check that the given object has rowClues and colClues arrays.
@@ -175,7 +176,5 @@ export function createBattleshipCluesBoardElement(inputString, dom) {
   const allLines = [...topClueLines, ...gridLines, ...bottomClueLines];
   const content = allLines.join('\n');
 
-  const pre = dom.createElement('pre');
-  dom.setTextContent(pre, content);
-  return pre;
+  return createPreFromContent(content, dom);
 }
