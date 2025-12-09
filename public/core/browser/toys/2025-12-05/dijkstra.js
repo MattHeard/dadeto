@@ -1,5 +1,6 @@
 import { isValidString } from '../../../common-core.js';
 import { calculateEdgeWeight } from './edgeWeight.js';
+import { isPlainObject } from '../browserToysCore.js';
 
 const NO_PATH_DISTANCE = 1;
 
@@ -299,8 +300,4 @@ function createInitialState(moderatorId) {
  * @param {unknown} value - Value to test.
  * @returns {boolean} True when the value is a non-array object.
  */
-function isPlainObject(value) {
-  return Boolean(value) && value.constructor === Object;
-}
-
 export { guardStopDistance };

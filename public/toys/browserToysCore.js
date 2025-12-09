@@ -27,6 +27,15 @@ export function parseJsonOrFallback(json, fallback = null) {
   return valueOr(safeParseJson(json, JSON.parse), fallback);
 }
 
+/**
+ * Check whether a value is a plain object.
+ * @param {*} value - Value to inspect.
+ * @returns {boolean} True when the value is a non-array object.
+ */
+export function isPlainObject(value) {
+  return Boolean(value) && value.constructor === Object;
+}
+
 const DENDRITE_TEMP_KEYS = ['stories', 'pages', 'options'];
 const DENDRITE_OPTION_KEYS = [
   'firstOption',

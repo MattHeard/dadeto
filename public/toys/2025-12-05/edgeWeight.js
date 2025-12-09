@@ -1,4 +1,5 @@
 import { isValidString } from '../../../common-core.js';
+import { isPlainObject } from '../browserToysCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
 
@@ -128,10 +129,6 @@ function areRatingRecordsValid(...records) {
  * @param {unknown} value - Value to test.
  * @returns {boolean} True when the value is a non-array object.
  */
-function isPlainObject(value) {
-  return Boolean(value) && value.constructor === Object;
-}
-
 /**
  * Determine the overlapping rated pages between two moderators.
  * @param {Record<string, boolean>} firstRatings - First moderator ratings.
