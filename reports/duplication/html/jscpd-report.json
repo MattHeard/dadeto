@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T12:16:00.080Z",
+    "detectionDate": "2025-12-09T12:21:29.024Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -89,14 +89,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-05/setPermanentData.js": {
-            "lines": 19,
-            "tokens": 103,
+            "lines": 18,
+            "tokens": 94,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 6,
-            "duplicatedTokens": 35,
-            "percentage": 31.58,
-            "percentageTokens": 33.98,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -161,14 +161,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-06-09/startLocalDendriteStory.js": {
-            "lines": 92,
-            "tokens": 476,
+            "lines": 89,
+            "tokens": 465,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 6,
-            "duplicatedTokens": 35,
-            "percentage": 6.52,
-            "percentageTokens": 7.35,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -413,14 +413,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/helpers.js": {
-            "lines": 264,
-            "tokens": 1210,
+            "lines": 261,
+            "tokens": 1184,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 72,
-            "percentage": 3.79,
-            "percentageTokens": 5.95,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -461,14 +461,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 833,
-            "tokens": 3276,
+            "lines": 829,
+            "tokens": 3249,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 72,
-            "percentage": 1.2,
-            "percentageTokens": 2.2,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,8 +581,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/browserToysCore.js": {
-            "lines": 288,
-            "tokens": 1627,
+            "lines": 303,
+            "tokens": 1697,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -763,6 +763,18 @@
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/constants/markdown.js": {
             "lines": 95,
             "tokens": 522,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/firestore-helpers.js": {
+            "lines": 25,
+            "tokens": 102,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1038,14 @@
           }
         },
         "total": {
-          "lines": 17496,
-          "tokens": 78238,
-          "sources": 85,
-          "clones": 7,
-          "duplicatedLines": 45,
-          "duplicatedTokens": 251,
-          "percentage": 0.26,
-          "percentageTokens": 0.32,
+          "lines": 17525,
+          "tokens": 78337,
+          "sources": 86,
+          "clones": 4,
+          "duplicatedLines": 29,
+          "duplicatedTokens": 144,
+          "percentage": 0.17,
+          "percentageTokens": 0.18,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,127 +1092,19 @@
       }
     },
     "total": {
-      "lines": 17743,
-      "tokens": 83753,
-      "sources": 87,
-      "clones": 7,
-      "duplicatedLines": 45,
-      "duplicatedTokens": 251,
-      "percentage": 0.25,
-      "percentageTokens": 0.3,
+      "lines": 17772,
+      "tokens": 83852,
+      "sources": 88,
+      "clones": 4,
+      "duplicatedLines": 29,
+      "duplicatedTokens": 144,
+      "percentage": 0.16,
+      "percentageTokens": 0.17,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 7,
-      "fragment": "\n    return JSON.stringify(result);\n  } catch {\n    return JSON.stringify({});\n  }\n}\n",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-06-09/startLocalDendriteStory.js",
-        "start": 87,
-        "end": 93,
-        "startLoc": {
-          "line": 87,
-          "column": 1,
-          "position": 441
-        },
-        "endLoc": {
-          "line": 93,
-          "column": 1,
-          "position": 476
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-07-05/setPermanentData.js",
-        "start": 14,
-        "end": 20,
-        "startLoc": {
-          "line": 14,
-          "column": 2,
-          "position": 68
-        },
-        "endLoc": {
-          "line": 20,
-          "column": 1,
-          "position": 103
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "\n    .collectionGroup('pages')\n    .where('number', '==', pageNumber)\n    .limit(1)\n    .get();\n}",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 134,
-        "end": 139,
-        "startLoc": {
-          "line": 134,
-          "column": 9,
-          "position": 490
-        },
-        "endLoc": {
-          "line": 139,
-          "column": 2,
-          "position": 525
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-page/helpers.js",
-        "start": 105,
-        "end": 110,
-        "startLoc": {
-          "line": 105,
-          "column": 3,
-          "position": 443
-        },
-        "endLoc": {
-          "line": 110,
-          "column": 3,
-          "position": 478
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": " pageRef\n    .collection('variants')\n    .where('name', '==', variantName)\n    .limit(1)\n    .get();\n}",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 236,
-        "end": 241,
-        "startLoc": {
-          "line": 236,
-          "column": 7,
-          "position": 875
-        },
-        "endLoc": {
-          "line": 241,
-          "column": 2,
-          "position": 912
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-page/helpers.js",
-        "start": 123,
-        "end": 128,
-        "startLoc": {
-          "line": 123,
-          "column": 6,
-          "position": 538
-        },
-        "endLoc": {
-          "line": 128,
-          "column": 3,
-          "position": 575
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 12,

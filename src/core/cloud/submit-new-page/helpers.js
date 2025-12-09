@@ -1,3 +1,8 @@
+import {
+  buildPageByNumberQuery,
+  buildVariantByNameQuery,
+} from '../firestore-helpers.js';
+
 /**
  * Split option string into parts.
  * @param {string} str String.
@@ -102,11 +107,7 @@ export function parseIncomingOption(str) {
  * @returns {Promise<object | null>} Page ref.
  */
 async function findPageByNumber(db, pageNumber) {
-  const pageSnap = await db
-    .collectionGroup('pages')
-    .where('number', '==', pageNumber)
-    .limit(1)
-    .get();
+  const pageSnap = await buildPageByNumberQuery(db, pageNumber).get();
   if (pageSnap.empty) {
     return null;
   }
@@ -120,11 +121,7 @@ async function findPageByNumber(db, pageNumber) {
  * @returns {Promise<object | null>} Variant ref.
  */
 async function findVariantByName(pageRef, variantName) {
-  const variantSnap = await pageRef
-    .collection('variants')
-    .where('name', '==', variantName)
-    .limit(1)
-    .get();
+  const variantSnap = await buildVariantByNameQuery(pageRef, variantName).get();
   if (variantSnap.empty) {
     return null;
   }

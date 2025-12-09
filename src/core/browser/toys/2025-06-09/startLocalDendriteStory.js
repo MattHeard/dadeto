@@ -1,4 +1,5 @@
 import { deepClone } from '../../../objectUtils.js';
+import { runToyWithParsedJson } from '../browserToysCore.js';
 
 const DENDRITE_OPTION_KEYS = [
   'firstOption',
@@ -78,15 +79,11 @@ function persistStoryResult(env, result) {
  * @returns {string} The serialized newly added story or empty object on error.
  */
 export function startLocalDendriteStory(input, env) {
-  try {
-    const data = JSON.parse(input);
+  return runToyWithParsedJson(input, data => {
     const getUuid = env.get('getUuid');
     const result = createStoryResult(data, getUuid);
 
     persistStoryResult(env, result);
-
     return JSON.stringify(result);
-  } catch {
-    return JSON.stringify({});
-  }
+  });
 }
