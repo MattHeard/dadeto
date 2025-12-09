@@ -33,6 +33,28 @@ export function whenBodyPresent(body, evaluator) {
 }
 
 /**
+ * Detect whether a Firestore snapshot exposes a callable data helper.
+ * @param {{ data?: () => unknown } | null | undefined} snapshot Snapshot candidate.
+ * @returns {snapshot is { data: () => unknown }} True when the snapshot exposes `data`.
+ */
+function hasSnapshotData(snapshot) {
+  return Boolean(snapshot && typeof snapshot.data === 'function');
+}
+
+/**
+ * Safely read the data payload from a Firestore snapshot.
+ * @param {{ data?: () => unknown } | null | undefined} snapshot Snapshot candidate.
+ * @returns {unknown | null} Snapshot data when available, otherwise null.
+ */
+export function getSnapshotData(snapshot) {
+  if (!hasSnapshotData(snapshot)) {
+    return null;
+  }
+
+  return snapshot.data();
+}
+
+/**
  * Normalize an incoming HTTP method to uppercase.
  * @param {unknown} method Candidate HTTP method.
  * @returns {string} Uppercase verb or empty string when invalid.

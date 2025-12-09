@@ -1,4 +1,8 @@
-import { assertFunction, DEFAULT_BUCKET_NAME } from './cloud-core.js';
+import {
+  assertFunction,
+  DEFAULT_BUCKET_NAME,
+  getSnapshotData,
+} from './cloud-core.js';
 import { ensureString, isNullish } from '../common-core.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
@@ -413,11 +417,12 @@ function buildRemovePayload(snapshot) {
  * @returns {*} Data or undefined.
  */
 function extractSnapshotData(snapshot) {
-  if (typeof snapshot.data === 'function') {
-    return snapshot.data();
+  const data = getSnapshotData(snapshot);
+  if (data === null) {
+    return undefined;
   }
 
-  return undefined;
+  return data;
 }
 
 /**
@@ -467,30 +472,8 @@ function hasGrandparent(ref) {
  * @returns {number} Visibility value or zero when unavailable.
  */
 export function getVariantVisibility(snapshot) {
-  const data = resolveSnapshotData(snapshot);
+  const data = getSnapshotData(snapshot);
   return extractVisibility(data);
-}
-
-/**
- * Resolve snapshot data when the Firestore snapshot exposes a data method.
- * @param {{ data?: () => * } | null | undefined} snapshot Snapshot to inspect.
- * @returns {*} The snapshot data or `null` when missing.
- */
-function resolveSnapshotData(snapshot) {
-  if (!hasSnapshotData(snapshot)) {
-    return null;
-  }
-
-  return snapshot.data();
-}
-
-/**
- * Confirm the snapshot exposes a callable data method.
- * @param {{ data?: unknown } | null | undefined} snapshot Snapshot candidate.
- * @returns {boolean} True when the snapshot data helper exists.
- */
-function hasSnapshotData(snapshot) {
-  return Boolean(snapshot && typeof snapshot.data === 'function');
 }
 
 /**
