@@ -9,3 +9,6 @@
 
 ## Follow-up idea
 - The re-export-only modules keep showing up as 0% even after the identity tests; we might want to revisit whether they should be excluded from coverage (via `/* istanbul ignore file */` or a config tweak) or turned into richer bridges so the tooling no longer flags them.
+
+## Duplication cleanup
+- The Playwright-origin helpers in the moderation and mark-variant cores were almost copy-paste duplicates of each other and of the new allowed-origins entry in `assign-moderation-job`. Moving the logic into `cloud-core.buildTestOrigins` eliminated two identical functions and keeps the three endpoints in sync.
