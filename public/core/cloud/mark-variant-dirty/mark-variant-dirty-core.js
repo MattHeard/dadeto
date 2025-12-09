@@ -3,6 +3,7 @@ import {
   productionOrigins,
   createCorsOriginHandler,
   createCorsOptions,
+  classifyDeploymentEnvironment,
 } from '../cloud-core.js';
 import {
   buildPageByNumberQuery,
@@ -11,8 +12,6 @@ import {
 import { ensureString } from '../common-core.js';
 
 const POST_METHOD = 'POST';
-const TEST_ENV_PREFIX = 't-';
-
 /**
  * Derive the set of allowed origins for the admin endpoint.
  * @param {Record<string, unknown> | null | undefined} environmentVariables Environment configuration.
@@ -22,7 +21,7 @@ export function getAllowedOrigins(environmentVariables) {
   const envVars = getEnvironmentVariables(environmentVariables);
   const environment = envVars.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = envVars.PLAYWRIGHT_ORIGIN;
-  const envType = classifyEnvironment(environment);
+  const envType = classifyDeploymentEnvironment(environment);
   return resolveAllowedOrigins(envType, playwrightOrigin);
 }
 
@@ -45,47 +44,6 @@ function resolveAllowedOrigins(envType, playwrightOrigin) {
  * @param {unknown} environment Raw environment label.
  * @returns {environment is string} True when the label is exactly `prod`.
  */
-function isProdEnvironment(environment) {
-  return environment === 'prod';
-}
-
-/**
- * Detect whether the environment label indicates a Playwright test run.
- * @param {unknown} environment Raw environment label.
- * @returns {environment is string} True when the label starts with the test prefix.
- */
-function isTestEnvironment(environment) {
-  return (
-    typeof environment === 'string' && environment.startsWith(TEST_ENV_PREFIX)
-  );
-}
-
-/**
- * Classify environment label.
- * @param {unknown} environment Environment.
- * @returns {'prod' | 'test' | 'other'} Type.
- */
-function classifyEnvironment(environment) {
-  if (isProdEnvironment(environment)) {
-    return 'prod';
-  }
-
-  return classifyNonProdEnvironment(environment);
-}
-
-/**
- * Classify environments that are not production.
- * @param {unknown} environment Environment label.
- * @returns {'test' | 'other'} Classification.
- */
-function classifyNonProdEnvironment(environment) {
-  if (isTestEnvironment(environment)) {
-    return 'test';
-  }
-
-  return 'other';
-}
-
 /**
  * Safely normalize the environment configuration bag.
  * @param {Record<string, unknown> | null | undefined} environmentVariables Environment settings.
@@ -605,11 +563,7 @@ export function parseMarkVariantRequestBody(body) {
  * @returns {string} Variant name or empty string.
  */
 function resolveVariantName(candidate) {
-  if (typeof candidate === 'string') {
-    return candidate;
-  }
-
-  return '';
+  return ensureString(candidate);
 }
 
 /**
