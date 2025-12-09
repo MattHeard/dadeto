@@ -19,10 +19,6 @@ import {
  * @param {object} obj Object.
  * @returns {boolean} True if exists.
  */
-function doesObjectExist(obj) {
-  return Boolean(obj);
-}
-
 /**
  * Check if fields are valid.
  * @param {object} obj Object.
@@ -38,7 +34,7 @@ function areFieldsValid(obj) {
  * @returns {boolean} True when the payload is usable.
  */
 function isValidInput(obj) {
-  return doesObjectExist(obj) && areFieldsValid(obj);
+  return Boolean(obj) && areFieldsValid(obj);
 }
 
 /**
