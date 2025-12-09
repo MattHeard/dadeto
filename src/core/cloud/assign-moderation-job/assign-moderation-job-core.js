@@ -6,7 +6,6 @@ import {
 const ENVIRONMENT_ORIGIN_RESOLVERS = {
   test: envVars => getTestOrigins(envVars?.PLAYWRIGHT_ORIGIN),
   prod: () => productionOrigins,
-  other: () => productionOrigins,
 };
 
 export { productionOrigins };

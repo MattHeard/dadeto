@@ -25,6 +25,10 @@ describe('getAllowedOrigins', () => {
     ).toEqual(['https://playwright.example']);
   });
 
+  it('returns an empty list for test env when no override is supplied', () => {
+    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-9876' })).toEqual([]);
+  });
+
   it('throws for unsupported environments', () => {
     expect(() =>
       getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'staging' })
