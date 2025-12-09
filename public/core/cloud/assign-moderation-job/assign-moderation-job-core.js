@@ -1,10 +1,11 @@
 import {
   productionOrigins,
   classifyDeploymentEnvironment,
+  buildTestOrigins,
 } from './cloud-core.js';
 
 const ENVIRONMENT_ORIGIN_RESOLVERS = {
-  test: envVars => getTestOrigins(envVars?.PLAYWRIGHT_ORIGIN),
+  test: envVars => buildTestOrigins(envVars?.PLAYWRIGHT_ORIGIN),
   prod: () => productionOrigins,
 };
 
@@ -164,13 +165,6 @@ export function createFirebaseInitialization() {
  * @param {unknown} playwrightOrigin Playwright origin.
  * @returns {string[]} Origins.
  */
-function getTestOrigins(playwrightOrigin) {
-  if (playwrightOrigin) {
-    return [playwrightOrigin];
-  }
-  return [];
-}
-
 /**
  * Determine allowed origins from the environment configuration.
  * @param {{ DENDRITE_ENVIRONMENT?: string, PLAYWRIGHT_ORIGIN?: string } | undefined} environmentVariables Runtime environment variables.

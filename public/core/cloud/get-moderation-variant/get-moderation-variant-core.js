@@ -4,6 +4,7 @@ import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
   classifyDeploymentEnvironment,
+  buildTestOrigins,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
@@ -410,18 +411,6 @@ function classifyEnvironmentType(environment) {
   return 'prod';
 }
 
-/**
- * Build test origins.
- * @param {string | undefined} playwrightOrigin Origin.
- * @returns {string[]} Origins.
- */
-function buildTestOrigins(playwrightOrigin) {
-  if (playwrightOrigin) {
-    return [playwrightOrigin];
-  }
-
-  return [];
-}
 /**
  *
  * @param handleCorsOrigin

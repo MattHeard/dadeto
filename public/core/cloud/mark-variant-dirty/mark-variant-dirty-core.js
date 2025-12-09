@@ -4,6 +4,7 @@ import {
   createCorsOriginHandler,
   createCorsOptions,
   classifyDeploymentEnvironment,
+  buildTestOrigins,
 } from '../cloud-core.js';
 import {
   buildPageByNumberQuery,
@@ -33,7 +34,7 @@ export function getAllowedOrigins(environmentVariables) {
  */
 function resolveAllowedOrigins(envType, playwrightOrigin) {
   if (envType === 'test') {
-    return resolvePlaywrightOrigin(playwrightOrigin);
+    return buildTestOrigins(playwrightOrigin);
   }
 
   return productionOrigins;
@@ -58,14 +59,6 @@ function getEnvironmentVariables(environmentVariables) {
  * @param {unknown} origin Candidate override.
  * @returns {string[]} Either a singleton list or an empty array.
  */
-function resolvePlaywrightOrigin(origin) {
-  const normalized = ensureString(origin);
-  if (normalized) {
-    return [normalized];
-  }
-  return [];
-}
-
 /**
  * Build the cors middleware origin handler.
  * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Origin predicate.

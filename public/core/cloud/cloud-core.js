@@ -54,6 +54,20 @@ export function getSnapshotData(snapshot) {
   return snapshot.data();
 }
 
+/**
+ * Build a Playwright-specific origin list when provided.
+ * @param {unknown} playwrightOrigin Candidate override origin.
+ * @returns {string[]} Singleton array containing the origin when valid, otherwise empty.
+ */
+export function buildTestOrigins(playwrightOrigin) {
+  const normalized = ensureString(playwrightOrigin);
+  if (normalized) {
+    return [normalized];
+  }
+
+  return [];
+}
+
 const TEST_ENV_PREFIX = 't-';
 
 const ENVIRONMENT_CLASSIFIERS = [
