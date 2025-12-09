@@ -5,7 +5,7 @@ import {
   getHeaderFromGetter,
   isAllowedOrigin,
 } from './cloud-core.js';
-import { stringOrNull } from '../common-core.js';
+import { stringOrFallback } from '../common-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
@@ -93,12 +93,7 @@ function extractFirstString(arr) {
  * @returns {string | null} String representation of the header or null when unavailable.
  */
 function coerceAuthorizationHeader(value) {
-  const normalized = stringOrNull(value);
-  if (normalized) {
-    return normalized;
-  }
-
-  return coerceHeaderArray(value);
+  return stringOrFallback(value, coerceHeaderArray);
 }
 
 /**
