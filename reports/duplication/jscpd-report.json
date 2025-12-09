@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T11:01:28.494Z",
+    "detectionDate": "2025-12-09T11:37:56.625Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -41,14 +41,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-11-01/textAppendList.js": {
-            "lines": 143,
-            "tokens": 575,
+            "lines": 110,
+            "tokens": 470,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 12,
-            "duplicatedTokens": 40,
-            "percentage": 8.39,
-            "percentageTokens": 6.96,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -461,8 +461,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 838,
-            "tokens": 3299,
+            "lines": 833,
+            "tokens": 3276,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -473,14 +473,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/hide-variant-html/hide-variant-html-core.js": {
-            "lines": 717,
-            "tokens": 2674,
+            "lines": 705,
+            "tokens": 2636,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 12,
-            "duplicatedTokens": 40,
-            "percentage": 1.67,
-            "percentageTokens": 1.5,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -785,14 +785,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 417,
-            "tokens": 1594,
+            "lines": 384,
+            "tokens": 1489,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 24,
-            "duplicatedTokens": 80,
-            "percentage": 5.76,
-            "percentageTokens": 5.02,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1013,8 +1013,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/common-core.js": {
-            "lines": 19,
-            "tokens": 64,
+            "lines": 54,
+            "tokens": 192,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17577,
-          "tokens": 78442,
+          "lines": 17529,
+          "tokens": 78299,
           "sources": 85,
-          "clones": 3,
-          "duplicatedLines": 39,
-          "duplicatedTokens": 121,
-          "percentage": 0.22,
-          "percentageTokens": 0.15,
+          "clones": 1,
+          "duplicatedLines": 15,
+          "duplicatedTokens": 41,
+          "percentage": 0.09,
+          "percentageTokens": 0.05,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,14 +1080,14 @@
       }
     },
     "total": {
-      "lines": 17824,
-      "tokens": 83957,
+      "lines": 17776,
+      "tokens": 83814,
       "sources": 87,
-      "clones": 3,
-      "duplicatedLines": 39,
-      "duplicatedTokens": 121,
-      "percentage": 0.22,
-      "percentageTokens": 0.14,
+      "clones": 1,
+      "duplicatedLines": 15,
+      "duplicatedTokens": 41,
+      "percentage": 0.08,
+      "percentageTokens": 0.05,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1126,78 +1126,6 @@
           "line": 167,
           "column": 4,
           "position": 781
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 13,
-      "fragment": "(value) {\n  if (isNullish(value)) {\n    return '';\n  }\n\n  return String(value);\n}\n\n/**\n * Check whether a value is `null` or `undefined`.\n * @param {unknown} value Candidate value to inspect.\n * @returns {boolean} True when the input is nullish.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/cloud-core.js",
-        "start": 134,
-        "end": 146,
-        "startLoc": {
-          "line": 134,
-          "column": 24,
-          "position": 508
-        },
-        "endLoc": {
-          "line": 146,
-          "column": 4,
-          "position": 548
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
-        "start": 42,
-        "end": 54,
-        "startLoc": {
-          "line": 42,
-          "column": 16,
-          "position": 182
-        },
-        "endLoc": {
-          "line": 54,
-          "column": 4,
-          "position": 222
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 13,
-      "fragment": "(value) {\n  if (typeof value !== 'string') {\n    return '';\n  }\n\n  return value;\n}\n\n/**\n * Safely resolve the Authorization header from the request getter.\n * @param {import('express').Request} req HTTP request object.\n * @returns {unknown} Resolved header value or undefined when unavailable.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/cloud-core.js",
-        "start": 244,
-        "end": 256,
-        "startLoc": {
-          "line": 244,
-          "column": 28,
-          "position": 904
-        },
-        "endLoc": {
-          "line": 256,
-          "column": 4,
-          "position": 944
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
-        "start": 355,
-        "end": 367,
-        "startLoc": {
-          "line": 355,
-          "column": 18,
-          "position": 1361
-        },
-        "endLoc": {
-          "line": 367,
-          "column": 4,
-          "position": 1401
         }
       }
     }

@@ -1,4 +1,5 @@
 import { assertFunction, DEFAULT_BUCKET_NAME } from './cloud-core.js';
+import { ensureString, isNullish } from '../common-core.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
 
@@ -67,15 +68,6 @@ function normalizeNullableField(value) {
     return null;
   }
   return value;
-}
-
-/**
- * Check for a nullish value.
- * @param {*} value Value to evaluate.
- * @returns {boolean} True when the value is `undefined` or `null`.
- */
-function isNullish(value) {
-  return value === undefined || value === null;
 }
 
 /**
@@ -353,11 +345,7 @@ function formatPageNumber(value) {
  * @returns {string} Variant name string or empty string when invalid.
  */
 function formatVariantName(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  return value;
+  return ensureString(value);
 }
 
 /**
