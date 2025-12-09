@@ -199,6 +199,20 @@ export function createCorsOriginHandler(isAllowedOriginFn, allowedOrigins) {
 }
 
 /**
+ * Determine whether an origin is permitted based on the provided whitelist.
+ * @param {string | null | undefined} origin Request origin header.
+ * @param {string[]} allowedOrigins Allowed origins whitelist.
+ * @returns {boolean} True when the origin is allowed or no origin is supplied.
+ */
+export function isAllowedOrigin(origin, allowedOrigins) {
+  if (!origin) {
+    return true;
+  }
+
+  return allowedOrigins.includes(origin);
+}
+
+/**
  * Compose a CORS configuration object for middleware initialization.
  * @param {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} handleCorsOrigin Origin handler built via `createCorsOriginHandler`.
  * @param {string[]} [methods] Allowed HTTP methods.

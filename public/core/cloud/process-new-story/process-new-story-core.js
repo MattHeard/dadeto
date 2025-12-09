@@ -1,4 +1,5 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
+import { normalizeHeaderValue } from '../cloud-core.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
 
@@ -299,7 +300,7 @@ function queueSubmissionWrites({
   batch.set(variantRef, {
     name: 'a',
     content: submission.content,
-    authorId: normalizeOptionalString(submission.authorId),
+    authorId: normalizeHeaderValue(submission.authorId),
     authorName: submission.author,
     moderatorReputationSum: 0,
     rand: random(),
@@ -316,19 +317,6 @@ function queueSubmissionWrites({
 
   batch.set(db.doc(`storyStats/${storyId}`), { variantCount: 1 });
   markSnapshotAsProcessed(batch, snapshot);
-}
-
-/**
- * Normalize optional values to null when undefined.
- * @param {unknown} value Candidate value.
- * @returns {unknown} Null when value is undefined or null.
- */
-function normalizeOptionalString(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  return null;
 }
 
 /**

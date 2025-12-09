@@ -3,6 +3,7 @@ import {
   matchBearerToken,
   normalizeMethod,
   getHeaderFromGetter,
+  isAllowedOrigin,
 } from './cloud-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
@@ -216,14 +217,6 @@ function createResponse(status, body) {
  * @param {string[]} allowedOrigins Normalized allow-list for the endpoint.
  * @returns {boolean} True when the origin may access the endpoint.
  */
-function validateAllowedOrigin(origin, allowedOrigins) {
-  if (!origin) {
-    return true;
-  }
-
-  return allowedOrigins.includes(origin);
-}
-
 /**
  * Normalize origins defined in the configuration.
  * @param {unknown} allowedOrigins Raw origins value.
@@ -252,7 +245,7 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
 
   return {
     origin: (origin, cb) => {
-      if (validateAllowedOrigin(origin, origins)) {
+      if (isAllowedOrigin(origin, origins)) {
         cb(null, true);
       } else {
         cb(new Error('CORS'));
