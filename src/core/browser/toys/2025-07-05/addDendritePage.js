@@ -12,7 +12,7 @@ import {
  * @returns {string} JSON string of the new page and options.
  */
 export function addDendritePage(input, env) {
-  const parsed = safeParseJson(input);
+  const parsed = safeParseJson(input, JSON.parse);
   if (!isValidPageInput(parsed)) {
     return buildEmptyDendritePageResponse();
   }
