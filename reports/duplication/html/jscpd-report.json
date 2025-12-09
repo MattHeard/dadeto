@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T15:05:35.722Z",
+    "detectionDate": "2025-12-09T15:16:32.854Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -257,14 +257,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-03-30/cyberpunkAdventure.js": {
-            "lines": 373,
-            "tokens": 1754,
+            "lines": 362,
+            "tokens": 1730,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 16,
-            "duplicatedTokens": 60,
-            "percentage": 4.29,
-            "percentageTokens": 3.42,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17556,
-          "tokens": 78435,
+          "lines": 17545,
+          "tokens": 78411,
           "sources": 87,
-          "clones": 8,
-          "duplicatedLines": 55,
-          "duplicatedTokens": 254,
-          "percentage": 0.31,
-          "percentageTokens": 0.32,
+          "clones": 7,
+          "duplicatedLines": 47,
+          "duplicatedTokens": 224,
+          "percentage": 0.27,
+          "percentageTokens": 0.29,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,55 +1104,19 @@
       }
     },
     "total": {
-      "lines": 17803,
-      "tokens": 83950,
+      "lines": 17792,
+      "tokens": 83926,
       "sources": 89,
-      "clones": 8,
-      "duplicatedLines": 55,
-      "duplicatedTokens": 254,
-      "percentage": 0.31,
-      "percentageTokens": 0.3,
+      "clones": 7,
+      "duplicatedLines": 47,
+      "duplicatedTokens": 224,
+      "percentage": 0.26,
+      "percentageTokens": 0.27,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 9,
-      "fragment": "{\n    state,\n    name,\n    time,\n    lowerInput,\n    nextInventory,\n    nextVisited,\n    getRandomNumber,\n    ",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
-        "start": 349,
-        "end": 357,
-        "startLoc": {
-          "line": 349,
-          "column": 2,
-          "position": 1662
-        },
-        "endLoc": {
-          "line": 357,
-          "column": 5,
-          "position": 1692
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
-        "start": 270,
-        "end": 278,
-        "startLoc": {
-          "line": 270,
-          "column": 2,
-          "position": 1169
-        },
-        "endLoc": {
-          "line": 278,
-          "column": 3,
-          "position": 1199
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 6,
