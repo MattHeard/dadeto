@@ -1,6 +1,7 @@
 import { deepClone } from '../../objectUtils.js';
-import { isNonNullObject } from '../browser-core.js';
+import { isNonNullObject, safeParseJson } from '../browser-core.js';
 import { isValidString } from '../../common-core.js';
+import { valueOr } from '../../jsonUtils.js';
 
 /**
  * Helper utilities shared by browser toys.
@@ -14,6 +15,16 @@ export function getEnvHelpers(env) {
     getData: getter('getData'),
     setLocalTemporaryData: getter('setLocalTemporaryData'),
   };
+}
+
+/**
+ * Parses a JSON string and falls back to a default when parsing fails.
+ * @param {string} json - JSON string to parse.
+ * @param {object|null} [fallback] - Value to return when parsing fails.
+ * @returns {object|null} Parsed object or the fallback.
+ */
+export function parseJsonOrFallback(json, fallback = null) {
+  return valueOr(safeParseJson(json, JSON.parse), fallback);
 }
 
 const DENDRITE_TEMP_KEYS = ['stories', 'pages', 'options'];
@@ -265,17 +276,4 @@ export function persistDendriteStory(parsed, env) {
   return buildPersistedResponse({ page, options: opts }, newData, () => ({
     stories: [story],
   }));
-}
-
-/**
- * Safely parse a JSON string without throwing.
- * @param {string} input JSON string to parse.
- * @returns {object|null} Parsed object or null when invalid.
- */
-export function safeParseJson(input) {
-  try {
-    return JSON.parse(input);
-  } catch {
-    return null;
-  }
 }

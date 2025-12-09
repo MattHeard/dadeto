@@ -1,3 +1,5 @@
+import { parseJsonOrFallback } from '../browserToysCore.js';
+
 /**
  *
  * @param {*} player - description
@@ -8,19 +10,6 @@ function getOpponent(player) {
     return 'O';
   } else {
     return 'X';
-  }
-}
-
-/**
- *
- * @param {*} input - description
- * @returns {*} - description
- */
-function tryParseJSON(input) {
-  try {
-    return JSON.parse(input);
-  } catch {
-    return null;
   }
 }
 
@@ -98,7 +87,7 @@ function hasMovesArray(val) {
  * @returns {*} - description
  */
 function parseInputSafely(input) {
-  const parsed = tryParseJSON(input);
+  const parsed = parseJsonOrFallback(input);
   return getValidParsedMoves(parsed);
 }
 

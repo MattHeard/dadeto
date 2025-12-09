@@ -24,7 +24,7 @@
  */
 
 import { isObject } from '../common.js';
-import { safeParseJson } from '../../jsonUtils.js';
+import { safeParseJson } from '../browser-core.js';
 
 /**
  * Check that the given object has rowClues and colClues arrays.

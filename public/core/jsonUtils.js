@@ -1,18 +1,4 @@
 /**
- * Parses a JSON string or returns a fallback value if parsing fails
- * @param {string} json - The JSON string to parse
- * @param {Function} parseJsonValue - Parser to run on the input
- * @returns {*} The parsed value, or `undefined` on failure
- */
-export function safeParseJson(json, parseJsonValue) {
-  try {
-    return parseJsonValue(json);
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * Returns `value` unless it is `undefined`, otherwise returns `fallback`.
  * @param {*} value - Value to check.
  * @param {*} fallback - Value to return when `value` is undefined.
@@ -24,10 +10,3 @@ export function valueOr(value, fallback) {
   }
   return value;
 }
-
-/**
- * Parses JSON or returns a provided default when parsing fails.
- * @param {string} json - JSON string to parse.
- * @param {object} [fallback] - Default value when parsing fails.
- * @returns {object} Parsed object or fallback.
- */
