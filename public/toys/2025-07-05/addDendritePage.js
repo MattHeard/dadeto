@@ -7,6 +7,8 @@ import {
   createOptions,
 } from '../browserToysCore.js';
 
+const ALL_REQUIRED_FIELDS = ['optionId', 'content'];
+
 /**
  * Validate the parsed page input.
  * @param {object} [obj] - Parsed object.
@@ -25,7 +27,7 @@ import {
  * @returns {boolean} True if valid.
  */
 function areFieldsValid(obj) {
-  return isValidString(obj.optionId) && isValidString(obj.content);
+  return ALL_REQUIRED_FIELDS.every(field => isValidString(obj[field]));
 }
 
 /**
