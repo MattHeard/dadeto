@@ -17,3 +17,38 @@ export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 export function isValidString(str) {
   return typeof str === 'string' && str.length > 0;
 }
+
+/**
+ * Detects whether a value is `null` or `undefined`.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the input is nullish.
+ */
+export function isNullish(value) {
+  return value === undefined || value === null;
+}
+
+/**
+ * Returns the input string when available; otherwise returns an empty string.
+ * @param {unknown} value Candidate value.
+ * @returns {string} Input string or empty fallback.
+ */
+export function ensureString(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return '';
+}
+
+/**
+ * Converts a non-string value into a string, defaulting to empty when nullish.
+ * @param {unknown} value Candidate value.
+ * @returns {string} Safe string representation.
+ */
+export function normalizeNonStringValue(value) {
+  if (isNullish(value)) {
+    return '';
+  }
+
+  return String(value);
+}

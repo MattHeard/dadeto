@@ -1,3 +1,5 @@
+import { ensureString, normalizeNonStringValue } from '../common-core.js';
+
 export { DEFAULT_BUCKET_NAME } from './common-core.js';
 
 /**
@@ -127,28 +129,6 @@ export function normalizeString(value, maxLength) {
 }
 
 /**
- * Convert non-string values into a working string.
- * @param {unknown} value Candidate value normalized by `normalizeString`.
- * @returns {string} Converted string, empty when the value is nullish.
- */
-function normalizeNonStringValue(value) {
-  if (isNullish(value)) {
-    return '';
-  }
-
-  return String(value);
-}
-
-/**
- * Check whether a value is `null` or `undefined`.
- * @param {unknown} value Candidate value to inspect.
- * @returns {boolean} True when the input is nullish.
- */
-function isNullish(value) {
-  return value === undefined || value === null;
-}
-
-/**
  * Origins that are permitted to access production endpoints.
  * Centralizes the allow list so every Cloud Function can reference
  * the same deployment configuration.
@@ -233,20 +213,7 @@ export function createCorsOptions(handleCorsOrigin, methods = ['POST']) {
  * @returns {string} Authorization header or an empty string.
  */
 export function getAuthHeader(req) {
-  return normalizeAuthorizationValue(resolveAuthorizationHeader(req));
-}
-
-/**
- * Normalize the Authorization header so the caller always receives a string.
- * @param {unknown} value Header value extracted from the request.
- * @returns {string} Header text or empty string when missing or invalid.
- */
-function normalizeAuthorizationValue(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  return value;
+  return ensureString(resolveAuthorizationHeader(req));
 }
 
 /**

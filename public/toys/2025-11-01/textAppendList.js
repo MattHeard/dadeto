@@ -1,3 +1,5 @@
+import { ensureString, normalizeNonStringValue } from '../../../common-core.js';
+
 // Toy: Text Append List
 // (string input, env) -> string
 
@@ -31,29 +33,7 @@ function normalizeInput(value) {
   if (typeof value === 'string') {
     return value;
   }
-  return stringFromValue(value);
-}
-
-/**
- * Transform any value into a string unless it is nullish.
- * @param {unknown} value - Candidate value read from input.
- * @returns {string} Empty string when the value is nullish, otherwise the string representation.
- */
-function stringFromValue(value) {
-  if (isNullish(value)) {
-    return '';
-  }
-
-  return String(value);
-}
-
-/**
- * Determine whether a value is nullish.
- * @param {unknown} value - Candidate value.
- * @returns {boolean} True when the value is `null` or `undefined`.
- */
-function isNullish(value) {
-  return value === undefined || value === null;
+  return normalizeNonStringValue(value);
 }
 
 /**
@@ -116,20 +96,7 @@ function getStoredListValue(storageFn) {
 }
 
 /**
- * Normalize a stored value into a string.
- * @param {unknown} value - Value read from storage.
- * @returns {string} The normalized string or an empty string when the value is not a string.
- */
-function ensureString(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  return '';
-}
-
-/**
- *
+ * Persist the updated list into storage.
  * @param {(args: object) => unknown} storageFn - Function writing the updated list to storage.
  * @param {string} list - Latest list contents to persist.
  * @returns {void}
