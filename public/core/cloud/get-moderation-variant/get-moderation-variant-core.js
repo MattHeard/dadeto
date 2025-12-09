@@ -1,7 +1,13 @@
-import { normalizeString, productionOrigins } from './cloud-core.js';
+import {
+  normalizeString,
+  productionOrigins,
+  createCorsOriginHandler,
+  createCorsOptions as buildCorsOptions,
+} from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
 export { productionOrigins, coreIsAllowedOrigin as isAllowedOrigin };
+export { createCorsOriginHandler as createHandleCorsOrigin };
 
 /**
  * @typedef {object} FirestoreDocumentSnapshot
@@ -419,30 +425,16 @@ function buildTestOrigins(playwrightOrigin) {
   return [];
 }
 /**
- * Builds a CORS origin handler backed by the shared allow list predicate.
- * @param {(origin: string | undefined, origins: string[]) => boolean} isAllowedOrigin Predicate used to validate incoming origins.
- * @param {string[]} origins Whitelist of origins allowed to access the endpoint.
- * @returns {HandleCorsOrigin} Node-style origin handler consumed by the cors middleware.
+ *
+ * @param handleCorsOrigin
  */
-export function createHandleCorsOrigin(isAllowedOrigin, origins) {
-  return (origin, cb) => {
-    if (isAllowedOrigin(origin, origins)) {
-      cb(null, true);
-    } else {
-      cb(new Error('CORS'));
-    }
-  };
-}
 /**
- * Creates the CORS configuration consumed by the moderation variant endpoint.
- * @param {HandleCorsOrigin} handleCorsOrigin Origin handler used to vet requests.
- * @returns {{ origin: HandleCorsOrigin, methods: string[] }} Configuration object passed to cors().
+ * Build a GET-only CORS configuration for this endpoint.
+ * @param {HandleCorsOrigin} handleCorsOrigin Origin validator returned by `createHandleCorsOrigin`.
+ * @returns {{ origin: HandleCorsOrigin, methods: string[] }} CORS options.
  */
 export function createCorsOptions(handleCorsOrigin) {
-  return {
-    origin: handleCorsOrigin,
-    methods: ['GET'],
-  };
+  return buildCorsOptions(handleCorsOrigin, ['GET']);
 }
 
 /**

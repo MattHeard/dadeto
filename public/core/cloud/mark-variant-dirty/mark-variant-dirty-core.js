@@ -1,4 +1,9 @@
-import { assertFunction, productionOrigins } from '../cloud-core.js';
+import {
+  assertFunction,
+  productionOrigins,
+  createCorsOriginHandler,
+  createCorsOptions,
+} from '../cloud-core.js';
 
 const POST_METHOD = 'POST';
 const TEST_ENV_PREFIX = 't-';
@@ -132,54 +137,7 @@ export function isAllowedOrigin(origin, allowedOrigins) {
  * @param {string[]} allowedOrigins Whitelisted origins.
  * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} Express CORS origin handler.
  */
-export function createHandleCorsOrigin(isAllowedOriginFn, allowedOrigins) {
-  if (typeof isAllowedOriginFn !== 'function') {
-    throw new TypeError('isAllowedOrigin must be a function');
-  }
-
-  return (origin, cb) =>
-    respondToCorsOrigin(
-      { origin: origin ?? null, allowedOrigins, isAllowedOriginFn },
-      cb
-    );
-}
-
-/**
- * Respond to a CORS origin lookup using the configured predicate.
- * @param {{
- *   origin: string | null | undefined,
- *   allowedOrigins: string[],
- *   isAllowedOriginFn: (origin: string | null | undefined, origins: string[]) => boolean,
- * }} config CORS inputs.
- * @param {(err: Error | null, allow?: boolean) => void} cb Response callback.
- * @returns {void}
- */
-function respondToCorsOrigin(
-  { origin, allowedOrigins, isAllowedOriginFn },
-  cb
-) {
-  if (isAllowedOriginFn(origin, allowedOrigins)) {
-    cb(null, true);
-    return;
-  }
-
-  cb(new Error('CORS'));
-}
-
-/**
- * Compose the CORS middleware configuration.
- * @param {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} handleCorsOrigin Origin handler.
- * @param {string[]} [methods] Allowed HTTP methods. Defaults to an array containing the POST method.
- * @returns {{ origin: typeof handleCorsOrigin, methods: string[] }} Express CORS configuration.
- */
-export function createCorsOptions(handleCorsOrigin, methods = [POST_METHOD]) {
-  assertFunction(handleCorsOrigin, 'handleCorsOrigin');
-
-  return {
-    origin: handleCorsOrigin,
-    methods,
-  };
-}
+export { createCorsOriginHandler as createHandleCorsOrigin, createCorsOptions };
 
 /**
  * Find pages snapshot for a page number.

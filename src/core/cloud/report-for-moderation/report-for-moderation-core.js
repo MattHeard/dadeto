@@ -1,4 +1,8 @@
-import { assertFunction } from './cloud-core.js';
+import {
+  assertFunction,
+  createCorsOriginHandler,
+  createCorsOptions as buildCorsOptions,
+} from './cloud-core.js';
 
 /**
  * Determine whether the provided request body contains a variant string.
@@ -95,20 +99,11 @@ export function createReportForModerationHandler({
  * @returns {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} Validation callback compatible with the CORS package.
  */
 export function createCorsOriginValidator(allowedOrigins) {
-  let origins;
+  let origins = [];
   if (Array.isArray(allowedOrigins)) {
     origins = allowedOrigins;
-  } else {
-    origins = [];
   }
-
-  return function corsOriginValidator(origin, cb) {
-    if (isCorsOriginAllowed(origin, origins)) {
-      cb(null, true);
-    } else {
-      cb(new Error('CORS'));
-    }
-  };
+  return createCorsOriginHandler(isCorsOriginAllowed, origins);
 }
 
 /**
@@ -130,11 +125,7 @@ function isCorsOriginAllowed(origin, allowedOrigins) {
  */
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   const origin = createCorsOriginValidator(allowedOrigins);
-
-  return {
-    origin,
-    methods,
-  };
+  return buildCorsOptions(origin, methods);
 }
 
 /**

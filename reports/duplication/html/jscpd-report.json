@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T09:37:52.399Z",
+    "detectionDate": "2025-12-09T09:58:30.057Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -437,14 +437,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
-            "lines": 204,
-            "tokens": 886,
+            "lines": 195,
+            "tokens": 828,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 11,
-            "duplicatedTokens": 48,
-            "percentage": 5.39,
-            "percentageTokens": 5.42,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -461,8 +461,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 890,
-            "tokens": 3538,
+            "lines": 848,
+            "tokens": 3342,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -485,14 +485,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-moderation-variant/get-moderation-variant-core.js": {
-            "lines": 715,
-            "tokens": 2707,
+            "lines": 707,
+            "tokens": 2643,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 11,
-            "duplicatedTokens": 48,
-            "percentage": 1.54,
-            "percentageTokens": 1.77,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -785,8 +785,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 349,
-            "tokens": 1331,
+            "lines": 403,
+            "tokens": 1544,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17574,
-          "tokens": 78447,
+          "lines": 17569,
+          "tokens": 78342,
           "sources": 85,
-          "clones": 1,
-          "duplicatedLines": 11,
-          "duplicatedTokens": 48,
-          "percentage": 0.06,
-          "percentageTokens": 0.06,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,55 +1080,18 @@
       }
     },
     "total": {
-      "lines": 17821,
-      "tokens": 83962,
+      "lines": 17816,
+      "tokens": 83857,
       "sources": 87,
-      "clones": 1,
-      "duplicatedLines": 11,
-      "duplicatedTokens": 48,
-      "percentage": 0.06,
-      "percentageTokens": 0.06,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 12,
-      "fragment": "(origin, origins)) {\n      cb(null, true);\n    } else {\n      cb(new Error('CORS'));\n    }\n  };\n}\n/**\n * Creates the CORS configuration consumed by the moderation variant endpoint.\n * @param {HandleCorsOrigin} handleCorsOrigin Origin handler used to vet requests.\n * @returns {{ origin: HandleCorsOrigin, methods: string[] }} Configuration object passed to cors().\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
-        "start": 429,
-        "end": 440,
-        "startLoc": {
-          "line": 429,
-          "column": 16,
-          "position": 1510
-        },
-        "endLoc": {
-          "line": 440,
-          "column": 4,
-          "position": 1558
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
-        "start": 106,
-        "end": 114,
-        "startLoc": {
-          "line": 106,
-          "column": 20,
-          "position": 459
-        },
-        "endLoc": {
-          "line": 114,
-          "column": 1,
-          "position": 507
-        }
-      }
-    }
-  ],
+  "duplicates": [],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }

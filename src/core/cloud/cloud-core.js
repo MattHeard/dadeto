@@ -160,6 +160,60 @@ export const productionOrigins = [
 ];
 
 /**
+ * Respond to an origin lookup using the supplied predicate.
+ * @param {{
+ *   origin: string | null | undefined,
+ *   allowedOrigins: string[],
+ *   isAllowedOriginFn: (origin: string | null | undefined, origins: string[]) => boolean,
+ * }} config Inputs for the validation routine.
+ * @param {(err: Error | null, allow?: boolean) => void} cb Callback invoked when the origin is validated.
+ * @returns {void}
+ */
+function respondToCorsOrigin(
+  { origin, allowedOrigins, isAllowedOriginFn },
+  cb
+) {
+  if (isAllowedOriginFn(origin, allowedOrigins)) {
+    cb(null, true);
+    return;
+  }
+
+  cb(new Error('CORS'));
+}
+
+/**
+ * Build a CORS origin handler from the provided predicate and whitelist.
+ * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Predicate that validates origins.
+ * @param {string[]} allowedOrigins Allowed origins for the endpoint.
+ * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} CORS origin handler.
+ */
+export function createCorsOriginHandler(isAllowedOriginFn, allowedOrigins) {
+  assertFunction(isAllowedOriginFn, 'isAllowedOrigin');
+
+  return (origin, cb) => {
+    respondToCorsOrigin(
+      { origin: origin ?? null, allowedOrigins, isAllowedOriginFn },
+      cb
+    );
+  };
+}
+
+/**
+ * Compose a CORS configuration object for middleware initialization.
+ * @param {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} handleCorsOrigin Origin handler built via `createCorsOriginHandler`.
+ * @param {string[]} [methods] Allowed HTTP methods.
+ * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS options for `cors`.
+ */
+export function createCorsOptions(handleCorsOrigin, methods = ['POST']) {
+  assertFunction(handleCorsOrigin, 'handleCorsOrigin');
+
+  return {
+    origin: handleCorsOrigin,
+    methods,
+  };
+}
+
+/**
  * Extract the Authorization header from a request.
  * @param {import('express').Request} req Incoming HTTP request.
  * @returns {string} Authorization header or an empty string.
