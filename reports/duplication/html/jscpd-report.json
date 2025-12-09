@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T08:28:43.254Z",
+    "detectionDate": "2025-12-09T08:30:40.059Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -389,8 +389,8 @@
             "newClones": 0
           },
           "src/core/cloud/submit-new-story/submit-new-story-core.js": {
-            "lines": 734,
-            "tokens": 3101,
+            "lines": 738,
+            "tokens": 3105,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,8 +1026,8 @@
           }
         },
         "total": {
-          "lines": 17586,
-          "tokens": 78564,
+          "lines": 17590,
+          "tokens": 78568,
           "sources": 85,
           "clones": 2,
           "duplicatedLines": 18,
@@ -1080,8 +1080,8 @@
       }
     },
     "total": {
-      "lines": 17833,
-      "tokens": 84079,
+      "lines": 17837,
+      "tokens": 84083,
       "sources": 87,
       "clones": 2,
       "duplicatedLines": 18,

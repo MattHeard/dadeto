@@ -109,8 +109,7 @@ export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
 export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
 export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
 
-const DENDRITE_PAGE_FIELDS = [
-  ['optionId', 'Option ID'],
+const DENDRITE_OPTION_FIELDS = [
   ['content', 'Content'],
   ['firstOption', 'First option'],
   ['secondOption', 'Second option'],
@@ -118,14 +117,13 @@ const DENDRITE_PAGE_FIELDS = [
   ['fourthOption', 'Fourth option'],
 ];
 
-const DENDRITE_FIELDS = [
-  ['title', 'Title'],
-  ['content', 'Content'],
-  ['firstOption', 'First option'],
-  ['secondOption', 'Second option'],
-  ['thirdOption', 'Third option'],
-  ['fourthOption', 'Fourth option'],
-];
+function getDendritePageFields() {
+  return [['optionId', 'Option ID'], ...DENDRITE_OPTION_FIELDS];
+}
+
+function getDendriteFields() {
+  return [['title', 'Title'], ...DENDRITE_OPTION_FIELDS];
+}
 
 /**
  * Hide and disable a DOM element.
@@ -153,8 +151,10 @@ export function defaultHandler(dom, container, textInput) {
   maybeRemoveTextarea(container, dom);
 }
 
-export const dendritePageHandler = createDendriteHandler(DENDRITE_PAGE_FIELDS);
-export const dendriteStoryHandler = createDendriteHandler(DENDRITE_FIELDS);
+export const dendritePageHandler = createDendriteHandler(
+  getDendritePageFields()
+);
+export const dendriteStoryHandler = createDendriteHandler(getDendriteFields());
 
 /**
  * Retrieve the stored value for an element, falling back to the element's value property.
