@@ -52,3 +52,16 @@ export function normalizeNonStringValue(value) {
 
   return String(value);
 }
+
+/**
+ * Return the input when it is a string; otherwise `null`.
+ * @param {unknown} value Candidate value.
+ * @returns {string | null} String when provided, otherwise `null`.
+ */
+export function stringOrNull(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return null;
+}

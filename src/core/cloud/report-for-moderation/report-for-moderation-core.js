@@ -2,6 +2,7 @@ import {
   assertFunction,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
+  whenBodyPresent,
 } from './cloud-core.js';
 
 /**
@@ -10,11 +11,10 @@ import {
  * @returns {boolean} True when a string variant is present.
  */
 function hasVariantString(body) {
-  if (!body) {
-    return false;
-  }
-
-  return typeof body.variant === 'string';
+  return whenBodyPresent(
+    body,
+    candidate => typeof candidate.variant === 'string'
+  );
 }
 
 /**

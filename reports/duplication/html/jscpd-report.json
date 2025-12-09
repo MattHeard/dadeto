@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T13:45:24.730Z",
+    "detectionDate": "2025-12-09T13:55:33.431Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -41,14 +41,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-11-01/textAppendList.js": {
-            "lines": 110,
-            "tokens": 470,
+            "lines": 116,
+            "tokens": 485,
             "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 15,
-            "duplicatedTokens": 98,
-            "percentage": 13.64,
-            "percentageTokens": 20.85,
+            "clones": 1,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 41,
+            "percentage": 5.17,
+            "percentageTokens": 8.45,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -389,14 +389,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js": {
-            "lines": 680,
-            "tokens": 2889,
+            "lines": 677,
+            "tokens": 2883,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 32,
-            "percentage": 0.74,
-            "percentageTokens": 1.11,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -425,26 +425,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 782,
-            "tokens": 3239,
+            "lines": 784,
+            "tokens": 3259,
             "sources": 1,
             "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 30,
-            "percentage": 0.64,
-            "percentageTokens": 0.93,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 41,
+            "percentage": 0.77,
+            "percentageTokens": 1.26,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
-            "lines": 195,
-            "tokens": 828,
+            "lines": 192,
+            "tokens": 822,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 32,
-            "percentage": 2.56,
-            "percentageTokens": 3.86,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -809,14 +809,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 384,
-            "tokens": 1489,
+            "lines": 394,
+            "tokens": 1518,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 68,
-            "percentage": 2.6,
-            "percentageTokens": 4.57,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 34,
+            "percentage": 1.27,
+            "percentageTokens": 2.24,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1037,27 +1037,27 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/common-core.js": {
-            "lines": 54,
-            "tokens": 192,
+            "lines": 67,
+            "tokens": 239,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 34,
-            "percentage": 9.26,
-            "percentageTokens": 17.71,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 68,
+            "percentage": 14.93,
+            "percentageTokens": 28.45,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
         },
         "total": {
-          "lines": 17510,
-          "tokens": 78284,
+          "lines": 17535,
+          "tokens": 78383,
           "sources": 87,
-          "clones": 15,
-          "duplicatedLines": 96,
-          "duplicatedTokens": 479,
-          "percentage": 0.55,
-          "percentageTokens": 0.61,
+          "clones": 13,
+          "duplicatedLines": 87,
+          "duplicatedTokens": 424,
+          "percentage": 0.5,
+          "percentageTokens": 0.54,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,14 +1104,14 @@
       }
     },
     "total": {
-      "lines": 17757,
-      "tokens": 83799,
+      "lines": 17782,
+      "tokens": 83898,
       "sources": 89,
-      "clones": 15,
-      "duplicatedLines": 96,
-      "duplicatedTokens": 479,
-      "percentage": 0.54,
-      "percentageTokens": 0.57,
+      "clones": 13,
+      "duplicatedLines": 87,
+      "duplicatedTokens": 424,
+      "percentage": 0.49,
+      "percentageTokens": 0.51,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1155,73 +1155,37 @@
     },
     {
       "format": "javascript",
-      "lines": 6,
-      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n",
+      "lines": 7,
+      "fragment": "(value) {\n  const normalized = stringOrNull(value);\n  if (normalized) {\n    return normalized;\n  }\n\n  return coerceHeaderArray",
       "tokens": 0,
       "firstFile": {
         "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 94,
-        "end": 99,
+        "start": 95,
+        "end": 101,
         "startLoc": {
-          "line": 94,
+          "line": 95,
           "column": 26,
-          "position": 288
+          "position": 301
         },
         "endLoc": {
-          "line": 99,
-          "column": 1,
-          "position": 318
+          "line": 101,
+          "column": 18,
+          "position": 342
         }
       },
       "secondFile": {
         "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
-        "start": 32,
-        "end": 36,
+        "start": 36,
+        "end": 42,
         "startLoc": {
-          "line": 32,
-          "column": 15,
-          "position": 152
-        },
-        "endLoc": {
           "line": 36,
-          "column": 3,
-          "position": 182
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "(body) {\n  if (!body) {\n    return false;\n  }\n\n  return typeof body.",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
-        "start": 12,
-        "end": 17,
-        "startLoc": {
-          "line": 12,
-          "column": 17,
-          "position": 33
+          "column": 15,
+          "position": 159
         },
         "endLoc": {
-          "line": 17,
-          "column": 2,
-          "position": 65
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
-        "start": 514,
-        "end": 519,
-        "startLoc": {
-          "line": 514,
-          "column": 13,
-          "position": 2039
-        },
-        "endLoc": {
-          "line": 519,
-          "column": 2,
-          "position": 2071
+          "line": 42,
+          "column": 24,
+          "position": 200
         }
       }
     },
@@ -1480,57 +1444,21 @@
     {
       "format": "javascript",
       "lines": 6,
-      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n  return null",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/cloud-core.js",
-        "start": 44,
-        "end": 49,
-        "startLoc": {
-          "line": 44,
-          "column": 21,
-          "position": 169
-        },
-        "endLoc": {
-          "line": 49,
-          "column": 5,
-          "position": 203
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
-        "start": 32,
-        "end": 99,
-        "startLoc": {
-          "line": 32,
-          "column": 15,
-          "position": 152
-        },
-        "endLoc": {
-          "line": 99,
-          "column": 18,
-          "position": 322
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
       "fragment": "(candidate) {\n  if (typeof candidate === 'string') {\n    return candidate;\n  }\n\n  return normalizeNonStringCandidate",
       "tokens": 0,
       "firstFile": {
         "name": "src/core/cloud/cloud-core.js",
-        "start": 99,
-        "end": 104,
+        "start": 109,
+        "end": 114,
         "startLoc": {
-          "line": 99,
+          "line": 109,
           "column": 32,
-          "position": 379
+          "position": 408
         },
         "endLoc": {
-          "line": 104,
+          "line": 114,
           "column": 28,
-          "position": 413
+          "position": 442
         }
       },
       "secondFile": {
@@ -1624,9 +1552,24 @@
     {
       "format": "javascript",
       "lines": 6,
-      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n  return ''",
+      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n  return null",
       "tokens": 0,
       "firstFile": {
+        "name": "src/core/common-core.js",
+        "start": 61,
+        "end": 66,
+        "startLoc": {
+          "line": 61,
+          "column": 13,
+          "position": 201
+        },
+        "endLoc": {
+          "line": 66,
+          "column": 5,
+          "position": 235
+        }
+      },
+      "secondFile": {
         "name": "src/core/common-core.js",
         "start": 35,
         "end": 40,
@@ -1639,21 +1582,6 @@
           "line": 40,
           "column": 3,
           "position": 141
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
-        "start": 32,
-        "end": 99,
-        "startLoc": {
-          "line": 32,
-          "column": 15,
-          "position": 152
-        },
-        "endLoc": {
-          "line": 99,
-          "column": 18,
-          "position": 322
         }
       }
     }
