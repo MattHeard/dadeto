@@ -1,5 +1,5 @@
 import { isValidString } from '../../../common-core.js';
-import { parseJsonOrFallback } from '../browserToysCore.js';
+import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
 
 const DEFAULT_VISIBILITY = '1';
@@ -379,8 +379,4 @@ export function clampDistance(distance) {
  * @param {unknown} value - Value to check.
  * @returns {boolean} True when the value is a non-array object.
  */
-function isPlainObject(value) {
-  return Boolean(value) && value.constructor === Object;
-}
-
 export { hasAdminRating };

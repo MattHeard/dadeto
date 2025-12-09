@@ -1,42 +1,42 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T12:08:24.109Z",
+    "detectionDate": "2025-12-09T12:16:00.080Z",
     "formats": {
       "javascript": {
         "sources": {
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/edgeWeight.js": {
-            "lines": 171,
-            "tokens": 752,
+            "lines": 168,
+            "tokens": 734,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 12,
-            "duplicatedTokens": 38,
-            "percentage": 7.02,
-            "percentageTokens": 5.05,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/dijkstra.js": {
-            "lines": 306,
-            "tokens": 1535,
+            "lines": 303,
+            "tokens": 1517,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 17,
-            "duplicatedTokens": 74,
-            "percentage": 5.56,
-            "percentageTokens": 4.82,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/calculateVisibility.js": {
-            "lines": 386,
-            "tokens": 1839,
+            "lines": 382,
+            "tokens": 1811,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 36,
-            "percentage": 1.3,
-            "percentageTokens": 1.96,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,8 +581,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/browserToysCore.js": {
-            "lines": 279,
-            "tokens": 1592,
+            "lines": 288,
+            "tokens": 1627,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17497,
-          "tokens": 78267,
+          "lines": 17496,
+          "tokens": 78238,
           "sources": 85,
-          "clones": 9,
-          "duplicatedLines": 62,
-          "duplicatedTokens": 325,
-          "percentage": 0.35,
-          "percentageTokens": 0.42,
+          "clones": 7,
+          "duplicatedLines": 45,
+          "duplicatedTokens": 251,
+          "percentage": 0.26,
+          "percentageTokens": 0.32,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,91 +1080,19 @@
       }
     },
     "total": {
-      "lines": 17744,
-      "tokens": 83782,
+      "lines": 17743,
+      "tokens": 83753,
       "sources": 87,
-      "clones": 9,
-      "duplicatedLines": 62,
-      "duplicatedTokens": 325,
-      "percentage": 0.35,
-      "percentageTokens": 0.39,
+      "clones": 7,
+      "duplicatedLines": 45,
+      "duplicatedTokens": 251,
+      "percentage": 0.25,
+      "percentageTokens": 0.3,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 13,
-      "fragment": ";\n}\n\n/**\n * Check whether a value is a plain object.\n * @param {unknown} value - Value to test.\n * @returns {boolean} True when the value is a non-array object.\n */\nfunction isPlainObject(value) {\n  return Boolean(value) && value.constructor === Object;\n}\n\nexport",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-12-05/dijkstra.js",
-        "start": 294,
-        "end": 306,
-        "startLoc": {
-          "line": 294,
-          "column": 2,
-          "position": 1489
-        },
-        "endLoc": {
-          "line": 306,
-          "column": 7,
-          "position": 1527
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-12-05/edgeWeight.js",
-        "start": 123,
-        "end": 141,
-        "startLoc": {
-          "line": 123,
-          "column": 2,
-          "position": 566
-        },
-        "endLoc": {
-          "line": 141,
-          "column": 4,
-          "position": 604
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "\nfunction isPlainObject(value) {\n  return Boolean(value) && value.constructor === Object;\n}\n\nexport { hasAdminRating",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-12-05/calculateVisibility.js",
-        "start": 381,
-        "end": 386,
-        "startLoc": {
-          "line": 381,
-          "column": 4,
-          "position": 1799
-        },
-        "endLoc": {
-          "line": 386,
-          "column": 15,
-          "position": 1835
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-12-05/dijkstra.js",
-        "start": 301,
-        "end": 306,
-        "startLoc": {
-          "line": 301,
-          "column": 4,
-          "position": 1495
-        },
-        "endLoc": {
-          "line": 306,
-          "column": 18,
-          "position": 1531
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 7,
