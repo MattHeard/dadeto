@@ -244,49 +244,45 @@ function getPlayerVisited(scoped) {
 }
 
 /**
+ * @typedef {object} AdventureContext
+ * @property {string} state - Current adventure state.
+ * @property {string} name - Player name.
+ * @property {string} time - Timestamp string for the current input.
+ * @property {string} lowerInput - Normalized player input string.
+ * @property {string[]} nextInventory - Inventory array queued for the next step.
+ * @property {Set<string>} nextVisited - Locations visited so far.
+ * @property {Function} getRandomNumber - RNG helper from the environment.
+ */
+
+/**
+ * Build the shared context object used by adventure steps.
+ * @param {AdventureContext} args - Values describing the current command.
+ * @returns {AdventureContext} Prepared context for handlers.
+ */
+function createAdventureContext(args) {
+  return {
+    ...args,
+  };
+}
+
+/**
  * Execute a single step of the adventure state machine.
- * @param {{
- *   state: string,
- *   name: string,
- *   time: string,
- *   lowerInput: string,
- *   nextInventory: string[],
- *   nextVisited: Set<string>,
- *   getRandomNumber: Function,
- *   setTemporaryData: Function,
- * }} param0 - Context and utilities for the step.
+ * @param {AdventureContext} context - Prepared context for the current turn.
+ * @param {Function} setTemporaryData - Environment helper to persist temporary storage.
  * @returns {string} Output text describing the result.
  */
-function processAdventureStep({
-  state,
-  name,
-  time,
-  lowerInput,
-  nextInventory,
-  nextVisited,
-  getRandomNumber,
-  setTemporaryData,
-}) {
-  const context = {
-    state,
-    name,
-    time,
-    lowerInput,
-    nextInventory,
-    nextVisited,
-    getRandomNumber,
-  };
+function processAdventureStep(context, setTemporaryData) {
   const result = getAdventureResult(context);
 
   const output = result.output;
   const nextState = result.nextState;
-  const updatedInventory = getUpdatedInventory(result, nextInventory);
-  const updatedVisited = getUpdatedVisited(result, nextVisited);
+  const updatedInventory = getUpdatedInventory(result, context.nextInventory);
+  const updatedVisited = getUpdatedVisited(result, context.nextVisited);
 
   setTemporaryData({
     temporary: {
       CYBE1: {
-        name,
+        name: context.name,
         state: nextState,
         inventory: updatedInventory,
         visited: [...updatedVisited],
@@ -346,7 +342,7 @@ function runAdventure(input, env) {
     return `> Welcome, ${name}. Your story begins now.\n> Type 'start' to continue.`;
   }
 
-  return processAdventureStep({
+  const adventureContext = createAdventureContext({
     state,
     name,
     time,
@@ -354,8 +350,9 @@ function runAdventure(input, env) {
     nextInventory,
     nextVisited,
     getRandomNumber,
-    setTemporaryData,
   });
+
+  return processAdventureStep(adventureContext, setTemporaryData);
 }
 
 /**
