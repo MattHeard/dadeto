@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T10:41:51.167Z",
+    "detectionDate": "2025-12-09T10:43:34.398Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -32,11 +32,11 @@
             "lines": 398,
             "tokens": 1872,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 15,
+            "duplicatedTokens": 41,
+            "percentage": 3.77,
+            "percentageTokens": 2.19,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -44,11 +44,11 @@
             "lines": 143,
             "tokens": 575,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 40,
+            "percentage": 8.39,
+            "percentageTokens": 6.96,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -236,11 +236,11 @@
             "lines": 725,
             "tokens": 3705,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 15,
+            "duplicatedTokens": 41,
+            "percentage": 2.07,
+            "percentageTokens": 1.11,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -428,11 +428,11 @@
             "lines": 789,
             "tokens": 3281,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 13,
+            "duplicatedTokens": 43,
+            "percentage": 1.65,
+            "percentageTokens": 1.31,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -452,11 +452,11 @@
             "lines": 482,
             "tokens": 1991,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 13,
+            "duplicatedTokens": 40,
+            "percentage": 2.7,
+            "percentageTokens": 2.01,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -464,11 +464,11 @@
             "lines": 848,
             "tokens": 3342,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 13,
+            "duplicatedTokens": 43,
+            "percentage": 1.53,
+            "percentageTokens": 1.29,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -476,11 +476,11 @@
             "lines": 717,
             "tokens": 2674,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 40,
+            "percentage": 1.67,
+            "percentageTokens": 1.5,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,7 +581,7 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/browserToysCore.js": {
-            "lines": 283,
+            "lines": 281,
             "tokens": 1581,
             "sources": 1,
             "clones": 0,
@@ -704,11 +704,11 @@
             "lines": 29,
             "tokens": 131,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 7,
+            "duplicatedTokens": 42,
+            "percentage": 24.14,
+            "percentageTokens": 32.06,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -716,11 +716,11 @@
             "lines": 87,
             "tokens": 584,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 7,
+            "duplicatedTokens": 42,
+            "percentage": 8.05,
+            "percentageTokens": 7.19,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -788,11 +788,11 @@
             "lines": 403,
             "tokens": 1544,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 3,
+            "duplicatedLines": 37,
+            "duplicatedTokens": 120,
+            "percentage": 9.18,
+            "percentageTokens": 7.77,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17584,
+          "lines": 17582,
           "tokens": 78486,
           "sources": 85,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 6,
+          "duplicatedLines": 72,
+          "duplicatedTokens": 246,
+          "percentage": 0.41,
+          "percentageTokens": 0.31,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,17 +1080,234 @@
       }
     },
     "total": {
-      "lines": 17831,
+      "lines": 17829,
       "tokens": 84001,
       "sources": 87,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 6,
+      "duplicatedLines": 72,
+      "duplicatedTokens": 246,
+      "percentage": 0.4,
+      "percentageTokens": 0.29,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": []
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 16,
+      "fragment": "(input) {\n  try {\n    return JSON.parse(input);\n  } catch {\n    return null;\n  }\n}\n\n/**\n *\n * @param {*} root0 - description\n * @param {*} root0.move - description\n * @param {*} root0.index - description\n * @param {*} root0.moves - description\n * @returns {*} - description\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-04-06/ticTacToe.js",
+        "start": 19,
+        "end": 34,
+        "startLoc": {
+          "line": 19,
+          "column": 13,
+          "position": 54
+        },
+        "endLoc": {
+          "line": 34,
+          "column": 4,
+          "position": 95
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-12-05/calculateVisibility.js",
+        "start": 154,
+        "end": 167,
+        "startLoc": {
+          "line": 154,
+          "column": 16,
+          "position": 740
+        },
+        "endLoc": {
+          "line": 167,
+          "column": 4,
+          "position": 781
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 14,
+      "fragment": "(origin, allowedOrigins) {\n  if (!origin) {\n    return true;\n  }\n\n  return allowedOrigins.includes(origin);\n}\n\n/**\n * Build the cors middleware origin handler.\n * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Origin predicate.\n * @param {string[]} allowedOrigins Whitelisted origins.\n * @returns {(origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void} Express CORS origin handler.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 126,
+        "end": 139,
+        "startLoc": {
+          "line": 126,
+          "column": 16,
+          "position": 474
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 4,
+          "position": 517
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 219,
+        "end": 231,
+        "startLoc": {
+          "line": 219,
+          "column": 22,
+          "position": 743
+        },
+        "endLoc": {
+          "line": 231,
+          "column": 4,
+          "position": 786
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 8,
+      "fragment": "\n    maybeRemoveKV,\n    maybeRemoveDendrite,\n    maybeRemoveTextarea,\n  ];\n  const invokeContainerHandler = createContainerHandlerInvoker(container, dom);\n  containerHandlers.forEach(invokeContainerHandler);\n  ",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/number.js",
+        "start": 79,
+        "end": 86,
+        "startLoc": {
+          "line": 79,
+          "column": 2,
+          "position": 528
+        },
+        "endLoc": {
+          "line": 86,
+          "column": 3,
+          "position": 570
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/text.js",
+        "start": 22,
+        "end": 29,
+        "startLoc": {
+          "line": 22,
+          "column": 2,
+          "position": 88
+        },
+        "endLoc": {
+          "line": 29,
+          "column": 2,
+          "position": 130
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 14,
+      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n  return null;\n}\n\n/**\n * Retrieve and normalize a header via the provided getter.\n * @param {Function} getter Header getter function.\n * @param {string} name Header key name.\n * @returns {string | null} Normalized header string or null.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/cloud-core.js",
+        "start": 42,
+        "end": 55,
+        "startLoc": {
+          "line": 42,
+          "column": 21,
+          "position": 152
+        },
+        "endLoc": {
+          "line": 55,
+          "column": 4,
+          "position": 192
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/process-new-story/process-new-story-core.js",
+        "start": 326,
+        "end": 339,
+        "startLoc": {
+          "line": 326,
+          "column": 24,
+          "position": 1296
+        },
+        "endLoc": {
+          "line": 339,
+          "column": 4,
+          "position": 1336
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 13,
+      "fragment": "(value) {\n  if (isNullish(value)) {\n    return '';\n  }\n\n  return String(value);\n}\n\n/**\n * Check whether a value is `null` or `undefined`.\n * @param {unknown} value Candidate value to inspect.\n * @returns {boolean} True when the input is nullish.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/cloud-core.js",
+        "start": 134,
+        "end": 146,
+        "startLoc": {
+          "line": 134,
+          "column": 24,
+          "position": 508
+        },
+        "endLoc": {
+          "line": 146,
+          "column": 4,
+          "position": 548
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
+        "start": 42,
+        "end": 54,
+        "startLoc": {
+          "line": 42,
+          "column": 16,
+          "position": 182
+        },
+        "endLoc": {
+          "line": 54,
+          "column": 4,
+          "position": 222
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 13,
+      "fragment": "(value) {\n  if (typeof value !== 'string') {\n    return '';\n  }\n\n  return value;\n}\n\n/**\n * Safely resolve the Authorization header from the request getter.\n * @param {import('express').Request} req HTTP request object.\n * @returns {unknown} Resolved header value or undefined when unavailable.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/cloud-core.js",
+        "start": 230,
+        "end": 242,
+        "startLoc": {
+          "line": 230,
+          "column": 28,
+          "position": 854
+        },
+        "endLoc": {
+          "line": 242,
+          "column": 4,
+          "position": 894
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
+        "start": 355,
+        "end": 367,
+        "startLoc": {
+          "line": 355,
+          "column": 18,
+          "position": 1361
+        },
+        "endLoc": {
+          "line": 367,
+          "column": 4,
+          "position": 1401
+        }
+      }
+    }
+  ]
 }
