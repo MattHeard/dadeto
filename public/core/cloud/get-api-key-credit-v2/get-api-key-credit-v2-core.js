@@ -1,5 +1,6 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 import { productionOrigins } from './cloud-core.js';
+import { ensureString } from '../../common-core.js';
 
 export { createDb } from './create-db.js';
 export { productionOrigins };
@@ -45,33 +46,14 @@ function matchPathUuid(path) {
  * @returns {string} Normalized UUID string when the match succeeds.
  */
 function extractUuidFromMatch(match) {
-  return sanitizeMatchUuid(match?.[1]);
+  return ensureString(match?.[1]);
 }
 
 /**
- * Normalize the captured UUID value, returning an empty string when invalid.
- * @param {unknown} value Candidate UUID value.
- * @returns {string} Valid UUID string or an empty string.
- */
-function sanitizeMatchUuid(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-  return '';
-}
-
-/**
- * Normalize a value into a UUID string.
+ * Normalize a string-like value into a UUID candidate.
  * @param {unknown} value Candidate value that may contain a UUID.
  * @returns {string} UUID string when valid, otherwise an empty string.
  */
-function readUuid(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-  return '';
-}
-
 /**
  * Invoke resolvers until one produces a value.
  * @param {Array<() => string>} resolvers Candidate value resolvers.
@@ -99,8 +81,8 @@ function resolveFirstValue(resolvers) {
 export function extractUuid(request = {}) {
   const resolvers = [
     () => matchPathUuid(request.path),
-    () => readUuid(request.params?.uuid),
-    () => readUuid(request.query?.uuid),
+    () => ensureString(request.params?.uuid),
+    () => ensureString(request.query?.uuid),
   ];
 
   return resolveFirstValue(resolvers);
