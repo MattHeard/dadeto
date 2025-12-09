@@ -28,6 +28,15 @@ export function isNullish(value) {
 }
 
 /**
+ * Determines whether a value is an object that is not null.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is an object and not null.
+ */
+export function isNonNullObject(value) {
+  return Boolean(value) && typeof value === 'object';
+}
+
+/**
  * Returns the input string when available; otherwise returns an empty string.
  * @param {unknown} value Candidate value.
  * @returns {string} Input string or empty fallback.

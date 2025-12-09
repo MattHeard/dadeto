@@ -1,5 +1,6 @@
 import { valueOr } from '../jsonUtils.js';
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
+import { isNonNullObject } from '../common-core.js';
 import { DENDRITE_FORM_SELECTOR } from './inputHandlers/browserInputHandlersCore.js';
 import {
   NUMBER_INPUT_SELECTOR,
@@ -202,15 +203,6 @@ export function getInputValue(element) {
 }
 
 export { setInputValue };
-
-/**
- * Check if a value is a non-null object.
- * @param {*} value - Value to test.
- * @returns {boolean} True when the value is a non-null object.
- */
-export function isNonNullObject(value) {
-  return Boolean(value) && typeof value === 'object';
-}
 
 /**
  * Ensure that the provided value is callable.

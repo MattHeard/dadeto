@@ -5,7 +5,7 @@ import {
   getHeaderFromGetter,
   isAllowedOrigin,
 } from './cloud-core.js';
-import { stringOrFallback } from '../common-core.js';
+import { isNonNullObject, stringOrFallback } from './common-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
@@ -368,19 +368,6 @@ function isNonEmptyString(value) {
   }
 
   return value.length > 0;
-}
-
-/**
- * Check for non-null object.
- * @param {unknown} value Value.
- * @returns {value is object} True when non-null object.
- */
-function isNonNullObject(value) {
-  if (typeof value !== 'object') {
-    return false;
-  }
-
-  return value !== null;
 }
 
 /**
