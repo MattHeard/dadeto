@@ -113,6 +113,30 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy entries using the provided logger and message resolver.
+   * @param {Array<{ source: string, destination: string }>} entries Entries to copy.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   *   readDirEntries: (dir: string) => import('fs').Dirent[],
+   * }} io FS adapters.
+   * @param {{ info?: (message: string) => void, warn?: (message: string) => void }} messageLogger Logger helpers.
+   * @param {(entry: { source: string, destination: string }) => string} resolveMessage Resolver for log text.
+   * @returns {void}
+   */
+  function copyEntries(entries, io, messageLogger, resolveMessage) {
+    entries.forEach(({ source, destination }) => {
+      copyFileWithDirectories(io, {
+        source,
+        destination,
+        messageLogger,
+        message: resolveMessage({ source, destination }),
+      });
+    });
+  }
+
+  /**
    * Determine whether a filename represents a copyable JS module.
    * @param {string} entryName - Directory entry name.
    * @returns {boolean} True when the file should be copied.
@@ -412,14 +436,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       },
     ];
 
-    filesToCopy.forEach(({ source, destination, message }) => {
-      copyFileWithDirectories(io, {
-        source,
-        destination,
-        messageLogger,
-        message,
-      });
-    });
+    copyEntries(filesToCopy, io, messageLogger, entry => entry.message);
   }
 
   /**
@@ -476,16 +493,15 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       dirs.srcPresentersDir,
       dirs.publicPresentersDir
     );
-    presenterPairs.forEach(({ source, destination }) => {
-      copyFileWithDirectories(io, {
-        source,
-        destination,
-        messageLogger,
-        message: `Copied presenter: ${formatPathForLog(source)} -> ${formatPathForLog(
+    copyEntries(
+      presenterPairs,
+      io,
+      messageLogger,
+      ({ source, destination }) =>
+        `Copied presenter: ${formatPathForLog(source)} -> ${formatPathForLog(
           destination
-        )}`,
-      });
-    });
+        )}`
+    );
     messageLogger.info('Presenter files copied successfully!');
   }
 

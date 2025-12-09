@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T15:32:35.362Z",
+    "detectionDate": "2025-12-09T15:38:38.140Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -1025,14 +1025,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/copy.js": {
-            "lines": 631,
-            "tokens": 2855,
+            "lines": 652,
+            "tokens": 2900,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 60,
-            "percentage": 1.58,
-            "percentageTokens": 2.1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17538,
-          "tokens": 78376,
+          "lines": 17559,
+          "tokens": 78421,
           "sources": 87,
-          "clones": 5,
-          "duplicatedLines": 33,
-          "duplicatedTokens": 160,
-          "percentage": 0.19,
-          "percentageTokens": 0.2,
+          "clones": 4,
+          "duplicatedLines": 28,
+          "duplicatedTokens": 130,
+          "percentage": 0.16,
+          "percentageTokens": 0.17,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,14 +1104,14 @@
       }
     },
     "total": {
-      "lines": 17785,
-      "tokens": 83891,
+      "lines": 17806,
+      "tokens": 83936,
       "sources": 89,
-      "clones": 5,
-      "duplicatedLines": 33,
-      "duplicatedTokens": 160,
-      "percentage": 0.19,
-      "percentageTokens": 0.19,
+      "clones": 4,
+      "duplicatedLines": 28,
+      "duplicatedTokens": 130,
+      "percentage": 0.16,
+      "percentageTokens": 0.15,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1222,42 +1222,6 @@
           "line": 28,
           "column": 2,
           "position": 118
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": " }) => {\n      copyFileWithDirectories(io, {\n        source,\n        destination,\n        messageLogger,\n        message:",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/copy.js",
-        "start": 479,
-        "end": 484,
-        "startLoc": {
-          "line": 479,
-          "column": 12,
-          "position": 2139
-        },
-        "endLoc": {
-          "line": 484,
-          "column": 2,
-          "position": 2169
-        }
-      },
-      "secondFile": {
-        "name": "src/core/copy.js",
-        "start": 415,
-        "end": 420,
-        "startLoc": {
-          "line": 415,
-          "column": 8,
-          "position": 1851
-        },
-        "endLoc": {
-          "line": 420,
-          "column": 2,
-          "position": 1881
         }
       }
     },
