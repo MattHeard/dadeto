@@ -69,6 +69,29 @@ export function buildTestOrigins(playwrightOrigin) {
 }
 
 /**
+ * Determine the allowed origins for an endpoint by reading the current runtime labels.
+ * @param {Record<string, unknown> | null | undefined} environmentVariables Environment map exposed to the function.
+ * @returns {string[]} Allowed origin list for the deployment environment.
+ */
+export function resolveAllowedOrigins(environmentVariables) {
+  const environment = getEnvironmentVariable(
+    environmentVariables,
+    'DENDRITE_ENVIRONMENT'
+  );
+  const envType = classifyDeploymentEnvironment(environment);
+
+  if (envType === 'test') {
+    const playwrightOrigin = getEnvironmentVariable(
+      environmentVariables,
+      'PLAYWRIGHT_ORIGIN'
+    );
+    return buildTestOrigins(playwrightOrigin);
+  }
+
+  return productionOrigins;
+}
+
+/**
  * Safely read a runtime environment variable.
  * @param {Record<string, unknown> | null | undefined} environmentVariables Runtime environment map.
  * @param {string} key Variable name to retrieve.

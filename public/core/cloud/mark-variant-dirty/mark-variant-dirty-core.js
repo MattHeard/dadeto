@@ -1,11 +1,8 @@
 import {
   assertFunction,
-  productionOrigins,
   createCorsOriginHandler,
   createCorsOptions,
-  classifyDeploymentEnvironment,
-  buildTestOrigins,
-  getEnvironmentVariable,
+  resolveAllowedOrigins,
 } from '../cloud-core.js';
 import {
   buildPageByNumberQuery,
@@ -20,30 +17,7 @@ const POST_METHOD = 'POST';
  * @returns {string[]} Whitelisted origins.
  */
 export function getAllowedOrigins(environmentVariables) {
-  const environment = getEnvironmentVariable(
-    environmentVariables,
-    'DENDRITE_ENVIRONMENT'
-  );
-  const playwrightOrigin = getEnvironmentVariable(
-    environmentVariables,
-    'PLAYWRIGHT_ORIGIN'
-  );
-  const envType = classifyDeploymentEnvironment(environment);
-  return resolveAllowedOrigins(envType, playwrightOrigin);
-}
-
-/**
- * Select a whitelist based on the detected environment type.
- * @param {'prod' | 'test' | 'other'} envType Classified environment.
- * @param {unknown} playwrightOrigin Candidate override for tests.
- * @returns {string[]} Allowed origins for the environment.
- */
-function resolveAllowedOrigins(envType, playwrightOrigin) {
-  if (envType === 'test') {
-    return buildTestOrigins(playwrightOrigin);
-  }
-
-  return productionOrigins;
+  return resolveAllowedOrigins(environmentVariables);
 }
 
 /**
