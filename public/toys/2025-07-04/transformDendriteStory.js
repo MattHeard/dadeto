@@ -12,7 +12,7 @@ import {
  * @returns {string} JSON string of the new objects.
  */
 export function transformDendriteStory(input, env) {
-  const parsed = safeParseJson(input);
+  const parsed = safeParseJson(input, JSON.parse);
   if (!isValidStoryInput(parsed)) {
     return buildEmptyDendriteStoryResponse();
   }

@@ -61,7 +61,7 @@ export function parseJsonOrDefault(json, fallback = {}) {
  * @param {Function} parseJsonValue - Parser to run on the input.
  * @returns {*} Parsed value or `undefined`.
  */
-export function safeParseJson(json, parseJsonValue = JSON.parse) {
+export function safeParseJson(json, parseJsonValue) {
   try {
     return parseJsonValue(json);
   } catch {
