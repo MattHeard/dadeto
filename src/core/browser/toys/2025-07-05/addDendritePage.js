@@ -72,7 +72,7 @@ function persistDendritePage(parsed, env) {
   };
 
   const newData = cloneTemporaryDend2Data(getData);
-  appendPageAndSave(newData, page, opts, setLocalTemporaryData);
+  appendPageAndSave(newData, { page, opts, setLocalTemporaryData });
 
   return JSON.stringify(buildPageResponse(page, opts));
 }

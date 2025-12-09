@@ -24,32 +24,36 @@ const DENDRITE_OPTION_KEYS = [
 ];
 
 /**
- *
+ * Build an empty DEND2 container initialized for the toy state.
+ * @returns {{stories: object[], pages: object[], options: object[]}} Empty DEND2.
  */
 function createEmptyDend2() {
   return { stories: [], pages: [], options: [] };
 }
 
 /**
- *
- * @param obj
- * @param keys
+ * Verify that the requested properties exist as arrays.
+ * @param {object} obj Object to validate.
+ * @param {string[]} keys Array keys that must resolve to arrays.
+ * @returns {boolean} True when every key points to an array.
  */
 function hasArrayProps(obj, keys) {
   return keys.every(key => Array.isArray(obj[key]));
 }
 
 /**
- *
- * @param obj
+ * Determine whether the given data matches the DEND2 shape.
+ * @param {object} obj Candidate structure.
+ * @returns {boolean} True when the shape is valid.
  */
 function isValidDend2Structure(obj) {
   return isNonNullObject(obj) && hasArrayProps(obj, DENDRITE_TEMP_KEYS);
 }
 
 /**
- *
- * @param data
+ * Confirm that the temporary storage contains a DEND2 payload.
+ * @param {object} data Storage object that should include `temporary`.
+ * @returns {boolean} True when `temporary.DEND2` is valid.
  */
 function isTemporaryValid(data) {
   if (!isNonNullObject(data.temporary)) {
@@ -59,8 +63,9 @@ function isTemporaryValid(data) {
 }
 
 /**
- *
- * @param data
+ * Make certain the store exposes a valid `temporary.DEND2` bucket.
+ * @param {object} data Storage object to update.
+ * @returns {void}
  */
 export function ensureDend2(data) {
   if (!isTemporaryValid(data)) {
@@ -113,12 +118,10 @@ export function appendPageAndOptions(data, page, opts) {
 /**
  * Append the page/options and persist the updated storage back.
  * @param {object} data Cloned DEND2 storage instance.
- * @param {object} page Page entity to add.
- * @param {Array<object>} opts Options to add.
- * @param {Function} setLocalTemporaryData Function used to persist the mutated data.
+ * @param {{page: object, opts: Array<object>, setLocalTemporaryData: Function}} params Payload metadata and writer.
  * @returns {void}
  */
-export function appendPageAndSave(data, page, opts, setLocalTemporaryData) {
+export function appendPageAndSave(data, { page, opts, setLocalTemporaryData }) {
   appendPageAndOptions(data, page, opts);
   setLocalTemporaryData(data);
 }
@@ -130,5 +133,9 @@ export function appendPageAndSave(data, page, opts, setLocalTemporaryData) {
  * @returns {{pages: object[], options: object[]}} Payload for the toy response.
  */
 export function buildPageResponse(page, opts) {
-  return { pages: page ? [page] : [], options: opts };
+  const pages = [];
+  if (page) {
+    pages.push(page);
+  }
+  return { pages, options: opts };
 }

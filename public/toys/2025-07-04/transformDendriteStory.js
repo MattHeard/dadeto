@@ -66,7 +66,7 @@ function createAndPersistStory(parsed, env) {
 
   const newData = cloneTemporaryDend2Data(getData);
   newData.temporary.DEND2.stories.push(story);
-  appendPageAndSave(newData, page, opts, setLocalTemporaryData);
+  appendPageAndSave(newData, { page, opts, setLocalTemporaryData });
 
   const pageResponse = buildPageResponse(page, opts);
   const responsePayload = { ...pageResponse, stories: [story] };
