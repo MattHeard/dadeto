@@ -1,5 +1,6 @@
 import { deepClone } from '../../objectUtils.js';
 import { isNonNullObject } from '../browser-core.js';
+import { isValidString } from '../../common-core.js';
 
 /**
  * Helper utilities shared by browser toys.
@@ -138,4 +139,143 @@ export function buildPageResponse(page, opts) {
     pages.push(page);
   }
   return { pages, options: opts };
+}
+
+const PAGE_REQUIRED_FIELDS = ['optionId', 'content'];
+const EMPTY_STORY_RESPONSE = JSON.stringify({
+  stories: [],
+  pages: [],
+  options: [],
+});
+
+/**
+ * Determine whether the parsed story payload defines the required fields.
+ * @param {{ title?: string, content?: string } | null | undefined} parsed Payload to validate.
+ * @returns {boolean} True when both title and content are valid strings.
+ */
+export function isValidStoryInput(parsed) {
+  return Boolean(parsed) && [parsed.title, parsed.content].every(isValidString);
+}
+
+/**
+ * Determine whether the parsed page payload defines the required fields.
+ * @param {{ optionId?: string, content?: string } | null | undefined} parsed Payload to validate.
+ * @returns {boolean} True when each required field is a valid string.
+ */
+export function isValidPageInput(parsed) {
+  return (
+    Boolean(parsed) &&
+    PAGE_REQUIRED_FIELDS.every(field => isValidString(parsed[field]))
+  );
+}
+
+/**
+ * Build the canonical empty page response when no data can be persisted.
+ * @returns {string} JSON string representing no pages/options.
+ */
+export function buildEmptyDendritePageResponse() {
+  return JSON.stringify(buildPageResponse(undefined, []));
+}
+
+/**
+ * Build the canonical empty story response when no data can be persisted.
+ * @returns {string} JSON string representing no stories/pages/options.
+ */
+export function buildEmptyDendriteStoryResponse() {
+  return EMPTY_STORY_RESPONSE;
+}
+
+/**
+ * Clone the temporary DEND2 store, mutate it if needed, and persist the supplied page/option data.
+ * @param {Map<string, Function>} env Environment helpers used during persistence.
+ * @param {{ page: object, options: Array<object> }} payload Page metadata to persist.
+ * @param {(data: object) => void} [mutateData] Optional hook to mutate the cloned data before saving.
+ * @returns {object} Updated temporary data after the persistence step.
+ */
+function persistTemporaryData(env, payload, mutateData = () => {}) {
+  const { page, options } = payload;
+  const { getData, setLocalTemporaryData } = getEnvHelpers(env);
+  const newData = cloneTemporaryDend2Data(getData);
+  mutateData(newData);
+  appendPageAndSave(newData, { page, opts: options, setLocalTemporaryData });
+  return newData;
+}
+
+/**
+ * Build the JSON response for a persisted page payload.
+ * @param {{ page: object, options: Array<object> }} payload Page metadata mirrored in the response.
+ * @param {object} newData Cloned temporary data that may have been mutated.
+ * @param {(context: { newData: object, page: object, options: Array<object> }) => object} [extraResponse] Optional fields to merge into the response.
+ * @returns {string} JSON string representing the persisted page data.
+ */
+function buildPersistedResponse(payload, newData, extraResponse = () => ({})) {
+  const { page, options } = payload;
+  const response = buildPageResponse(page, options);
+  return JSON.stringify({
+    ...response,
+    ...extraResponse({ newData, page, options }),
+  });
+}
+
+/**
+ * Persist a Dendrite page payload into temporary storage.
+ * @param {{ optionId: string, content: string }} parsed Parsed page payload.
+ * @param {Map<string, Function>} env Environment helpers used to get UUIDs and persist data.
+ * @returns {string} JSON string containing the new page and option entries.
+ */
+export function persistDendritePage(parsed, env) {
+  const { getUuid } = getEnvHelpers(env);
+  const pageId = getUuid();
+  const opts = createOptions(parsed, getUuid, pageId);
+  const page = {
+    id: pageId,
+    optionId: parsed.optionId,
+    content: parsed.content,
+  };
+
+  const newData = persistTemporaryData(env, { page, options: opts });
+  return buildPersistedResponse({ page, options: opts }, newData);
+}
+
+/**
+ * Persist a Dendrite story payload into temporary storage.
+ * @param {{ title: string, content: string }} parsed Parsed story payload.
+ * @param {Map<string, Function>} env Environment with helpers for persistence.
+ * @returns {string} JSON string containing the newly persisted story data.
+ */
+export function persistDendriteStory(parsed, env) {
+  const { getUuid } = getEnvHelpers(env);
+  const storyId = getUuid();
+  const pageId = getUuid();
+  const page = {
+    id: pageId,
+    storyId,
+    content: parsed.content,
+  };
+  const story = { id: storyId, title: parsed.title };
+  const opts = createOptions(parsed, getUuid).map(option => ({
+    ...option,
+    pageId,
+  }));
+
+  const newData = persistTemporaryData(env, { page, options: opts }, newData =>
+    newData.temporary.DEND2.stories.push(story)
+  );
+
+  return buildPersistedResponse({ page, options: opts }, newData, () => ({
+    stories: [story],
+  }));
+}
+
+/**
+ * Safely parse a JSON string without throwing.
+ * @param {string} input JSON string to parse.
+ * @returns {object|null} Parsed object or null when invalid.
+ */
+export function safeParseJson(input) {
+  try {
+    return JSON.parse(input);
+  } catch {
+    return null;
+  }
 }
