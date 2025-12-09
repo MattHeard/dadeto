@@ -1,5 +1,5 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
-import { normalizeHeaderValue } from '../cloud-core.js';
+import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
 
@@ -32,11 +32,7 @@ export function resetFindAvailablePageNumberResolver() {
  * @returns {Record<string, unknown> | null} Submission payload when available.
  */
 function getSubmissionData(snapshot) {
-  if (!hasSnapshotDataMethod(snapshot)) {
-    return null;
-  }
-
-  return snapshot.data();
+  return getSnapshotData(snapshot);
 }
 
 /**
@@ -54,10 +50,6 @@ function resolveSubmission(snapshot) {
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot to inspect.
  * @returns {snapshot is { data: () => Record<string, unknown> }} True when snapshot exposes data.
  */
-function hasSnapshotDataMethod(snapshot) {
-  return Boolean(snapshot) && typeof snapshot.data === 'function';
-}
-
 /**
  * Resolve a function that returns the Firestore server timestamp helper.
  * @param {{ serverTimestamp: () => FieldValue }} fieldValue FieldValue helper provided to the handler.

@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T14:11:53.065Z",
+    "detectionDate": "2025-12-09T14:19:46.250Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -449,14 +449,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/process-new-story/process-new-story-core.js": {
-            "lines": 470,
-            "tokens": 1959,
+            "lines": 462,
+            "tokens": 1905,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 11,
-            "duplicatedTokens": 30,
-            "percentage": 2.34,
-            "percentageTokens": 1.53,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -473,14 +473,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/hide-variant-html/hide-variant-html-core.js": {
-            "lines": 705,
-            "tokens": 2636,
+            "lines": 688,
+            "tokens": 2566,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 11,
-            "duplicatedTokens": 30,
-            "percentage": 1.56,
-            "percentageTokens": 1.14,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -809,14 +809,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 398,
-            "tokens": 1522,
+            "lines": 420,
+            "tokens": 1606,
             "sources": 1,
             "clones": 1,
             "duplicatedLines": 5,
             "duplicatedTokens": 34,
-            "percentage": 1.26,
-            "percentageTokens": 2.23,
+            "percentage": 1.19,
+            "percentageTokens": 2.12,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17547,
-          "tokens": 78394,
+          "lines": 17544,
+          "tokens": 78354,
           "sources": 87,
-          "clones": 12,
-          "duplicatedLines": 81,
-          "duplicatedTokens": 383,
-          "percentage": 0.46,
-          "percentageTokens": 0.49,
+          "clones": 11,
+          "duplicatedLines": 70,
+          "duplicatedTokens": 353,
+          "percentage": 0.4,
+          "percentageTokens": 0.45,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,14 +1104,14 @@
       }
     },
     "total": {
-      "lines": 17794,
-      "tokens": 83909,
+      "lines": 17791,
+      "tokens": 83869,
       "sources": 89,
-      "clones": 12,
-      "duplicatedLines": 81,
-      "duplicatedTokens": 383,
-      "percentage": 0.46,
-      "percentageTokens": 0.46,
+      "clones": 11,
+      "duplicatedLines": 70,
+      "duplicatedTokens": 353,
+      "percentage": 0.39,
+      "percentageTokens": 0.42,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1150,42 +1150,6 @@
           "line": 278,
           "column": 3,
           "position": 1199
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 12,
-      "fragment": "(snapshot)) {\n    return null;\n  }\n\n  return snapshot.data();\n}\n\n/**\n * Confirm the snapshot exposes a callable data method.\n * @param {{ data?: unknown } | null | undefined} snapshot Snapshot candidate.\n * @returns {boolean} True when the snapshot data helper exists.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
-        "start": 480,
-        "end": 491,
-        "startLoc": {
-          "line": 480,
-          "column": 16,
-          "position": 1855
-        },
-        "endLoc": {
-          "line": 491,
-          "column": 4,
-          "position": 1885
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/process-new-story/process-new-story-core.js",
-        "start": 35,
-        "end": 46,
-        "startLoc": {
-          "line": 35,
-          "column": 22,
-          "position": 108
-        },
-        "endLoc": {
-          "line": 46,
-          "column": 4,
-          "position": 138
         }
       }
     },
@@ -1412,17 +1376,17 @@
       "tokens": 0,
       "firstFile": {
         "name": "src/core/cloud/cloud-core.js",
-        "start": 113,
-        "end": 118,
+        "start": 135,
+        "end": 140,
         "startLoc": {
-          "line": 113,
+          "line": 135,
           "column": 32,
-          "position": 412
+          "position": 496
         },
         "endLoc": {
-          "line": 118,
+          "line": 140,
           "column": 28,
-          "position": 446
+          "position": 530
         }
       },
       "secondFile": {
