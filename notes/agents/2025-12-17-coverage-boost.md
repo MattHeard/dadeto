@@ -12,3 +12,4 @@
 
 ## Duplication cleanup
 - The Playwright-origin helpers in the moderation and mark-variant cores were almost copy-paste duplicates of each other and of the new allowed-origins entry in `assign-moderation-job`. Moving the logic into `cloud-core.buildTestOrigins` eliminated two identical functions and keeps the three endpoints in sync.
+- Both cores also duplicated their own environment-variable getters; I added `cloud-core.getEnvironmentVariable` and switched the modules to reuse it, which removed the remaining repeated accessor helpers.

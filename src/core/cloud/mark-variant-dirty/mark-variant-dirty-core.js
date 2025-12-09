@@ -5,6 +5,7 @@ import {
   createCorsOptions,
   classifyDeploymentEnvironment,
   buildTestOrigins,
+  getEnvironmentVariable,
 } from '../cloud-core.js';
 import {
   buildPageByNumberQuery,
@@ -19,9 +20,14 @@ const POST_METHOD = 'POST';
  * @returns {string[]} Whitelisted origins.
  */
 export function getAllowedOrigins(environmentVariables) {
-  const envVars = getEnvironmentVariables(environmentVariables);
-  const environment = envVars.DENDRITE_ENVIRONMENT;
-  const playwrightOrigin = envVars.PLAYWRIGHT_ORIGIN;
+  const environment = getEnvironmentVariable(
+    environmentVariables,
+    'DENDRITE_ENVIRONMENT'
+  );
+  const playwrightOrigin = getEnvironmentVariable(
+    environmentVariables,
+    'PLAYWRIGHT_ORIGIN'
+  );
   const envType = classifyDeploymentEnvironment(environment);
   return resolveAllowedOrigins(envType, playwrightOrigin);
 }
@@ -40,25 +46,6 @@ function resolveAllowedOrigins(envType, playwrightOrigin) {
   return productionOrigins;
 }
 
-/**
- * Detect whether the current environment should use the production origins.
- * @param {unknown} environment Raw environment label.
- * @returns {environment is string} True when the label is exactly `prod`.
- */
-/**
- * Safely normalize the environment configuration bag.
- * @param {Record<string, unknown> | null | undefined} environmentVariables Environment settings.
- * @returns {Record<string, unknown>} Normalized bag.
- */
-function getEnvironmentVariables(environmentVariables) {
-  return environmentVariables ?? {};
-}
-
-/**
- * Resolve the Playwright origin when provided.
- * @param {unknown} origin Candidate override.
- * @returns {string[]} Either a singleton list or an empty array.
- */
 /**
  * Build the cors middleware origin handler.
  * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Origin predicate.
