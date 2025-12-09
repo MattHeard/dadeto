@@ -1,4 +1,5 @@
 import { isValidString } from '../../../common-core.js';
+import { parseJsonOrFallback } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
 
 const DEFAULT_VISIBILITY = '1';
@@ -143,20 +144,7 @@ function parseInput(input) {
     return null;
   }
 
-  return parseJsonSafely(input);
-}
-
-/**
- * Parse JSON without throwing.
- * @param {string} input - JSON string.
- * @returns {object|null} Parsed object or null when parsing fails.
- */
-function parseJsonSafely(input) {
-  try {
-    return JSON.parse(input);
-  } catch {
-    return null;
-  }
+  return parseJsonOrFallback(input);
 }
 
 /**

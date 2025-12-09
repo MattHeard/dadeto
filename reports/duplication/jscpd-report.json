@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T11:37:56.625Z",
+    "detectionDate": "2025-12-09T12:01:45.298Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -29,14 +29,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/calculateVisibility.js": {
-            "lines": 398,
-            "tokens": 1872,
+            "lines": 386,
+            "tokens": 1839,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 15,
-            "duplicatedTokens": 41,
-            "percentage": 3.77,
-            "percentageTokens": 2.19,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -126,7 +126,7 @@
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-05/addDendritePage.js": {
             "lines": 21,
-            "tokens": 95,
+            "tokens": 104,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -138,7 +138,7 @@
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-04/transformDendriteStory.js": {
             "lines": 21,
-            "tokens": 95,
+            "tokens": 104,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -233,14 +233,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-04-06/ticTacToe.js": {
-            "lines": 725,
-            "tokens": 3705,
+            "lines": 714,
+            "tokens": 3673,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 15,
-            "duplicatedTokens": 41,
-            "percentage": 2.07,
-            "percentageTokens": 1.11,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,8 +581,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/browserToysCore.js": {
-            "lines": 281,
-            "tokens": 1581,
+            "lines": 279,
+            "tokens": 1592,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -881,8 +881,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/browser-core.js": {
-            "lines": 279,
-            "tokens": 1342,
+            "lines": 293,
+            "tokens": 1394,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -977,8 +977,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/jsonUtils.js": {
-            "lines": 33,
-            "tokens": 97,
+            "lines": 12,
+            "tokens": 45,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17529,
-          "tokens": 78299,
+          "lines": 17497,
+          "tokens": 78263,
           "sources": 85,
-          "clones": 1,
-          "duplicatedLines": 15,
-          "duplicatedTokens": 41,
-          "percentage": 0.09,
-          "percentageTokens": 0.05,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,54 +1080,17 @@
       }
     },
     "total": {
-      "lines": 17776,
-      "tokens": 83814,
+      "lines": 17744,
+      "tokens": 83778,
       "sources": 87,
-      "clones": 1,
-      "duplicatedLines": 15,
-      "duplicatedTokens": 41,
-      "percentage": 0.08,
-      "percentageTokens": 0.05,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 16,
-      "fragment": "(input) {\n  try {\n    return JSON.parse(input);\n  } catch {\n    return null;\n  }\n}\n\n/**\n *\n * @param {*} root0 - description\n * @param {*} root0.move - description\n * @param {*} root0.index - description\n * @param {*} root0.moves - description\n * @returns {*} - description\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-04-06/ticTacToe.js",
-        "start": 19,
-        "end": 34,
-        "startLoc": {
-          "line": 19,
-          "column": 13,
-          "position": 54
-        },
-        "endLoc": {
-          "line": 34,
-          "column": 4,
-          "position": 95
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-12-05/calculateVisibility.js",
-        "start": 154,
-        "end": 167,
-        "startLoc": {
-          "line": 154,
-          "column": 16,
-          "position": 740
-        },
-        "endLoc": {
-          "line": 167,
-          "column": 4,
-          "position": 781
-        }
-      }
-    }
-  ]
+  "duplicates": []
 }

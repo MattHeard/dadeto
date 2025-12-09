@@ -11,9 +11,34 @@ async function loadMinimax() {
     process.cwd(),
     'src/core/browser/toys/2025-04-06/ticTacToe.js'
   );
-  let src = fs.readFileSync(filePath, 'utf8');
-  src += '\nexport { minimax };';
-  const mod = await import(`data:text/javascript,${encodeURIComponent(src)}`);
+  const helperSource = `
+function safeParseJson(json, parseJsonValue) {
+  try {
+    return parseJsonValue(json);
+  } catch {
+    return undefined;
+  }
+}
+
+function valueOr(value, fallback) {
+  if (value === undefined) {
+    return fallback;
+  }
+  return value;
+}
+
+function parseJsonOrFallback(json, fallback = null) {
+  return valueOr(safeParseJson(json, JSON.parse), fallback);
+}
+`;
+  const parserImport =
+    "import { parseJsonOrFallback } from '../browserToysCore.js';\n";
+  const src = fs.readFileSync(filePath, 'utf8');
+  const cleanedSource = src.replace(parserImport, '');
+  const combined = `${helperSource}\n${cleanedSource}\nexport { minimax };`;
+  const mod = await import(
+    `data:text/javascript,${encodeURIComponent(combined)}`
+  );
   return mod.minimax;
 }
 

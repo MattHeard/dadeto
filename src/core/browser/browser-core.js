@@ -1,4 +1,4 @@
-import { safeParseJson, valueOr } from '../jsonUtils.js';
+import { valueOr } from '../jsonUtils.js';
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 import { DENDRITE_FORM_SELECTOR } from './inputHandlers/browserInputHandlersCore.js';
 import {
@@ -53,6 +53,20 @@ export function safeJsonParse(input) {
 export function parseJsonOrDefault(json, fallback = {}) {
   const parseJsonValue = x => JSON.parse(x);
   return valueOr(safeParseJson(json, parseJsonValue), fallback);
+}
+
+/**
+ * Parses a JSON string or returns `undefined` when parsing fails.
+ * @param {string} json - JSON string to parse.
+ * @param {Function} parseJsonValue - Parser to run on the input.
+ * @returns {*} Parsed value or `undefined`.
+ */
+export function safeParseJson(json, parseJsonValue = JSON.parse) {
+  try {
+    return parseJsonValue(json);
+  } catch {
+    return undefined;
+  }
 }
 
 /**

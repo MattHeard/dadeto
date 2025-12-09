@@ -1,5 +1,5 @@
+import { safeParseJson } from '../../browser-core.js';
 import {
-  safeParseJson,
   isValidPageInput,
   persistDendritePage,
   buildEmptyDendritePageResponse,

@@ -1,6 +1,9 @@
 import { describe, test, expect } from '@jest/globals';
-import { safeParseJson, valueOr } from '../../src/core/jsonUtils.js';
-import { parseJsonOrDefault } from '../../src/core/browser/browser-core.js';
+import { valueOr } from '../../src/core/jsonUtils.js';
+import {
+  safeParseJson,
+  parseJsonOrDefault,
+} from '../../src/core/browser/browser-core.js';
 
 const parseJsonValue = x => JSON.parse(x);
 
