@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T08:35:28.548Z",
+    "detectionDate": "2025-12-09T09:03:35.987Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -689,14 +689,14 @@
             "newClones": 0
           },
           "src/core/browser/inputHandlers/textarea.js": {
-            "lines": 102,
+            "lines": 105,
             "tokens": 715,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 53,
-            "percentage": 4.9,
-            "percentageTokens": 7.41,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -881,14 +881,14 @@
             "newClones": 0
           },
           "src/core/browser/browser-core.js": {
-            "lines": 256,
-            "tokens": 1260,
+            "lines": 267,
+            "tokens": 1290,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 53,
-            "percentage": 1.95,
-            "percentageTokens": 4.21,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17598,
-          "tokens": 78560,
+          "lines": 17612,
+          "tokens": 78590,
           "sources": 85,
-          "clones": 1,
-          "duplicatedLines": 5,
-          "duplicatedTokens": 53,
-          "percentage": 0.03,
-          "percentageTokens": 0.07,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,55 +1080,18 @@
       }
     },
     "total": {
-      "lines": 17845,
-      "tokens": 84075,
+      "lines": 17859,
+      "tokens": 84105,
       "sources": 87,
-      "clones": 1,
-      "duplicatedLines": 5,
-      "duplicatedTokens": 53,
-      "percentage": 0.03,
-      "percentageTokens": 0.06,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "(dom, container, textInput) {\n  hideAndDisable(textInput, dom);\n  maybeRemoveNumber(container, dom);\n  maybeRemoveKV(container, dom);\n  maybeRemoveDendrite(container, dom);\n  maybeRemoveTextarea",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/browser-core.js",
-        "start": 154,
-        "end": 159,
-        "startLoc": {
-          "line": 154,
-          "column": 15,
-          "position": 752
-        },
-        "endLoc": {
-          "line": 159,
-          "column": 20,
-          "position": 805
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/textarea.js",
-        "start": 96,
-        "end": 101,
-        "startLoc": {
-          "line": 96,
-          "column": 16,
-          "position": 649
-        },
-        "endLoc": {
-          "line": 101,
-          "column": 20,
-          "position": 702
-        }
-      }
-    }
-  ],
+  "duplicates": [],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }

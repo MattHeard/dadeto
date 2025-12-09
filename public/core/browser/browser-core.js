@@ -145,15 +145,11 @@ export function hideAndDisable(element, dom) {
 }
 
 /**
- *
- * @param cleanupFns
- */
-/**
  * Build a default handler configured with the provided cleanup callbacks.
  * @param {Array<(container: HTMLElement, dom: object) => void>} cleanupFns - Functions that clean up special widgets.
  * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => void} Handler that hides the base input then runs the cleanup functions.
  */
-function createDefaultHandler(cleanupFns) {
+export function createDefaultHandler(cleanupFns) {
   return function defaultHandler(dom, container, textInput) {
     hideAndDisable(textInput, dom);
     cleanupFns.forEach(fn => fn(container, dom));

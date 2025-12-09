@@ -1,6 +1,6 @@
 import {
+  createDefaultHandler,
   getInputValue,
-  hideAndDisable,
   maybeRemoveDendrite,
   maybeRemoveKV,
   maybeRemoveNumber,
@@ -86,6 +86,12 @@ export const ensureTextareaInput = (container, textInput, dom) => {
   return textarea;
 };
 
+const cleanupTextarea = createDefaultHandler([
+  maybeRemoveNumber,
+  maybeRemoveKV,
+  maybeRemoveDendrite,
+]);
+
 /**
  * Switch the UI to use a textarea input field.
  * @param {object} dom - DOM helper utilities.
@@ -94,9 +100,6 @@ export const ensureTextareaInput = (container, textInput, dom) => {
  * @returns {void}
  */
 export function textareaHandler(dom, container, textInput) {
-  hideAndDisable(textInput, dom);
-  maybeRemoveNumber(container, dom);
-  maybeRemoveKV(container, dom);
-  maybeRemoveDendrite(container, dom);
+  cleanupTextarea(dom, container, textInput);
   ensureTextareaInput(container, textInput, dom);
 }
