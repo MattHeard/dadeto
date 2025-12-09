@@ -13,12 +13,12 @@ import {
   createFirebaseInitialization,
   createCorsOptions,
   configureUrlencodedBodyParser,
-  getAllowedOrigins,
   createRunVariantQuery,
   setupAssignModerationJobRoute,
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
+import { resolveAllowedOrigins } from './cloud-core.js';
 
 const firebaseInitialization = createFirebaseInitialization();
 
@@ -205,7 +205,7 @@ const auth = getAuth();
 const app = express();
 
 const corsOptions = createCorsOptions(
-  getAllowedOrigins,
+  resolveAllowedOrigins,
   getEnvironmentVariables
 );
 

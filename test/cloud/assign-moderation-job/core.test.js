@@ -8,14 +8,12 @@ const {
   createCorsOriginHandler,
   createCorsOriginFactory,
   createCorsOriginFromEnvironment,
-  getAllowedOrigins,
   createRunGuards,
   createSetupCors,
   configureUrlencodedBodyParser,
   getBodyFromRequest,
   getIdTokenFromRequest,
   random,
-  productionOrigins,
   selectVariantDoc,
   createModeratorRefFactory,
   createVariantsQuery,
@@ -138,41 +136,6 @@ describe('shouldUseCustomFirestoreDependencies', () => {
     });
 
     expect(result).toBe(true);
-  });
-});
-
-describe('getAllowedOrigins', () => {
-  test('returns production origins for the production environment', () => {
-    const result = getAllowedOrigins({
-      DENDRITE_ENVIRONMENT: 'prod',
-    });
-
-    expect(result).toEqual(productionOrigins);
-  });
-
-  test('returns the playwright origin when a test environment provides one', () => {
-    const result = getAllowedOrigins({
-      DENDRITE_ENVIRONMENT: 't-chrome',
-      PLAYWRIGHT_ORIGIN: 'https://playwright.example',
-    });
-
-    expect(result).toEqual(['https://playwright.example']);
-  });
-
-  test('returns an empty allow list when the playwright origin is missing', () => {
-    const result = getAllowedOrigins({
-      DENDRITE_ENVIRONMENT: 't-firefox',
-    });
-
-    expect(result).toEqual([]);
-  });
-
-  test('throws when the environment is unsupported', () => {
-    expect(() =>
-      getAllowedOrigins({
-        DENDRITE_ENVIRONMENT: 'dev',
-      })
-    ).toThrow(/Unsupported environment label/);
   });
 });
 

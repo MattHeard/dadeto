@@ -2,6 +2,8 @@ import { describe, test, expect } from '@jest/globals';
 import {
   assertFunction,
   normalizeString,
+  productionOrigins,
+  resolveAllowedOrigins,
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {
@@ -36,6 +38,33 @@ describe('cloud-core', () => {
     test('should convert non-string values to a string', () => {
       expect(normalizeString(123, 10)).toBe('123');
       expect(normalizeString({ a: 1 }, 10)).toBe('[object Ob');
+    });
+  });
+  describe('resolveAllowedOrigins', () => {
+    test('returns production origins for prod env', () => {
+      const result = resolveAllowedOrigins({ DENDRITE_ENVIRONMENT: 'prod' });
+      expect(result).toEqual(productionOrigins);
+    });
+
+    test('uses PLAYWRIGHT_ORIGIN when in test env', () => {
+      const result = resolveAllowedOrigins({
+        DENDRITE_ENVIRONMENT: 't-firefox',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.test',
+      });
+      expect(result).toEqual(['https://playwright.test']);
+    });
+
+    test('returns empty array when test env is missing PLAYWRIGHT_ORIGIN', () => {
+      const result = resolveAllowedOrigins({
+        DENDRITE_ENVIRONMENT: 't-firefox',
+      });
+      expect(result).toEqual([]);
+    });
+
+    test('throws when environment is unsupported', () => {
+      expect(() =>
+        resolveAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })
+      ).toThrow(/Unsupported environment label/);
     });
   });
 });

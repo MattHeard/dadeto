@@ -3,9 +3,7 @@ import {
   productionOrigins,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
-  classifyDeploymentEnvironment,
-  buildTestOrigins,
-  getEnvironmentVariable,
+  resolveAllowedOrigins,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
@@ -347,39 +345,7 @@ function buildOptions(variantRef) {
  * @returns {string[]} List of allowed origins.
  */
 export function getAllowedOrigins(environmentVariables) {
-  return resolveOriginsForEnvironmentType(
-    classifyEnvironmentType(
-      getEnvironmentVariable(environmentVariables, 'DENDRITE_ENVIRONMENT')
-    ),
-    getEnvironmentVariable(environmentVariables, 'PLAYWRIGHT_ORIGIN')
-  );
-}
-
-/**
- * Select the allowed origins based on the deployment environment.
- * @param {'test' | 'prod'} environmentType Resolved environment classification.
- * @param {string | undefined} playwrightOrigin Optional Playwright-origin override.
- * @returns {string[]} Approved origins for the current environment.
- */
-function resolveOriginsForEnvironmentType(environmentType, playwrightOrigin) {
-  if (environmentType === 'test') {
-    return buildTestOrigins(playwrightOrigin);
-  }
-
-  return productionOrigins;
-}
-
-/**
- * Classify the environment tag into a known environment type.
- * @param {string | undefined} environment Environment string read from the runtime.
- * @returns {'test' | 'prod'} Normalized environment type used for routing decisions.
- */
-function classifyEnvironmentType(environment) {
-  if (classifyDeploymentEnvironment(environment) === 'test') {
-    return 'test';
-  }
-
-  return 'prod';
+  return resolveAllowedOrigins(environmentVariables);
 }
 
 /**

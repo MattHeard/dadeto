@@ -1,16 +1,3 @@
-import {
-  productionOrigins,
-  classifyDeploymentEnvironment,
-  buildTestOrigins,
-} from './cloud-core.js';
-
-const ENVIRONMENT_ORIGIN_RESOLVERS = {
-  test: envVars => buildTestOrigins(envVars?.PLAYWRIGHT_ORIGIN),
-  prod: () => productionOrigins,
-};
-
-export { productionOrigins };
-
 /**
  * @typedef {(environmentVariables: Record<string, unknown>) => string[]} ResolveAllowedOrigins
  */
@@ -158,24 +145,6 @@ export function createFirebaseInitialization() {
       initialized = false;
     },
   };
-}
-
-/**
- * Get test origins.
- * @param {unknown} playwrightOrigin Playwright origin.
- * @returns {string[]} Origins.
- */
-/**
- * Determine allowed origins from the environment configuration.
- * @param {{ DENDRITE_ENVIRONMENT?: string, PLAYWRIGHT_ORIGIN?: string } | undefined} environmentVariables Runtime environment variables.
- * @returns {string[]} Origin values permitted to use the moderation endpoint.
- */
-export function getAllowedOrigins(environmentVariables) {
-  const envType = classifyDeploymentEnvironment(
-    environmentVariables?.DENDRITE_ENVIRONMENT
-  );
-
-  return ENVIRONMENT_ORIGIN_RESOLVERS[envType](environmentVariables);
 }
 
 /**
