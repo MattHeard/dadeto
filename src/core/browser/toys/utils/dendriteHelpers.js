@@ -1,5 +1,3 @@
-export { ensureDend2, createOptions };
-
 import { isNonNullObject } from '../../browser-core.js';
 
 const DENDRITE_OPTION_KEYS = [
@@ -55,7 +53,7 @@ function isTemporaryValid(data) {
  * @param {object} data - Data object to update.
  * @returns {void}
  */
-function ensureDend2(data) {
+export function ensureDend2(data) {
   if (!isTemporaryValid(data)) {
     data.temporary = { DEND2: createEmptyDend2() };
   }
@@ -68,7 +66,7 @@ function ensureDend2(data) {
  * @param {string} [pageId] - Optional page identifier to include on each option.
  * @returns {Array<object>} Option list.
  */
-function createOptions(data, getUuid, pageId) {
+export function createOptions(data, getUuid, pageId) {
   return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => {
     const option = { id: getUuid(), content: data[key] };
     if (pageId) {
