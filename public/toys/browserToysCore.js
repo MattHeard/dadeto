@@ -28,6 +28,21 @@ export function parseJsonOrFallback(json, fallback = null) {
 }
 
 /**
+ * Run a toy with parsed JSON input and return the handler result string.
+ * @param {string} input - JSON payload string.
+ * @param {(parsed: object) => string} handler - Handler that runs the toy logic.
+ * @returns {string} Result string or `'{}'` on parse failure.
+ */
+export function runToyWithParsedJson(input, handler) {
+  try {
+    const parsed = JSON.parse(input);
+    return handler(parsed);
+  } catch {
+    return JSON.stringify({});
+  }
+}
+
+/**
  * Check whether a value is a plain object.
  * @param {*} value - Value to inspect.
  * @returns {boolean} True when the value is a non-array object.

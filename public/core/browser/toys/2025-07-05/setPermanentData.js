@@ -1,3 +1,5 @@
+import { runToyWithParsedJson } from '../browserToysCore.js';
+
 // Toy: Set Permanent Data
 // (string input, env) -> string
 
@@ -8,12 +10,9 @@
  * @returns {string} JSON string of the updated permanent data or '{}'.
  */
 export function setPermanentData(input, env) {
-  try {
-    const obj = JSON.parse(input);
+  return runToyWithParsedJson(input, parsed => {
     const setLocalPermanentData = env.get('setLocalPermanentData');
-    const result = setLocalPermanentData(obj);
+    const result = setLocalPermanentData(parsed);
     return JSON.stringify(result);
-  } catch {
-    return JSON.stringify({});
-  }
+  });
 }

@@ -4,6 +4,10 @@ import {
   createCorsOriginHandler,
   createCorsOptions,
 } from '../cloud-core.js';
+import {
+  buildPageByNumberQuery,
+  buildVariantByNameQuery,
+} from '../firestore-helpers.js';
 
 const POST_METHOD = 'POST';
 const TEST_ENV_PREFIX = 't-';
@@ -131,11 +135,7 @@ export { createCorsOriginHandler as createHandleCorsOrigin, createCorsOptions };
  * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Pages snapshot.
  */
 export function findPagesSnap(database, pageNumber) {
-  return database
-    .collectionGroup('pages')
-    .where('number', '==', pageNumber)
-    .limit(1)
-    .get();
+  return buildPageByNumberQuery(database, pageNumber).get();
 }
 
 /**
@@ -233,11 +233,7 @@ export async function findPageRef(database, pageNumber, firebase = {}) {
  * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Variants snapshot.
  */
 export function findVariantsSnap(pageRef, variantName) {
-  return pageRef
-    .collection('variants')
-    .where('name', '==', variantName)
-    .limit(1)
-    .get();
+  return buildVariantByNameQuery(pageRef, variantName).get();
 }
 
 /**
