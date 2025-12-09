@@ -8,6 +8,7 @@ import {
   buildPageByNumberQuery,
   buildVariantByNameQuery,
 } from '../firestore-helpers.js';
+import { ensureString } from '../common-core.js';
 
 const POST_METHOD = 'POST';
 const TEST_ENV_PREFIX = 't-';
@@ -100,24 +101,11 @@ function getEnvironmentVariables(environmentVariables) {
  * @returns {string[]} Either a singleton list or an empty array.
  */
 function resolvePlaywrightOrigin(origin) {
-  const normalized = normalizeString(origin);
+  const normalized = ensureString(origin);
   if (normalized) {
     return [normalized];
   }
   return [];
-}
-
-/**
- * Normalize the provided value into a string.
- * @param {unknown} candidate Candidate origin.
- * @returns {string} The value when it is a string; otherwise an empty string.
- */
-function normalizeString(candidate) {
-  if (typeof candidate !== 'string') {
-    return '';
-  }
-
-  return candidate;
 }
 
 /**
