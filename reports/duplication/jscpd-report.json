@@ -1,21 +1,9 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-08T19:04:47.080Z",
+    "detectionDate": "2025-12-09T08:04:04.446Z",
     "formats": {
       "javascript": {
         "sources": {
-          "src/core/browser/toys/utils/dendriteHelpers.js": {
-            "lines": 79,
-            "tokens": 387,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "src/core/browser/toys/2025-12-05/edgeWeight.js": {
             "lines": 171,
             "tokens": 752,
@@ -137,26 +125,26 @@
             "newClones": 0
           },
           "src/core/browser/toys/2025-07-05/addDendritePage.js": {
-            "lines": 100,
-            "tokens": 458,
+            "lines": 87,
+            "tokens": 431,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 14,
-            "duplicatedTokens": 50,
-            "percentage": 14,
-            "percentageTokens": 10.92,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "src/core/browser/toys/2025-07-04/transformDendriteStory.js": {
-            "lines": 71,
-            "tokens": 466,
+            "lines": 74,
+            "tokens": 481,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 14,
-            "duplicatedTokens": 50,
-            "percentage": 19.72,
-            "percentageTokens": 10.73,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -593,8 +581,8 @@
             "newClones": 0
           },
           "src/core/browser/toys/browserToysCore.js": {
-            "lines": 54,
-            "tokens": 255,
+            "lines": 141,
+            "tokens": 695,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1038,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17587,
-          "tokens": 78568,
-          "sources": 86,
-          "clones": 5,
-          "duplicatedLines": 52,
-          "duplicatedTokens": 266,
-          "percentage": 0.3,
-          "percentageTokens": 0.34,
+          "lines": 17585,
+          "tokens": 78609,
+          "sources": 85,
+          "clones": 4,
+          "duplicatedLines": 38,
+          "duplicatedTokens": 216,
+          "percentage": 0.22,
+          "percentageTokens": 0.27,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1092,55 +1080,19 @@
       }
     },
     "total": {
-      "lines": 17834,
-      "tokens": 84083,
-      "sources": 88,
-      "clones": 5,
-      "duplicatedLines": 52,
-      "duplicatedTokens": 266,
-      "percentage": 0.29,
-      "percentageTokens": 0.32,
+      "lines": 17832,
+      "tokens": 84124,
+      "sources": 87,
+      "clones": 4,
+      "duplicatedLines": 38,
+      "duplicatedTokens": 216,
+      "percentage": 0.21,
+      "percentageTokens": 0.26,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 15,
-      "fragment": "import { isValidString } from '../../../common-core.js';\nimport { createOptions } from '../utils/dendriteHelpers.js';\nimport {\n  getEnvHelpers,\n  cloneTemporaryDend2Data,\n  appendPageAndSave,\n} from '../browserToysCore.js';\n\n/**\n * Validate the parsed story input.\n * @param {object} [obj] - Parsed object.\n * @param {string} obj.title - Story title.\n * @param {string} obj.content - Story content.\n * @returns {boolean} True when valid.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-07-04/transformDendriteStory.js",
-        "start": 1,
-        "end": 15,
-        "startLoc": {
-          "line": 1,
-          "column": 1,
-          "position": 0
-        },
-        "endLoc": {
-          "line": 15,
-          "column": 4,
-          "position": 50
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-07-05/addDendritePage.js",
-        "start": 1,
-        "end": 15,
-        "startLoc": {
-          "line": 1,
-          "column": 1,
-          "position": 0
-        },
-        "endLoc": {
-          "line": 15,
-          "column": 4,
-          "position": 50
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 9,

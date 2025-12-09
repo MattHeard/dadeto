@@ -57,9 +57,18 @@ function createBoldPatternPart(marker) {
   } else {
     escapedMarker = marker;
   }
+  return createBoldPatternFromEscapedMarker(escapedMarker);
+}
+
+/**
+ * Assemble the bold regex pattern components for an escaped marker.
+ * @param {string} escapedMarker - The already escaped marker.
+ * @returns {string} - The joined regex pattern for bold text.
+ * @private
+ */
+function createBoldPatternFromEscapedMarker(escapedMarker) {
   const doubledMarker = getDoubledMarker(escapedMarker);
 
-  // Break the pattern into its constituent parts
   const patternParts = [
     '(?:', // Opening non-capturing group
     doubledMarker, // Opening doubled marker
