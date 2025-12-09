@@ -17,20 +17,34 @@ export function getEnvHelpers(env) {
 
 const DENDRITE_TEMP_KEYS = ['stories', 'pages', 'options'];
 
+/**
+ *
+ */
 function createEmptyDend2() {
   return { stories: [], pages: [], options: [] };
 }
 
+/**
+ *
+ * @param obj
+ * @param keys
+ */
 function hasArrayProps(obj, keys) {
   return keys.every(key => Array.isArray(obj[key]));
 }
 
+/**
+ *
+ * @param obj
+ */
 function isValidDend2Structure(obj) {
-  return (
-    isNonNullObject(obj) && hasArrayProps(obj, DENDRITE_TEMP_KEYS)
-  );
+  return isNonNullObject(obj) && hasArrayProps(obj, DENDRITE_TEMP_KEYS);
 }
 
+/**
+ *
+ * @param data
+ */
 function isTemporaryValid(data) {
   if (!isNonNullObject(data.temporary)) {
     return false;
@@ -38,6 +52,10 @@ function isTemporaryValid(data) {
   return isValidDend2Structure(data.temporary.DEND2);
 }
 
+/**
+ *
+ * @param data
+ */
 export function ensureDend2(data) {
   if (!isTemporaryValid(data)) {
     data.temporary = { DEND2: createEmptyDend2() };
