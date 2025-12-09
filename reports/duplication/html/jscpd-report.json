@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T13:14:48.090Z",
+    "detectionDate": "2025-12-09T13:24:10.179Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -32,11 +32,11 @@
             "lines": 382,
             "tokens": 1811,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 34,
+            "percentage": 1.31,
+            "percentageTokens": 1.88,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -44,11 +44,11 @@
             "lines": 110,
             "tokens": 470,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 3,
+            "duplicatedLines": 15,
+            "duplicatedTokens": 98,
+            "percentage": 13.64,
+            "percentageTokens": 20.85,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -68,11 +68,11 @@
             "lines": 403,
             "tokens": 1615,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 34,
+            "percentage": 1.24,
+            "percentageTokens": 2.11,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -200,11 +200,11 @@
             "lines": 169,
             "tokens": 957,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 34,
+            "percentage": 7.1,
+            "percentageTokens": 3.55,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -260,11 +260,11 @@
             "lines": 373,
             "tokens": 1754,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 16,
+            "duplicatedTokens": 60,
+            "percentage": 4.29,
+            "percentageTokens": 3.42,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -392,11 +392,11 @@
             "lines": 680,
             "tokens": 2889,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 32,
+            "percentage": 0.74,
+            "percentageTokens": 1.11,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -428,11 +428,11 @@
             "lines": 782,
             "tokens": 3239,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 30,
+            "percentage": 0.64,
+            "percentageTokens": 0.93,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -440,11 +440,11 @@
             "lines": 195,
             "tokens": 828,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 32,
+            "percentage": 2.56,
+            "percentageTokens": 3.86,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -452,11 +452,11 @@
             "lines": 470,
             "tokens": 1959,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 30,
+            "percentage": 2.34,
+            "percentageTokens": 1.53,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -464,11 +464,11 @@
             "lines": 829,
             "tokens": 3249,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 5,
+            "duplicatedLines": 25,
+            "duplicatedTokens": 161,
+            "percentage": 3.02,
+            "percentageTokens": 4.96,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -476,11 +476,11 @@
             "lines": 705,
             "tokens": 2636,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 30,
+            "percentage": 1.56,
+            "percentageTokens": 1.14,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -488,11 +488,11 @@
             "lines": 707,
             "tokens": 2643,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 3,
+            "duplicatedLines": 15,
+            "duplicatedTokens": 93,
+            "percentage": 2.12,
+            "percentageTokens": 3.52,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -512,11 +512,11 @@
             "lines": 377,
             "tokens": 1460,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 34,
+            "percentage": 1.33,
+            "percentageTokens": 2.33,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -560,11 +560,11 @@
             "lines": 985,
             "tokens": 3720,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 3,
+            "duplicatedLines": 19,
+            "duplicatedTokens": 97,
+            "percentage": 1.93,
+            "percentageTokens": 2.61,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -572,11 +572,11 @@
             "lines": 141,
             "tokens": 819,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 64,
+            "percentage": 7.09,
+            "percentageTokens": 7.81,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -668,11 +668,11 @@
             "lines": 180,
             "tokens": 1009,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 34,
+            "percentage": 6.67,
+            "percentageTokens": 3.37,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -716,11 +716,11 @@
             "lines": 28,
             "tokens": 119,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 30,
+            "percentage": 21.43,
+            "percentageTokens": 25.21,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -728,11 +728,11 @@
             "lines": 86,
             "tokens": 572,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 30,
+            "percentage": 6.98,
+            "percentageTokens": 5.24,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -812,11 +812,11 @@
             "lines": 384,
             "tokens": 1489,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 68,
+            "percentage": 2.6,
+            "percentageTokens": 4.57,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -908,11 +908,11 @@
             "lines": 293,
             "tokens": 1388,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 9,
+            "duplicatedTokens": 31,
+            "percentage": 3.07,
+            "percentageTokens": 2.23,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1028,11 +1028,11 @@
             "lines": 631,
             "tokens": 2855,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 60,
+            "percentage": 1.58,
+            "percentageTokens": 2.1,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1040,11 +1040,11 @@
             "lines": 54,
             "tokens": 192,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 34,
+            "percentage": 9.26,
+            "percentageTokens": 17.71,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
@@ -1053,11 +1053,11 @@
           "lines": 17497,
           "tokens": 78258,
           "sources": 87,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 18,
+          "duplicatedLines": 111,
+          "duplicatedTokens": 575,
+          "percentage": 0.63,
+          "percentageTokens": 0.73,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1107,15 +1107,664 @@
       "lines": 17744,
       "tokens": 83773,
       "sources": 89,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 18,
+      "duplicatedLines": 111,
+      "duplicatedTokens": 575,
+      "percentage": 0.63,
+      "percentageTokens": 0.69,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [],
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(input) {\n  if (typeof input !== 'string') {\n    return null;\n  }\n\n  return getTrimmedLines",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-10-19/csvToJsonArray.js",
+        "start": 52,
+        "end": 57,
+        "startLoc": {
+          "line": 52,
+          "column": 20,
+          "position": 159
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 16,
+          "position": 193
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-12-05/calculateVisibility.js",
+        "start": 142,
+        "end": 147,
+        "startLoc": {
+          "line": 142,
+          "column": 11,
+          "position": 708
+        },
+        "endLoc": {
+          "line": 147,
+          "column": 20,
+          "position": 742
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": "{\n    state,\n    name,\n    time,\n    lowerInput,\n    nextInventory,\n    nextVisited,\n    getRandomNumber,\n    ",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
+        "start": 349,
+        "end": 357,
+        "startLoc": {
+          "line": 349,
+          "column": 2,
+          "position": 1662
+        },
+        "endLoc": {
+          "line": 357,
+          "column": 5,
+          "position": 1692
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
+        "start": 270,
+        "end": 278,
+        "startLoc": {
+          "line": 270,
+          "column": 2,
+          "position": 1169
+        },
+        "endLoc": {
+          "line": 278,
+          "column": 3,
+          "position": 1199
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 94,
+        "end": 99,
+        "startLoc": {
+          "line": 94,
+          "column": 26,
+          "position": 288
+        },
+        "endLoc": {
+          "line": 99,
+          "column": 1,
+          "position": 318
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
+        "start": 32,
+        "end": 36,
+        "startLoc": {
+          "line": 32,
+          "column": 15,
+          "position": 152
+        },
+        "endLoc": {
+          "line": 36,
+          "column": 3,
+          "position": 182
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(body) {\n  if (!body) {\n    return false;\n  }\n\n  return typeof body.",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
+        "start": 12,
+        "end": 17,
+        "startLoc": {
+          "line": 12,
+          "column": 17,
+          "position": 33
+        },
+        "endLoc": {
+          "line": 17,
+          "column": 2,
+          "position": 65
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
+        "start": 514,
+        "end": 519,
+        "startLoc": {
+          "line": 514,
+          "column": 13,
+          "position": 2039
+        },
+        "endLoc": {
+          "line": 519,
+          "column": 2,
+          "position": 2071
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(req) {\n  if (!req) {\n    return undefined;\n  }\n\n  return req.method",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 489,
+        "end": 494,
+        "startLoc": {
+          "line": 489,
+          "column": 17,
+          "position": 1832
+        },
+        "endLoc": {
+          "line": 494,
+          "column": 7,
+          "position": 1863
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 477,
+        "end": 482,
+        "startLoc": {
+          "line": 477,
+          "column": 15,
+          "position": 1791
+        },
+        "endLoc": {
+          "line": 482,
+          "column": 5,
+          "position": 1822
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 12,
+      "fragment": "(snapshot)) {\n    return null;\n  }\n\n  return snapshot.data();\n}\n\n/**\n * Confirm the snapshot exposes a callable data method.\n * @param {{ data?: unknown } | null | undefined} snapshot Snapshot candidate.\n * @returns {boolean} True when the snapshot data helper exists.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
+        "start": 480,
+        "end": 491,
+        "startLoc": {
+          "line": 480,
+          "column": 16,
+          "position": 1855
+        },
+        "endLoc": {
+          "line": 491,
+          "column": 4,
+          "position": 1885
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/process-new-story/process-new-story-core.js",
+        "start": 35,
+        "end": 46,
+        "startLoc": {
+          "line": 35,
+          "column": 22,
+          "position": 108
+        },
+        "endLoc": {
+          "line": 46,
+          "column": 4,
+          "position": 138
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(environmentVariables) {\n  if (!environmentVariables) {\n    return undefined;\n  }\n\n  return environmentVariables.PLAYWRIGHT_ORIGIN",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
+        "start": 371,
+        "end": 376,
+        "startLoc": {
+          "line": 371,
+          "column": 20,
+          "position": 1299
+        },
+        "endLoc": {
+          "line": 376,
+          "column": 18,
+          "position": 1330
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
+        "start": 358,
+        "end": 363,
+        "startLoc": {
+          "line": 358,
+          "column": 18,
+          "position": 1257
+        },
+        "endLoc": {
+          "line": 363,
+          "column": 21,
+          "position": 1288
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(environment) {\n  if (isTestEnvironment(environment)) {\n    return 'test';\n  }\n\n  return 'prod'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
+        "start": 398,
+        "end": 403,
+        "startLoc": {
+          "line": 398,
+          "column": 24,
+          "position": 1390
+        },
+        "endLoc": {
+          "line": 403,
+          "column": 7,
+          "position": 1421
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 80,
+        "end": 85,
+        "startLoc": {
+          "line": 80,
+          "column": 27,
+          "position": 308
+        },
+        "endLoc": {
+          "line": 85,
+          "column": 8,
+          "position": 339
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(method) {\n  if (typeof method === 'string') {\n    return method;\n  }\n\n  return ''",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
+        "start": 184,
+        "end": 189,
+        "startLoc": {
+          "line": 184,
+          "column": 20,
+          "position": 701
+        },
+        "endLoc": {
+          "line": 189,
+          "column": 3,
+          "position": 735
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 663,
+        "end": 668,
+        "startLoc": {
+          "line": 663,
+          "column": 21,
+          "position": 2570
+        },
+        "endLoc": {
+          "line": 668,
+          "column": 12,
+          "position": 2604
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(err) {\n  if (isErrorWithMessage(err)) {\n    return err.message;\n  }\n\n  return 'generate failed'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 979,
+        "end": 984,
+        "startLoc": {
+          "line": 979,
+          "column": 24,
+          "position": 3683
+        },
+        "endLoc": {
+          "line": 984,
+          "column": 18,
+          "position": 3716
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 882,
+        "end": 887,
+        "startLoc": {
+          "line": 882,
+          "column": 14,
+          "position": 3324
+        },
+        "endLoc": {
+          "line": 887,
+          "column": 4,
+          "position": 3357
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(this.currentChar())) {\n      this.index += 1;\n      return;\n    }\n\n    this.appendCurrentChar",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/toys-core.js",
+        "start": 55,
+        "end": 60,
+        "startLoc": {
+          "line": 55,
+          "column": 17,
+          "position": 289
+        },
+        "endLoc": {
+          "line": 60,
+          "column": 18,
+          "position": 321
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/toys-core.js",
+        "start": 46,
+        "end": 51,
+        "startLoc": {
+          "line": 46,
+          "column": 13,
+          "position": 234
+        },
+        "endLoc": {
+          "line": 51,
+          "column": 16,
+          "position": 266
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 13,
+      "fragment": "));\n  if (found) {\n    return found[1];\n  }\n  return '';\n}\n\n/**\n * Pad a string of digits on the left to a fixed width.\n * @param {string} numStr - String of digits.\n * @param {number} width - Desired width.\n * @returns {string} Padded string.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/presenters/battleshipSolitaireClues.js",
+        "start": 85,
+        "end": 97,
+        "startLoc": {
+          "line": 85,
+          "column": 4,
+          "position": 304
+        },
+        "endLoc": {
+          "line": 97,
+          "column": 4,
+          "position": 338
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js",
+        "start": 143,
+        "end": 154,
+        "startLoc": {
+          "line": 143,
+          "column": 6,
+          "position": 827
+        },
+        "endLoc": {
+          "line": 154,
+          "column": 4,
+          "position": 861
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": "\n    maybeRemoveKV,\n    maybeRemoveDendrite,\n    maybeRemoveTextarea,\n  ];\n  invokeContainerHandlers(container, dom, containerHandlers);\n  ",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/number.js",
+        "start": 79,
+        "end": 85,
+        "startLoc": {
+          "line": 79,
+          "column": 2,
+          "position": 528
+        },
+        "endLoc": {
+          "line": 85,
+          "column": 3,
+          "position": 558
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/text.js",
+        "start": 22,
+        "end": 28,
+        "startLoc": {
+          "line": 22,
+          "column": 2,
+          "position": 88
+        },
+        "endLoc": {
+          "line": 28,
+          "column": 2,
+          "position": 118
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n  return null",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/cloud-core.js",
+        "start": 44,
+        "end": 49,
+        "startLoc": {
+          "line": 44,
+          "column": 21,
+          "position": 169
+        },
+        "endLoc": {
+          "line": 49,
+          "column": 5,
+          "position": 203
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
+        "start": 32,
+        "end": 99,
+        "startLoc": {
+          "line": 32,
+          "column": 15,
+          "position": 152
+        },
+        "endLoc": {
+          "line": 99,
+          "column": 18,
+          "position": 322
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(candidate) {\n  if (typeof candidate === 'string') {\n    return candidate;\n  }\n\n  return normalizeNonStringCandidate",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/cloud-core.js",
+        "start": 99,
+        "end": 104,
+        "startLoc": {
+          "line": 99,
+          "column": 32,
+          "position": 379
+        },
+        "endLoc": {
+          "line": 104,
+          "column": 28,
+          "position": 413
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 612,
+        "end": 617,
+        "startLoc": {
+          "line": 612,
+          "column": 19,
+          "position": 2362
+        },
+        "endLoc": {
+          "line": 617,
+          "column": 3,
+          "position": 2396
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 10,
+      "fragment": "function isNonNullObject(value) {\n  return Boolean(value) && typeof value === 'object';\n}\n\n/**\n * Ensure that the provided value is callable.\n * @param {*} value - Candidate value.\n * @param {string} name - Name reported in the error message.\n * @returns {void}\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/browser-core.js",
+        "start": 211,
+        "end": 220,
+        "startLoc": {
+          "line": 211,
+          "column": 2,
+          "position": 987
+        },
+        "endLoc": {
+          "line": 220,
+          "column": 4,
+          "position": 1018
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 912,
+        "end": 922,
+        "startLoc": {
+          "line": 912,
+          "column": 1,
+          "position": 3418
+        },
+        "endLoc": {
+          "line": 922,
+          "column": 4,
+          "position": 3449
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": " }) => {\n      copyFileWithDirectories(io, {\n        source,\n        destination,\n        messageLogger,\n        message:",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/copy.js",
+        "start": 479,
+        "end": 484,
+        "startLoc": {
+          "line": 479,
+          "column": 12,
+          "position": 2139
+        },
+        "endLoc": {
+          "line": 484,
+          "column": 2,
+          "position": 2169
+        }
+      },
+      "secondFile": {
+        "name": "src/core/copy.js",
+        "start": 415,
+        "end": 420,
+        "startLoc": {
+          "line": 415,
+          "column": 8,
+          "position": 1851
+        },
+        "endLoc": {
+          "line": 420,
+          "column": 2,
+          "position": 1881
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n\n  return ''",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/common-core.js",
+        "start": 35,
+        "end": 40,
+        "startLoc": {
+          "line": 35,
+          "column": 13,
+          "position": 107
+        },
+        "endLoc": {
+          "line": 40,
+          "column": 3,
+          "position": 141
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-11-01/textAppendList.js",
+        "start": 32,
+        "end": 99,
+        "startLoc": {
+          "line": 32,
+          "column": 15,
+          "position": 152
+        },
+        "endLoc": {
+          "line": 99,
+          "column": 18,
+          "position": 322
+        }
+      }
+    }
+  ],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }
