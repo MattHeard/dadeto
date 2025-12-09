@@ -1,7 +1,7 @@
 import {
   ensureString,
   normalizeNonStringValue,
-  stringOrNull,
+  stringOrFallback,
 } from '../../../common-core.js';
 
 // Toy: Text Append List
@@ -34,12 +34,7 @@ export function textAppendList(input, env) {
  * @returns {string} Normalized string value.
  */
 function normalizeInput(value) {
-  const normalized = stringOrNull(value);
-  if (normalized) {
-    return normalized;
-  }
-
-  return normalizeNonStringValue(value);
+  return stringOrFallback(value, normalizeNonStringValue);
 }
 
 /**

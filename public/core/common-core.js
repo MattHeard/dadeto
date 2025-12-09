@@ -65,3 +65,18 @@ export function stringOrNull(value) {
 
   return null;
 }
+
+/**
+ * Return the provided string when available or delegate to a fallback.
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown) => string | null} fallback Function invoked when the value is not a string.
+ * @returns {string | null} String from the value or fallback.
+ */
+export function stringOrFallback(value, fallback) {
+  const normalized = stringOrNull(value);
+  if (normalized) {
+    return normalized;
+  }
+
+  return fallback(value);
+}
