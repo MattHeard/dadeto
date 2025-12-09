@@ -121,11 +121,13 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    *   copyFile: (source: string, destination: string) => void,
    *   readDirEntries: (dir: string) => import('fs').Dirent[],
    * }} io FS adapters.
-   * @param {{ info?: (message: string) => void, warn?: (message: string) => void }} messageLogger Logger helpers.
-   * @param {(entry: { source: string, destination: string }) => string} resolveMessage Resolver for log text.
+   * @param {{
+   *   messageLogger: { info?: (message: string) => void, warn?: (message: string) => void },
+   *   resolveMessage: (entry: { source: string, destination: string }) => string,
+   * }} options Logger and message builder.
    * @returns {void}
    */
-  function copyEntries(entries, io, messageLogger, resolveMessage) {
+  function copyEntries(entries, io, { messageLogger, resolveMessage }) {
     entries.forEach(({ source, destination }) => {
       copyFileWithDirectories(io, {
         source,
@@ -436,7 +438,10 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       },
     ];
 
-    copyEntries(filesToCopy, io, messageLogger, entry => entry.message);
+    copyEntries(filesToCopy, io, {
+      messageLogger,
+      resolveMessage: entry => entry.message,
+    });
   }
 
   /**
@@ -493,15 +498,13 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       dirs.srcPresentersDir,
       dirs.publicPresentersDir
     );
-    copyEntries(
-      presenterPairs,
-      io,
+    copyEntries(presenterPairs, io, {
       messageLogger,
-      ({ source, destination }) =>
+      resolveMessage: ({ source, destination }) =>
         `Copied presenter: ${formatPathForLog(source)} -> ${formatPathForLog(
           destination
-        )}`
-    );
+        )}`,
+    });
     messageLogger.info('Presenter files copied successfully!');
   }
 
