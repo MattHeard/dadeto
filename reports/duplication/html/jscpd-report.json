@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T12:21:29.024Z",
+    "detectionDate": "2025-12-09T13:14:48.090Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -509,14 +509,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js": {
-            "lines": 395,
-            "tokens": 1533,
+            "lines": 377,
+            "tokens": 1460,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 22,
-            "duplicatedTokens": 78,
-            "percentage": 5.57,
-            "percentageTokens": 5.09,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -605,14 +605,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/presenters/ticTacToeBoard.js": {
-            "lines": 134,
-            "tokens": 829,
+            "lines": 133,
+            "tokens": 821,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 70,
-            "percentage": 7.46,
-            "percentageTokens": 8.44,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -640,27 +640,39 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/presenters/browserPresentersCore.js": {
+            "lines": 11,
+            "tokens": 50,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/presenters/battleshipSolitaireFleet.js": {
             "lines": 274,
-            "tokens": 1369,
+            "tokens": 1362,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 35,
-            "percentage": 1.82,
-            "percentageTokens": 2.56,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/presenters/battleshipSolitaireClues.js": {
-            "lines": 181,
-            "tokens": 1017,
+            "lines": 180,
+            "tokens": 1009,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 35,
-            "percentage": 2.76,
-            "percentageTokens": 3.44,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -725,14 +737,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/createDendriteHandler.js": {
-            "lines": 398,
-            "tokens": 1865,
+            "lines": 379,
+            "tokens": 1832,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 16,
-            "duplicatedTokens": 70,
-            "percentage": 4.02,
-            "percentageTokens": 3.75,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1038,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17525,
-          "tokens": 78337,
-          "sources": 86,
-          "clones": 4,
-          "duplicatedLines": 29,
-          "duplicatedTokens": 144,
-          "percentage": 0.17,
-          "percentageTokens": 0.18,
+          "lines": 17497,
+          "tokens": 78258,
+          "sources": 87,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1092,163 +1104,18 @@
       }
     },
     "total": {
-      "lines": 17772,
-      "tokens": 83852,
-      "sources": 88,
-      "clones": 4,
-      "duplicatedLines": 29,
-      "duplicatedTokens": 144,
-      "percentage": 0.16,
-      "percentageTokens": 0.17,
+      "lines": 17744,
+      "tokens": 83773,
+      "sources": 89,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 12,
-      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n  return '';\n}\n\n/**\n * Invoke resolvers until one produces a value.\n * @param {Array<() => string>} resolvers Candidate value resolvers.\n * @returns {string} First non-empty string returned by a resolver.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
-        "start": 68,
-        "end": 79,
-        "startLoc": {
-          "line": 68,
-          "column": 9,
-          "position": 225
-        },
-        "endLoc": {
-          "line": 79,
-          "column": 4,
-          "position": 264
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
-        "start": 56,
-        "end": 67,
-        "startLoc": {
-          "line": 56,
-          "column": 18,
-          "position": 181
-        },
-        "endLoc": {
-          "line": 67,
-          "column": 4,
-          "position": 220
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "\n  const pre = dom.createElement('pre');\n  dom.setTextContent(pre, content);\n  return pre;\n}\n",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/presenters/battleshipSolitaireFleet.js",
-        "start": 270,
-        "end": 275,
-        "startLoc": {
-          "line": 270,
-          "column": 20,
-          "position": 1334
-        },
-        "endLoc": {
-          "line": 275,
-          "column": 1,
-          "position": 1369
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/presenters/ticTacToeBoard.js",
-        "start": 128,
-        "end": 133,
-        "startLoc": {
-          "line": 128,
-          "column": 33,
-          "position": 781
-        },
-        "endLoc": {
-          "line": 133,
-          "column": 1,
-          "position": 816
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "\n  const pre = dom.createElement('pre');\n  dom.setTextContent(pre, content);\n  return pre;\n}\n",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/presenters/battleshipSolitaireClues.js",
-        "start": 177,
-        "end": 182,
-        "startLoc": {
-          "line": 177,
-          "column": 1,
-          "position": 982
-        },
-        "endLoc": {
-          "line": 182,
-          "column": 1,
-          "position": 1017
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/presenters/ticTacToeBoard.js",
-        "start": 128,
-        "end": 133,
-        "startLoc": {
-          "line": 128,
-          "column": 33,
-          "position": 781
-        },
-        "endLoc": {
-          "line": 133,
-          "column": 1,
-          "position": 816
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 9,
-      "fragment": "({\n  dom,\n  key,\n  placeholder,\n  data,\n  textInput,\n  disposers,\n}) {\n  const {",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/createDendriteHandler.js",
-        "start": 206,
-        "end": 214,
-        "startLoc": {
-          "line": 206,
-          "column": 20,
-          "position": 958
-        },
-        "endLoc": {
-          "line": 214,
-          "column": 2,
-          "position": 993
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/createDendriteHandler.js",
-        "start": 177,
-        "end": 185,
-        "startLoc": {
-          "line": 177,
-          "column": 17,
-          "position": 785
-        },
-        "endLoc": {
-          "line": 185,
-          "column": 6,
-          "position": 820
-        }
-      }
-    }
-  ],
+  "duplicates": [],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }
