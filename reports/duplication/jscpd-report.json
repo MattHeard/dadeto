@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T08:30:40.059Z",
+    "detectionDate": "2025-12-09T08:35:28.548Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -881,14 +881,14 @@
             "newClones": 0
           },
           "src/core/browser/browser-core.js": {
-            "lines": 248,
-            "tokens": 1268,
+            "lines": 256,
+            "tokens": 1260,
             "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 31,
-            "duplicatedTokens": 157,
-            "percentage": 12.5,
-            "percentageTokens": 12.38,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 53,
+            "percentage": 1.95,
+            "percentageTokens": 4.21,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17590,
-          "tokens": 78568,
+          "lines": 17598,
+          "tokens": 78560,
           "sources": 85,
-          "clones": 2,
-          "duplicatedLines": 18,
-          "duplicatedTokens": 105,
-          "percentage": 0.1,
-          "percentageTokens": 0.13,
+          "clones": 1,
+          "duplicatedLines": 5,
+          "duplicatedTokens": 53,
+          "percentage": 0.03,
+          "percentageTokens": 0.07,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,14 +1080,14 @@
       }
     },
     "total": {
-      "lines": 17837,
-      "tokens": 84083,
+      "lines": 17845,
+      "tokens": 84075,
       "sources": 87,
-      "clones": 2,
-      "duplicatedLines": 18,
-      "duplicatedTokens": 105,
-      "percentage": 0.1,
-      "percentageTokens": 0.12,
+      "clones": 1,
+      "duplicatedLines": 5,
+      "duplicatedTokens": 53,
+      "percentage": 0.03,
+      "percentageTokens": 0.06,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1095,58 +1095,22 @@
   "duplicates": [
     {
       "format": "javascript",
-      "lines": 14,
-      "fragment": "],\n  ['content', 'Content'],\n  ['firstOption', 'First option'],\n  ['secondOption', 'Second option'],\n  ['thirdOption', 'Third option'],\n  ['fourthOption', 'Fourth option'],\n];\n\n/**\n * Hide and disable a DOM element.\n * @param {HTMLElement} element - Element to hide.\n * @param {object} dom - DOM utilities.\n * @returns {void}\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/browser-core.js",
-        "start": 122,
-        "end": 135,
-        "startLoc": {
-          "line": 122,
-          "column": 8,
-          "position": 671
-        },
-        "endLoc": {
-          "line": 135,
-          "column": 4,
-          "position": 723
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/browser-core.js",
-        "start": 113,
-        "end": 121,
-        "startLoc": {
-          "line": 113,
-          "column": 12,
-          "position": 605
-        },
-        "endLoc": {
-          "line": 121,
-          "column": 6,
-          "position": 657
-        }
-      }
-    },
-    {
-      "format": "javascript",
       "lines": 6,
       "fragment": "(dom, container, textInput) {\n  hideAndDisable(textInput, dom);\n  maybeRemoveNumber(container, dom);\n  maybeRemoveKV(container, dom);\n  maybeRemoveDendrite(container, dom);\n  maybeRemoveTextarea",
       "tokens": 0,
       "firstFile": {
         "name": "src/core/browser/browser-core.js",
-        "start": 148,
-        "end": 153,
+        "start": 154,
+        "end": 159,
         "startLoc": {
-          "line": 148,
+          "line": 154,
           "column": 15,
-          "position": 767
+          "position": 752
         },
         "endLoc": {
-          "line": 153,
+          "line": 159,
           "column": 20,
-          "position": 820
+          "position": 805
         }
       },
       "secondFile": {
