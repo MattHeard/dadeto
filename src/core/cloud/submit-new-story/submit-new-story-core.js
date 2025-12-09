@@ -1,4 +1,8 @@
-import { assertFunction, normalizeString } from './cloud-core.js';
+import {
+  assertFunction,
+  matchBearerToken,
+  normalizeString,
+} from './cloud-core.js';
 
 /**
  * @typedef {object} SubmitNewStoryRequest
@@ -203,19 +207,6 @@ function getAuthorizationHeader(request) {
   }
 
   return readAuthorizationFromHeadersBag(getHeadersBag(request));
-}
-
-/**
- * Match bearer token.
- * @param {string} header Header.
- * @returns {string | null} Token or null.
- */
-function matchBearerToken(header) {
-  const match = header.match(/^Bearer (.+)$/);
-  if (match) {
-    return match[1];
-  }
-  return null;
 }
 
 /**

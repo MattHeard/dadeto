@@ -112,6 +112,21 @@ export function matchAuthHeader(authHeader) {
   return authHeader.match(/^Bearer (.+)$/);
 }
 
+const BEARER_HEADER_REGEX = /^Bearer (.+)$/;
+
+/**
+ * Extract the bare token string from a bearer Authorization header.
+ * @param {string} header Authorization header string.
+ * @returns {string | null} Token when the header matches, otherwise null.
+ */
+export function matchBearerToken(header) {
+  const match = header.match(BEARER_HEADER_REGEX);
+  if (match) {
+    return match[1];
+  }
+  return null;
+}
+
 const defaultMissingTokenMessage = 'Missing token';
 
 /**

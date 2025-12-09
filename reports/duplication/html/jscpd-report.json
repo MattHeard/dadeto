@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T08:04:04.446Z",
+    "detectionDate": "2025-12-09T08:28:43.254Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -317,14 +317,14 @@
             "newClones": 0
           },
           "src/core/browser/toys/2025-03-21/italics.js": {
-            "lines": 321,
-            "tokens": 1170,
+            "lines": 333,
+            "tokens": 1163,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 16,
-            "duplicatedTokens": 120,
-            "percentage": 4.98,
-            "percentageTokens": 10.26,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -389,14 +389,14 @@
             "newClones": 0
           },
           "src/core/cloud/submit-new-story/submit-new-story-core.js": {
-            "lines": 747,
-            "tokens": 3154,
+            "lines": 734,
+            "tokens": 3101,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 12,
-            "duplicatedTokens": 51,
-            "percentage": 1.61,
-            "percentageTokens": 1.62,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -425,14 +425,14 @@
             "newClones": 0
           },
           "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 846,
-            "tokens": 3495,
+            "lines": 833,
+            "tokens": 3442,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 12,
-            "duplicatedTokens": 51,
-            "percentage": 1.42,
-            "percentageTokens": 1.46,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -785,8 +785,8 @@
             "newClones": 0
           },
           "src/core/cloud/cloud-core.js": {
-            "lines": 234,
-            "tokens": 893,
+            "lines": 249,
+            "tokens": 961,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17585,
-          "tokens": 78609,
+          "lines": 17586,
+          "tokens": 78564,
           "sources": 85,
-          "clones": 4,
-          "duplicatedLines": 38,
-          "duplicatedTokens": 216,
-          "percentage": 0.22,
-          "percentageTokens": 0.27,
+          "clones": 2,
+          "duplicatedLines": 18,
+          "duplicatedTokens": 105,
+          "percentage": 0.1,
+          "percentageTokens": 0.13,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,91 +1080,19 @@
       }
     },
     "total": {
-      "lines": 17832,
-      "tokens": 84124,
+      "lines": 17833,
+      "tokens": 84079,
       "sources": 87,
-      "clones": 4,
-      "duplicatedLines": 38,
-      "duplicatedTokens": 216,
-      "percentage": 0.21,
-      "percentageTokens": 0.26,
+      "clones": 2,
+      "duplicatedLines": 18,
+      "duplicatedTokens": 105,
+      "percentage": 0.1,
+      "percentageTokens": 0.12,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 9,
-      "fragment": "(marker) {\n  // Escape marker if it's a special regex character\n  let escapedMarker;\n  if (REGEX_SPECIAL_CHARS.test(marker)) {\n    escapedMarker = `\\\\${marker}`;\n  } else {\n    escapedMarker = marker;\n  }\n  return",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-03-21/italics.js",
-        "start": 95,
-        "end": 103,
-        "startLoc": {
-          "line": 95,
-          "column": 21,
-          "position": 352
-        },
-        "endLoc": {
-          "line": 103,
-          "column": 7,
-          "position": 412
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-03-21/italics.js",
-        "start": 52,
-        "end": 60,
-        "startLoc": {
-          "line": 52,
-          "column": 22,
-          "position": 136
-        },
-        "endLoc": {
-          "line": 60,
-          "column": 6,
-          "position": 196
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 13,
-      "fragment": "(header) {\n  const match = header.match(/^Bearer (.+)$/);\n  if (match) {\n    return match[1];\n  }\n  return null;\n}\n\n/**\n * Extract the bearer token from a normalized Authorization header.\n * @param {string | null} header Authorization header content.\n * @returns {string | null} Extracted token or null when the header is invalid.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 240,
-        "end": 252,
-        "startLoc": {
-          "line": 240,
-          "column": 19,
-          "position": 824
-        },
-        "endLoc": {
-          "line": 252,
-          "column": 4,
-          "position": 875
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
-        "start": 213,
-        "end": 225,
-        "startLoc": {
-          "line": 213,
-          "column": 17,
-          "position": 716
-        },
-        "endLoc": {
-          "line": 225,
-          "column": 4,
-          "position": 767
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 14,

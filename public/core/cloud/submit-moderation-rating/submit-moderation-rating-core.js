@@ -1,4 +1,4 @@
-import { assertFunction } from './cloud-core.js';
+import { assertFunction, matchBearerToken } from './cloud-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
@@ -233,19 +233,6 @@ function resolveFirstNonNullValue(...resolvers) {
  * @returns {string | null} Bearer token contained in the header or null when invalid.
  */
 /**
- * Match bearer pattern.
- * @param {string} header Header.
- * @returns {string | null} Token.
- */
-function matchBearerPattern(header) {
-  const match = header.match(/^Bearer (.+)$/);
-  if (match) {
-    return match[1];
-  }
-  return null;
-}
-
-/**
  * Extract the bearer token from a normalized Authorization header.
  * @param {string | null} header Authorization header content.
  * @returns {string | null} Extracted token or null when the header is invalid.
@@ -254,7 +241,7 @@ function extractBearerToken(header) {
   if (typeof header !== 'string') {
     return null;
   }
-  return matchBearerPattern(header);
+  return matchBearerToken(header);
 }
 
 /**
