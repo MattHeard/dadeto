@@ -1,5 +1,5 @@
 import { deepClone } from '../../objectUtils.js';
-import { ensureDend2 } from './utils/dendriteHelpers.js';
+import { isNonNullObject } from '../browser-core.js';
 
 /**
  * Helper utilities shared by browser toys.
@@ -13,6 +13,53 @@ export function getEnvHelpers(env) {
     getData: getter('getData'),
     setLocalTemporaryData: getter('setLocalTemporaryData'),
   };
+}
+
+const DENDRITE_TEMP_KEYS = ['stories', 'pages', 'options'];
+
+/**
+ *
+ */
+function createEmptyDend2() {
+  return { stories: [], pages: [], options: [] };
+}
+
+/**
+ *
+ * @param obj
+ * @param keys
+ */
+function hasArrayProps(obj, keys) {
+  return keys.every(key => Array.isArray(obj[key]));
+}
+
+/**
+ *
+ * @param obj
+ */
+function isValidDend2Structure(obj) {
+  return isNonNullObject(obj) && hasArrayProps(obj, DENDRITE_TEMP_KEYS);
+}
+
+/**
+ *
+ * @param data
+ */
+function isTemporaryValid(data) {
+  if (!isNonNullObject(data.temporary)) {
+    return false;
+  }
+  return isValidDend2Structure(data.temporary.DEND2);
+}
+
+/**
+ *
+ * @param data
+ */
+export function ensureDend2(data) {
+  if (!isTemporaryValid(data)) {
+    data.temporary = { DEND2: createEmptyDend2() };
+  }
 }
 
 /**
