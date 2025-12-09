@@ -116,21 +116,6 @@ function normalizeString(candidate) {
   return candidate;
 }
 
-export { getAuthHeader, matchAuthHeader } from '../cloud-core.js';
-/**
- * Determine whether an origin is permitted.
- * @param {string | null | undefined} origin Request origin header.
- * @param {string[]} allowedOrigins Whitelisted origins.
- * @returns {boolean} True when the origin is allowed.
- */
-export function isAllowedOrigin(origin, allowedOrigins) {
-  if (!origin) {
-    return true;
-  }
-
-  return allowedOrigins.includes(origin);
-}
-
 /**
  * Build the cors middleware origin handler.
  * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Origin predicate.

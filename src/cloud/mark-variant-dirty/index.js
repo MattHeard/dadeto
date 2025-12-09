@@ -19,14 +19,13 @@ import {
   findVariantsSnap,
   findVariantRef,
   getAllowedOrigins,
-  isAllowedOrigin,
   markVariantDirtyImpl,
   parseMarkVariantRequestBody,
   refFromSnap,
   sendForbidden,
   sendUnauthorized,
 } from './mark-variant-dirty-core.js';
-import { createVerifyAdmin } from './cloud-core.js';
+import { createVerifyAdmin, isAllowedOrigin } from './cloud-core.js';
 
 const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 

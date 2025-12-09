@@ -1,8 +1,13 @@
 import { jest } from '@jest/globals';
 import * as markVariantDirtyCore from '../../../../src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js';
+import {
+  getAuthHeader,
+  isAllowedOrigin,
+  matchAuthHeader,
+  productionOrigins,
+} from '../../../../src/core/cloud/cloud-core.js';
 const {
   getAllowedOrigins,
-  isAllowedOrigin,
   createHandleCorsOrigin,
   createCorsOptions,
   findPageRef,
@@ -11,8 +16,6 @@ const {
   findVariantRef,
   refFromSnap,
   markVariantDirtyImpl,
-  matchAuthHeader,
-  getAuthHeader,
   sendUnauthorized,
   sendForbidden,
   createIsAdminUid,
@@ -22,7 +25,6 @@ const {
   getRequestMethod,
   hasStringMessage,
 } = markVariantDirtyCore;
-import { productionOrigins } from '../../../../src/core/cloud/cloud-core.js';
 
 describe('mark-variant-dirty core helpers', () => {
   describe('getAllowedOrigins', () => {
