@@ -10,3 +10,5 @@ Testing:
 Next: there are no outstanding duplication findings right now, so future work can focus on new toy features or broader refactors.
 
 Side note: after the duplication work I moved `safeParseJson`, the validators, and the persistence helpers into `src/core/browser/toys/browserToysCore.js` so a single file can power both toys and the old helper modules became unnecessary.
+
+Additional cleanup: the shared container-handler invocation pattern used by `textHandler` and `numberHandler` became a minor duplication report once `minTokens` dropped to 40, so I extracted `invokeContainerHandlers` into `src/core/browser/inputHandlers/browserInputHandlersCore.js` and wired both handlers through that helper before calling their individual cleanup lists.

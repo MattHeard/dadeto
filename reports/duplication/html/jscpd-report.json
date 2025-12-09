@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T10:43:34.398Z",
+    "detectionDate": "2025-12-09T10:45:36.168Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -701,26 +701,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/text.js": {
-            "lines": 29,
-            "tokens": 131,
+            "lines": 28,
+            "tokens": 119,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 7,
-            "duplicatedTokens": 42,
-            "percentage": 24.14,
-            "percentageTokens": 32.06,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/number.js": {
-            "lines": 87,
-            "tokens": 584,
+            "lines": 86,
+            "tokens": 572,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 7,
-            "duplicatedTokens": 42,
-            "percentage": 8.05,
-            "percentageTokens": 7.19,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -737,8 +737,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/browserInputHandlersCore.js": {
-            "lines": 94,
-            "tokens": 543,
+            "lines": 99,
+            "tokens": 588,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17582,
-          "tokens": 78486,
+          "lines": 17585,
+          "tokens": 78507,
           "sources": 85,
-          "clones": 6,
-          "duplicatedLines": 72,
-          "duplicatedTokens": 246,
-          "percentage": 0.41,
-          "percentageTokens": 0.31,
+          "clones": 5,
+          "duplicatedLines": 65,
+          "duplicatedTokens": 204,
+          "percentage": 0.37,
+          "percentageTokens": 0.26,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,14 +1080,14 @@
       }
     },
     "total": {
-      "lines": 17829,
-      "tokens": 84001,
+      "lines": 17832,
+      "tokens": 84022,
       "sources": 87,
-      "clones": 6,
-      "duplicatedLines": 72,
-      "duplicatedTokens": 246,
-      "percentage": 0.4,
-      "percentageTokens": 0.29,
+      "clones": 5,
+      "duplicatedLines": 65,
+      "duplicatedTokens": 204,
+      "percentage": 0.36,
+      "percentageTokens": 0.24,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1162,42 +1162,6 @@
           "line": 231,
           "column": 4,
           "position": 786
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 8,
-      "fragment": "\n    maybeRemoveKV,\n    maybeRemoveDendrite,\n    maybeRemoveTextarea,\n  ];\n  const invokeContainerHandler = createContainerHandlerInvoker(container, dom);\n  containerHandlers.forEach(invokeContainerHandler);\n  ",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/number.js",
-        "start": 79,
-        "end": 86,
-        "startLoc": {
-          "line": 79,
-          "column": 2,
-          "position": 528
-        },
-        "endLoc": {
-          "line": 86,
-          "column": 3,
-          "position": 570
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/text.js",
-        "start": 22,
-        "end": 29,
-        "startLoc": {
-          "line": 22,
-          "column": 2,
-          "position": 88
-        },
-        "endLoc": {
-          "line": 29,
-          "column": 2,
-          "position": 130
         }
       }
     },
