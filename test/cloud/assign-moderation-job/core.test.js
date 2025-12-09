@@ -167,12 +167,12 @@ describe('getAllowedOrigins', () => {
     expect(result).toEqual([]);
   });
 
-  test('falls back to production origins for unknown environments', () => {
-    const result = getAllowedOrigins({
-      DENDRITE_ENVIRONMENT: 'dev',
-    });
-
-    expect(result).toEqual(productionOrigins);
+  test('throws when the environment is unsupported', () => {
+    expect(() =>
+      getAllowedOrigins({
+        DENDRITE_ENVIRONMENT: 'dev',
+      })
+    ).toThrow(/Unsupported environment label/);
   });
 });
 

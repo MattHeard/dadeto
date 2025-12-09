@@ -47,14 +47,16 @@ describe('mark-variant-dirty core helpers', () => {
       expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-1' })).toEqual([]);
     });
 
-    it('defaults to production origins for other environments', () => {
-      expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })).toEqual(
-        productionOrigins
-      );
+    it('throws for unsupported environments', () => {
+      expect(() =>
+        getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })
+      ).toThrow(/Unsupported environment label/);
     });
 
-    it('falls back when environment config is missing', () => {
-      expect(getAllowedOrigins()).toEqual(productionOrigins);
+    it('throws when the environment config is missing', () => {
+      expect(() => getAllowedOrigins()).toThrow(
+        /Unsupported environment label/
+      );
     });
   });
 

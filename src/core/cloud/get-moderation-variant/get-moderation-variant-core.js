@@ -3,6 +3,7 @@ import {
   productionOrigins,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
+  classifyDeploymentEnvironment,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
@@ -402,20 +403,11 @@ function resolveOriginsForEnvironmentType(environmentType, playwrightOrigin) {
  * @returns {'test' | 'prod'} Normalized environment type used for routing decisions.
  */
 function classifyEnvironmentType(environment) {
-  if (isTestEnvironment(environment)) {
+  if (classifyDeploymentEnvironment(environment) === 'test') {
     return 'test';
   }
 
   return 'prod';
-}
-
-/**
- * Check test environment.
- * @param {string | undefined} environment Environment.
- * @returns {boolean} True if test.
- */
-function isTestEnvironment(environment) {
-  return typeof environment === 'string' && environment.startsWith('t-');
 }
 
 /**

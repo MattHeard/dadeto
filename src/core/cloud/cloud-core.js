@@ -54,6 +54,65 @@ export function getSnapshotData(snapshot) {
   return snapshot.data();
 }
 
+const TEST_ENV_PREFIX = 't-';
+
+const ENVIRONMENT_CLASSIFIERS = [
+  { check: isProdEnvironmentLabel, value: 'prod' },
+  { check: isTestEnvironmentLabel, value: 'test' },
+];
+
+/**
+ * Classify a deployment label into a known environment type.
+ * @param {unknown} environment Raw label read from the deployment configuration.
+ * @returns {'prod' | 'test'} Normalized environment type.
+ */
+export function classifyDeploymentEnvironment(environment) {
+  const classifier = ENVIRONMENT_CLASSIFIERS.find(({ check }) =>
+    check(environment)
+  );
+
+  if (classifier) {
+    return classifier.value;
+  }
+
+  throw new Error(
+    `Unsupported environment label: ${formatEnvironmentLabel(environment)}`
+  );
+}
+
+/**
+ * Detect whether the environment label matches production.
+ * @param {unknown} environment Candidate label.
+ * @returns {boolean} True when the label is 'prod'.
+ */
+function isProdEnvironmentLabel(environment) {
+  return environment === 'prod';
+}
+
+/**
+ * Detect whether the label represents a Playwright test deployment.
+ * @param {unknown} environment Candidate label.
+ * @returns {boolean} True when the label starts with the test prefix.
+ */
+function isTestEnvironmentLabel(environment) {
+  return (
+    typeof environment === 'string' && environment.startsWith(TEST_ENV_PREFIX)
+  );
+}
+
+/**
+ * Format the environment label for diagnostics.
+ * @param {unknown} environment Raw label.
+ * @returns {string} Stringified label.
+ */
+function formatEnvironmentLabel(environment) {
+  if (typeof environment === 'string') {
+    return environment;
+  }
+
+  return 'unknown';
+}
+
 /**
  * Normalize an incoming HTTP method to uppercase.
  * @param {unknown} method Candidate HTTP method.

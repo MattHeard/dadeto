@@ -1,4 +1,13 @@
-import { productionOrigins } from './cloud-core.js';
+import {
+  productionOrigins,
+  classifyDeploymentEnvironment,
+} from './cloud-core.js';
+
+const ENVIRONMENT_ORIGIN_RESOLVERS = {
+  test: envVars => getTestOrigins(envVars?.PLAYWRIGHT_ORIGIN),
+  prod: () => productionOrigins,
+  other: () => productionOrigins,
+};
 
 export { productionOrigins };
 
@@ -152,24 +161,6 @@ export function createFirebaseInitialization() {
 }
 
 /**
- * Check if environment is production.
- * @param {unknown} environment Environment.
- * @returns {boolean} True if prod.
- */
-function isProductionEnvironment(environment) {
-  return environment === 'prod';
-}
-
-/**
- * Check if environment is test.
- * @param {unknown} environment Environment.
- * @returns {boolean} True if test.
- */
-function isTestEnvironment(environment) {
-  return typeof environment === 'string' && environment.startsWith('t-');
-}
-
-/**
  * Get test origins.
  * @param {unknown} playwrightOrigin Playwright origin.
  * @returns {string[]} Origins.
@@ -182,75 +173,16 @@ function getTestOrigins(playwrightOrigin) {
 }
 
 /**
- * Determine whether the environment label represents a test deployment.
- * @param {unknown} environment Environment label from runtime config.
- * @returns {'test' | 'other'} Normalized environment type for deployment routing.
- */
-function resolveTestEnvironmentType(environment) {
-  if (isTestEnvironment(environment)) {
-    return 'test';
-  }
-
-  return 'other';
-}
-
-/**
- * Determine whether the running deployment is a Playwright test run.
- * @param {{ DENDRITE_ENVIRONMENT?: string } | undefined} environmentVariables Environment variables exposed to the function.
- * @returns {boolean} True when the deployment is tagged as a test environment.
- */
-function isTestDeploymentEnvironment(environmentVariables) {
-  return (
-    normalizeEnvironmentType(environmentVariables?.DENDRITE_ENVIRONMENT) ===
-    'test'
-  );
-}
-
-/**
  * Determine allowed origins from the environment configuration.
  * @param {{ DENDRITE_ENVIRONMENT?: string, PLAYWRIGHT_ORIGIN?: string } | undefined} environmentVariables Runtime environment variables.
  * @returns {string[]} Origin values permitted to use the moderation endpoint.
  */
 export function getAllowedOrigins(environmentVariables) {
-  return resolveAllowedOrigins(environmentVariables);
-}
+  const envType = classifyDeploymentEnvironment(
+    environmentVariables?.DENDRITE_ENVIRONMENT
+  );
 
-/**
- * Determine the allowed origins based on the deployment.
- * @param {{ DENDRITE_ENVIRONMENT?: string, PLAYWRIGHT_ORIGIN?: string } | undefined} environmentVariables Runtime environment variables.
- * @returns {string[]} Whitelisted origins.
- */
-function resolveAllowedOrigins(environmentVariables) {
-  return getEnvironmentOrigins({
-    isTestDeployment: isTestDeploymentEnvironment(environmentVariables),
-    playwrightOrigin: environmentVariables?.PLAYWRIGHT_ORIGIN,
-  });
-}
-
-/**
- * Choose between test or production origins.
- * @param {{ isTestDeployment: boolean, playwrightOrigin?: string }} params Decision inputs.
- * @returns {string[]} Resolved origins list.
- */
-function getEnvironmentOrigins({ isTestDeployment, playwrightOrigin }) {
-  if (isTestDeployment) {
-    return getTestOrigins(playwrightOrigin);
-  }
-
-  return productionOrigins;
-}
-
-/**
- * Normalize environment label to a category.
- * @param {unknown} environment Environment label.
- * @returns {'prod' | 'test' | 'other'} Environment type.
- */
-function normalizeEnvironmentType(environment) {
-  if (isProductionEnvironment(environment)) {
-    return 'prod';
-  }
-
-  return resolveTestEnvironmentType(environment);
+  return ENVIRONMENT_ORIGIN_RESOLVERS[envType](environmentVariables);
 }
 
 /**

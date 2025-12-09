@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T14:19:46.250Z",
+    "detectionDate": "2025-12-09T15:02:05.261Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -461,14 +461,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 824,
-            "tokens": 3232,
+            "lines": 778,
+            "tokens": 3054,
             "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 15,
-            "duplicatedTokens": 99,
-            "percentage": 1.82,
-            "percentageTokens": 3.06,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 34,
+            "percentage": 0.64,
+            "percentageTokens": 1.11,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -485,14 +485,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-moderation-variant/get-moderation-variant-core.js": {
-            "lines": 713,
-            "tokens": 2657,
+            "lines": 705,
+            "tokens": 2630,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 31,
-            "percentage": 0.7,
-            "percentageTokens": 1.17,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -809,14 +809,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 420,
-            "tokens": 1606,
+            "lines": 479,
+            "tokens": 1863,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 34,
-            "percentage": 1.19,
-            "percentageTokens": 2.12,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17544,
-          "tokens": 78354,
+          "lines": 17549,
+          "tokens": 78406,
           "sources": 87,
-          "clones": 11,
-          "duplicatedLines": 70,
-          "duplicatedTokens": 353,
-          "percentage": 0.4,
-          "percentageTokens": 0.45,
+          "clones": 9,
+          "duplicatedLines": 60,
+          "duplicatedTokens": 288,
+          "percentage": 0.34,
+          "percentageTokens": 0.37,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,14 +1104,14 @@
       }
     },
     "total": {
-      "lines": 17791,
-      "tokens": 83869,
+      "lines": 17796,
+      "tokens": 83921,
       "sources": 89,
-      "clones": 11,
-      "duplicatedLines": 70,
-      "duplicatedTokens": 353,
-      "percentage": 0.39,
-      "percentageTokens": 0.42,
+      "clones": 9,
+      "duplicatedLines": 60,
+      "duplicatedTokens": 288,
+      "percentage": 0.34,
+      "percentageTokens": 0.34,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1156,42 +1156,6 @@
     {
       "format": "javascript",
       "lines": 6,
-      "fragment": "(environment) {\n  if (isTestEnvironment(environment)) {\n    return 'test';\n  }\n\n  return 'prod'",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
-        "start": 404,
-        "end": 409,
-        "startLoc": {
-          "line": 404,
-          "column": 24,
-          "position": 1404
-        },
-        "endLoc": {
-          "line": 409,
-          "column": 7,
-          "position": 1435
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 81,
-        "end": 86,
-        "startLoc": {
-          "line": 81,
-          "column": 27,
-          "position": 321
-        },
-        "endLoc": {
-          "line": 86,
-          "column": 8,
-          "position": 352
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
       "fragment": "(method) {\n  if (typeof method === 'string') {\n    return method;\n  }\n\n  return ''",
       "tokens": 0,
       "firstFile": {
@@ -1211,17 +1175,17 @@
       },
       "secondFile": {
         "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 658,
-        "end": 663,
+        "start": 612,
+        "end": 617,
         "startLoc": {
-          "line": 658,
+          "line": 612,
           "column": 21,
-          "position": 2553
+          "position": 2375
         },
         "endLoc": {
-          "line": 663,
+          "line": 617,
           "column": 12,
-          "position": 2587
+          "position": 2409
         }
       }
     },
@@ -1366,42 +1330,6 @@
           "line": 28,
           "column": 2,
           "position": 118
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "(candidate) {\n  if (typeof candidate === 'string') {\n    return candidate;\n  }\n\n  return normalizeNonStringCandidate",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/cloud-core.js",
-        "start": 135,
-        "end": 140,
-        "startLoc": {
-          "line": 135,
-          "column": 32,
-          "position": 496
-        },
-        "endLoc": {
-          "line": 140,
-          "column": 28,
-          "position": 530
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 607,
-        "end": 612,
-        "startLoc": {
-          "line": 607,
-          "column": 19,
-          "position": 2345
-        },
-        "endLoc": {
-          "line": 612,
-          "column": 3,
-          "position": 2379
         }
       }
     },

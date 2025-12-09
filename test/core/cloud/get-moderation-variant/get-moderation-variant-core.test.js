@@ -25,12 +25,13 @@ describe('getAllowedOrigins', () => {
     ).toEqual(['https://playwright.example']);
   });
 
-  it('falls back to production origins without playwright origin override', () => {
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 't-e2e' })).toEqual([]);
-    expect(getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'staging' })).toEqual(
-      productionOrigins
+  it('throws for unsupported environments', () => {
+    expect(() =>
+      getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'staging' })
+    ).toThrow(/Unsupported environment label/);
+    expect(() => getAllowedOrigins(undefined)).toThrow(
+      /Unsupported environment label/
     );
-    expect(getAllowedOrigins(undefined)).toEqual(productionOrigins);
   });
 });
 
