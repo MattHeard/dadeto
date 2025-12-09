@@ -356,11 +356,7 @@ export function getAllowedOrigins(environmentVariables) {
  * @returns {string | undefined} Environment tag extracted from the runtime.
  */
 function getEnvironmentTag(environmentVariables) {
-  if (!environmentVariables) {
-    return undefined;
-  }
-
-  return environmentVariables.DENDRITE_ENVIRONMENT;
+  return getEnvironmentVariable(environmentVariables, 'DENDRITE_ENVIRONMENT');
 }
 
 /**
@@ -369,11 +365,21 @@ function getEnvironmentTag(environmentVariables) {
  * @returns {string | undefined} Playwright override origin.
  */
 function getPlaywrightOrigin(environmentVariables) {
+  return getEnvironmentVariable(environmentVariables, 'PLAYWRIGHT_ORIGIN');
+}
+
+/**
+ * Safely read a runtime environment variable.
+ * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime map.
+ * @param {string} key Environment variable key.
+ * @returns {string | undefined} Requested value or `undefined`.
+ */
+function getEnvironmentVariable(environmentVariables, key) {
   if (!environmentVariables) {
     return undefined;
   }
 
-  return environmentVariables.PLAYWRIGHT_ORIGIN;
+  return environmentVariables[key];
 }
 
 /**

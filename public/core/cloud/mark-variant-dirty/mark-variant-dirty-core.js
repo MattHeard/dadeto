@@ -470,28 +470,35 @@ function parseValidRequest(req, res, parseRequestBody) {
   return parsed;
 }
 /**
+ * Safely read a request property when the request is defined.
+ * @param {import('express').Request | undefined} req Express request.
+ * @param {'body' | 'method'} key Property name to access.
+ * @returns {unknown} Requested property or `undefined`.
+ */
+function getRequestProperty(req, key) {
+  if (!req) {
+    return undefined;
+  }
+
+  return req[key];
+}
+
+/**
  * Retrieve the request body when the request exists.
  * @param {import('express').Request | undefined} req Express request.
  * @returns {unknown | undefined} Body payload or `undefined`.
  */
 function getRequestBody(req) {
-  if (!req) {
-    return undefined;
-  }
-
-  return req.body;
+  return getRequestProperty(req, 'body');
 }
+
 /**
  * Access the HTTP method from the request, if present.
  * @param {import('express').Request | undefined} req Express request.
  * @returns {string | undefined} HTTP method or `undefined`.
  */
 function getRequestMethod(req) {
-  if (!req) {
-    return undefined;
-  }
-
-  return req.method;
+  return getRequestProperty(req, 'method');
 }
 
 /**
