@@ -1,5 +1,5 @@
 import { createVerifyAdmin } from './verifyAdmin.js';
-import { ADMIN_UID } from './common-core.js';
+import { ADMIN_UID, isNonNullObject } from './common-core.js';
 import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
 const STATS_PAGE_HEAD = `<!doctype html>
@@ -880,11 +880,7 @@ function logInvalidateError(logger, path, err) {
  * @returns {string | unknown} Message text or original payload.
  */
 function getLogMessage(err) {
-  if (isErrorWithMessage(err)) {
-    return err.message;
-  }
-
-  return err;
+  return resolveErrorMessage(err, value => value);
 }
 
 /**
@@ -905,12 +901,17 @@ function isErrorWithMessage(err) {
 }
 
 /**
- * Check whether the provided value is a non-null object.
- * @param {unknown} value Candidate value.
- * @returns {value is Record<string, unknown>} True when the value is an object.
+ * Resolve an error message with an optional fallback.
+ * @param {unknown} err Candidate error payload.
+ * @param {(err: unknown) => unknown} fallback Fallback used when no string message exists.
+ * @returns {string | unknown} The resolved message.
  */
-function isNonNullObject(value) {
-  return Boolean(value) && typeof value === 'object';
+function resolveErrorMessage(err, fallback) {
+  if (isErrorWithMessage(err)) {
+    return err.message;
+  }
+
+  return fallback(err);
 }
 
 /**
@@ -977,9 +978,5 @@ function sendGenerateFailure(res, err) {
  * @returns {string} Message sent in the response.
  */
 function getGenerateErrorMessage(err) {
-  if (isErrorWithMessage(err)) {
-    return err.message;
-  }
-
-  return 'generate failed';
+  return resolveErrorMessage(err, () => 'generate failed');
 }

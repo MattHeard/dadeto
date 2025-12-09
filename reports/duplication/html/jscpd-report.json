@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T15:16:32.854Z",
+    "detectionDate": "2025-12-09T15:32:35.362Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -257,8 +257,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-03-30/cyberpunkAdventure.js": {
-            "lines": 362,
-            "tokens": 1730,
+            "lines": 370,
+            "tokens": 1735,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -425,8 +425,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 779,
-            "tokens": 3230,
+            "lines": 766,
+            "tokens": 3184,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -557,14 +557,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
-            "lines": 985,
-            "tokens": 3720,
+            "lines": 982,
+            "tokens": 3713,
             "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 19,
-            "duplicatedTokens": 97,
-            "percentage": 1.93,
-            "percentageTokens": 2.61,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -905,14 +905,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/browser-core.js": {
-            "lines": 293,
-            "tokens": 1388,
+            "lines": 285,
+            "tokens": 1366,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 9,
-            "duplicatedTokens": 31,
-            "percentage": 3.07,
-            "percentageTokens": 2.23,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1037,27 +1037,27 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/common-core.js": {
-            "lines": 97,
-            "tokens": 360,
+            "lines": 106,
+            "tokens": 395,
             "sources": 1,
             "clones": 2,
             "duplicatedLines": 10,
             "duplicatedTokens": 68,
-            "percentage": 10.31,
-            "percentageTokens": 18.89,
+            "percentage": 9.43,
+            "percentageTokens": 17.22,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
         },
         "total": {
-          "lines": 17545,
-          "tokens": 78411,
+          "lines": 17538,
+          "tokens": 78376,
           "sources": 87,
-          "clones": 7,
-          "duplicatedLines": 47,
-          "duplicatedTokens": 224,
-          "percentage": 0.27,
-          "percentageTokens": 0.29,
+          "clones": 5,
+          "duplicatedLines": 33,
+          "duplicatedTokens": 160,
+          "percentage": 0.19,
+          "percentageTokens": 0.2,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,55 +1104,19 @@
       }
     },
     "total": {
-      "lines": 17792,
-      "tokens": 83926,
+      "lines": 17785,
+      "tokens": 83891,
       "sources": 89,
-      "clones": 7,
-      "duplicatedLines": 47,
-      "duplicatedTokens": 224,
-      "percentage": 0.26,
-      "percentageTokens": 0.27,
+      "clones": 5,
+      "duplicatedLines": 33,
+      "duplicatedTokens": 160,
+      "percentage": 0.19,
+      "percentageTokens": 0.19,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "(err) {\n  if (isErrorWithMessage(err)) {\n    return err.message;\n  }\n\n  return 'generate failed'",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
-        "start": 979,
-        "end": 984,
-        "startLoc": {
-          "line": 979,
-          "column": 24,
-          "position": 3683
-        },
-        "endLoc": {
-          "line": 984,
-          "column": 18,
-          "position": 3716
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
-        "start": 882,
-        "end": 887,
-        "startLoc": {
-          "line": 882,
-          "column": 14,
-          "position": 3324
-        },
-        "endLoc": {
-          "line": 887,
-          "column": 4,
-          "position": 3357
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 6,
@@ -1263,42 +1227,6 @@
     },
     {
       "format": "javascript",
-      "lines": 10,
-      "fragment": "function isNonNullObject(value) {\n  return Boolean(value) && typeof value === 'object';\n}\n\n/**\n * Ensure that the provided value is callable.\n * @param {*} value - Candidate value.\n * @param {string} name - Name reported in the error message.\n * @returns {void}\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/browser-core.js",
-        "start": 211,
-        "end": 220,
-        "startLoc": {
-          "line": 211,
-          "column": 2,
-          "position": 987
-        },
-        "endLoc": {
-          "line": 220,
-          "column": 4,
-          "position": 1018
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
-        "start": 912,
-        "end": 922,
-        "startLoc": {
-          "line": 912,
-          "column": 1,
-          "position": 3418
-        },
-        "endLoc": {
-          "line": 922,
-          "column": 4,
-          "position": 3449
-        }
-      }
-    },
-    {
-      "format": "javascript",
       "lines": 6,
       "fragment": " }) => {\n      copyFileWithDirectories(io, {\n        source,\n        destination,\n        messageLogger,\n        message:",
       "tokens": 0,
@@ -1340,32 +1268,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "src/core/common-core.js",
-        "start": 76,
-        "end": 81,
+        "start": 85,
+        "end": 90,
         "startLoc": {
-          "line": 76,
+          "line": 85,
           "column": 13,
-          "position": 262
+          "position": 297
         },
         "endLoc": {
-          "line": 81,
+          "line": 90,
           "column": 5,
-          "position": 296
+          "position": 331
         }
       },
       "secondFile": {
         "name": "src/core/common-core.js",
-        "start": 35,
-        "end": 40,
+        "start": 44,
+        "end": 49,
         "startLoc": {
-          "line": 35,
+          "line": 44,
           "column": 13,
-          "position": 107
+          "position": 142
         },
         "endLoc": {
-          "line": 40,
+          "line": 49,
           "column": 3,
-          "position": 141
+          "position": 176
         }
       }
     }
