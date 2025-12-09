@@ -51,12 +51,7 @@ function getDoubledMarker(marker) {
  */
 function createBoldPatternPart(marker) {
   // Escape marker if it's a special regex character
-  let escapedMarker;
-  if (REGEX_SPECIAL_CHARS.test(marker)) {
-    escapedMarker = `\\${marker}`;
-  } else {
-    escapedMarker = marker;
-  }
+  const escapedMarker = escapeMarker(marker);
   return createBoldPatternFromEscapedMarker(escapedMarker);
 }
 
@@ -103,13 +98,21 @@ function createBoldPattern() {
  */
 function createItalicsPattern(marker) {
   // Escape marker if it's a special regex character
-  let escapedMarker;
-  if (REGEX_SPECIAL_CHARS.test(marker)) {
-    escapedMarker = `\\${marker}`;
-  } else {
-    escapedMarker = marker;
-  }
+  const escapedMarker = escapeMarker(marker);
   return new RegExp(`${escapedMarker}(.*?)${escapedMarker}`, 'g');
+}
+
+/**
+ * Escape a marker character for use inside a regex.
+ * @param {string} marker - Marker literal.
+ * @returns {string} - Escaped marker.
+ * @private
+ */
+function escapeMarker(marker) {
+  if (REGEX_SPECIAL_CHARS.test(marker)) {
+    return `\\${marker}`;
+  }
+  return marker;
 }
 
 /**
