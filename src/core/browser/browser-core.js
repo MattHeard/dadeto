@@ -199,6 +199,18 @@ export function isNonNullObject(value) {
 }
 
 /**
+ * Ensure that the provided value is callable.
+ * @param {*} value - Candidate value.
+ * @param {string} name - Name reported in the error message.
+ * @returns {void}
+ */
+export function ensureFunction(value, name) {
+  if (typeof value !== 'function') {
+    throw new TypeError(`${name} must be a function`);
+  }
+}
+
+/**
  * Checks that two values are both not arrays.
  * @param {*} a - First value to inspect.
  * @param {*} b - Second value to inspect.

@@ -1,3 +1,5 @@
+import { ensureFunction } from './browser-core.js';
+
 /**
  * @typedef {object} GoogleAuthLike
  * @property {() => (string | null | undefined)} getIdToken Returns the cached Google ID token if one exists.
@@ -50,10 +52,10 @@ function validateAdminTokenActionOptions({
   action,
 }) {
   ensureGoogleAuth(googleAuth);
-  ensureFunctionDefined(getAdminEndpointsFn, 'getAdminEndpointsFn');
-  ensureFunctionDefined(fetchFn, 'fetchFn');
-  ensureFunctionDefined(showMessage, 'showMessage');
-  ensureFunctionDefined(action, 'action');
+  ensureFunction(getAdminEndpointsFn, 'getAdminEndpointsFn');
+  ensureFunction(fetchFn, 'fetchFn');
+  ensureFunction(showMessage, 'showMessage');
+  ensureFunction(action, 'action');
 }
 
 /**
@@ -62,19 +64,7 @@ function validateAdminTokenActionOptions({
  * @returns {void}
  */
 function ensureGoogleAuth(googleAuth) {
-  ensureFunctionDefined(googleAuth?.getIdToken, 'googleAuth.getIdToken');
-}
-
-/**
- * Ensure the value is a callable function.
- * @param {*} value - Candidate value to validate.
- * @param {string} name - Name used inside the error message.
- * @returns {void}
- */
-function ensureFunctionDefined(value, name) {
-  if (typeof value !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
+  ensureFunction(googleAuth?.getIdToken, 'googleAuth.getIdToken');
 }
 
 /**

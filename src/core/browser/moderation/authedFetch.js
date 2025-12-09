@@ -1,3 +1,5 @@
+import { ensureFunction } from '../browser-core.js';
+
 /**
  * @typedef {{ headers?: object, [key: string]: any }} FetchOptions
  */
@@ -142,18 +144,6 @@ export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
 function validateAuthedFetchDeps(getIdToken, fetchJson) {
   ensureFunction(getIdToken, 'getIdToken');
   ensureFunction(fetchJson, 'fetchJson');
-}
-
-/**
- * Throw when the provided value is not a function.
- * @param {unknown} value - Candidate function.
- * @param {string} name - Name used inside the error message.
- * @returns {void}
- */
-function ensureFunction(value, name) {
-  if (typeof value !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
 }
 
 /**
