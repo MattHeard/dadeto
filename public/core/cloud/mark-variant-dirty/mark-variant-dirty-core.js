@@ -1,4 +1,4 @@
-import { productionOrigins } from '../cloud-core.js';
+import { assertFunction, productionOrigins } from '../cloud-core.js';
 
 const POST_METHOD = 'POST';
 const TEST_ENV_PREFIX = 't-';
@@ -173,7 +173,7 @@ function respondToCorsOrigin(
  * @returns {{ origin: typeof handleCorsOrigin, methods: string[] }} Express CORS configuration.
  */
 export function createCorsOptions(handleCorsOrigin, methods = [POST_METHOD]) {
-  assertFunctionDependency('handleCorsOrigin', handleCorsOrigin);
+  assertFunction(handleCorsOrigin, 'handleCorsOrigin');
 
   return {
     origin: handleCorsOrigin,
@@ -692,8 +692,8 @@ export function createHandleRequest(options = {}) {
   const parseRequestBody = resolveParseRequestBody(options.parseRequestBody);
   const allowedMethod = resolveAllowedMethod(options.allowedMethod);
 
-  assertFunctionDependency('verifyAdmin', verifyAdmin);
-  assertFunctionDependency('markVariantDirty', markVariantDirty);
+  assertFunction(verifyAdmin, 'verifyAdmin');
+  assertFunction(markVariantDirty, 'markVariantDirty');
 
   return buildHandleRequest({
     verifyAdmin,
@@ -760,18 +760,6 @@ function buildHandleRequest({
 export { getRequestBody, getRequestMethod, hasStringMessage };
 
 const REQUEST_HANDLED = Symbol('request-handled');
-
-/**
- * Validate dependency shape.
- * @param {string} name Name.
- * @param {unknown} candidate Candidate.
- * @returns {void}
- */
-function assertFunctionDependency(name, candidate) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
 
 /**
  * Core handler workflow that validates the request, authorizes the caller, and marks the variant dirty.

@@ -1,5 +1,6 @@
 import { createDb } from './create-db.js';
 import { isValidString } from '../../common-core.js';
+import { assertFunction } from '../cloud-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
 const MISSING_UUID_RESPONSE = { status: 400, body: 'Missing UUID' };
@@ -31,23 +32,12 @@ export function fetchApiKeyCreditDocument(firestoreInstance, uuid) {
 }
 
 /**
- * Ensure a dependency is a function before using it.
- * @param {string} name - Name of the dependency for error messaging.
- * @param {*} dependency - Candidate dependency to validate.
- */
-function assertFunctionDependency(name, dependency) {
-  if (typeof dependency !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
-
-/**
  * Instantiate a Firestore client using the supplied constructor.
  * @param {typeof import('@google-cloud/firestore').Firestore} FirestoreConstructor Firestore constructor.
  * @returns {import('@google-cloud/firestore').Firestore} Initialized Firestore client.
  */
 export function createFirestore(FirestoreConstructor) {
-  assertFunctionDependency('FirestoreConstructor', FirestoreConstructor);
+  assertFunction(FirestoreConstructor, 'FirestoreConstructor');
 
   return createDb(FirestoreConstructor);
 }
@@ -171,8 +161,8 @@ async function executeRequest(fetchCredit, getUuid, request) {
  * @returns {(request: Record<string, unknown>) => Promise<{ status: number, body: unknown }>} Handler function.
  */
 export function createGetApiKeyCreditHandler({ fetchCredit, getUuid }) {
-  assertFunctionDependency('fetchCredit', fetchCredit);
-  assertFunctionDependency('getUuid', getUuid);
+  assertFunction(fetchCredit, 'fetchCredit');
+  assertFunction(getUuid, 'getUuid');
 
   return async function handleRequest(request = {}) {
     return executeRequest(fetchCredit, getUuid, request);

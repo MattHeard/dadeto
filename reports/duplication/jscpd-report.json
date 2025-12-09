@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T09:11:56.325Z",
+    "detectionDate": "2025-12-09T09:20:59.889Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -461,8 +461,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 902,
-            "tokens": 3585,
+            "lines": 890,
+            "tokens": 3538,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -473,8 +473,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/hide-variant-html/hide-variant-html-core.js": {
-            "lines": 731,
-            "tokens": 2726,
+            "lines": 717,
+            "tokens": 2674,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -545,8 +545,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-api-key-credit/get-api-key-credit-core.js": {
-            "lines": 180,
-            "tokens": 849,
+            "lines": 170,
+            "tokens": 812,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,8 +1026,8 @@
           }
         },
         "total": {
-          "lines": 17612,
-          "tokens": 78590,
+          "lines": 17576,
+          "tokens": 78454,
           "sources": 85,
           "clones": 0,
           "duplicatedLines": 0,
@@ -1080,8 +1080,8 @@
       }
     },
     "total": {
-      "lines": 17859,
-      "tokens": 84105,
+      "lines": 17823,
+      "tokens": 83969,
       "sources": 87,
       "clones": 0,
       "duplicatedLines": 0,

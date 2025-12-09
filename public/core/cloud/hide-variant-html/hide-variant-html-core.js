@@ -1,17 +1,6 @@
-import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
+import { assertFunction, DEFAULT_BUCKET_NAME } from './cloud-core.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
-
-/**
- * Ensure a dependency is a callable function.
- * @param {string} name Identifier used for error reporting.
- * @param {*} dependency Candidate dependency to validate.
- */
-function assertFunctionDependency(name, dependency) {
-  if (typeof dependency !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
 
 /**
  * Normalize the result returned by the loader so downstream logic can rely on
@@ -163,9 +152,9 @@ export function createRemoveVariantHtml({
   buildVariantPath,
   deleteRenderedFile,
 }) {
-  assertFunctionDependency('loadPageForVariant', loadPageForVariant);
-  assertFunctionDependency('buildVariantPath', buildVariantPath);
-  assertFunctionDependency('deleteRenderedFile', deleteRenderedFile);
+  assertFunction(loadPageForVariant, 'loadPageForVariant');
+  assertFunction(buildVariantPath, 'buildVariantPath');
+  assertFunction(deleteRenderedFile, 'deleteRenderedFile');
 
   return async function removeVariantHtml(payload = {}) {
     const { variantId, variantData, pageRef } = payload;
@@ -406,7 +395,7 @@ function extractVariantName(variantData) {
  * @returns {(snapshot: { id: string, data?: () => *, ref?: { parent?: { parent?: * } } }) => Promise<null>} Snapshot adapter.
  */
 export function createRemoveVariantHtmlForSnapshot(removeVariantHtml) {
-  assertFunctionDependency('removeVariantHtml', removeVariantHtml);
+  assertFunction(removeVariantHtml, 'removeVariantHtml');
 
   return function removeVariantHtmlForSnapshot(snapshot) {
     if (!snapshot) {
@@ -645,11 +634,8 @@ function assertVariantVisibilityDependencies(
   removeVariantHtmlForSnapshot,
   getVisibility
 ) {
-  assertFunctionDependency(
-    'removeVariantHtmlForSnapshot',
-    removeVariantHtmlForSnapshot
-  );
-  assertFunctionDependency('getVisibility', getVisibility);
+  assertFunction(removeVariantHtmlForSnapshot, 'removeVariantHtmlForSnapshot');
+  assertFunction(getVisibility, 'getVisibility');
 }
 
 /**
