@@ -68,6 +68,20 @@ export function buildTestOrigins(playwrightOrigin) {
   return [];
 }
 
+/**
+ * Safely read a runtime environment variable.
+ * @param {Record<string, unknown> | null | undefined} environmentVariables Runtime environment map.
+ * @param {string} key Variable name to retrieve.
+ * @returns {unknown} Variable value when available or `undefined`.
+ */
+export function getEnvironmentVariable(environmentVariables, key) {
+  if (!environmentVariables) {
+    return undefined;
+  }
+
+  return environmentVariables[key];
+}
+
 const TEST_ENV_PREFIX = 't-';
 
 const ENVIRONMENT_CLASSIFIERS = [

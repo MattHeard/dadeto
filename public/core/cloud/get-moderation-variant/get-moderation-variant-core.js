@@ -5,6 +5,7 @@ import {
   createCorsOptions as buildCorsOptions,
   classifyDeploymentEnvironment,
   buildTestOrigins,
+  getEnvironmentVariable,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
@@ -347,41 +348,11 @@ function buildOptions(variantRef) {
  */
 export function getAllowedOrigins(environmentVariables) {
   return resolveOriginsForEnvironmentType(
-    classifyEnvironmentType(getEnvironmentTag(environmentVariables)),
-    getPlaywrightOrigin(environmentVariables)
+    classifyEnvironmentType(
+      getEnvironmentVariable(environmentVariables, 'DENDRITE_ENVIRONMENT')
+    ),
+    getEnvironmentVariable(environmentVariables, 'PLAYWRIGHT_ORIGIN')
   );
-}
-
-/**
- * Read the environment tag from the runtime variables.
- * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment map.
- * @returns {string | undefined} Environment tag extracted from the runtime.
- */
-function getEnvironmentTag(environmentVariables) {
-  return getEnvironmentVariable(environmentVariables, 'DENDRITE_ENVIRONMENT');
-}
-
-/**
- * Read the optional Playwright origin override from the runtime variables.
- * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment map.
- * @returns {string | undefined} Playwright override origin.
- */
-function getPlaywrightOrigin(environmentVariables) {
-  return getEnvironmentVariable(environmentVariables, 'PLAYWRIGHT_ORIGIN');
-}
-
-/**
- * Safely read a runtime environment variable.
- * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime map.
- * @param {string} key Environment variable key.
- * @returns {string | undefined} Requested value or `undefined`.
- */
-function getEnvironmentVariable(environmentVariables, key) {
-  if (!environmentVariables) {
-    return undefined;
-  }
-
-  return environmentVariables[key];
 }
 
 /**
