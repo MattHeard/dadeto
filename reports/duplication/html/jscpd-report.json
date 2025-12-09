@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T12:05:13.582Z",
+    "detectionDate": "2025-12-09T12:08:24.109Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -8,11 +8,11 @@
             "lines": 171,
             "tokens": 752,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 38,
+            "percentage": 7.02,
+            "percentageTokens": 5.05,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -20,11 +20,11 @@
             "lines": 306,
             "tokens": 1535,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 17,
+            "duplicatedTokens": 74,
+            "percentage": 5.56,
+            "percentageTokens": 4.82,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -32,11 +32,11 @@
             "lines": 386,
             "tokens": 1839,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 36,
+            "percentage": 1.3,
+            "percentageTokens": 1.96,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -92,11 +92,11 @@
             "lines": 19,
             "tokens": 103,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 35,
+            "percentage": 31.58,
+            "percentageTokens": 33.98,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -164,11 +164,11 @@
             "lines": 92,
             "tokens": 476,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 35,
+            "percentage": 6.52,
+            "percentageTokens": 7.35,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -416,11 +416,11 @@
             "lines": 264,
             "tokens": 1210,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 72,
+            "percentage": 3.79,
+            "percentageTokens": 5.95,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -464,11 +464,11 @@
             "lines": 833,
             "tokens": 3276,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 72,
+            "percentage": 1.2,
+            "percentageTokens": 2.2,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -512,11 +512,11 @@
             "lines": 395,
             "tokens": 1533,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 22,
+            "duplicatedTokens": 78,
+            "percentage": 5.57,
+            "percentageTokens": 5.09,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -608,11 +608,11 @@
             "lines": 134,
             "tokens": 829,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 70,
+            "percentage": 7.46,
+            "percentageTokens": 8.44,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -644,11 +644,11 @@
             "lines": 274,
             "tokens": 1369,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 35,
+            "percentage": 1.82,
+            "percentageTokens": 2.56,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -656,11 +656,11 @@
             "lines": 181,
             "tokens": 1017,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 35,
+            "percentage": 2.76,
+            "percentageTokens": 3.44,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -728,11 +728,11 @@
             "lines": 398,
             "tokens": 1865,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 16,
+            "duplicatedTokens": 70,
+            "percentage": 4.02,
+            "percentageTokens": 3.75,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1029,11 +1029,11 @@
           "lines": 17497,
           "tokens": 78267,
           "sources": 85,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 9,
+          "duplicatedLines": 62,
+          "duplicatedTokens": 325,
+          "percentage": 0.35,
+          "percentageTokens": 0.42,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1083,15 +1083,340 @@
       "lines": 17744,
       "tokens": 83782,
       "sources": 87,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 9,
+      "duplicatedLines": 62,
+      "duplicatedTokens": 325,
+      "percentage": 0.35,
+      "percentageTokens": 0.39,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [],
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 13,
+      "fragment": ";\n}\n\n/**\n * Check whether a value is a plain object.\n * @param {unknown} value - Value to test.\n * @returns {boolean} True when the value is a non-array object.\n */\nfunction isPlainObject(value) {\n  return Boolean(value) && value.constructor === Object;\n}\n\nexport",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-12-05/dijkstra.js",
+        "start": 294,
+        "end": 306,
+        "startLoc": {
+          "line": 294,
+          "column": 2,
+          "position": 1489
+        },
+        "endLoc": {
+          "line": 306,
+          "column": 7,
+          "position": 1527
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-12-05/edgeWeight.js",
+        "start": 123,
+        "end": 141,
+        "startLoc": {
+          "line": 123,
+          "column": 2,
+          "position": 566
+        },
+        "endLoc": {
+          "line": 141,
+          "column": 4,
+          "position": 604
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\nfunction isPlainObject(value) {\n  return Boolean(value) && value.constructor === Object;\n}\n\nexport { hasAdminRating",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-12-05/calculateVisibility.js",
+        "start": 381,
+        "end": 386,
+        "startLoc": {
+          "line": 381,
+          "column": 4,
+          "position": 1799
+        },
+        "endLoc": {
+          "line": 386,
+          "column": 15,
+          "position": 1835
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-12-05/dijkstra.js",
+        "start": 301,
+        "end": 306,
+        "startLoc": {
+          "line": 301,
+          "column": 4,
+          "position": 1495
+        },
+        "endLoc": {
+          "line": 306,
+          "column": 18,
+          "position": 1531
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": "\n    return JSON.stringify(result);\n  } catch {\n    return JSON.stringify({});\n  }\n}\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-06-09/startLocalDendriteStory.js",
+        "start": 87,
+        "end": 93,
+        "startLoc": {
+          "line": 87,
+          "column": 1,
+          "position": 441
+        },
+        "endLoc": {
+          "line": 93,
+          "column": 1,
+          "position": 476
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-07-05/setPermanentData.js",
+        "start": 14,
+        "end": 20,
+        "startLoc": {
+          "line": 14,
+          "column": 2,
+          "position": 68
+        },
+        "endLoc": {
+          "line": 20,
+          "column": 1,
+          "position": 103
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n    .collectionGroup('pages')\n    .where('number', '==', pageNumber)\n    .limit(1)\n    .get();\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 134,
+        "end": 139,
+        "startLoc": {
+          "line": 134,
+          "column": 9,
+          "position": 490
+        },
+        "endLoc": {
+          "line": 139,
+          "column": 2,
+          "position": 525
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-page/helpers.js",
+        "start": 105,
+        "end": 110,
+        "startLoc": {
+          "line": 105,
+          "column": 3,
+          "position": 443
+        },
+        "endLoc": {
+          "line": 110,
+          "column": 3,
+          "position": 478
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": " pageRef\n    .collection('variants')\n    .where('name', '==', variantName)\n    .limit(1)\n    .get();\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 236,
+        "end": 241,
+        "startLoc": {
+          "line": 236,
+          "column": 7,
+          "position": 875
+        },
+        "endLoc": {
+          "line": 241,
+          "column": 2,
+          "position": 912
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-page/helpers.js",
+        "start": 123,
+        "end": 128,
+        "startLoc": {
+          "line": 123,
+          "column": 6,
+          "position": 538
+        },
+        "endLoc": {
+          "line": 128,
+          "column": 3,
+          "position": 575
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 12,
+      "fragment": "(value) {\n  if (typeof value === 'string') {\n    return value;\n  }\n  return '';\n}\n\n/**\n * Invoke resolvers until one produces a value.\n * @param {Array<() => string>} resolvers Candidate value resolvers.\n * @returns {string} First non-empty string returned by a resolver.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
+        "start": 68,
+        "end": 79,
+        "startLoc": {
+          "line": 68,
+          "column": 9,
+          "position": 225
+        },
+        "endLoc": {
+          "line": 79,
+          "column": 4,
+          "position": 264
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
+        "start": 56,
+        "end": 67,
+        "startLoc": {
+          "line": 56,
+          "column": 18,
+          "position": 181
+        },
+        "endLoc": {
+          "line": 67,
+          "column": 4,
+          "position": 220
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n  const pre = dom.createElement('pre');\n  dom.setTextContent(pre, content);\n  return pre;\n}\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/presenters/battleshipSolitaireFleet.js",
+        "start": 270,
+        "end": 275,
+        "startLoc": {
+          "line": 270,
+          "column": 20,
+          "position": 1334
+        },
+        "endLoc": {
+          "line": 275,
+          "column": 1,
+          "position": 1369
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/presenters/ticTacToeBoard.js",
+        "start": 128,
+        "end": 133,
+        "startLoc": {
+          "line": 128,
+          "column": 33,
+          "position": 781
+        },
+        "endLoc": {
+          "line": 133,
+          "column": 1,
+          "position": 816
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n  const pre = dom.createElement('pre');\n  dom.setTextContent(pre, content);\n  return pre;\n}\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/presenters/battleshipSolitaireClues.js",
+        "start": 177,
+        "end": 182,
+        "startLoc": {
+          "line": 177,
+          "column": 1,
+          "position": 982
+        },
+        "endLoc": {
+          "line": 182,
+          "column": 1,
+          "position": 1017
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/presenters/ticTacToeBoard.js",
+        "start": 128,
+        "end": 133,
+        "startLoc": {
+          "line": 128,
+          "column": 33,
+          "position": 781
+        },
+        "endLoc": {
+          "line": 133,
+          "column": 1,
+          "position": 816
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": "({\n  dom,\n  key,\n  placeholder,\n  data,\n  textInput,\n  disposers,\n}) {\n  const {",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/createDendriteHandler.js",
+        "start": 206,
+        "end": 214,
+        "startLoc": {
+          "line": 206,
+          "column": 20,
+          "position": 958
+        },
+        "endLoc": {
+          "line": 214,
+          "column": 2,
+          "position": 993
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/createDendriteHandler.js",
+        "start": 177,
+        "end": 185,
+        "startLoc": {
+          "line": 177,
+          "column": 17,
+          "position": 785
+        },
+        "endLoc": {
+          "line": 185,
+          "column": 6,
+          "position": 820
+        }
+      }
+    }
+  ],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }
