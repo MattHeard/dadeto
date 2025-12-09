@@ -1,4 +1,8 @@
-import { ensureString, normalizeNonStringValue } from '../common-core.js';
+import {
+  ensureString,
+  normalizeNonStringValue,
+  stringOrNull,
+} from '../common-core.js';
 
 export { DEFAULT_BUCKET_NAME } from './common-core.js';
 
@@ -12,6 +16,20 @@ export function assertFunction(candidate, name) {
   if (typeof candidate !== 'function') {
     throw new TypeError(`${name} must be a function`);
   }
+}
+
+/**
+ * Guard a request body check with a presence predicate.
+ * @param {unknown} body Candidate request body.
+ * @param {(value: unknown) => boolean} evaluator Evaluation to run when a body exists.
+ * @returns {boolean} Result of the evaluator or false when no body is supplied.
+ */
+export function whenBodyPresent(body, evaluator) {
+  if (!body) {
+    return false;
+  }
+
+  return evaluator(body);
 }
 
 /**
@@ -42,11 +60,7 @@ export function isFunction(value) {
  * @returns {string | null} Normalized header or null.
  */
 export function normalizeHeaderValue(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  return null;
+  return stringOrNull(value);
 }
 
 /**

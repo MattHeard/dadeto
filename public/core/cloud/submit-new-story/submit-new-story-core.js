@@ -5,6 +5,7 @@ import {
   normalizeMethod,
   normalizeAuthorizationCandidate,
   tryGetHeader,
+  whenBodyPresent,
 } from './cloud-core.js';
 
 /**
@@ -512,11 +513,7 @@ const responderKeyByType = {
  * @returns {body is Record<string, unknown>} Whether the body is a JSON object.
  */
 function isObjectBody(body) {
-  if (!body) {
-    return false;
-  }
-
-  return typeof body === 'object';
+  return whenBodyPresent(body, candidate => typeof candidate === 'object');
 }
 
 /**
