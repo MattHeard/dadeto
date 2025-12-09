@@ -16,6 +16,12 @@ export function getEnvHelpers(env) {
 }
 
 const DENDRITE_TEMP_KEYS = ['stories', 'pages', 'options'];
+const DENDRITE_OPTION_KEYS = [
+  'firstOption',
+  'secondOption',
+  'thirdOption',
+  'fourthOption',
+];
 
 /**
  *
@@ -60,6 +66,23 @@ export function ensureDend2(data) {
   if (!isTemporaryValid(data)) {
     data.temporary = { DEND2: createEmptyDend2() };
   }
+}
+
+/**
+ * Create option objects for values present in the input data.
+ * @param {object} data Source that may contain option values.
+ * @param {Function} getUuid UUID generator.
+ * @param {string} [pageId] Optional page identifier to include on each option.
+ * @returns {Array<object>} Option list.
+ */
+export function createOptions(data, getUuid, pageId) {
+  return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => {
+    const option = { id: getUuid(), content: data[key] };
+    if (pageId) {
+      option.pageId = pageId;
+    }
+    return option;
+  });
 }
 
 /**

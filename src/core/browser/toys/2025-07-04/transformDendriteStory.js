@@ -1,10 +1,10 @@
 import { isValidString } from '../../../common-core.js';
-import { createOptions } from '../utils/dendriteHelpers.js';
 import {
   getEnvHelpers,
   cloneTemporaryDend2Data,
   appendPageAndSave,
   buildPageResponse,
+  createOptions,
 } from '../browserToysCore.js';
 
 /**
