@@ -145,19 +145,34 @@ export function hideAndDisable(element, dom) {
 }
 
 /**
+ *
+ * @param cleanupFns
+ */
+/**
+ * Build a default handler configured with the provided cleanup callbacks.
+ * @param {Array<(container: HTMLElement, dom: object) => void>} cleanupFns - Functions that clean up special widgets.
+ * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => void} Handler that hides the base input then runs the cleanup functions.
+ */
+function createDefaultHandler(cleanupFns) {
+  return function defaultHandler(dom, container, textInput) {
+    hideAndDisable(textInput, dom);
+    cleanupFns.forEach(fn => fn(container, dom));
+  };
+}
+
+/**
  * Handle a field with no special input type by clearing related widgets.
  * @param {object} dom - DOM helper utilities.
  * @param {HTMLElement} container - Container element housing the input.
  * @param {HTMLInputElement} textInput - The text input element.
  * @returns {void}
  */
-export function defaultHandler(dom, container, textInput) {
-  hideAndDisable(textInput, dom);
-  maybeRemoveNumber(container, dom);
-  maybeRemoveKV(container, dom);
-  maybeRemoveDendrite(container, dom);
-  maybeRemoveTextarea(container, dom);
-}
+export const defaultHandler = createDefaultHandler([
+  maybeRemoveNumber,
+  maybeRemoveKV,
+  maybeRemoveDendrite,
+  maybeRemoveTextarea,
+]);
 
 export const dendritePageHandler = createDendriteHandler(
   getDendritePageFields()
