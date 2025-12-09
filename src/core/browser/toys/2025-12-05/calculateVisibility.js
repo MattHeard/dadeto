@@ -1,5 +1,9 @@
 import { isValidString } from '../../../common-core.js';
-import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
+import {
+  parseJsonOrFallback,
+  whenString,
+  isPlainObject,
+} from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
 
 const DEFAULT_VISIBILITY = '1';
@@ -140,11 +144,7 @@ function deriveWeightedScore({ pageRatings, adminId, ratings, pageId }) {
  * @returns {object|null} Parsed object or null on failure.
  */
 function parseInput(input) {
-  if (typeof input !== 'string') {
-    return null;
-  }
-
-  return parseJsonOrFallback(input);
+  return whenString(input, parseJsonOrFallback);
 }
 
 /**

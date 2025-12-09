@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T13:24:10.179Z",
+    "detectionDate": "2025-12-09T13:30:38.937Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -29,14 +29,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/calculateVisibility.js": {
-            "lines": 382,
-            "tokens": 1811,
+            "lines": 378,
+            "tokens": 1792,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 34,
-            "percentage": 1.31,
-            "percentageTokens": 1.88,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -65,14 +65,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-10-19/csvToJsonArray.js": {
-            "lines": 403,
-            "tokens": 1615,
+            "lines": 400,
+            "tokens": 1606,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 34,
-            "percentage": 1.24,
-            "percentageTokens": 2.11,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,8 +581,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/browserToysCore.js": {
-            "lines": 303,
-            "tokens": 1697,
+            "lines": 318,
+            "tokens": 1750,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -893,8 +893,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/common.js": {
-            "lines": 19,
-            "tokens": 70,
+            "lines": 27,
+            "tokens": 73,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17497,
-          "tokens": 78258,
+          "lines": 17513,
+          "tokens": 78286,
           "sources": 87,
-          "clones": 18,
-          "duplicatedLines": 111,
-          "duplicatedTokens": 575,
-          "percentage": 0.63,
-          "percentageTokens": 0.73,
+          "clones": 17,
+          "duplicatedLines": 106,
+          "duplicatedTokens": 541,
+          "percentage": 0.61,
+          "percentageTokens": 0.69,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,55 +1104,19 @@
       }
     },
     "total": {
-      "lines": 17744,
-      "tokens": 83773,
+      "lines": 17760,
+      "tokens": 83801,
       "sources": 89,
-      "clones": 18,
-      "duplicatedLines": 111,
-      "duplicatedTokens": 575,
-      "percentage": 0.63,
-      "percentageTokens": 0.69,
+      "clones": 17,
+      "duplicatedLines": 106,
+      "duplicatedTokens": 541,
+      "percentage": 0.6,
+      "percentageTokens": 0.65,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "(input) {\n  if (typeof input !== 'string') {\n    return null;\n  }\n\n  return getTrimmedLines",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-10-19/csvToJsonArray.js",
-        "start": 52,
-        "end": 57,
-        "startLoc": {
-          "line": 52,
-          "column": 20,
-          "position": 159
-        },
-        "endLoc": {
-          "line": 57,
-          "column": 16,
-          "position": 193
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-12-05/calculateVisibility.js",
-        "start": 142,
-        "end": 147,
-        "startLoc": {
-          "line": 142,
-          "column": 11,
-          "position": 708
-        },
-        "endLoc": {
-          "line": 147,
-          "column": 20,
-          "position": 742
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 9,
