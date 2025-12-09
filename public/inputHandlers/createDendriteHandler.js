@@ -174,14 +174,8 @@ function createWrapperAppender(dom, wrapper) {
  * @param {{dom: object, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Input setup parameters.
  * @returns {HTMLElement} Initialized input element.
  */
-function createFieldInput({
-  dom,
-  key,
-  placeholder,
-  data,
-  textInput,
-  disposers,
-}) {
+function createFieldInput(options) {
+  const { dom, key, placeholder, data, textInput, disposers } = options;
   const input = createInputElement(dom, key);
   dom.setPlaceholder(input, placeholder);
   setInputValueFromData({ dom, input, data, key });
@@ -203,25 +197,12 @@ function createFieldInput({
  * @param {{dom: object, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render inputs.
  * @returns {{fieldWrapper: HTMLElement}} Wrapped elements ready for insertion.
  */
-function createFieldElements({
-  dom,
-  key,
-  placeholder,
-  data,
-  textInput,
-  disposers,
-}) {
+function createFieldElements(options) {
+  const { dom, placeholder } = options;
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, placeholder);
 
-  const input = createFieldInput({
-    dom,
-    key,
-    placeholder,
-    data,
-    textInput,
-    disposers,
-  });
+  const input = createFieldInput(options);
   const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
   [label, input].forEach(appendToWrapper);
 
