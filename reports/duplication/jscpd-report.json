@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T10:25:59.871Z",
+    "detectionDate": "2025-12-09T10:41:51.167Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -125,26 +125,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-05/addDendritePage.js": {
-            "lines": 87,
-            "tokens": 431,
+            "lines": 21,
+            "tokens": 95,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 15,
-            "duplicatedTokens": 45,
-            "percentage": 17.24,
-            "percentageTokens": 10.44,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-04/transformDendriteStory.js": {
-            "lines": 74,
-            "tokens": 481,
+            "lines": 21,
+            "tokens": 95,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 15,
-            "duplicatedTokens": 45,
-            "percentage": 20.27,
-            "percentageTokens": 9.36,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,8 +581,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/browserToysCore.js": {
-            "lines": 141,
-            "tokens": 695,
+            "lines": 283,
+            "tokens": 1581,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17561,
-          "tokens": 78322,
+          "lines": 17584,
+          "tokens": 78486,
           "sources": 85,
-          "clones": 1,
-          "duplicatedLines": 15,
-          "duplicatedTokens": 45,
-          "percentage": 0.09,
-          "percentageTokens": 0.06,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,54 +1080,17 @@
       }
     },
     "total": {
-      "lines": 17808,
-      "tokens": 83837,
+      "lines": 17831,
+      "tokens": 84001,
       "sources": 87,
-      "clones": 1,
-      "duplicatedLines": 15,
-      "duplicatedTokens": 45,
-      "percentage": 0.08,
-      "percentageTokens": 0.05,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 16,
-      "fragment": "import { isValidString } from '../../../common-core.js';\nimport {\n  getEnvHelpers,\n  cloneTemporaryDend2Data,\n  appendPageAndSave,\n  buildPageResponse,\n  createOptions,\n} from '../browserToysCore.js';\n\n/**\n * Validate the parsed story input.\n * @param {object} [obj] - Parsed object.\n * @param {string} obj.title - Story title.\n * @param {string} obj.content - Story content.\n * @returns {boolean} True when valid.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/2025-07-04/transformDendriteStory.js",
-        "start": 1,
-        "end": 16,
-        "startLoc": {
-          "line": 1,
-          "column": 1,
-          "position": 0
-        },
-        "endLoc": {
-          "line": 16,
-          "column": 4,
-          "position": 45
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-07-05/addDendritePage.js",
-        "start": 1,
-        "end": 10,
-        "startLoc": {
-          "line": 1,
-          "column": 1,
-          "position": 0
-        },
-        "endLoc": {
-          "line": 10,
-          "column": 6,
-          "position": 45
-        }
-      }
-    }
-  ]
+  "duplicates": []
 }
