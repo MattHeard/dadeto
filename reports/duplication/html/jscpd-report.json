@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-09T09:27:02.406Z",
+    "detectionDate": "2025-12-09T09:37:52.399Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -389,14 +389,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js": {
-            "lines": 738,
-            "tokens": 3105,
+            "lines": 680,
+            "tokens": 2889,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 14,
-            "duplicatedTokens": 48,
-            "percentage": 1.9,
-            "percentageTokens": 1.55,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -425,14 +425,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 833,
-            "tokens": 3442,
+            "lines": 789,
+            "tokens": 3281,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 14,
-            "duplicatedTokens": 48,
-            "percentage": 1.68,
-            "percentageTokens": 1.39,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -785,8 +785,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 249,
-            "tokens": 961,
+            "lines": 349,
+            "tokens": 1331,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1026,14 +1026,14 @@
           }
         },
         "total": {
-          "lines": 17576,
-          "tokens": 78454,
+          "lines": 17574,
+          "tokens": 78447,
           "sources": 85,
-          "clones": 2,
-          "duplicatedLines": 25,
-          "duplicatedTokens": 96,
-          "percentage": 0.14,
-          "percentageTokens": 0.12,
+          "clones": 1,
+          "duplicatedLines": 11,
+          "duplicatedTokens": 48,
+          "percentage": 0.06,
+          "percentageTokens": 0.06,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1080,55 +1080,19 @@
       }
     },
     "total": {
-      "lines": 17823,
-      "tokens": 83969,
+      "lines": 17821,
+      "tokens": 83962,
       "sources": 87,
-      "clones": 2,
-      "duplicatedLines": 25,
-      "duplicatedTokens": 96,
-      "percentage": 0.14,
-      "percentageTokens": 0.11,
+      "clones": 1,
+      "duplicatedLines": 11,
+      "duplicatedTokens": 48,
+      "percentage": 0.06,
+      "percentageTokens": 0.06,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 15,
-      "fragment": "\nfunction normalizeMethod(method) {\n  if (typeof method !== 'string') {\n    return '';\n  }\n\n  return method.toUpperCase();\n}\n\n/**\n * Get header from getter.\n * @param {Function} getter Getter.\n * @param {string} name Name.\n * @returns {string | null} Header.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 47,
-        "end": 61,
-        "startLoc": {
-          "line": 47,
-          "column": 4,
-          "position": 125
-        },
-        "endLoc": {
-          "line": 61,
-          "column": 4,
-          "position": 173
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
-        "start": 47,
-        "end": 60,
-        "startLoc": {
-          "line": 47,
-          "column": 4,
-          "position": 62
-        },
-        "endLoc": {
-          "line": 60,
-          "column": 4,
-          "position": 110
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 12,

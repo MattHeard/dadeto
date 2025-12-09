@@ -2,6 +2,9 @@ import {
   assertFunction,
   matchBearerToken,
   normalizeString,
+  normalizeMethod,
+  normalizeAuthorizationCandidate,
+  tryGetHeader,
 } from './cloud-core.js';
 
 /**
@@ -39,67 +42,6 @@ import {
  * @type {HttpResponse}
  */
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
-
-/**
- * Normalize an incoming HTTP method to its uppercase representation.
- * @param {unknown} method - Incoming HTTP method value.
- * @returns {string} Uppercase HTTP method or an empty string when invalid.
- */
-function normalizeMethod(method) {
-  if (typeof method !== 'string') {
-    return '';
-  }
-
-  return method.toUpperCase();
-}
-
-/**
- * Extract the first string from a candidate array.
- * @param {unknown[]} candidate - Array to check.
- * @returns {string | null} First string element or null.
- */
-function extractStringFromCandidateArray(candidate) {
-  const [first] = candidate;
-
-  if (typeof first === 'string') {
-    return first;
-  }
-  return null;
-}
-
-/**
- * Normalize non-string candidate.
- * @param {unknown} candidate Candidate.
- * @returns {string | null} Normalized string.
- */
-function normalizeNonStringCandidate(candidate) {
-  if (Array.isArray(candidate)) {
-    return extractStringFromCandidateArray(candidate);
-  }
-  return null;
-}
-
-/**
- * Convert a header candidate into a normalized string value.
- * @param {unknown} candidate - Raw header candidate.
- * @returns {string | null} Normalized string when available.
- */
-function normalizeAuthorizationCandidate(candidate) {
-  if (typeof candidate === 'string') {
-    return candidate;
-  }
-  return normalizeNonStringCandidate(candidate);
-}
-
-/**
- * Try to retrieve a header using a getter function.
- * @param {(name: string) => string | undefined} getter - Header getter.
- * @param {string} name - Header name.
- * @returns {string | null} Normalized header value.
- */
-function tryGetHeader(getter, name) {
-  return normalizeAuthorizationCandidate(getter(name));
-}
 
 /**
  * Get getter function from request.

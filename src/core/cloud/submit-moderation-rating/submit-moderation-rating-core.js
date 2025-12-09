@@ -1,4 +1,9 @@
-import { assertFunction, matchBearerToken } from './cloud-core.js';
+import {
+  assertFunction,
+  matchBearerToken,
+  normalizeMethod,
+  getHeaderFromGetter,
+} from './cloud-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
@@ -39,55 +44,6 @@ const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
  * @property {() => string} randomUUID Generate a unique identifier for the rating entry.
  * @property {() => unknown} getServerTimestamp Provide the timestamp stored with the rating.
  */
-
-/**
- * Normalize a request method to an uppercase HTTP verb.
- * @param {unknown} method Method value received from the HTTP adapter.
- * @returns {string} Uppercase HTTP verb or an empty string when missing.
- */
-function normalizeMethod(method) {
-  if (typeof method !== 'string') {
-    return '';
-  }
-
-  return method.toUpperCase();
-}
-
-/**
- * Get header from getter.
- * @param {Function} getter Getter.
- * @param {string} name Name.
- * @returns {string | null} Header.
- */
-function getHeaderFromGetter(getter, name) {
-  if (!isFunction(getter)) {
-    return null;
-  }
-
-  return normalizeHeaderValue(getter(name));
-}
-
-/**
- * Normalize raw header values to strings when possible.
- * @param {unknown} value Value.
- * @returns {string | null} Normalized string.
- */
-function normalizeHeaderValue(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  return null;
-}
-
-/**
- * Determine whether value is a function.
- * @param {unknown} value Value.
- * @returns {value is Function} True when function.
- */
-function isFunction(value) {
-  return typeof value === 'function';
-}
 
 /**
  * Try authorization headers.

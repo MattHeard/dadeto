@@ -13,6 +13,106 @@ export function assertFunction(candidate, name) {
 }
 
 /**
+ * Normalize an incoming HTTP method to uppercase.
+ * @param {unknown} method Candidate HTTP method.
+ * @returns {string} Uppercase verb or empty string when invalid.
+ */
+export function normalizeMethod(method) {
+  if (typeof method !== 'string') {
+    return '';
+  }
+
+  return method.toUpperCase();
+}
+
+/**
+ * Determine whether the provided value is callable.
+ * @param {unknown} value Candidate value.
+ * @returns {value is Function} True when callable.
+ */
+export function isFunction(value) {
+  return typeof value === 'function';
+}
+
+/**
+ * Normalize a raw header value to a string when possible.
+ * @param {unknown} value Header candidate.
+ * @returns {string | null} Normalized header or null.
+ */
+export function normalizeHeaderValue(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return null;
+}
+
+/**
+ * Retrieve and normalize a header via the provided getter.
+ * @param {Function} getter Header getter function.
+ * @param {string} name Header key name.
+ * @returns {string | null} Normalized header string or null.
+ */
+export function getHeaderFromGetter(getter, name) {
+  if (!isFunction(getter)) {
+    return null;
+  }
+
+  return normalizeHeaderValue(getter(name));
+}
+
+/**
+ * Extract the first string element from an array candidate.
+ * @param {unknown[]} candidate Array candidate.
+ * @returns {string | null} String value or null.
+ */
+export function extractStringFromCandidateArray(candidate) {
+  const [first] = candidate;
+
+  if (typeof first === 'string') {
+    return first;
+  }
+
+  return null;
+}
+
+/**
+ * Normalize a non-string header candidate.
+ * @param {unknown} candidate Candidate value.
+ * @returns {string | null} Normalized string or null.
+ */
+export function normalizeNonStringCandidate(candidate) {
+  if (Array.isArray(candidate)) {
+    return extractStringFromCandidateArray(candidate);
+  }
+
+  return null;
+}
+
+/**
+ * Normalize authorization candidate values.
+ * @param {unknown} candidate Value returned for an Authorization header.
+ * @returns {string | null} Normalized string or null.
+ */
+export function normalizeAuthorizationCandidate(candidate) {
+  if (typeof candidate === 'string') {
+    return candidate;
+  }
+
+  return normalizeNonStringCandidate(candidate);
+}
+
+/**
+ * Try to retrieve an authorization header through the getter helper.
+ * @param {(name: string) => string | string[] | undefined} getter Header getter.
+ * @param {string} name Header key.
+ * @returns {string | null} Header string or null.
+ */
+export function tryGetHeader(getter, name) {
+  return normalizeAuthorizationCandidate(getter(name));
+}
+
+/**
  * Normalize a textual input into a trimmed string bounded by the provided length.
  * @param {unknown} value Raw value supplied by the client.
  * @param {number} maxLength Maximum number of characters allowed in the normalized result.
