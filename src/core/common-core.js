@@ -37,13 +37,43 @@ export function isNonNullObject(value) {
 }
 
 /**
+ * Return the string candidate when available.
+ * @param {unknown} value Candidate value.
+ * @returns {string | undefined} String when provided, otherwise undefined.
+ */
+function getStringCandidate(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return undefined;
+}
+
+/**
+ * Apply a fallback when the string candidate doesn't meet the acceptance predicate.
+ * @param {unknown} value Candidate value.
+ * @param {() => string | null} fallback Fallback result supplier.
+ * @param {(normalized: string | undefined) => boolean} isNormalizedAcceptable Predicate indicating when the normalized string should be returned.
+ * @returns {string | null} Normalized string or fallback.
+ */
+function withStringFallback(value, fallback, isNormalizedAcceptable) {
+  const normalized = getStringCandidate(value);
+  if (isNormalizedAcceptable(normalized)) {
+    return normalized;
+  }
+
+  return fallback();
+}
+
+/**
  * Returns the input string when available; otherwise returns an empty string.
  * @param {unknown} value Candidate value.
  * @returns {string} Input string or empty fallback.
  */
 export function ensureString(value) {
-  if (typeof value === 'string') {
-    return value;
+  const normalized = stringOrNull(value);
+  if (normalized !== null) {
+    return normalized;
   }
 
   return '';
@@ -56,12 +86,11 @@ export function ensureString(value) {
  * @returns {string} String value or fallback.
  */
 export function stringOrDefault(value, fallback) {
-  const normalized = stringOrNull(value);
-  if (normalized !== null) {
-    return normalized;
-  }
-
-  return fallback;
+  return withStringFallback(
+    value,
+    () => fallback,
+    normalized => normalized !== undefined
+  );
 }
 
 /**
@@ -83,8 +112,9 @@ export function normalizeNonStringValue(value) {
  * @returns {string | null} String when provided, otherwise `null`.
  */
 export function stringOrNull(value) {
-  if (typeof value === 'string') {
-    return value;
+  const normalized = getStringCandidate(value);
+  if (normalized !== undefined) {
+    return normalized;
   }
 
   return null;
@@ -97,10 +127,9 @@ export function stringOrNull(value) {
  * @returns {string | null} String from the value or fallback.
  */
 export function stringOrFallback(value, fallback) {
-  const normalized = stringOrNull(value);
-  if (normalized) {
-    return normalized;
-  }
-
-  return fallback(value);
+  return withStringFallback(
+    value,
+    () => fallback(value),
+    normalized => Boolean(normalized)
+  );
 }
