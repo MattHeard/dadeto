@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-10T13:16:31.097Z",
+    "detectionDate": "2025-12-10T13:19:52.630Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -512,11 +512,11 @@
             "lines": 373,
             "tokens": 1444,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 28,
+            "percentage": 1.34,
+            "percentageTokens": 1.94,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -560,11 +560,11 @@
             "lines": 934,
             "tokens": 3530,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 16,
+            "duplicatedTokens": 56,
+            "percentage": 1.71,
+            "percentageTokens": 1.59,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -584,11 +584,11 @@
             "lines": 318,
             "tokens": 1752,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 28,
+            "percentage": 1.57,
+            "percentageTokens": 1.6,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -716,11 +716,11 @@
             "lines": 22,
             "tokens": 100,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 28,
+            "percentage": 22.73,
+            "percentageTokens": 28,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -728,11 +728,11 @@
             "lines": 83,
             "tokens": 551,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 28,
+            "percentage": 6.02,
+            "percentageTokens": 5.08,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1053,11 +1053,11 @@
           "lines": 17521,
           "tokens": 78253,
           "sources": 87,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 3,
+          "duplicatedLines": 18,
+          "duplicatedTokens": 84,
+          "percentage": 0.1,
+          "percentageTokens": 0.11,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1107,14 +1107,123 @@
       "lines": 17768,
       "tokens": 83768,
       "sources": 89,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 3,
+      "duplicatedLines": 18,
+      "duplicatedTokens": 84,
+      "percentage": 0.1,
+      "percentageTokens": 0.1,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": []
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": ").count().get();\n    return snap.data().count;\n  }\n\n  /**\n   * Count unmoderated variants by checking for zero and null reputation sums.\n   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.\n   * @returns {Promise<number>} Unmoderated variant count.\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 354,
+        "end": 362,
+        "startLoc": {
+          "line": 354,
+          "column": 8,
+          "position": 1064
+        },
+        "endLoc": {
+          "line": 362,
+          "column": 6,
+          "position": 1092
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 344,
+        "end": 352,
+        "startLoc": {
+          "line": 344,
+          "column": 10,
+          "position": 1004
+        },
+        "endLoc": {
+          "line": 352,
+          "column": 6,
+          "position": 1032
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": ") {\n  if (typeof value !== 'string') {\n    return null;\n  }\n\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/browserToysCore.js",
+        "start": 13,
+        "end": 18,
+        "startLoc": {
+          "line": 13,
+          "column": 3,
+          "position": 68
+        },
+        "endLoc": {
+          "line": 18,
+          "column": 1,
+          "position": 96
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
+        "start": 26,
+        "end": 30,
+        "startLoc": {
+          "line": 26,
+          "column": 6,
+          "position": 86
+        },
+        "endLoc": {
+          "line": 30,
+          "column": 3,
+          "position": 114
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(textInput, dom);\n  applyCleanupHandlers({\n    container,\n    dom,\n    baseHandlers: BASE_CONTAINER_HANDLERS,\n  ",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/number.js",
+        "start": 76,
+        "end": 81,
+        "startLoc": {
+          "line": 76,
+          "column": 15,
+          "position": 504
+        },
+        "endLoc": {
+          "line": 81,
+          "column": 3,
+          "position": 532
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/text.js",
+        "start": 15,
+        "end": 20,
+        "startLoc": {
+          "line": 15,
+          "column": 16,
+          "position": 57
+        },
+        "endLoc": {
+          "line": 20,
+          "column": 5,
+          "position": 85
+        }
+      }
+    }
+  ]
 }
