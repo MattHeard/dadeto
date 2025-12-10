@@ -1,5 +1,5 @@
 import {
-  normalizeContent,
+  normalizeSubmissionContent,
   normalizeString,
   normalizeAuthor as normalizeSubmittedAuthor,
 } from './cloud-core.js';
@@ -32,10 +32,6 @@ function normalizePageStr(page) {
  * @param {string} content Raw content.
  * @returns {string} Normalized content.
  */
-function normalizeContentBody(content) {
-  return normalizeContent(content, 10_000);
-}
-
 /**
  * Normalize author.
  * @param {string} author Raw author.
@@ -89,7 +85,7 @@ function normalizeSubmissionBody(body) {
   return {
     incomingOption: normalizeIncomingOption(rawIncomingOption),
     pageStr: normalizePageStr(rawPage),
-    content: normalizeContentBody(rawContent),
+    content: normalizeSubmissionContent(rawContent),
     author: normalizeAuthor(rawAuthor),
   };
 }

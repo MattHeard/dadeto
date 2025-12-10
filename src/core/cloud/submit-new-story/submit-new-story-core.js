@@ -1,6 +1,7 @@
 import { assertFunction } from './common-core.js';
-import { normalizeAuthor, normalizeContent } from '../cloud-core.js';
 import {
+  normalizeAuthor,
+  normalizeSubmissionContent,
   matchBearerToken,
   normalizeString,
   normalizeMethod,
@@ -517,10 +518,6 @@ function normalizeTitle(title) {
  * @param {string} content Raw content.
  * @returns {string} Normalized content.
  */
-function normalizeContentBody(content) {
-  return normalizeContent(content ?? '', 10_000);
-}
-
 /**
  * Normalize submission data from request body.
  * @param {Record<string, unknown>} body - Request body.
@@ -528,7 +525,7 @@ function normalizeContentBody(content) {
  */
 function normalizeSubmissionData(body) {
   const title = normalizeTitle(body.title);
-  const content = normalizeContentBody(body.content);
+  const content = normalizeSubmissionContent(body.content);
   const author = normalizeAuthor(body.author ?? '???');
   const options = collectOptions(body, 120);
 

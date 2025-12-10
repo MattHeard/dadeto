@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-10T14:39:27.060Z",
+    "detectionDate": "2025-12-10T14:59:45.847Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -389,26 +389,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js": {
-            "lines": 623,
-            "tokens": 2685,
+            "lines": 620,
+            "tokens": 2647,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 9,
-            "duplicatedTokens": 26,
-            "percentage": 1.44,
-            "percentageTokens": 0.97,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js": {
-            "lines": 422,
-            "tokens": 1846,
+            "lines": 418,
+            "tokens": 1821,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 9,
-            "duplicatedTokens": 26,
-            "percentage": 2.13,
-            "percentageTokens": 1.41,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -809,8 +809,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 622,
-            "tokens": 2411,
+            "lines": 631,
+            "tokens": 2440,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17557,
-          "tokens": 78410,
+          "lines": 17559,
+          "tokens": 78376,
           "sources": 87,
-          "clones": 6,
-          "duplicatedLines": 41,
-          "duplicatedTokens": 156,
-          "percentage": 0.23,
-          "percentageTokens": 0.2,
+          "clones": 5,
+          "duplicatedLines": 32,
+          "duplicatedTokens": 130,
+          "percentage": 0.18,
+          "percentageTokens": 0.17,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,14 +1104,14 @@
       }
     },
     "total": {
-      "lines": 17804,
-      "tokens": 83925,
+      "lines": 17806,
+      "tokens": 83891,
       "sources": 89,
-      "clones": 6,
-      "duplicatedLines": 41,
-      "duplicatedTokens": 156,
-      "percentage": 0.23,
-      "percentageTokens": 0.19,
+      "clones": 5,
+      "duplicatedLines": 32,
+      "duplicatedTokens": 130,
+      "percentage": 0.18,
+      "percentageTokens": 0.15,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1186,42 +1186,6 @@
           "line": 122,
           "column": 48,
           "position": 608
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 10,
-      "fragment": ", 120);\n}\n\n/**\n * Normalize content.\n * @param {string} content Raw content.\n * @returns {string} Normalized content.\n */\nfunction normalizeContentBody(content) {\n  return normalizeContent(content,",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/submit-new-page/submit-new-page-core.js",
-        "start": 27,
-        "end": 36,
-        "startLoc": {
-          "line": 27,
-          "column": 5,
-          "position": 73
-        },
-        "endLoc": {
-          "line": 36,
-          "column": 2,
-          "position": 99
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
-        "start": 512,
-        "end": 521,
-        "startLoc": {
-          "line": 512,
-          "column": 11,
-          "position": 2106
-        },
-        "endLoc": {
-          "line": 521,
-          "column": 2,
-          "position": 2132
         }
       }
     },
