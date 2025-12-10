@@ -337,6 +337,26 @@ export function normalizeString(value, maxLength) {
 }
 
 /**
+ * Normalize content input by coercing to string, harmonizing newlines, and enforcing a max length.
+ * @param {unknown} value Candidate content value.
+ * @param {number} maxLength Maximum number of characters to keep.
+ * @returns {string} Normalized content string.
+ */
+export function normalizeContent(value, maxLength) {
+  const normalized = String(value ?? '');
+  return normalized.replace(/\r\n?/g, '\n').slice(0, maxLength);
+}
+
+/**
+ * Normalize an author field for storage.
+ * @param {unknown} author Candidate author value.
+ * @returns {string} Normalized author string.
+ */
+export function normalizeAuthor(author) {
+  return normalizeString(author, 120);
+}
+
+/**
  * Origins that are permitted to access production endpoints.
  * Centralizes the allow list so every Cloud Function can reference
  * the same deployment configuration.
