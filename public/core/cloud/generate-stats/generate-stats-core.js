@@ -341,8 +341,7 @@ export function createGenerateStatsCore({
    * @returns {Promise<number>} Story count.
    */
   async function getStoryCount(dbRef = db) {
-    const snap = await dbRef.collection('stories').count().get();
-    return snap.data().count;
+    return countDocuments(reference => reference.collection('stories'), dbRef);
   }
 
   /**
@@ -351,8 +350,10 @@ export function createGenerateStatsCore({
    * @returns {Promise<number>} Page count.
    */
   async function getPageCount(dbRef = db) {
-    const snap = await dbRef.collectionGroup('pages').count().get();
-    return snap.data().count;
+    return countDocuments(
+      reference => reference.collectionGroup('pages'),
+      dbRef
+    );
   }
 
   /**
@@ -372,6 +373,17 @@ export function createGenerateStatsCore({
       .count()
       .get();
     return zeroSnap.data().count + nullSnap.data().count;
+  }
+
+  /**
+   * Count the documents returned by a Firestore query builder.
+   * @param {(database: import('firebase-admin/firestore').Firestore) => import('firebase-admin/firestore').Query} buildQuery Query constructor.
+   * @param {import('firebase-admin/firestore').Firestore} [dbRef] Optional Firestore instance.
+   * @returns {Promise<number>} Document count.
+   */
+  async function countDocuments(buildQuery, dbRef = db) {
+    const snap = await buildQuery(dbRef).count().get();
+    return snap.data().count;
   }
 
   /**
