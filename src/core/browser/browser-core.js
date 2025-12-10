@@ -10,13 +10,30 @@ import {
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 
 /**
- *
- * @param element
- * @param container
- * @param dom
+ * Iterate predicate/message pairs and return the first matching message.
+ * @template T
+ * @param {Array<[ (candidate: T) => boolean, string ]>} checks Predicate/message pairs.
+ * @param {T} candidate Candidate value to evaluate.
+ * @returns {string} Message from the first predicate that returns true or empty string.
+ */
+export function getFirstErrorMessage(checks, candidate) {
+  const found = checks.find(([predicate]) => predicate(candidate));
+  if (found) {
+    return found[1];
+  }
+
+  return '';
+}
+
+/**
+ * Dispose and remove a DOM element that exposes `_dispose`.
+ * @param {HTMLElement | null | undefined} element Element that may expose `_dispose`.
+ * @param {HTMLElement} container Parent container to clean up the element from.
+ * @param {object} dom DOM helper utilities.
+ * @returns {void}
  */
 function removeCapturedElement(element, container, dom) {
-  if (!element || !hasDisposeHook(element)) {
+  if (!shouldRemoveElement(element)) {
     return;
   }
 
@@ -25,24 +42,36 @@ function removeCapturedElement(element, container, dom) {
 }
 
 /**
- *
- * @param element
+ * Determine whether the element has been instrumented for disposal.
+ * @param {HTMLElement | null | undefined} element Element to inspect.
+ * @returns {boolean} True when `_dispose` exists and is callable.
+ */
+function shouldRemoveElement(element) {
+  return Boolean(element && hasDisposeHook(element));
+}
+
+/**
+ * Call an element's `_dispose` hook.
+ * @param {HTMLElement} element Element exposing `_dispose`.
+ * @returns {void}
  */
 function disposeCapturedElement(element) {
   element._dispose();
 }
 
 /**
- *
- * @param element
+ * Detect whether an element exposes `_dispose`.
+ * @param {HTMLElement | null | undefined} element Element to inspect.
+ * @returns {boolean} True when `_dispose` exists and is callable.
  */
 function hasDisposeHook(element) {
   return Boolean(element && typeof element._dispose === 'function');
 }
 
 /**
- *
- * @param selector
+ * Create a remover callback targeting the provided selector.
+ * @param {string} selector Selector for the element to remove.
+ * @returns {(container: HTMLElement, dom: object) => void} Cleanup callback.
  */
 export function createElementRemover(selector) {
   return function removeElement(container, dom) {
