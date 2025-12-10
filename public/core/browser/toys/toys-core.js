@@ -43,8 +43,7 @@ class CsvLineParser {
   }
 
   consume() {
-    if (this.consumeQuote(this.currentChar())) {
-      this.index += 1;
+    if (this.consumeWithAdvance(this.consumeQuote)) {
       return;
     }
 
@@ -52,8 +51,7 @@ class CsvLineParser {
   }
 
   consumeNonQuote() {
-    if (this.consumeDelimiter(this.currentChar())) {
-      this.index += 1;
+    if (this.consumeWithAdvance(this.consumeDelimiter)) {
       return;
     }
 
@@ -108,6 +106,15 @@ class CsvLineParser {
 
     this.commitField();
     return true;
+  }
+
+  consumeWithAdvance(handler) {
+    if (handler.call(this, this.currentChar())) {
+      this.index += 1;
+      return true;
+    }
+
+    return false;
   }
 
   canConsumeDelimiter(char) {

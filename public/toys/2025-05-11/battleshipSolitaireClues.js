@@ -7,7 +7,7 @@
  * @returns {*} - description
  */
 
-import { safeParseJson } from '../../browser-core.js';
+import { safeParseJson, getFirstErrorMessage } from '../../browser-core.js';
 
 /**
  *
@@ -140,11 +140,7 @@ const fleetChecks = [
  * @returns {*} - description
  */
 function computeFleetError(fleet) {
-  const found = fleetChecks.find(([predicate]) => predicate(fleet));
-  if (found) {
-    return found[1];
-  }
-  return '';
+  return getFirstErrorMessage(fleetChecks, fleet);
 }
 
 /**

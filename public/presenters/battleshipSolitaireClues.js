@@ -24,7 +24,7 @@
  */
 
 import { isObject } from '../common.js';
-import { safeParseJson } from '../browser-core.js';
+import { safeParseJson, getFirstErrorMessage } from '../browser-core.js';
 import { createPreFromContent } from './browserPresentersCore.js';
 
 /**
@@ -82,11 +82,7 @@ const VALIDATION_CHECKS = [
  * @returns {string} Error message or empty string.
  */
 function findValidationError(obj) {
-  const found = VALIDATION_CHECKS.find(([predicate]) => predicate(obj));
-  if (found) {
-    return found[1];
-  }
-  return '';
+  return getFirstErrorMessage(VALIDATION_CHECKS, obj);
 }
 
 /**
