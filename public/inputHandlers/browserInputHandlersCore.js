@@ -1,11 +1,4 @@
 import { setInputValue } from '../inputValueStore.js';
-
-/**
- * Selector used to locate dendrite forms in the DOM.
- * @type {string}
- */
-export const DENDRITE_FORM_SELECTOR = '.dendrite-form';
-
 const createDomValueSetter = dom => (textInput, targetValue) => {
   dom.setValue(textInput, targetValue);
 };
@@ -46,6 +39,24 @@ export const createContainerHandlerInvoker = (container, dom) => handler =>
 export function invokeContainerHandlers(container, dom, handlers) {
   const invoke = createContainerHandlerInvoker(container, dom);
   handlers.forEach(invoke);
+}
+
+/**
+ * Apply the shared handlers plus any extras for a container/dom pair.
+ * @param {object} options Handler configuration.
+ * @param {HTMLElement} options.container Parent element hosting the inputs.
+ * @param {object} options.dom DOM helper utilities.
+ * @param {Function[]} options.baseHandlers Core cleanup handlers that should always run.
+ * @param {Function[]} [options.extraHandlers] Additional handlers to run ahead of the base stack.
+ */
+export function applyCleanupHandlers({
+  container,
+  dom,
+  baseHandlers,
+  extraHandlers = [],
+}) {
+  const handlers = [...extraHandlers, ...baseHandlers];
+  invokeContainerHandlers(container, dom, handlers);
 }
 
 /**

@@ -1,12 +1,65 @@
 import { valueOr } from '../jsonUtils.js';
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 import { isNonNullObject } from '../common-core.js';
-import { DENDRITE_FORM_SELECTOR } from './inputHandlers/browserInputHandlersCore.js';
 import {
+  DENDRITE_FORM_SELECTOR,
+  KV_CONTAINER_SELECTOR,
   NUMBER_INPUT_SELECTOR,
   TEXTAREA_SELECTOR,
 } from '../constants/selectors.js';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
+
+/**
+ *
+ * @param element
+ * @param container
+ * @param dom
+ */
+function removeCapturedElement(element, container, dom) {
+  if (!element || !hasDisposeHook(element)) {
+    return;
+  }
+
+  disposeCapturedElement(element);
+  dom.removeChild(container, element);
+}
+
+/**
+ *
+ * @param element
+ */
+function disposeCapturedElement(element) {
+  element._dispose();
+}
+
+/**
+ *
+ * @param element
+ */
+function hasDisposeHook(element) {
+  return Boolean(element && typeof element._dispose === 'function');
+}
+
+/**
+ *
+ * @param selector
+ */
+export function createElementRemover(selector) {
+  return function removeElement(container, dom) {
+    const element = dom.querySelector(container, selector);
+    removeCapturedElement(element, container, dom);
+  };
+}
+
+export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
+export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
+export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
+export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
+export const BASE_CONTAINER_HANDLERS = [
+  maybeRemoveKV,
+  maybeRemoveDendrite,
+  maybeRemoveTextarea,
+];
 
 export const createGoogleSignOut = ({
   authSignOut,
@@ -103,26 +156,6 @@ export function maybeRemoveElement(element, container, dom) {
     disposeAndRemove(element, container, dom);
   }
 }
-
-/**
- * Create a remover callback for the provided selector.
- * @param {string} selector - Selector used to locate the element to remove.
- * @returns {Function} Callback that removes the selected element when found.
- */
-function createElementRemover(selector) {
-  return (container, dom) => {
-    const element = dom.querySelector(container, selector);
-    maybeRemoveElement(element, container, dom);
-  };
-}
-
-export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
-
-const KV_CONTAINER_SELECTOR = '.kv-container';
-export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
-
-export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
-export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
 
 const DENDRITE_OPTION_FIELDS = [
   ['content', 'Content'],
