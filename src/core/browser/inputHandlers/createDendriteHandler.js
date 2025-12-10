@@ -1,4 +1,4 @@
-import { DENDRITE_FORM_SELECTOR } from './browserInputHandlersCore.js';
+import { DENDRITE_FORM_SELECTOR } from '../../constants/selectors.js';
 import {
   hideAndDisable,
   getInputValue,

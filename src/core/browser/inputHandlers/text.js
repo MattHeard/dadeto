@@ -1,13 +1,8 @@
 import {
-  maybeRemoveDendrite,
-  maybeRemoveKV,
-  maybeRemoveNumber,
-  maybeRemoveTextarea,
-} from '../browser-core.js';
-import {
-  invokeContainerHandlers,
+  applyCleanupHandlers,
   revealAndEnable,
 } from './browserInputHandlersCore.js';
+import { BASE_CONTAINER_HANDLERS, maybeRemoveNumber } from '../browser-core.js';
 
 /**
  * Handle a plain text input field.
@@ -18,11 +13,10 @@ import {
  */
 export function textHandler(dom, container, textInput) {
   revealAndEnable(textInput, dom);
-  const containerHandlers = [
-    maybeRemoveNumber,
-    maybeRemoveKV,
-    maybeRemoveDendrite,
-    maybeRemoveTextarea,
-  ];
-  invokeContainerHandlers(container, dom, containerHandlers);
+  applyCleanupHandlers({
+    container,
+    dom,
+    baseHandlers: BASE_CONTAINER_HANDLERS,
+    extraHandlers: [maybeRemoveNumber],
+  });
 }

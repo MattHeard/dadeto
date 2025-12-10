@@ -1,15 +1,13 @@
 import {
-  getInputValue,
-  hideAndDisable,
-  maybeRemoveDendrite,
-  maybeRemoveKV,
-  maybeRemoveTextarea,
-} from '../browser-core.js';
-import {
+  applyCleanupHandlers,
   insertBeforeNextSibling,
-  invokeContainerHandlers,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
+import {
+  BASE_CONTAINER_HANDLERS,
+  getInputValue,
+  hideAndDisable,
+} from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
@@ -76,11 +74,10 @@ export const ensureNumberInput = (container, textInput, dom) => {
  */
 export function numberHandler(dom, container, textInput) {
   hideAndDisable(textInput, dom);
-  const containerHandlers = [
-    maybeRemoveKV,
-    maybeRemoveDendrite,
-    maybeRemoveTextarea,
-  ];
-  invokeContainerHandlers(container, dom, containerHandlers);
+  applyCleanupHandlers({
+    container,
+    dom,
+    baseHandlers: BASE_CONTAINER_HANDLERS,
+  });
   ensureNumberInput(container, textInput, dom);
 }
