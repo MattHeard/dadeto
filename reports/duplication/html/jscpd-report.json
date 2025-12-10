@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-10T14:29:27.438Z",
+    "detectionDate": "2025-12-10T14:39:27.060Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -260,11 +260,11 @@
             "lines": 370,
             "tokens": 1735,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 4,
+            "duplicatedLines": 20,
+            "duplicatedTokens": 104,
+            "percentage": 5.41,
+            "percentageTokens": 5.99,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -392,11 +392,11 @@
             "lines": 623,
             "tokens": 2685,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 9,
+            "duplicatedTokens": 26,
+            "percentage": 1.44,
+            "percentageTokens": 0.97,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -404,11 +404,11 @@
             "lines": 422,
             "tokens": 1846,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 9,
+            "duplicatedTokens": 26,
+            "percentage": 2.13,
+            "percentageTokens": 1.41,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -416,11 +416,11 @@
             "lines": 261,
             "tokens": 1184,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 52,
+            "percentage": 3.83,
+            "percentageTokens": 4.39,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -428,11 +428,11 @@
             "lines": 760,
             "tokens": 3161,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 26,
+            "percentage": 0.79,
+            "percentageTokens": 0.82,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -476,11 +476,11 @@
             "lines": 684,
             "tokens": 2562,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 26,
+            "percentage": 1.61,
+            "percentageTokens": 1.01,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -488,11 +488,11 @@
             "lines": 631,
             "tokens": 2379,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 26,
+            "percentage": 0.95,
+            "percentageTokens": 1.09,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1040,11 +1040,11 @@
             "lines": 162,
             "tokens": 617,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 26,
+            "percentage": 6.79,
+            "percentageTokens": 4.21,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
@@ -1053,11 +1053,11 @@
           "lines": 17557,
           "tokens": 78410,
           "sources": 87,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 6,
+          "duplicatedLines": 41,
+          "duplicatedTokens": 156,
+          "percentage": 0.23,
+          "percentageTokens": 0.2,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1107,15 +1107,232 @@
       "lines": 17804,
       "tokens": 83925,
       "sources": 89,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 6,
+      "duplicatedLines": 41,
+      "duplicatedTokens": 156,
+      "percentage": 0.23,
+      "percentageTokens": 0.19,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [],
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": ",\n      nextInventory: context.nextInventory,\n      nextVisited: context.nextVisited,\n    };\n  }\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
+        "start": 22,
+        "end": 27,
+        "startLoc": {
+          "line": 22,
+          "column": 14,
+          "position": 121
+        },
+        "endLoc": {
+          "line": 27,
+          "column": 1,
+          "position": 147
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
+        "start": 15,
+        "end": 19,
+        "startLoc": {
+          "line": 15,
+          "column": 6,
+          "position": 73
+        },
+        "endLoc": {
+          "line": 19,
+          "column": 2,
+          "position": 99
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": ",\n      nextVisited,\n    };\n  } else {\n    return {\n      output: `> You trip a wire. Sirens start up. You sprint back to the Market.`",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
+        "start": 146,
+        "end": 151,
+        "startLoc": {
+          "line": 146,
+          "column": 14,
+          "position": 731
+        },
+        "endLoc": {
+          "line": 151,
+          "column": 69,
+          "position": 757
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
+        "start": 117,
+        "end": 122,
+        "startLoc": {
+          "line": 117,
+          "column": 13,
+          "position": 582
+        },
+        "endLoc": {
+          "line": 122,
+          "column": 48,
+          "position": 608
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 10,
+      "fragment": ", 120);\n}\n\n/**\n * Normalize content.\n * @param {string} content Raw content.\n * @returns {string} Normalized content.\n */\nfunction normalizeContentBody(content) {\n  return normalizeContent(content,",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-new-page/submit-new-page-core.js",
+        "start": 27,
+        "end": 36,
+        "startLoc": {
+          "line": 27,
+          "column": 5,
+          "position": 73
+        },
+        "endLoc": {
+          "line": 36,
+          "column": 2,
+          "position": 99
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
+        "start": 512,
+        "end": 521,
+        "startLoc": {
+          "line": 512,
+          "column": 11,
+          "position": 2106
+        },
+        "endLoc": {
+          "line": 521,
+          "column": 2,
+          "position": 2132
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": ");\n  if (!pageRef) {\n    return null;\n  }\n\n  return validateAndGetPagePath",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-new-page/helpers.js",
+        "start": 255,
+        "end": 260,
+        "startLoc": {
+          "line": 255,
+          "column": 11,
+          "position": 1151
+        },
+        "endLoc": {
+          "line": 260,
+          "column": 23,
+          "position": 1177
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-page/helpers.js",
+        "start": 194,
+        "end": 199,
+        "startLoc": {
+          "line": 194,
+          "column": 5,
+          "position": 880
+        },
+        "endLoc": {
+          "line": 199,
+          "column": 24,
+          "position": 906
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": "\nconst MISSING_AUTHORIZATION_RESPONSE = {\n  status: 401,\n  body: 'Missing or invalid Authorization header',\n};\n\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
+        "start": 97,
+        "end": 103,
+        "startLoc": {
+          "line": 97,
+          "column": 1,
+          "position": 124
+        },
+        "endLoc": {
+          "line": 103,
+          "column": 1,
+          "position": 150
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 18,
+        "end": 23,
+        "startLoc": {
+          "line": 18,
+          "column": 2,
+          "position": 101
+        },
+        "endLoc": {
+          "line": 23,
+          "column": 6,
+          "position": 127
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 12,
+      "fragment": ") {\n    return '';\n  }\n\n  return String(value);\n}\n\n/**\n * Return the input when it is a string; otherwise `null`.\n * @param {unknown} value Candidate value.\n * @returns {string | null} String when provided, otherwise `null`.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/common-core.js",
+        "start": 114,
+        "end": 125,
+        "startLoc": {
+          "line": 114,
+          "column": 2,
+          "position": 427
+        },
+        "endLoc": {
+          "line": 125,
+          "column": 4,
+          "position": 453
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
+        "start": 335,
+        "end": 346,
+        "startLoc": {
+          "line": 335,
+          "column": 9,
+          "position": 1317
+        },
+        "endLoc": {
+          "line": 346,
+          "column": 4,
+          "position": 1343
+        }
+      }
+    }
+  ],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }
