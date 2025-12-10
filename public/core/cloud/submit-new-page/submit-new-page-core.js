@@ -42,7 +42,7 @@ function normalizeContentBody(content) {
  * @returns {string} Normalized author.
  */
 function normalizeAuthor(author) {
-  return normalizeSubmittedAuthor(author ?? '???');
+  return normalizeSubmittedAuthor(author);
 }
 
 /**
