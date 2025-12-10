@@ -1,9 +1,9 @@
 import {
+  assertFunction,
   ensureString,
   normalizeNonStringValue,
   stringOrNull,
-} from '../common-core.js';
-
+} from './common-core.js';
 export { DEFAULT_BUCKET_NAME } from './common-core.js';
 
 /**
@@ -12,12 +12,6 @@ export { DEFAULT_BUCKET_NAME } from './common-core.js';
  * @param {string} name Name of the dependency for error reporting.
  * @returns {void}
  */
-export function assertFunction(candidate, name) {
-  if (typeof candidate !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
-
 /**
  * Guard a request body check with a presence predicate.
  * @param {unknown} body Candidate request body.
@@ -52,6 +46,74 @@ export function getSnapshotData(snapshot) {
   }
 
   return snapshot.data();
+}
+
+/**
+ * Determine whether a Firebase initialization error indicates a duplicate app.
+ * @param {unknown} error Error thrown by `initializeApp`.
+ * @returns {boolean} True when the error represents a duplicate app instance.
+ */
+export function isDuplicateAppError(error) {
+  return Boolean(error) && hasDuplicateAppIdentifierMessage(error);
+}
+
+/**
+ * Render the readable error message when available.
+ * @param {unknown} error Candidate error object.
+ * @returns {string} Message string or empty string when unavailable.
+ */
+export function extractErrorMessage(error) {
+  if (!hasStringMessage(error)) {
+    return '';
+  }
+
+  return error.message;
+}
+
+/**
+ * Detect whether the error includes a string `message`.
+ * @param {unknown} error Candidate error object.
+ * @returns {error is { message: string }} True when a message string is present.
+ */
+export function hasStringMessage(error) {
+  return Boolean(error) && typeof error.message === 'string';
+}
+
+/**
+ * Determine whether the error carries the duplicate-app identifier and message.
+ * @param {{ code?: string, message?: unknown }} error Firebase initialization error.
+ * @returns {boolean} True when the error represents a duplicate app.
+ */
+function hasDuplicateAppIdentifierMessage(error) {
+  if (!hasDuplicateIdentifier(error)) {
+    return false;
+  }
+
+  return messageIndicatesDuplicate(error);
+}
+
+/**
+ * Decide if the error payload identifies a duplicate Firebase app.
+ * @param {{ code?: string, message?: unknown }} error Error details from initializeApp.
+ * @returns {boolean} True when a duplicate app identifier is present.
+ */
+function hasDuplicateIdentifier(error) {
+  return (
+    error.code === 'app/duplicate-app' || typeof error.message === 'string'
+  );
+}
+
+/**
+ * Confirm the error message mentions an existing app.
+ * @param {{ message?: unknown }} error Error details to inspect.
+ * @returns {boolean} True when the message explicitly notes the app already exists.
+ */
+function messageIndicatesDuplicate(error) {
+  if (typeof error.message !== 'string') {
+    return false;
+  }
+
+  return String(error.message).toLowerCase().includes('already exists');
 }
 
 /**
@@ -351,6 +413,16 @@ export function createCorsOptions(handleCorsOrigin, methods = ['POST']) {
     origin: handleCorsOrigin,
     methods,
   };
+}
+
+/**
+ * Build a normalized response tuple consumed by Cloud Functions.
+ * @param {number} status HTTP status code to emit.
+ * @param {string | Record<string, unknown>} body Response body payload.
+ * @returns {{ status: number, body: string | Record<string, unknown> }} Response envelope.
+ */
+export function createResponse(status, body) {
+  return { status, body };
 }
 
 /**

@@ -1,11 +1,15 @@
 import {
   assertFunction,
+  isNonNullObject,
+  stringOrFallback,
+} from './common-core.js';
+import {
   matchBearerToken,
   normalizeMethod,
   getHeaderFromGetter,
   isAllowedOrigin,
+  createResponse,
 } from './cloud-core.js';
-import { isNonNullObject, stringOrFallback } from './common-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
@@ -196,16 +200,6 @@ function extractBearerToken(header) {
     return null;
   }
   return matchBearerToken(header);
-}
-
-/**
- * Create a normalized response payload for the HTTP adapter.
- * @param {number} status HTTP status code.
- * @param {string | Record<string, unknown>} body Response payload to send to the client.
- * @returns {SubmitModerationRatingResponse} Response tuple consumed by the caller.
- */
-function createResponse(status, body) {
-  return { status, body };
 }
 
 /**

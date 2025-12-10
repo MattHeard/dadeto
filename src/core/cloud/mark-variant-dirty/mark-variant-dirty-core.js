@@ -1,15 +1,19 @@
 import {
-  assertFunction,
   createCorsOriginHandler,
   createCorsOptions,
+  extractErrorMessage,
+  hasStringMessage,
   resolveAllowedOrigins,
 } from '../cloud-core.js';
 import {
   buildPageByNumberQuery,
   buildVariantByNameQuery,
 } from '../firestore-helpers.js';
-import { ensureString, stringOrDefault } from '../common-core.js';
-
+import {
+  assertFunction,
+  ensureString,
+  stringOrDefault,
+} from '../common-core.js';
 const POST_METHOD = 'POST';
 /**
  * Derive the set of allowed origins for the admin endpoint.
@@ -461,32 +465,6 @@ function resolveUpdateErrorMessage(error) {
   }
 
   return 'update failed';
-}
-
-/**
- * Normalize the provided error message when available.
- * @param {unknown} error Possible error object.
- * @returns {string} Error message or empty string when none is found.
- */
-function extractErrorMessage(error) {
-  if (!hasStringMessage(error)) {
-    return '';
-  }
-
-  return error.message;
-}
-
-/**
- * Test whether the input exposes a string message.
- * @param {unknown} error Candidate error object.
- * @returns {error is { message: string }} True when a string message exists.
- */
-function hasStringMessage(error) {
-  if (!error) {
-    return false;
-  }
-
-  return typeof error.message === 'string';
 }
 
 /**

@@ -67,7 +67,7 @@ export function isPlainObject(value) {
 }
 
 const DENDRITE_TEMP_KEYS = ['stories', 'pages', 'options'];
-const DENDRITE_OPTION_KEYS = [
+export const DENDRITE_OPTION_KEYS = [
   'firstOption',
   'secondOption',
   'thirdOption',

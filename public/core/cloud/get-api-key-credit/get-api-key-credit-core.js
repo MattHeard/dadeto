@@ -1,6 +1,5 @@
 import { createDb } from './create-db.js';
-import { isValidString } from '../../common-core.js';
-import { assertFunction } from '../cloud-core.js';
+import { assertFunction, isValidString } from './common-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
 const MISSING_UUID_RESPONSE = { status: 400, body: 'Missing UUID' };

@@ -37,6 +37,18 @@ export function isNonNullObject(value) {
 }
 
 /**
+ * Ensure a dependency is callable.
+ * @param {unknown} candidate Candidate value.
+ * @param {string} name Name used in the error message.
+ * @returns {void}
+ */
+export function assertFunction(candidate, name) {
+  if (typeof candidate !== 'function') {
+    throw new TypeError(`${name} must be a function`);
+  }
+}
+
+/**
  * Return the string candidate when available.
  * @param {unknown} value Candidate value.
  * @returns {string | undefined} String when provided, otherwise undefined.

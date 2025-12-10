@@ -4,10 +4,10 @@ import { isAdminWithDeps } from './admin-core.js';
 
 const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 
-const adminLinks = document.querySelectorAll('.admin-link');
 const signInButtons = document.querySelectorAll('#signinButton');
 const signOutWraps = document.querySelectorAll('#signoutWrap');
 const signOutLinks = document.querySelectorAll('#signoutLink');
+const adminLinks = document.querySelectorAll('.admin-link');
 
 /**
  *

@@ -1,11 +1,14 @@
+import { assertFunction } from './common-core.js';
 import {
-  assertFunction,
   matchBearerToken,
   normalizeString,
   normalizeMethod,
   normalizeAuthorizationCandidate,
   tryGetHeader,
   whenBodyPresent,
+  isAllowedOrigin,
+  createCorsOriginHandler,
+  createResponse,
 } from './cloud-core.js';
 
 /**
@@ -305,43 +308,6 @@ export async function resolveAuthorId(request, verifyIdToken) {
 }
 
 /**
- * Create a minimal HTTP response envelope.
- * @param {number} status - HTTP status code to emit.
- * @param {unknown} body - Response body payload.
- * @returns {HttpResponse} HTTP response envelope.
- */
-function createResponse(status, body) {
-  return { status, body };
-}
-
-/**
- * Check if origin is allowed.
- * @param {string} origin Origin.
- * @param {string[]} allowedOrigins Allowed origins.
- * @returns {boolean} True if allowed.
- */
-function isOriginAllowed(origin, allowedOrigins) {
-  if (!origin) {
-    return true;
-  }
-  return allowedOrigins.includes(origin);
-}
-
-/**
- * Handle origin check callback.
- * @param {string} origin Origin.
- * @param {string[]} allowedOrigins Allowed origins.
- * @param {(err: Error | null, allow?: boolean) => void} cb Callback.
- */
-function handleOriginCheck(origin, allowedOrigins, cb) {
-  if (isOriginAllowed(origin, allowedOrigins)) {
-    cb(null, true);
-  } else {
-    cb(new Error('CORS'));
-  }
-}
-
-/**
  * Get allowed origins from options.
  * @param {object} options Options.
  * @returns {string[]} Allowed origins.
@@ -386,7 +352,7 @@ export function createCorsOptions(config) {
   const { allowedOrigins, methods } = normalizeCorsOptions(config);
 
   return {
-    origin: (origin, cb) => handleOriginCheck(origin, allowedOrigins, cb),
+    origin: createCorsOriginHandler(isAllowedOrigin, allowedOrigins),
     methods,
   };
 }

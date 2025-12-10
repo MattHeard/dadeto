@@ -1,6 +1,6 @@
 import { describe, test, expect } from '@jest/globals';
+import { assertFunction } from '../../../src/core/common-core.js';
 import {
-  assertFunction,
   normalizeString,
   productionOrigins,
   resolveAllowedOrigins,

@@ -1,9 +1,5 @@
-import {
-  assertFunction,
-  DEFAULT_BUCKET_NAME,
-  getSnapshotData,
-} from './cloud-core.js';
-import { ensureString, isNullish } from '../common-core.js';
+import { DEFAULT_BUCKET_NAME, getSnapshotData } from './cloud-core.js';
+import { assertFunction, ensureString, isNullish } from '../common-core.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
 

@@ -1,8 +1,5 @@
-import {
-  assertFunction,
-  DEFAULT_BUCKET_NAME,
-  productionOrigins,
-} from './cloud-core.js';
+import { DEFAULT_BUCKET_NAME, productionOrigins } from './cloud-core.js';
+import { assertFunction } from './common-core.js';
 export { DEFAULT_BUCKET_NAME, productionOrigins };
 const DEFAULT_PAGE_SIZE = 100;
 

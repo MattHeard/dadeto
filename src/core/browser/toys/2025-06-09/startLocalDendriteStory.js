@@ -1,26 +1,5 @@
 import { deepClone } from '../../../objectUtils.js';
-import { runToyWithParsedJson } from '../browserToysCore.js';
-
-const DENDRITE_OPTION_KEYS = [
-  'firstOption',
-  'secondOption',
-  'thirdOption',
-  'fourthOption',
-];
-
-/**
- * Converts option fields in the data object into an array of objects.
- * @param {object} data - Parsed story data.
- * @param {Function} getUuid - UUID generator.
- * @returns {object[]} Normalized options list.
- */
-function createOptions(data, getUuid) {
-  const keys = DENDRITE_OPTION_KEYS;
-  return keys
-    .filter(key => data[key])
-    .map(key => ({ id: getUuid(), content: data[key] }));
-}
-
+import { runToyWithParsedJson, createOptions } from '../browserToysCore.js';
 /**
  * Determines whether the provided object has a valid temporary structure.
  * @param {object} obj - Object to inspect.

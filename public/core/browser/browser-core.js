@@ -8,6 +8,7 @@ import {
   TEXTAREA_SELECTOR,
 } from '../constants/selectors.js';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
+export { assertFunction as ensureFunction } from '../common-core.js';
 
 /**
  * Iterate predicate/message pairs and return the first matching message.
@@ -272,12 +273,6 @@ export { setInputValue };
  * @param {string} name - Name reported in the error message.
  * @returns {void}
  */
-export function ensureFunction(value, name) {
-  if (typeof value !== 'function') {
-    throw new TypeError(`${name} must be a function`);
-  }
-}
-
 /**
  * Checks that two values are both not arrays.
  * @param {*} a - First value to inspect.

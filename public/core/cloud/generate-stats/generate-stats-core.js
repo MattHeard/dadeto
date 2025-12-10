@@ -1,6 +1,7 @@
 import { createVerifyAdmin } from './verifyAdmin.js';
 import { ADMIN_UID, isNonNullObject } from './common-core.js';
-import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
+import { DEFAULT_BUCKET_NAME, isDuplicateAppError } from './cloud-core.js';
+export { isDuplicateAppError };
 
 const STATS_PAGE_HEAD = `<!doctype html>
 <html lang="en">
@@ -123,55 +124,6 @@ ${MENU_SCRIPT}`;
 
 const DEFAULT_URL_MAP = 'prod-dendrite-url-map';
 const DEFAULT_CDN_HOST = 'www.dendritestories.co.nz';
-/**
- * Determine whether a Firebase initialization error indicates a duplicate app.
- * @param {unknown} error Error thrown when calling initializeApp.
- * @returns {boolean} True when the error represents an existing app instance.
- */
-export function isDuplicateAppError(error) {
-  if (!error) {
-    return false;
-  }
-
-  return hasDuplicateAppIdentifierMessage(error);
-}
-
-/**
- * Determine whether the error carries the duplicate-app identifier and message.
- * @param {{ code?: string, message?: unknown }} error Firebase initialization error.
- * @returns {boolean} True when the error represents a duplicate app.
- */
-function hasDuplicateAppIdentifierMessage(error) {
-  if (!hasDuplicateIdentifier(error)) {
-    return false;
-  }
-
-  return messageIndicatesDuplicate(error);
-}
-
-/**
- * Decide if the error payload identifies a duplicate Firebase app.
- * @param {{ code?: string, message?: unknown }} error Error details from initializeApp.
- * @returns {boolean} True when a duplicate app identifier is present.
- */
-function hasDuplicateIdentifier(error) {
-  return (
-    error.code === 'app/duplicate-app' || typeof error.message === 'string'
-  );
-}
-
-/**
- * Confirm the error message mentions an existing app.
- * @param {{ message?: unknown }} error Error details to inspect.
- * @returns {boolean} True when the message explicitly notes the app already exists.
- */
-function messageIndicatesDuplicate(error) {
-  if (typeof error.message !== 'string') {
-    return false;
-  }
-
-  return String(error.message).toLowerCase().includes('already exists');
-}
 
 /**
  * Initialize the Firebase app, ignoring duplicate app errors.
