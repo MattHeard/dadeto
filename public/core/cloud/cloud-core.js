@@ -348,6 +348,15 @@ export function normalizeContent(value, maxLength) {
 }
 
 /**
+ * Normalize submission bodies by coercing to a string, normalizing newlines, and trimming to the allowed length.
+ * @param {unknown} value Raw submission text.
+ * @returns {string} Normalized submission body.
+ */
+export function normalizeSubmissionContent(value) {
+  return normalizeContent(value, 10_000);
+}
+
+/**
  * Normalize an author field for storage.
  * @param {unknown} author Candidate author value.
  * @returns {string} Normalized author string.
