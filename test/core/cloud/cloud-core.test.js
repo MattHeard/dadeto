@@ -2,6 +2,8 @@ import { describe, test, expect } from '@jest/globals';
 import { assertFunction } from '../../../src/core/common-core.js';
 import {
   normalizeString,
+  normalizeContent,
+  normalizeAuthor,
   productionOrigins,
   resolveAllowedOrigins,
 } from '../../../src/core/cloud/cloud-core.js';
@@ -65,6 +67,32 @@ describe('cloud-core', () => {
       expect(() =>
         resolveAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })
       ).toThrow(/Unsupported environment label/);
+    });
+  });
+
+  describe('normalizeContent', () => {
+    test('normalizes newlines and truncates text to max length', () => {
+      const raw = 'line1\r\nline2\rline3';
+
+      expect(normalizeContent(raw, 100)).toBe('line1\nline2\nline3');
+      expect(normalizeContent(raw, 5)).toBe('line1');
+    });
+
+    test('defaults to an empty string when the value is nullish', () => {
+      expect(normalizeContent(null, 10)).toBe('');
+      expect(normalizeContent(undefined, 10)).toBe('');
+    });
+  });
+
+  describe('normalizeAuthor', () => {
+    test('trims and enforces maximum length', () => {
+      expect(normalizeAuthor('  author  ')).toBe('author');
+      expect(normalizeAuthor('long author')).toBe('long author');
+    });
+
+    test('handles nullish values by returning an empty string', () => {
+      expect(normalizeAuthor(null)).toBe('');
+      expect(normalizeAuthor(undefined)).toBe('');
     });
   });
 });
