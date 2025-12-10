@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-10T13:19:52.630Z",
+    "detectionDate": "2025-12-10T13:22:10.941Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -557,14 +557,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
-            "lines": 934,
-            "tokens": 3530,
+            "lines": 946,
+            "tokens": 3564,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 16,
-            "duplicatedTokens": 56,
-            "percentage": 1.71,
-            "percentageTokens": 1.59,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17521,
-          "tokens": 78253,
+          "lines": 17533,
+          "tokens": 78287,
           "sources": 87,
-          "clones": 3,
-          "duplicatedLines": 18,
-          "duplicatedTokens": 84,
-          "percentage": 0.1,
-          "percentageTokens": 0.11,
+          "clones": 2,
+          "duplicatedLines": 10,
+          "duplicatedTokens": 56,
+          "percentage": 0.06,
+          "percentageTokens": 0.07,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,55 +1104,19 @@
       }
     },
     "total": {
-      "lines": 17768,
-      "tokens": 83768,
+      "lines": 17780,
+      "tokens": 83802,
       "sources": 89,
-      "clones": 3,
-      "duplicatedLines": 18,
-      "duplicatedTokens": 84,
-      "percentage": 0.1,
-      "percentageTokens": 0.1,
+      "clones": 2,
+      "duplicatedLines": 10,
+      "duplicatedTokens": 56,
+      "percentage": 0.06,
+      "percentageTokens": 0.07,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 9,
-      "fragment": ").count().get();\n    return snap.data().count;\n  }\n\n  /**\n   * Count unmoderated variants by checking for zero and null reputation sums.\n   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.\n   * @returns {Promise<number>} Unmoderated variant count.\n   */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
-        "start": 354,
-        "end": 362,
-        "startLoc": {
-          "line": 354,
-          "column": 8,
-          "position": 1064
-        },
-        "endLoc": {
-          "line": 362,
-          "column": 6,
-          "position": 1092
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
-        "start": 344,
-        "end": 352,
-        "startLoc": {
-          "line": 344,
-          "column": 10,
-          "position": 1004
-        },
-        "endLoc": {
-          "line": 352,
-          "column": 6,
-          "position": 1032
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 6,
