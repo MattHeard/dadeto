@@ -1,4 +1,8 @@
-import { normalizeString } from './cloud-core.js';
+import {
+  normalizeContent,
+  normalizeString,
+  normalizeAuthor as normalizeSubmittedAuthor,
+} from './cloud-core.js';
 
 /**
  * Normalize incoming option.
@@ -29,7 +33,7 @@ function normalizePageStr(page) {
  * @returns {string} Normalized content.
  */
 function normalizeContentBody(content) {
-  return content.toString().replace(/\r\n?/g, '\n').slice(0, 10_000);
+  return normalizeContent(content, 10_000);
 }
 
 /**
@@ -38,7 +42,7 @@ function normalizeContentBody(content) {
  * @returns {string} Normalized author.
  */
 function normalizeAuthor(author) {
-  return normalizeString(author, 120);
+  return normalizeSubmittedAuthor(author ?? '???');
 }
 
 /**

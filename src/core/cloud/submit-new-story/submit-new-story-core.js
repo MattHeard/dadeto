@@ -1,4 +1,5 @@
 import { assertFunction } from './common-core.js';
+import { normalizeAuthor, normalizeContent } from '../cloud-core.js';
 import {
   matchBearerToken,
   normalizeString,
@@ -179,18 +180,6 @@ function extractBearerToken(header) {
   }
 
   return matchBearerToken(validHeader);
-}
-
-/**
- * Normalize content by coercing to string, harmonizing newlines, and truncating.
- * @param {unknown} value - Submitted content value.
- * @param {number} maxLength - Maximum number of characters allowed.
- * @returns {string} Content ready for persistence.
- */
-function normalizeContent(value, maxLength) {
-  const normalized = String(value);
-
-  return normalized.replace(/\r\n?/g, '\n').slice(0, maxLength);
 }
 
 /**
@@ -533,15 +522,6 @@ function normalizeContentBody(content) {
 }
 
 /**
- * Normalize author.
- * @param {string} author Raw author.
- * @returns {string} Normalized author.
- */
-function normalizeAuthor(author) {
-  return normalizeString(author ?? '???', 120);
-}
-
-/**
  * Normalize submission data from request body.
  * @param {Record<string, unknown>} body - Request body.
  * @returns {object} Normalized data.
@@ -549,7 +529,7 @@ function normalizeAuthor(author) {
 function normalizeSubmissionData(body) {
   const title = normalizeTitle(body.title);
   const content = normalizeContentBody(body.content);
-  const author = normalizeAuthor(body.author);
+  const author = normalizeAuthor(body.author ?? '???');
   const options = collectOptions(body, 120);
 
   return { title, content, author, options };
