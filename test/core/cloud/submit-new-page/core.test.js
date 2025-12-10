@@ -239,4 +239,40 @@ describe('createHandleSubmit', () => {
     });
     expect(deps.saveSubmission).not.toHaveBeenCalled();
   });
+
+  it('defaults the author to ??? when the client omits it', async () => {
+    const deps = baseDeps();
+    deps.findExistingPage.mockResolvedValue('/pages/7');
+    const handler = createHandleSubmit(deps);
+
+    const result = await handler(
+      createRequest(
+        { page: '7', content: 'Story' },
+        { Authorization: 'Bearer token-123' }
+      )
+    );
+
+    expect(result).toEqual({
+      status: 201,
+      body: {
+        id: 'uuid-1',
+        incomingOptionFullName: null,
+        pageNumber: 7,
+        content: 'Story',
+        author: '???',
+        authorId: 'user-1',
+        options: [],
+      },
+    });
+
+    expect(deps.saveSubmission).toHaveBeenCalledWith('uuid-1', {
+      incomingOptionFullName: null,
+      pageNumber: 7,
+      content: 'Story',
+      author: '???',
+      authorId: 'user-1',
+      options: [],
+      createdAt: 'ts',
+    });
+  });
 });

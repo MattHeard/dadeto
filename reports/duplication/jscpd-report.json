@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-10T14:14:24.634Z",
+    "detectionDate": "2025-12-10T14:29:27.438Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -402,7 +402,7 @@
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js": {
             "lines": 422,
-            "tokens": 1851,
+            "tokens": 1846,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -557,8 +557,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
-            "lines": 946,
-            "tokens": 3564,
+            "lines": 955,
+            "tokens": 3629,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1050,8 +1050,8 @@
           }
         },
         "total": {
-          "lines": 17548,
-          "tokens": 78350,
+          "lines": 17557,
+          "tokens": 78410,
           "sources": 87,
           "clones": 0,
           "duplicatedLines": 0,
@@ -1104,8 +1104,8 @@
       }
     },
     "total": {
-      "lines": 17795,
-      "tokens": 83865,
+      "lines": 17804,
+      "tokens": 83925,
       "sources": 89,
       "clones": 0,
       "duplicatedLines": 0,

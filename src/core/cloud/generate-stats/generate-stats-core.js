@@ -340,8 +340,14 @@ export function createGenerateStatsCore({
    * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
    * @returns {Promise<number>} Story count.
    */
-  async function getStoryCount(dbRef = db) {
-    return countDocuments(reference => reference.collection('stories'), dbRef);
+  async function getStoryCount(dbRef) {
+    const buildStoriesQuery = reference => reference.collection('stories');
+
+    if (arguments.length > 0) {
+      return countDocuments(buildStoriesQuery, dbRef);
+    }
+
+    return countDocuments(buildStoriesQuery);
   }
 
   /**
@@ -349,11 +355,14 @@ export function createGenerateStatsCore({
    * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
    * @returns {Promise<number>} Page count.
    */
-  async function getPageCount(dbRef = db) {
-    return countDocuments(
-      reference => reference.collectionGroup('pages'),
-      dbRef
-    );
+  async function getPageCount(dbRef) {
+    const buildPagesQuery = reference => reference.collectionGroup('pages');
+
+    if (arguments.length > 0) {
+      return countDocuments(buildPagesQuery, dbRef);
+    }
+
+    return countDocuments(buildPagesQuery);
   }
 
   /**

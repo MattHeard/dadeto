@@ -389,6 +389,26 @@ describe('createGenerateStatsCore', () => {
       expect(count).toBe(10);
     });
 
+    it('getStoryCount accepts a custom database reference', async () => {
+      const customDb = {
+        collection: () => customDb,
+        count: () => customDb,
+        get: () => Promise.resolve({ data: () => ({ count: 8 }) }),
+      };
+      const count = await core.getStoryCount(customDb);
+      expect(count).toBe(8);
+    });
+
+    it('getPageCount accepts a custom database reference', async () => {
+      const customDb = {
+        collectionGroup: () => customDb,
+        count: () => customDb,
+        get: () => Promise.resolve({ data: () => ({ count: 12 }) }),
+      };
+      const count = await core.getPageCount(customDb);
+      expect(count).toBe(12);
+    });
+
     it('getUnmoderatedPageCount should return the correct count', async () => {
       let callCount = 0;
       mockDb.get = () => {
