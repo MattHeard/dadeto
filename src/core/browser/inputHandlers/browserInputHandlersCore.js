@@ -21,45 +21,6 @@ export const createUpdateTextInputValue = (textInput, dom) => {
 };
 
 /**
- * Build a helper that invokes cleanup callbacks with shared container/dom args.
- * @param {HTMLElement} container - Element hosting the inputs.
- * @param {object} dom - DOM utilities.
- * @returns {Function} Invokes a list of handlers with the shared container/dom.
- */
-export const createContainerHandlerInvoker = (container, dom) => handler =>
-  handler(container, dom);
-
-/**
- * Invoke a set of cleanup handlers for the supplied container/dom pair.
- * @param {HTMLElement} container Element hosting the inputs.
- * @param {object} dom DOM helper utilities.
- * @param {Array<Function>} handlers Handlers to invoke with the shared args.
- * @returns {void}
- */
-export function invokeContainerHandlers(container, dom, handlers) {
-  const invoke = createContainerHandlerInvoker(container, dom);
-  handlers.forEach(invoke);
-}
-
-/**
- * Apply the shared handlers plus any extras for a container/dom pair.
- * @param {object} options Handler configuration.
- * @param {HTMLElement} options.container Parent element hosting the inputs.
- * @param {object} options.dom DOM helper utilities.
- * @param {Function[]} options.baseHandlers Core cleanup handlers that should always run.
- * @param {Function[]} [options.extraHandlers] Additional handlers to run ahead of the base stack.
- */
-export function applyCleanupHandlers({
-  container,
-  dom,
-  baseHandlers,
-  extraHandlers = [],
-}) {
-  const handlers = [...extraHandlers, ...baseHandlers];
-  invokeContainerHandlers(container, dom, handlers);
-}
-
-/**
  * Build a disposer that removes a registered input listener.
  * @param {object} dom - DOM utilities.
  * @param {HTMLElement} el - Element that had the listener attached.

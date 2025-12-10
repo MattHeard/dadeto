@@ -1,9 +1,5 @@
-import { isValidString } from '../../../common-core.js';
-import {
-  parseJsonOrFallback,
-  whenString,
-  isPlainObject,
-} from '../browserToysCore.js';
+import { isValidString, whenString } from '../../../common-core.js';
+import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
 
 const DEFAULT_VISIBILITY = '1';

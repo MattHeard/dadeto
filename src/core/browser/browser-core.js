@@ -91,6 +91,58 @@ export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveTextarea,
 ];
 
+const createContainerHandlerInvoker = (container, dom) => handler =>
+  handler(container, dom);
+
+/**
+ * Invoke a set of cleanup callbacks bound to a container/dom pair.
+ * @param {HTMLElement} container Element hosting the inputs.
+ * @param {object} dom DOM helper utilities.
+ * @param {Function[]} handlers Cleanup callbacks to run.
+ */
+function invokeContainerHandlers(container, dom, handlers) {
+  const invoke = createContainerHandlerInvoker(container, dom);
+  handlers.forEach(invoke);
+}
+
+/**
+ * Apply the provided handlers for the supplied container/dom pair.
+ * @param {object} options Cleanup configuration.
+ * @param {HTMLElement} options.container Parent element hosting the inputs.
+ * @param {object} options.dom DOM helper utilities.
+ * @param {Function[]} options.baseHandlers Handlers that should always run.
+ * @param {Function[]} [options.extraHandlers] Additional handlers to execute before the core stack.
+ */
+export function applyCleanupHandlers({
+  container,
+  dom,
+  baseHandlers,
+  extraHandlers = [],
+}) {
+  const handlers = [...extraHandlers, ...baseHandlers];
+  invokeContainerHandlers(container, dom, handlers);
+}
+
+/**
+ * Apply the shared cleanup handlers plus optional extras.
+ * @param {object} options Cleanup options.
+ * @param {HTMLElement} options.container Parent container for inputs.
+ * @param {object} options.dom DOM helper utilities.
+ * @param {Function[]} [options.extraHandlers] Additional handlers to run before the base stack.
+ */
+export function applyBaseCleanupHandlers({
+  container,
+  dom,
+  extraHandlers = [],
+}) {
+  applyCleanupHandlers({
+    container,
+    dom,
+    baseHandlers: BASE_CONTAINER_HANDLERS,
+    extraHandlers,
+  });
+}
+
 export const createGoogleSignOut = ({
   authSignOut,
   storage,

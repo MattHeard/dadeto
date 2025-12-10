@@ -1,8 +1,8 @@
+import { revealAndEnable } from './browserInputHandlersCore.js';
 import {
-  applyCleanupHandlers,
-  revealAndEnable,
-} from './browserInputHandlersCore.js';
-import { BASE_CONTAINER_HANDLERS, maybeRemoveNumber } from '../browser-core.js';
+  applyBaseCleanupHandlers,
+  maybeRemoveNumber,
+} from '../browser-core.js';
 
 /**
  * Handle a plain text input field.
@@ -13,10 +13,9 @@ import { BASE_CONTAINER_HANDLERS, maybeRemoveNumber } from '../browser-core.js';
  */
 export function textHandler(dom, container, textInput) {
   revealAndEnable(textInput, dom);
-  applyCleanupHandlers({
+  applyBaseCleanupHandlers({
     container,
     dom,
-    baseHandlers: BASE_CONTAINER_HANDLERS,
     extraHandlers: [maybeRemoveNumber],
   });
 }

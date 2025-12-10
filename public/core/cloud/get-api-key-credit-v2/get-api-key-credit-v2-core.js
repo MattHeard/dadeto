@@ -1,6 +1,6 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 import { productionOrigins } from './cloud-core.js';
-import { ensureString, stringOrDefault } from '../../common-core.js';
+import { ensureString, stringOrDefault, whenString } from './common-core.js';
 
 export { createDb } from './create-db.js';
 export { productionOrigins };
@@ -24,10 +24,9 @@ const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
  * @returns {RegExpExecArray|null} Regex match result when successful.
  */
 function execUuidPathPattern(value) {
-  if (typeof value !== 'string') {
-    return null;
-  }
-  return UUID_PATH_PATTERN.exec(value);
+  return whenString(value, uuidCandidate =>
+    UUID_PATH_PATTERN.exec(uuidCandidate)
+  );
 }
 
 /**

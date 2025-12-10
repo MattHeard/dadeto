@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-10T13:22:10.941Z",
+    "detectionDate": "2025-12-10T13:49:23.188Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -29,8 +29,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/calculateVisibility.js": {
-            "lines": 382,
-            "tokens": 1796,
+            "lines": 378,
+            "tokens": 1792,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -509,14 +509,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js": {
-            "lines": 373,
-            "tokens": 1444,
+            "lines": 372,
+            "tokens": 1436,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 28,
-            "percentage": 1.34,
-            "percentageTokens": 1.94,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -581,14 +581,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/browserToysCore.js": {
-            "lines": 318,
-            "tokens": 1752,
+            "lines": 312,
+            "tokens": 1715,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 28,
-            "percentage": 1.57,
-            "percentageTokens": 1.6,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -713,26 +713,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/text.js": {
-            "lines": 22,
-            "tokens": 100,
+            "lines": 21,
+            "tokens": 90,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 28,
-            "percentage": 22.73,
-            "percentageTokens": 28,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/number.js": {
-            "lines": 83,
-            "tokens": 551,
+            "lines": 78,
+            "tokens": 536,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 28,
-            "percentage": 6.02,
-            "percentageTokens": 5.08,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -749,8 +749,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/browserInputHandlersCore.js": {
-            "lines": 117,
-            "tokens": 644,
+            "lines": 78,
+            "tokens": 494,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -905,8 +905,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/browser-core.js": {
-            "lines": 342,
-            "tokens": 1565,
+            "lines": 394,
+            "tokens": 1773,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1037,8 +1037,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/common-core.js": {
-            "lines": 147,
-            "tokens": 564,
+            "lines": 162,
+            "tokens": 617,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1050,14 +1050,14 @@
           }
         },
         "total": {
-          "lines": 17533,
-          "tokens": 78287,
+          "lines": 17544,
+          "tokens": 78324,
           "sources": 87,
-          "clones": 2,
-          "duplicatedLines": 10,
-          "duplicatedTokens": 56,
-          "percentage": 0.06,
-          "percentageTokens": 0.07,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1104,90 +1104,17 @@
       }
     },
     "total": {
-      "lines": 17780,
-      "tokens": 83802,
+      "lines": 17791,
+      "tokens": 83839,
       "sources": 89,
-      "clones": 2,
-      "duplicatedLines": 10,
-      "duplicatedTokens": 56,
-      "percentage": 0.06,
-      "percentageTokens": 0.07,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": ") {\n  if (typeof value !== 'string') {\n    return null;\n  }\n\n",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/toys/browserToysCore.js",
-        "start": 13,
-        "end": 18,
-        "startLoc": {
-          "line": 13,
-          "column": 3,
-          "position": 68
-        },
-        "endLoc": {
-          "line": 18,
-          "column": 1,
-          "position": 96
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
-        "start": 26,
-        "end": 30,
-        "startLoc": {
-          "line": 26,
-          "column": 6,
-          "position": 86
-        },
-        "endLoc": {
-          "line": 30,
-          "column": 3,
-          "position": 114
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "(textInput, dom);\n  applyCleanupHandlers({\n    container,\n    dom,\n    baseHandlers: BASE_CONTAINER_HANDLERS,\n  ",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/number.js",
-        "start": 76,
-        "end": 81,
-        "startLoc": {
-          "line": 76,
-          "column": 15,
-          "position": 504
-        },
-        "endLoc": {
-          "line": 81,
-          "column": 3,
-          "position": 532
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/text.js",
-        "start": 15,
-        "end": 20,
-        "startLoc": {
-          "line": 15,
-          "column": 16,
-          "position": 57
-        },
-        "endLoc": {
-          "line": 20,
-          "column": 5,
-          "position": 85
-        }
-      }
-    }
-  ]
+  "duplicates": []
 }

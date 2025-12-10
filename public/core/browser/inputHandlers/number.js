@@ -1,10 +1,9 @@
 import {
-  applyCleanupHandlers,
   insertBeforeNextSibling,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
 import {
-  BASE_CONTAINER_HANDLERS,
+  applyBaseCleanupHandlers,
   getInputValue,
   hideAndDisable,
 } from '../browser-core.js';
@@ -74,10 +73,6 @@ export const ensureNumberInput = (container, textInput, dom) => {
  */
 export function numberHandler(dom, container, textInput) {
   hideAndDisable(textInput, dom);
-  applyCleanupHandlers({
-    container,
-    dom,
-    baseHandlers: BASE_CONTAINER_HANDLERS,
-  });
+  applyBaseCleanupHandlers({ container, dom });
   ensureNumberInput(container, textInput, dom);
 }

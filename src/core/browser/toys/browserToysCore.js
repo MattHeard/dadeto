@@ -10,13 +10,7 @@ import { valueOr } from '../../jsonUtils.js';
  * @returns {T | null} Result of the callback or null when the input is not a string.
  * @template T
  */
-export function whenString(value, fn) {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  return fn(value);
-}
+export { whenString } from '../../common-core.js';
 
 /**
  * Helper utilities shared by browser toys.

@@ -145,3 +145,18 @@ export function stringOrFallback(value, fallback) {
     normalized => Boolean(normalized)
   );
 }
+
+/**
+ * Run the provided callback when the value is a string.
+ * @param {unknown} value Candidate value.
+ * @param {(value: string) => T} fn Callback invoked with the string.
+ * @returns {T | null} Callback result or `null` when the input is not a string.
+ * @template T
+ */
+export function whenString(value, fn) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  return fn(value);
+}
