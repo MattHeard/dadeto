@@ -11,6 +11,8 @@ import {
   isAllowedOrigin,
   createCorsOriginHandler,
   createResponse,
+  assertFunctionDependencies,
+  assertRandomUuidAndTimestamp,
 } from './cloud-core.js';
 
 /**
@@ -605,10 +607,12 @@ export function createSubmitNewStoryResponder(dependencies) {
   const { verifyIdToken, saveSubmission, randomUUID, getServerTimestamp } =
     dependencies;
 
-  assertFunction(verifyIdToken, 'verifyIdToken');
-  assertFunction(saveSubmission, 'saveSubmission');
-  assertFunction(randomUUID, 'randomUUID');
-  assertFunction(getServerTimestamp, 'getServerTimestamp');
+  assertFunctionDependencies([
+    ['verifyIdToken', verifyIdToken],
+    ['saveSubmission', saveSubmission],
+  ]);
+
+  assertRandomUuidAndTimestamp(dependencies);
 
   return async function submitNewStoryResponder(request) {
     if (!isPostMethod(request.method)) {

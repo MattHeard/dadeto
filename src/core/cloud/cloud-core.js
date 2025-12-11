@@ -279,6 +279,37 @@ export function getHeaderFromGetter(getter, name) {
 }
 
 /**
+ * Send a generic success payload for HTTP responders.
+ * @param {import('express').Response} res Express response object.
+ * @returns {void}
+ */
+export function sendOkResponse(res) {
+  res.status(200).json({ ok: true });
+}
+
+/**
+ * Assert that the named dependencies are callable functions.
+ * @param {Array<[string, unknown]>} candidates Tuple of dependency name and candidate function.
+ * @returns {void}
+ */
+export function assertFunctionDependencies(candidates) {
+  candidates.forEach(([name, candidate]) => {
+    assertFunction(candidate, name);
+  });
+}
+
+/**
+ * Assert that the UUID and timestamp helpers are callable.
+ * @param {{ randomUUID: unknown, getServerTimestamp: unknown }} deps Dependency candidates.
+ * @returns {void}
+ */
+export function assertRandomUuidAndTimestamp(deps) {
+  const { randomUUID, getServerTimestamp } = deps;
+  assertFunction(randomUUID, 'randomUUID');
+  assertFunction(getServerTimestamp, 'getServerTimestamp');
+}
+
+/**
  * Extract the first string element from an array candidate.
  * @param {unknown[]} candidate Array candidate.
  * @returns {string | null} String value or null.
