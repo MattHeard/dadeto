@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T09:20:10.428Z",
+    "detectionDate": "2025-12-11T09:32:48.707Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -392,11 +392,11 @@
             "lines": 620,
             "tokens": 2647,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 9,
+            "duplicatedTokens": 25,
+            "percentage": 1.45,
+            "percentageTokens": 0.94,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -428,11 +428,11 @@
             "lines": 757,
             "tokens": 3122,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 50,
+            "percentage": 1.85,
+            "percentageTokens": 1.6,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -464,11 +464,11 @@
             "lines": 706,
             "tokens": 2767,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 8,
+            "duplicatedTokens": 25,
+            "percentage": 1.13,
+            "percentageTokens": 0.9,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -560,11 +560,11 @@
             "lines": 955,
             "tokens": 3629,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 8,
+            "duplicatedTokens": 25,
+            "percentage": 0.84,
+            "percentageTokens": 0.69,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -812,11 +812,11 @@
             "lines": 638,
             "tokens": 2493,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 25,
+            "percentage": 0.78,
+            "percentageTokens": 1,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1053,11 +1053,11 @@
           "lines": 17622,
           "tokens": 78545,
           "sources": 87,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 3,
+          "duplicatedLines": 22,
+          "duplicatedTokens": 75,
+          "percentage": 0.12,
+          "percentageTokens": 0.1,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1107,14 +1107,123 @@
       "lines": 17869,
       "tokens": 84060,
       "sources": 89,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 3,
+      "duplicatedLines": 22,
+      "duplicatedTokens": 75,
+      "percentage": 0.12,
+      "percentageTokens": 0.09,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": []
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 10,
+      "fragment": ");\n  assertFunction(randomUUID, 'randomUUID');\n  assertFunction(getServerTimestamp, 'getServerTimestamp');\n\n  /**\n   * Process valid rating.\n   * @param {object} deps Dependencies.\n   * @param {object} context Context.\n   * @returns {Promise<object>} Response.\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 532,
+        "end": 541,
+        "startLoc": {
+          "line": 532,
+          "column": 25,
+          "position": 2018
+        },
+        "endLoc": {
+          "line": 541,
+          "column": 6,
+          "position": 2043
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
+        "start": 609,
+        "end": 613,
+        "startLoc": {
+          "line": 609,
+          "column": 17,
+          "position": 2567
+        },
+        "endLoc": {
+          "line": 613,
+          "column": 7,
+          "position": 2592
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": "\n  res.status(200).json({ ok: true });\n}\n\n/**\n * Send a failure response when generation throws.\n * @param {import('express').Response} res Express response helper.\n * @param {unknown} err Error raised during generation.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 935,
+        "end": 943,
+        "startLoc": {
+          "line": 935,
+          "column": 2,
+          "position": 3534
+        },
+        "endLoc": {
+          "line": 943,
+          "column": 4,
+          "position": 3559
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 452,
+        "end": 460,
+        "startLoc": {
+          "line": 452,
+          "column": 1,
+          "position": 1738
+        },
+        "endLoc": {
+          "line": 460,
+          "column": 4,
+          "position": 1763
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n  if (typeof first === 'string') {\n    return first;\n  }\n\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/cloud-core.js",
+        "start": 288,
+        "end": 293,
+        "startLoc": {
+          "line": 288,
+          "column": 1,
+          "position": 1144
+        },
+        "endLoc": {
+          "line": 293,
+          "column": 1,
+          "position": 1169
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 84,
+        "end": 88,
+        "startLoc": {
+          "line": 84,
+          "column": 2,
+          "position": 233
+        },
+        "endLoc": {
+          "line": 88,
+          "column": 3,
+          "position": 258
+        }
+      }
+    }
+  ]
 }
