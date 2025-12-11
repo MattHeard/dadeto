@@ -3,7 +3,6 @@ import {
   productionOrigins,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
-  resolveAllowedOrigins,
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
 } from './cloud-core.js';
@@ -11,6 +10,7 @@ import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
 export { productionOrigins, coreIsAllowedOrigin as isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
+export { getAllowedOrigins } from '../allowed-origins.js';
 
 /**
  * @typedef {object} FirestoreDocumentSnapshot
@@ -335,19 +335,6 @@ function buildOptions(variantRef) {
     .get()
     .then(snapshot => snapshot.docs.map(mapOptionDoc));
 }
-/**
- * Determines the allowed origins for the moderation variant endpoint.
- * @param {Record<string, string | undefined> | undefined} environmentVariables Environment variable map available to the function.
- * @returns {string[]} List of allowed origins.
- */
-export function getAllowedOrigins(environmentVariables) {
-  return resolveAllowedOrigins(environmentVariables);
-}
-
-/**
- *
- * @param handleCorsOrigin
- */
 /**
  * Build a GET-only CORS configuration for this endpoint.
  * @param {HandleCorsOrigin} handleCorsOrigin Origin validator returned by `createHandleCorsOrigin`.

@@ -2,7 +2,6 @@ import { assertFunction } from './common-core.js';
 import {
   normalizeAuthor,
   normalizeSubmissionContent,
-  matchBearerToken,
   normalizeString,
   normalizeMethod,
   normalizeAuthorizationCandidate,
@@ -14,6 +13,7 @@ import {
   assertFunctionDependencies,
   assertRandomUuidAndTimestamp,
 } from './cloud-core.js';
+import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 
 /**
  * @typedef {object} SubmitNewStoryRequest
@@ -160,32 +160,6 @@ function getAuthorizationHeader(request) {
 }
 
 /**
- * Validate header string.
- * @param {unknown} header Header.
- * @returns {string | null} String or null.
- */
-function validateHeaderString(header) {
-  if (typeof header !== 'string') {
-    return null;
-  }
-  return header;
-}
-
-/**
- * Extract a bearer token from an Authorization header.
- * @param {unknown} header - Authorization header value.
- * @returns {string | null} Bearer token value when present.
- */
-function extractBearerToken(header) {
-  const validHeader = validateHeaderString(header);
-  if (!validHeader) {
-    return null;
-  }
-
-  return matchBearerToken(validHeader);
-}
-
-/**
  * Get raw option.
  * @param {Record<string, unknown>} body Body.
  * @param {string} key Key.
@@ -268,35 +242,14 @@ function validateDecodedToken(decoded) {
 }
 
 /**
- * Verify a token and return the UID if valid.
- * @param {string} token - Token to verify.
- * @param {SubmitNewStoryDependencies['verifyIdToken']} verifyIdToken - Verification function.
- * @returns {Promise<string | null>} UID or null.
- */
-async function verifyTokenSafe(token, verifyIdToken) {
-  try {
-    const decoded = await verifyIdToken(token);
-    return validateDecodedToken(decoded);
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Resolve the authenticated author identifier from a request and verification function.
  * @param {SubmitNewStoryRequest | undefined} request - Request potentially carrying an identity token.
  * @param {SubmitNewStoryDependencies['verifyIdToken']} verifyIdToken - Token verification dependency.
  * @returns {Promise<string | null>} Resolved author identifier when verification succeeds.
  */
-export async function resolveAuthorId(request, verifyIdToken) {
+export function resolveAuthorId(request, verifyIdToken) {
   const header = getAuthorizationHeader(request);
-  const token = extractBearerToken(header);
-
-  if (!token) {
-    return null;
-  }
-
-  return verifyTokenSafe(token, verifyIdToken);
+  return resolveAuthorIdFromHeader(header, verifyIdToken, validateDecodedToken);
 }
 
 /**

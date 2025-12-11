@@ -3,7 +3,6 @@ import {
   createCorsOptions,
   extractErrorMessage,
   hasStringMessage,
-  resolveAllowedOrigins,
   sendOkResponse,
 } from '../cloud-core.js';
 import {
@@ -16,15 +15,7 @@ import {
   stringOrDefault,
 } from '../common-core.js';
 const POST_METHOD = 'POST';
-/**
- * Derive the set of allowed origins for the admin endpoint.
- * @param {Record<string, unknown> | null | undefined} environmentVariables Environment configuration.
- * @returns {string[]} Whitelisted origins.
- */
-export function getAllowedOrigins(environmentVariables) {
-  return resolveAllowedOrigins(environmentVariables);
-}
-
+export { getAllowedOrigins } from '../allowed-origins.js';
 /**
  * Build the cors middleware origin handler.
  * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Origin predicate.
