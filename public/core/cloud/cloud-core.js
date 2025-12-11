@@ -337,6 +337,22 @@ export function buildErrorResult(error) {
 }
 
 /**
+ * Return the first error result when present, otherwise delegate to the fallback.
+ * @template T
+ * @param {unknown} error Error payload.
+ * @param {() => T} fallback Supplier invoked when no error was found.
+ * @returns {{ error: unknown } | T} Error wrapper or fallback result.
+ */
+export function returnErrorResultOrValue(error, fallback) {
+  const errorResult = buildErrorResult(error);
+  if (errorResult) {
+    return errorResult;
+  }
+
+  return fallback();
+}
+
+/**
  * Normalize a numeric lookup result, returning zero when the value or source is absent.
  * @param {Record<string, unknown> | undefined | null} data Data object providing the numeric value.
  * @param {(payload: Record<string, unknown>) => unknown} selector Selector that reads a property from the data.
