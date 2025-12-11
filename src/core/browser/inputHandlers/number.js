@@ -5,7 +5,7 @@ import {
   hideAndDisable,
 } from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
-import { ensureSpecialInput } from './sharedSpecialInput.js';
+import { createSpecialInputEnsurer } from './sharedSpecialInput.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
@@ -33,24 +33,22 @@ const maybeSetNumberInputValue = (dom, input, value) => {
 };
 
 export const ensureNumberInput = (container, textInput, dom) => {
-  const specialInput = dom.querySelector(container, NUMBER_INPUT_SELECTOR);
-
-  return ensureSpecialInput({
+  const { ensure } = createSpecialInputEnsurer({
     selector: NUMBER_INPUT_SELECTOR,
     container,
     textInput,
     dom,
-    existingSpecialInput: specialInput,
-    createSpecialInput: () => {
-      const inputValue = getInputValue(textInput);
-      const updateTextInputValue = event => {
-        const targetValue = dom.getTargetValue(event);
-        dom.setValue(textInput, targetValue);
-        setInputValue(textInput, targetValue);
-      };
+  });
 
-      return createNumberInput(inputValue, updateTextInputValue, dom);
-    },
+  return ensure(() => {
+    const inputValue = getInputValue(textInput);
+    const updateTextInputValue = event => {
+      const targetValue = dom.getTargetValue(event);
+      dom.setValue(textInput, targetValue);
+      setInputValue(textInput, targetValue);
+    };
+
+    return createNumberInput(inputValue, updateTextInputValue, dom);
   });
 };
 
