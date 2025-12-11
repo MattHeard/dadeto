@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T09:10:37.735Z",
+    "detectionDate": "2025-12-11T09:20:10.428Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -257,8 +257,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-03-30/cyberpunkAdventure.js": {
-            "lines": 407,
-            "tokens": 1801,
+            "lines": 419,
+            "tokens": 1906,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -413,8 +413,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/helpers.js": {
-            "lines": 267,
-            "tokens": 1195,
+            "lines": 270,
+            "tokens": 1200,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1050,8 +1050,8 @@
           }
         },
         "total": {
-          "lines": 17607,
-          "tokens": 78435,
+          "lines": 17622,
+          "tokens": 78545,
           "sources": 87,
           "clones": 0,
           "duplicatedLines": 0,
@@ -1104,8 +1104,8 @@
       }
     },
     "total": {
-      "lines": 17854,
-      "tokens": 83950,
+      "lines": 17869,
+      "tokens": 84060,
       "sources": 89,
       "clones": 0,
       "duplicatedLines": 0,

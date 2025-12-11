@@ -186,7 +186,7 @@ async function resolvePageRefForInfo(db, info) {
 /**
  * Apply a callback when an async resolver produces a value.
  * @param {Promise<*>} resolver Promise resolving to a value or null.
- * @param {(value: *) => Promise<*|*} fn Callback invoked with the resolved value.
+ * @param {(value: *) => Promise<*>} fn Callback invoked with the resolved value.
  * @returns {Promise<*|null>} Callback result or null when resolver yields nothing.
  */
 async function whenFound(resolver, fn) {

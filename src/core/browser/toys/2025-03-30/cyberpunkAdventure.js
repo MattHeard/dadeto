@@ -10,18 +10,12 @@ function handleHackerDoor(context) {
     const output = `> Password accepted. Inside, a rogue AI offers you a cracked implant.`;
     context.nextInventory.push('cracked implant');
     context.nextVisited.add('hacker');
-    return respondWithInventory(
-      output,
-      'hub',
-      context.nextInventory,
-      context.nextVisited
-    );
+    return respondWithContext(context, output, 'hub');
   } else {
-    return respondWithInventory(
+    return respondWithContext(
+      context,
       `> Hint: the password is a number and a name...`,
-      'hacker:door',
-      context.nextInventory,
-      context.nextVisited
+      'hacker:door'
     );
   }
 }
@@ -107,24 +101,24 @@ function shouldTradeDatapad(nextInventory, lowerInput) {
  *   Trade result and next state.
  */
 function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
-  if (shouldTradeDatapad(nextInventory, lowerInput)) {
+  const tradeSuccess = shouldTradeDatapad(nextInventory, lowerInput);
+  let inventory = nextInventory;
+  let output = `> Do you want to trade? Type 'trade datapad'.`;
+  let nextState = 'transport:trade';
+
+  if (tradeSuccess) {
     const newInventory = nextInventory.filter(item => item !== 'datapad');
     newInventory.push('neural ticket');
     nextVisited.add('transport');
-    return respondWithInventory(
-      `> You hand over the datapad. The vendor grins and slips you the neural ticket.`,
-      'hub',
-      newInventory,
-      nextVisited
-    );
-  } else {
-    return respondWithInventory(
-      `> Do you want to trade? Type 'trade datapad'.`,
-      'transport:trade',
-      nextInventory,
-      nextVisited
-    );
+    inventory = newInventory;
+    output = `> You hand over the datapad. The vendor grins and slips you the neural ticket.`;
+    nextState = 'hub';
   }
+
+  return respondWithInventoryState(output, nextState, {
+    inventory,
+    visited: nextVisited,
+  });
 }
 
 /**
@@ -137,23 +131,17 @@ function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
 function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
   const stealthCheck = getRandomNumber();
   const success = stealthCheck > 0.3;
+  let output = `> You trip a wire. Sirens start up. You sprint back to the Market.`;
   if (success) {
     nextInventory.push('stimpack');
     nextVisited.add('alley');
-    return respondWithInventory(
-      `> You dodge the shadows and find a hidden stash: a stimpack.`,
-      'hub',
-      nextInventory,
-      nextVisited
-    );
-  } else {
-    return respondWithInventory(
-      `> You trip a wire. Sirens start up. You sprint back to the Market.`,
-      'hub',
-      nextInventory,
-      nextVisited
-    );
+    output = `> You dodge the shadows and find a hidden stash: a stimpack.`;
   }
+
+  return respondWithInventoryState(output, 'hub', {
+    inventory: nextInventory,
+    visited: nextVisited,
+  });
 }
 
 /**
@@ -166,19 +154,43 @@ function getDefaultAdventureResult() {
 
 /**
  * Assemble the transition payload for inventory-aware responses.
- * @param {string} output Text that should be shown to the player.
+ * @param {string} output Text to show to the player.
  * @param {string} nextState Next adventure state.
- * @param {string[]} inventory Inventory snapshot to carry forward.
- * @param {Set<string>} visited Visited node tracker.
+ * @param {{inventory: string[], visited: Set<string>}} state Inventory and visited mapping.
  * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Combined response.
  */
-function respondWithInventory(output, nextState, inventory, visited) {
+function respondWithInventory(output, nextState, { inventory, visited }) {
   return buildAdventureResponse({
     output,
     nextState,
     nextInventory: inventory,
     nextVisited: visited,
   });
+}
+
+/**
+ * Respond using the context's inventory/visit tracking.
+ * @param {{nextInventory: string[], nextVisited: Set<string>}} context Response context.
+ * @param {string} output Text to show.
+ * @param {string} nextState Next adventure state.
+ * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Transition response.
+ */
+function respondWithContext(context, output, nextState) {
+  return respondWithInventory(output, nextState, {
+    inventory: context.nextInventory,
+    visited: context.nextVisited,
+  });
+}
+
+/**
+ * Respond with explicitly supplied inventory data.
+ * @param {string} output Text to show.
+ * @param {string} nextState Next adventure state.
+ * @param {{inventory: string[], visited: Set<string>}} state Inventory/visited bundle.
+ * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Transition response.
+ */
+function respondWithInventoryState(output, nextState, state) {
+  return respondWithInventory(output, nextState, state);
 }
 
 /**
