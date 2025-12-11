@@ -1,51 +1,15 @@
 import {
   normalizeSubmissionContent,
-  normalizeString,
+  normalizeShortString,
   normalizeAuthor as normalizeSubmittedAuthor,
+  normalizeString,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 
 /**
- * Normalize incoming option.
- * @param {string} option Raw option.
- * @returns {string} Normalized option.
- */
-/**
- * Normalize incoming option.
- * @param {string} option Raw option.
- * @returns {string} Normalized option.
- */
-function normalizeIncomingOption(option) {
-  return normalizeString(option, 120);
-}
-
-/**
- * Normalize page string.
- * @param {string} page Raw page.
- * @returns {string} Normalized page.
- */
-function normalizePageStr(page) {
-  return normalizeString(page, 120);
-}
-
-/**
- * Normalize content.
- * @param {string} content Raw content.
- * @returns {string} Normalized content.
- */
-/**
- * Normalize author.
- * @param {string} author Raw author.
- * @returns {string} Normalized author.
- */
-function normalizeAuthor(author) {
-  return normalizeSubmittedAuthor(author);
-}
-
-/**
- * Get raw content.
- * @param {Record<string, unknown>} body Body.
- * @returns {string} Raw content.
+ * Extract submission content directly from the request body.
+ * @param {Record<string, unknown>} body Request payload provided by Express.
+ * @returns {string} Raw content string when available.
  */
 function getRawContent(body) {
   return body.content || '';
@@ -84,10 +48,10 @@ function normalizeSubmissionBody(body) {
     getRawValues(body);
 
   return {
-    incomingOption: normalizeIncomingOption(rawIncomingOption),
-    pageStr: normalizePageStr(rawPage),
+    incomingOption: normalizeShortString(rawIncomingOption),
+    pageStr: normalizeShortString(rawPage),
     content: normalizeSubmissionContent(rawContent),
-    author: normalizeAuthor(rawAuthor),
+    author: normalizeSubmittedAuthor(rawAuthor),
   };
 }
 

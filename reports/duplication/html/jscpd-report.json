@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T13:03:04.265Z",
+    "detectionDate": "2025-12-11T13:15:03.691Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -389,8 +389,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js": {
-            "lines": 576,
-            "tokens": 2456,
+            "lines": 577,
+            "tokens": 2457,
             "sources": 1,
             "clones": 1,
             "duplicatedLines": 8,
@@ -401,14 +401,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js": {
-            "lines": 381,
-            "tokens": 1675,
+            "lines": 345,
+            "tokens": 1600,
             "sources": 1,
             "clones": 1,
             "duplicatedLines": 8,
             "duplicatedTokens": 23,
-            "percentage": 2.1,
-            "percentageTokens": 1.37,
+            "percentage": 2.32,
+            "percentageTokens": 1.44,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -473,14 +473,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/hide-variant-html/hide-variant-html-core.js": {
-            "lines": 689,
-            "tokens": 2570,
+            "lines": 688,
+            "tokens": 2578,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 46,
-            "percentage": 1.45,
-            "percentageTokens": 1.79,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -821,8 +821,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 738,
-            "tokens": 2875,
+            "lines": 747,
+            "tokens": 2903,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1086,14 +1086,14 @@
           }
         },
         "total": {
-          "lines": 17658,
-          "tokens": 78766,
+          "lines": 17631,
+          "tokens": 78728,
           "sources": 90,
-          "clones": 3,
-          "duplicatedLines": 18,
-          "duplicatedTokens": 69,
-          "percentage": 0.1,
-          "percentageTokens": 0.09,
+          "clones": 2,
+          "duplicatedLines": 13,
+          "duplicatedTokens": 46,
+          "percentage": 0.07,
+          "percentageTokens": 0.06,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1140,14 +1140,14 @@
       }
     },
     "total": {
-      "lines": 17905,
-      "tokens": 84281,
+      "lines": 17878,
+      "tokens": 84243,
       "sources": 92,
-      "clones": 3,
-      "duplicatedLines": 18,
-      "duplicatedTokens": 69,
-      "percentage": 0.1,
-      "percentageTokens": 0.08,
+      "clones": 2,
+      "duplicatedLines": 13,
+      "duplicatedTokens": 46,
+      "percentage": 0.07,
+      "percentageTokens": 0.05,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1156,72 +1156,36 @@
     {
       "format": "javascript",
       "lines": 9,
-      "fragment": ",\n} from './cloud-core.js';\nimport { resolveAuthorIdFromHeader } from '../auth-helpers.js';\n\n/**\n * Normalize incoming option.\n * @param {string} option Raw option.\n * @returns {string} Normalized option.\n */",
+      "fragment": ",\n} from './cloud-core.js';\nimport { resolveAuthorIdFromHeader } from '../auth-helpers.js';\n\n/**\n * Extract submission content directly from the request body.\n * @param {Record<string, unknown>} body Request payload provided by Express.\n * @returns {string} Raw content string when available.\n */",
       "tokens": 0,
       "firstFile": {
         "name": "src/core/cloud/submit-new-page/submit-new-page-core.js",
-        "start": 4,
-        "end": 12,
+        "start": 5,
+        "end": 13,
         "startLoc": {
-          "line": 4,
-          "column": 25,
-          "position": 18
+          "line": 5,
+          "column": 16,
+          "position": 22
         },
         "endLoc": {
-          "line": 12,
+          "line": 13,
           "column": 4,
-          "position": 41
+          "position": 45
         }
       },
       "secondFile": {
         "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
-        "start": 14,
-        "end": 24,
+        "start": 15,
+        "end": 25,
         "startLoc": {
-          "line": 14,
-          "column": 29,
-          "position": 63
+          "line": 15,
+          "column": 21,
+          "position": 67
         },
         "endLoc": {
-          "line": 24,
+          "line": 25,
           "column": 4,
-          "position": 86
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "({\n  removeVariantHtmlForSnapshot,\n  getVisibility,\n  visibilityThreshold,\n}) {\n  return async",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
-        "start": 622,
-        "end": 627,
-        "startLoc": {
-          "line": 622,
-          "column": 34,
-          "position": 2272
-        },
-        "endLoc": {
-          "line": 627,
-          "column": 6,
-          "position": 2295
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
-        "start": 561,
-        "end": 566,
-        "startLoc": {
-          "line": 561,
-          "column": 32,
-          "position": 2082
-        },
-        "endLoc": {
-          "line": 566,
-          "column": 2,
-          "position": 2105
+          "position": 90
         }
       }
     },
