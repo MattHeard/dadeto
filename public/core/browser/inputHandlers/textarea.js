@@ -10,7 +10,7 @@ import {
   revealAndEnable,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
-import { ensureSpecialInput } from './sharedSpecialInput.js';
+import { createSpecialInputEnsurer } from './sharedSpecialInput.js';
 
 const TEXTAREA_SELECTOR = '.toy-textarea';
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
@@ -53,20 +53,19 @@ const shouldSetTextareaValue = (specialInput, value) =>
 
 export const ensureTextareaInput = (container, textInput, dom) => {
   const selector = TEXTAREA_SELECTOR;
-  const specialInput = dom.querySelector(container, selector);
+  const { existingSpecialInput: specialInput, ensure } =
+    createSpecialInputEnsurer({
+      selector,
+      container,
+      textInput,
+      dom,
+    });
 
-  const textarea = ensureSpecialInput({
-    selector,
-    container,
-    textInput,
-    dom,
-    existingSpecialInput: specialInput,
-    createSpecialInput: () => {
-      const textarea = dom.createElement('textarea');
-      dom.setClassName(textarea, TEXTAREA_CLASS);
-      setupTextarea({ textarea, textInput, dom });
-      return textarea;
-    },
+  const textarea = ensure(() => {
+    const textarea = dom.createElement('textarea');
+    dom.setClassName(textarea, TEXTAREA_CLASS);
+    setupTextarea({ textarea, textInput, dom });
+    return textarea;
   });
 
   const value = getTextareaSourceValue(textInput, dom);

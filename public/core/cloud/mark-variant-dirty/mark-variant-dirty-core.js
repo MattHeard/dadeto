@@ -536,29 +536,16 @@ function resolveAllowedMethod(method) {
 
 /**
  * Build the HTTP handler once the inputs are normalized.
- * @param {object} options Normalized handler dependencies.
- * @param {Function} options.verifyAdmin Admin check.
- * @param {Function} options.markVariantDirty Variant mutation helper.
- * @param {Function} options.parseRequestBody Body parser.
- * @param {string} options.allowedMethod Allowed HTTP method.
- * @returns {(req: import('express').Request, res: import('express').Response, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof options.verifyAdmin }) => Promise<void>} Express request handler.
+ * @param {object} handlerDeps Normalized handler dependencies.
+ * @param {Function} handlerDeps.verifyAdmin Admin check.
+ * @param {Function} handlerDeps.markVariantDirty Variant mutation helper.
+ * @param {Function} handlerDeps.parseRequestBody Body parser.
+ * @param {string} handlerDeps.allowedMethod Allowed HTTP method.
+ * @returns {(req: import('express').Request, res: import('express').Response, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof handlerDeps.verifyAdmin }) => Promise<void>} Express request handler.
  */
-function buildHandleRequest({
-  verifyAdmin,
-  markVariantDirty,
-  parseRequestBody,
-  allowedMethod,
-}) {
+function buildHandleRequest(handlerDeps) {
   return async function handleRequest(req, res, deps = {}) {
-    return processHandleRequest({
-      req,
-      res,
-      deps,
-      verifyAdmin,
-      markVariantDirty,
-      parseRequestBody,
-      allowedMethod,
-    });
+    return processHandleRequest({ req, res, deps }, handlerDeps);
   };
 }
 
@@ -568,25 +555,21 @@ const REQUEST_HANDLED = Symbol('request-handled');
 
 /**
  * Core handler workflow that validates the request, authorizes the caller, and marks the variant dirty.
- * @param {object} options Handler dependencies.
- * @param {import('express').Request} options.req Express request.
- * @param {import('express').Response} options.res Express response.
- * @param {object} options.deps Optional overrides.
- * @param {Function} options.verifyAdmin Admin verification function.
- * @param {Function} options.markVariantDirty Variant mutation helper.
- * @param {(body: unknown) => { pageNumber: number, variantName: string }} options.parseRequestBody Request parser.
- * @param {string} options.allowedMethod Allowed HTTP method.
+ * @param {object} requestData Request lifecycle dependencies.
+ * @param {import('express').Request} requestData.req Express request.
+ * @param {import('express').Response} requestData.res Express response.
+ * @param {object} requestData.deps Optional overrides.
+ * @param {object} handlerDeps Handler dependencies.
+ * @param {Function} handlerDeps.verifyAdmin Admin verification function.
+ * @param {Function} handlerDeps.markVariantDirty Variant mutation helper.
+ * @param {(body: unknown) => { pageNumber: number, variantName: string }} handlerDeps.parseRequestBody Request parser.
+ * @param {string} handlerDeps.allowedMethod Allowed HTTP method.
  * @returns {Promise<void>} Promise resolved once handling completes.
  */
-async function processHandleRequest({
-  req,
-  res,
-  deps,
-  verifyAdmin,
-  markVariantDirty,
-  parseRequestBody,
-  allowedMethod,
-}) {
+async function processHandleRequest(requestData, handlerDeps) {
+  const { req, res, deps } = requestData;
+  const { verifyAdmin, markVariantDirty, parseRequestBody, allowedMethod } =
+    handlerDeps;
   const verifyAdminFn = pickVerifyAdminFn(verifyAdmin, deps);
   const markFn = pickMarkFn(markVariantDirty, deps);
 

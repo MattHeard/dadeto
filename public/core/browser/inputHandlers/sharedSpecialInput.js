@@ -55,3 +55,38 @@ export function ensureSpecialInput({
     createSpecialInput,
   });
 }
+
+/**
+ * Create a helper that caches the pre-existing special input and provides an ensure function.
+ * @param {object} params Helper configuration.
+ * @param {string} params.selector Selector to locate an existing element.
+ * @param {HTMLElement} params.container Container that wraps the input.
+ * @param {HTMLElement} params.textInput Underlying text input element.
+ * @param {object} params.dom DOM helper utilities.
+ * @returns {{
+ *   existingSpecialInput: HTMLElement | null,
+ *   ensure: (createSpecialInput: () => HTMLElement) => HTMLElement,
+ * }} Wrapper exposing the existing element and an ensure helper.
+ */
+export function createSpecialInputEnsurer({
+  selector,
+  container,
+  textInput,
+  dom,
+}) {
+  const existingSpecialInput = dom.querySelector(container, selector);
+
+  return {
+    existingSpecialInput,
+    ensure(createSpecialInput) {
+      return ensureSpecialInput({
+        selector,
+        container,
+        textInput,
+        dom,
+        existingSpecialInput,
+        createSpecialInput,
+      });
+    },
+  };
+}
