@@ -1,3 +1,5 @@
+import { getNumericValueOrZero } from '../cloud-core.js';
+
 /**
  * Ensure the provided Firestore instance is truthy.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
@@ -7,7 +9,6 @@ function assertDbExists(db) {
     throw new TypeError('db must expose a doc helper');
   }
 }
-
 /**
  * Ensure the provided Firestore instance has a doc method.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
@@ -45,18 +46,6 @@ function assertDocumentSnapshot(snapshot) {
  * @returns {Record<string, unknown> | null} Stored document data, if present.
  */
 /**
- * Cast nullable numeric values into a usable number for calculations.
- * @param {number | null | undefined} value Possible numeric input.
- * @returns {number} Normalized number, defaulting to zero when absent.
- */
-function toNumber(value) {
-  if (typeof value === 'number') {
-    return value;
-  }
-  return 0;
-}
-
-/**
  * Normalize a variant identifier into a Firestore document path.
  * @param {string | null | undefined} variantId Raw variant identifier.
  * @returns {string} Cleaned variant path without a leading slash.
@@ -76,10 +65,7 @@ export function normalizeVariantPath(variantId) {
  * @returns {number} Numeric value or 0.
  */
 function getSafeNumber(data, key) {
-  if (!data) {
-    return 0;
-  }
-  return toNumber(data[key]);
+  return getNumericValueOrZero(data, record => record?.[key]);
 }
 
 /**

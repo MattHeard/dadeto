@@ -8,6 +8,7 @@
  */
 
 import { safeParseJson, getFirstErrorMessage } from '../../browser-core.js';
+import { buildErrorResult } from '../../../cloud/cloud-core.js';
 
 /**
  *
@@ -123,8 +124,9 @@ function parseFleet(input) {
   const parseJsonValue = x => JSON.parse(x);
   const fleet = safeParseJson(input, parseJsonValue);
   const error = computeFleetError(fleet);
-  if (error) {
-    return { error };
+  const errorResult = buildErrorResult(error);
+  if (errorResult) {
+    return errorResult;
   }
   return fleet;
 }

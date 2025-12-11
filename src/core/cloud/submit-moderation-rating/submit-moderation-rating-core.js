@@ -10,6 +10,7 @@ import {
   normalizeAuthorizationCandidate,
   assertFunctionDependencies,
   assertRandomUuidAndTimestamp,
+  buildErrorResult,
 } from './cloud-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
@@ -600,8 +601,9 @@ function resolveRequestPrerequisites(request) {
     tokenResult.error,
   ]);
 
-  if (error) {
-    return { error };
+  const errorResult = buildErrorResult(error);
+  if (errorResult) {
+    return errorResult;
   }
 
   return { bodyResult, token: tokenResult.token };

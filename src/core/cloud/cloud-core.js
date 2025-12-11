@@ -324,6 +324,45 @@ export function resolveMessageOrDefault(message, fallback) {
 }
 
 /**
+ * Build a simple object containing the first error encountered.
+ * @param {unknown} error Error payload to wrap.
+ * @returns {{ error: unknown } | null} Wrapped error object or null when no error was provided.
+ */
+export function buildErrorResult(error) {
+  if (error) {
+    return { error };
+  }
+
+  return null;
+}
+
+/**
+ * Normalize a numeric lookup result, returning zero when the value or source is absent.
+ * @param {Record<string, unknown> | undefined | null} data Data object providing the numeric value.
+ * @param {(payload: Record<string, unknown>) => unknown} selector Selector that reads a property from the data.
+ * @returns {number} Numeric value when available, otherwise zero.
+ */
+export function getNumericValueOrZero(data, selector) {
+  if (!data) {
+    return 0;
+  }
+
+  return resolveNumericCandidate(selector(data));
+}
+/**
+ * Normalize a candidate into a number when possible; otherwise zero.
+ * @param {unknown} value Candidate to inspect.
+ * @returns {number} Number extracted from the value or zero.
+ */
+function resolveNumericCandidate(value) {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  return 0;
+}
+
+/**
  * Extract the first string element from an array candidate.
  * @param {unknown[]} candidate Array candidate.
  * @returns {string | null} String value or null.
