@@ -4,6 +4,7 @@ import {
   extractErrorMessage,
   hasStringMessage,
   resolveAllowedOrigins,
+  sendOkResponse,
 } from '../cloud-core.js';
 import {
   buildPageByNumberQuery,
@@ -450,7 +451,7 @@ function respondToVariantResult(res, ok) {
     return;
   }
 
-  res.status(200).json({ ok: true });
+  sendOkResponse(res);
 }
 
 /**

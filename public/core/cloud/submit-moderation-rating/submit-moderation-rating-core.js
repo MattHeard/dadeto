@@ -1,8 +1,4 @@
-import {
-  assertFunction,
-  isNonNullObject,
-  stringOrFallback,
-} from './common-core.js';
+import { assertFunction, isNonNullObject } from './common-core.js';
 import {
   matchBearerToken,
   normalizeMethod,
@@ -11,6 +7,9 @@ import {
   createResponse,
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
+  normalizeAuthorizationCandidate,
+  assertFunctionDependencies,
+  assertRandomUuidAndTimestamp,
 } from './cloud-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
@@ -71,43 +70,12 @@ function readAuthorizationFromGetter(request) {
 }
 
 /**
- * Normalize header values to the first available string entry.
- * @param {unknown} value Header value to normalize.
- * @returns {string | null} String header representation or null when unavailable.
- */
-/**
- * Extract first string from array.
- * @param {unknown[]} arr Array.
- * @returns {string | null} First string.
- */
-function extractFirstString(arr) {
-  const [first] = arr;
-  if (typeof first === 'string') {
-    return first;
-  }
-  return null;
-}
-
-/**
- * Coerce a raw header value into a normalized string token.
+ * Coerce an Authorization header candidate into a normalized string.
  * @param {unknown} value Header value sourced from Express request metadata.
  * @returns {string | null} String representation of the header or null when unavailable.
  */
 function coerceAuthorizationHeader(value) {
-  return stringOrFallback(value, coerceHeaderArray);
-}
-
-/**
- * Extract header from array-like values.
- * @param {unknown} value Value.
- * @returns {string | null} Header.
- */
-function coerceHeaderArray(value) {
-  if (Array.isArray(value)) {
-    return extractFirstString(value);
-  }
-
-  return null;
+  return normalizeAuthorizationCandidate(value);
 }
 
 /**
@@ -520,18 +488,21 @@ function isValidAssignment(assignment) {
  * @param {SubmitModerationRatingDependencies} dependencies Functions required to process the request.
  * @returns {(request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} Responder that validates and processes submissions.
  */
-export function createSubmitModerationRatingResponder({
-  verifyIdToken,
-  fetchModeratorAssignment,
-  recordModerationRating,
-  randomUUID,
-  getServerTimestamp,
-}) {
-  assertFunction(verifyIdToken, 'verifyIdToken');
-  assertFunction(fetchModeratorAssignment, 'fetchModeratorAssignment');
-  assertFunction(recordModerationRating, 'recordModerationRating');
-  assertFunction(randomUUID, 'randomUUID');
-  assertFunction(getServerTimestamp, 'getServerTimestamp');
+export function createSubmitModerationRatingResponder(dependencies) {
+  const {
+    verifyIdToken,
+    fetchModeratorAssignment,
+    recordModerationRating,
+    randomUUID,
+    getServerTimestamp,
+  } = dependencies;
+  assertFunctionDependencies([
+    ['verifyIdToken', verifyIdToken],
+    ['fetchModeratorAssignment', fetchModeratorAssignment],
+    ['recordModerationRating', recordModerationRating],
+  ]);
+
+  assertRandomUuidAndTimestamp(dependencies);
 
   /**
    * Process valid rating.

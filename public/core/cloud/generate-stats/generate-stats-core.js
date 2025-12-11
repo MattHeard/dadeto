@@ -1,6 +1,10 @@
 import { createVerifyAdmin } from './verifyAdmin.js';
 import { ADMIN_UID, isNonNullObject } from './common-core.js';
-import { DEFAULT_BUCKET_NAME, isDuplicateAppError } from './cloud-core.js';
+import {
+  DEFAULT_BUCKET_NAME,
+  isDuplicateAppError,
+  sendOkResponse,
+} from './cloud-core.js';
 export { isDuplicateAppError };
 
 const STATS_PAGE_HEAD = `<!doctype html>
@@ -925,17 +929,8 @@ async function respondWithGenerate(res, generate) {
     return;
   }
 
-  sendGenerateSuccess(res);
+  sendOkResponse(res);
 }
-
-/**
- * Send a success response after generation completes.
- * @param {import('express').Response} res Express response helper.
- */
-function sendGenerateSuccess(res) {
-  res.status(200).json({ ok: true });
-}
-
 /**
  * Send a failure response when generation throws.
  * @param {import('express').Response} res Express response helper.
