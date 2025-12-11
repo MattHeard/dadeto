@@ -3,6 +3,7 @@ import {
   normalizeString,
   normalizeAuthor as normalizeSubmittedAuthor,
 } from './cloud-core.js';
+import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 
 /**
  * Normalize incoming option.
@@ -229,44 +230,6 @@ async function resolveSubmissionTarget(deps) {
 }
 
 /**
- * Get UID from decoded token.
- * @param {object} decoded Decoded token.
- * @returns {string | null} UID.
- */
-function getUidFromDecoded(decoded) {
-  return decoded.uid ?? null;
-}
-
-/**
- * Verify token safely.
- * @param {string} token Token.
- * @param {Function} verifyIdToken Verifier.
- * @returns {Promise<string | null>} UID.
- */
-async function verifyTokenSafe(token, verifyIdToken) {
-  try {
-    const decoded = await verifyIdToken(token);
-    return getUidFromDecoded(decoded);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Resolve the optional author identifier from the Authorization header.
- * @param {string} authHeader Authorization header value.
- * @param {(token: string) => Promise<{ uid: string }>} verifyIdToken Firebase token verifier.
- * @returns {Promise<string | null>} Resolved author UID when the token is valid.
- */
-async function resolveAuthorId(authHeader, verifyIdToken) {
-  const match = authHeader.match(/^Bearer (.+)$/);
-  if (!match) {
-    return null;
-  }
-  return verifyTokenSafe(match[1], verifyIdToken);
-}
-
-/**
  * Check if option is present.
  * @param {unknown} raw Raw option.
  * @returns {boolean} True if present.
@@ -335,7 +298,7 @@ async function processValidSubmission(deps, context) {
   const { verifyIdToken, randomUUID, saveSubmission, serverTimestamp } = deps;
   const { target, content, author, authHeader, options } = context;
 
-  const authorId = await resolveAuthorId(authHeader, verifyIdToken);
+  const authorId = await resolveAuthorIdFromHeader(authHeader, verifyIdToken);
   const id = randomUUID();
   const submissionData = {
     incomingOptionFullName: target.incomingOptionFullName,
