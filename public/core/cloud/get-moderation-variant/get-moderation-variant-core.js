@@ -5,6 +5,7 @@ import {
   createCorsOptions as buildCorsOptions,
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
+  resolveMessageOrDefault,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
@@ -509,20 +510,7 @@ function createInvalidTokenResponse(error) {
  */
 function getInvalidTokenMessage(error) {
   const normalized = normalizeString(error?.message);
-  return selectInvalidTokenMessage(normalized);
-}
-
-/**
- * Choose between a normalized message and the default response body.
- * @param {string | undefined} message Normalized error text.
- * @returns {string} Message to return to the client.
- */
-function selectInvalidTokenMessage(message) {
-  if (message) {
-    return message;
-  }
-
-  return INVALID_TOKEN_RESPONSE.body;
+  return resolveMessageOrDefault(normalized, INVALID_TOKEN_RESPONSE.body);
 }
 
 /**
