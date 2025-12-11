@@ -604,8 +604,7 @@ async function processSubmission(deps, request) {
  * @returns {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} Domain responder for new story submissions.
  */
 export function createSubmitNewStoryResponder(dependencies) {
-  const { verifyIdToken, saveSubmission, randomUUID, getServerTimestamp } =
-    dependencies;
+  const { verifyIdToken, saveSubmission } = dependencies;
 
   assertFunctionDependencies([
     ['verifyIdToken', verifyIdToken],
