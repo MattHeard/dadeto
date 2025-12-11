@@ -4,6 +4,7 @@ import {
   extractErrorMessage,
   hasStringMessage,
   sendOkResponse,
+  resolveMessageOrDefault,
 } from '../cloud-core.js';
 import {
   buildPageByNumberQuery,
@@ -452,11 +453,7 @@ function respondToVariantResult(res, ok) {
  */
 function resolveUpdateErrorMessage(error) {
   const message = extractErrorMessage(error);
-  if (message) {
-    return message;
-  }
-
-  return 'update failed';
+  return resolveMessageOrDefault(message, 'update failed');
 }
 
 /**

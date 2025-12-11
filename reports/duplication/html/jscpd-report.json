@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T12:16:49.537Z",
+    "detectionDate": "2025-12-11T12:20:47.240Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -461,14 +461,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 698,
-            "tokens": 2741,
+            "lines": 695,
+            "tokens": 2732,
             "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 17,
-            "duplicatedTokens": 69,
-            "percentage": 2.44,
-            "percentageTokens": 2.52,
+            "clones": 2,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 46,
+            "percentage": 1.73,
+            "percentageTokens": 1.68,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -485,14 +485,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-moderation-variant/get-moderation-variant-core.js": {
-            "lines": 614,
-            "tokens": 2321,
+            "lines": 602,
+            "tokens": 2289,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 23,
-            "percentage": 0.81,
-            "percentageTokens": 0.99,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -809,8 +809,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 669,
-            "tokens": 2632,
+            "lines": 683,
+            "tokens": 2676,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1074,14 +1074,14 @@
           }
         },
         "total": {
-          "lines": 17584,
-          "tokens": 78454,
+          "lines": 17583,
+          "tokens": 78457,
           "sources": 89,
-          "clones": 8,
-          "duplicatedLines": 44,
-          "duplicatedTokens": 184,
-          "percentage": 0.25,
-          "percentageTokens": 0.23,
+          "clones": 7,
+          "duplicatedLines": 39,
+          "duplicatedTokens": 161,
+          "percentage": 0.22,
+          "percentageTokens": 0.21,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1128,14 +1128,14 @@
       }
     },
     "total": {
-      "lines": 17831,
-      "tokens": 83969,
+      "lines": 17830,
+      "tokens": 83972,
       "sources": 91,
-      "clones": 8,
-      "duplicatedLines": 44,
-      "duplicatedTokens": 184,
-      "percentage": 0.25,
-      "percentageTokens": 0.22,
+      "clones": 7,
+      "duplicatedLines": 39,
+      "duplicatedTokens": 161,
+      "percentage": 0.22,
+      "percentageTokens": 0.19,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1220,32 +1220,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 587,
-        "end": 593,
+        "start": 584,
+        "end": 590,
         "startLoc": {
-          "line": 587,
+          "line": 584,
           "column": 2,
-          "position": 2253
+          "position": 2244
         },
         "endLoc": {
-          "line": 593,
+          "line": 590,
           "column": 6,
-          "position": 2276
+          "position": 2267
         }
       },
       "secondFile": {
         "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 549,
-        "end": 555,
+        "start": 546,
+        "end": 552,
         "startLoc": {
-          "line": 549,
+          "line": 546,
           "column": 2,
-          "position": 2109
+          "position": 2100
         },
         "endLoc": {
-          "line": 555,
+          "line": 552,
           "column": 7,
-          "position": 2132
+          "position": 2123
         }
       }
     },
@@ -1282,42 +1282,6 @@
           "line": 566,
           "column": 2,
           "position": 2105
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "\n  if (message) {\n    return message;\n  }\n\n  return INVALID_TOKEN_RESPONSE",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
-        "start": 520,
-        "end": 525,
-        "startLoc": {
-          "line": 520,
-          "column": 2,
-          "position": 1889
-        },
-        "endLoc": {
-          "line": 525,
-          "column": 23,
-          "position": 1912
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 454,
-        "end": 459,
-        "startLoc": {
-          "line": 454,
-          "column": 2,
-          "position": 1760
-        },
-        "endLoc": {
-          "line": 459,
-          "column": 16,
-          "position": 1783
         }
       }
     },

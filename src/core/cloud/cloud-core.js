@@ -310,6 +310,20 @@ export function assertRandomUuidAndTimestamp(deps) {
 }
 
 /**
+ * Return a fallback when the provided message is falsy.
+ * @param {string | undefined | null} message Candidate message.
+ * @param {string} fallback Fallback value when message is falsy.
+ * @returns {string} Message to surface to the caller.
+ */
+export function resolveMessageOrDefault(message, fallback) {
+  if (message) {
+    return message;
+  }
+
+  return fallback;
+}
+
+/**
  * Extract the first string element from an array candidate.
  * @param {unknown[]} candidate Array candidate.
  * @returns {string | null} String value or null.
