@@ -1,3 +1,5 @@
+import { buildCopyExportMap } from './copy-export-utils.js';
+
 export const sharedDirectoryPairs = [
   {
     key: 'Toys',
@@ -622,29 +624,29 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copySupportingDirectories(dirs, io, messageLogger);
   }
 
-  return {
-    formatPathForLog,
-    isCorrectJsFileEnding,
-    isJsFile,
-    shouldCheckEntry,
-    getActualNewFiles,
-    getPossibleNewFiles,
-    accumulateJsFiles,
-    findJsFiles,
-    createCopyPairs,
-    ensureDirectoryExists,
-    copyFileWithDirectories,
-    copyFilePairs,
-    handleDirectoryEntry,
-    processDirectoryEntries,
-    copyDirRecursive,
-    copyDirectoryTreeIfExists,
-    copyBlogJson,
-    copyRootUtilityFiles,
-    copyToyFiles,
-    copyPresenterFiles,
-    copyBrowserAudioControls,
-    copySupportingDirectories,
-    runCopyWorkflow,
-  };
+  return buildCopyExportMap([
+    ['runCopyWorkflow', runCopyWorkflow],
+    ['copySupportingDirectories', copySupportingDirectories],
+    ['copyBrowserAudioControls', copyBrowserAudioControls],
+    ['copyPresenterFiles', copyPresenterFiles],
+    ['copyToyFiles', copyToyFiles],
+    ['copyRootUtilityFiles', copyRootUtilityFiles],
+    ['copyBlogJson', copyBlogJson],
+    ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
+    ['copyDirRecursive', copyDirRecursive],
+    ['processDirectoryEntries', processDirectoryEntries],
+    ['handleDirectoryEntry', handleDirectoryEntry],
+    ['copyFilePairs', copyFilePairs],
+    ['copyFileWithDirectories', copyFileWithDirectories],
+    ['ensureDirectoryExists', ensureDirectoryExists],
+    ['createCopyPairs', createCopyPairs],
+    ['findJsFiles', findJsFiles],
+    ['accumulateJsFiles', accumulateJsFiles],
+    ['getPossibleNewFiles', getPossibleNewFiles],
+    ['getActualNewFiles', getActualNewFiles],
+    ['shouldCheckEntry', shouldCheckEntry],
+    ['isJsFile', isJsFile],
+    ['isCorrectJsFileEnding', isCorrectJsFileEnding],
+    ['formatPathForLog', formatPathForLog],
+  ]);
 }

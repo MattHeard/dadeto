@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T13:15:03.691Z",
+    "detectionDate": "2025-12-11T13:27:04.701Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -392,23 +392,23 @@
             "lines": 577,
             "tokens": 2457,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 8,
-            "duplicatedTokens": 23,
-            "percentage": 1.39,
-            "percentageTokens": 0.94,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js": {
-            "lines": 345,
-            "tokens": 1600,
+            "lines": 347,
+            "tokens": 1602,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 8,
-            "duplicatedTokens": 23,
-            "percentage": 2.32,
-            "percentageTokens": 1.44,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -796,6 +796,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-shared.js": {
+            "lines": 16,
+            "tokens": 68,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/firestore-helpers.js": {
             "lines": 25,
             "tokens": 102,
@@ -809,14 +821,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/copy.js": {
-            "lines": 298,
-            "tokens": 1037,
+            "lines": 299,
+            "tokens": 1088,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 23,
-            "percentage": 1.68,
-            "percentageTokens": 2.22,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1061,14 +1073,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/copy.js": {
-            "lines": 650,
-            "tokens": 2912,
+            "lines": 652,
+            "tokens": 3044,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 23,
-            "percentage": 0.77,
-            "percentageTokens": 0.79,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/copy-export-utils.js": {
+            "lines": 8,
+            "tokens": 25,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1086,14 +1110,14 @@
           }
         },
         "total": {
-          "lines": 17631,
-          "tokens": 78728,
-          "sources": 90,
-          "clones": 2,
-          "duplicatedLines": 13,
-          "duplicatedTokens": 46,
-          "percentage": 0.07,
-          "percentageTokens": 0.06,
+          "lines": 17660,
+          "tokens": 79006,
+          "sources": 92,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1140,91 +1164,18 @@
       }
     },
     "total": {
-      "lines": 17878,
-      "tokens": 84243,
-      "sources": 92,
-      "clones": 2,
-      "duplicatedLines": 13,
-      "duplicatedTokens": 46,
-      "percentage": 0.07,
-      "percentageTokens": 0.05,
+      "lines": 17907,
+      "tokens": 84521,
+      "sources": 94,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 9,
-      "fragment": ",\n} from './cloud-core.js';\nimport { resolveAuthorIdFromHeader } from '../auth-helpers.js';\n\n/**\n * Extract submission content directly from the request body.\n * @param {Record<string, unknown>} body Request payload provided by Express.\n * @returns {string} Raw content string when available.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/submit-new-page/submit-new-page-core.js",
-        "start": 5,
-        "end": 13,
-        "startLoc": {
-          "line": 5,
-          "column": 16,
-          "position": 22
-        },
-        "endLoc": {
-          "line": 13,
-          "column": 4,
-          "position": 45
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
-        "start": 15,
-        "end": 25,
-        "startLoc": {
-          "line": 15,
-          "column": 21,
-          "position": 67
-        },
-        "endLoc": {
-          "line": 25,
-          "column": 4,
-          "position": 90
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": ", io, messageLogger);\n  }\n\n  return {\n    formatPathForLog,\n    isCorrectJsFileEnding",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/copy.js",
-        "start": 622,
-        "end": 627,
-        "startLoc": {
-          "line": 622,
-          "column": 5,
-          "position": 2797
-        },
-        "endLoc": {
-          "line": 627,
-          "column": 22,
-          "position": 2820
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/copy.js",
-        "start": 286,
-        "end": 291,
-        "startLoc": {
-          "line": 286,
-          "column": 21,
-          "position": 986
-        },
-        "endLoc": {
-          "line": 291,
-          "column": 15,
-          "position": 1009
-        }
-      }
-    }
-  ],
+  "duplicates": [],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }

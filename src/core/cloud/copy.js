@@ -1,4 +1,5 @@
 import { formatPathRelativeToProject } from '../copy.js';
+import { buildCopyExportMap } from '../copy-export-utils.js';
 
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 
@@ -286,13 +287,13 @@ export function createCopyToInfraCore({
     await copyIndividualFiles(individualFileCopies, io, messageLogger);
   }
 
-  return {
-    formatPathForLog,
-    isCopyableFile,
-    copyFileToTarget,
-    copyDirectory,
-    copyDeclaredFiles,
-    copyIndividualFiles,
-    runCopyToInfra,
-  };
+  return buildCopyExportMap([
+    ['runCopyToInfra', runCopyToInfra],
+    ['copyIndividualFiles', copyIndividualFiles],
+    ['copyDeclaredFiles', copyDeclaredFiles],
+    ['copyDirectory', copyDirectory],
+    ['copyFileToTarget', copyFileToTarget],
+    ['isCopyableFile', isCopyableFile],
+    ['formatPathForLog', formatPathForLog],
+  ]);
 }
