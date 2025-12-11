@@ -1,10 +1,12 @@
 import {
   normalizeSubmissionContent,
-  normalizeShortString,
   normalizeAuthor as normalizeSubmittedAuthor,
   normalizeString,
 } from './cloud-core.js';
-import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
+import {
+  normalizeShortString,
+  resolveAuthorIdFromHeader,
+} from '../submit-shared.js';
 
 /**
  * Extract submission content directly from the request body.
