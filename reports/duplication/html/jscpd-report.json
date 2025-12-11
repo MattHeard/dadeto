@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T09:57:06.892Z",
+    "detectionDate": "2025-12-11T12:16:49.537Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -200,11 +200,11 @@
             "lines": 165,
             "tokens": 919,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 3.03,
+            "percentageTokens": 2.5,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -380,11 +380,11 @@
             "lines": 272,
             "tokens": 1151,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 1.84,
+            "percentageTokens": 2,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -392,11 +392,11 @@
             "lines": 576,
             "tokens": 2456,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 8,
+            "duplicatedTokens": 23,
+            "percentage": 1.39,
+            "percentageTokens": 0.94,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -404,11 +404,11 @@
             "lines": 381,
             "tokens": 1675,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 8,
+            "duplicatedTokens": 23,
+            "percentage": 2.1,
+            "percentageTokens": 1.37,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -428,11 +428,11 @@
             "lines": 728,
             "tokens": 3025,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 0.69,
+            "percentageTokens": 0.76,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -464,11 +464,11 @@
             "lines": 698,
             "tokens": 2741,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 3,
+            "duplicatedLines": 17,
+            "duplicatedTokens": 69,
+            "percentage": 2.44,
+            "percentageTokens": 2.52,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -476,11 +476,11 @@
             "lines": 689,
             "tokens": 2570,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 46,
+            "percentage": 1.45,
+            "percentageTokens": 1.79,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -488,11 +488,11 @@
             "lines": 614,
             "tokens": 2321,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 0.81,
+            "percentageTokens": 0.99,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -512,11 +512,11 @@
             "lines": 372,
             "tokens": 1436,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 1.34,
+            "percentageTokens": 1.6,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -704,11 +704,11 @@
             "lines": 105,
             "tokens": 715,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 4.76,
+            "percentageTokens": 3.22,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -728,11 +728,11 @@
             "lines": 78,
             "tokens": 536,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 6.41,
+            "percentageTokens": 4.29,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -800,11 +800,11 @@
             "lines": 298,
             "tokens": 1037,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 1.68,
+            "percentageTokens": 2.22,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1052,11 +1052,11 @@
             "lines": 650,
             "tokens": 2912,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 23,
+            "percentage": 0.77,
+            "percentageTokens": 0.79,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1077,11 +1077,11 @@
           "lines": 17584,
           "tokens": 78454,
           "sources": 89,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 8,
+          "duplicatedLines": 44,
+          "duplicatedTokens": 184,
+          "percentage": 0.25,
+          "percentageTokens": 0.23,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1131,15 +1131,304 @@
       "lines": 17831,
       "tokens": 83969,
       "sources": 91,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 8,
+      "duplicatedLines": 44,
+      "duplicatedTokens": 184,
+      "percentage": 0.25,
+      "percentageTokens": 0.22,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [],
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": ",\n} from './cloud-core.js';\nimport { resolveAuthorIdFromHeader } from '../auth-helpers.js';\n\n/**\n * Normalize incoming option.\n * @param {string} option Raw option.\n * @returns {string} Normalized option.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-new-page/submit-new-page-core.js",
+        "start": 4,
+        "end": 12,
+        "startLoc": {
+          "line": 4,
+          "column": 25,
+          "position": 18
+        },
+        "endLoc": {
+          "line": 12,
+          "column": 4,
+          "position": 41
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
+        "start": 14,
+        "end": 24,
+        "startLoc": {
+          "line": 14,
+          "column": 29,
+          "position": 63
+        },
+        "endLoc": {
+          "line": 24,
+          "column": 4,
+          "position": 86
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n  if (error) {\n    return { error };\n  }\n\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 602,
+        "end": 607,
+        "startLoc": {
+          "line": 602,
+          "column": 1,
+          "position": 2471
+        },
+        "endLoc": {
+          "line": 607,
+          "column": 1,
+          "position": 2494
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js",
+        "start": 125,
+        "end": 129,
+        "startLoc": {
+          "line": 125,
+          "column": 2,
+          "position": 719
+        },
+        "endLoc": {
+          "line": 129,
+          "column": 3,
+          "position": 742
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": "\n  verifyAdmin,\n  markVariantDirty,\n  parseRequestBody,\n  allowedMethod,\n}) {\n  const",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 587,
+        "end": 593,
+        "startLoc": {
+          "line": 587,
+          "column": 2,
+          "position": 2253
+        },
+        "endLoc": {
+          "line": 593,
+          "column": 6,
+          "position": 2276
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 549,
+        "end": 555,
+        "startLoc": {
+          "line": 549,
+          "column": 2,
+          "position": 2109
+        },
+        "endLoc": {
+          "line": 555,
+          "column": 7,
+          "position": 2132
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "({\n  removeVariantHtmlForSnapshot,\n  getVisibility,\n  visibilityThreshold,\n}) {\n  return async",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
+        "start": 622,
+        "end": 627,
+        "startLoc": {
+          "line": 622,
+          "column": 34,
+          "position": 2272
+        },
+        "endLoc": {
+          "line": 627,
+          "column": 6,
+          "position": 2295
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/hide-variant-html/hide-variant-html-core.js",
+        "start": 561,
+        "end": 566,
+        "startLoc": {
+          "line": 561,
+          "column": 32,
+          "position": 2082
+        },
+        "endLoc": {
+          "line": 566,
+          "column": 2,
+          "position": 2105
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n  if (message) {\n    return message;\n  }\n\n  return INVALID_TOKEN_RESPONSE",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-moderation-variant/get-moderation-variant-core.js",
+        "start": 520,
+        "end": 525,
+        "startLoc": {
+          "line": 520,
+          "column": 2,
+          "position": 1889
+        },
+        "endLoc": {
+          "line": 525,
+          "column": 23,
+          "position": 1912
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
+        "start": 454,
+        "end": 459,
+        "startLoc": {
+          "line": 454,
+          "column": 2,
+          "position": 1760
+        },
+        "endLoc": {
+          "line": 459,
+          "column": 16,
+          "position": 1783
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": ") {\n  if (!data) {\n    return 0;\n  }\n\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js",
+        "start": 352,
+        "end": 357,
+        "startLoc": {
+          "line": 352,
+          "column": 5,
+          "position": 1345
+        },
+        "endLoc": {
+          "line": 357,
+          "column": 1,
+          "position": 1368
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/update-variant-visibility/update-variant-visibility-core.js",
+        "start": 78,
+        "end": 82,
+        "startLoc": {
+          "line": 78,
+          "column": 4,
+          "position": 273
+        },
+        "endLoc": {
+          "line": 82,
+          "column": 3,
+          "position": 296
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n  if (specialInput) {\n    return specialInput;\n  }\n\n  const inputValue",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/number.js",
+        "start": 40,
+        "end": 45,
+        "startLoc": {
+          "line": 40,
+          "column": 1,
+          "position": 326
+        },
+        "endLoc": {
+          "line": 45,
+          "column": 11,
+          "position": 349
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/textarea.js",
+        "start": 51,
+        "end": 56,
+        "startLoc": {
+          "line": 51,
+          "column": 2,
+          "position": 360
+        },
+        "endLoc": {
+          "line": 56,
+          "column": 9,
+          "position": 383
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": ", io, messageLogger);\n  }\n\n  return {\n    formatPathForLog,\n    isCorrectJsFileEnding",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/copy.js",
+        "start": 622,
+        "end": 627,
+        "startLoc": {
+          "line": 622,
+          "column": 5,
+          "position": 2797
+        },
+        "endLoc": {
+          "line": 627,
+          "column": 22,
+          "position": 2820
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/copy.js",
+        "start": 286,
+        "end": 291,
+        "startLoc": {
+          "line": 286,
+          "column": 21,
+          "position": 986
+        },
+        "endLoc": {
+          "line": 291,
+          "column": 15,
+          "position": 1009
+        }
+      }
+    }
+  ],
   "filename": "/Users/matthew.heard/Code/Matt/dadeto/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }
