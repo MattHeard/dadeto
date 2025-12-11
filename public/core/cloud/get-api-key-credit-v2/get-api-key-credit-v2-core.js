@@ -1,5 +1,5 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
-import { productionOrigins } from './cloud-core.js';
+import { getNumericValueOrZero, productionOrigins } from './cloud-core.js';
 import { ensureString, stringOrDefault, whenString } from './common-core.js';
 
 export { createDb } from './create-db.js';
@@ -350,23 +350,5 @@ function resolveSnapshotData(snap) {
  * @returns {number} The stored credit when present, otherwise zero.
  */
 function resolveCreditValue(data) {
-  if (!data) {
-    return 0;
-  }
-
-  return extractNumericCredit(data);
-}
-
-/**
- * Normalize raw data into a numeric credit value.
- * @param {Record<string, unknown>} data Data payload containing the credit.
- * @returns {number} Numeric credit value or zero when absent.
- */
-function extractNumericCredit(data) {
-  const credit = data.credit;
-  if (typeof credit === 'number') {
-    return credit;
-  }
-
-  return 0;
+  return getNumericValueOrZero(data, record => record.credit);
 }
