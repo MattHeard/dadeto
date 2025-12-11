@@ -1,13 +1,11 @@
-import {
-  insertBeforeNextSibling,
-  setupInputEvents,
-} from './browserInputHandlersCore.js';
+import { setupInputEvents } from './browserInputHandlersCore.js';
 import {
   applyBaseCleanupHandlers,
   getInputValue,
   hideAndDisable,
 } from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
+import { ensureSpecialInput } from './sharedSpecialInput.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
@@ -35,33 +33,25 @@ const maybeSetNumberInputValue = (dom, input, value) => {
 };
 
 export const ensureNumberInput = (container, textInput, dom) => {
-  const selector = NUMBER_INPUT_SELECTOR;
-  const specialInput = dom.querySelector(container, selector);
+  const specialInput = dom.querySelector(container, NUMBER_INPUT_SELECTOR);
 
-  if (specialInput) {
-    return specialInput;
-  }
-
-  const inputValue = getInputValue(textInput);
-  const updateTextInputValue = event => {
-    const targetValue = dom.getTargetValue(event);
-    dom.setValue(textInput, targetValue);
-    setInputValue(textInput, targetValue);
-  };
-  const newSpecialInput = createNumberInput(
-    inputValue,
-    updateTextInputValue,
-    dom
-  );
-
-  insertBeforeNextSibling({
+  return ensureSpecialInput({
+    selector: NUMBER_INPUT_SELECTOR,
     container,
     textInput,
-    element: newSpecialInput,
     dom,
-  });
+    existingSpecialInput: specialInput,
+    createSpecialInput: () => {
+      const inputValue = getInputValue(textInput);
+      const updateTextInputValue = event => {
+        const targetValue = dom.getTargetValue(event);
+        dom.setValue(textInput, targetValue);
+        setInputValue(textInput, targetValue);
+      };
 
-  return newSpecialInput;
+      return createNumberInput(inputValue, updateTextInputValue, dom);
+    },
+  });
 };
 
 /**

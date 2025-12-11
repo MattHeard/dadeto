@@ -7,10 +7,10 @@ import {
 } from '../browser-core.js';
 import {
   createUpdateTextInputValue,
-  insertBeforeNextSibling,
   revealAndEnable,
   setupInputEvents,
 } from './browserInputHandlersCore.js';
+import { ensureSpecialInput } from './sharedSpecialInput.js';
 
 const TEXTAREA_SELECTOR = '.toy-textarea';
 const TEXTAREA_CLASS = TEXTAREA_SELECTOR.slice(1);
@@ -48,33 +48,25 @@ const setupTextarea = ({ textarea, textInput, dom }) => {
   setupInputEvents(dom, textarea, handleInput);
 };
 
-const getOrCreateTextarea = (specialInput, { container, textInput, dom }) => {
-  if (specialInput) {
-    return specialInput;
-  }
-
-  const textarea = dom.createElement('textarea');
-  dom.setClassName(textarea, TEXTAREA_CLASS);
-  insertBeforeNextSibling({
-    container,
-    textInput,
-    element: textarea,
-    dom,
-  });
-  setupTextarea({ textarea, textInput, dom });
-  return textarea;
-};
-
 const shouldSetTextareaValue = (specialInput, value) =>
   Boolean(specialInput) || Boolean(value);
 
 export const ensureTextareaInput = (container, textInput, dom) => {
   const selector = TEXTAREA_SELECTOR;
   const specialInput = dom.querySelector(container, selector);
-  const textarea = getOrCreateTextarea(specialInput, {
+
+  const textarea = ensureSpecialInput({
+    selector,
     container,
     textInput,
     dom,
+    existingSpecialInput: specialInput,
+    createSpecialInput: () => {
+      const textarea = dom.createElement('textarea');
+      dom.setClassName(textarea, TEXTAREA_CLASS);
+      setupTextarea({ textarea, textInput, dom });
+      return textarea;
+    },
   });
 
   const value = getTextareaSourceValue(textInput, dom);
