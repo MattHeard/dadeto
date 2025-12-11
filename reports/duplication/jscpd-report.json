@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T13:27:04.701Z",
+    "detectionDate": "2025-12-11T13:57:25.244Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -320,11 +320,11 @@
             "lines": 333,
             "tokens": 1163,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 3,
+            "duplicatedLines": 22,
+            "duplicatedTokens": 66,
+            "percentage": 6.61,
+            "percentageTokens": 5.67,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -392,11 +392,11 @@
             "lines": 577,
             "tokens": 2457,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 8,
+            "duplicatedTokens": 22,
+            "percentage": 1.39,
+            "percentageTokens": 0.9,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -428,11 +428,11 @@
             "lines": 728,
             "tokens": 3023,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 8,
+            "duplicatedTokens": 22,
+            "percentage": 1.1,
+            "percentageTokens": 0.73,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -560,11 +560,11 @@
             "lines": 950,
             "tokens": 3600,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 44,
+            "percentage": 1.26,
+            "percentageTokens": 1.22,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -572,11 +572,11 @@
             "lines": 148,
             "tokens": 854,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 44,
+            "percentage": 6.76,
+            "percentageTokens": 5.15,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -620,11 +620,11 @@
             "lines": 62,
             "tokens": 282,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 10,
+            "duplicatedTokens": 22,
+            "percentage": 16.13,
+            "percentageTokens": 7.8,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -824,11 +824,11 @@
             "lines": 299,
             "tokens": 1088,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 26,
+            "duplicatedTokens": 44,
+            "percentage": 8.7,
+            "percentageTokens": 4.04,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1113,11 +1113,11 @@
           "lines": 17660,
           "tokens": 79006,
           "sources": 92,
-          "clones": 0,
-          "duplicatedLines": 0,
-          "duplicatedTokens": 0,
-          "percentage": 0,
-          "percentageTokens": 0,
+          "clones": 6,
+          "duplicatedLines": 48,
+          "duplicatedTokens": 132,
+          "percentage": 0.27,
+          "percentageTokens": 0.17,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1167,14 +1167,231 @@
       "lines": 17907,
       "tokens": 84521,
       "sources": 94,
-      "clones": 0,
-      "duplicatedLines": 0,
-      "duplicatedTokens": 0,
-      "percentage": 0,
-      "percentageTokens": 0,
+      "clones": 6,
+      "duplicatedLines": 48,
+      "duplicatedTokens": 132,
+      "percentage": 0.27,
+      "percentageTokens": 0.16,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": []
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": ");\n  } else {\n    return '';\n  }\n}\n\n// Helper function to check if text is invalid",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/2025-03-21/italics.js",
+        "start": 199,
+        "end": 205,
+        "startLoc": {
+          "line": 199,
+          "column": 10,
+          "position": 697
+        },
+        "endLoc": {
+          "line": 205,
+          "column": 47,
+          "position": 719
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-03-21/italics.js",
+        "start": 186,
+        "end": 196,
+        "startLoc": {
+          "line": 186,
+          "column": 11,
+          "position": 649
+        },
+        "endLoc": {
+          "line": 196,
+          "column": 4,
+          "position": 671
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": "(res, result.status, result.body);\n  };\n}\n\n/**\n * Normalize an Express-style request into the shape expected by the responder.\n * @param {SubmitModerationRatingRequest | undefined} req Incoming HTTP request.\n * @returns {SubmitModerationRatingRequest} Payload forwarded to the responder.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 226,
+        "end": 234,
+        "startLoc": {
+          "line": 226,
+          "column": 19,
+          "position": 805
+        },
+        "endLoc": {
+          "line": 234,
+          "column": 4,
+          "position": 827
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
+        "start": 459,
+        "end": 467,
+        "startLoc": {
+          "line": 459,
+          "column": 20,
+          "position": 1878
+        },
+        "endLoc": {
+          "line": 467,
+          "column": 4,
+          "position": 1900
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": "\n  fetchImpl,\n  project,\n  resolvedUrlMap,\n  resolvedCdnHost,\n  randomUUID,\n  token",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 786,
+        "end": 792,
+        "startLoc": {
+          "line": 786,
+          "column": 2,
+          "position": 2976
+        },
+        "endLoc": {
+          "line": 792,
+          "column": 6,
+          "position": 2998
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
+        "start": 749,
+        "end": 755,
+        "startLoc": {
+          "line": 749,
+          "column": 2,
+          "position": 2841
+        },
+        "endLoc": {
+          "line": 755,
+          "column": 7,
+          "position": 2863
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "\n      this.index += 1;\n      return true;\n    }\n\n    return",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/toys/toys-core.js",
+        "start": 112,
+        "end": 117,
+        "startLoc": {
+          "line": 112,
+          "column": 2,
+          "position": 644
+        },
+        "endLoc": {
+          "line": 117,
+          "column": 7,
+          "position": 666
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/toys-core.js",
+        "start": 89,
+        "end": 94,
+        "startLoc": {
+          "line": 89,
+          "column": 2,
+          "position": 496
+        },
+        "endLoc": {
+          "line": 94,
+          "column": 5,
+          "position": 518
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 11,
+      "fragment": ");\n  } else {\n    return '';\n  }\n}\n\n/**\n * Determine the pre element content for a given input string.\n * @param {string} inputString - The input provided to the presenter.\n * @returns {string} The formatted string for the <pre> element.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/presenters/pre.js",
+        "start": 33,
+        "end": 43,
+        "startLoc": {
+          "line": 33,
+          "column": 5,
+          "position": 153
+        },
+        "endLoc": {
+          "line": 43,
+          "column": 4,
+          "position": 175
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-03-21/italics.js",
+        "start": 186,
+        "end": 196,
+        "startLoc": {
+          "line": 186,
+          "column": 11,
+          "position": 649
+        },
+        "endLoc": {
+          "line": 196,
+          "column": 4,
+          "position": 671
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 14,
+      "fragment": ",\n          messageLogger,\n        })\n      )\n    );\n  }\n\n  /**\n   * Copy files defined by explicit source and target pairs.\n   * @param {{ source: string, target: string }[]} copies - Array of copy instructions.\n   * @param {{ ensureDirectory: (target: string) => Promise<void>, copyFile: (source: string, destination: string) => Promise<void> }} io - Filesystem adapters.\n   * @param {{ info: (message: string) => void }} messageLogger - Logger to report progress.\n   * @returns {Promise<void>} Resolves when all files are copied.\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/copy.js",
+        "start": 222,
+        "end": 235,
+        "startLoc": {
+          "line": 222,
+          "column": 5,
+          "position": 712
+        },
+        "endLoc": {
+          "line": 235,
+          "column": 6,
+          "position": 734
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/copy.js",
+        "start": 164,
+        "end": 175,
+        "startLoc": {
+          "line": 164,
+          "column": 5,
+          "position": 461
+        },
+        "endLoc": {
+          "line": 175,
+          "column": 6,
+          "position": 483
+        }
+      }
+    }
+  ]
 }
