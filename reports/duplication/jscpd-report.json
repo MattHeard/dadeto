@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-11T12:59:44.178Z",
+    "detectionDate": "2025-12-11T13:03:04.265Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -197,14 +197,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js": {
-            "lines": 167,
-            "tokens": 941,
+            "lines": 163,
+            "tokens": 921,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 6,
-            "duplicatedTokens": 32,
-            "percentage": 3.59,
-            "percentageTokens": 3.4,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -425,14 +425,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 730,
-            "tokens": 3038,
+            "lines": 728,
+            "tokens": 3023,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 6,
-            "duplicatedTokens": 32,
-            "percentage": 0.82,
-            "percentageTokens": 1.05,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -461,8 +461,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 681,
-            "tokens": 2718,
+            "lines": 678,
+            "tokens": 2713,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -821,8 +821,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 722,
-            "tokens": 2816,
+            "lines": 738,
+            "tokens": 2875,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1086,14 +1086,14 @@
           }
         },
         "total": {
-          "lines": 17651,
-          "tokens": 78747,
+          "lines": 17658,
+          "tokens": 78766,
           "sources": 90,
-          "clones": 4,
-          "duplicatedLines": 24,
-          "duplicatedTokens": 101,
-          "percentage": 0.14,
-          "percentageTokens": 0.13,
+          "clones": 3,
+          "duplicatedLines": 18,
+          "duplicatedTokens": 69,
+          "percentage": 0.1,
+          "percentageTokens": 0.09,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1140,14 +1140,14 @@
       }
     },
     "total": {
-      "lines": 17898,
-      "tokens": 84262,
+      "lines": 17905,
+      "tokens": 84281,
       "sources": 92,
-      "clones": 4,
-      "duplicatedLines": 24,
-      "duplicatedTokens": 101,
-      "percentage": 0.13,
-      "percentageTokens": 0.12,
+      "clones": 3,
+      "duplicatedLines": 18,
+      "duplicatedTokens": 69,
+      "percentage": 0.1,
+      "percentageTokens": 0.08,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1186,42 +1186,6 @@
           "line": 24,
           "column": 4,
           "position": 86
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 7,
-      "fragment": "\n  const errorResult = buildErrorResult(error);\n  if (errorResult) {\n    return errorResult;\n  }\n\n",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 603,
-        "end": 609,
-        "startLoc": {
-          "line": 603,
-          "column": 1,
-          "position": 2475
-        },
-        "endLoc": {
-          "line": 609,
-          "column": 1,
-          "position": 2507
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js",
-        "start": 126,
-        "end": 131,
-        "startLoc": {
-          "line": 126,
-          "column": 2,
-          "position": 732
-        },
-        "endLoc": {
-          "line": 131,
-          "column": 3,
-          "position": 764
         }
       }
     },
