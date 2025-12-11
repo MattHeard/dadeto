@@ -184,6 +184,20 @@ async function resolvePageRefForInfo(db, info) {
 }
 
 /**
+ * Apply a callback when an async resolver produces a value.
+ * @param {Promise<*>} resolver Promise resolving to a value or null.
+ * @param {(value: *) => Promise<*|*} fn Callback invoked with the resolved value.
+ * @returns {Promise<*|null>} Callback result or null when resolver yields nothing.
+ */
+async function whenFound(resolver, fn) {
+  const value = await resolver;
+  if (!value) {
+    return null;
+  }
+  return fn(value);
+}
+
+/**
  * Resolve an option document by page, variant and option indices.
  * @param {object} db Firestore database instance.
  * @param {{pageNumber: number, variantName: string, optionNumber: number}} info
@@ -191,12 +205,9 @@ async function resolvePageRefForInfo(db, info) {
  * @returns {Promise<string|null>} Option document path or null when not found.
  */
 export async function findExistingOption(db, info) {
-  const pageRef = await resolvePageRefForInfo(db, info);
-  if (!pageRef) {
-    return null;
-  }
-
-  return resolveVariantAndOption(pageRef, info);
+  return whenFound(resolvePageRefForInfo(db, info), pageRef =>
+    resolveVariantAndOption(pageRef, info)
+  );
 }
 
 /**
@@ -252,10 +263,8 @@ async function resolvePageRefForNumber(db, pageNumber) {
  * @returns {Promise<string|null>} Page document path or null when not found.
  */
 export async function findExistingPage(db, pageNumber) {
-  const pageRef = await resolvePageRefForNumber(db, pageNumber);
-  if (!pageRef) {
-    return null;
-  }
-
-  return validateAndGetPagePath(pageRef);
+  return whenFound(
+    resolvePageRefForNumber(db, pageNumber),
+    validateAndGetPagePath
+  );
 }

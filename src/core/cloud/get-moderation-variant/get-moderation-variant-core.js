@@ -4,6 +4,8 @@ import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
   resolveAllowedOrigins,
+  MISSING_AUTHORIZATION_RESPONSE,
+  NO_JOB_RESPONSE,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
@@ -95,17 +97,11 @@ export { createCorsOriginHandler as createHandleCorsOrigin };
  * @returns {void}
  */
 
-const MISSING_AUTHORIZATION_RESPONSE = {
-  status: 401,
-  body: 'Missing or invalid Authorization header',
-};
-
 const INVALID_TOKEN_RESPONSE = {
   status: 401,
   body: 'Invalid or expired token',
 };
 
-const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
 const VARIANT_NOT_FOUND_RESPONSE = { status: 404, body: 'Variant not found' };
 
 /**

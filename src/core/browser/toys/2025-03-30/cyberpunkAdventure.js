@@ -10,19 +10,19 @@ function handleHackerDoor(context) {
     const output = `> Password accepted. Inside, a rogue AI offers you a cracked implant.`;
     context.nextInventory.push('cracked implant');
     context.nextVisited.add('hacker');
-    return {
+    return respondWithInventory(
       output,
-      nextState: 'hub',
-      nextInventory: context.nextInventory,
-      nextVisited: context.nextVisited,
-    };
+      'hub',
+      context.nextInventory,
+      context.nextVisited
+    );
   } else {
-    return {
-      output: `> Hint: the password is a number and a name...`,
-      nextState: 'hacker:door',
-      nextInventory: context.nextInventory,
-      nextVisited: context.nextVisited,
-    };
+    return respondWithInventory(
+      `> Hint: the password is a number and a name...`,
+      'hacker:door',
+      context.nextInventory,
+      context.nextVisited
+    );
   }
 }
 
@@ -111,19 +111,19 @@ function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
     const newInventory = nextInventory.filter(item => item !== 'datapad');
     newInventory.push('neural ticket');
     nextVisited.add('transport');
-    return {
-      output: `> You hand over the datapad. The vendor grins and slips you the neural ticket.`,
-      nextState: 'hub',
-      nextInventory: newInventory,
-      nextVisited,
-    };
+    return respondWithInventory(
+      `> You hand over the datapad. The vendor grins and slips you the neural ticket.`,
+      'hub',
+      newInventory,
+      nextVisited
+    );
   } else {
-    return {
-      output: `> Do you want to trade? Type 'trade datapad'.`,
-      nextState: 'transport:trade',
+    return respondWithInventory(
+      `> Do you want to trade? Type 'trade datapad'.`,
+      'transport:trade',
       nextInventory,
-      nextVisited,
-    };
+      nextVisited
+    );
   }
 }
 
@@ -140,19 +140,19 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
   if (success) {
     nextInventory.push('stimpack');
     nextVisited.add('alley');
-    return {
-      output: `> You dodge the shadows and find a hidden stash: a stimpack.`,
-      nextState: 'hub',
+    return respondWithInventory(
+      `> You dodge the shadows and find a hidden stash: a stimpack.`,
+      'hub',
       nextInventory,
-      nextVisited,
-    };
+      nextVisited
+    );
   } else {
-    return {
-      output: `> You trip a wire. Sirens start up. You sprint back to the Market.`,
-      nextState: 'hub',
+    return respondWithInventory(
+      `> You trip a wire. Sirens start up. You sprint back to the Market.`,
+      'hub',
       nextInventory,
-      nextVisited,
-    };
+      nextVisited
+    );
   }
 }
 
@@ -162,6 +162,43 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
  */
 function getDefaultAdventureResult() {
   return { output: `> Glitch in the grid. Resetting...`, nextState: 'intro' };
+}
+
+/**
+ * Assemble the transition payload for inventory-aware responses.
+ * @param {string} output Text that should be shown to the player.
+ * @param {string} nextState Next adventure state.
+ * @param {string[]} inventory Inventory snapshot to carry forward.
+ * @param {Set<string>} visited Visited node tracker.
+ * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Combined response.
+ */
+function respondWithInventory(output, nextState, inventory, visited) {
+  return buildAdventureResponse({
+    output,
+    nextState,
+    nextInventory: inventory,
+    nextVisited: visited,
+  });
+}
+
+/**
+ * Assemble the common response structure for transitions that touch inventory.
+ * @param {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} options
+ *   Response details and mutated state references.
+ * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Composed response.
+ */
+function buildAdventureResponse({
+  output,
+  nextState,
+  nextInventory,
+  nextVisited,
+}) {
+  return {
+    output,
+    nextState,
+    nextInventory,
+    nextVisited,
+  };
 }
 
 /**

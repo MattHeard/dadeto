@@ -9,6 +9,8 @@ import {
   getHeaderFromGetter,
   isAllowedOrigin,
   createResponse,
+  MISSING_AUTHORIZATION_RESPONSE,
+  NO_JOB_RESPONSE,
 } from './cloud-core.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
@@ -16,11 +18,6 @@ const INVALID_BODY_RESPONSE = {
   status: 400,
   body: 'Missing or invalid isApproved',
 };
-const MISSING_AUTHORIZATION_RESPONSE = {
-  status: 401,
-  body: 'Missing or invalid Authorization header',
-};
-const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
 
 /**
  * @typedef {object} SubmitModerationRatingRequest

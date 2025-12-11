@@ -6,6 +6,13 @@ import {
 } from './common-core.js';
 export { DEFAULT_BUCKET_NAME } from './common-core.js';
 
+export const MISSING_AUTHORIZATION_RESPONSE = {
+  status: 401,
+  body: 'Missing or invalid Authorization header',
+};
+
+export const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
+
 /**
  * Ensure a candidate dependency is callable before using it.
  * @param {unknown} candidate Value being validated.
