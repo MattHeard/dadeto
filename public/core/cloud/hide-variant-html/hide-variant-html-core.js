@@ -619,11 +619,10 @@ function assertVariantVisibilityDependencies(
  * }} params Transition dependencies.
  * @returns {(change: { before: import('firebase-admin/firestore').DocumentSnapshot, after: { exists: boolean } }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
  */
-function createVisibilityTransitionHandler({
-  removeVariantHtmlForSnapshot,
-  getVisibility,
-  visibilityThreshold,
-}) {
+function createVisibilityTransitionHandler(params) {
+  const { removeVariantHtmlForSnapshot, getVisibility, visibilityThreshold } =
+    params;
+
   return async function visibilityTransition({ before, after }) {
     const beforeVisibility = getVisibility(before);
     const afterVisibility = getVisibility(after);

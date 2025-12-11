@@ -473,6 +473,15 @@ export function normalizeAuthor(author) {
 }
 
 /**
+ * Normalize arbitrary text to the short string length used by form submissions.
+ * @param {unknown} value Candidate value provided by the caller.
+ * @returns {string} Normalized text trimmed to 120 characters.
+ */
+export function normalizeShortString(value) {
+  return normalizeString(value, 120);
+}
+
+/**
  * Origins that are permitted to access production endpoints.
  * Centralizes the allow list so every Cloud Function can reference
  * the same deployment configuration.

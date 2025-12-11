@@ -12,6 +12,7 @@ import {
   createResponse,
   assertFunctionDependencies,
   assertRandomUuidAndTimestamp,
+  normalizeShortString,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 
@@ -465,7 +466,7 @@ export function createHandleSubmitNewStory(responder) {
  * @returns {string} Normalized title.
  */
 function normalizeTitle(title) {
-  return normalizeString(title ?? 'Untitled', 120);
+  return normalizeShortString(title ?? 'Untitled');
 }
 
 /**
