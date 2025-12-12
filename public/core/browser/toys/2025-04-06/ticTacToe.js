@@ -1,4 +1,5 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
+import { when } from '#core/browser/common';
 
 /**
  *
@@ -40,12 +41,7 @@ function isObject(val) {
  * @returns {*} - description
  */
 function getValidParsedMoves(parsed) {
-  const isValid = isValidParsedMoves(parsed);
-  if (isValid) {
-    return parsed.moves;
-  } else {
-    return null;
-  }
+  return when(isValidParsedMoves(parsed), () => parsed.moves);
 }
 
 /**
@@ -107,10 +103,20 @@ function shouldSkipMove(earlyWin, moves) {
  * @param {*} newMove - description
  * @returns {*} - description
  */
+function buildMoveResponse(moves) {
+  const response = { moves };
+  return JSON.stringify(response);
+}
+
+/**
+ *
+ * @param {*} moves - description
+ * @param {*} newMove - description
+ * @returns {*} - description
+ */
 function buildMoveResponseWithNewMove(moves, newMove) {
   const updatedMoves = [...moves, newMove];
-  const response = { moves: updatedMoves };
-  return JSON.stringify(response);
+  return buildMoveResponse(updatedMoves);
 }
 
 /**
@@ -119,8 +125,7 @@ function buildMoveResponseWithNewMove(moves, newMove) {
  * @returns {*} - description
  */
 function buildMoveResponseWithoutNewMove(moves) {
-  const response = { moves };
-  return JSON.stringify(response);
+  return buildMoveResponse(moves);
 }
 
 /**

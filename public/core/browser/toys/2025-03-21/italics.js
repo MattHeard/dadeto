@@ -1,3 +1,5 @@
+import { withFallback } from '#core/browser/common';
+
 // Markdown marker characters
 const ASTERISK_MARKER = '*';
 const UNDERSCORE_MARKER = '_';
@@ -182,11 +184,9 @@ function processTextPreservingBold(text) {
  * @returns {string} Formatted prefix text.
  */
 function processItalicBefore(beforeText) {
-  if (beforeText) {
-    return processAllItalicStyles(beforeText);
-  } else {
-    return '';
-  }
+  return withFallback(Boolean(beforeText), () =>
+    processAllItalicStyles(beforeText)
+  );
 }
 
 /**
@@ -195,11 +195,9 @@ function processItalicBefore(beforeText) {
  * @returns {string} Formatted suffix text.
  */
 function processBoldAfter(afterText) {
-  if (afterText) {
-    return processTextPreservingBold(afterText);
-  } else {
-    return '';
-  }
+  return withFallback(Boolean(afterText), () =>
+    processTextPreservingBold(afterText)
+  );
 }
 
 // Helper function to check if text is invalid

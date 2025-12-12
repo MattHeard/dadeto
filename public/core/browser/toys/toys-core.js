@@ -87,8 +87,7 @@ class CsvLineParser {
   closeQuote() {
     if (this.peek() === QUOTE) {
       this.field += QUOTE;
-      this.index += 1;
-      return true;
+      return this.incrementIndexAndReturnTrue();
     }
 
     this.inQuotes = false;
@@ -110,11 +109,15 @@ class CsvLineParser {
 
   consumeWithAdvance(handler) {
     if (handler.call(this, this.currentChar())) {
-      this.index += 1;
-      return true;
+      return this.incrementIndexAndReturnTrue();
     }
 
     return false;
+  }
+
+  incrementIndexAndReturnTrue() {
+    this.index += 1;
+    return true;
   }
 
   canConsumeDelimiter(char) {

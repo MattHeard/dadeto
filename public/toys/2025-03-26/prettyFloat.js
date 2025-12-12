@@ -1,3 +1,5 @@
+import { when } from '#core/browser/common';
+
 /**
  * Build a formatted decomposition string for a number.
  * @param {number} num - Number to decompose.
@@ -29,12 +31,7 @@ export function decomposeFloat(input) {
  * @returns {string|null} Result string or null.
  */
 function getZeroVariantResult(num) {
-  const result = isZeroVariant(num);
-  if (result !== null) {
-    return result;
-  } else {
-    return null;
-  }
+  return isZeroVariant(num);
 }
 
 /**
@@ -74,12 +71,7 @@ function getZeroVariantString(num) {
  * @returns {string|null} Zero variant string or null.
  */
 function resolveZeroVariant(num) {
-  const zeroResult = getZeroVariantString(num);
-  if (zeroResult) {
-    return zeroResult;
-  } else {
-    return null;
-  }
+  return getZeroVariantString(num);
 }
 
 /**
@@ -97,11 +89,7 @@ function isNotFinite(num) {
  * @returns {string|null} Zero variant representation or null.
  */
 function handleZeroVariantsOrNull(num) {
-  const zeroVariant = resolveZeroVariant(num);
-  if (zeroVariant) {
-    return zeroVariant;
-  }
-  return null;
+  return resolveZeroVariant(num);
 }
 
 /**
@@ -140,11 +128,7 @@ function isNegativeZero(n) {
  * @returns {string|null} Result string or null.
  */
 function isPositiveZeroResult(num) {
-  if (isPositiveZero(num)) {
-    return '0 (0 × 2^0)';
-  } else {
-    return null;
-  }
+  return when(isPositiveZero(num), () => '0 (0 × 2^0)');
 }
 
 /**
@@ -153,11 +137,7 @@ function isPositiveZeroResult(num) {
  * @returns {string|null} Result string or null.
  */
 function isNegativeZeroResult(num) {
-  if (isNegativeZero(num)) {
-    return '0 (-0 × 2^0)';
-  } else {
-    return null;
-  }
+  return when(isNegativeZero(num), () => '0 (-0 × 2^0)');
 }
 
 /**
@@ -166,11 +146,11 @@ function isNegativeZeroResult(num) {
  * @returns {string|null} Result string or null.
  */
 function isZeroVariant(num) {
-  if (isPositiveZeroResult(num)) {
-    return isPositiveZeroResult(num);
-  } else {
-    return isNegativeZeroResult(num);
-  }
+  return when(
+    isPositiveZero(num),
+    () => isPositiveZeroResult(num),
+    () => isNegativeZeroResult(num)
+  );
 }
 
 /**

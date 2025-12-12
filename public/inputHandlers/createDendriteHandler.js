@@ -214,22 +214,13 @@ function createFieldElements(options) {
  * @param {{dom: object, form: HTMLElement, key: string, placeholder: string, data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Field render options.
  * @returns {void}
  */
-function buildField({
-  dom,
-  form,
-  key,
-  placeholder,
-  data,
-  textInput,
-  disposers,
-}) {
+function buildField({ dom, form, key, placeholder, ...rest }) {
+  const sharedArgs = getSharedFormArgs(rest);
   const { fieldWrapper } = createFieldElements({
     dom,
     key,
     placeholder,
-    data,
-    textInput,
-    disposers,
+    ...sharedArgs,
   });
   dom.appendChild(form, fieldWrapper);
 }
@@ -246,15 +237,14 @@ function buildField({
  * @returns {(field: [string, string]) => void} Renderer for each field tuple.
  */
 function createFieldRenderer({ dom, form, data, textInput, disposers }) {
+  const sharedArgs = getSharedFormArgs({ data, textInput, disposers });
   return function renderFieldForTuple([key, placeholder]) {
     buildField({
       dom,
       form,
       key,
       placeholder,
-      data,
-      textInput,
-      disposers,
+      ...sharedArgs,
     });
   };
 }
@@ -277,6 +267,15 @@ function createDisposeForm(disposers) {
   return () => {
     disposers.forEach(runDisposer);
   };
+}
+
+/**
+ * Capture the arguments shared between field renderers and form builders.
+ * @param {{data: object, textInput: HTMLInputElement, disposers: Function[]}} options - Sync helpers for the form data.
+ * @returns {{data: object, textInput: HTMLInputElement, disposers: Function[]}} Shared payload.
+ */
+function getSharedFormArgs({ data, textInput, disposers }) {
+  return { data, textInput, disposers };
 }
 
 /**
@@ -361,7 +360,8 @@ function createBuildForm(fields) {
 function createDendriteForm({ buildForm, dom, container, textInput }) {
   const disposers = [];
   const data = parseDendriteData(dom, textInput);
-  return buildForm(dom, { container, textInput, data, disposers });
+  const sharedArgs = getSharedFormArgs({ data, textInput, disposers });
+  return buildForm(dom, { container, ...sharedArgs });
 }
 
 /**

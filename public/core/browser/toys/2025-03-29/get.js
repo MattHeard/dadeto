@@ -1,3 +1,5 @@
+import { when } from '#core/browser/common';
+
 /**
  * Determine whether the supplied value represents an error string.
  * @param {unknown} value - Value to inspect.
@@ -142,10 +144,7 @@ function createNonObjectErrorResult(currentValue, segment, currentPath) {
     segment,
     currentPath
   );
-  if (nonObjectError === null) {
-    return null;
-  }
-  return { error: nonObjectError };
+  return when(nonObjectError !== null, () => ({ error: nonObjectError }));
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   TEXTAREA_SELECTOR,
 } from '../constants/selectors.js';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
+import { tryOr } from '#core/browser/common';
 export { assertFunction as ensureFunction } from '../common-core.js';
 
 /**
@@ -38,8 +39,7 @@ function removeCapturedElement(element, container, dom) {
     return;
   }
 
-  disposeCapturedElement(element);
-  dom.removeChild(container, element);
+  disposeAndRemoveElement(element, container, dom);
 }
 
 /**
@@ -52,21 +52,24 @@ function shouldRemoveElement(element) {
 }
 
 /**
- * Call an element's `_dispose` hook.
- * @param {HTMLElement} element Element exposing `_dispose`.
- * @returns {void}
- */
-function disposeCapturedElement(element) {
-  element._dispose();
-}
-
-/**
  * Detect whether an element exposes `_dispose`.
  * @param {HTMLElement | null | undefined} element Element to inspect.
  * @returns {boolean} True when `_dispose` exists and is callable.
  */
 function hasDisposeHook(element) {
   return Boolean(element && typeof element._dispose === 'function');
+}
+
+/**
+ * Dispose an element and remove it from its container.
+ * @param {HTMLElement} element Element to clean up.
+ * @param {HTMLElement} container Container hosting the element.
+ * @param {object} dom DOM helper utilities.
+ * @returns {void}
+ */
+function disposeAndRemoveElement(element, container, dom) {
+  element._dispose();
+  dom.removeChild(container, element);
 }
 
 /**
@@ -198,11 +201,7 @@ export function parseJsonOrDefault(json, fallback = {}) {
  * @returns {*} Parsed value or `undefined`.
  */
 export function safeParseJson(json, parseJsonValue) {
-  try {
-    return parseJsonValue(json);
-  } catch {
-    return undefined;
-  }
+  return tryOr(() => parseJsonValue(json));
 }
 
 /**
@@ -222,8 +221,7 @@ export function isDisposable(element) {
  * @returns {void}
  */
 export function disposeAndRemove(element, container, dom) {
-  element._dispose();
-  dom.removeChild(container, element);
+  disposeAndRemoveElement(element, container, dom);
 }
 
 /**

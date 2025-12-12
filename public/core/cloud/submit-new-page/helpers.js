@@ -1,7 +1,8 @@
 import {
-  buildPageByNumberQuery,
   buildVariantByNameQuery,
+  buildPageByNumberQuery,
 } from '../firestore-helpers.js';
+import { when } from '../../common-core.js';
 
 /**
  * Split option string into parts.
@@ -154,10 +155,9 @@ async function findOptionByPosition(variantRef, optionNumber) {
  */
 async function resolveVariantAndOption(pageRef, info) {
   const variantRef = await findVariantByName(pageRef, info.variantName);
-  if (!variantRef) {
-    return null;
-  }
-  return findOptionByPosition(variantRef, info.optionNumber);
+  return when(variantRef, () =>
+    findOptionByPosition(variantRef, info.optionNumber)
+  );
 }
 
 /**

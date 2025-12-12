@@ -44,18 +44,12 @@ export function createAdminTokenAction(options) {
  * @param {AdminTokenActionOptions} options - Configuration to validate.
  * @returns {void}
  */
-function validateAdminTokenActionOptions({
-  googleAuth,
-  getAdminEndpointsFn,
-  fetchFn,
-  showMessage,
-  action,
-}) {
-  ensureGoogleAuth(googleAuth);
-  ensureFunction(getAdminEndpointsFn, 'getAdminEndpointsFn');
-  ensureFunction(fetchFn, 'fetchFn');
-  ensureFunction(showMessage, 'showMessage');
-  ensureFunction(action, 'action');
+function validateAdminTokenActionOptions(options) {
+  ensureGoogleAuth(options.googleAuth);
+  ensureFunction(options.getAdminEndpointsFn, 'getAdminEndpointsFn');
+  ensureFunction(options.fetchFn, 'fetchFn');
+  ensureFunction(options.showMessage, 'showMessage');
+  ensureFunction(options.action, 'action');
 }
 
 /**
@@ -72,26 +66,19 @@ function ensureGoogleAuth(googleAuth) {
  * @param {AdminTokenActionOptions} options - Validated dependencies for the action.
  * @returns {AdminTokenAction} Token action bound to the provided helpers.
  */
-function buildAdminTokenAction({
-  googleAuth,
-  getAdminEndpointsFn,
-  fetchFn,
-  showMessage,
-  missingTokenMessage,
-  action,
-}) {
+function buildAdminTokenAction(options) {
   return async function adminTokenAction() {
-    const token = googleAuth.getIdToken();
+    const token = options.googleAuth.getIdToken();
     if (!token) {
-      showMessage(missingTokenMessage);
+      options.showMessage(options.missingTokenMessage);
       return;
     }
 
-    await action({
+    await options.action({
       token,
-      getAdminEndpoints: getAdminEndpointsFn,
-      fetchFn,
-      showMessage,
+      getAdminEndpoints: options.getAdminEndpointsFn,
+      fetchFn: options.fetchFn,
+      showMessage: options.showMessage,
     });
   };
 }

@@ -1,5 +1,6 @@
 import { deepClone } from '../objectUtils.js';
 import { isNonNullObject } from '../common-core.js';
+import { guardThen } from '#core/browser/common';
 
 /**
  * @typedef {(message: string, ...meta: unknown[]) => void} BlogLogFn
@@ -94,11 +95,9 @@ function isFetchInProgress(globalState) {
  * @returns {boolean} True if a fetch is already running.
  */
 export function shouldUseExistingFetch(globalState, logFn) {
-  if (isFetchInProgress(globalState)) {
+  return guardThen(isFetchInProgress(globalState), () => {
     logFn('Blog data fetch already in progress.');
-    return true;
-  }
-  return false;
+  });
 }
 
 /**

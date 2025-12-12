@@ -1,22 +1,31 @@
 import { getNumericValueOrZero } from '../cloud-core.js';
 
 /**
+ * Validate a Firestore client using the provided predicate.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {(candidate: import('firebase-admin/firestore').Firestore) => boolean} predicate Validation predicate.
+ * @returns {void}
+ */
+function assertDbCondition(db, predicate) {
+  if (!predicate(db)) {
+    throw new TypeError('db must expose a doc helper');
+  }
+}
+
+/**
  * Ensure the provided Firestore instance is truthy.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  */
 function assertDbExists(db) {
-  if (!db) {
-    throw new TypeError('db must expose a doc helper');
-  }
+  assertDbCondition(db, Boolean);
 }
+
 /**
  * Ensure the provided Firestore instance has a doc method.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  */
 function assertDbHasDoc(db) {
-  if (typeof db.doc !== 'function') {
-    throw new TypeError('db must expose a doc helper');
-  }
+  assertDbCondition(db, candidate => typeof candidate?.doc === 'function');
 }
 
 /**
@@ -69,6 +78,15 @@ function getSafeNumber(data, key) {
 }
 
 /**
+ * Read the moderator reputation total when the data exists.
+ * @param {Record<string, unknown>} variantData Variant data to read.
+ * @returns {number} Reputation sum or zero when unavailable.
+ */
+function getModeratorReputationSum(variantData) {
+  return getSafeNumber(variantData, 'moderatorReputationSum');
+}
+
+/**
  * Calculate the updated visibility score based on the new rating.
  * @param {{
  *   visibility?: number,
@@ -81,10 +99,7 @@ function getSafeNumber(data, key) {
 export function calculateUpdatedVisibility(variantData, newRating) {
   const currentVisibility = getSafeNumber(variantData, 'visibility');
   const currentCount = getSafeNumber(variantData, 'moderationRatingCount');
-  const currentReputationSum = getSafeNumber(
-    variantData,
-    'moderatorReputationSum'
-  );
+  const currentReputationSum = getModeratorReputationSum(variantData);
 
   const numerator = currentVisibility * currentReputationSum + newRating;
   const denominator = currentCount + 1;
@@ -152,10 +167,7 @@ function calculateNewStats(variantData, newRating) {
     variantData,
     'moderationRatingCount'
   );
-  const moderatorReputationSum = getSafeNumber(
-    variantData,
-    'moderatorReputationSum'
-  );
+  const moderatorReputationSum = getModeratorReputationSum(variantData);
 
   return {
     visibility: updatedVisibility,

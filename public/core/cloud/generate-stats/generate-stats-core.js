@@ -5,6 +5,7 @@ import {
   isDuplicateAppError,
   sendOkResponse,
 } from './cloud-core.js';
+import { runWithFailure } from '../response-utils.js';
 export { isDuplicateAppError };
 
 const STATS_PAGE_HEAD = `<!doctype html>
@@ -745,26 +746,9 @@ function resolveGlobalFetch() {
  * @param {string} deps.token Token.
  * @returns {Promise<void>} Promise.
  */
-async function invalidateSinglePath({
-  path,
-  fetchImpl,
-  project,
-  resolvedUrlMap,
-  resolvedCdnHost,
-  randomUUID,
-  logger,
-  token,
-}) {
+async function invalidateSinglePath({ path, logger, ...sendDeps }) {
   try {
-    const res = await sendInvalidateRequest({
-      fetchImpl,
-      project,
-      resolvedUrlMap,
-      resolvedCdnHost,
-      randomUUID,
-      token,
-      path,
-    });
+    const res = await sendInvalidateRequest(sendDeps, path);
     handleInvalidateResponse(res, path, logger);
   } catch (err) {
     logInvalidateError(logger, path, err);
@@ -780,18 +764,13 @@ async function invalidateSinglePath({
  * @param {string} deps.resolvedCdnHost CDN host header.
  * @param {() => string} deps.randomUUID Request ID generator.
  * @param {string} deps.token Metadata access token.
- * @param {string} deps.path CDN path to invalidate.
+ * @param {string} path CDN path to invalidate.
  * @returns {Promise<unknown>} Response.
  */
-function sendInvalidateRequest({
-  fetchImpl,
-  project,
-  resolvedUrlMap,
-  resolvedCdnHost,
-  randomUUID,
-  token,
-  path,
-}) {
+function sendInvalidateRequest(
+  { fetchImpl, project, resolvedUrlMap, resolvedCdnHost, randomUUID, token },
+  path
+) {
   return fetchImpl(
     `https://compute.googleapis.com/compute/v1/projects/${project}/global/urlMaps/${resolvedUrlMap}/invalidateCache`,
     {
@@ -922,10 +901,13 @@ function isCronRequest(req) {
  * @returns {Promise<void>} Promise.
  */
 async function respondWithGenerate(res, generate) {
-  try {
-    await generate();
-  } catch (err) {
-    sendGenerateFailure(res, err);
+  const result = await runWithFailure(
+    () => generate(),
+    err => {
+      sendGenerateFailure(res, err);
+    }
+  );
+  if (!result.ok) {
     return;
   }
 

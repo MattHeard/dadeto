@@ -1,3 +1,5 @@
+import { functionOrFallback } from '../common-core.js';
+
 /**
  * @typedef {object} StaticConfigResponse
  * @property {boolean} ok Indicates whether the request succeeded.
@@ -103,11 +105,8 @@ function ensureFetchFunction(fetchFn) {
  * @returns {(message: string, error?: unknown) => void} Logger invoked when static config loading fails.
  */
 function resolveLogWarn(warn) {
-  if (typeof warn === 'function') {
-    return warn;
-  }
-
-  return () => {};
+  const fallbackLogger = () => () => {};
+  return functionOrFallback(warn, fallbackLogger);
 }
 
 /**

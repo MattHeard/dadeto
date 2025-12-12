@@ -1,4 +1,3 @@
-import { assertFunction } from './common-core.js';
 import {
   normalizeAuthor,
   normalizeSubmissionContent,
@@ -6,7 +5,6 @@ import {
   normalizeMethod,
   normalizeAuthorizationCandidate,
   tryGetHeader,
-  whenBodyPresent,
   isAllowedOrigin,
   createCorsOriginHandler,
   createResponse,
@@ -15,6 +13,7 @@ import {
   normalizeShortString,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
+import { createCloudSubmitHandler } from '../submit-shared.js';
 
 /**
  * @typedef {object} SubmitNewStoryRequest
@@ -374,91 +373,11 @@ export function createCorsErrorHandler(options) {
 }
 
 /**
- * Resolve the header getter from an Express request when available.
- * @param {SubmitNewStoryRequest} req - Incoming Express request.
- * @returns {SubmitNewStoryRequest['get']} Header getter.
- */
-function resolveRequestGetter(req) {
-  if (typeof req.get !== 'function') {
-    return undefined;
-  }
-
-  return name => req.get(name);
-}
-
-/**
- * Normalize an Express request into the shape expected by the responder.
- * @param {SubmitNewStoryRequest} req - Incoming Express request.
- * @returns {SubmitNewStoryRequest} Request data for the responder.
- */
-function mapSubmitNewStoryRequest(req) {
-  const request = req ?? {};
-
-  return {
-    method: request.method,
-    body: request.body,
-    get: resolveRequestGetter(request),
-    headers: request.headers,
-  };
-}
-
-const responderHandlers = {
-  object(res, status, body) {
-    res.status(status).json(body);
-  },
-  undefined(res, status) {
-    res.sendStatus(status);
-  },
-  default(res, status, body) {
-    res.status(status).send(body);
-  },
-};
-
-const responderKeyByType = {
-  true: 'undefined',
-  false: 'default',
-};
-
-/**
- * Determine whether a responder body should be serialized as JSON.
- * @param {unknown} body - Response body candidate.
- * @returns {body is Record<string, unknown>} Whether the body is a JSON object.
- */
-function isObjectBody(body) {
-  return whenBodyPresent(body, candidate => typeof candidate === 'object');
-}
-
-/**
- * Send an HTTP response based on the responder result payload.
- * @param {import('express').Response} res - Response instance used to send data.
- * @param {number} status - HTTP status code emitted to the client.
- * @param {unknown} body - Payload returned by the domain responder.
- */
-function sendResponderResult(res, status, body) {
-  if (isObjectBody(body)) {
-    responderHandlers.object(res, status, body);
-    return;
-  }
-
-  const handlerKey = responderKeyByType[body === undefined];
-  responderHandlers[handlerKey](res, status, body);
-}
-
-/**
  * Adapt a domain responder into an Express request handler.
  * @param {(request: SubmitNewStoryRequest) => Promise<HttpResponse>} responder - Domain-specific request handler.
  * @returns {(req: SubmitNewStoryRequest, res: { status: (code: number) => { json: (payload: unknown) => void, send: (payload: unknown) => void, sendStatus: (code: number) => void } }) => Promise<void>} Express-compatible route handler.
  */
-export function createHandleSubmitNewStory(responder) {
-  assertFunction(responder, 'responder');
-
-  return async function handleSubmitNewStory(req, res) {
-    const request = mapSubmitNewStoryRequest(req);
-    const result = await responder(request);
-
-    sendResponderResult(res, result.status, result.body);
-  };
-}
+export const createHandleSubmitNewStory = createCloudSubmitHandler;
 
 /**
  * Normalize title.

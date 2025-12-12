@@ -113,17 +113,25 @@ const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg =>
 
 /**
  *
+ * @param {{ dir: string, value: number, delta: number, axis: string }} config - Coordinate adjustment options.
+ * @returns {number} - Updated coordinate.
+ */
+function adjustCoordinate({ dir, value, delta, axis }) {
+  if (dir === axis) {
+    return value + delta;
+  }
+  return value;
+}
+
+/**
+ *
  * @param {*} dir - description
  * @param {*} x - description
  * @param {*} i - description
  * @returns {*} - description
  */
 function getSx(dir, x, i) {
-  if (dir === 'H') {
-    return x + i;
-  } else {
-    return x;
-  }
+  return adjustCoordinate({ dir, value: x, delta: i, axis: 'H' });
 }
 
 /**
@@ -134,11 +142,7 @@ function getSx(dir, x, i) {
  * @returns {*} - description
  */
 function getSy(dir, y, i) {
-  if (dir === 'V') {
-    return y + i;
-  } else {
-    return y;
-  }
+  return adjustCoordinate({ dir, value: y, delta: i, axis: 'V' });
 }
 
 /**
@@ -149,11 +153,12 @@ function getSy(dir, y, i) {
  * @returns {*} - description
  */
 function getEndX(dir, x, len) {
-  if (dir === 'H') {
-    return x + len - 1;
-  } else {
-    return x;
-  }
+  return adjustCoordinate({
+    dir,
+    value: x,
+    delta: len - 1,
+    axis: 'H',
+  });
 }
 
 /**
@@ -164,11 +169,12 @@ function getEndX(dir, x, len) {
  * @returns {*} - description
  */
 function getEndY(dir, y, len) {
-  if (dir === 'V') {
-    return y + len - 1;
-  } else {
-    return y;
-  }
+  return adjustCoordinate({
+    dir,
+    value: y,
+    delta: len - 1,
+    axis: 'V',
+  });
 }
 
 /**

@@ -1,6 +1,11 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 import { getNumericValueOrZero, productionOrigins } from './cloud-core.js';
-import { ensureString, stringOrDefault, whenString } from './common-core.js';
+import {
+  ensureString,
+  functionOrFallback,
+  stringOrDefault,
+  whenString,
+} from './common-core.js';
 
 export { createDb } from './create-db.js';
 export { productionOrigins };
@@ -168,11 +173,7 @@ function resolveUuidDependency(getUuid) {
  * @returns {(error: unknown) => void} Logger that safely ignores errors.
  */
 function resolveErrorLogger(logError) {
-  if (typeof logError === 'function') {
-    return logError;
-  }
-
-  return () => {};
+  return functionOrFallback(logError, () => () => {});
 }
 
 /**

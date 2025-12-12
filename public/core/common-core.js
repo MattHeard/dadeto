@@ -160,3 +160,76 @@ export function whenString(value, fn) {
 
   return fn(value);
 }
+
+/**
+ * Return the provided function candidate when available, otherwise use the fallback.
+ * @param {unknown} candidate Candidate value.
+ * @param {() => Function} fallback Factory returning the fallback function.
+ * @returns {Function} Callable derived from the candidate or fallback.
+ */
+export function functionOrFallback(candidate, fallback) {
+  if (typeof candidate === 'function') {
+    return candidate;
+  }
+
+  return fallback();
+}
+
+/**
+ * Run a side effect when a condition is truthy and indicate whether it ran.
+ * @param {boolean} condition - Determines whether to execute the effect.
+ * @param {() => void} effect - Side effect invoked when the condition holds.
+ * @returns {boolean} True when the effect executed, false otherwise.
+ */
+export function guardThen(condition, effect) {
+  if (!condition) {
+    return false;
+  }
+
+  effect();
+  return true;
+}
+
+/* eslint complexity: ["error", 3] */
+/**
+ * Execute the transform when the condition is true, otherwise return the fallback result.
+ * @param {boolean} condition - Determines whether the transform should run.
+ * @param {() => unknown} transform - Resolver invoked when the condition holds.
+ * @param {() => unknown} [fallback] - Resolver invoked when the condition is falsy.
+ * @returns {unknown} Result of the transform or the fallback.
+ */
+export function when(condition, transform, fallback = () => null) {
+  if (!condition) {
+    return fallback();
+  }
+
+  return transform();
+}
+
+/**
+ * Execute the action and return `undefined` when it throws.
+ * @param {() => unknown} action Callback that may throw.
+ * @returns {unknown} The action result or `undefined` when an error occurs.
+ */
+function executeSafely(action) {
+  try {
+    return action();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Evaluate the action and return its result, falling back when an exception occurs.
+ * @param {() => unknown} action - Function that may throw.
+ * @param {() => unknown} [fallback] - Value returned when an error is thrown.
+ * @returns {unknown} Action result or the fallback.
+ */
+export function tryOr(action, fallback = () => undefined) {
+  const result = executeSafely(action);
+  if (result === undefined) {
+    return fallback();
+  }
+
+  return result;
+}
