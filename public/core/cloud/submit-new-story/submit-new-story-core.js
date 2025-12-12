@@ -8,12 +8,11 @@ import {
   isAllowedOrigin,
   createCorsOriginHandler,
   createResponse,
-  assertFunctionDependencies,
-  assertRandomUuidAndTimestamp,
   normalizeShortString,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 import { createCloudSubmitHandler } from '../submit-shared.js';
+import { createResponder } from '../responder-utils.js';
 
 /**
  * @typedef {object} SubmitNewStoryRequest
@@ -472,25 +471,48 @@ async function processSubmission(deps, request) {
 }
 
 /**
+ * Handle the incoming request and delegate to the submission processor.
+ * @param {SubmitNewStoryDependencies | Record<string, unknown>} deps Dependencies for the handler.
+ * @param {SubmitNewStoryRequest | undefined} request Incoming request data.
+ * @returns {Promise<HttpResponse>} Response returned to the caller.
+ */
+function handleSubmitNewStoryRequest(deps, request) {
+  const incomingRequest = request ?? {};
+  return runWhenPostMethod(
+    incomingRequest,
+    req => processSubmission(deps, req),
+    () => METHOD_NOT_ALLOWED_RESPONSE
+  );
+}
+
+/**
+ * Run the success callback only when the request uses POST; otherwise invoke the failure path.
+ * @param {SubmitNewStoryRequest} request Request to inspect.
+ * @param {(req: SubmitNewStoryRequest) => Promise<HttpResponse>} onPost Callback executed for POST requests.
+ * @param {() => HttpResponse} onFail Callback executed for non-POST requests.
+ * @returns {Promise<HttpResponse>} Response from the chosen callback.
+ */
+function runWhenPostMethod(request, onPost, onFail) {
+  if (isPostMethod(request.method)) {
+    return onPost(request);
+  }
+
+  return onFail();
+}
+
+/**
  * Construct the submit-new-story domain responder with the required dependencies.
  * @param {SubmitNewStoryDependencies} dependencies - Injectable services used by the responder.
  * @returns {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} Domain responder for new story submissions.
  */
 export function createSubmitNewStoryResponder(dependencies) {
-  const { verifyIdToken, saveSubmission } = dependencies;
-
-  assertFunctionDependencies([
-    ['verifyIdToken', verifyIdToken],
-    ['saveSubmission', saveSubmission],
-  ]);
-
-  assertRandomUuidAndTimestamp(dependencies);
-
-  return async function submitNewStoryResponder(request) {
-    if (!isPostMethod(request.method)) {
-      return METHOD_NOT_ALLOWED_RESPONSE;
-    }
-
-    return processSubmission(dependencies, request);
-  };
+  return createResponder({
+    dependencies,
+    requiredFunctionNames: ['verifyIdToken', 'saveSubmission'],
+    handlerFactory: deps => {
+      return async function submitNewStoryResponder(request) {
+        return handleSubmitNewStoryRequest(deps, request);
+      };
+    },
+  });
 }
