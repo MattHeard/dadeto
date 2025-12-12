@@ -23,17 +23,6 @@ describe('createReportForModerationHandler', () => {
     ).toThrow(new TypeError('getServerTimestamp must be a function'));
   });
 
-  it('rejects non-POST requests', async () => {
-    const handler = createReportForModerationHandler({
-      addModerationReport: jest.fn(),
-      getServerTimestamp: jest.fn(),
-    });
-
-    await expect(
-      handler({ method: 'GET', body: { variant: 'ignored' } })
-    ).resolves.toEqual({ status: 405, body: 'POST only' });
-  });
-
   it('returns 400 when variant is missing or blank', async () => {
     const addModerationReport = jest.fn();
     const handler = createReportForModerationHandler({
@@ -133,6 +122,23 @@ describe('createHandleReportForModeration', () => {
     expect(() => createHandleReportForModeration(null)).toThrow(
       new TypeError('reportForModerationHandler must be a function')
     );
+  });
+
+  it('returns 405 for non-POST requests before invoking the handler', async () => {
+    const handler = jest.fn().mockResolvedValue({ status: 200, body: {} });
+    const respond = createHandleReportForModeration(handler);
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+      sendStatus: jest.fn(),
+    };
+
+    await respond({ method: 'GET' }, res);
+
+    expect(res.status).toHaveBeenCalledWith(405);
+    expect(res.send).toHaveBeenCalledWith('POST only');
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it('forwards string responses via send', async () => {

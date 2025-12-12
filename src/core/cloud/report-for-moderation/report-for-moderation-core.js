@@ -4,6 +4,7 @@ import {
   createCorsOptions as buildCorsOptions,
   whenBodyPresent,
 } from './cloud-core.js';
+import { createAsyncDomainHandler } from '../handler-utils.js';
 
 /**
  * Determine whether the provided request body contains a variant string.
@@ -77,20 +78,16 @@ export function createReportForModerationHandler({
   assertFunction(addModerationReport, 'addModerationReport');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  return async function reportForModerationHandler({ method, body }) {
-    if (method !== 'POST') {
-      return {
-        status: 405,
-        body: 'POST only',
-      };
-    }
-
-    return handlePostRequest({
+  const reportRequestHandler = createAsyncDomainHandler({
+    execute: handlePostRequest,
+    mapParams: ({ body }) => ({
       body,
       addModerationReport,
       getServerTimestamp,
-    });
-  };
+    }),
+  });
+
+  return reportRequestHandler;
 }
 
 /**
@@ -158,8 +155,12 @@ export function createHandleReportForModeration(reportForModerationHandler) {
   assertFunction(reportForModerationHandler, 'reportForModerationHandler');
 
   return async function handleReportForModeration(req, res) {
+    if (req.method !== 'POST') {
+      sendResponse(res, 405, 'POST only');
+      return;
+    }
+
     const { status, body } = await reportForModerationHandler({
-      method: req.method,
       body: req.body,
     });
 

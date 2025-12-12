@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-12T10:45:23.946Z",
+    "detectionDate": "2025-12-12T15:44:25.656Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -437,26 +437,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
-            "lines": 195,
-            "tokens": 836,
+            "lines": 196,
+            "tokens": 851,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 17,
-            "duplicatedTokens": 18,
-            "percentage": 8.72,
-            "percentageTokens": 2.15,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/process-new-story/process-new-story-core.js": {
             "lines": 462,
-            "tokens": 1905,
+            "tokens": 1917,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 17,
-            "duplicatedTokens": 18,
-            "percentage": 3.68,
-            "percentageTokens": 0.94,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -844,6 +844,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/handler-utils.js": {
+            "lines": 17,
+            "tokens": 88,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/firestore-helpers.js": {
             "lines": 25,
             "tokens": 102,
@@ -1146,14 +1158,14 @@
           }
         },
         "total": {
-          "lines": 17782,
-          "tokens": 79478,
-          "sources": 95,
-          "clones": 3,
-          "duplicatedLines": 43,
-          "duplicatedTokens": 54,
-          "percentage": 0.24,
-          "percentageTokens": 0.07,
+          "lines": 17800,
+          "tokens": 79593,
+          "sources": 96,
+          "clones": 2,
+          "duplicatedLines": 26,
+          "duplicatedTokens": 36,
+          "percentage": 0.15,
+          "percentageTokens": 0.05,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1200,55 +1212,19 @@
       }
     },
     "total": {
-      "lines": 18029,
-      "tokens": 84993,
-      "sources": 97,
-      "clones": 3,
-      "duplicatedLines": 43,
-      "duplicatedTokens": 54,
-      "percentage": 0.24,
-      "percentageTokens": 0.06,
+      "lines": 18047,
+      "tokens": 85108,
+      "sources": 98,
+      "clones": 2,
+      "duplicatedLines": 26,
+      "duplicatedTokens": 36,
+      "percentage": 0.14,
+      "percentageTokens": 0.04,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 18,
-      "fragment": ",\n      getServerTimestamp,\n    });\n  };\n}\n\n/**\n * Orchestrate the steps required to persist a new story submission.\n * @param {object} params Parameters required to process the submission.\n * @param {Record<string, unknown>} params.submission Submission payload.\n * @param {FirestoreDocumentSnapshot | null | undefined} params.snapshot Trigger snapshot.\n * @param {{ params?: Record<string, string> } | undefined} params.context Trigger context.\n * @param {Firestore} params.db Firestore instance.\n * @param {() => string} params.randomUUID UUID generator.\n * @param {() => number} params.random Random number generator.\n * @param {() => FieldValue} params.getServerTimestamp Server timestamp helper.\n * @returns {Promise<null>} Null once work completes.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/process-new-story/process-new-story-core.js",
-        "start": 409,
-        "end": 426,
-        "startLoc": {
-          "line": 409,
-          "column": 7,
-          "position": 1659
-        },
-        "endLoc": {
-          "line": 426,
-          "column": 4,
-          "position": 1677
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
-        "start": 90,
-        "end": 100,
-        "startLoc": {
-          "line": 90,
-          "column": 20,
-          "position": 382
-        },
-        "endLoc": {
-          "line": 100,
-          "column": 4,
-          "position": 400
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 11,

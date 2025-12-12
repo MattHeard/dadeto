@@ -40,20 +40,6 @@ describe('createReportForModerationHandler', () => {
     ).toThrow(new TypeError('getServerTimestamp must be a function'));
   });
 
-  it('returns 405 when using a method other than POST', async () => {
-    const addModerationReport = jest.fn();
-    const getServerTimestamp = jest.fn();
-    const handler = createReportForModerationHandler({
-      addModerationReport,
-      getServerTimestamp,
-    });
-
-    const response = await handler({ method: 'GET' });
-
-    expect(response).toEqual({ status: 405, body: 'POST only' });
-    expect(addModerationReport).not.toHaveBeenCalled();
-  });
-
   it('returns 400 when variant is missing or blank', async () => {
     const addModerationReport = jest.fn();
     const getServerTimestamp = jest.fn();
