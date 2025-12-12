@@ -98,10 +98,9 @@ function shouldSkipMove(earlyWin, moves) {
 }
 
 /**
- *
- * @param {*} moves - description
- * @param {*} newMove - description
- * @returns {*} - description
+ * Build the JSON string for the provided move list.
+ * @param {*} moves - Current move array.
+ * @returns {string} JSON payload containing moves.
  */
 function buildMoveResponse(moves) {
   const response = { moves };

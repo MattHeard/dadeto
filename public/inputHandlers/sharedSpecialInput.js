@@ -38,14 +38,13 @@ export function reuseOrInsertSpecialInput({
 
 /**
  * Ensure the special input exists by querying for the selector and inserting a new element when needed.
- * @param {object} params Helper configuration.
- * @param {string} params.selector Selector to locate an existing element.
- * @param {HTMLElement} params.container Container that wraps the input.
- * @param {HTMLElement} params.textInput Underlying text input element.
- * @param {object} params.dom DOM helper utilities.
- * @param {() => HTMLElement} params.createSpecialInput Factory that produces the new special input.
- * @param {HTMLElement | null | undefined} [params.existingSpecialInput] Optional element already located by the caller.
- * @param options
+ * @param {object} options Helper configuration.
+ * @param {string} options.selector Selector to locate an existing element.
+ * @param {HTMLElement} options.container Container that wraps the input.
+ * @param {HTMLElement} options.textInput Underlying text input element.
+ * @param {object} options.dom DOM helper utilities.
+ * @param {() => HTMLElement} options.createSpecialInput Factory that produces the new special input.
+ * @param {HTMLElement | null | undefined} [options.existingSpecialInput] Optional element already located by the caller.
  * @returns {HTMLElement} Reused or newly created special input.
  */
 export function ensureSpecialInput(options) {
@@ -64,12 +63,11 @@ export function ensureSpecialInput(options) {
 
 /**
  * Create a helper that caches the pre-existing special input and provides an ensure function.
- * @param {object} params Helper configuration.
- * @param {string} params.selector Selector to locate an existing element.
- * @param {HTMLElement} params.container Container that wraps the input.
- * @param {HTMLElement} params.textInput Underlying text input element.
- * @param {object} params.dom DOM helper utilities.
- * @param options
+ * @param {object} options Helper configuration.
+ * @param {string} options.selector Selector to locate an existing element.
+ * @param {HTMLElement} options.container Container that wraps the input.
+ * @param {HTMLElement} options.textInput Underlying text input element.
+ * @param {object} options.dom DOM helper utilities.
  * @returns {{
  *   existingSpecialInput: HTMLElement | null,
  *   ensure: (createSpecialInput: () => HTMLElement) => HTMLElement,
