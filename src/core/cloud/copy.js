@@ -151,21 +151,17 @@ export function createCopyToInfraCore({
    */
   async function copyDirectory(copyPlan, io, messageLogger) {
     const { source, target } = copyPlan;
-    await io.ensureDirectory(target);
-
     const sourceEntries = await io.readDirEntries(source);
-    const sourceFiles = sourceEntries.filter(isCopyableFile);
-    await Promise.all(
-      sourceFiles.map(entry =>
-        copyFileToTarget({
-          io,
-          sourceDir: source,
-          targetDir: target,
-          name: entry.name,
-          messageLogger,
-        })
-      )
-    );
+    const fileNames = sourceEntries
+      .filter(isCopyableFile)
+      .map(entry => entry.name);
+    await performCopy({
+      files: fileNames,
+      sourceDir: source,
+      targetDir: target,
+      io,
+      messageLogger,
+    });
   }
 
   /**
@@ -199,11 +195,11 @@ export function createCopyToInfraCore({
   }
 
   /**
-   * Copy a declared list of files into the target directory.
-   * @param {object} copyPlan - Copy configuration.
+   * Copy files defined by a declared list.
+   * @param {object} copyPlan - Copy configuration with source and target directories.
    * @param {object} io - Filesystem adapters.
    * @param {object} messageLogger - Logger to report progress.
-   * @returns {Promise<void>} Resolves when all files are copied.
+   * @returns {Promise<void>} Resolves when the declared files are copied.
    */
   async function copyDeclaredFiles(copyPlan, io, messageLogger) {
     if (!shouldCopyDeclaredFiles(copyPlan)) {
@@ -211,19 +207,14 @@ export function createCopyToInfraCore({
     }
     const { sourceDir, targetDir } = copyPlan;
     const files = extractDeclaredFiles(copyPlan);
-    await io.ensureDirectory(targetDir);
-
-    await Promise.all(
-      files.map(file =>
-        copyFileToTarget({
-          io,
-          sourceDir,
-          targetDir,
-          name: file,
-          messageLogger,
-        })
-      )
-    );
+    const copyParams = {
+      files,
+      sourceDir,
+      targetDir,
+      io,
+      messageLogger,
+    };
+    await performCopy(copyParams);
   }
 
   /**
@@ -243,6 +234,51 @@ export function createCopyToInfraCore({
         );
       })
     );
+  }
+
+  /**
+   * Copy a set of filenames from source to target directories, ensuring the target exists.
+   * @param {{
+   *   files: string[],
+   *   sourceDir: string,
+   *   targetDir: string,
+   *   io: CopyAsyncIo,
+   *   messageLogger: CopyMessageLogger,
+   * }} options Copy details.
+   * @returns {Promise<void>} Resolves when every file is copied.
+   */
+  async function copyFiles({ files, sourceDir, targetDir, io, messageLogger }) {
+    await io.ensureDirectory(targetDir);
+    if (!files.length) {
+      return;
+    }
+
+    await Promise.all(
+      files.map(name =>
+        copyFileToTarget({
+          io,
+          sourceDir,
+          targetDir,
+          name,
+          messageLogger,
+        })
+      )
+    );
+  }
+
+  /**
+   * Proxy copy calls through a shared helper to reduce duplication.
+   * @param {{
+   *   files: string[],
+   *   sourceDir: string,
+   *   targetDir: string,
+   *   io: CopyAsyncIo,
+   *   messageLogger: CopyMessageLogger,
+   * }} details Prepared copy parameters.
+   * @returns {Promise<void>}
+   */
+  async function performCopy(details) {
+    await copyFiles(details);
   }
 
   /**

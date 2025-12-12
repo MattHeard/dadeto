@@ -1,6 +1,8 @@
 // Toy: Get DEND2 Story Titles
 // (input, env) -> string
 
+import { tryOr } from '#core/browser/common';
+
 /**
  * Determine if the provided value is an array of stories.
  * @param {*} value - Potential stories array.
@@ -16,11 +18,7 @@ function isStoryArray(value) {
  * @returns {*[]} Possibly undefined stories array.
  */
 function extractDend2Stories(data) {
-  try {
-    return data.temporary.DEND2.stories;
-  } catch {
-    return undefined;
-  }
+  return tryOr(() => data.temporary.DEND2.stories);
 }
 
 /**

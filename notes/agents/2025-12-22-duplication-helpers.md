@@ -1,0 +1,5 @@
+# Duplication helper refactor
+
+- **Unexpected hurdle:** After tuning `.jscpd` to `minTokens=19`, the detector still flagged the `data, textInput, disposers` spread in `createDendriteHandler` even though the rest of the file had been rewritten, so I had to trace the report and realize the renderer was still repeating the same parameter tuple.
+- **Fix & learning:** Added a shared `buildWhen` guard and a `getSharedSpecialInputContext` helper so the once-identical `if (!…) return null; return {…}` block now lives in one place, replaced the repeated `moderatorReputationSum` accessor with `getModeratorReputationSum`, and funneled the dendrite form payload through `getSharedFormArgs`; `jscpd` now reports zero clones at token threshold 19 (`npm run duplication`).
+- **Follow-up ideas:** Keep an eye on `buildWhen` usage—any other guard-return patterns (especially across browser toys and browser/core helpers) could benefit from it instead of retyping the sticky `if (!condition) return null` structure, and consider whether similar shared arg bundles should exist for other handler builders to avoid future duplication noise.

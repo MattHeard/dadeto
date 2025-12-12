@@ -15,6 +15,7 @@ import {
   ensureString,
   stringOrDefault,
 } from '../common-core.js';
+import { runWithFailure } from '../response-utils.js';
 const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';
 /**
@@ -422,13 +423,18 @@ function isValidMarkRequest({ pageNumber, variantName }) {
  * @returns {Promise<void>} Resolves when the response has been sent.
  */
 async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
-  try {
-    const ok = await markFn(pageNumber, variantName);
-    respondToVariantResult(res, ok);
-  } catch (error) {
-    const message = resolveUpdateErrorMessage(error);
-    res.status(500).json({ error: message });
+  const outcome = await runWithFailure(
+    () => markFn(pageNumber, variantName),
+    error => {
+      const message = resolveUpdateErrorMessage(error);
+      res.status(500).json({ error: message });
+    }
+  );
+  if (!outcome.ok) {
+    return;
   }
+
+  respondToVariantResult(res, outcome.value);
 }
 
 /**

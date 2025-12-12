@@ -1,4 +1,5 @@
 import { isValidString, whenString } from '../../../common-core.js';
+import { when } from '#core/browser/common';
 import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
 
@@ -91,26 +92,14 @@ function resolveEmptyRatings(pageRatings) {
  * @param {{ pageRatings: Array<{ moderatorId: string, approved: boolean }>, adminId: string, ratings: Record<string, Record<string, boolean>>, pageId: string }} payload - Ratings context.
  * @returns {string} Visibility score.
  */
-function resolveNonEmptyRatings({ pageRatings, adminId, ratings, pageId }) {
-  const singleResult = resolveSingleRating(pageRatings);
-  if (singleResult) {
-    return singleResult;
-  }
+function resolveNonEmptyRatings(payload) {
+  const { pageRatings } = payload;
 
-  return deriveWeightedScore({ pageRatings, adminId, ratings, pageId });
-}
-
-/**
- * Apply the single-rating rule.
- * @param {Array<{ moderatorId: string, approved: boolean }>} pageRatings - Ratings for the page.
- * @returns {string|null} Score when a single rating exists.
- */
-function resolveSingleRating(pageRatings) {
-  if (pageRatings.length !== 1) {
-    return null;
-  }
-
-  return mapBooleanToVisibility(pageRatings[0].approved);
+  return when(
+    pageRatings.length === 1,
+    () => mapBooleanToVisibility(pageRatings[0].approved),
+    () => deriveWeightedScore(payload)
+  );
 }
 
 /**

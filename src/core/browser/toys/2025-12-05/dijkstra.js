@@ -1,6 +1,7 @@
 import { isValidString } from '../../../common-core.js';
 import { calculateEdgeWeight } from './edgeWeight.js';
 import { isPlainObject } from '../browserToysCore.js';
+import { guardThen } from '#core/browser/common';
 
 const NO_PATH_DISTANCE = 1;
 
@@ -134,11 +135,9 @@ function guardAdmin(state, adminId, current) {
  * @returns {boolean} True when further exploration should stop.
  */
 function guardStopDistance(state, distance) {
-  if (distance >= state.bestDistance) {
+  return guardThen(distance >= state.bestDistance, () => {
     state.queue.length = 0;
-    return true;
-  }
-  return false;
+  });
 }
 
 /**

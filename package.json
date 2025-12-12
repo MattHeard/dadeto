@@ -2,6 +2,9 @@
   "name": "blog-generator",
   "version": "1.0.0",
   "type": "module",
+  "imports": {
+    "#core/browser/common": "./src/core/browser/common.js"
+  },
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false",
     "test:e2e": "playwright test",

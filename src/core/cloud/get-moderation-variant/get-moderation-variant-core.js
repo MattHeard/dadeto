@@ -8,6 +8,7 @@ import {
   resolveMessageOrDefault,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
+import { when } from '../../common-core.js';
 
 export { productionOrigins, coreIsAllowedOrigin as isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
@@ -211,11 +212,7 @@ async function fetchVariantSnapshot(db, uid) {
   const moderatorSnap = await db.collection('moderators').doc(uid).get();
   const variantRef = resolveModeratorVariantRef(moderatorSnap);
 
-  if (!variantRef) {
-    return null;
-  }
-
-  return fetchVariantResponse(variantRef);
+  return when(variantRef, () => fetchVariantResponse(variantRef));
 }
 
 /**

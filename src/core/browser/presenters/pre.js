@@ -1,3 +1,5 @@
+import { withFallback } from '#core/browser/common';
+
 // Pre-formatted text presenter
 // Creates a <pre> element with the given string as its text content using a DOM abstraction
 
@@ -26,14 +28,12 @@ function isBracketedListString(str) {
  */
 function formatBracketedListString(inputString) {
   const inner = inputString.slice(1, -1).trim();
-  if (inner.length > 0) {
-    return inner
+  return withFallback(inner.length > 0, () =>
+    inner
       .split(',')
       .map(s => s.trim())
-      .join('\n');
-  } else {
-    return '';
-  }
+      .join('\n')
+  );
 }
 
 /**

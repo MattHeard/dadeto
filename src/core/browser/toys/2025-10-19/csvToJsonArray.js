@@ -7,6 +7,7 @@
  */
 
 import { parseCsvLine } from './toys-core.js';
+import { buildWhen } from '../../common.js';
 import { whenString } from '../../../common-core.js';
 
 /**
@@ -175,14 +176,10 @@ function parseHeaderEntries(lines) {
  */
 function buildHeaderEntriesResult(parsedHeader) {
   const headerEntries = buildHeaderEntries(parsedHeader.headers);
-  if (!doHeaderEntriesExist(headerEntries)) {
-    return null;
-  }
-
-  return {
+  return buildWhen(doHeaderEntriesExist(headerEntries), () => ({
     headerEntries,
     dataLines: parsedHeader.dataLines,
-  };
+  }));
 }
 
 /**

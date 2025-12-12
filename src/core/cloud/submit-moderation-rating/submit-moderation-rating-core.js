@@ -1,4 +1,4 @@
-import { assertFunction, isNonNullObject } from './common-core.js';
+import { isNonNullObject } from './common-core.js';
 import {
   matchBearerToken,
   normalizeMethod,
@@ -12,6 +12,7 @@ import {
   assertRandomUuidAndTimestamp,
   returnErrorResultOrValue,
 } from './cloud-core.js';
+import { createCloudSubmitHandler } from '../submit-shared.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
@@ -217,87 +218,9 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
  * @param {(request: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} responder Domain-specific responder that returns status/body pairs.
  * @returns {(req: SubmitModerationRatingRequest, res: { status: (code: number) => { json: (body: Record<string, unknown>) => void, send: (body: string) => void }, sendStatus: (code: number) => void }) => Promise<void>} Express-compatible handler that writes the responder output.
  */
-export function createHandleSubmitModerationRating(responder) {
-  assertFunction(responder, 'responder');
+const moderationSubmitHandler = createCloudSubmitHandler;
 
-  return async function handleSubmitModerationRating(req, res) {
-    const result = await responder(normalizeResponderRequest(req));
-
-    writeResponderBody(res, result.status, result.body);
-  };
-}
-
-/**
- * Normalize an Express-style request into the shape expected by the responder.
- * @param {SubmitModerationRatingRequest | undefined} req Incoming HTTP request.
- * @returns {SubmitModerationRatingRequest} Payload forwarded to the responder.
- */
-function normalizeResponderRequest(req) {
-  if (!req) {
-    return {};
-  }
-
-  return {
-    method: req.method,
-    body: req.body,
-    get: getHeaderAccessor(req.get),
-    headers: req.headers,
-  };
-}
-
-/**
- * Wrap the optional header accessor so it matches the responder signature.
- * @param {unknown} candidate Potential header accessor supplied by the request.
- * @returns {SubmitModerationRatingRequest['get'] | undefined} Normalized accessor.
- */
-function getHeaderAccessor(candidate) {
-  if (typeof candidate !== 'function') {
-    return undefined;
-  }
-
-  return name => candidate(name);
-}
-
-/**
- * Write the responder output to the HTTP response object.
- * @param {{ status: (code: number) => { json: (body: Record<string, unknown>) => void, send: (body: string) => void }, sendStatus: (code: number) => void }} res Express-style response object.
- * @param {number} status HTTP status code returned by the responder.
- * @param {string | Record<string, unknown> | undefined} body Response payload returned by the responder.
- * @returns {void}
- */
-function writeResponderBody(res, status, body) {
-  if (isJsonBody(body)) {
-    res.status(status).json(body);
-    return;
-  }
-
-  sendPrimitiveBody(res, status, body);
-}
-
-/**
- * Determine whether the responder returned a JSON-compatible payload.
- * @param {unknown} value Payload produced by the responder.
- * @returns {value is Record<string, unknown>} True when the payload should be serialized as JSON.
- */
-function isJsonBody(value) {
-  return typeof value === 'object' && value !== null;
-}
-
-/**
- * Write primitive responder payloads to the HTTP response.
- * @param {{ status: (code: number) => { send: (body: string) => void }, sendStatus: (code: number) => void }} res Express-style response object.
- * @param {number} status HTTP status code returned by the responder.
- * @param {string | undefined} body Primitive payload to send to the client.
- * @returns {void}
- */
-function sendPrimitiveBody(res, status, body) {
-  if (typeof body === 'undefined') {
-    res.sendStatus(status);
-    return;
-  }
-
-  res.status(status).send(body);
-}
+export { moderationSubmitHandler as createHandleSubmitModerationRating };
 
 /**
  * Determine whether a value is a boolean literal.

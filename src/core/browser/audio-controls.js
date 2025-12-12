@@ -48,36 +48,36 @@ export function setupAudio(dom, setTextContent) {
     timeDisplay.className = 'audio-time';
     setTextContent(timeDisplay, '0:00');
 
-    const playButton = dom.createElement('a');
-    playButton.href = '#';
-    playButton.textContent = 'PLAY';
-    const onPlayClick = createPlayClickHandler(
-      audio,
-      dom.stopDefault,
-      dom.playAudio
-    );
-    dom.addEventListener(playButton, 'click', onPlayClick);
+    /**
+     *
+     * @param label
+     * @param handlerFactory
+     * @param actionFn
+     */
+    /**
+     * Create a control button and wire it to the provided handler.
+     * @param {string} label - Text displayed on the control.
+     * @param {(
+     *   audio: HTMLAudioElement,
+     *   stop: (event: Event) => void,
+     *   action: (audio: HTMLAudioElement) => void
+     * ) => (event: Event) => void} handlerFactory - Factory creating the click handler.
+     * @param {(audio: HTMLAudioElement) => void} actionFn - Audio action invoked by the handler.
+     * @returns {void}
+     */
+    function addControl(label, handlerFactory, actionFn) {
+      const button = dom.createElement('a');
+      button.href = '#';
+      button.textContent = label;
+      const onClick = handlerFactory(audio, dom.stopDefault, actionFn);
+      dom.addEventListener(button, 'click', onClick);
+      dom.appendChild(controlsContainer, button);
+      dom.appendChild(controlsContainer, dom.createTextNode(' '));
+    }
 
-    const onPauseClick = createPauseClickHandler(
-      audio,
-      dom.stopDefault,
-      dom.pauseAudio
-    );
-
-    const pauseButton = dom.createElement('a');
-    pauseButton.href = '#';
-    pauseButton.textContent = 'PAUSE';
-    dom.addEventListener(pauseButton, 'click', onPauseClick);
-
-    const onStopClick = createStopClickHandler(
-      audio,
-      dom.stopDefault,
-      dom.pauseAudio
-    );
-    const stopButton = dom.createElement('a');
-    stopButton.href = '#';
-    stopButton.textContent = 'STOP';
-    dom.addEventListener(stopButton, 'click', onStopClick);
+    addControl('PLAY', createPlayClickHandler, dom.playAudio);
+    addControl('PAUSE', createPauseClickHandler, dom.pauseAudio);
+    addControl('STOP', createStopClickHandler, dom.pauseAudio);
 
     const updateTimeDisplay = createUpdateTimeDisplay(
       audio,
@@ -86,12 +86,6 @@ export function setupAudio(dom, setTextContent) {
     );
     dom.addEventListener(audio, 'timeupdate', updateTimeDisplay);
 
-    dom.appendChild(controlsContainer, playButton);
-    dom.appendChild(controlsContainer, dom.createTextNode(' '));
-    dom.appendChild(controlsContainer, pauseButton);
-    dom.appendChild(controlsContainer, dom.createTextNode(' '));
-    dom.appendChild(controlsContainer, stopButton);
-    dom.appendChild(controlsContainer, dom.createTextNode(' '));
     dom.appendChild(controlsContainer, timeDisplay);
 
     dom.insertBefore(audio.parentNode, controlsContainer, audio.nextSibling);

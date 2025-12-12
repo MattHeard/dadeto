@@ -1,4 +1,5 @@
 import { isValidString } from '../../../common-core.js';
+import { buildWhen } from '../../common.js';
 import { isPlainObject } from '../browserToysCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
@@ -49,11 +50,10 @@ function extractRatingsPair({ moderatorA, moderatorB, ratings }) {
 function buildRatingsPair(ratings, moderatorA, moderatorB) {
   const firstRatings = getModeratorRatings(ratings, moderatorA);
   const secondRatings = getModeratorRatings(ratings, moderatorB);
-  if (!areRatingRecordsValid(firstRatings, secondRatings)) {
-    return null;
-  }
-
-  return { firstRatings, secondRatings };
+  return buildWhen(areRatingRecordsValid(firstRatings, secondRatings), () => ({
+    firstRatings,
+    secondRatings,
+  }));
 }
 
 /**
