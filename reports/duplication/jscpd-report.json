@@ -1,12 +1,12 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-12T10:09:02.658Z",
+    "detectionDate": "2025-12-12T10:45:23.946Z",
     "formats": {
       "javascript": {
         "sources": {
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/edgeWeight.js": {
             "lines": 168,
-            "tokens": 745,
+            "tokens": 744,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -65,8 +65,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-10-19/csvToJsonArray.js": {
-            "lines": 400,
-            "tokens": 1617,
+            "lines": 397,
+            "tokens": 1612,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -233,7 +233,7 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-04-06/ticTacToe.js": {
-            "lines": 719,
+            "lines": 718,
             "tokens": 3666,
             "sources": 1,
             "clones": 0,
@@ -378,7 +378,7 @@
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/update-variant-visibility/update-variant-visibility-core.js": {
             "lines": 270,
-            "tokens": 1144,
+            "tokens": 1143,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -389,14 +389,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js": {
-            "lines": 496,
-            "tokens": 1990,
+            "lines": 518,
+            "tokens": 2081,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 18,
-            "percentage": 2.02,
-            "percentageTokens": 0.9,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -425,14 +425,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 651,
-            "tokens": 2673,
+            "lines": 662,
+            "tokens": 2651,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 18,
-            "percentage": 1.54,
-            "percentageTokens": 0.67,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -820,6 +820,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/responder-utils.js": {
+            "lines": 27,
+            "tokens": 105,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/request-normalization.js": {
             "lines": 33,
             "tokens": 134,
@@ -1134,14 +1146,14 @@
           }
         },
         "total": {
-          "lines": 17726,
-          "tokens": 79311,
-          "sources": 94,
-          "clones": 4,
-          "duplicatedLines": 53,
-          "duplicatedTokens": 72,
-          "percentage": 0.3,
-          "percentageTokens": 0.09,
+          "lines": 17782,
+          "tokens": 79478,
+          "sources": 95,
+          "clones": 3,
+          "duplicatedLines": 43,
+          "duplicatedTokens": 54,
+          "percentage": 0.24,
+          "percentageTokens": 0.07,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1188,55 +1200,19 @@
       }
     },
     "total": {
-      "lines": 17973,
-      "tokens": 84826,
-      "sources": 96,
-      "clones": 4,
-      "duplicatedLines": 53,
-      "duplicatedTokens": 72,
-      "percentage": 0.29,
-      "percentageTokens": 0.08,
+      "lines": 18029,
+      "tokens": 84993,
+      "sources": 97,
+      "clones": 3,
+      "duplicatedLines": 43,
+      "duplicatedTokens": 54,
+      "percentage": 0.24,
+      "percentageTokens": 0.06,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 11,
-      "fragment": "],\n  ]);\n\n  assertRandomUuidAndTimestamp(dependencies);\n\n  /**\n   * Process valid rating.\n   * @param {object} deps Dependencies.\n   * @param {object} context Context.\n   * @returns {Promise<object>} Response.\n   */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 426,
-        "end": 436,
-        "startLoc": {
-          "line": 426,
-          "column": 23,
-          "position": 1582
-        },
-        "endLoc": {
-          "line": 436,
-          "column": 6,
-          "position": 1600
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-new-story/submit-new-story-core.js",
-        "start": 484,
-        "end": 489,
-        "startLoc": {
-          "line": 484,
-          "column": 15,
-          "position": 1917
-        },
-        "endLoc": {
-          "line": 489,
-          "column": 7,
-          "position": 1935
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 18,

@@ -8,11 +8,10 @@ import {
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
   normalizeAuthorizationCandidate,
-  assertFunctionDependencies,
-  assertRandomUuidAndTimestamp,
   returnErrorResultOrValue,
 } from './cloud-core.js';
 import { createCloudSubmitHandler } from '../submit-shared.js';
+import { createResponder } from '../responder-utils.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
@@ -413,87 +412,99 @@ function isValidAssignment(assignment) {
  * @returns {(request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} Responder that validates and processes submissions.
  */
 export function createSubmitModerationRatingResponder(dependencies) {
-  const {
-    verifyIdToken,
-    fetchModeratorAssignment,
-    recordModerationRating,
-    randomUUID,
-    getServerTimestamp,
-  } = dependencies;
-  assertFunctionDependencies([
-    ['verifyIdToken', verifyIdToken],
-    ['fetchModeratorAssignment', fetchModeratorAssignment],
-    ['recordModerationRating', recordModerationRating],
-  ]);
+  return createResponder({
+    dependencies,
+    requiredFunctionNames: [
+      'verifyIdToken',
+      'fetchModeratorAssignment',
+      'recordModerationRating',
+    ],
+    handlerFactory: deps => {
+      const {
+        verifyIdToken,
+        fetchModeratorAssignment,
+        recordModerationRating,
+        randomUUID,
+        getServerTimestamp,
+      } = deps;
 
-  assertRandomUuidAndTimestamp(dependencies);
+      /**
+       *
+       * @param context
+       */
+      /**
+       * Process a rating when prerequisites and context are valid.
+       * @param {{ contextResult: { uid?: string, assignment?: ModeratorAssignment }, bodyResult: { isApproved?: boolean } }} context Context data.
+       * @returns {Promise<object>} Success response payload.
+       */
+      async function processValidRating(context) {
+        const { contextResult, bodyResult } = context;
 
-  /**
-   * Process valid rating.
-   * @param {object} deps Dependencies.
-   * @param {object} context Context.
-   * @returns {Promise<object>} Response.
-   */
-  async function processValidRating(deps, context) {
-    const { recordModerationRating, randomUUID, getServerTimestamp } = deps;
-    const { contextResult, bodyResult } = context;
+        const ratingId = randomUUID();
+        await recordModerationRating({
+          id: ratingId,
+          moderatorId: contextResult.uid,
+          variantId: contextResult.assignment.variantId,
+          isApproved: bodyResult.isApproved,
+          ratedAt: getServerTimestamp(),
+        });
 
-    const ratingId = randomUUID();
-    await recordModerationRating({
-      id: ratingId,
-      moderatorId: contextResult.uid,
-      variantId: contextResult.assignment.variantId,
-      isApproved: bodyResult.isApproved,
-      ratedAt: getServerTimestamp(),
-    });
+        await clearAssignment(contextResult.assignment);
 
-    await clearAssignment(contextResult.assignment);
+        return createResponse(201, {});
+      }
 
-    return createResponse(201, {});
-  }
+      /**
+       *
+       * @param bodyResult
+       * @param contextResult
+       */
+      /**
+       * Build the response once the context lookup finishes.
+       * @param {{ isApproved?: boolean, error?: SubmitModerationRatingResponse }} bodyResult Body validation result.
+       * @param {{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }} contextResult Moderator context outcome.
+       * @returns {Promise<SubmitModerationRatingResponse>} Handler response.
+       */
+      function resolveResponseFromContext(bodyResult, contextResult) {
+        if (contextResult.error) {
+          return Promise.resolve(contextResult.error);
+        }
 
-  /**
-   * Resolve response after context lookup.
-   * @param {object} deps Dependencies.
-   * @param {{ isApproved: boolean }} bodyResult Body result.
-   * @param {{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }} contextResult Context result.
-   * @returns {Promise<SubmitModerationRatingResponse>} Response.
-   */
-  function resolveResponseFromContext(deps, bodyResult, contextResult) {
-    if (contextResult.error) {
-      return Promise.resolve(contextResult.error);
-    }
+        return processValidRating({ contextResult, bodyResult });
+      }
 
-    return processValidRating(deps, { contextResult, bodyResult });
-  }
+      /**
+       *
+       * @param prerequisiteResult
+       */
+      /**
+       * Resolve the moderator context or propagate the prerequisite error.
+       * @param {{ error?: SubmitModerationRatingResponse, token?: string }} prerequisiteResult Prerequisite outcome.
+       * @returns {Promise<{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }>} Context resolution result.
+       */
+      function resolveContextResult(prerequisiteResult) {
+        if (prerequisiteResult.error) {
+          return Promise.resolve({ error: prerequisiteResult.error });
+        }
 
-  return async function submitModerationRatingResponder(request = {}) {
-    const prerequisiteResult = resolveRequestPrerequisites(request);
-    const contextResult = await resolveContextResult(prerequisiteResult);
+        return resolveModeratorContext({
+          verifyIdToken,
+          fetchModeratorAssignment,
+          token: prerequisiteResult.token,
+        });
+      }
 
-    return resolveResponseFromContext(
-      { recordModerationRating, randomUUID, getServerTimestamp },
-      prerequisiteResult.bodyResult,
-      contextResult
-    );
-  };
+      return async function submitModerationRatingResponder(request = {}) {
+        const prerequisiteResult = resolveRequestPrerequisites(request);
+        const contextResult = await resolveContextResult(prerequisiteResult);
 
-  /**
-   * Resolve context result or propagate prerequisite error.
-   * @param {{ error?: SubmitModerationRatingResponse, token?: string }} prerequisiteResult Prerequisite result.
-   * @returns {Promise<{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }>} Context result.
-   */
-  function resolveContextResult(prerequisiteResult) {
-    if (prerequisiteResult.error) {
-      return Promise.resolve({ error: prerequisiteResult.error });
-    }
-
-    return resolveModeratorContext({
-      verifyIdToken,
-      fetchModeratorAssignment,
-      token: prerequisiteResult.token,
-    });
-  }
+        return resolveResponseFromContext(
+          prerequisiteResult.bodyResult,
+          contextResult
+        );
+      };
+    },
+  });
 }
 
 /**
