@@ -241,5 +241,31 @@ describe('createCopyToInfraCore', () => {
       expect(io.copyFile).not.toHaveBeenCalled();
       expect(logger.info).not.toHaveBeenCalled();
     });
+
+    it('ensures directory preparation even when no files exist', async () => {
+      const io = {
+        ensureDirectory: jest.fn().mockResolvedValue(undefined),
+        readDirEntries: jest.fn().mockResolvedValue([]),
+        copyFile: jest.fn(),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.runCopyToInfra({
+        directoryCopies: [
+          {
+            source: posix.join(projectRoot, 'functions'),
+            target: posix.join(projectRoot, 'infra/functions'),
+          },
+        ],
+        io,
+        messageLogger: logger,
+      });
+
+      expect(io.ensureDirectory).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'infra/functions')
+      );
+      expect(io.copyFile).not.toHaveBeenCalled();
+      expect(logger.info).not.toHaveBeenCalled();
+    });
   });
 });
