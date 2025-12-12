@@ -52,6 +52,15 @@ describe('submit-new-story core', () => {
       });
     });
 
+    it('rejects when the request is missing', async () => {
+      const responder = createSubmitNewStoryResponder(createDependencies());
+
+      await expect(responder(undefined)).resolves.toEqual({
+        status: 405,
+        body: 'POST only',
+      });
+    });
+
     it('saves a normalized submission and returns the payload', async () => {
       const saveSubmission = jest.fn().mockResolvedValue();
       const randomUUID = jest.fn().mockReturnValue('story-77');
