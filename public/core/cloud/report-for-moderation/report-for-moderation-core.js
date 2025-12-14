@@ -129,6 +129,10 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 
+/**
+ *
+ * @param method
+ */
 function validateHttpMethod(method) {
   if (normalizeMethod(method) === 'POST') {
     return null;

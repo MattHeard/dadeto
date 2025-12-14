@@ -349,6 +349,73 @@
         </div>
       </div>
       <article
+        class="entry tag-toy tag-moderation tag-json tag-stats"
+        id="MODE1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">MODE1</div>
+        <div class="value">
+          <h2><a href="#MODE1">Moderator Rating Counts</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">14 Dec 2025</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-moderation">moderation</a>,
+          <a class="tag-json">json</a>, <a class="tag-stats">stats</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Filters pasted JSON ratings down to valid moderator submissions and
+          skips malformed rows.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Returns a JSON array of counts so you can see how many ratings each
+          moderator logged.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'MODE1',
+            '/toys/2025-12-14/moderatorRatingCounts.js',
+            'moderatorRatingCounts'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-dendrite tag-graph tag-moderation"
         id="VISI1"
       >
