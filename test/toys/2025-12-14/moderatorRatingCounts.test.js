@@ -44,6 +44,12 @@ describe('moderatorRatingCounts', () => {
         ratedAt: 'not-a-date',
         variantId: 'variant-B',
       },
+      {
+        isApproved: false,
+        moderatorId: 'mod-alpha',
+        ratedAt: 0,
+        variantId: 'variant-C',
+      },
     ];
 
     expect(moderatorRatingCounts(JSON.stringify(invalidRatings))).toBe('[]');
