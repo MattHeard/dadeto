@@ -1,5 +1,6 @@
 import { assertFunction } from '../common-core.js';
 import {
+  normalizeMethod,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
   whenBodyPresent,
@@ -77,16 +78,14 @@ export function createReportForModerationHandler({
   assertFunction(addModerationReport, 'addModerationReport');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  return async function reportForModerationHandler({ method, body }) {
-    if (method !== 'POST') {
-      return {
-        status: 405,
-        body: 'POST only',
-      };
+  return async function reportForModerationHandler(request = {}) {
+    const methodError = validateHttpMethod(request.method);
+    if (methodError) {
+      return methodError;
     }
 
     return handlePostRequest({
-      body,
+      body: request.body,
       addModerationReport,
       getServerTimestamp,
     });
@@ -128,6 +127,16 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   return buildCorsOptions(origin, methods);
 }
 
+const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
+
+function validateHttpMethod(method) {
+  if (normalizeMethod(method) === 'POST') {
+    return null;
+  }
+
+  return METHOD_NOT_ALLOWED_RESPONSE;
+}
+
 /**
  * Emit a simple string response with the provided status code.
  * @param {{ status: (code: number) => { send: (body: string) => void } }} res - Express-like response object.
@@ -158,8 +167,12 @@ export function createHandleReportForModeration(reportForModerationHandler) {
   assertFunction(reportForModerationHandler, 'reportForModerationHandler');
 
   return async function handleReportForModeration(req, res) {
+    if (req.method !== 'POST') {
+      sendResponse(res, 405, 'POST only');
+      return;
+    }
+
     const { status, body } = await reportForModerationHandler({
-      method: req.method,
       body: req.body,
     });
 

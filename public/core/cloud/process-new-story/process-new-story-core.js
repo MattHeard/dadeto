@@ -1,5 +1,6 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
+import { createAsyncDomainHandler } from '../handler-utils.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
 
@@ -397,19 +398,18 @@ export function createProcessNewStoryHandler({
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
-  return async function handleProcessNewStory(snapshot, context = {}) {
-    const submission = resolveSubmission(snapshot);
-
-    return processStorySubmission({
-      submission,
+  return createAsyncDomainHandler({
+    execute: processStorySubmission,
+    mapParams: (snapshot, context = {}) => ({
+      submission: resolveSubmission(snapshot),
       snapshot,
       context,
       db,
       randomUUID,
       random,
       getServerTimestamp,
-    });
-  };
+    }),
+  });
 }
 
 /**

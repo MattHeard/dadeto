@@ -1,10 +1,10 @@
 import { assertFunction } from '../common-core.js';
 import {
+  normalizeMethod,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
   whenBodyPresent,
 } from './cloud-core.js';
-import { createAsyncDomainHandler } from '../handler-utils.js';
 
 /**
  * Determine whether the provided request body contains a variant string.
@@ -78,16 +78,18 @@ export function createReportForModerationHandler({
   assertFunction(addModerationReport, 'addModerationReport');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  const reportRequestHandler = createAsyncDomainHandler({
-    execute: handlePostRequest,
-    mapParams: ({ body }) => ({
-      body,
+  return async function reportForModerationHandler(request = {}) {
+    const methodError = validateHttpMethod(request.method);
+    if (methodError) {
+      return methodError;
+    }
+
+    return handlePostRequest({
+      body: request.body,
       addModerationReport,
       getServerTimestamp,
-    }),
-  });
-
-  return reportRequestHandler;
+    });
+  };
 }
 
 /**
@@ -123,6 +125,20 @@ function isCorsOriginAllowed(origin, allowedOrigins) {
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   const origin = createCorsOriginValidator(allowedOrigins);
   return buildCorsOptions(origin, methods);
+}
+
+const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
+
+/**
+ *
+ * @param method
+ */
+function validateHttpMethod(method) {
+  if (normalizeMethod(method) === 'POST') {
+    return null;
+  }
+
+  return METHOD_NOT_ALLOWED_RESPONSE;
 }
 
 /**

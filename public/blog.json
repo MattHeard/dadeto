@@ -1,6 +1,26 @@
 {
   "posts": [
     {
+      "key": "MODE1",
+      "title": "Moderator Rating Counts",
+      "publicationDate": "2025-12-14",
+      "content": [
+        "Filters pasted JSON ratings down to valid moderator submissions and skips malformed rows.",
+        "Returns a JSON array of counts so you can see how many ratings each moderator logged."
+      ],
+      "toy": {
+        "modulePath": "/toys/2025-12-14/moderatorRatingCounts.js",
+        "functionName": "moderatorRatingCounts",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "moderation",
+        "json",
+        "stats"
+      ]
+    },
+    {
       "key": "VISI1",
       "title": "Visibility Calculator",
       "publicationDate": "2025-12-05",
