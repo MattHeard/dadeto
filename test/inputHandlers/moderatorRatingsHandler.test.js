@@ -80,6 +80,10 @@ describe('serializeRatingRows', () => {
 /**
  *
  */
+/**
+ * Creates a fake DOM helper collection for interaction verification.
+ * @returns {object} Mock DOM utilities.
+ */
 function createFakeDom() {
   const created = [];
 

@@ -1,9 +1,21 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-12T15:44:25.656Z",
+    "detectionDate": "2025-12-15T13:42:41.003Z",
     "formats": {
       "javascript": {
         "sources": {
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-14/moderatorRatingCounts.js": {
+            "lines": 167,
+            "tokens": 749,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 32,
+            "percentage": 2.99,
+            "percentageTokens": 4.27,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/edgeWeight.js": {
             "lines": 168,
             "tokens": 744,
@@ -428,23 +440,23 @@
             "lines": 662,
             "tokens": 2651,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 3,
+            "duplicatedLines": 27,
+            "duplicatedTokens": 98,
+            "percentage": 4.08,
+            "percentageTokens": 3.7,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
-            "lines": 196,
-            "tokens": 851,
+            "lines": 231,
+            "tokens": 966,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 22,
+            "duplicatedTokens": 66,
+            "percentage": 9.52,
+            "percentageTokens": 6.83,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -748,15 +760,27 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
+            "lines": 276,
+            "tokens": 2188,
+            "sources": 1,
+            "clones": 7,
+            "duplicatedLines": 43,
+            "duplicatedTokens": 229,
+            "percentage": 15.58,
+            "percentageTokens": 10.47,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/createDendriteHandler.js": {
             "lines": 379,
             "tokens": 1899,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 7,
+            "duplicatedTokens": 25,
+            "percentage": 1.85,
+            "percentageTokens": 1.32,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -773,8 +797,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/constants/selectors.js": {
-            "lines": 7,
-            "tokens": 45,
+            "lines": 8,
+            "tokens": 56,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -835,6 +859,18 @@
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/request-normalization.js": {
             "lines": 33,
             "tokens": 134,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/parallel-utils.js": {
+            "lines": 14,
+            "tokens": 61,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1001,8 +1037,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/browser-core.js": {
-            "lines": 392,
-            "tokens": 1778,
+            "lines": 397,
+            "tokens": 1803,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1121,8 +1157,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/copy.js": {
-            "lines": 652,
-            "tokens": 3044,
+            "lines": 498,
+            "tokens": 2346,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1158,14 +1194,14 @@
           }
         },
         "total": {
-          "lines": 17800,
-          "tokens": 79593,
-          "sources": 96,
-          "clones": 2,
-          "duplicatedLines": 26,
-          "duplicatedTokens": 36,
-          "percentage": 0.15,
-          "percentageTokens": 0.05,
+          "lines": 18144,
+          "tokens": 82044,
+          "sources": 99,
+          "clones": 9,
+          "duplicatedLines": 78,
+          "duplicatedTokens": 261,
+          "percentage": 0.43,
+          "percentageTokens": 0.32,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1212,19 +1248,127 @@
       }
     },
     "total": {
-      "lines": 18047,
-      "tokens": 85108,
-      "sources": 98,
-      "clones": 2,
-      "duplicatedLines": 26,
-      "duplicatedTokens": 36,
-      "percentage": 0.14,
-      "percentageTokens": 0.04,
+      "lines": 18391,
+      "tokens": 87559,
+      "sources": 101,
+      "clones": 9,
+      "duplicatedLines": 78,
+      "duplicatedTokens": 261,
+      "percentage": 0.42,
+      "percentageTokens": 0.3,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 6,
+      "fragment": "(value) {\n  if (typeof value !== 'string') {\n    return false;\n  }\n\n  return",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 247,
+        "end": 252,
+        "startLoc": {
+          "line": 247,
+          "column": 17,
+          "position": 841
+        },
+        "endLoc": {
+          "line": 252,
+          "column": 7,
+          "position": 873
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/toys/2025-12-14/moderatorRatingCounts.js",
+        "start": 71,
+        "end": 165,
+        "startLoc": {
+          "line": 71,
+          "column": 13,
+          "position": 302
+        },
+        "endLoc": {
+          "line": 165,
+          "column": 6,
+          "position": 722
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 9,
+      "fragment": "\n\nconst METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };\n\n/**\n * Validate the request method and emit an error response when unsupported.\n * @param {string | undefined} method - HTTP method supplied by the client.\n * @returns {{ status: number, body: string } | null} Error response when the method is not POST; otherwise null.\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
+        "start": 146,
+        "end": 154,
+        "startLoc": {
+          "line": 146,
+          "column": 2,
+          "position": 583
+        },
+        "endLoc": {
+          "line": 154,
+          "column": 4,
+          "position": 608
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 14,
+        "end": 57,
+        "startLoc": {
+          "line": 14,
+          "column": 2,
+          "position": 85
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 4,
+          "position": 128
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 15,
+      "fragment": "(method) {\n  if (normalizeMethod(method) === 'POST') {\n    return null;\n  }\n\n  return METHOD_NOT_ALLOWED_RESPONSE;\n}\n\n/**\n * Emit a simple string response with the provided status code.\n * @param {{ status: (code: number) => { send: (body: string) => void } }} res - Express-like response object.\n * @param {number} status - HTTP status code to send.\n * @param {string} body - String body to send in the response.\n * @returns {void}\n */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
+        "start": 155,
+        "end": 169,
+        "startLoc": {
+          "line": 155,
+          "column": 19,
+          "position": 613
+        },
+        "endLoc": {
+          "line": 169,
+          "column": 4,
+          "position": 654
+        }
+      },
+      "secondFile": {
+        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
+        "start": 515,
+        "end": 527,
+        "startLoc": {
+          "line": 515,
+          "column": 22,
+          "position": 1976
+        },
+        "endLoc": {
+          "line": 527,
+          "column": 4,
+          "position": 2017
+        }
+      }
+    },
     {
       "format": "javascript",
       "lines": 11,
@@ -1258,6 +1402,150 @@
           "line": 455,
           "column": 1,
           "position": 1779
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns\n    );\n\n    const ratedAtInput",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 188,
+        "end": 194,
+        "startLoc": {
+          "line": 188,
+          "column": 10,
+          "position": 1541
+        },
+        "endLoc": {
+          "line": 194,
+          "column": 13,
+          "position": 1575
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 177,
+        "end": 183,
+        "startLoc": {
+          "line": 177,
+          "column": 12,
+          "position": 1475
+        },
+        "endLoc": {
+          "line": 183,
+          "column": 13,
+          "position": 1509
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns\n    );\n\n    const approveSelect",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 199,
+        "end": 205,
+        "startLoc": {
+          "line": 199,
+          "column": 8,
+          "position": 1607
+        },
+        "endLoc": {
+          "line": 205,
+          "column": 14,
+          "position": 1641
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 177,
+        "end": 183,
+        "startLoc": {
+          "line": 177,
+          "column": 12,
+          "position": 1475
+        },
+        "endLoc": {
+          "line": 183,
+          "column": 13,
+          "position": 1509
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns\n    );\n\n    const cleanupRow",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 209,
+        "end": 215,
+        "startLoc": {
+          "line": 209,
+          "column": 11,
+          "position": 1669
+        },
+        "endLoc": {
+          "line": 215,
+          "column": 11,
+          "position": 1703
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 177,
+        "end": 183,
+        "startLoc": {
+          "line": 177,
+          "column": 12,
+          "position": 1475
+        },
+        "endLoc": {
+          "line": 183,
+          "column": 13,
+          "position": 1509
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 8,
+      "fragment": ",\n  maybeRemoveNumber,\n  maybeRemoveTextarea,\n  parseJsonOrDefault,\n  setInputValue,\n} from '../browser-core.js';\n\n",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/createDendriteHandler.js",
+        "start": 5,
+        "end": 12,
+        "startLoc": {
+          "line": 5,
+          "column": 14,
+          "position": 27
+        },
+        "endLoc": {
+          "line": 12,
+          "column": 1,
+          "position": 52
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 7,
+        "end": 13,
+        "startLoc": {
+          "line": 7,
+          "column": 28,
+          "position": 26
+        },
+        "endLoc": {
+          "line": 13,
+          "column": 7,
+          "position": 51
         }
       }
     },

@@ -1,7 +1,6 @@
 import {
   createDefaultHandler,
   getInputValue,
-  hideAndDisable,
   maybeRemoveDendrite,
   maybeRemoveKV,
   maybeRemoveModeratorRatings,
@@ -12,6 +11,7 @@ import {
 } from '../browser-core.js';
 import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
 import { MODERATOR_RATINGS_FORM_SELECTOR } from '../../constants/selectors.js';
+import { isNonNullObject } from '../../common-core.js';
 
 const FORM_CLASS = MODERATOR_RATINGS_FORM_SELECTOR.slice(1);
 const ROW_CLASS = 'moderator-rating-row';
@@ -30,28 +30,32 @@ const cleanupModeratorRatings = createDefaultHandler([
   maybeRemoveModeratorRatings,
 ]);
 
-const toNormalizedString = value => {
-  if (value === undefined || value === null) {
-    return '';
-  }
-  return String(value).trim();
-};
+const toNormalizedString = value => String(value ?? '').trim();
 
 const toBoolean = value => value === true || value === 'true';
 
 /**
  * Normalize a rating entry into the schema that the toy expects.
  * @param {unknown} entry Value parsed from the hidden input.
- * @returns {{moderatorId: string, variantId: string, ratedAt: string, isApproved: boolean}}
+ * @returns {{moderatorId: string, variantId: string, ratedAt: string, isApproved: boolean}} Normalized entry.
+ */
+const defaultRatingEntry = {
+  moderatorId: '',
+  variantId: '',
+  ratedAt: '',
+  isApproved: false,
+};
+
+const createDefaultRatingEntry = () => ({ ...defaultRatingEntry });
+
+/**
+ * Normalize a rating entry into the schema that the toy expects.
+ * @param {unknown} entry Value parsed from the hidden input.
+ * @returns {{moderatorId: string, variantId: string, ratedAt: string, isApproved: boolean}} Normalized entry.
  */
 export function normalizeRatingEntry(entry) {
-  if (!entry || typeof entry !== 'object') {
-    return {
-      moderatorId: '',
-      variantId: '',
-      ratedAt: '',
-      isApproved: false,
-    };
+  if (!isNonNullObject(entry)) {
+    return createDefaultRatingEntry();
   }
 
   return {
@@ -71,9 +75,9 @@ export function serializeRatingRows(rows) {
   return rows.map(normalizeRatingEntry);
 }
 
-const createEmptyRating = () => normalizeRatingEntry(null);
+const createEmptyRating = createDefaultRatingEntry;
 
-const buildFieldInput = (dom, placeholder, value, onChange, cleanupFns) => {
+const buildFieldInput = ({ dom, placeholder, value, onChange, cleanupFns }) => {
   const input = dom.createElement('input');
   dom.setType(input, 'text');
   dom.setPlaceholder(input, placeholder);
@@ -88,7 +92,7 @@ const buildFieldInput = (dom, placeholder, value, onChange, cleanupFns) => {
   return input;
 };
 
-const buildApproveToggle = (dom, initialValue, onChange, cleanupFns) => {
+const buildApproveToggle = ({ dom, initialValue, onChange, cleanupFns }) => {
   const select = dom.createElement('select');
   const options = [
     ['true', APPROVED_OPTION_LABEL],
@@ -101,7 +105,8 @@ const buildApproveToggle = (dom, initialValue, onChange, cleanupFns) => {
     dom.appendChild(select, option);
   });
 
-  dom.setValue(select, initialValue ? 'true' : 'false');
+  const initialIndex = Number(!initialValue);
+  dom.setValue(select, options[initialIndex][0]);
 
   const handleChange = () => {
     onChange(dom.getValue(select) === 'true');
@@ -114,7 +119,7 @@ const buildApproveToggle = (dom, initialValue, onChange, cleanupFns) => {
   return select;
 };
 
-const buildRemoveButton = (dom, onClick, cleanupFns) => {
+const buildRemoveButton = ({ dom, onClick, cleanupFns }) => {
   const button = dom.createElement('button');
   dom.setType(button, 'button');
   dom.setTextContent(button, REMOVE_BUTTON_LABEL);
@@ -169,48 +174,48 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
     const rowElement = dom.createElement('div');
     dom.setClassName(rowElement, ROW_CLASS);
 
-    const authorInput = buildFieldInput(
+    const authorInput = buildFieldInput({
       dom,
-      'Moderator ID',
-      rowModel.moderatorId,
-      value => {
+      placeholder: 'Moderator ID',
+      value: rowModel.moderatorId,
+      onChange: value => {
         rowModel.moderatorId = value;
         syncTextInput(rows, dom, textInput);
       },
-      cleanupFns
-    );
+      cleanupFns,
+    });
 
-    const variantInput = buildFieldInput(
+    const variantInput = buildFieldInput({
       dom,
-      'Variant ID',
-      rowModel.variantId,
-      value => {
+      placeholder: 'Variant ID',
+      value: rowModel.variantId,
+      onChange: value => {
         rowModel.variantId = value;
         syncTextInput(rows, dom, textInput);
       },
-      cleanupFns
-    );
+      cleanupFns,
+    });
 
-    const ratedAtInput = buildFieldInput(
+    const ratedAtInput = buildFieldInput({
       dom,
-      'ratedAt (ISO 8601)',
-      rowModel.ratedAt,
-      value => {
+      placeholder: 'ratedAt (ISO 8601)',
+      value: rowModel.ratedAt,
+      onChange: value => {
         rowModel.ratedAt = value;
         syncTextInput(rows, dom, textInput);
       },
-      cleanupFns
-    );
+      cleanupFns,
+    });
 
-    const approveSelect = buildApproveToggle(
+    const approveSelect = buildApproveToggle({
       dom,
-      rowModel.isApproved,
-      value => {
+      initialValue: rowModel.isApproved,
+      onChange: value => {
         rowModel.isApproved = value;
         syncTextInput(rows, dom, textInput);
       },
-      cleanupFns
-    );
+      cleanupFns,
+    });
 
     const cleanupRow = () => cleanupFns.forEach(fn => fn());
     const unregisterCleanup = registerRowCleanup(cleanupRow);
@@ -226,7 +231,11 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       syncTextInput(rows, dom, textInput);
     };
 
-    const removeButton = buildRemoveButton(dom, removeRow, cleanupFns);
+    const removeButton = buildRemoveButton({
+      dom,
+      onClick: removeRow,
+      cleanupFns,
+    });
     [
       authorInput,
       variantInput,
