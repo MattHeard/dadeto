@@ -58,21 +58,5 @@ export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
     srcDir,
     publicDir,
     ...sharedEntries,
-    srcAssetsDir: path.resolve(srcDir, 'browser/assets'),
-    publicAssetsDir: publicDir,
-    srcBlogJson: path.join(srcDir, 'blog.json'),
-    publicBlogJson: path.join(publicDir, 'blog.json'),
-    srcCoreBrowserAudioControlsFile: path.join(
-      srcDir,
-      'core/browser/audio-controls.js'
-    ),
-    publicBrowserAudioControlsFile: path.join(
-      publicDir,
-      'browser/audio-controls.js'
-    ),
-    srcCoreObjectUtilsFile: path.join(srcDir, 'core/objectUtils.js'),
-    publicObjectUtilsFile: path.join(publicDir, 'objectUtils.js'),
-    srcCoreValidationFile: path.join(srcDir, 'core/validation.js'),
-    publicValidationFile: path.join(publicDir, 'validation.js'),
   };
 }

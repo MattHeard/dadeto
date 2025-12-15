@@ -5,7 +5,7 @@ export const sharedDirectoryPairs = [
   {
     key: 'CoreBrowser',
     relativePath: 'core/browser',
-    publicRelativePath: 'browser',
+    publicRelativePath: 'core/browser',
   },
   { key: 'Core', relativePath: 'core', publicRelativePath: 'core' },
 ];

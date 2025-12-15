@@ -24,7 +24,7 @@ const createDirectories = () => {
     srcCoreDir: posix.join(srcDir, 'core'),
     publicCoreDir: posix.join(publicDir, 'core'),
     srcCoreBrowserDir: posix.join(srcDir, 'core/browser'),
-    publicCoreBrowserDir: posix.join(publicDir, 'browser'),
+    publicCoreBrowserDir: posix.join(publicDir, 'core/browser'),
   };
 };
 
@@ -66,7 +66,7 @@ describe('createSharedDirectoryEntries', () => {
     ]);
     expect(entries).toContainEqual([
       'publicCoreBrowserDir',
-      posix.join(publicDir, 'browser'),
+      posix.join(publicDir, 'core/browser'),
     ]);
     expect(entries).toContainEqual(['srcCoreDir', posix.join(srcDir, 'core')]);
     expect(entries).toContainEqual([
