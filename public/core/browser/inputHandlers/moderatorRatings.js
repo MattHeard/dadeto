@@ -108,7 +108,9 @@ const buildApproveToggle = (dom, initialValue, onChange, cleanupFns) => {
   };
 
   dom.addEventListener(select, 'change', handleChange);
-  cleanupFns.push(() => dom.removeEventListener(select, 'change', handleChange));
+  cleanupFns.push(() =>
+    dom.removeEventListener(select, 'change', handleChange)
+  );
   return select;
 };
 
@@ -225,9 +227,13 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
     };
 
     const removeButton = buildRemoveButton(dom, removeRow, cleanupFns);
-    [authorInput, variantInput, ratedAtInput, approveSelect, removeButton].forEach(
-      el => dom.appendChild(rowElement, el)
-    );
+    [
+      authorInput,
+      variantInput,
+      ratedAtInput,
+      approveSelect,
+      removeButton,
+    ].forEach(el => dom.appendChild(rowElement, el));
 
     dom.appendChild(rowsContainer, rowElement);
   };
@@ -245,7 +251,9 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
   const cleanupFns = [];
   const handleAddRow = () => addRow();
   dom.addEventListener(addButton, 'click', handleAddRow);
-  cleanupFns.push(() => dom.removeEventListener(addButton, 'click', handleAddRow));
+  cleanupFns.push(() =>
+    dom.removeEventListener(addButton, 'click', handleAddRow)
+  );
 
   form._dispose = () => {
     rowCleanups.forEach(cleanup => cleanup());
