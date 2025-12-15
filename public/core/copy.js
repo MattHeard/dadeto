@@ -454,6 +454,34 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy the shared core constants directory into the public tree.
+   * @param {Record<string, string>} dirs - Directory map.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   *   readDirEntries: (dir: string) => import('fs').Dirent[],
+   * }} io - File system adapters.
+   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
+   * @returns {void}
+   */
+  function copyCoreConstants(dirs, io, messageLogger) {
+    const constantsDir = join(dirs.srcCoreDir, 'constants');
+    copyDirectoryTreeIfExists(
+      {
+        src: constantsDir,
+        dest: join(dirs.publicCoreDir, 'constants'),
+        successMessage: 'Core constants copied successfully!',
+        missingMessage: `Warning: core/constants directory not found at ${formatPathForLog(
+          constantsDir
+        )}`,
+      },
+      io,
+      messageLogger
+    );
+  }
+
+  /**
    * Execute the full copy workflow for the static site.
    * @param {{
    *   directories: Record<string, string>,
@@ -471,12 +499,14 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ensureDirectoryExists(io, dirs.publicDir);
     copyBrowserTrees(dirs, io, messageLogger);
     copyCoreRootFiles(dirs, io, messageLogger);
+    copyCoreConstants(dirs, io, messageLogger);
   }
 
   return buildCopyExportMap([
     ['runCopyWorkflow', runCopyWorkflow],
     ['copyBrowserTrees', copyBrowserTrees],
     ['copyCoreRootFiles', copyCoreRootFiles],
+    ['copyCoreConstants', copyCoreConstants],
     ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
     ['copyDirRecursive', copyDirRecursive],
     ['processDirectoryEntries', processDirectoryEntries],
