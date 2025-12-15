@@ -253,4 +253,38 @@ describe('moderatorRatingsHandler', () => {
 
     clearInputValue(textInput);
   });
+
+  test('reuses stored rows and tolerates repeated removal', () => {
+    const storedRow = {
+      moderatorId: 'stored-mod',
+      variantId: 'stored-var',
+      ratedAt: '2025-12-01T00:00:00Z',
+      isApproved: true,
+    };
+    const textInput = { value: JSON.stringify([storedRow]) };
+    const dom = createFakeDom();
+    const container = {};
+
+    moderatorRatingsHandler(dom, container, textInput);
+
+    const approveSelect = dom.createdElements.find(
+      element => element.tag === 'select'
+    );
+    expect(approveSelect).toBeDefined();
+    expect(approveSelect.value).toBe('true');
+
+    const removeButtons = dom.createdElements.filter(
+      element =>
+        element.tag === 'button' && element.textContent === 'Remove rating'
+    );
+    expect(removeButtons.length).toBeGreaterThanOrEqual(1);
+    const removeHandler = removeButtons[0].listeners.click[0];
+
+    removeHandler();
+    removeHandler();
+
+    expect(dom.removeChild).toHaveBeenCalledTimes(2);
+
+    clearInputValue(textInput);
+  });
 });
