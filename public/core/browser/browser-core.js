@@ -4,6 +4,7 @@ import { isNonNullObject } from '../common-core.js';
 import {
   DENDRITE_FORM_SELECTOR,
   KV_CONTAINER_SELECTOR,
+  MODERATOR_RATINGS_FORM_SELECTOR,
   NUMBER_INPUT_SELECTOR,
   TEXTAREA_SELECTOR,
 } from '../constants/selectors.js';
@@ -88,10 +89,14 @@ export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
 export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
 export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
 export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
+export const maybeRemoveModeratorRatings = createElementRemover(
+  MODERATOR_RATINGS_FORM_SELECTOR
+);
 export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveKV,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
+  maybeRemoveModeratorRatings,
 ];
 
 const createContainerHandlerInvoker = (container, dom) => handler =>

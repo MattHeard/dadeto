@@ -8,7 +8,7 @@ describe('inputHandlersMap constant source', () => {
   test('definition includes expected handler mappings', () => {
     const src = fs.readFileSync(sourcePath, 'utf8');
     const regex =
-      /const inputHandlersMap = \{\s*text: textHandler,\s*textarea: textareaHandler,\s*number: numberHandler,\s*kv: kvHandler,\s*'dendrite-story': dendriteStoryHandler,\s*'dendrite-page': dendritePageHandler,\s*default: defaultHandler,?\s*\};/s;
+      /const inputHandlersMap = \{\s*text: textHandler,\s*textarea: textareaHandler,\s*number: numberHandler,\s*kv: kvHandler,\s*'dendrite-story': dendriteStoryHandler,\s*'dendrite-page': dendritePageHandler,\s*'moderator-ratings': moderatorRatingsHandler,\s*default: defaultHandler,?\s*\};/s;
     expect(src).toMatch(regex);
   });
 });

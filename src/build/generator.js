@@ -989,6 +989,7 @@ const INPUT_METHODS = [
   'kv',
   'dendrite-story',
   'dendrite-page',
+  'moderator-ratings',
 ];
 
 /**

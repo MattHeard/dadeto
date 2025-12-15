@@ -172,6 +172,7 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 import { textHandler } from './inputHandlers/text.js';
 import { textareaHandler } from './inputHandlers/textarea.js';
 import { numberHandler } from './inputHandlers/number.js';
+import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { KV_CONTAINER_SELECTOR } from './constants/selectors.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
@@ -241,6 +242,7 @@ const inputHandlersMap = {
   kv: kvHandler,
   'dendrite-story': dendriteStoryHandler,
   'dendrite-page': dendritePageHandler,
+  'moderator-ratings': moderatorRatingsHandler,
   default: defaultHandler,
 };
 
