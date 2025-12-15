@@ -482,6 +482,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ['processDirectoryEntries', processDirectoryEntries],
     ['handleDirectoryEntry', handleDirectoryEntry],
     ['copyFilePairs', copyFilePairs],
+    ['copyEntries', copyEntries],
     ['copyFileWithDirectories', copyFileWithDirectories],
     ['ensureDirectoryExists', ensureDirectoryExists],
     ['createCopyPairs', createCopyPairs],

@@ -82,16 +82,44 @@ describe('serializeRatingRows', () => {
  */
 function createFakeDom() {
   const created = [];
+
+  const addEventListener = jest.fn((element, event, handler) => {
+    element.listeners = element.listeners ?? {};
+    element.listeners[event] = element.listeners[event] ?? [];
+    element.listeners[event].push(handler);
+  });
+
+  const removeEventListener = jest.fn((element, event, handler) => {
+    if (!element.listeners?.[event]) {
+      return;
+    }
+    element.listeners[event] = element.listeners[event].filter(
+      existing => existing !== handler
+    );
+  });
+
+  const makeElement = tag => {
+    const element = {
+      tag,
+      children: [],
+      value: '',
+      attributes: {},
+      listeners: {},
+      placeholder: '',
+      className: '',
+      textContent: '',
+    };
+    created.push(element);
+    return element;
+  };
+
   return {
+    createdElements: created,
     hide: jest.fn(),
     disable: jest.fn(),
     querySelector: jest.fn(() => null),
     removeChild: jest.fn(),
-    createElement: jest.fn(tag => {
-      const element = { tag, children: [], value: '', attributes: {} };
-      created.push(element);
-      return element;
-    }),
+    createElement: jest.fn(makeElement),
     setClassName: jest.fn((element, className) => {
       element.className = className;
     }),
@@ -111,8 +139,8 @@ function createFakeDom() {
       element.value = value;
     }),
     getValue: jest.fn(element => element.value),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
+    addEventListener,
+    removeEventListener,
     reveal: jest.fn(),
     setTextContent: jest.fn((element, text) => {
       element.textContent = text;
@@ -138,6 +166,90 @@ describe('moderatorRatingsHandler', () => {
     expect(lastValue).toBe(
       '[{"moderatorId":"","variantId":"","ratedAt":"","isApproved":false}]'
     );
+
+    clearInputValue(textInput);
+  });
+
+  test('resets to a default row when stored JSON is not an array', () => {
+    const textInput = { value: '{"moderator":"modx"}' };
+    const dom = createFakeDom();
+    const container = {};
+
+    moderatorRatingsHandler(dom, container, textInput);
+
+    const setValueCalls = dom.setValue.mock.calls.filter(
+      ([element]) => element === textInput
+    );
+    const lastValue = setValueCalls[setValueCalls.length - 1][1];
+    expect(lastValue).toBe(
+      '[{"moderatorId":"","variantId":"","ratedAt":"","isApproved":false}]'
+    );
+
+    clearInputValue(textInput);
+  });
+
+  test('keeps hidden input synchronized as rows change', () => {
+    const textInput = { value: '' };
+    const dom = createFakeDom();
+    const container = {};
+
+    moderatorRatingsHandler(dom, container, textInput);
+
+    const findInput = placeholder =>
+      dom.createdElements.find(
+        element =>
+          element.tag === 'input' && element.placeholder === placeholder
+      );
+    const findButton = label =>
+      dom.createdElements.find(
+        element => element.tag === 'button' && element.textContent === label
+      );
+
+    const authorInput = findInput('Moderator ID');
+    const variantInput = findInput('Variant ID');
+    const ratedAtInput = findInput('ratedAt (ISO 8601)');
+    const approveSelect = dom.createdElements.find(
+      element => element.tag === 'select'
+    );
+    const addButton = findButton('Add rating');
+
+    expect(authorInput).toBeDefined();
+    expect(variantInput).toBeDefined();
+    expect(ratedAtInput).toBeDefined();
+    expect(approveSelect).toBeDefined();
+    expect(addButton).toBeDefined();
+
+    authorInput.value = '  mod-action  ';
+    authorInput.listeners.input[0]();
+    expect(textInput.value).toContain('"moderatorId":"mod-action"');
+
+    variantInput.value = ' variant-x ';
+    variantInput.listeners.input[0]();
+    expect(textInput.value).toContain('"variantId":"variant-x"');
+
+    ratedAtInput.value = '2025-12-01T12:00:00Z';
+    ratedAtInput.listeners.input[0]();
+    expect(textInput.value).toContain('"ratedAt":"2025-12-01T12:00:00Z"');
+
+    approveSelect.value = 'true';
+    approveSelect.listeners.change[0]();
+    expect(textInput.value).toContain('"isApproved":true');
+
+    addButton.listeners.click[0]();
+
+    const removeButtons = dom.createdElements.filter(
+      element =>
+        element.tag === 'button' && element.textContent === 'Remove rating'
+    );
+    expect(removeButtons.length).toBeGreaterThanOrEqual(2);
+
+    const newRowRemove = removeButtons[removeButtons.length - 1];
+    newRowRemove.listeners.click[0]();
+    expect(dom.removeChild).toHaveBeenCalled();
+
+    const form = dom.insertBefore.mock.calls[0]?.[1];
+    expect(form).toBeDefined();
+    form._dispose();
 
     clearInputValue(textInput);
   });

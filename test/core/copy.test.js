@@ -176,6 +176,46 @@ describe('createCopyCore', () => {
     });
   });
 
+  describe('copy entries helper', () => {
+    it('applies the resolver and copies the entries', () => {
+      const entries = [
+        {
+          source: posix.join(directories.srcToysDir, 'one.js'),
+          destination: posix.join(directories.publicToysDir, 'one.js'),
+        },
+        {
+          source: posix.join(directories.srcToysDir, 'two.js'),
+          destination: posix.join(directories.publicToysDir, 'two.js'),
+        },
+      ];
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(true),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+      const resolveMessage = jest
+        .fn()
+        .mockImplementation(entry => `copied ${entry.source}`);
+
+      core.copyEntries(entries, io, { messageLogger: logger, resolveMessage });
+
+      expect(resolveMessage).toHaveBeenCalledTimes(entries.length);
+      expect(logger.info).toHaveBeenCalledTimes(entries.length);
+      expect(io.copyFile).toHaveBeenCalledTimes(entries.length);
+      expect(io.copyFile).toHaveBeenNthCalledWith(
+        1,
+        entries[0].source,
+        entries[0].destination
+      );
+      expect(io.copyFile).toHaveBeenNthCalledWith(
+        2,
+        entries[1].source,
+        entries[1].destination
+      );
+    });
+  });
+
   describe('directory traversal', () => {
     it('returns new files for directories and files', () => {
       const listEntries = jest.fn(dir => {
