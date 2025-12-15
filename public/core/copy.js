@@ -22,6 +22,11 @@ export const sharedDirectoryPairs = [
     relativePath: 'core/browser/presenters',
     publicRelativePath: 'presenters',
   },
+  {
+    key: 'Root',
+    relativePath: 'root',
+    publicRelativePath: '',
+  },
   { key: 'Core', relativePath: 'core' },
 ];
 
@@ -447,6 +452,31 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy any root-level wrappers (e.g., browser/core re-exports) into the public directory.
+   * @param {Record<string, string>} dirs - Directory map.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   *   readDirEntries: (dir: string) => import('fs').Dirent[],
+   * }} io - File system adapters.
+   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
+   * @returns {void}
+   */
+  function copyRootWrappers(dirs, io, messageLogger) {
+    const plan = {
+      src: dirs.srcRootDir,
+      dest: dirs.publicDir,
+      successMessage: 'Root wrappers copied successfully!',
+      missingMessage: `Warning: root wrappers directory not found at ${formatPathForLog(
+        dirs.srcRootDir
+      )}`,
+    };
+
+    copyDirectoryTreeIfExists(plan, io, messageLogger);
+  }
+
+  /**
    * Copy toy modules from the src tree into the public directory.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
@@ -618,6 +648,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ensureDirectoryExists(io, dirs.publicDir);
     copyBlogJson(dirs, io, messageLogger);
     copyRootUtilityFiles(dirs, io, messageLogger);
+    copyRootWrappers(dirs, io, messageLogger);
     copyToyFiles(dirs, io, messageLogger);
     copyPresenterFiles(dirs, io, messageLogger);
     copyBrowserAudioControls(dirs, io, messageLogger);
@@ -631,6 +662,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ['copyPresenterFiles', copyPresenterFiles],
     ['copyToyFiles', copyToyFiles],
     ['copyRootUtilityFiles', copyRootUtilityFiles],
+    ['copyRootWrappers', copyRootWrappers],
     ['copyBlogJson', copyBlogJson],
     ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
     ['copyDirRecursive', copyDirRecursive],

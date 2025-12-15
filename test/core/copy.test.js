@@ -45,6 +45,8 @@ const createDirectories = () => {
     publicPresentersDir: posix.join(publicDir, 'presenters'),
     srcBlogJson: posix.join(srcDir, 'blog.json'),
     publicBlogJson: posix.join(publicDir, 'blog.json'),
+    srcRootDir: posix.join(srcDir, 'root'),
+    publicRootDir: publicDir,
   };
 };
 

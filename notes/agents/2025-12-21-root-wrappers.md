@@ -1,0 +1,6 @@
+# Root wrappers for toys
+
+- **Unexpected:** The toy modules import shared helpers using relative paths that resolved to `/common.js`, `/browser-core.js`, etc., so after the flattening copy to `public/toys` the browser started hitting 404s even though the originals lived under `/browser/*` or `/core/*`.
+- **Diagnosis & options:** I first reviewed the generated bundles and the dynamic import stack traces, then inspected `src/core/copy.js` to confirm how toys are copied into `public/toys`. Instead of patching dozens of imports, I opted to expose lightweight root-level wrappers in `src/root` and wire the copy workflow to copy them into `/public`, which preserves the expected paths without touching the toy sources.
+- **Learning:** When you flatten a directory tree for publishing, double-check which shared files the consumers expect to resolve. Copy-time helpers (like `copyRootWrappers`) can keep the runtime layout intact while still pointing at the canonical core code.
+- **Follow-up:** Keep an eye on additional root aliases that crop up when adding new helper modules; if other toys start importing new shared utilities, create the matching `src/root` proxy rather than editing the toy files.
