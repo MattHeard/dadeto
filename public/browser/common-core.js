@@ -1,1 +1,1 @@
-export * from '../core/common-core.js';
+export * from '../common-core.js';

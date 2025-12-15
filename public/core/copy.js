@@ -1,33 +1,13 @@
 import { buildCopyExportMap } from './copy-export-utils.js';
 
 export const sharedDirectoryPairs = [
+  { key: 'Browser', relativePath: 'browser', publicRelativePath: 'browser' },
   {
-    key: 'Toys',
-    relativePath: 'core/browser/toys',
-    publicRelativePath: 'toys',
+    key: 'CoreBrowser',
+    relativePath: 'core/browser',
+    publicRelativePath: 'browser',
   },
-  { key: 'Browser', relativePath: 'browser' },
-  {
-    key: 'InputHandlers',
-    relativePath: 'core/browser/inputHandlers',
-    publicRelativePath: 'inputHandlers',
-  },
-  {
-    key: 'Constants',
-    relativePath: 'core/constants',
-    publicRelativePath: 'constants',
-  },
-  {
-    key: 'Presenters',
-    relativePath: 'core/browser/presenters',
-    publicRelativePath: 'presenters',
-  },
-  {
-    key: 'Root',
-    relativePath: 'root',
-    publicRelativePath: '',
-  },
-  { key: 'Core', relativePath: 'core' },
+  { key: 'Core', relativePath: 'core', publicRelativePath: 'core' },
 ];
 
 /**
@@ -401,58 +381,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
-   * Copy the canonical blog.json file into the public directory.
-   * @param {Record<string, string>} dirs - Directory map.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void }} messageLogger - Logger for status updates.
-   * @returns {void}
-   */
-  function copyBlogJson(dirs, io, messageLogger) {
-    copyFileWithDirectories(io, {
-      source: dirs.srcBlogJson,
-      destination: dirs.publicBlogJson,
-      messageLogger,
-      message: 'Copied: src/blog.json -> public/blog.json',
-    });
-  }
-
-  /**
-   * Copy core utility modules into the public root directory.
-   * @param {Record<string, string>} dirs - Directory map.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void }} messageLogger - Logger for status updates.
-   * @returns {void}
-   */
-  function copyRootUtilityFiles(dirs, io, messageLogger) {
-    const filesToCopy = [
-      {
-        source: dirs.srcCoreValidationFile,
-        destination: dirs.publicValidationFile,
-        message: 'Copied: src/core/validation.js -> public/validation.js',
-      },
-      {
-        source: dirs.srcCoreObjectUtilsFile,
-        destination: dirs.publicObjectUtilsFile,
-        message: 'Copied: src/core/objectUtils.js -> public/objectUtils.js',
-      },
-    ];
-
-    copyEntries(filesToCopy, io, {
-      messageLogger,
-      resolveMessage: entry => entry.message,
-    });
-  }
-
-  /**
-   * Copy any root-level wrappers (e.g., browser/core re-exports) into the public directory.
+   * Copy one or more browser-related directory trees into the public browser directory.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
    *   directoryExists: (target: string) => boolean,
@@ -463,158 +392,8 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
    * @returns {void}
    */
-  function copyRootWrappers(dirs, io, messageLogger) {
-    const plan = {
-      src: dirs.srcRootDir,
-      dest: dirs.publicDir,
-      successMessage: 'Root wrappers copied successfully!',
-      missingMessage: `Warning: root wrappers directory not found at ${formatPathForLog(
-        dirs.srcRootDir
-      )}`,
-    };
-
-    copyDirectoryTreeIfExists(plan, io, messageLogger);
-  }
-
-  /**
-   * Copy toy modules from the src tree into the public directory.
-   * @param {Record<string, string>} dirs - Directory map.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void }} messageLogger - Logger for status updates.
-   * @returns {void}
-   */
-  function copyToyFiles(dirs, io, messageLogger) {
-    const toyFiles = findJsFiles(dirs.srcToysDir, io.readDirEntries);
-    const destinationRoot = dirs.publicToysDir ?? dirs.publicDir;
-    const copyPairs = createCopyPairs(
-      toyFiles,
-      dirs.srcToysDir,
-      destinationRoot
-    );
-    copyFilePairs(copyPairs, io, messageLogger);
-    messageLogger.info('Toy files copied successfully!');
-  }
-
-  /**
-   * Copy presenter modules while gracefully handling missing directories.
-   * @param {Record<string, string>} dirs - Directory map.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
-   * @returns {void}
-   */
-  function copyPresenterFiles(dirs, io, messageLogger) {
-    if (!io.directoryExists(dirs.srcPresentersDir)) {
-      messageLogger.warn(
-        `Warning: presenters directory not found at ${formatPathForLog(
-          dirs.srcPresentersDir
-        )}`
-      );
-      return;
-    }
-    const presenterFiles = findJsFiles(
-      dirs.srcPresentersDir,
-      io.readDirEntries
-    );
-    const presenterPairs = createCopyPairs(
-      presenterFiles,
-      dirs.srcPresentersDir,
-      dirs.publicPresentersDir
-    );
-    copyEntries(presenterPairs, io, {
-      messageLogger,
-      resolveMessage: ({ source, destination }) =>
-        `Copied presenter: ${formatPathForLog(source)} -> ${formatPathForLog(
-          destination
-        )}`,
-    });
-    messageLogger.info('Presenter files copied successfully!');
-  }
-
-  /**
-   * Copy the audio controls script into the public browser directory.
-   * @param {Record<string, string>} dirs - Directory map.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
-   * @returns {void}
-   */
-  function copyBrowserAudioControls(dirs, io, messageLogger) {
-    const source = dirs.srcCoreBrowserAudioControlsFile;
-    if (!io.directoryExists(source)) {
-      messageLogger.warn(
-        `Warning: audio controls file not found at ${formatPathForLog(source)}`
-      );
-      return;
-    }
-
-    copyFileWithDirectories(io, {
-      source,
-      destination: dirs.publicBrowserAudioControlsFile,
-      messageLogger,
-      message:
-        'Copied: src/core/browser/audio-controls.js -> public/browser/audio-controls.js',
-    });
-  }
-
-  /**
-   * Copy a list of supporting directories from src into public.
-   * @param {Record<string, string>} dirs - Directory map.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
-   * @returns {void}
-   */
-  function copySupportingDirectories(dirs, io, messageLogger) {
+  function copyBrowserTrees(dirs, io, messageLogger) {
     const plans = [
-      {
-        src: dirs.srcInputHandlersDir,
-        dest: dirs.publicInputHandlersDir,
-        successMessage: 'Input handler files copied successfully!',
-        missingMessage: `Warning: inputHandlers directory not found at ${formatPathForLog(
-          dirs.srcInputHandlersDir
-        )}`,
-      },
-      {
-        src: dirs.srcConstantsDir,
-        dest: dirs.publicConstantsDir,
-        successMessage: 'Constants files copied successfully!',
-        missingMessage: `Warning: constants directory not found at ${formatPathForLog(
-          dirs.srcConstantsDir
-        )}`,
-      },
-      {
-        src: dirs.srcCoreDir,
-        dest: dirs.publicCoreDir,
-        successMessage: 'Core files copied successfully!',
-        missingMessage: `Warning: core directory not found at ${formatPathForLog(
-          dirs.srcCoreDir
-        )}`,
-      },
-      {
-        src: dirs.srcAssetsDir,
-        dest: dirs.publicAssetsDir,
-        successMessage: 'Asset files copied successfully!',
-        missingMessage: `Warning: assets directory not found at ${formatPathForLog(
-          dirs.srcAssetsDir
-        )}`,
-      },
       {
         src: dirs.srcBrowserDir,
         dest: dirs.publicBrowserDir,
@@ -623,11 +402,55 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
           dirs.srcBrowserDir
         )}`,
       },
+      {
+        src: dirs.srcCoreBrowserDir,
+        dest: dirs.publicCoreBrowserDir,
+        successMessage: 'Core browser files copied successfully!',
+        missingMessage: `Warning: core/browser directory not found at ${formatPathForLog(
+          dirs.srcCoreBrowserDir
+        )}`,
+      },
     ];
 
     plans.forEach(plan => {
       copyDirectoryTreeIfExists(plan, io, messageLogger);
     });
+  }
+
+  /**
+   * Copy root-level JavaScript modules from src/core into public/core.
+   * @param {Record<string, string>} dirs - Directory map.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   *   readDirEntries: (dir: string) => import('fs').Dirent[],
+   * }} io - File system adapters.
+   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
+   * @returns {void}
+   */
+  function copyCoreRootFiles(dirs, io, messageLogger) {
+    if (!io.directoryExists(dirs.srcCoreDir)) {
+      messageLogger.warn(
+        `Warning: core directory not found at ${formatPathForLog(
+          dirs.srcCoreDir
+        )}`
+      );
+      return;
+    }
+
+    const entries = io.readDirEntries(dirs.srcCoreDir);
+    const rootFiles = entries.filter(
+      entry => entry.isFile() && isCorrectJsFileEnding(entry.name)
+    );
+
+    rootFiles.forEach(entry => {
+      const source = join(dirs.srcCoreDir, entry.name);
+      const destination = join(dirs.publicCoreDir, entry.name);
+      copyFileWithDirectories(io, { source, destination, messageLogger });
+    });
+
+    messageLogger.info('Core root scripts copied successfully!');
   }
 
   /**
@@ -646,24 +469,14 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    */
   function runCopyWorkflow({ directories: dirs, io, messageLogger }) {
     ensureDirectoryExists(io, dirs.publicDir);
-    copyBlogJson(dirs, io, messageLogger);
-    copyRootUtilityFiles(dirs, io, messageLogger);
-    copyRootWrappers(dirs, io, messageLogger);
-    copyToyFiles(dirs, io, messageLogger);
-    copyPresenterFiles(dirs, io, messageLogger);
-    copyBrowserAudioControls(dirs, io, messageLogger);
-    copySupportingDirectories(dirs, io, messageLogger);
+    copyBrowserTrees(dirs, io, messageLogger);
+    copyCoreRootFiles(dirs, io, messageLogger);
   }
 
   return buildCopyExportMap([
     ['runCopyWorkflow', runCopyWorkflow],
-    ['copySupportingDirectories', copySupportingDirectories],
-    ['copyBrowserAudioControls', copyBrowserAudioControls],
-    ['copyPresenterFiles', copyPresenterFiles],
-    ['copyToyFiles', copyToyFiles],
-    ['copyRootUtilityFiles', copyRootUtilityFiles],
-    ['copyRootWrappers', copyRootWrappers],
-    ['copyBlogJson', copyBlogJson],
+    ['copyBrowserTrees', copyBrowserTrees],
+    ['copyCoreRootFiles', copyCoreRootFiles],
     ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
     ['copyDirRecursive', copyDirRecursive],
     ['processDirectoryEntries', processDirectoryEntries],
