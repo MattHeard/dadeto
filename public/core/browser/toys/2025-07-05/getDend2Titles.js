@@ -1,7 +1,7 @@
 // Toy: Get DEND2 Story Titles
 // (input, env) -> string
 
-import { tryOr } from '#core/browser/common';
+import { tryOr } from '../../common.js';
 
 /**
  * Determine if the provided value is an array of stories.

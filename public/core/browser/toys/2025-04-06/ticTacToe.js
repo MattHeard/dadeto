@@ -1,5 +1,5 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
-import { when } from '#core/browser/common';
+import { when } from '../../common.js';
 
 /**
  *

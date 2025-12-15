@@ -1,4 +1,4 @@
-import { withFallback } from '#core/browser/common';
+import { withFallback } from '../common.js';
 
 // Pre-formatted text presenter
 // Creates a <pre> element with the given string as its text content using a DOM abstraction

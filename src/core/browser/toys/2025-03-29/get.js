@@ -1,4 +1,4 @@
-import { when } from '#core/browser/common';
+import { when } from '../../common.js';
 
 /**
  * Determine whether the supplied value represents an error string.

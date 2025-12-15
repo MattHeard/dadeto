@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { pathToFileURL } from 'url';
 import { beforeAll, describe, test, expect } from '@jest/globals';
+
+import { rewriteRelativeImports } from '../../helpers/resolveRelativeImports.js';
 
 let createBoldPattern;
 
@@ -11,10 +12,7 @@ beforeAll(async () => {
     'src/core/browser/toys/2025-03-21/italics.js'
   );
   let src = fs.readFileSync(srcPath, 'utf8');
-  src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {
-    const abs = pathToFileURL(path.join(path.dirname(srcPath), p));
-    return `from '${abs.href}'`;
-  });
+  src = rewriteRelativeImports(src, srcPath);
   src += '\nexport { createBoldPattern };';
   ({ createBoldPattern } = await import(
     `data:text/javascript,${encodeURIComponent(src)}`

@@ -30,7 +30,6 @@ export function headElement() {
   <style>
     ${styles()}
   </style>
-  
   <!-- Define the component management system in the head -->
   <script type="module">
     // Define array of interactive components to initialize

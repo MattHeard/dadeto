@@ -8,7 +8,7 @@ import {
   TEXTAREA_SELECTOR,
 } from '../constants/selectors.js';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
-import { tryOr } from '#core/browser/common';
+import { tryOr } from './common.js';
 export { assertFunction as ensureFunction } from '../common-core.js';
 
 /**

@@ -1,4 +1,4 @@
-import { when } from '#core/browser/common';
+import { when } from '../../common.js';
 
 /**
  * Build a formatted decomposition string for a number.

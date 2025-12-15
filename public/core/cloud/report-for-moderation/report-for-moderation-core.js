@@ -78,18 +78,36 @@ export function createReportForModerationHandler({
   assertFunction(addModerationReport, 'addModerationReport');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
 
-  return async function reportForModerationHandler(request = {}) {
-    const methodError = validateHttpMethod(request.method);
-    if (methodError) {
-      return methodError;
-    }
-
-    return handlePostRequest({
-      body: request.body,
+  return function reportForModerationHandler(request = {}) {
+    return processReportSubmission({
+      request,
       addModerationReport,
       getServerTimestamp,
     });
   };
+}
+
+/**
+ * Process the moderation report request when the HTTP method is validated.
+ * @param {object} root0 Dependencies required for processing.
+ * @param {{ method?: string, body?: { variant?: unknown } | null }} root0.request Incoming request details.
+ * @param {(report: { variant: string, createdAt: unknown }) => Promise<void> | void} root0.addModerationReport Storage helper.
+ * @param {() => unknown} root0.getServerTimestamp Timestamp generator.
+ * @returns {{ status: number, body: string } | Promise<{ status: number, body: string | Record<string, unknown> }>} Response object or promise from the domain handler.
+ */
+function processReportSubmission({
+  request,
+  addModerationReport,
+  getServerTimestamp,
+}) {
+  return (
+    validateHttpMethod(request.method) ??
+    handlePostRequest({
+      body: request.body,
+      addModerationReport,
+      getServerTimestamp,
+    })
+  );
 }
 
 /**
@@ -130,8 +148,9 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 
 /**
- *
- * @param method
+ * Validate the request method and emit an error response when unsupported.
+ * @param {string | undefined} method - HTTP method supplied by the client.
+ * @returns {{ status: number, body: string } | null} Error response when the method is not POST; otherwise null.
  */
 function validateHttpMethod(method) {
   if (normalizeMethod(method) === 'POST') {

@@ -1,4 +1,4 @@
-import { withFallback } from '#core/browser/common';
+import { withFallback } from '../../common.js';
 
 // Markdown marker characters
 const ASTERISK_MARKER = '*';

@@ -75,6 +75,20 @@ describe('createReportForModerationHandler', () => {
     expect(addModerationReport).not.toHaveBeenCalled();
     expect(getServerTimestamp).not.toHaveBeenCalled();
   });
+
+  it('returns 405 when request argument is omitted', async () => {
+    const addModerationReport = jest.fn();
+    const getServerTimestamp = jest.fn();
+    const handler = createReportForModerationHandler({
+      addModerationReport,
+      getServerTimestamp,
+    });
+
+    const response = await handler();
+    expect(response).toEqual({ status: 405, body: 'POST only' });
+    expect(addModerationReport).not.toHaveBeenCalled();
+    expect(getServerTimestamp).not.toHaveBeenCalled();
+  });
 });
 
 describe('createCorsOriginValidator', () => {

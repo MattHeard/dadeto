@@ -1,7 +1,7 @@
 import { isValidString } from '../../../common-core.js';
 import { calculateEdgeWeight } from './edgeWeight.js';
 import { isPlainObject } from '../browserToysCore.js';
-import { guardThen } from '#core/browser/common';
+import { guardThen } from '../../common.js';
 
 const NO_PATH_DISTANCE = 1;
 

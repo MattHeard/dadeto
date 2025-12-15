@@ -1,5 +1,5 @@
 import { isValidString, whenString } from '../../../common-core.js';
-import { when } from '#core/browser/common';
+import { when } from '../../common.js';
 import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
 

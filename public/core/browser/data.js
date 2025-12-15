@@ -1,6 +1,6 @@
 import { deepClone } from '../objectUtils.js';
 import { isNonNullObject } from '../common-core.js';
-import { guardThen } from '#core/browser/common';
+import { guardThen } from './common.js';
 
 /**
  * @typedef {(message: string, ...meta: unknown[]) => void} BlogLogFn

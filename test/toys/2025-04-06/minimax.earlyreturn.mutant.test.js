@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { describe, test, expect } from '@jest/globals';
 
+import { rewriteRelativeImports } from '../../helpers/resolveRelativeImports.js';
+
 /**
  * Dynamically imports the ticTacToe module and returns its minimax export.
  * @returns {Promise<Function>} Resolves with the minimax function.
@@ -35,7 +37,8 @@ function parseJsonOrFallback(json, fallback = null) {
     "import { parseJsonOrFallback } from '../browserToysCore.js';\n";
   const src = fs.readFileSync(filePath, 'utf8');
   const cleanedSource = src.replace(parserImport, '');
-  const combined = `${helperSource}\n${cleanedSource}\nexport { minimax };`;
+  const rewrittenSource = rewriteRelativeImports(cleanedSource, filePath);
+  const combined = `${helperSource}\n${rewrittenSource}\nexport { minimax };`;
   const mod = await import(
     `data:text/javascript,${encodeURIComponent(combined)}`
   );
