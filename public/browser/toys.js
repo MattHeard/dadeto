@@ -173,7 +173,7 @@ import { textHandler } from './inputHandlers/text.js';
 import { textareaHandler } from './inputHandlers/textarea.js';
 import { numberHandler } from './inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
-import { KV_CONTAINER_SELECTOR } from './constants/selectors.js';
+import { KV_CONTAINER_SELECTOR } from '../core/browser/browser-core.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
   let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);

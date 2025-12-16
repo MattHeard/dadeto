@@ -1,4 +1,3 @@
-import { DENDRITE_FORM_SELECTOR } from '../../constants/selectors.js';
 import * as browserCore from '../browser-core.js';
 
 /**
@@ -20,7 +19,10 @@ function disposeIfPossible(node) {
  * @returns {void}
  */
 function removeExistingForm(container, dom) {
-  const existing = dom.querySelector(container, DENDRITE_FORM_SELECTOR);
+  const existing = dom.querySelector(
+    container,
+    browserCore.DENDRITE_FORM_SELECTOR
+  );
   if (existing) {
     disposeIfPossible(existing);
     dom.removeChild(container, existing);
@@ -321,7 +323,8 @@ function cleanContainer(dom, container) {
  */
 function createBuildForm(fields) {
   return function buildForm(dom, { container, textInput, data, disposers }) {
-    const dendriteFormClassName = DENDRITE_FORM_SELECTOR.slice(1);
+    const dendriteFormClassName =
+      browserCore.DENDRITE_FORM_SELECTOR.slice(1);
     const form = dom.createElement('div');
     dom.setClassName(form, dendriteFormClassName);
     const nextSibling = dom.getNextSibling(textInput);

@@ -1,12 +1,12 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 import { isNonNullObject } from '../commonCore.js';
-import {
-  DENDRITE_FORM_SELECTOR,
-  KV_CONTAINER_SELECTOR,
-  MODERATOR_RATINGS_FORM_SELECTOR,
-  NUMBER_INPUT_SELECTOR,
-  TEXTAREA_SELECTOR,
-} from '../constants/selectors.js';
+
+// DOM selectors shared across the browser helpers.
+export const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
+export const KV_CONTAINER_SELECTOR = '.kv-container';
+export const TEXTAREA_SELECTOR = '.toy-textarea';
+export const DENDRITE_FORM_SELECTOR = '.dendrite-form';
+export const MODERATOR_RATINGS_FORM_SELECTOR = '.moderator-ratings-form';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 import { tryOr } from './common.js';
 export { assertFunction as ensureFunction } from '../commonCore.js';

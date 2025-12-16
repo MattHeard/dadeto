@@ -1,7 +1,8 @@
 import * as browserCore from '../browser-core.js';
 import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
-import { MODERATOR_RATINGS_FORM_SELECTOR } from '../../constants/selectors.js';
 import { isNonNullObject } from '../../commonCore.js';
+
+const { MODERATOR_RATINGS_FORM_SELECTOR } = browserCore;
 
 const FORM_CLASS = MODERATOR_RATINGS_FORM_SELECTOR.slice(1);
 const ROW_CLASS = 'moderator-rating-row';
