@@ -1,4 +1,4 @@
-import { ADMIN_UID } from '../../src/core/common-core.js';
+import { ADMIN_UID } from '../../src/core/commonCore.js';
 
 describe('admin-config', () => {
   it('should export ADMIN_UID', () => {

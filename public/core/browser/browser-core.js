@@ -1,5 +1,5 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
-import { isNonNullObject } from '../common-core.js';
+import { isNonNullObject } from '../commonCore.js';
 import {
   DENDRITE_FORM_SELECTOR,
   KV_CONTAINER_SELECTOR,
@@ -9,7 +9,7 @@ import {
 } from '../constants/selectors.js';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 import { tryOr } from './common.js';
-export { assertFunction as ensureFunction } from '../common-core.js';
+export { assertFunction as ensureFunction } from '../commonCore.js';
 
 /**
  * Creates a logging function that prefixes messages with the given prefix.

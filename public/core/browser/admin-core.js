@@ -1,4 +1,4 @@
-import { ADMIN_UID } from '../common-core.js';
+import { ADMIN_UID } from '../commonCore.js';
 import { createAdminTokenAction } from './token-action.js';
 import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
 

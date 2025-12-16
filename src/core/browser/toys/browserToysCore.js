@@ -1,6 +1,6 @@
 import { deepClone } from '../../objectUtils.js';
 import { safeParseJson, valueOr } from '../browser-core.js';
-import { isNonNullObject, isValidString } from '../../common-core.js';
+import { isNonNullObject, isValidString } from '../../commonCore.js';
 
 /**
  * Run a callback when the input value is a string.
@@ -9,7 +9,7 @@ import { isNonNullObject, isValidString } from '../../common-core.js';
  * @returns {T | null} Result of the callback or null when the input is not a string.
  * @template T
  */
-export { whenString } from '../../common-core.js';
+export { whenString } from '../../commonCore.js';
 
 /**
  * Helper utilities shared by browser toys.

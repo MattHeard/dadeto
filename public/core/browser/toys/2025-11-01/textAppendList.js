@@ -2,7 +2,7 @@ import {
   ensureString,
   normalizeNonStringValue,
   stringOrFallback,
-} from '../../../common-core.js';
+} from '../../../commonCore.js';
 
 // Toy: Text Append List
 // (string input, env) -> string

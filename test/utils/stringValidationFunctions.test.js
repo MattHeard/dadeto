@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { isValidString } from '../../src/core/common-core.js';
+import { isValidString } from '../../src/core/commonCore.js';
 
 describe('isValidString', () => {
   test('returns true for non-empty strings', () => {

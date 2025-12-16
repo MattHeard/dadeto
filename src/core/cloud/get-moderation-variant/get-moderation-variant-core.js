@@ -8,7 +8,7 @@ import {
   resolveMessageOrDefault,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
-import { when } from '../../common-core.js';
+import { when } from '../../commonCore.js';
 
 export { productionOrigins, coreIsAllowedOrigin as isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };

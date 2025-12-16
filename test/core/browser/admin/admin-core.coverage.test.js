@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { ADMIN_UID } from '../../../../src/core/common-core.js';
+import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 import {
   buildGoogleSignInDeps,
   createCredentialFactory,

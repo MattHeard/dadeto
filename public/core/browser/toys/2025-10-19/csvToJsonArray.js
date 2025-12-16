@@ -8,7 +8,7 @@
 
 import { parseCsvLine } from './toys-core.js';
 import { buildWhen } from '../../common.js';
-import { whenString } from '../../../common-core.js';
+import { whenString } from '../../../commonCore.js';
 
 /**
  * Convert a multi-row CSV string into a JSON array string.

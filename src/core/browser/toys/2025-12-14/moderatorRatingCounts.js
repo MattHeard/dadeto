@@ -1,5 +1,5 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
-import { whenString } from '../../../common-core.js';
+import { whenString } from '../../../commonCore.js';
 
 const REQUIRED_FIELDS = ['isApproved', 'moderatorId', 'ratedAt', 'variantId'];
 

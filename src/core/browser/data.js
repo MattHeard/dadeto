@@ -1,5 +1,5 @@
 import { deepClone } from '../objectUtils.js';
-import { isNonNullObject } from '../common-core.js';
+import { isNonNullObject } from '../commonCore.js';
 import { guardThen } from './common.js';
 
 /**

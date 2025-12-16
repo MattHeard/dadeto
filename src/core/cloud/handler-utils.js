@@ -1,4 +1,4 @@
-import { assertFunction } from '../common-core.js';
+import { assertFunction } from '../commonCore.js';
 
 /**
  * Create an async handler that delegates to the provided execution function.

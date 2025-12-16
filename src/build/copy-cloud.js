@@ -110,7 +110,7 @@ const assignModerationCoreSource = join(
 );
 
 const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
-const commonCoreSource = join(srcCoreDir, 'common-core.js');
+const commonCoreSource = join(srcCoreDir, 'commonCore.js');
 
 const generateStatsCoreSource = join(
   srcCoreCloudDir,
@@ -328,7 +328,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraDir, 'common-core.js'),
+    target: join(infraDir, 'commonCore.js'),
   },
   {
     source: adminConfigSource,
@@ -389,7 +389,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'assign-moderation-job', 'common-core.js'),
+    target: join(infraFunctionsDir, 'assign-moderation-job', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -435,7 +435,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'generate-stats', 'common-core.js'),
+    target: join(infraFunctionsDir, 'generate-stats', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -473,7 +473,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'submit-new-page', 'common-core.js'),
+    target: join(infraFunctionsDir, 'submit-new-page', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -521,7 +521,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit', 'common-core.js'),
+    target: join(infraFunctionsDir, 'get-api-key-credit', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -549,7 +549,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'common-core.js'),
+    target: join(infraFunctionsDir, 'get-api-key-credit-v2', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -599,7 +599,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'hide-variant-html', 'common-core.js'),
+    target: join(infraFunctionsDir, 'hide-variant-html', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -637,7 +637,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'mark-variant-dirty', 'common-core.js'),
+    target: join(infraFunctionsDir, 'mark-variant-dirty', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -679,7 +679,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'process-new-page', 'common-core.js'),
+    target: join(infraFunctionsDir, 'process-new-page', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -725,7 +725,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'process-new-story', 'common-core.js'),
+    target: join(infraFunctionsDir, 'process-new-story', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -770,7 +770,7 @@ const individualFileCopies = [
     target: join(
       infraFunctionsDir,
       'update-variant-visibility',
-      'common-core.js'
+      'commonCore.js'
     ),
   },
   {
@@ -835,7 +835,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'get-moderation-variant', 'common-core.js'),
+    target: join(infraFunctionsDir, 'get-moderation-variant', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -877,7 +877,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'render-contents', 'common-core.js'),
+    target: join(infraFunctionsDir, 'render-contents', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -911,7 +911,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'render-variant', 'common-core.js'),
+    target: join(infraFunctionsDir, 'render-variant', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -945,7 +945,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'report-for-moderation', 'common-core.js'),
+    target: join(infraFunctionsDir, 'report-for-moderation', 'commonCore.js'),
   },
   {
     source: commonGcfSource,
@@ -990,7 +990,7 @@ const individualFileCopies = [
     target: join(
       infraFunctionsDir,
       'submit-moderation-rating',
-      'common-core.js'
+      'commonCore.js'
     ),
   },
   {
@@ -1025,7 +1025,7 @@ const individualFileCopies = [
   },
   {
     source: commonCoreSource,
-    target: join(infraFunctionsDir, 'submit-new-story', 'common-core.js'),
+    target: join(infraFunctionsDir, 'submit-new-story', 'commonCore.js'),
   },
   {
     source: commonGcfSource,

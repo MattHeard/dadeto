@@ -1,4 +1,4 @@
-import { functionOrFallback } from '../common-core.js';
+import { functionOrFallback } from '../commonCore.js';
 
 /**
  * @typedef {object} StaticConfigResponse

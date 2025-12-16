@@ -2,7 +2,7 @@ import {
   buildVariantByNameQuery,
   buildPageByNumberQuery,
 } from '../firestore-helpers.js';
-import { when } from '../../common-core.js';
+import { when } from '../../commonCore.js';
 
 /**
  * Split option string into parts.

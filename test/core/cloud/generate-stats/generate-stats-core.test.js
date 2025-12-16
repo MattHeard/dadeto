@@ -14,7 +14,7 @@ import {
   DEFAULT_BUCKET_NAME,
   matchAuthHeader,
 } from '../../../../src/core/cloud/cloud-core.js';
-import { ADMIN_UID } from '../../../../src/core/common-core.js';
+import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 
 describe('createGenerateStatsCore', () => {
   let mockDb;

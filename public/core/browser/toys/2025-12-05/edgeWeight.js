@@ -1,4 +1,4 @@
-import { isValidString } from '../../../common-core.js';
+import { isValidString } from '../../../commonCore.js';
 import { buildWhen } from '../../common.js';
 import { isPlainObject } from '../browserToysCore.js';
 
