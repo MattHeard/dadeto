@@ -1,4 +1,4 @@
-import { deepClone } from '../../../objectUtils.js';
+import { deepClone } from '../../browser-core.js';
 import { runToyWithParsedJson, createOptions } from '../browserToysCore.js';
 /**
  * Determines whether the provided object has a valid temporary structure.

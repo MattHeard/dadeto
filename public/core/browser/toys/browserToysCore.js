@@ -1,5 +1,4 @@
-import { deepClone } from '../../objectUtils.js';
-import { safeParseJson, valueOr } from '../browser-core.js';
+import { deepClone, safeParseJson, valueOr } from '../browser-core.js';
 import { isNonNullObject, isValidString } from '../../commonCore.js';
 
 /**

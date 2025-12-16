@@ -1,6 +1,5 @@
 import { isObject } from './common.js';
-import { safeJsonParse, deepMerge } from './browser-core.js';
-import { deepClone } from '../objectUtils.js';
+import { safeJsonParse, deepMerge, deepClone } from './browser-core.js';
 
 /**
  * Creates a function that merges JSON input into a section of the data object.
