@@ -1,6 +1,6 @@
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
-import { deepClone } from './objectUtils.js';
+import { deepClone } from '../core/browser/browser-core.js';
 import {
   createRemoveListener,
   defaultHandler,
