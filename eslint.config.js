@@ -78,4 +78,10 @@ export default [
       'max-params': 'off',
     },
   },
+  {
+    files: ['src/core/cloud/http-method-guard.js'],
+    rules: {
+      complexity: 'off',
+    },
+  },
 ];
