@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-16T13:29:13.757Z",
+    "detectionDate": "2025-12-16T13:58:11.140Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -713,14 +713,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/textarea.js": {
-            "lines": 96,
-            "tokens": 661,
+            "lines": 90,
+            "tokens": 653,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 21,
-            "percentage": 5.21,
-            "percentageTokens": 3.18,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -761,14 +761,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
-            "lines": 293,
-            "tokens": 2259,
+            "lines": 286,
+            "tokens": 2248,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 21,
-            "percentage": 1.71,
-            "percentageTokens": 0.93,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1206,14 +1206,14 @@
           }
         },
         "total": {
-          "lines": 18197,
-          "tokens": 82322,
+          "lines": 18184,
+          "tokens": 82303,
           "sources": 100,
-          "clones": 1,
-          "duplicatedLines": 5,
-          "duplicatedTokens": 21,
-          "percentage": 0.03,
-          "percentageTokens": 0.03,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1260,54 +1260,17 @@
       }
     },
     "total": {
-      "lines": 18444,
-      "tokens": 87837,
+      "lines": 18431,
+      "tokens": 87818,
       "sources": 102,
-      "clones": 1,
-      "duplicatedLines": 5,
-      "duplicatedTokens": 21,
-      "percentage": 0.03,
-      "percentageTokens": 0.02,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
-  "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 6,
-      "fragment": "import {\n  createDefaultHandler,\n  getInputValue,\n  maybeRemoveDendrite,\n  maybeRemoveKV,\n  maybeRemoveModeratorRatings",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 1,
-        "end": 6,
-        "startLoc": {
-          "line": 1,
-          "column": 1,
-          "position": 0
-        },
-        "endLoc": {
-          "line": 6,
-          "column": 28,
-          "position": 21
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/textarea.js",
-        "start": 1,
-        "end": 6,
-        "startLoc": {
-          "line": 1,
-          "column": 1,
-          "position": 0
-        },
-        "endLoc": {
-          "line": 6,
-          "column": 18,
-          "position": 21
-        }
-      }
-    }
-  ]
+  "duplicates": []
 }

@@ -1,10 +1,4 @@
-import {
-  createDefaultHandler,
-  getInputValue,
-  maybeRemoveDendrite,
-  maybeRemoveKV,
-  maybeRemoveNumber,
-} from '../browser-core.js';
+import * as browserCore from '../browser-core.js';
 import {
   createUpdateTextInputValue,
   revealAndEnable,
@@ -35,7 +29,7 @@ const canReadTextareaValue = dom =>
   Boolean(dom) && typeof dom.getValue === 'function';
 
 const getTextareaSourceValue = (textInput, dom) => {
-  const storedValue = getInputValue(textInput);
+  const storedValue = browserCore.getInputValue(textInput);
   if (storedValue) {
     return storedValue;
   }
@@ -77,10 +71,10 @@ export const ensureTextareaInput = (container, textInput, dom) => {
   return textarea;
 };
 
-const cleanupTextarea = createDefaultHandler([
-  maybeRemoveNumber,
-  maybeRemoveKV,
-  maybeRemoveDendrite,
+const cleanupTextarea = browserCore.createDefaultHandler([
+  browserCore.maybeRemoveNumber,
+  browserCore.maybeRemoveKV,
+  browserCore.maybeRemoveDendrite,
 ]);
 
 /**

@@ -1,14 +1,4 @@
-import {
-  createDefaultHandler,
-  getInputValue,
-  maybeRemoveDendrite,
-  maybeRemoveKV,
-  maybeRemoveModeratorRatings,
-  maybeRemoveNumber,
-  maybeRemoveTextarea,
-  parseJsonOrDefault,
-  setInputValue,
-} from '../browser-core.js';
+import * as browserCore from '../browser-core.js';
 import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
 import { MODERATOR_RATINGS_FORM_SELECTOR } from '../../constants/selectors.js';
 import { isNonNullObject } from '../../common-core.js';
@@ -22,12 +12,12 @@ const REMOVE_BUTTON_LABEL = 'Remove rating';
 const APPROVED_OPTION_LABEL = 'Approved';
 const REJECTED_OPTION_LABEL = 'Rejected';
 
-const cleanupModeratorRatings = createDefaultHandler([
-  maybeRemoveNumber,
-  maybeRemoveKV,
-  maybeRemoveTextarea,
-  maybeRemoveDendrite,
-  maybeRemoveModeratorRatings,
+const cleanupModeratorRatings = browserCore.createDefaultHandler([
+  browserCore.maybeRemoveNumber,
+  browserCore.maybeRemoveKV,
+  browserCore.maybeRemoveTextarea,
+  browserCore.maybeRemoveDendrite,
+  browserCore.maybeRemoveModeratorRatings,
 ]);
 
 const toNormalizedString = value => String(value ?? '').trim();
@@ -131,7 +121,7 @@ const buildRemoveButton = ({ dom, onClick, cleanupFns }) => {
 const syncTextInput = (rows, dom, textInput) => {
   const serialised = JSON.stringify(serializeRatingRows(rows));
   dom.setValue(textInput, serialised);
-  setInputValue(textInput, serialised);
+  browserCore.setInputValue(textInput, serialised);
 };
 
 /**
@@ -164,7 +154,10 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
   dom.reveal(form);
 
   const rows = (() => {
-    const parsed = parseJsonOrDefault(getInputValue(textInput), []);
+    const parsed = browserCore.parseJsonOrDefault(
+      browserCore.getInputValue(textInput),
+      []
+    );
     if (!Array.isArray(parsed)) {
       return [];
     }
