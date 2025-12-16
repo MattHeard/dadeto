@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import {
   createPrefixedLogger,
   createPrefixedLoggers,
-} from '../../src/core/logging.js';
+} from '../../src/core/browser/browser-core.js';
 
 describe('logging helpers', () => {
   describe('createPrefixedLogger', () => {

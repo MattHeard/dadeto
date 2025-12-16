@@ -1,1 +1,1 @@
-export * from '../core/logging.js';
+export * from './browser-core.js';
