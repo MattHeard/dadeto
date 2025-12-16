@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-16T11:47:29.232Z",
+    "detectionDate": "2025-12-16T13:29:13.757Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -764,23 +764,23 @@
             "lines": 293,
             "tokens": 2259,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 12,
-            "duplicatedTokens": 46,
-            "percentage": 4.1,
-            "percentageTokens": 2.04,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 21,
+            "percentage": 1.71,
+            "percentageTokens": 0.93,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/createDendriteHandler.js": {
-            "lines": 379,
-            "tokens": 1899,
+            "lines": 371,
+            "tokens": 1887,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 7,
-            "duplicatedTokens": 25,
-            "percentage": 1.85,
-            "percentageTokens": 1.32,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1206,14 +1206,14 @@
           }
         },
         "total": {
-          "lines": 18205,
-          "tokens": 82334,
+          "lines": 18197,
+          "tokens": 82322,
           "sources": 100,
-          "clones": 2,
-          "duplicatedLines": 12,
-          "duplicatedTokens": 46,
-          "percentage": 0.07,
-          "percentageTokens": 0.06,
+          "clones": 1,
+          "duplicatedLines": 5,
+          "duplicatedTokens": 21,
+          "percentage": 0.03,
+          "percentageTokens": 0.03,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1260,14 +1260,14 @@
       }
     },
     "total": {
-      "lines": 18452,
-      "tokens": 87849,
+      "lines": 18444,
+      "tokens": 87837,
       "sources": 102,
-      "clones": 2,
-      "duplicatedLines": 12,
-      "duplicatedTokens": 46,
-      "percentage": 0.07,
-      "percentageTokens": 0.05,
+      "clones": 1,
+      "duplicatedLines": 5,
+      "duplicatedTokens": 21,
+      "percentage": 0.03,
+      "percentageTokens": 0.02,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1306,42 +1306,6 @@
           "line": 6,
           "column": 18,
           "position": 21
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 8,
-      "fragment": ",\n  maybeRemoveNumber,\n  maybeRemoveTextarea,\n  parseJsonOrDefault,\n  setInputValue,\n} from '../browser-core.js';\n\n",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/createDendriteHandler.js",
-        "start": 5,
-        "end": 12,
-        "startLoc": {
-          "line": 5,
-          "column": 14,
-          "position": 27
-        },
-        "endLoc": {
-          "line": 12,
-          "column": 1,
-          "position": 52
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 6,
-        "end": 12,
-        "startLoc": {
-          "line": 6,
-          "column": 28,
-          "position": 22
-        },
-        "endLoc": {
-          "line": 12,
-          "column": 7,
-          "position": 47
         }
       }
     }

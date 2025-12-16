@@ -1,13 +1,5 @@
 import { DENDRITE_FORM_SELECTOR } from '../../constants/selectors.js';
-import {
-  hideAndDisable,
-  getInputValue,
-  maybeRemoveKV,
-  maybeRemoveNumber,
-  maybeRemoveTextarea,
-  parseJsonOrDefault,
-  setInputValue,
-} from '../browser-core.js';
+import * as browserCore from '../browser-core.js';
 
 /**
  * Call a node's _dispose method when available.
@@ -47,8 +39,8 @@ function removeExistingForm(container, dom) {
  * @returns {object} Parsed dendrite data.
  */
 function parseDendriteData(dom, textInput) {
-  const value = getInputValue(textInput) || '{}';
-  return parseJsonOrDefault(value, {});
+  const value = browserCore.getInputValue(textInput) || '{}';
+  return browserCore.parseJsonOrDefault(value, {});
 }
 
 /**
@@ -121,7 +113,7 @@ function createSetValueFactory(dom) {
 function syncHiddenInput(dom, textInput, data) {
   const serialised = JSON.stringify(data);
   const setValue = createSetValueFactory(dom);
-  const syncFns = [setValue, setInputValue];
+  const syncFns = [setValue, browserCore.setInputValue];
   const executeSyncFn = createExecuteSyncFn(textInput, serialised);
   syncFns.forEach(executeSyncFn);
 }
@@ -313,9 +305,9 @@ function runRemoverForContainer(container, dom, remover) {
  */
 function cleanContainer(dom, container) {
   const removers = [
-    maybeRemoveNumber,
-    maybeRemoveKV,
-    maybeRemoveTextarea,
+    browserCore.maybeRemoveNumber,
+    browserCore.maybeRemoveKV,
+    browserCore.maybeRemoveTextarea,
     removeExistingForm,
   ];
   const runForContainer = runRemoverForContainer.bind(null, container, dom);
@@ -372,7 +364,7 @@ function createDendriteForm({ buildForm, dom, container, textInput }) {
 export function createDendriteHandler(fields) {
   return function dendriteHandler(dom, container, textInput) {
     const buildForm = createBuildForm(fields);
-    hideAndDisable(textInput, dom);
+    browserCore.hideAndDisable(textInput, dom);
     cleanContainer(dom, container);
     return createDendriteForm({ buildForm, dom, container, textInput });
   };
