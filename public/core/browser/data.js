@@ -3,6 +3,20 @@ import { isNonNullObject } from '../common-core.js';
 import { guardThen } from './common.js';
 
 /**
+ * Returns a Base64 encoding function using the provided helpers.
+ * @param {Function} btoa - Platform `btoa`.
+ * @param {Function} encodeURIComponentFn - Platform `encodeURIComponent`.
+ * @returns {Function} encodeBase64 - Encodes a string to Base64.
+ */
+export function getEncodeBase64(btoa, encodeURIComponentFn) {
+  const toBinary = str =>
+    encodeURIComponentFn(str).replace(/%([0-9A-F]{2})/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    );
+  return str => btoa(toBinary(str));
+}
+
+/**
  * @typedef {(message: string, ...meta: unknown[]) => void} BlogLogFn
  */
 
@@ -47,7 +61,6 @@ import { guardThen } from './common.js';
  */
 
 export { deepMerge } from './browser-core.js';
-export { getEncodeBase64 } from '../encoding.js';
 
 const INTERNAL_STATE_KEYS = ['blogStatus', 'blogError', 'blogFetchPromise'];
 const BLOG_DATA_URL = './blog.json';

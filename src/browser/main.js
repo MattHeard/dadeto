@@ -1,7 +1,6 @@
 import { setupAudio } from './audio-controls.js';
 import { handleTagLinks } from './tags.js';
-import { createBlogDataController } from './data.js';
-import { getEncodeBase64 } from './encoding.js';
+import { createBlogDataController, getEncodeBase64 } from './data.js';
 import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
