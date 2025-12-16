@@ -1,6 +1,5 @@
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
-import { parseJsonOrDefault } from './jsonUtils.js';
 import { deepClone } from './objectUtils.js';
 import {
   createRemoveListener,
@@ -10,6 +9,7 @@ import {
   maybeRemoveNumber,
   maybeRemoveTextarea,
   maybeRemoveDendrite,
+  parseJsonOrDefault,
   setInputValue,
   dendritePageHandler,
   dendriteStoryHandler,

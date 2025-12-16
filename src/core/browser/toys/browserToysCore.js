@@ -1,7 +1,6 @@
 import { deepClone } from '../../objectUtils.js';
-import { safeParseJson } from '../browser-core.js';
+import { safeParseJson, valueOr } from '../browser-core.js';
 import { isNonNullObject, isValidString } from '../../common-core.js';
-import { valueOr } from '../../jsonUtils.js';
 
 /**
  * Run a callback when the input value is a string.

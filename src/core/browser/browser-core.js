@@ -1,4 +1,3 @@
-import { valueOr } from '../jsonUtils.js';
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 import { isNonNullObject } from '../common-core.js';
 import {
@@ -11,6 +10,19 @@ import {
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 import { tryOr } from './common.js';
 export { assertFunction as ensureFunction } from '../common-core.js';
+
+/**
+ * Returns `value` unless it is `undefined`, otherwise returns `fallback`.
+ * @param {*} value - Value to check.
+ * @param {*} fallback - Value to return when `value` is undefined.
+ * @returns {*} Either `value` or `fallback`.
+ */
+export function valueOr(value, fallback) {
+  if (value === undefined) {
+    return fallback;
+  }
+  return value;
+}
 
 /**
  * Iterate predicate/message pairs and return the first matching message.
