@@ -1,5 +1,5 @@
 import { formatPathRelativeToProject } from '../copy.js';
-import { buildCopyExportMap } from '../copy-export-utils.js';
+import { buildCopyExportMap } from '../build/buildCore.js';
 import { runInParallel } from './parallel-utils.js';
 
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];

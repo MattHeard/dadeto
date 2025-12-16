@@ -1,4 +1,4 @@
-import { buildCopyExportMap } from './copy-export-utils.js';
+import { buildCopyExportMap } from './build/buildCore.js';
 
 export const sharedDirectoryPairs = [
   { key: 'Browser', relativePath: 'browser', publicRelativePath: 'browser' },
