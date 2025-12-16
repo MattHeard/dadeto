@@ -134,6 +134,20 @@ const syncTextInput = (rows, dom, textInput) => {
   setInputValue(textInput, serialised);
 };
 
+/**
+ * Build a change handler for a row model property that keeps the hidden input in sync.
+ * @param {Array<Record<string, unknown>>} rows - All rating rows.
+ * @param {object} dom - DOM helpers.
+ * @param {HTMLInputElement} textInput - Hidden JSON payload input.
+ * @param {Record<string, unknown>} rowModel - Model for the row being edited.
+ * @returns {(key: string) => (value: unknown) => void} Factory that builds change handlers per property.
+ */
+const createRowChangeHandler =
+  (rows, dom, textInput, rowModel) => key => value => {
+    rowModel[key] = value;
+    syncTextInput(rows, dom, textInput);
+  };
+
 const ensureModeratorRatingsForm = (dom, container, textInput) => {
   const form = dom.createElement('div');
   dom.setClassName(form, FORM_CLASS);
@@ -174,14 +188,18 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
     const rowElement = dom.createElement('div');
     dom.setClassName(rowElement, ROW_CLASS);
 
+    const handleRowChange = createRowChangeHandler(
+      rows,
+      dom,
+      textInput,
+      rowModel
+    );
+
     const authorInput = buildFieldInput({
       dom,
       placeholder: 'Moderator ID',
       value: rowModel.moderatorId,
-      onChange: value => {
-        rowModel.moderatorId = value;
-        syncTextInput(rows, dom, textInput);
-      },
+      onChange: handleRowChange('moderatorId'),
       cleanupFns,
     });
 
@@ -189,10 +207,7 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       dom,
       placeholder: 'Variant ID',
       value: rowModel.variantId,
-      onChange: value => {
-        rowModel.variantId = value;
-        syncTextInput(rows, dom, textInput);
-      },
+      onChange: handleRowChange('variantId'),
       cleanupFns,
     });
 
@@ -200,20 +215,14 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       dom,
       placeholder: 'ratedAt (ISO 8601)',
       value: rowModel.ratedAt,
-      onChange: value => {
-        rowModel.ratedAt = value;
-        syncTextInput(rows, dom, textInput);
-      },
+      onChange: handleRowChange('ratedAt'),
       cleanupFns,
     });
 
     const approveSelect = buildApproveToggle({
       dom,
       initialValue: rowModel.isApproved,
-      onChange: value => {
-        rowModel.isApproved = value;
-        syncTextInput(rows, dom, textInput);
-      },
+      onChange: handleRowChange('isApproved'),
       cleanupFns,
     });
 

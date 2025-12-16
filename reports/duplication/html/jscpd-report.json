@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-16T09:45:45.551Z",
+    "detectionDate": "2025-12-16T11:19:46.012Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -557,8 +557,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-api-key-credit/get-api-key-credit-core.js": {
-            "lines": 149,
-            "tokens": 730,
+            "lines": 150,
+            "tokens": 741,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -761,14 +761,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
-            "lines": 285,
-            "tokens": 2265,
+            "lines": 294,
+            "tokens": 2250,
             "sources": 1,
-            "clones": 8,
-            "duplicatedLines": 48,
-            "duplicatedTokens": 262,
-            "percentage": 16.84,
-            "percentageTokens": 11.57,
+            "clones": 2,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 46,
+            "percentage": 4.08,
+            "percentageTokens": 2.04,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -881,8 +881,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/http-method-guard.js": {
-            "lines": 24,
-            "tokens": 97,
+            "lines": 55,
+            "tokens": 209,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1206,14 +1206,14 @@
           }
         },
         "total": {
-          "lines": 18170,
-          "tokens": 82196,
+          "lines": 18211,
+          "tokens": 82304,
           "sources": 100,
-          "clones": 7,
-          "duplicatedLines": 51,
-          "duplicatedTokens": 204,
-          "percentage": 0.28,
-          "percentageTokens": 0.25,
+          "clones": 4,
+          "duplicatedLines": 33,
+          "duplicatedTokens": 96,
+          "percentage": 0.18,
+          "percentageTokens": 0.12,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1260,14 +1260,14 @@
       }
     },
     "total": {
-      "lines": 18417,
-      "tokens": 87711,
+      "lines": 18458,
+      "tokens": 87819,
       "sources": 102,
-      "clones": 7,
-      "duplicatedLines": 51,
-      "duplicatedTokens": 204,
-      "percentage": 0.28,
-      "percentageTokens": 0.23,
+      "clones": 4,
+      "duplicatedLines": 33,
+      "duplicatedTokens": 96,
+      "percentage": 0.18,
+      "percentageTokens": 0.11,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1342,114 +1342,6 @@
           "line": 6,
           "column": 18,
           "position": 21
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 7,
-      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns,\n    });\n\n    const ratedAtInput",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 193,
-        "end": 199,
-        "startLoc": {
-          "line": 193,
-          "column": 10,
-          "position": 1583
-        },
-        "endLoc": {
-          "line": 199,
-          "column": 13,
-          "position": 1619
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 182,
-        "end": 188,
-        "startLoc": {
-          "line": 182,
-          "column": 12,
-          "position": 1505
-        },
-        "endLoc": {
-          "line": 188,
-          "column": 13,
-          "position": 1541
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 7,
-      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns,\n    });\n\n    const approveSelect",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 204,
-        "end": 210,
-        "startLoc": {
-          "line": 204,
-          "column": 8,
-          "position": 1661
-        },
-        "endLoc": {
-          "line": 210,
-          "column": 14,
-          "position": 1697
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 182,
-        "end": 188,
-        "startLoc": {
-          "line": 182,
-          "column": 12,
-          "position": 1505
-        },
-        "endLoc": {
-          "line": 188,
-          "column": 13,
-          "position": 1541
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 7,
-      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns,\n    });\n\n    const cleanupRow",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 214,
-        "end": 220,
-        "startLoc": {
-          "line": 214,
-          "column": 11,
-          "position": 1732
-        },
-        "endLoc": {
-          "line": 220,
-          "column": 11,
-          "position": 1768
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 182,
-        "end": 188,
-        "startLoc": {
-          "line": 182,
-          "column": 12,
-          "position": 1505
-        },
-        "endLoc": {
-          "line": 188,
-          "column": 13,
-          "position": 1541
         }
       }
     },
