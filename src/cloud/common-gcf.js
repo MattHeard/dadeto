@@ -1,5 +1,6 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
+import { isDuplicateAppError } from '../core/cloud/cloud-core.js';
 
 /**
  * @typedef {import('node:process').ProcessEnv} ProcessEnv
@@ -25,27 +26,6 @@ export function getEnvironmentVariables() {
 export const fetchFn = globalThis.fetch.bind(globalThis);
 
 /**
- * Determine whether an initialization error indicates a duplicate Firebase app.
- * @param {unknown} error Error thrown during Firebase initialization.
- * @returns {boolean} True when the error corresponds to an already-initialized app.
- */
-function isDuplicateFirebaseAppError(error) {
-  if (!error) {
-    return false;
-  }
-
-  const candidate = /** @type {{ code?: string; message?: unknown }} */ (error);
-  const hasDuplicateCode = candidate.code === 'app/duplicate-app';
-  const hasStringMessage = typeof candidate.message === 'string';
-  const messageText = String(candidate.message ?? '').toLowerCase();
-
-  return (
-    messageText.includes('already exists') &&
-    (hasDuplicateCode || hasStringMessage)
-  );
-}
-
-/**
  * Create helpers that manage Firebase Admin app initialization state.
  * @param {() => void} initializer Firebase initialization function.
  * @returns {{
@@ -69,7 +49,7 @@ export function createFirebaseAppManager(initializer) {
     try {
       initFn();
     } catch (error) {
-      if (!isDuplicateFirebaseAppError(error)) {
+      if (!isDuplicateAppError(error)) {
         throw error;
       }
     }

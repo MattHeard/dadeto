@@ -18,7 +18,7 @@ import {
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
-import { resolveAllowedOrigins } from './cloud-core.js';
+import { resolveAllowedOrigins, isDuplicateAppError } from './cloud-core.js';
 
 const firebaseInitialization = createFirebaseInitialization();
 
@@ -158,27 +158,6 @@ const { getFirestoreInstance, clearFirestoreInstanceCache } =
   createFirestoreInstanceHandlers(firebaseInitializationHandlers);
 
 /**
- * Determine whether an initialization error indicates the app already exists.
- * @param {unknown} error Error thrown during Firebase initialization.
- * @returns {boolean} True when the error corresponds to a duplicate app.
- */
-function isDuplicateFirebaseAppError(error) {
-  if (!error) {
-    return false;
-  }
-
-  const candidate = /** @type {{ code?: string, message?: unknown }} */ (error);
-  const hasDuplicateCode = candidate.code === 'app/duplicate-app';
-  const hasStringMessage = typeof candidate.message === 'string';
-  const messageText = String(candidate.message ?? '');
-
-  return (
-    (hasDuplicateCode || hasStringMessage) &&
-    messageText.toLowerCase().includes('already exists')
-  );
-}
-
-/**
  * Ensure the default Firebase Admin app is initialized.
  * @param {() => void} [initFn] Optional initializer for dependency injection.
  * @returns {void}
@@ -191,7 +170,7 @@ function ensureFirebaseApp(initFn = initializeApp) {
   try {
     initFn();
   } catch (error) {
-    if (!isDuplicateFirebaseAppError(error)) {
+    if (!isDuplicateAppError(error)) {
       throw error;
     }
   }
