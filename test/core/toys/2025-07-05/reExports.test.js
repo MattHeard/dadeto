@@ -1,5 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
-import * as baseObjectUtils from '../../../../src/core/objectUtils.js';
+import {
+  pick,
+  mapValues,
+  deepClone,
+} from '../../../../src/core/browser/browser-core.js';
 import * as reExportedObjectUtils from '../../../../src/core/browser/toys/2025-07-05/objectUtils.js';
 import * as baseValidation from '../../../../src/core/validation.js';
 import * as reExportedValidation from '../../../../src/core/browser/toys/2025-07-05/validation.js';
@@ -20,6 +24,7 @@ describe('add dendrite page re-exports', () => {
   }
 
   test('object utils match the core utilities', () => {
+    const baseObjectUtils = { pick, mapValues, deepClone };
     expectModuleExportsToMatch(baseObjectUtils, reExportedObjectUtils);
   });
 
