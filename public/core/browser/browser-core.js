@@ -51,6 +51,57 @@ export function valueOr(value, fallback) {
 }
 
 /**
+ * Creates a shallow copy of an object that only includes the requested keys.
+ * @param {object} obj - Source object.
+ * @param {string[]} keys - Keys to retain.
+ * @returns {object} Shallow copy containing only the requested keys.
+ */
+export function pick(obj, keys) {
+  let source = {};
+  if (Object(obj) === obj) {
+    source = obj;
+  }
+
+  return Object.fromEntries(
+    keys.filter(key => key in source).map(key => [key, source[key]])
+  );
+}
+
+/**
+ * Creates a new object with values transformed by the provided function.
+ * @param {object} source - Source object.
+ * @param {Function} fn - Transformation `(value, key) => any`.
+ * @returns {object} Object with transformed values.
+ */
+function transformEntries(source, fn) {
+  return Object.fromEntries(
+    Object.entries(source).map(([key, value]) => [key, fn(value, key)])
+  );
+}
+
+/**
+ * Maps over each value on an object with the provided mapper.
+ * @param {object} obj - Source object.
+ * @param {Function} fn - Mapper `(value, key) => any`.
+ * @returns {object} Object with mapped values.
+ */
+export function mapValues(obj, fn) {
+  if (Object(obj) !== obj) {
+    return {};
+  }
+  return transformEntries(obj, fn);
+}
+
+/**
+ * Creates a deep clone of the provided value using JSON serialization.
+ * @param {*} value - Value to clone.
+ * @returns {*} Deep copy of the value.
+ */
+export function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+/**
  * Iterate predicate/message pairs and return the first matching message.
  * @template T
  * @param {Array<[ (candidate: T) => boolean, string ]>} checks Predicate/message pairs.
