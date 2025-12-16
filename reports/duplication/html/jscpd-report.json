@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-15T13:42:41.003Z",
+    "detectionDate": "2025-12-16T09:45:45.551Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -437,26 +437,26 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 662,
-            "tokens": 2651,
+            "lines": 648,
+            "tokens": 2592,
             "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 27,
-            "duplicatedTokens": 98,
-            "percentage": 4.08,
-            "percentageTokens": 3.7,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 32,
+            "percentage": 0.77,
+            "percentageTokens": 1.23,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
-            "lines": 231,
-            "tokens": 966,
+            "lines": 216,
+            "tokens": 906,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 22,
-            "duplicatedTokens": 66,
-            "percentage": 9.52,
-            "percentageTokens": 6.83,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -473,14 +473,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 684,
-            "tokens": 2752,
+            "lines": 682,
+            "tokens": 2735,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 10,
-            "duplicatedTokens": 18,
-            "percentage": 1.46,
-            "percentageTokens": 0.65,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -557,8 +557,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/get-api-key-credit/get-api-key-credit-core.js": {
-            "lines": 169,
-            "tokens": 802,
+            "lines": 149,
+            "tokens": 730,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -569,14 +569,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
-            "lines": 932,
-            "tokens": 3583,
+            "lines": 928,
+            "tokens": 3562,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 26,
-            "duplicatedTokens": 36,
-            "percentage": 2.79,
-            "percentageTokens": 1,
+            "clones": 1,
+            "duplicatedLines": 16,
+            "duplicatedTokens": 18,
+            "percentage": 1.72,
+            "percentageTokens": 0.51,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -716,11 +716,11 @@
             "lines": 96,
             "tokens": 661,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 5,
+            "duplicatedTokens": 21,
+            "percentage": 5.21,
+            "percentageTokens": 3.18,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -761,14 +761,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
-            "lines": 276,
-            "tokens": 2188,
+            "lines": 285,
+            "tokens": 2265,
             "sources": 1,
-            "clones": 7,
-            "duplicatedLines": 43,
-            "duplicatedTokens": 229,
-            "percentage": 15.58,
-            "percentageTokens": 10.47,
+            "clones": 8,
+            "duplicatedLines": 48,
+            "duplicatedTokens": 262,
+            "percentage": 16.84,
+            "percentageTokens": 11.57,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -833,8 +833,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/response-utils.js": {
-            "lines": 16,
-            "tokens": 88,
+            "lines": 34,
+            "tokens": 167,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -871,6 +871,18 @@
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/parallel-utils.js": {
             "lines": 14,
             "tokens": 61,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/http-method-guard.js": {
+            "lines": 24,
+            "tokens": 97,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1157,8 +1169,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/copy.js": {
-            "lines": 498,
-            "tokens": 2346,
+            "lines": 528,
+            "tokens": 2474,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1194,14 +1206,14 @@
           }
         },
         "total": {
-          "lines": 18144,
-          "tokens": 82044,
-          "sources": 99,
-          "clones": 9,
-          "duplicatedLines": 78,
-          "duplicatedTokens": 261,
-          "percentage": 0.43,
-          "percentageTokens": 0.32,
+          "lines": 18170,
+          "tokens": 82196,
+          "sources": 100,
+          "clones": 7,
+          "duplicatedLines": 51,
+          "duplicatedTokens": 204,
+          "percentage": 0.28,
+          "percentageTokens": 0.25,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1248,14 +1260,14 @@
       }
     },
     "total": {
-      "lines": 18391,
-      "tokens": 87559,
-      "sources": 101,
-      "clones": 9,
-      "duplicatedLines": 78,
-      "duplicatedTokens": 261,
-      "percentage": 0.42,
-      "percentageTokens": 0.3,
+      "lines": 18417,
+      "tokens": 87711,
+      "sources": 102,
+      "clones": 7,
+      "duplicatedLines": 51,
+      "duplicatedTokens": 204,
+      "percentage": 0.28,
+      "percentageTokens": 0.23,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1268,17 +1280,17 @@
       "tokens": 0,
       "firstFile": {
         "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 247,
-        "end": 252,
+        "start": 246,
+        "end": 251,
         "startLoc": {
-          "line": 247,
+          "line": 246,
           "column": 17,
-          "position": 841
+          "position": 828
         },
         "endLoc": {
-          "line": 252,
+          "line": 251,
           "column": 7,
-          "position": 873
+          "position": 860
         }
       },
       "secondFile": {
@@ -1299,217 +1311,145 @@
     },
     {
       "format": "javascript",
-      "lines": 9,
-      "fragment": "\n\nconst METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };\n\n/**\n * Validate the request method and emit an error response when unsupported.\n * @param {string | undefined} method - HTTP method supplied by the client.\n * @returns {{ status: number, body: string } | null} Error response when the method is not POST; otherwise null.\n */",
+      "lines": 6,
+      "fragment": "import {\n  createDefaultHandler,\n  getInputValue,\n  maybeRemoveDendrite,\n  maybeRemoveKV,\n  maybeRemoveModeratorRatings",
       "tokens": 0,
       "firstFile": {
-        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
-        "start": 146,
-        "end": 154,
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 1,
+        "end": 6,
         "startLoc": {
-          "line": 146,
-          "column": 2,
-          "position": 583
-        },
-        "endLoc": {
-          "line": 154,
-          "column": 4,
-          "position": 608
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 14,
-        "end": 57,
-        "startLoc": {
-          "line": 14,
-          "column": 2,
-          "position": 85
-        },
-        "endLoc": {
-          "line": 57,
-          "column": 4,
-          "position": 128
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 15,
-      "fragment": "(method) {\n  if (normalizeMethod(method) === 'POST') {\n    return null;\n  }\n\n  return METHOD_NOT_ALLOWED_RESPONSE;\n}\n\n/**\n * Emit a simple string response with the provided status code.\n * @param {{ status: (code: number) => { send: (body: string) => void } }} res - Express-like response object.\n * @param {number} status - HTTP status code to send.\n * @param {string} body - String body to send in the response.\n * @returns {void}\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/report-for-moderation/report-for-moderation-core.js",
-        "start": 155,
-        "end": 169,
-        "startLoc": {
-          "line": 155,
-          "column": 19,
-          "position": 613
-        },
-        "endLoc": {
-          "line": 169,
-          "column": 4,
-          "position": 654
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js",
-        "start": 515,
-        "end": 527,
-        "startLoc": {
-          "line": 515,
-          "column": 22,
-          "position": 1976
-        },
-        "endLoc": {
-          "line": 527,
-          "column": 4,
-          "position": 2017
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 11,
-      "fragment": "\n    return;\n  }\n\n  sendOkResponse(res);\n}\n/**\n * Send a failure response when generation throws.\n * @param {import('express').Response} res Express response helper.\n * @param {unknown} err Error raised during generation.\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
-        "start": 910,
-        "end": 920,
-        "startLoc": {
-          "line": 910,
-          "column": 2,
-          "position": 3495
-        },
-        "endLoc": {
-          "line": 920,
-          "column": 4,
-          "position": 3513
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js",
-        "start": 448,
-        "end": 455,
-        "startLoc": {
-          "line": 448,
-          "column": 2,
-          "position": 1761
-        },
-        "endLoc": {
-          "line": 455,
+          "line": 1,
           "column": 1,
-          "position": 1779
+          "position": 0
+        },
+        "endLoc": {
+          "line": 6,
+          "column": 28,
+          "position": 21
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/textarea.js",
+        "start": 1,
+        "end": 6,
+        "startLoc": {
+          "line": 1,
+          "column": 1,
+          "position": 0
+        },
+        "endLoc": {
+          "line": 6,
+          "column": 18,
+          "position": 21
         }
       }
     },
     {
       "format": "javascript",
       "lines": 7,
-      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns\n    );\n\n    const ratedAtInput",
+      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns,\n    });\n\n    const ratedAtInput",
       "tokens": 0,
       "firstFile": {
         "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 188,
-        "end": 194,
+        "start": 193,
+        "end": 199,
         "startLoc": {
-          "line": 188,
+          "line": 193,
           "column": 10,
-          "position": 1541
+          "position": 1583
         },
         "endLoc": {
-          "line": 194,
-          "column": 13,
-          "position": 1575
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 177,
-        "end": 183,
-        "startLoc": {
-          "line": 177,
-          "column": 12,
-          "position": 1475
-        },
-        "endLoc": {
-          "line": 183,
-          "column": 13,
-          "position": 1509
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 7,
-      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns\n    );\n\n    const approveSelect",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 199,
-        "end": 205,
-        "startLoc": {
           "line": 199,
-          "column": 8,
-          "position": 1607
-        },
-        "endLoc": {
-          "line": 205,
-          "column": 14,
-          "position": 1641
+          "column": 13,
+          "position": 1619
         }
       },
       "secondFile": {
         "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 177,
-        "end": 183,
+        "start": 182,
+        "end": 188,
         "startLoc": {
-          "line": 177,
+          "line": 182,
           "column": 12,
-          "position": 1475
+          "position": 1505
         },
         "endLoc": {
-          "line": 183,
+          "line": 188,
           "column": 13,
-          "position": 1509
+          "position": 1541
         }
       }
     },
     {
       "format": "javascript",
       "lines": 7,
-      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns\n    );\n\n    const cleanupRow",
+      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns,\n    });\n\n    const approveSelect",
       "tokens": 0,
       "firstFile": {
         "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 209,
-        "end": 215,
+        "start": 204,
+        "end": 210,
         "startLoc": {
-          "line": 209,
-          "column": 11,
-          "position": 1669
+          "line": 204,
+          "column": 8,
+          "position": 1661
         },
         "endLoc": {
-          "line": 215,
-          "column": 11,
-          "position": 1703
+          "line": 210,
+          "column": 14,
+          "position": 1697
         }
       },
       "secondFile": {
         "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 177,
-        "end": 183,
+        "start": 182,
+        "end": 188,
         "startLoc": {
-          "line": 177,
+          "line": 182,
           "column": 12,
-          "position": 1475
+          "position": 1505
         },
         "endLoc": {
-          "line": 183,
+          "line": 188,
           "column": 13,
-          "position": 1509
+          "position": 1541
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 7,
+      "fragment": " = value;\n        syncTextInput(rows, dom, textInput);\n      },\n      cleanupFns,\n    });\n\n    const cleanupRow",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 214,
+        "end": 220,
+        "startLoc": {
+          "line": 214,
+          "column": 11,
+          "position": 1732
+        },
+        "endLoc": {
+          "line": 220,
+          "column": 11,
+          "position": 1768
+        }
+      },
+      "secondFile": {
+        "name": "src/core/browser/inputHandlers/moderatorRatings.js",
+        "start": 182,
+        "end": 188,
+        "startLoc": {
+          "line": 182,
+          "column": 12,
+          "position": 1505
+        },
+        "endLoc": {
+          "line": 188,
+          "column": 13,
+          "position": 1541
         }
       }
     },
@@ -1535,17 +1475,17 @@
       },
       "secondFile": {
         "name": "src/core/browser/inputHandlers/moderatorRatings.js",
-        "start": 7,
-        "end": 13,
+        "start": 6,
+        "end": 12,
         "startLoc": {
-          "line": 7,
+          "line": 6,
           "column": 28,
-          "position": 26
+          "position": 22
         },
         "endLoc": {
-          "line": 13,
+          "line": 12,
           "column": 7,
-          "position": 51
+          "position": 47
         }
       }
     },

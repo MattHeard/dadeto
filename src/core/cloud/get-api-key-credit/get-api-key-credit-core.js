@@ -1,5 +1,6 @@
 import { createDb } from './create-db.js';
 import { assertFunction, isValidString } from './common-core.js';
+import { validatePostMethod } from '../http-method-guard.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };
 const MISSING_UUID_RESPONSE = { status: 400, body: 'Missing UUID' };
@@ -39,30 +40,6 @@ export function createFirestore(FirestoreConstructor) {
   assertFunction(FirestoreConstructor, 'FirestoreConstructor');
 
   return createDb(FirestoreConstructor);
-}
-
-/**
- * Normalize a request method for validation.
- * @param {*} method - Method value taken from the request.
- * @returns {string} Uppercase representation or the default POST method.
- */
-function normalizeMethod(method) {
-  if (typeof method !== 'string') {
-    return 'POST';
-  }
-  return method.toUpperCase();
-}
-
-/**
- * Validate that the incoming method is POST.
- * @param {*} method - Method value taken from the request.
- * @returns {{ status: number, body: string } | null} Error response when invalid, otherwise null.
- */
-function validateMethod(method) {
-  if (normalizeMethod(method) === 'POST') {
-    return null;
-  }
-  return METHOD_NOT_ALLOWED_RESPONSE;
 }
 
 /**
@@ -143,7 +120,11 @@ async function fetchCreditWhenUuidPresent(fetchCredit, request, getUuid) {
  * @returns {Promise<{ status: number, body: unknown }>} Resolved response.
  */
 async function executeRequest(fetchCredit, getUuid, request) {
-  const methodValidation = validateMethod(request.method);
+  const methodValidation = validatePostMethod(
+    request.method,
+    METHOD_NOT_ALLOWED_RESPONSE,
+    { treatNonStringAsPost: true }
+  );
   if (methodValidation) {
     return methodValidation;
   }

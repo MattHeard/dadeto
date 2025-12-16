@@ -1,10 +1,10 @@
 import { assertFunction } from '../common-core.js';
 import {
-  normalizeMethod,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
   whenBodyPresent,
 } from './cloud-core.js';
+import { validatePostMethod } from '../http-method-guard.js';
 
 /**
  * Determine whether the provided request body contains a variant string.
@@ -101,7 +101,7 @@ function processReportSubmission({
   getServerTimestamp,
 }) {
   return (
-    validateHttpMethod(request.method) ??
+    validatePostMethod(request.method) ??
     handlePostRequest({
       body: request.body,
       addModerationReport,
@@ -143,21 +143,6 @@ function isCorsOriginAllowed(origin, allowedOrigins) {
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   const origin = createCorsOriginValidator(allowedOrigins);
   return buildCorsOptions(origin, methods);
-}
-
-const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
-
-/**
- * Validate the request method and emit an error response when unsupported.
- * @param {string | undefined} method - HTTP method supplied by the client.
- * @returns {{ status: number, body: string } | null} Error response when the method is not POST; otherwise null.
- */
-function validateHttpMethod(method) {
-  if (normalizeMethod(method) === 'POST') {
-    return null;
-  }
-
-  return METHOD_NOT_ALLOWED_RESPONSE;
 }
 
 /**

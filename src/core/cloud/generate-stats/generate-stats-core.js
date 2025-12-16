@@ -5,7 +5,7 @@ import {
   isDuplicateAppError,
   sendOkResponse,
 } from './cloud-core.js';
-import { runWithFailure } from '../response-utils.js';
+import { runWithFailureAndThen } from '../response-utils.js';
 export { isDuplicateAppError };
 
 const STATS_PAGE_HEAD = `<!doctype html>
@@ -901,17 +901,13 @@ function isCronRequest(req) {
  * @returns {Promise<void>} Promise.
  */
 async function respondWithGenerate(res, generate) {
-  const result = await runWithFailure(
+  await runWithFailureAndThen(
     () => generate(),
     err => {
       sendGenerateFailure(res, err);
-    }
+    },
+    () => sendOkResponse(res)
   );
-  if (!result.ok) {
-    return;
-  }
-
-  sendOkResponse(res);
 }
 /**
  * Send a failure response when generation throws.
