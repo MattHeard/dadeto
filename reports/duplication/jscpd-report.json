@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-16T20:09:29.400Z",
+    "detectionDate": "2025-12-16T20:24:52.640Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -79,18 +79,6 @@
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-10-19/csvToJsonArray.js": {
             "lines": 397,
             "tokens": 1612,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-05/validation.js": {
-            "lines": 4,
-            "tokens": 10,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -341,8 +329,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-03-21/booleanCoercer.js": {
-            "lines": 51,
-            "tokens": 215,
+            "lines": 59,
+            "tokens": 230,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1120,18 +1108,6 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/str.js": {
-            "lines": 20,
-            "tokens": 74,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/commonCore.js": {
             "lines": 235,
             "tokens": 898,
@@ -1146,9 +1122,9 @@
           }
         },
         "total": {
-          "lines": 18121,
-          "tokens": 81990,
-          "sources": 95,
+          "lines": 18105,
+          "tokens": 81921,
+          "sources": 93,
           "clones": 0,
           "duplicatedLines": 0,
           "duplicatedTokens": 0,
@@ -1200,9 +1176,9 @@
       }
     },
     "total": {
-      "lines": 18368,
-      "tokens": 87505,
-      "sources": 97,
+      "lines": 18352,
+      "tokens": 87436,
+      "sources": 95,
       "clones": 0,
       "duplicatedLines": 0,
       "duplicatedTokens": 0,

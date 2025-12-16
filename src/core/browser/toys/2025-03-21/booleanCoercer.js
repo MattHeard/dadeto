@@ -1,5 +1,3 @@
-import { isType } from '../../../validation.js';
-
 /**
  * Attempt to coerce a value to boolean.
  * @param {unknown} input - Value that may represent a boolean.
@@ -48,4 +46,14 @@ function normalizeBooleanString(input) {
  */
 function parseBooleanString(str) {
   return { true: true, false: false }[str];
+}
+
+/**
+ * Determine whether a value matches the provided primitive type name.
+ * @param {unknown} value Value to inspect.
+ * @param {string} type Expected `typeof` result.
+ * @returns {boolean} True when `typeof value` matches `type`.
+ */
+function isType(value, type) {
+  return typeof value === type;
 }
