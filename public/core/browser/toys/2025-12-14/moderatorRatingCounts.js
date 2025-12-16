@@ -1,4 +1,5 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
+import { whenString } from '../../../common-core.js';
 
 const REQUIRED_FIELDS = ['isApproved', 'moderatorId', 'ratedAt', 'variantId'];
 
@@ -158,10 +159,10 @@ function isPlainObject(value) {
  * @returns {boolean} True when the string can be parsed as a date.
  */
 function isIso8601String(value) {
-  if (typeof value !== 'string') {
-    return false;
-  }
-
-  const parsed = Date.parse(value);
-  return !Number.isNaN(parsed);
+  return (
+    whenString(value, candidate => {
+      const parsed = Date.parse(candidate);
+      return !Number.isNaN(parsed);
+    }) ?? false
+  );
 }

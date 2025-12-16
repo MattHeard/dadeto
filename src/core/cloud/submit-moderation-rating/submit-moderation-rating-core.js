@@ -1,4 +1,4 @@
-import { isNonNullObject } from './common-core.js';
+import { isNonNullObject, whenString } from './common-core.js';
 import {
   matchBearerToken,
   getHeaderFromGetter,
@@ -244,11 +244,7 @@ function validateDecodedUid(decoded) {
  * @returns {value is string} True if non-empty string.
  */
 function isNonEmptyString(value) {
-  if (typeof value !== 'string') {
-    return false;
-  }
-
-  return value.length > 0;
+  return whenString(value, candidate => candidate.length > 0) ?? false;
 }
 
 /**
