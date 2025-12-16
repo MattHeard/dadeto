@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-16T11:30:03.846Z",
+    "detectionDate": "2025-12-16T11:47:29.232Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -569,14 +569,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
-            "lines": 928,
-            "tokens": 3562,
+            "lines": 927,
+            "tokens": 3567,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 16,
-            "duplicatedTokens": 18,
-            "percentage": 1.72,
-            "percentageTokens": 0.51,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -917,14 +917,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/copy.js": {
-            "lines": 335,
-            "tokens": 1189,
+            "lines": 334,
+            "tokens": 1194,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 16,
-            "duplicatedTokens": 18,
-            "percentage": 4.78,
-            "percentageTokens": 1.51,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1206,14 +1206,14 @@
           }
         },
         "total": {
-          "lines": 18207,
-          "tokens": 82324,
+          "lines": 18205,
+          "tokens": 82334,
           "sources": 100,
-          "clones": 3,
-          "duplicatedLines": 28,
-          "duplicatedTokens": 64,
-          "percentage": 0.15,
-          "percentageTokens": 0.08,
+          "clones": 2,
+          "duplicatedLines": 12,
+          "duplicatedTokens": 46,
+          "percentage": 0.07,
+          "percentageTokens": 0.06,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1260,14 +1260,14 @@
       }
     },
     "total": {
-      "lines": 18454,
-      "tokens": 87839,
+      "lines": 18452,
+      "tokens": 87849,
       "sources": 102,
-      "clones": 3,
-      "duplicatedLines": 28,
-      "duplicatedTokens": 64,
-      "percentage": 0.15,
-      "percentageTokens": 0.07,
+      "clones": 2,
+      "duplicatedLines": 12,
+      "duplicatedTokens": 46,
+      "percentage": 0.07,
+      "percentageTokens": 0.05,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -1342,42 +1342,6 @@
           "line": 12,
           "column": 7,
           "position": 47
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 17,
-      "fragment": ",\n        })\n      )\n    );\n  }\n\n  /**\n   * Proxy copy calls through a shared helper to reduce duplication.\n   * @param {{\n   *   files: string[],\n   *   sourceDir: string,\n   *   targetDir: string,\n   *   io: CopyAsyncIo,\n   *   messageLogger: CopyMessageLogger,\n   * }} details Prepared copy parameters.\n   * @returns {Promise<void>}\n   */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/cloud/copy.js",
-        "start": 263,
-        "end": 279,
-        "startLoc": {
-          "line": 263,
-          "column": 14,
-          "position": 907
-        },
-        "endLoc": {
-          "line": 279,
-          "column": 6,
-          "position": 925
-        }
-      },
-      "secondFile": {
-        "name": "src/core/cloud/generate-stats/generate-stats-core.js",
-        "start": 539,
-        "end": 548,
-        "startLoc": {
-          "line": 539,
-          "column": 6,
-          "position": 1985
-        },
-        "endLoc": {
-          "line": 548,
-          "column": 6,
-          "position": 2003
         }
       }
     }

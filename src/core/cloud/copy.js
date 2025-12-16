@@ -1,5 +1,6 @@
 import { formatPathRelativeToProject } from '../copy.js';
 import { buildCopyExportMap } from '../copy-export-utils.js';
+import { runInParallel } from './parallel-utils.js';
 
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 
@@ -253,16 +254,14 @@ export function createCopyToInfraCore({
       return;
     }
 
-    await Promise.all(
-      files.map(name =>
-        copyFileToTarget({
-          io,
-          sourceDir,
-          targetDir,
-          name,
-          messageLogger,
-        })
-      )
+    await runInParallel(files, name =>
+      copyFileToTarget({
+        io,
+        sourceDir,
+        targetDir,
+        name,
+        messageLogger,
+      })
     );
   }
 
