@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-16T14:27:02.405Z",
+    "detectionDate": "2025-12-16T16:54:44.389Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -964,6 +964,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/build/buildCore.js": {
+            "lines": 8,
+            "tokens": 25,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/token-action.js": {
             "lines": 84,
             "tokens": 275,
@@ -1171,18 +1183,6 @@
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/copy.js": {
             "lines": 528,
             "tokens": 2474,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/copy-export-utils.js": {
-            "lines": 8,
-            "tokens": 25,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,

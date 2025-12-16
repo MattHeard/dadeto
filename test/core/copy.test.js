@@ -3,7 +3,7 @@ import path from 'path';
 import {
   createCopyCore,
   createSharedDirectoryEntries,
-} from '../../src/core/copy.js';
+} from '../../src/core/build/blog.js';
 
 const posix = path.posix;
 

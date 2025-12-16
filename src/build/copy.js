@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createCopyCore, createSharedDirectoryEntries } from '../core/copy.js';
+import { createCopyCore, createSharedDirectoryEntries } from '../core/build/blog.js';
 import {
   createCopyDirectories,
   createPathAdapters,

@@ -1,4 +1,4 @@
-import { formatPathRelativeToProject } from '../copy.js';
+import { formatPathRelativeToProject } from '../build/blog.js';
 import { buildCopyExportMap } from '../build/buildCore.js';
 import { runInParallel } from './parallel-utils.js';
 
