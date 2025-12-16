@@ -136,14 +136,13 @@ const syncTextInput = (rows, dom, textInput) => {
 
 /**
  * Build a change handler for a row model property that keeps the hidden input in sync.
- * @param {Array<Record<string, unknown>>} rows - All rating rows.
- * @param {object} dom - DOM helpers.
- * @param {HTMLInputElement} textInput - Hidden JSON payload input.
- * @param {Record<string, unknown>} rowModel - Model for the row being edited.
+ * @param {{rows: Array<Record<string, unknown>>, dom: object, textInput: HTMLInputElement, rowModel: Record<string, unknown>}} options - Handler dependencies.
  * @returns {(key: string) => (value: unknown) => void} Factory that builds change handlers per property.
  */
 const createRowChangeHandler =
-  (rows, dom, textInput, rowModel) => key => value => {
+  ({ rows, dom, textInput, rowModel }) =>
+  key =>
+  value => {
     rowModel[key] = value;
     syncTextInput(rows, dom, textInput);
   };
@@ -188,12 +187,12 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
     const rowElement = dom.createElement('div');
     dom.setClassName(rowElement, ROW_CLASS);
 
-    const handleRowChange = createRowChangeHandler(
+    const handleRowChange = createRowChangeHandler({
       rows,
       dom,
       textInput,
-      rowModel
-    );
+      rowModel,
+    });
 
     const authorInput = buildFieldInput({
       dom,
