@@ -1,6 +1,7 @@
 import { describe, test, expect } from '@jest/globals';
 import { assertFunction } from '../../../src/core/commonCore.js';
 import {
+  getHeaderFromGetter,
   normalizeString,
   normalizeContent,
   normalizeAuthor,
@@ -93,6 +94,12 @@ describe('cloud-core', () => {
     test('handles nullish values by returning an empty string', () => {
       expect(normalizeAuthor(null)).toBe('');
       expect(normalizeAuthor(undefined)).toBe('');
+    });
+  });
+
+  describe('getHeaderFromGetter', () => {
+    test('returns null when the getter is not callable', () => {
+      expect(getHeaderFromGetter(undefined, 'Authorization')).toBeNull();
     });
   });
 });
