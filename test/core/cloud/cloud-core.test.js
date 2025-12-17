@@ -1,4 +1,4 @@
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
 import { assertFunction } from '../../../src/core/commonCore.js';
 import {
   getHeaderFromGetter,
@@ -7,6 +7,9 @@ import {
   normalizeAuthor,
   productionOrigins,
   resolveAllowedOrigins,
+  whenBodyPresent,
+  getSnapshotData,
+  isDuplicateAppError,
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {
@@ -100,6 +103,54 @@ describe('cloud-core', () => {
   describe('getHeaderFromGetter', () => {
     test('returns null when the getter is not callable', () => {
       expect(getHeaderFromGetter(undefined, 'Authorization')).toBeNull();
+    });
+  });
+
+  describe('whenBodyPresent', () => {
+    test('returns false when body is missing', () => {
+      const evaluator = jest.fn(() => true);
+      expect(whenBodyPresent(null, evaluator)).toBe(false);
+      expect(evaluator).not.toHaveBeenCalled();
+    });
+
+    test('invokes the evaluator when the body exists', () => {
+      const evaluator = jest.fn(() => 'ok');
+      expect(whenBodyPresent({ payload: true }, evaluator)).toBe('ok');
+      expect(evaluator).toHaveBeenCalledWith({ payload: true });
+    });
+  });
+
+  describe('getSnapshotData', () => {
+    test('returns null when snapshot lacks data helper', () => {
+      expect(getSnapshotData({})).toBeNull();
+    });
+
+    test('returns the snapshot data when available', () => {
+      const value = { foo: 'bar' };
+      expect(getSnapshotData({ data: () => value })).toBe(value);
+    });
+  });
+
+  describe('isDuplicateAppError', () => {
+    test('requires a duplicate message to return true even when code matches', () => {
+      expect(
+        isDuplicateAppError({
+          code: 'app/duplicate-app',
+        })
+      ).toBe(false);
+    });
+
+    test('recognizes duplicate app errors by message content', () => {
+      expect(
+        isDuplicateAppError({
+          message: 'Firebase app already exists in this project',
+        })
+      ).toBe(true);
+    });
+
+    test('returns false for other errors', () => {
+      expect(isDuplicateAppError({ code: 'something/else' })).toBe(false);
+      expect(isDuplicateAppError(null)).toBe(false);
     });
   });
 });
