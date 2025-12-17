@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 
-import { createWriteFormattedHtml } from '../../../../src/core/scripts/generate/writeFormattedHtml.js';
+import { createWriteFormattedHtml } from '../../../../src/core/build/buildCore.js';
 
 describe('createWriteFormattedHtml', () => {
   const baseDependencies = () => {

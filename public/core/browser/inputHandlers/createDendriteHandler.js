@@ -323,8 +323,7 @@ function cleanContainer(dom, container) {
  */
 function createBuildForm(fields) {
   return function buildForm(dom, { container, textInput, data, disposers }) {
-    const dendriteFormClassName =
-      browserCore.DENDRITE_FORM_SELECTOR.slice(1);
+    const dendriteFormClassName = browserCore.DENDRITE_FORM_SELECTOR.slice(1);
     const form = dom.createElement('div');
     dom.setClassName(form, dendriteFormClassName);
     const nextSibling = dom.getNextSibling(textInput);
