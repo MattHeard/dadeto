@@ -9,7 +9,7 @@ import { ensureFunction } from './browser-core.js';
  * @typedef {object} AdminTokenActionContext
  * @property {string} token Token retrieved from the Google auth instance.
  * @property {() => Promise<object>} getAdminEndpoints Lazily resolves admin endpoints.
- * @property {import('./core.js').FetchFn} fetchFn Fetch implementation to use for network calls.
+ * @property {import('./admin-core.js').FetchFn} fetchFn Fetch implementation to use for network calls.
  * @property {(text: string) => void} showMessage Displays validation feedback to the user.
  */
 
@@ -23,7 +23,7 @@ import { ensureFunction } from './browser-core.js';
  * @typedef {object} AdminTokenActionOptions
  * @property {GoogleAuthLike} googleAuth Google auth helper that yields the current ID token.
  * @property {() => Promise<object>} getAdminEndpointsFn Lazily loads the admin endpoints.
- * @property {import('./core.js').FetchFn} fetchFn Fetch implementation for network requests.
+ * @property {import('./admin-core.js').FetchFn} fetchFn Fetch implementation for network requests.
  * @property {(text: string) => void} showMessage Renders validation feedback in the UI.
  * @property {string} missingTokenMessage Message displayed when the token is unavailable.
  * @property {AdminTokenAction} action Action to invoke once dependencies are validated.
