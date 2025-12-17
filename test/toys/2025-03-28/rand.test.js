@@ -41,4 +41,11 @@ describe('rand', () => {
     expect(rand('test', env)).toBe(2);
     expect(rand('test', env)).toBe(3);
   });
+
+  test('throws when helper is missing', () => {
+    const env = new Map();
+    expect(() => rand('test', env)).toThrow(
+      'getRandomNumber helper is missing'
+    );
+  });
 });

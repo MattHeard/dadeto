@@ -20,4 +20,11 @@ describe('encodeBase64', () => {
     const env = { get };
     expect(encodeBase64('test', env)).toBe('dGVzdA==');
   });
+
+  it('throws when the encoding helper is missing', () => {
+    const env = { get: () => undefined };
+    expect(() => encodeBase64('test', env)).toThrow(
+      'encodeBase64 helper is missing'
+    );
+  });
 });

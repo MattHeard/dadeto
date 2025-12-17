@@ -14,4 +14,9 @@ describe('uuidToy', () => {
     const env = { get };
     expect(uuidToy(undefined, env)).toBe(mockUuid);
   });
+
+  it('throws when the uuid helper is missing', () => {
+    const env = { get: () => undefined };
+    expect(() => uuidToy(undefined, env)).toThrow('getUuid helper is missing');
+  });
 });
