@@ -1,6 +1,8 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 import { isNonNullObject } from '../commonCore.js';
 
+/** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
+
 // DOM selectors shared across the browser helpers.
 export const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 export const KV_CONTAINER_SELECTOR = '.kv-container';
@@ -399,7 +401,7 @@ export const dendriteStoryHandler = createDendriteHandler(getDendriteFields());
 
 /**
  * Retrieve the stored value for an element, falling back to the element's value property.
- * @param {HTMLElement} element - Input element to look up.
+ * @param {ElementWithValue | null | undefined} element - Input element to look up.
  * @returns {string} The stored value or element.value when absent.
  */
 export function getInputValue(element) {
