@@ -6,7 +6,7 @@ import { tryOr } from '../../common.js';
 /**
  * Determine if the provided value is an array of stories.
  * @param {*} value - Potential stories array.
- * @returns {boolean} True when value is an array.
+ * @returns {value is object[]} True when value is an array.
  */
 function isStoryArray(value) {
   return Array.isArray(value);
@@ -15,10 +15,11 @@ function isStoryArray(value) {
 /**
  * Safely retrieve nested DEND2 stories.
  * @param {*} data - Application state data.
- * @returns {*[]} Possibly undefined stories array.
+ * @returns {object[] | undefined} Possibly undefined stories array.
  */
 function extractDend2Stories(data) {
-  return tryOr(() => data.temporary.DEND2.stories);
+  const candidate = tryOr(() => data.temporary.DEND2.stories);
+  return /** @type {object[] | undefined} */ (candidate);
 }
 
 /**
@@ -36,12 +37,12 @@ function getStories(data) {
 
 /**
  * Collect story titles from a DEND2 stories list.
- * @param {object[]} stories - List of DEND2 stories.
+ * @param {{ title?: string }[]} stories - List of DEND2 stories.
  * @returns {string[]} Array of story titles.
  */
 function collectTitles(stories) {
   return stories
-    .map(story => story?.title)
+    .map(story => story.title)
     .filter(title => typeof title === 'string');
 }
 
@@ -66,6 +67,9 @@ export function getDend2Titles(input, env) {
  */
 function gatherTitles(env) {
   const getData = env.get('getData');
+  if (typeof getData !== 'function') {
+    return [];
+  }
   const stories = getStories(getData());
   return collectTitles(stories);
 }

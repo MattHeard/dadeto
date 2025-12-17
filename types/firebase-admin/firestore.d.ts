@@ -8,6 +8,7 @@ declare module 'firebase-admin/firestore' {
     path: string;
     collection(collectionPath: string): CollectionReference;
     get(): Promise<DocumentSnapshot<T>>;
+    update(data: DocumentData): Promise<void>;
   }
 
   export interface CollectionReference<T = DocumentData> extends Query<T> {
@@ -27,6 +28,15 @@ declare module 'firebase-admin/firestore' {
     id: string;
     exists: boolean;
     data(): T | undefined;
+    get(fieldPath: string): unknown;
+  }
+
+  export interface AggregateQuerySnapshot {
+    data(): { count: number };
+  }
+
+  export interface AggregateQuery<T = DocumentData> {
+    get(): Promise<AggregateQuerySnapshot>;
   }
 
   export interface Query<T = DocumentData> {
@@ -34,6 +44,7 @@ declare module 'firebase-admin/firestore' {
     orderBy(fieldPath: string, directionStr?: 'asc' | 'desc'): Query<T>;
     limit(count: number): Query<T>;
     get(): Promise<QuerySnapshot<T>>;
+    count(): AggregateQuery<T>;
   }
 
   export interface WriteBatch {

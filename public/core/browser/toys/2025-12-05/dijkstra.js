@@ -174,7 +174,12 @@ function enqueueNeighbors({
       })
     )
     .filter(Boolean)
-    .forEach(entry => enqueueIfImproved(entry, queue, distances));
+    .forEach(entry => {
+      const neighborEntry = /** @type {{ id: string; distance: number }} */ (
+        entry
+      );
+      enqueueIfImproved(neighborEntry, queue, distances);
+    });
 }
 
 /**
@@ -242,7 +247,11 @@ function hasShorterPath(distances, neighbor, candidateDistance) {
  */
 function dequeue(queue) {
   queue.sort((first, second) => first.distance - second.distance);
-  return queue.shift();
+  const next = queue.shift();
+  if (!next) {
+    throw new Error('Queue unexpectedly empty');
+  }
+  return next;
 }
 
 /**
@@ -262,12 +271,18 @@ function enqueue(queue, entry) {
  * @returns {string[]} Unique node identifiers.
  */
 function buildNodeList(ratings, moderatorId, adminId) {
-  const nodes = [];
+  /** @type {Record<string, boolean>} */
+  const uniqueNodes = {};
   if (isPlainObject(ratings)) {
-    nodes.push(...Object.keys(ratings));
+    const normalizedRatings =
+      /** @type {Record<string, Record<string, boolean>>} */ (ratings);
+    Object.keys(normalizedRatings).forEach(node => {
+      uniqueNodes[node] = true;
+    });
   }
-  nodes.push(moderatorId, adminId);
-  return Array.from(new Set(nodes));
+  uniqueNodes[moderatorId] = true;
+  uniqueNodes[adminId] = true;
+  return Object.keys(uniqueNodes);
 }
 
 /**

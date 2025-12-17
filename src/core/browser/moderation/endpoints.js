@@ -46,8 +46,8 @@ export function mapConfigToModerationEndpoints(config = {}, defaults) {
  *     assignModerationJobUrl: string,
  *     submitModerationRatingUrl: string,
  *   },
- *   logger: { error: (message: string, error?: unknown) => void },
- * }} [options] - Optional defaults and required logger for error reporting.
+ *   logger?: { error: (message: string, error?: unknown) => void },
+ * }} [options] - Optional defaults and logger for error reporting.
  * @returns {Promise<{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,
@@ -59,11 +59,8 @@ export function createModerationEndpointsPromise(
   options = {}
 ) {
   const defaults = resolveModerationDefaults(options);
-  return loadModerationEndpointsSafely(
-    loadStaticConfigFn,
-    defaults,
-    options.logger
-  );
+  const logger = resolveModerationLogger(options.logger);
+  return loadModerationEndpointsSafely(loadStaticConfigFn, defaults, logger);
 }
 
 /**
@@ -83,6 +80,23 @@ export function createModerationEndpointsPromise(
  */
 function resolveModerationDefaults(options) {
   return options.defaults ?? DEFAULT_MODERATION_ENDPOINTS;
+}
+
+/**
+ * Normalize the resolver that reports endpoint failures.
+ * @param {{ error: (message: string, error?: unknown) => void } | undefined} logger Logger provided via options.
+ * @returns {{ error: (message: string, error?: unknown) => void }} Logger used for reporting.
+ */
+function resolveModerationLogger(logger) {
+  if (logger) {
+    return logger;
+  }
+
+  return {
+    error(message, error) {
+      console.error(message, error);
+    },
+  };
 }
 
 /**
@@ -142,7 +156,7 @@ async function loadModerationEndpointsUnsafe(loadStaticConfigFn, defaults) {
 
 /**
  * Handle failures when loading moderation endpoints.
- * @param {{ error?: (message: string, error?: unknown) => void } | undefined} logger - Logger used to report the error.
+ * @param {{ error: (message: string, error?: unknown) => void }} logger - Logger used to report the error.
  * @param {{
  *   getModerationVariantUrl: string,
  *   assignModerationJobUrl: string,
@@ -181,7 +195,13 @@ export function createGetModerationEndpoints(createEndpointsPromiseFn) {
     throw new TypeError('createEndpointsPromiseFn must be a function');
   }
 
-  let endpointsPromise;
+  /**
+   * @type {Promise<{
+   *   getModerationVariantUrl: string,
+   *   assignModerationJobUrl: string,
+   *   submitModerationRatingUrl: string,
+    }> | null} */
+  let endpointsPromise = null;
 
   return function getModerationEndpoints() {
     if (!endpointsPromise) {

@@ -4,7 +4,7 @@
  * @returns {boolean|undefined} The coerced boolean or undefined.
  */
 function tryBooleanCoercion(input) {
-  if (isType(input, 'boolean')) {
+  if (typeof input === 'boolean') {
     return input;
   }
   return normalizeBooleanString(input);
@@ -30,12 +30,13 @@ export function coerceToBoolean(input) {
 /**
  * Normalize a string that may represent a boolean.
  * @param {unknown} input - Value to normalize.
- * @returns {string|undefined} Lowercased string or undefined if not a string.
+ * @returns {boolean|undefined} Lowercased string or undefined if not a string.
  */
 function normalizeBooleanString(input) {
-  if (!isType(input, 'string')) {
+  if (typeof input !== 'string') {
     return undefined;
   }
+
   return parseBooleanString(input.toLowerCase());
 }
 
@@ -46,14 +47,4 @@ function normalizeBooleanString(input) {
  */
 function parseBooleanString(str) {
   return { true: true, false: false }[str];
-}
-
-/**
- * Determine whether a value matches the provided primitive type name.
- * @param {unknown} value Value to inspect.
- * @param {string} type Expected `typeof` result.
- * @returns {boolean} True when `typeof value` matches `type`.
- */
-function isType(value, type) {
-  return typeof value === type;
 }

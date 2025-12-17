@@ -16,11 +16,20 @@ declare module '@google-cloud/firestore' {
     empty: boolean;
   }
 
+  export interface AggregateQuerySnapshot {
+    data(): { count: number };
+  }
+
+  export interface AggregateQuery<T = DocumentData> {
+    get(): Promise<AggregateQuerySnapshot>;
+  }
+
   export interface Query<T = DocumentData> {
     where(fieldPath: string, opStr: string, value: unknown): Query<T>;
     orderBy?(fieldPath: string, directionStr?: 'asc' | 'desc'): Query<T>;
     limit(count: number): Query<T>;
     get(): Promise<QuerySnapshot<T>>;
+    count(): AggregateQuery<T>;
   }
 
   export interface DocumentReference<T = DocumentData> {

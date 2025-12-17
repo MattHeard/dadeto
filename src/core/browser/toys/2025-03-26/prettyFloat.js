@@ -128,7 +128,9 @@ function isNegativeZero(n) {
  * @returns {string|null} Result string or null.
  */
 function isPositiveZeroResult(num) {
-  return when(isPositiveZero(num), () => '0 (0 × 2^0)');
+  return /** @type {string | null} */ (
+    when(isPositiveZero(num), () => '0 (0 × 2^0)')
+  );
 }
 
 /**
@@ -137,7 +139,9 @@ function isPositiveZeroResult(num) {
  * @returns {string|null} Result string or null.
  */
 function isNegativeZeroResult(num) {
-  return when(isNegativeZero(num), () => '0 (-0 × 2^0)');
+  return /** @type {string | null} */ (
+    when(isNegativeZero(num), () => '0 (-0 × 2^0)')
+  );
 }
 
 /**
@@ -146,10 +150,12 @@ function isNegativeZeroResult(num) {
  * @returns {string|null} Result string or null.
  */
 function isZeroVariant(num) {
-  return when(
-    isPositiveZero(num),
-    () => isPositiveZeroResult(num),
-    () => isNegativeZeroResult(num)
+  return /** @type {string | null} */ (
+    when(
+      isPositiveZero(num),
+      () => isPositiveZeroResult(num),
+      () => isNegativeZeroResult(num)
+    )
   );
 }
 

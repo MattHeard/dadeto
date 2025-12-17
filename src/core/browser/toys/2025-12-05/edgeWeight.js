@@ -1,5 +1,4 @@
 import { isValidString } from '../../../commonCore.js';
-import { buildWhen } from '../../common.js';
 import { isPlainObject } from '../browserToysCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
@@ -50,10 +49,14 @@ function extractRatingsPair({ moderatorA, moderatorB, ratings }) {
 function buildRatingsPair(ratings, moderatorA, moderatorB) {
   const firstRatings = getModeratorRatings(ratings, moderatorA);
   const secondRatings = getModeratorRatings(ratings, moderatorB);
-  return buildWhen(areRatingRecordsValid(firstRatings, secondRatings), () => ({
+  if (!firstRatings || !secondRatings) {
+    return null;
+  }
+
+  return {
     firstRatings,
     secondRatings,
-  }));
+  };
 }
 
 /**
@@ -76,7 +79,10 @@ function getModeratorRatings(ratings, moderatorId) {
  * @returns {boolean} True when the entry exists.
  */
 function hasModeratorEntry(ratings, moderatorId) {
-  return Boolean(ratings) && Object.hasOwn(ratings, moderatorId);
+  return (
+    Boolean(ratings) &&
+    Object.prototype.hasOwnProperty.call(ratings, moderatorId)
+  );
 }
 
 /**
@@ -116,15 +122,6 @@ function areModeratorIdsValid(moderatorA, moderatorB) {
 }
 
 /**
- * Check whether rating entries are usable objects.
- * @param {...unknown} records - Candidate rating records.
- * @returns {boolean} True when all records are plain objects.
- */
-function areRatingRecordsValid(...records) {
-  return records.every(record => isPlainObject(record));
-}
-
-/**
  * Check whether a value is a plain object.
  * @param {unknown} value - Value to test.
  * @returns {boolean} True when the value is a non-array object.
@@ -140,7 +137,7 @@ function getOverlap(firstRatings, secondRatings, ignoredPageId) {
   return Object.keys(firstRatings).filter(
     pageId =>
       !shouldIgnorePage(pageId, ignoredPageId) &&
-      Object.hasOwn(secondRatings, pageId)
+      Object.prototype.hasOwnProperty.call(secondRatings, pageId)
   );
 }
 

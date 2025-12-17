@@ -61,7 +61,7 @@ function createStaticConfigError(response) {
  * @returns {StaticConfigResponse['status'] | 'unknown'} Status code or `'unknown'` when unavailable.
  */
 function resolveStaticConfigStatus(response) {
-  if (!isStatusDefined(response)) {
+  if (!response || response.status === undefined) {
     return 'unknown';
   }
 
@@ -69,20 +69,12 @@ function resolveStaticConfigStatus(response) {
 }
 
 /**
- * Determine whether a response exposes a defined status.
- * @param {StaticConfigResponse | null | undefined} response Response that may declare a status.
- * @returns {boolean} True when a defined status is available.
- */
-function isStatusDefined(response) {
-  return Boolean(response && response.status !== undefined);
-}
-
-/**
  * Create a memoized static config loader using injected dependencies.
  * @param {LoadStaticConfigDependencies} [options] - Dependency bundle for the loader.
  * @returns {() => Promise<Record<string, unknown>>} Static config loader.
  */
-export function createLoadStaticConfig({ fetchFn, warn } = {}) {
+export function createLoadStaticConfig(options) {
+  const { fetchFn, warn } = options ?? {};
   ensureFetchFunction(fetchFn);
   const logWarn = resolveLogWarn(warn);
   return createStaticConfigLoader(fetchFn, logWarn);
@@ -90,8 +82,8 @@ export function createLoadStaticConfig({ fetchFn, warn } = {}) {
 
 /**
  * Validate that the injected fetch helper is callable.
- * @param {(input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} fetchFn - Fetch-like function.
- * @returns {void}
+ * @param {unknown} fetchFn - Candidate fetch helper.
+ * @returns {asserts fetchFn is (input: string, init?: Record<string, unknown>) => Promise<StaticConfigResponse>} Guarantees the helper is callable.
  */
 function ensureFetchFunction(fetchFn) {
   if (typeof fetchFn !== 'function') {
@@ -101,12 +93,23 @@ function ensureFetchFunction(fetchFn) {
 
 /**
  * Ensure a warning logger is available, defaulting to no-op.
- * @param {(message: string, error?: unknown) => void | undefined} warn - Optional logger dependency.
+ * @param {((message: string, error?: unknown) => void) | undefined} warn - Optional logger dependency.
  * @returns {(message: string, error?: unknown) => void} Logger invoked when static config loading fails.
  */
 function resolveLogWarn(warn) {
-  const fallbackLogger = () => () => {};
-  return functionOrFallback(warn, fallbackLogger);
+  const fallbackLogger =
+    () =>
+    /**
+     * @param {string} message
+     * @param {unknown} [error]
+     */
+    (message, error) => {
+      void message;
+      void error;
+    };
+  return /** @type {(message: string, error?: unknown) => void} */ (
+    functionOrFallback(warn, fallbackLogger)
+  );
 }
 
 /**
@@ -116,7 +119,8 @@ function resolveLogWarn(warn) {
  * @returns {() => Promise<Record<string, unknown>>} Loader that returns the cached payload.
  */
 function createStaticConfigLoader(fetchFn, logWarn) {
-  let configPromise;
+  /** @type {Promise<Record<string, unknown>> | null} */
+  let configPromise = null;
 
   /**
    * Log failures and fall back to an empty payload.

@@ -200,7 +200,7 @@ async function processVariantUpdate(variantSnap, variantRef, isApproved) {
     return;
   }
 
-  const variantData = variantSnap.data();
+  const variantData = variantSnap.data() ?? {};
   const newRating = getNewRating(isApproved);
   const newStats = calculateNewStats(variantData, newRating);
 
@@ -210,7 +210,7 @@ async function processVariantUpdate(variantSnap, variantRef, isApproved) {
 /**
  * Validate approval status.
  * @param {unknown} isApproved Approval status.
- * @returns {boolean} True if valid.
+ * @returns {isApproved is boolean} True if valid.
  */
 function validateApproval(isApproved) {
   return isValidApproval(isApproved);
@@ -232,20 +232,6 @@ function resolveVariantRef(db, variantId) {
 }
 
 /**
- * Validate inputs and resolve reference.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore.
- * @param {string} variantId Variant ID.
- * @param {unknown} isApproved Approval status.
- * @returns {import('firebase-admin/firestore').DocumentReference | null} Reference or null.
- */
-function validateAndResolve(db, variantId, isApproved) {
-  if (!validateApproval(isApproved)) {
-    return null;
-  }
-  return resolveVariantRef(db, variantId);
-}
-
-/**
  * Build the handler that updates variant visibility.
  * @param {{ db: import('firebase-admin/firestore').Firestore }} options Collaborators required by the handler.
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Firestore trigger handler.
@@ -254,10 +240,19 @@ export function createUpdateVariantVisibilityHandler({ db }) {
   assertDb(db);
 
   return async function handleUpdateVariantVisibility(snapshot) {
-    const data = snapshot.data();
+    const data = /** @type {{ variantId?: string; isApproved?: unknown }} */ (
+      snapshot.data() ?? {}
+    );
     const { variantId, isApproved } = data;
 
-    const variantRef = validateAndResolve(db, variantId, isApproved);
+    if (typeof variantId !== 'string') {
+      return null;
+    }
+    if (!validateApproval(isApproved)) {
+      return null;
+    }
+
+    const variantRef = resolveVariantRef(db, variantId);
     if (!variantRef) {
       return null;
     }

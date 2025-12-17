@@ -34,7 +34,7 @@ export function textAppendList(input, env) {
  * @returns {string} Normalized string value.
  */
 function normalizeInput(value) {
-  return stringOrFallback(value, normalizeNonStringValue);
+  return stringOrFallback(value, normalizeNonStringValue) ?? '';
 }
 
 /**
@@ -53,7 +53,7 @@ function getStorageFunction(env) {
 /**
  * Check whether the provided environment exposes the expected storage getter.
  * @param {{ get?: (key: string) => unknown } | null | undefined} env - Dependency bag with storage accessors.
- * @returns {boolean} True when the storage helper is available.
+ * @returns {env is { get: (key: string) => unknown }} True when the storage helper is available.
  */
 function isStorageEnvironment(env) {
   return Boolean(env && typeof env.get === 'function');
@@ -67,7 +67,7 @@ function isStorageEnvironment(env) {
 function resolveStorageFn(env) {
   const storageFn = env.get('setLocalPermanentData');
   if (typeof storageFn === 'function') {
-    return storageFn;
+    return /** @type {(args: object) => unknown} */ (storageFn);
   }
 
   return null;
@@ -92,7 +92,8 @@ function readExistingList(storageFn) {
  * @returns {string} Stored list contents or an empty string.
  */
 function getStoredListValue(storageFn) {
-  const existingData = storageFn({});
+  const existingData =
+    /** @type {Record<string, unknown> | null | undefined} */ (storageFn({}));
   return ensureString(existingData?.[TOY_KEY]);
 }
 

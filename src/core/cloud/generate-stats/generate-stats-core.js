@@ -12,6 +12,10 @@ export { isDuplicateAppError };
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 
+/** @typedef {Record<string, string | undefined>} EnvironmentMap */
+/** @typedef {{ randomUUID: () => string }} StatsCryptoModule */
+/** @typedef {{ error: (message: string, ...args: any[]) => void }} StatsLogger */
+
 const STATS_PAGE_HEAD = `<!doctype html>
 <html lang="en">
   <head>
@@ -86,18 +90,16 @@ const D3_SANKEY_SCRIPT = `    <script src="https://cdn.jsdelivr.net/npm/d3-sanke
 
 const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="/statsGoogleAuthModule.js"></script>`;
 
-const TOP_STORIES_INVOCATION_SCRIPT = dataStr => `    <script type="module">
-      import { renderTopStories } from '/statsTopStories.js';
-      renderTopStories(${dataStr});
-    </script>`;
-
 /**
  * Emit the script that renders the top stories list.
  * @param {string} dataStr Serialized top stories payload.
  * @returns {string} Script tag that bootstraps the top stories renderer.
  */
 function buildTopStoriesScript(dataStr) {
-  return TOP_STORIES_INVOCATION_SCRIPT(dataStr);
+  return `    <script type="module">
+      import { renderTopStories } from '/statsTopStories.js';
+      renderTopStories(${dataStr});
+    </script>`;
 }
 
 const MENU_SCRIPT = `    <script type="module" src="/statsMenu.js"></script>
@@ -160,8 +162,6 @@ function handleInitializeError(error) {
   }
 }
 
-/** @typedef {import('node:process').ProcessEnv} ProcessEnv */
-
 /**
  * Determine whether a value is a non-empty string.
  * @param {unknown} value Candidate value.
@@ -173,8 +173,8 @@ function isNonEmptyString(value) {
 
 /**
  * Ensure the environment object is usable for lookups.
- * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
- * @returns {ProcessEnv | Record<string, string | undefined> | null} Normalized env map.
+ * @param {EnvironmentMap | Record<string, string | undefined>} [env] - Environment variables object.
+ * @returns {EnvironmentMap | Record<string, string | undefined> | null} Normalized env map.
  */
 function resolveEnv(env) {
   if (!isEnvLike(env)) {
@@ -199,7 +199,7 @@ function isEnvLike(env) {
 
 /**
  * Derive the Google Cloud project identifier from environment variables.
- * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @param {EnvironmentMap | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string | undefined} Project identifier if present.
  */
 export function getProjectFromEnv(env) {
@@ -208,7 +208,7 @@ export function getProjectFromEnv(env) {
 
 /**
  * Extract the project identifier from resolved environment variables.
- * @param {ProcessEnv | Record<string, string | undefined> | null} resolved Sanitized environment map.
+ * @param {EnvironmentMap | Record<string, string | undefined> | null} resolved Sanitized environment map.
  * @returns {string | undefined} Resolved project identifier if available.
  */
 function resolveProjectId(resolved) {
@@ -221,7 +221,7 @@ function resolveProjectId(resolved) {
 
 /**
  * Extract the project identifier from a resolved environment map.
- * @param {ProcessEnv | Record<string, string | undefined>} resolved Normalized environment variables.
+ * @param {EnvironmentMap | Record<string, string | undefined>} resolved Normalized environment variables.
  * @returns {string | undefined} Project identifier when available.
  */
 function extractProjectIdFromResolved(resolved) {
@@ -230,7 +230,7 @@ function extractProjectIdFromResolved(resolved) {
 
 /**
  * Resolve the URL map identifier used for CDN invalidations.
- * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @param {EnvironmentMap | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} URL map identifier.
  */
 export function getUrlMapFromEnv(env) {
@@ -240,7 +240,7 @@ export function getUrlMapFromEnv(env) {
 
 /**
  * Derive the URL map identifier from the resolved environment data.
- * @param {ProcessEnv | Record<string, string | undefined> | null} resolved Normalized environment map.
+ * @param {EnvironmentMap | Record<string, string | undefined> | null} resolved Normalized environment map.
  * @returns {string} Resolved URL map identifier.
  */
 function selectUrlMap(resolved) {
@@ -253,7 +253,7 @@ function selectUrlMap(resolved) {
 
 /**
  * Extract the URL map identifier from a resolved environment map.
- * @param {ProcessEnv | Record<string, string | undefined>} resolved Normalized env.
+ * @param {EnvironmentMap | Record<string, string | undefined>} resolved Normalized env.
  * @returns {string} URL map identifier.
  */
 function extractUrlMapFromResolved(resolved) {
@@ -267,7 +267,7 @@ function extractUrlMapFromResolved(resolved) {
 
 /**
  * Resolve the CDN host used for cache invalidations from environment variables.
- * @param {ProcessEnv | Record<string, string | undefined>} [env] - Environment variables object.
+ * @param {EnvironmentMap | Record<string, string | undefined>} [env] - Environment variables object.
  * @returns {string} CDN host name.
  */
 export function getCdnHostFromEnv(env) {
@@ -295,9 +295,10 @@ function selectCdnHost(candidate) {
  *   auth: import('firebase-admin/auth').Auth,
  *   storage: import('@google-cloud/storage').Storage,
  *   fetchFn: typeof fetch,
- *   env?: ProcessEnv | Record<string, string | undefined>,
+ *   env?: EnvironmentMap | Record<string, string | undefined>,
  *   urlMap?: string,
- *   cryptoModule: { randomUUID: () => string },
+ *   cryptoModule: StatsCryptoModule,
+ *   console?: StatsLogger,
  * }} deps Dependencies required by the workflow.
  * @returns {{
  *   getStoryCount: (dbRef?: import('firebase-admin/firestore').Firestore) => Promise<number>,
@@ -350,6 +351,10 @@ export function createGenerateStatsCore({
    * @returns {Promise<number>} Story count.
    */
   async function getStoryCount(dbRef) {
+    /**
+     * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
+     * @returns {import('firebase-admin/firestore').CollectionReference} Stories collection reference.
+     */
     const buildStoriesQuery = reference => reference.collection('stories');
 
     if (arguments.length > 0) {
@@ -365,6 +370,10 @@ export function createGenerateStatsCore({
    * @returns {Promise<number>} Page count.
    */
   async function getPageCount(dbRef) {
+    /**
+     * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
+     * @returns {import('firebase-admin/firestore').Query} Pages collection group query.
+     */
     const buildPagesQuery = reference => reference.collectionGroup('pages');
 
     if (arguments.length > 0) {
@@ -471,7 +480,7 @@ export function createGenerateStatsCore({
 
   /**
    * Normalize the title stored on a story document.
-   * @param {{ title?: unknown }} data Document data read from Firestore.
+   * @param {import('firebase-admin/firestore').DocumentData | undefined} data Document data read from Firestore.
    * @param {string} fallback Identifier used when the title is missing.
    * @returns {string} Story title.
    */
@@ -502,8 +511,10 @@ export function createGenerateStatsCore({
       headers: { 'Metadata-Flavor': 'Google' },
     });
     validateMetadataResponse(response);
-    const { access_token: accessToken } = await response.json();
-    return accessToken;
+    const metadata = /** @type {{ access_token: string }} */ (
+      await response.json()
+    );
+    return metadata.access_token;
   }
 
   /**
@@ -525,7 +536,7 @@ export function createGenerateStatsCore({
   /**
    * Invalidate CDN paths via the Compute Engine API.
    * @param {string[]} paths - CDN paths to invalidate.
-   * @param {{ error?: (message: string, ...args: any[]) => void }} [logger] Logger used to surface invalidation errors.
+   * @param {StatsLogger} [logger] Logger used to surface invalidation errors.
    * @returns {Promise<void>} Resolves when invalidation requests finish.
    */
   async function invalidatePaths(paths, logger = console) {
@@ -554,7 +565,8 @@ export function createGenerateStatsCore({
     const html = buildHtml(storyCount, pageCount, unmoderatedCount, topStories);
     const bucketRef = getStatsBucketRef(storage);
     await uploadStatsHtml(bucketRef, html);
-    return invalidatePaths(['/stats.html'], console);
+    await invalidatePaths(['/stats.html'], console);
+    return null;
   }
 
   /**
@@ -592,7 +604,15 @@ export function createGenerateStatsCore({
     ]);
   }
 
+  /**
+   * @param {string} token OAuth token.
+   * @returns {Promise<unknown>} Verification result.
+   */
   const verifyToken = token => auth.verifyIdToken(token);
+  /**
+   * @param {{ uid?: string | undefined }} decoded Auth payload.
+   * @returns {boolean} True when the decoded payload belongs to the admin.
+   */
   const isAdminUid = decoded => decoded.uid === ADMIN_UID;
   /**
    * Send a 401 response when authentication fails.
@@ -695,7 +715,7 @@ function normalizeEnvObject(env) {
  * Resolve the URL map identifier.
  * @param {string | undefined} urlMap Url map override.
  * @param {Record<string, string | undefined>} envRef Normalized environment.
- * @returns {string | undefined} Url map.
+ * @returns {string} Url map.
  */
 function resolveUrlMap(urlMap, envRef) {
   return urlMap ?? getUrlMapFromEnv(envRef);
@@ -704,7 +724,7 @@ function resolveUrlMap(urlMap, envRef) {
 /**
  * Resolve CDN host.
  * @param {Record<string, string | undefined>} envRef Env ref.
- * @returns {string | undefined} CDN host.
+ * @returns {string} CDN host.
  */
 function resolveCdnHost(envRef) {
   return getCdnHostFromEnv(envRef);
@@ -713,11 +733,11 @@ function resolveCdnHost(envRef) {
 /**
  * Resolve the fetch implementation required for HTTP requests.
  * @param {unknown} fetchFn Optional fetch override.
- * @returns {Function} Fetch implementation.
+ * @returns {typeof fetch} Fetch implementation.
  */
 function resolveFetchImpl(fetchFn) {
   if (typeof fetchFn === 'function') {
-    return fetchFn;
+    return /** @type {typeof fetch} */ (fetchFn);
   }
 
   return resolveGlobalFetch();
@@ -739,16 +759,16 @@ function resolveGlobalFetch() {
  * Invalidate a single CDN path.
  * @param {object} deps Deps.
  * @param {string} deps.path Path.
- * @param {Function} deps.fetchImpl Fetch.
+ * @param {typeof fetch} deps.fetchImpl Fetch.
  * @param {string} deps.project Project.
  * @param {string} deps.resolvedUrlMap Url map.
  * @param {string} deps.resolvedCdnHost Host.
- * @param {Function} deps.randomUUID UUID.
- * @param {{ error?: (message: string, ...args: any[]) => void }} deps.logger Logger.
+ * @param {() => string} deps.randomUUID UUID.
+ * @param {StatsLogger} deps.logger Logger.
  * @param {string} deps.token Token.
  * @returns {Promise<void>} Promise.
  */
-async function invalidateSinglePath({ path, logger, ...sendDeps }) {
+async function invalidateSinglePath({ path, logger = console, ...sendDeps }) {
   try {
     const res = await sendInvalidateRequest(sendDeps, path);
     handleInvalidateResponse(res, path, logger);
@@ -760,14 +780,14 @@ async function invalidateSinglePath({ path, logger, ...sendDeps }) {
 /**
  * Send invalidate request.
  * @param {object} deps Deps.
- * @param {Function} deps.fetchImpl HTTP client.
+ * @param {typeof fetch} deps.fetchImpl HTTP client.
  * @param {string} deps.project Google Cloud project name.
  * @param {string} deps.resolvedUrlMap CDN URL map.
  * @param {string} deps.resolvedCdnHost CDN host header.
  * @param {() => string} deps.randomUUID Request ID generator.
  * @param {string} deps.token Metadata access token.
  * @param {string} path CDN path to invalidate.
- * @returns {Promise<unknown>} Response.
+ * @returns {Promise<Response>} Response.
  */
 function sendInvalidateRequest(
   { fetchImpl, project, resolvedUrlMap, resolvedCdnHost, randomUUID, token },
@@ -794,7 +814,7 @@ function sendInvalidateRequest(
  * Handle invalidate response.
  * @param {{ ok: boolean, status: number }} res Response.
  * @param {string} path Path.
- * @param {{ error?: (message: string, ...args: any[]) => void }} logger Logger.
+ * @param {StatsLogger} logger Logger.
  * @returns {void}
  */
 function handleInvalidateResponse(res, path, logger) {
@@ -813,7 +833,7 @@ function handleInvalidateResponse(res, path, logger) {
  */
 /**
  * Emit a log message when an invalidation fails.
- * @param {{ error?: (message: string, ...args: any[]) => void }} logger Logger used to surface problems.
+ * @param {StatsLogger} logger Logger used to surface problems.
  * @param {string} path CDN path that triggered the failure.
  * @param {number} status HTTP status code returned by the failed invalidation.
  */
@@ -823,7 +843,7 @@ function logInvalidateFailure(logger, path, status) {
 
 /**
  * Log invalidate error.
- * @param {{ error: (message: string, ...args: any[]) => void }} logger Logger.
+ * @param {StatsLogger} logger Logger.
  * @param {string} path Path.
  * @param {unknown} err Error.
  * @returns {void}
@@ -893,7 +913,7 @@ async function ensureAuthorizedRequest(req, res, verifyAdmin) {
  * @returns {boolean} True if cron.
  */
 function isCronRequest(req) {
-  return req.get('X-Appengine-Cron') === 'true';
+  return req.get?.('X-Appengine-Cron') === 'true';
 }
 
 /**

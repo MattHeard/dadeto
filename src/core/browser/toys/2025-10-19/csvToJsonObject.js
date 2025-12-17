@@ -26,7 +26,10 @@ function assertCsv(condition) {
  */
 function zipHeadersWithValues(headers, values) {
   return headers
-    .map((header, index) => [header.trim(), (values[index] ?? '').trim()])
+    .map((header, index) => {
+      const entry = [header.trim(), (values[index] ?? '').trim()];
+      return /** @type {[string, string]} */ (entry);
+    })
     .filter(([header, value]) => header.length > 0 && value.length > 0);
 }
 
@@ -53,10 +56,13 @@ function buildObjectFromCsv(input) {
   assertCsv(Boolean(dataLine));
   assertCsv(!rest.some(line => line.trim().length > 0));
 
-  const headers = parseCsvLine(headerLine);
-  const values = parseCsvLine(dataLine.trimEnd());
-  assertCsv(Array.isArray(headers));
-  assertCsv(Array.isArray(values));
+  const headersCandidate = parseCsvLine(headerLine);
+  const valuesCandidate = parseCsvLine(dataLine.trimEnd());
+  assertCsv(Array.isArray(headersCandidate));
+  assertCsv(Array.isArray(valuesCandidate));
+
+  const headers = /** @type {string[]} */ (headersCandidate);
+  const values = /** @type {string[]} */ (valuesCandidate);
 
   const entries = zipHeadersWithValues(headers, values);
 
