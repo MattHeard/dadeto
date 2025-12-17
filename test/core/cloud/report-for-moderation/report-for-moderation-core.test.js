@@ -190,6 +190,27 @@ describe('createHandleReportForModeration', () => {
     expect(res.sendStatus).not.toHaveBeenCalled();
   });
 
+  it('routes POST string responses through send', async () => {
+    const handler = jest.fn().mockResolvedValue({
+      status: 200,
+      body: 'OK',
+    });
+    const respond = createHandleReportForModeration(handler);
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+      sendStatus: jest.fn(),
+    };
+
+    await respond({ method: 'POST' }, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith('OK');
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.sendStatus).not.toHaveBeenCalled();
+  });
+
   it('forwards empty responses via sendStatus', async () => {
     const handler = jest.fn().mockResolvedValue({ status: 204 });
     const respond = createHandleReportForModeration(handler);
