@@ -7,8 +7,9 @@ import { MISSING_AUTHORIZATION_RESPONSE } from '../../../src/core/cloud/cloud-co
 import { METHOD_NOT_ALLOWED_RESPONSE } from '../../../src/core/cloud/http-method-guard.js';
 
 /**
- *
- * @param overrides
+ * Build a default request shaped like the HTTP handler input.
+ * @param {object} [overrides] Properties to override on the default request.
+ * @returns {object} Express-style request stub for the responder.
  */
 function createRequest(overrides = {}) {
   return {
@@ -20,8 +21,9 @@ function createRequest(overrides = {}) {
 }
 
 /**
- *
- * @param overrides
+ * Assemble the dependencies required by the responder for happy-path scenarios.
+ * @param {object} [overrides] Values that override the default dependency mocks.
+ * @returns {{ dependencies: object, clearAssignment: jest.Mock }} Mocks wired into the responder.
  */
 function buildDependencies(overrides = {}) {
   const clearAssignment = jest.fn();

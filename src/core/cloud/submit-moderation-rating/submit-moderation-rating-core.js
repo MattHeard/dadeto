@@ -90,11 +90,10 @@ function tryAuthorizationHeaders(getter) {
     return null;
   }
 
-  const uppercase = getHeaderFromGetter(getter, 'Authorization');
-  if (uppercase) {
-    return uppercase;
-  }
-  return getHeaderFromGetter(getter, 'authorization');
+  return resolveFirstNonNullValue(
+    () => getHeaderFromGetter(getter, 'Authorization'),
+    () => getHeaderFromGetter(getter, 'authorization')
+  );
 }
 
 /**
