@@ -2,7 +2,6 @@ import { assertFunction } from '../common-core.js';
 import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
-  whenBodyPresent,
 } from './cloud-core.js';
 import { validatePostMethod } from '../http-method-guard.js';
 
@@ -11,13 +10,6 @@ import { validatePostMethod } from '../http-method-guard.js';
  * @param {{ variant?: unknown } | null | undefined} body Request payload to inspect.
  * @returns {boolean} True when a string variant is present.
  */
-function hasVariantString(body) {
-  return whenBodyPresent(
-    body,
-    candidate => typeof candidate.variant === 'string'
-  );
-}
-
 /**
  * Safely extract the trimmed variant string from a request body.
  * @param {{ variant?: unknown } | null | undefined} body Request payload containing the variant field.
@@ -29,6 +21,15 @@ function resolveVariant(body) {
   }
 
   return body.variant.trim();
+}
+
+/**
+ * Determine whether the provided request payload contains a string variant.
+ * @param {{ variant?: unknown } | null | undefined} body Request payload to inspect.
+ * @returns {body is { variant: string }} True when the payload has a string variant.
+ */
+function hasVariantString(body) {
+  return Boolean(body && typeof body.variant === 'string');
 }
 
 /**

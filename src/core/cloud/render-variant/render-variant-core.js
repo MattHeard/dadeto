@@ -111,10 +111,19 @@ function renderInlineMarkdown(text) {
 }
 
 /**
+ * @typedef {object} VariantOption
+ * @property {number} position - Position index from Firestore.
+ * @property {string} content - Option text rendered as inline Markdown.
+ * @property {Array<{ name: string, weight: number }>} [targetVariants] - Optional variant metadata for navigation.
+ * @property {number} [targetPageNumber] - Page number for the target variant.
+ * @property {string} [targetVariantName] - Variant identifier for the target page.
+ */
+
+/**
  *
  * @param {number} pageNumber - Page number the option belongs to.
  * @param {string} variantName - Variant identifier tied to the option.
- * @param {object} option - Option metadata from Firestore.
+ * @param {VariantOption} option - Option metadata from Firestore.
  * @returns {string} HTML list item for the option.
  */
 function buildOptionItem(pageNumber, variantName, option) {
@@ -144,7 +153,7 @@ function buildBaseAttrs(slug, href) {
  *
  * @param {number} pageNumber - Page number used for slug creation.
  * @param {string} variantName - Variant identifier used for slug creation.
- * @param {object[]} options - List of variant navigation options.
+ * @param {VariantOption[]} options - List of variant navigation options.
  * @returns {string} Joined HTML list of options.
  */
 function buildOptionsHtml(pageNumber, variantName, options) {
@@ -155,7 +164,7 @@ function buildOptionsHtml(pageNumber, variantName, options) {
 
 /**
  * Build the rendered option items for the resolved build data.
- * @param {{ pageNumber: number, variantName: string, options: unknown }} resolvedParams - Normalized parameters.
+ * @param {{ pageNumber: number, variantName: string, options: VariantOption[] }} resolvedParams - Normalized parameters.
  * @returns {string} All option list items.
  */
 function buildOptionsItems(resolvedParams) {
@@ -327,7 +336,7 @@ function buildTitleHeading(resolvedParams) {
 
 /**
  *
- * @param {string} storyTitle - Title shown in the document's `<title>`.
+ * @param {string | undefined} storyTitle - Title shown in the document's `<title>`.
  * @returns {string} Title displayed in the document head.
  */
 function buildHeadTitle(storyTitle) {
@@ -339,8 +348,8 @@ function buildHeadTitle(storyTitle) {
 
 /**
  *
- * @param {string} author - Name of the story author.
- * @param {string} authorUrl - Optional author link.
+ * @param {string | undefined} author - Name of the story author.
+ * @param {string | undefined} authorUrl - Optional author link.
  * @returns {string} Author credits HTML.
  */
 function buildAuthorHtml(author, authorUrl) {
@@ -365,7 +374,7 @@ function buildAuthorLink(author, authorUrl) {
 
 /**
  *
- * @param {string} url - Target URL for the back/first page links.
+ * @param {string | undefined} url - Target URL for the back/first page links.
  * @param {string} label - Link label.
  * @returns {string} Link paragraph HTML or empty string.
  */
@@ -473,7 +482,18 @@ ${VARIANT_REDIRECT_SCRIPT}
 
 /**
  * Build the `<main>` section for the resolved build variant parameters.
- * @param {{ pageNumber: number, variantName: string }} resolvedParams - Normalized build inputs.
+ * @param {{
+ *   pageNumber: number,
+ *   variantName: string,
+ *   content: string,
+ *   options: VariantOption[],
+ *   storyTitle: string,
+ *   showTitleHeading: boolean,
+ *   author?: string,
+ *   authorUrl?: string,
+ *   parentUrl?: string,
+ *   firstPageUrl?: string,
+ * }} resolvedParams - Normalized build inputs.
  * @returns {string} Rendered `<main>` block.
  */
 function buildMainContent(resolvedParams) {
@@ -502,6 +522,7 @@ const BUILD_HTML_BASE_DEFAULTS = {
   parentUrl: '',
   firstPageUrl: '',
   showTitleHeading: true,
+  options: [],
 };
 
 /**
@@ -510,7 +531,7 @@ const BUILD_HTML_BASE_DEFAULTS = {
  *   pageNumber: number,
  *   variantName: string,
  *   content: string,
- *   options: unknown,
+ *   options: VariantOption[],
  *   storyTitle?: string,
  *   author?: string,
  *   authorUrl?: string,
@@ -702,7 +723,7 @@ export function getVisibleVariants(docs) {
 /**
  * Map document to variant object.
  * @param {object} doc Document.
- * @returns {object} Variant object.
+ * @returns {{ name: string, content: string }} Variant object.
  */
 function mapDocToVariant(doc) {
   const data = doc.data();
@@ -722,9 +743,13 @@ function normalizeVariantString(value) {
 }
 
 /**
+ * @typedef {{ name?: unknown, content?: unknown }} VariantDocumentData
+ */
+
+/**
  * Build variant object from data.
- * @param {object} data Variant data.
- * @returns {object} Variant object.
+ * @param {VariantDocumentData} data Variant data.
+ * @returns {{ name: string, content: string }} Variant object.
  */
 function buildVariantObject(data) {
   const { name, content } = data ?? {};
@@ -781,7 +806,7 @@ function checkStorageBucketHelper(storage) {
 /**
  * Create invalidation function.
  * @param {object} root0 Dependencies.
- * @param {Function} root0.fetchFn Fetch function.
+ * @param {(input: string, init?: object) => Promise<Response>} root0.fetchFn Fetch function.
  * @param {string} root0.projectId Project ID.
  * @param {string} root0.urlMapName URL map name.
  * @param {string} [root0.cdnHost] CDN host override.
@@ -925,7 +950,7 @@ function buildInvalidateUrl(projectId, urlMapName) {
 /**
  * Execute cache invalidations for the supplied paths.
  * @param {string[]} paths Paths to purge from the CDN cache.
- * @param {{url: string, host: string, fetchFn: (input: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError: (message: string, ...optionalParams: unknown[]) => void}} options Invalidation dependencies.
+ * @param {{url: string, host: string, fetchFn: (input: string, init?: object) => Promise<Response>, randomUUID: () => string, consoleError?: (message: string, ...optionalParams: unknown[]) => void}} options Invalidation dependencies.
  * @returns {Promise<void>} Resolves after every invalidation request completes.
  */
 async function executeInvalidation(paths, options) {
