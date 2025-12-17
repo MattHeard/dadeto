@@ -228,6 +228,25 @@ describe('createHandleReportForModeration', () => {
     expect(res.send).not.toHaveBeenCalled();
   });
 
+  it('treats null bodies as empty JSON payloads', async () => {
+    const handler = jest.fn().mockResolvedValue({
+      status: 201,
+      body: null,
+    });
+    const respond = createHandleReportForModeration(handler);
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+      sendStatus: jest.fn(),
+    };
+
+    await respond({ method: 'POST' }, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({});
+  });
+
   it('serializes object responses via json', async () => {
     const handler = jest.fn().mockResolvedValue({
       status: 201,
