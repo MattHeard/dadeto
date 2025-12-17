@@ -4,7 +4,7 @@ import {
 } from './cloud-core.js';
 
 /**
- * @typedef {Record<string, unknown>} DependencyMap
+ * @typedef {{ randomUUID: unknown; getServerTimestamp: unknown } & Record<string, unknown>} DependencyMap
  * @typedef {(dependencies: DependencyMap) => Function} HandlerFactory
  */
 
