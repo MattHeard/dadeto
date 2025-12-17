@@ -473,24 +473,6 @@ export function createSubmitModerationRatingResponder(dependencies) {
       }
 
       /**
-       * Build the response once the context lookup finishes.
-       * @param {SubmitModerationRatingBodySuccess | undefined} bodyResult Body validation result when available.
-       * @param {SubmitModerationRatingContextResult} contextResult Moderator context outcome.
-       * @returns {Promise<SubmitModerationRatingResponse>} Handler response.
-       */
-      function resolveResponseFromContext(bodyResult, contextResult) {
-        if ('error' in contextResult) {
-          return Promise.resolve(contextResult.error);
-        }
-
-        if (!bodyResult) {
-          throw new Error('Missing rating body after successful prerequisites');
-        }
-
-        return processValidRating({ contextResult, bodyResult });
-      }
-
-      /**
        * Resolve the moderator context or propagate the prerequisite error.
        * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
        * @returns {Promise<SubmitModerationRatingContextResult>} Context resolution result.
@@ -509,13 +491,21 @@ export function createSubmitModerationRatingResponder(dependencies) {
 
       return async function submitModerationRatingResponder(request = {}) {
         const prerequisiteResult = resolveRequestPrerequisites(request);
-        const contextResult = await resolveContextResult(prerequisiteResult);
-        const bodyResult =
-          'bodyResult' in prerequisiteResult
-            ? prerequisiteResult.bodyResult
-            : undefined;
 
-        return resolveResponseFromContext(bodyResult, contextResult);
+        if ('error' in prerequisiteResult) {
+          const contextResult = await resolveContextResult(prerequisiteResult);
+          return contextResult.error;
+        }
+
+        const contextResult = await resolveContextResult(prerequisiteResult);
+        if ('error' in contextResult) {
+          return contextResult.error;
+        }
+
+        return processValidRating({
+          contextResult,
+          bodyResult: prerequisiteResult.bodyResult,
+        });
       };
     },
   });
