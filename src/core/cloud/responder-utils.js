@@ -4,11 +4,16 @@ import {
 } from './cloud-core.js';
 
 /**
+ * @typedef {Record<string, unknown>} DependencyMap
+ * @typedef {(dependencies: DependencyMap) => Function} HandlerFactory
+ */
+
+/**
  * Wire a responder with shared dependency validation.
  * @param {object} params Helper configuration.
- * @param {object} params.dependencies Injectable services consumed by the handler.
+ * @param {DependencyMap} params.dependencies Injectable services consumed by the handler.
  * @param {string[]} params.requiredFunctionNames Names of dependencies that must be functions.
- * @param {(dependencies: object) => Function} params.handlerFactory Builds the handler once validation passes.
+ * @param {HandlerFactory} params.handlerFactory Builds the handler once validation passes.
  * @returns {Function} Initialized responder function.
  */
 export function createResponder({
@@ -16,10 +21,9 @@ export function createResponder({
   requiredFunctionNames,
   handlerFactory,
 }) {
-  const dependencyTuples = requiredFunctionNames.map(name => [
-    name,
-    dependencies[name],
-  ]);
+  const dependencyTuples = /** @type {[string, unknown][]} */ (
+    requiredFunctionNames.map(name => [name, dependencies[name]])
+  );
   assertFunctionDependencies(dependencyTuples);
   assertRandomUuidAndTimestamp(dependencies);
 

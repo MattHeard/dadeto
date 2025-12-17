@@ -93,21 +93,23 @@ export function createReportForModerationHandler({
  * @param {{ method?: string, body?: { variant?: unknown } | null }} root0.request Incoming request details.
  * @param {(report: { variant: string, createdAt: unknown }) => Promise<void> | void} root0.addModerationReport Storage helper.
  * @param {() => unknown} root0.getServerTimestamp Timestamp generator.
- * @returns {{ status: number, body: string } | Promise<{ status: number, body: string | Record<string, unknown> }>} Response object or promise from the domain handler.
+ * @returns {Promise<{ status: number, body: string | Record<string, unknown> }>} Promise resolved with the HTTP response.
  */
 function processReportSubmission({
   request,
   addModerationReport,
   getServerTimestamp,
 }) {
-  return (
-    validatePostMethod(request.method) ??
-    handlePostRequest({
-      body: request.body,
-      addModerationReport,
-      getServerTimestamp,
-    })
-  );
+  const methodError = validatePostMethod(request.method);
+  if (methodError) {
+    return Promise.resolve(methodError);
+  }
+
+  return handlePostRequest({
+    body: request.body,
+    addModerationReport,
+    getServerTimestamp,
+  });
 }
 
 /**
@@ -116,6 +118,7 @@ function processReportSubmission({
  * @returns {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} Validation callback compatible with the CORS package.
  */
 export function createCorsOriginValidator(allowedOrigins) {
+  /** @type {string[]} */
   let origins = [];
   if (Array.isArray(allowedOrigins)) {
     origins = allowedOrigins;
@@ -125,7 +128,7 @@ export function createCorsOriginValidator(allowedOrigins) {
 
 /**
  * Determine whether the provided origin satisfies the CORS allow list.
- * @param {string | undefined} origin - Origin header emitted by the browser.
+ * @param {string | null | undefined} origin - Origin header emitted by the browser.
  * @param {string[]} allowedOrigins - Origins explicitly permitted to access the endpoint.
  * @returns {boolean} True when the origin is either missing or present in the allow list.
  */
@@ -195,13 +198,28 @@ export function createHandleReportForModeration(reportForModerationHandler) {
  * @returns {(res: { status: (code: number) => { send: (body: string) => void, json: (body: Record<string, unknown>) => void }, sendStatus: (code: number) => void }, status: number) => void} Sender that knows how to write the response.
  */
 function createResponseSender(body) {
-  const responders = {
-    string: sendResponse,
-    undefined: sendStatusResponse,
-    object: sendJsonResponse,
-  };
+  if (typeof body === 'string') {
+    return (res, status) => sendResponse(res, status, body);
+  }
 
-  return (res, status) => responders[typeof body](res, status, body);
+  return resolveNonStringResponseSender(body);
+}
+
+/**
+ * @param {string | Record<string, unknown> | undefined} body Response body emitted by the domain handler.
+ * @returns {(res: { status: (code: number) => { send: (body: string) => void, json: (body: Record<string, unknown>) => void }, sendStatus: (code: number) => void }, status: number) => void} Response sender for the provided payload.
+ */
+function resolveNonStringResponseSender(body) {
+  if (typeof body === 'undefined') {
+    return (res, status) => sendStatusResponse(res, status);
+  }
+
+  return (res, status) =>
+    sendJsonResponse(
+      res,
+      status,
+      /** @type {Record<string, unknown>} */ (body ?? {})
+    );
 }
 
 /**
