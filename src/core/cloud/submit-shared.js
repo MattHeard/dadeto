@@ -14,29 +14,58 @@ function normalizeShortSubmissionString(value) {
 
 /**
  * @typedef {object} ResponderHandlers
- * @property {(res: import('express').Response, status: number, body: unknown) => void} object Handler for JSON responses.
+ * @property {(res: import('express').Response, status: number, body: Record<string, unknown>) => void} object Handler for JSON responses.
  * @property {(res: import('express').Response, status: number) => void} undefined Handler used when the responder returns undefined.
  * @property {(res: import('express').Response, status: number, body: unknown) => void} default Handler for primitive payloads.
  */
 
+/** @type {ResponderHandlers} */
 const responderHandlers = {
+  /**
+   * JSON response handler.
+   * @param {import('express').Response} res
+   * @param {number} status
+   * @param {Record<string, unknown>} body
+   */
   object(res, status, body) {
     res.status(status).json(body);
   },
+  /**
+   * Handler used when the responder returns `undefined`.
+   * @param {import('express').Response} res
+   * @param {number} status
+   */
   undefined(res, status) {
     res.sendStatus(status);
   },
+  /**
+   * Primitive payload handler.
+   * @param {import('express').Response} res
+   * @param {number} status
+   * @param {unknown} body
+   */
   default(res, status, body) {
     res.status(status).send(body);
   },
 };
 
-const responderKeyByType = {
-  true: 'undefined',
-  false: 'default',
-};
+/**
+ * Map the result payload type to the correct responder key.
+ * @param {boolean} isUndefined
+ * @returns {'undefined' | 'default'}
+ */
+function responderKeyByType(isUndefined) {
+  return isUndefined ? 'undefined' : 'default';
+}
 
-const isObjectBody = value => typeof value === 'object' && value !== null;
+/**
+ * Guard for object payloads so the response handler can treat them as JSON.
+ * @param {unknown} value
+ * @returns {value is Record<string, unknown>}
+ */
+function isObjectBody(value) {
+  return typeof value === 'object' && value !== null;
+}
 
 /**
  * Send an HTTP response based on the responder result payload.
@@ -46,11 +75,13 @@ const isObjectBody = value => typeof value === 'object' && value !== null;
  */
 export function sendResponderResult(res, status, body) {
   if (isObjectBody(body)) {
-    responderHandlers.object(res, status, body);
+    /** @type {Record<string, unknown>} */
+    const objectBody = body;
+    responderHandlers.object(res, status, objectBody);
     return;
   }
 
-  const handlerKey = responderKeyByType[body === undefined];
+  const handlerKey = responderKeyByType(body === undefined);
   responderHandlers[handlerKey](res, status, body);
 }
 
@@ -61,7 +92,10 @@ export function sendResponderResult(res, status, body) {
  * @returns {(req: import('express').Request | undefined, res: import('express').Response) => Promise<void>} Express handler.
  */
 export function createResponderHandler(responder, normalizeRequest) {
-  return async function handleResponder(req, res) {
+  return async function handleResponder(
+    /** @type {import('express').Request | undefined} */ req,
+    /** @type {import('express').Response} */ res
+  ) {
     const request = normalizeRequest(req);
     const result = await responder(request);
 

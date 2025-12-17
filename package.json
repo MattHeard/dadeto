@@ -26,6 +26,7 @@
     "@playwright/test": "1.47.0",
     "@stryker-mutator/core": "^8.7.1",
     "@stryker-mutator/jest-runner": "^8.7.1",
+    "@types/express": "^5.0.6",
     "complexity-report": "^2.0.0-alpha",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
