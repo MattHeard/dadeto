@@ -70,7 +70,7 @@ function getStringCandidate(value) {
  */
 function withStringFallback(value, fallback, isNormalizedAcceptable) {
   const normalized = getStringCandidate(value);
-  if (isNormalizedAcceptable(normalized)) {
+  if (isNormalizedAcceptable(normalized) && normalized !== undefined) {
     return normalized;
   }
 
@@ -98,11 +98,17 @@ export function ensureString(value) {
  * @returns {string} String value or fallback.
  */
 export function stringOrDefault(value, fallback) {
-  return withStringFallback(
+  const normalized = withStringFallback(
     value,
     () => fallback,
     normalized => normalized !== undefined
   );
+
+  if (normalized !== null) {
+    return normalized;
+  }
+
+  return fallback;
 }
 
 /**
