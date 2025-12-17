@@ -6,6 +6,9 @@ import {
 } from './common-core.js';
 export { DEFAULT_BUCKET_NAME } from './common-core.js';
 
+/** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+
 export const MISSING_AUTHORIZATION_RESPONSE = {
   status: 401,
   body: 'Missing or invalid Authorization header',
@@ -280,7 +283,7 @@ export function getHeaderFromGetter(getter, name) {
 
 /**
  * Send a generic success payload for HTTP responders.
- * @param {import('express').Response} res Express response object.
+ * @param {NativeHttpResponse} res Express response object.
  * @returns {void}
  */
 export function sendOkResponse(res) {
@@ -572,7 +575,7 @@ export function createResponse(status, body) {
 
 /**
  * Extract the Authorization header from a request.
- * @param {import('express').Request} req Incoming HTTP request.
+ * @param {NativeHttpRequest} req Incoming HTTP request.
  * @returns {string} Authorization header or an empty string.
  */
 export function getAuthHeader(req) {
@@ -581,7 +584,7 @@ export function getAuthHeader(req) {
 
 /**
  * Safely resolve the Authorization header from the request getter.
- * @param {import('express').Request} req HTTP request object.
+ * @param {NativeHttpRequest} req HTTP request object.
  * @returns {unknown} Resolved header value or undefined when unavailable.
  */
 function resolveAuthorizationHeader(req) {
@@ -639,7 +642,7 @@ function defaultInvalidTokenMessage(error) {
 
 /**
  * Extract the bearer token string from the request.
- * @param {import('express').Request} req Incoming HTTP request.
+ * @param {NativeHttpRequest} req Incoming HTTP request.
  * @returns {string} Bearer token string or an empty string when missing.
  */
 function extractTokenFromRequest(req) {
@@ -665,9 +668,9 @@ function getBearerTokenFromMatch(match) {
  *   token: string,
  *   verifyToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>,
  *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
- *   sendUnauthorized: (res: import('express').Response, message: string) => void,
- *   sendForbidden: (res: import('express').Response) => void,
- *   res: import('express').Response,
+ *   sendUnauthorized: (res: NativeHttpResponse, message: string) => void,
+ *   sendForbidden: (res: NativeHttpResponse) => void,
+ *   res: NativeHttpResponse,
  * }} deps Dependencies for validating the token and sending HTTP errors.
  * @returns {Promise<boolean>} True when the token is authorized for an admin request.
  */
@@ -699,8 +702,8 @@ async function authorizeAdminToken({
  * @param {{
  *   decoded: import('firebase-admin/auth').DecodedIdToken,
  *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
- *   sendForbidden: (res: import('express').Response) => void,
- *   res: import('express').Response,
+ *   sendForbidden: (res: NativeHttpResponse) => void,
+ *   res: NativeHttpResponse,
  * }} deps Authorization helpers.
  * @returns {boolean} True when the decoded token matches the admin UID.
  */
@@ -718,9 +721,9 @@ function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
  * @param {object} deps Authorization collaborators.
  * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token validator.
  * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
- * @param {(res: import('express').Response, message: string) => void} deps.sendUnauthorized Sends 401 responses.
- * @param {(res: import('express').Response) => void} deps.sendForbidden Sends 403 responses.
- * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
+ * @param {(res: NativeHttpResponse, message: string) => void} deps.sendUnauthorized Sends 401 responses.
+ * @param {(res: NativeHttpResponse) => void} deps.sendForbidden Sends 403 responses.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
  */
 export function createVerifyAdmin({
   verifyToken,

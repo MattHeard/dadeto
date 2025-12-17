@@ -18,6 +18,8 @@ import {
 import { runWithFailureAndThen } from '../response-utils.js';
 const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';
+/** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 /**
  * Build the cors middleware origin handler.
  * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Origin predicate.
@@ -313,12 +315,12 @@ function applyUpdateFn(updateVariantDirtyFn, variantRef) {
 
 /**
  * Extract the Authorization header from a request.
- * @param {import('express').Request} req HTTP request.
+ * @param {NativeHttpRequest} req HTTP request.
  * @returns {string} Authorization header or empty string.
  */
 /**
  * Send a 401 response with a message.
- * @param {import('express').Response} res HTTP response.
+ * @param {NativeHttpResponse} res HTTP response.
  * @param {string} message Message to send.
  * @returns {void}
  */
@@ -328,7 +330,7 @@ export function sendUnauthorized(res, message) {
 
 /**
  * Send a 403 Forbidden response.
- * @param {import('express').Response} res HTTP response.
+ * @param {NativeHttpResponse} res HTTP response.
  * @returns {void}
  */
 export function sendForbidden(res) {
@@ -337,8 +339,8 @@ export function sendForbidden(res) {
 
 /**
  * Ensure the incoming request uses the allowed HTTP method.
- * @param {import('express').Request} req HTTP request.
- * @param {import('express').Response} res HTTP response.
+ * @param {NativeHttpRequest} req HTTP request.
+ * @param {NativeHttpResponse} res HTTP response.
  * @param {string} allowedMethod Allowed HTTP method.
  * @returns {boolean} True when the method is allowed.
  */
@@ -353,8 +355,8 @@ function enforceAllowedMethod(req, res, allowedMethod) {
 
 /**
  * Parse and validate the incoming request body.
- * @param {import('express').Request} req HTTP request.
- * @param {import('express').Response} res HTTP response.
+ * @param {NativeHttpRequest} req HTTP request.
+ * @param {NativeHttpResponse} res HTTP response.
  * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Body parser.
  * @returns {{ pageNumber: number, variantName: string } | null} Parsed parameters or null when invalid.
  */
@@ -369,7 +371,7 @@ function parseValidRequest(req, res, parseRequestBody) {
 }
 /**
  * Safely read a request property when the request is defined.
- * @param {import('express').Request | undefined} req Express request.
+ * @param {NativeHttpRequest | undefined} req Express request.
  * @param {'body' | 'method'} key Property name to access.
  * @returns {unknown} Requested property or `undefined`.
  */
@@ -383,7 +385,7 @@ function getRequestProperty(req, key) {
 
 /**
  * Retrieve the request body when the request exists.
- * @param {import('express').Request | undefined} req Express request.
+ * @param {NativeHttpRequest | undefined} req Express request.
  * @returns {unknown | undefined} Body payload or `undefined`.
  */
 function getRequestBody(req) {
@@ -392,7 +394,7 @@ function getRequestBody(req) {
 
 /**
  * Access the HTTP method from the request, if present.
- * @param {import('express').Request | undefined} req Express request.
+ * @param {NativeHttpRequest | undefined} req Express request.
  * @returns {string | undefined} HTTP method or `undefined`.
  */
 function getRequestMethod(req) {
@@ -415,7 +417,7 @@ function isValidMarkRequest({ pageNumber, variantName }) {
 /**
  * Mark the variant dirty and send the appropriate response.
  * @param {{
- *   res: import('express').Response,
+ *   res: NativeHttpResponse,
  *   markFn: (pageNumber: number, variantName: string) => Promise<boolean>,
  *   pageNumber: number,
  *   variantName: string,
@@ -437,7 +439,7 @@ async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
 
 /**
  * Send the response for the variant update result.
- * @param {import('express').Response} res Response object.
+ * @param {NativeHttpResponse} res Response object.
  * @param {boolean} ok Marker of success.
  * @returns {void}
  */
@@ -494,11 +496,11 @@ function resolveVariantName(candidate) {
 /**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
  * @param {object} options Configuration for the handler.
- * @param {(req: import('express').Request, res: import('express').Response) => Promise<boolean>} options.verifyAdmin Admin verification helper.
+ * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} options.verifyAdmin Admin verification helper.
  * @param {(pageNumber: number, variantName: string, deps?: object) => Promise<boolean>} options.markVariantDirty Core mutation helper.
  * @param {(body: unknown) => { pageNumber: number, variantName: string }} [options.parseRequestBody] Body parser.
  * @param {string} [options.allowedMethod] Allowed HTTP method.
- * @returns {(req: import('express').Request, res: import('express').Response, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof options.verifyAdmin }) => Promise<void>} Express request handler.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof options.verifyAdmin }) => Promise<void>} Express request handler.
  */
 export function createHandleRequest(options = {}) {
   const { verifyAdmin, markVariantDirty } = options;
@@ -545,7 +547,7 @@ function resolveAllowedMethod(method) {
  * @param {Function} handlerDeps.markVariantDirty Variant mutation helper.
  * @param {Function} handlerDeps.parseRequestBody Body parser.
  * @param {string} handlerDeps.allowedMethod Allowed HTTP method.
- * @returns {(req: import('express').Request, res: import('express').Response, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof handlerDeps.verifyAdmin }) => Promise<void>} Express request handler.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof handlerDeps.verifyAdmin }) => Promise<void>} Express request handler.
  */
 function buildHandleRequest(handlerDeps) {
   return async function handleRequest(req, res, deps = {}) {
@@ -560,8 +562,8 @@ const REQUEST_HANDLED = Symbol('request-handled');
 /**
  * Core handler workflow that validates the request, authorizes the caller, and marks the variant dirty.
  * @param {object} requestData Request lifecycle dependencies.
- * @param {import('express').Request} requestData.req Express request.
- * @param {import('express').Response} requestData.res Express response.
+ * @param {NativeHttpRequest} requestData.req Express request.
+ * @param {NativeHttpResponse} requestData.res Express response.
  * @param {object} requestData.deps Optional overrides.
  * @param {object} handlerDeps Handler dependencies.
  * @param {Function} handlerDeps.verifyAdmin Admin verification function.
@@ -640,8 +642,8 @@ function pickMarkFn(markVariantDirty, deps) {
 
 /**
  * Enforce method or throw sentinel.
- * @param {import('express').Request} req Req.
- * @param {import('express').Response} res Res.
+ * @param {NativeHttpRequest} req Req.
+ * @param {NativeHttpResponse} res Res.
  * @param {string} allowedMethod Allowed method.
  * @returns {void}
  */
@@ -654,8 +656,8 @@ function enforceMethodOrThrow(req, res, allowedMethod) {
 /**
  * Ensure authorization or throw sentinel.
  * @param {Function} verifyAdminFn Verify fn.
- * @param {import('express').Request} req Req.
- * @param {import('express').Response} res Res.
+ * @param {NativeHttpRequest} req Req.
+ * @param {NativeHttpResponse} res Res.
  * @returns {Promise<void>} Promise.
  */
 async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
@@ -667,8 +669,8 @@ async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
 
 /**
  * Parse request or throw sentinel.
- * @param {import('express').Request} req Req.
- * @param {import('express').Response} res Res.
+ * @param {NativeHttpRequest} req Req.
+ * @param {NativeHttpResponse} res Res.
  * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Parser.
  * @returns {{ pageNumber: number, variantName: string }} Parsed.
  */

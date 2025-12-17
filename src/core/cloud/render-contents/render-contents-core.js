@@ -5,6 +5,8 @@ import {
 } from './cloud-core.js';
 import { assertFunction } from './common-core.js';
 export { DEFAULT_BUCKET_NAME, productionOrigins };
+/** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 const DEFAULT_PAGE_SIZE = 100;
 
 /**
@@ -1512,8 +1514,8 @@ export function buildHandleRenderRequest({
 
   /**
    * Guard the render workflow by ensuring the request is authorized.
-   * @param {import('express').Request} req - Request forwarded from the HTTP handler.
-   * @param {import('express').Response} res - Response object used to send errors or success.
+   * @param {NativeHttpRequest} req - Request forwarded from the HTTP handler.
+   * @param {NativeHttpResponse} res - Response object used to send errors or success.
    * @returns {Promise<void>}
    */
   async function executeRenderRequest(req, res) {
@@ -1526,7 +1528,7 @@ export function buildHandleRenderRequest({
 
   /**
    * Actually run the render helper and send the final response.
-   * @param {import('express').Response} res - Response object for success/failure updates.
+   * @param {NativeHttpResponse} res - Response object for success/failure updates.
    * @returns {Promise<void>}
    */
   function executeRenderRequestAfterGuard(res) {

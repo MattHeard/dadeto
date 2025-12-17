@@ -3,6 +3,9 @@ import { resolveAuthorIdFromHeader } from './auth-helpers.js';
 import { assertFunction } from './common-core.js';
 import { normalizeExpressRequest } from './request-normalization.js';
 
+/** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+
 /**
  * Normalize the short text submitted by callers (title, option, page markers, etc.).
  * @param {unknown} value Candidate value supplied by the request.
@@ -14,16 +17,16 @@ function normalizeShortSubmissionString(value) {
 
 /**
  * @typedef {object} ResponderHandlers
- * @property {(res: import('express').Response, status: number, body: Record<string, unknown>) => void} object Handler for JSON responses.
- * @property {(res: import('express').Response, status: number) => void} undefined Handler used when the responder returns undefined.
- * @property {(res: import('express').Response, status: number, body: unknown) => void} default Handler for primitive payloads.
+ * @property {(res: NativeHttpResponse, status: number, body: Record<string, unknown>) => void} object Handler for JSON responses.
+ * @property {(res: NativeHttpResponse, status: number) => void} undefined Handler used when the responder returns undefined.
+ * @property {(res: NativeHttpResponse, status: number, body: unknown) => void} default Handler for primitive payloads.
  */
 
 /** @type {ResponderHandlers} */
 const responderHandlers = {
   /**
    * JSON response handler.
-   * @param {import('express').Response} res Response used to send JSON payloads.
+   * @param {NativeHttpResponse} res Response used to send JSON payloads.
    * @param {number} status HTTP status code to emit.
    * @param {Record<string, unknown>} body Payload to serialize as JSON.
    */
@@ -32,7 +35,7 @@ const responderHandlers = {
   },
   /**
    * Handler used when the responder returns `undefined`.
-   * @param {import('express').Response} res Response for status-only replies.
+   * @param {NativeHttpResponse} res Response for status-only replies.
    * @param {number} status HTTP status code to emit.
    */
   undefined(res, status) {
@@ -40,7 +43,7 @@ const responderHandlers = {
   },
   /**
    * Primitive payload handler.
-   * @param {import('express').Response} res Response used to write primitives.
+   * @param {NativeHttpResponse} res Response used to write primitives.
    * @param {number} status HTTP status code to emit.
    * @param {unknown} body Payload echoed through `send`.
    */
@@ -72,7 +75,7 @@ function isObjectBody(value) {
 
 /**
  * Send an HTTP response based on the responder result payload.
- * @param {import('express').Response} res - Response instance used to send data.
+ * @param {NativeHttpResponse} res - Response instance used to send data.
  * @param {number} status - HTTP status code emitted to the client.
  * @param {unknown} body - Payload returned by the domain responder.
  */
@@ -91,13 +94,13 @@ export function sendResponderResult(res, status, body) {
 /**
  * Build an Express-compatible handler that normalizes the request and writes the responder output.
  * @param {(request: unknown) => Promise<{ status: number, body?: unknown }>} responder Function that accepts the normalized request payload and returns a response result.
- * @param {(request: import('express').Request | undefined) => unknown} normalizeRequest Request normalizer helper.
- * @returns {(req: import('express').Request | undefined, res: import('express').Response) => Promise<void>} Express handler.
+ * @param {(request: NativeHttpRequest | undefined) => unknown} normalizeRequest Request normalizer helper.
+ * @returns {(req: NativeHttpRequest | undefined, res: NativeHttpResponse) => Promise<void>} Express handler.
  */
 export function createResponderHandler(responder, normalizeRequest) {
   return async function handleResponder(
-    /** @type {import('express').Request | undefined} */ req,
-    /** @type {import('express').Response} */ res
+    /** @type {NativeHttpRequest | undefined} */ req,
+    /** @type {NativeHttpResponse} */ res
   ) {
     const request = normalizeRequest(req);
     const result = await responder(request);
@@ -109,7 +112,7 @@ export function createResponderHandler(responder, normalizeRequest) {
 /**
  * Wrap a responder with the shared Express handler logic.
  * @param {(request: unknown) => Promise<{ status: number, body?: unknown }>} responder Domain response handler.
- * @returns {(req: import('express').Request | undefined, res: import('express').Response) => Promise<void>} Express handler.
+ * @returns {(req: NativeHttpRequest | undefined, res: NativeHttpResponse) => Promise<void>} Express handler.
  */
 export function createCloudSubmitHandler(responder) {
   assertFunction(responder, 'responder');

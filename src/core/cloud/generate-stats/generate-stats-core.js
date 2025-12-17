@@ -9,6 +9,9 @@ import { runInParallel } from '../parallel-utils.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 export { isDuplicateAppError };
 
+/** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+
 const STATS_PAGE_HEAD = `<!doctype html>
 <html lang="en">
   <head>
@@ -316,8 +319,8 @@ function selectCdnHost(candidate) {
  *     invalidatePathsFn?: (paths: string[]) => Promise<void>,
  *   }) => Promise<null>,
  *   handleRequest: (
- *     req: import('express').Request,
- *     res: import('express').Response,
+ *     req: NativeHttpRequest,
+ *     res: NativeHttpResponse,
  *     deps?: { genFn?: () => Promise<unknown>, authInstance?: import('firebase-admin/auth').Auth, adminUid?: string }
  *   ) => Promise<void>,
  * }} Core helpers.
@@ -593,7 +596,7 @@ export function createGenerateStatsCore({
   const isAdminUid = decoded => decoded.uid === ADMIN_UID;
   /**
    * Send a 401 response when authentication fails.
-   * @param {import('express').Response} res - Express response helper.
+   * @param {NativeHttpResponse} res - Express response helper.
    * @param {string} message - Text to include in the response body.
    * @returns {void}
    */
@@ -602,7 +605,7 @@ export function createGenerateStatsCore({
   }
   /**
    * Send a 403 response when authorization fails.
-   * @param {import('express').Response} res - Response helper used to send the rejection.
+   * @param {NativeHttpResponse} res - Response helper used to send the rejection.
    * @returns {void}
    */
   function sendForbidden(res) {
@@ -618,7 +621,7 @@ export function createGenerateStatsCore({
 
   /**
    * Check whether the incoming request used POST.
-   * @param {import('express').Request} req - HTTP request to inspect.
+   * @param {NativeHttpRequest} req - HTTP request to inspect.
    * @returns {boolean} True when the request method is POST.
    */
   function isPostMethod(req) {
@@ -627,7 +630,7 @@ export function createGenerateStatsCore({
 
   /**
    * Reply with a 405 when a non-POST method is used.
-   * @param {import('express').Response} res - Response object to signal the rejection.
+   * @param {NativeHttpResponse} res - Response object to signal the rejection.
    * @returns {void}
    */
   function sendPostOnlyResponse(res) {
@@ -636,8 +639,8 @@ export function createGenerateStatsCore({
 
   /**
    * Handle HTTP requests to trigger the stats generation workflow.
-   * @param {import('express').Request} req - Incoming HTTP request.
-   * @param {import('express').Response} res - Response object for sending results.
+   * @param {NativeHttpRequest} req - Incoming HTTP request.
+   * @param {NativeHttpResponse} res - Response object for sending results.
    * @returns {Promise<void>} Resolves when the request finishes.
    */
   async function handleAuthorizedRequest(req, res) {
@@ -651,8 +654,8 @@ export function createGenerateStatsCore({
 
   /**
    * Enforce POST + authorization before invoking the handler.
-   * @param {import('express').Request} req - Incoming HTTP request.
-   * @param {import('express').Response} res - Response object used to send the reply.
+   * @param {NativeHttpRequest} req - Incoming HTTP request.
+   * @param {NativeHttpResponse} res - Response object used to send the reply.
    * @returns {Promise<void>} Resolves after the request handling completes.
    */
   async function handleRequest(req, res) {
@@ -871,9 +874,9 @@ function resolveErrorMessage(err, fallback) {
 
 /**
  * Check authorization for incoming request.
- * @param {import('express').Request} req Req.
- * @param {import('express').Response} res Res.
- * @param {(req: import('express').Request, res: import('express').Response) => Promise<boolean>} verifyAdmin Verify fn.
+ * @param {NativeHttpRequest} req Req.
+ * @param {NativeHttpResponse} res Res.
+ * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Verify fn.
  * @returns {Promise<boolean>} Authorization result.
  */
 async function ensureAuthorizedRequest(req, res, verifyAdmin) {
@@ -886,7 +889,7 @@ async function ensureAuthorizedRequest(req, res, verifyAdmin) {
 
 /**
  * Determine if request is cron.
- * @param {import('express').Request} req Req.
+ * @param {NativeHttpRequest} req Req.
  * @returns {boolean} True if cron.
  */
 function isCronRequest(req) {
@@ -895,7 +898,7 @@ function isCronRequest(req) {
 
 /**
  * Run generation and respond appropriately.
- * @param {import('express').Response} res Res.
+ * @param {NativeHttpResponse} res Res.
  * @param {() => Promise<unknown>} generate Generate fn.
  * @returns {Promise<void>} Promise.
  */
@@ -910,7 +913,7 @@ async function respondWithGenerate(res, generate) {
 }
 /**
  * Send a failure response when generation throws.
- * @param {import('express').Response} res Express response helper.
+ * @param {NativeHttpResponse} res Express response helper.
  * @param {unknown} err Error raised during generation.
  */
 function sendGenerateFailure(res, err) {

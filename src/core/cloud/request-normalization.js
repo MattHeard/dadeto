@@ -1,11 +1,14 @@
+/** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../types/native-http').HttpRequestHeaders} HttpRequestHeaders */
+
 /**
  * Normalize an Express-style request to the shape expected by cloud responders.
- * @param {import('express').Request | undefined} request Incoming Express request.
+ * @param {NativeHttpRequest | undefined} request Incoming Express-like request.
  * @returns {{
  *   method: string | undefined,
  *   body: unknown,
- *   get: (name: string) => string | undefined,
- *   headers: import('express').Request['headers'],
+ *   get: ((name: string) => string | undefined) | undefined,
+ *   headers: HttpRequestHeaders | undefined,
  * }} Normalized request payload.
  */
 export function normalizeExpressRequest(request) {
@@ -13,12 +16,12 @@ export function normalizeExpressRequest(request) {
 }
 
 /**
- * @param {import('express').Request | undefined} request Incoming Express-like request.
+ * @param {NativeHttpRequest | undefined} request Incoming Express-like request.
  * @returns {{
  *   method: string | undefined,
  *   body: unknown,
- *   get: (name: string) => string | undefined,
- *   headers: import('express').Request['headers'],
+ *   get: ((name: string) => string | undefined) | undefined,
+ *   headers: HttpRequestHeaders | undefined,
  * }} Normalized request payload.
  */
 function buildNormalizedRequest(request) {
@@ -31,7 +34,7 @@ function buildNormalizedRequest(request) {
 }
 
 /**
- * @param {import('express').Request | undefined} request Incoming Express request.
+ * @param {NativeHttpRequest | undefined} request Incoming Express request.
  * @returns {string | undefined} HTTP verb when available.
  */
 function resolveRequestMethod(request) {
@@ -39,7 +42,7 @@ function resolveRequestMethod(request) {
 }
 
 /**
- * @param {import('express').Request | undefined} request Incoming Express request.
+ * @param {NativeHttpRequest | undefined} request Incoming Express request.
  * @returns {unknown} Body payload stored on the request.
  */
 function resolveRequestBody(request) {
@@ -47,8 +50,8 @@ function resolveRequestBody(request) {
 }
 
 /**
- * @param {import('express').Request | undefined} request Incoming Express request.
- * @returns {import('express').Request['headers']} Headers provided by the request.
+ * @param {NativeHttpRequest | undefined} request Incoming Express request.
+ * @returns {HttpRequestHeaders | undefined} Headers provided by the request.
  */
 function resolveRequestHeaders(request) {
   return request?.headers;
@@ -57,7 +60,7 @@ function resolveRequestHeaders(request) {
 /**
  * Normalize a header getter into the shape expected by consumers.
  * @param {((name: string) => string | undefined) | undefined} candidate Potential getter.
- * @returns {((name: string) => string | undefined) | undefined} Wrapped getter or undefined.
+ * @returns {((name: string) => string | undefined) | undefined} Wrapped getter or undefined when there is no getter.
  */
 function resolveRequestGetter(candidate) {
   if (typeof candidate !== 'function') {
