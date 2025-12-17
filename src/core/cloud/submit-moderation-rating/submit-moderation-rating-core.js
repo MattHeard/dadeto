@@ -491,22 +491,30 @@ export function createSubmitModerationRatingResponder(dependencies) {
 
       return async function submitModerationRatingResponder(request = {}) {
         const prerequisiteResult = resolveRequestPrerequisites(request);
+        return resolveAndRespond(prerequisiteResult);
+      };
 
-        if ('error' in prerequisiteResult) {
-          const contextResult = await resolveContextResult(prerequisiteResult);
-          return contextResult.error;
-        }
-
+      /**
+       * Build the final response after context resolution.
+       * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
+       * @returns {Promise<SubmitModerationRatingResponse>} Promise resolved with the HTTP response pair.
+       */
+      async function resolveAndRespond(prerequisiteResult) {
         const contextResult = await resolveContextResult(prerequisiteResult);
         if ('error' in contextResult) {
           return contextResult.error;
         }
 
+        const successPrerequisite =
+          /** @type {SubmitModerationRatingPrerequisiteSuccess} */ (
+            prerequisiteResult
+          );
+
         return processValidRating({
           contextResult,
-          bodyResult: prerequisiteResult.bodyResult,
+          bodyResult: successPrerequisite.bodyResult,
         });
-      };
+      }
     },
   });
 }
@@ -522,12 +530,31 @@ function resolveRequestPrerequisites(request) {
     return { error: methodError };
   }
 
+  return resolveBodyAndToken(request);
+}
+
+/**
+ * Validate the request body and resolve token data.
+ * @param {SubmitModerationRatingRequest} request HTTP-style request.
+ * @returns {SubmitModerationRatingPrerequisiteResult} Prerequisite outcome so the handler can continue.
+ */
+function resolveBodyAndToken(request) {
   const bodyResult = validateRatingBody(request.body);
   if (bodyResult.error) {
     return bodyResult;
   }
 
   const tokenResult = resolveAuthorizationToken(request);
+  return finalizeTokenResult(bodyResult, tokenResult);
+}
+
+/**
+ * Normalize the token resolution result after a validated body.
+ * @param {SubmitModerationRatingBodySuccess} bodyResult Normalized body payload.
+ * @param {{ token?: string, error?: SubmitModerationRatingResponse }} tokenResult Token lookup outcome.
+ * @returns {SubmitModerationRatingPrerequisiteResult} Prerequisite outcome.
+ */
+function finalizeTokenResult(bodyResult, tokenResult) {
   if ('error' in tokenResult) {
     return tokenResult;
   }
