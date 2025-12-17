@@ -7,7 +7,6 @@ import {
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
   normalizeAuthorizationCandidate,
-  returnErrorResultOrValue,
 } from './cloud-core.js';
 import { createCloudSubmitHandler } from '../submit-shared.js';
 import { createResponder } from '../responder-utils.js';
@@ -45,6 +44,34 @@ const INVALID_BODY_RESPONSE = {
  * @property {(rating: { id: string, moderatorId: string, variantId: string, isApproved: boolean, ratedAt: unknown }) => Promise<void> | void} recordModerationRating Persist the submitted rating.
  * @property {() => string} randomUUID Generate a unique identifier for the rating entry.
  * @property {() => unknown} getServerTimestamp Provide the timestamp stored with the rating.
+ */
+
+/**
+ * @typedef {{ error: SubmitModerationRatingResponse }} SubmitModerationRatingErrorResult
+ */
+/**
+ * @typedef {{ isApproved: boolean }} SubmitModerationRatingBodySuccess
+ */
+/**
+ * @typedef {SubmitModerationRatingBodySuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingBodyResult
+ */
+/**
+ * @typedef {{ bodyResult: SubmitModerationRatingBodySuccess, token: string }} SubmitModerationRatingPrerequisiteSuccess
+ */
+/**
+ * @typedef {SubmitModerationRatingPrerequisiteSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingPrerequisiteResult
+ */
+/**
+ * @typedef {{ uid: string, assignment: ModeratorAssignment }} SubmitModerationRatingContextSuccess
+ */
+/**
+ * @typedef {SubmitModerationRatingContextSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingContextResult
+ */
+/**
+ * @typedef {{ uid: string }} SubmitModerationRatingUidSuccess
+ */
+/**
+ * @typedef {SubmitModerationRatingUidSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingUidResult
  */
 
 /**
@@ -424,13 +451,9 @@ export function createSubmitModerationRatingResponder(dependencies) {
       } = deps;
 
       /**
-       *
-       * @param context
-       */
-      /**
        * Process a rating when prerequisites and context are valid.
-       * @param {{ contextResult: { uid?: string, assignment?: ModeratorAssignment }, bodyResult: { isApproved?: boolean } }} context Context data.
-       * @returns {Promise<object>} Success response payload.
+       * @param {{ contextResult: SubmitModerationRatingContextSuccess, bodyResult: SubmitModerationRatingBodySuccess }} context Context data.
+       * @returns {Promise<SubmitModerationRatingResponse>} Success response payload.
        */
       async function processValidRating(context) {
         const { contextResult, bodyResult } = context;
@@ -450,36 +473,31 @@ export function createSubmitModerationRatingResponder(dependencies) {
       }
 
       /**
-       *
-       * @param bodyResult
-       * @param contextResult
-       */
-      /**
        * Build the response once the context lookup finishes.
-       * @param {{ isApproved?: boolean, error?: SubmitModerationRatingResponse }} bodyResult Body validation result.
-       * @param {{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }} contextResult Moderator context outcome.
+       * @param {SubmitModerationRatingBodySuccess | undefined} bodyResult Body validation result when available.
+       * @param {SubmitModerationRatingContextResult} contextResult Moderator context outcome.
        * @returns {Promise<SubmitModerationRatingResponse>} Handler response.
        */
       function resolveResponseFromContext(bodyResult, contextResult) {
-        if (contextResult.error) {
+        if ('error' in contextResult) {
           return Promise.resolve(contextResult.error);
+        }
+
+        if (!bodyResult) {
+          throw new Error('Missing rating body after successful prerequisites');
         }
 
         return processValidRating({ contextResult, bodyResult });
       }
 
       /**
-       *
-       * @param prerequisiteResult
-       */
-      /**
        * Resolve the moderator context or propagate the prerequisite error.
-       * @param {{ error?: SubmitModerationRatingResponse, token?: string }} prerequisiteResult Prerequisite outcome.
-       * @returns {Promise<{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }>} Context resolution result.
+       * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
+       * @returns {Promise<SubmitModerationRatingContextResult>} Context resolution result.
        */
       function resolveContextResult(prerequisiteResult) {
-        if (prerequisiteResult.error) {
-          return Promise.resolve({ error: prerequisiteResult.error });
+        if ('error' in prerequisiteResult) {
+          return Promise.resolve(prerequisiteResult);
         }
 
         return resolveModeratorContext({
@@ -492,11 +510,12 @@ export function createSubmitModerationRatingResponder(dependencies) {
       return async function submitModerationRatingResponder(request = {}) {
         const prerequisiteResult = resolveRequestPrerequisites(request);
         const contextResult = await resolveContextResult(prerequisiteResult);
+        const bodyResult =
+          'bodyResult' in prerequisiteResult
+            ? prerequisiteResult.bodyResult
+            : undefined;
 
-        return resolveResponseFromContext(
-          prerequisiteResult.bodyResult,
-          contextResult
-        );
+        return resolveResponseFromContext(bodyResult, contextResult);
       };
     },
   });
@@ -505,31 +524,25 @@ export function createSubmitModerationRatingResponder(dependencies) {
 /**
  * Resolve prerequisites needed for further processing.
  * @param {SubmitModerationRatingRequest} request Request.
- * @returns {{ error?: SubmitModerationRatingResponse, bodyResult?: { isApproved: boolean }, token?: string }} Result.
+ * @returns {SubmitModerationRatingPrerequisiteResult} Result.
  */
 function resolveRequestPrerequisites(request) {
   const methodError = validatePostMethod(request.method);
+  if (methodError) {
+    return { error: methodError };
+  }
+
   const bodyResult = validateRatingBody(request.body);
+  if (bodyResult.error) {
+    return bodyResult;
+  }
+
   const tokenResult = resolveAuthorizationToken(request);
-  const error = findFirstError([
-    methodError,
-    bodyResult.error,
-    tokenResult.error,
-  ]);
+  if ('error' in tokenResult) {
+    return tokenResult;
+  }
 
-  return returnErrorResultOrValue(error, () => ({
-    bodyResult,
-    token: tokenResult.token,
-  }));
-}
-
-/**
- * Find the first error in a list.
- * @param {Array<SubmitModerationRatingResponse | undefined | null>} errors Errors.
- * @returns {SubmitModerationRatingResponse | undefined} First error.
- */
-function findFirstError(errors) {
-  return errors.find(error => Boolean(error));
+  return { bodyResult, token: tokenResult.token };
 }
 
 /**
@@ -542,13 +555,14 @@ function extractIsApproved(body) {
     return undefined;
   }
 
-  return body.isApproved;
+  const normalizedBody = /** @type {{ isApproved?: unknown }} */ (body);
+  return normalizedBody.isApproved;
 }
 
 /**
  * Validate the submitted rating payload.
  * @param {unknown} body Request body parsed by the HTTP handler.
- * @returns {{ isApproved?: boolean, error?: SubmitModerationRatingResponse }} Validation outcome containing the normalized approval flag or an error response.
+ * @returns {SubmitModerationRatingBodyResult} Validation outcome containing the normalized approval flag or an error response.
  */
 function validateRatingBody(body) {
   const isApproved = extractIsApproved(body);
@@ -580,7 +594,7 @@ function resolveAuthorizationToken(request) {
  * Resolve UID safely.
  * @param {Function} verifyIdToken Verifier.
  * @param {string} token Token.
- * @returns {Promise<object>} Result.
+ * @returns {Promise<SubmitModerationRatingUidResult>} Result.
  */
 async function resolveUidSafely(verifyIdToken, token) {
   return resolveUid(verifyIdToken, token)
@@ -592,7 +606,7 @@ async function resolveUidSafely(verifyIdToken, token) {
  * Resolve assignment and build context.
  * @param {Function} fetchModeratorAssignment Fetcher.
  * @param {string} uid UID.
- * @returns {Promise<object>} Result.
+ * @returns {Promise<SubmitModerationRatingContextResult>} Result.
  */
 async function resolveAssignmentAndBuildContext(fetchModeratorAssignment, uid) {
   const assignment = await resolveModeratorAssignment(
@@ -614,7 +628,7 @@ async function resolveAssignmentAndBuildContext(fetchModeratorAssignment, uid) {
  *   fetchModeratorAssignment: SubmitModerationRatingDependencies['fetchModeratorAssignment'],
  *   token: string
  * }} deps Dependencies required to validate the token and load the assignment.
- * @returns {Promise<{ uid?: string, assignment?: ModeratorAssignment, error?: SubmitModerationRatingResponse }>} Resulting context or an error response.
+ * @returns {Promise<SubmitModerationRatingContextResult>} Resulting context or an error response.
  */
 async function resolveModeratorContext({
   verifyIdToken,
@@ -622,7 +636,7 @@ async function resolveModeratorContext({
   token,
 }) {
   const uidResult = await resolveUidSafely(verifyIdToken, token);
-  if (uidResult.error) {
+  if ('error' in uidResult) {
     return uidResult;
   }
 

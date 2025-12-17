@@ -1,0 +1,6 @@
+# TSDoc check progress
+
+- Running `npm run tsdoc:check` exposed the (expectedly) massive number of `checkJS` strict errors in `src/core`, which was surprising because the repo keeps relying on loose JavaScript. To make tangible progress I zeroed in on `src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js` rather than tackling the entire sweep.
+- Diagnosed the pain point as the responder flow having too many loosely typed objects, so I replaced the shared `returnErrorResultOrValue` helper with explicit success/error unions, added typed body/context results, and guarded the responder so TypeScript now knows `bodyResult`/`assignment` exist when the flow got that far.
+- Key takeaway: these modules benefit from explicit unions plus `in` guards; once that pattern is in place the `tsdoc` compiler stops yelling about missing properties. A broader plan would be to replicate the pattern (and maybe add `.d.ts` helpers) before trying to clean the large `admin-core` surface.
+- Open questions: should we bite the bullet and start migrating parts of `src/core` to `.ts` or staged type definitions so `tsdoc` stops failing everywhere? Also worth deciding if the tsconfig for `tsdoc:check` should eventually run on a smaller slice so the signal is actionable.
