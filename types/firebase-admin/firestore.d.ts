@@ -51,6 +51,7 @@ declare module 'firebase-admin/firestore' {
     doc(path: string): DocumentReference;
     batch(): WriteBatch;
     runTransaction<T>(transactionFn: (txn: Transaction) => Promise<T>): Promise<T>;
+    collectionGroup(collectionId: string): CollectionGroup;
   }
 
   export interface Transaction {

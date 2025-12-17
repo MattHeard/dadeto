@@ -4,10 +4,13 @@
 /**
  * Encodes a string to Base64 using the environment helper.
  * @param {string} input - String to encode.
- * @param {Map<string, Function>} env - Environment map with `encodeBase64`.
+ * @param {Map<string, (value: string) => string>} env - Environment map with `encodeBase64`.
  * @returns {string} The Base64 encoded string.
  */
 export function encodeBase64(input, env) {
   const encodeBase64 = env.get('encodeBase64');
+  if (!encodeBase64) {
+    throw new Error('encodeBase64 helper is missing');
+  }
   return encodeBase64(input);
 }
