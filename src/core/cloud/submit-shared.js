@@ -23,26 +23,26 @@ function normalizeShortSubmissionString(value) {
 const responderHandlers = {
   /**
    * JSON response handler.
-   * @param {import('express').Response} res
-   * @param {number} status
-   * @param {Record<string, unknown>} body
+   * @param {import('express').Response} res Response used to send JSON payloads.
+   * @param {number} status HTTP status code to emit.
+   * @param {Record<string, unknown>} body Payload to serialize as JSON.
    */
   object(res, status, body) {
     res.status(status).json(body);
   },
   /**
    * Handler used when the responder returns `undefined`.
-   * @param {import('express').Response} res
-   * @param {number} status
+   * @param {import('express').Response} res Response for status-only replies.
+   * @param {number} status HTTP status code to emit.
    */
   undefined(res, status) {
     res.sendStatus(status);
   },
   /**
    * Primitive payload handler.
-   * @param {import('express').Response} res
-   * @param {number} status
-   * @param {unknown} body
+   * @param {import('express').Response} res Response used to write primitives.
+   * @param {number} status HTTP status code to emit.
+   * @param {unknown} body Payload echoed through `send`.
    */
   default(res, status, body) {
     res.status(status).send(body);
@@ -51,17 +51,20 @@ const responderHandlers = {
 
 /**
  * Map the result payload type to the correct responder key.
- * @param {boolean} isUndefined
- * @returns {'undefined' | 'default'}
+ * @param {boolean} isUndefined Whether the responder returned `undefined`.
+ * @returns {'undefined' | 'default'} Key that selects the correct handler.
  */
 function responderKeyByType(isUndefined) {
-  return isUndefined ? 'undefined' : 'default';
+  if (isUndefined) {
+    return 'undefined';
+  }
+  return 'default';
 }
 
 /**
  * Guard for object payloads so the response handler can treat them as JSON.
- * @param {unknown} value
- * @returns {value is Record<string, unknown>}
+ * @param {unknown} value Candidate payload to evaluate.
+ * @returns {value is Record<string, unknown>} True when the value is a non-null object.
  */
 function isObjectBody(value) {
   return typeof value === 'object' && value !== null;
