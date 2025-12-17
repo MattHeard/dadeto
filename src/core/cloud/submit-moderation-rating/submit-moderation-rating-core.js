@@ -56,16 +56,16 @@ const INVALID_BODY_RESPONSE = {
  * @typedef {SubmitModerationRatingBodySuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingBodyResult
  */
 /**
+ * @typedef {{ token: string }} SubmitModerationRatingAuthorizationSuccess
+ */
+/**
+ * @typedef {SubmitModerationRatingAuthorizationSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingAuthorizationResult
+ */
+/**
  * @typedef {{ bodyResult: SubmitModerationRatingBodySuccess, token: string }} SubmitModerationRatingPrerequisiteSuccess
  */
 /**
  * @typedef {SubmitModerationRatingPrerequisiteSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingPrerequisiteResult
- */
-/**
- * @typedef {{ uid: string, assignment: ModeratorAssignment }} SubmitModerationRatingContextSuccess
- */
-/**
- * @typedef {SubmitModerationRatingContextSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingContextResult
  */
 /**
  * @typedef {{ uid: string }} SubmitModerationRatingUidSuccess
@@ -73,13 +73,23 @@ const INVALID_BODY_RESPONSE = {
 /**
  * @typedef {SubmitModerationRatingUidSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingUidResult
  */
+/**
+ * @typedef {{ uid: string, assignment: ModeratorAssignment }} SubmitModerationRatingContextSuccess
+ */
+/**
+ * @typedef {SubmitModerationRatingContextSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingContextResult
+ */
 
 /**
  * Try authorization headers.
- * @param {Function} getter Getter.
+ * @param {((name: string) => string | null | undefined) | undefined} getter Getter.
  * @returns {string | null} Header.
  */
 function tryAuthorizationHeaders(getter) {
+  if (!getter) {
+    return null;
+  }
+
   const uppercase = getHeaderFromGetter(getter, 'Authorization');
   if (uppercase) {
     return uppercase;
@@ -147,18 +157,25 @@ function normalizeHeadersObject(headers) {
     return null;
   }
 
-  return headers;
+  return /** @type {Record<string, unknown>} */ (headers);
 }
 
 /**
  * Resolve an Authorization header from a heterogeneous request shape.
- * @param {{ get?: (name: string) => unknown, headers?: Record<string, unknown> | null }} request Request-like value.
+ * @param {{ get?: (name: string) => unknown, headers?: Record<string, unknown> | null } | undefined} request Request-like value.
  * @returns {string | null} Header value when present, otherwise null.
  */
 function getAuthorizationHeader(request) {
+  const typedRequest =
+    /** @type {SubmitModerationRatingRequest | undefined} */ (request);
+  const typedHeaders =
+    /** @type {Record<string, unknown> | null | undefined} */ (
+      request?.headers
+    );
+
   return resolveFirstNonNullValue(
-    () => readAuthorizationFromGetter(request),
-    () => readAuthorizationFromHeaders(request?.headers)
+    () => readAuthorizationFromGetter(typedRequest),
+    () => readAuthorizationFromHeaders(typedHeaders)
   );
 }
 
@@ -168,13 +185,18 @@ function getAuthorizationHeader(request) {
  * @returns {string | null} First non-null result or null when none match.
  */
 function resolveFirstNonNullValue(...resolvers) {
-  return resolvers.reduce((result, resolver) => {
-    if (result === null) {
-      return resolver();
-    }
+  return resolvers.reduce(
+    /** @type {(result: string | null, resolver: () => string | null) => string | null} */ (
+      (result, resolver) => {
+        if (result === null) {
+          return resolver();
+        }
 
-    return result;
-  }, null);
+        return result;
+      }
+    ),
+    /** @type {string | null} */ (null)
+  );
 }
 
 /**
@@ -258,7 +280,7 @@ function ensureBoolean(value) {
 
 /**
  * Validate decoded UID.
- * @param {object} decoded Decoded token.
+ * @param {{ uid?: unknown }} decoded Decoded token.
  * @returns {string | null} UID or null.
  */
 function validateDecodedUid(decoded) {
@@ -319,7 +341,26 @@ function getTokenErrorMessage(err) {
  * @returns {string | undefined} Message.
  */
 function extractErrorMessage(err) {
-  return err?.message;
+  if (!isNonNullObject(err)) {
+    return undefined;
+  }
+
+  return getMessageFromErrorObject(
+    /** @type {Record<string, unknown>} */ (err)
+  );
+}
+
+/**
+ * Extract the message when the object has a string field.
+ * @param {Record<string, unknown>} object Candidate error-like object.
+ * @returns {string | undefined} Message when present.
+ */
+function getMessageFromErrorObject(object) {
+  if (typeof object.message === 'string') {
+    return object.message;
+  }
+
+  return undefined;
 }
 
 /**
@@ -330,7 +371,8 @@ function extractErrorMessage(err) {
  */
 function stripDefaultTokenMessage(error, message) {
   if (message === 'Invalid or expired token') {
-    delete error.message;
+    const typedError = /** @type {{ message?: string }} */ (error);
+    typedError.message = undefined;
   }
 }
 
@@ -378,19 +420,19 @@ function isValidVariantId(variantId) {
 /**
  * Normalize clear assignment.
  * @param {unknown} clearAssignment Clear assignment.
- * @returns {Function | null} Normalized.
+ * @returns {(() => Promise<void> | void) | null} Normalized callback.
  */
 function normalizeClearAssignment(clearAssignment) {
   if (typeof clearAssignment === 'function') {
-    return clearAssignment;
+    return /** @type {() => Promise<void> | void} */ (clearAssignment);
   }
   return null;
 }
 
 /**
  * Build assignment result.
- * @param {object} assignment Assignment.
- * @returns {object} Result.
+ * @param {ModeratorAssignment} assignment Assignment.
+ * @returns {ModeratorAssignment} Result.
  */
 function buildAssignmentResult(assignment) {
   return {
@@ -434,89 +476,91 @@ function isValidAssignment(assignment) {
  * @returns {(request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} Responder that validates and processes submissions.
  */
 export function createSubmitModerationRatingResponder(dependencies) {
-  return createResponder({
-    dependencies,
-    requiredFunctionNames: [
-      'verifyIdToken',
-      'fetchModeratorAssignment',
-      'recordModerationRating',
-    ],
-    handlerFactory: deps => {
-      const {
-        verifyIdToken,
-        fetchModeratorAssignment,
-        recordModerationRating,
-        randomUUID,
-        getServerTimestamp,
-      } = deps;
-
-      /**
-       * Process a rating when prerequisites and context are valid.
-       * @param {{ contextResult: SubmitModerationRatingContextSuccess, bodyResult: SubmitModerationRatingBodySuccess }} context Context data.
-       * @returns {Promise<SubmitModerationRatingResponse>} Success response payload.
-       */
-      async function processValidRating(context) {
-        const { contextResult, bodyResult } = context;
-
-        const ratingId = randomUUID();
-        await recordModerationRating({
-          id: ratingId,
-          moderatorId: contextResult.uid,
-          variantId: contextResult.assignment.variantId,
-          isApproved: bodyResult.isApproved,
-          ratedAt: getServerTimestamp(),
-        });
-
-        await clearAssignment(contextResult.assignment);
-
-        return createResponse(201, {});
-      }
-
-      /**
-       * Resolve the moderator context or propagate the prerequisite error.
-       * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
-       * @returns {Promise<SubmitModerationRatingContextResult>} Context resolution result.
-       */
-      function resolveContextResult(prerequisiteResult) {
-        if ('error' in prerequisiteResult) {
-          return Promise.resolve(prerequisiteResult);
-        }
-
-        return resolveModeratorContext({
+  return /** @type {(request?: SubmitModerationRatingRequest) => Promise<SubmitModerationRatingResponse>} */ (
+    createResponder({
+      dependencies,
+      requiredFunctionNames: [
+        'verifyIdToken',
+        'fetchModeratorAssignment',
+        'recordModerationRating',
+      ],
+      handlerFactory: deps => {
+        const {
           verifyIdToken,
           fetchModeratorAssignment,
-          token: prerequisiteResult.token,
-        });
-      }
+          recordModerationRating,
+          randomUUID,
+          getServerTimestamp,
+        } = /** @type {SubmitModerationRatingDependencies} */ (deps);
 
-      return async function submitModerationRatingResponder(request = {}) {
-        const prerequisiteResult = resolveRequestPrerequisites(request);
-        return resolveAndRespond(prerequisiteResult);
-      };
+        /**
+         * Process a rating when prerequisites and context are valid.
+         * @param {{ contextResult: SubmitModerationRatingContextSuccess, bodyResult: SubmitModerationRatingBodySuccess }} context Context data.
+         * @returns {Promise<SubmitModerationRatingResponse>} Success response payload.
+         */
+        async function processValidRating(context) {
+          const { contextResult, bodyResult } = context;
 
-      /**
-       * Build the final response after context resolution.
-       * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
-       * @returns {Promise<SubmitModerationRatingResponse>} Promise resolved with the HTTP response pair.
-       */
-      async function resolveAndRespond(prerequisiteResult) {
-        const contextResult = await resolveContextResult(prerequisiteResult);
-        if ('error' in contextResult) {
-          return contextResult.error;
+          const ratingId = randomUUID();
+          await recordModerationRating({
+            id: ratingId,
+            moderatorId: contextResult.uid,
+            variantId: contextResult.assignment.variantId,
+            isApproved: bodyResult.isApproved,
+            ratedAt: getServerTimestamp(),
+          });
+
+          await clearAssignment(contextResult.assignment);
+
+          return createResponse(201, {});
         }
 
-        const successPrerequisite =
-          /** @type {SubmitModerationRatingPrerequisiteSuccess} */ (
-            prerequisiteResult
-          );
+        /**
+         * Resolve the moderator context or propagate the prerequisite error.
+         * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
+         * @returns {Promise<SubmitModerationRatingContextResult>} Context resolution result.
+         */
+        function resolveContextResult(prerequisiteResult) {
+          if ('error' in prerequisiteResult) {
+            return Promise.resolve(prerequisiteResult);
+          }
 
-        return processValidRating({
-          contextResult,
-          bodyResult: successPrerequisite.bodyResult,
-        });
-      }
-    },
-  });
+          return resolveModeratorContext({
+            verifyIdToken,
+            fetchModeratorAssignment,
+            token: prerequisiteResult.token,
+          });
+        }
+
+        return async function submitModerationRatingResponder(request = {}) {
+          const prerequisiteResult = resolveRequestPrerequisites(request);
+          return resolveAndRespond(prerequisiteResult);
+        };
+
+        /**
+         * Build the final response after context resolution.
+         * @param {SubmitModerationRatingPrerequisiteResult} prerequisiteResult Prerequisite outcome.
+         * @returns {Promise<SubmitModerationRatingResponse>} Promise resolved with the HTTP response pair.
+         */
+        async function resolveAndRespond(prerequisiteResult) {
+          const contextResult = await resolveContextResult(prerequisiteResult);
+          if ('error' in contextResult) {
+            return contextResult.error;
+          }
+
+          const successPrerequisite =
+            /** @type {SubmitModerationRatingPrerequisiteSuccess} */ (
+              prerequisiteResult
+            );
+
+          return processValidRating({
+            contextResult,
+            bodyResult: successPrerequisite.bodyResult,
+          });
+        }
+      },
+    })
+  );
 }
 
 /**
@@ -540,7 +584,7 @@ function resolveRequestPrerequisites(request) {
  */
 function resolveBodyAndToken(request) {
   const bodyResult = validateRatingBody(request.body);
-  if (bodyResult.error) {
+  if ('error' in bodyResult) {
     return bodyResult;
   }
 
@@ -551,7 +595,7 @@ function resolveBodyAndToken(request) {
 /**
  * Normalize the token resolution result after a validated body.
  * @param {SubmitModerationRatingBodySuccess} bodyResult Normalized body payload.
- * @param {{ token?: string, error?: SubmitModerationRatingResponse }} tokenResult Token lookup outcome.
+ * @param {SubmitModerationRatingAuthorizationResult} tokenResult Token lookup outcome.
  * @returns {SubmitModerationRatingPrerequisiteResult} Prerequisite outcome.
  */
 function finalizeTokenResult(bodyResult, tokenResult) {
@@ -594,7 +638,7 @@ function validateRatingBody(body) {
 /**
  * Resolve a bearer token from the inbound request.
  * @param {SubmitModerationRatingRequest | undefined} request Incoming request object.
- * @returns {{ token: string } | { error: SubmitModerationRatingResponse }} Result containing the token or an error response.
+ * @returns {SubmitModerationRatingAuthorizationResult} Result containing the token or an error response.
  */
 function resolveAuthorizationToken(request) {
   const authorizationHeader = getAuthorizationHeader(request);
@@ -609,7 +653,7 @@ function resolveAuthorizationToken(request) {
 
 /**
  * Resolve UID safely.
- * @param {Function} verifyIdToken Verifier.
+ * @param {SubmitModerationRatingDependencies['verifyIdToken']} verifyIdToken Verifier.
  * @param {string} token Token.
  * @returns {Promise<SubmitModerationRatingUidResult>} Result.
  */
@@ -621,7 +665,7 @@ async function resolveUidSafely(verifyIdToken, token) {
 
 /**
  * Resolve assignment and build context.
- * @param {Function} fetchModeratorAssignment Fetcher.
+ * @param {SubmitModerationRatingDependencies['fetchModeratorAssignment']} fetchModeratorAssignment Fetcher.
  * @param {string} uid UID.
  * @returns {Promise<SubmitModerationRatingContextResult>} Result.
  */
