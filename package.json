@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false",
+    "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
     "test:e2e": "playwright test",
     "generate": "node src/build/generate.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
@@ -40,6 +41,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "jscpd": "^4.0.5",
     "prettier": "^3.5.3",
+    "typescript": "^5.9.3",
     "typhonjs-escomplex": "^0.1.0"
   }
 }
