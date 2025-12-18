@@ -1438,7 +1438,17 @@ async function fetchStoryData(storyRef) {
   if (!storyRef) {
     return null;
   }
-  return (await getStorySnapshot(storyRef)).data() ?? null;
+  return getStoryDataFromSnapshot(storyRef);
+}
+
+/**
+ * Get story data from snapshot.
+ * @param {object} storyRef Story ref.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentData | null>} Story data.
+ */
+async function getStoryDataFromSnapshot(storyRef) {
+  const snap = await getStorySnapshot(storyRef);
+  return snap.data() || null;
 }
 
 /**
@@ -1569,7 +1579,23 @@ function buildRootUrl(snap, variant) {
   if (!variant) {
     return undefined;
   }
-  return `/p/${snap.data()?.number}${variant.data().name}.html`;
+  return assembleRootUrl(snap, variant);
+}
+
+/**
+ * Assemble root URL.
+ * @param {any} snap Snap.
+ * @param {any} variant Variant.
+ * @returns {string} URL.
+ */
+function assembleRootUrl(snap, variant) {
+  const data = snap.data();
+  let pageNumber = '';
+  if (data) {
+    pageNumber = data.number;
+  }
+  const variantName = variant.data().name;
+  return `/p/${pageNumber}${variantName}.html`;
 }
 
 /**

@@ -1147,119 +1147,46 @@ src/core/cloud/render-contents/render-contents-core.js(1424,46): error TS2345: A
       Type 'Function' provides no match for the signature '(code: number): { send: (body: string) => void; }'.
 src/core/cloud/render-contents/render-contents-core.js(1568,39): error TS2345: Argument of type '{ status: Function; send: Function; json: Function; }' is not assignable to parameter of type 'NativeHttpResponse'.
   Property 'sendStatus' is missing in type '{ status: Function; send: Function; json: Function; }' but required in type 'NativeHttpResponse'.
-src/core/cloud/render-variant/render-variant-core.js(1073,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/cloud/render-variant/render-variant-core.js(1245,34): error TS2345: Argument of type '{ exists: boolean; data: Function; }' is not assignable to parameter of type 'DocumentSnapshot<DocumentData>'.
-  Type '{ exists: boolean; data: Function; }' is missing the following properties from type 'DocumentSnapshot<DocumentData>': id, get
-src/core/cloud/render-variant/render-variant-core.js(1290,51): error TS2532: Object is possibly 'undefined'.
-src/core/cloud/render-variant/render-variant-core.js(1301,12): error TS2365: Operator '>=' cannot be applied to types '{}' and 'number'.
-src/core/cloud/render-variant/render-variant-core.js(1360,21): error TS7006: Parameter 'data' implicitly has an 'any' type.
-src/core/cloud/render-variant/render-variant-core.js(1380,27): error TS18047: 'storyRef' is possibly 'null'.
-src/core/cloud/render-variant/render-variant-core.js(1380,36): error TS2339: Property 'get' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1426,32): error TS2345: Argument of type '((message?: unknown, ...optionalParams: unknown[]) => void) | undefined' is not assignable to parameter of type 'Function'.
-  Type 'undefined' is not assignable to type 'Function'.
-src/core/cloud/render-variant/render-variant-core.js(1459,40): error TS2339: Property 'rootPage' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1465,43): error TS2339: Property 'rootPage' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1585,11): error TS2339: Property 'authorPath' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(1585,23): error TS2339: Property 'file' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(1585,29): error TS2339: Property 'exists' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(1606,29): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
-src/core/cloud/render-variant/render-variant-core.js(1644,5): error TS2741: Property 'doc' is missing in type '{}' but required in type '{ doc: (path: string) => { get: () => Promise<{ data: () => Record<string, unknown> & { uuid: string; }; }>; }; }'.
-src/core/cloud/render-variant/render-variant-core.js(1645,5): error TS2741: Property 'file' is missing in type '{}' but required in type '{ file: (path: string) => { exists: () => Promise<[boolean]>; save: (content: string, options: object) => Promise<unknown>; }; }'.
-src/core/cloud/render-variant/render-variant-core.js(1807,28): error TS2339: Property 'exists' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1807,53): error TS2339: Property 'exists' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1874,24): error TS2339: Property 'doc' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1880,5): error TS2345: Argument of type '{ get: Function; }' is not assignable to parameter of type '{ get: () => Promise<{ exists: boolean; data: () => Record<string, any>; }>; }'.
+src/core/cloud/render-variant/render-variant-core.js(1487,29): error TS2345: Argument of type 'Record<string, any>' is not assignable to parameter of type '{ rootPage: DocumentReference<DocumentData>; }'.
+  Property 'rootPage' is missing in type 'Record<string, any>' but required in type '{ rootPage: DocumentReference<DocumentData>; }'.
+src/core/cloud/render-variant/render-variant-core.js(1755,5): error TS2741: Property 'doc' is missing in type '{}' but required in type '{ doc: (path: string) => { get: () => Promise<{ data: () => Record<string, unknown> & { uuid: string; }; }>; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(1756,5): error TS2741: Property 'file' is missing in type '{}' but required in type '{ file: (path: string) => { exists: () => Promise<[boolean]>; save: (content: string, options: object) => Promise<unknown>; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(1918,28): error TS2339: Property 'exists' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1918,53): error TS2339: Property 'exists' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1985,24): error TS2339: Property 'doc' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1991,5): error TS2345: Argument of type '{ get: Function; }' is not assignable to parameter of type '{ get: () => Promise<{ exists: boolean; data: () => Record<string, any>; }>; }'.
   Types of property 'get' are incompatible.
     Type 'Function' is not assignable to type '() => Promise<{ exists: boolean; data: () => Record<string, any>; }>'.
       Type 'Function' provides no match for the signature '(): Promise<{ exists: boolean; data: () => Record<string, any>; }>'.
-src/core/cloud/render-variant/render-variant-core.js(1892,15): error TS2339: Property 'parentVariantSnap' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1893,15): error TS2339: Property 'parentPageSnap' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1970,3): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+src/core/cloud/render-variant/render-variant-core.js(2003,15): error TS2339: Property 'parentVariantSnap' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2004,15): error TS2339: Property 'parentPageSnap' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2081,3): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
   Type 'null' is not assignable to type 'string | undefined'.
-src/core/cloud/render-variant/render-variant-core.js(2015,3): error TS2322: Type 'Function' is not assignable to type '(snap: { exists?: boolean | undefined; data: () => Record<string, any>; ref: { parent?: { parent?: any; } | undefined; }; }, context?: { params?: Record<string, string> | undefined; } | undefined) => Promise<...>'.
-  Type 'Function' provides no match for the signature '(snap: { exists?: boolean | undefined; data: () => Record<string, any>; ref: { parent?: { parent?: any; } | undefined; }; }, context?: { params?: Record<string, string> | undefined; } | undefined): Promise<...>'.
-src/core/cloud/render-variant/render-variant-core.js(2015,37): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ db: object; storage: object; fetchFn: Function; randomUUID: Function; projectId: string; urlMapName: string; cdnHost: string; consoleError: Function; bucketName: string; visibilityThreshold: number; }'.
-  Type '{}' is missing the following properties from type '{ db: object; storage: object; fetchFn: Function; randomUUID: Function; projectId: string; urlMapName: string; cdnHost: string; consoleError: Function; bucketName: string; visibilityThreshold: number; }': db, storage, fetchFn, randomUUID, and 6 more.
-src/core/cloud/render-variant/render-variant-core.js(2024,11): error TS2339: Property 'db' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2024,15): error TS2339: Property 'storage' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2024,24): error TS2339: Property 'fetchFn' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2024,33): error TS2339: Property 'randomUUID' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2024,45): error TS2339: Property 'projectId' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2024,56): error TS2339: Property 'urlMapName' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2024,68): error TS2339: Property 'cdnHost' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2035,65): error TS2339: Property 'consoleError' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2036,61): error TS2339: Property 'bucketName' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2038,20): error TS2339: Property 'visibilityThreshold' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2115,26): error TS2339: Property 'bucket' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2117,5): error TS2322: Type 'Function' is not assignable to type '(input: string, init?: object | undefined) => Promise<Response>'.
-  Type 'Function' provides no match for the signature '(input: string, init?: object | undefined): Promise<Response>'.
-src/core/cloud/render-variant/render-variant-core.js(2121,5): error TS2322: Type 'Function' is not assignable to type '() => string'.
-  Type 'Function' provides no match for the signature '(): string'.
-src/core/cloud/render-variant/render-variant-core.js(2122,5): error TS2322: Type 'Function' is not assignable to type '(message: string, ...optionalParams: unknown[]) => void'.
-  Type 'Function' provides no match for the signature '(message: string, ...optionalParams: unknown[]): void'.
-src/core/cloud/render-variant/render-variant-core.js(2132,13): error TS2339: Property 'db' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2132,17): error TS2339: Property 'bucket' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2132,25): error TS2339: Property 'consoleError' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2132,39): error TS2339: Property 'visibilityThreshold' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2132,60): error TS2339: Property 'invalidatePaths' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2136,7): error TS2739: Type '{}' is missing the following properties from type '{ exists?: boolean | undefined; data: () => Record<string, any>; ref: { parent?: { parent?: any; } | undefined; }; }': data, ref
-src/core/cloud/render-variant/render-variant-core.js(2148,7): error TS2741: Property 'ref' is missing in type '{}' but required in type '{ ref: { parent?: { parent?: any; } | undefined; }; }'.
-src/core/cloud/render-variant/render-variant-core.js(2157,32): error TS7006: Parameter 'snap' implicitly has an 'any' type.
-src/core/cloud/render-variant/render-variant-core.js(2202,5): error TS2322: Type 'unknown' is not assignable to type 'boolean'.
-src/core/cloud/render-variant/render-variant-core.js(2219,5): error TS2322: Type 'undefined' is not assignable to type 'object | null'.
-src/core/cloud/render-variant/render-variant-core.js(2221,15): error TS2339: Property 'ref' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2244,3): error TS2322: Type 'unknown' is not assignable to type '{ parent?: any; } | null'.
-src/core/cloud/render-variant/render-variant-core.js(2296,3): error TS2322: Type 'object | null' is not assignable to type '{ exists?: boolean | undefined; data: () => Record<string, any>; } | null'.
-  Property 'data' is missing in type '{}' but required in type '{ exists?: boolean | undefined; data: () => Record<string, any>; }'.
-src/core/cloud/render-variant/render-variant-core.js(2308,3): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
-  Type 'undefined' is not assignable to type 'boolean'.
-src/core/cloud/render-variant/render-variant-core.js(2318,5): error TS2339: Property 'snap' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2319,5): error TS2339: Property 'db' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2320,5): error TS2339: Property 'bucket' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2321,5): error TS2339: Property 'pageSnap' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2322,5): error TS2339: Property 'page' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2323,5): error TS2339: Property 'consoleError' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2324,5): error TS2339: Property 'visibilityThreshold' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2325,5): error TS2339: Property 'variant' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2331,5): error TS2353: Object literal may only specify known properties, and 'db' does not exist in type '{ snap: QueryDocumentSnapshot<DocumentData>; visibilityThreshold: number; consoleError?: ((message?: unknown, ...optionalParams: unknown[]) => void) | undefined; }'.
-src/core/cloud/render-variant/render-variant-core.js(2364,5): error TS2339: Property 'page' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2365,5): error TS2339: Property 'variant' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2366,5): error TS2339: Property 'options' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2367,5): error TS2339: Property 'storyTitle' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2368,5): error TS2339: Property 'authorName' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2369,5): error TS2339: Property 'authorUrl' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2370,5): error TS2339: Property 'parentUrl' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2371,5): error TS2339: Property 'firstPageUrl' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2388,5): error TS7006: Parameter 'option' implicitly has an 'any' type.
-src/core/cloud/render-variant/render-variant-core.js(2400,40): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean | undefined; data: () => Record<string, any>; }>; } | undefined; } | undefined; }; }'.
-  Property 'ref' is missing in type '{}' but required in type '{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean | undefined; data: () => Record<string, any>; }>; } | undefined; } | undefined; }; }'.
-src/core/cloud/render-variant/render-variant-core.js(2431,3): error TS2322: Type 'object | null' is not assignable to type '{ variant: Record<string, any>; page: Record<string, any>; parentUrl: string | undefined; html: string; filePath: string; openVariant: boolean; } | null'.
-  Type '{}' is missing the following properties from type '{ variant: Record<string, any>; page: Record<string, any>; parentUrl: string | undefined; html: string; filePath: string; openVariant: boolean; }': variant, page, parentUrl, html, and 2 more.
-src/core/cloud/render-variant/render-variant-core.js(2440,11): error TS2339: Property 'snap' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2446,26): error TS2345: Argument of type '{ pageData: object; }' is not assignable to parameter of type '{ snap: object; pageData: object; db: object; bucket: object; consoleError: Function; visibilityThreshold: number; }'.
-  Type '{ pageData: object; }' is missing the following properties from type '{ snap: object; pageData: object; db: object; bucket: object; consoleError: Function; visibilityThreshold: number; }': snap, db, bucket, consoleError, visibilityThreshold
-src/core/cloud/render-variant/render-variant-core.js(2468,11): error TS2339: Property 'pageSnap' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2468,21): error TS2339: Property 'page' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2469,24): error TS2339: Property 'data' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2509,16): error TS2339: Property 'file' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2521,11): error TS2339: Property 'snap' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2521,17): error TS2339: Property 'bucket' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2521,25): error TS2339: Property 'page' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2527,3): error TS2322: Type 'string' is not assignable to type 'void'.
-src/core/cloud/render-variant/render-variant-core.js(2538,15): error TS2339: Property 'incomingOption' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2581,16): error TS2339: Property 'file' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2634,33): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2130,3): error TS2322: Type 'Function' is not assignable to type '(snap: any, context?: any) => Promise<null>'.
+  Type 'Function' provides no match for the signature '(snap: any, context?: any): Promise<null>'.
+src/core/cloud/render-variant/render-variant-core.js(2150,52): error TS2345: Argument of type '((message?: unknown, ...optionalParams: unknown[]) => void) | undefined' is not assignable to parameter of type '(message?: unknown, ...optionalParams: unknown[]) => void | undefined'.
+  Type 'undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void | undefined'.
+src/core/cloud/render-variant/render-variant-core.js(2232,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/core/cloud/render-variant/render-variant-core.js(2636,40): error TS2345: Argument of type 'void' is not assignable to parameter of type 'string'.
-src/core/cloud/render-variant/render-variant-core.js(2671,32): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2672,18): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2695,43): error TS2345: Argument of type '{ params?: Record<string, string> | undefined; } | undefined' is not assignable to parameter of type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2233,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2271,32): error TS7006: Parameter 'snap' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(2537,11): error TS2339: Property 'snap' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2614,3): error TS2322: Type 'string' is not assignable to type 'void'.
+src/core/cloud/render-variant/render-variant-core.js(2625,15): error TS2339: Property 'incomingOption' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2668,16): error TS2339: Property 'file' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2710,33): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2712,40): error TS2345: Argument of type 'void' is not assignable to parameter of type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2747,32): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2748,18): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2771,43): error TS2345: Argument of type '{ params?: Record<string, string> | undefined; } | undefined' is not assignable to parameter of type 'object'.
   Type 'undefined' is not assignable to type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2705,25): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2727,35): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2740,17): error TS2339: Property 'before' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2744,37): error TS2339: Property 'before' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2745,34): error TS2339: Property 'visibility' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2781,25): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2803,35): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2816,17): error TS2339: Property 'before' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2820,37): error TS2339: Property 'before' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2821,34): error TS2339: Property 'visibility' does not exist on type 'object'.
 src/core/cloud/submit-new-page/helpers.js(101,3): error TS2322: Type 'object | null' is not assignable to type '{ pageNumber: number; variantName: string; optionNumber: number; } | null'.
   Type '{}' is missing the following properties from type '{ pageNumber: number; variantName: string; optionNumber: number; }': pageNumber, variantName, optionNumber
 src/core/cloud/submit-new-page/helpers.js(111,49): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Firestore'.

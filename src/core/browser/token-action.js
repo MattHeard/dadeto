@@ -15,7 +15,6 @@ import { ensureFunction } from './browser-core.js';
 
 /**
  * @callback AdminTokenAction
- * @param {AdminTokenActionContext} context Contextual helpers passed to the action.
  * @returns {Promise<void>}
  */
 

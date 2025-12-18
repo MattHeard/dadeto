@@ -89,8 +89,9 @@ function readDisableAutoSelect(globalScope) {
  * @returns {unknown} Candidate disable helper or undefined when absent.
  */
 function getDisableAutoSelectCandidate(globalScope) {
+  const scope = /** @type {any} */ (globalScope);
   return getNestedProperty(
-    globalScope,
+    scope,
     'google',
     'accounts',
     'id',
@@ -107,7 +108,7 @@ function getDisableAutoSelectCandidate(globalScope) {
 function getNestedProperty(source, ...keys) {
   return keys.reduce(
     (cursor, key) => resolveNestedProperty(cursor, key),
-    source
+    /** @type {any} */ (source)
   );
 }
 
@@ -152,8 +153,10 @@ function isDisableAutoSelectFunction(value) {
 export function createSignOut(authInstance, globalScope) {
   return createGoogleSignOut({
     authSignOut: authInstance.signOut.bind(authInstance),
-    storage: createSessionStorageHandler(globalScope),
-    disableAutoSelect: createDisableAutoSelect(globalScope),
+    storage: createSessionStorageHandler(/** @type {any} */ (globalScope)),
+    disableAutoSelect: createDisableAutoSelect(
+      /** @type {any} */ (globalScope)
+    ),
   });
 }
 
@@ -164,6 +167,7 @@ export function createSignOut(authInstance, globalScope) {
  * @returns {() => () => Promise<void>} Memoized factory returning the sign-out handler.
  */
 export function createSignOutHandlerFactory(getAuthFn, globalScope) {
+  /** @type {(() => Promise<void>) | undefined} */
   let signOutHandler;
 
   return () => ensureSignOutHandler();
@@ -207,12 +211,16 @@ export function createGoogleAuthModule(deps) {
     getAuthFn,
     sessionStorageObj: storage,
     consoleObj,
-    globalThisObj: globalScope,
+    globalThisObj: /** @type {typeof globalThis} */ (globalScope),
     googleAuthProviderFn: Provider,
-    signInWithCredentialFn: credentialFactory,
+    signInWithCredentialFn: (auth, cred) => {
+      const result = credentialFactory(/** @type {string} */ (cred));
+      return /** @type {void | Promise<void>} */ (result);
+    },
   });
 
-  const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
+  const initGoogleSignIn = (/** @type {any} */ options) =>
+    getInitGoogleSignInHandler()(options);
 
   const getSignOutHandler = createSignOutHandlerFactory(getAuthFn, globalScope);
 
@@ -262,7 +270,11 @@ function resolveAdminEndpoint(config, key) {
   const endpointSources = [config, DEFAULT_ADMIN_ENDPOINTS];
   const sourceWithKey = endpointSources.find(source => key in source);
 
-  return sourceWithKey[key];
+  if (!sourceWithKey) {
+    return '';
+  }
+
+  return /** @type {any} */ (sourceWithKey)[key];
 }
 
 /**
@@ -310,6 +322,7 @@ export function createAdminEndpointsPromise(loadStaticConfigFn) {
  * }>} Function returning a memoized admin endpoints promise.
  */
 export function createGetAdminEndpoints(createAdminEndpointsPromiseFn) {
+  /** @type {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}> | undefined} */
   let adminEndpointsPromise;
 
   return function getAdminEndpoints() {
@@ -317,7 +330,9 @@ export function createGetAdminEndpoints(createAdminEndpointsPromiseFn) {
       adminEndpointsPromise = createAdminEndpointsPromiseFn();
     }
 
-    return adminEndpointsPromise;
+    return /** @type {Promise<{triggerRenderContentsUrl: string, markVariantDirtyUrl: string, generateStatsUrl: string}>} */ (
+      adminEndpointsPromise
+    );
   };
 }
 
@@ -367,8 +382,29 @@ export async function postTriggerRenderContents(
  * @returns {number | string} Known status code or the string "unknown" when unavailable.
  */
 function resolveTriggerRenderStatus(res) {
-  const status = res.status;
+  return extractStatus(res);
+}
+
+/**
+ * Extract status from response.
+ * @param {Response|null|undefined} res Response.
+ * @returns {number | string} Status.
+ */
+function extractStatus(res) {
+  const status = readStatusProperty(res);
   return status ?? 'unknown';
+}
+
+/**
+ * Read status property.
+ * @param {Response|null|undefined} res Response.
+ * @returns {number | undefined} Status.
+ */
+function readStatusProperty(res) {
+  if (res) {
+    return res.status;
+  }
+  return undefined;
 }
 
 /**
@@ -377,12 +413,29 @@ function resolveTriggerRenderStatus(res) {
  * @returns {string} Known status text or the string "unknown" when unavailable.
  */
 function resolveTriggerRenderStatusText(res) {
-  const statusText = res.statusText;
-  if (!statusText) {
-    return 'unknown';
-  }
+  return extractStatusText(res);
+}
 
-  return statusText;
+/**
+ * Extract status text from response.
+ * @param {Response|null|undefined} res Response.
+ * @returns {string} Status text.
+ */
+function extractStatusText(res) {
+  const statusText = readStatusTextProperty(res);
+  return statusText || 'unknown';
+}
+
+/**
+ * Read status text property.
+ * @param {Response|null|undefined} res Response.
+ * @returns {string | undefined} Status text.
+ */
+function readStatusTextProperty(res) {
+  if (res) {
+    return res.statusText;
+  }
+  return undefined;
 }
 
 /**
@@ -405,6 +458,18 @@ async function readTriggerRenderBody(res) {
  * @returns {(() => Promise<string>) | null} Callable reader or null when absent.
  */
 function getResponseTextReader(res) {
+  if (!res) {
+    return null;
+  }
+  return extractTextReader(res);
+}
+
+/**
+ * Extract text reader.
+ * @param {Response} res Response.
+ * @returns {(() => Promise<string>) | null} Reader.
+ */
+function extractTextReader(res) {
   const reader = res.text;
   if (typeof reader !== 'function') {
     return null;
@@ -420,7 +485,7 @@ function getResponseTextReader(res) {
  * @returns {Promise<string>} Promise resolving to response text or an empty string.
  */
 async function readResponseText(readText, res) {
-  const body = await readText.call(res);
+  const body = await readText.call(/** @type {Response} */ (res));
   return body || '';
 }
 
@@ -464,7 +529,7 @@ async function reportTriggerRenderFailure(res, showMessage) {
  * @returns {Promise<void>} Resolves after the trigger render result has been surfaced.
  */
 export async function announceTriggerRenderResult(res, showMessage) {
-  if (res.ok) {
+  if (isResponseOk(res)) {
     showMessage('Render triggered');
     return;
   }
@@ -553,12 +618,14 @@ export function createTriggerRender({
     fetchFn,
     showMessage,
     missingTokenMessage: 'Render failed: missing ID token',
-    action: ({
-      token,
-      getAdminEndpoints,
-      fetchFn: fetch,
-      showMessage: report,
-    }) =>
+    action: (
+      /** @type {any} */ {
+        token,
+        getAdminEndpoints,
+        fetchFn: fetch,
+        showMessage: report,
+      }
+    ) =>
       executeTriggerRender({
         getAdminEndpoints,
         fetchFn: fetch,
@@ -700,9 +767,10 @@ function createElementEventBinder(eventType) {
     if (!canListenToEvent(element)) {
       return null;
     }
+    const el = /** @type {EventTarget} */ (element);
 
-    element.addEventListener(eventType, listener);
-    return element;
+    el.addEventListener(eventType, listener);
+    return /** @type {HTMLElement} */ (element);
   };
 }
 
@@ -799,7 +867,8 @@ function attachSignOutLink(link, googleAuth) {
     return;
   }
 
-  link.addEventListener('click', createSignOutClickHandler(googleAuth));
+  const el = /** @type {EventTarget} */ (link);
+  el.addEventListener('click', createSignOutClickHandler(googleAuth));
 }
 
 /**
@@ -811,7 +880,9 @@ function attachSignOutLink(link, googleAuth) {
 function attachSignOutLinks(doc, googleAuth) {
   doc
     .querySelectorAll('#signoutLink')
-    .forEach(link => attachSignOutLink(link, googleAuth));
+    .forEach(link =>
+      attachSignOutLink(/** @type {HTMLElement} */ (link), googleAuth)
+    );
 }
 
 /**
@@ -904,48 +975,58 @@ function validateGoogleSignInDeps({
  *   querySelectorAll: (selector: string) => NodeList,
  *   logger?: { error?: (message: string) => void },
  * }} deps - Raw dependency bag.
- * @returns {{
- *   resolveGoogleAccountsId: () => GoogleAccountsClient | undefined,
- *   credentialFactory: (credential: string) => unknown,
- *   signInWithCredential: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
- *   auth: { currentUser?: { getIdToken?: () => Promise<string> } },
- *   storage: { setItem: (key: string, value: string) => void },
- *   matchMedia: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
- *   querySelectorAll: (selector: string) => NodeList,
- *   safeLogger: { error?: (message: string) => void },
- * }} Normalized dependencies with required helpers.
+ * @returns {NormalizedGoogleSignInDeps} Normalized dependencies with required helpers.
  */
 function normalizeGoogleSignInDeps(deps) {
   const normalizedDeps = summarizeGoogleSignInDeps(deps);
 
-  validateGoogleSignInDeps(normalizedDeps);
+  validateGoogleSignInDeps(/** @type {any} */ (normalizedDeps));
 
-  return normalizedDeps;
+  return /** @type {NormalizedGoogleSignInDeps} */ (normalizedDeps);
 }
 
 /**
+ * @typedef {object} GoogleSignInDeps
+ * @property {GoogleAccountsClient | (() => GoogleAccountsClient | undefined)} [googleAccountsId] - Google Identity client or resolver.
+ * @property {(credential: string) => unknown} [credentialFactory] - Factory for creating Firebase credentials.
+ * @property {(auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void} [signInWithCredential] - Helper to sign in with a credential.
+ * @property {{ currentUser?: { getIdToken?: () => Promise<string> } }} [auth] - Firebase auth instance.
+ * @property {{ setItem: (key: string, value: string) => void }} [storage] - Storage implementation for persisting tokens.
+ * @property {(query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void }} [matchMedia] - Media query matcher for theme detection.
+ * @property {(selector: string) => NodeList} [querySelectorAll] - DOM query helper for locating button targets.
+ * @property {{ error?: (message: string) => void }} [logger] - Optional logger for reporting errors.
+ */
+
+/**
+ * @typedef {object} SummarizedGoogleSignInDeps
+ * @property {GoogleAccountsClient | (() => GoogleAccountsClient | undefined)} [googleAccountsId] - Google Identity client or resolver.
+ * @property {(credential: string) => unknown} [credentialFactory] - Factory for creating Firebase credentials.
+ * @property {(auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void} [signInWithCredential] - Helper to sign in with a credential.
+ * @property {{ currentUser?: { getIdToken?: () => Promise<string> } }} [auth] - Firebase auth instance.
+ * @property {{ setItem: (key: string, value: string) => void }} [storage] - Storage implementation for persisting tokens.
+ * @property {(query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void }} [matchMedia] - Media query matcher for theme detection.
+ * @property {(selector: string) => NodeList} [querySelectorAll] - DOM query helper for locating button targets.
+ * @property {{ error?: (message: string) => void }} logger - Logger for reporting errors.
+ * @property {{ error?: (message: string) => void }} safeLogger - Safely initialized logger.
+ * @property {() => GoogleAccountsClient | undefined} resolveGoogleAccountsId - Resolver for the Google Identity client.
+ */
+
+/**
+ * @typedef {object} NormalizedGoogleSignInDeps
+ * @property {() => GoogleAccountsClient | undefined} resolveGoogleAccountsId - Resolver for the Google Identity client.
+ * @property {(credential: string) => unknown} credentialFactory - Factory for creating Firebase credentials.
+ * @property {(auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void} signInWithCredential - Helper to sign in with a credential.
+ * @property {{ currentUser?: { getIdToken?: () => Promise<string> } }} auth - Firebase auth instance.
+ * @property {{ setItem: (key: string, value: string) => void }} storage - Storage implementation for persisting tokens.
+ * @property {(query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void }} matchMedia - Media query matcher for theme detection.
+ * @property {(selector: string) => NodeList} querySelectorAll - DOM query helper for locating button targets.
+ * @property {{ error?: (message: string) => void }} safeLogger - Safely initialized logger.
+ */
+
+/**
  * Normalize the raw Google sign-in inputs without validation.
- * @param {{
- *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
- *   credentialFactory?: (credential: string) => unknown,
- *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
- *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
- *   storage?: { setItem?: (key: string, value: string) => void },
- *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
- *   querySelectorAll?: (selector: string) => NodeList,
- *   logger?: { error?: (message: string) => void },
- * } | undefined} deps - Raw dependency bag.
- * @returns {{
- *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
- *   credentialFactory?: (credential: string) => unknown,
- *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
- *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
- *   storage?: { setItem?: (key: string, value: string) => void },
- *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
- *   querySelectorAll?: (selector: string) => NodeList,
- *   safeLogger: { error?: (message: string) => void },
- *   resolveGoogleAccountsId: () => GoogleAccountsClient | undefined,
- * }} Normalized dependencies with resolver helpers.
+ * @param {GoogleSignInDeps | undefined} deps - Raw dependency bag.
+ * @returns {SummarizedGoogleSignInDeps} Normalized dependencies with resolver helpers.
  */
 function summarizeGoogleSignInDeps(deps) {
   const normalized = buildNormalizedGoogleSignInDeps(deps);
@@ -960,29 +1041,12 @@ function summarizeGoogleSignInDeps(deps) {
 
 /**
  * Prepare the raw dependency values with defaults but without validation.
- * @param {{
- *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
- *   credentialFactory?: (credential: string) => unknown,
- *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
- *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
- *   storage?: { setItem?: (key: string, value: string) => void },
- *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
- *   querySelectorAll?: (selector: string) => NodeList,
- *   logger?: { error?: (message: string) => void },
- * } | undefined} deps - Raw dependency bag.
- * @returns {{
- *   googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined),
- *   credentialFactory?: (credential: string) => unknown,
- *   signInWithCredential?: (auth: { currentUser?: { getIdToken?: () => Promise<string> } }, credential: unknown) => Promise<void> | void,
- *   auth?: { currentUser?: { getIdToken?: () => Promise<string> } },
- *   storage?: { setItem?: (key: string, value: string) => void },
- *   matchMedia?: (query: string) => { matches: boolean, addEventListener?: (type: string, listener: () => void) => void },
- *   querySelectorAll?: (selector: string) => NodeList,
- *   logger: { error?: (message: string) => void },
- * } | {}} Normalized dependency bag with defaults applied.
+ * @param {GoogleSignInDeps | undefined} deps - Raw dependency bag.
+ * @returns {SummarizedGoogleSignInDeps} Normalized dependency bag with defaults applied.
  */
 function buildNormalizedGoogleSignInDeps(deps) {
   const source = deps ?? {};
+  /** @type {SummarizedGoogleSignInDeps} */
   const normalized = {
     googleAccountsId: source.googleAccountsId,
     credentialFactory: source.credentialFactory,
@@ -992,6 +1056,8 @@ function buildNormalizedGoogleSignInDeps(deps) {
     matchMedia: source.matchMedia,
     querySelectorAll: source.querySelectorAll,
     logger: source.logger,
+    safeLogger: { error: () => {} },
+    resolveGoogleAccountsId: () => undefined,
   };
 
   return ensureLogger(normalized);
@@ -999,8 +1065,8 @@ function buildNormalizedGoogleSignInDeps(deps) {
 
 /**
  * Ensure logger exists.
- * @param {object} deps Deps.
- * @returns {object} Deps with logger.
+ * @param {SummarizedGoogleSignInDeps} deps Deps.
+ * @returns {SummarizedGoogleSignInDeps} Deps with logger.
  */
 function ensureLogger(deps) {
   applyDefaultLogger(deps);
@@ -1009,7 +1075,7 @@ function ensureLogger(deps) {
 
 /**
  * Assign the default console logger when no logger has been provided.
- * @param {object} deps Dependency bag to update.
+ * @param {SummarizedGoogleSignInDeps} deps Dependency bag to update.
  * @returns {void}
  */
 function applyDefaultLogger(deps) {
@@ -1055,7 +1121,7 @@ function resolveGoogleAccounts(googleAccountsId) {
  */
 function resolveLogger(logger) {
   if (hasLoggerError(logger)) {
-    return logger;
+    return /** @type {{ error: (message: string) => void }} */ (logger);
   }
   return console;
 }
@@ -1066,7 +1132,8 @@ function resolveLogger(logger) {
  * @returns {boolean} True when the client provides initialize and renderButton.
  */
 function hasRequiredGoogleIdentityMethods(accountsId) {
-  return hasInitializeMethod(accountsId) && hasRenderButtonMethod(accountsId);
+  const client = /** @type {GoogleAccountsClient} */ (accountsId);
+  return hasInitializeMethod(client) && hasRenderButtonMethod(client);
 }
 
 /**
@@ -1075,7 +1142,10 @@ function hasRequiredGoogleIdentityMethods(accountsId) {
  * @returns {void}
  */
 function reportMissingGoogleIdentity(logger) {
-  resolveLogger(logger).error('Google Identity script missing');
+  const safe = resolveLogger(logger);
+  if (typeof safe.error === 'function') {
+    safe.error('Google Identity script missing');
+  }
 }
 
 /**
@@ -1093,7 +1163,8 @@ function hasLoggerError(logger) {
  * @returns {boolean} True when `initialize` exists.
  */
 function hasInitializeMethod(accountsId) {
-  return Boolean(accountsId && typeof accountsId.initialize === 'function');
+  const client = /** @type {GoogleAccountsClient} */ (accountsId);
+  return Boolean(client && typeof client.initialize === 'function');
 }
 
 /**
@@ -1102,7 +1173,8 @@ function hasInitializeMethod(accountsId) {
  * @returns {boolean} True when `renderButton` exists.
  */
 function hasRenderButtonMethod(accountsId) {
-  return Boolean(accountsId && typeof accountsId.renderButton === 'function');
+  const client = /** @type {GoogleAccountsClient} */ (accountsId);
+  return Boolean(client && typeof client.renderButton === 'function');
 }
 
 /**
@@ -1133,7 +1205,7 @@ async function handleCredentialSignIn(
 
 /**
  * Build a getter for the current user's `getIdToken` method.
- * @param {{ getIdToken?: () => Promise<string> | () => string | null | undefined } | null | undefined} currentUser - Auth user object.
+ * @param {{ getIdToken?: (() => Promise<string>) | (() => string | null | undefined) } | null | undefined} currentUser - Auth user object.
  * @returns {() => Promise<string>} Function returning a promised token.
  */
 /**
@@ -1157,7 +1229,7 @@ function validateGetIdToken(getter) {
 function resolveGetIdToken(currentUser) {
   const getter = currentUser?.getIdToken;
   validateGetIdToken(getter);
-  return () => getter.call(currentUser);
+  return () => /** @type {() => Promise<string>} */ (getter).call(currentUser);
 }
 
 /**
@@ -1180,7 +1252,9 @@ function renderSignInButtons(accountsId, querySelectorAll, mediaQueryList) {
  * @returns {HTMLElement[]} Array of sign-in button elements.
  */
 function getSignInButtonElements(querySelectorAll) {
-  return Array.from(querySelectorAll('#signinButton') ?? []);
+  return /** @type {HTMLElement[]} */ (
+    Array.from(querySelectorAll('#signinButton') ?? [])
+  );
 }
 
 /**
@@ -1282,7 +1356,7 @@ function initGoogleSignInCore(deps, onSignIn) {
   const accountsId = resolveGoogleAccountsId();
 
   if (ensureGoogleIdentityAvailable(accountsId, safeLogger)) {
-    initializeGoogleSignIn(accountsId, {
+    initializeGoogleSignIn(/** @type {GoogleAccountsClient} */ (accountsId), {
       credentialFactory,
       signInWithCredential,
       auth,
@@ -1291,7 +1365,11 @@ function initGoogleSignInCore(deps, onSignIn) {
     });
 
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
-    setupSignInButtonRenderer(accountsId, querySelectorAll, mediaQueryList);
+    setupSignInButtonRenderer(
+      /** @type {GoogleAccountsClient} */ (accountsId),
+      querySelectorAll,
+      mediaQueryList
+    );
   }
 }
 
@@ -1314,7 +1392,8 @@ function initializeGoogleSignIn(accountsId, options) {
   accountsId.initialize({
     ['client_id']:
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-    callback: cred => handleCredentialSignIn(cred, options),
+    callback: (/** @type {any} */ cred) =>
+      handleCredentialSignIn(cred, options),
     ['ux_mode']: 'popup',
   });
 }
@@ -1348,8 +1427,10 @@ export function createTriggerStats({
       showMessage: report,
     }) => {
       try {
-        const { generateStatsUrl } = await getAdminEndpoints();
-        await fetch(generateStatsUrl, {
+        const endpoints = /** @type {{ generateStatsUrl: string }} */ (
+          await getAdminEndpoints()
+        );
+        await fetch(endpoints.generateStatsUrl, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -1383,7 +1464,7 @@ export function createRegenerateVariant(options) {
  * @returns {boolean} True when `getIdToken` is callable.
  */
 function hasGetIdToken(googleAuth) {
-  return typeof googleAuth.getIdToken === 'function';
+  return Boolean(googleAuth && typeof googleAuth.getIdToken === 'function');
 }
 
 /**
@@ -1399,7 +1480,7 @@ function ensureGoogleAuth(googleAuth) {
 
 /**
  * Check if auth is valid.
- * @param {object} googleAuth Auth.
+ * @param {any} googleAuth Auth.
  * @returns {boolean} True if valid.
  */
 function isValidAuth(googleAuth) {
@@ -1493,7 +1574,10 @@ function resolveValidPageVariant(doc, showMessage) {
  * @returns {string | null} Token.
  */
 function getTokenSafely(googleAuth) {
-  return googleAuth.getIdToken() || null;
+  const auth = /** @type {{ getIdToken: () => string | null | undefined }} */ (
+    googleAuth
+  );
+  return auth.getIdToken() || null;
 }
 
 /**
@@ -1539,7 +1623,8 @@ function resolvePageVariantPayload(doc, showMessage, token) {
  * @returns {boolean} True if can default.
  */
 function canPreventDefault(event) {
-  return Boolean(event && typeof event.preventDefault === 'function');
+  const e = /** @type {{ preventDefault?: () => void }} */ (event);
+  return Boolean(e && typeof e.preventDefault === 'function');
 }
 
 /**
@@ -1549,7 +1634,7 @@ function canPreventDefault(event) {
  */
 function preventDefaultEvent(event) {
   if (canPreventDefault(event)) {
-    event.preventDefault();
+    /** @type {Event} */ (event).preventDefault();
   }
 }
 
@@ -1581,7 +1666,9 @@ async function performRegenerationWhenReady(payload, deps) {
  * @returns {{page: number, variant: string} | null} Parsed page/variant info or null when invalid.
  */
 function getPageVariantFromDoc(doc) {
-  const input = doc.getElementById('regenInput');
+  const input = /** @type {HTMLInputElement | null} */ (
+    doc.getElementById('regenInput')
+  );
   return parsePageVariantInput(input);
 }
 
@@ -1641,7 +1728,8 @@ function parsePageVariantInput(inputElement) {
  * @returns {string} Value.
  */
 function getValueFromInput(inputElement) {
-  const { value } = inputElement;
+  const el = /** @type {HTMLInputElement} */ (inputElement);
+  const { value } = el;
   if (typeof value === 'string') {
     return value;
   }
@@ -1784,7 +1872,6 @@ function renderStatusParagraph(statusParagraph, text) {
  *   doc: Document,
  *   fetchFn: FetchFn,
  * }} options - Dependencies required for admin initialization.
- * @param {() => unknown} options.getAuthFn - Getter that returns the current auth instance.
  * @returns {void}
  */
 export function initAdmin({
@@ -1961,18 +2048,20 @@ export function updateAuthControlsDisplay(user, signIns, signOuts) {
   const isSignedIn = Boolean(user);
 
   signIns.forEach(element => {
+    const el = /** @type {HTMLElement} */ (element);
     if (isSignedIn) {
-      element.style.display = 'none';
+      el.style.display = 'none';
     } else {
-      element.style.display = '';
+      el.style.display = '';
     }
   });
 
   signOuts.forEach(element => {
+    const el = /** @type {HTMLElement} */ (element);
     if (isSignedIn) {
-      element.style.display = '';
+      el.style.display = '';
     } else {
-      element.style.display = 'none';
+      el.style.display = 'none';
     }
   });
 }
@@ -2021,10 +2110,11 @@ export function initAdminApp({
 }) {
   setupFirebase(initializeAppFn);
 
+  /** @type {((options?: GoogleSignInOptions) => Promise<void> | void) | undefined} */
   let initGoogleSignInHandler;
   const getInitGoogleSignInHandler = () => {
     if (!initGoogleSignInHandler) {
-      const auth = getAuthFn();
+      const auth = /** @type {object} */ (getAuthFn());
       initGoogleSignInHandler = createGoogleSignInInit({
         auth,
         storage: sessionStorageObj,
@@ -2039,10 +2129,13 @@ export function initAdminApp({
 
   const initGoogleSignIn = options => getInitGoogleSignInHandler()(options);
 
+  /** @type {(() => Promise<void>) | undefined} */
   let signOutHandler;
   const getSignOutHandler = () => {
     if (!signOutHandler) {
-      const auth = getAuthFn();
+      const auth = /** @type {{ signOut: () => void | Promise<void> }} */ (
+        getAuthFn()
+      );
       signOutHandler = createSignOut(auth, globalThisObj);
     }
     return signOutHandler;
@@ -2310,7 +2403,8 @@ export function buildGoogleSignInDeps({
  * @returns {(options?: GoogleSignInOptions) => Promise<void> | void} Initialized sign-in function.
  */
 export function createGoogleSignInInit(deps) {
-  return createInitGoogleSignIn(buildGoogleSignInDeps(deps));
+  const googleSignInDeps = buildGoogleSignInDeps(/** @type {any} */ (deps));
+  return createInitGoogleSignIn(googleSignInDeps);
 }
 
 /**
