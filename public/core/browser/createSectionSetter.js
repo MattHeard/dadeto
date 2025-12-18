@@ -2,20 +2,22 @@ import { isObject } from './common.js';
 import { safeJsonParse, deepMerge, deepClone } from './browser-core.js';
 
 /**
- * @typedef {{ ok: boolean; message?: string; data?: object }} ParseResult
+ * @typedef {{ ok: true; data: object; message?: string }} ParseSuccess
+ * @typedef {{ ok: false; message: string }} ParseFailure
+ * @typedef {ParseSuccess | ParseFailure} ParseResult
  */
 
 /**
  * Determine whether parsing yielded a valid object.
  * @param {ParseResult} result - Result from parsing JSON input.
- * @returns {result is { ok: true; data: object }} True when parsing succeeded with data.
+ * @returns {result is ParseSuccess} True when parsing succeeded with data.
  */
 function hasParsedData(result) {
   return result.ok && Boolean(result.data);
 }
 
 /**
- * @param {ParseResult} result - Result from parsing JSON input.
+ * @param {ParseFailure} result - Result from parsing JSON input.
  * @returns {string} Message describing why parsing failed.
  */
 function formatParseFailure(result) {

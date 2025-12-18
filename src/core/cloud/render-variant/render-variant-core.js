@@ -1535,13 +1535,11 @@ function handleRootPageError(error, consoleError) {
 /**
  * Log root page error.
  * @param {Error} error Error.
- * @param {Function} [consoleError] Error logger.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} consoleError Error logger.
  */
 function logRootPageError(error, consoleError) {
   const message = getErrorMessage(error);
-  if (consoleError) {
-    consoleError('root page lookup failed', message);
-  }
+  consoleError('root page lookup failed', message);
 }
 
 /**
@@ -1758,13 +1756,11 @@ function handleAuthorLookupError(error, consoleError) {
 /**
  * Log author lookup error.
  * @param {unknown} error Error.
- * @param {Function} [consoleError] Error logger.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} consoleError Error logger.
  */
 function logAuthorLookupError(error, consoleError) {
   const message = getErrorMessage(error);
-  if (consoleError) {
-    consoleError('author lookup failed', message);
-  }
+  consoleError('author lookup failed', message);
 }
 
 /**

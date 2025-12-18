@@ -497,6 +497,35 @@ describe('loadOptions', () => {
       },
     ]);
   });
+
+  it('uses the noop logger when consoleError is omitted', async () => {
+    const snap = {
+      ref: {
+        collection: () => ({
+          get: jest.fn().mockResolvedValue({
+            docs: [
+              {
+                data: () => ({
+                  content: 'Default',
+                  position: 0,
+                  targetPageNumber: 2,
+                }),
+              },
+            ],
+          }),
+        }),
+      },
+    };
+
+    const result = await loadOptions({
+      snap,
+      visibilityThreshold: 0.5,
+    });
+
+    expect(result).toEqual([
+      { content: 'Default', position: 0, targetPageNumber: 2 },
+    ]);
+  });
 });
 
 describe('resolveStoryMetadata', () => {
@@ -638,6 +667,50 @@ describe('resolveStoryMetadata', () => {
       storyTitle: '',
       firstPageUrl: undefined,
     });
+  });
+
+  it('handles story snapshots that return no data', async () => {
+    const storySnap = {
+      exists: true,
+      data: () => undefined,
+    };
+
+    const storyRef = {
+      get: jest.fn().mockResolvedValue(storySnap),
+    };
+
+    const pageSnap = {
+      ref: {
+        parent: { parent: storyRef },
+      },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: { incomingOption: true },
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({
+      storyTitle: '',
+      firstPageUrl: undefined,
+    });
+  });
+});
+
+describe('buildRootUrl', () => {
+  it('renders root URLs using page data when present', () => {
+    const snap = { data: () => ({ number: 9 }) };
+    const variant = { data: () => ({ name: 'alpha' }) };
+
+    expect(buildRootUrl(snap, variant)).toBe('/p/9alpha.html');
+  });
+
+  it('falls back to an empty page number when the snapshot lacks data', () => {
+    const snap = { data: () => undefined };
+    const variant = { data: () => ({ name: 'beta' }) };
+
+    expect(buildRootUrl(snap, variant)).toBe('/p/beta.html');
   });
 });
 
