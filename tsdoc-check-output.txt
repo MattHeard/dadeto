@@ -1,0 +1,1397 @@
+
+> blog-generator@1.0.0 tsdoc:check
+> tsc --project tsconfig.jsdoc.json
+
+src/core/browser/admin-core.js(93,5): error TS2345: Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'Record<string, unknown> | undefined'.
+  Type 'Window & typeof globalThis' is not assignable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'Window & typeof globalThis'.
+src/core/browser/admin-core.js(109,22): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: string, currentValue: string, currentIndex: number, array: string[]) => string, initialValue: string): string', gave the following error.
+    Type 'unknown' is not assignable to type 'string'.
+  Overload 2 of 3, '(callbackfn: (previousValue: Record<string, unknown> | undefined, currentValue: string, currentIndex: number, array: string[]) => Record<string, unknown> | undefined, initialValue: Record<...> | undefined): Record<...> | undefined', gave the following error.
+    Type 'unknown' is not assignable to type 'Record<string, unknown> | undefined'.
+src/core/browser/admin-core.js(156,48): error TS2345: Argument of type 'typeof globalThis' is not assignable to parameter of type 'Window & typeof globalThis'.
+  Property 'name' is missing in type 'typeof globalThis' but required in type 'Window'.
+src/core/browser/admin-core.js(167,7): error TS7034: Variable 'signOutHandler' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/browser/admin-core.js(176,10): error TS7005: Variable 'signOutHandler' implicitly has an 'any' type.
+src/core/browser/admin-core.js(212,5): error TS2322: Type '(credentials: string) => unknown' is not assignable to type '(auth: unknown, credential: unknown) => void | Promise<void>'.
+  Types of parameters 'credentials' and 'auth' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+src/core/browser/admin-core.js(215,28): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/core/browser/admin-core.js(265,10): error TS18048: 'sourceWithKey' is possibly 'undefined'.
+src/core/browser/admin-core.js(313,7): error TS7034: Variable 'adminEndpointsPromise' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/browser/admin-core.js(316,10): error TS7005: Variable 'adminEndpointsPromise' implicitly has an 'any' type.
+src/core/browser/admin-core.js(370,18): error TS18049: 'res' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(380,22): error TS18049: 'res' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(408,18): error TS18049: 'res' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(467,7): error TS18049: 'res' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(550,3): error TS2322: Type 'AdminTokenAction' is not assignable to type '() => Promise<void>'.
+  Target signature provides too few arguments. Expected 1 or more, but got 0.
+src/core/browser/admin-core.js(563,9): error TS2322: Type '() => Promise<object>' is not assignable to type '() => Promise<{ triggerRenderContentsUrl: string; }>'.
+  Type 'Promise<object>' is not assignable to type 'Promise<{ triggerRenderContentsUrl: string; }>'.
+    Property 'triggerRenderContentsUrl' is missing in type '{}' but required in type '{ triggerRenderContentsUrl: string; }'.
+src/core/browser/admin-core.js(704,5): error TS18047: 'element' is possibly 'null'.
+src/core/browser/admin-core.js(802,3): error TS18049: 'link' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(814,40): error TS2345: Argument of type 'Element' is not assignable to parameter of type 'HTMLElement'.
+  Type 'Element' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 129 more.
+src/core/browser/admin-core.js(921,28): error TS2345: Argument of type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }' is not assignable to parameter of type '{ credentialFactory: (credential: string) => unknown; signInWithCredential: (auth: { currentUser?: { getIdToken?: (() => Promise<string>) | undefined; } | undefined; }, credential: unknown) => void | Promise<...>; auth?: { ...; } | undefined; storage?: { ...; } | undefined; matchMedia: (query: string) => { ...; }; q...'.
+  Types of property 'credentialFactory' are incompatible.
+    Type '((credential: string) => unknown) | undefined' is not assignable to type '(credential: string) => unknown'.
+      Type 'undefined' is not assignable to type '(credential: string) => unknown'.
+src/core/browser/admin-core.js(923,3): error TS2322: Type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }' is not assignable to type '{ resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; credentialFactory: (credential: string) => unknown; signInWithCredential: (auth: { currentUser?: { getIdToken?: (() => Promise<...>) | undefined; } | undefined; }, credential: unknown) => void | Promise<...>; ... 4 more ...; safeLogger: { ...; }; }'.
+  Types of property 'credentialFactory' are incompatible.
+    Type '((credential: string) => unknown) | undefined' is not assignable to type '(credential: string) => unknown'.
+      Type 'undefined' is not assignable to type '(credential: string) => unknown'.
+src/core/browser/admin-core.js(953,14): error TS2339: Property 'safeLogger' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
+  Property 'safeLogger' does not exist on type '{}'.
+src/core/browser/admin-core.js(953,52): error TS2339: Property 'logger' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
+  Property 'logger' does not exist on type '{}'.
+src/core/browser/admin-core.js(954,14): error TS2339: Property 'resolveGoogleAccountsId' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
+  Property 'resolveGoogleAccountsId' does not exist on type '{}'.
+src/core/browser/admin-core.js(955,16): error TS2339: Property 'googleAccountsId' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
+  Property 'googleAccountsId' does not exist on type '{}'.
+src/core/browser/admin-core.js(958,3): error TS2322: Type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }' is not assignable to type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }'.
+  Type '{}' is missing the following properties from type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }': safeLogger, resolveGoogleAccountsId
+src/core/browser/admin-core.js(1016,23): error TS2339: Property 'logger' does not exist on type 'object'.
+src/core/browser/admin-core.js(1017,10): error TS2339: Property 'logger' does not exist on type 'object'.
+src/core/browser/admin-core.js(1058,5): error TS2322: Type '{ error?: ((message: string) => void) | undefined; } | undefined' is not assignable to type '{ error?: ((message: string) => void) | undefined; }'.
+  Type 'undefined' is not assignable to type '{ error?: ((message: string) => void) | undefined; }'.
+src/core/browser/admin-core.js(1078,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/admin-core.js(1096,50): error TS2339: Property 'initialize' does not exist on type '{}'.
+src/core/browser/admin-core.js(1105,50): error TS2339: Property 'renderButton' does not exist on type '{}'.
+src/core/browser/admin-core.js(1136,50): error TS1385: Function type notation must be parenthesized when used in a union type.
+src/core/browser/admin-core.js(1159,22): error TS2345: Argument of type '(() => string | Promise<string> | null | undefined) | undefined' is not assignable to parameter of type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/admin-core.js(1160,16): error TS2684: The 'this' context of type '(() => string | Promise<string> | null | undefined) | undefined' is not assignable to method's 'this' of type '(this: { getIdToken?: (() => string | Promise<string> | null | undefined) | undefined; } | null | undefined) => string | Promise<string> | null | undefined'.
+  Type 'undefined' is not assignable to type '(this: { getIdToken?: (() => string | Promise<string> | null | undefined) | undefined; } | null | undefined) => string | Promise<string> | null | undefined'.
+src/core/browser/admin-core.js(1160,16): error TS18048: 'getter' is possibly 'undefined'.
+src/core/browser/admin-core.js(1160,16): error TS2322: Type 'string | Promise<string> | null | undefined' is not assignable to type 'Promise<string>'.
+  Type 'undefined' is not assignable to type 'Promise<string>'.
+src/core/browser/admin-core.js(1183,3): error TS2322: Type 'Node[]' is not assignable to type 'HTMLElement[]'.
+  Type 'Node' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 264 more.
+src/core/browser/admin-core.js(1285,28): error TS2345: Argument of type 'GoogleAccountsClient | undefined' is not assignable to parameter of type 'GoogleAccountsClient'.
+  Type 'undefined' is not assignable to type 'GoogleAccountsClient'.
+src/core/browser/admin-core.js(1294,31): error TS2345: Argument of type 'GoogleAccountsClient | undefined' is not assignable to parameter of type 'GoogleAccountsClient'.
+  Type 'undefined' is not assignable to type 'GoogleAccountsClient'.
+src/core/browser/admin-core.js(1317,15): error TS7006: Parameter 'cred' implicitly has an 'any' type.
+src/core/browser/admin-core.js(1338,3): error TS2322: Type 'AdminTokenAction' is not assignable to type '() => Promise<void>'.
+  Target signature provides too few arguments. Expected 1 or more, but got 0.
+src/core/browser/admin-core.js(1351,17): error TS2339: Property 'generateStatsUrl' does not exist on type '{}'.
+src/core/browser/admin-core.js(1386,17): error TS18049: 'googleAuth' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(1395,20): error TS2345: Argument of type '{ getIdToken?: (() => string | null | undefined) | undefined; } | null | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/browser/admin-core.js(1496,21): error TS2339: Property 'getIdToken' does not exist on type 'object'.
+src/core/browser/admin-core.js(1542,40): error TS2339: Property 'preventDefault' does not exist on type 'object'.
+src/core/browser/admin-core.js(1551,25): error TS2345: Argument of type '{ preventDefault?: (() => void) | undefined; } | null | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/browser/admin-core.js(1552,5): error TS18049: 'event' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(1552,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/admin-core.js(1585,32): error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLInputElement | null | undefined'.
+  Type 'HTMLElement' is missing the following properties from type 'HTMLInputElement': accept, align, alt, autocomplete, and 55 more.
+src/core/browser/admin-core.js(1644,11): error TS2339: Property 'value' does not exist on type '{}'.
+src/core/browser/admin-core.js(1787,27): error TS8032: Qualified name 'options.getAuthFn' is not allowed without a leading '@param {object} options'.
+src/core/browser/admin-core.js(1810,41): error TS2345: Argument of type '() => unknown' is not assignable to parameter of type '() => { currentUser?: { uid?: string | undefined; } | undefined; } | null | undefined'.
+  Type 'unknown' is not assignable to type '{ currentUser?: { uid?: string | undefined; } | undefined; } | null | undefined'.
+src/core/browser/admin-core.js(1937,36): error TS2345: Argument of type '() => { currentUser?: unknown; } | null | undefined' is not assignable to parameter of type '() => { currentUser: unknown; } | null | undefined'.
+  Type '{ currentUser?: unknown; } | null | undefined' is not assignable to type '{ currentUser: unknown; } | null | undefined'.
+    Type '{ currentUser?: unknown; }' is not assignable to type '{ currentUser: unknown; }'.
+      Property 'currentUser' is optional in type '{ currentUser?: unknown; }' but required in type '{ currentUser: unknown; }'.
+src/core/browser/admin-core.js(1965,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
+  Property 'style' does not exist on type 'Node'.
+src/core/browser/admin-core.js(1967,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
+  Property 'style' does not exist on type 'Node'.
+src/core/browser/admin-core.js(1973,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
+  Property 'style' does not exist on type 'Node'.
+src/core/browser/admin-core.js(1975,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
+  Property 'style' does not exist on type 'Node'.
+src/core/browser/admin-core.js(2024,7): error TS7034: Variable 'initGoogleSignInHandler' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/browser/admin-core.js(2026,10): error TS7005: Variable 'initGoogleSignInHandler' implicitly has an 'any' type.
+src/core/browser/admin-core.js(2029,9): error TS2322: Type 'unknown' is not assignable to type 'object'.
+src/core/browser/admin-core.js(2040,28): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/core/browser/admin-core.js(2042,7): error TS7034: Variable 'signOutHandler' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/browser/admin-core.js(2044,10): error TS7005: Variable 'signOutHandler' implicitly has an 'any' type.
+src/core/browser/admin-core.js(2046,38): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ signOut: () => void | Promise<void>; }'.
+src/core/browser/admin-core.js(2080,30): error TS2345: Argument of type 'Storage | null | undefined' is not assignable to parameter of type 'Storage'.
+  Type 'undefined' is not assignable to type 'Storage'.
+src/core/browser/admin-core.js(2081,5): error TS18049: 'storage' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(2143,43): error TS2339: Property 'id' does not exist on type '{}'.
+src/core/browser/admin-core.js(2152,29): error TS2339: Property 'accounts' does not exist on type '{}'.
+src/core/browser/admin-core.js(2161,15): error TS2339: Property 'google' does not exist on type 'Window'.
+src/core/browser/admin-core.js(2313,33): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory: (credential: string) => unknown; ... 5 more ...; logger?: { ...; } | undefined; }'.
+  Type '{}' is missing the following properties from type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory: (credential: string) => unknown; ... 5 more ...; logger?: { ...; } | undefined; }': credentialFactory, signInWithCredential, auth, storage, and 2 more.
+src/core/browser/admin-core.js(2313,55): error TS2345: Argument of type '{ auth: object; storage: Storage; logger: { error?: ((message: string) => void) | undefined; }; globalObject: typeof globalThis; authProvider: { credential?: ((token: string) => string) | undefined; }; signInCredential: (auth: object, credential: unknown) => void | Promise<...>; }' is not assignable to parameter of type '{ auth: object; storage: Storage; logger: Logger; globalObject?: typeof globalThis | undefined; authProvider: { credential?: ((token: string) => string) | undefined; }; signInCredential: (auth: object, credential: unknown) => void | Promise<...>; }'.
+  The types of 'logger.error' are incompatible between these types.
+    Type '((message: string) => void) | undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void'.
+      Type 'undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void'.
+src/core/browser/admin-core.js(2337,7): error TS7034: Variable 'initGoogleSignInHandler' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/browser/admin-core.js(2339,10): error TS7005: Variable 'initGoogleSignInHandler' implicitly has an 'any' type.
+src/core/browser/admin-core.js(2342,9): error TS2322: Type 'unknown' is not assignable to type 'object'.
+src/core/browser/admin-core.js(2361,36): error TS2345: Argument of type '{ credential?: ((token: string) => string) | undefined; } | null | undefined' is not assignable to parameter of type '{ credential?: ((token: string) => string) | undefined; }'.
+  Type 'undefined' is not assignable to type '{ credential?: ((token: string) => string) | undefined; }'.
+src/core/browser/admin-core.js(2433,5): error TS18048: 'list' is possibly 'undefined'.
+src/core/browser/admin-core.js(2433,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/admin-core.js(2450,55): error TS2345: Argument of type '{ matches?: boolean | undefined; addEventListener?: ((type: string, listener: () => void) => void) | undefined; } | undefined' is not assignable to parameter of type '{ matches: boolean; addEventListener?: ((type: string, listener: () => void) => void) | undefined; } | undefined'.
+  Type '{ matches?: boolean | undefined; addEventListener?: ((type: string, listener: () => void) => void) | undefined; }' is not assignable to type '{ matches: boolean; addEventListener?: ((type: string, listener: () => void) => void) | undefined; }'.
+    Types of property 'matches' are incompatible.
+      Type 'boolean | undefined' is not assignable to type 'boolean'.
+        Type 'undefined' is not assignable to type 'boolean'.
+src/core/browser/admin-core.js(2469,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ uid?: string | undefined; } | null | undefined'.
+src/core/browser/admin-core.js(2471,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ uid?: string | undefined; } | null | undefined'.
+src/core/browser/admin-core.js(2493,5): error TS18049: 'element' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(2495,5): error TS18049: 'element' is possibly 'null' or 'undefined'.
+src/core/browser/audio-controls.js(1,40): error TS7006: Parameter 'audio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(1,47): error TS7006: Parameter 'stopDefault' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(1,60): error TS7006: Parameter 'playAudio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(2,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(8,41): error TS7006: Parameter 'audio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(8,48): error TS7006: Parameter 'stopDefault' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(8,61): error TS7006: Parameter 'pauseAudio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(12,40): error TS7006: Parameter 'audio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(12,47): error TS7006: Parameter 'stopDefault' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(12,60): error TS7006: Parameter 'pauseAudio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(13,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(20,41): error TS7006: Parameter 'audio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(20,48): error TS7006: Parameter 'timeDisplay' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(20,61): error TS7006: Parameter 'setTextContent' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(36,29): error TS2339: Property 'getAudioElements' does not exist on type 'object'.
+src/core/browser/audio-controls.js(37,35): error TS7006: Parameter 'audio' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(37,42): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/core/browser/audio-controls.js(38,9): error TS2339: Property 'removeControlsAttribute' does not exist on type 'object'.
+src/core/browser/audio-controls.js(43,35): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/audio-controls.js(47,29): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/audio-controls.js(69,26): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/audio-controls.js(72,49): error TS2339: Property 'stopDefault' does not exist on type 'object'.
+src/core/browser/audio-controls.js(73,11): error TS2339: Property 'addEventListener' does not exist on type 'object'.
+src/core/browser/audio-controls.js(74,11): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/audio-controls.js(75,11): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/audio-controls.js(75,46): error TS2339: Property 'createTextNode' does not exist on type 'object'.
+src/core/browser/audio-controls.js(78,52): error TS2339: Property 'playAudio' does not exist on type 'object'.
+src/core/browser/audio-controls.js(79,54): error TS2339: Property 'pauseAudio' does not exist on type 'object'.
+src/core/browser/audio-controls.js(80,52): error TS2339: Property 'pauseAudio' does not exist on type 'object'.
+src/core/browser/audio-controls.js(87,9): error TS2339: Property 'addEventListener' does not exist on type 'object'.
+src/core/browser/audio-controls.js(89,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/audio-controls.js(91,9): error TS2339: Property 'insertBefore' does not exist on type 'object'.
+src/core/browser/browser-core.js(25,13): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+src/core/browser/browser-core.js(37,41): error TS2339: Property 'logInfo' does not exist on type 'object'.
+src/core/browser/browser-core.js(38,42): error TS2339: Property 'logError' does not exist on type 'object'.
+src/core/browser/browser-core.js(39,44): error TS2339: Property 'logWarning' does not exist on type 'object'.
+src/core/browser/browser-core.js(68,56): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/browser-core.js(134,27): error TS2345: Argument of type 'HTMLElement | null | undefined' is not assignable to parameter of type 'HTMLElement'.
+  Type 'undefined' is not assignable to type 'HTMLElement'.
+src/core/browser/browser-core.js(152,44): error TS2339: Property '_dispose' does not exist on type 'HTMLElement'.
+src/core/browser/browser-core.js(163,11): error TS2339: Property '_dispose' does not exist on type 'HTMLElement'.
+src/core/browser/browser-core.js(164,7): error TS2339: Property 'removeChild' does not exist on type 'object'.
+src/core/browser/browser-core.js(174,25): error TS2339: Property 'querySelector' does not exist on type 'object'.
+src/core/browser/browser-core.js(193,40): error TS7006: Parameter 'container' implicitly has an 'any' type.
+src/core/browser/browser-core.js(193,51): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/browser-core.js(193,59): error TS7006: Parameter 'handler' implicitly has an 'any' type.
+src/core/browser/browser-core.js(246,3): error TS7031: Binding element 'authSignOut' implicitly has an 'any' type.
+src/core/browser/browser-core.js(247,3): error TS7031: Binding element 'storage' implicitly has an 'any' type.
+src/core/browser/browser-core.js(248,3): error TS7031: Binding element 'disableAutoSelect' implicitly has an 'any' type.
+src/core/browser/browser-core.js(277,46): error TS18046: 'parseError' is of type 'unknown'.
+src/core/browser/browser-core.js(289,26): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/browser/browser-core.js(309,45): error TS2339: Property '_dispose' does not exist on type 'HTMLElement'.
+src/core/browser/browser-core.js(349,38): error TS2322: Type 'string[]' is not assignable to type '[string, string]'.
+  Target requires 2 element(s) but source may have fewer.
+src/core/browser/browser-core.js(357,31): error TS2322: Type 'string[]' is not assignable to type '[string, string]'.
+  Target requires 2 element(s) but source may have fewer.
+src/core/browser/browser-core.js(367,7): error TS2339: Property 'hide' does not exist on type 'object'.
+src/core/browser/browser-core.js(368,7): error TS2339: Property 'disable' does not exist on type 'object'.
+src/core/browser/browser-core.js(463,20): error TS7006: Parameter 'key' implicitly has an 'any' type.
+src/core/browser/browser-core.js(464,25): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/core/browser/browser-core.js(465,25): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/core/browser/browser-core.js(467,7): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/core/browser/browser-core.js(469,7): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/core/browser/browser-core.js(488,9): error TS2339: Property 'removeEventListener' does not exist on type 'object'.
+src/core/browser/createSectionSetter.js(10,3): error TS2322: Type '(input: string, env: Map<string, Function>) => string | undefined' is not assignable to type '(input: string, env: Map<string, Function>) => string'.
+  Type 'string | undefined' is not assignable to type 'string'.
+    Type 'undefined' is not assignable to type 'string'.
+src/core/browser/createSectionSetter.js(15,34): error TS2345: Argument of type 'object | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/browser/createSectionSetter.js(50,17): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/createSectionSetter.js(51,5): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/createSectionSetter.js(66,25): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/createSectionSetter.js(66,25): error TS18048: 'getData' is possibly 'undefined'.
+src/core/browser/createSectionSetter.js(70,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/createSectionSetter.js(74,47): error TS18046: 'error' is of type 'unknown'.
+src/core/browser/data.js(12,20): error TS7006: Parameter 'str' implicitly has an 'any' type.
+src/core/browser/data.js(13,59): error TS7006: Parameter '_' implicitly has an 'any' type.
+src/core/browser/data.js(13,62): error TS7006: Parameter 'hex' implicitly has an 'any' type.
+src/core/browser/data.js(16,10): error TS7006: Parameter 'str' implicitly has an 'any' type.
+src/core/browser/data.js(87,25): error TS2339: Property 'blogStatus' does not exist on type 'object'.
+src/core/browser/data.js(88,24): error TS2339: Property 'blogError' does not exist on type 'object'.
+src/core/browser/data.js(89,31): error TS2339: Property 'blogFetchPromise' does not exist on type 'object'.
+src/core/browser/data.js(90,23): error TS2339: Property 'blog' does not exist on type 'object'.
+src/core/browser/data.js(100,11): error TS2339: Property 'status' does not exist on type '{}'.
+src/core/browser/data.js(100,19): error TS2339: Property 'fetchPromise' does not exist on type '{}'.
+src/core/browser/data.js(129,18): error TS2339: Property 'blogFetchPromise' does not exist on type 'object'.
+src/core/browser/data.js(135,9): error TS2339: Property 'blogStatus' does not exist on type 'object'.
+src/core/browser/data.js(136,9): error TS2339: Property 'blogError' does not exist on type 'object'.
+src/core/browser/data.js(138,9): error TS2339: Property 'blogFetchPromise' does not exist on type 'object'.
+src/core/browser/data.js(146,13): error TS2339: Property 'blog' does not exist on type 'object'.
+src/core/browser/data.js(147,13): error TS2339: Property 'blogStatus' does not exist on type 'object'.
+src/core/browser/data.js(151,13): error TS2339: Property 'blogStatus' does not exist on type 'object'.
+src/core/browser/data.js(152,13): error TS2339: Property 'blogError' does not exist on type 'object'.
+src/core/browser/data.js(156,13): error TS2339: Property 'blogFetchPromise' does not exist on type 'object'.
+src/core/browser/data.js(159,16): error TS2339: Property 'blogFetchPromise' does not exist on type 'object'.
+src/core/browser/data.js(175,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/data.js(185,15): error TS2339: Property 'blogStatus' does not exist on type 'object'.
+src/core/browser/data.js(185,38): error TS2339: Property 'status' does not exist on type 'object'.
+src/core/browser/data.js(186,15): error TS2339: Property 'blogError' does not exist on type 'object'.
+src/core/browser/data.js(186,37): error TS2339: Property 'error' does not exist on type 'object'.
+src/core/browser/data.js(187,15): error TS2339: Property 'blogFetchPromise' does not exist on type 'object'.
+src/core/browser/data.js(187,44): error TS2339: Property 'fetchPromise' does not exist on type 'object'.
+src/core/browser/data.js(188,15): error TS2339: Property 'blog' does not exist on type 'object'.
+src/core/browser/data.js(188,32): error TS2339: Property 'data' does not exist on type 'object'.
+src/core/browser/data.js(206,17): error TS2550: Property 'hasOwn' does not exist on type 'ObjectConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2022' or later.
+src/core/browser/data.js(267,30): error TS2339: Property 'status' does not exist on type 'object'.
+src/core/browser/data.js(288,17): error TS2339: Property 'status' does not exist on type 'object'.
+src/core/browser/data.js(289,66): error TS2339: Property 'error' does not exist on type 'object'.
+src/core/browser/data.js(312,3): error TS2322: Type 'boolean' is not assignable to type 'object'.
+src/core/browser/data.js(321,24): error TS2339: Property 'blogStatus' does not exist on type 'object'.
+src/core/browser/data.js(391,41): error TS2345: Argument of type 'object' is not assignable to parameter of type 'BlogDataLoggers'.
+  Type '{}' is missing the following properties from type 'BlogDataLoggers': logInfo, logError
+src/core/browser/data.js(392,28): error TS2345: Argument of type 'Storage | undefined' is not assignable to parameter of type 'Storage'.
+  Type 'undefined' is not assignable to type 'Storage'.
+src/core/browser/data.js(560,7): error TS7034: Variable 'cachedDependencies' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/browser/data.js(562,10): error TS7005: Variable 'cachedDependencies' implicitly has an 'any' type.
+src/core/browser/data.js(579,43): error TS2345: Argument of type 'NormalizedBlogDataDependencies' is not assignable to parameter of type 'BlogDataDependencies'.
+  Types of property 'storage' are incompatible.
+    Type 'Storage | null' is not assignable to type 'Storage | undefined'.
+      Type 'null' is not assignable to type 'Storage | undefined'.
+src/core/browser/data.js(582,29): error TS2345: Argument of type 'NormalizedBlogDataDependencies' is not assignable to parameter of type 'BlogDataDependencies'.
+  Types of property 'storage' are incompatible.
+    Type 'Storage | null' is not assignable to type 'Storage | undefined'.
+      Type 'null' is not assignable to type 'Storage | undefined'.
+src/core/browser/data.js(584,5): error TS2322: Type '(state: object) => void' is not assignable to type '(state: object) => object'.
+  Type 'void' is not assignable to type 'object'.
+src/core/browser/data.js(586,36): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ desired: object; current: object; }'.
+  Type '{}' is missing the following properties from type '{ desired: object; current: object; }': desired, current
+src/core/browser/data.js(594,46): error TS2345: Argument of type 'Storage | null' is not assignable to parameter of type 'Storage | undefined'.
+  Type 'null' is not assignable to type 'Storage | undefined'.
+src/core/browser/data.js(599,36): error TS7006: Parameter 'desired' implicitly has an 'any' type.
+src/core/browser/data.js(599,45): error TS7006: Parameter 'loggers' implicitly has an 'any' type.
+src/core/browser/data.js(599,54): error TS7006: Parameter 'storage' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(2,30): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(2,38): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(2,49): error TS7006: Parameter 'targetValue' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(6,29): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(6,42): error TS7006: Parameter 'targetValue' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(6,57): error TS7006: Parameter 'handler' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(10,4): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(10,9): error TS7006: Parameter 'applyTargetToHandlers' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(10,32): error TS7006: Parameter 'updateHandlers' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(10,51): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(16,44): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(16,55): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(31,7): error TS2339: Property 'removeEventListener' does not exist on type 'object'.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(41,7): error TS2339: Property 'addEventListener' does not exist on type 'object'.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(42,9): error TS2339: Property '_dispose' does not exist on type 'HTMLElement'.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(60,27): error TS2339: Property 'getNextSibling' does not exist on type 'object'.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(61,18): error TS2339: Property 'insertBefore' does not exist on type 'object'.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(62,9): error TS2339: Property 'insertBefore' does not exist on type 'object'.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(76,24): error TS2339: Property 'reveal' does not exist on type 'object'.
+src/core/browser/inputHandlers/browserInputHandlersCore.js(76,36): error TS2339: Property 'enable' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(22,24): error TS2339: Property 'querySelector' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(28,9): error TS2339: Property 'removeChild' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(58,21): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(85,7): error TS2339: Property 'setType' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(95,14): error TS2550: Property 'hasOwn' does not exist on type 'ObjectConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2022' or later.
+src/core/browser/inputHandlers/createDendriteHandler.js(96,9): error TS2339: Property 'setValue' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(96,25): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/inputHandlers/createDendriteHandler.js(106,41): error TS2339: Property 'setValue' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(140,5): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/inputHandlers/createDendriteHandler.js(140,21): error TS2339: Property 'getValue' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(153,20): error TS2339: Property 'removeEventListener' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(163,23): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(174,7): error TS2339: Property 'setPlaceholder' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(183,7): error TS2339: Property 'addEventListener' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(197,7): error TS2339: Property 'setTextContent' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(219,7): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(327,22): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(328,9): error TS2339: Property 'setClassName' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(329,29): error TS2339: Property 'getNextSibling' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(330,9): error TS2339: Property 'insertBefore' does not exist on type 'object'.
+src/core/browser/inputHandlers/createDendriteHandler.js(355,9): error TS7034: Variable 'disposers' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/browser/inputHandlers/createDendriteHandler.js(357,59): error TS7005: Variable 'disposers' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/moderatorRatings.js(24,28): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(26,19): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(53,37): error TS18046: 'entry' is of type 'unknown'.
+src/core/browser/inputHandlers/moderatorRatings.js(54,35): error TS18046: 'entry' is of type 'unknown'.
+src/core/browser/inputHandlers/moderatorRatings.js(55,33): error TS18046: 'entry' is of type 'unknown'.
+src/core/browser/inputHandlers/moderatorRatings.js(56,27): error TS18046: 'entry' is of type 'unknown'.
+src/core/browser/inputHandlers/moderatorRatings.js(71,28): error TS7031: Binding element 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(71,33): error TS7031: Binding element 'placeholder' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(71,46): error TS7031: Binding element 'value' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(71,53): error TS7031: Binding element 'onChange' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(71,63): error TS7031: Binding element 'cleanupFns' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(86,31): error TS7031: Binding element 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(86,36): error TS7031: Binding element 'initialValue' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(86,50): error TS7031: Binding element 'onChange' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(86,60): error TS7031: Binding element 'cleanupFns' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(113,30): error TS7031: Binding element 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(113,35): error TS7031: Binding element 'onClick' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(113,44): error TS7031: Binding element 'cleanupFns' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(122,24): error TS7006: Parameter 'rows' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(122,30): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(122,35): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(141,37): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(141,42): error TS7006: Parameter 'container' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(141,53): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(174,30): error TS7006: Parameter 'cleanup' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(179,21): error TS7006: Parameter 'rowModel' implicitly has an 'any' type.
+src/core/browser/inputHandlers/moderatorRatings.js(180,11): error TS7034: Variable 'cleanupFns' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/browser/inputHandlers/moderatorRatings.js(196,7): error TS7005: Variable 'cleanupFns' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/moderatorRatings.js(204,7): error TS7005: Variable 'cleanupFns' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/moderatorRatings.js(212,7): error TS7005: Variable 'cleanupFns' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/moderatorRatings.js(219,7): error TS7005: Variable 'cleanupFns' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/moderatorRatings.js(222,30): error TS7005: Variable 'cleanupFns' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/moderatorRatings.js(239,7): error TS7005: Variable 'cleanupFns' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/moderatorRatings.js(262,9): error TS7034: Variable 'cleanupFns' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/browser/inputHandlers/moderatorRatings.js(272,5): error TS7005: Variable 'cleanupFns' implicitly has an 'any[]' type.
+src/core/browser/inputHandlers/number.js(12,28): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(14,29): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(14,34): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(16,31): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(22,35): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(22,42): error TS7006: Parameter 'onChange' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(22,52): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(29,35): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(29,40): error TS7006: Parameter 'input' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(29,47): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(35,35): error TS7006: Parameter 'container' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(35,46): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(35,57): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/number.js(45,34): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(12,26): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(20,30): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(20,41): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(28,30): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(31,33): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(31,44): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(40,26): error TS7031: Binding element 'textarea' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(40,36): error TS7031: Binding element 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(40,47): error TS7031: Binding element 'dom' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(45,33): error TS7006: Parameter 'specialInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(45,47): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(48,37): error TS7006: Parameter 'container' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(48,48): error TS7006: Parameter 'textInput' implicitly has an 'any' type.
+src/core/browser/inputHandlers/textarea.js(48,59): error TS7006: Parameter 'dom' implicitly has an 'any' type.
+src/core/browser/moderation/authedFetch.js(15,31): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(entries: Iterable<readonly [PropertyKey, any]>): { [k: string]: any; }', gave the following error.
+    Argument of type '() => HeadersIterator<[string, string]>' is not assignable to parameter of type 'Iterable<readonly [PropertyKey, any]>'.
+  Overload 2 of 2, '(entries: Iterable<readonly any[]>): any', gave the following error.
+    Argument of type '() => HeadersIterator<[string, string]>' is not assignable to parameter of type 'Iterable<readonly any[]>'.
+src/core/browser/moderation/authedFetch.js(44,3): error TS2322: Type 'HeadersIterator<[string, string]>' is not assignable to type '() => HeadersIterator<[string, string]>'.
+  Type 'HeadersIterator<[string, string]>' provides no match for the signature '(): HeadersIterator<[string, string]>'.
+src/core/browser/moderation/authedFetch.js(66,30): error TS2345: Argument of type 'object | null | undefined' is not assignable to parameter of type '{ ok: boolean; status?: number | undefined; json?: (() => any) | undefined; }'.
+  Type 'undefined' is not assignable to type '{ ok: boolean; status?: number | undefined; json?: (() => any) | undefined; }'.
+src/core/browser/moderation/authedFetch.js(75,46): error TS2339: Property 'ok' does not exist on type 'object'.
+src/core/browser/moderation/authedFetch.js(96,11): error TS2339: Property 'status' does not exist on type 'Error'.
+src/core/browser/presenters/battleshipSolitaireClues.js(36,28): error TS2339: Property 'rowClues' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireClues.js(36,59): error TS2339: Property 'colClues' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireClues.js(41,12): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/presenters/battleshipSolitaireClues.js(50,12): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/presenters/battleshipSolitaireClues.js(60,14): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/presenters/battleshipSolitaireClues.js(63,15): error TS2339: Property 'rowClues' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireClues.js(63,29): error TS2339: Property 'colClues' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireClues.js(67,4): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireClues.js(68,4): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireClues.js(70,5): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireClues.js(74,5): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireClues.js(85,31): error TS2345: Argument of type '(string | ((o: any) => boolean))[][]' is not assignable to parameter of type '[(candidate: object) => boolean, string][]'.
+  Type '(string | ((o: any) => boolean))[]' is not assignable to type '[(candidate: object) => boolean, string]'.
+    Target requires 2 element(s) but source may have fewer.
+src/core/browser/presenters/battleshipSolitaireClues.js(104,3): error TS7006: Parameter 'obj' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireClues.js(105,3): error TS7006: Parameter 'obj' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireClues.js(120,22): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+src/core/browser/presenters/battleshipSolitaireClues.js(132,26): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireClues.js(175,40): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ createElement: Function; setTextContent: Function; }'.
+  Type '{}' is missing the following properties from type '{ createElement: Function; setTextContent: Function; }': createElement, setTextContent
+src/core/browser/presenters/battleshipSolitaireFleet.js(29,6): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireFleet.js(30,6): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireFleet.js(31,6): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireFleet.js(34,50): error TS2349: This expression is not callable.
+  Not all constituents of type 'string | ((f: any) => boolean)' are callable.
+    Type 'string' has no call signatures.
+src/core/browser/presenters/battleshipSolitaireFleet.js(35,3): error TS2322: Type 'string | ((f: any) => boolean)' is not assignable to type 'string'.
+  Type '(f: any) => boolean' is not assignable to type 'string'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(35,10): error TS18048: 'found' is possibly 'undefined'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(44,21): error TS7006: Parameter 'ship' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireFleet.js(66,29): error TS2339: Property 'length' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(91,12): error TS2339: Property 'direction' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(92,17): error TS2339: Property 'start' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(94,15): error TS2339: Property 'start' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(104,12): error TS2339: Property 'direction' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(105,17): error TS2339: Property 'start' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(107,15): error TS2339: Property 'start' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(116,11): error TS2339: Property 'board' does not exist on type '{}'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(116,18): error TS2339: Property 'dimensions' does not exist on type '{}'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(145,16): error TS2339: Property 'start' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(154,22): error TS2339: Property 'start' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(154,58): error TS2339: Property 'start' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(163,22): error TS2339: Property 'length' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(172,15): error TS2339: Property 'direction' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(172,41): error TS2339: Property 'direction' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(242,21): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(243,9): error TS2339: Property 'setTextContent' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(256,11): error TS2339: Property 'width' does not exist on type '{}'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(256,18): error TS2339: Property 'height' does not exist on type '{}'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(264,38): error TS2339: Property 'ships' does not exist on type 'object'.
+src/core/browser/presenters/battleshipSolitaireFleet.js(267,21): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireFleet.js(268,20): error TS7006: Parameter 'rows' implicitly has an 'any' type.
+src/core/browser/presenters/battleshipSolitaireFleet.js(273,40): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ createElement: Function; setTextContent: Function; }'.
+  Type '{}' is missing the following properties from type '{ createElement: Function; setTextContent: Function; }': createElement, setTextContent
+src/core/browser/presenters/ticTacToeBoard.js(23,31): error TS7031: Binding element 'position' implicitly has an 'any' type.
+src/core/browser/presenters/ticTacToeBoard.js(26,26): error TS7031: Binding element 'player' implicitly has an 'any' type.
+src/core/browser/presenters/ticTacToeBoard.js(29,23): error TS7031: Binding element 'position' implicitly has an 'any' type.
+src/core/browser/presenters/ticTacToeBoard.js(32,26): error TS7031: Binding element 'position' implicitly has an 'any' type.
+src/core/browser/presenters/ticTacToeBoard.js(37,26): error TS7031: Binding element 'position' implicitly has an 'any' type.
+src/core/browser/presenters/ticTacToeBoard.js(37,36): error TS7031: Binding element 'board' implicitly has an 'any' type.
+src/core/browser/presenters/ticTacToeBoard.js(65,13): error TS2339: Property 'row' does not exist on type '{ row: number; column: number; } | undefined'.
+src/core/browser/presenters/ticTacToeBoard.js(65,18): error TS2339: Property 'column' does not exist on type '{ row: number; column: number; } | undefined'.
+src/core/browser/presenters/ticTacToeBoard.js(66,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/browser/presenters/ticTacToeBoard.js(117,7): error TS7034: Variable 'moves' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/browser/presenters/ticTacToeBoard.js(123,3): error TS7005: Variable 'moves' implicitly has an 'any[]' type.
+src/core/browser/tags.js(9,11): error TS2339: Property 'hasClass' does not exist on type 'object'.
+src/core/browser/tags.js(10,9): error TS2339: Property 'hide' does not exist on type 'object'.
+src/core/browser/tags.js(24,51): error TS7006: Parameter 'className' implicitly has an 'any' type.
+src/core/browser/tags.js(29,9): error TS2339: Property 'addEventListener' does not exist on type 'object'.
+src/core/browser/tags.js(38,38): error TS7006: Parameter 'link' implicitly has an 'any' type.
+src/core/browser/tags.js(40,7): error TS2339: Property 'getClasses' does not exist on type 'object'.
+src/core/browser/tags.js(49,18): error TS2339: Property 'getElementsByTagName' does not exist on type 'object'.
+src/core/browser/tags.js(49,53): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(value: any, index: number, array: any[]) => void'.
+  Type 'Function' provides no match for the signature '(value: any, index: number, array: any[]): void'.
+src/core/browser/tags.js(59,20): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/core/browser/tags.js(60,9): error TS2339: Property 'stopDefault' does not exist on type 'object'.
+src/core/browser/tags.js(71,34): error TS7006: Parameter 'link' implicitly has an 'any' type.
+src/core/browser/tags.js(71,40): error TS7006: Parameter 'className' implicitly has an 'any' type.
+src/core/browser/tags.js(72,22): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/tags.js(73,9): error TS2339: Property 'addClass' does not exist on type 'object'.
+src/core/browser/tags.js(74,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/tags.js(74,31): error TS2339: Property 'createTextNode' does not exist on type 'object'.
+src/core/browser/tags.js(76,26): error TS2339: Property 'createElement' does not exist on type 'object'.
+src/core/browser/tags.js(77,9): error TS2339: Property 'setTextContent' does not exist on type 'object'.
+src/core/browser/tags.js(80,9): error TS2339: Property 'addEventListener' does not exist on type 'object'.
+src/core/browser/tags.js(82,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/tags.js(83,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
+src/core/browser/tags.js(83,31): error TS2339: Property 'createTextNode' does not exist on type 'object'.
+src/core/browser/tags.js(84,9): error TS2339: Property 'insertBefore' does not exist on type 'object'.
+src/core/browser/tags.js(95,24): error TS2339: Property 'getElementsByTagName' does not exist on type 'object'.
+src/core/browser/tags.js(109,11): error TS2339: Property 'hasNextSiblingClass' does not exist on type 'object'.
+src/core/browser/tags.js(111,9): error TS2339: Property 'removeNextSibling' does not exist on type 'object'.
+src/core/browser/tags.js(113,9): error TS2339: Property 'createHideSpan' does not exist on type 'object'.
+src/core/browser/tags.js(124,60): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/core/browser/tags.js(125,7): error TS2339: Property 'stopDefault' does not exist on type 'object'.
+src/core/browser/toys/2025-03-21/italics.js(122,14): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-21/italics.js(175,5): error TS18047: 'segment' is possibly 'null'.
+src/core/browser/toys/2025-03-21/italics.js(175,13): error TS2339: Property 'beforeText' does not exist on type 'object'.
+src/core/browser/toys/2025-03-21/italics.js(176,5): error TS18047: 'segment' is possibly 'null'.
+src/core/browser/toys/2025-03-21/italics.js(176,13): error TS2339: Property 'boldText' does not exist on type 'object'.
+src/core/browser/toys/2025-03-21/italics.js(177,5): error TS18047: 'segment' is possibly 'null'.
+src/core/browser/toys/2025-03-21/italics.js(177,13): error TS2339: Property 'afterText' does not exist on type 'object'.
+src/core/browser/toys/2025-03-29/fishingGame.js(98,10): error TS18048: 'match' is possibly 'undefined'.
+src/core/browser/toys/2025-03-29/fishingGame.js(114,10): error TS18048: 'match' is possibly 'undefined'.
+src/core/browser/toys/2025-03-29/fishingGame.js(136,13): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ winter: string; spring: string; summer: string; fall: string; }'.
+  No index signature with a parameter of type 'string' was found on type '{ winter: string; spring: string; summer: string; fall: string; }'.
+src/core/browser/toys/2025-03-29/fishingGame.js(136,43): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ morning: string; afternoon: string; evening: string; night: string; }'.
+  No index signature with a parameter of type 'string' was found on type '{ morning: string; afternoon: string; evening: string; night: string; }'.
+src/core/browser/toys/2025-03-29/fishingGame.js(169,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(169,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(174,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(174,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(179,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(179,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(184,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(184,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/fishingGame.js(198,10): error TS2532: Object is possibly 'undefined'.
+src/core/browser/toys/2025-03-29/fishingGame.js(253,23): error TS2339: Property 'isError' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
+  Property 'isError' does not exist on type '{ modifier: number; description: string; }'.
+src/core/browser/toys/2025-03-29/fishingGame.js(254,28): error TS2339: Property 'message' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
+  Property 'message' does not exist on type '{ modifier: number; description: string; }'.
+src/core/browser/toys/2025-03-29/fishingGame.js(262,39): error TS2339: Property 'modifier' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
+  Property 'modifier' does not exist on type '{ isError: boolean; message: string; }'.
+src/core/browser/toys/2025-03-29/fishingGame.js(267,14): error TS2339: Property 'description' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
+  Property 'description' does not exist on type '{ isError: boolean; message: string; }'.
+src/core/browser/toys/2025-03-29/fishingGame.js(271,45): error TS2339: Property 'description' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
+  Property 'description' does not exist on type '{ isError: boolean; message: string; }'.
+src/core/browser/toys/2025-03-29/get.js(14,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(25,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(31,20): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/get.js(31,25): error TS7006: Parameter 'segment' implicitly has an 'any' type.
+src/core/browser/toys/2025-03-29/get.js(55,5): error TS2739: Type '{ error: string; }' is missing the following properties from type '{ value: any; path: string; error: string | null; }': value, path
+src/core/browser/toys/2025-03-29/get.js(74,3): error TS2322: Type '{ error: string; } | { value: any; path: string; error: string | null; }' is not assignable to type '{ value: any; path: string; error: string | null; }'.
+  Type '{ error: string; }' is missing the following properties from type '{ value: any; path: string; error: string | null; }': value, path
+src/core/browser/toys/2025-03-29/get.js(98,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(105,21): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'object | any[]'.
+  No index signature with a parameter of type 'string' was found on type 'object | any[]'.
+src/core/browser/toys/2025-03-29/get.js(147,3): error TS2322: Type 'unknown' is not assignable to type '{ error: string; } | null'.
+src/core/browser/toys/2025-03-29/get.js(161,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(166,17): error TS2550: Property 'hasOwn' does not exist on type 'ObjectConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2022' or later.
+src/core/browser/toys/2025-03-29/get.js(171,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(188,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(221,66): error TS18046: 'stringifyError' is of type 'unknown'.
+src/core/browser/toys/2025-03-29/get.js(257,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(289,79): error TS18046: 'error' is of type 'unknown'.
+src/core/browser/toys/2025-03-29/get.js(302,11): error TS2339: Property 'data' does not exist on type '{ data: any; } | { error: string; }'.
+src/core/browser/toys/2025-03-29/get.js(302,17): error TS2339: Property 'error' does not exist on type '{ data: any; } | { error: string; }'.
+src/core/browser/toys/2025-03-29/get.js(302,44): error TS2345: Argument of type 'Function | undefined' is not assignable to parameter of type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/toys/2025-03-29/get.js(314,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-29/get.js(328,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(67,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ hacker: { output: string; nextState: string; }; transport: { output: string; nextState: string; }; alley: { output: string; nextState: string; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ hacker: { output: string; nextState: string; }; transport: { output: string; nextState: string; }; alley: { output: string; nextState: string; }; }'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(231,19): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ intro: ({ name, time }: { name: string; time: string; }) => { output: string; nextState: string; }; hub: ({ lowerInput }: { lowerInput: string; }) => { output: string; nextState: string; }; 'hacker:door': (context: { lowerInput: string; nextInventory: string[]; nextVisited: Set<...>; }) => { ...; }; 'transport:pla...'.
+  No index signature with a parameter of type 'string' was found on type '{ intro: ({ name, time }: { name: string; time: string; }) => { output: string; nextState: string; }; hub: ({ lowerInput }: { lowerInput: string; }) => { output: string; nextState: string; }; 'hacker:door': (context: { lowerInput: string; nextInventory: string[]; nextVisited: Set<...>; }) => { ...; }; 'transport:pla...'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(245,10): error TS18048: 'data.temporary' is possibly 'undefined'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(255,17): error TS2339: Property 'name' does not exist on type 'object'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(274,17): error TS2339: Property 'state' does not exist on type 'object'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(283,17): error TS2339: Property 'inventory' does not exist on type 'object'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(292,25): error TS2339: Property 'visited' does not exist on type 'object'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(376,33): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(384,16): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(384,16): error TS18048: 'getCurrentTime' is possibly 'undefined'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(389,15): error TS2339: Property 'name' does not exist on type 'object'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(390,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(401,5): error TS2322: Type 'Function | undefined' is not assignable to type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(404,49): error TS2345: Argument of type 'Function | undefined' is not assignable to parameter of type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/toys/2025-04-06/ticTacToe.js(20,15): error TS8032: Qualified name 'root0.move' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-04-06/ticTacToe.js(21,15): error TS8032: Qualified name 'root0.index' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-04-06/ticTacToe.js(22,15): error TS8032: Qualified name 'root0.moves' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-04-06/ticTacToe.js(53,11): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(53,16): error TS7006: Parameter 'fn' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(258,20): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(258,25): error TS7006: Parameter '_' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(258,28): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(263,19): error TS7006: Parameter 'move' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(292,20): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(331,11): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(331,18): error TS7031: Binding element 'r' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(331,21): error TS7031: Binding element 'c' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(360,6): error TS7006: Parameter 'best' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(360,12): error TS7006: Parameter 'current' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(379,10): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(402,6): error TS7006: Parameter 'cells' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(402,13): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(402,18): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(403,19): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(403,24): error TS7006: Parameter 'cell' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(403,30): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(432,20): error TS7006: Parameter 'cell' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(442,21): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(453,22): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(552,6): error TS7006: Parameter 'moves' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(552,13): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(552,18): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(553,19): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(553,24): error TS7006: Parameter 'cell' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(553,30): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(625,11): error TS7006: Parameter 'scores' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(625,20): error TS7031: Binding element 'r' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(625,23): error TS7031: Binding element 'c' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(627,39): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/toys/2025-04-06/ticTacToe.js(643,15): error TS8032: Qualified name 'root0.move' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-04-06/ticTacToe.js(653,15): error TS8032: Qualified name 'root0.move' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(31,14): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(31,17): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(79,11): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(79,16): error TS7006: Parameter 'dx' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(111,40): error TS7006: Parameter 'cfg' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(111,45): error TS7006: Parameter 'occupied' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(111,58): error TS7006: Parameter 'seg' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(112,25): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(201,11): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(201,16): error TS7006: Parameter '_' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(201,19): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(260,41): error TS7006: Parameter 'cfg' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(260,46): error TS7006: Parameter 'occupied' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(260,56): error TS7006: Parameter 'segs' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(304,15): error TS8032: Qualified name 'root0.start' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(305,15): error TS8032: Qualified name 'root0.length' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(306,15): error TS8032: Qualified name 'root0.cfg' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(307,15): error TS8032: Qualified name 'root0.occupied' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(312,9): error TS7034: Variable 'candidates' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(320,7): error TS7005: Variable 'candidates' implicitly has an 'any[]' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(323,10): error TS7005: Variable 'candidates' implicitly has an 'any[]' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(329,15): error TS8032: Qualified name 'root0.direction' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(330,15): error TS8032: Qualified name 'root0.start' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(331,15): error TS8032: Qualified name 'root0.length' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(332,15): error TS8032: Qualified name 'root0.cfg' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(333,15): error TS8032: Qualified name 'root0.occupied' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(334,15): error TS8032: Qualified name 'root0.candidates' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(360,15): error TS8032: Qualified name 'root0.direction' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(361,15): error TS8032: Qualified name 'root0.start' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(362,15): error TS8032: Qualified name 'root0.length' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(363,15): error TS8032: Qualified name 'root0.cfg' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(364,15): error TS8032: Qualified name 'root0.occupied' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(378,15): error TS8032: Qualified name 'root0.direction' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(379,15): error TS8032: Qualified name 'root0.start' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(380,15): error TS8032: Qualified name 'root0.length' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(381,15): error TS8032: Qualified name 'root0.cfg' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(382,15): error TS8032: Qualified name 'root0.occupied' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(405,9): error TS7034: Variable 'candidates' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(407,57): error TS7005: Variable 'candidates' implicitly has an 'any[]' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(409,10): error TS7005: Variable 'candidates' implicitly has an 'any[]' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(415,15): error TS8032: Qualified name 'root0.y' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(416,15): error TS8032: Qualified name 'root0.length' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(417,15): error TS8032: Qualified name 'root0.cfg' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(418,15): error TS8032: Qualified name 'root0.occupied' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(419,15): error TS8032: Qualified name 'root0.candidates' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(453,15): error TS8032: Qualified name 'root0.candidates' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(454,15): error TS8032: Qualified name 'root0.length' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(491,10): error TS7006: Parameter 'len' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(511,11): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(511,16): error TS7006: Parameter 'len' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(559,43): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(559,46): error TS7006: Parameter 'l' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(598,12): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js(703,33): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(26,17): error TS7006: Parameter 'ship' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(27,34): error TS7031: Binding element 'x' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(27,37): error TS7031: Binding element 'y' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(89,15): error TS8032: Qualified name 'root0.x' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(90,15): error TS8032: Qualified name 'root0.y' is not allowed without a leading '@param {object} root0'.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(124,26): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(131,4): error TS7006: Parameter 'fleet' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(132,4): error TS7006: Parameter 'fleet' implicitly has an 'any' type.
+src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js(141,31): error TS2345: Argument of type '(string | ((fleet: any) => boolean))[][]' is not assignable to parameter of type '[(candidate: any) => boolean, string][]'.
+  Type '(string | ((fleet: any) => boolean))[]' is not assignable to type '[(candidate: any) => boolean, string]'.
+    Target requires 2 element(s) but source may have fewer.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(9,28): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(19,9): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(32,17): error TS2339: Property 'title' does not exist on type 'object'.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(33,19): error TS2339: Property 'content' does not exist on type 'object'.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(47,23): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(47,23): error TS18048: 'getData' is possibly 'undefined'.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(51,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/toys/2025-06-09/startLocalDendriteStory.js(63,44): error TS2345: Argument of type 'Function | undefined' is not assignable to parameter of type '() => string'.
+  Type 'undefined' is not assignable to type '() => string'.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(94,10): error TS18048: 'rows.length' is possibly 'undefined'.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(130,27): error TS2550: Property 'findLastIndex' does not exist on type 'string[]'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2023' or later.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(130,41): error TS7006: Parameter 'line' implicitly has an 'any' type.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(151,12): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(262,9): error TS7034: Variable 'rows' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(263,50): error TS7005: Variable 'rows' implicitly has an 'any[]' type.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(265,10): error TS7005: Variable 'rows' implicitly has an 'any[]' type.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(284,28): error TS2345: Argument of type 'Record<string, string> | null | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(285,15): error TS2345: Argument of type 'Record<string, string> | null | undefined' is not assignable to parameter of type 'Record<string, string>'.
+  Type 'undefined' is not assignable to type 'Record<string, string>'.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(330,52): error TS2345: Argument of type '{}' is not assignable to parameter of type 'Record<string, string>'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/browser/toys/2025-10-19/csvToJsonArray.js(332,3): error TS2322: Type '{}' is not assignable to type 'Record<string, string>'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/browser/toys/2025-12-05/calculateVisibility.js(16,30): error TS2345: Argument of type 'object | null' is not assignable to parameter of type '{ pageId: string; adminId: string; ratings: object; } | null'.
+  Type '{}' is missing the following properties from type '{ pageId: string; adminId: string; ratings: object; }': pageId, adminId, ratings
+src/core/browser/toys/2025-12-05/calculateVisibility.js(98,3): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/core/browser/toys/2025-12-05/calculateVisibility.js(154,51): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown>'.
+src/core/browser/toys/2025-12-05/calculateVisibility.js(156,20): error TS2345: Argument of type '{}' is not assignable to parameter of type 'Record<string, Record<string, boolean>>'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/browser/toys/2025-12-05/calculateVisibility.js(157,3): error TS2322: Type '{}' is not assignable to type 'Record<string, Record<string, boolean>>'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/browser/toys/2025-12-05/calculateVisibility.js(191,15): error TS2550: Property 'hasOwn' does not exist on type 'ObjectConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2022' or later.
+src/core/browser/toys/2025-12-05/calculateVisibility.js(206,25): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(o: { [s: string]: any; } | ArrayLike<any>): [string, any][]', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type '{ [s: string]: any; } | ArrayLike<any>'.
+  Overload 2 of 2, '(o: {}): [string, any][]', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type '{}'.
+src/core/browser/toys/2025-12-05/calculateVisibility.js(261,17): error TS2550: Property 'hasOwn' does not exist on type 'ObjectConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2022' or later.
+src/core/browser/toys/2025-12-14/moderatorRatingCounts.js(26,35): error TS2339: Property 'moderatorId' does not exist on type 'object'.
+src/core/browser/toys/2025-12-14/moderatorRatingCounts.js(38,3): error TS2322: Type 'unknown[]' is not assignable to type 'object[]'.
+  Type 'unknown' is not assignable to type 'object'.
+src/core/browser/toys/2025-12-14/moderatorRatingCounts.js(130,28): error TS2339: Property 'isApproved' does not exist on type 'object'.
+src/core/browser/toys/2025-12-14/moderatorRatingCounts.js(131,28): error TS2339: Property 'moderatorId' does not exist on type 'object'.
+src/core/browser/toys/2025-12-14/moderatorRatingCounts.js(132,37): error TS2339: Property 'ratedAt' does not exist on type 'object'.
+src/core/browser/toys/2025-12-14/moderatorRatingCounts.js(133,28): error TS2339: Property 'variantId' does not exist on type 'object'.
+src/core/browser/toys/browserToysCore.js(21,5): error TS2322: Type 'Function | undefined' is not assignable to type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/toys/browserToysCore.js(22,5): error TS2322: Type 'Function | undefined' is not assignable to type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/toys/browserToysCore.js(23,5): error TS2322: Type 'Function | undefined' is not assignable to type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/toys/browserToysCore.js(84,42): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/toys/browserToysCore.js(102,29): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/browserToysCore.js(105,37): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/browserToysCore.js(115,10): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/browserToysCore.js(127,45): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/toys/browserToysCore.js(128,46): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/core/browser/toys/browserToysCore.js(130,14): error TS2339: Property 'pageId' does not exist on type '{ id: any; content: any; }'.
+src/core/browser/toys/browserToysCore.js(156,8): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/browserToysCore.js(157,8): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/browserToysCore.js(199,30): error TS18049: 'parsed' is possibly 'null' or 'undefined'.
+src/core/browser/toys/browserToysCore.js(199,44): error TS18049: 'parsed' is possibly 'null' or 'undefined'.
+src/core/browser/toys/browserToysCore.js(199,66): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: string | undefined, index: number, array: (string | undefined)[]) => value is string | undefined, thisArg?: any): this is S[]', gave the following error.
+    Argument of type '(str: string) => boolean' is not assignable to parameter of type '(value: string | undefined, index: number, array: (string | undefined)[]) => value is string | undefined'.
+      Types of parameters 'str' and 'value' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: string | undefined, index: number, array: (string | undefined)[]) => unknown, thisArg?: any): boolean', gave the following error.
+    Argument of type '(str: string) => boolean' is not assignable to parameter of type '(value: string | undefined, index: number, array: (string | undefined)[]) => unknown'.
+      Types of parameters 'str' and 'value' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/core/browser/toys/browserToysCore.js(210,55): error TS18049: 'parsed' is possibly 'null' or 'undefined'.
+src/core/browser/toys/browserToysCore.js(210,55): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ optionId?: string | undefined; content?: string | undefined; }'.
+  No index signature with a parameter of type 'string' was found on type '{ optionId?: string | undefined; content?: string | undefined; }'.
+src/core/browser/toys/browserToysCore.js(219,43): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'object'.
+src/core/browser/toys/browserToysCore.js(304,13): error TS2339: Property 'temporary' does not exist on type 'object'.
+src/core/browser/toys/toys-core.js(25,15): error TS7006: Parameter 'line' implicitly has an 'any' type.
+src/core/browser/toys/toys-core.js(28,5): error TS7008: Member 'fields' implicitly has an 'any[]' type.
+src/core/browser/toys/toys-core.js(66,16): error TS7006: Parameter 'char' implicitly has an 'any' type.
+src/core/browser/toys/toys-core.js(74,11): error TS7006: Parameter 'char' implicitly has an 'any' type.
+src/core/browser/toys/toys-core.js(101,20): error TS7006: Parameter 'char' implicitly has an 'any' type.
+src/core/browser/toys/toys-core.js(110,22): error TS7006: Parameter 'handler' implicitly has an 'any' type.
+src/core/browser/toys/toys-core.js(123,23): error TS7006: Parameter 'char' implicitly has an 'any' type.
+src/core/browser/toys/toys-core.js(127,15): error TS7006: Parameter 'char' implicitly has an 'any' type.
+src/core/build/blog.js(82,36): error TS8032: Qualified name 'options.directories' is not allowed without a leading '@param {object} options'.
+src/core/build/blog.js(83,74): error TS8032: Qualified name 'options.path' is not allowed without a leading '@param {object} options'.
+src/core/build/blog.js(122,9): error TS2322: Type '{ info?: ((message: string) => void) | undefined; warn?: ((message: string) => void) | undefined; }' is not assignable to type '{ info: (message: string) => void; }'.
+  Types of property 'info' are incompatible.
+    Type '((message: string) => void) | undefined' is not assignable to type '(message: string) => void'.
+      Type 'undefined' is not assignable to type '(message: string) => void'.
+src/core/build/blog.js(206,5): error TS2740: Type 'Dirent' is missing the following properties from type 'string[]': length, pop, push, concat, and 29 more.
+src/core/build/blog.js(208,9): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: Dirent, currentValue: Dirent, currentIndex: number, array: Dirent[]) => Dirent, initialValue: Dirent): Dirent', gave the following error.
+    Type 'string[]' is missing the following properties from type 'Dirent': isFile, isDirectory, isBlockDevice, isCharacterDevice, and 6 more.
+  Overload 2 of 3, '(callbackfn: (previousValue: never[], currentValue: Dirent, currentIndex: number, array: Dirent[]) => never[], initialValue: never[]): never[]', gave the following error.
+    Type 'string[]' is not assignable to type 'never[]'.
+      Type 'string' is not assignable to type 'never'.
+src/core/build/blog.js(505,3): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'Record<string, Function>'.
+  'string' index signatures are incompatible.
+    Type 'unknown' is not assignable to type 'Function'.
+src/core/build/buildCore.js(21,3): error TS7031: Binding element 'resolveConfig' implicitly has an 'any' type.
+src/core/build/buildCore.js(22,3): error TS7031: Binding element 'formatHtml' implicitly has an 'any' type.
+src/core/build/buildCore.js(23,3): error TS7031: Binding element 'configPath' implicitly has an 'any' type.
+src/core/build/buildCore.js(24,3): error TS7031: Binding element 'html' implicitly has an 'any' type.
+src/core/build/buildCore.js(25,3): error TS7031: Binding element 'parser' implicitly has an 'any' type.
+src/core/build/buildCore.js(26,3): error TS7031: Binding element 'outputPath' implicitly has an 'any' type.
+src/core/build/buildCore.js(27,3): error TS7031: Binding element 'encoding' implicitly has an 'any' type.
+src/core/build/buildCore.js(28,3): error TS7031: Binding element 'writeFile' implicitly has an 'any' type.
+src/core/build/buildCore.js(29,3): error TS7031: Binding element 'logInfo' implicitly has an 'any' type.
+src/core/build/buildCore.js(42,5): error TS7031: Binding element 'logError' implicitly has an 'any' type.
+src/core/build/buildCore.js(42,15): error TS7031: Binding element 'writeFile' implicitly has an 'any' type.
+src/core/build/buildCore.js(42,26): error TS7031: Binding element 'logInfo' implicitly has an 'any' type.
+src/core/build/buildCore.js(42,35): error TS7031: Binding element 'outputPath' implicitly has an 'any' type.
+src/core/build/buildCore.js(42,47): error TS7031: Binding element 'html' implicitly has an 'any' type.
+src/core/build/buildCore.js(42,53): error TS7031: Binding element 'encoding' implicitly has an 'any' type.
+src/core/build/buildCore.js(43,3): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/core/build/buildCore.js(50,33): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(85,28): error TS2345: Argument of type 'Function | undefined' is not assignable to parameter of type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(86,34): error TS2345: Argument of type 'Function | undefined' is not assignable to parameter of type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(255,36): error TS2339: Property 'message' does not exist on type '{}'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(268,10): error TS18046: 'err' is of type 'unknown'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(322,51): error TS2345: Argument of type '{ verifyIdToken: (token: string) => Promise<unknown>; getUser: (uid: string) => Promise<unknown>; }' is not assignable to parameter of type '{ getUser: (uid: string) => Promise<UserRecord>; }'.
+  The types returned by 'getUser(...)' are incompatible between these types.
+    Type 'Promise<unknown>' is not assignable to type 'Promise<UserRecord>'.
+      Type 'unknown' is not assignable to type 'UserRecord'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(327,5): error TS2322: Type '(context: { idToken: string; }) => Promise<GuardResult>' is not assignable to type 'GuardFunction'.
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'GuardContext' is not assignable to type '{ idToken: string; }'.
+      Types of property 'idToken' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(328,5): error TS2322: Type '(context: { decoded: { uid: string; }; }) => Promise<GuardResult>' is not assignable to type 'GuardFunction'.
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'GuardContext' is not assignable to type '{ decoded: { uid: string; }; }'.
+      Types of property 'decoded' are incompatible.
+        Type 'DecodedIdToken | undefined' is not assignable to type '{ uid: string; }'.
+          Type 'undefined' is not assignable to type '{ uid: string; }'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(458,39): error TS2345: Argument of type 'string[] | undefined' is not assignable to parameter of type 'string[]'.
+  Type 'undefined' is not assignable to type 'string[]'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(561,3): error TS2322: Type 'unknown[] | undefined' is not assignable to type 'unknown[]'.
+  Type 'undefined' is not assignable to type 'unknown[]'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(561,10): error TS18048: 'snapshot' is possibly 'undefined'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(679,28): error TS7006: Parameter 'snapshot' implicitly has an 'any' type.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(785,36): error TS2339: Property 'context' does not exist on type '{ error: GuardError; } | GuardSuccess'.
+  Property 'context' does not exist on type '{ error: GuardError; }'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(842,26): error TS2339: Property 'error' does not exist on type '{ error: GuardError; } | GuardSuccess'.
+  Property 'error' does not exist on type 'GuardSuccess'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(852,3): error TS2322: Type '(initialContext: GuardContext) => Promise<unknown>' is not assignable to type '(initialContext: GuardContext) => Promise<{ error?: GuardError | undefined; context?: GuardContext | undefined; }>'.
+  Type 'Promise<unknown>' is not assignable to type 'Promise<{ error?: GuardError | undefined; context?: GuardContext | undefined; }>'.
+    Type 'unknown' is not assignable to type '{ error?: GuardError | undefined; context?: GuardContext | undefined; }'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(871,5): error TS2322: Type 'GuardContext | undefined' is not assignable to type 'GuardContext'.
+  Type 'undefined' is not assignable to type 'GuardContext'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(947,5): error TS2322: Type '{ status: number; body?: string | undefined; }' is not assignable to type '{ status: number; body: string; }'.
+  Types of property 'body' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(960,19): error TS2339: Property 'status' does not exist on type 'object'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(961,17): error TS2339: Property 'body' does not exist on type 'object'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(992,33): error TS2339: Property 'error' does not exist on type '{ error: GuardError; } | GuardSuccess'.
+  Property 'error' does not exist on type 'GuardSuccess'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1001,44): error TS2339: Property 'context' does not exist on type '{ error: GuardError; } | GuardSuccess'.
+  Property 'context' does not exist on type '{ error: GuardError; }'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1010,3): error TS2322: Type 'GuardContext | {}' is not assignable to type 'GuardContext'.
+  Property 'req' is missing in type '{}' but required in type 'GuardContext'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1052,3): error TS2741: Property 'uid' is missing in type '{}' but required in type '{ uid: string; }'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1052,28): error TS2345: Argument of type '{ uid?: string | undefined; } | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1085,11): error TS2339: Property 'createModeratorRef' does not exist on type '{}'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1085,31): error TS2339: Property 'now' does not exist on type '{}'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1086,11): error TS2339: Property 'userRecord' does not exist on type '{}'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1086,23): error TS2339: Property 'variantDoc' does not exist on type '{}'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1101,40): error TS2339: Property 'status' does not exist on type '{}'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1123,45): error TS2345: Argument of type '(db: Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean | undefined; }>' is not assignable to parameter of type '(database: unknown) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean | undefined; }>'.
+  Types of parameters 'db' and 'database' are incompatible.
+    Type 'unknown' is not assignable to type 'Firestore'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1199,5): error TS2322: Type '(snapshot: { empty: boolean; docs?: unknown[] | undefined; }) => { variantDoc?: unknown; errorMessage?: string | undefined; }' is not assignable to type '(snapshot: unknown) => { variantDoc?: { ref: unknown; } | undefined; errorMessage?: string | undefined; }'.
+  Types of parameters 'snapshot' and 'snapshot' are incompatible.
+    Type 'unknown' is not assignable to type '{ empty: boolean; docs?: unknown[] | undefined; }'.
+src/core/cloud/assign-moderation-job/assign-moderation-job-core.js(1200,5): error TS2322: Type '(uid: string) => unknown' is not assignable to type '(uid: string) => { set: (assignment: unknown) => Promise<unknown>; }'.
+  Type 'unknown' is not assignable to type '{ set: (assignment: unknown) => Promise<unknown>; }'.
+src/core/cloud/cloud-core.js(67,61): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ code?: string | undefined; message?: unknown; }'.
+src/core/cloud/cloud-core.js(89,35): error TS18046: 'error' is of type 'unknown'.
+src/core/cloud/cloud-core.js(198,5): error TS2322: Type 'string' is not assignable to type '"prod" | "test"'.
+src/core/cloud/cloud-core.js(446,10): error TS18046: 'value' is of type 'unknown'.
+src/core/cloud/cloud-core.js(639,28): error TS2339: Property 'message' does not exist on type '{}'.
+src/core/cloud/copy.js(209,13): error TS2339: Property 'sourceDir' does not exist on type '{}'.
+src/core/cloud/copy.js(209,24): error TS2339: Property 'targetDir' does not exist on type '{}'.
+src/core/cloud/copy.js(218,23): error TS2345: Argument of type '{ files: string[] | undefined; sourceDir: any; targetDir: any; io: object; messageLogger: object; }' is not assignable to parameter of type '{ files: string[]; sourceDir: string; targetDir: string; io: CopyAsyncIo; messageLogger: CopyMessageLogger; }'.
+  Types of property 'files' are incompatible.
+    Type 'string[] | undefined' is not assignable to type 'string[]'.
+      Type 'undefined' is not assignable to type 'string[]'.
+src/core/cloud/copy.js(292,38): error TS2345: Argument of type '{ ensureDirectory: (target: string) => Promise<void>; }' is not assignable to parameter of type '{ ensureDirectory: (target: string) => Promise<void>; readDirEntries: (dir: string) => Promise<Dirent[]>; copyFile: (source: string, destination: string) => Promise<...>; }'.
+  Type '{ ensureDirectory: (target: string) => Promise<void>; }' is missing the following properties from type '{ ensureDirectory: (target: string) => Promise<void>; readDirEntries: (dir: string) => Promise<Dirent[]>; copyFile: (source: string, destination: string) => Promise<...>; }': readDirEntries, copyFile
+src/core/cloud/copy.js(321,29): error TS2345: Argument of type '{ sourceDir: string; targetDir: string; files: string[]; } | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/cloud/copy.js(325,3): error TS2740: Type 'Record<string, unknown>' is missing the following properties from type 'CopyToInfraHelpers': formatPathForLog, isCopyableFile, copyFileToTarget, copyDirectory, and 3 more.
+src/core/cloud/generate-stats/generate-stats-core.js(265,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/generate-stats/generate-stats-core.js(285,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/generate-stats/generate-stats-core.js(465,7): error TS2322: Type '{}' is not assignable to type 'number'.
+src/core/cloud/generate-stats/generate-stats-core.js(502,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/core/cloud/generate-stats/generate-stats-core.js(548,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/generate-stats/generate-stats-core.js(640,41): error TS2345: Argument of type '{ verifyToken: (token: string) => Promise<unknown>; isAdminUid: (decoded: { uid?: string | undefined; }) => boolean; sendUnauthorized: (res: NativeHttpResponse, message: string) => void; sendForbidden: (res: NativeHttpResponse) => void; }' is not assignable to parameter of type '{ verifyToken: (token: string) => Promise<DecodedIdToken>; isAdminUid: (decoded: DecodedIdToken) => boolean; sendUnauthorized: (res: NativeHttpResponse, message: string) => void; sendForbidden: (res: NativeHttpResponse) => void; }'.
+  The types returned by 'verifyToken(...)' are incompatible between these types.
+    Type 'Promise<unknown>' is not assignable to type 'Promise<DecodedIdToken>'.
+      Type 'unknown' is not assignable to type 'DecodedIdToken'.
+src/core/cloud/generate-stats/generate-stats-core.js(891,17): error TS18046: 'err' is of type 'unknown'.
+src/core/cloud/generate-stats/generate-stats-core.js(962,3): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js(108,48): error TS2741: Property 'fetchCredit' is missing in type '{}' but required in type '{ fetchCredit: (uuid: string) => Promise<number | null>; getUuid?: ((request: unknown) => string) | undefined; logError?: ((error: unknown) => void) | undefined; }'.
+src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js(118,7): error TS2739: Type 'Promise<{ status: number; body: string | { credit: number; }; }>' is missing the following properties from type '{ status: number; body: string | { credit: number; }; headers?: Record<string, string> | undefined; }': status, body
+src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js(142,37): error TS2345: Argument of type '((error: unknown) => void) | undefined' is not assignable to parameter of type '(error: unknown) => void | undefined'.
+  Type 'undefined' is not assignable to type '(error: unknown) => void | undefined'.
+src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js(167,3): error TS2322: Type '(request?: { path?: string | undefined; params?: Record<string, unknown> | undefined; query?: Record<string, unknown> | undefined; } | undefined) => string' is not assignable to type '(request: unknown) => string'.
+  Types of parameters 'request' and 'request' are incompatible.
+    Type 'unknown' is not assignable to type '{ path?: string | undefined; params?: Record<string, unknown> | undefined; query?: Record<string, unknown> | undefined; } | undefined'.
+src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js(176,3): error TS2322: Type 'Function' is not assignable to type '(error: unknown) => void'.
+  Type 'Function' provides no match for the signature '(error: unknown): void'.
+src/core/cloud/get-api-key-credit/get-api-key-credit-core.js(53,21): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/core/cloud/get-api-key-credit/get-api-key-credit-core.js(54,5): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/core/cloud/get-api-key-credit/get-api-key-credit-core.js(66,34): error TS2345: Argument of type 'number | null | undefined' is not assignable to parameter of type 'null | undefined'.
+  Type 'number' is not assignable to type 'null | undefined'.
+src/core/cloud/get-api-key-credit/get-api-key-credit-core.js(91,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/get-api-key-credit/get-api-key-credit-core.js(112,43): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(191,3): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(192,17): error TS18049: 'request' is possibly 'null' or 'undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(192,17): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(215,3): error TS2322: Type 'unknown' is not assignable to type 'ResponderResult | VariantSnapshot | null'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(215,15): error TS2345: Argument of type 'FirestoreDocumentReference | null' is not assignable to parameter of type 'boolean'.
+  Type 'null' is not assignable to type 'boolean'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(215,54): error TS2345: Argument of type 'FirestoreDocumentReference | null' is not assignable to parameter of type 'FirestoreDocumentReference'.
+  Type 'null' is not assignable to type 'FirestoreDocumentReference'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(254,33): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'FirestoreDocumentReference | null | undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(289,19): error TS18049: 'variantRef.parent' is possibly 'null' or 'undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(290,20): error TS18048: 'pageRef' is possibly 'undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(290,20): error TS18049: 'pageRef.parent' is possibly 'null' or 'undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(291,27): error TS18048: 'storyRef' is possibly 'undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(294,10): error TS2554: Expected 2 arguments, but got 1.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(294,26): error TS18048: 'storyData' is possibly 'undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(303,19): error TS2554: Expected 2 arguments, but got 1.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(306,45): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'number | undefined'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(382,37): error TS2322: Type 'string | null | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(457,27): error TS2345: Argument of type '{ uid?: string | null | undefined; } | null | undefined' is not assignable to parameter of type '{ uid?: string | null | undefined; }'.
+  Type 'undefined' is not assignable to type '{ uid?: string | null | undefined; }'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(509,22): error TS2554: Expected 2 arguments, but got 1.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(509,45): error TS2339: Property 'message' does not exist on type '{}'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(525,40): error TS2345: Argument of type 'ResponderResult | VariantSnapshot' is not assignable to parameter of type 'VariantSnapshot'.
+  Type 'ResponderResult' is missing the following properties from type 'VariantSnapshot': variantSnap, variantRef
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(535,5): error TS2741: Property 'body' is missing in type 'VariantSnapshot & Record<"status", unknown>' but required in type 'ResponderResult'.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(584,16): error TS2554: Expected 2 arguments, but got 1.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(585,15): error TS2554: Expected 2 arguments, but got 1.
+src/core/cloud/get-moderation-variant/get-moderation-variant-core.js(598,3): error TS2322: Type 'Record<string, unknown> | undefined' is not assignable to type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(259,3): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(331,44): error TS2339: Property 'bucket' does not exist on type '{}'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(449,10): error TS18049: 'ref' is possibly 'null' or 'undefined'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(449,10): error TS18048: 'ref.parent' is possibly 'undefined'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(477,28): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ visibility?: number | undefined; } | null | undefined'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(568,46): error TS2345: Argument of type '((snapshot: any) => number) | undefined' is not assignable to parameter of type '(snapshot: any) => number | undefined'.
+  Type 'undefined' is not assignable to type '(snapshot: any) => number | undefined'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(580,5): error TS2322: Type '(snapshot: any) => number | undefined' is not assignable to type '(snapshot: any) => number'.
+  Type 'number | undefined' is not assignable to type 'number'.
+    Type 'undefined' is not assignable to type 'number'.
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(628,43): error TS2345: Argument of type '{ exists: boolean; }' is not assignable to parameter of type 'DocumentSnapshot<DocumentData>'.
+  Type '{ exists: boolean; }' is missing the following properties from type 'DocumentSnapshot<DocumentData>': id, data, get
+src/core/cloud/hide-variant-html/hide-variant-html-core.js(637,43): error TS2345: Argument of type '{ exists: boolean; }' is not assignable to parameter of type 'DocumentSnapshot<DocumentData>'.
+  Type '{ exists: boolean; }' is missing the following properties from type 'DocumentSnapshot<DocumentData>': id, data, get
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(60,20): error TS18049: 'snap' is possibly 'null' or 'undefined'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(95,10): error TS18049: 'doc' is possibly 'null' or 'undefined'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(95,14): error TS2339: Property 'ref' does not exist on type 'QueryDocumentSnapshot<DocumentData>'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(108,22): error TS2339: Property 'ref' does not exist on type 'QueryDocumentSnapshot<DocumentData>'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(161,33): error TS2339: Property 'findPageRef' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(162,28): error TS2339: Property 'findPagesSnap' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(163,26): error TS2339: Property 'refFromSnap' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(178,5): error TS2322: Type 'null' is not assignable to type 'Promise<DocumentReference<DocumentData> | null>'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(191,40): error TS2339: Property 'findPageRef' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(192,45): error TS2339: Property 'findVariantsSnap' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(193,42): error TS2339: Property 'findPagesSnap' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(194,40): error TS2339: Property 'refFromSnap' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(220,38): error TS2339: Property 'findVariantsSnap' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(221,18): error TS2339: Property 'refFromSnap' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(249,69): error TS2741: Property 'db' is missing in type '{}' but required in type '{ db: Firestore; firebase?: { findPageRef?: ((database: Firestore, pageNumber: number, firebase?: { findPagesSnap?: ((database: Firestore, pageNumber: number) => Promise<...>) | undefined; refFromSnap?: ((snap: QuerySnapshot<...>) => DocumentReference<...> | null) | undefined; } | undefined) => Promise<...>) | undef...'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(282,11): error TS2339: Property 'db' does not exist on type '{}'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(282,15): error TS2339: Property 'firebase' does not exist on type '{}'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(401,3): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(480,11): error TS2339: Property 'page' does not exist on type '{}'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(480,17): error TS2339: Property 'variant' does not exist on type '{}'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(505,37): error TS2739: Type '{}' is missing the following properties from type '{ verifyAdmin: (req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>; markVariantDirty: (pageNumber: number, variantName: string, deps?: object | undefined) => Promise<...>; parseRequestBody?: ((body: unknown) => { ...; }) | undefined; allowedMethod?: string | undefined; }': verifyAdmin, markVariantDirty
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(550,132): error TS2304: Cannot find name 'handlerDeps'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(554,53): error TS2345: Argument of type '{ verifyAdmin: Function; markVariantDirty: Function; parseRequestBody: Function; allowedMethod: string; }' is not assignable to parameter of type '{ verifyAdmin: Function; markVariantDirty: Function; parseRequestBody: (body: unknown) => { pageNumber: number; variantName: string; }; allowedMethod: string; }'.
+  Types of property 'parseRequestBody' are incompatible.
+    Type 'Function' is not assignable to type '(body: unknown) => { pageNumber: number; variantName: string; }'.
+      Type 'Function' provides no match for the signature '(body: unknown): { pageNumber: number; variantName: string; }'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(593,7): error TS2322: Type 'Function' is not assignable to type '(pageNumber: number, variantName: string) => Promise<boolean>'.
+  Type 'Function' provides no match for the signature '(pageNumber: number, variantName: string): Promise<boolean>'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(622,19): error TS2339: Property 'verifyAdmin' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(623,17): error TS2339: Property 'verifyAdmin' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(636,19): error TS2339: Property 'markFn' does not exist on type 'object'.
+src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js(637,17): error TS2339: Property 'markFn' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(120,28): error TS2345: Argument of type 'DocumentReference<T> | null | undefined' is not assignable to parameter of type 'DocumentReference<DocumentData> | null | undefined'.
+  Type 'DocumentReference<T>' is not assignable to type 'DocumentReference<DocumentData>'.
+    Type 'T' is not assignable to type 'DocumentData'.
+src/core/cloud/process-new-page/process-new-page-core.js(124,3): error TS2322: Type 'DocumentReference<T> | null | undefined' is not assignable to type 'DocumentReference<T>'.
+  Type 'undefined' is not assignable to type 'DocumentReference<T>'.
+src/core/cloud/process-new-page/process-new-page-core.js(151,16): error TS2345: Argument of type '(() => number) | undefined' is not assignable to parameter of type '() => number'.
+  Type 'undefined' is not assignable to type '() => number'.
+src/core/cloud/process-new-page/process-new-page-core.js(154,32): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/cloud/process-new-page/process-new-page-core.js(166,5): error TS2322: Type '(() => number) | undefined' is not assignable to type '() => number'.
+  Type 'undefined' is not assignable to type '() => number'.
+src/core/cloud/process-new-page/process-new-page-core.js(189,5): error TS2322: Type 'number' is not assignable to type 'Promise<number>'.
+src/core/cloud/process-new-page/process-new-page-core.js(206,22): error TS18049: 'optionRef' is possibly 'null' or 'undefined'.
+src/core/cloud/process-new-page/process-new-page-core.js(206,32): error TS2339: Property 'parent' does not exist on type 'DocumentReference<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(222,5): error TS2322: Type 'DocumentReference<DocumentData> | null | undefined' is not assignable to type 'DocumentReference<DocumentData> | null'.
+  Type 'undefined' is not assignable to type 'DocumentReference<DocumentData> | null'.
+src/core/cloud/process-new-page/process-new-page-core.js(336,5): error TS2322: Type 'string | undefined' is not assignable to type 'DocumentReference<DocumentData> | null'.
+  Type 'undefined' is not assignable to type 'DocumentReference<DocumentData> | null'.
+src/core/cloud/process-new-page/process-new-page-core.js(360,3): error TS2322: Type 'DocumentReference<DocumentData> | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/core/cloud/process-new-page/process-new-page-core.js(360,32): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'DocumentReference<DocumentData> | null | undefined'.
+src/core/cloud/process-new-page/process-new-page-core.js(436,5): error TS2322: Type 'unknown' is not assignable to type 'number | null'.
+src/core/cloud/process-new-page/process-new-page-core.js(436,17): error TS18047: 'existingPageSnap' is possibly 'null'.
+src/core/cloud/process-new-page/process-new-page-core.js(436,17): error TS2532: Object is possibly 'undefined'.
+src/core/cloud/process-new-page/process-new-page-core.js(491,22): error TS18047: 'storyRef' is possibly 'null'.
+src/core/cloud/process-new-page/process-new-page-core.js(533,20): error TS2339: Property 'ref' does not exist on type 'DocumentSnapshot<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(537,39): error TS2339: Property 'ref' does not exist on type 'QueryDocumentSnapshot<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(588,5): error TS2345: Argument of type 'object' is not assignable to parameter of type 'DocumentData'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/cloud/process-new-page/process-new-page-core.js(591,31): error TS2339: Property 'options' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(627,53): error TS2339: Property 'authorId' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(765,25): error TS2339: Property 'content' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(766,50): error TS2339: Property 'authorId' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(767,28): error TS2339: Property 'author' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(768,56): error TS2339: Property 'incomingOptionFullName' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(805,18): error TS2339: Property 'ref' does not exist on type 'DocumentSnapshot<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(837,5): error TS2322: Type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData> | null; variantRef: DocumentReference<...> | null; pageNumber: number | null; } | null' is not assignable to type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData>; variantRef: DocumentReference<...> | null; pageNumber: number; } | null'.
+  Type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData> | null; variantRef: DocumentReference<...> | null; pageNumber: number | null; }' is not assignable to type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData>; variantRef: DocumentReference<...> | null; pageNumber: number; }'.
+    Types of property 'storyRef' are incompatible.
+      Type 'DocumentReference<DocumentData> | null' is not assignable to type 'DocumentReference<DocumentData>'.
+        Type 'null' is not assignable to type 'DocumentReference<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(848,3): error TS2322: Type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData> | null; variantRef: null; pageNumber: number; } | null' is not assignable to type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData>; variantRef: DocumentReference<...> | null; pageNumber: number; } | null'.
+  Type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData> | null; variantRef: null; pageNumber: number; }' is not assignable to type '{ pageDocRef: DocumentReference<DocumentData>; storyRef: DocumentReference<DocumentData>; variantRef: DocumentReference<...> | null; pageNumber: number; }'.
+    Types of property 'storyRef' are incompatible.
+      Type 'DocumentReference<DocumentData> | null' is not assignable to type 'DocumentReference<DocumentData>'.
+        Type 'null' is not assignable to type 'DocumentReference<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(850,5): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/core/cloud/process-new-page/process-new-page-core.js(914,27): error TS2339: Property 'ref' does not exist on type 'DocumentSnapshot<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(928,5): error TS2554: Expected 2 arguments, but got 3.
+src/core/cloud/process-new-page/process-new-page-core.js(933,26): error TS2339: Property 'ref' does not exist on type 'DocumentSnapshot<DocumentData>'.
+src/core/cloud/process-new-page/process-new-page-core.js(974,45): error TS2339: Property 'incomingOptionFullName' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(975,39): error TS2339: Property 'pageNumber' does not exist on type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(1115,9): error TS18048: 'submission' is possibly 'undefined'.
+src/core/cloud/process-new-page/process-new-page-core.js(1120,7): error TS2322: Type 'DocumentData | undefined' is not assignable to type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/cloud/process-new-page/process-new-page-core.js(1124,7): error TS2322: Type '(() => number) | undefined' is not assignable to type '() => number'.
+  Type 'undefined' is not assignable to type '() => number'.
+src/core/cloud/process-new-story/process-new-story-core.js(36,3): error TS2322: Type 'unknown' is not assignable to type 'Record<string, unknown> | null'.
+src/core/cloud/process-new-story/process-new-story-core.js(340,19): error TS2339: Property 'ref' does not exist on type 'FirestoreDocumentSnapshot'.
+  Property 'ref' does not exist on type 'QueryDocumentSnapshot<DocumentData>'.
+src/core/cloud/process-new-story/process-new-story-core.js(362,42): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | null | undefined'.
+src/core/cloud/process-new-story/process-new-story-core.js(379,28): error TS2345: Argument of type 'DocumentSnapshot<DocumentData>' is not assignable to parameter of type 'FirestoreDocumentSnapshot | null | undefined'.
+  Property 'get' is missing in type 'import("@google-cloud/firestore").DocumentSnapshot<import("@google-cloud/firestore").DocumentData>' but required in type 'import("firebase-admin/firestore").DocumentSnapshot<import("firebase-admin/firestore").DocumentData>'.
+src/core/cloud/process-new-story/process-new-story-core.js(401,3): error TS2322: Type '(...args: unknown[]) => Promise<unknown>' is not assignable to type '(snap: FirestoreDocumentSnapshot | null | undefined, context: { params?: Record<string, string> | undefined; }) => Promise<null>'.
+  Type 'Promise<unknown>' is not assignable to type 'Promise<null>'.
+    Type 'unknown' is not assignable to type 'null'.
+src/core/cloud/process-new-story/process-new-story-core.js(402,5): error TS2322: Type '({ submission, snapshot, context, db, randomUUID, random, getServerTimestamp, }: { submission: Record<string, unknown>; snapshot: FirestoreDocumentSnapshot | null | undefined; context: { params?: Record<string, string> | undefined; } | undefined; db: Firestore; randomUUID: () => string; random: () => number; getServ...' is not assignable to type '(params: Record<string, unknown>) => unknown'.
+  Types of parameters '__0' and 'params' are incompatible.
+    Type 'Record<string, unknown>' is missing the following properties from type '{ submission: Record<string, unknown>; snapshot: FirestoreDocumentSnapshot | null | undefined; context: { params?: Record<string, string> | undefined; } | undefined; db: Firestore; randomUUID: () => string; random: () => number; getServerTimestamp: () => FieldValue; }': submission, snapshot, context, db, and 3 more.
+src/core/cloud/process-new-story/process-new-story-core.js(404,37): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'FirestoreDocumentSnapshot | null | undefined'.
+src/core/cloud/render-contents/render-contents-core.js(179,19): error TS7006: Parameter 'list' implicitly has an 'any' type.
+src/core/cloud/render-contents/render-contents-core.js(237,30): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/core/cloud/render-contents/render-contents-core.js(265,3): error TS2739: Type 'Promise<StoryInfo | null>' is missing the following properties from type 'StoryInfo': pageNumber, title
+src/core/cloud/render-contents/render-contents-core.js(323,5): error TS2322: Type 'number | undefined' is not assignable to type 'number | null'.
+  Type 'undefined' is not assignable to type 'number | null'.
+src/core/cloud/render-contents/render-contents-core.js(424,5): error TS2322: Type '(input: string, init?: object | undefined) => Promise<{ ok: boolean; status: number; json: () => Promise<any>; }>' is not assignable to type '(input: string, init?: object | undefined) => Promise<Response>'.
+  Type 'Promise<{ ok: boolean; status: number; json: () => Promise<any>; }>' is not assignable to type 'Promise<Response>'.
+    Type '{ ok: boolean; status: number; json: () => Promise<any>; }' is missing the following properties from type 'Response': headers, redirected, statusText, type, and 9 more.
+src/core/cloud/render-contents/render-contents-core.js(653,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/cloud/render-contents/render-contents-core.js(664,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/cloud/render-contents/render-contents-core.js(746,5): error TS2339: Property 'db' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(747,5): error TS2339: Property 'storage' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(748,5): error TS2339: Property 'fetchFn' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(749,5): error TS2339: Property 'randomUUID' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(750,5): error TS2339: Property 'projectId' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(751,5): error TS2339: Property 'urlMapName' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(752,5): error TS2339: Property 'cdnHost' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(753,5): error TS2339: Property 'consoleError' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(754,5): error TS2339: Property 'bucketName' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(755,5): error TS2339: Property 'pageSize' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(810,5): error TS2339: Property 'db' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(811,5): error TS2339: Property 'storage' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(812,5): error TS2339: Property 'fetchFn' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(813,5): error TS2339: Property 'randomUUID' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(814,5): error TS2339: Property 'projectId' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(815,5): error TS2339: Property 'urlMapName' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(816,5): error TS2339: Property 'cdnHost' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(817,5): error TS2339: Property 'consoleError' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(818,5): error TS2339: Property 'bucketName' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(819,5): error TS2339: Property 'pageSize' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(846,11): error TS2339: Property 'db' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(846,15): error TS2339: Property 'bucket' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(846,23): error TS2339: Property 'invalidatePaths' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(846,40): error TS2339: Property 'pageSize' does not exist on type '{}'.
+src/core/cloud/render-contents/render-contents-core.js(848,7): error TS7034: Variable 'fetchTopStoryIds' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/cloud/render-contents/render-contents-core.js(849,7): error TS7034: Variable 'fetchStoryInfo' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/cloud/render-contents/render-contents-core.js(854,14): error TS7005: Variable 'fetchTopStoryIds' implicitly has an 'any' type.
+src/core/cloud/render-contents/render-contents-core.js(863,7): error TS2322: Type '((storyId: string) => Promise<StoryInfo | null>) | undefined' is not assignable to type '(() => Promise<any[]>) | undefined'.
+  Type '(storyId: string) => Promise<StoryInfo | null>' is not assignable to type '() => Promise<any[]>'.
+    Target signature provides too few arguments. Expected 1 or more, but got 0.
+src/core/cloud/render-contents/render-contents-core.js(864,14): error TS7005: Variable 'fetchStoryInfo' implicitly has an 'any' type.
+src/core/cloud/render-contents/render-contents-core.js(868,7): error TS2322: Type '(db: { collection: Function; }) => (storyId: string) => Promise<{ title: string; pageNumber: number | null; } | null>' is not assignable to type '(db: { collection: Function; }) => () => Promise<any[]>'.
+  Type '(storyId: string) => Promise<{ title: string; pageNumber: number | null; } | null>' is not assignable to type '() => Promise<any[]>'.
+    Target signature provides too few arguments. Expected 1 or more, but got 0.
+src/core/cloud/render-contents/render-contents-core.js(917,36): error TS2345: Argument of type '{ collection?: Function | undefined; } | undefined' is not assignable to parameter of type '{ collection?: Function | undefined; }'.
+  Type 'undefined' is not assignable to type '{ collection?: Function | undefined; }'.
+src/core/cloud/render-contents/render-contents-core.js(928,9): error TS7034: Variable 'items' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/cloud/render-contents/render-contents-core.js(932,19): error TS7005: Variable 'items' implicitly has an 'any[]' type.
+src/core/cloud/render-contents/render-contents-core.js(935,10): error TS7005: Variable 'items' implicitly has an 'any[]' type.
+src/core/cloud/render-contents/render-contents-core.js(970,28): error TS2345: Argument of type 'Record<string, any>[]' is not assignable to parameter of type '{ pageNumber: string | number; title: string; }[]'.
+  Type 'Record<string, any>' is missing the following properties from type '{ pageNumber: string | number; title: string; }': pageNumber, title
+src/core/cloud/render-contents/render-contents-core.js(1002,13): error TS2339: Property 'metadata' does not exist on type '{ contentType: string; }'.
+src/core/cloud/render-contents/render-contents-core.js(1021,12): error TS2345: Argument of type '{ collection?: Function | undefined; }' is not assignable to parameter of type '{ collection: Function; }'.
+  Types of property 'collection' are incompatible.
+    Type 'Function | undefined' is not assignable to type 'Function'.
+      Type 'undefined' is not assignable to type 'Function'.
+src/core/cloud/render-contents/render-contents-core.js(1022,27): error TS2345: Argument of type '{ collection?: Function | undefined; }' is not assignable to parameter of type '{ collection: Function; }'.
+  Types of property 'collection' are incompatible.
+    Type 'Function | undefined' is not assignable to type 'Function'.
+      Type 'undefined' is not assignable to type 'Function'.
+src/core/cloud/render-contents/render-contents-core.js(1089,7): error TS7034: Variable 'origins' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/core/cloud/render-contents/render-contents-core.js(1098,43): error TS2345: Argument of type '{ set: Function; status?: Function | undefined; }' is not assignable to parameter of type '{ set: (name: string, value: string) => void; }'.
+  Types of property 'set' are incompatible.
+    Type 'Function' is not assignable to type '(name: string, value: string) => void'.
+      Type 'Function' provides no match for the signature '(name: string, value: string): void'.
+src/core/cloud/render-contents/render-contents-core.js(1098,56): error TS7005: Variable 'origins' implicitly has an 'any[]' type.
+src/core/cloud/render-contents/render-contents-core.js(1099,26): error TS2345: Argument of type '{ set: Function; status?: Function | undefined; }' is not assignable to parameter of type '{ set: (name: string, value: string) => void; }'.
+  Types of property 'set' are incompatible.
+    Type 'Function' is not assignable to type '(name: string, value: string) => void'.
+      Type 'Function' provides no match for the signature '(name: string, value: string): void'.
+src/core/cloud/render-contents/render-contents-core.js(1110,3): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/core/cloud/render-contents/render-contents-core.js(1110,27): error TS2345: Argument of type '((name: string) => unknown) | undefined' is not assignable to parameter of type '(name: string) => unknown'.
+  Type 'undefined' is not assignable to type '(name: string) => unknown'.
+src/core/cloud/render-contents/render-contents-core.js(1175,49): error TS2345: Argument of type '{ status: Function; send: Function; }' is not assignable to parameter of type '{ set: Function; status: Function; send: Function; }'.
+  Property 'set' is missing in type '{ status: Function; send: Function; }' but required in type '{ set: Function; status: Function; send: Function; }'.
+src/core/cloud/render-contents/render-contents-core.js(1177,30): error TS2345: Argument of type '{ status: Function; send: Function; }' is not assignable to parameter of type '{ status: (code: number) => { send: (body: string) => void; }; }'.
+  Types of property 'status' are incompatible.
+    Type 'Function' is not assignable to type '(code: number) => { send: (body: string) => void; }'.
+      Type 'Function' provides no match for the signature '(code: number): { send: (body: string) => void; }'.
+src/core/cloud/render-contents/render-contents-core.js(1181,46): error TS2345: Argument of type '{ status: Function; send: Function; }' is not assignable to parameter of type '{ status: (code: number) => { send: (body: string) => void; }; }'.
+  Types of property 'status' are incompatible.
+    Type 'Function' is not assignable to type '(code: number) => { send: (body: string) => void; }'.
+      Type 'Function' provides no match for the signature '(code: number): { send: (body: string) => void; }'.
+src/core/cloud/render-contents/render-contents-core.js(1295,38): error TS2345: Argument of type '{ get?: ((name: string) => unknown) | undefined; headers?: object | undefined; }' is not assignable to parameter of type '{ get: (name: string) => unknown; }'.
+  Types of property 'get' are incompatible.
+    Type '((name: string) => unknown) | undefined' is not assignable to type '(name: string) => unknown'.
+      Type 'undefined' is not assignable to type '(name: string) => unknown'.
+src/core/cloud/render-contents/render-contents-core.js(1423,63): error TS2345: Argument of type '{ status: Function; send: Function; }' is not assignable to parameter of type '{ status: (code: number) => { send: (body: string) => void; }; }'.
+  Types of property 'status' are incompatible.
+    Type 'Function' is not assignable to type '(code: number) => { send: (body: string) => void; }'.
+      Type 'Function' provides no match for the signature '(code: number): { send: (body: string) => void; }'.
+src/core/cloud/render-contents/render-contents-core.js(1424,46): error TS2345: Argument of type '{ status: Function; send: Function; }' is not assignable to parameter of type '{ status: (code: number) => { send: (body: string) => void; }; }'.
+  Types of property 'status' are incompatible.
+    Type 'Function' is not assignable to type '(code: number) => { send: (body: string) => void; }'.
+      Type 'Function' provides no match for the signature '(code: number): { send: (body: string) => void; }'.
+src/core/cloud/render-contents/render-contents-core.js(1568,39): error TS2345: Argument of type '{ status: Function; send: Function; json: Function; }' is not assignable to parameter of type 'NativeHttpResponse'.
+  Property 'sendStatus' is missing in type '{ status: Function; send: Function; json: Function; }' but required in type 'NativeHttpResponse'.
+src/core/cloud/render-variant/render-variant-core.js(729,20): error TS2339: Property 'data' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(779,17): error TS2339: Property 'doc' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(801,22): error TS2339: Property 'bucket' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1076,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/cloud/render-variant/render-variant-core.js(1131,12): error TS18046: 'error' is of type 'unknown'.
+src/core/cloud/render-variant/render-variant-core.js(1143,36): error TS18046: 'error' is of type 'unknown'.
+src/core/cloud/render-variant/render-variant-core.js(1210,12): error TS2339: Property 'targetPageNumber' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1211,37): error TS2339: Property 'targetPageNumber' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1234,6): error TS2339: Property 'get' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1235,11): error TS7006: Parameter 'targetSnap' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(1241,12): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(1242,36): error TS2345: Argument of type '((message?: unknown, ...optionalParams: unknown[]) => void) | undefined' is not assignable to parameter of type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/cloud/render-variant/render-variant-core.js(1277,39): error TS2339: Property 'data' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1279,6): error TS2339: Property 'collection' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1284,5): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(1301,40): error TS2339: Property 'data' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1303,15): error TS2339: Property 'data' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1304,17): error TS2339: Property 'data' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1324,44): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(1325,21): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(1325,24): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(1328,21): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(1332,9): error TS2322: Type '((message?: unknown, ...optionalParams: unknown[]) => void) | undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void'.
+  Type 'undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void'.
+src/core/cloud/render-variant/render-variant-core.js(1348,27): error TS18047: 'storyRef' is possibly 'null'.
+src/core/cloud/render-variant/render-variant-core.js(1348,36): error TS2339: Property 'get' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1394,32): error TS2345: Argument of type '((message?: unknown, ...optionalParams: unknown[]) => void) | undefined' is not assignable to parameter of type 'Function'.
+  Type 'undefined' is not assignable to type 'Function'.
+src/core/cloud/render-variant/render-variant-core.js(1427,40): error TS2339: Property 'rootPage' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1433,43): error TS2339: Property 'rootPage' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1460,3): error TS2322: Type 'unknown' is not assignable to type 'object | null'.
+src/core/cloud/render-variant/render-variant-core.js(1483,3): error TS2322: Type 'unknown' is not assignable to type 'object | null'.
+src/core/cloud/render-variant/render-variant-core.js(1492,3): error TS2322: Type 'unknown' is not assignable to type 'object | null'.
+src/core/cloud/render-variant/render-variant-core.js(1543,37): error TS2322: Type '{ doc: Function; }' is not assignable to type '{ doc: (path: string) => { get: () => Promise<{ data: () => Record<string, any>; }>; }; }'.
+  Types of property 'doc' are incompatible.
+    Type 'Function' is not assignable to type '(path: string) => { get: () => Promise<{ data: () => Record<string, any>; }>; }'.
+      Type 'Function' provides no match for the signature '(path: string): { get: () => Promise<{ data: () => Record<string, any>; }>; }'.
+src/core/cloud/render-variant/render-variant-core.js(1543,41): error TS2322: Type '{ file: (path: string) => { save: Function; exists: () => Promise<[boolean]>; }; }' is not assignable to type '{ file: (path: string) => { exists: () => Promise<[boolean]>; save: (content: string, options: object) => Promise<unknown>; }; }'.
+  The types of 'file(...).save' are incompatible between these types.
+    Type 'Function' is not assignable to type '(content: string, options: object) => Promise<unknown>'.
+      Type 'Function' provides no match for the signature '(content: string, options: object): Promise<unknown>'.
+src/core/cloud/render-variant/render-variant-core.js(1553,11): error TS2339: Property 'authorPath' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1553,23): error TS2339: Property 'file' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1553,29): error TS2339: Property 'exists' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1574,29): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Error'.
+src/core/cloud/render-variant/render-variant-core.js(1612,5): error TS2741: Property 'doc' is missing in type '{}' but required in type '{ doc: (path: string) => { get: () => Promise<{ data: () => Record<string, unknown> & { uuid: string; }; }>; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(1613,5): error TS2741: Property 'file' is missing in type '{}' but required in type '{ file: (path: string) => { exists: () => Promise<[boolean]>; save: (content: string, options: object) => Promise<unknown>; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(1639,28): error TS18046: 'authorRef' is of type 'unknown'.
+src/core/cloud/render-variant/render-variant-core.js(1677,42): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ parent?: unknown; } | null | undefined'.
+src/core/cloud/render-variant/render-variant-core.js(1707,29): error TS2345: Argument of type '{ parent?: unknown; } | null | undefined' is not assignable to parameter of type '{ parent?: unknown; } | null'.
+  Type 'undefined' is not assignable to type '{ parent?: unknown; } | null'.
+src/core/cloud/render-variant/render-variant-core.js(1734,3): error TS2322: Type 'unknown' is not assignable to type '{ parent?: unknown; } | null'.
+src/core/cloud/render-variant/render-variant-core.js(1755,11): error TS2339: Property 'parentVariantRef' does not exist on type 'object | null'.
+src/core/cloud/render-variant/render-variant-core.js(1755,29): error TS2339: Property 'parentPageRef' does not exist on type 'object | null'.
+src/core/cloud/render-variant/render-variant-core.js(1755,65): error TS2345: Argument of type '{ parent?: { parent?: { parent?: { parent?: any; } | undefined; } | undefined; } | undefined; } | null | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1775,28): error TS2339: Property 'exists' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1775,53): error TS2339: Property 'exists' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1842,24): error TS2339: Property 'doc' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1848,5): error TS2345: Argument of type '{ get: Function; }' is not assignable to parameter of type '{ get: () => Promise<{ exists: boolean; data: () => Record<string, any>; }>; }'.
+  Types of property 'get' are incompatible.
+    Type 'Function' is not assignable to type '() => Promise<{ exists: boolean; data: () => Record<string, any>; }>'.
+      Type 'Function' provides no match for the signature '(): Promise<{ exists: boolean; data: () => Record<string, any>; }>'.
+src/core/cloud/render-variant/render-variant-core.js(1860,15): error TS2339: Property 'parentVariantSnap' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1861,15): error TS2339: Property 'parentPageSnap' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1938,3): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/core/cloud/render-variant/render-variant-core.js(1983,3): error TS2322: Type 'Function' is not assignable to type '(snap: { exists?: boolean | undefined; data: () => Record<string, any>; ref: { parent?: { parent?: any; } | undefined; }; }, context?: { params?: Record<string, string> | undefined; } | undefined) => Promise<...>'.
+  Type 'Function' provides no match for the signature '(snap: { exists?: boolean | undefined; data: () => Record<string, any>; ref: { parent?: { parent?: any; } | undefined; }; }, context?: { params?: Record<string, string> | undefined; } | undefined): Promise<...>'.
+src/core/cloud/render-variant/render-variant-core.js(1983,37): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ db: object; storage: object; fetchFn: Function; randomUUID: Function; projectId: string; urlMapName: string; cdnHost: string; consoleError: Function; bucketName: string; visibilityThreshold: number; }'.
+  Type '{}' is missing the following properties from type '{ db: object; storage: object; fetchFn: Function; randomUUID: Function; projectId: string; urlMapName: string; cdnHost: string; consoleError: Function; bucketName: string; visibilityThreshold: number; }': db, storage, fetchFn, randomUUID, and 6 more.
+src/core/cloud/render-variant/render-variant-core.js(1992,11): error TS2339: Property 'db' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1992,15): error TS2339: Property 'storage' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1992,24): error TS2339: Property 'fetchFn' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1992,33): error TS2339: Property 'randomUUID' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1992,45): error TS2339: Property 'projectId' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1992,56): error TS2339: Property 'urlMapName' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(1992,68): error TS2339: Property 'cdnHost' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2003,65): error TS2339: Property 'consoleError' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2004,61): error TS2339: Property 'bucketName' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2006,20): error TS2339: Property 'visibilityThreshold' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2083,26): error TS2339: Property 'bucket' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2085,5): error TS2322: Type 'Function' is not assignable to type '(input: string, init?: object | undefined) => Promise<Response>'.
+  Type 'Function' provides no match for the signature '(input: string, init?: object | undefined): Promise<Response>'.
+src/core/cloud/render-variant/render-variant-core.js(2089,5): error TS2322: Type 'Function' is not assignable to type '() => string'.
+  Type 'Function' provides no match for the signature '(): string'.
+src/core/cloud/render-variant/render-variant-core.js(2090,5): error TS2322: Type 'Function' is not assignable to type '(message: string, ...optionalParams: unknown[]) => void'.
+  Type 'Function' provides no match for the signature '(message: string, ...optionalParams: unknown[]): void'.
+src/core/cloud/render-variant/render-variant-core.js(2100,13): error TS2339: Property 'db' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2100,17): error TS2339: Property 'bucket' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2100,25): error TS2339: Property 'consoleError' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2100,39): error TS2339: Property 'visibilityThreshold' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2100,60): error TS2339: Property 'invalidatePaths' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2104,7): error TS2739: Type '{}' is missing the following properties from type '{ exists?: boolean | undefined; data: () => Record<string, any>; ref: { parent?: { parent?: any; } | undefined; }; }': data, ref
+src/core/cloud/render-variant/render-variant-core.js(2116,7): error TS2741: Property 'ref' is missing in type '{}' but required in type '{ ref: { parent?: { parent?: any; } | undefined; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(2125,32): error TS7006: Parameter 'snap' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(2170,5): error TS2322: Type 'unknown' is not assignable to type 'boolean'.
+src/core/cloud/render-variant/render-variant-core.js(2187,5): error TS2322: Type 'undefined' is not assignable to type 'object | null'.
+src/core/cloud/render-variant/render-variant-core.js(2189,15): error TS2339: Property 'ref' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2212,3): error TS2322: Type 'unknown' is not assignable to type '{ parent?: any; } | null'.
+src/core/cloud/render-variant/render-variant-core.js(2264,3): error TS2322: Type 'object | null' is not assignable to type '{ exists?: boolean | undefined; data: () => Record<string, any>; } | null'.
+  Property 'data' is missing in type '{}' but required in type '{ exists?: boolean | undefined; data: () => Record<string, any>; }'.
+src/core/cloud/render-variant/render-variant-core.js(2276,3): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/core/cloud/render-variant/render-variant-core.js(2286,5): error TS2339: Property 'snap' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2287,5): error TS2339: Property 'db' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2288,5): error TS2339: Property 'bucket' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2289,5): error TS2339: Property 'pageSnap' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2290,5): error TS2339: Property 'page' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2291,5): error TS2339: Property 'consoleError' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2292,5): error TS2339: Property 'visibilityThreshold' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2293,5): error TS2339: Property 'variant' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2299,5): error TS2353: Object literal may only specify known properties, and 'db' does not exist in type '{ snap: { ref: { collection: Function; }; }; visibilityThreshold: number; consoleError?: ((message?: unknown, ...optionalParams: unknown[]) => void) | undefined; }'.
+src/core/cloud/render-variant/render-variant-core.js(2332,5): error TS2339: Property 'page' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2333,5): error TS2339: Property 'variant' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2334,5): error TS2339: Property 'options' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2335,5): error TS2339: Property 'storyTitle' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2336,5): error TS2339: Property 'authorName' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2337,5): error TS2339: Property 'authorUrl' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2338,5): error TS2339: Property 'parentUrl' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2339,5): error TS2339: Property 'firstPageUrl' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2356,5): error TS7006: Parameter 'option' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(2368,40): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean | undefined; data: () => Record<string, any>; }>; } | undefined; } | undefined; }; }'.
+  Property 'ref' is missing in type '{}' but required in type '{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean | undefined; data: () => Record<string, any>; }>; } | undefined; } | undefined; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(2399,3): error TS2322: Type 'object | null' is not assignable to type '{ variant: Record<string, any>; page: Record<string, any>; parentUrl: string | undefined; html: string; filePath: string; openVariant: boolean; } | null'.
+  Type '{}' is missing the following properties from type '{ variant: Record<string, any>; page: Record<string, any>; parentUrl: string | undefined; html: string; filePath: string; openVariant: boolean; }': variant, page, parentUrl, html, and 2 more.
+src/core/cloud/render-variant/render-variant-core.js(2408,11): error TS2339: Property 'snap' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2414,26): error TS2345: Argument of type '{ pageData: object; }' is not assignable to parameter of type '{ snap: object; pageData: object; db: object; bucket: object; consoleError: Function; visibilityThreshold: number; }'.
+  Type '{ pageData: object; }' is missing the following properties from type '{ snap: object; pageData: object; db: object; bucket: object; consoleError: Function; visibilityThreshold: number; }': snap, db, bucket, consoleError, visibilityThreshold
+src/core/cloud/render-variant/render-variant-core.js(2436,11): error TS2339: Property 'pageSnap' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2436,21): error TS2339: Property 'page' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2437,24): error TS2339: Property 'data' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2477,16): error TS2339: Property 'file' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2489,11): error TS2339: Property 'snap' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2489,17): error TS2339: Property 'bucket' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2489,25): error TS2339: Property 'page' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2495,3): error TS2322: Type 'string' is not assignable to type 'void'.
+src/core/cloud/render-variant/render-variant-core.js(2506,15): error TS2339: Property 'incomingOption' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2549,16): error TS2339: Property 'file' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2602,33): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2604,40): error TS2345: Argument of type 'void' is not assignable to parameter of type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2639,32): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2640,18): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2663,43): error TS2345: Argument of type '{ params?: Record<string, string> | undefined; } | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2673,25): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2695,35): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2708,17): error TS2339: Property 'before' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2712,37): error TS2339: Property 'before' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2713,34): error TS2339: Property 'visibility' does not exist on type 'object'.
+src/core/cloud/submit-new-page/helpers.js(101,3): error TS2322: Type 'object | null' is not assignable to type '{ pageNumber: number; variantName: string; optionNumber: number; } | null'.
+  Type '{}' is missing the following properties from type '{ pageNumber: number; variantName: string; optionNumber: number; }': pageNumber, variantName, optionNumber
+src/core/cloud/submit-new-page/helpers.js(111,49): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Firestore'.
+  Type '{}' is missing the following properties from type 'Firestore': collection, doc, batch, runTransaction, collectionGroup
+src/core/cloud/submit-new-page/helpers.js(115,27): error TS2339: Property 'ref' does not exist on type 'QueryDocumentSnapshot<DocumentData>'.
+src/core/cloud/submit-new-page/helpers.js(125,53): error TS2345: Argument of type 'object' is not assignable to parameter of type 'DocumentReference<DocumentData>'.
+  Type '{}' is missing the following properties from type 'DocumentReference<DocumentData>': id, path, collection, get, update
+src/core/cloud/submit-new-page/helpers.js(129,30): error TS2339: Property 'ref' does not exist on type 'QueryDocumentSnapshot<DocumentData>'.
+src/core/cloud/submit-new-page/helpers.js(140,6): error TS2339: Property 'collection' does not exist on type 'object'.
+src/core/cloud/submit-new-page/helpers.js(157,60): error TS2339: Property 'variantName' does not exist on type 'object'.
+src/core/cloud/submit-new-page/helpers.js(158,3): error TS2322: Type 'unknown' is not assignable to type 'string | null'.
+src/core/cloud/submit-new-page/helpers.js(158,15): error TS2345: Argument of type 'object | null' is not assignable to parameter of type 'boolean'.
+  Type 'null' is not assignable to type 'boolean'.
+src/core/cloud/submit-new-page/helpers.js(159,26): error TS2345: Argument of type 'object | null' is not assignable to parameter of type 'object'.
+  Type 'null' is not assignable to type 'object'.
+src/core/cloud/submit-new-page/helpers.js(159,43): error TS2339: Property 'optionNumber' does not exist on type 'object'.
+src/core/cloud/submit-new-page/helpers.js(219,38): error TS2339: Property 'collection' does not exist on type 'object'.
+src/core/cloud/submit-new-page/helpers.js(233,18): error TS2339: Property 'path' does not exist on type 'object'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(17,3): error TS2322: Type '{}' is not assignable to type 'string'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(26,3): error TS2322: Type '{}' is not assignable to type 'string'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(49,11): error TS2339: Property 'rawIncomingOption' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(49,30): error TS2339: Property 'rawPage' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(49,39): error TS2339: Property 'rawContent' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(49,51): error TS2339: Property 'rawAuthor' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(99,5): error TS2739: Type '{ error: { status: number; body: { error: string; }; }; }' is missing the following properties from type '{ incomingOptionFullName: string | null; pageNumber: number | null; error?: { status: number; body: { error: string; }; } | undefined; }': incomingOptionFullName, pageNumber
+src/core/cloud/submit-new-page/submit-new-page-core.js(101,3): error TS2739: Type '{}' is missing the following properties from type '{ incomingOptionFullName: string | null; pageNumber: number | null; error?: { status: number; body: { error: string; }; } | undefined; }': incomingOptionFullName, pageNumber
+src/core/cloud/submit-new-page/submit-new-page-core.js(137,5): error TS2739: Type '{ error: { status: number; body: { error: string; }; }; }' is missing the following properties from type '{ incomingOptionFullName: string | null; pageNumber: number | null; error?: { status: number; body: { error: string; }; } | undefined; }': incomingOptionFullName, pageNumber
+src/core/cloud/submit-new-page/submit-new-page-core.js(139,3): error TS2739: Type '{}' is missing the following properties from type '{ incomingOptionFullName: string | null; pageNumber: number | null; error?: { status: number; body: { error: string; }; } | undefined; }': incomingOptionFullName, pageNumber
+src/core/cloud/submit-new-page/submit-new-page-core.js(159,5): error TS2339: Property 'incomingOption' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(160,5): error TS2339: Property 'pageStr' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(161,5): error TS2339: Property 'parseIncomingOption' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(162,5): error TS2339: Property 'findExistingOption' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(163,5): error TS2339: Property 'findExistingPage' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(192,5): error TS2739: Type '{ error: { status: number; body: { error: string; }; }; }' is missing the following properties from type '{ incomingOptionFullName: string | null; pageNumber: number | null; error?: { status: number; body: { error: string; }; } | undefined; }': incomingOptionFullName, pageNumber
+src/core/cloud/submit-new-page/submit-new-page-core.js(195,3): error TS2739: Type '{}' is missing the following properties from type '{ incomingOptionFullName: string | null; pageNumber: number | null; error?: { status: number; body: { error: string; }; } | undefined; }': incomingOptionFullName, pageNumber
+src/core/cloud/submit-new-page/submit-new-page-core.js(227,3): error TS2322: Type '(string | null)[]' is not assignable to type 'string[]'.
+  Type 'string | null' is not assignable to type 'string'.
+    Type 'null' is not assignable to type 'string'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(236,22): error TS2339: Property 'get' does not exist on type 'object'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(237,28): error TS2339: Property 'get' does not exist on type 'object'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(250,11): error TS2339: Property 'saveSubmission' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(250,27): error TS2339: Property 'serverTimestamp' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(264,11): error TS2339: Property 'verifyIdToken' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(264,26): error TS2339: Property 'randomUUID' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(264,38): error TS2339: Property 'saveSubmission' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(264,54): error TS2339: Property 'serverTimestamp' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(265,11): error TS2339: Property 'target' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(265,19): error TS2339: Property 'content' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(265,28): error TS2339: Property 'author' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(265,36): error TS2339: Property 'authHeader' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(265,48): error TS2339: Property 'options' does not exist on type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(292,18): error TS2339: Property 'body' does not exist on type 'object'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(321,3): error TS2322: Type '(request: { body?: object | undefined; get?: ((name: string) => string | undefined) | undefined; }) => Promise<object>' is not assignable to type '(request: { body?: object | undefined; get?: ((name: string) => string | undefined) | undefined; }) => Promise<{ status: number; body: object; }>'.
+  Type 'Promise<object>' is not assignable to type 'Promise<{ status: number; body: object; }>'.
+    Type '{}' is missing the following properties from type '{ status: number; body: object; }': status, body
+src/core/cloud/submit-new-page/submit-new-page-core.js(325,31): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/cloud/submit-new-page/submit-new-page-core.js(344,31): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(68,34): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(name: string) => string | string[] | undefined'.
+  Type 'Function' provides no match for the signature '(name: string): string | string[] | undefined'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(72,23): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(name: string) => string | string[] | undefined'.
+  Type 'Function' provides no match for the signature '(name: string): string | string[] | undefined'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(81,35): error TS2345: Argument of type 'SubmitNewStoryRequest | undefined' is not assignable to parameter of type 'SubmitNewStoryRequest'.
+  Type 'undefined' is not assignable to type 'SubmitNewStoryRequest'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(104,5): error TS2322: Type 'unknown' is not assignable to type 'Record<string, unknown> | null'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(205,3): error TS2322: Type '(string | null)[]' is not assignable to type 'string[]'.
+  Type 'string | null' is not assignable to type 'string'.
+    Type 'null' is not assignable to type 'string'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(206,33): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(226,5): error TS2322: Type 'unknown' is not assignable to type 'string | null'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(240,30): error TS2339: Property 'uid' does not exist on type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(251,59): error TS2345: Argument of type '(decoded: object) => string | null' is not assignable to parameter of type '(decoded: { uid?: string | null | undefined; } | null | undefined) => string | null'.
+  Types of parameters 'decoded' and 'decoded' are incompatible.
+    Type '{ uid?: string | null | undefined; } | null | undefined' is not assignable to type 'object'.
+      Type 'undefined' is not assignable to type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(260,29): error TS2339: Property 'allowedOrigins' does not exist on type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(261,20): error TS2339: Property 'allowedOrigins' does not exist on type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(272,18): error TS2339: Property 'methods' does not exist on type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(320,7): error TS2339: Property 'status' does not exist on type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(329,18): error TS2339: Property 'status' does not exist on type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(338,18): error TS2339: Property 'body' does not exist on type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(362,55): error TS2345: Argument of type '{ status?: number | undefined; body?: unknown; } | undefined' is not assignable to parameter of type 'object'.
+  Type 'undefined' is not assignable to type 'object'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(401,32): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(426,11): error TS2339: Property 'saveSubmission' does not exist on type '{}'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(426,27): error TS2339: Property 'getServerTimestamp' does not exist on type '{}'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(439,3): error TS2322: Type '{}' is not assignable to type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type '{}'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(483,30): error TS2345: Argument of type 'Record<string, unknown> | SubmitNewStoryDependencies' is not assignable to parameter of type 'SubmitNewStoryDependencies'.
+  Type 'Record<string, unknown>' is missing the following properties from type 'SubmitNewStoryDependencies': verifyIdToken, saveSubmission, randomUUID, getServerTimestamp
+src/core/cloud/submit-new-story/submit-new-story-core.js(496,20): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(500,3): error TS2739: Type 'HttpResponse' is missing the following properties from type 'Promise<HttpResponse>': then, catch, finally, [Symbol.toStringTag]
+src/core/cloud/submit-new-story/submit-new-story-core.js(509,3): error TS2322: Type 'Function' is not assignable to type '(request?: SubmitNewStoryRequest | undefined) => Promise<HttpResponse>'.
+  Type 'Function' provides no match for the signature '(request?: SubmitNewStoryRequest | undefined): Promise<HttpResponse>'.
+src/core/cloud/submit-new-story/submit-new-story-core.js(513,53): error TS7006: Parameter 'request' implicitly has an 'any' type.

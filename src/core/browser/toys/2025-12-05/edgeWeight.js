@@ -1,5 +1,4 @@
 import { isValidString } from '../../../commonCore.js';
-import { isPlainObject } from '../browserToysCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
 
@@ -48,8 +47,23 @@ function extractRatingsPair({ moderatorA, moderatorB, ratings }) {
  */
 function buildRatingsPair(ratings, moderatorA, moderatorB) {
   const firstRatings = getModeratorRatings(ratings, moderatorA);
+  if (!firstRatings) {
+    return null;
+  }
+
+  return buildSecondRatingsPair(firstRatings, ratings, moderatorB);
+}
+
+/**
+ * Build the second moderator's ratings once the first is confirmed.
+ * @param {Record<string, boolean>} firstRatings First moderator ratings.
+ * @param {Record<string, Record<string, boolean>>} ratings All ratings keyed by moderator.
+ * @param {string} moderatorB Second moderator identifier.
+ * @returns {{ firstRatings: Record<string, boolean>, secondRatings: Record<string, boolean> }|null} Pair when both moderators exist.
+ */
+function buildSecondRatingsPair(firstRatings, ratings, moderatorB) {
   const secondRatings = getModeratorRatings(ratings, moderatorB);
-  if (!firstRatings || !secondRatings) {
+  if (!secondRatings) {
     return null;
   }
 
@@ -121,11 +135,6 @@ function areModeratorIdsValid(moderatorA, moderatorB) {
   return isValidString(moderatorA) && isValidString(moderatorB);
 }
 
-/**
- * Check whether a value is a plain object.
- * @param {unknown} value - Value to test.
- * @returns {boolean} True when the value is a non-array object.
- */
 /**
  * Determine the overlapping rated pages between two moderators.
  * @param {Record<string, boolean>} firstRatings - First moderator ratings.

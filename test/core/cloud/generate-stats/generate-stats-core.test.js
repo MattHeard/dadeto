@@ -804,6 +804,57 @@ describe('createGenerateStatsCore', () => {
   });
 });
 
+describe('invalidateSinglePath default logger', () => {
+  it('uses the global console when no logger is provided', async () => {
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 });
+
+    const core = createGenerateStatsCore({
+      db: {},
+      auth: {},
+      storage: {},
+      fetchFn,
+      cryptoModule: { randomUUID: () => 'uuid' },
+      env: {},
+    });
+
+    await core.invalidatePaths(['/path']);
+    expect(consoleSpy).toHaveBeenCalledWith('invalidate /path failed: 500');
+    consoleSpy.mockRestore();
+  });
+
+  it('handles a logger that does not have an error method', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 });
+
+    const core = createGenerateStatsCore({
+      db: {},
+      auth: {},
+      storage: {},
+      fetchFn,
+      cryptoModule: { randomUUID: () => 'uuid' },
+      env: {},
+      console: {}, // No error method
+    });
+
+    // Should not throw
+    await expect(core.invalidatePaths(['/path'])).resolves.toBeUndefined();
+  });
+});
+
 describe('generate stats helpers', () => {
   it('detects duplicate app errors by code or message', () => {
     expect(

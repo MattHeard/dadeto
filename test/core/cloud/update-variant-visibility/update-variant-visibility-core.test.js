@@ -108,6 +108,16 @@ describe('createUpdateVariantVisibilityHandler', () => {
     expect(db.doc).not.toHaveBeenCalled();
   });
 
+  it('returns null when variant identifier is not a string', async () => {
+    const db = { doc: jest.fn() };
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await expect(
+      handler(createSnapshot({ variantId: 123, isApproved: true }))
+    ).resolves.toBeNull();
+    expect(db.doc).not.toHaveBeenCalled();
+  });
+
   it('returns null when variant snapshot is missing or not found', async () => {
     const db = {
       doc: jest.fn(() => ({
@@ -134,6 +144,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
     await expect(
       handler(createSnapshot({ variantId: 'variants/id', isApproved: true }))
     ).resolves.toBeNull();
+  });
+
+  it('returns null when the trigger snapshot data is missing', async () => {
+    const db = { doc: jest.fn() };
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await expect(handler({ data: () => null })).resolves.toBeNull();
   });
 
   it('updates visibility when the variant is approved', async () => {
@@ -190,6 +207,29 @@ describe('createUpdateVariantVisibilityHandler', () => {
       visibility: (1 * 1 + 0) / 2,
       moderatorRatingCount: 2,
       moderatorReputationSum: 2,
+    });
+  });
+
+  it('handles variant snapshot that exists but has no data', async () => {
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => null,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const db = { doc: jest.fn(() => variantRef) };
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await handler(
+      createSnapshot({ variantId: 'variants/id', isApproved: true })
+    );
+
+    expect(variantRef.update).toHaveBeenCalledWith({
+      visibility: 1, // (0 * 0 + 1) / 1
+      moderatorRatingCount: 1,
+      moderatorReputationSum: 1,
     });
   });
 });

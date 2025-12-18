@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
   shortestDistanceToAdmin,
   guardStopDistance,
+  dequeue,
 } from '../../../src/core/browser/toys/2025-12-05/dijkstra.js';
 
 describe('shortestDistanceToAdmin', () => {
@@ -96,5 +97,11 @@ describe('guardStopDistance', () => {
     const result = guardStopDistance(state, 0.5);
     expect(result).toBe(true);
     expect(state.queue).toHaveLength(0);
+  });
+});
+
+describe('dequeue', () => {
+  it('throws an error when the queue is unexpectedly empty', () => {
+    expect(() => dequeue([])).toThrow('Queue unexpectedly empty');
   });
 });

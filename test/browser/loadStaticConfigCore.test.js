@@ -29,6 +29,13 @@ describe('parseStaticConfigResponse', () => {
       'Failed to load static config: unknown'
     );
   });
+
+  it('uses an unknown status placeholder when the response status is undefined', async () => {
+    const response = { ok: false, json: jest.fn() };
+    await expect(parseStaticConfigResponse(response)).rejects.toThrow(
+      'Failed to load static config: unknown'
+    );
+  });
 });
 
 describe('createLoadStaticConfig', () => {

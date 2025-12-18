@@ -1,0 +1,6 @@
+# Lint fixes 2025-12-17
+- **Surprise:** ESLint's complexity rule treated `??`, `&&`, and `||` as additional decision points, so even tiny helpers like `resolveStaticConfigStatus` or a single short-circuit guard could tip over the limit.
+- **Diagnosis:** The warnings, combined with the detailed line numbers, made it clear that the rule counts each logical operator and nested guard, not just explicit `if` statements. Running `npm run lint` after each experiment confirmed which patterns stayed or vanished.
+- **Resolution:** I broke complex logic into smaller helpers, avoided chained `??`/`&&`/`||` inside any single function, and moved the variant-update workflow into two subtasks (`executeVariantUpdate`/`applyVariantUpdate`). This preserved behavior while keeping each helper's complexity at most two.
+- **Learning:** When complexity is tight, restructure around pure helpers instead of giant guard blocks, and prioritize chaining helpers over inline short-circuit logic; small wrappers that immediately return `null` or a value are easier to keep under the threshold.
+- **Follow-up:** If future lint bumps target other helpers, revisit them with the same pattern of micro helpers + early returns to keep the numbers manageable.

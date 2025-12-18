@@ -768,13 +768,26 @@ function resolveGlobalFetch() {
  * @param {string} deps.token Token.
  * @returns {Promise<void>} Promise.
  */
-async function invalidateSinglePath({ path, logger = console, ...sendDeps }) {
-  try {
-    const res = await sendInvalidateRequest(sendDeps, path);
-    handleInvalidateResponse(res, path, logger);
-  } catch (err) {
-    logInvalidateError(logger, path, err);
-  }
+async function invalidateSinglePath({ path, logger, ...sendDeps }) {
+  const request = Promise.resolve(sendInvalidateRequest(sendDeps, path));
+  await handleInvalidateResult(request, path, logger);
+}
+
+/**
+ * Process the response promise for an invalidation request.
+ * @param {Promise<Response>} requestPromise Promise returned by the HTTP client.
+ * @param {string} path CDN path under invalidation.
+ * @param {StatsLogger} logger Logger used for diagnostics.
+ * @returns {Promise<void>} Promise that resolves when logging completes.
+ */
+function handleInvalidateResult(requestPromise, path, logger) {
+  return requestPromise
+    .then(res => {
+      handleInvalidateResponse(res, path, logger);
+    })
+    .catch(err => {
+      logInvalidateError(logger, path, err);
+    });
 }
 
 /**

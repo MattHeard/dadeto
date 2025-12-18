@@ -93,6 +93,21 @@ describe('createModerationEndpointsPromise', () => {
     );
     expect(result).toEqual(DEFAULT_MODERATION_ENDPOINTS);
   });
+
+  it('uses the default console logger when no logger is provided', async () => {
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const loadStaticConfig = jest.fn().mockRejectedValue(new Error('fail'));
+
+    await createModerationEndpointsPromise(loadStaticConfig);
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Failed to load moderation endpoints, falling back to defaults.',
+      expect.any(Error)
+    );
+    consoleSpy.mockRestore();
+  });
 });
 
 describe('createGetModerationEndpoints', () => {

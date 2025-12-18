@@ -1268,8 +1268,8 @@ function logTargetPageError(error, consoleError) {
 
 /**
  * Process target snap.
- * @param {object} targetSnap Target snap.
- * @param {object} targetPage Target page.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} targetSnap Target snap.
+ * @param {import('firebase-admin/firestore').DocumentReference} targetPage Target page.
  * @param {number} visibilityThreshold Visibility threshold.
  * @returns {Promise<object>} Target metadata.
  */
@@ -1281,6 +1281,10 @@ async function processTargetSnap(targetSnap, targetPage, visibilityThreshold) {
     .get();
 
   const visible = variantSnap.docs.filter(
+    /**
+     * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} doc - Firestore document snapshot.
+     * @returns {boolean} True if the variant is visible.
+     */
     doc => (doc.data().visibility ?? 1) >= visibilityThreshold
   );
 
@@ -1294,7 +1298,7 @@ async function processTargetSnap(targetSnap, targetPage, visibilityThreshold) {
 /**
  * Build target metadata.
  * @param {number} targetPageNumber Target page number.
- * @param {object[]} visible Visible variants.
+ * @param {import('firebase-admin/firestore').QueryDocumentSnapshot[]} visible Visible variants.
  * @returns {object} Target metadata.
  */
 function buildTargetMetadata(targetPageNumber, visible) {
@@ -1314,15 +1318,28 @@ function buildTargetMetadata(targetPageNumber, visible) {
 /**
  * Load and normalize option documents for a particular variant.
  * @param {object} options - Dependencies required to load options.
- * @param {{ref: {collection: Function}}} options.snap - Firestore snapshot for the variant whose options are being read.
+ * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} options.snap - Firestore snapshot for the variant whose options are being read.
  * @param {number} options.visibilityThreshold - Minimum visibility required for inclusion.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
  * @returns {Promise<object[]>} Ordered option metadata entries.
  */
 async function loadOptions({ snap, visibilityThreshold, consoleError }) {
   const optionsSnap = await snap.ref.collection('options').get();
-  const optionsData = optionsSnap.docs.map(doc => doc.data());
-  optionsData.sort((a, b) => a.position - b.position);
+  const optionsData = optionsSnap.docs.map(
+    /**
+     * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} doc - Firestore document snapshot.
+     * @returns {import('firebase-admin/firestore').DocumentData} Document data.
+     */
+    doc => doc.data()
+  );
+  optionsData.sort(
+    /**
+     * @param {import('firebase-admin/firestore').DocumentData} a - First option data.
+     * @param {import('firebase-admin/firestore').DocumentData} b - Second option data.
+     * @returns {number} Sorting weight.
+     */
+    (a, b) => a.position - b.position
+  );
 
   return Promise.all(
     optionsData.map(data =>

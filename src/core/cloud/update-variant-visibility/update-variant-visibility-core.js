@@ -189,6 +189,33 @@ function isValidSnapshot(snapshot) {
 }
 
 /**
+ * Read document data when the snapshot is valid.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Variant snapshot.
+ * @returns {Record<string, unknown> | null} Data or null when invalid.
+ */
+function getValidVariantSnapshotData(snapshot) {
+  if (!isValidSnapshot(snapshot)) {
+    return null;
+  }
+
+  return getSnapshotDataOrFallback(snapshot);
+}
+
+/**
+ * Normalize snapshot data to an object, treating absence as empty.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot to read.
+ * @returns {Record<string, unknown>} Snapshot data or empty object.
+ */
+function getSnapshotDataOrFallback(snapshot) {
+  const snapshotData = snapshot.data();
+  if (snapshotData) {
+    return snapshotData;
+  }
+
+  return {};
+}
+
+/**
  * Process the variant update if the snapshot is valid.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} variantSnap Variant snapshot.
  * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant reference.
@@ -196,13 +223,12 @@ function isValidSnapshot(snapshot) {
  * @returns {Promise<void>} Promise.
  */
 async function processVariantUpdate(variantSnap, variantRef, isApproved) {
-  if (!isValidSnapshot(variantSnap)) {
+  const variantData = getValidVariantSnapshotData(variantSnap);
+  if (!variantData) {
     return;
   }
 
-  const variantData = variantSnap.data() ?? {};
-  const newRating = getNewRating(isApproved);
-  const newStats = calculateNewStats(variantData, newRating);
+  const newStats = calculateNewStats(variantData, getNewRating(isApproved));
 
   await updateVariantStats(variantRef, newStats);
 }
@@ -214,6 +240,36 @@ async function processVariantUpdate(variantSnap, variantRef, isApproved) {
  */
 function validateApproval(isApproved) {
   return isValidApproval(isApproved);
+}
+
+/**
+ * Extracts validated variant update inputs.
+ * @param {Record<string, unknown>} data Raw trigger payload.
+ * @returns {{ variantId: string; isApproved: boolean } | null} Sanitized payload for processing.
+ */
+function getValidVariantUpdatePayload(data) {
+  if (typeof data.variantId !== 'string') {
+    return null;
+  }
+
+  return buildVariantUpdatePayload(data.variantId, data.isApproved);
+}
+
+/**
+ * Build the final payload when approval status is valid.
+ * @param {string} variantId Variant identifier.
+ * @param {unknown} isApproved Approval flag.
+ * @returns {{ variantId: string; isApproved: boolean } | null} Payload for processing.
+ */
+function buildVariantUpdatePayload(variantId, isApproved) {
+  if (!validateApproval(isApproved)) {
+    return null;
+  }
+
+  return {
+    variantId,
+    isApproved,
+  };
 }
 
 /**
@@ -240,26 +296,53 @@ export function createUpdateVariantVisibilityHandler({ db }) {
   assertDb(db);
 
   return async function handleUpdateVariantVisibility(snapshot) {
-    const data = /** @type {{ variantId?: string; isApproved?: unknown }} */ (
-      snapshot.data() ?? {}
-    );
-    const { variantId, isApproved } = data;
-
-    if (typeof variantId !== 'string') {
-      return null;
-    }
-    if (!validateApproval(isApproved)) {
-      return null;
-    }
-
-    const variantRef = resolveVariantRef(db, variantId);
-    if (!variantRef) {
-      return null;
-    }
-
-    const variantSnap = await variantRef.get();
-    await processVariantUpdate(variantSnap, variantRef, isApproved);
-
-    return null;
+    return executeVariantUpdate(db, snapshot);
   };
+}
+
+/**
+ * Execute the variant update logic when a valid payload exists.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Trigger snapshot.
+ * @returns {Promise<null>} Resolves with null when complete.
+ */
+async function executeVariantUpdate(db, snapshot) {
+  const payload = getVariantUpdatePayloadFromSnapshot(snapshot);
+  if (!payload) {
+    return null;
+  }
+
+  return applyVariantUpdate(db, payload);
+}
+
+/**
+ * Apply the visibility update using the validated payload.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {{ variantId: string; isApproved: boolean }} payload Validated inputs.
+ * @returns {Promise<null>} Resolves after the update runs.
+ */
+async function applyVariantUpdate(db, payload) {
+  const variantRef = resolveVariantRef(db, payload.variantId);
+  if (!variantRef) {
+    return null;
+  }
+
+  const variantSnap = await variantRef.get();
+  await processVariantUpdate(variantSnap, variantRef, payload.isApproved);
+
+  return null;
+}
+
+/**
+ * Extracts a sanitized payload directly from the snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Firestore snapshot.
+ * @returns {{ variantId: string; isApproved: boolean } | null} Validated payload or null.
+ */
+function getVariantUpdatePayloadFromSnapshot(snapshot) {
+  const data = snapshot.data();
+  if (!data) {
+    return null;
+  }
+
+  return getValidVariantUpdatePayload(data);
 }

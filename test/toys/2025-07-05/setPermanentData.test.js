@@ -18,4 +18,10 @@ describe('setPermanentData', () => {
     expect(output).toBe(JSON.stringify({}));
     expect(mock).not.toHaveBeenCalled();
   });
+
+  test('returns empty object when the storage helper is not available', () => {
+    const env = new Map();
+    const output = setPermanentData('{"foo": "bar"}', env);
+    expect(output).toBe(JSON.stringify({}));
+  });
 });
