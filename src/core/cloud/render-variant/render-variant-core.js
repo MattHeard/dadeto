@@ -1441,11 +1441,19 @@ async function fetchStoryData(storyRef) {
   if (!storyRef) {
     return null;
   }
-  const storySnap =
-    await /** @type {import('firebase-admin/firestore').DocumentReference} */ (
-      storyRef
-    ).get();
+  const storySnap = await getStorySnapshot(storyRef);
   return storySnap.data() || null;
+}
+
+/**
+ * Get story snapshot.
+ * @param {object} storyRef Story reference.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentSnapshot>} Story snapshot.
+ */
+async function getStorySnapshot(storyRef) {
+  return /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+    storyRef
+  ).get();
 }
 
 /**
@@ -1551,19 +1559,28 @@ async function fetchRootPageUrl(storyData) {
  * @returns {Promise<string | undefined>} Root page URL.
  */
 async function resolveUrlFromRootPage(rootPageSnap, rootPageRef) {
-  const rootVariantSnap = await rootPageRef
+  const firstVariant = await getFirstVariant(rootPageRef);
+  if (!firstVariant) {
+    return undefined;
+  }
+
+  const pageData = rootPageSnap.data();
+  return `/p/${pageData?.number}${firstVariant.data().name}.html`;
+}
+
+/**
+ * Get the first variant document snapshot for a page.
+ * @param {import('firebase-admin/firestore').DocumentReference} pageRef Page reference.
+ * @returns {Promise<import('firebase-admin/firestore').QueryDocumentSnapshot | undefined>} First variant.
+ */
+async function getFirstVariant(pageRef) {
+  const rootVariantSnap = await pageRef
     .collection('variants')
     .orderBy('name')
     .limit(1)
     .get();
 
-  if (!rootVariantSnap.docs[0]) {
-    return undefined;
-  }
-
-  return `/p/${rootPageSnap.data()?.number}${
-    rootVariantSnap.docs[0].data().name
-  }.html`;
+  return rootVariantSnap.docs[0];
 }
 
 /**
