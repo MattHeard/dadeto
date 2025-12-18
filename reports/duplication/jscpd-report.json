@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-18T16:18:31.268Z",
+    "detectionDate": "2025-12-18T17:33:06.187Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -761,8 +761,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/browserInputHandlersCore.js": {
-            "lines": 78,
-            "tokens": 494,
+            "lines": 114,
+            "tokens": 517,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1086,8 +1086,8 @@
           }
         },
         "total": {
-          "lines": 18756,
-          "tokens": 83438,
+          "lines": 18792,
+          "tokens": 83461,
           "sources": 90,
           "clones": 0,
           "duplicatedLines": 0,
@@ -1140,8 +1140,8 @@
       }
     },
     "total": {
-      "lines": 19003,
-      "tokens": 88953,
+      "lines": 19039,
+      "tokens": 88976,
       "sources": 92,
       "clones": 0,
       "duplicatedLines": 0,

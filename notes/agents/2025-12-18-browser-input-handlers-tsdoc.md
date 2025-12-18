@@ -1,0 +1,4 @@
+# Browser input handlers Tsdoc cleanup
+- **Unexpected hurdle:** Running `npm run tsdoc:check` still explodes with the sea of existing JSDoc/typing errors (the browser document helpers, cloud functions, etc.) so I could only verify that my targeted file no longer contributes new failures.
+- **Diagnosis & fix:** I introduced explicit typedefs for the shared DOM helpers (the `dom` object exported from `src/browser/document.js`) and the text-input handler signatures, which finally satisfied the compiler and let the browser input handler helpers remain at 100% coverage.
+- **Learning / next step:** Broad tsdoc compliance still needs a heavyweight cleanup (probably defining shared DOM/handler interfaces once and reusing them everywhere); consider iterating on that after this focused fix to make the project-wide check meaningful again.
