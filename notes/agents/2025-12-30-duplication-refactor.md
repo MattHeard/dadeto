@@ -1,0 +1,6 @@
+# Duplication refactor (2025-12-30)
+
+- **Surprise**: jscpd was still surfacing a clone that spanned the cloud variant handler and the latest toy (`edgeWeight`). The tool flagged the “null guard plus return object” pattern even though the logic deals with very different domains, so I had to dig into the JSON report to trace both locations before deciding how to refactor.
+- **Diagnosis & fix**: I leaned on the existing `when` helper in `commonCore` for those guards and restructured `buildVariantUpdatePayload`, `buildRatingsPair`, and `buildSecondRatingsPair` to call `when` instead of repeating `if/return null` blocks. That eliminated the token match and also centralized the guard pattern for other consumers.
+- **Learning**: Reusing `getFirstErrorMessage` from `browser-core` in `battleshipSolitaireFleet` removed another clone while keeping the validators local. When duplication spans unrelated modules, it helps to look for ready-made helpers (like `when`) before introducing brand-new abstractions, otherwise the clone detector just swaps one repeated block for another similar helper call.
+- **Next steps/Questions**: Should we document more “guard + return object” idioms so future helpers can reuse `when` upfront? Also, keep an eye on the duplication reports after new toys land to avoid regressing on these shared patterns.

@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-12-16T20:24:52.640Z",
+    "detectionDate": "2025-12-18T12:50:42.664Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -17,8 +17,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/edgeWeight.js": {
-            "lines": 168,
-            "tokens": 744,
+            "lines": 170,
+            "tokens": 752,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -29,8 +29,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-12-05/dijkstra.js": {
-            "lines": 302,
-            "tokens": 1526,
+            "lines": 317,
+            "tokens": 1627,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -53,8 +53,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-11-01/textAppendList.js": {
-            "lines": 111,
-            "tokens": 456,
+            "lines": 112,
+            "tokens": 465,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -65,8 +65,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-10-19/csvToJsonObject.js": {
-            "lines": 82,
-            "tokens": 528,
+            "lines": 88,
+            "tokens": 580,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -89,8 +89,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-05/setPermanentData.js": {
-            "lines": 18,
-            "tokens": 94,
+            "lines": 22,
+            "tokens": 124,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -113,8 +113,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-07-05/getDend2Titles.js": {
-            "lines": 71,
-            "tokens": 295,
+            "lines": 75,
+            "tokens": 333,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -149,8 +149,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-06-09/uuid.js": {
-            "lines": 12,
-            "tokens": 44,
+            "lines": 15,
+            "tokens": 68,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -185,8 +185,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-05-13/base64Encoder.js": {
-            "lines": 13,
-            "tokens": 46,
+            "lines": 16,
+            "tokens": 70,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -221,8 +221,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-04-16/colorPalette.js": {
-            "lines": 16,
-            "tokens": 173,
+            "lines": 21,
+            "tokens": 176,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -293,8 +293,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-03-28/rand.js": {
-            "lines": 15,
-            "tokens": 50,
+            "lines": 19,
+            "tokens": 75,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -305,8 +305,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-03-26/prettyFloat.js": {
-            "lines": 233,
-            "tokens": 1101,
+            "lines": 239,
+            "tokens": 1125,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -329,8 +329,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/toys/2025-03-21/booleanCoercer.js": {
-            "lines": 59,
-            "tokens": 230,
+            "lines": 50,
+            "tokens": 201,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -364,21 +364,9 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/scripts/generate/writeFormattedHtml.js": {
-            "lines": 86,
-            "tokens": 440,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/update-variant-visibility/update-variant-visibility-core.js": {
-            "lines": 270,
-            "tokens": 1143,
+            "lines": 345,
+            "tokens": 1416,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -425,8 +413,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
-            "lines": 644,
-            "tokens": 2585,
+            "lines": 718,
+            "tokens": 2841,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -437,8 +425,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
-            "lines": 216,
-            "tokens": 906,
+            "lines": 235,
+            "tokens": 1004,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -461,8 +449,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
-            "lines": 682,
-            "tokens": 2735,
+            "lines": 684,
+            "tokens": 2739,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -557,8 +545,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
-            "lines": 927,
-            "tokens": 3567,
+            "lines": 963,
+            "tokens": 3639,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -653,8 +641,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/presenters/battleshipSolitaireFleet.js": {
-            "lines": 274,
-            "tokens": 1362,
+            "lines": 291,
+            "tokens": 1347,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -677,8 +665,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/moderation/endpoints.js": {
-            "lines": 221,
-            "tokens": 584,
+            "lines": 241,
+            "tokens": 667,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -725,8 +713,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/sharedSpecialInput.js": {
-            "lines": 93,
-            "tokens": 375,
+            "lines": 103,
+            "tokens": 381,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -749,8 +737,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
-            "lines": 286,
-            "tokens": 2248,
+            "lines": 287,
+            "tokens": 2249,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -761,8 +749,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputHandlers/createDendriteHandler.js": {
-            "lines": 371,
-            "tokens": 1887,
+            "lines": 373,
+            "tokens": 1883,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -784,20 +772,8 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/constants/selectors.js": {
-            "lines": 8,
-            "tokens": 56,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/constants/markdown.js": {
-            "lines": 95,
+          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-shared.js": {
+            "lines": 126,
             "tokens": 522,
             "sources": 1,
             "clones": 0,
@@ -808,21 +784,9 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/submit-shared.js": {
-            "lines": 86,
-            "tokens": 466,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/response-utils.js": {
-            "lines": 34,
-            "tokens": 167,
+            "lines": 42,
+            "tokens": 170,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -833,8 +797,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/responder-utils.js": {
-            "lines": 27,
-            "tokens": 105,
+            "lines": 31,
+            "tokens": 110,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -845,8 +809,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/request-normalization.js": {
-            "lines": 33,
-            "tokens": 134,
+            "lines": 71,
+            "tokens": 215,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -917,8 +881,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/cloud/cloud-core.js": {
-            "lines": 747,
-            "tokens": 2903,
+            "lines": 750,
+            "tokens": 2908,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -953,8 +917,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/build/buildCore.js": {
-            "lines": 8,
-            "tokens": 25,
+            "lines": 95,
+            "tokens": 467,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -977,7 +941,7 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/token-action.js": {
-            "lines": 84,
+            "lines": 83,
             "tokens": 275,
             "sources": 1,
             "clones": 0,
@@ -1001,8 +965,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/load-static-config-core.js": {
-            "lines": 144,
-            "tokens": 529,
+            "lines": 161,
+            "tokens": 590,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1013,8 +977,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/inputValueStore.js": {
-            "lines": 49,
-            "tokens": 197,
+            "lines": 55,
+            "tokens": 202,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1037,8 +1001,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/createSectionSetter.js": {
-            "lines": 76,
-            "tokens": 479,
+            "lines": 162,
+            "tokens": 790,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1061,8 +1025,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/browser-core.js": {
-            "lines": 486,
-            "tokens": 2234,
+            "lines": 488,
+            "tokens": 2264,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1073,8 +1037,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/beta.js": {
-            "lines": 13,
-            "tokens": 87,
+            "lines": 21,
+            "tokens": 90,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1085,20 +1049,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/audio-controls.js": {
-            "lines": 93,
-            "tokens": 687,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/Users/matthew.heard/Code/Matt/dadeto/src/core/validation.js": {
-            "lines": 43,
-            "tokens": 149,
+            "lines": 100,
+            "tokens": 689,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1109,8 +1061,8 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/commonCore.js": {
-            "lines": 235,
-            "tokens": 898,
+            "lines": 233,
+            "tokens": 940,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1122,9 +1074,9 @@
           }
         },
         "total": {
-          "lines": 18105,
-          "tokens": 81921,
-          "sources": 93,
+          "lines": 18476,
+          "tokens": 82883,
+          "sources": 89,
           "clones": 0,
           "duplicatedLines": 0,
           "duplicatedTokens": 0,
@@ -1176,9 +1128,9 @@
       }
     },
     "total": {
-      "lines": 18352,
-      "tokens": 87436,
-      "sources": 95,
+      "lines": 18723,
+      "tokens": 88398,
+      "sources": 91,
       "clones": 0,
       "duplicatedLines": 0,
       "duplicatedTokens": 0,

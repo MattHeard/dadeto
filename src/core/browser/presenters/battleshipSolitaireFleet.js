@@ -25,6 +25,7 @@
  * }
  */
 import { createPreFromContent } from './browserPresentersCore.js';
+import { getFirstErrorMessage } from '../browser-core.js';
 
 /**
  * Validate that a fleet object has the required properties.
@@ -38,11 +39,8 @@ function validateFleetObject(fleet) {
     [f => typeof f.height !== 'number', 'Missing or invalid property: height'],
     [f => !Array.isArray(f.ships), 'Missing or invalid property: ships'],
   ];
-  const found = validators.find(([validator]) => validator(fleet));
-  if (found) {
-    return found[1];
-  }
-  return '';
+
+  return getFirstErrorMessage(validators, fleet);
 }
 
 /**

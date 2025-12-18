@@ -1,4 +1,5 @@
 import { getNumericValueOrZero } from '../cloud-core.js';
+import { when } from '../../commonCore.js';
 
 /**
  * Validate a Firestore client using the provided predicate.
@@ -262,14 +263,10 @@ function getValidVariantUpdatePayload(data) {
  * @returns {{ variantId: string; isApproved: boolean } | null} Payload for processing.
  */
 function buildVariantUpdatePayload(variantId, isApproved) {
-  if (!validateApproval(isApproved)) {
-    return null;
-  }
-
-  return {
+  return when(validateApproval(isApproved), () => ({
     variantId,
     isApproved,
-  };
+  }));
 }
 
 /**

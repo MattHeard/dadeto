@@ -1,4 +1,4 @@
-import { isValidString } from '../../../commonCore.js';
+import { isValidString, when } from '../../../commonCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
 
@@ -47,11 +47,10 @@ function extractRatingsPair({ moderatorA, moderatorB, ratings }) {
  */
 function buildRatingsPair(ratings, moderatorA, moderatorB) {
   const firstRatings = getModeratorRatings(ratings, moderatorA);
-  if (!firstRatings) {
-    return null;
-  }
 
-  return buildSecondRatingsPair(firstRatings, ratings, moderatorB);
+  return when(Boolean(firstRatings), () =>
+    buildSecondRatingsPair(firstRatings, ratings, moderatorB)
+  );
 }
 
 /**
@@ -63,14 +62,11 @@ function buildRatingsPair(ratings, moderatorA, moderatorB) {
  */
 function buildSecondRatingsPair(firstRatings, ratings, moderatorB) {
   const secondRatings = getModeratorRatings(ratings, moderatorB);
-  if (!secondRatings) {
-    return null;
-  }
 
-  return {
+  return when(Boolean(secondRatings), () => ({
     firstRatings,
     secondRatings,
-  };
+  }));
 }
 
 /**

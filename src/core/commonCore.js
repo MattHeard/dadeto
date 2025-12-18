@@ -84,11 +84,11 @@ function withStringFallback(value, fallback, isNormalizedAcceptable) {
  */
 export function ensureString(value) {
   const normalized = stringOrNull(value);
-  if (normalized !== null) {
-    return normalized;
-  }
-
-  return '';
+  return when(
+    normalized !== null,
+    () => normalized,
+    () => ''
+  );
 }
 
 /**
@@ -104,11 +104,11 @@ export function stringOrDefault(value, fallback) {
     normalized => normalized !== undefined
   );
 
-  if (normalized !== null) {
-    return normalized;
-  }
-
-  return fallback;
+  return when(
+    normalized !== null,
+    () => normalized,
+    () => fallback
+  );
 }
 
 /**
