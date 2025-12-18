@@ -14,5 +14,17 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src/core/**/*.js"]
+  "include": ["src/core/**/*.js"],
+  "exclude": [
+    "node_modules",
+    "public",
+    "test",
+    "infra",
+    "reports",
+    "docker",
+    "notes",
+    "src/browser",
+    "src/cloud",
+    "src/scripts"
+  ]
 }
