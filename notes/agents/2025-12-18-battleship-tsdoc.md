@@ -4,3 +4,4 @@
 - The remaining `tsdoc` failure count is still very high because the rest of the core/browser/core files lack typedef coverage; I didn’t attempt to fix them this pass but noted the gap.
 - Next time it might be worth defining shared presenter type heads so each toy file can reuse them instead of repeating `object` everywhere; that could also let us convert more helpers to real TypeScript files later.
 - Open question: Should we invest in a shared presenter typedef catalog (or even migrate these presenters to `.ts`) so `tsdoc:check` can surface fewer warnings without retyping each toy?
+- Bonus note: Reworking `validateFleetObject` to always return the found validator’s message (using `??` instead of a redundant `return ''` branch) closed the last uncovered line, so the presenter now reports 100% coverage in the latest `npm run test` run.

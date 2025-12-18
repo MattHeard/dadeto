@@ -39,11 +39,10 @@ function validateFleetObject(fleet) {
     [f => !Array.isArray(f.ships), 'Missing or invalid property: ships'],
     [() => true, ''],
   ];
-  const found = validators.find(([validator]) => validator(fleet));
-  if (found) {
-    return found[1];
-  }
-  return '';
+  const found =
+    validators.find(([validator]) => validator(fleet)) ??
+    validators[validators.length - 1];
+  return found[1];
 }
 
 /**
