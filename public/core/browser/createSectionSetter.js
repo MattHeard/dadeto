@@ -19,7 +19,7 @@ function hasParsedData(result) {
  * @returns {string} Message describing why parsing failed.
  */
 function formatParseFailure(result) {
-  return result.message ?? 'Unable to parse JSON input.';
+  return result.message;
 }
 
 /**

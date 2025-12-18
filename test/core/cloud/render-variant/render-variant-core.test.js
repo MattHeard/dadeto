@@ -19,6 +19,7 @@ import {
   resolveRenderPlan,
   isSnapValid,
   extractStoryRef,
+  buildRootUrl,
   buildAltsHtml,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
@@ -382,6 +383,22 @@ describe('buildOptionMetadata', () => {
     expect(targetPage.get).toHaveBeenCalled();
   });
 
+  it('returns bare metadata when the target page data is missing', async () => {
+    const targetPage = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => null }),
+    };
+
+    const result = await buildOptionMetadata({
+      data: { content: 'Empty', position: 6, targetPage },
+      visibilityThreshold: 0.5,
+      db: { doc: jest.fn() },
+      consoleError: jest.fn(),
+    });
+
+    expect(result).toEqual({ content: 'Empty', position: 6 });
+    expect(targetPage.get).toHaveBeenCalled();
+  });
+
   it('skips variant metadata when no visible variants are found', async () => {
     const variantDocs = { docs: [] };
     const targetPage = {
@@ -607,6 +624,18 @@ describe('resolveStoryMetadata', () => {
 
     expect(result).toEqual({
       storyTitle: 'Story',
+      firstPageUrl: undefined,
+    });
+  });
+
+  it('returns empty metadata when the story reference is missing', async () => {
+    const result = await resolveStoryMetadata({
+      pageSnap: {},
+      page: { incomingOption: false },
+    });
+
+    expect(result).toEqual({
+      storyTitle: '',
       firstPageUrl: undefined,
     });
   });
@@ -2416,5 +2445,13 @@ describe('resolveRenderPlan', () => {
     await expect(
       resolveRenderPlan({ snap: { exists: false } })
     ).resolves.toBeNull();
+  });
+});
+
+describe('buildRootUrl', () => {
+  it('returns undefined when no variant is provided', () => {
+    const snap = { data: () => ({ number: 5 }) };
+
+    expect(buildRootUrl(snap, null)).toBeUndefined();
   });
 });

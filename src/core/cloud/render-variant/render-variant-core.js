@@ -2864,4 +2864,5 @@ export {
   buildParentRoute,
   resolveParentUrl,
   resolveRenderPlan,
+  buildRootUrl,
 };

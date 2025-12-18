@@ -197,6 +197,33 @@ export function createSignOutHandlerFactory(getAuthFn, globalScope) {
  * @param {(credentials: string) => unknown} deps.credentialFactory Credential builder invoked with the Google credential.
  * @returns {{ initGoogleSignIn: (options: object) => void, signOut: () => Promise<void> }} Public helpers for Google auth flows.
  */
+/**
+ * Build the function used to hand credentials to Firebase.
+ * @param {(token: string) => unknown} credentialFactory - Converts raw tokens into Firebase credentials.
+ * @returns {(auth: unknown, credential: unknown) => void | Promise<void>} Function that passes credentials to Firebase.
+ */
+export function buildSignInCredential(credentialFactory) {
+  return (auth, cred) => {
+    const result = credentialFactory(/** @type {string} */ (cred));
+    return /** @type {void | Promise<void>} */ (result);
+  };
+}
+
+/**
+ * Build the Google auth helpers used by the admin surface.
+ * @param {{
+ *   getAuthFn: () => unknown,
+ *   storage: Storage,
+ *   consoleObj: { error?: (message: string) => void },
+ *   globalScope: Window & typeof globalThis,
+ *   Provider: { credential?: (token: string) => string },
+ *   credentialFactory: (token: string) => unknown,
+ * }} deps - Dependencies required to construct the auth module.
+ * @returns {{
+ *   initGoogleSignIn: (options?: GoogleSignInOptions) => void | Promise<void>,
+ *   signOut: () => void,
+ * }} Auth helpers wired to the provided dependencies.
+ */
 export function createGoogleAuthModule(deps) {
   const {
     getAuthFn,
@@ -213,10 +240,7 @@ export function createGoogleAuthModule(deps) {
     consoleObj,
     globalThisObj: /** @type {typeof globalThis} */ (globalScope),
     googleAuthProviderFn: Provider,
-    signInWithCredentialFn: (auth, cred) => {
-      const result = credentialFactory(/** @type {string} */ (cred));
-      return /** @type {void | Promise<void>} */ (result);
-    },
+    signInWithCredentialFn: buildSignInCredential(credentialFactory),
   });
 
   const initGoogleSignIn = (/** @type {any} */ options) =>
@@ -266,7 +290,7 @@ function isAdminToken(token, jsonParser, decodeBase64) {
  * @param {'triggerRenderContentsUrl'|'markVariantDirtyUrl'|'generateStatsUrl'} key - Endpoint key to resolve.
  * @returns {string} Resolved endpoint URL.
  */
-function resolveAdminEndpoint(config, key) {
+export function resolveAdminEndpoint(config, key) {
   const endpointSources = [config, DEFAULT_ADMIN_ENDPOINTS];
   const sourceWithKey = endpointSources.find(source => key in source);
 
@@ -1057,7 +1081,6 @@ function buildNormalizedGoogleSignInDeps(deps) {
     querySelectorAll: source.querySelectorAll,
     logger: source.logger,
     safeLogger: { error: () => {} },
-    resolveGoogleAccountsId: () => undefined,
   };
 
   return ensureLogger(normalized);
@@ -2489,7 +2512,7 @@ function validateCredentialFactory(provider) {
  * @param {{ error?: (message: string) => void }} logger - Logger used to report missing scripts.
  * @returns {boolean} True when the client provides both `initialize` and `renderButton`.
  */
-function ensureGoogleIdentityAvailable(accountsId, logger) {
+export function ensureGoogleIdentityAvailable(accountsId, logger) {
   if (!hasRequiredGoogleIdentityMethods(accountsId)) {
     reportMissingGoogleIdentity(logger);
     return false;
