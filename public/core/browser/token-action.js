@@ -15,7 +15,12 @@ import { ensureFunction } from './browser-core.js';
 
 /**
  * @callback AdminTokenAction
+ * @param {AdminTokenActionContext} context Action context when the token is available.
  * @returns {Promise<void>}
+ */
+
+/**
+ * @typedef {() => Promise<void>} AdminTokenActionHandler
  */
 
 /**
@@ -31,7 +36,7 @@ import { ensureFunction } from './browser-core.js';
 /**
  * Validate admin token action dependencies and produce a handler.
  * @param {AdminTokenActionOptions} options Dependencies and configuration for the admin action.
- * @returns {AdminTokenAction} Handler guarded by the shared validation logic.
+ * @returns {AdminTokenActionHandler} Handler guarded by the shared validation logic.
  */
 export function createAdminTokenAction(options) {
   validateAdminTokenActionOptions(options);
@@ -63,7 +68,7 @@ function ensureGoogleAuth(googleAuth) {
 /**
  * Build the admin token action once dependencies are validated.
  * @param {AdminTokenActionOptions} options - Validated dependencies for the action.
- * @returns {AdminTokenAction} Token action bound to the provided helpers.
+ * @returns {AdminTokenActionHandler} Token action bound to the provided helpers.
  */
 function buildAdminTokenAction(options) {
   return async function adminTokenAction() {

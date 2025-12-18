@@ -9,6 +9,7 @@ import {
   createQuerySelectorAll,
   createRemoveItem,
   createSessionStorageHandler,
+  createInitGoogleSignInHandlerFactory,
   createSignOutHandlerFactory,
   initAdminApp,
   isAdminWithDeps,
@@ -47,6 +48,32 @@ describe('admin-core additional coverage', () => {
     expect(getAuth).toHaveBeenCalledTimes(1);
     expect(signOut).toHaveBeenCalledTimes(2);
     expect(storage.removeItem).toHaveBeenCalledWith('id_token');
+  });
+
+  it('throws when the sign out factory cannot resolve auth yet', () => {
+    const getAuth = jest.fn().mockReturnValue(null);
+    const storage = { removeItem: jest.fn() };
+    const globalScope = { sessionStorage: storage };
+
+    const getSignOutHandler = createSignOutHandlerFactory(getAuth, globalScope);
+    expect(() => getSignOutHandler()).toThrow(
+      new Error('Firebase auth client is not ready')
+    );
+  });
+
+  it('throws when the google sign-in handler factory lacks auth', () => {
+    const initFactory = createInitGoogleSignInHandlerFactory({
+      getAuthFn: () => null,
+      sessionStorageObj: { setItem: jest.fn() },
+      consoleObj: { error: jest.fn() },
+      globalThisObj: {},
+      googleAuthProviderFn: { credential: jest.fn() },
+      signInWithCredentialFn: jest.fn(),
+    });
+
+    expect(() => initFactory()).toThrow(
+      new Error('Firebase auth client is not ready')
+    );
   });
 
   describe('isAdminWithDeps', () => {
@@ -209,7 +236,7 @@ describe('admin-core additional coverage', () => {
         logger,
         globalObject: globalScope,
         authProvider,
-        signInCredential: signInWithCredential,
+        signInWithCredential: signInWithCredential,
       });
 
       expect(deps.googleAccountsId()).toBe(
@@ -238,7 +265,7 @@ describe('admin-core additional coverage', () => {
         logger,
         globalObject: undefined,
         authProvider,
-        signInCredential: jest.fn(),
+        signInWithCredential: jest.fn(),
       });
       expect(() => deps.matchMedia('(prefers-color-scheme: dark)')).toThrow(
         new Error('window is not available')

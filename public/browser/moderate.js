@@ -30,7 +30,7 @@ const getInitGoogleSignInHandler = () => {
       logger: console,
       globalObject: globalThis,
       authProvider: GoogleAuthProvider,
-      signInCredential: signInWithCredential,
+      signInWithCredential: signInWithCredential,
     });
   }
   return initGoogleSignInHandler;
