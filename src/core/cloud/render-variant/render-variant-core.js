@@ -1287,7 +1287,7 @@ function logTargetPageError(error, consoleError) {
  * @returns {Promise<object>} Target metadata.
  */
 async function processTargetSnap(targetSnap, targetPage, visibilityThreshold) {
-  const targetPageNumber = targetSnap.data().number;
+  const targetPageNumber = /** @type {number} */ (targetSnap.data().number);
   const variantSnap = await targetPage
     .collection('variants')
     .orderBy('name')
@@ -1337,7 +1337,9 @@ function buildTargetMetadata(targetPageNumber, visible) {
  * @returns {Promise<object[]>} Ordered option metadata entries.
  */
 async function loadOptions({ snap, visibilityThreshold, consoleError }) {
-  const optionsSnap = await snap.ref.collection('options').get();
+  const optionsSnap = await /** @type {any} */ (snap).ref
+    .collection('options')
+    .get();
   const optionsData = optionsSnap.docs.map(
     /**
      * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} doc - Firestore document snapshot.
@@ -1351,15 +1353,15 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
      * @param {import('firebase-admin/firestore').DocumentData} b - Second option data.
      * @returns {number} Sorting weight.
      */
-    (a, b) => a.position - b.position
+    (a, b) => /** @type {any} */ (a).position - /** @type {any} */ (b).position
   );
 
   return Promise.all(
     optionsData.map(data =>
       buildOptionMetadata({
-        data,
+        data: /** @type {any} */ (data),
         visibilityThreshold,
-        consoleError,
+        consoleError: consoleError || (() => {}),
       })
     )
   );
@@ -1487,7 +1489,7 @@ function extractStoryRef(pageSnap) {
  * @returns {object | null} Document reference or null.
  */
 function getPageRef(pageSnap) {
-  return readNullableProperty(pageSnap, 'ref');
+  return /** @type {any} */ (readNullableProperty(pageSnap, 'ref'));
 }
 
 /**
@@ -1510,7 +1512,7 @@ function resolveStoryFromPageRef(pageRef) {
  * @returns {object | null} Parent reference or null.
  */
 function getPageParent(pageRef) {
-  return readNullableProperty(pageRef, 'parent');
+  return /** @type {any} */ (readNullableProperty(pageRef, 'parent'));
 }
 
 /**
@@ -1519,7 +1521,7 @@ function getPageParent(pageRef) {
  * @returns {object | null} Grandparent reference or null when missing.
  */
 function getParentParent(parent) {
-  return readNullableProperty(parent, 'parent');
+  return /** @type {any} */ (readNullableProperty(parent, 'parent'));
 }
 
 /**
@@ -1538,8 +1540,8 @@ function deriveAuthorName(variant) {
  * Resolve author metadata for the rendered variant, creating landing pages if needed.
  * @param {{
  *   variant: Record<string, any>,
- *   db: { doc: Function },
- *   bucket: { file: (path: string) => { save: Function, exists: () => Promise<[boolean]> } },
+ *   db: { doc: (path: string) => { get: () => Promise<{ data: () => Record<string, any> }> } },
+ *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
  *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
  * }} root0 - Inputs for author lookup.
  * @returns {Promise<{authorName: string, authorUrl: string | undefined}>} Author metadata for templates.
@@ -1559,8 +1561,8 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
  * Ensure an author landing page exists and return its public URL.
  * @param {{
  *   variant: Record<string, any>,
- *   db: { doc: Function },
- *   bucket: { file: (path: string) => { save: Function, exists: () => Promise<[boolean]> } },
+ *   db: { doc: (path: string) => { get: () => Promise<{ data: () => Record<string, any> }> } },
+ *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
  *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
  * }} root0 - Inputs for creating or reusing an author page.
  * @returns {Promise<string | undefined>} URL of the author page, if one exists.
@@ -1647,9 +1649,9 @@ async function performAuthorLookup({ variant, db, bucket }) {
 
 /**
  * Resolve a Firestore reference for an author document.
- * @param {{ doc: (path: string) => unknown }} db Firestore-like client.
+ * @param {{ doc: (path: string) => any }} db Firestore-like client.
  * @param {string | undefined} authorId Identifier for the author.
- * @returns {unknown} Firestore document reference for the author path.
+ * @returns {any} Firestore document reference for the author path.
  */
 function resolveAuthorRef(db, authorId) {
   return db.doc(`authors/${authorId}`);
@@ -1699,8 +1701,8 @@ async function writeAuthorLandingPage(variant, file) {
  */
 /**
  * Extract parent refs.
- * @param {object} optionRef Option ref.
- * @returns {object | null} Refs.
+ * @param {any} optionRef Option ref.
+ * @returns {{ parentVariantRef: any, parentPageRef: any }} Refs.
  */
 function extractParentRefs(optionRef) {
   const parentVariantRef = getParentVariantRef(optionRef);
@@ -1711,7 +1713,7 @@ function extractParentRefs(optionRef) {
 /**
  * Retrieve the variant-level ancestor for an option.
  * @param {{ parent?: unknown } | null | undefined} optionRef Option document reference.
- * @returns {unknown | null} Ancestor variant reference or null.
+ * @returns {any} Ancestor variant reference or null.
  */
 function getParentVariantRef(optionRef) {
   return getAncestorRef(optionRef, 2);
@@ -1719,8 +1721,8 @@ function getParentVariantRef(optionRef) {
 
 /**
  * Retrieve the parent page reference for a variant.
- * @param {{ parent?: unknown } | null | undefined} parentVariantRef Variant reference.
- * @returns {unknown | null} Page reference ancestor or null.
+ * @param {any} parentVariantRef Variant reference.
+ * @returns {any} Page reference ancestor or null.
  */
 function getParentPageRef(parentVariantRef) {
   return getAncestorRef(parentVariantRef, 2);
@@ -1728,9 +1730,9 @@ function getParentPageRef(parentVariantRef) {
 
 /**
  * Walk up a reference chain a fixed number of steps.
- * @param {{ parent?: unknown } | null | undefined} ref Reference to walk.
+ * @param {any} ref Reference to walk.
  * @param {number} steps Number of parent hops to follow.
- * @returns {unknown | null} Ancestor reference or null when the chain breaks.
+ * @returns {any} Ancestor reference or null when the chain breaks.
  */
 function getAncestorRef(ref, steps = 0) {
   const normalizedSteps = Math.max(steps, 0);
@@ -1739,9 +1741,9 @@ function getAncestorRef(ref, steps = 0) {
 
 /**
  * Walk the reference chain for a fixed number of steps.
- * @param {{ parent?: unknown } | null} reference Starting reference.
+ * @param {any} reference Starting reference.
  * @param {number} remainingSteps Steps left to traverse.
- * @returns {{ parent?: unknown } | null} Resolved ancestor or null.
+ * @returns {any} Resolved ancestor or null.
  */
 function walkReferenceChain(reference, remainingSteps) {
   if (remainingSteps <= 0) {
@@ -1761,7 +1763,7 @@ function getParentRef(reference) {
     return null;
   }
 
-  return reference.parent;
+  return /** @type {{ parent?: unknown } | null} */ (reference.parent);
 }
 
 export { getAncestorRef };
