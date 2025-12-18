@@ -722,7 +722,7 @@ export function getVisibleVariants(docs) {
 
 /**
  * Map document to variant object.
- * @param {object} doc Document.
+ * @param {{ data: Function }} doc Document.
  * @returns {{ name: string, content: string }} Variant object.
  */
 function mapDocToVariant(doc) {
@@ -773,7 +773,7 @@ function assertDb(db) {
 
 /**
  * Check if db has doc helper.
- * @param {object} db Database.
+ * @param {{ doc: Function }} db Database.
  */
 function checkDbDocHelper(db) {
   if (typeof db.doc !== 'function') {
@@ -795,7 +795,7 @@ function assertStorage(storage) {
 
 /**
  * Check if storage has bucket helper.
- * @param {object} storage Storage.
+ * @param {{ bucket: Function }} storage Storage.
  */
 function checkStorageBucketHelper(storage) {
   if (typeof storage.bucket !== 'function') {
@@ -1069,11 +1069,9 @@ async function invalidatePathItem({
  * @returns {void}
  */
 function logInvalidateResponse(response, path, consoleError) {
-  if (!shouldLogInvalidateResponse(response, consoleError)) {
-    return;
+  if (shouldLogInvalidateResponse(response, consoleError)) {
+    consoleError(`invalidate ${path} failed: ${response.status}`);
   }
-
-  consoleError(`invalidate ${path} failed: ${response.status}`);
 }
 
 /**
@@ -1128,7 +1126,7 @@ function isObject(value) {
  */
 function extractMessageProperty(error) {
   if (hasStringMessage(error)) {
-    return error.message;
+    return /** @type {{message: string}} */ (error).message;
   }
 
   return undefined;
@@ -1140,7 +1138,9 @@ function extractMessageProperty(error) {
  * @returns {boolean} True when a string message exists.
  */
 function hasStringMessage(error) {
-  return isObject(error) && typeof error.message === 'string';
+  return (
+    isObject(error) && typeof (/** @type {any} */ (error).message) === 'string'
+  );
 }
 
 /**
@@ -1203,7 +1203,7 @@ async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
 
 /**
  * Derive the resolved page number metadata when no target reference exists.
- * @param {object} data Option document payload.
+ * @param {Record<string, any>} data Option document payload.
  * @returns {{targetPageNumber?: number}} Metadata containing the target page number when set.
  */
 function resolveTargetPageNumber(data) {
@@ -1216,7 +1216,7 @@ function resolveTargetPageNumber(data) {
 
 /**
  * Retrieve metadata for a referenced target page, including the first visible variant.
- * @param {object} targetPage Firestore reference for the target page document.
+ * @param {{ get: Function }} targetPage Firestore reference for the target page document.
  * @param {number} visibilityThreshold Minimum visibility required for a variant to be considered published.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for unexpected failures.
  * @returns {Promise<{
@@ -1232,22 +1232,35 @@ async function fetchTargetPageMetadata(
 ) {
   return targetPage
     .get()
-    .then(targetSnap => {
-      if (!targetSnap.exists) {
+    .then(
+      /**
+       * @param {{exists: boolean, data: Function}} targetSnap - Target snapshot.
+       * @returns {Promise<object>} Metadata.
+       */
+      targetSnap => {
+        if (!targetSnap.exists) {
+          return Promise.resolve({});
+        }
+
+        return processTargetSnap(targetSnap, targetPage, visibilityThreshold);
+      }
+    )
+    .catch(
+      /**
+       * @param {any} error - Error object.
+       * @returns {object} Empty object.
+       */
+      error => {
+        handleTargetPageError(error, consoleError);
         return {};
       }
-      return processTargetSnap(targetSnap, targetPage, visibilityThreshold);
-    })
-    .catch(error => {
-      handleTargetPageError(error, consoleError);
-      return {};
-    });
+    );
 }
 
 /**
  * Handle target page error.
- * @param {Error} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {unknown} error Error.
+ * @param {Function} [consoleError] Error logger.
  */
 function handleTargetPageError(error, consoleError) {
   if (!consoleError) {
@@ -1258,7 +1271,7 @@ function handleTargetPageError(error, consoleError) {
 
 /**
  * Log target page error.
- * @param {Error} error Error.
+ * @param {unknown} error Error.
  * @param {Function} consoleError Error logger.
  */
 function logTargetPageError(error, consoleError) {
