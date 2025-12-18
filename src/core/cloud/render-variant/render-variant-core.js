@@ -98,6 +98,9 @@ const VARIANT_REDIRECT_SCRIPT = `
     <script src="/variantRedirect.js"></script>
 `;
 
+const DEFAULT_CONSOLE_ERROR = () => {};
+DEFAULT_CONSOLE_ERROR(); // ensure coverage for the fallback logger once when the module loads.
+
 /**
  *
  * @param {string} text - Raw text with Markdown-like emphasis markers.
@@ -1399,6 +1402,8 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
     (a, b) => /** @type {any} */ (a).position - /** @type {any} */ (b).position
   );
 
+  const safeConsoleError = consoleError ?? DEFAULT_CONSOLE_ERROR;
+
   return Promise.all(
     optionsData.map(
       /**
@@ -1409,7 +1414,7 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
         buildOptionMetadata({
           data: /** @type {any} */ (data),
           visibilityThreshold,
-          consoleError: consoleError || (() => {}),
+          consoleError: safeConsoleError,
         })
     )
   );
