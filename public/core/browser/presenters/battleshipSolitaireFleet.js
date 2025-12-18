@@ -1,10 +1,17 @@
 /**
+ * @typedef {{x:number,y:number}} FleetCoordinate
+ * @typedef {'H' | 'V'} FleetDirection
+ * @typedef {{start:FleetCoordinate,length:number,direction:FleetDirection}} FleetShip
+ * @typedef {{width:number,height:number,ships:FleetShip[]}} BattleshipFleet
+ * @typedef {[(fleet: BattleshipFleet) => boolean,string]} FleetValidator
+ * @typedef {{createElement:(tag:string)=>HTMLElement,setTextContent:(node:HTMLElement,text:string)=>void}} DomAbstraction
+ * @typedef {{board:string[][],dimensions:{width:number,height:number}}} BoardInfo
+ *
  * createBattleshipFleetBoardElement
  * ---------------------------------
  * Renders a Battleship-Solitaire fleet into a monospace text grid.
  * @param {string} inputString – JSON-encoded RevealedBattleshipFleet
  * @param {object} dom         – abstraction with createElement / setTextContent
- * @param fleet
  * @returns {HTMLElement}      – <pre> element (board) or <p> element (error)
  *
  * Fleet JSON shape:
@@ -21,10 +28,11 @@ import { createPreFromContent } from './browserPresentersCore.js';
 
 /**
  * Validate that a fleet object has the required properties.
- * @param {object} fleet - Parsed fleet object.
+ * @param {BattleshipFleet} fleet - Parsed fleet object.
  * @returns {string} Empty string if valid, otherwise an error message.
  */
 function validateFleetObject(fleet) {
+  /** @type {FleetValidator[]} */
   const validators = [
     [f => typeof f.width !== 'number', 'Missing or invalid property: width'],
     [f => typeof f.height !== 'number', 'Missing or invalid property: height'],
@@ -32,23 +40,25 @@ function validateFleetObject(fleet) {
     [() => true, ''],
   ];
   const found = validators.find(([validator]) => validator(fleet));
-  return found[1];
+  if (found) {
+    return found[1];
+  }
+  return '';
 }
 
 /**
  * Place multiple ships onto the board.
- * @param {object} boardInfo - Contains board array and dimensions.
- * @param {object[]} ships - Array of ship objects.
+ * @param {BoardInfo} boardInfo - Contains board array and dimensions.
+ * @param {FleetShip[]} ships - Array of ship objects.
  */
 function placeShipsOnBoard(boardInfo, ships) {
-  const placeShip = ship => placeSingleShipOnBoard(boardInfo, ship);
-  ships.forEach(placeShip);
+  ships.forEach(ship => placeSingleShipOnBoard(boardInfo, ship));
 }
 
 /**
  * Place a single ship on the board if it is well formed.
- * @param {object} boardInfo - Board data.
- * @param {object} ship - Ship specification.
+ * @param {BoardInfo} boardInfo - Board data.
+ * @param {FleetShip} ship - Ship specification.
  */
 function placeSingleShipOnBoard(boardInfo, ship) {
   if (isMalformedShip(ship)) {
@@ -59,8 +69,8 @@ function placeSingleShipOnBoard(boardInfo, ship) {
 
 /**
  * Fill each cell for a ship on the board.
- * @param {object} boardInfo - Board data.
- * @param {object} ship - Ship specification.
+ * @param {BoardInfo} boardInfo - Board data.
+ * @param {FleetShip} ship - Ship specification.
  */
 function fillShipOnBoard(boardInfo, ship) {
   Array.from({ length: ship.length }).forEach((_, i) => {
@@ -70,8 +80,8 @@ function fillShipOnBoard(boardInfo, ship) {
 
 /**
  * Mark an individual ship cell on the board.
- * @param {object} boardInfo - Board data.
- * @param {object} ship - Ship specification.
+ * @param {BoardInfo} boardInfo - Board data.
+ * @param {FleetShip} ship - Ship specification.
  * @param {number} i - Index within the ship.
  */
 function fillShipCell(boardInfo, ship, i) {
@@ -83,7 +93,7 @@ function fillShipCell(boardInfo, ship, i) {
 
 /**
  * Calculate the y coordinate for the i-th cell of a ship.
- * @param {object} ship - Ship specification.
+ * @param {FleetShip} ship - Ship specification.
  * @param {number} i - Index within the ship.
  * @returns {number} y coordinate on the board.
  */
@@ -96,7 +106,7 @@ function getShipCellY(ship, i) {
 
 /**
  * Calculate the x coordinate for the i-th cell of a ship.
- * @param {object} ship - Ship specification.
+ * @param {FleetShip} ship - Ship specification.
  * @param {number} i - Index within the ship.
  * @returns {number} x coordinate on the board.
  */
@@ -109,8 +119,8 @@ function getShipCellX(ship, i) {
 
 /**
  * Mark a board coordinate as containing a ship cell.
- * @param {object} boardInfo - Board data.
- * @param {{x:number, y:number}} coord - Coordinate to mark.
+ * @param {BoardInfo} boardInfo - Board data.
+ * @param {FleetCoordinate} coord - Coordinate to mark.
  */
 function markShipCellOnBoard(boardInfo, coord) {
   const { board, dimensions } = boardInfo;
@@ -123,7 +133,7 @@ function markShipCellOnBoard(boardInfo, coord) {
 
 /**
  * Determine whether a ship object is missing required fields.
- * @param {object} ship - Ship specification.
+ * @param {FleetShip} ship - Ship specification.
  * @returns {boolean} True if ship is malformed.
  */
 function isMalformedShip(ship) {
@@ -138,7 +148,7 @@ function isMalformedShip(ship) {
 
 /**
  * Check if a ship lacks a starting coordinate.
- * @param {object} ship - Ship specification.
+ * @param {FleetShip} ship - Ship specification.
  * @returns {boolean} True if start is missing.
  */
 function isMissingStart(ship) {
@@ -147,7 +157,7 @@ function isMissingStart(ship) {
 
 /**
  * Validate the start coordinates of a ship.
- * @param {object} ship - Ship specification.
+ * @param {FleetShip} ship - Ship specification.
  * @returns {boolean} True if coordinates are invalid.
  */
 function isInvalidStartCoordinates(ship) {
@@ -156,7 +166,7 @@ function isInvalidStartCoordinates(ship) {
 
 /**
  * Check if a ship has a numeric length.
- * @param {object} ship - Ship specification.
+ * @param {FleetShip} ship - Ship specification.
  * @returns {boolean} True if length is invalid.
  */
 function isInvalidLength(ship) {
@@ -165,7 +175,7 @@ function isInvalidLength(ship) {
 
 /**
  * Validate a ship's direction property.
- * @param {object} ship - Ship specification.
+ * @param {FleetShip} ship - Ship specification.
  * @returns {boolean} True if direction is not 'H' or 'V'.
  */
 function isInvalidDirection(ship) {
@@ -208,14 +218,9 @@ function isCoordinateExceedsDimensions(coord, dimensions) {
 }
 
 /**
- *
- * @param inputString
- * @param dom
- */
-/**
  * Render a fleet board from a JSON string description.
  * @param {string} inputString - JSON encoded fleet description.
- * @param {object} dom - DOM abstraction with createElement and setTextContent.
+ * @param {DomAbstraction} dom - DOM abstraction with createElement and setTextContent.
  * @returns {HTMLElement} <pre> element representing the board or a <p> error element.
  */
 export function createBattleshipFleetBoardElement(inputString, dom) {
@@ -232,8 +237,8 @@ export function createBattleshipFleetBoardElement(inputString, dom) {
 
 /**
  * Validate a parsed fleet and render it or an error element.
- * @param {object} fleet - Parsed fleet object.
- * @param {object} dom - DOM abstraction.
+ * @param {BattleshipFleet} fleet - Parsed fleet object.
+ * @param {DomAbstraction} dom - DOM abstraction.
  * @returns {HTMLElement} Rendered fleet board or error message element.
  */
 function handleParsedFleet(fleet, dom) {
@@ -248,8 +253,8 @@ function handleParsedFleet(fleet, dom) {
 
 /**
  * Render a fleet board assuming the fleet is valid.
- * @param {object} fleet - Fleet data.
- * @param {object} dom - DOM abstraction.
+ * @param {BattleshipFleet} fleet - Fleet data.
+ * @param {DomAbstraction} dom - DOM abstraction.
  * @returns {HTMLElement} Preformatted board element.
  */
 function renderFleetBoard(fleet, dom) {
@@ -264,8 +269,23 @@ function renderFleetBoard(fleet, dom) {
   placeShipsOnBoard(boardInfo, fleet.ships);
 
   // 4. Convert to string
-  const formatRow = row => row.join(' ');
-  const joinRows = rows => rows.join('\n');
+  /**
+   * Format a single board row.
+   * @param {string[]} row - Row cells.
+   * @returns {string} Row string.
+   */
+  function formatRow(row) {
+    return row.join(' ');
+  }
+
+  /**
+   * Join formatted rows into final content.
+   * @param {string[]} rows - Formatted row strings.
+   * @returns {string} Full board string.
+   */
+  function joinRows(rows) {
+    return rows.join('\n');
+  }
   const rowStrings = board.map(formatRow);
   const content = joinRows(rowStrings);
 
