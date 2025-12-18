@@ -3,6 +3,21 @@ import { isNonNullObject } from '../commonCore.js';
 
 /** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
 
+/**
+ * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} LogCallback
+ * @typedef {{ logInfo: LogCallback; logError: LogCallback; logWarning: LogCallback }} BrowserLoggers
+ * @typedef {HTMLElement & { _dispose: () => void }} DisposableElement
+ * @typedef {(event: unknown) => void} DOMEventListener
+ * @typedef {{
+ *   querySelector: (container: HTMLElement, selector: string) => HTMLElement | null;
+ *   removeChild: (container: HTMLElement, child: HTMLElement) => void;
+ *   hide: (element: HTMLElement) => void;
+ *   disable: (element: HTMLElement) => void;
+ *   removeEventListener: (el: EventTarget, event: string, handler: DOMEventListener) => void;
+ * }} DOMHelpers
+ * @typedef {(container: HTMLElement, dom: DOMHelpers) => void} ContainerHandler
+ */
+
 // DOM selectors shared across the browser helpers.
 export const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 export const KV_CONTAINER_SELECTOR = '.kv-container';
@@ -16,22 +31,25 @@ export { assertFunction as ensureFunction } from '../commonCore.js';
 /**
  * Creates a logging function that prefixes messages with the given prefix.
  * Returns a no-op function if the base logger is falsy.
- * @param {Function} logger - The base logging function
+ * @param {LogCallback | undefined} logger - The base logging function
  * @param {string} prefix - The prefix string to prepend
- * @returns {Function} The prefixed logger function
+ * @returns {LogCallback} The prefixed logger function
  */
 export const createPrefixedLogger = (logger, prefix) => {
   if (logger) {
-    return (...args) => logger(prefix, ...args);
+    const prefixedLogger = /** @type {LogCallback} */ (
+      (message, ...optionalParams) => logger(prefix, message, ...optionalParams)
+    );
+    return prefixedLogger;
   }
-  return () => {};
+  return /** @type {LogCallback} */ (() => {});
 };
 
 /**
  * Creates a loggers object with each logger prefixed using the given prefix.
- * @param {object} loggers - Object containing logInfo, logError, and logWarning
+ * @param {BrowserLoggers} loggers - Object containing logInfo, logError, and logWarning
  * @param {string} prefix - The prefix string to prepend to all log messages
- * @returns {object} The new loggers object with prefixed functions
+ * @returns {BrowserLoggers} The new loggers object with prefixed functions
  */
 export const createPrefixedLoggers = (loggers, prefix) => ({
   logInfo: createPrefixedLogger(loggers.logInfo, prefix),
@@ -54,15 +72,16 @@ export function valueOr(value, fallback) {
 
 /**
  * Creates a shallow copy of an object that only includes the requested keys.
- * @param {object} obj - Source object.
+ * @param {Record<string, unknown> | null | undefined} obj - Source object.
  * @param {string[]} keys - Keys to retain.
- * @returns {object} Shallow copy containing only the requested keys.
+ * @returns {Record<string, unknown>} Shallow copy containing only the requested keys.
  */
 export function pick(obj, keys) {
-  let source = {};
-  if (Object(obj) === obj) {
-    source = obj;
+  if (!isNonNullObject(obj)) {
+    return {};
   }
+
+  const source = /** @type {Record<string, unknown>} */ (obj);
 
   return Object.fromEntries(
     keys.filter(key => key in source).map(key => [key, source[key]])
@@ -123,7 +142,7 @@ export function getFirstErrorMessage(checks, candidate) {
  * Dispose and remove a DOM element that exposes `_dispose`.
  * @param {HTMLElement | null | undefined} element Element that may expose `_dispose`.
  * @param {HTMLElement} container Parent container to clean up the element from.
- * @param {object} dom DOM helper utilities.
+ * @param {DOMHelpers} dom DOM helper utilities.
  * @returns {void}
  */
 function removeCapturedElement(element, container, dom) {
@@ -136,27 +155,34 @@ function removeCapturedElement(element, container, dom) {
 
 /**
  * Determine whether the element has been instrumented for disposal.
- * @param {HTMLElement | null | undefined} element Element to inspect.
- * @returns {boolean} True when `_dispose` exists and is callable.
+ * @param {unknown} element Candidate to inspect.
+ * @returns {element is DisposableElement} True when `_dispose` exists and is callable.
  */
 function shouldRemoveElement(element) {
   return Boolean(element && hasDisposeHook(element));
 }
 
 /**
- * Detect whether an element exposes `_dispose`.
- * @param {HTMLElement | null | undefined} element Element to inspect.
+ * Detect whether a value exposes `_dispose`.
+ * @param {unknown} element Candidate value to inspect.
  * @returns {boolean} True when `_dispose` exists and is callable.
  */
 function hasDisposeHook(element) {
-  return Boolean(element && typeof element._dispose === 'function');
+  if (!isNonNullObject(element)) {
+    return false;
+  }
+
+  return (
+    typeof (/** @type {Partial<DisposableElement>} */ (element)._dispose) ===
+    'function'
+  );
 }
 
 /**
  * Dispose an element and remove it from its container.
- * @param {HTMLElement} element Element to clean up.
+ * @param {DisposableElement} element Element to clean up.
  * @param {HTMLElement} container Container hosting the element.
- * @param {object} dom DOM helper utilities.
+ * @param {DOMHelpers} dom DOM helper utilities.
  * @returns {void}
  */
 function disposeAndRemoveElement(element, container, dom) {
@@ -167,7 +193,7 @@ function disposeAndRemoveElement(element, container, dom) {
 /**
  * Create a remover callback targeting the provided selector.
  * @param {string} selector Selector for the element to remove.
- * @returns {(container: HTMLElement, dom: object) => void} Cleanup callback.
+ * @returns {ContainerHandler} Cleanup callback.
  */
 export function createElementRemover(selector) {
   return function removeElement(container, dom) {
@@ -183,6 +209,7 @@ export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
 export const maybeRemoveModeratorRatings = createElementRemover(
   MODERATOR_RATINGS_FORM_SELECTOR
 );
+/** @type {ContainerHandler[]} */
 export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveKV,
   maybeRemoveDendrite,
@@ -190,14 +217,28 @@ export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveModeratorRatings,
 ];
 
-const createContainerHandlerInvoker = (container, dom) => handler =>
-  handler(container, dom);
+/**
+ * @param {HTMLElement} container Element hosting the inputs.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @returns {(handler: ContainerHandler) => void} Bound invoker.
+ */
+function createContainerHandlerInvoker(container, dom) {
+  /**
+   * @param {ContainerHandler} handler - Handler to execute.
+   * @returns {void}
+   */
+  function invokeHandler(handler) {
+    handler(container, dom);
+  }
+
+  return invokeHandler;
+}
 
 /**
  * Invoke a set of cleanup callbacks bound to a container/dom pair.
  * @param {HTMLElement} container Element hosting the inputs.
- * @param {object} dom DOM helper utilities.
- * @param {Function[]} handlers Cleanup callbacks to run.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @param {ContainerHandler[]} handlers Cleanup callbacks to run.
  */
 function invokeContainerHandlers(container, dom, handlers) {
   const invoke = createContainerHandlerInvoker(container, dom);
@@ -208,9 +249,9 @@ function invokeContainerHandlers(container, dom, handlers) {
  * Apply the provided handlers for the supplied container/dom pair.
  * @param {object} options Cleanup configuration.
  * @param {HTMLElement} options.container Parent element hosting the inputs.
- * @param {object} options.dom DOM helper utilities.
- * @param {Function[]} options.baseHandlers Handlers that should always run.
- * @param {Function[]} [options.extraHandlers] Additional handlers to execute before the core stack.
+ * @param {DOMHelpers} options.dom DOM helper utilities.
+ * @param {ContainerHandler[]} options.baseHandlers Handlers that should always run.
+ * @param {ContainerHandler[]} [options.extraHandlers] Additional handlers to execute before the core stack.
  */
 export function applyCleanupHandlers({
   container,
@@ -226,8 +267,8 @@ export function applyCleanupHandlers({
  * Apply the shared cleanup handlers plus optional extras.
  * @param {object} options Cleanup options.
  * @param {HTMLElement} options.container Parent container for inputs.
- * @param {object} options.dom DOM helper utilities.
- * @param {Function[]} [options.extraHandlers] Additional handlers to run before the base stack.
+ * @param {DOMHelpers} options.dom DOM helper utilities.
+ * @param {ContainerHandler[]} [options.extraHandlers] Additional handlers to run before the base stack.
  */
 export function applyBaseCleanupHandlers({
   container,
@@ -242,6 +283,14 @@ export function applyBaseCleanupHandlers({
   });
 }
 
+/**
+ * Creates a sign-out helper that clears local state before logging out.
+ * @param {object} options - Dependencies for the sign-out flow.
+ * @param {() => Promise<void>} options.authSignOut - Auth level sign-out helper.
+ * @param {Storage} options.storage - Storage used to cache the token.
+ * @param {() => void} options.disableAutoSelect - Cleanup for auto-select toggles.
+ * @returns {() => Promise<void>} Function that triggers the sign-out flow.
+ */
 export const createGoogleSignOut = ({
   authSignOut,
   storage,
@@ -264,6 +313,19 @@ export function getIdToken(storage = sessionStorage) {
 }
 
 /**
+ * Format an error message for JSON parsing failures.
+ * @param {unknown} error - Exception raised during parsing.
+ * @returns {string} Safe message describing the failure.
+ */
+function formatJsonParseError(error) {
+  if (error instanceof Error) {
+    return `Error: Invalid JSON input. ${error.message}`;
+  }
+
+  return 'Error: Invalid JSON input. Unknown error';
+}
+
+/**
  * Safely parse a JSON string.
  * @param {string} input - JSON string to parse.
  * @returns {{ok: boolean, message?: string, data?: object}} Parsed result.
@@ -274,7 +336,7 @@ export function safeJsonParse(input) {
   } catch (parseError) {
     return {
       ok: false,
-      message: `Error: Invalid JSON input. ${parseError.message}`,
+      message: formatJsonParseError(parseError),
     };
   }
 }
@@ -286,14 +348,20 @@ export function safeJsonParse(input) {
  * @returns {object} Parsed object or fallback.
  */
 export function parseJsonOrDefault(json, fallback = {}) {
-  const parseJsonValue = x => JSON.parse(x);
+  /**
+   * @param {string} value - JSON string to parse.
+   * @returns {unknown} Parsed value.
+   */
+  function parseJsonValue(value) {
+    return JSON.parse(value);
+  }
   return valueOr(safeParseJson(json, parseJsonValue), fallback);
 }
 
 /**
  * Parses a JSON string or returns `undefined` when parsing fails.
  * @param {string} json - JSON string to parse.
- * @param {Function} parseJsonValue - Parser to run on the input.
+ * @param {(input: string) => unknown} parseJsonValue - Parser to run on the input.
  * @returns {*} Parsed value or `undefined`.
  */
 export function safeParseJson(json, parseJsonValue) {
@@ -301,19 +369,19 @@ export function safeParseJson(json, parseJsonValue) {
 }
 
 /**
- * Determine if an element exposes a dispose function.
- * @param {HTMLElement} element - The element to check.
- * @returns {boolean} True when the element has a _dispose method.
+ * Determine if a value exposes a dispose function.
+ * @param {unknown} element - Candidate value.
+ * @returns {element is DisposableElement} True when the value has a _dispose method.
  */
 export function isDisposable(element) {
-  return Boolean(element) && typeof element._dispose === 'function';
+  return hasDisposeHook(element);
 }
 
 /**
  * Call the dispose method on an element and remove it from the DOM.
- * @param {HTMLElement} element - The element to dispose.
+ * @param {DisposableElement} element - The element to dispose.
  * @param {HTMLElement} container - Parent container element.
- * @param {object} dom - DOM helper utilities.
+ * @param {DOMHelpers} dom - DOM helper utilities.
  * @returns {void}
  */
 export function disposeAndRemove(element, container, dom) {
@@ -322,9 +390,9 @@ export function disposeAndRemove(element, container, dom) {
 
 /**
  * Remove an element if it exposes a dispose method.
- * @param {HTMLElement} element - Element that may be disposable.
+ * @param {unknown} element - Value that may be disposable.
  * @param {HTMLElement} container - Parent container element.
- * @param {object} dom - DOM helper utilities.
+ * @param {DOMHelpers} dom - DOM helper utilities.
  * @returns {void}
  */
 export function maybeRemoveElement(element, container, dom) {
@@ -333,6 +401,7 @@ export function maybeRemoveElement(element, container, dom) {
   }
 }
 
+/** @type {Array<[string, string]>} */
 const DENDRITE_OPTION_FIELDS = [
   ['content', 'Content'],
   ['firstOption', 'First option'],
@@ -360,7 +429,7 @@ function getDendriteFields() {
 /**
  * Hide and disable a DOM element.
  * @param {HTMLElement} element - Element to hide.
- * @param {object} dom - DOM utilities.
+ * @param {DOMHelpers} dom - DOM utilities.
  * @returns {void}
  */
 export function hideAndDisable(element, dom) {
@@ -370,19 +439,26 @@ export function hideAndDisable(element, dom) {
 
 /**
  * Build a default handler configured with the provided cleanup callbacks.
- * @param {Array<(container: HTMLElement, dom: object) => void>} cleanupFns - Functions that clean up special widgets.
- * @returns {(dom: object, container: HTMLElement, textInput: HTMLInputElement) => void} Handler that hides the base input then runs the cleanup functions.
+ * @param {ContainerHandler[]} cleanupFns - Functions that clean up special widgets.
+ * @returns {(dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement) => void} Handler that hides the base input then runs the cleanup functions.
  */
 export function createDefaultHandler(cleanupFns) {
-  return function defaultHandler(dom, container, textInput) {
-    hideAndDisable(textInput, dom);
-    cleanupFns.forEach(fn => fn(container, dom));
-  };
+  return (
+    /**
+     * @param {DOMHelpers} dom - DOM helper utilities.
+     * @param {HTMLElement} container - Parent container for the input.
+     * @param {HTMLInputElement} textInput - The base input element.
+     */
+    function defaultHandler(dom, container, textInput) {
+      hideAndDisable(textInput, dom);
+      cleanupFns.forEach(fn => fn(container, dom));
+    }
+  );
 }
 
 /**
  * Handle a field with no special input type by clearing related widgets.
- * @param {object} dom - DOM helper utilities.
+ * @param {DOMHelpers} dom - DOM helper utilities.
  * @param {HTMLElement} container - Container element housing the input.
  * @param {HTMLInputElement} textInput - The text input element.
  * @returns {void}
@@ -454,17 +530,23 @@ function shouldDeepMerge(targetValue, sourceValue) {
 
 /**
  * Deeply merges two objects, producing a new object.
- * @param {object} target - Destination object.
- * @param {object} source - Source object to merge.
- * @returns {object} The merged object.
+ * @param {Record<string, unknown>} target - Destination object.
+ * @param {Record<string, unknown>} source - Source object to merge.
+ * @returns {Record<string, unknown>} The merged object.
  */
 export function deepMerge(target, source) {
-  const output = { ...target };
+  const output = /** @type {Record<string, unknown>} */ ({ ...target });
+  /**
+   * @param {string} key - Key to merge from the source object.
+   */
   const mergeKey = key => {
     const targetValue = target[key];
     const sourceValue = source[key];
     if (shouldDeepMerge(targetValue, sourceValue)) {
-      output[key] = deepMerge(targetValue, sourceValue);
+      output[key] = deepMerge(
+        /** @type {Record<string, unknown>} */ (targetValue),
+        /** @type {Record<string, unknown>} */ (sourceValue)
+      );
     } else {
       output[key] = sourceValue;
     }
@@ -476,11 +558,11 @@ export function deepMerge(target, source) {
 /**
  * Generates a disposer that removes an event listener.
  * @param {object} options - Parameters for the remover.
- * @param {object} options.dom - DOM helper utilities.
+ * @param {DOMHelpers} options.dom - DOM helper utilities.
  * @param {EventTarget} options.el - The element to detach from.
  * @param {string} options.event - The event type to remove.
- * @param {Function} options.handler - The handler to detach.
- * @returns {Function} Disposer function removing the listener.
+ * @param {DOMEventListener} options.handler - The handler to detach.
+ * @returns {() => void} Disposer function removing the listener.
  */
 export const createRemoveListener =
   ({ dom, el, event, handler }) =>
