@@ -9,11 +9,30 @@ import { guardThen } from './common.js';
  * @returns {Function} encodeBase64 - Encodes a string to Base64.
  */
 export function getEncodeBase64(btoa, encodeURIComponentFn) {
+  /**
+   * Convert percent-encoded segments back into binary characters.
+   * @param {string} str - Input string to convert.
+   * @returns {string} Binary-friendly representation.
+   */
   const toBinary = str =>
-    encodeURIComponentFn(str).replace(/%([0-9A-F]{2})/g, (_, hex) =>
-      String.fromCharCode(parseInt(hex, 16))
+    encodeURIComponentFn(str).replace(
+      /%([0-9A-F]{2})/g,
+      /**
+       * @param {string} _match - Matched percent-encoded sequence.
+       * @param {string} hex - Captured hexadecimal digits.
+       * @returns {string} Single character produced from the decoded bytes.
+       */
+      (_match, hex) => String.fromCharCode(parseInt(hex, 16))
     );
-  return str => btoa(toBinary(str));
+
+  /**
+   * Base64 encode the provided text.
+   * @param {string} str - Text to encode.
+   * @returns {string} Base64 string.
+   */
+  const encodeBase64 = str => btoa(toBinary(str));
+
+  return encodeBase64;
 }
 
 /**
@@ -31,7 +50,7 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  * @typedef {object} BlogDataDependencies
  * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
  * @property {BlogDataLoggers} loggers - Logger bundle injected by the entry layer.
- * @property {Storage} [storage] - Optional storage implementation for permanent state.
+ * @property {Storage | null | undefined} [storage] - Optional storage implementation for permanent state.
  */
 
 /**
@@ -54,10 +73,38 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
 
 /**
  * @typedef {object} BlogDataController
- * @property {(state: object) => Promise<unknown>} fetchAndCacheBlogData - Starts a blog data fetch and caches the result.
- * @property {(state: object) => object} getData - Returns the current blog data state snapshot.
- * @property {(state: object) => object} setLocalTemporaryData - Persists temporary blog state locally.
- * @property {(desired: object) => object} setLocalPermanentData - Persists permanent blog state locally.
+ * @property {(state: BlogStateRecord) => Promise<unknown>} fetchAndCacheBlogData - Starts a blog data fetch and caches the result.
+ * @property {(state: BlogStateRecord) => Record<string, unknown>} getData - Returns a sanitized snapshot of the current state.
+ * @property {(state: TemporaryStateBundle) => void} setLocalTemporaryData - Persists temporary blog state locally.
+ * @property {(desired: Record<string, unknown>) => object} setLocalPermanentData - Persists permanent blog state locally.
+ * @property {() => object} getLocalPermanentData - Reads persistent blog state.
+ */
+
+/**
+ * @typedef {Record<string, unknown> & {
+ *   blogStatus?: string,
+ *   blogError?: unknown,
+ *   blogFetchPromise?: Promise<unknown> | null | undefined,
+ *   blog?: unknown,
+ * }} BlogStateRecord
+ * @property {string | undefined} blogStatus - Current blog load status flag.
+ * @property {unknown} blogError - Stored error when a fetch fails.
+ * @property {Promise<unknown> | null | undefined} blogFetchPromise - Active fetch promise when loading.
+ * @property {unknown} blog - Cached blog data.
+ */
+
+/**
+ * @typedef {object} TemporaryStateBundle
+ * @property {Record<string, unknown>} desired - Incoming temporary state object.
+ * @property {BlogStateRecord} current - Existing application state to modify.
+ */
+
+/**
+ * @typedef {object} BlogStateSnapshot
+ * @property {string | undefined} status - Normalized blog status.
+ * @property {unknown} error - Stored fetch error.
+ * @property {Promise<unknown> | null | undefined} fetchPromise - Existing fetch promise.
+ * @property {unknown} data - Blog payload.
  */
 
 export { deepMerge } from './browser-core.js';
@@ -79,8 +126,8 @@ export const BLOG_STATUS = {
 
 /**
  * Extracts blog-related state from the global store.
- * @param {object} globalState - The application state object.
- * @returns {object} Blog-specific state fields.
+ * @param {BlogStateRecord} globalState - The application state object.
+ * @returns {BlogStateSnapshot} Blog-specific state fields.
  */
 function getBlogState(globalState) {
   return {
@@ -93,18 +140,18 @@ function getBlogState(globalState) {
 
 /**
  * Checks whether a blog fetch is currently running.
- * @param {object} globalState - The application state.
+ * @param {BlogStateRecord} globalState - The application state.
  * @returns {boolean} True if a fetch promise is active.
  */
 function isFetchInProgress(globalState) {
   const { status, fetchPromise } = getBlogState(globalState);
-  return status === BLOG_STATUS.LOADING && fetchPromise;
+  return status === BLOG_STATUS.LOADING && Boolean(fetchPromise);
 }
 
 /**
  * Checks if a blog fetch is already in progress.
- * @param {object} globalState - The application state.
- * @param {Function} logFn - Logging function used when fetch is active.
+ * @param {BlogStateRecord} globalState - The application state.
+ * @param {BlogLogFn} logFn - Logging function used when fetch is active.
  * @returns {boolean} True if a fetch is already running.
  */
 export function shouldUseExistingFetch(globalState, logFn) {
@@ -114,8 +161,39 @@ export function shouldUseExistingFetch(globalState, logFn) {
 }
 
 /**
+ * Returns the active fetch promise when a blog fetch is already running.
+ * @param {BlogStateRecord} state - The global state object.
+ * @param {BlogLogFn} logInfo - Logger used to report active fetches.
+ * @returns {Promise<unknown> | null} The promise if a fetch is running, otherwise null.
+ */
+function getActiveBlogFetch(state, logInfo) {
+  if (!isFetchInProgress(state)) {
+    return null;
+  }
+
+  logInfo('Blog data fetch already in progress.');
+  const { blogFetchPromise: activeFetch } = state;
+  return ensureActiveFetchPromise(activeFetch);
+}
+
+/**
+ * Ensures an active fetch promise is present when the fetch state is loading.
+ * @param {Promise<unknown> | null | undefined} maybePromise - Candidate promise.
+ * @returns {Promise<unknown>} Confirmed fetch promise.
+ */
+function ensureActiveFetchPromise(maybePromise) {
+  if (!maybePromise) {
+    throw new Error(
+      'Blog fetch marked as in progress without an active promise.'
+    );
+  }
+
+  return maybePromise;
+}
+
+/**
  * Wrapper for blog-data fetching that accepts an injected dependency bundle.
- * @param {object} state - The global state object.
+ * @param {BlogStateRecord} state - The global state object.
  * @param {BlogDataDependencies} dependencies - Injected fetch + logger bundle.
  * @returns {Promise<unknown>} Promise resolving when fetch completes.
  */
@@ -124,9 +202,9 @@ export function fetchAndCacheBlogData(state, dependencies) {
   const { logInfo, logError } = loggers;
 
   // Prevent multiple simultaneous fetches
-  if (isFetchInProgress(state)) {
-    logInfo('Blog data fetch already in progress.');
-    return state.blogFetchPromise;
+  const activeFetch = getActiveBlogFetch(state, logInfo);
+  if (activeFetch) {
+    return activeFetch;
   }
 
   const blogUrl = BLOG_DATA_URL;
@@ -135,7 +213,7 @@ export function fetchAndCacheBlogData(state, dependencies) {
   state.blogStatus = BLOG_STATUS.LOADING;
   state.blogError = null;
 
-  state.blogFetchPromise = fetch(blogUrl)
+  const fetchPromise = fetch(blogUrl)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -156,19 +234,20 @@ export function fetchAndCacheBlogData(state, dependencies) {
       state.blogFetchPromise = null; // Clear the promise tracking
     });
 
-  return state.blogFetchPromise; // Return the promise for potential chaining
+  state.blogFetchPromise = fetchPromise;
+  return fetchPromise;
 }
 
 /**
  * Creates a deep copy of the provided state.
- * @param {object} globalState - The state to copy.
- * @returns {object} A cloned version of the state.
+ * @param {Record<string, unknown>} globalState - The state to copy.
+ * @returns {Record<string, unknown>} A cloned version of the state.
  */
 export const getDeepStateCopy = globalState => deepClone(globalState);
 
 /**
  * Removes internal bookkeeping fields from a state copy.
- * @param {object} stateCopy - State object to sanitize.
+ * @param {BlogStateRecord} stateCopy - State object to sanitize.
  */
 function stripInternalFields(stateCopy) {
   for (const key of INTERNAL_STATE_KEYS) {
@@ -178,8 +257,8 @@ function stripInternalFields(stateCopy) {
 
 /**
  * Restores blog-related properties on the global state object.
- * @param {object} globalState - The global application state.
- * @param {object} blogState - Previously saved blog data.
+ * @param {BlogStateRecord} globalState - The global application state.
+ * @param {BlogStateSnapshot} blogState - Previously saved blog data.
  */
 function restoreBlogState(globalState, blogState) {
   globalState.blogStatus = blogState.status;
@@ -203,7 +282,7 @@ export function shouldCopyStateForFetch(status) {
  * @returns {boolean} True when the property exists.
  */
 function hasTemporaryProperty(obj) {
-  return Object.hasOwn(obj, 'temporary');
+  return Object.prototype.hasOwnProperty.call(obj, 'temporary');
 }
 
 /**
@@ -260,7 +339,7 @@ function validateIncomingPermanentState(incomingState, errorFn) {
 
 /**
  * Checks whether the blog status is idle.
- * @param {object} state - The global state object.
+ * @param {BlogStateRecord} state - The global state object.
  * @returns {boolean} True when status is IDLE.
  */
 function isIdleStatus(state) {
@@ -269,8 +348,8 @@ function isIdleStatus(state) {
 
 /**
  * Triggers the provided fetch when the blog status is idle.
- * @param {object} state - Global state.
- * @param {Function} fetch - Blog fetch function.
+ * @param {BlogStateRecord} state - Global state.
+ * @param {() => void} fetch - Blog fetch function.
  */
 function tryFetchingBlog(state, fetch) {
   if (isIdleStatus(state)) {
@@ -280,8 +359,8 @@ function tryFetchingBlog(state, fetch) {
 
 /**
  * Logs any stored fetch error when present.
- * @param {object} state - Global state object.
- * @param {Function} logWarning - Warning logger.
+ * @param {BlogStateRecord} state - Global state object.
+ * @param {BlogLogFn} logWarning - Warning logger.
  */
 function maybeLogFetchError(state, logWarning) {
   const blogState = getBlogState(state);
@@ -292,7 +371,7 @@ function maybeLogFetchError(state, logWarning) {
 
 /**
  * Handles fetch-related state transitions and logging.
- * @param {object} state - Global state to update.
+ * @param {BlogStateRecord} state - Global state to update.
  * @param {BlogDataDependencies} dependencies - Injected fetch + logger bundle.
  */
 function handleBlogFetchState(state, dependencies) {
@@ -305,8 +384,8 @@ function handleBlogFetchState(state, dependencies) {
 
 /**
  * Returns a deep copy of state if needed for fetch, otherwise returns state itself.
- * @param {string} status - Current blog status.
- * @returns {object} Either the original state or a clone.
+ * @param {string | undefined} status - Current blog status.
+ * @returns {boolean} Whether a deep clone should be made.
  */
 function shouldDeepCopyForFetch(status) {
   return status === 'idle' || status === 'error';
@@ -314,13 +393,13 @@ function shouldDeepCopyForFetch(status) {
 
 /**
  * Provides either the original state or a deep copy depending on status.
- * @param {object} state - Global application state.
- * @returns {object} State or a deep clone when needed.
+ * @param {BlogStateRecord} state - Global application state.
+ * @returns {BlogStateRecord} State or a deep clone when needed.
  */
 function getRelevantStateCopy(state) {
   const status = state.blogStatus;
   if (shouldDeepCopyForFetch(status)) {
-    return deepClone(state);
+    return /** @type {BlogStateRecord} */ (deepClone(state));
   }
   return state;
 }
@@ -328,9 +407,9 @@ function getRelevantStateCopy(state) {
 /**
  * Gets a deep copy of the current global state, suitable for passing to toys.
  * It also handles initiating the blog data fetch if needed.
- * @param {object} state - The main application state.
+ * @param {BlogStateRecord} state - The main application state.
  * @param {BlogDataDependencies} dependencies - Injected fetch + logger bundle.
- * @returns {object} A deep copy of the relevant state for the toy.
+ * @returns {Record<string, unknown>} A deep copy of the relevant state for the toy.
  */
 export const getData = (state, dependencies) => {
   const stateCopy = getRelevantStateCopy(state);
@@ -341,12 +420,8 @@ export const getData = (state, dependencies) => {
 /**
  * Updates the global state with incoming data while preserving internal
  * blog-fetch properties.
- * @param {object} state - Contains desired and current state objects.
- * @param {object} state.desired - The new state object (must have 'temporary').
- * @param {object} state.current - The global state to be modified.
- * @param {object} loggers - Logging functions.
- * @param {Function} loggers.logInfo - Information logger.
- * @param {Function} loggers.logError - Error logger.
+ * @param {TemporaryStateBundle} state - Contains desired and current state objects.
+ * @param {BlogDataLoggers} loggers - Logging functions.
  */
 export const setLocalTemporaryData = (state, loggers) => {
   const { desired, current } = state;
@@ -361,16 +436,16 @@ export const setLocalTemporaryData = (state, loggers) => {
 /**
  * Updates persistent data stored in localStorage.
  * Reads existing data, merges with the incoming object and persists the result.
- * @param {object} desired - The new state object.
- * @param {object} loggers - Logging functions.
- * @param {Function} loggers.logError - Error logger.
- * @param {Storage} [storage] - Storage used to persist data.
+ * @param {Record<string, unknown>} desired - The new state object.
+ * @param {BlogDataLoggers} loggers - Logging functions.
+ * @param {BlogLogFn} loggers.logError - Error logger.
+ * @param {Storage | null | undefined} [storage] - Storage used to persist data.
  * @returns {object} The merged permanent state.
  */
 
 /**
  * Load existing permanent data from storage.
- * @param {Storage} storage - Storage used to persist data.
+ * @param {Storage | null | undefined} storage - Storage used to persist data.
  * @param {Function} logError - Error logger.
  * @returns {object} Stored data object.
  */
@@ -383,8 +458,8 @@ function loadPermanentData(storage, logError) {
 
 /**
  * Read the stored permanent data while ensuring the logError helper exists.
- * @param {object} loggers - Logging helpers that must include `logError`.
- * @param {Storage} [storage] - Storage implementation to read from.
+ * @param {BlogDataLoggers} loggers - Logging helpers that must include `logError`.
+ * @param {Storage | null | undefined} [storage] - Storage implementation to read from.
  * @returns {object} Stored permanent data (or empty object on failure).
  */
 function readLocalPermanentData(loggers, storage) {
@@ -432,7 +507,7 @@ function writePermanentData(storage, data, logError) {
 
 /**
  * Persist permanent data when storage is available.
- * @param {Storage} storage - Storage used to persist data.
+ * @param {Storage | null | undefined} storage - Storage used to persist data.
  * @param {object} data - Data to save.
  * @param {Function} logError - Error logger.
  */
@@ -557,6 +632,7 @@ function createDependencyAccessor(createDependencies) {
     );
   }
 
+  /** @type {NormalizedBlogDataDependencies | undefined} */
   let cachedDependencies;
   return () => {
     if (!cachedDependencies) {
@@ -575,16 +651,32 @@ export function createBlogDataController(createDependencies) {
   const getDependencies = createDependencyAccessor(createDependencies);
 
   return {
+    /**
+     * @param {BlogStateRecord} state - Current blog state that will be updated.
+     * @returns {Promise<unknown>} Resolves once the fetch and cache operations complete.
+     */
     fetchAndCacheBlogData(state) {
       return fetchAndCacheBlogData(state, getDependencies());
     },
+    /**
+     * @param {BlogStateRecord} state - Application state used to build the data view.
+     * @returns {Record<string, unknown>} Sanitized copy of the current state.
+     */
     getData(state) {
       return getData(state, getDependencies());
     },
+    /**
+     * @param {TemporaryStateBundle} state - Incoming temporary payload and the target state.
+     * @returns {void} No value is returned; the state is modified in place.
+     */
     setLocalTemporaryData(state) {
       const { loggers } = getDependencies();
       return setLocalTemporaryData(state, loggers);
     },
+    /**
+     * @param {Record<string, unknown>} desired - Desired permanent values to persist.
+     * @returns {object} Merged permanent state after persistence.
+     */
     setLocalPermanentData(desired) {
       const { loggers, storage } = getDependencies();
       return setLocalPermanentDataCore(desired, loggers, storage);
@@ -596,6 +688,13 @@ export function createBlogDataController(createDependencies) {
   };
 }
 
+/**
+ * Persist the merged permanent state to storage.
+ * @param {Record<string, unknown>} desired - Desired permanent state.
+ * @param {BlogDataLoggers} loggers - Logging helpers.
+ * @param {Storage | null | undefined} storage - Storage used to persist data.
+ * @returns {object} Merged permanent state object.
+ */
 const setLocalPermanentDataCore = (desired, loggers, storage) => {
   const { logError } = loggers;
   validateIncomingPermanentState(desired, logError);

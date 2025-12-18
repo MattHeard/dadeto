@@ -8,6 +8,7 @@ import { isNonNullObject } from '../commonCore.js';
  * @typedef {{ logInfo: LogCallback; logError: LogCallback; logWarning: LogCallback }} BrowserLoggers
  * @typedef {HTMLElement & { _dispose: () => void }} DisposableElement
  * @typedef {(event: unknown) => void} DOMEventListener
+ * @typedef {{ removeItem: (key: string) => void }} StorageLike
  * @typedef {{
  *   querySelector: (container: HTMLElement, selector: string) => HTMLElement | null;
  *   removeChild: (container: HTMLElement, child: HTMLElement) => void;
@@ -287,7 +288,7 @@ export function applyBaseCleanupHandlers({
  * Creates a sign-out helper that clears local state before logging out.
  * @param {object} options - Dependencies for the sign-out flow.
  * @param {() => Promise<void>} options.authSignOut - Auth level sign-out helper.
- * @param {Storage} options.storage - Storage used to cache the token.
+ * @param {StorageLike} options.storage - Storage used to cache the token.
  * @param {() => void} options.disableAutoSelect - Cleanup for auto-select toggles.
  * @returns {() => Promise<void>} Function that triggers the sign-out flow.
  */

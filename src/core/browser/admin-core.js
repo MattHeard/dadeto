@@ -60,6 +60,10 @@ import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
  * @property {{ id?: GoogleAccountsClient }} [accounts] - Google accounts helper container.
  */
 
+/**
+ * @typedef {{ removeItem: (key: string) => void }} SessionStorageHandler
+ */
+
 const DEFAULT_ADMIN_ENDPOINTS = {
   triggerRenderContentsUrl:
     'https://europe-west1-irien-465710.cloudfunctions.net/prod-trigger-render-contents',
@@ -173,8 +177,12 @@ function isDisableAutoSelectFunction(value) {
  * @returns {() => Promise<void>} Sign-out helper that removes the cached token.
  */
 export function createSignOut(authInstance, globalScope) {
+  const authSignOut = async () => {
+    await authInstance.signOut();
+  };
+
   return createGoogleSignOut({
-    authSignOut: authInstance.signOut.bind(authInstance),
+    authSignOut,
     storage: createSessionStorageHandler(/** @type {any} */ (globalScope)),
     disableAutoSelect: createDisableAutoSelect(
       /** @type {any} */ (globalScope)
@@ -2265,7 +2273,7 @@ function ensureRemoveItemFunction(storage) {
 /**
  * Build a handler that wraps sessionStorage access on the given global scope.
  * @param {typeof globalThis} scope - Global scope that should provide `sessionStorage`.
- * @returns {{ removeItem: (key: string) => void }} Session-storage handler.
+ * @returns {SessionStorageHandler} Session-storage handler.
  */
 export function createSessionStorageHandler(scope = globalThis) {
   return {
