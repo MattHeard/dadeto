@@ -1166,9 +1166,7 @@ function hasRequiredGoogleIdentityMethods(accountsId) {
  */
 function reportMissingGoogleIdentity(logger) {
   const safe = resolveLogger(logger);
-  if (typeof safe.error === 'function') {
-    safe.error('Google Identity script missing');
-  }
+  safe.error('Google Identity script missing');
 }
 
 /**
