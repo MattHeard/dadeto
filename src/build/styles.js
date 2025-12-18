@@ -17,7 +17,7 @@ export function styles() {
   }
   #container {
     max-width: 85rch;
-    padding: 1em 1rch;
+    padding: 1.5em 0.5em;
   }
   .entry {
     display: grid;
