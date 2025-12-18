@@ -1,0 +1,5 @@
+## Audio Controls TSDoc Work
+
+- **Hurdles:** Running `npm run tsdoc:check` surfaced a flood of pre-existing errors across `core/browser` and `core/cloud`, so I narrowed the work to `audio-controls.js`. ESLint also flagged the new `NodeListOf` typedef and a `complexity` violation, which I resolved by switching to `Array.from` + a typed helper payload and by pulling ID/insertion logic into tiny helpers.
+- **Takeaways:** Complex helper wiring is easier to reason about when the exported function does very little (just captures the dependencies); the supporting helpers can stay structured while keeping ESLint happy. When `jsdoc/no-undefined-types` fires, try to use built-in DOM types (like `HTMLAudioElement`) via casts instead of throwing new generics into the typedef.
+- **Open questions:** The tsdoc check still fails in dozens of files (`src/core/browser/browser-core.js`, `data.js`, `render-variant-core.js`, etc.). Should those errors be addressed in this cycle, or do they need a broader pact (e.g., enhancing the DOM helper typings) before we invest more time?
