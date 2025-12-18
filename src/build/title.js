@@ -8,7 +8,7 @@
  * @type {string}
  */
 export function headerBanner() {
-  return `<pre aria-label="Matt Heard" role="heading" aria-level="1">
+  return `<pre class="header-banner" aria-label="Matt Heard" role="heading" aria-level="1">
 ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖
 ▐▛▚▞▜▌▐▌ ▐▌ █    █
 ▐▌  ▐▌▐▛▀▜▌ █    █

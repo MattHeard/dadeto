@@ -117,6 +117,9 @@ export function styles() {
     overflow-x: auto;
     margin: 1.5em 0px;
   }
+  .header-banner {
+    margin: 0px;
+  }
   #audio-controls {
     background-color: #1A1A1A;
     color: #00FFFF;
