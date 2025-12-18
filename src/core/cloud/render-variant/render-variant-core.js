@@ -1417,11 +1417,8 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
 
 /**
  * Resolve title and navigation metadata for the story owning the variant.
- * @param {object} options - Input describing the current page and lookup helpers.
- * @param {{ref: {parent?: {parent?: any}}, get: Function, exists: boolean}} options.pageSnap - Firestore snapshot for the current page.
- * @param {Record<string, any>} options.page - Raw page document data.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
- * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
+ * @param {any} options - Input describing the current page and lookup helpers.
+ * @returns {Promise<any>} Story metadata used in templates.
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = extractStoryRef(pageSnap);
@@ -1441,8 +1438,7 @@ async function fetchStoryData(storyRef) {
   if (!storyRef) {
     return null;
   }
-  const storySnap = await getStorySnapshot(storyRef);
-  return storySnap.data() || null;
+  return (await getStorySnapshot(storyRef)).data() ?? null;
 }
 
 /**
@@ -1560,12 +1556,20 @@ async function fetchRootPageUrl(storyData) {
  */
 async function resolveUrlFromRootPage(rootPageSnap, rootPageRef) {
   const firstVariant = await getFirstVariant(rootPageRef);
-  if (!firstVariant) {
+  return buildRootUrl(rootPageSnap, firstVariant);
+}
+
+/**
+ * Build root URL.
+ * @param {any} snap Snap.
+ * @param {any} variant Variant.
+ * @returns {string | undefined} URL.
+ */
+function buildRootUrl(snap, variant) {
+  if (!variant) {
     return undefined;
   }
-
-  const pageData = rootPageSnap.data();
-  return `/p/${pageData?.number}${firstVariant.data().name}.html`;
+  return `/p/${snap.data()?.number}${variant.data().name}.html`;
 }
 
 /**
@@ -1648,13 +1652,8 @@ function deriveAuthorName(variant) {
 
 /**
  * Resolve author metadata for the rendered variant, creating landing pages if needed.
- * @param {{
- *   variant: Record<string, any>,
- *   db: { doc: (path: string) => { get: () => Promise<{ data: () => Record<string, any> }> } },
- *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
- *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
- * }} root0 - Inputs for author lookup.
- * @returns {Promise<{authorName: string, authorUrl: string | undefined}>} Author metadata for templates.
+ * @param {any} root0 - Inputs for author lookup.
+ * @returns {Promise<any>} Author metadata for templates.
  */
 async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   const authorName = deriveAuthorName(variant);
@@ -2108,19 +2107,23 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
 }
 
 /**
+ * @typedef {object} RenderVariantDependencies
+ * @property {any} db - Firestore-like database used to load related documents.
+ * @property {any} storage - Cloud storage helper capable of writing files.
+ * @property {(url: string, init?: object) => Promise<any>} fetchFn - Fetch implementation used for cache invalidation calls.
+ * @property {() => string} randomUUID - UUID generator for request identifiers.
+ * @property {string} [projectId] - Google Cloud project identifier used for cache invalidation.
+ * @property {string} [urlMapName] - URL map name whose cache should be invalidated.
+ * @property {string} [cdnHost] - Hostname whose cache entries should be purged.
+ * @property {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] - Logger for recoverable failures.
+ * @property {string} [bucketName] - Name of the bucket where rendered HTML is written.
+ * @property {number} [visibilityThreshold] - Minimum visibility used when publishing variants.
+ */
+
+/**
  * Create a renderer that materializes variant HTML and supporting metadata.
- * @param {object} dependencies - External services and configuration values.
- * @param {{doc: Function}} dependencies.db - Firestore-like database used to load related documents.
- * @param {{bucket: (name: string) => { file: (path: string) => { save: Function } }}} dependencies.storage - Cloud storage helper capable of writing files.
- * @param {(url: string, init?: object) => Promise<{ok: boolean, status: number, json: () => Promise<object>}>} dependencies.fetchFn - Fetch implementation used for cache invalidation calls.
- * @param {() => string} dependencies.randomUUID - UUID generator for request identifiers.
- * @param {string} [dependencies.projectId] - Google Cloud project identifier used for cache invalidation.
- * @param {string} [dependencies.urlMapName] - URL map name whose cache should be invalidated.
- * @param {string} [dependencies.cdnHost] - Hostname whose cache entries should be purged.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [dependencies.consoleError] - Logger for recoverable failures.
- * @param {string} [dependencies.bucketName] - Name of the bucket where rendered HTML is written.
- * @param {number} [dependencies.visibilityThreshold] - Minimum visibility used when publishing variants.
- * @returns {(snap: {exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}, context?: {params?: Record<string, string>}) => Promise<null>} Async renderer for variant snapshots.
+ * @param {RenderVariantDependencies} dependencies - External services and configuration values.
+ * @returns {(snap: any, context?: any) => Promise<null>} Async renderer for variant snapshots.
  */
 export function createRenderVariant(dependencies) {
   validateDependencies(dependencies);
@@ -2129,8 +2132,8 @@ export function createRenderVariant(dependencies) {
 
 /**
  * Build the options object consumed by the renderer factory.
- * @param {object} dependencies Renderer dependencies.
- * @returns {object} Normalized options for the renderer.
+ * @param {RenderVariantDependencies} dependencies Renderer dependencies.
+ * @returns {RenderVariantDependencies} Normalized options for the renderer.
  */
 function buildRenderVariantOptions(dependencies) {
   const { db, storage, fetchFn, randomUUID, projectId, urlMapName, cdnHost } =
@@ -2198,18 +2201,17 @@ function validateDependencies(dependencies) {
 }
 
 /**
+ * @typedef {object} RenderHandlerDeps
+ * @property {any} db Database.
+ * @property {any} bucket Bucket.
+ * @property {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Error logger.
+ * @property {number} [visibilityThreshold] Visibility threshold.
+ * @property {(paths: string[]) => Promise<void>} invalidatePaths Invalidate paths.
+ */
+
+/**
  * Create render variant handler.
- * @param {object} root0 Dependencies.
- * @param {object} root0.db Database.
- * @param {object} root0.storage Storage.
- * @param {Function} root0.fetchFn Fetch function.
- * @param {Function} root0.randomUUID UUID generator.
- * @param {string} root0.projectId Project ID.
- * @param {string} root0.urlMapName URL map name.
- * @param {string} root0.cdnHost CDN host.
- * @param {Function} root0.consoleError Error logger.
- * @param {string} root0.bucketName Bucket name.
- * @param {number} root0.visibilityThreshold Visibility threshold.
+ * @param {RenderVariantDependencies} options Dependencies.
  * @returns {Function} Render function.
  */
 function createRenderVariantHandler({
@@ -2235,9 +2237,9 @@ function createRenderVariantHandler({
   });
   /**
    * Execute render workflow.
-   * @param {object} deps Dependencies.
-   * @param {object} snap Snap.
-   * @param {object} context Context.
+   * @param {RenderHandlerDeps} deps Dependencies.
+   * @param {any} snap Snap.
+   * @param {any} context Context.
    * @returns {Promise<null>} Null.
    */
   async function executeRenderWorkflow(deps, snap, context) {
@@ -2294,7 +2296,7 @@ function createRenderVariantHandler({
  */
 /**
  * Validate snap exists.
- * @param {object} snap Snap.
+ * @param {any} snap Snap.
  * @returns {boolean} True if valid.
  */
 export function isSnapValid(snap) {
@@ -2306,25 +2308,22 @@ export function isSnapValid(snap) {
 
 /**
  * Check snap exists.
- * @param {object} snap Snap.
+ * @param {any} snap Snap.
  * @returns {boolean} True if exists.
  */
 function checkSnapExists(snap) {
-  if ('exists' in snap) {
-    return snap.exists;
-  }
-  return true;
+  return snap?.exists !== false;
 }
 
 /**
  * Fetch page data.
- * @param {object} snap Snap.
- * @returns {Promise<object | null>} Page snap.
+ * @param {any} snap Snap.
+ * @returns {Promise<any>} Page snap.
  */
 /**
  * Get page snap from ref.
- * @param {object} snap Snap.
- * @returns {Promise<object | null>} Page snap.
+ * @param {any} snap Snap.
+ * @returns {Promise<any | undefined>} Page snap.
  */
 export async function getPageSnapFromRef(snap) {
   if (!isSnapRefValid(snap)) {
@@ -2349,8 +2348,8 @@ function isSnapRefValid(snap) {
 
 /**
  * Extract the `ref` property from a snapshot when present.
- * @param {{ ref?: { parent?: any } } | null | undefined} snap Candidate snapshot.
- * @returns {{ parent?: any } | null} Snapshot ref when available; otherwise null.
+ * @param {any} snap Candidate snapshot.
+ * @returns {any} Snapshot ref when available; otherwise null.
  */
 function resolveSnapshotRef(snap) {
   return readNullableProperty(snap, 'ref');
@@ -2358,9 +2357,9 @@ function resolveSnapshotRef(snap) {
 
 /**
  * Safely read a nested property from the provided object.
- * @param {{ [key: string]: unknown } | null | undefined} source Source object.
+ * @param {any} source Source object.
  * @param {string} key Property key to resolve.
- * @returns {unknown | null} Property value or null when unavailable.
+ * @returns {any} Property value or null when unavailable.
  */
 function readNullableProperty(source, key) {
   const normalizedSource = getNormalizedSource(source);
@@ -2417,13 +2416,13 @@ function isPageSnapValid(pageSnap) {
   if (!pageSnap) {
     return false;
   }
-  return pageSnap.exists;
+  return Boolean(pageSnap.exists);
 }
 
 /**
  * Gather metadata.
- * @param {object} deps Dependencies.
- * @returns {Promise<object>} Metadata.
+ * @param {any} deps Dependencies.
+ * @returns {Promise<any>} Metadata.
  */
 async function gatherMetadata(deps) {
   const {
@@ -2440,7 +2439,6 @@ async function gatherMetadata(deps) {
   const options = await loadOptions({
     snap,
     visibilityThreshold,
-    db,
     consoleError,
   });
   const { storyTitle, firstPageUrl } = await resolveStoryMetadata({
@@ -2468,8 +2466,8 @@ async function gatherMetadata(deps) {
 
 /**
  * Build render output.
- * @param {object} data Data.
- * @returns {object} Output.
+ * @param {any} data Data.
+ * @returns {any} Output.
  */
 function buildRenderOutput(data) {
   const {
@@ -2497,7 +2495,7 @@ function buildRenderOutput(data) {
   });
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(
-    option => option.targetPageNumber === undefined
+    (/** @type {any} */ option) => option.targetPageNumber === undefined
   );
 
   return { variant, page, parentUrl, html, filePath, openVariant };
@@ -2505,8 +2503,8 @@ function buildRenderOutput(data) {
 
 /**
  * Fetch and validate page.
- * @param {object} snap Snap.
- * @returns {Promise<object | null>} Page data.
+ * @param {any} snap Snap.
+ * @returns {Promise<any>} Page data.
  */
 async function fetchAndValidatePage(snap) {
   const pageSnap = await fetchPageData(snap);
@@ -2518,24 +2516,11 @@ async function fetchAndValidatePage(snap) {
 
 /**
  * Resolve the render plan for a variant snapshot.
- * @param {{
- *   snap: { exists?: boolean, data: () => Record<string, any>, ref: { parent?: { parent?: any } } },
- *   db: { doc: Function },
- *   bucket: { file: Function },
- *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void,
- *   visibilityThreshold: number
- * }} options Inputs required to assemble the render plan.
- * @returns {Promise<null | {
- *   variant: Record<string, any>,
- *   page: Record<string, any>,
- *   parentUrl: string | undefined,
- *   html: string,
- *   filePath: string,
- *   openVariant: boolean
- * }>} Render plan when the variant should be materialized.
+ * @param {any} options Inputs required to assemble the render plan.
+ * @returns {Promise<any>} Render plan describing the variant artefacts.
  */
 async function resolveRenderPlan(options) {
-  const { snap } = options;
+  const { snap } = /** @type {any} */ (options);
   if (!isSnapValid(snap)) {
     return null;
   }
@@ -2560,14 +2545,8 @@ async function buildRenderPlanIfPageValid(options) {
 
 /**
  * Build render plan.
- * @param {object} root0 Options.
- * @param {object} root0.snap Snap.
- * @param {object} root0.pageData Page data.
- * @param {object} root0.db Database.
- * @param {object} root0.bucket Bucket.
- * @param {Function} root0.consoleError Error logger.
- * @param {number} root0.visibilityThreshold Visibility threshold.
- * @returns {Promise<object>} Render plan.
+ * @param {any} root0 Options.
+ * @returns {Promise<any>} Render plan.
  */
 async function buildRenderPlan({
   snap,
@@ -2610,11 +2589,7 @@ async function buildRenderPlan({
  */
 /**
  * Save variant HTML.
- * @param {object} bucket Bucket object.
- * @param {object} bucket.bucket Storage bucket.
- * @param {string} bucket.filePath File path.
- * @param {string} bucket.html HTML content.
- * @param {boolean} bucket.openVariant Is open variant.
+ * @param {any} root0 Options.
  * @returns {Promise<void>} Promise.
  */
 async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
@@ -2626,7 +2601,7 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
 
 /**
  * Save alts HTML.
- * @param {object} deps Dependencies.
+ * @param {any} deps Dependencies.
  * @returns {Promise<void>} Promise.
  */
 async function saveAltsHtml(deps) {
@@ -2713,18 +2688,7 @@ function buildInvalidationPaths(altsPath, filePath, parentUrl) {
 
 /**
  * Persist rendered HTML, related metadata, and cache invalidation paths.
- * @param {{
- *   snap: { ref: { parent?: { parent?: any } } },
- *   context: { params?: Record<string, string> },
- *   bucket: { file: (path: string) => { save: Function } },
- *   invalidatePaths: (paths: string[]) => Promise<unknown>,
- *   variant: Record<string, any>,
- *   page: Record<string, any>,
- *   parentUrl?: string,
- *   html: string,
- *   filePath: string,
- *   openVariant: boolean
- * }} options Inputs for persisting the render plan.
+ * @param {any} options Inputs for persisting the render plan.
  * @returns {Promise<void>} Void promise.
  */
 async function persistRenderPlan({
