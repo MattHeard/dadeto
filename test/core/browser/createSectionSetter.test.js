@@ -20,4 +20,42 @@ describe('createSectionSetter', () => {
     expect(result).toMatch(/^Error: Invalid JSON input\./);
     expect(setLocalTemporaryData).not.toHaveBeenCalled();
   });
+
+  it('deep merges valid JSON into the selected section', () => {
+    const setter = createSectionSetter('section');
+    const mergeEnv = new Map([
+      ['getData', () => ({ section: { existing: true } })],
+      ['setLocalTemporaryData', jest.fn()],
+    ]);
+
+    const result = setter('{"new":true}', mergeEnv);
+
+    const expectedData = {
+      section: { existing: true, new: true },
+    };
+
+    expect(result).toBe('Success: Section data deep merged.');
+    expect(mergeEnv.get('setLocalTemporaryData')).toHaveBeenCalledWith(
+      expectedData
+    );
+  });
+
+  it('reports a friendly message when merge throws a non-error value', () => {
+    const setter = createSectionSetter('section');
+    const envWithThrow = new Map([
+      ['getData', () => ({ section: {} })],
+      [
+        'setLocalTemporaryData',
+        () => {
+          throw 'boom';
+        },
+      ],
+    ]);
+
+    const result = setter('{}', envWithThrow);
+
+    expect(result).toBe(
+      'Error updating section data: An unexpected error occurred.'
+    );
+  });
 });
