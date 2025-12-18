@@ -2,143 +2,49 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
-src/core/browser/admin-core.js(93,5): error TS2345: Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'Record<string, unknown> | undefined'.
-  Type 'Window & typeof globalThis' is not assignable to type 'Record<string, unknown>'.
-    Index signature for type 'string' is missing in type 'Window & typeof globalThis'.
-src/core/browser/admin-core.js(109,22): error TS2769: No overload matches this call.
-  Overload 1 of 3, '(callbackfn: (previousValue: string, currentValue: string, currentIndex: number, array: string[]) => string, initialValue: string): string', gave the following error.
-    Type 'unknown' is not assignable to type 'string'.
-  Overload 2 of 3, '(callbackfn: (previousValue: Record<string, unknown> | undefined, currentValue: string, currentIndex: number, array: string[]) => Record<string, unknown> | undefined, initialValue: Record<...> | undefined): Record<...> | undefined', gave the following error.
-    Type 'unknown' is not assignable to type 'Record<string, unknown> | undefined'.
-src/core/browser/admin-core.js(156,48): error TS2345: Argument of type 'typeof globalThis' is not assignable to parameter of type 'Window & typeof globalThis'.
-  Property 'name' is missing in type 'typeof globalThis' but required in type 'Window'.
-src/core/browser/admin-core.js(167,7): error TS7034: Variable 'signOutHandler' implicitly has type 'any' in some locations where its type cannot be determined.
-src/core/browser/admin-core.js(176,10): error TS7005: Variable 'signOutHandler' implicitly has an 'any' type.
-src/core/browser/admin-core.js(212,5): error TS2322: Type '(credentials: string) => unknown' is not assignable to type '(auth: unknown, credential: unknown) => void | Promise<void>'.
-  Types of parameters 'credentials' and 'auth' are incompatible.
-    Type 'unknown' is not assignable to type 'string'.
-src/core/browser/admin-core.js(215,28): error TS7006: Parameter 'options' implicitly has an 'any' type.
-src/core/browser/admin-core.js(265,10): error TS18048: 'sourceWithKey' is possibly 'undefined'.
-src/core/browser/admin-core.js(313,7): error TS7034: Variable 'adminEndpointsPromise' implicitly has type 'any' in some locations where its type cannot be determined.
-src/core/browser/admin-core.js(316,10): error TS7005: Variable 'adminEndpointsPromise' implicitly has an 'any' type.
-src/core/browser/admin-core.js(370,18): error TS18049: 'res' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(380,22): error TS18049: 'res' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(408,18): error TS18049: 'res' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(467,7): error TS18049: 'res' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(550,3): error TS2322: Type 'AdminTokenAction' is not assignable to type '() => Promise<void>'.
+src/core/browser/admin-core.js(621,5): error TS2322: Type '({ token, getAdminEndpoints, fetchFn: fetch, showMessage: report, }: any) => Promise<void>' is not assignable to type 'AdminTokenAction'.
   Target signature provides too few arguments. Expected 1 or more, but got 0.
-src/core/browser/admin-core.js(563,9): error TS2322: Type '() => Promise<object>' is not assignable to type '() => Promise<{ triggerRenderContentsUrl: string; }>'.
-  Type 'Promise<object>' is not assignable to type 'Promise<{ triggerRenderContentsUrl: string; }>'.
-    Property 'triggerRenderContentsUrl' is missing in type '{}' but required in type '{ triggerRenderContentsUrl: string; }'.
-src/core/browser/admin-core.js(704,5): error TS18047: 'element' is possibly 'null'.
-src/core/browser/admin-core.js(802,3): error TS18049: 'link' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(814,40): error TS2345: Argument of type 'Element' is not assignable to parameter of type 'HTMLElement'.
-  Type 'Element' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 129 more.
-src/core/browser/admin-core.js(921,28): error TS2345: Argument of type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }' is not assignable to parameter of type '{ credentialFactory: (credential: string) => unknown; signInWithCredential: (auth: { currentUser?: { getIdToken?: (() => Promise<string>) | undefined; } | undefined; }, credential: unknown) => void | Promise<...>; auth?: { ...; } | undefined; storage?: { ...; } | undefined; matchMedia: (query: string) => { ...; }; q...'.
-  Types of property 'credentialFactory' are incompatible.
-    Type '((credential: string) => unknown) | undefined' is not assignable to type '(credential: string) => unknown'.
-      Type 'undefined' is not assignable to type '(credential: string) => unknown'.
-src/core/browser/admin-core.js(923,3): error TS2322: Type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }' is not assignable to type '{ resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; credentialFactory: (credential: string) => unknown; signInWithCredential: (auth: { currentUser?: { getIdToken?: (() => Promise<...>) | undefined; } | undefined; }, credential: unknown) => void | Promise<...>; ... 4 more ...; safeLogger: { ...; }; }'.
-  Types of property 'credentialFactory' are incompatible.
-    Type '((credential: string) => unknown) | undefined' is not assignable to type '(credential: string) => unknown'.
-      Type 'undefined' is not assignable to type '(credential: string) => unknown'.
-src/core/browser/admin-core.js(953,14): error TS2339: Property 'safeLogger' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
-  Property 'safeLogger' does not exist on type '{}'.
-src/core/browser/admin-core.js(953,52): error TS2339: Property 'logger' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
-  Property 'logger' does not exist on type '{}'.
-src/core/browser/admin-core.js(954,14): error TS2339: Property 'resolveGoogleAccountsId' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
-  Property 'resolveGoogleAccountsId' does not exist on type '{}'.
-src/core/browser/admin-core.js(955,16): error TS2339: Property 'googleAccountsId' does not exist on type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }'.
-  Property 'googleAccountsId' does not exist on type '{}'.
-src/core/browser/admin-core.js(958,3): error TS2322: Type '{} | { googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 5 more ...; logger: { ...; }; }' is not assignable to type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }'.
-  Type '{}' is missing the following properties from type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory?: ((credential: string) => unknown) | undefined; ... 6 more ...; resolveGoogleAccountsId: () => GoogleAccountsClient | undefined; }': safeLogger, resolveGoogleAccountsId
-src/core/browser/admin-core.js(1016,23): error TS2339: Property 'logger' does not exist on type 'object'.
-src/core/browser/admin-core.js(1017,10): error TS2339: Property 'logger' does not exist on type 'object'.
 src/core/browser/admin-core.js(1058,5): error TS2322: Type '{ error?: ((message: string) => void) | undefined; } | undefined' is not assignable to type '{ error?: ((message: string) => void) | undefined; }'.
   Type 'undefined' is not assignable to type '{ error?: ((message: string) => void) | undefined; }'.
-src/core/browser/admin-core.js(1078,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/browser/admin-core.js(1096,50): error TS2339: Property 'initialize' does not exist on type '{}'.
-src/core/browser/admin-core.js(1105,50): error TS2339: Property 'renderButton' does not exist on type '{}'.
-src/core/browser/admin-core.js(1136,50): error TS1385: Function type notation must be parenthesized when used in a union type.
-src/core/browser/admin-core.js(1159,22): error TS2345: Argument of type '(() => string | Promise<string> | null | undefined) | undefined' is not assignable to parameter of type 'Function'.
+src/core/browser/admin-core.js(1231,22): error TS2345: Argument of type '(() => string | Promise<string> | null | undefined) | undefined' is not assignable to parameter of type 'Function'.
   Type 'undefined' is not assignable to type 'Function'.
-src/core/browser/admin-core.js(1160,16): error TS2684: The 'this' context of type '(() => string | Promise<string> | null | undefined) | undefined' is not assignable to method's 'this' of type '(this: { getIdToken?: (() => string | Promise<string> | null | undefined) | undefined; } | null | undefined) => string | Promise<string> | null | undefined'.
-  Type 'undefined' is not assignable to type '(this: { getIdToken?: (() => string | Promise<string> | null | undefined) | undefined; } | null | undefined) => string | Promise<string> | null | undefined'.
-src/core/browser/admin-core.js(1160,16): error TS18048: 'getter' is possibly 'undefined'.
-src/core/browser/admin-core.js(1160,16): error TS2322: Type 'string | Promise<string> | null | undefined' is not assignable to type 'Promise<string>'.
-  Type 'undefined' is not assignable to type 'Promise<string>'.
-src/core/browser/admin-core.js(1183,3): error TS2322: Type 'Node[]' is not assignable to type 'HTMLElement[]'.
-  Type 'Node' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 264 more.
-src/core/browser/admin-core.js(1285,28): error TS2345: Argument of type 'GoogleAccountsClient | undefined' is not assignable to parameter of type 'GoogleAccountsClient'.
-  Type 'undefined' is not assignable to type 'GoogleAccountsClient'.
-src/core/browser/admin-core.js(1294,31): error TS2345: Argument of type 'GoogleAccountsClient | undefined' is not assignable to parameter of type 'GoogleAccountsClient'.
-  Type 'undefined' is not assignable to type 'GoogleAccountsClient'.
-src/core/browser/admin-core.js(1317,15): error TS7006: Parameter 'cred' implicitly has an 'any' type.
-src/core/browser/admin-core.js(1338,3): error TS2322: Type 'AdminTokenAction' is not assignable to type '() => Promise<void>'.
-  Target signature provides too few arguments. Expected 1 or more, but got 0.
-src/core/browser/admin-core.js(1351,17): error TS2339: Property 'generateStatsUrl' does not exist on type '{}'.
-src/core/browser/admin-core.js(1386,17): error TS18049: 'googleAuth' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(1395,20): error TS2345: Argument of type '{ getIdToken?: (() => string | null | undefined) | undefined; } | null | undefined' is not assignable to parameter of type 'object'.
+src/core/browser/admin-core.js(1424,7): error TS7031: Binding element 'token' implicitly has an 'any' type.
+src/core/browser/admin-core.js(1425,7): error TS7031: Binding element 'getAdminEndpoints' implicitly has an 'any' type.
+src/core/browser/admin-core.js(1426,16): error TS7031: Binding element 'fetch' implicitly has an 'any' type.
+src/core/browser/admin-core.js(1427,20): error TS7031: Binding element 'report' implicitly has an 'any' type.
+src/core/browser/admin-core.js(1636,25): error TS2345: Argument of type '{ preventDefault?: (() => void) | undefined; } | null | undefined' is not assignable to parameter of type 'object'.
   Type 'undefined' is not assignable to type 'object'.
-src/core/browser/admin-core.js(1496,21): error TS2339: Property 'getIdToken' does not exist on type 'object'.
-src/core/browser/admin-core.js(1542,40): error TS2339: Property 'preventDefault' does not exist on type 'object'.
-src/core/browser/admin-core.js(1551,25): error TS2345: Argument of type '{ preventDefault?: (() => void) | undefined; } | null | undefined' is not assignable to parameter of type 'object'.
-  Type 'undefined' is not assignable to type 'object'.
-src/core/browser/admin-core.js(1552,5): error TS18049: 'event' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(1552,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/browser/admin-core.js(1585,32): error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLInputElement | null | undefined'.
-  Type 'HTMLElement' is missing the following properties from type 'HTMLInputElement': accept, align, alt, autocomplete, and 55 more.
-src/core/browser/admin-core.js(1644,11): error TS2339: Property 'value' does not exist on type '{}'.
-src/core/browser/admin-core.js(1787,27): error TS8032: Qualified name 'options.getAuthFn' is not allowed without a leading '@param {object} options'.
-src/core/browser/admin-core.js(1810,41): error TS2345: Argument of type '() => unknown' is not assignable to parameter of type '() => { currentUser?: { uid?: string | undefined; } | undefined; } | null | undefined'.
+src/core/browser/admin-core.js(1897,41): error TS2345: Argument of type '() => unknown' is not assignable to parameter of type '() => { currentUser?: { uid?: string | undefined; } | undefined; } | null | undefined'.
   Type 'unknown' is not assignable to type '{ currentUser?: { uid?: string | undefined; } | undefined; } | null | undefined'.
-src/core/browser/admin-core.js(1937,36): error TS2345: Argument of type '() => { currentUser?: unknown; } | null | undefined' is not assignable to parameter of type '() => { currentUser: unknown; } | null | undefined'.
+src/core/browser/admin-core.js(2024,36): error TS2345: Argument of type '() => { currentUser?: unknown; } | null | undefined' is not assignable to parameter of type '() => { currentUser: unknown; } | null | undefined'.
   Type '{ currentUser?: unknown; } | null | undefined' is not assignable to type '{ currentUser: unknown; } | null | undefined'.
     Type '{ currentUser?: unknown; }' is not assignable to type '{ currentUser: unknown; }'.
       Property 'currentUser' is optional in type '{ currentUser?: unknown; }' but required in type '{ currentUser: unknown; }'.
-src/core/browser/admin-core.js(1965,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
-  Property 'style' does not exist on type 'Node'.
-src/core/browser/admin-core.js(1967,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
-  Property 'style' does not exist on type 'Node'.
-src/core/browser/admin-core.js(1973,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
-  Property 'style' does not exist on type 'Node'.
-src/core/browser/admin-core.js(1975,15): error TS2339: Property 'style' does not exist on type 'HTMLElement | Node'.
-  Property 'style' does not exist on type 'Node'.
-src/core/browser/admin-core.js(2024,7): error TS7034: Variable 'initGoogleSignInHandler' implicitly has type 'any' in some locations where its type cannot be determined.
-src/core/browser/admin-core.js(2026,10): error TS7005: Variable 'initGoogleSignInHandler' implicitly has an 'any' type.
-src/core/browser/admin-core.js(2029,9): error TS2322: Type 'unknown' is not assignable to type 'object'.
-src/core/browser/admin-core.js(2040,28): error TS7006: Parameter 'options' implicitly has an 'any' type.
-src/core/browser/admin-core.js(2042,7): error TS7034: Variable 'signOutHandler' implicitly has type 'any' in some locations where its type cannot be determined.
-src/core/browser/admin-core.js(2044,10): error TS7005: Variable 'signOutHandler' implicitly has an 'any' type.
-src/core/browser/admin-core.js(2046,38): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ signOut: () => void | Promise<void>; }'.
-src/core/browser/admin-core.js(2080,30): error TS2345: Argument of type 'Storage | null | undefined' is not assignable to parameter of type 'Storage'.
+src/core/browser/admin-core.js(2130,28): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/core/browser/admin-core.js(2173,30): error TS2345: Argument of type 'Storage | null | undefined' is not assignable to parameter of type 'Storage'.
   Type 'undefined' is not assignable to type 'Storage'.
-src/core/browser/admin-core.js(2081,5): error TS18049: 'storage' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(2143,43): error TS2339: Property 'id' does not exist on type '{}'.
-src/core/browser/admin-core.js(2152,29): error TS2339: Property 'accounts' does not exist on type '{}'.
-src/core/browser/admin-core.js(2161,15): error TS2339: Property 'google' does not exist on type 'Window'.
-src/core/browser/admin-core.js(2313,33): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory: (credential: string) => unknown; ... 5 more ...; logger?: { ...; } | undefined; }'.
+src/core/browser/admin-core.js(2174,5): error TS18049: 'storage' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(2236,43): error TS2339: Property 'id' does not exist on type '{}'.
+src/core/browser/admin-core.js(2245,29): error TS2339: Property 'accounts' does not exist on type '{}'.
+src/core/browser/admin-core.js(2254,15): error TS2339: Property 'google' does not exist on type 'Window'.
+src/core/browser/admin-core.js(2407,33): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory: (credential: string) => unknown; ... 5 more ...; logger?: { ...; } | undefined; }'.
   Type '{}' is missing the following properties from type '{ googleAccountsId?: GoogleAccountsClient | (() => GoogleAccountsClient | undefined) | undefined; credentialFactory: (credential: string) => unknown; ... 5 more ...; logger?: { ...; } | undefined; }': credentialFactory, signInWithCredential, auth, storage, and 2 more.
-src/core/browser/admin-core.js(2313,55): error TS2345: Argument of type '{ auth: object; storage: Storage; logger: { error?: ((message: string) => void) | undefined; }; globalObject: typeof globalThis; authProvider: { credential?: ((token: string) => string) | undefined; }; signInCredential: (auth: object, credential: unknown) => void | Promise<...>; }' is not assignable to parameter of type '{ auth: object; storage: Storage; logger: Logger; globalObject?: typeof globalThis | undefined; authProvider: { credential?: ((token: string) => string) | undefined; }; signInCredential: (auth: object, credential: unknown) => void | Promise<...>; }'.
-  The types of 'logger.error' are incompatible between these types.
-    Type '((message: string) => void) | undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void'.
-      Type 'undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void'.
-src/core/browser/admin-core.js(2337,7): error TS7034: Variable 'initGoogleSignInHandler' implicitly has type 'any' in some locations where its type cannot be determined.
-src/core/browser/admin-core.js(2339,10): error TS7005: Variable 'initGoogleSignInHandler' implicitly has an 'any' type.
-src/core/browser/admin-core.js(2342,9): error TS2322: Type 'unknown' is not assignable to type 'object'.
-src/core/browser/admin-core.js(2361,36): error TS2345: Argument of type '{ credential?: ((token: string) => string) | undefined; } | null | undefined' is not assignable to parameter of type '{ credential?: ((token: string) => string) | undefined; }'.
+src/core/browser/admin-core.js(2431,7): error TS7034: Variable 'initGoogleSignInHandler' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/browser/admin-core.js(2433,10): error TS7005: Variable 'initGoogleSignInHandler' implicitly has an 'any' type.
+src/core/browser/admin-core.js(2436,9): error TS2322: Type 'unknown' is not assignable to type 'object'.
+src/core/browser/admin-core.js(2455,36): error TS2345: Argument of type '{ credential?: ((token: string) => string) | undefined; } | null | undefined' is not assignable to parameter of type '{ credential?: ((token: string) => string) | undefined; }'.
   Type 'undefined' is not assignable to type '{ credential?: ((token: string) => string) | undefined; }'.
-src/core/browser/admin-core.js(2433,5): error TS18048: 'list' is possibly 'undefined'.
-src/core/browser/admin-core.js(2433,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/browser/admin-core.js(2450,55): error TS2345: Argument of type '{ matches?: boolean | undefined; addEventListener?: ((type: string, listener: () => void) => void) | undefined; } | undefined' is not assignable to parameter of type '{ matches: boolean; addEventListener?: ((type: string, listener: () => void) => void) | undefined; } | undefined'.
+src/core/browser/admin-core.js(2527,5): error TS18048: 'list' is possibly 'undefined'.
+src/core/browser/admin-core.js(2527,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/core/browser/admin-core.js(2544,55): error TS2345: Argument of type '{ matches?: boolean | undefined; addEventListener?: ((type: string, listener: () => void) => void) | undefined; } | undefined' is not assignable to parameter of type '{ matches: boolean; addEventListener?: ((type: string, listener: () => void) => void) | undefined; } | undefined'.
   Type '{ matches?: boolean | undefined; addEventListener?: ((type: string, listener: () => void) => void) | undefined; }' is not assignable to type '{ matches: boolean; addEventListener?: ((type: string, listener: () => void) => void) | undefined; }'.
     Types of property 'matches' are incompatible.
       Type 'boolean | undefined' is not assignable to type 'boolean'.
         Type 'undefined' is not assignable to type 'boolean'.
-src/core/browser/admin-core.js(2469,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ uid?: string | undefined; } | null | undefined'.
-src/core/browser/admin-core.js(2471,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ uid?: string | undefined; } | null | undefined'.
-src/core/browser/admin-core.js(2493,5): error TS18049: 'element' is possibly 'null' or 'undefined'.
-src/core/browser/admin-core.js(2495,5): error TS18049: 'element' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(2563,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ uid?: string | undefined; } | null | undefined'.
+src/core/browser/admin-core.js(2565,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ uid?: string | undefined; } | null | undefined'.
+src/core/browser/admin-core.js(2587,5): error TS18049: 'element' is possibly 'null' or 'undefined'.
+src/core/browser/admin-core.js(2589,5): error TS18049: 'element' is possibly 'null' or 'undefined'.
 src/core/browser/audio-controls.js(1,40): error TS7006: Parameter 'audio' implicitly has an 'any' type.
 src/core/browser/audio-controls.js(1,47): error TS7006: Parameter 'stopDefault' implicitly has an 'any' type.
 src/core/browser/audio-controls.js(1,60): error TS7006: Parameter 'playAudio' implicitly has an 'any' type.
@@ -490,6 +396,7 @@ src/core/browser/tags.js(111,9): error TS2339: Property 'removeNextSibling' does
 src/core/browser/tags.js(113,9): error TS2339: Property 'createHideSpan' does not exist on type 'object'.
 src/core/browser/tags.js(124,60): error TS7006: Parameter 'event' implicitly has an 'any' type.
 src/core/browser/tags.js(125,7): error TS2339: Property 'stopDefault' does not exist on type 'object'.
+src/core/browser/token-action.js(76,26): error TS2554: Expected 0 arguments, but got 1.
 src/core/browser/toys/2025-03-21/italics.js(122,14): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
 src/core/browser/toys/2025-03-21/italics.js(175,5): error TS18047: 'segment' is possibly 'null'.
 src/core/browser/toys/2025-03-21/italics.js(175,13): error TS2339: Property 'beforeText' does not exist on type 'object'.
@@ -1147,46 +1054,46 @@ src/core/cloud/render-contents/render-contents-core.js(1424,46): error TS2345: A
       Type 'Function' provides no match for the signature '(code: number): { send: (body: string) => void; }'.
 src/core/cloud/render-contents/render-contents-core.js(1568,39): error TS2345: Argument of type '{ status: Function; send: Function; json: Function; }' is not assignable to parameter of type 'NativeHttpResponse'.
   Property 'sendStatus' is missing in type '{ status: Function; send: Function; json: Function; }' but required in type 'NativeHttpResponse'.
-src/core/cloud/render-variant/render-variant-core.js(1487,29): error TS2345: Argument of type 'Record<string, any>' is not assignable to parameter of type '{ rootPage: DocumentReference<DocumentData>; }'.
+src/core/cloud/render-variant/render-variant-core.js(1497,29): error TS2345: Argument of type 'Record<string, any>' is not assignable to parameter of type '{ rootPage: DocumentReference<DocumentData>; }'.
   Property 'rootPage' is missing in type 'Record<string, any>' but required in type '{ rootPage: DocumentReference<DocumentData>; }'.
-src/core/cloud/render-variant/render-variant-core.js(1755,5): error TS2741: Property 'doc' is missing in type '{}' but required in type '{ doc: (path: string) => { get: () => Promise<{ data: () => Record<string, unknown> & { uuid: string; }; }>; }; }'.
-src/core/cloud/render-variant/render-variant-core.js(1756,5): error TS2741: Property 'file' is missing in type '{}' but required in type '{ file: (path: string) => { exists: () => Promise<[boolean]>; save: (content: string, options: object) => Promise<unknown>; }; }'.
-src/core/cloud/render-variant/render-variant-core.js(1918,28): error TS2339: Property 'exists' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1918,53): error TS2339: Property 'exists' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1985,24): error TS2339: Property 'doc' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(1991,5): error TS2345: Argument of type '{ get: Function; }' is not assignable to parameter of type '{ get: () => Promise<{ exists: boolean; data: () => Record<string, any>; }>; }'.
+src/core/cloud/render-variant/render-variant-core.js(1781,5): error TS2741: Property 'doc' is missing in type '{}' but required in type '{ doc: (path: string) => { get: () => Promise<{ data: () => Record<string, unknown> & { uuid: string; }; }>; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(1782,5): error TS2741: Property 'file' is missing in type '{}' but required in type '{ file: (path: string) => { exists: () => Promise<[boolean]>; save: (content: string, options: object) => Promise<unknown>; }; }'.
+src/core/cloud/render-variant/render-variant-core.js(1944,28): error TS2339: Property 'exists' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(1944,53): error TS2339: Property 'exists' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2011,24): error TS2339: Property 'doc' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2017,5): error TS2345: Argument of type '{ get: Function; }' is not assignable to parameter of type '{ get: () => Promise<{ exists: boolean; data: () => Record<string, any>; }>; }'.
   Types of property 'get' are incompatible.
     Type 'Function' is not assignable to type '() => Promise<{ exists: boolean; data: () => Record<string, any>; }>'.
       Type 'Function' provides no match for the signature '(): Promise<{ exists: boolean; data: () => Record<string, any>; }>'.
-src/core/cloud/render-variant/render-variant-core.js(2003,15): error TS2339: Property 'parentVariantSnap' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2004,15): error TS2339: Property 'parentPageSnap' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2081,3): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+src/core/cloud/render-variant/render-variant-core.js(2029,15): error TS2339: Property 'parentVariantSnap' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2030,15): error TS2339: Property 'parentPageSnap' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2107,3): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
   Type 'null' is not assignable to type 'string | undefined'.
-src/core/cloud/render-variant/render-variant-core.js(2130,3): error TS2322: Type 'Function' is not assignable to type '(snap: any, context?: any) => Promise<null>'.
+src/core/cloud/render-variant/render-variant-core.js(2156,3): error TS2322: Type 'Function' is not assignable to type '(snap: any, context?: any) => Promise<null>'.
   Type 'Function' provides no match for the signature '(snap: any, context?: any): Promise<null>'.
-src/core/cloud/render-variant/render-variant-core.js(2150,52): error TS2345: Argument of type '((message?: unknown, ...optionalParams: unknown[]) => void) | undefined' is not assignable to parameter of type '(message?: unknown, ...optionalParams: unknown[]) => void | undefined'.
+src/core/cloud/render-variant/render-variant-core.js(2176,52): error TS2345: Argument of type '((message?: unknown, ...optionalParams: unknown[]) => void) | undefined' is not assignable to parameter of type '(message?: unknown, ...optionalParams: unknown[]) => void | undefined'.
   Type 'undefined' is not assignable to type '(message?: unknown, ...optionalParams: unknown[]) => void | undefined'.
-src/core/cloud/render-variant/render-variant-core.js(2232,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2258,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/core/cloud/render-variant/render-variant-core.js(2233,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2259,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/core/cloud/render-variant/render-variant-core.js(2271,32): error TS7006: Parameter 'snap' implicitly has an 'any' type.
-src/core/cloud/render-variant/render-variant-core.js(2537,11): error TS2339: Property 'snap' does not exist on type '{}'.
-src/core/cloud/render-variant/render-variant-core.js(2614,3): error TS2322: Type 'string' is not assignable to type 'void'.
-src/core/cloud/render-variant/render-variant-core.js(2625,15): error TS2339: Property 'incomingOption' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2668,16): error TS2339: Property 'file' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2710,33): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2297,32): error TS7006: Parameter 'snap' implicitly has an 'any' type.
+src/core/cloud/render-variant/render-variant-core.js(2563,11): error TS2339: Property 'snap' does not exist on type '{}'.
+src/core/cloud/render-variant/render-variant-core.js(2640,3): error TS2322: Type 'string' is not assignable to type 'void'.
+src/core/cloud/render-variant/render-variant-core.js(2651,15): error TS2339: Property 'incomingOption' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2694,16): error TS2339: Property 'file' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2736,33): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
-src/core/cloud/render-variant/render-variant-core.js(2712,40): error TS2345: Argument of type 'void' is not assignable to parameter of type 'string'.
-src/core/cloud/render-variant/render-variant-core.js(2747,32): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2748,18): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2771,43): error TS2345: Argument of type '{ params?: Record<string, string> | undefined; } | undefined' is not assignable to parameter of type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2738,40): error TS2345: Argument of type 'void' is not assignable to parameter of type 'string'.
+src/core/cloud/render-variant/render-variant-core.js(2773,32): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2774,18): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2797,43): error TS2345: Argument of type '{ params?: Record<string, string> | undefined; } | undefined' is not assignable to parameter of type 'object'.
   Type 'undefined' is not assignable to type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2781,25): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2803,35): error TS2339: Property 'after' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2816,17): error TS2339: Property 'before' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2820,37): error TS2339: Property 'before' does not exist on type 'object'.
-src/core/cloud/render-variant/render-variant-core.js(2821,34): error TS2339: Property 'visibility' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2807,25): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2829,35): error TS2339: Property 'after' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2842,17): error TS2339: Property 'before' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2846,37): error TS2339: Property 'before' does not exist on type 'object'.
+src/core/cloud/render-variant/render-variant-core.js(2847,34): error TS2339: Property 'visibility' does not exist on type 'object'.
 src/core/cloud/submit-new-page/helpers.js(101,3): error TS2322: Type 'object | null' is not assignable to type '{ pageNumber: number; variantName: string; optionNumber: number; } | null'.
   Type '{}' is missing the following properties from type '{ pageNumber: number; variantName: string; optionNumber: number; }': pageNumber, variantName, optionNumber
 src/core/cloud/submit-new-page/helpers.js(111,49): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Firestore'.

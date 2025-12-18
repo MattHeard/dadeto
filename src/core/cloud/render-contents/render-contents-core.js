@@ -22,6 +22,20 @@ const DEFAULT_PAGE_SIZE = 100;
  */
 
 /**
+ * @typedef {object} RenderOptions
+ * @property {{ collection: Function }} [db] Firestore-like instance used for lookup helpers.
+ * @property {{ bucket: Function }} [storage] Cloud storage-like instance.
+ * @property {(input: string, init?: object) => Promise<any>} fetchFn Fetch implementation.
+ * @property {() => string} randomUUID UUID generator for cache invalidation.
+ * @property {string} [projectId] Google Cloud project identifier.
+ * @property {string} [urlMapName] Compute URL map identifier.
+ * @property {string} [cdnHost] CDN host name used for invalidation requests.
+ * @property {(message: string, error?: unknown) => void} [consoleError] Logger for invalidate failures.
+ * @property {string} [bucketName] Target bucket name for rendered files.
+ * @property {number} [pageSize] Number of items per generated page.
+ */
+
+/**
  * Ensure the provided Firestore-like instance exposes the expected helpers.
  * @param {{ collection: Function }} db Firestore-like instance to validate.
  * @returns {void}
@@ -718,17 +732,7 @@ function isStringMessage(candidate) {
 
 /**
  * Create the primary render function that updates the moderation contents listing.
- * @param {object} options Dependencies required to render content pages.
- * @param {{ collection: Function }} [options.db] Firestore-like instance used for lookup helpers.
- * @param {{ bucket: Function }} [options.storage] Cloud storage-like instance.
- * @param {(input: string, init?: object) => Promise<{ ok: boolean, status: number, json: () => Promise<any> }>} options.fetchFn Fetch implementation.
- * @param {() => string} options.randomUUID UUID generator for cache invalidation.
- * @param {string} [options.projectId] Google Cloud project identifier.
- * @param {string} [options.urlMapName] Compute URL map identifier.
- * @param {string} [options.cdnHost] CDN host name used for invalidation requests.
- * @param {(message: string, error?: unknown) => void} [options.consoleError] Logger for invalidate failures.
- * @param {string} [options.bucketName] Target bucket name for rendered files.
- * @param {number} [options.pageSize] Number of items per generated page.
+ * @param {RenderOptions} options Dependencies required to render content pages.
  * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer.
  */
 export function createRenderContents(options) {
@@ -738,10 +742,12 @@ export function createRenderContents(options) {
 
 /**
  * Normalize incoming render dependencies so assertions and defaults are grouped together.
- * @param {object} params Raw dependencies supplied by callers.
- * @returns {object} Dependencies with defaults and validation applied.
+ * @param {Partial<RenderOptions>} params Raw dependencies supplied by callers.
+ * @returns {RenderOptions} Dependencies with defaults and validation applied.
  */
-function normalizeRenderContentsOptions(params = {}) {
+function normalizeRenderContentsOptions(
+  params = /** @type {RenderOptions} */ ({})
+) {
   const {
     db,
     storage,
@@ -802,7 +808,7 @@ function resolveRenderContentsPageSize(value) {
 
 /**
  * Instantiate the renderer after defaults and validations are applied.
- * @param {object} deps Normalized render dependencies.
+ * @param {RenderOptions} deps Normalized render dependencies.
  * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
 function instantiateRenderContents(deps) {
@@ -839,35 +845,47 @@ function instantiateRenderContents(deps) {
 
 /**
  * Build the renderer closure that caches fetchers between invocations.
- * @param {object} config Handler dependencies.
+ * @param {{
+ *   db: { collection: Function },
+ *   bucket: { file: (path: string) => { save: (content: string, options: object) => Promise<unknown> } },
+ *   invalidatePaths: (paths: string[]) => Promise<void>,
+ *   pageSize: number
+ * }} config Handler dependencies.
  * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
 function createRenderContentsHandler(config) {
   const { db, bucket, invalidatePaths, pageSize } = config;
 
+  /** @type {(() => Promise<string[]>) | undefined} */
   let fetchTopStoryIds;
+  /** @type {((storyId: string) => Promise<StoryInfo | null>) | undefined} */
   let fetchStoryInfo;
 
   return async function render(deps = {}) {
-    const loadStoryIds = resolveFetcher({
-      provided: deps.fetchTopStoryIds,
-      cache: fetchTopStoryIds,
-      setCache: value => {
-        fetchTopStoryIds = value;
-      },
-      factory: createFetchTopStoryIds,
-      db,
-    });
+    const loadStoryIds = /** @type {() => Promise<string[]>} */ (
+      resolveFetcher({
+        provided: deps.fetchTopStoryIds,
+        cache: fetchTopStoryIds,
+        setCache: value => {
+          fetchTopStoryIds = value;
+        },
+        factory: createFetchTopStoryIds,
+        db,
+      })
+    );
 
-    const loadStoryInfo = resolveFetcher({
-      provided: deps.fetchStoryInfo,
-      cache: fetchStoryInfo,
-      setCache: value => {
-        fetchStoryInfo = value;
-      },
-      factory: createFetchStoryInfo,
-      db,
-    });
+    const loadStoryInfo =
+      /** @type {(storyId: string) => Promise<StoryInfo | null>} */ (
+        resolveFetcher({
+          provided: deps.fetchStoryInfo,
+          cache: fetchStoryInfo,
+          setCache: value => {
+            fetchStoryInfo = value;
+          },
+          factory: createFetchStoryInfo,
+          db,
+        })
+      );
 
     const items = await buildStoryItems(loadStoryIds, loadStoryInfo);
     const paths = await publishStoryPages({
@@ -884,13 +902,13 @@ function createRenderContentsHandler(config) {
 /**
  * Resolve an asynchronous fetcher from the provided override or cached factory.
  * @param {{
- *   provided?: () => Promise<any[]>,
- *   cache?: () => Promise<any[]>,
- *   setCache: (fn: () => Promise<any[]>) => void,
- *   factory: (db: { collection: Function }) => () => Promise<any[]>,
- *   db?: { collection?: Function }
+ *   provided?: Function,
+ *   cache?: Function,
+ *   setCache: (fn: any) => void,
+ *   factory: (db: { collection: Function }) => Function,
+ *   db?: { collection: Function }
  * }} options Fetcher resolution inputs.
- * @returns {() => Promise<any[]>} Fetch implementation to use.
+ * @returns {Function} Fetch implementation to use.
  */
 function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
   if (typeof provided === 'function') {
@@ -903,12 +921,12 @@ function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
 /**
  * Return the cached fetcher or create a new one via the factory helper.
  * @param {{
- *   cache?: () => Promise<any[]>,
- *   database?: { collection?: Function },
- *   factory: (db: { collection: Function }) => () => Promise<any[]>,
- *   setCache: (fn: () => Promise<any[]>) => void
+ *   cache?: Function,
+ *   database?: { collection: Function },
+ *   factory: (db: { collection: Function }) => Function,
+ *   setCache: (fn: any) => void
  * }} options Fetcher lookup inputs.
- * @returns {() => Promise<any[]>} Fetch implementation.
+ * @returns {Function} Fetch implementation.
  */
 function getOrCreateFetcher({ cache, database, factory, setCache }) {
   if (cache) {
@@ -920,8 +938,8 @@ function getOrCreateFetcher({ cache, database, factory, setCache }) {
 /**
  * Build story metadata items from Story ID loaders.
  * @param {() => Promise<string[]>} loadIds Loader returning top story identifiers.
- * @param {(id: string) => Promise<Record<string, any> | null>} loadInfo Loader returning story metadata.
- * @returns {Promise<Record<string, any>[]>} Collected story data.
+ * @param {(id: string) => Promise<StoryInfo | null>} loadInfo Loader returning story metadata.
+ * @returns {Promise<StoryInfo[]>} Collected story data.
  */
 async function buildStoryItems(loadIds, loadInfo) {
   const ids = await loadIds();
@@ -950,7 +968,7 @@ function pushIfPresent(collection, value) {
 /**
  * Write paginated story HTML to storage and return invalidation paths.
  * @param {{
- *   items: Record<string, any>[],
+ *   items: StoryInfo[],
  *   pageSize: number,
  *   bucket: { file: (path: string) => { save: (content: string, options: object) => Promise<unknown> } }
  * }} options Publishing inputs.
@@ -997,6 +1015,7 @@ function resolvePageFilePath(pageNumber) {
  * @returns {{ contentType: string, metadata?: { cacheControl: string } }} Storage options.
  */
 function buildPageSaveOptions(pageNumber, maxPages) {
+  /** @type {{ contentType: string, metadata?: { cacheControl: string } }} */
   const options = { contentType: 'text/html' };
   if (pageNumber === maxPages) {
     options.metadata = { cacheControl: 'no-cache' };
@@ -1012,10 +1031,10 @@ function buildPageSaveOptions(pageNumber, maxPages) {
  */
 /**
  * Create a cached fetcher when none is provided.
- * @param {{ collection?: Function }} database Firestore-like instance used by the factory.
- * @param {(db: { collection: Function }) => () => Promise<any[]>} factory Factory that produces the fetcher.
- * @param {(fn: () => Promise<any[]>) => void} setCache Setter for caching the created fetcher.
- * @returns {() => Promise<any[]>} Newly created fetch implementation.
+ * @param {{ collection: Function } | undefined} database Firestore-like instance used by the factory.
+ * @param {(db: { collection: Function }) => Function} factory Factory that produces the fetcher.
+ * @param {(fn: Function) => void} setCache Setter for caching the created fetcher.
+ * @returns {Function} Newly created fetch implementation.
  */
 function createFetcherFromDatabase(database, factory, setCache) {
   assertDb(database);
@@ -1083,9 +1102,10 @@ function chooseAllowedOrigins(parsedOrigins) {
 /**
  * Create a helper that applies CORS headers to outgoing responses.
  * @param {{ allowedOrigins?: string[] }} root0 Options for configuring origins.
- * @returns {(req: { get?: (name: string) => unknown }, res: { set: Function, status?: Function }) => boolean} Header applier returning whether the origin is allowed.
+ * @returns {(req: NativeHttpRequest, res: { set: (name: string, value: string) => void, status?: Function }) => boolean} Header applier returning whether the origin is allowed.
  */
 export function createApplyCorsHeaders({ allowedOrigins }) {
+  /** @type {string[]} */
   let origins;
   if (Array.isArray(allowedOrigins)) {
     origins = allowedOrigins;
@@ -1103,7 +1123,7 @@ export function createApplyCorsHeaders({ allowedOrigins }) {
 
 /**
  * Extract the Origin header when available on the request object.
- * @param {{ get?: (name: string) => unknown }} req Request-like helper.
+ * @param {NativeHttpRequest} req Request-like helper.
  * @returns {string | undefined} Origin header string, when present.
  */
 function resolveOriginHeader(req) {
@@ -1165,8 +1185,8 @@ function setStaticCorsHeaders(res) {
 
 /**
  * Create a request validator that ensures CORS and method requirements.
- * @param {{ applyCorsHeaders: (req: { method?: string, get?: (name: string) => unknown }, res: { set: Function, status: Function, send: Function }) => boolean }} root0 Dependencies.
- * @returns {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} Validator indicating if the request should continue.
+ * @param {{ applyCorsHeaders: (req: NativeHttpRequest, res: { set: (name: string, value: string) => void, status: Function, send: Function }) => boolean }} root0 Dependencies.
+ * @returns {(req: NativeHttpRequest, res: { status: Function, send: Function }) => boolean} Validator indicating if the request should continue.
  */
 export function createValidateRequest({ applyCorsHeaders }) {
   assertFunction(applyCorsHeaders, 'applyCorsHeaders');
@@ -1184,7 +1204,7 @@ export function createValidateRequest({ applyCorsHeaders }) {
 
 /**
  * Handle OPTIONS preflight requests.
- * @param {{ method?: string }} req Incoming request.
+ * @param {NativeHttpRequest} req Incoming request.
  * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
  * @param {boolean} originAllowed Whether the request origin passed CORS checks.
  * @returns {boolean} True when the request was handled and no further processing is needed.
@@ -1215,7 +1235,7 @@ function respondToPreflight(res, originAllowed) {
 
 /**
  * Enforce that the origin is allowed and the method is POST.
- * @param {{ method?: string }} req Incoming request helper.
+ * @param {NativeHttpRequest} req Incoming request helper.
  * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
  * @param {boolean} originAllowed Whether the origin is allowed.
  * @returns {boolean} True when the request should continue.
@@ -1230,7 +1250,7 @@ function ensureOriginAndMethodAllowed(req, res, originAllowed) {
 
 /**
  * Ensure the request uses the POST method.
- * @param {{ method?: string }} req Request helper.
+ * @param {NativeHttpRequest} req Request helper.
  * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
  * @returns {boolean} True when the method is POST.
  */
@@ -1245,7 +1265,7 @@ function ensurePostMethod(req, res) {
 
 /**
  * Check whether the incoming request is an OPTIONS preflight.
- * @param {{ method?: string } | undefined} req Incoming request object.
+ * @param {NativeHttpRequest | undefined} req Incoming request object.
  * @returns {boolean} True when the method is OPTIONS.
  */
 function isOptionsRequest(req) {
@@ -1254,7 +1274,7 @@ function isOptionsRequest(req) {
 
 /**
  * Confirm the request uses the POST method.
- * @param {{ method?: string } | undefined} req Incoming request object.
+ * @param {NativeHttpRequest | undefined} req Incoming request object.
  * @returns {boolean} True when the method is POST.
  */
 function isPostRequest(req) {
@@ -1263,7 +1283,7 @@ function isPostRequest(req) {
 
 /**
  * Extract the Authorization header via the request getter.
- * @param {{ get: (name: string) => unknown }} req Incoming request-like object that provides `get`.
+ * @param {NativeHttpRequest} req Incoming request-like object that provides `get`.
  * @returns {unknown} Value returned by {@code req.get('Authorization')} or {@code req.get('authorization')}.
  */
 function getAuthorizationHeaderFromGetter(req) {
@@ -1287,7 +1307,7 @@ function isDefined(value) {
 
 /**
  * Resolve the Authorization header from a request-like object.
- * @param {{ get?: (name: string) => unknown, headers?: object }} req Incoming request object.
+ * @param {NativeHttpRequest} req Incoming request object.
  * @returns {string} Authorization header or an empty string.
  */
 export function resolveAuthorizationHeader(req) {
@@ -1330,7 +1350,7 @@ function normalizeHeaderCandidate(value) {
 
 /**
  * Read the Authorization header when it lives in the request headers map.
- * @param {{ headers?: object }} req Request holding the headers object.
+ * @param {NativeHttpRequest} req Request holding the headers object.
  * @returns {unknown} Authorization header value when present.
  */
 export function getHeaderFromHeaders(req) {
@@ -1374,7 +1394,7 @@ function getAuthorizationCandidate(headers) {
 
 /**
  * Determine whether the provided request contains headers.
- * @param {{ headers?: object } | undefined} req Request-like helper.
+ * @param {NativeHttpRequest | undefined} req Request-like helper.
  * @returns {boolean} True when the request exposes a headers object.
  */
 function hasHeaders(req) {
@@ -1401,7 +1421,7 @@ function extractBearerToken(header) {
  *   verifyIdToken: (token: string) => Promise<{ uid?: string }>,
  *   adminUid: string
  * }} root0 - Authorization dependencies.
- * @returns {(options: { req: { get?: (name: string) => unknown, headers?: object }, res: { status: Function, send: Function } }) => Promise<{ uid?: string } | null>} Authorization checker.
+ * @returns {(options: { req: NativeHttpRequest, res: { status: Function, send: Function } }) => Promise<{ uid?: string } | null>} Authorization checker.
  */
 export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
   assertFunction(verifyIdToken, 'verifyIdToken');
@@ -1496,7 +1516,7 @@ function hasNonEmptyString(input) {
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.
- * @returns {(req: { method?: string }, res: { status: Function, send: Function, json: Function }) => Promise<void>} Fully wired handler.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Fully wired handler.
  */
 export function buildHandleRenderRequest({
   validateRequest,

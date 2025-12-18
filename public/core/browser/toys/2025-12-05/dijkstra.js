@@ -245,7 +245,7 @@ function hasShorterPath(distances, neighbor, candidateDistance) {
  * @param {Array<{id: string, distance: number}>} queue - Priority queue.
  * @returns {{ id: string, distance: number }} Next entry.
  */
-function dequeue(queue) {
+export function dequeue(queue) {
   queue.sort((first, second) => first.distance - second.distance);
   const next = queue.shift();
   if (!next) {

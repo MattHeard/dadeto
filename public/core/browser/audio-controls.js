@@ -1,3 +1,10 @@
+/**
+ * Create a click handler that stops the default event and plays given audio.
+ * @param {HTMLAudioElement} audio - Audio element to control.
+ * @param {(event: Event) => void} stopDefault - Prevents the default click action.
+ * @param {(element: HTMLAudioElement) => void} playAudio - Plays the audio element.
+ * @returns {(event: Event) => void} Handler bound to the control's click events.
+ */
 export const createPlayClickHandler = (audio, stopDefault, playAudio) => {
   return e => {
     stopDefault(e);

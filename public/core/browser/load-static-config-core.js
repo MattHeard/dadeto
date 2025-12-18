@@ -61,7 +61,20 @@ function createStaticConfigError(response) {
  * @returns {StaticConfigResponse['status'] | 'unknown'} Status code or `'unknown'` when unavailable.
  */
 function resolveStaticConfigStatus(response) {
-  if (!response || response.status === undefined) {
+  if (!response) {
+    return 'unknown';
+  }
+
+  return getStatusFromResponse(response);
+}
+
+/**
+ * Extracts a status code when the response exposes one.
+ * @param {StaticConfigResponse} response Response that issued the status.
+ * @returns {StaticConfigResponse['status'] | 'unknown'} Status code or `'unknown'`.
+ */
+function getStatusFromResponse(response) {
+  if (response.status === undefined) {
     return 'unknown';
   }
 
@@ -100,8 +113,8 @@ function resolveLogWarn(warn) {
   const fallbackLogger =
     () =>
     /**
-     * @param {string} message
-     * @param {unknown} [error]
+     * @param {string} message Warning text describing the issue.
+     * @param {unknown} [error] Optional error payload captured during logging.
      */
     (message, error) => {
       void message;

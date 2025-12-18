@@ -2,15 +2,36 @@ import { isObject } from './common.js';
 import { safeJsonParse, deepMerge, deepClone } from './browser-core.js';
 
 /**
+ * @typedef {{ ok: boolean; message?: string; data?: object }} ParseResult
+ */
+
+/**
+ * Determine whether parsing yielded a valid object.
+ * @param {ParseResult} result - Result from parsing JSON input.
+ * @returns {result is { ok: true; data: object }} True when parsing succeeded with data.
+ */
+function hasParsedData(result) {
+  return result.ok && Boolean(result.data);
+}
+
+/**
+ * @param {ParseResult} result - Result from parsing JSON input.
+ * @returns {string} Message describing why parsing failed.
+ */
+function formatParseFailure(result) {
+  return result.message ?? 'Unable to parse JSON input.';
+}
+
+/**
  * Creates a function that merges JSON input into a section of the data object.
  * @param {string} section - The property name to merge into.
- * @returns {(input: string, env: Map<string, Function>) => string} Setter function
+ * @returns {(input: string, env: Map<string, Function>) => string} Setter function that validates and merges payloads.
  */
 export function createSectionSetter(section) {
   return function setSection(input, env) {
     const result = parseJsonObject(input);
-    if (!result.ok) {
-      return result.message;
+    if (!hasParsedData(result)) {
+      return formatParseFailure(result);
     }
     return mergeSection(section, result.data, env);
   };
