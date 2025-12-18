@@ -1070,7 +1070,9 @@ async function invalidatePathItem({
  */
 function logInvalidateResponse(response, path, consoleError) {
   if (shouldLogInvalidateResponse(response, consoleError)) {
-    consoleError(`invalidate ${path} failed: ${response.status}`);
+    /** @type {Function} */ (consoleError)(
+      `invalidate ${path} failed: ${response.status}`
+    );
   }
 }
 
@@ -1216,7 +1218,7 @@ function resolveTargetPageNumber(data) {
 
 /**
  * Retrieve metadata for a referenced target page, including the first visible variant.
- * @param {{ get: Function }} targetPage Firestore reference for the target page document.
+ * @param {import('firebase-admin/firestore').DocumentReference} targetPage Firestore reference for the target page document.
  * @param {number} visibilityThreshold Minimum visibility required for a variant to be considered published.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for unexpected failures.
  * @returns {Promise<{
@@ -1234,7 +1236,7 @@ async function fetchTargetPageMetadata(
     .get()
     .then(
       /**
-       * @param {{exists: boolean, data: Function}} targetSnap - Target snapshot.
+       * @param {import('firebase-admin/firestore').DocumentSnapshot} targetSnap - Target snapshot.
        * @returns {Promise<object>} Metadata.
        */
       targetSnap => {
@@ -1242,7 +1244,11 @@ async function fetchTargetPageMetadata(
           return Promise.resolve({});
         }
 
-        return processTargetSnap(targetSnap, targetPage, visibilityThreshold);
+        return processTargetSnap(
+          targetSnap,
+          /** @type {any} */ (targetPage),
+          visibilityThreshold
+        );
       }
     )
     .catch(
@@ -1287,18 +1293,33 @@ function logTargetPageError(error, consoleError) {
  * @returns {Promise<object>} Target metadata.
  */
 async function processTargetSnap(targetSnap, targetPage, visibilityThreshold) {
-  const targetPageNumber = /** @type {number} */ (targetSnap.data().number);
-  const variantSnap = await targetPage
-    .collection('variants')
-    .orderBy('name')
-    .get();
+  const data = targetSnap.data();
+  if (!data) {
+    return {};
+  }
+  return resolveTargetMetadataWithVariants({
+    targetPageNumber: /** @type {number} */ (data.number),
+    targetPage,
+    visibilityThreshold,
+  });
+}
 
-  const visible = variantSnap.docs.filter(
-    /**
-     * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} doc - Firestore document snapshot.
-     * @returns {boolean} True if the variant is visible.
-     */
-    doc => (doc.data().visibility ?? 1) >= visibilityThreshold
+/**
+ * Resolve target metadata with variants.
+ * @param {object} options Options.
+ * @param {number} options.targetPageNumber Target page number.
+ * @param {import('firebase-admin/firestore').DocumentReference} options.targetPage Target page.
+ * @param {number} options.visibilityThreshold Visibility threshold.
+ * @returns {Promise<object>} Target metadata.
+ */
+async function resolveTargetMetadataWithVariants({
+  targetPageNumber,
+  targetPage,
+  visibilityThreshold,
+}) {
+  const visible = await getVisibleVariantsFromPage(
+    targetPage,
+    visibilityThreshold
   );
 
   if (!visible.length) {
@@ -1306,6 +1327,28 @@ async function processTargetSnap(targetSnap, targetPage, visibilityThreshold) {
   }
 
   return buildTargetMetadata(targetPageNumber, visible);
+}
+
+/**
+ * Get visible variants from page.
+ * @param {import('firebase-admin/firestore').DocumentReference} targetPage Target page.
+ * @param {number} visibilityThreshold Visibility threshold.
+ * @returns {Promise<import('firebase-admin/firestore').QueryDocumentSnapshot[]>} Visible variants.
+ */
+async function getVisibleVariantsFromPage(targetPage, visibilityThreshold) {
+  const variantSnap = await targetPage
+    .collection('variants')
+    .orderBy('name')
+    .get();
+
+  return variantSnap.docs.filter(
+    /**
+     * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} doc - Firestore document snapshot.
+     * @returns {boolean} True if the variant is visible.
+     */
+    doc =>
+      /** @type {any} */ (doc.data().visibility ?? 1) >= visibilityThreshold
+  );
 }
 
 /**
@@ -1357,12 +1400,17 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
   );
 
   return Promise.all(
-    optionsData.map(data =>
-      buildOptionMetadata({
-        data: /** @type {any} */ (data),
-        visibilityThreshold,
-        consoleError: consoleError || (() => {}),
-      })
+    optionsData.map(
+      /**
+       * @param {import('firebase-admin/firestore').DocumentData} data Document data.
+       * @returns {Promise<object>} Metadata.
+       */
+      data =>
+        buildOptionMetadata({
+          data: /** @type {any} */ (data),
+          visibilityThreshold,
+          consoleError: consoleError || (() => {}),
+        })
     )
   );
 }
@@ -1377,9 +1425,39 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = extractStoryRef(pageSnap);
-  const storySnap = await storyRef.get();
-  const storyData = storySnap.data();
-  const storyTitle = storyData.title;
+  const storyData = await fetchStoryData(storyRef);
+  if (!storyData) {
+    return { storyTitle: '', firstPageUrl: undefined };
+  }
+  return buildStoryMetadata({ storyData, page, consoleError });
+}
+
+/**
+ * Fetch story data.
+ * @param {object | null} storyRef Story reference.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentData | null>} Story data.
+ */
+async function fetchStoryData(storyRef) {
+  if (!storyRef) {
+    return null;
+  }
+  const storySnap =
+    await /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+      storyRef
+    ).get();
+  return storySnap.data() || null;
+}
+
+/**
+ * Build story metadata.
+ * @param {object} options Options.
+ * @param {import('firebase-admin/firestore').DocumentData} options.storyData Story data.
+ * @param {Record<string, any>} options.page Page data.
+ * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] Error logger.
+ * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata.
+ */
+async function buildStoryMetadata({ storyData, page, consoleError }) {
+  const storyTitle = /** @type {string} */ (storyData.title || '');
   const firstPageUrl = await resolveFirstPageUrl({
     page,
     storyData,
@@ -1417,12 +1495,12 @@ function shouldResolveFirstPageUrl(page, storyData) {
 
 /**
  * Resolve the root page URL while gracefully handling errors.
- * @param {Record<string, any>} storyData Story metadata containing the root page.
+ * @param {{rootPage: import('firebase-admin/firestore').DocumentReference}} storyData Story metadata containing the root page.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for failures.
  * @returns {Promise<string | undefined>} Root page URL when available.
  */
 function resolveRootPageUrl(storyData, consoleError) {
-  return fetchRootPageUrl(storyData).catch(error => {
+  return fetchRootPageUrl(/** @type {any} */ (storyData)).catch(error => {
     handleRootPageError(error, consoleError);
     return undefined;
   });
@@ -1431,7 +1509,7 @@ function resolveRootPageUrl(storyData, consoleError) {
 /**
  * Handle root page error.
  * @param {Error} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {Function} [consoleError] Error logger.
  */
 function handleRootPageError(error, consoleError) {
   if (!consoleError) {
@@ -1443,32 +1521,47 @@ function handleRootPageError(error, consoleError) {
 /**
  * Log root page error.
  * @param {Error} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {Function} [consoleError] Error logger.
  */
 function logRootPageError(error, consoleError) {
   const message = getErrorMessage(error);
-  consoleError('root page lookup failed', message);
+  if (consoleError) {
+    consoleError('root page lookup failed', message);
+  }
 }
 
 /**
  * Fetch root page URL.
- * @param {object} storyData Story data.
+ * @param {{rootPage: import('firebase-admin/firestore').DocumentReference}} storyData Story data.
  * @returns {Promise<string|undefined>} Root page URL.
  */
 async function fetchRootPageUrl(storyData) {
   const rootPageSnap = await storyData.rootPage.get();
-
   if (!rootPageSnap.exists) {
     return undefined;
   }
 
-  const rootVariantSnap = await storyData.rootPage
+  return resolveUrlFromRootPage(rootPageSnap, storyData.rootPage);
+}
+
+/**
+ * Resolve URL from root page.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} rootPageSnap Root page snapshot.
+ * @param {import('firebase-admin/firestore').DocumentReference} rootPageRef Root page reference.
+ * @returns {Promise<string | undefined>} Root page URL.
+ */
+async function resolveUrlFromRootPage(rootPageSnap, rootPageRef) {
+  const rootVariantSnap = await rootPageRef
     .collection('variants')
     .orderBy('name')
     .limit(1)
     .get();
 
-  return `/p/${rootPageSnap.data().number}${
+  if (!rootVariantSnap.docs[0]) {
+    return undefined;
+  }
+
+  return `/p/${rootPageSnap.data()?.number}${
     rootVariantSnap.docs[0].data().name
   }.html`;
 }
@@ -1577,7 +1670,7 @@ async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
 
 /**
  * Write author page if needed.
- * @param {object} authorFile Author file data.
+ * @param {{authorPath: string, file: any, exists: boolean}} authorFile Author file data.
  * @param {object} variant Variant.
  * @returns {Promise<string>} Author path.
  */
@@ -1610,8 +1703,8 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
 
 /**
  * Handle author lookup error.
- * @param {Error} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {unknown} error Error.
+ * @param {Function} [consoleError] Error logger.
  */
 function handleAuthorLookupError(error, consoleError) {
   if (!consoleError) {
@@ -1622,12 +1715,14 @@ function handleAuthorLookupError(error, consoleError) {
 
 /**
  * Log author lookup error.
- * @param {Error} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {unknown} error Error.
+ * @param {Function} [consoleError] Error logger.
  */
 function logAuthorLookupError(error, consoleError) {
   const message = getErrorMessage(error);
-  consoleError('author lookup failed', message);
+  if (consoleError) {
+    consoleError('author lookup failed', message);
+  }
 }
 
 /**
