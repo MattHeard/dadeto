@@ -2,7 +2,7 @@ import { setInputValue } from '../inputValueStore.js';
 
 /** @typedef {import('../browser-core.js').DOMEventListener} DOMEventListener */
 /** @typedef {import('../inputValueStore.js').ElementWithValue} ElementWithValue */
-/** @typedef {typeof import('../../../browser/document.js').dom} BrowserDom */
+/** @typedef {import('../domHelpers.js').DOMHelpers} BrowserDom */
 /**
  * @typedef {{
  *   container: HTMLElement;

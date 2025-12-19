@@ -2,6 +2,7 @@ import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 import { isNonNullObject } from '../commonCore.js';
 
 /** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
+/** @typedef {import('./domHelpers.js').DOMHelpers} DOMHelpers */
 
 /**
  * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} LogCallback
@@ -9,13 +10,6 @@ import { isNonNullObject } from '../commonCore.js';
  * @typedef {HTMLElement & { _dispose: () => void }} DisposableElement
  * @typedef {(event: unknown) => void} DOMEventListener
  * @typedef {{ removeItem: (key: string) => void }} StorageLike
- * @typedef {{
- *   querySelector: (container: HTMLElement, selector: string) => HTMLElement | null;
- *   removeChild: (container: HTMLElement, child: HTMLElement) => void;
- *   hide: (element: HTMLElement) => void;
- *   disable: (element: HTMLElement) => void;
- *   removeEventListener: (el: EventTarget, event: string, handler: DOMEventListener) => void;
- * }} DOMHelpers
  * @typedef {(container: HTMLElement, dom: DOMHelpers) => void} ContainerHandler
  */
 

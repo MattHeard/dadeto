@@ -1,5 +1,7 @@
 import { createRemoveListener } from '../core/browser/browser-core.js';
 
+/** @typedef {import('../core/browser/domHelpers.js').DOMHelpers} DOMHelpers */
+
 // DOM helper functions
 export const getElementById = id => document.getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
@@ -248,7 +250,7 @@ const importModule = (modulePath, onSuccess, onError) => {
 /**
  * Centralized DOM manipulation utilities
  */
-export const dom = {
+export const dom = /** @type {DOMHelpers} */ ({
   importModule,
   makeIntersectionObserver,
   setType,
@@ -302,7 +304,7 @@ export const dom = {
   setTargetValue,
   hasBetaParam,
   reveal,
-};
+});
 
 /**
  * Checks if a window has no interactive components
