@@ -3,15 +3,16 @@ import { setInputValue } from '../inputValueStore.js';
 /** @typedef {import('../browser-core.js').DOMEventListener} DOMEventListener */
 /** @typedef {import('../inputValueStore.js').ElementWithValue} ElementWithValue */
 /** @typedef {import('../domHelpers.js').DOMHelpers} BrowserDom */
+/** @typedef {HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement} TextInputElement */
 /**
  * @typedef {{
  *   container: HTMLElement;
- *   textInput: ElementWithValue;
+ *   textInput: TextInputElement;
  *   element: HTMLElement;
  *   dom: BrowserDom;
  * }} InsertBeforeOptions
  */
-/** @typedef {(textInput: ElementWithValue, targetValue: string) => void} TextInputUpdateHandler */
+/** @typedef {(textInput: TextInputElement, targetValue: string) => void} TextInputUpdateHandler */
 /**
  * @param {BrowserDom} dom - DOM utilities.
  * @returns {TextInputUpdateHandler} Setter that writes target values back to the DOM.
@@ -31,23 +32,25 @@ const createTargetApplier = textInput => targetValue => handler =>
  * @param {BrowserDom} dom - DOM utilities.
  * @param {(targetValue: string) => (handler: TextInputUpdateHandler) => void} applyTargetToHandlers - Apply the current target to each handler.
  * @param {TextInputUpdateHandler[]} updateHandlers - Handlers that mirror the input value.
- * @returns {(event: Event) => void} Handler that syncs the DOM target value.
+ * @returns {DOMEventListener} Handler that syncs the DOM target value.
  */
 const createTextInputUpdater =
   (dom, applyTargetToHandlers, updateHandlers) =>
   /**
-   * @param {Event} event - Input event to read from.
+   * @param {unknown} event - Input event to read from.
    */
   event => {
-    const targetValue = dom.getTargetValue(event);
+    const targetValue = dom.getTargetValue(
+      /** @type {Event & { target: { value: string } }} */ (event)
+    );
     const callWithTarget = applyTargetToHandlers(targetValue);
     updateHandlers.forEach(callWithTarget);
   };
 
 /**
- * @param {ElementWithValue} textInput - Input element to mirror.
+ * @param {TextInputElement} textInput - Input element to mirror.
  * @param {BrowserDom} dom - DOM utilities.
- * @returns {(event: Event) => void} Input handler that keeps helpers aligned.
+ * @returns {DOMEventListener} Input handler that keeps helpers aligned.
  */
 export const createUpdateTextInputValue = (textInput, dom) => {
   const setTextInputValue = createDomValueSetter(dom);
@@ -80,7 +83,7 @@ export const setupInputEvents = (dom, input, handler) => {
 
 /**
  * Insert an element right before the text input's next sibling.
- * @param {InsertBeforeOptions} options - Insertion parameters.
+ * @param {object} options - Insertion parameters.
  * @param {HTMLElement} options.container - Parent container holding the inputs.
  * @param {HTMLElement} options.textInput - Text input element to anchor positioning.
  * @param {HTMLElement} options.element - Element to insert.

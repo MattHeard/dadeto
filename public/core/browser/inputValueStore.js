@@ -1,6 +1,6 @@
 /**
- * Object keys that expose a `value` property used for normalization and storage.
- * @typedef {object & { value?: string }} ElementWithValue
+ * Input-like elements that expose a `value` property for storage.
+ * @typedef {HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement} ElementWithValue
  */
 
 /** @type {WeakMap<ElementWithValue, string>} */

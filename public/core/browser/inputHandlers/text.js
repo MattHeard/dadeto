@@ -4,9 +4,11 @@ import {
   maybeRemoveNumber,
 } from '../browser-core.js';
 
+/** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
+
 /**
  * Handle a plain text input field.
- * @param {object} dom - DOM helper utilities.
+ * @param {DOMHelpers} dom - DOM helper utilities.
  * @param {HTMLElement} container - Container element for the input.
  * @param {HTMLInputElement} textInput - The text input element.
  * @returns {void}

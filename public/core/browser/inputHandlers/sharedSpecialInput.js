@@ -1,15 +1,12 @@
 import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
 
-/**
- * @typedef {object} DomHelpers
- * @property {(container: HTMLElement, selector: string) => HTMLElement | null} querySelector DOM lookup helper.
- */
+/** @typedef {import('../domHelpers.js').DOMHelpers} DomHelpers */
 
 /**
  * @typedef {{
  *   selector: string;
  *   container: HTMLElement;
- *   textInput: HTMLElement;
+ *   textInput: HTMLInputElement;
  *   dom: DomHelpers;
  * }} SharedSpecialInputParams
  */
@@ -19,7 +16,7 @@ import { insertBeforeNextSibling } from './browserInputHandlersCore.js';
  * @param {{
  *   selector: string,
  *   container: HTMLElement,
- *   textInput: HTMLElement,
+ *   textInput: HTMLInputElement,
  *   dom: DomHelpers,
  * }} params - Shared configuration.
  * @returns {SharedSpecialInputParams} Shared subset.

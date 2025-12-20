@@ -17,7 +17,7 @@
  * @typedef {object} DOMHelpers
  * @property {(modulePath: string, onSuccess: ModuleSuccessHandler, onError: ModuleErrorHandler) => void} importModule - Load a module by path.
  * @property {(callback: IntersectionObserverCallback) => IntersectionObserver} makeIntersectionObserver - Create a shared intersection observer.
- * @property {(element: HTMLInputElement, type: string) => void} setType - Set the input type.
+ * @property {(element: HTMLInputElement | HTMLButtonElement, type: string) => void} setType - Set the input type.
  * @property {(element: HTMLInputElement | HTMLTextAreaElement, placeholder: string) => void} setPlaceholder - Update placeholder text.
  * @property {(element: HTMLElement, name: string, value: string) => void} setDataAttribute - Assign a data attribute.
  * @property {(element: HTMLElement, name: string) => string | undefined} getDataAttribute - Read a data attribute.
@@ -62,8 +62,8 @@
  * @property {(event: Event) => EventTarget} getCurrentTarget - Read current event target.
  * @property {(element: Node) => Node | null} getNextSibling - Fetch the next sibling node.
  * @property {(element: Element) => Element | null} getParentElement - Fetch the parent element.
- * @property {(element: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, value: string | number | boolean | string[] | FileList) => void} setValue - Set input value.
- * @property {(element: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => string | number | boolean | string[] | FileList} getValue - Read input value.
+ * @property {(element: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLOptionElement, value: string | number | boolean | string[] | FileList) => void} setValue - Set input value.
+ * @property {(element: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLOptionElement) => string | number | boolean | string[] | FileList} getValue - Read input value.
  * @property {(event: Event & { target: { value: string } }) => string} getTargetValue - Read target value.
  * @property {(event: Event & { target: { value: string } }, value: string) => void} setTargetValue - Write target value.
  * @property {() => boolean} hasBetaParam - Detect beta query param.
