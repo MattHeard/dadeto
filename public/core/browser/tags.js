@@ -12,6 +12,19 @@ function hideIfHasClass(article, className, dom) {
 }
 
 /**
+ * Hides an article if it does not have the specified class.
+ * @param {HTMLElement} article - The article element.
+ * @param {string} className - Class name to test.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
+ */
+function hideIfMissingClass(article, className, dom) {
+  if (!dom.hasClass(article, className)) {
+    dom.hide(article);
+  }
+}
+
+/**
  * Functions for handling tags and filtering articles
  */
 
@@ -76,10 +89,18 @@ export function makeHandleHideSpan(dom) {
     const hideLink = dom.createElement('a');
     dom.setTextContent(hideLink, 'hide');
 
+    const onlyLink = dom.createElement('a');
+    dom.setTextContent(onlyLink, 'only');
+
     const handleHideClick = makeHandleHideClick(dom, className);
     dom.addEventListener(hideLink, 'click', handleHideClick);
 
+    const handleOnlyClick = makeHandleOnlyClick(dom, className);
+    dom.addEventListener(onlyLink, 'click', handleOnlyClick);
+
     dom.appendChild(span, hideLink);
+    dom.appendChild(span, dom.createTextNode(' | '));
+    dom.appendChild(span, onlyLink);
     dom.appendChild(span, dom.createTextNode(')'));
     dom.insertBefore(link.parentNode, span, link.nextSibling);
   };
@@ -96,6 +117,32 @@ export function hideArticlesByClass(className, dom) {
   for (const article of articles) {
     hideIfHasClass(article, className, dom);
   }
+}
+
+/**
+ * Hide all articles that do not contain the given class.
+ * @param {string} className - Class used to filter articles.
+ * @param {object} dom - DOM helper utilities.
+ * @returns {void}
+ */
+export function hideArticlesWithoutClass(className, dom) {
+  const articles = dom.getElementsByTagName('article');
+  for (const article of articles) {
+    hideIfMissingClass(article, className, dom);
+  }
+}
+
+/**
+ * Returns a click handler that hides articles missing the provided class.
+ * @param {object} dom - Object containing DOM helper functions.
+ * @param {string} className - The CSS class to filter by.
+ * @returns {Function} Event handler that hides non-matching articles.
+ */
+export function makeHandleOnlyClick(dom, className) {
+  return function (event) {
+    dom.stopDefault(event);
+    hideArticlesWithoutClass(className, dom);
+  };
 }
 
 /**

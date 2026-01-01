@@ -528,7 +528,13 @@ function createWarningLogger(loggers) {
 function normalizeDependencies(bundle) {
   ensureBundleObject(bundle);
 
-  const { fetch: fetchImpl, loggers, storage, memoryLens, permanentLens } = bundle;
+  const {
+    fetch: fetchImpl,
+    loggers,
+    storage,
+    memoryLens,
+    permanentLens,
+  } = bundle;
 
   ensureFetchFunction(fetchImpl);
   ensureLoggersObject(loggers);
@@ -537,7 +543,9 @@ function normalizeDependencies(bundle) {
   const normalizedStorage = storage ?? null;
 
   const finalMemoryLens = memoryLens ?? createMemoryStorageLens();
-  const finalPermanentLens = permanentLens ?? createLensFromStorage(normalizedStorage, normalizedLoggers.logError);
+  const finalPermanentLens =
+    permanentLens ??
+    createLensFromStorage(normalizedStorage, normalizedLoggers.logError);
 
   return {
     fetch: fetchImpl,
