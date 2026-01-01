@@ -24,6 +24,8 @@ import {
   getInteractiveComponents,
 } from './document.js';
 import { revealBetaArticles } from './beta.js';
+import { createMemoryStorageLens } from '../core/browser/memoryStorageLens.js';
+import { createLocalStorageLens } from '../core/browser/localStorageLens.js';
 
 const globalState = {
   blog: null, // Holds the fetched blog data
@@ -44,10 +46,18 @@ const globalState = {
  */
 const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
 
+const memoryLens = createMemoryStorageLens();
+const permanentLens = createLocalStorageLens({
+  storage: localStorage,
+  logError: dom.logError,
+});
+
 const createBlogDependencies = () => ({
   fetch,
   loggers,
   storage: localStorage,
+  memoryLens,
+  permanentLens,
 });
 
 const {
@@ -76,6 +86,8 @@ function createEnv() {
     ['setLocalPermanentData', newData => applyLocalPermanentData(newData)],
     ['getLocalPermanentData', () => fetchLocalPermanentData()],
     ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
+    ['memoryLens', memoryLens],
+    ['permanentLens', permanentLens],
   ]);
 }
 
