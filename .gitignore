@@ -20,6 +20,7 @@ yarn-error.log*
 dist/
 build/
 !src/build/
+!src/core/build/
 
 # Editor and IDE files
 .idea/
