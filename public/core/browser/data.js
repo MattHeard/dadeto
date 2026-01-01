@@ -1,6 +1,8 @@
 import { deepClone } from './browser-core.js';
 import { isNonNullObject } from '../commonCore.js';
 import { guardThen } from './common.js';
+import { createLocalStorageLens } from './localStorageLens.js';
+import { createMemoryStorageLens } from './memoryStorageLens.js';
 
 /**
  * Returns a Base64 encoding function using the provided helpers.
@@ -51,6 +53,8 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
  * @property {BlogDataLoggers} loggers - Logger bundle injected by the entry layer.
  * @property {Storage | null | undefined} [storage] - Optional storage implementation for permanent state.
+ * @property {import('./storageLens.js').StorageLens} [memoryLens] - Optional lens for memory storage.
+ * @property {import('./storageLens.js').StorageLens} [permanentLens] - Optional lens for permanent storage.
  */
 
 /**
@@ -62,6 +66,8 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  *   logWarning: BlogLogFn,
  * }} loggers - Logger bundle with guaranteed callable members.
  * @property {Storage | null} storage - Storage implementation or null when unavailable.
+ * @property {import('./storageLens.js').StorageLens | null} memoryLens - Lens for memory storage or null.
+ * @property {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage or null.
  */
 
 /**
@@ -445,77 +451,45 @@ export const setLocalTemporaryData = (state, loggers) => {
 
 /**
  * Load existing permanent data from storage.
- * @param {Storage | null | undefined} storage - Storage used to persist data.
- * @param {Function} logError - Error logger.
+ * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
  * @returns {object} Stored data object.
  */
-function loadPermanentData(storage, logError) {
-  if (!storage) {
+function loadPermanentData(permanentLens) {
+  if (!permanentLens) {
     return {};
   }
-  return loadDataFromStorage(storage, logError);
+  return loadDataFromLens(permanentLens);
 }
 
 /**
- * Read the stored permanent data while ensuring the logError helper exists.
- * @param {BlogDataLoggers} loggers - Logging helpers that must include `logError`.
- * @param {Storage | null | undefined} [storage] - Storage implementation to read from.
+ * Read the stored permanent data.
+ * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
  * @returns {object} Stored permanent data (or empty object on failure).
  */
-function readLocalPermanentData(loggers, storage) {
-  const logError = ensureLoggerFunction(loggers, 'logError');
-  return loadPermanentData(storage, logError);
+function readLocalPermanentData(permanentLens) {
+  return loadPermanentData(permanentLens);
 }
 
 /**
- * Read and parse permanent data from storage.
- * @param {Storage} storage - Storage used to persist data.
- * @param {Function} logError - Error logger.
+ * Read data from a lens.
+ * @param {import('./storageLens.js').StorageLens} lens - Storage lens.
  * @returns {object} Stored data object.
  */
-function loadDataFromStorage(storage, logError) {
-  try {
-    return JSON.parse(getPermanentRaw(storage));
-  } catch (readError) {
-    logError('Failed to read permanent data:', readError);
-    return {};
-  }
+function loadDataFromLens(lens) {
+  const data = lens.get('permanentData');
+  return data || {};
 }
 
 /**
- * Retrieve the raw permanent data string from storage.
- * @param {Storage} storage - Storage used to persist data.
- * @returns {string} Stored data string or '{}'.
- */
-function getPermanentRaw(storage) {
-  return storage.getItem('permanentData') || '{}';
-}
-
-/**
- * Write the permanent data object to storage.
- * @param {Storage} storage - Storage used to persist data.
+ * Persist permanent data using a lens.
+ * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
  * @param {object} data - Data to save.
- * @param {Function} logError - Error logger.
  */
-function writePermanentData(storage, data, logError) {
-  try {
-    storage.setItem('permanentData', JSON.stringify(data));
-  } catch (storageError) {
-    logError('Failed to persist permanent data:', storageError);
-  }
-}
-
-/**
- * Persist permanent data when storage is available.
- * @param {Storage | null | undefined} storage - Storage used to persist data.
- * @param {object} data - Data to save.
- * @param {Function} logError - Error logger.
- */
-function savePermanentData(storage, data, logError) {
-  if (!storage) {
+function savePermanentData(permanentLens, data) {
+  if (!permanentLens) {
     return;
   }
-  writePermanentData(storage, data, logError);
+  permanentLens.set('permanentData', data);
 }
 
 /**
@@ -554,18 +528,37 @@ function createWarningLogger(loggers) {
 function normalizeDependencies(bundle) {
   ensureBundleObject(bundle);
 
-  const { fetch: fetchImpl, loggers, storage } = bundle;
+  const { fetch: fetchImpl, loggers, storage, memoryLens, permanentLens } = bundle;
 
   ensureFetchFunction(fetchImpl);
   ensureLoggersObject(loggers);
 
   const normalizedLoggers = createNormalizedLoggers(loggers);
+  const normalizedStorage = storage ?? null;
+
+  const finalMemoryLens = memoryLens ?? createMemoryStorageLens();
+  const finalPermanentLens = permanentLens ?? createLensFromStorage(normalizedStorage, normalizedLoggers.logError);
 
   return {
     fetch: fetchImpl,
     loggers: normalizedLoggers,
-    storage: storage ?? null,
+    storage: normalizedStorage,
+    memoryLens: finalMemoryLens,
+    permanentLens: finalPermanentLens,
   };
+}
+
+/**
+ * Creates a storage lens from a legacy storage object.
+ * @param {Storage | null} storage - Browser storage implementation.
+ * @param {BlogLogFn} logError - Error logger.
+ * @returns {import('./storageLens.js').StorageLens | null} Storage lens or null.
+ */
+function createLensFromStorage(storage, logError) {
+  if (!storage) {
+    return null;
+  }
+  return createLocalStorageLens({ storage, logError });
 }
 
 /**
@@ -678,12 +671,12 @@ export function createBlogDataController(createDependencies) {
      * @returns {object} Merged permanent state after persistence.
      */
     setLocalPermanentData(desired) {
-      const { loggers, storage } = getDependencies();
-      return setLocalPermanentDataCore(desired, loggers, storage);
+      const { loggers, permanentLens } = getDependencies();
+      return setLocalPermanentDataCore(desired, loggers, permanentLens);
     },
     getLocalPermanentData() {
-      const { loggers, storage } = getDependencies();
-      return readLocalPermanentData(loggers, storage);
+      const { permanentLens } = getDependencies();
+      return readLocalPermanentData(permanentLens);
     },
   };
 }
@@ -692,19 +685,39 @@ export function createBlogDataController(createDependencies) {
  * Persist the merged permanent state to storage.
  * @param {Record<string, unknown>} desired - Desired permanent state.
  * @param {BlogDataLoggers} loggers - Logging helpers.
- * @param {Storage | null | undefined} storage - Storage used to persist data.
+ * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
  * @returns {object} Merged permanent state object.
  */
-const setLocalPermanentDataCore = (desired, loggers, storage) => {
+const setLocalPermanentDataCore = (desired, loggers, permanentLens) => {
   const { logError } = loggers;
   validateIncomingPermanentState(desired, logError);
 
-  const storedData = loadPermanentData(storage, logError);
+  const storedData = loadPermanentData(permanentLens);
   const updated = { ...storedData, ...desired };
-  savePermanentData(storage, updated, logError);
+  savePermanentData(permanentLens, updated);
 
   return updated;
 };
 
-export const setLocalPermanentData = setLocalPermanentDataCore;
-export const getLocalPermanentData = readLocalPermanentData;
+/**
+ * Exported wrapper for backward compatibility with storage-based API.
+ * @param {Record<string, unknown>} desired - Desired permanent state.
+ * @param {BlogDataLoggers} loggers - Logging helpers.
+ * @param {Storage | null | undefined} storage - Storage used to persist data.
+ * @returns {object} Merged permanent state object.
+ */
+export const setLocalPermanentData = (desired, loggers, storage) => {
+  const lens = createLensFromStorage(storage ?? null, loggers.logError);
+  return setLocalPermanentDataCore(desired, loggers, lens);
+};
+
+/**
+ * Exported wrapper for backward compatibility with storage-based API.
+ * @param {BlogDataLoggers} loggers - Logging helpers.
+ * @param {Storage | null | undefined} storage - Storage implementation to read from.
+ * @returns {object} Stored permanent data (or empty object on failure).
+ */
+export const getLocalPermanentData = (loggers, storage) => {
+  const lens = createLensFromStorage(storage ?? null, loggers.logError);
+  return readLocalPermanentData(lens);
+};
