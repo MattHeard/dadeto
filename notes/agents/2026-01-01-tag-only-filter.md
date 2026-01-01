@@ -1,0 +1,3 @@
+Adding the new tag menu option surfaced a small testing gotcha: the hide/only links both use `createElement('a')`, so mocks that key off tag names need sequential `mockImplementationOnce` values instead of a tag map. I confirmed the handler wiring by asserting both click listeners and the divider text, which kept the span construction test honest without overfitting to call counts. If you extend the menu again, update the test to handle repeated tag names before chasing false negatives.
+
+Open question: should we eventually refactor tag menu creation to reduce duplicated element creation (e.g., a helper that creates labeled links) so tests can be less order-sensitive?

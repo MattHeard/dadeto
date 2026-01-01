@@ -1,10 +1,12 @@
 import { jest } from '@jest/globals';
 import {
   hideArticlesByClass,
+  hideArticlesWithoutClass,
   toggleHideLink,
   makeHandleClassName,
   makeHandleLink,
   makeHandleHideSpan,
+  makeHandleOnlyClick,
 } from '../../src/core/browser/tags.js';
 
 describe('hideArticlesByClass', () => {
@@ -49,6 +51,68 @@ describe('hideArticlesByClass', () => {
     hideArticlesByClass('any-class', dom);
 
     expect(getElementsByTagName).toHaveBeenCalledWith('article');
+  });
+});
+
+describe('hideArticlesWithoutClass', () => {
+  it('does not throw when given a class and no matching elements', () => {
+    const dom = {
+      getElementsByTagName: () => [],
+      hasClass: () => false,
+      hide: () => {},
+    };
+
+    expect(() => {
+      hideArticlesWithoutClass('some-class', dom);
+    }).not.toThrow();
+  });
+
+  it('hides articles without the given class', () => {
+    const article1 = {};
+    const article2 = {};
+    const articles = [article1, article2];
+
+    const dom = {
+      getElementsByTagName: () => articles,
+      hasClass: (el, className) =>
+        el === article1 && className === 'target-class',
+      hide: jest.fn(),
+    };
+
+    hideArticlesWithoutClass('target-class', dom);
+
+    expect(dom.hide).toHaveBeenCalledTimes(1);
+    expect(dom.hide).toHaveBeenCalledWith(article2);
+  });
+
+  it('calls getElementsByTagName with "article"', () => {
+    const getElementsByTagName = jest.fn(() => []);
+    const dom = {
+      getElementsByTagName,
+      hasClass: () => false,
+      hide: jest.fn(),
+    };
+
+    hideArticlesWithoutClass('any-class', dom);
+
+    expect(getElementsByTagName).toHaveBeenCalledWith('article');
+  });
+});
+
+describe('makeHandleOnlyClick', () => {
+  it('stops default and hides articles without the class', () => {
+    const dom = {
+      stopDefault: jest.fn(),
+      getElementsByTagName: () => [{}],
+      hasClass: () => false,
+      hide: jest.fn(),
+    };
+
+    const handler = makeHandleOnlyClick(dom, 'tag-only');
+    handler('evt');
+
+    expect(dom.stopDefault).toHaveBeenCalledWith('evt');
+    expect(dom.hide).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -116,17 +180,25 @@ describe('makeHandleHideSpan', () => {
   it('creates a hide link span and inserts it after the link', () => {
     const spanEl = {};
     const hideLinkEl = {};
+    const onlyLinkEl = {};
     const textNode1 = {};
+    const textNodeDivider = {};
     const textNode2 = {};
+    const createElement = jest
+      .fn()
+      .mockImplementationOnce(() => spanEl)
+      .mockImplementationOnce(() => hideLinkEl)
+      .mockImplementationOnce(() => onlyLinkEl);
     const dom = {
-      createElement: jest.fn(
-        tag => ({ span: spanEl, a: hideLinkEl })[tag] || {}
-      ),
+      createElement,
       addClass: jest.fn(),
       appendChild: jest.fn(),
       createTextNode: jest.fn(txt => {
         if (txt === ' (') {
           return textNode1;
+        }
+        if (txt === ' | ') {
+          return textNodeDivider;
         }
         return textNode2;
       }),
@@ -141,8 +213,14 @@ describe('makeHandleHideSpan', () => {
     expect(dom.addClass).toHaveBeenCalledWith(spanEl, 'hide-span');
     expect(dom.createElement).toHaveBeenCalledWith('a');
     expect(dom.setTextContent).toHaveBeenCalledWith(hideLinkEl, 'hide');
+    expect(dom.setTextContent).toHaveBeenCalledWith(onlyLinkEl, 'only');
     expect(dom.addEventListener).toHaveBeenCalledWith(
       hideLinkEl,
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      onlyLinkEl,
       'click',
       expect.any(Function)
     );
@@ -153,8 +231,11 @@ describe('makeHandleHideSpan', () => {
       spanEl,
       link.nextSibling
     );
-    expect(dom.createTextNode).toHaveBeenCalledWith(')');
     expect(dom.appendChild).toHaveBeenCalledWith(spanEl, hideLinkEl);
+    expect(dom.createTextNode).toHaveBeenCalledWith(' | ');
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, textNodeDivider);
+    expect(dom.appendChild).toHaveBeenCalledWith(spanEl, onlyLinkEl);
+    expect(dom.createTextNode).toHaveBeenCalledWith(')');
     expect(dom.appendChild).toHaveBeenCalledWith(spanEl, textNode2);
   });
 });
