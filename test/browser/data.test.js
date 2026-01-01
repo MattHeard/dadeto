@@ -98,6 +98,28 @@ describe('fetchAndCacheBlogData', () => {
     );
   });
 
+  it('throws when a fetch is marked in progress without a promise', () => {
+    const stateWithFlakyPromise = {
+      blog: null,
+      blogStatus: 'loading',
+      blogError: null,
+    };
+    let readCount = 0;
+    Object.defineProperty(stateWithFlakyPromise, 'blogFetchPromise', {
+      get() {
+        readCount += 1;
+        return readCount === 1 ? Promise.resolve() : null;
+      },
+    });
+
+    expect(() =>
+      fetchAndCacheBlogData(stateWithFlakyPromise, createDependencies())
+    ).toThrow('Blog fetch marked as in progress without an active promise.');
+    expect(mockLog).toHaveBeenCalledWith(
+      'Blog data fetch already in progress.'
+    );
+  });
+
   it('should start fetching blog data and update state on success', async () => {
     const blogData = { title: 'Test Blog' };
     mockFetch = jest.fn(() =>

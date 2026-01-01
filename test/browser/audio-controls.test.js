@@ -405,6 +405,37 @@ describe('setupAudio', () => {
     expect(createdElements[0].id).toBe(`controls-${audioElements[0].id}`);
   });
 
+  it('inserts controls after the audio element when it has a parent', () => {
+    // Given
+    const parent = {};
+    const nextSibling = {};
+    const element = { parentNode: parent, nextSibling };
+    const audioElements = [element];
+    const getAudioElements = () => audioElements;
+    const dom = {
+      getAudioElements,
+      removeControlsAttribute,
+      createElement,
+      createTextNode: jest.fn(text => ({ nodeType: 3, textContent: text })),
+      insertBefore: jest.fn(),
+      appendChild: jest.fn(),
+      addEventListener: jest.fn(),
+      pauseAudio,
+      playAudio,
+      stopDefault,
+    };
+
+    // When
+    setupAudio(dom, setTextContent);
+
+    // Then
+    expect(dom.insertBefore).toHaveBeenCalledWith(
+      parent,
+      createdElements[0],
+      nextSibling
+    );
+  });
+
   it('sets correct text on control buttons', () => {
     // Given
     const element = {};

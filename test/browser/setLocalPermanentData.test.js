@@ -172,4 +172,24 @@ describe('createBlogDataController', () => {
       expect.any(SyntaxError)
     );
   });
+
+  it('prefers a provided permanent lens over storage', () => {
+    const logError = jest.fn();
+    const logInfo = jest.fn();
+    const storage = { getItem: jest.fn(), setItem: jest.fn() };
+    const permanentLens = {
+      get: jest.fn(() => ({ from: 'lens' })),
+      set: jest.fn(),
+    };
+    const controller = createBlogDataController(() => ({
+      fetch: jest.fn(),
+      loggers: { logInfo, logError },
+      storage,
+      permanentLens,
+    }));
+
+    expect(controller.getLocalPermanentData()).toEqual({ from: 'lens' });
+    expect(permanentLens.get).toHaveBeenCalledWith('permanentData');
+    expect(storage.getItem).not.toHaveBeenCalled();
+  });
 });

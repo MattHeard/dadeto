@@ -70,4 +70,4 @@
  * @property {(element: HTMLElement) => void} reveal - Reveal a hidden element.
  */
 
-export {};
+export const DOM_HELPERS_MARKER = true;
