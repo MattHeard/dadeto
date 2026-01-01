@@ -28,7 +28,7 @@
         "Returns a JSON array of counts so you can see how many ratings each moderator logged."
       ],
       "toy": {
-        "modulePath": "/toys/2025-12-14/moderatorRatingCounts.js",
+        "modulePath": "/core/browser/toys/2025-12-14/moderatorRatingCounts.js",
         "functionName": "moderatorRatingCounts",
         "defaultInputMethod": "moderator-ratings"
       },
@@ -48,7 +48,7 @@
         "Respects admin overrides, the single-rating rule, and paths discovered via Dijkstra's algorithm."
       ],
       "toy": {
-        "modulePath": "/toys/2025-12-05/index.js",
+        "modulePath": "/core/browser/toys/2025-12-05/index.js",
         "functionName": "calculateVisibility",
         "defaultInputMethod": "textarea"
       },
@@ -68,7 +68,7 @@
         "Each run returns the complete history pulled from the toy's storage key."
       ],
       "toy": {
-        "modulePath": "/toys/2025-11-01/textAppendList.js",
+        "modulePath": "/core/browser/toys/2025-11-01/textAppendList.js",
         "functionName": "textAppendList"
       },
       "tags": [
@@ -85,7 +85,7 @@
         "Converts multi-row CSV input into a JSON array string of objects, ignoring blank headers and values."
       ],
       "toy": {
-        "modulePath": "/toys/2025-10-19/csvToJsonArray.js",
+        "modulePath": "/core/browser/toys/2025-10-19/csvToJsonArray.js",
         "functionName": "csvToJsonArrayToy"
       },
       "tags": [
@@ -103,7 +103,7 @@
         "Transforms a header/data CSV pair into a JSON object string while skipping empty cells."
       ],
       "toy": {
-        "modulePath": "/toys/2025-10-19/csvToJsonObject.js",
+        "modulePath": "/core/browser/toys/2025-10-19/csvToJsonObject.js",
         "functionName": "csvToJsonObjectToy"
       },
       "illustration": {
@@ -129,7 +129,7 @@
         "altText": "a digital illustration features a glowing neon wireframe crystal hovering above a magenta folder icon, all set against a dark grid background"
       },
       "toy": {
-        "modulePath": "/toys/2025-07-05/setPermanentData.js",
+        "modulePath": "/core/browser/toys/2025-07-05/setPermanentData.js",
         "functionName": "setPermanentData"
       },
       "tags": [
@@ -151,7 +151,7 @@
         "altText": "a flat digital illustration features a plant being pruned with shears while a paper page grows from its stem like a grafted leaf, all set against a yellow speckled background."
       },
       "toy": {
-        "modulePath": "/toys/2025-07-05/addDendritePage.js",
+        "modulePath": "/core/browser/toys/2025-07-05/addDendritePage.js",
         "functionName": "addDendritePage"
       },
       "tags": [
@@ -173,7 +173,7 @@
         "altText": "a flat, minimalist digital vector illustration depicting a floating wooden shelf holding books shaped like flower buds. the scene is set against a pale blue sky with soft clouds and a sun. the flower-books are in red, pink, and purple tones, with green leaves and stems. one closed book lies flat between the blooming ones."
       },
       "toy": {
-        "modulePath": "/toys/2025-07-05/getDend2Titles.js",
+        "modulePath": "/core/browser/toys/2025-07-05/getDend2Titles.js",
         "functionName": "getDend2Titles"
       },
       "tags": [
@@ -195,7 +195,7 @@
         "altText": "a traditional ink-style black and white illustration of a tree diagram branching from a central box labeled \u201cthe first split\u201d and \u201cnarrative atomization\u201d with empty squares beneath and fractal limbs extending above."
       },
       "toy": {
-        "modulePath": "/toys/2025-07-04/transformDendriteStory.js",
+        "modulePath": "/core/browser/toys/2025-07-04/transformDendriteStory.js",
         "functionName": "transformDendriteStory",
         "defaultInputMethod": "dendrite-story"
       },
@@ -366,7 +366,7 @@
         "altText": "a young adventurer with a walking stick stands at a fork in a sunlit forest path, facing two large trees where the trail splits, surrounded by lush green foliage and soft painterly lighting"
       },
       "toy": {
-        "modulePath": "/toys/2025-06-09/startLocalDendriteStory.js",
+        "modulePath": "/core/browser/toys/2025-06-09/startLocalDendriteStory.js",
         "functionName": "startLocalDendriteStory",
         "defaultInputMethod": "dendrite-story"
       },
@@ -388,7 +388,7 @@
         "altText": "a black fingerprint with spiral-like ridges is centered on an off-white square background, intersected by minimal black wireframe lines and a solid black dot anchoring one corner of the composition"
       },
       "toy": {
-        "modulePath": "/toys/2025-06-09/uuid.js",
+        "modulePath": "/core/browser/toys/2025-06-09/uuid.js",
         "functionName": "uuidToy"
       },
       "tags": [
@@ -453,7 +453,7 @@
         "altText": "a watercolor painting with four soft-edged rectangles in yellow, red, green, and blue arranged in a row, framed by a wavy red-orange line above and a straight line below, all set against a textured background blending beige, peach, and light blue tones"
       },
       "toy": {
-        "modulePath": "/toys/2025-05-15/stringToJsonArray.js",
+        "modulePath": "/core/browser/toys/2025-05-15/stringToJsonArray.js",
         "functionName": "stringToJsonArrayToy"
       },
       "tags": [
@@ -475,7 +475,7 @@
         "altText": "a stylized terminal window with the phrase 'Base64 Encoder', a text input, and an output box, all in a minimal, modern design"
       },
       "toy": {
-        "modulePath": "/toys/2025-05-13/base64Encoder.js",
+        "modulePath": "/core/browser/toys/2025-05-13/base64Encoder.js",
         "functionName": "encodeBase64"
       },
       "tags": [
@@ -497,7 +497,7 @@
         "altText": "a sepia-toned steampunk puzzle schematic featuring a grid of dots with numerical clues along the top, bottom, left, and right, all framed by brass pipes and riveted metal borders"
       },
       "toy": {
-        "modulePath": "/toys/2025-05-11/battleshipSolitaireClues.js",
+        "modulePath": "/core/browser/toys/2025-05-11/battleshipSolitaireClues.js",
         "functionName": "generateClues"
       },
       "tags": [
@@ -519,7 +519,7 @@
         "altText": "a battleship solitaire grid with cartoon ships placed on a blue board, red and navy title text above, and a ship type guide on the right side showing ship counts and sizes"
       },
       "toy": {
-        "modulePath": "/toys/2025-05-08/battleshipSolitaireFleet.js",
+        "modulePath": "/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js",
         "functionName": "generateFleet",
         "defaultInputMethod": "kv"
       },
@@ -542,7 +542,7 @@
         "altText": "a 2d digital illustration of a painter's palette with twelve colorful paint blobs arranged in two rows on a beige background"
       },
       "toy": {
-        "modulePath": "/toys/2025-04-16/colorPalette.js",
+        "modulePath": "/core/browser/toys/2025-04-16/colorPalette.js",
         "functionName": "generatePalette"
       },
       "tags": [
@@ -580,7 +580,7 @@
         "altText": "a flat, graphic digital illustration depicts a tic-tac-toe game on a slightly irregular 3x3 grid with bold 'x' and 'o' symbols in textured navy-blue and orange-yellow hues; a stylized hand points to an empty square, indicating the next move with a curved arrow, all set against a vintage off-white background"
       },
       "toy": {
-        "modulePath": "/toys/2025-04-06/ticTacToe.js",
+        "modulePath": "/core/browser/toys/2025-04-06/ticTacToe.js",
         "functionName": "ticTacToeMove",
         "defaultInputMethod": "kv"
       },
@@ -602,7 +602,7 @@
         "Sends a GET request and prints the response."
       ],
       "toy": {
-        "modulePath": "/toys/2025-04-05/httpRequest.js",
+        "modulePath": "/core/browser/toys/2025-04-05/httpRequest.js",
         "functionName": "httpRequest"
       },
       "tags": [
@@ -640,7 +640,7 @@
         "altText": "a neon-lit cyberpunk market with glowing signs in blues and purples, crowded with blurred figures and a silhouetted man in a high-collared jacket in the foreground"
       },
       "toy": {
-        "modulePath": "/toys/2025-03-30/cyberpunkAdventure.js",
+        "modulePath": "/core/browser/toys/2025-03-30/cyberpunkAdventure.js",
         "functionName": "cyberpunkAdventure"
       },
       "tags": [
@@ -663,7 +663,7 @@
         "altText": "a flat-style digital illustration depicts a young woman with red-orange hair in a ponytail, wearing a yellow shirt, working at a laptop and placing a turquoise sticky note on a nearby calendar, with a warm, textured background and bold outlines"
       },
       "toy": {
-        "modulePath": "/toys/2025-03-29/setTemporary.js",
+        "modulePath": "/core/browser/toys/2025-03-29/setTemporary.js",
         "functionName": "setTemporary",
         "defaultInputMethod": "kv"
       },
@@ -686,7 +686,7 @@
         "altText": "a tarot-style illustration titled \u201cthe data\u201d showing a black triangular prism splitting a white light beam into a rainbow, with stars, a crescent moon, and a sun in the background"
       },
       "toy": {
-        "modulePath": "/toys/2025-03-29/get.js",
+        "modulePath": "/core/browser/toys/2025-03-29/get.js",
         "functionName": "get"
       },
       "tags": [
@@ -707,7 +707,7 @@
         "A fishing game. Feel free to choose your bait."
       ],
       "toy": {
-        "modulePath": "/toys/2025-03-29/fishingGame.js",
+        "modulePath": "/core/browser/toys/2025-03-29/fishingGame.js",
         "functionName": "fishingGame"
       },
       "tags": [
@@ -728,7 +728,7 @@
         "Produces random numbers."
       ],
       "toy": {
-        "modulePath": "/toys/2025-03-28/rand.js",
+        "modulePath": "/core/browser/toys/2025-03-28/rand.js",
         "functionName": "rand"
       },
       "relatedLinks": [
@@ -756,7 +756,7 @@
         "Converts a floating-point number to a precise string showing its parts."
       ],
       "toy": {
-        "modulePath": "/toys/2025-03-26/prettyFloat.js",
+        "modulePath": "/core/browser/toys/2025-03-26/prettyFloat.js",
         "functionName": "decomposeFloat",
         "defaultInputMethod": "number"
       },
@@ -779,7 +779,7 @@
         "Converts a value to either 'true' or 'false' or nothing."
       ],
       "toy": {
-        "modulePath": "/toys/2025-03-21/booleanCoercer.js",
+        "modulePath": "/core/browser/toys/2025-03-21/booleanCoercer.js",
         "functionName": "coerceToBoolean"
       },
       "relatedLinks": [
@@ -808,7 +808,7 @@
         "Wraps Markdown italics text in HTML italic tags (and ignores other Markdown formatting)."
       ],
       "toy": {
-        "modulePath": "/toys/2025-03-21/italics.js",
+        "modulePath": "/core/browser/toys/2025-03-21/italics.js",
         "functionName": "italics"
       },
       "relatedLinks": [
@@ -836,7 +836,7 @@
         "Returns the input."
       ],
       "toy": {
-        "modulePath": "/toys/2025-03-20/identity.js",
+        "modulePath": "/core/browser/toys/2025-03-20/identity.js",
         "functionName": "identity"
       },
       "relatedLinks": [
@@ -988,7 +988,7 @@
         "Returns 'Hello world'."
       ],
       "toy": {
-        "modulePath": "/toys/2024-10-02/hello.js",
+        "modulePath": "/core/browser/toys/2024-10-02/hello.js",
         "functionName": "hello"
       }
     },

@@ -1,0 +1,3 @@
+The console errors traced back to a mismatch between the toy module paths in `src/blog.json` (which pointed at `/toys/...`) and the copy workflow, which only populated `public/browser/...` and `public/core/browser/...`. I confirmed there was no `/public/toys` output, so the dynamic imports were 404ing even though the modules existed under `/public/core/browser/toys`.
+
+I fixed it by updating the `modulePath` entries to `/core/browser/toys/...`, matching the existing copy output. Next time, if a toy import 404s, check whether the copy pipeline targets match `modulePath` values before changing either side.
