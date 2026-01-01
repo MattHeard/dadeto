@@ -540,12 +540,13 @@ function normalizeDependencies(bundle) {
   ensureLoggersObject(loggers);
 
   const normalizedLoggers = createNormalizedLoggers(loggers);
-  const normalizedStorage = storage ?? null;
-
-  const finalMemoryLens = memoryLens ?? createMemoryStorageLens();
-  const finalPermanentLens =
-    permanentLens ??
-    createLensFromStorage(normalizedStorage, normalizedLoggers.logError);
+  const normalizedStorage = getNormalizedStorage(storage);
+  const finalMemoryLens = getMemoryLens(memoryLens);
+  const finalPermanentLens = getPermanentLens(
+    permanentLens,
+    normalizedStorage,
+    normalizedLoggers.logError
+  );
 
   return {
     fetch: fetchImpl,
@@ -554,6 +555,39 @@ function normalizeDependencies(bundle) {
     memoryLens: finalMemoryLens,
     permanentLens: finalPermanentLens,
   };
+}
+
+/**
+ * Normalize the storage dependency to a nullable reference.
+ * @param {Storage | null | undefined} storage - Storage dependency candidate.
+ * @returns {Storage | null} Normalized storage reference.
+ */
+function getNormalizedStorage(storage) {
+  return storage ?? null;
+}
+
+/**
+ * Resolve the memory lens, falling back to an in-memory implementation.
+ * @param {import('./storageLens.js').StorageLens | null | undefined} memoryLens - Memory lens candidate.
+ * @returns {import('./storageLens.js').StorageLens} Memory lens instance.
+ */
+function getMemoryLens(memoryLens) {
+  return memoryLens ?? createMemoryStorageLens();
+}
+
+/**
+ * Resolve the permanent lens from provided dependencies.
+ * @param {import('./storageLens.js').StorageLens | null | undefined} permanentLens - Permanent lens candidate.
+ * @param {Storage | null} storage - Normalized storage reference.
+ * @param {BlogLogFn} logError - Error logger.
+ * @returns {import('./storageLens.js').StorageLens | null} Permanent lens instance.
+ */
+function getPermanentLens(permanentLens, storage, logError) {
+  if (permanentLens) {
+    return permanentLens;
+  }
+
+  return createLensFromStorage(storage, logError);
 }
 
 /**

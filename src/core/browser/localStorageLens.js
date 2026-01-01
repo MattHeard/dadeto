@@ -31,8 +31,18 @@ export function createLocalStorageLens({ storage, logError = () => {} }) {
 function createRawLocalStorageLens(storage, logError) {
   return createStorageLens(
     key => getFromStorage(storage, key, logError),
-    (key, value) => setToStorage(storage, key, value, logError)
+    makeStorageSetter(storage, logError)
   );
+}
+
+/**
+ * Create a storage setter closure.
+ * @param {Storage | null} storage - Browser storage.
+ * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
+ * @returns {(key: string, value: string | null) => void} Storage setter.
+ */
+function makeStorageSetter(storage, logError) {
+  return (key, value) => setToStorage({ storage, key, value, logError });
 }
 
 /**
@@ -47,6 +57,17 @@ function getFromStorage(storage, key, logError) {
     return null;
   }
 
+  return safeGetItem(storage, key, logError);
+}
+
+/**
+ * Safely retrieve a value from storage.
+ * @param {Storage} storage - Browser storage.
+ * @param {string} key - Storage key.
+ * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
+ * @returns {string | null} Stored value or null.
+ */
+function safeGetItem(storage, key, logError) {
   try {
     return storage.getItem(key);
   } catch (error) {
@@ -57,25 +78,49 @@ function getFromStorage(storage, key, logError) {
 
 /**
  * Writes a value to storage.
- * @param {Storage | null} storage - Browser storage.
- * @param {string} key - Storage key.
- * @param {string | null} value - Value to store.
- * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
+ * @param {object} options - Storage write options.
+ * @param {Storage | null} options.storage - Browser storage.
+ * @param {string} options.key - Storage key.
+ * @param {string | null} options.value - Value to store.
+ * @param {(message: string, ...args: unknown[]) => void} options.logError - Error logger.
  */
-function setToStorage(storage, key, value, logError) {
+function setToStorage({ storage, key, value, logError }) {
   if (!storage) {
     return;
   }
 
+  applyStorageValue({ storage, key, value, logError });
+}
+
+/**
+ * Apply a storage write with error handling.
+ * @param {object} options - Storage write options.
+ * @param {Storage} options.storage - Browser storage.
+ * @param {string} options.key - Storage key.
+ * @param {string | null} options.value - Value to store.
+ * @param {(message: string, ...args: unknown[]) => void} options.logError - Error logger.
+ */
+function applyStorageValue({ storage, key, value, logError }) {
   try {
-    if (value === null) {
-      storage.removeItem(key);
-    } else {
-      storage.setItem(key, value);
-    }
+    writeStorageValue(storage, key, value);
   } catch (error) {
     logError('Failed to persist permanent data:', error);
   }
+}
+
+/**
+ * Write a storage value, removing when null.
+ * @param {Storage} storage - Browser storage.
+ * @param {string} key - Storage key.
+ * @param {string | null} value - Value to store.
+ */
+function writeStorageValue(storage, key, value) {
+  if (value === null) {
+    storage.removeItem(key);
+    return;
+  }
+
+  storage.setItem(key, value);
 }
 
 /**
@@ -85,21 +130,36 @@ function setToStorage(storage, key, value, logError) {
  */
 function deserializeJson(logError) {
   return value => {
-    if (value === null || value === undefined) {
+    if (isMissingStoredValue(value)) {
       return null;
     }
 
-    if (value === '') {
-      return null;
-    }
-
-    try {
-      return JSON.parse(value);
-    } catch (error) {
-      logError('Failed to read permanent data:', error);
-      return null;
-    }
+    return parseStoredJson(value, logError);
   };
+}
+
+/**
+ * Determine if a stored value should be treated as missing.
+ * @param {string | null | undefined} value - Stored value.
+ * @returns {boolean} True when no value should be parsed.
+ */
+function isMissingStoredValue(value) {
+  return [null, undefined, ''].includes(value);
+}
+
+/**
+ * Parse stored JSON with error handling.
+ * @param {string} value - JSON string.
+ * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
+ * @returns {unknown} Parsed JSON value or null.
+ */
+function parseStoredJson(value, logError) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    logError('Failed to read permanent data:', error);
+    return null;
+  }
 }
 
 /**
@@ -109,15 +169,34 @@ function deserializeJson(logError) {
  */
 function serializeJson(logError) {
   return value => {
-    if (value === null || value === undefined) {
+    if (isNullish(value)) {
       return null;
     }
 
-    try {
-      return JSON.stringify(value);
-    } catch (error) {
-      logError('Failed to serialize JSON for storage:', error);
-      return null;
-    }
+    return stringifyStoredJson(value, logError);
   };
+}
+
+/**
+ * Test for nullish values.
+ * @param {unknown} value - Value to test.
+ * @returns {boolean} True when the value is null or undefined.
+ */
+function isNullish(value) {
+  return value === null || value === undefined;
+}
+
+/**
+ * Stringify JSON with error handling.
+ * @param {unknown} value - Value to serialize.
+ * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
+ * @returns {string | null} JSON string or null.
+ */
+function stringifyStoredJson(value, logError) {
+  try {
+    return JSON.stringify(value);
+  } catch (error) {
+    logError('Failed to serialize JSON for storage:', error);
+    return null;
+  }
 }
