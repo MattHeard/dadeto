@@ -9,6 +9,7 @@
     "typeRoots": ["types", "node_modules/@types"],
     "noImplicitAny": true,
     "strict": false,
+    "strictNullChecks": true,
     "noEmit": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
