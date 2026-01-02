@@ -1,25 +1,13 @@
 /**
- * Hides an article if it has the specified class.
+ * Hides an article when it does (or does not) have the provided class.
  * @param {HTMLElement} article - The article element.
- * @param {string} className - Class name to test.
+ * @param {string} className - CSS class to test for.
  * @param {object} dom - DOM helper utilities.
+ * @param {boolean} shouldHaveClass - Whether the article should match the class to be hidden.
  * @returns {void}
  */
-function hideIfHasClass(article, className, dom) {
-  if (dom.hasClass(article, className)) {
-    dom.hide(article);
-  }
-}
-
-/**
- * Hides an article if it does not have the specified class.
- * @param {HTMLElement} article - The article element.
- * @param {string} className - Class name to test.
- * @param {object} dom - DOM helper utilities.
- * @returns {void}
- */
-function hideIfMissingClass(article, className, dom) {
-  if (!dom.hasClass(article, className)) {
+function hideArticleWhen(article, className, dom, shouldHaveClass) {
+  if (dom.hasClass(article, className) === shouldHaveClass) {
     dom.hide(article);
   }
 }
@@ -107,29 +95,35 @@ export function makeHandleHideSpan(dom) {
 }
 
 /**
+ * Iterates over every article and hides it when the class presence matches `shouldHaveClass`.
+ * @param {string} className - Class used to filter articles.
+ * @param {object} dom - DOM helper utilities.
+ * @param {boolean} shouldHaveClass - When true hide articles that have the class; false hides those that do not.
+ * @returns {void}
+ */
+function hideArticlesByCondition(className, dom, shouldHaveClass) {
+  const articles = dom.getElementsByTagName('article');
+  for (const article of articles) {
+    hideArticleWhen(article, className, dom, shouldHaveClass);
+  }
+}
+
+/**
  * Hide all articles that contain the given class.
  * @param {string} className - Class used to filter articles.
  * @param {object} dom - DOM helper utilities.
- * @returns {void}
  */
 export function hideArticlesByClass(className, dom) {
-  const articles = dom.getElementsByTagName('article');
-  for (const article of articles) {
-    hideIfHasClass(article, className, dom);
-  }
+  hideArticlesByCondition(className, dom, true);
 }
 
 /**
  * Hide all articles that do not contain the given class.
  * @param {string} className - Class used to filter articles.
  * @param {object} dom - DOM helper utilities.
- * @returns {void}
  */
 export function hideArticlesWithoutClass(className, dom) {
-  const articles = dom.getElementsByTagName('article');
-  for (const article of articles) {
-    hideIfMissingClass(article, className, dom);
-  }
+  hideArticlesByCondition(className, dom, false);
 }
 
 /**
