@@ -1,12 +1,13 @@
 /**
  * Hides an article when it does (or does not) have the provided class.
- * @param {HTMLElement} article - The article element.
- * @param {string} className - CSS class to test for.
- * @param {object} dom - DOM helper utilities.
- * @param {boolean} shouldHaveClass - Whether the article should match the class to be hidden.
+ * @param {object} options - Configuration for hiding.
+ * @param {HTMLElement} options.article - The article element.
+ * @param {string} options.className - CSS class to test for.
+ * @param {object} options.dom - DOM helper utilities.
+ * @param {boolean} options.shouldHaveClass - Whether the article should match the class to be hidden.
  * @returns {void}
  */
-function hideArticleWhen(article, className, dom, shouldHaveClass) {
+function hideArticleWhen({ article, className, dom, shouldHaveClass }) {
   if (dom.hasClass(article, className) === shouldHaveClass) {
     dom.hide(article);
   }
@@ -104,7 +105,7 @@ export function makeHandleHideSpan(dom) {
 function hideArticlesByCondition(className, dom, shouldHaveClass) {
   const articles = dom.getElementsByTagName('article');
   for (const article of articles) {
-    hideArticleWhen(article, className, dom, shouldHaveClass);
+    hideArticleWhen({ article, className, dom, shouldHaveClass });
   }
 }
 
