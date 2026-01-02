@@ -20,7 +20,14 @@ if [ $TEST_EXIT_CODE -eq 0 ] && [ $LINT_EXIT_CODE -eq 0 ]; then
   echo "Tests and linting passed! Committing changes..."
   git add .
   git commit -m "$COMMIT_MESSAGE"
-  echo "Changes committed successfully with message: '$COMMIT_MESSAGE'"
+  COMMIT_EXIT_CODE=$?
+
+  if [ $COMMIT_EXIT_CODE -eq 0 ]; then
+    echo "Changes committed successfully with message: '$COMMIT_MESSAGE'"
+  else
+    echo "Git commit failed with exit code $COMMIT_EXIT_CODE."
+    exit $COMMIT_EXIT_CODE
+  fi
 else
   if [ $TEST_EXIT_CODE -ne 0 ]; then
     echo "Tests failed!"
