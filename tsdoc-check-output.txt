@@ -2,10 +2,6 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
-src/core/browser/data.js(480,3): error TS2322: Type 'unknown' is not assignable to type 'object'.
-src/core/browser/localStorageLens.js(56,3): error TS2322: Type 'unknown' is not assignable to type 'string'.
-src/core/browser/localStorageLens.js(67,3): error TS2322: Type 'unknown' is not assignable to type 'string'.
-src/core/browser/localStorageLens.js(203,3): error TS2322: Type 'unknown' is not assignable to type 'string'.
 src/core/browser/moderation/authedFetch.js(15,31): error TS2769: No overload matches this call.
   Overload 1 of 2, '(entries: Iterable<readonly [PropertyKey, any]>): { [k: string]: any; }', gave the following error.
     Argument of type '() => HeadersIterator<[string, string]>' is not assignable to parameter of type 'Iterable<readonly [PropertyKey, any]>'.

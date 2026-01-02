@@ -53,8 +53,8 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
  * @property {BlogDataLoggers} loggers - Logger bundle injected by the entry layer.
  * @property {Storage | null | undefined} [storage] - Optional storage implementation for permanent state.
- * @property {import('./storageLens.js').StorageLens} [memoryLens] - Optional lens for memory storage.
- * @property {import('./storageLens.js').StorageLens} [permanentLens] - Optional lens for permanent storage.
+ * @property {import('./storageLens.js').StorageLens<unknown>} [memoryLens] - Optional lens for memory storage.
+ * @property {import('./storageLens.js').StorageLens<BlogStateRecord>} [permanentLens] - Optional lens for permanent storage.
  */
 
 /**
@@ -66,8 +66,8 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  *   logWarning: BlogLogFn,
  * }} loggers - Logger bundle with guaranteed callable members.
  * @property {Storage | null} storage - Storage implementation or null when unavailable.
- * @property {import('./storageLens.js').StorageLens | null} memoryLens - Lens for memory storage or null.
- * @property {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage or null.
+ * @property {import('./storageLens.js').StorageLens<unknown> | null} memoryLens - Lens for memory storage or null.
+ * @property {import('./storageLens.js').StorageLens<BlogStateRecord> | null} permanentLens - Lens for permanent storage or null.
  */
 
 /**
@@ -451,8 +451,8 @@ export const setLocalTemporaryData = (state, loggers) => {
 
 /**
  * Load existing permanent data from storage.
- * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
- * @returns {object} Stored data object.
+ * @param {import('./storageLens.js').StorageLens<BlogStateRecord> | null} permanentLens - Lens for permanent storage.
+ * @returns {BlogStateRecord} Stored data object.
  */
 function loadPermanentData(permanentLens) {
   if (!permanentLens) {
@@ -463,8 +463,8 @@ function loadPermanentData(permanentLens) {
 
 /**
  * Read the stored permanent data.
- * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
- * @returns {object} Stored permanent data (or empty object on failure).
+ * @param {import('./storageLens.js').StorageLens<BlogStateRecord> | null} permanentLens - Lens for permanent storage.
+ * @returns {BlogStateRecord} Stored permanent data (or empty object on failure).
  */
 function readLocalPermanentData(permanentLens) {
   return loadPermanentData(permanentLens);
@@ -472,18 +472,21 @@ function readLocalPermanentData(permanentLens) {
 
 /**
  * Read data from a lens.
- * @param {import('./storageLens.js').StorageLens} lens - Storage lens.
- * @returns {object} Stored data object.
+ * @param {import('./storageLens.js').StorageLens<BlogStateRecord>} lens - Storage lens.
+ * @returns {BlogStateRecord} Stored data object.
  */
 function loadDataFromLens(lens) {
   const data = lens.get('permanentData');
-  return data || {};
+  if (!isNonNullObject(data)) {
+    return /** @type {BlogStateRecord} */ ({});
+  }
+  return /** @type {BlogStateRecord} */ (data);
 }
 
 /**
  * Persist permanent data using a lens.
- * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
- * @param {object} data - Data to save.
+ * @param {import('./storageLens.js').StorageLens<BlogStateRecord> | null} permanentLens - Lens for permanent storage.
+ * @param {BlogStateRecord} data - Data to save.
  */
 function savePermanentData(permanentLens, data) {
   if (!permanentLens) {
@@ -568,8 +571,8 @@ function getNormalizedStorage(storage) {
 
 /**
  * Resolve the memory lens, falling back to an in-memory implementation.
- * @param {import('./storageLens.js').StorageLens | null | undefined} memoryLens - Memory lens candidate.
- * @returns {import('./storageLens.js').StorageLens} Memory lens instance.
+ * @param {import('./storageLens.js').StorageLens<unknown> | null | undefined} memoryLens - Memory lens candidate.
+ * @returns {import('./storageLens.js').StorageLens<unknown>} Memory lens instance.
  */
 function getMemoryLens(memoryLens) {
   return memoryLens ?? createMemoryStorageLens();
@@ -577,10 +580,10 @@ function getMemoryLens(memoryLens) {
 
 /**
  * Resolve the permanent lens from provided dependencies.
- * @param {import('./storageLens.js').StorageLens | null | undefined} permanentLens - Permanent lens candidate.
+ * @param {import('./storageLens.js').StorageLens<BlogStateRecord> | null | undefined} permanentLens - Permanent lens candidate.
  * @param {Storage | null} storage - Normalized storage reference.
  * @param {BlogLogFn} logError - Error logger.
- * @returns {import('./storageLens.js').StorageLens | null} Permanent lens instance.
+ * @returns {import('./storageLens.js').StorageLens<BlogStateRecord> | null} Permanent lens instance.
  */
 function getPermanentLens(permanentLens, storage, logError) {
   if (permanentLens) {
@@ -594,13 +597,15 @@ function getPermanentLens(permanentLens, storage, logError) {
  * Creates a storage lens from a legacy storage object.
  * @param {Storage | null} storage - Browser storage implementation.
  * @param {BlogLogFn} logError - Error logger.
- * @returns {import('./storageLens.js').StorageLens | null} Storage lens or null.
+ * @returns {import('./storageLens.js').StorageLens<BlogStateRecord> | null} Storage lens or null.
  */
 function createLensFromStorage(storage, logError) {
   if (!storage) {
     return null;
   }
-  return createLocalStorageLens({ storage, logError });
+  return /** @type {import('./storageLens.js').StorageLens<BlogStateRecord>} */ (
+    createLocalStorageLens({ storage, logError })
+  );
 }
 
 /**
@@ -727,7 +732,7 @@ export function createBlogDataController(createDependencies) {
  * Persist the merged permanent state to storage.
  * @param {Record<string, unknown>} desired - Desired permanent state.
  * @param {BlogDataLoggers} loggers - Logging helpers.
- * @param {import('./storageLens.js').StorageLens | null} permanentLens - Lens for permanent storage.
+ * @param {import('./storageLens.js').StorageLens<BlogStateRecord> | null} permanentLens - Lens for permanent storage.
  * @returns {object} Merged permanent state object.
  */
 const setLocalPermanentDataCore = (desired, loggers, permanentLens) => {

@@ -15,7 +15,7 @@ import { createStorageLens, mapLens } from './storageLens.js';
 /**
  * Creates a localStorage lens with JSON serialization.
  * @param {LocalStorageLensOptions} options - Configuration options.
- * @returns {import('./storageLens.js').StorageLens} A lens for localStorage.
+ * @returns {import('./storageLens.js').StorageLens<unknown>} A lens for localStorage.
  */
 export function createLocalStorageLens({ storage, logError = () => {} }) {
   const baseLens = createRawLocalStorageLens(storage, logError);
@@ -26,7 +26,7 @@ export function createLocalStorageLens({ storage, logError = () => {} }) {
  * Creates a raw localStorage lens without JSON transformation.
  * @param {Storage | null} storage - Browser localStorage implementation.
  * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
- * @returns {import('./storageLens.js').StorageLens} A lens for raw localStorage.
+ * @returns {import('./storageLens.js').StorageLens<string | null>} A lens for raw localStorage.
  */
 function createRawLocalStorageLens(storage, logError) {
   return createStorageLens(
@@ -80,21 +80,24 @@ function safeGetItem(storage, key, logError) {
  * @param {(message: string, ...args: unknown[]) => void} options.logError - Error logger.
  */
 function setToStorage({ storage, key, value, logError }) {
-  withStorage(storage, st =>
-    applyStorageValue({ storage: st, key, value, logError })
+  withStorage(
+    storage,
+    st => applyStorageValue({ storage: st, key, value, logError }),
+    undefined
   );
 }
 
 /**
  * Executes an operation only when storage is available.
+ * @template TValue
  * @param {Storage | null} storage - Browser storage.
- * @param {(storage: Storage) => unknown} operation - Storage-aware callback.
- * @param {unknown} [defaultValue] - Value to return when storage is missing.
- * @returns {unknown} Result of the operation or default value.
+ * @param {(storage: Storage) => TValue} operation - Storage-aware callback.
+ * @param {TValue} fallback - Value returned when storage is missing.
+ * @returns {TValue} Result of the operation or fallback.
  */
-function withStorage(storage, operation, defaultValue) {
+function withStorage(storage, operation, fallback) {
   if (!storage) {
-    return defaultValue;
+    return fallback;
   }
 
   return operation(storage);
@@ -209,10 +212,11 @@ function stringifyStoredJson(value, logError) {
 
 /**
  * Wraps an operation in try/catch and logs failures uniformly.
- * @param {Function} operation - Function that might throw.
+ * @template TValue
+ * @param {() => TValue} operation - Function that might throw.
  * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
  * @param {() => string} errorMessage - Provides the log message.
- * @returns {unknown} Result of the operation or null when it fails.
+ * @returns {TValue | null} Result of the operation or null when it fails.
  */
 function tryWithLog(operation, logError, errorMessage) {
   try {
