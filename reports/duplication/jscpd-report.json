@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2026-01-02T08:25:54.063Z",
+    "detectionDate": "2026-01-02T08:50:32.329Z",
     "formats": {
       "javascript": {
         "sources": {
@@ -953,14 +953,14 @@
             "newClones": 0
           },
           "/Users/matthew.heard/Code/Matt/dadeto/src/core/browser/tags.js": {
-            "lines": 174,
-            "tokens": 960,
+            "lines": 168,
+            "tokens": 920,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 14,
-            "duplicatedTokens": 56,
-            "percentage": 8.05,
-            "percentageTokens": 5.83,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1134,14 +1134,14 @@
           }
         },
         "total": {
-          "lines": 19405,
-          "tokens": 85321,
+          "lines": 19399,
+          "tokens": 85281,
           "sources": 94,
-          "clones": 3,
-          "duplicatedLines": 26,
-          "duplicatedTokens": 67,
-          "percentage": 0.13,
-          "percentageTokens": 0.08,
+          "clones": 2,
+          "duplicatedLines": 19,
+          "duplicatedTokens": 39,
+          "percentage": 0.1,
+          "percentageTokens": 0.05,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -1188,55 +1188,19 @@
       }
     },
     "total": {
-      "lines": 19652,
-      "tokens": 90836,
+      "lines": 19646,
+      "tokens": 90796,
       "sources": 96,
-      "clones": 3,
-      "duplicatedLines": 26,
-      "duplicatedTokens": 67,
-      "percentage": 0.13,
-      "percentageTokens": 0.07,
+      "clones": 2,
+      "duplicatedLines": 19,
+      "duplicatedTokens": 39,
+      "percentage": 0.1,
+      "percentageTokens": 0.04,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "javascript",
-      "lines": 8,
-      "fragment": "dom.hasClass(article, className)) {\n    dom.hide(article);\n  }\n}\n\n/**\n * Functions for handling tags and filtering articles\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "src/core/browser/tags.js",
-        "start": 22,
-        "end": 29,
-        "startLoc": {
-          "line": 22,
-          "column": 2,
-          "position": 71
-        },
-        "endLoc": {
-          "line": 29,
-          "column": 4,
-          "position": 99
-        }
-      },
-      "secondFile": {
-        "name": "src/core/browser/tags.js",
-        "start": 9,
-        "end": 20,
-        "startLoc": {
-          "line": 9,
-          "column": 2,
-          "position": 21
-        },
-        "endLoc": {
-          "line": 20,
-          "column": 4,
-          "position": 49
-        }
-      }
-    },
     {
       "format": "javascript",
       "lines": 11,

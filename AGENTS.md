@@ -11,6 +11,8 @@ Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for a
 - `bd close <id>` - Complete work
 - `bd sync` - Sync with git (run at session end)
 
+- Before editing any files for a bead, mark it in progress via `bd update <id> --status=in_progress` so the status reflects your work.
+
 For full workflow details: `bd prime`
 
 ## General Recommendations for Future Agents
@@ -95,7 +97,8 @@ For full workflow details: `bd prime`
    ```
 5. **Clean up** - Clear stashes, prune remote branches
 6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+7. **Record evidence** - Before closing a bead, add a comment that covers what changed, commands run, outcomes, and follow-ups.
+8. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
 - Work is NOT complete until `git push` succeeds
