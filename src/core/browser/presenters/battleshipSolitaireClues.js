@@ -32,14 +32,14 @@ import { createPreFromContent } from './browserPresentersCore.js';
 
 /**
  * @typedef {object} BattleshipClueCandidate
- * @property {unknown[]} [rowClues]
- * @property {unknown[]} [colClues]
+ * @property {unknown[]} [rowClues] - Candidate row clues parsed from input.
+ * @property {unknown[]} [colClues] - Candidate column clues parsed from input.
  */
 
 /**
  * @typedef {object} BattleshipCluesConfig
- * @property {number[]} rowClues
- * @property {number[]} colClues
+ * @property {number[]} rowClues - Validated row clues guaranteed to be numeric.
+ * @property {number[]} colClues - Validated column clues guaranteed to be numeric.
  */
 
 /**
@@ -151,7 +151,11 @@ function buildColumnDigitMatrix(colClues) {
  * @returns {BattleshipCluesConfig} Parsed clues object.
  */
 function parseCluesOrDefault(inputString) {
-  const parseJsonValue = /** @param {string} x */ x => JSON.parse(x);
+  /**
+   * @param {string} json - JSON string to parse.
+   * @returns {unknown} Parsed value.
+   */
+  const parseJsonValue = json => JSON.parse(json);
   const obj = /** @type {BattleshipClueCandidate} */ (
     safeParseJson(inputString, parseJsonValue)
   );
