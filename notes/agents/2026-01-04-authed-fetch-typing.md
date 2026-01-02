@@ -1,0 +1,5 @@
+Tightened the runtime signatures around `src/core/browser/moderation/authedFetch.js` so the helper now exposes `AuthedResponse`, annotates the header iterator with `ReturnType<Headers['entries']>`, and gates the error path through an `AuthedError` type plus an `isObjectLike` guard. That keeps `tsdoc:check` happy for this file while respecting the existing lint constraints (no `Iterable`/`HeadersIterator` references and only two logical branches in the guard).
+
+`npm run tsdoc:check` still fails with the backlog listed in `tsdoc-check-output.txt` (presenters/toys/cloud helpers remain the blocking work). `npm run test`, `npm run lint`, and `npm run tcr` all pass except `tcr` cannot complete its built-in `git commit`/push because the script is unable to create `.git/index.lock` (macOS keeps returning "Operation not permitted" when touched); repeated runs delivered the same permission error, so the repo stays uncommitted at this stage.
+
+Next up: follow the bead queue for `dadeto-ycn` etc. to keep whittling down the tsdoc backlog, and once the environment allows writing to `.git/index.lock`, rerun `tcr` or commit manually.

@@ -2,17 +2,6 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
-src/core/browser/moderation/authedFetch.js(15,31): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(entries: Iterable<readonly [PropertyKey, any]>): { [k: string]: any; }', gave the following error.
-    Argument of type '() => HeadersIterator<[string, string]>' is not assignable to parameter of type 'Iterable<readonly [PropertyKey, any]>'.
-  Overload 2 of 2, '(entries: Iterable<readonly any[]>): any', gave the following error.
-    Argument of type '() => HeadersIterator<[string, string]>' is not assignable to parameter of type 'Iterable<readonly any[]>'.
-src/core/browser/moderation/authedFetch.js(44,3): error TS2322: Type 'HeadersIterator<[string, string]>' is not assignable to type '() => HeadersIterator<[string, string]>'.
-  Type 'HeadersIterator<[string, string]>' provides no match for the signature '(): HeadersIterator<[string, string]>'.
-src/core/browser/moderation/authedFetch.js(66,30): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ ok: boolean; status?: number; json?: () => any; }'.
-  Property 'ok' is missing in type '{}' but required in type '{ ok: boolean; status?: number; json?: () => any; }'.
-src/core/browser/moderation/authedFetch.js(75,46): error TS2339: Property 'ok' does not exist on type 'object'.
-src/core/browser/moderation/authedFetch.js(96,11): error TS2339: Property 'status' does not exist on type 'Error'.
 src/core/browser/presenters/battleshipSolitaireClues.js(36,28): error TS2339: Property 'rowClues' does not exist on type 'object'.
 src/core/browser/presenters/battleshipSolitaireClues.js(36,59): error TS2339: Property 'colClues' does not exist on type 'object'.
 src/core/browser/presenters/battleshipSolitaireClues.js(41,12): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
@@ -41,6 +30,8 @@ src/core/browser/presenters/ticTacToeBoard.js(37,26): error TS7031: Binding elem
 src/core/browser/presenters/ticTacToeBoard.js(37,36): error TS7031: Binding element 'board' implicitly has an 'any' type.
 src/core/browser/presenters/ticTacToeBoard.js(117,7): error TS7034: Variable 'moves' implicitly has type 'any[]' in some locations where its type cannot be determined.
 src/core/browser/presenters/ticTacToeBoard.js(123,3): error TS7005: Variable 'moves' implicitly has an 'any[]' type.
+src/core/browser/storageLens.js(46,27): error TS2345: Argument of type 'string | TValue' is not assignable to parameter of type 'TValue'.
+  'TValue' could be instantiated with an arbitrary type which could be unrelated to 'string | TValue'.
 src/core/browser/tags.js(11,11): error TS2339: Property 'hasClass' does not exist on type 'object'.
 src/core/browser/tags.js(12,9): error TS2339: Property 'hide' does not exist on type 'object'.
 src/core/browser/tags.js(26,51): error TS7006: Parameter 'className' implicitly has an 'any' type.
