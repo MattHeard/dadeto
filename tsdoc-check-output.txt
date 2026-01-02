@@ -83,24 +83,7 @@ src/core/browser/toys/2025-03-29/get.js(302,44): error TS2345: Argument of type 
   Type 'undefined' is not assignable to type 'Function'.
 src/core/browser/toys/2025-03-29/get.js(314,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
 src/core/browser/toys/2025-03-29/get.js(328,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(67,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ hacker: { output: string; nextState: string; }; transport: { output: string; nextState: string; }; alley: { output: string; nextState: string; }; }'.
-  No index signature with a parameter of type 'string' was found on type '{ hacker: { output: string; nextState: string; }; transport: { output: string; nextState: string; }; alley: { output: string; nextState: string; }; }'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(231,19): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ intro: ({ name, time }: { name: string; time: string; }) => { output: string; nextState: string; }; hub: ({ lowerInput }: { lowerInput: string; }) => { output: string; nextState: string; }; 'hacker:door': (context: { lowerInput: string; nextInventory: string[]; nextVisited: Set<...>; }) => { ...; }; 'transport:pla...'.
-  No index signature with a parameter of type 'string' was found on type '{ intro: ({ name, time }: { name: string; time: string; }) => { output: string; nextState: string; }; hub: ({ lowerInput }: { lowerInput: string; }) => { output: string; nextState: string; }; 'hacker:door': (context: { lowerInput: string; nextInventory: string[]; nextVisited: Set<...>; }) => { ...; }; 'transport:pla...'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(245,10): error TS18048: 'data.temporary' is possibly 'undefined'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(255,17): error TS2339: Property 'name' does not exist on type 'object'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(274,17): error TS2339: Property 'state' does not exist on type 'object'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(283,17): error TS2339: Property 'inventory' does not exist on type 'object'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(292,25): error TS2339: Property 'visited' does not exist on type 'object'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(376,33): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(384,16): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(384,16): error TS18048: 'getCurrentTime' is possibly 'undefined'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(389,15): error TS2339: Property 'name' does not exist on type 'object'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(390,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(401,5): error TS2322: Type 'Function | undefined' is not assignable to type 'Function'.
-  Type 'undefined' is not assignable to type 'Function'.
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(404,49): error TS2345: Argument of type 'Function | undefined' is not assignable to parameter of type 'Function'.
-  Type 'undefined' is not assignable to type 'Function'.
+src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(204,44): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AdventureState'.
 src/core/browser/toys/2025-04-06/ticTacToe.js(20,15): error TS8032: Qualified name 'root0.move' is not allowed without a leading '@param {object} root0'.
 src/core/browser/toys/2025-04-06/ticTacToe.js(21,15): error TS8032: Qualified name 'root0.index' is not allowed without a leading '@param {object} root0'.
 src/core/browser/toys/2025-04-06/ticTacToe.js(22,15): error TS8032: Qualified name 'root0.moves' is not allowed without a leading '@param {object} root0'.

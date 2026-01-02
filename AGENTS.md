@@ -69,6 +69,7 @@ For full workflow details: `bd prime`
 - Link relevant issues and include screenshots or artifacts when UI behavior changes.
 - Ensure generated outputs or reports are up to date, but avoid committing transient build products outside approved directories.
 - Always stage all modifications in one shot (e.g., `git add -A`) before running `git commit`; avoid selectively staging files so retreats and follow-up agents see the full change set.
+- Add and commit every modified file in each change set; never leave unstaged work or skip files when preparing commits so the repo snapshot remains complete.
 
 ## Agent Retrospectives
 - After completing your work, add a reflective note in a new file under `notes/agents/`. Create the directory if it does not yet exist.
