@@ -5,6 +5,8 @@
 This project uses **bd (beads)** for issue tracking.
 Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for auto-injection.
 
+**Pro tip:** try each `bd` command without `--no-daemon` first; if it fails or times out due to daemon / lock issues, rerun it with `--no-daemon` to skip the background service.
+
 **Quick reference:**
 - `bd ready` - Find unblocked work
 - `bd create "Title" --type task --priority 2` - Create issue
