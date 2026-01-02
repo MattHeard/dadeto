@@ -68,6 +68,7 @@ For full workflow details: `bd prime`
 - Pull requests must include a "Summary" of code changes and a "Testing" section listing executed commands (e.g., `npm test`, `npm run lint`).
 - Link relevant issues and include screenshots or artifacts when UI behavior changes.
 - Ensure generated outputs or reports are up to date, but avoid committing transient build products outside approved directories.
+- Always stage all modifications in one shot (e.g., `git add -A`) before running `git commit`; avoid selectively staging files so retreats and follow-up agents see the full change set.
 
 ## Agent Retrospectives
 - After completing your work, add a reflective note in a new file under `notes/agents/`. Create the directory if it does not yet exist.
