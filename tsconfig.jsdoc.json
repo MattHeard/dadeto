@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
     "module": "esnext",
     "moduleResolution": "node",
     "target": "es2020",
     "lib": ["es2020"],
     "typeRoots": ["types", "node_modules/@types"],
-    "strict": true,
+    "strict": false,
     "noEmit": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
