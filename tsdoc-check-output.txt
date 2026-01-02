@@ -2,34 +2,6 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
-src/core/browser/presenters/battleshipSolitaireClues.js(36,28): error TS2339: Property 'rowClues' does not exist on type 'object'.
-src/core/browser/presenters/battleshipSolitaireClues.js(36,59): error TS2339: Property 'colClues' does not exist on type 'object'.
-src/core/browser/presenters/battleshipSolitaireClues.js(41,12): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/presenters/battleshipSolitaireClues.js(50,12): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/presenters/battleshipSolitaireClues.js(60,14): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/presenters/battleshipSolitaireClues.js(63,15): error TS2339: Property 'rowClues' does not exist on type 'object'.
-src/core/browser/presenters/battleshipSolitaireClues.js(63,29): error TS2339: Property 'colClues' does not exist on type 'object'.
-src/core/browser/presenters/battleshipSolitaireClues.js(67,4): error TS7006: Parameter 'o' implicitly has an 'any' type.
-src/core/browser/presenters/battleshipSolitaireClues.js(68,4): error TS7006: Parameter 'o' implicitly has an 'any' type.
-src/core/browser/presenters/battleshipSolitaireClues.js(70,5): error TS7006: Parameter 'o' implicitly has an 'any' type.
-src/core/browser/presenters/battleshipSolitaireClues.js(74,5): error TS7006: Parameter 'o' implicitly has an 'any' type.
-src/core/browser/presenters/battleshipSolitaireClues.js(85,31): error TS2345: Argument of type '(string | ((o: any) => boolean))[][]' is not assignable to parameter of type '[(candidate: any) => boolean, string][]'.
-  Type '(string | ((o: any) => boolean))[]' is not assignable to type '[(candidate: any) => boolean, string]'.
-    Target requires 2 element(s) but source may have fewer.
-src/core/browser/presenters/battleshipSolitaireClues.js(104,3): error TS7006: Parameter 'obj' implicitly has an 'any' type.
-src/core/browser/presenters/battleshipSolitaireClues.js(105,3): error TS7006: Parameter 'obj' implicitly has an 'any' type.
-src/core/browser/presenters/battleshipSolitaireClues.js(116,50): error TS7011: Function expression, which lacks return-type annotation, implicitly has an 'any[]' return type.
-src/core/browser/presenters/battleshipSolitaireClues.js(132,26): error TS7006: Parameter 'x' implicitly has an 'any' type.
-src/core/browser/presenters/battleshipSolitaireClues.js(175,40): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ createElement: Function; setTextContent: Function; }'.
-  Type '{}' is missing the following properties from type '{ createElement: Function; setTextContent: Function; }': createElement, setTextContent
-src/core/browser/presenters/ticTacToeBoard.js(23,31): error TS7031: Binding element 'position' implicitly has an 'any' type.
-src/core/browser/presenters/ticTacToeBoard.js(26,26): error TS7031: Binding element 'player' implicitly has an 'any' type.
-src/core/browser/presenters/ticTacToeBoard.js(29,23): error TS7031: Binding element 'position' implicitly has an 'any' type.
-src/core/browser/presenters/ticTacToeBoard.js(32,26): error TS7031: Binding element 'position' implicitly has an 'any' type.
-src/core/browser/presenters/ticTacToeBoard.js(37,26): error TS7031: Binding element 'position' implicitly has an 'any' type.
-src/core/browser/presenters/ticTacToeBoard.js(37,36): error TS7031: Binding element 'board' implicitly has an 'any' type.
-src/core/browser/presenters/ticTacToeBoard.js(117,7): error TS7034: Variable 'moves' implicitly has type 'any[]' in some locations where its type cannot be determined.
-src/core/browser/presenters/ticTacToeBoard.js(123,3): error TS7005: Variable 'moves' implicitly has an 'any[]' type.
 src/core/browser/storageLens.js(46,27): error TS2345: Argument of type 'string | TValue' is not assignable to parameter of type 'TValue'.
   'TValue' could be instantiated with an arbitrary type which could be unrelated to 'string | TValue'.
 src/core/browser/tags.js(35,51): error TS7006: Parameter 'className' implicitly has an 'any' type.

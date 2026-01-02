@@ -1,6 +1,38 @@
 import { isObject } from '../common.js';
 import { createPreFromContent } from './browserPresentersCore.js';
 
+/** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
+/** @typedef {Pick<DOMHelpers, 'createElement'|'setTextContent'>} PresenterDOMHelpers */
+
+/**
+ * @typedef {object} TicTacToePosition
+ * @property {number} row
+ * @property {number} column
+ */
+
+/**
+ * @typedef {object} TicTacToeMove
+ * @property {'X'|'O'} player
+ * @property {TicTacToePosition} position
+ */
+
+/**
+ * @typedef {Partial<TicTacToeMove>} TicTacToeMoveCandidate
+ */
+
+/**
+ * @typedef {object} TicTacToeRenderData
+ * @property {Array<TicTacToeMoveCandidate | null | undefined>} [moves]
+ */
+
+/**
+ * @param {TicTacToeMoveCandidate | null | undefined} move
+ * @returns {move is TicTacToeMoveCandidate}
+ */
+function isDefinedMove(move) {
+  return Boolean(move);
+}
+
 /**
  * Extract the player from a move object.
  * @param {{player?: string}} move - Move object that may contain a `player`.
@@ -19,6 +51,14 @@ function getPosition(move) {
   return move?.position;
 }
 
+/**
+ * @typedef {object} TicTacToeValidatorArgs
+ * @property {string} [player]
+ * @property {TicTacToePosition} [position]
+ * @property {string[][]} board
+ */
+
+/** @type {Array<(args: TicTacToeValidatorArgs) => boolean>} */
 const moveValidators = [
   function positionIsObject({ position }) {
     return isObject(position);
@@ -41,8 +81,7 @@ const moveValidators = [
 
 /**
  * Determine if a move is legal.
- * @param {{player?: string, position?: {row: number, column: number}}} move -
- * Move to validate.
+ * @param {TicTacToeMoveCandidate} move - Move to validate.
  * @param {string[][]} board - Current board state.
  * @returns {boolean} Whether the move can be applied.
  */
@@ -55,21 +94,21 @@ function isLegalMove(move, board) {
 
 /**
  * Update the board if the provided move is legal.
- * @param {{player?: string, position?: {row: number, column: number}}} move -
- * Candidate move.
+ * @param {TicTacToeMoveCandidate} move - Candidate move.
  * @param {string[][]} board - Board to update.
  * @returns {void}
  */
 function updateBoardIfLegal(move, board) {
-  if (isLegalMove(move, board)) {
-    const { row, column } = getPosition(move);
-    board[row][column] = getPlayer(move);
+  const position = getPosition(move);
+  const player = getPlayer(move);
+  if (position && player && isLegalMove(move, board)) {
+    board[position.row][position.column] = player;
   }
 }
 
 /**
  * Apply a move to the board if it contains a valid position.
- * @param {{player?: string, position?: {row: number, column: number}}} move -
+ * @param {TicTacToeMoveCandidate} move -
  * Move to attempt.
  * @param {string[][]} board - Board to mutate.
  * @returns {void}
@@ -84,8 +123,7 @@ function applyMove(move, board) {
 /**
  * Create a DOM element representing a tic‑tac‑toe board.
  * @param {string} inputString - JSON encoded array of moves.
- * @param {{createElement: Function, setTextContent: Function}} dom - DOM
- * abstraction used for creation and rendering.
+ * @param {PresenterDOMHelpers} dom - DOM abstraction used for creation and rendering.
  * @returns {HTMLElement} `<pre>` containing the board layout.
  */
 export function createTicTacToeBoardElement(inputString, dom) {
@@ -104,9 +142,8 @@ export function createTicTacToeBoardElement(inputString, dom) {
 
 /**
  * Render a tic‑tac‑toe board from parsed data.
- * @param {{moves?: Array<object>}} data - Parsed moves object.
- * @param {{createElement: Function, setTextContent: Function}} dom - DOM
- * abstraction for element creation.
+ * @param {TicTacToeRenderData} data - Parsed moves object.
+ * @param {PresenterDOMHelpers} dom - DOM abstraction for element creation.
  * @returns {HTMLElement} `<pre>` element representing the board.
  */
 function renderTicTacToeBoardFromData(data, dom) {
@@ -114,12 +151,10 @@ function renderTicTacToeBoardFromData(data, dom) {
   const board = Array.from({ length: 3 }, () => Array(3).fill(' '));
 
   // 3. Apply each legal move (first–come, first-served)
-  let moves;
-  if (Array.isArray(data.moves)) {
-    moves = data.moves.filter(Boolean);
-  } else {
-    moves = [];
-  }
+  /** @type {TicTacToeMoveCandidate[]} */
+  const moves = Array.isArray(data.moves)
+    ? /** @type {TicTacToeMoveCandidate[]} */ (data.moves.filter(isDefinedMove))
+    : [];
   moves.forEach(move => applyMove(move, board));
 
   // 4. Render board into a monospace grid

@@ -1,0 +1,5 @@
+# Presenter DOM typing
+
+- **Unexpected hurdle:** `npm run tsdoc:check` still halts on the existing stack (tags, toys, cloud helpers, etc.) even after the presenter helpers switched to typed payloads, so the log now highlights those same backlog files instead of `battleshipSolitaireClues.js`/`ticTacToeBoard.js`.
+- **Work:** Added `BattleshipCluesConfig` + helper predicates plus a narrow `PresenterDOMHelpers` bag so `createBattleshipCluesBoardElement` and its helpers only talk to typed arrays, and declared `TicTacToeMoveCandidate`/`TicTacToeRenderData` along with a DOM helper subset for the board renderer so no `any`/`object` leaks remain. Reran `npm run tsdoc:check` (output captured in `tsdoc-check-output.txt`) and `npm run test` to ensure the runtime suite stays green.
+- **Next steps:** Follow the pending beads (e.g., `dadeto-ho5`, `dadeto-ycn`, other cloud helpers) to chip away at the remaining tsdoc failures before rerunning the check; the current log can serve as the checklist for the rest of the backlog.
