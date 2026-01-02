@@ -66,7 +66,7 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  *   logWarning: BlogLogFn,
  * }} loggers - Logger bundle with guaranteed callable members.
  * @property {Storage | null} storage - Storage implementation or null when unavailable.
- * @property {import('./storageLens.js').StorageLens<unknown> | null} memoryLens - Lens for memory storage or null.
+ * @property {import('./storageLens.js').StorageLens<unknown>} memoryLens - Lens for memory storage (in-memory fallback guarantees a value).
  * @property {import('./storageLens.js').StorageLens<BlogStateRecord> | null} permanentLens - Lens for permanent storage or null.
  */
 
