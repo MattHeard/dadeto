@@ -1,9 +1,92 @@
 /**
+ * Adventure state identifiers used by handlers.
+ * @typedef {'intro'|'hub'|'hacker:door'|'transport:platform'|'transport:trade'|'alley:stealth'} AdventureState
+ */
+
+/**
+ * Structured response emitted by each adventure handler.
+ * @typedef {object} AdventureResult
+ * @property {string} output - Message displayed to the player.
+ * @property {AdventureState} nextState - Next adventure state.
+ * @property {string[]} [nextInventory] - Optional inventory updates.
+ * @property {Set<string>} [nextVisited] - Optional visited locations updates.
+ */
+
+/**
+ * Helper mapping of class names to text responses.
+ * @typedef {Record<'hacker'|'transport'|'alley', AdventureResult>} HubKeywordMap
+ */
+
+/**
+ * Valid keywords processed while in the hub.
+ * @typedef {'hacker'|'transport'|'alley'} HubKeyword
+ */
+
+/**
+ * Inventory and visited metadata exchanged between handlers.
+ * @typedef {object} AdventureInventoryState
+ * @property {string[]} inventory - Pending inventory entries.
+ * @property {Set<string>} visited - Locations visited so far.
+ */
+
+/**
+ * Temporary state container stored under the CYBE1 key.
+ * @typedef {object} AdventureTemporaryScope
+ * @property {AdventureScopedState} [CYBE1] - Stored adventure attributes kept between turns.
+ */
+
+/**
+ * Top-level data envelope exposed by the getData helper.
+ * @typedef {object} AdventureDataEnvelope
+ * @property {AdventureTemporaryScope} [temporary] - Container for transient toy state.
+ */
+
+/**
+ * Installer for temporary state mutations.
+ * @typedef {(data: AdventureDataEnvelope) => void} AdventureStateSetter
+ */
+
+/**
+ * Recognised environment keys shared with the toy harness.
+ * @typedef {'getRandomNumber'|'getCurrentTime'|'getData'|'setLocalTemporaryData'} AdventureEnvKey
+ */
+
+/**
+ * Environment functions exposed to toys.
+ * @typedef {Map<AdventureEnvKey, Function>} AdventureEnvironment
+ */
+
+/**
+ * Handler invoked for each adventure state.
+ * @callback AdventureHandler
+ * @param {AdventureContext} context
+ * @returns {AdventureResult}
+ */
+
+/**
+ * Context passed to every story handler.
+ * @typedef {object} AdventureContext
+ * @property {AdventureState} state - Current adventure state name.
+ * @property {string} name - Player name.
+ * @property {string} time - Current time string.
+ * @property {string} lowerInput - Normalized player input.
+ * @property {string[]} nextInventory - Inventory queued for the next step.
+ * @property {Set<string>} nextVisited - Visited locations.
+ * @property {() => number} getRandomNumber - RNG helper from the environment.
+ */
+
+/**
+ * @typedef {object} AdventureScopedState
+ * @property {string} [name] - Stored player name.
+ * @property {AdventureState} [state] - Last known adventure state.
+ * @property {string[]} [inventory] - Previously saved inventory entries.
+ * @property {string[]} [visited] - Previously observed locations.
+ */
+
+/**
  * Resolve the interaction at the hacker door.
- * @param {{lowerInput: string, nextInventory: string[], nextVisited: Set<string>}} context -
- *   Player context for this step.
- * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}}
- *   Resulting state transition information.
+ * @param {AdventureContext} context - Player context for this step.
+ * @returns {AdventureResult} Resulting state transition information.
  */
 function handleHackerDoor(context) {
   if (context.lowerInput.includes('zero')) {
@@ -22,10 +105,11 @@ function handleHackerDoor(context) {
 
 /**
  * Produce the introductory message for the adventure.
- * @param {{name: string, time: string}} param0 - Player name and current time.
- * @returns {{output: string, nextState: string}} Introductory prompt and state.
+ * @param {AdventureContext} context - Player name and current time.
+ * @returns {AdventureResult} Introductory prompt and state.
  */
-function handleIntro({ name, time }) {
+function handleIntro(context) {
+  const { name, time } = context;
   return {
     output: `> ${time}\n> ${name}, you're in the Neon Market. Lights hum. Faces blur.\n> You see paths to: Hacker Den, Transport Hub, and Back Alley.\n> Where do you go? (hacker / transport / alley)`,
     nextState: 'hub',
@@ -35,20 +119,22 @@ function handleIntro({ name, time }) {
 /**
  * Find a keyword contained within the player's input.
  * @param {string} lowerInput - Normalised player input.
- * @param {Record<string, any>} keywordMap - Map of keywords to responses.
- * @returns {string|undefined} The matched keyword if found.
+ * @param {HubKeywordMap} keywordMap - Map of keywords to responses.
+ * @returns {HubKeyword|undefined} The matched keyword if found.
  */
 function findMatchingKeyword(lowerInput, keywordMap) {
-  return Object.keys(keywordMap).find(keyword => lowerInput.includes(keyword));
+  const keys = /** @type {HubKeyword[]} */ (Object.keys(keywordMap));
+  return keys.find(keyword => lowerInput.includes(keyword));
 }
 
 /**
  * Handle input while the player is in the hub area.
- * @param {{lowerInput: string}} param0 - Object containing normalised input.
- * @returns {{output: string, nextState: string}} Hub response and next state.
+ * @param {AdventureContext} context - Object containing normalised input.
+ * @returns {AdventureResult} Hub response and next state.
  */
-function handleHub({ lowerInput }) {
-  const keywordMap = {
+function handleHub(context) {
+  const { lowerInput } = context;
+  const keywordMap = /** @type {HubKeywordMap} */ ({
     hacker: {
       output: `> You approach the Hacker Den. The door requires a password.`,
       nextState: 'hacker:door',
@@ -61,10 +147,11 @@ function handleHub({ lowerInput }) {
       output: `> You slip into the Back Alley. The shadows move with you.`,
       nextState: 'alley:stealth',
     },
-  };
+  });
   const match = findMatchingKeyword(lowerInput, keywordMap);
   if (match) {
-    return keywordMap[match];
+    const keyword = /** @type {HubKeyword} */ (match);
+    return keywordMap[keyword];
   }
   return {
     output: `> Unclear direction. Options: hacker / transport / alley`,
@@ -74,7 +161,7 @@ function handleHub({ lowerInput }) {
 
 /**
  * Describe the transport platform scene.
- * @returns {{output: string, nextState: string}} Narrative response.
+ * @returns {AdventureResult} Narrative response.
  */
 function handleTransportPlatform() {
   return {
@@ -95,12 +182,11 @@ function shouldTradeDatapad(nextInventory, lowerInput) {
 
 /**
  * Handle the trade interaction at the transport vendor.
- * @param {{nextInventory: string[], nextVisited: Set<string>, lowerInput: string}} param0 -
- *   Player context for the trade.
- * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}}
- *   Trade result and next state.
+ * @param {AdventureContext} context - Player context for the trade.
+ * @returns {AdventureResult} Trade result and next state.
  */
-function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
+function handleTransportTrade(context) {
+  const { nextInventory, nextVisited, lowerInput } = context;
   const tradeSuccess = shouldTradeDatapad(nextInventory, lowerInput);
   let inventory = nextInventory;
   let output = `> Do you want to trade? Type 'trade datapad'.`;
@@ -123,12 +209,11 @@ function handleTransportTrade({ nextInventory, nextVisited, lowerInput }) {
 
 /**
  * Attempt to sneak through the alley.
- * @param {{getRandomNumber: Function, nextInventory: string[], nextVisited: Set<string>}} param0 -
- *   Utilities and player state.
- * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}}
- *   Outcome of the stealth attempt.
+ * @param {AdventureContext} context - Utilities and player state.
+ * @returns {AdventureResult} Outcome of the stealth attempt.
  */
-function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
+function handleAlleyStealth(context) {
+  const { getRandomNumber, nextInventory, nextVisited } = context;
   const stealthCheck = getRandomNumber();
   const success = stealthCheck > 0.3;
   let output = `> You trip a wire. Sirens start up. You sprint back to the Market.`;
@@ -146,7 +231,7 @@ function handleAlleyStealth({ getRandomNumber, nextInventory, nextVisited }) {
 
 /**
  * Provide a fallback result when no handler matches the state.
- * @returns {{output: string, nextState: string}} Default response.
+ * @returns {AdventureResult} Default response.
  */
 function getDefaultAdventureResult() {
   return { output: `> Glitch in the grid. Resetting...`, nextState: 'intro' };
@@ -155,9 +240,9 @@ function getDefaultAdventureResult() {
 /**
  * Assemble the transition payload for inventory-aware responses.
  * @param {string} output Text to show to the player.
- * @param {string} nextState Next adventure state.
- * @param {{inventory: string[], visited: Set<string>}} state Inventory and visited mapping.
- * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Combined response.
+ * @param {AdventureState} nextState Next adventure state.
+ * @param {AdventureInventoryState} state Inventory and visited mapping.
+ * @returns {AdventureResult} Combined response.
  */
 function respondWithInventory(output, nextState, { inventory, visited }) {
   return buildAdventureResponse({
@@ -170,10 +255,10 @@ function respondWithInventory(output, nextState, { inventory, visited }) {
 
 /**
  * Respond using the context's inventory/visit tracking.
- * @param {{nextInventory: string[], nextVisited: Set<string>}} context Response context.
+ * @param {AdventureContext} context Response context.
  * @param {string} output Text to show.
- * @param {string} nextState Next adventure state.
- * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Transition response.
+ * @param {AdventureState} nextState Next adventure state.
+ * @returns {AdventureResult} Transition response.
  */
 function respondWithContext(context, output, nextState) {
   return respondWithInventory(output, nextState, {
@@ -185,9 +270,9 @@ function respondWithContext(context, output, nextState) {
 /**
  * Respond with explicitly supplied inventory data.
  * @param {string} output Text to show.
- * @param {string} nextState Next adventure state.
- * @param {{inventory: string[], visited: Set<string>}} state Inventory/visited bundle.
- * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Transition response.
+ * @param {AdventureState} nextState Next adventure state.
+ * @param {AdventureInventoryState} state Inventory/visited bundle.
+ * @returns {AdventureResult} Transition response.
  */
 function respondWithInventoryState(output, nextState, state) {
   return respondWithInventory(output, nextState, state);
@@ -195,9 +280,9 @@ function respondWithInventoryState(output, nextState, state) {
 
 /**
  * Assemble the common response structure for transitions that touch inventory.
- * @param {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} options
+ * @param {{output: string, nextState: AdventureState, nextInventory: string[], nextVisited: Set<string>}} options
  *   Response details and mutated state references.
- * @returns {{output: string, nextState: string, nextInventory: string[], nextVisited: Set<string>}} Composed response.
+ * @returns {AdventureResult} Composed response.
  */
 function buildAdventureResponse({
   output,
@@ -215,19 +300,19 @@ function buildAdventureResponse({
 
 /**
  * Execute the handler for the current adventure state.
- * @param {{state: string}} context - Current player context.
- * @returns {{output: string, nextState: string, nextInventory?: string[], nextVisited?: Set<string>}}
- *   Resulting state data.
+ * @param {AdventureContext} context - Current player context.
+ * @returns {AdventureResult} Resulting state data.
  */
 function getAdventureResult(context) {
-  const stateHandlers = {
-    intro: handleIntro,
-    hub: handleHub,
-    'hacker:door': handleHackerDoor,
-    'transport:platform': handleTransportPlatform,
-    'transport:trade': handleTransportTrade,
-    'alley:stealth': handleAlleyStealth,
-  };
+  const stateHandlers =
+    /** @type {Record<AdventureState, AdventureHandler>} */ ({
+      intro: handleIntro,
+      hub: handleHub,
+      'hacker:door': handleHackerDoor,
+      'transport:platform': handleTransportPlatform,
+      'transport:trade': handleTransportTrade,
+      'alley:stealth': handleAlleyStealth,
+    });
   const handler = stateHandlers[context.state];
   if (handler) {
     return handler(context);
@@ -238,16 +323,28 @@ function getAdventureResult(context) {
 
 /**
  * Extract temporary adventure data from the environment.
- * @param {{temporary?: {CYBE1?: object}}} data - Full data object from env.
- * @returns {object} Scoped state for this adventure.
+ * @param {AdventureDataEnvelope} data - Full data object from env.
+ * @returns {AdventureScopedState} Scoped state for this adventure.
  */
 function getScopedState(data) {
-  return data.temporary.CYBE1 || {};
+  return resolveScopedState(data.temporary);
+}
+
+/**
+ * @param {AdventureTemporaryScope | undefined} temporary - Optional temporary bucket.
+ * @returns {AdventureScopedState} Extracted scoped state.
+ */
+function resolveScopedState(temporary) {
+  /* eslint complexity: ["error", 3] */
+  if (!temporary) {
+    return {};
+  }
+  return temporary.CYBE1 ?? {};
 }
 
 /**
  * Determine the player's name from stored state or input.
- * @param {object} scoped - Stored temporary state.
+ * @param {AdventureScopedState} scoped - Stored temporary state.
  * @param {string} input - Raw player input.
  * @returns {string} Normalised name string.
  */
@@ -257,7 +354,7 @@ function getNameOrInput(scoped, input) {
 
 /**
  * Resolve the player name, defaulting when absent.
- * @param {object} scoped - Temporary state.
+ * @param {AdventureScopedState} scoped - Temporary state.
  * @param {string} input - Raw player input.
  * @returns {string} Determined player name.
  */
@@ -267,8 +364,8 @@ function getPlayerName(scoped, input) {
 
 /**
  * Obtain the player's current adventure state.
- * @param {object} scoped - Temporary state.
- * @returns {string} Adventure state name.
+ * @param {AdventureScopedState} scoped - Temporary state.
+ * @returns {AdventureState} Adventure state name.
  */
 function getPlayerState(scoped) {
   return scoped.state || 'intro';
@@ -276,7 +373,7 @@ function getPlayerState(scoped) {
 
 /**
  * Retrieve the player's inventory list.
- * @param {object} scoped - Temporary state.
+ * @param {AdventureScopedState} scoped - Temporary state.
  * @returns {string[]} Inventory array.
  */
 function getPlayerInventory(scoped) {
@@ -285,23 +382,12 @@ function getPlayerInventory(scoped) {
 
 /**
  * Convert stored visited locations into a Set.
- * @param {object} scoped - Temporary state.
+ * @param {AdventureScopedState} scoped - Temporary state.
  * @returns {Set<string>} Collection of visited identifiers.
  */
 function getPlayerVisited(scoped) {
   return new Set(scoped.visited || []);
 }
-
-/**
- * @typedef {object} AdventureContext
- * @property {string} state - Current adventure state.
- * @property {string} name - Player name.
- * @property {string} time - Timestamp string for the current input.
- * @property {string} lowerInput - Normalized player input string.
- * @property {string[]} nextInventory - Inventory array queued for the next step.
- * @property {Set<string>} nextVisited - Locations visited so far.
- * @property {Function} getRandomNumber - RNG helper from the environment.
- */
 
 /**
  * Build the shared context object used by adventure steps.
@@ -317,7 +403,7 @@ function createAdventureContext(args) {
 /**
  * Execute a single step of the adventure state machine.
  * @param {AdventureContext} context - Prepared context for the current turn.
- * @param {Function} setTemporaryData - Environment helper to persist temporary storage.
+ * @param {AdventureStateSetter} setTemporaryData - Environment helper to persist temporary storage.
  * @returns {string} Output text describing the result.
  */
 function processAdventureStep(context, setTemporaryData) {
@@ -363,16 +449,39 @@ function getUpdatedVisited(result, nextVisited) {
 }
 
 /**
+ * @template {Function} T
+ * @param {AdventureEnvironment} env - Environment map containing the toy helpers.
+ * @param {AdventureEnvKey} key - Dependency key to retrieve.
+ * @param {string} label - Human-friendly label used in error reporting.
+ * @returns {T} Requested dependency implementation.
+ */
+function requireEnvFunction(env, key, label) {
+  const candidate = /** @type {T | undefined} */ (env.get(key));
+  if (!candidate) {
+    throw new Error(`Missing ${label} dependency for the adventure.`);
+  }
+  return candidate;
+}
+
+/**
  * Core adventure logic executed for each player command.
  * @param {string} input - Raw player command.
- * @param {Map<string, Function>} env - Environment accessor map.
+ * @param {AdventureEnvironment} env - Environment accessor map.
  * @returns {string} Output generated by the command.
  */
 function runAdventure(input, env) {
-  const getRandomNumber = env.get('getRandomNumber');
-  const getCurrentTime = env.get('getCurrentTime');
-  const getData = env.get('getData');
-  const setTemporaryData = env.get('setLocalTemporaryData');
+  const getRandomNumber = /** @type {() => number} */ (
+    requireEnvFunction(env, 'getRandomNumber', 'random number generator')
+  );
+  const getCurrentTime = /** @type {() => string} */ (
+    requireEnvFunction(env, 'getCurrentTime', 'time provider')
+  );
+  const getData = /** @type {() => AdventureDataEnvelope} */ (
+    requireEnvFunction(env, 'getData', 'state accessor')
+  );
+  const setTemporaryData = /** @type {AdventureStateSetter} */ (
+    requireEnvFunction(env, 'setLocalTemporaryData', 'temporary state setter')
+  );
   const scoped = getScopedState(getData());
 
   const name = getPlayerName(scoped, input);
@@ -407,7 +516,7 @@ function runAdventure(input, env) {
 /**
  * Public entry point for the cyberpunk adventure.
  * @param {string} input - Player command.
- * @param {Map<string, Function>} env - Environment utilities.
+ * @param {AdventureEnvironment} env - Environment utilities.
  * @returns {string} Narrative response.
  */
 export function cyberpunkAdventure(input, env) {

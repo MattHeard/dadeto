@@ -53,8 +53,8 @@ export function getEncodeBase64(btoa, encodeURIComponentFn) {
  * @property {typeof fetch} fetch - Fetch implementation used to retrieve blog data.
  * @property {BlogDataLoggers} loggers - Logger bundle injected by the entry layer.
  * @property {Storage | null | undefined} [storage] - Optional storage implementation for permanent state.
- * @property {import('./storageLens.js').StorageLens<unknown>} [memoryLens] - Optional lens for memory storage.
- * @property {import('./storageLens.js').StorageLens<BlogStateRecord>} [permanentLens] - Optional lens for permanent storage.
+ * @property {import('./storageLens.js').StorageLens<unknown> | null} [memoryLens] - Optional lens for memory storage.
+ * @property {import('./storageLens.js').StorageLens<BlogStateRecord> | null} [permanentLens] - Optional lens for permanent storage.
  */
 
 /**
