@@ -6,14 +6,14 @@ import { createPreFromContent } from './browserPresentersCore.js';
 
 /**
  * @typedef {object} TicTacToePosition
- * @property {number} row
- * @property {number} column
+ * @property {number} row - Zero-based row index inside the grid.
+ * @property {number} column - Zero-based column index inside the grid.
  */
 
 /**
  * @typedef {object} TicTacToeMove
- * @property {'X'|'O'} player
- * @property {TicTacToePosition} position
+ * @property {'X'|'O'} player - Symbol representing the player who made the move.
+ * @property {TicTacToePosition} position - Grid coordinates for the move.
  */
 
 /**
@@ -22,12 +22,12 @@ import { createPreFromContent } from './browserPresentersCore.js';
 
 /**
  * @typedef {object} TicTacToeRenderData
- * @property {Array<TicTacToeMoveCandidate | null | undefined>} [moves]
+ * @property {Array<TicTacToeMoveCandidate | null | undefined>} [moves] - Moves to replay in order.
  */
 
 /**
- * @param {TicTacToeMoveCandidate | null | undefined} move
- * @returns {move is TicTacToeMoveCandidate}
+ * @param {TicTacToeMoveCandidate | null | undefined} move - Candidate that might be absent.
+ * @returns {move is TicTacToeMoveCandidate} Whether the move carries data.
  */
 function isDefinedMove(move) {
   return Boolean(move);
@@ -53,9 +53,9 @@ function getPosition(move) {
 
 /**
  * @typedef {object} TicTacToeValidatorArgs
- * @property {string} [player]
- * @property {TicTacToePosition} [position]
- * @property {string[][]} board
+ * @property {string} [player] - Candidate player symbol.
+ * @property {TicTacToePosition} [position] - Candidate board coordinates.
+ * @property {string[][]} board - Current board state used to validate the move.
  */
 
 /** @type {Array<(args: TicTacToeValidatorArgs) => boolean>} */
@@ -93,31 +93,30 @@ function isLegalMove(move, board) {
 }
 
 /**
- * Update the board if the provided move is legal.
- * @param {TicTacToeMoveCandidate} move - Candidate move.
+ * Update the board if the provided coordinates and player are valid.
+ * @param {{position: TicTacToePosition, player: 'X'|'O'}} moveDetails - Validated move details.
  * @param {string[][]} board - Board to update.
  * @returns {void}
  */
-function updateBoardIfLegal(move, board) {
-  const position = getPosition(move);
-  const player = getPlayer(move);
-  if (position && player && isLegalMove(move, board)) {
-    board[position.row][position.column] = player;
-  }
+function updateBoardIfLegal(moveDetails, board) {
+  board[moveDetails.position.row][moveDetails.position.column] =
+    moveDetails.player;
 }
 
 /**
  * Apply a move to the board if it contains a valid position.
- * @param {TicTacToeMoveCandidate} move -
- * Move to attempt.
+ * @param {TicTacToeMoveCandidate} move - Move to attempt.
  * @param {string[][]} board - Board to mutate.
  * @returns {void}
  */
 function applyMove(move, board) {
-  const position = getPosition(move);
-  if (isObject(position)) {
-    updateBoardIfLegal(move, board);
+  if (!isLegalMove(move, board)) {
+    return;
   }
+
+  const position = /** @type {TicTacToePosition} */ (getPosition(move));
+  const player = /** @type {'X'|'O'} */ (getPlayer(move));
+  updateBoardIfLegal({ position, player }, board);
 }
 
 /**
@@ -152,9 +151,12 @@ function renderTicTacToeBoardFromData(data, dom) {
 
   // 3. Apply each legal move (first–come, first-served)
   /** @type {TicTacToeMoveCandidate[]} */
-  const moves = Array.isArray(data.moves)
-    ? /** @type {TicTacToeMoveCandidate[]} */ (data.moves.filter(isDefinedMove))
-    : [];
+  let moves = [];
+  if (Array.isArray(data.moves)) {
+    moves = /** @type {TicTacToeMoveCandidate[]} */ (
+      data.moves.filter(isDefinedMove)
+    );
+  }
   moves.forEach(move => applyMove(move, board));
 
   // 4. Render board into a monospace grid
