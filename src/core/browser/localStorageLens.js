@@ -53,11 +53,7 @@ function makeStorageSetter(storage, logError) {
  * @returns {string | null} Stored value or null.
  */
 function getFromStorage(storage, key, logError) {
-  if (!storage) {
-    return null;
-  }
-
-  return safeGetItem(storage, key, logError);
+  return withStorage(storage, st => safeGetItem(st, key, logError), null);
 }
 
 /**
@@ -68,12 +64,11 @@ function getFromStorage(storage, key, logError) {
  * @returns {string | null} Stored value or null.
  */
 function safeGetItem(storage, key, logError) {
-  try {
-    return storage.getItem(key);
-  } catch (error) {
-    logError(`Failed to read from localStorage key "${key}":`, error);
-    return null;
-  }
+  return tryWithLog(
+    () => storage.getItem(key),
+    logError,
+    () => `Failed to read from localStorage key "${key}":`
+  );
 }
 
 /**
@@ -85,11 +80,24 @@ function safeGetItem(storage, key, logError) {
  * @param {(message: string, ...args: unknown[]) => void} options.logError - Error logger.
  */
 function setToStorage({ storage, key, value, logError }) {
+  withStorage(storage, st =>
+    applyStorageValue({ storage: st, key, value, logError })
+  );
+}
+
+/**
+ * Executes an operation only when storage is available.
+ * @param {Storage | null} storage - Browser storage.
+ * @param {(storage: Storage) => unknown} operation - Storage-aware callback.
+ * @param {unknown} [defaultValue] - Value to return when storage is missing.
+ * @returns {unknown} Result of the operation or default value.
+ */
+function withStorage(storage, operation, defaultValue) {
   if (!storage) {
-    return;
+    return defaultValue;
   }
 
-  applyStorageValue({ storage, key, value, logError });
+  return operation(storage);
 }
 
 /**
@@ -101,11 +109,11 @@ function setToStorage({ storage, key, value, logError }) {
  * @param {(message: string, ...args: unknown[]) => void} options.logError - Error logger.
  */
 function applyStorageValue({ storage, key, value, logError }) {
-  try {
-    writeStorageValue(storage, key, value);
-  } catch (error) {
-    logError('Failed to persist permanent data:', error);
-  }
+  tryWithLog(
+    () => writeStorageValue(storage, key, value),
+    logError,
+    () => 'Failed to persist permanent data:'
+  );
 }
 
 /**
@@ -154,12 +162,11 @@ function isMissingStoredValue(value) {
  * @returns {unknown} Parsed JSON value or null.
  */
 function parseStoredJson(value, logError) {
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    logError('Failed to read permanent data:', error);
-    return null;
-  }
+  return tryWithLog(
+    () => JSON.parse(value),
+    logError,
+    () => 'Failed to read permanent data:'
+  );
 }
 
 /**
@@ -193,10 +200,25 @@ function isNullish(value) {
  * @returns {string | null} JSON string or null.
  */
 function stringifyStoredJson(value, logError) {
+  return tryWithLog(
+    () => JSON.stringify(value),
+    logError,
+    () => 'Failed to serialize JSON for storage:'
+  );
+}
+
+/**
+ * Wraps an operation in try/catch and logs failures uniformly.
+ * @param {Function} operation - Function that might throw.
+ * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
+ * @param {() => string} errorMessage - Provides the log message.
+ * @returns {unknown} Result of the operation or null when it fails.
+ */
+function tryWithLog(operation, logError, errorMessage) {
   try {
-    return JSON.stringify(value);
+    return operation();
   } catch (error) {
-    logError('Failed to serialize JSON for storage:', error);
+    logError(errorMessage(), error);
     return null;
   }
 }
