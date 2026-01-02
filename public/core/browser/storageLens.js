@@ -6,16 +6,18 @@
  */
 
 /**
+ * @template TValue=unknown
  * @typedef {object} StorageLens
- * @property {(key: string) => unknown} get - Read data from storage by key.
- * @property {(key: string, value: unknown) => void} set - Write data to storage by key.
+ * @property {(key: string) => TValue} get - Read data from storage by key.
+ * @property {(key: string, value: TValue) => void} set - Write data to storage by key.
  */
 
 /**
  * Creates a storage lens from getter and setter functions.
- * @param {(key: string) => unknown} getter - Function to read from storage.
- * @param {(key: string, value: unknown) => void} setter - Function to write to storage.
- * @returns {StorageLens} A lens object with get and set operations.
+ * @template TValue
+ * @param {(key: string) => TValue} getter - Function to read from storage.
+ * @param {(key: string, value: TValue) => void} setter - Function to write to storage.
+ * @returns {StorageLens<TValue>} A lens object with get and set operations.
  */
 export function createStorageLens(getter, setter) {
   return {
@@ -26,17 +28,21 @@ export function createStorageLens(getter, setter) {
 
 /**
  * Creates a lens that operates on a subset of data within a parent lens.
- * @param {StorageLens} parentLens - The parent lens to compose with.
+ * @template TValue
+ * @param {StorageLens<TValue>} parentLens - The parent lens to compose with.
  * @param {string} key - The key to focus on within the parent data.
- * @returns {StorageLens} A focused lens.
+ * @returns {StorageLens<TValue>} A focused lens.
  */
 export function focusLens(parentLens, key) {
   return createStorageLens(
-    () => {
-      const data = parentLens.get(key);
-      return data;
-    },
-    value => {
+    () => parentLens.get(key),
+    (...args) => {
+      let value;
+      if (args.length >= 2) {
+        value = args[1];
+      } else {
+        value = args[0];
+      }
       parentLens.set(key, value);
     }
   );
@@ -44,10 +50,12 @@ export function focusLens(parentLens, key) {
 
 /**
  * Creates a lens with a transformation applied on get and set.
- * @param {StorageLens} lens - The base lens.
- * @param {(value: unknown) => unknown} getTransform - Transform applied when getting.
- * @param {(value: unknown) => unknown} setTransform - Transform applied when setting.
- * @returns {StorageLens} A transformed lens.
+ * @template TBase
+ * @template TDerived
+ * @param {StorageLens<TBase>} lens - The base lens.
+ * @param {(value: TBase) => TDerived} getTransform - Transform applied when getting.
+ * @param {(value: TDerived) => TBase} setTransform - Transform applied when setting.
+ * @returns {StorageLens<TDerived>} A transformed lens.
  */
 export function mapLens(lens, getTransform, setTransform) {
   return createStorageLens(

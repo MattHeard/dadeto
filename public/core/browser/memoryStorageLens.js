@@ -9,7 +9,7 @@ import { createStorageLens } from './storageLens.js';
 /**
  * Creates a memory storage lens backed by a Map.
  * @param {Map<string, unknown>} [store] - Optional Map to use as storage backend.
- * @returns {import('./storageLens.js').StorageLens} A lens for in-memory storage.
+ * @returns {import('./storageLens.js').StorageLens<unknown>} A lens for in-memory storage.
  */
 export function createMemoryStorageLens(store = new Map()) {
   return createStorageLens(
