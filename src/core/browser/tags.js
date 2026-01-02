@@ -8,6 +8,16 @@
  */
 
 /**
+ * Handler invoked for each tag class name.
+ * @typedef {(className: string) => void} TagClassHandler
+ */
+
+/**
+ * Handler invoked for each individual link.
+ * @typedef {(link: HTMLElement) => void} TagLinkHandler
+ */
+
+/**
  * Hides an article when it does (or does not) have the provided class.
  * @param {object} options - Configuration for hiding.
  * @param {HTMLElement} options.article - The article element.
@@ -27,28 +37,32 @@ function hideArticleWhen({ article, className, dom, shouldHaveClass }) {
  */
 
 /**
- * Returns a className handler for tag links (used in handleTagLinks)
+ * Returns a className handler for tag links (used in handleTagLinks).
  * @param {TagsDOMHelpers} dom - DOM helpers
  * @param {HTMLElement} link - The tag link element
- * @returns {Function} Handler for className
+ * @returns {TagClassHandler} Handler for class names.
  */
-export const makeHandleClassName = (dom, link) => className => {
-  if (className.startsWith('tag-')) {
-    const createHideSpan = makeHandleHideSpan(dom);
-    const clickDeps = { ...dom, createHideSpan };
-    const handleClick = createHandleClick(clickDeps, link, className);
-    dom.addEventListener(link, 'click', handleClick);
-  }
+export const makeHandleClassName = (dom, link) => {
+  return className => {
+    if (className.startsWith('tag-')) {
+      const createHideSpan = makeHandleHideSpan(dom);
+      const clickDeps = { ...dom, createHideSpan };
+      const handleClick = createHandleClick(clickDeps, link, className);
+      dom.addEventListener(link, 'click', handleClick);
+    }
+  };
 };
 
 /**
- * Returns a handler for a tag link (used in handleTagLinks)
+ * Returns a handler for a tag link (used in handleTagLinks).
  * @param {TagsDOMHelpers} dom - DOM helpers
- * @returns {Function} Handler for a link
+ * @returns {TagLinkHandler} Handler for a link.
  */
-export const makeHandleLink = dom => link => {
-  const handleClassName = makeHandleClassName(dom, link);
-  dom.getClasses(link).forEach(handleClassName);
+export const makeHandleLink = dom => {
+  return link => {
+    const handleClassName = makeHandleClassName(dom, link);
+    dom.getClasses(link).forEach(handleClassName);
+  };
 };
 
 /**
@@ -57,7 +71,10 @@ export const makeHandleLink = dom => link => {
  */
 export const handleTagLinks = dom => {
   const handleLink = makeHandleLink(dom);
-  Array.from(dom.getElementsByTagName('a')).forEach(handleLink);
+  const links = /** @type {HTMLElement[]} */ (
+    Array.from(dom.getElementsByTagName('a'))
+  );
+  links.forEach(handleLink);
 };
 
 /**
@@ -140,10 +157,10 @@ export function hideArticlesWithoutClass(className, dom) {
  * Returns a click handler that hides articles missing the provided class.
  * @param {TagsDOMHelpers} dom - Object containing DOM helper functions.
  * @param {string} className - The CSS class to filter by.
- * @returns {Function} Event handler that hides non-matching articles.
+ * @returns {(event: Event) => void} Event handler that hides non-matching articles.
  */
 export function makeHandleOnlyClick(dom, className) {
-  return function (event) {
+  return function handleOnlyClick(event) {
     dom.stopDefault(event);
     hideArticlesWithoutClass(className, dom);
   };
@@ -170,9 +187,11 @@ export function toggleHideLink(link, className, dom) {
  * @param {TagsDOMHelpers} dom - Object containing DOM helpers: stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan
  * @param {HTMLElement} link - The tag link element
  * @param {string} className - The CSS class to filter by
- * @returns {Function} Event handler
+ * @returns {(event: Event) => void} Event handler
  */
-export const createHandleClick = (dom, link, className) => event => {
-  dom.stopDefault(event);
-  toggleHideLink(link, className, dom);
+export const createHandleClick = (dom, link, className) => {
+  return function handleTagClick(event) {
+    dom.stopDefault(event);
+    toggleHideLink(link, className, dom);
+  };
 };
