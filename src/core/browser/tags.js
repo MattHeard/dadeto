@@ -1,9 +1,18 @@
+/** @typedef {import('./domHelpers.js').DOMHelpers} DOMHelpers */
+
+/**
+ * DOM helpers that tags rely on. These build on the global DOM helpers plus
+ * the locally defined `createHideSpan` helper so the module can pass the
+ * full dependency bag around with accurate members.
+ * @typedef {DOMHelpers & { createHideSpan: (link: HTMLElement, className: string) => void }} TagsDOMHelpers
+ */
+
 /**
  * Hides an article when it does (or does not) have the provided class.
  * @param {object} options - Configuration for hiding.
  * @param {HTMLElement} options.article - The article element.
  * @param {string} options.className - CSS class to test for.
- * @param {object} options.dom - DOM helper utilities.
+ * @param {TagsDOMHelpers} options.dom - DOM helper utilities.
  * @param {boolean} options.shouldHaveClass - Whether the article should match the class to be hidden.
  * @returns {void}
  */
@@ -19,7 +28,7 @@ function hideArticleWhen({ article, className, dom, shouldHaveClass }) {
 
 /**
  * Returns a className handler for tag links (used in handleTagLinks)
- * @param {object} dom - DOM helpers
+ * @param {TagsDOMHelpers} dom - DOM helpers
  * @param {HTMLElement} link - The tag link element
  * @returns {Function} Handler for className
  */
@@ -34,7 +43,7 @@ export const makeHandleClassName = (dom, link) => className => {
 
 /**
  * Returns a handler for a tag link (used in handleTagLinks)
- * @param {object} dom - DOM helpers
+ * @param {TagsDOMHelpers} dom - DOM helpers
  * @returns {Function} Handler for a link
  */
 export const makeHandleLink = dom => link => {
@@ -44,7 +53,7 @@ export const makeHandleLink = dom => link => {
 
 /**
  * Handles all tag links on the page by applying makeHandleLink(dom) to each 'a' element.
- * @param {object} dom - DOM helpers
+ * @param {TagsDOMHelpers} dom - DOM helpers
  */
 export const handleTagLinks = dom => {
   const handleLink = makeHandleLink(dom);
@@ -53,7 +62,7 @@ export const handleTagLinks = dom => {
 
 /**
  * Hides articles that contain a specific CSS class.
- * @param {object} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide
+ * @param {TagsDOMHelpers} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide
  * @param {string} className - The CSS class to filter by
  * @returns {Function} Event handler that hides matching articles.
  */
@@ -66,7 +75,7 @@ export function makeHandleHideClick(dom, className) {
 
 /**
  * Factory to create a function that adds a hide-span to a tag link.
- * @param {object} dom - DOM helpers.
+ * @param {TagsDOMHelpers} dom - DOM helpers.
  * @returns {Function} Function that inserts a hide link span.
  */
 export function makeHandleHideSpan(dom) {
@@ -98,7 +107,7 @@ export function makeHandleHideSpan(dom) {
 /**
  * Iterates over every article and hides it when the class presence matches `shouldHaveClass`.
  * @param {string} className - Class used to filter articles.
- * @param {object} dom - DOM helper utilities.
+ * @param {TagsDOMHelpers} dom - DOM helper utilities.
  * @param {boolean} shouldHaveClass - When true hide articles that have the class; false hides those that do not.
  * @returns {void}
  */
@@ -112,7 +121,7 @@ function hideArticlesByCondition(className, dom, shouldHaveClass) {
 /**
  * Hide all articles that contain the given class.
  * @param {string} className - Class used to filter articles.
- * @param {object} dom - DOM helper utilities.
+ * @param {TagsDOMHelpers} dom - DOM helper utilities.
  */
 export function hideArticlesByClass(className, dom) {
   hideArticlesByCondition(className, dom, true);
@@ -121,7 +130,7 @@ export function hideArticlesByClass(className, dom) {
 /**
  * Hide all articles that do not contain the given class.
  * @param {string} className - Class used to filter articles.
- * @param {object} dom - DOM helper utilities.
+ * @param {TagsDOMHelpers} dom - DOM helper utilities.
  */
 export function hideArticlesWithoutClass(className, dom) {
   hideArticlesByCondition(className, dom, false);
@@ -129,7 +138,7 @@ export function hideArticlesWithoutClass(className, dom) {
 
 /**
  * Returns a click handler that hides articles missing the provided class.
- * @param {object} dom - Object containing DOM helper functions.
+ * @param {TagsDOMHelpers} dom - Object containing DOM helper functions.
  * @param {string} className - The CSS class to filter by.
  * @returns {Function} Event handler that hides non-matching articles.
  */
@@ -144,7 +153,7 @@ export function makeHandleOnlyClick(dom, className) {
  * Toggles the hide link for a given tag link
  * @param {HTMLElement} link - The tag link element
  * @param {string} className - The CSS class to filter by
- * @param {object} dom - Object containing DOM helpers: hasNextSiblingClass, removeNextSibling, createHideSpan
+ * @param {TagsDOMHelpers} dom - Object containing DOM helpers: hasNextSiblingClass, removeNextSibling, createHideSpan
  */
 export function toggleHideLink(link, className, dom) {
   // Check if a span with the hide link already exists immediately after the link.
@@ -158,7 +167,7 @@ export function toggleHideLink(link, className, dom) {
 
 /**
  * Returns a click handler for tag links that toggles the hide link using the provided dom helpers
- * @param {object} dom - Object containing DOM helpers: stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan
+ * @param {TagsDOMHelpers} dom - Object containing DOM helpers: stopDefault, hasNextSiblingClass, removeNextSibling, createHideSpan
  * @param {HTMLElement} link - The tag link element
  * @param {string} className - The CSS class to filter by
  * @returns {Function} Event handler

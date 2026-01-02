@@ -32,44 +32,29 @@ src/core/browser/presenters/ticTacToeBoard.js(117,7): error TS7034: Variable 'mo
 src/core/browser/presenters/ticTacToeBoard.js(123,3): error TS7005: Variable 'moves' implicitly has an 'any[]' type.
 src/core/browser/storageLens.js(46,27): error TS2345: Argument of type 'string | TValue' is not assignable to parameter of type 'TValue'.
   'TValue' could be instantiated with an arbitrary type which could be unrelated to 'string | TValue'.
-src/core/browser/tags.js(11,11): error TS2339: Property 'hasClass' does not exist on type 'object'.
-src/core/browser/tags.js(12,9): error TS2339: Property 'hide' does not exist on type 'object'.
-src/core/browser/tags.js(26,51): error TS7006: Parameter 'className' implicitly has an 'any' type.
-src/core/browser/tags.js(31,9): error TS2339: Property 'addEventListener' does not exist on type 'object'.
-src/core/browser/tags.js(40,38): error TS7006: Parameter 'link' implicitly has an 'any' type.
-src/core/browser/tags.js(42,7): error TS2339: Property 'getClasses' does not exist on type 'object'.
-src/core/browser/tags.js(51,18): error TS2339: Property 'getElementsByTagName' does not exist on type 'object'.
-src/core/browser/tags.js(51,53): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(value: any, index: number, array: any[]) => void'.
-  Type 'Function' provides no match for the signature '(value: any, index: number, array: any[]): void'.
-src/core/browser/tags.js(61,20): error TS7006: Parameter 'event' implicitly has an 'any' type.
-src/core/browser/tags.js(62,9): error TS2339: Property 'stopDefault' does not exist on type 'object'.
-src/core/browser/tags.js(73,34): error TS7006: Parameter 'link' implicitly has an 'any' type.
-src/core/browser/tags.js(73,40): error TS7006: Parameter 'className' implicitly has an 'any' type.
-src/core/browser/tags.js(74,22): error TS2339: Property 'createElement' does not exist on type 'object'.
-src/core/browser/tags.js(75,9): error TS2339: Property 'addClass' does not exist on type 'object'.
-src/core/browser/tags.js(76,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
-src/core/browser/tags.js(76,31): error TS2339: Property 'createTextNode' does not exist on type 'object'.
-src/core/browser/tags.js(78,26): error TS2339: Property 'createElement' does not exist on type 'object'.
-src/core/browser/tags.js(79,9): error TS2339: Property 'setTextContent' does not exist on type 'object'.
-src/core/browser/tags.js(81,26): error TS2339: Property 'createElement' does not exist on type 'object'.
-src/core/browser/tags.js(82,9): error TS2339: Property 'setTextContent' does not exist on type 'object'.
-src/core/browser/tags.js(85,9): error TS2339: Property 'addEventListener' does not exist on type 'object'.
-src/core/browser/tags.js(88,9): error TS2339: Property 'addEventListener' does not exist on type 'object'.
-src/core/browser/tags.js(90,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
-src/core/browser/tags.js(91,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
-src/core/browser/tags.js(91,31): error TS2339: Property 'createTextNode' does not exist on type 'object'.
-src/core/browser/tags.js(92,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
-src/core/browser/tags.js(93,9): error TS2339: Property 'appendChild' does not exist on type 'object'.
-src/core/browser/tags.js(93,31): error TS2339: Property 'createTextNode' does not exist on type 'object'.
-src/core/browser/tags.js(94,9): error TS2339: Property 'insertBefore' does not exist on type 'object'.
-src/core/browser/tags.js(106,24): error TS2339: Property 'getElementsByTagName' does not exist on type 'object'.
-src/core/browser/tags.js(137,20): error TS7006: Parameter 'event' implicitly has an 'any' type.
-src/core/browser/tags.js(138,9): error TS2339: Property 'stopDefault' does not exist on type 'object'.
-src/core/browser/tags.js(151,11): error TS2339: Property 'hasNextSiblingClass' does not exist on type 'object'.
-src/core/browser/tags.js(153,9): error TS2339: Property 'removeNextSibling' does not exist on type 'object'.
-src/core/browser/tags.js(155,9): error TS2339: Property 'createHideSpan' does not exist on type 'object'.
-src/core/browser/tags.js(166,60): error TS7006: Parameter 'event' implicitly has an 'any' type.
-src/core/browser/tags.js(167,7): error TS2339: Property 'stopDefault' does not exist on type 'object'.
+src/core/browser/tags.js(35,51): error TS7006: Parameter 'className' implicitly has an 'any' type.
+src/core/browser/tags.js(39,43): error TS2345: Argument of type '{ createHideSpan: Function; importModule: (modulePath: string, onSuccess: ModuleSuccessHandler, onError: ModuleErrorHandler) => void; ... 51 more ...; reveal: (element: HTMLElement) => void; }' is not assignable to parameter of type 'TagsDOMHelpers'.
+  Type '{ createHideSpan: Function; importModule: (modulePath: string, onSuccess: ModuleSuccessHandler, onError: ModuleErrorHandler) => void; ... 51 more ...; reveal: (element: HTMLElement) => void; }' is not assignable to type '{ createHideSpan: (link: HTMLElement, className: string) => void; }'.
+    Types of property 'createHideSpan' are incompatible.
+      Type 'Function' is not assignable to type '(link: HTMLElement, className: string) => void'.
+        Type 'Function' provides no match for the signature '(link: HTMLElement, className: string): void'.
+src/core/browser/tags.js(40,41): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(event: Event) => void'.
+  Type 'Function' provides no match for the signature '(event: Event): void'.
+src/core/browser/tags.js(49,38): error TS7006: Parameter 'link' implicitly has an 'any' type.
+src/core/browser/tags.js(51,32): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(value: string, index: number, array: string[]) => void'.
+  Type 'Function' provides no match for the signature '(value: string, index: number, array: string[]): void'.
+src/core/browser/tags.js(60,53): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(value: Element, index: number, array: Element[]) => void'.
+  Type 'Function' provides no match for the signature '(value: Element, index: number, array: Element[]): void'.
+src/core/browser/tags.js(70,20): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/core/browser/tags.js(82,34): error TS7006: Parameter 'link' implicitly has an 'any' type.
+src/core/browser/tags.js(82,40): error TS7006: Parameter 'className' implicitly has an 'any' type.
+src/core/browser/tags.js(94,45): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(event: Event) => void'.
+  Type 'Function' provides no match for the signature '(event: Event): void'.
+src/core/browser/tags.js(97,45): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(event: Event) => void'.
+  Type 'Function' provides no match for the signature '(event: Event): void'.
+src/core/browser/tags.js(117,23): error TS2740: Type 'Element' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 129 more.
+src/core/browser/tags.js(146,20): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/core/browser/tags.js(175,60): error TS7006: Parameter 'event' implicitly has an 'any' type.
 src/core/browser/toys/2025-03-21/italics.js(122,14): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
 src/core/browser/toys/2025-03-21/italics.js(175,13): error TS2339: Property 'beforeText' does not exist on type 'object'.
 src/core/browser/toys/2025-03-21/italics.js(176,13): error TS2339: Property 'boldText' does not exist on type 'object'.
