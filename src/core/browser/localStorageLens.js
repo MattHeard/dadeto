@@ -152,10 +152,10 @@ function deserializeJson(logError) {
 /**
  * Determine if a stored value should be treated as missing.
  * @param {string | null | undefined} value - Stored value.
- * @returns {boolean} True when no value should be parsed.
+ * @returns {value is null | undefined | ''} True when no value should be parsed.
  */
 function isMissingStoredValue(value) {
-  return [null, undefined, ''].includes(value);
+  return value === null || value === undefined || value === '';
 }
 
 /**

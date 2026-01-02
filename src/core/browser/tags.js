@@ -81,7 +81,7 @@ export const handleTagLinks = dom => {
  * Hides articles that contain a specific CSS class.
  * @param {TagsDOMHelpers} dom - Object containing DOM helper functions: getElementsByTagName, hasClass, hide
  * @param {string} className - The CSS class to filter by
- * @returns {Function} Event handler that hides matching articles.
+ * @returns {(event: Event) => void} Event handler that hides matching articles.
  */
 export function makeHandleHideClick(dom, className) {
   return function (event) {
@@ -93,9 +93,14 @@ export function makeHandleHideClick(dom, className) {
 /**
  * Factory to create a function that adds a hide-span to a tag link.
  * @param {TagsDOMHelpers} dom - DOM helpers.
- * @returns {Function} Function that inserts a hide link span.
+ * @returns {(link: HTMLElement, className: string) => void} Function that inserts a hide link span.
  */
 export function makeHandleHideSpan(dom) {
+  /**
+   * Build the hide/only span for a tag link.
+   * @param {HTMLElement} link - The tag link element.
+   * @param {string} className - CSS class the link represents.
+   */
   return function createHideSpan(link, className) {
     const span = dom.createElement('span');
     dom.addClass(span, 'hide-span');
@@ -117,7 +122,11 @@ export function makeHandleHideSpan(dom) {
     dom.appendChild(span, dom.createTextNode(' | '));
     dom.appendChild(span, onlyLink);
     dom.appendChild(span, dom.createTextNode(')'));
-    dom.insertBefore(link.parentNode, span, link.nextSibling);
+    const parent = link.parentNode;
+    if (!parent) {
+      return;
+    }
+    dom.insertBefore(parent, span, link.nextSibling);
   };
 }
 
@@ -129,7 +138,9 @@ export function makeHandleHideSpan(dom) {
  * @returns {void}
  */
 function hideArticlesByCondition(className, dom, shouldHaveClass) {
-  const articles = dom.getElementsByTagName('article');
+  const articles = /** @type {HTMLElement[]} */ (
+    Array.from(dom.getElementsByTagName('article'))
+  );
   for (const article of articles) {
     hideArticleWhen({ article, className, dom, shouldHaveClass });
   }
@@ -171,6 +182,7 @@ export function makeHandleOnlyClick(dom, className) {
  * @param {HTMLElement} link - The tag link element
  * @param {string} className - The CSS class to filter by
  * @param {TagsDOMHelpers} dom - Object containing DOM helpers: hasNextSiblingClass, removeNextSibling, createHideSpan
+ * @returns {void}
  */
 export function toggleHideLink(link, className, dom) {
   // Check if a span with the hide link already exists immediately after the link.
