@@ -44,11 +44,8 @@ debug/
 *.zip
 /infra/build/
 
-# Coverage reports
-reports/coverage/
-
-# Lint reports
-reports/lint/
+# Reports
+reports/
 
 # stryker temp files
 .stryker-tmp
@@ -63,4 +60,3 @@ reports/lint/
 /infra/loadStaticConfig.js
 /infra/load-static-config-core.js
 /infra/moderate.js
-
