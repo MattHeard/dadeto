@@ -9,6 +9,7 @@
     "typeRoots": ["types", "node_modules/@types"],
     "noImplicitAny": true,
     "strict": false,
+    "strictFunctionTypes": true,
     "strictNullChecks": true,
     "noEmit": true,
     "skipLibCheck": true,
