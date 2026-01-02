@@ -1,12 +1,23 @@
 import { ensureFunction } from '../browser-core.js';
 
 /**
- * @typedef {{ headers?: object, [key: string]: any }} FetchOptions
+ * @typedef {{ ok: boolean, status?: number, json?: () => any }} AuthedResponse
+ */
+
+/**
+ * @typedef {Error & { status?: number }} AuthedError
+ */
+
+/**
+ * @typedef {{
+ *   headers?: Headers | ReturnType<Headers['entries']> | Record<string, any> | null,
+ *   [key: string]: any,
+ * }} FetchOptions
  */
 
 /**
  * Normalize header-like inputs into an object for fetch.
- * @param {Headers|FetchOptions|Record<string, any>|null|undefined} originalHeaders Header-like data.
+ * @param {Headers|ReturnType<Headers['entries']>|Record<string, any>|null|undefined} originalHeaders Header-like data.
  * @returns {Record<string, any>} Normalized headers map.
  */
 function normalizeHeaders(originalHeaders) {
@@ -34,7 +45,7 @@ function isHeadersInstance(value) {
 /**
  * Extract entries from a Headers-like object when accessible.
  * @param {unknown} value - Candidate header store.
- * @returns {Headers['entries'] | null} Iterator over header entries when available.
+ * @returns {ReturnType<Headers['entries']> | null} Iterator over header entries when available.
  */
 function getHeaderEntries(value) {
   if (!isHeadersInstance(value)) {
@@ -46,7 +57,7 @@ function getHeaderEntries(value) {
 
 /**
  * Clone non-`Headers` inputs into a plain object.
- * @param {FetchOptions|Record<string, any>|null|undefined} originalHeaders Header-like data.
+ * @param {FetchOptions['headers']|Record<string, any>|null|undefined} originalHeaders Header-like data.
  * @returns {Record<string, any>} Shallow copy of the provided headers.
  */
 function buildHeaderFallback(originalHeaders) {
@@ -55,7 +66,7 @@ function buildHeaderFallback(originalHeaders) {
 
 /**
  * Normalize successful responses and throw on HTTP errors.
- * @param {object|null|undefined} response - Raw fetch response or failure object.
+ * @param {AuthedResponse|unknown} response - Raw fetch response or failure object.
  * @returns {*} Parsed JSON payload or the original response.
  */
 function handleAuthedResponse(response) {
@@ -68,16 +79,28 @@ function handleAuthedResponse(response) {
 
 /**
  * Determine whether the provided response can be normalized.
- * @param {object|null|undefined} response - Candidate response object.
- * @returns {boolean} True when a response object with an `ok` flag is provided.
+ * @param {unknown} response - Candidate response object.
+ * @returns {response is AuthedResponse} True when a response object with an `ok` flag is provided.
  */
 function shouldProcessAuthedResponse(response) {
-  return Boolean(response && typeof response.ok === 'boolean');
+  return (
+    isObjectLike(response) &&
+    typeof (/** @type {{ ok?: unknown }} */ (response).ok) === 'boolean'
+  );
+}
+
+/**
+ * Determine whether a value is a non-null object.
+ * @param {unknown} value - Value to inspect.
+ * @returns {value is object} True when the value is an object and not null.
+ */
+function isObjectLike(value) {
+  return typeof value === 'object' && value !== null;
 }
 
 /**
  * Parse an authenticated response, throwing on HTTP failures.
- * @param {{ ok: boolean, status?: number, json?: () => any }} response - Validated fetch response.
+ * @param {AuthedResponse} response - Validated fetch response.
  * @returns {*} Parsed JSON payload or the original response when no parser is available.
  */
 function parseAuthedResponse(response) {
@@ -87,12 +110,14 @@ function parseAuthedResponse(response) {
 
 /**
  * Ensure the response reported success before parsing.
- * @param {{ ok: boolean, status?: number }} response - Validated response object.
+ * @param {AuthedResponse} response - Validated response object.
  * @returns {void}
  */
 function ensureResponseOk(response) {
   if (!response.ok) {
-    const error = new Error(`HTTP ${response.status}`);
+    const error = /** @type {AuthedError} */ (
+      new Error(`HTTP ${response.status}`)
+    );
     error.status = response.status;
     throw error;
   }
@@ -100,7 +125,7 @@ function ensureResponseOk(response) {
 
 /**
  * Resolve the body payload for a successful response.
- * @param {{ json?: () => any }} response - Response providing an optional JSON parser.
+ * @param {AuthedResponse} response - Response providing an optional JSON parser.
  * @returns {*} Parsed JSON payload or the original response when parsing is unavailable.
  */
 function getResponseBody(response) {
@@ -115,11 +140,7 @@ function getResponseBody(response) {
  * Create an authenticated fetch helper that injects the current ID token.
  * @param {{
  *   getIdToken: () => (string|Promise<string|null>|null),
- *   fetchJson: (url: string, init: FetchOptions) => Promise<{
- *     ok: boolean,
- *     status: number,
- *     json: () => any,
- *   } | any>,
+ *   fetchJson: (url: string, init: FetchOptions) => Promise<AuthedResponse|any>,
  * }} deps Dependencies for token lookup and network access.
  * @returns {(url: string, init?: FetchOptions) => Promise<any>} Fetch helper adding an Authorization header.
  */
