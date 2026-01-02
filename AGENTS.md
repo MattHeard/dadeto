@@ -12,8 +12,10 @@ Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for a
 - `bd create "Title" --type task --priority 2` - Create issue
 - `bd close <id>` - Complete work
 - `bd sync` - Sync with git (run at session end)
+- If a quality tool (lint, tests, coverage, etc.) raises a warning and no bead exists for it, create one so the warning is tracked.
 
 - Before editing any files for a bead, mark it in progress via `bd update <id> --status=in_progress` so the status reflects your work.
+- Treat missing branch coverage beads (e.g., coverage falling below 100%) as higher-priority chores; address them before tackling other open chores when possible so coverage regressions don’t linger.
 
 For full workflow details: `bd prime`
 

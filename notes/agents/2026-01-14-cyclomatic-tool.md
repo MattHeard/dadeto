@@ -1,0 +1,8 @@
+# Cyclomatic factors build tool
+
+- **Surprise:** I expected to need a standalone parser dependency, but the project already includes `typhonjs-escomplex`. Reading `ESComplex.parse` revealed it exposes the Babel AST, so I could reuse that for node traversal instead of introducing `@babel/parser`.
+- **Diagnosis:** I explored the dependency tree and the ESComplex source to confirm the parse helper exists, then wired the new analyzer to reuse the parsed AST while guarding for anonymous functions and all the branching node types we care about.
+- **Options:** I could have added a fresh parser or leaned on `escomplex.analyzeModule` reports, but choosing the existing parser kept the dependency list unchanged and let the new tool focus on textual descriptions; the trade-off was writing a custom walker to stay lightweight.
+- **Learning:** The AST from `typhonjs-escomplex` is production-ready, and building a simple traversal to build ordered descriptions works well alongside the CLI wrapper; future agents can hook into `describeCyclomaticFactors` directly.
+- **Follow-up:** Consider wiring this analyzer into any lint hook that flags high cyclomatic complexity so agents can automatically append the factor list to the warning. Also, determine if we want to surface `case` labels or `logical` short-circuits more richly in the output strings.
+- **Iteration:** While testing the tool against an example with multiple `||` expressions on the same line, I needed the descriptions to be unique, so I taught the analyzer to include the trimmed source snippet inside the logical operator descriptions before it logs the line number.

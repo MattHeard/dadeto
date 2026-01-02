@@ -238,6 +238,31 @@ describe('makeHandleHideSpan', () => {
     expect(dom.createTextNode).toHaveBeenCalledWith(')');
     expect(dom.appendChild).toHaveBeenCalledWith(spanEl, textNode2);
   });
+
+  it('returns early when the link has no parent', () => {
+    const spanEl = {};
+    const hideLinkEl = {};
+    const onlyLinkEl = {};
+    const createElement = jest
+      .fn()
+      .mockImplementationOnce(() => spanEl)
+      .mockImplementationOnce(() => hideLinkEl)
+      .mockImplementationOnce(() => onlyLinkEl);
+    const dom = {
+      createElement,
+      addClass: jest.fn(),
+      appendChild: jest.fn(),
+      createTextNode: jest.fn(() => ({})),
+      setTextContent: jest.fn(),
+      addEventListener: jest.fn(),
+      insertBefore: jest.fn(),
+    };
+    const link = { parentNode: null, nextSibling: {} };
+    const createHideSpan = makeHandleHideSpan(dom);
+    createHideSpan(link, 'foo');
+
+    expect(dom.insertBefore).not.toHaveBeenCalled();
+  });
 });
 
 describe('makeHandleClassName integration', () => {

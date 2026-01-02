@@ -68,10 +68,18 @@ function isValidCoordinate(value) {
 
 /**
  * Validate that the candidate position describes a board slot.
- * @param {TicTacToePosition | undefined} position - Candidate position.
+ * @param {TicTacToePosition} position - Candidate position.
  * @returns {position is TicTacToePosition} True when both row and column are provided.
  */
 function isValidPosition(position) {
+  return Boolean(position) && arePositionCoordinatesValid(position);
+}
+
+/**
+ * @param {TicTacToePosition} position - Coordinates describing a slot.
+ * @returns {boolean} True when row and column coordinates are valid.
+ */
+function arePositionCoordinatesValid(position) {
   return hasValidRow(position) && hasValidColumn(position);
 }
 
@@ -81,23 +89,15 @@ function isValidPosition(position) {
  * @returns {boolean} True when the row is 0, 1, or 2.
  */
 function hasValidRow(position) {
-  if (!position) {
-    return false;
-  }
-
   return isValidCoordinate(position.row);
 }
 
 /**
  * Does the provided position specify a valid column index?
- * @param {TicTacToePosition | undefined} position - Candidate position.
+ * @param {TicTacToePosition} position - Candidate position.
  * @returns {boolean} True when the column is 0, 1, or 2.
  */
 function hasValidColumn(position) {
-  if (!position) {
-    return false;
-  }
-
   return isValidCoordinate(position.column);
 }
 
