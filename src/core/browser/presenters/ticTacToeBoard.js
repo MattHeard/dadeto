@@ -1,4 +1,3 @@
-import { isObject } from '../common.js';
 import { createPreFromContent } from './browserPresentersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -58,38 +57,96 @@ function getPosition(move) {
  * @property {string[][]} board - Current board state used to validate the move.
  */
 
-/** @type {Array<(args: TicTacToeValidatorArgs) => boolean>} */
-const moveValidators = [
-  function positionIsObject({ position }) {
-    return isObject(position);
-  },
-  function validPlayer({ player }) {
-    return player === 'X' || player === 'O';
-  },
-  function validRow({ position }) {
-    return typeof position.row === 'number' && [0, 1, 2].includes(position.row);
-  },
-  function validColumn({ position }) {
-    return (
-      typeof position.column === 'number' && [0, 1, 2].includes(position.column)
-    );
-  },
-  function cellIsEmpty({ position, board }) {
-    return board[position.row][position.column] === ' ';
-  },
-];
+/**
+ * Test whether a grid coordinate is within the 3×3 board.
+ * @param {unknown} value - Coordinate to validate.
+ * @returns {value is number} True when the value is a number between 0 and 2.
+ */
+function isValidCoordinate(value) {
+  return typeof value === 'number' && [0, 1, 2].includes(value);
+}
+
+/**
+ * Validate that the candidate position describes a board slot.
+ * @param {TicTacToePosition | undefined} position - Candidate position.
+ * @returns {position is TicTacToePosition} True when both row and column are provided.
+ */
+function isValidPosition(position) {
+  return hasValidRow(position) && hasValidColumn(position);
+}
+
+/**
+ * Does the provided position specify a valid row index?
+ * @param {TicTacToePosition | undefined} position - Candidate position.
+ * @returns {boolean} True when the row is 0, 1, or 2.
+ */
+function hasValidRow(position) {
+  if (!position) {
+    return false;
+  }
+
+  return isValidCoordinate(position.row);
+}
+
+/**
+ * Does the provided position specify a valid column index?
+ * @param {TicTacToePosition | undefined} position - Candidate position.
+ * @returns {boolean} True when the column is 0, 1, or 2.
+ */
+function hasValidColumn(position) {
+  if (!position) {
+    return false;
+  }
+
+  return isValidCoordinate(position.column);
+}
+
+/**
+ * Ensure the provided player symbol is either 'X' or 'O'.
+ * @param {unknown} player - Candidate player symbol.
+ * @returns {player is 'X' | 'O'} True when the symbol matches a legal player.
+ */
+function isValidPlayer(player) {
+  return player === 'X' || player === 'O';
+}
+
+/**
+ * Check if a board cell is still empty.
+ * @param {TicTacToePosition} position - Position to inspect.
+ * @param {string[][]} board - Current board state.
+ * @returns {boolean} True when the cell contains a blank space.
+ */
+function isCellEmpty(position, board) {
+  return board[position.row][position.column] === ' ';
+}
+
+/**
+ * Validate that the move lands on an empty board cell.
+ * @param {TicTacToeMoveCandidate} move - Move being applied.
+ * @param {string[][]} board - Current board state.
+ * @returns {boolean} True when the move targets a blank slot.
+ */
+function hasValidPositionWithEmptyCell(move, board) {
+  const position = /** @type {TicTacToePosition | undefined} */ (
+    getPosition(move)
+  );
+
+  if (!isValidPosition(position)) {
+    return false;
+  }
+
+  return isCellEmpty(/** @type {TicTacToePosition} */ (position), board);
+}
 
 /**
  * Determine if a move is legal.
  * @param {TicTacToeMoveCandidate} move - Move to validate.
  * @param {string[][]} board - Current board state.
- * @returns {boolean} Whether the move can be applied.
+ * @returns {move is TicTacToeMove} Whether the move can be applied.
  */
 function isLegalMove(move, board) {
   const player = getPlayer(move);
-  const position = getPosition(move);
-  const args = { player, position, board };
-  return moveValidators.every(fn => fn(args));
+  return hasValidPositionWithEmptyCell(move, board) && isValidPlayer(player);
 }
 
 /**
@@ -114,9 +171,7 @@ function applyMove(move, board) {
     return;
   }
 
-  const position = /** @type {TicTacToePosition} */ (getPosition(move));
-  const player = /** @type {'X'|'O'} */ (getPlayer(move));
-  updateBoardIfLegal({ position, player }, board);
+  updateBoardIfLegal(move, board);
 }
 
 /**
