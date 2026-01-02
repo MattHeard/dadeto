@@ -1,5 +1,18 @@
 # Repository Guidelines
 
+## Issue Tracking
+
+This project uses **bd (beads)** for issue tracking.
+Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for auto-injection.
+
+**Quick reference:**
+- `bd ready` - Find unblocked work
+- `bd create "Title" --type task --priority 2` - Create issue
+- `bd close <id>` - Complete work
+- `bd sync` - Sync with git (run at session end)
+
+For full workflow details: `bd prime`
+
 ## General Recommendations for Future Agents
 - **Consult guidelines and past notes first.** Review relevant documentation, retrospectives, and prior changes before starting work so your approach aligns with established patterns and known pitfalls.
 - **Plan broad changes carefully.** Script repetitive edits, break large refactors into incremental steps, update related docs, and validate each phase—especially configs and tests—before moving on.
@@ -63,3 +76,29 @@
 - Terraform changes are applied by `.github/workflows/gcp-prod.yml`; modify the workflow to adjust behavior instead of running Terraform manually.
 - Mutation analysis and quality gates rely on Stryker and Sonar scripts—run `npm run stryker` or `npm run sonar-issues` only when coordinated with maintainers, and capture their reports under `reports/` if shared.
 - If tool output is hard to interpret, use more targeted options (e.g., ESLint JSON output with a lower local complexity threshold) to surface hot spots before broader refactors.
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
