@@ -214,6 +214,19 @@ describe('Cyberpunk Text Game', () => {
     expect(result).toMatch(/SYSTEM ERROR: neural link failure/);
   });
 
+  test('treats missing temporary bucket as an empty scoped state', () => {
+    env.set('getData', () => ({}));
+    const result = cyberpunkAdventure('start', env);
+    expect(result).toMatch(/Welcome, start/i);
+    expect(tempData.name).toBe('start');
+  });
+
+  test('returns SYSTEM ERROR if a required env helper is absent', () => {
+    env.delete('getCurrentTime');
+    const result = cyberpunkAdventure('any command', env);
+    expect(result).toMatch(/SYSTEM ERROR: neural link failure/);
+  });
+
   test('starts new game if CYBE1 data is missing', () => {
     env.set('getData', () => ({ temporary: {} }));
     const result = cyberpunkAdventure('Blaze', env);

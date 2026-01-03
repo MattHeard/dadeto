@@ -155,7 +155,7 @@ function deserializeJson(logError) {
  * @returns {value is null | undefined | ''} True when no value should be parsed.
  */
 function isMissingStoredValue(value) {
-  return value === null || value === undefined || value === '';
+  return isNullish(value) || value === '';
 }
 
 /**
