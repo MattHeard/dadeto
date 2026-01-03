@@ -16,8 +16,8 @@ Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for a
 
 - **Autoloop: Next Bead**
 - After finishing a bead (tests run, changes committed, bead updated/closed, evidence recorded) immediately start the next one—do not wait for a prompt.
-- 1. List your ready work with `bd ready --sort priority --limit 1`. If an ID appears, claim it via `bd update <id> --claim` and begin.
-- 2. If nothing is assigned yet still ready, run `bd ready --sort priority --unassigned --limit 1`; pick that bead (priority order makes it deterministic) and claim it the same way.
+- 1. List your ready work with `bd ready --sort priority`. If an ID appears, claim it via `bd update <id> --claim` and begin.
+- 2. If nothing is assigned yet still ready, run `bd ready --sort priority --unassigned`; pick that bead (priority order makes it deterministic) and claim it the same way.
 - 3. When more than one bead matches either list, the `--sort priority` ordering ensures the worker always picks higher-priority (lower number) work; continue to the next bead before touching lower priority work later.
 - 4. If a bead needs human input, immediately `bd update <id> --status blocked --add-label blocked:needs-human`, leave a blocking note via `bd comments add <id> "Describe the missing input"`, and jump back to step 1 to find the next ready bead instead of idling.
 - 5. If no eligible bead exists, idle (sleep/backoff for a minute), then rerun steps 1–2 until something is available.
