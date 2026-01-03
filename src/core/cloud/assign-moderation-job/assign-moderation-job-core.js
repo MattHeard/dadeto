@@ -252,12 +252,11 @@ function extractTokenErrorMessage(err) {
  * @returns {err is { message: string }} True when the message can be read as a string.
  */
 function hasTokenMessage(err) {
-  return (
-    typeof err === 'object' &&
-    err !== null &&
-    'message' in err &&
-    typeof err.message === 'string'
-  );
+  if (typeof err !== 'object' || err === null) {
+    return false;
+  }
+
+  return typeof err.message === 'string';
 }
 
 /**
@@ -296,13 +295,23 @@ function createEnsureValidIdToken(authInstance) {
       return createTokenError('Missing id_token');
     }
 
-    try {
-      const decoded = await authInstance.verifyIdToken(idToken);
-      return { context: { decoded } };
-    } catch (err) {
-      return createTokenError(err);
-    }
+    return verifyIdToken(authInstance, idToken);
   };
+}
+
+/**
+ * Verify the Firebase ID token and convert the result into a guard outcome.
+ * @param {{ verifyIdToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken> }} authInstance Firebase auth helper.
+ * @param {string} idToken Token to verify.
+ * @returns {Promise<GuardResult>} Guard outcome with the decoded token or an error.
+ */
+async function verifyIdToken(authInstance, idToken) {
+  try {
+    const decoded = await authInstance.verifyIdToken(idToken);
+    return { context: { decoded } };
+  } catch (err) {
+    return createTokenError(err);
+  }
 }
 
 /**
@@ -318,13 +327,23 @@ function createEnsureUserRecord(authInstance) {
       return createTokenError('Missing decoded token');
     }
 
-    try {
-      const userRecord = await authInstance.getUser(decoded.uid);
-      return { context: { userRecord } };
-    } catch (err) {
-      return createTokenError(err);
-    }
+    return fetchUserRecord(authInstance, decoded.uid);
   };
+}
+
+/**
+ * Load the Firebase user record while normalizing failures into guard outcomes.
+ * @param {{ getUser: (uid: string) => Promise<import('firebase-admin/auth').UserRecord> }} authInstance Firebase auth helper.
+ * @param {string} uid Moderator UID.
+ * @returns {Promise<GuardResult>} Guard result with the user record or an error.
+ */
+async function fetchUserRecord(authInstance, uid) {
+  try {
+    const userRecord = await authInstance.getUser(uid);
+    return { context: { userRecord } };
+  } catch (err) {
+    return createTokenError(err);
+  }
 }
 
 /**
@@ -561,8 +580,8 @@ function snapshotIsEmpty(snapshot) {
 
 /**
  * @typedef {object} SelectVariantDocResult
- * @property {VariantDocSnapshot} [variantDoc]
- * @property {string} [errorMessage]
+ * @property {VariantDocSnapshot} [variantDoc] Selected variant document snapshot when available.
+ * @property {string} [errorMessage] Human-readable message explaining why selection failed.
  */
 
 /**
@@ -735,11 +754,24 @@ async function selectSnapshotFromStep({ plan, runQuery, index, snapshot }) {
  */
 async function resolvePlanStep({ plan, runQuery, index, lastSnapshot }) {
   if (index >= plan.length) {
-    return lastSnapshot ?? { empty: true };
+    return ensureSnapshot(lastSnapshot);
   }
 
   const snapshot = await runQuery(plan[index]);
   return selectSnapshotFromStep({ plan, runQuery, index, snapshot });
+}
+
+/**
+ * Provide an empty snapshot structure when no data exists.
+ * @param {VariantSnapshot | undefined} snapshot Candidate snapshot.
+ * @returns {VariantSnapshot} Snapshot with actual data or an empty marker.
+ */
+function ensureSnapshot(snapshot) {
+  if (snapshot) {
+    return snapshot;
+  }
+
+  return { empty: true };
 }
 
 /**
@@ -1104,6 +1136,18 @@ async function resolveVariantDoc({
   const variantSnapshot = await fetchVariantSnapshot(random());
   const { errorMessage, variantDoc } = selectVariantDoc(variantSnapshot);
 
+  ensureVariantDocAvailability(errorMessage, variantDoc);
+
+  return variantDoc;
+}
+
+/**
+ * Throw an error when the resolved variant doc is missing or the selector signaled a failure.
+ * @param {string | undefined} errorMessage Optional selector error message.
+ * @param {VariantDocSnapshot | undefined} variantDoc Variant document snapshot.
+ * @returns {void}
+ */
+function ensureVariantDocAvailability(errorMessage, variantDoc) {
   if (errorMessage) {
     throw { status: 500, body: errorMessage };
   }
@@ -1111,8 +1155,6 @@ async function resolveVariantDoc({
   if (!variantDoc) {
     throw { status: 500, body: 'Variant fetch failed 🤷' };
   }
-
-  return variantDoc;
 }
 
 /**
