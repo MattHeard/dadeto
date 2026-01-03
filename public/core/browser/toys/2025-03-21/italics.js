@@ -8,6 +8,14 @@ const UNDERSCORE_MARKER = '_';
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
 
 /**
+ * A bold markdown segment that should remain untouched by italic expansion.
+ * @typedef {object} BoldSegment
+ * @property {string} boldText - The bold text including markers.
+ * @property {string} beforeText - Content that appears before the bold segment.
+ * @property {string} afterText - Content that appears after the bold segment.
+ */
+
+/**
  * Determine whether a string is empty or whitespace only.
  * @param {string} text - Text to evaluate.
  * @returns {boolean} True if text has no visible characters.
@@ -119,7 +127,7 @@ function escapeMarker(marker) {
 
 /**
  * Returns the array of markers used for italic styles
- * @returns {Array} - Array of marker characters
+ * @returns {string[]} - Array of marker characters
  * @private
  */
 function getItalicMarkers() {
@@ -171,6 +179,9 @@ function processTextPreservingBold(text) {
   }
 
   const segment = findBoldSegments(text);
+  if (!segment) {
+    return processAllItalicStyles(text);
+  }
   return assembleProcessedText(
     segment.beforeText,
     segment.boldText,
@@ -243,7 +254,7 @@ export function italics(text) {
 /**
  * Find bold segments in text and split into bold text and surrounding text
  * @param {string} text - The text to process
- * @returns {object | null} - Object with boldText, beforeText, and afterText properties, or null if no bold found
+ * @returns {BoldSegment | null} - Object with boldText, beforeText, and afterText properties, or null if no bold found
  * @private
  */
 function findBoldSegments(text) {
