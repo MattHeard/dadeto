@@ -7,6 +7,10 @@ const DEFAULT_VISIBILITY = '1';
 const NO_PATH_DISTANCE = 1;
 
 /**
+ * @typedef {{ pageId: string, adminId: string, ratings: unknown }} VisibilityPayload
+ */
+
+/**
  * Calculate the visibility score for a Dendrite page.
  * @param {string} input - JSON string containing pageId, adminId, and ratings.
  * @returns {string} Visibility score between "0" and "1".
@@ -18,7 +22,7 @@ export function calculateVisibility(input) {
 
 /**
  * Resolve visibility once input has been parsed.
- * @param {{ pageId: string, adminId: string, ratings: object } | null} parsed - Parsed payload or null.
+ * @param {VisibilityPayload | null} parsed - Parsed payload or null.
  * @returns {string} Visibility score or fallback.
  */
 function resolveParsedResult(parsed) {
@@ -30,7 +34,7 @@ function resolveParsedResult(parsed) {
 
 /**
  * Resolve the visibility outcome once input has been parsed.
- * @param {{ pageId: string, adminId: string, ratings: object }} payload - Parsed payload.
+ * @param {VisibilityPayload} payload - Parsed payload.
  * @returns {string} Visibility score.
  */
 function determineVisibility({ pageId, adminId, ratings }) {
@@ -43,7 +47,7 @@ function determineVisibility({ pageId, adminId, ratings }) {
 
 /**
  * Apply admin overrides and moderator calculations with normalized data.
- * @param {{ pageId: string, adminId: string, ratings: object }} payload - Validated payload.
+ * @param {{ pageId: string, adminId: string, ratings: unknown }} payload - Validated payload.
  * @returns {string} Visibility score.
  */
 function resolveWithNormalized({ pageId, adminId, ratings }) {
@@ -95,10 +99,12 @@ function resolveEmptyRatings(pageRatings) {
 function resolveNonEmptyRatings(payload) {
   const { pageRatings } = payload;
 
-  return when(
-    pageRatings.length === 1,
-    () => mapBooleanToVisibility(pageRatings[0].approved),
-    () => deriveWeightedScore(payload)
+  return /** @type {string} */ (
+    when(
+      pageRatings.length === 1,
+      () => mapBooleanToVisibility(pageRatings[0].approved),
+      () => deriveWeightedScore(payload)
+    )
   );
 }
 
@@ -126,10 +132,12 @@ function deriveWeightedScore({ pageRatings, adminId, ratings, pageId }) {
 /**
  * Parse incoming JSON safely.
  * @param {unknown} input - Raw input value.
- * @returns {object|null} Parsed object or null on failure.
+ * @returns {VisibilityPayload | null} Parsed object or null on failure.
  */
 function parseInput(input) {
-  return whenString(input, parseJsonOrFallback);
+  return /** @type {VisibilityPayload | null} */ (
+    whenString(input, parseJsonOrFallback)
+  );
 }
 
 /**
@@ -149,9 +157,13 @@ function areIdentifiersValid(pageId, adminId) {
  * @returns {Record<string, Record<string, boolean>>} Normalized ratings.
  */
 function normalizeRatings(ratings, adminId) {
-  const normalized = {};
+  const normalized =
+    /** @type {Record<string, Record<string, boolean>>} */ ({});
   if (isPlainObject(ratings)) {
-    Object.assign(normalized, mapModeratorRatings(ratings));
+    Object.assign(
+      normalized,
+      mapModeratorRatings(/** @type {Record<string, unknown>} */ (ratings))
+    );
   }
   ensureAdminEntry(normalized, adminId);
   return normalized;
@@ -188,7 +200,7 @@ function assignModeratorRatings(acc, moderatorId, moderatorRatings) {
  * @param {string} adminId - Admin identifier.
  */
 function ensureAdminEntry(normalized, adminId) {
-  if (!Object.hasOwn(normalized, adminId)) {
+  if (!Object.prototype.hasOwnProperty.call(normalized, adminId)) {
     normalized[adminId] = {};
   }
 }
@@ -205,7 +217,7 @@ function sanitizeRatings(moderatorRatings) {
 
   return Object.entries(moderatorRatings).reduce(
     (acc, [pageId, value]) => assignPageRating(acc, pageId, value),
-    {}
+    /** @type {Record<string, boolean>} */ ({})
   );
 }
 
@@ -258,7 +270,10 @@ function getAdminRatings(ratings, adminId) {
  * @returns {boolean} True when a rating exists.
  */
 function hasAdminRating(ratings, adminId, pageId) {
-  return Object.hasOwn(getAdminRatings(ratings, adminId), pageId);
+  return Object.prototype.hasOwnProperty.call(
+    getAdminRatings(ratings, adminId),
+    pageId
+  );
 }
 
 /**

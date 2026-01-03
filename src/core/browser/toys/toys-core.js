@@ -22,11 +22,19 @@ export function parseCsvLine(line) {
 }
 
 class CsvLineParser {
+  /**
+   * @param {string} line CSV row to parse.
+   */
   constructor(line) {
+    /** @type {string} */
     this.line = line;
+    /** @type {number} */
     this.index = 0;
+    /** @type {string[]} */
     this.fields = [];
+    /** @type {string} */
     this.field = '';
+    /** @type {boolean} */
     this.inQuotes = false;
   }
 
@@ -63,6 +71,10 @@ class CsvLineParser {
     this.index += 1;
   }
 
+  /**
+   * @param {string} char Current character to examine.
+   * @returns {boolean}
+   */
   consumeQuote(char) {
     if (!this.isQuote(char)) {
       return false;
@@ -98,6 +110,10 @@ class CsvLineParser {
     return this.line[this.index + 1];
   }
 
+  /**
+   * @param {string} char Character to test for the delimiter.
+   * @returns {boolean}
+   */
   consumeDelimiter(char) {
     if (!this.canConsumeDelimiter(char)) {
       return false;
@@ -107,6 +123,10 @@ class CsvLineParser {
     return true;
   }
 
+  /**
+   * @param {(char: string) => boolean} handler Handler that processes the current character.
+   * @returns {boolean}
+   */
   consumeWithAdvance(handler) {
     if (handler.call(this, this.currentChar())) {
       return this.incrementIndexAndReturnTrue();
@@ -120,10 +140,18 @@ class CsvLineParser {
     return true;
   }
 
+  /**
+   * @param {string} char Candidate character to treat as a delimiter.
+   * @returns {boolean}
+   */
   canConsumeDelimiter(char) {
     return this.isDelimiter(char) && this.isOutsideQuotedField();
   }
 
+  /**
+   * @param {string} char Candidate character to compare against the delimiter.
+   * @returns {boolean}
+   */
   isDelimiter(char) {
     return char === DELIMITER;
   }

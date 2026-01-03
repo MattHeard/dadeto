@@ -2,6 +2,30 @@ import { deepClone, safeParseJson, valueOr } from '../browser-core.js';
 import { isNonNullObject, isValidString } from '../../commonCore.js';
 
 /**
+ * @typedef {( ...args: any[]) => any} EnvHelperFunc
+ * @typedef {Map<string, EnvHelperFunc>} ToyEnv
+ * @typedef {{ stories: object[], pages: object[], options: object[] }} Dend2Data
+ * @typedef {{ temporary?: { DEND2?: Dend2Data } }} ToyStorage
+ * @typedef {{ id: string, optionId: string, content: string }} ToyPage
+ * @typedef {{ id: string, title: string }} ToyStory
+ * @typedef {{ id: string, content: string, pageId?: string }} ToyOption
+ * @typedef {{ getUuid: () => string, getData: () => ToyStorage, setLocalTemporaryData: (data: ToyStorage) => void }} EnvAccessors
+ */
+
+/**
+ *
+ * @param env
+ * @param key
+ */
+function requireEnvHelper(env, key) {
+  const helper = env.get(key);
+  if (typeof helper !== 'function') {
+    throw new Error(`Missing toy helper "${key}"`);
+  }
+  return helper;
+}
+
+/**
  * Run a callback when the input value is a string.
  * @param {unknown} value Candidate value.
  * @param {(value: string) => T} fn Callback that consumes the string.
@@ -12,15 +36,16 @@ export { whenString } from '../../commonCore.js';
 
 /**
  * Helper utilities shared by browser toys.
- * @param {Map<string, Function>} env Environment map that exposes helpers.
- * @returns {{getUuid: Function, getData: Function, setLocalTemporaryData: Function}} Accessors.
+ * @param {ToyEnv} env Environment map that exposes helpers.
+ * @returns {EnvAccessors} Accessors.
  */
 export function getEnvHelpers(env) {
-  const getter = env.get.bind(env);
   return {
-    getUuid: getter('getUuid'),
-    getData: getter('getData'),
-    setLocalTemporaryData: getter('setLocalTemporaryData'),
+    getUuid: /** @type {() => string} */ (requireEnvHelper(env, 'getUuid')),
+    getData: /** @type {() => ToyStorage} */ (requireEnvHelper(env, 'getData')),
+    setLocalTemporaryData: /** @type {(data: ToyStorage) => void} */ (
+      requireEnvHelper(env, 'setLocalTemporaryData')
+    ),
   };
 }
 
@@ -76,7 +101,7 @@ function createEmptyDend2() {
 
 /**
  * Verify that the requested properties exist as arrays.
- * @param {object} obj Object to validate.
+ * @param {Record<string, unknown>} obj Object to validate.
  * @param {string[]} keys Array keys that must resolve to arrays.
  * @returns {boolean} True when every key points to an array.
  */
@@ -86,7 +111,7 @@ function hasArrayProps(obj, keys) {
 
 /**
  * Determine whether the given data matches the DEND2 shape.
- * @param {object} obj Candidate structure.
+ * @param {Record<string, unknown>} obj Candidate structure.
  * @returns {boolean} True when the shape is valid.
  */
 function isValidDend2Structure(obj) {
@@ -95,7 +120,7 @@ function isValidDend2Structure(obj) {
 
 /**
  * Confirm that the temporary storage contains a DEND2 payload.
- * @param {object} data Storage object that should include `temporary`.
+ * @param {ToyStorage} data Storage object that should include `temporary`.
  * @returns {boolean} True when `temporary.DEND2` is valid.
  */
 function isTemporaryValid(data) {
@@ -107,7 +132,7 @@ function isTemporaryValid(data) {
 
 /**
  * Make certain the store exposes a valid `temporary.DEND2` bucket.
- * @param {object} data Storage object to update.
+ * @param {ToyStorage} data Storage object to update.
  * @returns {void}
  */
 export function ensureDend2(data) {
@@ -118,39 +143,45 @@ export function ensureDend2(data) {
 
 /**
  * Create option objects for values present in the input data.
- * @param {object} data Source that may contain option values.
- * @param {Function} getUuid UUID generator.
+ * @param {Record<string, unknown>} data Source that may contain option values.
+ * @param {() => string} getUuid UUID generator.
  * @param {string} [pageId] Optional page identifier to include on each option.
- * @returns {Array<object>} Option list.
+ * @returns {ToyOption[]} Option list.
  */
 export function createOptions(data, getUuid, pageId) {
-  return DENDRITE_OPTION_KEYS.filter(key => data[key]).map(key => {
-    const option = { id: getUuid(), content: data[key] };
+  return DENDRITE_OPTION_KEYS.reduce((acc, key) => {
+    const candidate = data[key];
+    if (typeof candidate !== 'string' || candidate.length === 0) {
+      return acc;
+    }
+    /** @type {ToyOption} */
+    const option = { id: getUuid(), content: candidate };
     if (pageId) {
       option.pageId = pageId;
     }
-    return option;
-  });
+    acc.push(option);
+    return acc;
+  }, /** @type {ToyOption[]} */ ([]));
 }
 
 /**
  * Clone the current data snapshot and guarantee a temporary DEND2 structure.
- * @param {Function} getData Function that returns the current storage object.
- * @returns {object} Clone of the current data with a ready `temporary.DEND2`.
+ * @param {() => ToyStorage} getData Function that returns the current storage object.
+ * @returns {ToyStorage} Clone of the current data with a ready `temporary.DEND2`.
  */
 export function cloneTemporaryDend2Data(getData) {
   const currentData = getData();
-  const newData = deepClone(currentData);
+  const newData = /** @type {ToyStorage} */ (deepClone(currentData));
   ensureDend2(newData);
   return newData;
 }
 
 /**
  * Append a newly created page and its options to the cloned DEND2 state.
- * @param {object} data Cloned storage object with `temporary.DEND2`.
- * @param {object} page Page object to persist.
- * @param {Array<object>} opts Option objects to attach.
- * @returns {object} The updated storage object.
+ * @param {ToyStorage} data Cloned storage object with `temporary.DEND2`.
+ * @param {ToyPage} page Page object to persist.
+ * @param {ToyOption[]} opts Option objects to attach.
+ * @returns {ToyStorage} The updated storage object.
  */
 export function appendPageAndOptions(data, page, opts) {
   data.temporary.DEND2.pages.push(page);
@@ -160,8 +191,8 @@ export function appendPageAndOptions(data, page, opts) {
 
 /**
  * Append the page/options and persist the updated storage back.
- * @param {object} data Cloned DEND2 storage instance.
- * @param {{page: object, opts: Array<object>, setLocalTemporaryData: Function}} params Payload metadata and writer.
+ * @param {ToyStorage} data Cloned DEND2 storage instance.
+ * @param {{page: ToyPage, opts: ToyOption[], setLocalTemporaryData: (data: ToyStorage) => void}} params Payload metadata and writer.
  * @returns {void}
  */
 export function appendPageAndSave(data, { page, opts, setLocalTemporaryData }) {
@@ -171,9 +202,9 @@ export function appendPageAndSave(data, { page, opts, setLocalTemporaryData }) {
 
 /**
  * Construct the JSON payload for a newly added page and its options.
- * @param {object} page The persisted page object.
- * @param {Array<object>} opts Option objects tied to the page.
- * @returns {{pages: object[], options: object[]}} Payload for the toy response.
+ * @param {ToyPage | undefined} page The persisted page object.
+ * @param {ToyOption[]} opts Option objects tied to the page.
+ * @returns {{pages: ToyPage[], options: ToyOption[]}} Payload for the toy response.
  */
 export function buildPageResponse(page, opts) {
   const pages = [];
@@ -229,10 +260,10 @@ export function buildEmptyDendriteStoryResponse() {
 
 /**
  * Clone the temporary DEND2 store, mutate it if needed, and persist the supplied page/option data.
- * @param {Map<string, Function>} env Environment helpers used during persistence.
- * @param {{ page: object, options: Array<object> }} payload Page metadata to persist.
- * @param {(data: object) => void} [mutateData] Optional hook to mutate the cloned data before saving.
- * @returns {object} Updated temporary data after the persistence step.
+ * @param {ToyEnv} env Environment helpers used during persistence.
+ * @param {{ page: ToyPage, options: ToyOption[] }} payload Page metadata to persist.
+ * @param {(data: ToyStorage) => void} [mutateData] Optional hook to mutate the cloned data before saving.
+ * @returns {ToyStorage} Updated temporary data after the persistence step.
  */
 function persistTemporaryData(env, payload, mutateData = () => {}) {
   const { page, options } = payload;
@@ -245,9 +276,9 @@ function persistTemporaryData(env, payload, mutateData = () => {}) {
 
 /**
  * Build the JSON response for a persisted page payload.
- * @param {{ page: object, options: Array<object> }} payload Page metadata mirrored in the response.
- * @param {object} newData Cloned temporary data that may have been mutated.
- * @param {(context: { newData: object, page: object, options: Array<object> }) => object} [extraResponse] Optional fields to merge into the response.
+ * @param {{ page: ToyPage, options: ToyOption[] }} payload Page metadata mirrored in the response.
+ * @param {ToyStorage} newData Cloned temporary data that may have been mutated.
+ * @param {(context: { newData: ToyStorage, page: ToyPage, options: ToyOption[] }) => object} [extraResponse] Optional fields to merge into the response.
  * @returns {string} JSON string representing the persisted page data.
  */
 function buildPersistedResponse(payload, newData, extraResponse = () => ({})) {
@@ -262,7 +293,7 @@ function buildPersistedResponse(payload, newData, extraResponse = () => ({})) {
 /**
  * Persist a Dendrite page payload into temporary storage.
  * @param {{ optionId: string, content: string }} parsed Parsed page payload.
- * @param {Map<string, Function>} env Environment helpers used to get UUIDs and persist data.
+ * @param {ToyEnv} env Environment helpers used to get UUIDs and persist data.
  * @returns {string} JSON string containing the new page and option entries.
  */
 export function persistDendritePage(parsed, env) {
@@ -282,7 +313,7 @@ export function persistDendritePage(parsed, env) {
 /**
  * Persist a Dendrite story payload into temporary storage.
  * @param {{ title: string, content: string }} parsed Parsed story payload.
- * @param {Map<string, Function>} env Environment with helpers for persistence.
+ * @param {ToyEnv} env Environment with helpers for persistence.
  * @returns {string} JSON string containing the newly persisted story data.
  */
 export function persistDendriteStory(parsed, env) {

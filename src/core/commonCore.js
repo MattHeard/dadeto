@@ -196,7 +196,19 @@ export function guardThen(condition, effect) {
   return true;
 }
 
-/* eslint complexity: ["error", 3] */
+/**
+ * Provide a safe fallback resolver for cases when one isn't supplied.
+ * @param {(() => unknown) | undefined} fallback Optional fallback resolver.
+ * @returns {() => unknown} Resolver to invoke when the condition fails.
+ */
+function resolveWhenFallback(fallback) {
+  if (typeof fallback === 'function') {
+    return fallback;
+  }
+
+  return () => null;
+}
+
 /**
  * Execute the transform when the condition is true, otherwise return the fallback result.
  * @param {boolean} condition - Determines whether the transform should run.
@@ -204,9 +216,9 @@ export function guardThen(condition, effect) {
  * @param {() => unknown} [fallback] - Resolver invoked when the condition is falsy.
  * @returns {unknown} Result of the transform or the fallback.
  */
-export function when(condition, transform, fallback = () => null) {
+export function when(condition, transform, fallback) {
   if (!condition) {
-    return fallback();
+    return resolveWhenFallback(fallback)();
   }
 
   return transform();

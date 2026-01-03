@@ -47,22 +47,22 @@ export function resolveFirestoreEnvironment(
 
 /**
  * Check if ensure function is custom.
- * @param {Function} ensureAppFn Ensure function.
+ * @param {Function | undefined} ensureAppFn Ensure function.
  * @param {Function} defaultEnsureFn Default.
  * @returns {boolean} True if custom.
  */
 function isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) {
-  return ensureAppFn && ensureAppFn !== defaultEnsureFn;
+  return Boolean(ensureAppFn && ensureAppFn !== defaultEnsureFn);
 }
 
 /**
  * Check if get firestore function is custom.
- * @param {Function} getFirestoreFn Get function.
+ * @param {Function | undefined} getFirestoreFn Get function.
  * @param {Function} defaultGetFirestoreFn Default.
  * @returns {boolean} True if custom.
  */
 function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
-  return getFirestoreFn && getFirestoreFn !== defaultGetFirestoreFn;
+  return Boolean(getFirestoreFn && getFirestoreFn !== defaultGetFirestoreFn);
 }
 
 /**
@@ -249,10 +249,15 @@ function extractTokenErrorMessage(err) {
 /**
  * Determine whether the error exposes a string message.
  * @param {unknown} err Error captured during token validation.
- * @returns {boolean} True when the message can be read as a string.
+ * @returns {err is { message: string }} True when the message can be read as a string.
  */
 function hasTokenMessage(err) {
-  return Boolean(err && typeof err.message === 'string');
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'message' in err &&
+    typeof err.message === 'string'
+  );
 }
 
 /**
@@ -280,11 +285,17 @@ function resolveTokenErrorMessage(err) {
 
 /**
  * Build a guard that verifies Firebase ID tokens using the provided auth instance.
- * @param {{ verifyIdToken: (token: string) => Promise<unknown> }} authInstance Firebase auth helper used to validate tokens.
- * @returns {(context: { idToken: string }) => Promise<GuardResult>} Guard that enforces token validity.
+ * @param {{ verifyIdToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken> }} authInstance Firebase auth helper used to validate tokens.
+ * @returns {GuardFunction} Guard that enforces token validity.
  */
 function createEnsureValidIdToken(authInstance) {
-  return async function ensureValidIdToken({ idToken }) {
+  return async function ensureValidIdToken(context) {
+    const { idToken } = context;
+
+    if (!idToken) {
+      return createTokenError('Missing id_token');
+    }
+
     try {
       const decoded = await authInstance.verifyIdToken(idToken);
       return { context: { decoded } };
@@ -297,10 +308,16 @@ function createEnsureValidIdToken(authInstance) {
 /**
  * Build a guard that ensures the authenticated user record exists.
  * @param {{ getUser: (uid: string) => Promise<import('firebase-admin/auth').UserRecord> }} authInstance Firebase auth instance.
- * @returns {(context: { decoded: { uid: string } }) => Promise<GuardResult>} Guard ensuring the user record can be fetched.
+ * @returns {GuardFunction} Guard ensuring the user record can be fetched.
  */
 function createEnsureUserRecord(authInstance) {
-  return async function ensureUserRecord({ decoded }) {
+  return async function ensureUserRecord(context) {
+    const { decoded } = context;
+
+    if (!decoded) {
+      return createTokenError('Missing decoded token');
+    }
+
     try {
       const userRecord = await authInstance.getUser(decoded.uid);
       return { context: { userRecord } };
@@ -312,7 +329,7 @@ function createEnsureUserRecord(authInstance) {
 
 /**
  * Build the guard runner for the assign moderation workflow.
- * @param {{ verifyIdToken: (token: string) => Promise<unknown>, getUser: (uid: string) => Promise<unknown> }} authInstance
+ * @param {{ verifyIdToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>, getUser: (uid: string) => Promise<import('firebase-admin/auth').UserRecord> }} authInstance
  * Firebase auth instance providing token verification and user lookup.
  * @returns {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>}
  * Guard chain executor configured with the standard moderation guards.
@@ -451,7 +468,7 @@ export function createCreateCorsOrigin({ getAllowedOrigins }) {
  * @returns {{ origin: CorsOriginHandler, methods: string[] }} Configuration object for the CORS middleware.
  */
 function buildCorsOptions(createCorsOriginHandlerFn, corsConfig) {
-  const { allowedOrigins } = corsConfig;
+  const allowedOrigins = corsConfig.allowedOrigins ?? [];
 
   return {
     ...corsConfig,
@@ -515,6 +532,15 @@ function isSnapshotEmpty(snapshot, variantDoc) {
   return isMissingVariantDoc(variantDoc) || snapshotIsEmpty(snapshot);
 }
 
+/** @typedef {import('firebase-admin/firestore').QueryDocumentSnapshot} VariantDocSnapshot */
+
+/**
+ * @typedef {{
+ *   empty?: boolean,
+ *   docs?: VariantDocSnapshot[],
+ * }} VariantSnapshot
+ */
+
 /**
  * Determine whether a variant document is missing from the snapshot.
  * @param {unknown} variantDoc Candidate document.
@@ -534,9 +560,15 @@ function snapshotIsEmpty(snapshot) {
 }
 
 /**
+ * @typedef {object} SelectVariantDocResult
+ * @property {VariantDocSnapshot} [variantDoc]
+ * @property {string} [errorMessage]
+ */
+
+/**
  * Select the primary variant document from a query snapshot when it exists.
- * @param {{ empty: boolean, docs?: unknown[] }} snapshot Query snapshot containing candidate documents.
- * @returns {{ variantDoc?: unknown, errorMessage?: string }} Selected document when present or an error message when missing.
+ * @param {VariantSnapshot} snapshot Query snapshot containing candidate documents.
+ * @returns {SelectVariantDocResult} Selected document when present or an error message when missing.
  */
 export function selectVariantDoc(snapshot) {
   const docs = resolveSnapshotDocs(snapshot);
@@ -550,8 +582,8 @@ export function selectVariantDoc(snapshot) {
 
 /**
  * Safely extract document snapshots from a query result.
- * @param {{ docs?: unknown[] } | undefined} snapshot Firestore query snapshot that may contain docs.
- * @returns {unknown[]} Document snapshots if present, otherwise an empty array.
+ * @param {VariantSnapshot | undefined} snapshot Firestore query snapshot that may contain docs.
+ * @returns {VariantDocSnapshot[]} Document snapshots if present, otherwise an empty array.
  */
 function resolveSnapshotDocs(snapshot) {
   if (!hasSnapshotDocs(snapshot)) {
@@ -563,8 +595,8 @@ function resolveSnapshotDocs(snapshot) {
 
 /**
  * Check whether the snapshot exposes document entries.
- * @param {{ docs?: unknown[] } | undefined} snapshot Snapshot to inspect.
- * @returns {boolean} True when an array of docs exists.
+ * @param {VariantSnapshot | undefined} snapshot Snapshot to inspect.
+ * @returns {snapshot is { docs: VariantDocSnapshot[] }} True when an array of docs exists.
  */
 function hasSnapshotDocs(snapshot) {
   if (!snapshot) {
@@ -576,8 +608,8 @@ function hasSnapshotDocs(snapshot) {
 
 /**
  * Create a helper that resolves moderator document references.
- * @param {{ collection: (name: string) => { doc: (id: string) => unknown } }} database Firestore database instance.
- * @returns {(uid: string) => unknown} Function that builds references to moderator documents.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @returns {(uid: string) => import('firebase-admin/firestore').DocumentReference} Function that builds references to moderator documents.
  */
 export function createModeratorRefFactory(database) {
   return function createModeratorRef(uid) {
@@ -630,7 +662,7 @@ export function createReputationScopedVariantsQuery(database, reputation) {
 /**
  * Create a query runner that fetches a single variant candidate.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
- * @returns {(descriptor: VariantQueryDescriptor) => Promise<import('firebase-admin/firestore').QuerySnapshot>} Query runner bound to the provided database.
+ * @returns {(descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} Query runner bound to the provided database.
  */
 export function createRunVariantQuery(database) {
   return function runVariantQuery({ reputation, comparator, randomValue }) {
@@ -680,10 +712,10 @@ const snapshotHasResults = snapshot => snapshot?.empty === false;
 
 /**
  * Evaluate a snapshot and continue the plan when empty.
- * @param {{ plan: VariantQueryDescriptor[], runQuery: (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>, index: number, snapshot: { empty?: boolean } }} input Query evaluation context.
- * @returns {Promise<unknown>|unknown} Snapshot containing results or the promise for the next step.
+ * @param {{ plan: VariantQueryDescriptor[], runQuery: (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>, index: number, snapshot: VariantSnapshot }} input Query evaluation context.
+ * @returns {Promise<VariantSnapshot>} Snapshot containing results or the promise for the next step.
  */
-function selectSnapshotFromStep({ plan, runQuery, index, snapshot }) {
+async function selectSnapshotFromStep({ plan, runQuery, index, snapshot }) {
   if (snapshotHasResults(snapshot)) {
     return snapshot;
   }
@@ -698,12 +730,12 @@ function selectSnapshotFromStep({ plan, runQuery, index, snapshot }) {
 
 /**
  * Resolve the query plan sequentially until a snapshot yields results.
- * @param {{ plan: VariantQueryDescriptor[], runQuery: (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>, index: number, lastSnapshot: unknown }} input Remaining plan execution state.
- * @returns {Promise<unknown>} Snapshot matching the selection criteria or the last evaluated snapshot.
+ * @param {{ plan: VariantQueryDescriptor[], runQuery: (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>, index: number, lastSnapshot: VariantSnapshot | undefined }} input Remaining plan execution state.
+ * @returns {Promise<VariantSnapshot>} Snapshot matching the selection criteria or the last evaluated snapshot.
  */
 async function resolvePlanStep({ plan, runQuery, index, lastSnapshot }) {
   if (index >= plan.length) {
-    return lastSnapshot;
+    return lastSnapshot ?? { empty: true };
   }
 
   const snapshot = await runQuery(plan[index]);
@@ -712,9 +744,9 @@ async function resolvePlanStep({ plan, runQuery, index, lastSnapshot }) {
 
 /**
  * Create a Firestore-agnostic variant snapshot fetcher.
- * @param {{ runQuery: (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }> }} deps
+ * @param {{ runQuery: (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot> }} deps
  * Adapter that executes a single query descriptor.
- * @returns {(randomValue: number) => Promise<unknown>} Function resolving with the first snapshot containing results.
+ * @returns {(randomValue: number) => Promise<VariantSnapshot>} Function resolving with the first snapshot containing results.
  */
 export function createVariantSnapshotFetcher({ runQuery }) {
   return async function fetchVariantSnapshot(randomValue) {
@@ -730,9 +762,9 @@ export function createVariantSnapshotFetcher({ runQuery }) {
 
 /**
  * Build a factory that produces Firestore-backed variant snapshot fetchers.
- * @param {(database: unknown) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQueryFn
+ * @param {(database: unknown) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} createRunVariantQueryFn
  * Adapter factory that accepts a database instance and returns a query executor.
- * @returns {(database: unknown) => (randomValue: number) => Promise<unknown>} Factory producing snapshot fetchers bound to a
+ * @returns {(database: unknown) => (randomValue: number) => Promise<VariantSnapshot>} Factory producing snapshot fetchers bound to a
  * Firestore database.
  */
 export function createFetchVariantSnapshotFromDbFactory(
@@ -753,17 +785,14 @@ export function createFetchVariantSnapshotFromDbFactory(
  */
 
 /**
- * @typedef {object} GuardSuccess
- * @property {object} [context] Additional context to merge into the chain state.
- */
-
-/**
- * @typedef {{ error: GuardError } | GuardSuccess | void} GuardResult
+ * @typedef {object} GuardResult
+ * @property {GuardContext} [context]
+ * @property {GuardError} [error]
  */
 
 /**
  * @typedef {object} GuardContext
- * @property {NativeHttpRequest} req Incoming HTTP request.
+ * @property {NativeHttpRequest} [req] Incoming HTTP request.
  * @property {string} [idToken] Extracted Firebase ID token.
  * @property {import('firebase-admin/auth').DecodedIdToken} [decoded] Verified Firebase token payload.
  * @property {import('firebase-admin/auth').UserRecord} [userRecord] Authenticated moderator record.
@@ -868,7 +897,7 @@ async function executeGuardSequence(guards, initialContext) {
   let context = initialContext;
   for (const guard of guards) {
     const guardResult = await executeSingleGuard(guard, context);
-    context = guardResult.context;
+    context = guardResult.context ?? context;
   }
   return { context };
 }
@@ -890,10 +919,10 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
 
 /**
  * @typedef {object} AssignModerationWorkflowDeps
- * @property {(context: { req: NativeHttpRequest }) => Promise<{ error?: { status: number, body: string }, context?: { userRecord?: import('firebase-admin/auth').UserRecord } }>} runGuards - Guard runner that validates the incoming request.
- * @property {(randomValue: number) => Promise<unknown>} fetchVariantSnapshot - Resolver that fetches a moderation candidate snapshot.
- * @property {(snapshot: unknown) => { variantDoc?: { ref: unknown }, errorMessage?: string }} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
- * @property {(uid: string) => { set: (assignment: unknown) => Promise<unknown> }} createModeratorRef - Factory that returns the moderator document reference for persisting assignments.
+ * @property {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>} runGuards - Guard runner that validates the incoming request.
+ * @property {(randomValue: number) => Promise<VariantSnapshot>} fetchVariantSnapshot - Resolver that fetches a moderation candidate snapshot.
+ * @property {(snapshot: VariantSnapshot) => SelectVariantDocResult} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
+ * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference} createModeratorRef - Factory that returns the moderator document reference for persisting assignments.
  * @property {() => unknown} now - Clock function that returns the timestamp persisted with the assignment.
  * @property {() => number} random - RNG used to seed variant selection.
  */
@@ -952,7 +981,7 @@ function handleAssignmentError(err) {
 
 /**
  * Create guard error response.
- * @param {object} error Error.
+ * @param {GuardError} error Error.
  * @returns {object} Response.
  */
 function createGuardErrorResponse(error) {
@@ -964,23 +993,24 @@ function createGuardErrorResponse(error) {
 
 /**
  * Ensure guard result has no error or throw.
- * @param {Function} runGuards Guards runner.
- * @param {object} req Request.
- * @returns {Promise<object>} Guard context.
+ * @param {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>} runGuards Guards runner.
+ * @param {NativeHttpRequest} req Request.
+ * @returns {Promise<GuardContext>} Guard context.
  */
 async function resolveGuardContext(runGuards, req) {
   const guardResult = await runGuards({ req });
-  return extractGuardContext(guardResult);
+  return extractGuardContext(guardResult, req);
 }
 
 /**
  * Ensure a guard context is available or throw the associated response.
- * @param {object} guardResult Guard runner output.
- * @returns {object} Guard context.
+ * @param {{ error?: GuardError, context?: GuardContext } | undefined} guardResult Guard runner output.
+ * @param {NativeHttpRequest} req Request used to seed fallback context.
+ * @returns {GuardContext} Guard context.
  */
-function extractGuardContext(guardResult) {
+function extractGuardContext(guardResult, req) {
   ensureGuardErrorFromResult(guardResult);
-  return getGuardContextValue(guardResult);
+  return getGuardContextValue(guardResult, req);
 }
 
 /**
@@ -995,24 +1025,26 @@ function ensureGuardErrorFromResult(guardResult) {
 /**
  * Retrieve the guard context when available.
  * @param {GuardResult | undefined} guardResult Guard runner output.
+ * @param {NativeHttpRequest} req Request used to compose the fallback context.
  * @returns {GuardContext} Guard context or fallback.
  */
-function getGuardContextValue(guardResult) {
-  return getContextOrFallback(guardResult?.context);
+function getGuardContextValue(guardResult, req) {
+  return getContextOrFallback(guardResult?.context, req);
 }
 
 /**
- * Provide the guard context or an empty fallback.
+ * Provide the guard context or a fallback containing the request.
  * @param {GuardContext | undefined} context Guard context candidate.
+ * @param {NativeHttpRequest} req Request used to seed fallback context.
  * @returns {GuardContext} Guard context or safe fallback.
  */
-function getContextOrFallback(context) {
-  return context ?? {};
+function getContextOrFallback(context, req) {
+  return context ?? { req };
 }
 
 /**
  * Throw when the guard runner produced an error.
- * @param {{ status: number, body?: string } | undefined} guardError Guard error response.
+ * @param {GuardError | undefined} guardError Guard error response.
  * @returns {void}
  */
 function ensureGuardError(guardError) {
@@ -1053,12 +1085,16 @@ function resolveUserRecord(context) {
 }
 
 /**
+ * @typedef {object} ResolveVariantDocDeps
+ * @property {(randomValue: number) => Promise<VariantSnapshot>} fetchVariantSnapshot Function that loads a variant snapshot based on the provided candidate.
+ * @property {(snapshot: VariantSnapshot) => SelectVariantDocResult} selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
+ * @property {() => number} random Random number generator used to pick a variant candidate.
+ */
+
+/**
  * Fetch a candidate variant snapshot and resolve the selected variant document.
- * @param {object} deps Dependencies required for variant resolution.
- * @param {Function} deps.fetchVariantSnapshot Function that loads a variant snapshot based on the provided candidate.
- * @param {Function} deps.selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
- * @param {() => number} deps.random Random number generator used to pick a variant candidate.
- * @returns {Promise<unknown>} Variant document snapshot resolved for the current moderator.
+ * @param {ResolveVariantDocDeps} deps Dependencies required for variant resolution.
+ * @returns {Promise<VariantDocSnapshot>} Variant document snapshot resolved for the current moderator.
  */
 async function resolveVariantDoc({
   fetchVariantSnapshot,
@@ -1072,13 +1108,29 @@ async function resolveVariantDoc({
     throw { status: 500, body: errorMessage };
   }
 
+  if (!variantDoc) {
+    throw { status: 500, body: 'Variant fetch failed 🤷' };
+  }
+
   return variantDoc;
 }
 
 /**
+ * @typedef {object} PersistAssignmentDeps
+ * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference} createModeratorRef Factory returning moderator document references.
+ * @property {() => unknown} now Clock used for timestamping assignments.
+ */
+
+/**
+ * @typedef {object} PersistAssignmentData
+ * @property {{ uid: string }} userRecord Authenticated moderator record.
+ * @property {VariantDocSnapshot} variantDoc Selected variant document snapshot.
+ */
+
+/**
  * Persist assignment.
- * @param {object} deps Dependencies.
- * @param {object} data Data.
+ * @param {PersistAssignmentDeps} deps Dependencies.
+ * @param {PersistAssignmentData} data Data.
  * @returns {Promise<void>} Promise.
  */
 async function persistAssignment(deps, data) {
@@ -1104,7 +1156,7 @@ function isResponse(value) {
 /**
  * Create the Express handler that assigns moderation jobs using Firestore.
  * @param {{
- *   createRunVariantQuery: (db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>,
+ *   createRunVariantQuery: (db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>,
  *   auth: import('firebase-admin/auth').Auth,
  *   db: import('firebase-admin/firestore').Firestore,
  *   now: () => unknown,
@@ -1136,7 +1188,7 @@ export function createHandleAssignModerationJob({
 /**
  * Register the assign moderation job route on the provided Express app.
  * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: NativeExpressApp }} firebaseResources - Firebase resources used to serve the moderation endpoint.
- * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<{ empty?: boolean }>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
+ * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
  * @param {() => unknown} now - Timestamp provider for persisted assignments.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Registered moderation handler.
  */
@@ -1176,7 +1228,7 @@ export function createAssignModerationJob(functionsModule, firebaseResources) {
  * Compose the moderation handler using Firebase auth and Firestore dependencies.
  * @param {{
  *   auth: import('firebase-admin/auth').Auth,
- *   fetchVariantSnapshot: (randomValue: number) => Promise<unknown>,
+ *   fetchVariantSnapshot: (randomValue: number) => Promise<VariantSnapshot>,
  *   db: import('firebase-admin/firestore').Firestore,
  *   now: () => unknown,
  *   random: () => number,

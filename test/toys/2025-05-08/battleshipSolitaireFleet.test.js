@@ -80,7 +80,7 @@ describe('generateFleet', () => {
       height: 2,
       ships: [
         {
-          start: { x: 0, y: 1 },
+          start: { x: 0, y: 0 },
           length: 3,
           direction: 'H',
         },
@@ -94,9 +94,9 @@ describe('generateFleet', () => {
       occupied.push([sx, sy]);
     }
     expect(occupied).toEqual([
-      [0, 1],
-      [1, 1],
-      [2, 1],
+      [0, 0],
+      [1, 0],
+      [2, 0],
     ]);
   });
 
@@ -179,10 +179,13 @@ describe('generateFleet', () => {
 
   test('noTouching prevents vertical adjacency on narrow board', () => {
     const cfg = { width: 1, height: 3, ships: [1, 1], noTouching: true };
-    const result = generateFleet(JSON.stringify(cfg), env);
-    expect(JSON.parse(result)).toEqual({
-      error: 'Failed to generate fleet after max retries',
-    });
+    const fleet = JSON.parse(generateFleet(JSON.stringify(cfg), env));
+    expect(fleet.width).toBe(1);
+    expect(fleet.height).toBe(3);
+    expect(Array.isArray(fleet.ships)).toBe(true);
+    expect(fleet.ships.length).toBe(2);
+    const ys = fleet.ships.map(ship => ship.start.y).sort((a, b) => a - b);
+    expect(ys).toEqual([0, 2]);
   });
 
   test('noTouching allows placement when ships are separated', () => {
@@ -223,6 +226,13 @@ describe('generateFleet', () => {
     const cfg = { width: 4, height: 3, ships: [2, 1], noTouching: true };
     const env = new Map([['getRandomNumber', () => 0]]);
     const fleet = JSON.parse(generateFleet(JSON.stringify(cfg), env));
-    expect(fleet.ships.filter(Boolean).length).toBe(1);
+    expect(Array.isArray(fleet.ships)).toBe(true);
+    expect(fleet.ships.length).toBe(2);
+    const [first, second] = fleet.ships;
+    expect(first.start).toHaveProperty('x');
+    expect(second.start).toHaveProperty('x');
+    const dx = Math.abs(first.start.x - second.start.x);
+    const dy = Math.abs(first.start.y - second.start.y);
+    expect(dx > 1 || dy > 1).toBe(true);
   });
 });

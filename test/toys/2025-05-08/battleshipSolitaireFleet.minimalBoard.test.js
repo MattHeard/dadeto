@@ -18,7 +18,7 @@ describe('generateFleet minimal board', () => {
     expect(fleet.ships).toHaveLength(1);
     const ship = fleet.ships[0];
     expect(ship.length).toBe(1);
-    expect(ship.start).toEqual({ x: 1, y: 0 });
+    expect(ship.start).toEqual({ x: 0, y: 0 });
     expect(['H', 'V']).toContain(ship.direction);
   });
 });

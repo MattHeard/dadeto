@@ -11,30 +11,42 @@ import { safeParseJson, getFirstErrorMessage } from '../../browser-core.js';
 import { returnErrorResultOrValue } from '../../../cloud/cloud-core.js';
 
 /**
- *
- * @param {*} input - description
- * @returns {*} - description
+ * @typedef {{ x: number, y: number }} BattleshipCoordinate
+ * @typedef {{ direction: 'H' | 'V', length: number, start: BattleshipCoordinate }} BattleshipShip
+ * @typedef {{ width: number, height: number, ships: BattleshipShip[] }} BattleshipFleet
+ * @typedef {{ row: number[], col: number[] }} BattleshipClueBuffer
+ * @typedef {{ width: number, height: number }} BattleshipBoard
+ * @typedef {{ error?: string }} BattleshipErrorResult
+ */
+
+/**
+ * Generate row and column clues for the provided fleet configuration.
+ * @param {string} input - JSON string describing the fleet.
+ * @returns {string} Row/column clue payload or error object.
  */
 function generateClues(input) {
   const fleet = parseFleet(input);
-  if (fleet.error) {
+  if ('error' in fleet) {
     return JSON.stringify({ error: fleet.error });
   }
   const { width, height, ships } = fleet;
-  const clues = { row: Array(height).fill(0), col: Array(width).fill(0) };
-  const board = { width, height };
+  const clues = /** @type {BattleshipClueBuffer} */ ({
+    row: Array(height).fill(0),
+    col: Array(width).fill(0),
+  });
+  const board = /** @type {BattleshipBoard} */ ({ width, height });
   ships.forEach(ship => {
-    getShipCells(ship).forEach(([x, y]) => {
-      incrementClues({ x, y }, board, clues);
+    getShipCells(ship).forEach(coord => {
+      incrementClues(coord, board, clues);
     });
   });
   return JSON.stringify({ rowClues: clues.row, colClues: clues.col });
 }
 
 /**
- *
- * @param {*} ship - description
- * @returns {*} - description
+ * Resolve every coordinate occupied by the ship.
+ * @param {BattleshipShip} ship - Ship payload describing direction and length.
+ * @returns {BattleshipCoordinate[]} Coordinates covering the ship.
  */
 function getShipCells(ship) {
   if (ship.direction === 'H') {
@@ -44,37 +56,37 @@ function getShipCells(ship) {
 }
 
 /**
- *
- * @param {*} ship - description
- * @returns {*} - description
+ * Return the horizontal coordinates for the provided ship.
+ * @param {BattleshipShip} ship - Ship placed horizontally.
+ * @returns {BattleshipCoordinate[]} Coordinates along the row.
  */
 function getHorizontalCells(ship) {
   const cells = [];
   for (let i = 0; i < ship.length; i++) {
-    cells.push([ship.start.x + i, ship.start.y]);
+    cells.push({ x: ship.start.x + i, y: ship.start.y });
   }
   return cells;
 }
 
 /**
- *
- * @param {*} ship - description
- * @returns {*} - description
+ * Return the vertical coordinates for the provided ship.
+ * @param {BattleshipShip} ship - Ship placed vertically.
+ * @returns {BattleshipCoordinate[]} Coordinates along the column.
  */
 function getVerticalCells(ship) {
   const cells = [];
   for (let i = 0; i < ship.length; i++) {
-    cells.push([ship.start.x, ship.start.y + i]);
+    cells.push({ x: ship.start.x, y: ship.start.y + i });
   }
   return cells;
 }
 
 /**
- *
- * @param {*} position - description
- * @param {*} board - description
- * @param {*} clues - description
- * @returns {*} - description
+ * Increase the clue counters when a ship segment is valid.
+ * @param {BattleshipCoordinate} position - Ship segment coordinate.
+ * @param {BattleshipBoard} board - Board dimensions.
+ * @param {BattleshipClueBuffer} clues - Counters for rows/columns.
+ * @returns {void}
  */
 function incrementClues(position, board, clues) {
   if (isValidCell(position, board)) {
@@ -84,44 +96,41 @@ function incrementClues(position, board, clues) {
 }
 
 /**
- *
- * @param {*} root0 - description
- * @param {*} root0.x - description
- * @param {*} root0.y - description
- * @param {*} board - description
- * @returns {*} - description
+ * Validate that the coordinate lies inside the board.
+ * @param {BattleshipCoordinate} coord - Candidate coordinate.
+ * @param {BattleshipBoard} board - Board limits.
+ * @returns {boolean} True when the coordinate is on the board.
  */
 function isValidCell({ x, y }, board) {
   return isValidX(x, board) && isValidY(y, board);
 }
 
 /**
- *
- * @param {*} x - description
- * @param {*} board - description
- * @returns {*} - description
+ * @param {number} x - Column index.
+ * @param {BattleshipBoard} board - Board limits.
+ * @returns {boolean} True when the column lies in range.
  */
 function isValidX(x, board) {
   return x >= 0 && x < board.width;
 }
 
 /**
- *
- * @param {*} y - description
- * @param {*} board - description
- * @returns {*} - description
+ * @param {number} y - Row index.
+ * @param {BattleshipBoard} board - Board limits.
+ * @returns {boolean} True when the row lies in range.
  */
 function isValidY(y, board) {
   return y >= 0 && y < board.height;
 }
 
 /**
- *
- * @param {*} input - description
- * @returns {*} - description
+ * Parse the fleet JSON payload and guard against malformed input.
+ * @param {string} input - JSON string describing the fleet.
+ * @returns {BattleshipFleet | { error: string }} Parsed fleet or error descriptor.
  */
 function parseFleet(input) {
-  const parseJsonValue = x => JSON.parse(x);
+  /** @type {(value: string) => BattleshipFleet} */
+  const parseJsonValue = value => JSON.parse(value);
   const fleet = safeParseJson(input, parseJsonValue);
   const error = computeFleetError(fleet);
   return returnErrorResultOrValue(error, () => fleet);
@@ -133,27 +142,27 @@ const fleetChecks = [
 ];
 
 /**
- *
- * @param {*} fleet - description
- * @returns {*} - description
+ * Evaluate the fleet object against the configured checks.
+ * @param {unknown} fleet - Candidate payload to validate.
+ * @returns {string | null} Error message when invalid, null otherwise.
  */
 function computeFleetError(fleet) {
   return getFirstErrorMessage(fleetChecks, fleet);
 }
 
 /**
- *
- * @param {*} value - description
- * @returns {*} - description
+ * Determine whether the candidate value is numeric.
+ * @param {unknown} value - Candidate value.
+ * @returns {value is number} True when the input is a number.
  */
 function isNumber(value) {
   return typeof value === 'number';
 }
 
 /**
- *
- * @param {*} fleet - description
- * @returns {*} - description
+ * Validate the fleet structure extracted from parsed input.
+ * @param {unknown} fleet - Candidate fleet payload.
+ * @returns {fleet is BattleshipFleet} True when width, height, and ships are valid.
  */
 function isValidFleet(fleet) {
   const { width, height, ships } = Object(fleet);

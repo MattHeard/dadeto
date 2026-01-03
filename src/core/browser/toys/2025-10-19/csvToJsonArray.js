@@ -91,7 +91,7 @@ function buildRowsFromLines(trimmedLines) {
  * @returns {boolean} True if exist.
  */
 function doRowsExist(rows) {
-  return rows?.length > 0;
+  return Boolean(rows && rows.length > 0);
 }
 
 /**
@@ -127,12 +127,27 @@ function isLineEmpty(line) {
  * @returns {string[]} A slice of the original lines without trailing blanks.
  */
 function removeTrailingEmptyLines(lines) {
-  const lastIndex = lines.findLastIndex(line => !isLineEmpty(line));
+  const lastIndex = findLastNonEmptyLineIndex(lines);
   if (lastIndex === -1) {
     return [];
   }
 
   return lines.slice(0, lastIndex + 1);
+}
+
+/**
+ * Locate the last index containing a non-empty line.
+ * @param {string[]} lines - Candidate lines to inspect.
+ * @returns {number} Last index where the line is not empty, otherwise -1.
+ */
+function findLastNonEmptyLineIndex(lines) {
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    if (!isLineEmpty(lines[index])) {
+      return index;
+    }
+  }
+
+  return -1;
 }
 
 /**
@@ -148,7 +163,7 @@ function buildHeaderEntries(headers) {
 
 /**
  * Check if header entries exist.
- * @param {Array} entries Entries.
+ * @param {Array<{ name: string, index: number }>} entries Entries.
  * @returns {boolean} True if exist.
  */
 function doHeaderEntriesExist(entries) {
@@ -251,15 +266,16 @@ function isRecordInvalid(record) {
  * @returns {Array<Record<string, string>>|null} An array of row objects, or null when parsing fails.
  */
 function buildRows(dataLines, headerEntries) {
-  const records = dataLines.map(rawLine =>
-    createRecordForLine(rawLine, headerEntries)
-  );
+  const records =
+    /** @type {Array<Record<string, string> | undefined | null>} */ (
+      dataLines.map(rawLine => createRecordForLine(rawLine, headerEntries))
+    );
 
   if (records.some(isRecordInvalid)) {
     return null;
   }
 
-  const rows = [];
+  const rows = /** @type {Array<Record<string, string>>} */ ([]);
   records.forEach(record => pushRecordIfNotEmpty(rows, record));
 
   return rows;
@@ -267,11 +283,11 @@ function buildRows(dataLines, headerEntries) {
 
 /**
  * Check if record has values.
- * @param {object} record Record.
- * @returns {boolean} True if has values.
+ * @param {Record<string, string> | undefined | null} record Record.
+ * @returns {record is Record<string, string>} True when the record contains values.
  */
 function doesRecordHaveValues(record) {
-  return record && Object.keys(record).length > 0;
+  return Boolean(record && Object.keys(record).length > 0);
 }
 
 /**
@@ -326,7 +342,7 @@ function buildRecordFromLine(line, headerEntries) {
     return null;
   }
 
-  const record = {};
+  const record = /** @type {Record<string, string>} */ ({});
   headerEntries.forEach(entry => assignRecordValue(record, entry, values));
 
   return record;

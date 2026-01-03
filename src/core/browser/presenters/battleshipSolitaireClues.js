@@ -45,7 +45,7 @@ import { createPreFromContent } from './browserPresentersCore.js';
 /**
  * Check that the given object has rowClues and colClues arrays.
  * @param {BattleshipClueCandidate} obj - Parsed JSON object.
- * @returns {boolean} True when both arrays are present.
+ * @returns {obj is {rowClues: unknown[], colClues: unknown[]}} True when both arrays are present.
  */
 function hasValidClueArrays(obj) {
   return Array.isArray(obj.rowClues) && Array.isArray(obj.colClues);
@@ -72,10 +72,24 @@ function isEmpty(arr) {
 /**
  * Extract row and column clue arrays from the object.
  * @param {BattleshipClueCandidate} obj - Parsed clue object.
- * @returns {[unknown[], unknown[]]} A pair [rowClues, colClues].
+ * @returns {[unknown[], unknown[]]} A pair [rowClues, colClues] (defaults to empty arrays when missing).
  */
 function getClueArrays(obj) {
-  return [obj.rowClues, obj.colClues];
+  const rowClues = ensureArray(obj.rowClues);
+  const colClues = ensureArray(obj.colClues);
+  return [rowClues, colClues];
+}
+
+/**
+ * Ensure a value is an array when accessing the clue fields.
+ * @param {unknown} value - Value to inspect.
+ * @returns {unknown[]} The array when present, otherwise an empty array.
+ */
+function ensureArray(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  return [];
 }
 
 /** @type {Array<[(obj: BattleshipClueCandidate) => boolean, string]>} */
@@ -83,22 +97,31 @@ const VALIDATION_CHECKS = [
   [o => !isObject(o), 'Invalid JSON object'],
   [o => !hasValidClueArrays(o), 'Missing rowClues or colClues array'],
   [
-    o => getClueArrays(o).some(hasNonNumberValues),
+    o => hasValidClueArrays(o) && getClueArrays(o).some(hasNonNumberValues),
     'Clue values must be numbers',
   ],
   [
-    o => getClueArrays(o).some(isEmpty),
+    o => hasValidClueArrays(o) && getClueArrays(o).some(isEmpty),
     'rowClues and colClues must be non-empty',
   ],
 ];
 
 /**
  * Return a validation error message for the clue object if any rule fails.
- * @param {BattleshipClueCandidate} obj - Parsed clue object.
+ * @param {unknown} obj - Parsed clue object candidate.
  * @returns {string} Error message or empty string.
  */
+/* eslint complexity: ["warn", 4] */
+/**
+ *
+ * @param obj
+ */
 function findValidationError(obj) {
-  return getFirstErrorMessage(VALIDATION_CHECKS, obj);
+  if (!isObject(obj)) {
+    return 'Invalid object';
+  }
+  const candidate = /** @type {BattleshipClueCandidate} */ (obj);
+  return getFirstErrorMessage(VALIDATION_CHECKS, candidate);
 }
 
 /**
@@ -156,13 +179,16 @@ function parseCluesOrDefault(inputString) {
    * @returns {unknown} Parsed value.
    */
   const parseJsonValue = json => JSON.parse(json);
-  const obj = /** @type {BattleshipClueCandidate} */ (
-    safeParseJson(inputString, parseJsonValue)
-  );
-  if (INVALID_CLUE_CHECKS.some(fn => fn(obj))) {
+  const parsedValue = safeParseJson(inputString, parseJsonValue);
+  if (INVALID_CLUE_CHECKS.some(fn => fn(parsedValue))) {
     return DEFAULT_CLUES;
   }
-  return /** @type {BattleshipCluesConfig} */ (obj);
+  const obj = /** @type {BattleshipClueCandidate} */ (parsedValue);
+  const [rowClues, colClues] = getClueArrays(obj);
+  return {
+    rowClues: /** @type {number[]} */ (rowClues),
+    colClues: /** @type {number[]} */ (colClues),
+  };
 }
 
 /**

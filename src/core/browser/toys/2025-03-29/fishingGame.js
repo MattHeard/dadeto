@@ -108,11 +108,78 @@ function getBaitData(input, baitOptions, moodDescription) {
 }
 
 /**
- * @param {BaitResponse} response
- * @returns {response is BaitError}
+ * Determine whether a bait response is an error payload.
+ * @param {BaitResponse} response - Response emitted by `getBaitData`.
+ * @returns {response is BaitError} True when the response describes an error.
  */
 function isBaitError(response) {
   return Boolean(response && response.isError);
+}
+
+const timeOfDayByHour = [
+  'night',
+  'night',
+  'night',
+  'night',
+  'night',
+  'morning',
+  'morning',
+  'morning',
+  'morning',
+  'morning',
+  'morning',
+  'morning',
+  'afternoon',
+  'afternoon',
+  'afternoon',
+  'afternoon',
+  'afternoon',
+  'evening',
+  'evening',
+  'evening',
+  'evening',
+  'night',
+  'night',
+  'night',
+];
+
+const seasonByMonth = [
+  'winter',
+  'winter',
+  'spring',
+  'spring',
+  'spring',
+  'summer',
+  'summer',
+  'summer',
+  'fall',
+  'fall',
+  'fall',
+  'winter',
+];
+
+/**
+ * Choose the matching time-of-day label from the configured ranges.
+ * @param {number} hour - Hour of the day used as lookup key.
+ * @returns {TimeOfDayLabel} The best matching time-of-day label.
+ */
+function findTimeOfDayLabel(hour) {
+  const normalizedHour = ((hour % 24) + 24) % 24;
+  return /** @type {TimeOfDayLabel} */ (
+    timeOfDayByHour[normalizedHour] ?? 'night'
+  );
+}
+
+/**
+ * Choose the season label covering the supplied month index.
+ * @param {number} month - Month index between 0 and 11.
+ * @returns {SeasonLabel} The season that contains the given month.
+ */
+function findSeasonLabel(month) {
+  const normalizedMonth = ((month % 12) + 12) % 12;
+  return /** @type {SeasonLabel} */ (
+    seasonByMonth[normalizedMonth] ?? 'winter'
+  );
 }
 
 /**
@@ -121,16 +188,7 @@ function isBaitError(response) {
  * @returns {TimeOfDayLabel} Time of day label.
  */
 function getTimeOfDay(hour) {
-  /** @type {{start: number, end: number, label: TimeOfDayLabel}[]} */
-  const ranges = [
-    { start: 5, end: 12, label: 'morning' },
-    { start: 12, end: 17, label: 'afternoon' },
-    { start: 17, end: 21, label: 'evening' },
-    { start: 21, end: 24, label: 'night' },
-    { start: 0, end: 5, label: 'night' },
-  ];
-  const match = ranges.find(({ start, end }) => hour >= start && hour < end);
-  return match?.label ?? 'night';
+  return /** @type {TimeOfDayLabel} */ (findTimeOfDayLabel(hour));
 }
 
 /**
@@ -139,15 +197,7 @@ function getTimeOfDay(hour) {
  * @returns {SeasonLabel} Season label.
  */
 function getSeason(month) {
-  /** @type {{months: number[], label: SeasonLabel}[]} */
-  const ranges = [
-    { months: [11, 0, 1], label: 'winter' },
-    { months: [2, 3, 4], label: 'spring' },
-    { months: [5, 6, 7], label: 'summer' },
-    { months: [8, 9, 10], label: 'fall' },
-  ];
-  const match = ranges.find(({ months }) => months.includes(month));
-  return match?.label ?? 'winter';
+  return /** @type {SeasonLabel} */ (findSeasonLabel(month));
 }
 
 /**
@@ -244,9 +294,6 @@ const fishingOutcomes = /** @type {FishingOutcome[]} */ ([
  */
 function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
   const fallbackOutcome = fishingOutcomes[fishingOutcomes.length - 1];
-  if (!fallbackOutcome) {
-    throw new Error('Fishing outcomes were not defined');
-  }
   const outcome =
     fishingOutcomes.find(({ check }) => check(effectiveChance)) ??
     fallbackOutcome;
@@ -288,6 +335,20 @@ function getTimeContext(getCurrentTime) {
 }
 
 /**
+ * Ensure an environment function is available and typed as a number supplier.
+ * @param {{get: (name: string) => any}} env - Environment accessor provided by the toy harness.
+ * @param {string} name - Name of the dependency to load from the environment.
+ * @returns {() => number} The requested function cast to a numeric supplier.
+ */
+function requireNumericEnvFunction(env, name) {
+  const candidate = env.get(name);
+  if (typeof candidate !== 'function') {
+    throw new Error(`Fishing game missing ${name} dependency`);
+  }
+  return /** @type {() => number} */ (candidate);
+}
+
+/**
  * Main entry point for the fishing mini game.
  * @param {string} input - Raw player input representing bait choice.
  * @param {{get: (name: string) => any}} env - Environment accessor used to get
@@ -295,13 +356,7 @@ function getTimeContext(getCurrentTime) {
  * @returns {string} Message describing the outcome of the cast.
  */
 function fishingGame(input, env) {
-  const getCurrentTimeCandidate = env.get('getCurrentTime');
-  if (typeof getCurrentTimeCandidate !== 'function') {
-    throw new Error('Fishing game missing getCurrentTime dependency');
-  }
-  const getCurrentTimeFn = /** @type {() => number} */ (
-    getCurrentTimeCandidate
-  );
+  const getCurrentTimeFn = requireNumericEnvFunction(env, 'getCurrentTime');
   const { season, timeOfDay } = getTimeContext(getCurrentTimeFn);
 
   const moodDescription = getMoodDescription(season, timeOfDay);
@@ -314,13 +369,7 @@ function fishingGame(input, env) {
   }
   const baitData = baitDataOrError;
 
-  const getRandomNumberCandidate = env.get('getRandomNumber');
-  if (typeof getRandomNumberCandidate !== 'function') {
-    throw new Error('Fishing game missing getRandomNumber dependency');
-  }
-  const getRandomNumber = /** @type {() => number} */ (
-    getRandomNumberCandidate
-  );
+  const getRandomNumber = requireNumericEnvFunction(env, 'getRandomNumber');
   const baseChance = getRandomNumber();
   const effectiveChance = Math.min(
     1,

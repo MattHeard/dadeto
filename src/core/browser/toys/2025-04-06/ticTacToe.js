@@ -2,9 +2,28 @@ import { parseJsonOrFallback } from '../browserToysCore.js';
 import { when } from '../../common.js';
 
 /**
- *
- * @param {*} player - description
- * @returns {*} - description
+ * @typedef {'X' | 'O'} TicTacToePlayer
+ * @typedef {{ row: number, col: number }} TicTacToePosition
+ * @typedef {{ player: TicTacToePlayer, position: TicTacToePosition }} TicTacToeMove
+ * @typedef {{ moves: TicTacToeMove[] }} TicTacToePayload
+ * @typedef {{
+ *   board: Array<Array<TicTacToePlayer | null>>,
+ *   seen: Set<string>
+ * }} TicTacToeBoardState
+ * @typedef {{ valid: boolean, earlyWin: boolean }} MoveResult
+ * @typedef {{ valid: boolean, earlyWin: boolean, stop: boolean }} MoveAccumulator
+ * @typedef {{ moveScore: number, move: { row: number, column: number } }} ScoredMove
+ * @typedef {{
+ *   board: TicTacToeBoardState['board'],
+ *   player: TicTacToePlayer,
+ *   moves: TicTacToeMove[]
+ * }} MinimaxParams
+ */
+
+/**
+ * Determine the opposing player.
+ * @param {TicTacToePlayer} player - Current player.
+ * @returns {TicTacToePlayer} Opponent player.
  */
 function getOpponent(player) {
   if (player === 'X') {
@@ -15,53 +34,57 @@ function getOpponent(player) {
 }
 
 /**
- *
- * @param {*} root0 - description
- * @param {*} root0.move - description
- * @param {*} root0.index - description
- * @param {*} root0.moves - description
- * @returns {*} - description
+ * Ensure the move alternates players according to turn order.
+ * @param {{ move: TicTacToeMove, index: number, moves: TicTacToeMove[] }} params - Move context.
+ * @returns {boolean} True when the move respects turn order.
  */
 function respectsTurnOrder({ move, index, moves }) {
   return index === 0 || move.player !== moves[index - 1].player;
 }
 
 /**
- *
- * @param {*} val - description
- * @returns {*} - description
+ * Determine whether the value is a plain object.
+ * @param {unknown} val - Candidate value.
+ * @returns {val is Record<string, unknown>} True when the value is a non-null object.
  */
 function isObject(val) {
   return typeof val === 'object' && val !== null;
 }
 
 /**
- *
- * @param {*} parsed - description
- * @returns {*} - description
+ * Validate that the parsed payload contains moves.
+ * @param {unknown} parsed - Parsed input value.
+ * @returns {TicTacToeMove[] | null} Moves when valid, otherwise null.
  */
 function getValidParsedMoves(parsed) {
   return when(isValidParsedMoves(parsed), () => parsed.moves);
 }
 
 /**
- *
- * @param {*} parsed - description
- * @returns {*} - description
+ * Build a reducer that runs validators against the parsed payload.
+ * @param {unknown} parsed - Candidate payload.
+ * @returns {(acc: boolean, fn: (payload: unknown) => boolean) => boolean} Reducer that short circuits on invalid payloads.
  */
 function makeValidatorReducer(parsed) {
-  return (acc, fn) => {
-    if (!acc) {
-      return false;
+  return (
+    /**
+     * @param {boolean} acc - Accumulated validation result.
+     * @param {(payload: unknown) => boolean} fn - Validator function.
+     * @returns {boolean} Validation result for the current function.
+     */
+    (acc, fn) => {
+      if (!acc) {
+        return false;
+      }
+      return fn(parsed);
     }
-    return fn(parsed);
-  };
+  );
 }
 
 /**
- *
- * @param {*} parsed - description
- * @returns {*} - description
+ * Validate that the parsed object exposes a moves array.
+ * @param {unknown} parsed - Candidate payload.
+ * @returns {parsed is TicTacToePayload} True when the payload carries moves.
  */
 function isValidParsedMoves(parsed) {
   const validators = [isObject, hasMovesArray];
@@ -69,18 +92,18 @@ function isValidParsedMoves(parsed) {
 }
 
 /**
- *
- * @param {*} val - description
- * @returns {*} - description
+ * Check whether the object exposes a moves array.
+ * @param {unknown} val - Candidate value.
+ * @returns {val is TicTacToePayload} True when the object carries a moves array.
  */
 function hasMovesArray(val) {
   return isObject(val) && Array.isArray(val.moves);
 }
 
 /**
- *
- * @param {*} input - description
- * @returns {*} - description
+ * Parse the input JSON safely and extract the moves array when valid.
+ * @param {string} input - JSON string containing tic-tac-toe moves.
+ * @returns {TicTacToeMove[] | null} Moves or null when parsing fails.
  */
 function parseInputSafely(input) {
   const parsed = parseJsonOrFallback(input);
@@ -88,18 +111,17 @@ function parseInputSafely(input) {
 }
 
 /**
- *
- * @param {*} earlyWin - description
- * @param {*} moves - description
- * @returns {*} - description
+ * Decide whether the toy should skip adding a new move.
+ * @param {boolean} earlyWin - Indicator that a win already occurred.
+ * @param {TicTacToeMove[]} moves - Moves played so far.
+ * @returns {boolean} True when the moves array is truthy.
  */
 function shouldSkipMove(earlyWin, moves) {
   return earlyWin || moves.length >= 9;
 }
-
 /**
  * Build the JSON string for the provided move list.
- * @param {*} moves - Current move array.
+ * @param {TicTacToeMove[]} moves - Current move array.
  * @returns {string} JSON payload containing moves.
  */
 function buildMoveResponse(moves) {
@@ -108,10 +130,10 @@ function buildMoveResponse(moves) {
 }
 
 /**
- *
- * @param {*} moves - description
- * @param {*} newMove - description
- * @returns {*} - description
+ * Build a response when a new move must be appended.
+ * @param {TicTacToeMove[]} moves - Existing moves.
+ * @param {TicTacToeMove} newMove - Move to append.
+ * @returns {boolean} True when the moves list stays within the board limit.
  */
 function buildMoveResponseWithNewMove(moves, newMove) {
   const updatedMoves = [...moves, newMove];
@@ -119,18 +141,18 @@ function buildMoveResponseWithNewMove(moves, newMove) {
 }
 
 /**
- *
- * @param {*} moves - description
- * @returns {*} - description
+ * Build a response without adding a new move.
+ * @param {TicTacToeMove[]} moves - Existing moves.
+ * @returns {boolean} True when the moves array passes all validators.
  */
 function buildMoveResponseWithoutNewMove(moves) {
   return buildMoveResponse(moves);
 }
 
 /**
- *
- * @param {*} input - description
- * @returns {*} - description
+ * Entry point for the Tic Tac Toe toy.
+ * @param {string} input - JSON string describing moves.
+ * @returns {string} Response payload.
  */
 export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
@@ -143,9 +165,9 @@ export function ticTacToeMove(input) {
 }
 
 /**
- *
- * @param {*} moves - description
- * @returns {*} - description
+ * Continue processing when moves are valid.
+ * @param {TicTacToeMove[]} moves - Moves array.
+ * @returns {boolean} True when the move application is valid.
  */
 function handleValidMoves(moves) {
   const { board, seen } = initializeBoardAndSeen();
@@ -157,11 +179,11 @@ function handleValidMoves(moves) {
 }
 
 /**
- *
- * @param {*} moves - description
- * @param {*} board - description
- * @param {*} result - description
- * @returns {*} - description
+ * Handle the game state once moves are successfully applied.
+ * @param {TicTacToeMove[]} moves - Applied moves.
+ * @param {TicTacToeBoardState['board']} board - Current board state.
+ * @param {MoveResult} result - Result of applying the moves.
+ * @returns {boolean} True when processing should halt.
  */
 function handleValidAppliedMoves(moves, board, result) {
   const earlyWin = result.earlyWin;
@@ -177,8 +199,8 @@ function handleValidAppliedMoves(moves, board, result) {
 }
 
 /**
- *
- * @returns {*} - description
+ * Initialize an empty board and seen positions tracker.
+ * @returns {TicTacToeBoardState}
  */
 function initializeBoardAndSeen() {
   const board = Array.from({ length: 3 }, () => Array(3).fill(null));
@@ -187,36 +209,36 @@ function initializeBoardAndSeen() {
 }
 
 /**
- *
- * @param {*} moves - description
- * @returns {*} - description
+ * Confirm that the moves array has a truthy value.
+ * @param {TicTacToeMove[] | null} moves - Candidate moves.
+ * @returns {boolean}
  */
 function isTruthyMoves(moves) {
   return Boolean(moves);
 }
 
 /**
- *
- * @param {*} moves - description
- * @returns {*} - description
+ * Confirm the value is an array of moves.
+ * @param {unknown} moves - Candidate value.
+ * @returns {moves is TicTacToeMove[]} True when the value is an array.
  */
 function isArrayMoves(moves) {
   return Array.isArray(moves);
 }
 
 /**
- *
- * @param {*} moves - description
- * @returns {*} - description
+ * Ensure the moves array does not exceed the board capacity.
+ * @param {TicTacToeMove[] | null} moves - Candidate moves.
+ * @returns {boolean}
  */
 function isShortEnoughMoves(moves) {
   return !moves || moves.length <= 9;
 }
 
 /**
- *
- * @param {*} moves - description
- * @returns {*} - description
+ * Determine whether the moves array fails validation.
+ * @param {TicTacToeMove[] | null} moves - Candidate moves.
+ * @returns {boolean} True when the moves should be rejected.
  */
 function isInvalidMoves(moves) {
   const validators = [isTruthyMoves, isArrayMoves, isShortEnoughMoves];
@@ -224,11 +246,11 @@ function isInvalidMoves(moves) {
 }
 
 /**
- *
- * @param {*} i - description
- * @param {*} moves - description
- * @param {*} apply - description
- * @returns {*} - description
+ * Check whether the move can be applied at the current index.
+ * @param {number} i - Move index.
+ * @param {TicTacToeMove[]} moves - Moves array.
+ * @param {(move: TicTacToeMove) => boolean} apply - Callback that applies the move.
+ * @returns {boolean}
  */
 function isMoveApplicationValid(i, moves, apply) {
   const move = moves[i];
@@ -238,21 +260,21 @@ function isMoveApplicationValid(i, moves, apply) {
 }
 
 /**
- *
- * @param {*} valid - description
- * @param {*} earlyWin - description
- * @returns {*} - description
+ * Decide whether to stop processing moves.
+ * @param {boolean} valid - Current validity flag.
+ * @param {boolean} earlyWin - Indicates if a win was already detected.
+ * @returns {boolean}
  */
 function shouldStop(valid, earlyWin) {
   return !valid || earlyWin;
 }
 
 /**
- *
- * @param {*} moves - description
- * @param {*} board - description
- * @param {*} seen - description
- * @returns {*} - description
+ * Build a reducer that applies moves sequentially.
+ * @param {TicTacToeMove[]} moves - Moves array.
+ * @param {TicTacToeBoardState['board']} board - Board state.
+ * @param {Set<string>} seen - Seen positions.
+ * @returns {(acc: MoveAccumulator, _: TicTacToeMove | undefined, i: number) => MoveAccumulator}
  */
 function applyMoveReducer(moves, board, seen) {
   return function (acc, _, i) {
@@ -270,11 +292,11 @@ function applyMoveReducer(moves, board, seen) {
 }
 
 /**
- *
- * @param {*} moves - description
- * @param {*} board - description
- * @param {*} seen - description
- * @returns {*} - description
+ * Apply the provided moves to the board and summarize the result.
+ * @param {TicTacToeMove[]} moves - Moves to apply.
+ * @param {TicTacToeBoardState['board']} board - Board state.
+ * @param {Set<string>} seen - Seen coordinates.
+ * @returns {MoveResult}
  */
 function applyMovesSequentially(moves, board, seen) {
   const initial = { valid: true, earlyWin: false, stop: false };
@@ -284,20 +306,20 @@ function applyMovesSequentially(moves, board, seen) {
 }
 
 /**
- *
- * @param {*} board - description
- * @returns {*} - description
+ * Clone the board rows.
+ * @param {TicTacToeBoardState['board']} board - Board to copy.
+ * @returns {TicTacToeBoardState['board']}
  */
 function copyBoard(board) {
   return board.map(row => row.slice());
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} coordinates - description
- * @param {*} value - description
- * @returns {*} - description
+ * Set a cell value on a copy of the board.
+ * @param {TicTacToeBoardState['board']} board - Source board.
+ * @param {{ r: number, c: number }} coordinates - Cell coordinates.
+ * @param {TicTacToePlayer} value - Value to insert.
+ * @returns {TicTacToeBoardState['board']} Updated board copy.
  */
 function setBoardCell(board, coordinates, value) {
   const { r, c } = coordinates;
@@ -307,11 +329,11 @@ function setBoardCell(board, coordinates, value) {
 }
 
 /**
- *
- * @param {*} player - description
- * @param {*} moves - description
- * @param {*} setCell - description
- * @returns {*} - description
+ * Score a hypothetical move using minimax.
+ * @param {TicTacToePlayer} player - Player making the move.
+ * @param {TicTacToeMove[]} moves - Moves already played.
+ * @param {(value: TicTacToePlayer) => TicTacToeBoardState['board']} setCell - Function that applies the move.
+ * @returns {number} Move score.
  */
 function scoreMove(player, moves, setCell) {
   const board = setCell(player);
@@ -321,11 +343,11 @@ function scoreMove(player, moves, setCell) {
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} nextPlayer - description
- * @param {*} moves - description
- * @returns {*} - description
+ * Build a reducer that scores each empty cell.
+ * @param {TicTacToeBoardState['board']} board - Current board state.
+ * @param {TicTacToePlayer} nextPlayer - Player to move next.
+ * @param {TicTacToeMove[]} moves - Moves already played.
+ * @returns {(acc: ScoredMove[], coordinates: { r: number, c: number }) => ScoredMove[]}
  */
 function makeScoreReducer(board, nextPlayer, moves) {
   return (acc, { r, c }) => {
@@ -339,11 +361,11 @@ function makeScoreReducer(board, nextPlayer, moves) {
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} nextPlayer - description
- * @param {*} moves - description
- * @returns {*} - description
+ * Score every empty cell for the next player.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {TicTacToePlayer} nextPlayer - Player to move next.
+ * @param {TicTacToeMove[]} moves - Moves already played.
+ * @returns {ScoredMove[]}
  */
 function getScoredMoves(board, nextPlayer, moves) {
   const scoreReducer = makeScoreReducer(board, nextPlayer, moves);
@@ -351,9 +373,9 @@ function getScoredMoves(board, nextPlayer, moves) {
 }
 
 /**
- *
- * @param {*} scoredMoves - description
- * @returns {*} - description
+ * Pick the move with the highest score.
+ * @param {ScoredMove[]} scoredMoves - Candidate moves with scores.
+ * @returns {ScoredMove} Best scored move.
  */
 function getBestScoredMove(scoredMoves) {
   return scoredMoves.reduce(
@@ -369,22 +391,22 @@ function getBestScoredMove(scoredMoves) {
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} r - description
- * @param {*} c - description
- * @returns {*} - description
+ * Create a setter that inserts a value at the target coordinates.
+ * @param {TicTacToeBoardState['board']} board - Board state.
+ * @param {number} r - Row index.
+ * @param {number} c - Column index.
+ * @returns {(value: TicTacToePlayer) => TicTacToeBoardState['board']}
  */
 function setter(board, r, c) {
   return value => setBoardCell(board, { r, c }, value);
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} nextPlayer - description
- * @param {*} moves - description
- * @returns {*} - description
+ * Evaluate and return the best move for the next player.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {TicTacToePlayer} nextPlayer - Player to move.
+ * @param {TicTacToeMove[]} moves - Moves played so far.
+ * @returns {TicTacToePosition}
  */
 function findBestMove(board, nextPlayer, moves) {
   const scoredMoves = getScoredMoves(board, nextPlayer, moves);
@@ -393,9 +415,9 @@ function findBestMove(board, nextPlayer, moves) {
 }
 
 /**
- *
- * @param {*} board - description
- * @returns {*} - description
+ * Collect empty cells from the board.
+ * @param {TicTacToeBoardState['board']} board - Board state.
+ * @returns {Array<{ r: number, c: number }>}
  */
 function getEmptyCells(board) {
   return board.reduce(
@@ -411,9 +433,9 @@ function getEmptyCells(board) {
 }
 
 /**
- *
- * @param {*} moves - description
- * @returns {*} - description
+ * Determine which player moves next.
+ * @param {TicTacToeMove[]} moves - Moves played so far.
+ * @returns {TicTacToePlayer}
  */
 function determineNextPlayer(moves) {
   if (moves.length === 0) {
@@ -423,51 +445,51 @@ function determineNextPlayer(moves) {
 }
 
 /**
- *
- * @param {*} row - description
- * @param {*} player - description
- * @returns {*} - description
+ * Check whether a row is owned entirely by the player.
+ * @param {Array<TicTacToePlayer | null>} row - Row to evaluate.
+ * @param {TicTacToePlayer} player - Player to check.
+ * @returns {boolean}
  */
 function isRowWin(row, player) {
   return row.every(cell => cell === player);
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} player - description
- * @returns {*} - description
+ * Check whether any row is a win for the player.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {TicTacToePlayer} player - Player to check.
+ * @returns {boolean}
  */
 function checkRows(board, player) {
   return board.some(row => isRowWin(row, player));
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} col - description
- * @param {*} player - description
- * @returns {*} - description
+ * Check whether a column is a win for the player.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {number} col - Column index.
+ * @param {TicTacToePlayer} player - Player to check.
+ * @returns {boolean}
  */
 function isColumnWin(board, col, player) {
   return board.every(row => row[col] === player);
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} player - description
- * @returns {*} - description
+ * Check whether any column is a win for the player.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {TicTacToePlayer} player - Player to check.
+ * @returns {boolean}
  */
 function checkColumns(board, player) {
   return [0, 1, 2].some(col => isColumnWin(board, col, player));
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} player - description
- * @returns {*} - description
+ * Check whether a diagonal is a win for the player.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {TicTacToePlayer} player - Player to check.
+ * @returns {boolean}
  */
 function checkDiagonals(board, player) {
   const leftToRight = [0, 1, 2].every(i => board[i][i] === player);
@@ -476,20 +498,20 @@ function checkDiagonals(board, player) {
 }
 
 /**
- *
- * @param {*} board - description
- * @returns {*} - description
+ * Detect whether either player already has a winning line.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @returns {boolean}
  */
 function checkEarlyWin(board) {
   return isWin(board, 'X') || isWin(board, 'O');
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} move - description
- * @param {*} seen - description
- * @returns {*} - description
+ * Apply the move to the board and update the seen set.
+ * @param {TicTacToeBoardState['board']} board - Board to mutate.
+ * @param {TicTacToeMove} move - Move being applied.
+ * @param {Set<string>} seen - Seen coordinates.
+ * @returns {boolean}
  */
 function applyMoveToBoard(board, move, seen) {
   const { player, position } = move;
@@ -506,10 +528,10 @@ function applyMoveToBoard(board, move, seen) {
 }
 
 /**
- *
- * @param {*} isWinPlayer - description
- * @param {*} depth - description
- * @returns {*} - description
+ * Compute the minimax score for a winning state.
+ * @param {() => boolean} isWinPlayer - Callback indicating a win for the player.
+ * @param {number} depth - Current depth in the search tree.
+ * @returns {number}
  */
 function getTerminalScore(isWinPlayer, depth) {
   if (isWinPlayer()) {
@@ -519,21 +541,21 @@ function getTerminalScore(isWinPlayer, depth) {
 }
 
 /**
- *
- * @param {*} isWinPlayer - description
- * @param {*} isWinOpponent - description
- * @returns {*} - description
+ * Determine whether the game is in a terminal state.
+ * @param {() => boolean} isWinPlayer - Callback for player win.
+ * @param {() => boolean} isWinOpponent - Callback for opponent win.
+ * @returns {boolean}
  */
 function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
   return isWinPlayer() || isWinOpponent();
 }
 
 /**
- *
- * @param {*} isWinPlayer - description
- * @param {*} isWinOpponent - description
- * @param {*} depth - description
- * @returns {*} - description
+ * Evaluate and score the terminal state if present.
+ * @param {() => boolean} isWinPlayer - Callback for player win.
+ * @param {() => boolean} isWinOpponent - Callback for opponent win.
+ * @param {number} depth - Current search depth.
+ * @returns {number | null}
  */
 function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
   if (shouldEvaluateTerminal(isWinPlayer, isWinOpponent)) {
@@ -543,9 +565,9 @@ function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
 }
 
 /**
- *
- * @param {*} board - description
- * @returns {*} - description
+ * List available moves on the board.
+ * @param {TicTacToeBoardState['board']} board - Current board state.
+ * @returns {Array<[number, number]>}
  */
 function getAvailableMoves(board) {
   return board.reduce(
@@ -561,21 +583,21 @@ function getAvailableMoves(board) {
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} accumulateScores - description
- * @returns {*} - description
+ * Simulate moves by accumulating scores.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {(scores: number[], move: [number, number]) => number[]} accumulateScores - Reducer over available moves.
+ * @returns {number[]}
  */
 function simulateMoves(board, accumulateScores) {
   return getAvailableMoves(board).reduce(accumulateScores, []);
 }
 
 /**
- *
- * @param {*} depth - description
- * @param {*} isMax - description
- * @param {*} params - description
- * @returns {*} - description
+ * Minimax search for tic-tac-toe.
+ * @param {number} depth - Current depth in the search tree.
+ * @param {boolean} isMax - Whether the current layer is maximizing.
+ * @param {MinimaxParams} params - Search parameters.
+ * @returns {number}
  */
 function minimax(depth, isMax, params) {
   const opponent = getOpponent(params.player);
@@ -595,10 +617,10 @@ function minimax(depth, isMax, params) {
 }
 
 /**
- *
- * @param {*} scores - description
- * @param {*} isMax - description
- * @returns {*} - description
+ * Select the best or worst score depending on the layer.
+ * @param {number[]} scores - Collected scores.
+ * @param {boolean} isMax - Whether to select the maximum.
+ * @returns {number}
  */
 function selectScore(scores, isMax) {
   if (isMax) {
@@ -609,11 +631,11 @@ function selectScore(scores, isMax) {
 }
 
 /**
- *
- * @param {*} params - description
- * @param {*} depth - description
- * @param {*} isMax - description
- * @returns {*} - description
+ * Create a reducer that accumulates scores for each simulated move.
+ * @param {MinimaxParams} params - Current search parameters.
+ * @param {number} depth - Current depth.
+ * @param {boolean} isMax - Whether the layer maximizes scores.
+ * @returns {(scores: number[], move: [number, number]) => number[]}
  */
 function makeAccumulateScores(params, depth, isMax) {
   let value;
@@ -638,20 +660,18 @@ function makeAccumulateScores(params, depth, isMax) {
 }
 
 /**
- *
- * @param {*} root0 - description
- * @param {*} root0.move - description
- * @returns {*} - description
+ * Validate that the move is issued by a recognized player.
+ * @param {{ move: TicTacToeMove }} params - Move wrapper.
+ * @returns {boolean}
  */
 function hasValidPlayer({ move }) {
   return ['X', 'O'].includes(move.player);
 }
 
 /**
- *
- * @param {*} root0 - description
- * @param {*} root0.move - description
- * @returns {*} - description
+ * Check whether the move carries a valid position.
+ * @param {{ move: TicTacToeMove }} params - Move wrapper.
+ * @returns {boolean}
  */
 function hasValidPosition({ move }) {
   const position = move.position;
@@ -663,21 +683,21 @@ function hasValidPosition({ move }) {
 }
 
 /**
- *
- * @param {*} row - description
- * @param {*} column - description
- * @returns {*} - description
+ * Validate row and column indices.
+ * @param {number} row - Row index.
+ * @param {number} column - Column index.
+ * @returns {boolean}
  */
 function isValidRowAndColumn(row, column) {
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
 }
 
 /**
- *
- * @param {*} move - description
- * @param {*} index - description
- * @param {*} moves - description
- * @returns {*} - description
+ * Determine whether the move can be applied at the current index.
+ * @param {unknown} move - Move candidate.
+ * @param {number} index - Move index.
+ * @param {TicTacToeMove[]} moves - Moves array.
+ * @returns {boolean}
  */
 function canMoveBeApplied(move, index, moves) {
   if (!isObject(move)) {
@@ -687,9 +707,9 @@ function canMoveBeApplied(move, index, moves) {
 }
 
 /**
- *
- * @param {*} params - description
- * @returns {*} - description
+ * Validate that the move details satisfy all validators.
+ * @param {{ move: unknown, index: number, moves: TicTacToeMove[] }} params - Move context.
+ * @returns {boolean}
  */
 function isMoveDetailsValid(params) {
   const validators = [hasValidPlayer, hasValidPosition, respectsTurnOrder];
@@ -697,10 +717,10 @@ function isMoveDetailsValid(params) {
 }
 
 /**
- *
- * @param {*} board - description
- * @param {*} player - description
- * @returns {*} - description
+ * Check whether the player has a winning line on the board.
+ * @param {TicTacToeBoardState['board']} board - Current board.
+ * @param {TicTacToePlayer} player - Player to evaluate.
+ * @returns {boolean}
  */
 function isWin(board, player) {
   const checks = [checkRows, checkColumns, checkDiagonals];
@@ -708,8 +728,8 @@ function isWin(board, player) {
 }
 
 /**
- *
- * @returns {*} - description
+ * Return the initial optimal move payload.
+ * @returns {string}
  */
 function returnInitialOptimalMove() {
   // In an empty board, the optimal first move is the center
