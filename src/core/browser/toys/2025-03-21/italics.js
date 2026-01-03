@@ -175,15 +175,28 @@ function processTextPreservingBold(text) {
     return processAllItalicStyles(text);
   }
 
+  return formatBoldSegments(text);
+}
+
+/**
+ * Extracts the bold segment details and either reconstructs the text with the
+ * bold portion preserved or falls back to the generic italic processor.
+ * @param {string} text - The text to inspect for bold segments.
+ * @returns {string} Resulting HTML–formatted text.
+ * @private
+ */
+function formatBoldSegments(text) {
   const segment = /** @type {BoldSegment | null} */ (findBoldSegments(text));
-  if (!segment) {
-    return processAllItalicStyles(text);
+
+  if (segment) {
+    return assembleProcessedText(
+      segment.beforeText,
+      segment.boldText,
+      segment.afterText
+    );
   }
-  return assembleProcessedText(
-    segment.beforeText,
-    segment.boldText,
-    segment.afterText
-  );
+
+  return processAllItalicStyles(text);
 }
 
 /**
