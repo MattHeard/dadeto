@@ -6,6 +6,8 @@
  * @property {string|null} error - Error message when traversal fails.
  */
 
+/* eslint complexity: ["warn", 4] */
+
 /**
  * Determine whether the supplied value represents an error string.
  * @param {unknown} value - Value to inspect.
@@ -36,9 +38,9 @@ function traversePathSegments(data, pathSegments) {
   /** @type {PathTraversalState} */
   const initialState = { value: data, path: '', error: null };
   /**
-   * @param {PathTraversalState} acc
-   * @param {string} segment
-   * @returns {PathTraversalState}
+   * @param {PathTraversalState} acc - State accumulated so far.
+   * @param {string} segment - Next path segment to process.
+   * @returns {PathTraversalState} New traversal state after this segment.
    */
   function reduceTraversal(acc, segment) {
     if (acc.error) {
@@ -98,20 +100,49 @@ function getNextPath(currentPath, segment) {
  * @returns {PathTraversalState} Lookup result.
  */
 function getSegmentValueOrError(currentValue, segment, nextPath) {
-  if (Array.isArray(currentValue)) {
-    const arrayIndex = getArrayIndex(segment);
-    if (arrayIndex !== null && arrayIndex < currentValue.length) {
-      return { value: currentValue[arrayIndex], path: nextPath, error: null };
+  const arrayResult = getArraySegmentValue(currentValue, segment, nextPath);
+  const objectResult = getSegmentObjectValue(currentValue, segment, nextPath);
+  return (
+    arrayResult ??
+    objectResult ?? {
+      value: undefined,
+      path: nextPath,
+      error: getSegmentNotFoundError(currentValue, segment, nextPath),
     }
-  } else if (hasOwnSegment(currentValue, segment)) {
-    const objectValue = /** @type {Record<string, unknown>} */ (currentValue);
-    return { value: objectValue[segment], path: nextPath, error: null };
+  );
+}
+
+/**
+ * Attempt to resolve the array entry for the active segment.
+ * @param {object|unknown[]} currentValue - Current value being inspected.
+ * @param {string} segment - Segment text interpreted as an index.
+ * @param {string} nextPath - Path using the current segment.
+ * @returns {PathTraversalState|null} Traversal state when the array entry is valid, otherwise null.
+ */
+function getArraySegmentValue(currentValue, segment, nextPath) {
+  if (!Array.isArray(currentValue)) {
+    return null;
   }
-  return {
-    value: undefined,
-    path: nextPath,
-    error: getSegmentNotFoundError(currentValue, segment, nextPath),
-  };
+  const arrayIndex = getArrayIndex(segment);
+  if (arrayIndex === null || arrayIndex >= currentValue.length) {
+    return null;
+  }
+  return { value: currentValue[arrayIndex], path: nextPath, error: null };
+}
+
+/**
+ * Return the object property value for a segment when it exists.
+ * @param {object|unknown[]} currentValue - Target object being traversed.
+ * @param {string} segment - Segment name or index.
+ * @param {string} nextPath - Path that includes this segment.
+ * @returns {PathTraversalState|null} Traversal state when the property exists, otherwise null.
+ */
+function getSegmentObjectValue(currentValue, segment, nextPath) {
+  if (!hasOwnSegment(currentValue, segment)) {
+    return null;
+  }
+  const objectValue = /** @type {Record<string, unknown>} */ (currentValue);
+  return { value: objectValue[segment], path: nextPath, error: null };
 }
 
 /**
@@ -173,9 +204,27 @@ function isNonObjectValue(value) {
  */
 function getArrayIndex(segment) {
   const numericIndex = Number(segment);
-  return Number.isInteger(numericIndex) && numericIndex >= 0
-    ? numericIndex
-    : null;
+  if (!Number.isInteger(numericIndex) || numericIndex < 0) {
+    return null;
+  }
+  return numericIndex;
+}
+
+/**
+ * Determine whether the array contains an index matching the segment.
+ * @param {object|unknown[]} currentValue - Array under inspection.
+ * @param {string} segment - Segment text to convert to an index.
+ * @returns {boolean} True when the converted index is within bounds.
+ */
+function isValidArrayIndex(currentValue, segment) {
+  if (!Array.isArray(currentValue)) {
+    return false;
+  }
+  const arrayIndex = getArrayIndex(segment);
+  if (arrayIndex === null) {
+    return false;
+  }
+  return arrayIndex < currentValue.length;
 }
 
 /**
@@ -186,8 +235,7 @@ function getArrayIndex(segment) {
  */
 function hasOwnSegment(currentValue, segment) {
   if (Array.isArray(currentValue)) {
-    const arrayIndex = getArrayIndex(segment);
-    return arrayIndex !== null && arrayIndex < currentValue.length;
+    return isValidArrayIndex(currentValue, segment);
   }
   return Object.prototype.hasOwnProperty.call(currentValue, segment);
 }
@@ -247,14 +295,24 @@ function safeStringifyValueAtPath(value, input) {
   try {
     return JSON.stringify(value);
   } catch (stringifyError) {
-    const message =
-      stringifyError instanceof Error
-        ? stringifyError.message
-        : typeof stringifyError === 'string'
-          ? stringifyError
-          : 'unknown error';
-    return `Error stringifying final value at path "${input}": ${message}`;
+    return formatStringifyError(stringifyError, input);
   }
+}
+
+/**
+ * Format the stringification failure message.
+ * @param {*} stringifyError - Error thrown while stringifying.
+ * @param {string} input - Original path string.
+ * @returns {string} User-facing error message describing the failure.
+ */
+function formatStringifyError(stringifyError, input) {
+  let message = 'unknown error';
+  if (stringifyError instanceof Error) {
+    message = stringifyError.message;
+  } else if (typeof stringifyError === 'string') {
+    message = stringifyError;
+  }
+  return `Error stringifying final value at path "${input}": ${message}`;
 }
 
 /**
@@ -326,17 +384,27 @@ function getDataWithCatch(getData, input) {
   try {
     return { data: getData(), error: null };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : typeof error === 'string'
-          ? error
-          : 'unknown error';
     return {
       data: null,
-      error: `Error during data retrieval or path traversal for "${input}": ${message}`,
+      error: describeGetDataError(error, input),
     };
   }
+}
+
+/**
+ * Build the error string returned when `getData` throws.
+ * @param {*} error - Raw value thrown by the environment call.
+ * @param {string} input - Path string used when calling `getData`.
+ * @returns {string} Formatted error string for diagnostics.
+ */
+function describeGetDataError(error, input) {
+  let message = 'unknown error';
+  if (error instanceof Error) {
+    message = error.message;
+  } else if (typeof error === 'string') {
+    message = error;
+  }
+  return `Error during data retrieval or path traversal for "${input}": ${message}`;
 }
 
 /**
@@ -353,11 +421,7 @@ export function get(input, env) {
   const getData = /** @type {() => object|unknown[]} */ (getDataCandidate);
   const { data, error } = getDataWithCatch(getData, input);
   const retrievalError = handleDataRetrievalErrorInGet(error);
-  if (retrievalError !== null) {
-    return retrievalError;
-  }
-
-  return getFinalResultAfterRetrieval(input, data);
+  return retrievalError ?? getFinalResultAfterRetrieval(input, data);
 }
 
 /**

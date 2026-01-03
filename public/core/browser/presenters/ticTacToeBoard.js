@@ -68,11 +68,14 @@ function isValidCoordinate(value) {
 
 /**
  * Validate that the candidate position describes a board slot.
- * @param {TicTacToePosition} position - Candidate position.
+ * @param {TicTacToePosition | undefined} position - Candidate position.
  * @returns {position is TicTacToePosition} True when both row and column are provided.
  */
 function isValidPosition(position) {
-  return Boolean(position) && arePositionCoordinatesValid(position);
+  if (!position) {
+    return false;
+  }
+  return arePositionCoordinatesValid(position);
 }
 
 /**
@@ -89,15 +92,21 @@ function arePositionCoordinatesValid(position) {
  * @returns {boolean} True when the row is 0, 1, or 2.
  */
 function hasValidRow(position) {
+  if (!position) {
+    return false;
+  }
   return isValidCoordinate(position.row);
 }
 
 /**
  * Does the provided position specify a valid column index?
- * @param {TicTacToePosition} position - Candidate position.
+ * @param {TicTacToePosition | undefined} position - Candidate position.
  * @returns {boolean} True when the column is 0, 1, or 2.
  */
 function hasValidColumn(position) {
+  if (!position) {
+    return false;
+  }
   return isValidCoordinate(position.column);
 }
 
@@ -127,15 +136,11 @@ function isCellEmpty(position, board) {
  * @returns {boolean} True when the move targets a blank slot.
  */
 function hasValidPositionWithEmptyCell(move, board) {
-  const position = /** @type {TicTacToePosition | undefined} */ (
-    getPosition(move)
-  );
-
+  const position = getPosition(move);
   if (!isValidPosition(position)) {
     return false;
   }
-
-  return isCellEmpty(/** @type {TicTacToePosition} */ (position), board);
+  return isCellEmpty(position, board);
 }
 
 /**
@@ -151,7 +156,7 @@ function isLegalMove(move, board) {
 
 /**
  * Update the board if the provided coordinates and player are valid.
- * @param {{position: TicTacToePosition, player: 'X'|'O'}} moveDetails - Validated move details.
+ * @param {TicTacToeMove} moveDetails - Validated move details.
  * @param {string[][]} board - Board to update.
  * @returns {void}
  */

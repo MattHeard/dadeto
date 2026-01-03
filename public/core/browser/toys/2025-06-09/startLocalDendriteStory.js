@@ -1,8 +1,18 @@
 import { deepClone } from '../../browser-core.js';
-import { runToyWithParsedJson, createOptions } from '../browserToysCore.js';
+import {
+  runToyWithParsedJson,
+  createOptions,
+  getEnvHelpers,
+} from '../browserToysCore.js';
+
+/**
+ * @typedef {{ title: string, content: string }} DendriteStoryInput
+ * @typedef {{id: string, title: string, content: string, options: object[]}} DendriteStoryResult
+ * @typedef {{ temporary?: { DEND1?: DendriteStoryResult[] } }} DendriteStoryStorage
+ */
 /**
  * Determines whether the provided object has a valid temporary structure.
- * @param {object} obj - Object to inspect.
+ * @param {DendriteStoryStorage} obj - Object to inspect.
  * @returns {boolean} True when `obj.temporary.DEND1` is an array.
  */
 function hasValidTemporary(obj) {
@@ -11,7 +21,7 @@ function hasValidTemporary(obj) {
 
 /**
  * Ensures that the object contains the expected temporary data structure.
- * @param {object} obj - Object to mutate if needed.
+ * @param {DendriteStoryStorage} obj - Object to mutate if needed.
  * @returns {void}
  */
 function ensureTemporaryData(obj) {
@@ -22,9 +32,9 @@ function ensureTemporaryData(obj) {
 
 /**
  * Create a normalized dendrite story result object from raw data.
- * @param {object} data - Parsed story data.
+ * @param {DendriteStoryInput} data - Parsed story data.
  * @param {() => string} getUuid - UUID generator.
- * @returns {object} Normalized story result.
+ * @returns {DendriteStoryResult} Normalized story result.
  */
 function createStoryResult(data, getUuid) {
   return {
@@ -38,14 +48,13 @@ function createStoryResult(data, getUuid) {
 /**
  * Store the dendrite story result inside the environment's temporary data.
  * @param {Map<string, Function>} env - Environment helpers.
- * @param {object} result - Story result to persist.
+ * @param {DendriteStoryResult} result - Story result to persist.
  * @returns {void}
  */
 function persistStoryResult(env, result) {
-  const getData = env.get('getData');
-  const setLocalTemporaryData = env.get('setLocalTemporaryData');
+  const { getData, setLocalTemporaryData } = getEnvHelpers(env);
   const currentData = getData();
-  const newData = deepClone(currentData);
+  const newData = /** @type {DendriteStoryStorage} */ (deepClone(currentData));
   ensureTemporaryData(newData);
   newData.temporary.DEND1.push(result);
   setLocalTemporaryData(newData);
@@ -58,11 +67,14 @@ function persistStoryResult(env, result) {
  * @returns {string} The serialized newly added story or empty object on error.
  */
 export function startLocalDendriteStory(input, env) {
-  return runToyWithParsedJson(input, data => {
-    const getUuid = env.get('getUuid');
-    const result = createStoryResult(data, getUuid);
+  return runToyWithParsedJson(
+    input,
+    /** @param {DendriteStoryInput} data */ data => {
+      const { getUuid } = getEnvHelpers(env);
+      const result = createStoryResult(data, getUuid);
 
-    persistStoryResult(env, result);
-    return JSON.stringify(result);
-  });
+      persistStoryResult(env, result);
+      return JSON.stringify(result);
+    }
+  );
 }

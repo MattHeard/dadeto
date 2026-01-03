@@ -335,10 +335,17 @@ function getScopedState(data) {
  * @returns {AdventureScopedState} Extracted scoped state.
  */
 function resolveScopedState(temporary) {
-  /* eslint complexity: ["error", 3] */
   if (!temporary) {
     return {};
   }
+  return resolveTemporaryScope(temporary);
+}
+
+/**
+ * @param {AdventureTemporaryScope} temporary - Bucket that may contain `CYBE1`.
+ * @returns {AdventureScopedState} Scoped state fallback.
+ */
+function resolveTemporaryScope(temporary) {
   return temporary.CYBE1 ?? {};
 }
 

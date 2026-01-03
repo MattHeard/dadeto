@@ -1,6 +1,10 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
 import { whenString } from '../../../commonCore.js';
 
+/**
+ * @typedef {{ isApproved: boolean, moderatorId: string, ratedAt: string, variantId: string }} ModeratorRatingEntry
+ */
+
 const REQUIRED_FIELDS = ['isApproved', 'moderatorId', 'ratedAt', 'variantId'];
 
 /**
@@ -16,11 +20,11 @@ export function moderatorRatingCounts(input) {
 
 /**
  * Build a map of moderators to the number of valid ratings submitted.
- * @param {Array<unknown>} ratings - Parsed rating entries.
+ * @param {Array<ModeratorRatingEntry>} ratings - Parsed rating entries.
  * @returns {Map<string, number>} Moderators mapped to their counts.
  */
 function countModeratorRatings(ratings) {
-  const counts = new Map();
+  const counts = /** @type {Map<string, number>} */ (new Map());
 
   for (const rating of getValidRatings(ratings)) {
     incrementCount(counts, rating.moderatorId);
@@ -32,10 +36,12 @@ function countModeratorRatings(ratings) {
 /**
  * Filter the provided array to return only schema-compliant entries.
  * @param {Array<unknown>} ratings - Parsed rating entries.
- * @returns {Array<object>} Valid rating objects.
+ * @returns {Array<ModeratorRatingEntry>} Valid rating objects.
  */
 function getValidRatings(ratings) {
-  return ratings.filter(isValidRating);
+  return /** @type {Array<ModeratorRatingEntry>} */ (
+    ratings.filter(isValidRating)
+  );
 }
 
 /**
@@ -105,16 +111,20 @@ function buildResultArray(counts) {
 /**
  * Verify that the candidate satisfies the rating schema.
  * @param {*} candidate - Entry parsed from the input array.
- * @returns {boolean} True when the entry contains valid fields.
+ * @returns {candidate is ModeratorRatingEntry} True when the entry contains valid fields.
  */
 function isValidRating(candidate) {
-  return isPlainObject(candidate) && hasValidShape(candidate);
+  if (!isPlainObject(candidate)) {
+    return false;
+  }
+
+  return hasValidShape(/** @type {Record<string, unknown>} */ (candidate));
 }
 
 /**
  * Confirm the entry declares the required fields and the expected types.
- * @param {object} candidate - Object validated by `isPlainObject`.
- * @returns {boolean} True when the shape matches the schema.
+ * @param {Record<string, unknown>} candidate - Object validated by `isPlainObject`.
+ * @returns {candidate is ModeratorRatingEntry} True when the shape matches the schema.
  */
 function hasValidShape(candidate) {
   return hasRequiredFields(candidate) && hasValidTypes(candidate);
@@ -122,22 +132,21 @@ function hasValidShape(candidate) {
 
 /**
  * Verify the parsed entry stores the expected primitive types.
- * @param {object} candidate - Entry that already has the required fields.
- * @returns {boolean} True when every field matches its expected type.
+ * @param {Record<string, unknown>} candidate - Entry that already has the required fields.
+ * @returns {candidate is ModeratorRatingEntry} True when every field matches its expected type.
  */
 function hasValidTypes(candidate) {
-  const validators = [
-    () => typeof candidate.isApproved === 'boolean',
-    () => typeof candidate.moderatorId === 'string',
-    () => isIso8601String(candidate.ratedAt),
-    () => typeof candidate.variantId === 'string',
-  ];
-  return validators.every(check => check());
+  return (
+    typeof candidate.isApproved === 'boolean' &&
+    typeof candidate.moderatorId === 'string' &&
+    isIso8601String(candidate.ratedAt) &&
+    typeof candidate.variantId === 'string'
+  );
 }
 
 /**
  * Ensure each required field is present on the entry.
- * @param {object} candidate - Rating entry confirmed to be an object.
+ * @param {Record<string, unknown>} candidate - Rating entry confirmed to be an object.
  * @returns {boolean} True when every required key exists.
  */
 function hasRequiredFields(candidate) {
