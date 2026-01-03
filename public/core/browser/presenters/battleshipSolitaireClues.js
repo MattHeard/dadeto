@@ -106,15 +106,11 @@ const VALIDATION_CHECKS = [
   ],
 ];
 
-/**
- * Return a validation error message for the clue object if any rule fails.
- * @param {unknown} obj - Parsed clue object candidate.
- * @returns {string} Error message or empty string.
- */
 /* eslint complexity: ["warn", 4] */
 /**
- *
- * @param obj
+ * Return a validation error message for the clue object if any rule fails.
+ * @param {unknown} obj - Parsed clue object candidate that may hold row/col clue data.
+ * @returns {string} Error message or empty string.
  */
 function findValidationError(obj) {
   if (!isObject(obj)) {
