@@ -13,9 +13,10 @@ import { isNonNullObject, isValidString } from '../../commonCore.js';
  */
 
 /**
- *
- * @param env
- * @param key
+ * Ensure the requested helper exists in the environment map.
+ * @param {ToyEnv} env - Environment map that stores helper functions.
+ * @param {string} key - Helper name that should exist in the env map.
+ * @returns {EnvHelperFunc} - Registered helper for the given key.
  */
 function requireEnvHelper(env, key) {
   const helper = env.get(key);
@@ -92,6 +93,29 @@ export const DENDRITE_OPTION_KEYS = [
 ];
 
 /**
+ * Append a parsed option into the accumulator when valid.
+ * @param {ToyOption[]} acc Accumulated options.
+ * @param {string} key Candidate key to inspect.
+ * @param {Record<string, unknown>} data Source data.
+ * @param {() => string} getUuid UUID generator.
+ * @param {string} [pageId] Optional page ID.
+ * @returns {ToyOption[]} Accumulator with the new option when added.
+ */
+function addOption(acc, key, data, getUuid, pageId) {
+  const candidate = data[key];
+  if (typeof candidate !== 'string' || candidate.length === 0) {
+    return acc;
+  }
+  /** @type {ToyOption} */
+  const option = { id: getUuid(), content: candidate };
+  if (pageId) {
+    option.pageId = pageId;
+  }
+  acc.push(option);
+  return acc;
+}
+
+/**
  * Build an empty DEND2 container initialized for the toy state.
  * @returns {{stories: object[], pages: object[], options: object[]}} Empty DEND2.
  */
@@ -149,19 +173,10 @@ export function ensureDend2(data) {
  * @returns {ToyOption[]} Option list.
  */
 export function createOptions(data, getUuid, pageId) {
-  return DENDRITE_OPTION_KEYS.reduce((acc, key) => {
-    const candidate = data[key];
-    if (typeof candidate !== 'string' || candidate.length === 0) {
-      return acc;
-    }
-    /** @type {ToyOption} */
-    const option = { id: getUuid(), content: candidate };
-    if (pageId) {
-      option.pageId = pageId;
-    }
-    acc.push(option);
-    return acc;
-  }, /** @type {ToyOption[]} */ ([]));
+  return DENDRITE_OPTION_KEYS.reduce(
+    (acc, key) => addOption(acc, key, data, getUuid, pageId),
+    /** @type {ToyOption[]} */ ([])
+  );
 }
 
 /**

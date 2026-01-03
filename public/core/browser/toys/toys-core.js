@@ -73,7 +73,7 @@ class CsvLineParser {
 
   /**
    * @param {string} char Current character to examine.
-   * @returns {boolean}
+   * @returns {boolean} - True when the quote state was toggled.
    */
   consumeQuote(char) {
     if (!this.isQuote(char)) {
@@ -112,7 +112,7 @@ class CsvLineParser {
 
   /**
    * @param {string} char Character to test for the delimiter.
-   * @returns {boolean}
+   * @returns {boolean} - True when the delimiter was consumed.
    */
   consumeDelimiter(char) {
     if (!this.canConsumeDelimiter(char)) {
@@ -125,7 +125,7 @@ class CsvLineParser {
 
   /**
    * @param {(char: string) => boolean} handler Handler that processes the current character.
-   * @returns {boolean}
+   * @returns {boolean} - True when the handler consumed the current character and advanced.
    */
   consumeWithAdvance(handler) {
     if (handler.call(this, this.currentChar())) {
@@ -142,7 +142,7 @@ class CsvLineParser {
 
   /**
    * @param {string} char Candidate character to treat as a delimiter.
-   * @returns {boolean}
+   * @returns {boolean} - True when the character is a delimiter outside quotes.
    */
   canConsumeDelimiter(char) {
     return this.isDelimiter(char) && this.isOutsideQuotedField();
@@ -150,7 +150,7 @@ class CsvLineParser {
 
   /**
    * @param {string} char Candidate character to compare against the delimiter.
-   * @returns {boolean}
+   * @returns {boolean} - True when the character matches the configured delimiter.
    */
   isDelimiter(char) {
     return char === DELIMITER;

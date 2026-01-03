@@ -494,11 +494,11 @@ function shouldAbortPlaceShip(acc) {
  */
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (shouldAbortPlaceShip(acc)) {
+    if (!acc || shouldAbortPlaceShip(acc)) {
       return null;
     }
     const placed = placeShipWithArgs(len);
-    if (!placed || !acc) {
+    if (!placed) {
       return null;
     }
     acc.push(placed);
@@ -734,7 +734,7 @@ function generateFleet(input, env) {
 /**
  * Determine whether the area error should be returned.
  * @param {FleetConfig} cfg - Board configuration.
- * @returns {boolean}
+ * @returns {boolean} True when the configured fleet exceeds the board area so the area error short-circuits generation.
  */
 function shouldReturnAreaError(cfg) {
   return exceedsBoardArea(cfg);
