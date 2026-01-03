@@ -8,11 +8,8 @@ const UNDERSCORE_MARKER = '_';
 const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
 
 /**
- * A bold markdown segment that should remain untouched by italic expansion.
- * @typedef {object} BoldSegment
- * @property {string} boldText - The bold text including markers.
- * @property {string} beforeText - Content that appears before the bold segment.
- * @property {string} afterText - Content that appears after the bold segment.
+ * Represents the bold segment alongside its surrounding text.
+ * @typedef {{ beforeText: string; boldText: string; afterText: string }} BoldSegment
  */
 
 /**
@@ -178,7 +175,7 @@ function processTextPreservingBold(text) {
     return processAllItalicStyles(text);
   }
 
-  const segment = findBoldSegments(text);
+  const segment = /** @type {BoldSegment | null} */ (findBoldSegments(text));
   if (!segment) {
     return processAllItalicStyles(text);
   }
