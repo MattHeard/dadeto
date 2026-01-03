@@ -686,7 +686,7 @@ function hasValidPosition({ move }) {
  * Validate row and column indices.
  * @param {number} row - Row index.
  * @param {number} column - Column index.
- * @returns {boolean} True when both indices fall inside the 3x3 grid so invalid indices never hit the board.
+ * @returns {boolean} True when both indices fall inside the 3x3 grid so invalid indices never touch the board or cause OOB accesses.
  */
 function isValidRowAndColumn(row, column) {
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
@@ -697,7 +697,7 @@ function isValidRowAndColumn(row, column) {
  * @param {unknown} move - Move candidate.
  * @param {number} index - Move index.
  * @param {TicTacToeMove[]} moves - Moves array.
- * @returns {boolean} True when the move passes validation and turn-order checks so illegals are rejected before application.
+ * @returns {boolean} True when the move passes validation and turn-order checks so illegals are rejected before the play is applied.
  */
 function canMoveBeApplied(move, index, moves) {
   if (!isObject(move)) {
@@ -709,7 +709,7 @@ function canMoveBeApplied(move, index, moves) {
 /**
  * Validate that the move details satisfy all validators.
  * @param {{ move: unknown, index: number, moves: TicTacToeMove[] }} params - Move context.
- * @returns {boolean} True when every validator accepts the move details, guaranteeing they meet all guard rails.
+ * @returns {boolean} True when every validator accepts the move details, guaranteeing they meet all guard rails before evaluation.
  */
 function isMoveDetailsValid(params) {
   const validators = [hasValidPlayer, hasValidPosition, respectsTurnOrder];
@@ -720,7 +720,7 @@ function isMoveDetailsValid(params) {
  * Check whether the player has a winning line on the board.
  * @param {TicTacToeBoardState['board']} board - Current board.
  * @param {TicTacToePlayer} player - Player to evaluate.
- * @returns {boolean} True when the player has a winning row, column, or diagonal so recursive terminal checks can stop early.
+ * @returns {boolean} True when the player has a winning row, column, or diagonal so recursive terminal checks can stop early and scores can propagate.
  */
 function isWin(board, player) {
   const checks = [checkRows, checkColumns, checkDiagonals];
@@ -729,7 +729,7 @@ function isWin(board, player) {
 
 /**
  * Return the initial optimal move payload.
- * @returns {string} JSON payload describing the default first move so clients can bootstrap the board consistently.
+ * @returns {string} JSON payload describing the default first move so clients can bootstrap the board consistently with the center opening.
  */
 function returnInitialOptimalMove() {
   // In an empty board, the optimal first move is the center

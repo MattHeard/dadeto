@@ -136,12 +136,13 @@ function hasValidShape(candidate) {
  * @returns {candidate is ModeratorRatingEntry} True when every field matches its expected type.
  */
 function hasValidTypes(candidate) {
-  return (
-    typeof candidate.isApproved === 'boolean' &&
-    typeof candidate.moderatorId === 'string' &&
-    isIso8601String(candidate.ratedAt) &&
-    typeof candidate.variantId === 'string'
-  );
+  const checks = [
+    typeof candidate.isApproved === 'boolean',
+    typeof candidate.moderatorId === 'string',
+    isIso8601String(candidate.ratedAt),
+    typeof candidate.variantId === 'string',
+  ];
+  return checks.every(Boolean);
 }
 
 /**

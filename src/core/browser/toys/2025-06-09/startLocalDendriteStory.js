@@ -69,7 +69,11 @@ function persistStoryResult(env, result) {
 export function startLocalDendriteStory(input, env) {
   return runToyWithParsedJson(
     input,
-    /** @param {DendriteStoryInput} data */ data => {
+    /**
+     * @param {DendriteStoryInput} data - Parsed story payload from the caller.
+     * @returns {string} Serialized story result saved into the temporary store.
+     */
+    data => {
       const { getUuid } = getEnvHelpers(env);
       const result = createStoryResult(data, getUuid);
 

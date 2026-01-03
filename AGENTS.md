@@ -23,6 +23,7 @@ Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for a
 - 5. If no eligible bead exists, idle (sleep/backoff for a minute), then rerun steps 1–2 until something is available.
 - 6. After wrapping each bead, close it with `bd close <id>` before looping; the cycle keeps the agent working through ready beads.
 
+- Before closing any bead, run `npm test` with the working tree in its current state and record the command and outcome via `bd comments add <id> ...` so every closure leaves evidence that the baseline suite passed.
 - Before editing any files for a bead, mark it in progress via `bd update <id> --status=in_progress` so the status reflects your work.
 - Treat missing branch coverage beads (e.g., coverage falling below 100%) as higher-priority chores; address them before tackling other open chores when possible so coverage regressions don’t linger.
 
