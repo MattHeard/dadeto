@@ -108,6 +108,14 @@ function getBaitData(input, baitOptions, moodDescription) {
 }
 
 /**
+ * @param {BaitResponse} response
+ * @returns {response is BaitError}
+ */
+function isBaitError(response) {
+  return Boolean(response && response.isError);
+}
+
+/**
  * Determine a textual time of day description from the hour.
  * @param {number} hour - Hour of the day in 24 hour format.
  * @returns {TimeOfDayLabel} Time of day label.
@@ -122,10 +130,7 @@ function getTimeOfDay(hour) {
     { start: 0, end: 5, label: 'night' },
   ];
   const match = ranges.find(({ start, end }) => hour >= start && hour < end);
-  if (!match) {
-    return 'night';
-  }
-  return match.label;
+  return match?.label ?? 'night';
 }
 
 /**
@@ -142,10 +147,7 @@ function getSeason(month) {
     { months: [8, 9, 10], label: 'fall' },
   ];
   const match = ranges.find(({ months }) => months.includes(month));
-  if (!match) {
-    return 'winter';
-  }
-  return match.label;
+  return match?.label ?? 'winter';
 }
 
 /**
@@ -169,7 +171,9 @@ function getMoodDescription(season, timeOfDay) {
     evening: 'in the glow of twilight',
     night: 'beneath a silent, starry sky',
   };
-  return `${seasonDescriptions[season]} ${timeDescriptions[timeOfDay]}`;
+  const seasonLabel = /** @type {SeasonLabel} */ (season);
+  const timeLabel = /** @type {TimeOfDayLabel} */ (timeOfDay);
+  return `${seasonDescriptions[seasonLabel]} ${timeDescriptions[timeLabel]}`;
 }
 
 /**
@@ -202,27 +206,31 @@ function isTroutCatch(chance) {
 const fishingOutcomes = /** @type {FishingOutcome[]} */ ([
   {
     check: isSilentCatch,
-    /** @type {(bait: string, mood: string) => string} */
-    describe: (bait, mood) =>
-      `the water stays silent. Despite your use of ${bait}, no fish disturb the ${mood}.`,
+    describe: /** @type {(bait: string, mood: string) => string} */ (
+      (bait, mood) =>
+        `the water stays silent. Despite your use of ${bait}, no fish disturb the ${mood}.`
+    ),
   },
   {
     check: isCommonCatch,
-    /** @type {(bait: string, mood: string) => string} */
-    describe: (bait, mood) =>
-      `a common carp surfaces gently, a modest reward for your effort with ${bait}, set against ${mood}.`,
+    describe: /** @type {(bait: string, mood: string) => string} */ (
+      (bait, mood) =>
+        `a common carp surfaces gently, a modest reward for your effort with ${bait}, set against ${mood}.`
+    ),
   },
   {
     check: isTroutCatch,
-    /** @type {(bait: string, mood: string) => string} */
-    describe: (bait, mood) =>
-      `a glimmering trout appears briefly, its shimmer echoing the beauty of ${mood}. Your choice of ${bait} worked well.`,
+    describe: /** @type {(bait: string, mood: string) => string} */ (
+      (bait, mood) =>
+        `a glimmering trout appears briefly, its shimmer echoing the beauty of ${mood}. Your choice of ${bait} worked well.`
+    ),
   },
   {
     check: () => true,
-    /** @type {(bait: string, mood: string) => string} */
-    describe: (bait, mood) =>
-      `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${mood}. Your ${bait} has yielded a prize.`,
+    describe: /** @type {(bait: string, mood: string) => string} */ (
+      (bait, mood) =>
+        `in a burst of brilliance, a legendary golden fish leaps forth—its radiance matching the splendor of ${mood}. Your ${bait} has yielded a prize.`
+    ),
   },
 ]);
 
@@ -235,9 +243,13 @@ const fishingOutcomes = /** @type {FishingOutcome[]} */ ([
  * @returns {string} Narrative describing the catch.
  */
 function getFishingOutcome(effectiveChance, baitDescription, moodDescription) {
+  const fallbackOutcome = fishingOutcomes[fishingOutcomes.length - 1];
+  if (!fallbackOutcome) {
+    throw new Error('Fishing outcomes were not defined');
+  }
   const outcome =
     fishingOutcomes.find(({ check }) => check(effectiveChance)) ??
-    fishingOutcomes[fishingOutcomes.length - 1];
+    fallbackOutcome;
   return outcome.describe(baitDescription, moodDescription);
 }
 
@@ -297,10 +309,10 @@ function fishingGame(input, env) {
   const baitOptions = getBaitOptions();
 
   const baitDataOrError = getBaitData(input, baitOptions, moodDescription);
-  if (baitDataOrError.isError) {
+  if (isBaitError(baitDataOrError)) {
     return baitDataOrError.message;
   }
-  const baitData = /** @type {BaitDetails} */ (baitDataOrError);
+  const baitData = baitDataOrError;
 
   const getRandomNumberCandidate = env.get('getRandomNumber');
   if (typeof getRandomNumberCandidate !== 'function') {

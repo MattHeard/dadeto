@@ -2,88 +2,15 @@
 > blog-generator@1.0.0 tsdoc:check
 > tsc --project tsconfig.jsdoc.json
 
-src/core/browser/localStorageLens.js(148,28): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
-  Type 'null' is not assignable to type 'string'.
 src/core/browser/presenters/battleshipSolitaireClues.js(78,11): error TS2322: Type 'unknown[] | undefined' is not assignable to type 'unknown[]'.
   Type 'undefined' is not assignable to type 'unknown[]'.
 src/core/browser/presenters/battleshipSolitaireClues.js(78,25): error TS2322: Type 'unknown[] | undefined' is not assignable to type 'unknown[]'.
   Type 'undefined' is not assignable to type 'unknown[]'.
 src/core/browser/presenters/battleshipSolitaireClues.js(123,38): error TS2345: Argument of type 'BattleshipClueCandidate | null | undefined' is not assignable to parameter of type 'BattleshipClueCandidate'.
   Type 'undefined' is not assignable to type 'BattleshipClueCandidate'.
-src/core/browser/presenters/ticTacToeBoard.js(70,19): error TS18048: 'position' is possibly 'undefined'.
-src/core/browser/presenters/ticTacToeBoard.js(70,67): error TS18048: 'position' is possibly 'undefined'.
-src/core/browser/presenters/ticTacToeBoard.js(74,14): error TS18048: 'position' is possibly 'undefined'.
-src/core/browser/presenters/ticTacToeBoard.js(74,65): error TS18048: 'position' is possibly 'undefined'.
-src/core/browser/presenters/ticTacToeBoard.js(78,18): error TS18048: 'position' is possibly 'undefined'.
-src/core/browser/presenters/ticTacToeBoard.js(78,32): error TS18048: 'position' is possibly 'undefined'.
-src/core/browser/storageLens.js(46,27): error TS2345: Argument of type 'string | TValue' is not assignable to parameter of type 'TValue'.
-  'TValue' could be instantiated with an arbitrary type which could be unrelated to 'string | TValue'.
-src/core/browser/tags.js(50,45): error TS2345: Argument of type '{ createHideSpan: Function; importModule: (modulePath: string, onSuccess: ModuleSuccessHandler, onError: ModuleErrorHandler) => void; ... 51 more ...; reveal: (element: HTMLElement) => void; }' is not assignable to parameter of type 'TagsDOMHelpers'.
-  Type '{ createHideSpan: Function; importModule: (modulePath: string, onSuccess: ModuleSuccessHandler, onError: ModuleErrorHandler) => void; ... 51 more ...; reveal: (element: HTMLElement) => void; }' is not assignable to type '{ createHideSpan: (link: HTMLElement, className: string) => void; }'.
-    Types of property 'createHideSpan' are incompatible.
-      Type 'Function' is not assignable to type '(link: HTMLElement, className: string) => void'.
-        Type 'Function' provides no match for the signature '(link: HTMLElement, className: string): void'.
-src/core/browser/tags.js(87,20): error TS7006: Parameter 'event' implicitly has an 'any' type.
-src/core/browser/tags.js(99,34): error TS7006: Parameter 'link' implicitly has an 'any' type.
-src/core/browser/tags.js(99,40): error TS7006: Parameter 'className' implicitly has an 'any' type.
-src/core/browser/tags.js(111,45): error TS2345: Argument of type 'Function' is not assignable to parameter of type '(event: Event) => void'.
-  Type 'Function' provides no match for the signature '(event: Event): void'.
-src/core/browser/tags.js(134,23): error TS2740: Type 'Element' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 129 more.
-src/core/browser/toys/2025-03-21/italics.js(122,14): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-21/italics.js(175,5): error TS18047: 'segment' is possibly 'null'.
-src/core/browser/toys/2025-03-21/italics.js(175,13): error TS2339: Property 'beforeText' does not exist on type 'object'.
-src/core/browser/toys/2025-03-21/italics.js(176,5): error TS18047: 'segment' is possibly 'null'.
-src/core/browser/toys/2025-03-21/italics.js(176,13): error TS2339: Property 'boldText' does not exist on type 'object'.
-src/core/browser/toys/2025-03-21/italics.js(177,5): error TS18047: 'segment' is possibly 'null'.
-src/core/browser/toys/2025-03-21/italics.js(177,13): error TS2339: Property 'afterText' does not exist on type 'object'.
-src/core/browser/toys/2025-03-29/fishingGame.js(98,10): error TS18048: 'match' is possibly 'undefined'.
-src/core/browser/toys/2025-03-29/fishingGame.js(114,10): error TS18048: 'match' is possibly 'undefined'.
-src/core/browser/toys/2025-03-29/fishingGame.js(136,13): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ winter: string; spring: string; summer: string; fall: string; }'.
-  No index signature with a parameter of type 'string' was found on type '{ winter: string; spring: string; summer: string; fall: string; }'.
-src/core/browser/toys/2025-03-29/fishingGame.js(136,43): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ morning: string; afternoon: string; evening: string; night: string; }'.
-  No index signature with a parameter of type 'string' was found on type '{ morning: string; afternoon: string; evening: string; night: string; }'.
-src/core/browser/toys/2025-03-29/fishingGame.js(169,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(169,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(174,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(174,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(179,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(179,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(184,16): error TS7006: Parameter 'bait' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(184,22): error TS7006: Parameter 'mood' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/fishingGame.js(198,10): error TS2532: Object is possibly 'undefined'.
-src/core/browser/toys/2025-03-29/fishingGame.js(253,23): error TS2339: Property 'isError' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
-  Property 'isError' does not exist on type '{ modifier: number; description: string; }'.
-src/core/browser/toys/2025-03-29/fishingGame.js(254,28): error TS2339: Property 'message' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
-  Property 'message' does not exist on type '{ modifier: number; description: string; }'.
-src/core/browser/toys/2025-03-29/fishingGame.js(262,39): error TS2339: Property 'modifier' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
-  Property 'modifier' does not exist on type '{ isError: boolean; message: string; }'.
-src/core/browser/toys/2025-03-29/fishingGame.js(267,14): error TS2339: Property 'description' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
-  Property 'description' does not exist on type '{ isError: boolean; message: string; }'.
-src/core/browser/toys/2025-03-29/fishingGame.js(271,45): error TS2339: Property 'description' does not exist on type '{ modifier: number; description: string; } | { isError: boolean; message: string; }'.
-  Property 'description' does not exist on type '{ isError: boolean; message: string; }'.
-src/core/browser/toys/2025-03-29/get.js(14,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(25,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(31,20): error TS7006: Parameter 'acc' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/get.js(31,25): error TS7006: Parameter 'segment' implicitly has an 'any' type.
-src/core/browser/toys/2025-03-29/get.js(55,5): error TS2739: Type '{ error: string; }' is missing the following properties from type '{ value: any; path: string; error: string | null; }': value, path
-src/core/browser/toys/2025-03-29/get.js(74,3): error TS2322: Type '{ error: string; } | { value: any; path: string; error: string | null; }' is not assignable to type '{ value: any; path: string; error: string | null; }'.
-  Type '{ error: string; }' is missing the following properties from type '{ value: any; path: string; error: string | null; }': value, path
-src/core/browser/toys/2025-03-29/get.js(98,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(105,21): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'object | any[]'.
-  No index signature with a parameter of type 'string' was found on type 'object | any[]'.
-src/core/browser/toys/2025-03-29/get.js(147,3): error TS2322: Type 'unknown' is not assignable to type '{ error: string; } | null'.
-src/core/browser/toys/2025-03-29/get.js(161,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(166,17): error TS2550: Property 'hasOwn' does not exist on type 'ObjectConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2022' or later.
-src/core/browser/toys/2025-03-29/get.js(171,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(188,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(257,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(302,11): error TS2339: Property 'data' does not exist on type '{ data: any; } | { error: string; }'.
-src/core/browser/toys/2025-03-29/get.js(302,17): error TS2339: Property 'error' does not exist on type '{ data: any; } | { error: string; }'.
-src/core/browser/toys/2025-03-29/get.js(302,44): error TS2345: Argument of type 'Function | undefined' is not assignable to parameter of type 'Function'.
-  Type 'undefined' is not assignable to type 'Function'.
-src/core/browser/toys/2025-03-29/get.js(314,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-29/get.js(328,19): error TS2314: Generic type 'Array<T>' requires 1 type argument(s).
-src/core/browser/toys/2025-03-30/cyberpunkAdventure.js(204,44): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AdventureState'.
+src/core/browser/presenters/ticTacToeBoard.js(92,28): error TS18048: 'position' is possibly 'undefined'.
+src/core/browser/presenters/ticTacToeBoard.js(134,24): error TS2345: Argument of type 'TicTacToePosition | undefined' is not assignable to parameter of type 'TicTacToePosition'.
+  Type 'undefined' is not assignable to type 'TicTacToePosition'.
 src/core/browser/toys/2025-04-06/ticTacToe.js(20,15): error TS8032: Qualified name 'root0.move' is not allowed without a leading '@param {object} root0'.
 src/core/browser/toys/2025-04-06/ticTacToe.js(21,15): error TS8032: Qualified name 'root0.index' is not allowed without a leading '@param {object} root0'.
 src/core/browser/toys/2025-04-06/ticTacToe.js(22,15): error TS8032: Qualified name 'root0.moves' is not allowed without a leading '@param {object} root0'.

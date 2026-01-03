@@ -35,14 +35,18 @@ function getValueAtPath(data, input) {
 function traversePathSegments(data, pathSegments) {
   /** @type {PathTraversalState} */
   const initialState = { value: data, path: '', error: null };
-  /** @type {(acc: PathTraversalState, segment: string) => PathTraversalState} */
-  const reducer = (acc, segment) => {
+  /**
+   * @param {PathTraversalState} acc
+   * @param {string} segment
+   * @returns {PathTraversalState}
+   */
+  function reduceTraversal(acc, segment) {
     if (acc.error) {
       return acc;
     }
     return traverseSegment(acc.value, segment, acc.path);
-  };
-  const finalState = pathSegments.reduce(reducer, initialState);
+  }
+  const finalState = pathSegments.reduce(reduceTraversal, initialState);
   if (finalState.error) {
     return finalState.error;
   } else {

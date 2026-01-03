@@ -190,8 +190,7 @@ function handleTransportTrade(context) {
   const tradeSuccess = shouldTradeDatapad(nextInventory, lowerInput);
   let inventory = nextInventory;
   let output = `> Do you want to trade? Type 'trade datapad'.`;
-  /** @type {AdventureState} */
-  let nextState = 'transport:trade';
+  let nextState = /** @type {AdventureState} */ ('transport:trade');
 
   if (tradeSuccess) {
     const newInventory = nextInventory.filter(item => item !== 'datapad');
