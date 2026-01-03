@@ -567,7 +567,7 @@ function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
 /**
  * List available moves on the board.
  * @param {TicTacToeBoardState['board']} board - Current board state.
- * @returns {Array<[number, number]>} Coordinates of each empty cell.
+ * @returns {Array<[number, number]>} Coordinates of each empty cell so helpers can evaluate remaining play options.
  */
 function getAvailableMoves(board) {
   return board.reduce(
@@ -586,7 +586,7 @@ function getAvailableMoves(board) {
  * Simulate moves by accumulating scores.
  * @param {TicTacToeBoardState['board']} board - Current board.
  * @param {(scores: number[], move: [number, number]) => number[]} accumulateScores - Reducer over available moves.
- * @returns {number[]} Scores collected from simulating each available move.
+ * @returns {number[]} Scores collected from simulating each available move so the minimax layer can compare possible outcomes.
  */
 function simulateMoves(board, accumulateScores) {
   return getAvailableMoves(board).reduce(accumulateScores, []);
@@ -597,7 +597,7 @@ function simulateMoves(board, accumulateScores) {
  * @param {number} depth - Current depth in the search tree.
  * @param {boolean} isMax - Whether the current layer is maximizing.
  * @param {MinimaxParams} params - Search parameters.
- * @returns {number} Score for the optimal (or pessimal) path at the current depth.
+ * @returns {number} Score for the optimal (or pessimal) path at the current depth so callers can choose the best or worst branch.
  */
 function minimax(depth, isMax, params) {
   const opponent = getOpponent(params.player);
@@ -620,7 +620,7 @@ function minimax(depth, isMax, params) {
  * Select the best or worst score depending on the layer.
  * @param {number[]} scores - Collected scores.
  * @param {boolean} isMax - Whether to select the maximum.
- * @returns {number} Either the highest or lowest score from the list.
+ * @returns {number} Either the highest or lowest score from the list depending on whether the current layer maximizes or minimizes.
  */
 function selectScore(scores, isMax) {
   if (isMax) {
@@ -635,7 +635,7 @@ function selectScore(scores, isMax) {
  * @param {MinimaxParams} params - Current search parameters.
  * @param {number} depth - Current depth.
  * @param {boolean} isMax - Whether the layer maximizes scores.
- * @returns {(scores: number[], move: [number, number]) => number[]} Reducer that pushes simulated scores for each move.
+ * @returns {(scores: number[], move: [number, number]) => number[]} Reducer that pushes simulated scores for each move so the search can accumulate all candidate outcomes.
  */
 function makeAccumulateScores(params, depth, isMax) {
   let value;
@@ -662,7 +662,7 @@ function makeAccumulateScores(params, depth, isMax) {
 /**
  * Validate that the move is issued by a recognized player.
  * @param {{ move: TicTacToeMove }} params - Move wrapper.
- * @returns {boolean} True when the move lists a recognized player.
+ * @returns {boolean} True when the move lists a recognized player so invalid tokens are rejected.
  */
 function hasValidPlayer({ move }) {
   return ['X', 'O'].includes(move.player);
@@ -671,7 +671,7 @@ function hasValidPlayer({ move }) {
 /**
  * Check whether the move carries a valid position.
  * @param {{ move: TicTacToeMove }} params - Move wrapper.
- * @returns {boolean} True when the move's position is within the board bounds.
+ * @returns {boolean} True when the move's position is within the board bounds by delegating to row/column validation.
  */
 function hasValidPosition({ move }) {
   const position = move.position;
@@ -686,7 +686,7 @@ function hasValidPosition({ move }) {
  * Validate row and column indices.
  * @param {number} row - Row index.
  * @param {number} column - Column index.
- * @returns {boolean} True when both indices fall inside the 3x3 grid.
+ * @returns {boolean} True when both indices fall inside the 3x3 grid so invalid indices never hit the board.
  */
 function isValidRowAndColumn(row, column) {
   return [0, 1, 2].includes(row) && [0, 1, 2].includes(column);
@@ -697,7 +697,7 @@ function isValidRowAndColumn(row, column) {
  * @param {unknown} move - Move candidate.
  * @param {number} index - Move index.
  * @param {TicTacToeMove[]} moves - Moves array.
- * @returns {boolean} True when the move passes validation and turn-order checks.
+ * @returns {boolean} True when the move passes validation and turn-order checks so illegals are rejected before application.
  */
 function canMoveBeApplied(move, index, moves) {
   if (!isObject(move)) {
@@ -709,7 +709,7 @@ function canMoveBeApplied(move, index, moves) {
 /**
  * Validate that the move details satisfy all validators.
  * @param {{ move: unknown, index: number, moves: TicTacToeMove[] }} params - Move context.
- * @returns {boolean} True when every validator accepts the move details.
+ * @returns {boolean} True when every validator accepts the move details, guaranteeing they meet all guard rails.
  */
 function isMoveDetailsValid(params) {
   const validators = [hasValidPlayer, hasValidPosition, respectsTurnOrder];
@@ -720,7 +720,7 @@ function isMoveDetailsValid(params) {
  * Check whether the player has a winning line on the board.
  * @param {TicTacToeBoardState['board']} board - Current board.
  * @param {TicTacToePlayer} player - Player to evaluate.
- * @returns {boolean} True when the player has a winning row, column, or diagonal.
+ * @returns {boolean} True when the player has a winning row, column, or diagonal so recursive terminal checks can stop early.
  */
 function isWin(board, player) {
   const checks = [checkRows, checkColumns, checkDiagonals];
@@ -729,7 +729,7 @@ function isWin(board, player) {
 
 /**
  * Return the initial optimal move payload.
- * @returns {string} JSON payload describing the default first move.
+ * @returns {string} JSON payload describing the default first move so clients can bootstrap the board consistently.
  */
 function returnInitialOptimalMove() {
   // In an empty board, the optimal first move is the center

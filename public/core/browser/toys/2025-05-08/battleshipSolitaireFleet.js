@@ -211,7 +211,7 @@ function makeSegReducer(dir, start, occupied) {
      * @param {SegmentAccumulator} acc - Accumulated segment state.
      * @param {Coord | undefined} _ - Placeholder for reduce value.
      * @param {number} i - Segment offset.
-     * @returns {SegmentAccumulator}
+     * @returns {SegmentAccumulator} Updated accumulator after validating the current segment.
      */
     (acc, _, i) =>
       handleSegment({ acc, placement: { dir, start } }, occupied, i)
@@ -221,7 +221,7 @@ function makeSegReducer(dir, start, occupied) {
    * @param {{ acc: SegmentAccumulator, placement: { dir: 'H' | 'V', start: Coord } }} segment - Segment state.
    * @param {Set<string>} occupied - Occupied coordinates.
    * @param {number} i - Segment index.
-   * @returns {SegmentAccumulator}
+   * @returns {SegmentAccumulator} Accumulator that now reflects the handled segment.
    */
   function handleSegment(segment, occupied, i) {
     const { acc, placement } = segment;
@@ -237,7 +237,7 @@ function makeSegReducer(dir, start, occupied) {
   /**
    * @param {{ acc: SegmentAccumulator, sx: number, sy: number }} segment - Candidate segment state.
    * @param {Set<string>} occupied - Occupied coordinates.
-   * @returns {SegmentAccumulator}
+   * @returns {SegmentAccumulator} Accumulator with the newly added segment and updated validity.
    */
   function getNextAccumulator(segment, occupied) {
     const { acc, sx, sy } = segment;
@@ -251,7 +251,7 @@ function makeSegReducer(dir, start, occupied) {
    * @param {Set<string>} occupied - Occupied coordinate keys.
    * @param {number} sx - Column index.
    * @param {number} sy - Row index.
-   * @returns {boolean}
+   * @returns {boolean} True when the evaluated coordinate is already occupied.
    */
   function isSegmentOccupied(occupied, sx, sy) {
     const k = key(sx, sy);
@@ -262,7 +262,7 @@ function makeSegReducer(dir, start, occupied) {
    * @param {SegmentAccumulator} acc - Current accumulator.
    * @param {number} sx - Column index.
    * @param {number} sy - Row index.
-   * @returns {SegmentAccumulator}
+   * @returns {SegmentAccumulator} Accumulator extended with the confirmed segment placement.
    */
   function addSegmentToAccumulator(acc, sx, sy) {
     return { ...acc, segs: [...acc.segs, { x: sx, y: sy }] };
@@ -282,7 +282,7 @@ const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
  * @param {FleetConfig} cfg - Board configuration.
  * @param {Set<string>} occupied - Occupied coordinates.
  * @param {Coord[]} segs - Candidate segments.
- * @returns {boolean}
+ * @returns {boolean} True when the no-touching rule rejects the segments.
  */
 function isForbiddenTouch(cfg, occupied, segs) {
   return (
@@ -296,7 +296,7 @@ function isForbiddenTouch(cfg, occupied, segs) {
  * @param {BoardState} boardState - Board configuration with occupied cells.
  * @param {Coord[]} segs - Candidate segments.
  * @param {boolean} valid - Indicator that the segments are still valid.
- * @returns {boolean}
+ * @returns {boolean} True when the candidate is still valid after board constraints are considered.
  */
 function isValidCandidate(boardState, segs, valid) {
   if (!valid) {
@@ -481,7 +481,7 @@ function makePlaceShip(cfg, env) {
 /**
  * Determine whether placement should abort for the current accumulator.
  * @param {Candidate[] | null} acc - Accumulated placements or null when failed.
- * @returns {boolean}
+ * @returns {boolean} True when placement should abort because a prior reduction already failed.
  */
 function shouldAbortPlaceShip(acc) {
   return acc === null;
