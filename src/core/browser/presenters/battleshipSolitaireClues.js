@@ -109,8 +109,8 @@ const VALIDATION_CHECKS = [
 /* eslint complexity: ["warn", 4] */
 /**
  * Return a validation error message for the clue object if any rule fails.
- * @param {unknown} obj - Parsed clue object candidate that may hold row/col clue data.
- * @returns {string} Error message or empty string.
+ * @param {BattleshipClueCandidate | unknown} obj - Parsed clue candidate that may still require the correct clue arrays.
+ * @returns {string} Error message when validation fails, otherwise an empty string for a valid clue → used by INVALID_CLUE_CHECKS.
  */
 function findValidationError(obj) {
   if (!isObject(obj)) {

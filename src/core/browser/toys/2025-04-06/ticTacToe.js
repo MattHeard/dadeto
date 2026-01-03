@@ -200,7 +200,7 @@ function handleValidAppliedMoves(moves, board, result) {
 
 /**
  * Initialize an empty board and seen positions tracker.
- * @returns {TicTacToeBoardState} The empty board/seen state for the next move.
+ * @returns {TicTacToeBoardState} The empty board/seen state that seeds move validation and minimax.
  */
 function initializeBoardAndSeen() {
   const board = Array.from({ length: 3 }, () => Array(3).fill(null));
@@ -211,7 +211,7 @@ function initializeBoardAndSeen() {
 /**
  * Confirm that the moves array has a truthy value.
  * @param {TicTacToeMove[] | null} moves - Candidate moves.
- * @returns {boolean} True when the moves array contains a value to evaluate.
+ * @returns {boolean} True when the moves array contains a value to evaluate so later validators run.
  */
 function isTruthyMoves(moves) {
   return Boolean(moves);
@@ -417,7 +417,7 @@ function findBestMove(board, nextPlayer, moves) {
 /**
  * Collect empty cells from the board.
  * @param {TicTacToeBoardState['board']} board - Board state.
- * @returns {Array<{ r: number, c: number }>} Coordinates for every empty board cell.
+ * @returns {Array<{ r: number, c: number }>} Coordinates for every empty board cell that future moves will consider.
  */
 function getEmptyCells(board) {
   return board.reduce(
@@ -435,7 +435,7 @@ function getEmptyCells(board) {
 /**
  * Determine which player moves next.
  * @param {TicTacToeMove[]} moves - Moves played so far.
- * @returns {TicTacToePlayer} Player who should act next.
+ * @returns {TicTacToePlayer} Player who should act next (defaults to 'X' when the board is empty).
  */
 function determineNextPlayer(moves) {
   if (moves.length === 0) {
@@ -448,7 +448,7 @@ function determineNextPlayer(moves) {
  * Check whether a row is owned entirely by the player.
  * @param {Array<TicTacToePlayer | null>} row - Row to evaluate.
  * @param {TicTacToePlayer} player - Player to check.
- * @returns {boolean} True when every cell in the row matches the player.
+ * @returns {boolean} True when every cell in the row matches the player being evaluated.
  */
 function isRowWin(row, player) {
   return row.every(cell => cell === player);
@@ -458,7 +458,7 @@ function isRowWin(row, player) {
  * Check whether any row is a win for the player.
  * @param {TicTacToeBoardState['board']} board - Current board.
  * @param {TicTacToePlayer} player - Player to check.
- * @returns {boolean} True when at least one row is fully occupied by the player.
+ * @returns {boolean} True when at least one row is fully occupied by the player, indicating a win.
  */
 function checkRows(board, player) {
   return board.some(row => isRowWin(row, player));
@@ -469,7 +469,7 @@ function checkRows(board, player) {
  * @param {TicTacToeBoardState['board']} board - Current board.
  * @param {number} col - Column index.
  * @param {TicTacToePlayer} player - Player to check.
- * @returns {boolean} True when the player controls every cell in the column.
+ * @returns {boolean} True when the player controls every cell in the column, making it a winning column.
  */
 function isColumnWin(board, col, player) {
   return board.every(row => row[col] === player);
@@ -479,7 +479,7 @@ function isColumnWin(board, col, player) {
  * Check whether any column is a win for the player.
  * @param {TicTacToeBoardState['board']} board - Current board.
  * @param {TicTacToePlayer} player - Player to check.
- * @returns {boolean} True when some column is fully occupied by the player.
+ * @returns {boolean} True when some column is fully occupied by the player, signaling a column victory.
  */
 function checkColumns(board, player) {
   return [0, 1, 2].some(col => isColumnWin(board, col, player));
@@ -489,7 +489,7 @@ function checkColumns(board, player) {
  * Check whether a diagonal is a win for the player.
  * @param {TicTacToeBoardState['board']} board - Current board.
  * @param {TicTacToePlayer} player - Player to check.
- * @returns {boolean} True when either diagonal is completely owned by the player.
+ * @returns {boolean} True when either diagonal is completely owned by the player, signaling a diagonal win.
  */
 function checkDiagonals(board, player) {
   const leftToRight = [0, 1, 2].every(i => board[i][i] === player);
@@ -500,7 +500,7 @@ function checkDiagonals(board, player) {
 /**
  * Detect whether either player already has a winning line.
  * @param {TicTacToeBoardState['board']} board - Current board.
- * @returns {boolean} True when a win has already been formed on the board.
+ * @returns {boolean} True when a win has already been formed on the board, letting the reducer stop early.
  */
 function checkEarlyWin(board) {
   return isWin(board, 'X') || isWin(board, 'O');
@@ -511,7 +511,7 @@ function checkEarlyWin(board) {
  * @param {TicTacToeBoardState['board']} board - Board to mutate.
  * @param {TicTacToeMove} move - Move being applied.
  * @param {Set<string>} seen - Seen coordinates.
- * @returns {boolean} True when the cell was free and the move was recorded.
+ * @returns {boolean} True when the cell was free, the seen set accepted the key, and the move recorded successfully.
  */
 function applyMoveToBoard(board, move, seen) {
   const { player, position } = move;
@@ -531,7 +531,7 @@ function applyMoveToBoard(board, move, seen) {
  * Compute the minimax score for a winning state.
  * @param {() => boolean} isWinPlayer - Callback indicating a win for the player.
  * @param {number} depth - Current depth in the search tree.
- * @returns {number} Score that favors quick wins and discourages deep losses.
+ * @returns {number} Score that favors quick wins and discourages deep losses so terminal states bubble up priority.
  */
 function getTerminalScore(isWinPlayer, depth) {
   if (isWinPlayer()) {
@@ -544,7 +544,7 @@ function getTerminalScore(isWinPlayer, depth) {
  * Determine whether the game is in a terminal state.
  * @param {() => boolean} isWinPlayer - Callback for player win.
  * @param {() => boolean} isWinOpponent - Callback for opponent win.
- * @returns {boolean} True when either player has already won.
+ * @returns {boolean} True when either player has already won and the recursive search should stop.
  */
 function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
   return isWinPlayer() || isWinOpponent();
@@ -555,7 +555,7 @@ function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
  * @param {() => boolean} isWinPlayer - Callback for player win.
  * @param {() => boolean} isWinOpponent - Callback for opponent win.
  * @param {number} depth - Current search depth.
- * @returns {number | null} Minimax score when the state is terminal, otherwise null.
+ * @returns {number | null} Minimax score when the state is terminal, otherwise null so higher recursion can continue.
  */
 function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
   if (shouldEvaluateTerminal(isWinPlayer, isWinOpponent)) {
