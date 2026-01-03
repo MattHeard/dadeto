@@ -9,12 +9,63 @@ import {
 } from '../submit-shared.js';
 
 /**
+ * @typedef {object} SubmitNewPageRequest
+ * @property {Record<string, unknown>} [body]
+ * @property {(name: string) => string | undefined} [get]
+ * @typedef {{
+ *   rawIncomingOption: unknown;
+ *   rawPage: unknown;
+ *   rawContent: unknown;
+ *   rawAuthor: unknown;
+ * }} RawSubmissionValues
+ * @typedef {{ incomingOptionFullName: string | null; pageNumber: number | null; error?: undefined }} SubmissionTargetSuccess
+ * @typedef {{ error: { status: number; body: { error: string } } }} SubmissionTargetError
+ * @typedef {SubmissionTargetSuccess | SubmissionTargetError} SubmissionTargetResult
+ * @typedef {{
+ *   incomingOption: string;
+ *   pageStr: string;
+ *   parseIncomingOption: (option: string) => unknown;
+ *   findExistingOption: (option: unknown) => Promise<string | null>;
+ *   findExistingPage: (page: number) => Promise<string | null>;
+ * }} SubmissionTargetDeps
+ * @typedef {{
+ *   target: SubmissionTargetSuccess;
+ *   content: string;
+ *   author: string;
+ *   authHeader: string;
+ *   options: string[];
+ * }} SubmitNewPageContext
+ * @typedef {{
+ *   incomingOptionFullName: string | null;
+ *   pageNumber: number | null;
+ *   content: string;
+ *   author: string;
+ *   authorId: string | null;
+ *   options: string[];
+ * }} SubmitNewPageInput
+ * @typedef {SubmitNewPageInput & { createdAt: unknown }} SubmitNewPageRecord
+ * @typedef {{
+ *   saveSubmission: (id: string, submission: SubmitNewPageRecord) => Promise<void>;
+ *   serverTimestamp: () => unknown;
+ * }} SubmitNewPageStorageDeps
+ * @typedef {{
+ *   verifyIdToken: (token: string) => Promise<{ uid: string }>;
+ *   saveSubmission: (id: string, submission: SubmitNewPageRecord) => Promise<void>;
+ *   randomUUID: () => string;
+ *   serverTimestamp: () => unknown;
+ *   parseIncomingOption: (option: string) => unknown;
+ *   findExistingOption: (option: unknown) => Promise<string | null>;
+ *   findExistingPage: (page: number) => Promise<string | null>;
+ * }} SubmitNewPageHandlerDeps
+ */
+
+/**
  * Extract submission content directly from the request body.
  * @param {Record<string, unknown>} body Request payload provided by Express.
  * @returns {string} Raw content string when available.
  */
 function getRawContent(body) {
-  return body.content || '';
+  return String(body.content || '');
 }
 
 /**
@@ -23,13 +74,13 @@ function getRawContent(body) {
  * @returns {string} Raw author.
  */
 function getRawAuthor(body) {
-  return body.author || '???';
+  return String(body.author || '???');
 }
 
 /**
  * Get raw values from body.
  * @param {Record<string, unknown>} body Body.
- * @returns {object} Raw values.
+ * @returns {RawSubmissionValues} Raw values.
  */
 function getRawValues(body) {
   return {
@@ -71,8 +122,8 @@ function createError(message) {
 /**
  * Resolve parsed option.
  * @param {unknown} parsed Parsed option.
- * @param {Function} findExistingOption Finder.
- * @returns {Promise<object>} Result.
+ * @param {(option: unknown) => Promise<string | null>} findExistingOption Finder.
+ * @returns {Promise<SubmissionTargetResult>} Result.
  */
 async function resolveParsedOption(parsed, findExistingOption) {
   const found = await findExistingOption(parsed);
@@ -87,7 +138,7 @@ async function resolveParsedOption(parsed, findExistingOption) {
  * @param {string} incomingOption - Option string.
  * @param {(option: string) => unknown} parseIncomingOption - Parser.
  * @param {(option: unknown) => Promise<string | null>} findExistingOption - Finder.
- * @returns {Promise<{ incomingOptionFullName: string | null, pageNumber: number | null, error?: { status: number, body: { error: string } } }>} Result.
+ * @returns {Promise<SubmissionTargetResult>} Result.
  */
 async function resolveOptionTarget(
   incomingOption,
@@ -113,8 +164,8 @@ function isValidPageNumber(parsedPage) {
 /**
  * Resolve valid page.
  * @param {number} parsedPage Page number.
- * @param {Function} findExistingPage Finder.
- * @returns {Promise<object>} Result.
+ * @param {(page: number) => Promise<string | null>} findExistingPage Finder.
+ * @returns {Promise<SubmissionTargetResult>} Result.
  */
 async function resolveValidPage(parsedPage, findExistingPage) {
   const pagePath = await findExistingPage(parsedPage);
@@ -129,7 +180,7 @@ async function resolveValidPage(parsedPage, findExistingPage) {
  * Resolve target when page number is provided.
  * @param {string} pageStr - Page string.
  * @param {(page: number) => Promise<string | null>} findExistingPage - Finder.
- * @returns {Promise<{ incomingOptionFullName: string | null, pageNumber: number | null, error?: { status: number, body: { error: string } } }>} Result.
+ * @returns {Promise<SubmissionTargetResult>} Result.
  */
 async function resolvePageTarget(pageStr, findExistingPage) {
   const parsedPage = Number.parseInt(pageStr, 10);
@@ -151,8 +202,8 @@ function countSources(incomingOption, pageStr) {
 
 /**
  * Resolve target based on source.
- * @param {object} deps Dependencies.
- * @returns {Promise<object>} Result.
+ * @param {SubmissionTargetDeps} deps Dependencies.
+ * @returns {Promise<SubmissionTargetResult>} Result.
  */
 async function resolveTargetBySource(deps) {
   const {
@@ -175,14 +226,8 @@ async function resolveTargetBySource(deps) {
 
 /**
  * Validate which submission target is provided and resolve its canonical form.
- * @param {{
- *   incomingOption: string,
- *   pageStr: string,
- *   parseIncomingOption: (option: string) => unknown,
- *   findExistingOption: (option: unknown) => Promise<string | null>,
- *   findExistingPage: (page: number) => Promise<string | null>,
- * }} deps Normalized values and lookup helpers.
- * @returns {Promise<{ incomingOptionFullName: string | null, pageNumber: number | null, error?: { status: number, body: { error: string } } }>} Resolution result including any validation error.
+ * @param {SubmissionTargetDeps} deps Normalized values and lookup helpers.
+ * @returns {Promise<SubmissionTargetResult>} Resolution result including any validation error.
  */
 async function resolveSubmissionTarget(deps) {
   const { incomingOption, pageStr } = deps;
@@ -224,12 +269,13 @@ function processOption(body, index) {
  * @returns {string[]} Trimmed option strings provided by the submitter.
  */
 function collectOptions(body) {
-  return [0, 1, 2, 3].map(i => processOption(body, i)).filter(Boolean);
+  const options = [0, 1, 2, 3].map(i => processOption(body, i)).filter(Boolean);
+  return /** @type {string[]} */ (options);
 }
 
 /**
  * Resolve a header getter from the request.
- * @param {object} request - Request object.
+ * @param {SubmitNewPageRequest} request - Request object.
  * @returns {(name: string) => string | undefined} Header getter.
  */
 function resolveHeaderGetter(request) {
@@ -241,9 +287,9 @@ function resolveHeaderGetter(request) {
 
 /**
  * Save the new page submission.
- * @param {object} deps Dependencies.
+ * @param {SubmitNewPageStorageDeps} deps Dependencies.
  * @param {string} id ID.
- * @param {object} data Data.
+ * @param {SubmitNewPageInput} data Data.
  * @returns {Promise<void>} Promise.
  */
 async function saveNewPage(deps, id, data) {
@@ -256,9 +302,9 @@ async function saveNewPage(deps, id, data) {
 
 /**
  * Process valid submission.
- * @param {object} deps Dependencies.
- * @param {object} context Context.
- * @returns {Promise<object>} Response.
+ * @param {SubmitNewPageHandlerDeps} deps Dependencies.
+ * @param {SubmitNewPageContext} context Context.
+ * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>} Response.
  */
 async function processValidSubmission(deps, context) {
   const { verifyIdToken, randomUUID, saveSubmission, serverTimestamp } = deps;
@@ -285,8 +331,8 @@ async function processValidSubmission(deps, context) {
 
 /**
  * Get body from request.
- * @param {object} request Request.
- * @returns {object} Body.
+ * @param {SubmitNewPageRequest} request Request.
+ * @returns {Record<string, unknown>} Body.
  */
 function getBody(request) {
   return request.body || {};
@@ -294,7 +340,7 @@ function getBody(request) {
 
 /**
  * Get auth header.
- * @param {Function} getHeader Getter.
+ * @param {(name: string) => string | undefined} getHeader Getter.
  * @returns {string} Auth header.
  */
 function getAuthHeader(getHeader) {
@@ -303,21 +349,17 @@ function getAuthHeader(getHeader) {
 
 /**
  * Create an HTTP handler that accepts interactive fiction submissions.
- * @param {{
- *   verifyIdToken: (token: string) => Promise<{ uid: string }>,
- *   saveSubmission: (id: string, submission: object) => Promise<void>,
- *   randomUUID: () => string,
- *   serverTimestamp: () => unknown,
- *   parseIncomingOption: (option: string) => unknown,
- *   findExistingOption: (option: unknown) => Promise<string | null>,
- *   findExistingPage: (page: number) => Promise<string | null>,
- * }} deps Functions used to validate and persist the submission.
- * @returns {(request: { body?: object, get?: (name: string) => string | undefined }) => Promise<{ status: number, body: object }>}
+ * @param {SubmitNewPageHandlerDeps} deps Functions used to validate and persist the submission.
+ * @returns {(request: SubmitNewPageRequest) => Promise<{ status: number, body: object }>}
  * Submission handler returning HTTP-style responses.
  */
 export function createHandleSubmit(deps) {
   const { parseIncomingOption, findExistingOption, findExistingPage } = deps;
 
+  /**
+   * Handle an incoming submission request.
+   * @param {SubmitNewPageRequest} request Request object.
+   */
   return async function handleSubmit(request) {
     const body = getBody(request);
     const getHeader = resolveHeaderGetter(request);

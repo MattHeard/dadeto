@@ -5,6 +5,89 @@ export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;
 
 /**
+ * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
+ * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} DocumentReferenceData
+ * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>} DocumentSnapshotData
+ * @typedef {{ doc: (path: string) => DocumentReferenceData }} FirestoreLike
+ * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
+ * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
+ * @typedef {object} AncestorReference
+ * @property {Function} get
+ * @property {AncestorReference | null | undefined} [parent]
+ * @typedef {AncestorReference | null | undefined} OptionalAncestorReference
+ * @typedef {{
+ *   name: string;
+ *   content: string;
+ *   incomingOption?: string;
+ *   author?: string;
+ *   authorId?: string;
+ *   authorName?: string;
+ * }} VariantDocument
+ * @typedef {import('firebase-admin/firestore').DocumentSnapshot<VariantDocument>} VariantSnapshot
+ * @typedef {{ number: number; incomingOption?: string }} PageDocument
+ * @typedef {import('firebase-admin/firestore').DocumentSnapshot<PageDocument>} PageSnapshot
+ * @typedef {object} OptionDocument
+ * @property {string} content
+ * @property {number} position
+ * @property {number} [targetPageNumber]
+ * @property {import('firebase-admin/firestore').DocumentReference} [targetPage]
+ * @typedef {{ content: string; position: number; targetPageNumber?: number; targetVariantName?: string; targetVariants?: { name: string; weight: number }[] }} OptionMetadata
+ * @typedef {OptionMetadata[]} OptionCollection
+ * @typedef {{ rootVariantRef?: OptionalAncestorReference; rootPageRef?: OptionalAncestorReference }} ParentReferences
+ * @typedef {{ parentVariantSnap?: DocumentSnapshotData; parentPageSnap?: DocumentSnapshotData } | null} ParentSnapshots
+ * @typedef {object} StoryMetadata
+ * @property {DocumentReferenceData | undefined} [rootPage]
+ * @typedef {StoryMetadata & { rootPage: DocumentReferenceData }} StoryDataWithRoot
+ * @typedef {{ variant: { authorId?: string }; db: FirestoreLike; bucket: StorageBucketLike; consoleError?: ConsoleError }} AuthorLookupDeps
+ * @typedef {{ variant: { incomingOption?: string }; db: FirestoreLike; consoleError?: ConsoleError }} ParentResolutionDeps
+ * @typedef {{
+ *   snap: VariantSnapshot;
+ *   db: FirestoreLike;
+ *   bucket: StorageBucketLike;
+ *   consoleError?: ConsoleError;
+ *   visibilityThreshold?: number;
+ * }} ResolveRenderPlanDeps
+ * @typedef {{
+ *   snap: VariantSnapshot;
+ *   pageData: { pageSnap: PageSnapshot; page: PageDocument };
+ *   db: FirestoreLike;
+ *   bucket: StorageBucketLike;
+ *   consoleError?: ConsoleError;
+ *   visibilityThreshold?: number;
+ * }} BuildRenderPlanDeps
+ * @typedef {{
+ *   options: OptionMetadata[];
+ *   storyTitle: string;
+ *   authorName: string;
+ *   authorUrl?: string;
+ *   parentUrl?: string;
+ *   firstPageUrl?: string;
+ * }} RenderMetadata
+ * @typedef {RenderMetadata & { page: PageDocument; variant: VariantDocument }} RenderOutputInput
+ * @typedef {{
+ *   variant: VariantDocument;
+ *   page: PageDocument;
+ *   parentUrl?: string;
+ *   html: string;
+ *   filePath: string;
+ *   openVariant: boolean;
+ * }} RenderOutput
+ * @typedef {{ params?: Record<string, string> }} RenderContext
+ * @typedef {RenderOutput & {
+ *   snap: VariantSnapshot;
+ *   context?: RenderContext;
+ *   bucket: StorageBucketLike;
+ *   invalidatePaths: (paths: string[]) => Promise<void>;
+ * }} PersistRenderPlanDeps
+ * @typedef {{
+ *   storyData: import('firebase-admin/firestore').DocumentData;
+ *   page: PageDocument;
+ *   consoleError?: ConsoleError;
+ * }} StoryMetadataDeps
+ * @typedef {{ pageSnap: PageSnapshot; page: PageDocument; consoleError?: ConsoleError }} StoryMetadataLookupDeps
+ */
+
+/**
  * Escape HTML special characters to prevent injection.
  * @param {string} text Text to escape.
  * @returns {string} Escaped text.
@@ -1163,11 +1246,9 @@ function getErrorMessage(error) {
 
 /**
  * Construct metadata for a single option attached to a story variant.
- * @param {object} options - Information about the option to prepare for rendering.
- * @param {Record<string, any>} options.data - Raw option document data.
- * @param {number} options.visibilityThreshold - Minimum visibility required for a variant to be considered published.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} options.consoleError - Logger for recoverable failures.
- * @returns {Promise<object>} Metadata describing the option suitable for HTML rendering.
+ * @param {{ data: OptionDocument; visibilityThreshold: number; consoleError: ConsoleError }} options
+ *   Information about the option to prepare for rendering.
+ * @returns {Promise<OptionMetadata>} Metadata describing the option suitable for HTML rendering.
  */
 async function buildOptionMetadata({
   data,
@@ -1189,10 +1270,10 @@ async function buildOptionMetadata({
 
 /**
  * Resolve the target metadata referenced by an option document.
- * @param {Record<string, any>} data Raw option document data.
+ * @param {OptionDocument} data Raw option document data.
  * @param {number} visibilityThreshold Minimum visibility required for variants.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for errors.
- * @returns {Promise<{targetPageNumber?: number, targetVariantName?: string, targetVariants?: {name: string, weight: number}[]}>} Target metadata derived from the option.
+ * @param {ConsoleError} [consoleError] Optional logger for errors.
+ * @returns {Promise<OptionMetadata>} Target metadata derived from the option.
  */
 async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
   if (data.targetPage) {
@@ -1208,7 +1289,7 @@ async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
 
 /**
  * Derive the resolved page number metadata when no target reference exists.
- * @param {Record<string, any>} data Option document payload.
+ * @param {OptionDocument} data Option document payload.
  * @returns {{targetPageNumber?: number}} Metadata containing the target page number when set.
  */
 function resolveTargetPageNumber(data) {
@@ -1223,12 +1304,8 @@ function resolveTargetPageNumber(data) {
  * Retrieve metadata for a referenced target page, including the first visible variant.
  * @param {import('firebase-admin/firestore').DocumentReference} targetPage Firestore reference for the target page document.
  * @param {number} visibilityThreshold Minimum visibility required for a variant to be considered published.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for unexpected failures.
- * @returns {Promise<{
- *   targetPageNumber?: number,
- *   targetVariantName?: string,
- *   targetVariants?: {name: string, weight: number}[],
- * }>} Metadata derived from the target page lookup.
+ * @param {ConsoleError} [consoleError] Optional logger for unexpected failures.
+ * @returns {Promise<OptionMetadata>} Metadata derived from the target page lookup.
  */
 async function fetchTargetPageMetadata(
   targetPage,
@@ -1376,11 +1453,9 @@ function buildTargetMetadata(targetPageNumber, visible) {
 
 /**
  * Load and normalize option documents for a particular variant.
- * @param {object} options - Dependencies required to load options.
- * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} options.snap - Firestore snapshot for the variant whose options are being read.
- * @param {number} options.visibilityThreshold - Minimum visibility required for inclusion.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] - Logger for recoverable failures.
- * @returns {Promise<object[]>} Ordered option metadata entries.
+ * @param {{ snap: VariantSnapshot; visibilityThreshold: number; consoleError?: ConsoleError }} options
+ *   Dependencies required to load options.
+ * @returns {Promise<OptionMetadata[]>} Ordered option metadata entries.
  */
 async function loadOptions({ snap, visibilityThreshold, consoleError }) {
   const optionsSnap = await /** @type {any} */ (snap).ref
@@ -1422,8 +1497,8 @@ async function loadOptions({ snap, visibilityThreshold, consoleError }) {
 
 /**
  * Resolve title and navigation metadata for the story owning the variant.
- * @param {any} options - Input describing the current page and lookup helpers.
- * @returns {Promise<any>} Story metadata used in templates.
+ * @param {StoryMetadataLookupDeps} options - Input describing the current page and lookup helpers.
+ * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
  */
 async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
   const storyRef = extractStoryRef(pageSnap);
@@ -1469,9 +1544,7 @@ async function getStorySnapshot(storyRef) {
 
 /**
  * Build story metadata.
- * @param {object} options Options.
- * @param {import('firebase-admin/firestore').DocumentData} options.storyData Story data.
- * @param {Record<string, any>} options.page Page data.
+ * @param {StoryMetadataDeps} options Options.
  * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] Error logger.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata.
  */
@@ -1488,10 +1561,7 @@ async function buildStoryMetadata({ storyData, page, consoleError }) {
 
 /**
  * Determine the parent route for a story when the variant was created from an option.
- * @param {object} options - Inputs describing the page and story context.
- * @param {Record<string, any>} options.page Raw page document data.
- * @param {Record<string, any>} options.storyData Story metadata that includes a rootPage reference.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] Optional logger for recoverable failures.
+ * @param {{ page: Record<string, any>; storyData: StoryMetadata; consoleError?: ConsoleError }} options - Inputs describing the page and story context.
  * @returns {Promise<string | undefined>} URL for the first published page when resolvable.
  */
 async function resolveFirstPageUrl({ page, storyData, consoleError }) {
@@ -1499,13 +1569,16 @@ async function resolveFirstPageUrl({ page, storyData, consoleError }) {
     return undefined;
   }
 
-  return resolveRootPageUrl(storyData, consoleError);
+  return resolveRootPageUrl(
+    /** @type {StoryDataWithRoot} */ (storyData),
+    consoleError
+  );
 }
 
 /**
  * Determine whether there is an incoming option that points at a story root.
  * @param {Record<string, any>} page Page document data.
- * @param {Record<string, any>} storyData Story metadata that may include a rootPage reference.
+ * @param {StoryMetadata} storyData Story metadata that may include a rootPage reference.
  * @returns {boolean} True when we should resolve a root page URL.
  */
 function shouldResolveFirstPageUrl(page, storyData) {
@@ -1514,12 +1587,12 @@ function shouldResolveFirstPageUrl(page, storyData) {
 
 /**
  * Resolve the root page URL while gracefully handling errors.
- * @param {{rootPage: import('firebase-admin/firestore').DocumentReference}} storyData Story metadata containing the root page.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Optional logger for failures.
+ * @param {StoryDataWithRoot} storyData Story metadata containing the root page.
+ * @param {ConsoleError} [consoleError] Optional logger for failures.
  * @returns {Promise<string | undefined>} Root page URL when available.
  */
 function resolveRootPageUrl(storyData, consoleError) {
-  return fetchRootPageUrl(/** @type {any} */ (storyData)).catch(error => {
+  return fetchRootPageUrl(storyData).catch(error => {
     handleRootPageError(error, consoleError);
     return undefined;
   });
@@ -1549,7 +1622,7 @@ function logRootPageError(error, consoleError) {
 
 /**
  * Fetch root page URL.
- * @param {{rootPage: import('firebase-admin/firestore').DocumentReference}} storyData Story data.
+ * @param {StoryDataWithRoot} storyData Story data.
  * @returns {Promise<string|undefined>} Root page URL.
  */
 async function fetchRootPageUrl(storyData) {
@@ -1574,8 +1647,8 @@ async function resolveUrlFromRootPage(rootPageSnap, rootPageRef) {
 
 /**
  * Build root URL.
- * @param {any} snap Snap.
- * @param {any} variant Variant.
+ * @param {PageSnapshot} snap Snap.
+ * @param {VariantSnapshot} variant Variant.
  * @returns {string | undefined} URL.
  */
 function buildRootUrl(snap, variant) {
@@ -1587,8 +1660,8 @@ function buildRootUrl(snap, variant) {
 
 /**
  * Assemble root URL.
- * @param {any} snap Snap.
- * @param {any} variant Variant.
+ * @param {PageSnapshot} snap Snap.
+ * @param {VariantSnapshot} variant Variant.
  * @returns {string} URL.
  */
 function assembleRootUrl(snap, variant) {
@@ -1681,8 +1754,8 @@ function deriveAuthorName(variant) {
 
 /**
  * Resolve author metadata for the rendered variant, creating landing pages if needed.
- * @param {any} root0 - Inputs for author lookup.
- * @returns {Promise<any>} Author metadata for templates.
+ * @param {AuthorLookupDeps} options Inputs for author lookup.
+ * @returns {Promise<{ authorName: string; authorUrl?: string }>} Author metadata for templates.
  */
 async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
   const authorName = deriveAuthorName(variant);
@@ -1697,12 +1770,7 @@ async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
 
 /**
  * Ensure an author landing page exists and return its public URL.
- * @param {{
- *   variant: Record<string, any>,
- *   db: { doc: (path: string) => { get: () => Promise<{ data: () => Record<string, any> }> } },
- *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
- *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
- * }} root0 - Inputs for creating or reusing an author page.
+ * @param {AuthorLookupDeps} options Inputs for creating or reusing an author page.
  * @returns {Promise<string | undefined>} URL of the author page, if one exists.
  */
 async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
@@ -1729,12 +1797,7 @@ async function writeAuthorPageIfNeeded(authorFile, variant) {
 
 /**
  * Lookup or create an author landing page and return its URL.
- * @param {{
- *   variant: { authorId?: string },
- *   db: { doc: (path: string) => { get: () => Promise<{ data: () => Record<string, any> }> } },
- *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
- *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void
- * }} options Dependencies for author lookup.
+ * @param {AuthorLookupDeps} options Dependencies for author lookup.
  * @returns {Promise<string | undefined>} Author URL when the lookup succeeds.
  */
 async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
@@ -1770,10 +1833,7 @@ function logAuthorLookupError(error, consoleError) {
 
 /**
  * Perform author lookup.
- * @param {object} root0 Dependencies.
- * @param {object} root0.variant Variant.
- * @param {object} root0.db Database.
- * @param {object} root0.bucket Bucket.
+ * @param {AuthorLookupDeps} root0 Dependencies.
  * @returns {Promise<string|undefined>} Author URL.
  */
 async function performAuthorLookup({ variant, db, bucket }) {
@@ -1787,7 +1847,7 @@ async function performAuthorLookup({ variant, db, bucket }) {
 
 /**
  * Resolve a Firestore reference for an author document.
- * @param {{ doc: (path: string) => any }} db Firestore-like client.
+ * @param {FirestoreLike} db Firestore-like client.
  * @param {string | undefined} authorId Identifier for the author.
  * @returns {any} Firestore document reference for the author path.
  */
@@ -1797,12 +1857,8 @@ function resolveAuthorRef(db, authorId) {
 
 /**
  * Resolve the bucket file used to persist the author's landing page.
- * @param {{
- *   variant: { authorId?: string },
- *   db: { doc: (path: string) => { get: () => Promise<{ data: () => (Record<string, unknown> & { uuid: string }) }> } },
- *   bucket: { file: (path: string) => { exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> } },
- * }} options Dependencies for author file resolution.
- * @returns {Promise<{ authorPath: string, file: { exists: () => Promise<[boolean]>, save: Function }, exists: boolean }>} Metadata used to write the landing page.
+ * @param {AuthorLookupDeps} options Dependencies for author file resolution.
+ * @returns {Promise<{ authorPath: string, file: StorageFileLike, exists: boolean }>} Metadata used to write the landing page.
  */
 async function resolveAuthorFile({ variant, db, bucket }) {
   const authorRef = resolveAuthorRef(db, variant.authorId);
@@ -1839,8 +1895,8 @@ async function writeAuthorLandingPage(variant, file) {
  */
 /**
  * Extract parent refs.
- * @param {any} optionRef Option ref.
- * @returns {{ parentVariantRef: any, parentPageRef: any }} Refs.
+ * @param {OptionalAncestorReference} optionRef Option ref.
+ * @returns {{ parentVariantRef: OptionalAncestorReference, parentPageRef: OptionalAncestorReference }} Refs.
  */
 function extractParentRefs(optionRef) {
   const parentVariantRef = getParentVariantRef(optionRef);
@@ -1850,8 +1906,8 @@ function extractParentRefs(optionRef) {
 
 /**
  * Retrieve the variant-level ancestor for an option.
- * @param {{ parent?: unknown } | null | undefined} optionRef Option document reference.
- * @returns {any} Ancestor variant reference or null.
+ * @param {OptionalAncestorReference} optionRef Option document reference.
+ * @returns {OptionalAncestorReference} Ancestor variant reference or null.
  */
 function getParentVariantRef(optionRef) {
   return getAncestorRef(optionRef, 2);
@@ -1859,8 +1915,8 @@ function getParentVariantRef(optionRef) {
 
 /**
  * Retrieve the parent page reference for a variant.
- * @param {any} parentVariantRef Variant reference.
- * @returns {any} Page reference ancestor or null.
+ * @param {OptionalAncestorReference} parentVariantRef Variant reference.
+ * @returns {OptionalAncestorReference} Page reference ancestor or null.
  */
 function getParentPageRef(parentVariantRef) {
   return getAncestorRef(parentVariantRef, 2);
@@ -1868,9 +1924,9 @@ function getParentPageRef(parentVariantRef) {
 
 /**
  * Walk up a reference chain a fixed number of steps.
- * @param {any} ref Reference to walk.
+ * @param {OptionalAncestorReference} ref Reference to walk.
  * @param {number} steps Number of parent hops to follow.
- * @returns {any} Ancestor reference or null when the chain breaks.
+ * @returns {OptionalAncestorReference} Ancestor reference or null when the chain breaks.
  */
 function getAncestorRef(ref, steps = 0) {
   const normalizedSteps = Math.max(steps, 0);
@@ -1879,9 +1935,9 @@ function getAncestorRef(ref, steps = 0) {
 
 /**
  * Walk the reference chain for a fixed number of steps.
- * @param {any} reference Starting reference.
+ * @param {OptionalAncestorReference} reference Starting reference.
  * @param {number} remainingSteps Steps left to traverse.
- * @returns {any} Resolved ancestor or null.
+ * @returns {OptionalAncestorReference} Resolved ancestor or null.
  */
 function walkReferenceChain(reference, remainingSteps) {
   if (remainingSteps <= 0) {
@@ -1893,8 +1949,8 @@ function walkReferenceChain(reference, remainingSteps) {
 
 /**
  * Return the parent reference when available.
- * @param {{ parent?: unknown } | null} reference Candidate reference.
- * @returns {{ parent?: unknown } | null} Parent reference or null.
+ * @param {OptionalAncestorReference} reference Candidate reference.
+ * @returns {OptionalAncestorReference} Parent reference or null.
  */
 function getParentRef(reference) {
   if (!reference) {
@@ -1918,7 +1974,7 @@ function areParentRefsValid(parentVariantRef, parentPageRef) {
 
 /**
  * Resolve the parent variant and page references from an option document.
- * @param {{ parent?: { parent?: { parent?: { parent?: any } } } } | null | undefined} optionRef Option reference from Firestore.
+ * @param {OptionalAncestorReference} optionRef Option reference from Firestore.
  * @returns {{ parentVariantRef: { get: Function }, parentPageRef: { get: Function } } | null} Parent references when resolvable.
  */
 export function resolveParentReferences(optionRef) {
@@ -1994,19 +2050,10 @@ function buildParentRoute(parentVariantSnap, parentPageSnap) {
 }
 
 /**
- * Determine the canonical URL of the variant's parent, if any.
- * @param {{
- *   variant: Record<string, any>,
- *   db: { doc: (path: string) => { parent?: { parent?: any }, get: Function } },
- *   consoleError: (message?: unknown, ...optionalParams: unknown[]) => void
- * }} options Inputs for parent resolution.
- * @returns {Promise<string | undefined>} URL to the parent variant when it can be resolved.
- */
-/**
  * Fetch parent data.
- * @param {object} db Database.
+ * @param {FirestoreLike} db Database.
  * @param {string} incomingOption Incoming option.
- * @returns {Promise<object | null>} Parent data.
+ * @returns {Promise<ParentSnapshots | null>} Parent data snapshots when available.
  */
 async function fetchParentData(db, incomingOption) {
   const optionRef = db.doc(incomingOption);
@@ -2022,7 +2069,7 @@ async function fetchParentData(db, incomingOption) {
 
 /**
  * Build route from snapshots.
- * @param {object} snapshots Snapshots.
+ * @param {ParentSnapshots} snapshots Snapshots.
  * @returns {string | null} Route.
  */
 function buildRouteFromSnapshots(snapshots) {
@@ -2034,11 +2081,7 @@ function buildRouteFromSnapshots(snapshots) {
 
 /**
  * Resolve the canonical URL for the parent variant, if one exists.
- * @param {{
- *   variant: { incomingOption?: string },
- *   db: { doc: (path: string) => { get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> } },
- *   consoleError: (message?: unknown, ...optionalParams: unknown[]) => void
- * }} options Dependencies for parent resolution.
+ * @param {ParentResolutionDeps} options Dependencies for parent resolution.
  * @returns {Promise<string | undefined>} Parent URL when resolvable.
  */
 async function resolveParentUrl(options) {
@@ -2073,7 +2116,7 @@ function logParentLookupError(error, consoleError) {
 
 /**
  * Fetch and build parent URL.
- * @param {object} db Database.
+ * @param {FirestoreLike} db Database.
  * @param {string} incomingOption Incoming option.
  * @returns {Promise<string|undefined>} Parent URL.
  */
@@ -2084,7 +2127,7 @@ async function fetchAndBuildParentUrl(db, incomingOption) {
 
 /**
  * Safely resolve a parent route or fall back to undefined.
- * @param {{ parentVariantSnap?: unknown, parentPageSnap?: unknown } | null} snapshots Snapshot bundle.
+ * @param {ParentSnapshots} snapshots Snapshot bundle.
  * @returns {string | undefined} Route string when resolvable.
  */
 function resolveParentRoute(snapshots) {
@@ -2119,7 +2162,7 @@ function isRoutePresent(route) {
 
 /**
  * Resolve the parent lookup promise, handling missing incoming options.
- * @param {{ incomingOption?: string, db: object, consoleError: Function }} options Lookup dependencies.
+ * @param {{ incomingOption?: string, db: FirestoreLike, consoleError?: ConsoleError }} options Lookup dependencies.
  * @returns {Promise<string | undefined>} Parent URL when available.
  */
 function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
@@ -2265,8 +2308,8 @@ function createRenderVariantHandler({
   /**
    * Execute render workflow.
    * @param {RenderHandlerDeps} deps Dependencies.
-   * @param {any} snap Snap.
-   * @param {any} context Context.
+   * @param {VariantSnapshot} snap Snap.
+   * @param {RenderContext | undefined} context Context.
    * @returns {Promise<null>} Null.
    */
   async function executeRenderWorkflow(deps, snap, context) {
@@ -2447,9 +2490,9 @@ function isPageSnapValid(pageSnap) {
 }
 
 /**
- * Gather metadata.
- * @param {any} deps Dependencies.
- * @returns {Promise<any>} Metadata.
+ * Gather metadata for rendering.
+ * @param {RenderMetadataDeps} deps Dependencies required to resolve the render metadata.
+ * @returns {Promise<RenderMetadata>} Metadata object suitable for templates and persistence.
  */
 async function gatherMetadata(deps) {
   const {
@@ -2493,8 +2536,8 @@ async function gatherMetadata(deps) {
 
 /**
  * Build render output.
- * @param {any} data Data.
- * @returns {any} Output.
+ * @param {RenderOutputInput} data Data.
+ * @returns {RenderOutput} Output.
  */
 function buildRenderOutput(data) {
   const {
@@ -2543,11 +2586,11 @@ async function fetchAndValidatePage(snap) {
 
 /**
  * Resolve the render plan for a variant snapshot.
- * @param {any} options Inputs required to assemble the render plan.
- * @returns {Promise<any>} Render plan describing the variant artefacts.
+ * @param {ResolveRenderPlanDeps} options Inputs required to assemble the render plan.
+ * @returns {Promise<RenderOutput | null>} Render plan describing the variant artefacts.
  */
 async function resolveRenderPlan(options) {
-  const { snap } = /** @type {any} */ (options);
+  const { snap } = options;
   if (!isSnapValid(snap)) {
     return null;
   }
@@ -2557,8 +2600,8 @@ async function resolveRenderPlan(options) {
 
 /**
  * Attempt to build a render plan only when the variant page data is valid.
- * @param {object} options - Inputs that include the variant snapshot and dependencies.
- * @returns {Promise<null | object>} The render plan when the page is valid or `null` otherwise.
+ * @param {ResolveRenderPlanDeps} options - Inputs that include the variant snapshot and dependencies.
+ * @returns {Promise<RenderOutput | null>} The render plan when the page is valid or `null` otherwise.
  */
 async function buildRenderPlanIfPageValid(options) {
   const { snap } = options;
@@ -2572,8 +2615,8 @@ async function buildRenderPlanIfPageValid(options) {
 
 /**
  * Build render plan.
- * @param {any} root0 Options.
- * @returns {Promise<any>} Render plan.
+ * @param {BuildRenderPlanDeps} params Options.
+ * @returns {Promise<RenderOutput>} Render plan.
  */
 async function buildRenderPlan({
   snap,
@@ -2616,7 +2659,12 @@ async function buildRenderPlan({
  */
 /**
  * Save variant HTML.
- * @param {any} root0 Options.
+ * @param {{
+ *   bucket: StorageBucketLike;
+ *   filePath: string;
+ *   html: string;
+ *   openVariant: boolean;
+ * }} options Options used to persist the variant HTML.
  * @returns {Promise<void>} Promise.
  */
 async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
@@ -2628,8 +2676,8 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
 
 /**
  * Save alts HTML.
- * @param {any} deps Dependencies.
- * @returns {Promise<void>} Promise.
+ * @param {{ snap: VariantSnapshot; bucket: StorageBucketLike; page: PageDocument }} deps Dependencies.
+ * @returns {Promise<string>} Promise resolved with the saved path.
  */
 async function saveAltsHtml(deps) {
   const { snap, bucket, page } = deps;
@@ -2643,8 +2691,8 @@ async function saveAltsHtml(deps) {
 
 /**
  * Resolve pending name.
- * @param {object} variant Variant.
- * @param {object} context Context.
+ * @param {VariantDocument} variant Variant.
+ * @param {RenderContext | undefined} context Context.
  * @returns {string | undefined} Pending name.
  */
 function resolvePendingName(variant, context) {
@@ -2658,7 +2706,7 @@ function resolvePendingName(variant, context) {
 
 /**
  * Extract request parameters from the render context.
- * @param {{ params?: Record<string, string> } | undefined | null} context Rendering context.
+ * @param {RenderContext | undefined | null} context Rendering context.
  * @returns {Record<string, string> | undefined} Parameters when available.
  */
 function resolvePendingParams(context) {
@@ -2685,8 +2733,8 @@ function resolvePendingStoryId(params) {
 
 /**
  * Save pending file.
- * @param {object} bucket Bucket.
- * @param {string} pendingName Pending name.
+ * @param {StorageBucketLike} bucket Bucket.
+ * @param {string | undefined} pendingName Pending name.
  * @param {string} filePath File path.
  * @returns {Promise<void>} Promise.
  */
@@ -2715,7 +2763,7 @@ function buildInvalidationPaths(altsPath, filePath, parentUrl) {
 
 /**
  * Persist rendered HTML, related metadata, and cache invalidation paths.
- * @param {any} options Inputs for persisting the render plan.
+ * @param {PersistRenderPlanDeps} options Inputs for persisting the render plan.
  * @returns {Promise<void>} Void promise.
  */
 async function persistRenderPlan({

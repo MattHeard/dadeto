@@ -5,6 +5,12 @@ import {
 import { when } from '../../commonCore.js';
 
 /**
+ * @typedef {import('firebase-admin/firestore').Firestore} Firestore
+ * @typedef {import('firebase-admin/firestore').DocumentReference} DocumentReference
+ * @typedef {{ pageNumber: number; variantName: string; optionNumber: number }} OptionInfo
+ */
+
+/**
  * Split option string into parts.
  * @param {string} str String.
  * @returns {string[]} Parts.
@@ -48,7 +54,7 @@ function hasValidPartsCount(parts) {
  * @param {number} pageNumber Page number.
  * @param {number} optionNumber Option number.
  * @param {string} variantName Variant name.
- * @returns {object | null} Option info.
+ * @returns {OptionInfo | null} Option info.
  */
 function validateAndCreateInfo(pageNumber, optionNumber, variantName) {
   if (!areValidNumbers(pageNumber, optionNumber)) {
@@ -62,7 +68,7 @@ function validateAndCreateInfo(pageNumber, optionNumber, variantName) {
  * @param {string} pageStr Page string.
  * @param {string} variantName Variant name.
  * @param {string} optionStr Option string.
- * @returns {object | null} Option info.
+ * @returns {OptionInfo | null} Option info.
  */
 function createOptionInfo(pageStr, variantName, optionStr) {
   const pageNumber = Number.parseInt(pageStr, 10);
@@ -77,7 +83,7 @@ function createOptionInfo(pageStr, variantName, optionStr) {
 /**
  * Parse parts into option info.
  * @param {string[]} parts Parts.
- * @returns {object | null} Parsed info.
+ * @returns {OptionInfo | null} Parsed info.
  */
 function parseParts(parts) {
   if (!hasValidPartsCount(parts)) {
@@ -103,35 +109,37 @@ export function parseIncomingOption(str) {
 
 /**
  * Find page by number.
- * @param {object} db Database.
+ * @param {Firestore} db Database.
  * @param {number} pageNumber Page number.
- * @returns {Promise<object | null>} Page ref.
+ * @returns {Promise<DocumentReference | null>} Page ref.
  */
 async function findPageByNumber(db, pageNumber) {
   const pageSnap = await buildPageByNumberQuery(db, pageNumber).get();
   if (pageSnap.empty) {
     return null;
   }
-  return pageSnap.docs[0].ref;
+  const pageDoc = /** @type {any} */ (pageSnap.docs[0]);
+  return pageDoc.ref;
 }
 
 /**
  * Find variant by name.
- * @param {object} pageRef Page ref.
+ * @param {DocumentReference} pageRef Page ref.
  * @param {string} variantName Variant name.
- * @returns {Promise<object | null>} Variant ref.
+ * @returns {Promise<DocumentReference | null>} Variant ref.
  */
 async function findVariantByName(pageRef, variantName) {
   const variantSnap = await buildVariantByNameQuery(pageRef, variantName).get();
   if (variantSnap.empty) {
     return null;
   }
-  return variantSnap.docs[0].ref;
+  const variantDoc = /** @type {any} */ (variantSnap.docs[0]);
+  return variantDoc.ref;
 }
 
 /**
  * Find option by position.
- * @param {object} variantRef Variant ref.
+ * @param {DocumentReference} variantRef Variant ref.
  * @param {number} optionNumber Option number.
  * @returns {Promise<string | null>} Option path.
  */
@@ -144,13 +152,14 @@ async function findOptionByPosition(variantRef, optionNumber) {
   if (optionsSnap.empty) {
     return null;
   }
-  return optionsSnap.docs[0].ref.path;
+  const optionDoc = /** @type {any} */ (optionsSnap.docs[0]);
+  return optionDoc.ref.path;
 }
 
 /**
  * Resolve variant and option.
- * @param {object} pageRef Page ref.
- * @param {object} info Info.
+ * @param {DocumentReference} pageRef Page ref.
+ * @param {OptionInfo} info Info.
  * @returns {Promise<string | null>} Option path.
  */
 async function resolveVariantAndOption(pageRef, info) {
@@ -162,8 +171,8 @@ async function resolveVariantAndOption(pageRef, info) {
 
 /**
  * Validate inputs.
- * @param {object} db Database.
- * @param {object} info Info.
+ * @param {Firestore} db Database.
+ * @param {OptionInfo | null} info Info.
  * @returns {boolean} True if valid.
  */
 function areInputsValid(db, info) {
@@ -172,9 +181,9 @@ function areInputsValid(db, info) {
 
 /**
  * Resolve a page reference when the option info is valid.
- * @param {object} db Database.
- * @param {{pageNumber: number}} info Option info carrying the page number.
- * @returns {Promise<object | null>} Page reference or null when not found.
+ * @param {Firestore} db Database.
+ * @param {OptionInfo} info Option info carrying the page number.
+ * @returns {Promise<DocumentReference | null>} Page reference or null when not found.
  */
 async function resolvePageRefForInfo(db, info) {
   if (!areInputsValid(db, info)) {
@@ -185,9 +194,10 @@ async function resolvePageRefForInfo(db, info) {
 
 /**
  * Apply a callback when an async resolver produces a value.
- * @param {Promise<*>} resolver Promise resolving to a value or null.
- * @param {(value: *) => Promise<*>} fn Callback invoked with the resolved value.
- * @returns {Promise<*|null>} Callback result or null when resolver yields nothing.
+ * @template Value, Result
+ * @param {Promise<Value | null | undefined>} resolver Promise resolving to a value or null.
+ * @param {(value: Value) => Promise<Result>} fn Callback invoked with the resolved value.
+ * @returns {Promise<Result | null>} Callback result or null when resolver yields nothing.
  */
 async function whenFound(resolver, fn) {
   const value = await resolver;
@@ -199,9 +209,8 @@ async function whenFound(resolver, fn) {
 
 /**
  * Resolve an option document by page, variant and option indices.
- * @param {object} db Firestore database instance.
- * @param {{pageNumber: number, variantName: string, optionNumber: number}} info
- *   Location details.
+ * @param {Firestore} db Firestore database instance.
+ * @param {OptionInfo} info Location details.
  * @returns {Promise<string|null>} Option document path or null when not found.
  */
 export async function findExistingOption(db, info) {
@@ -212,7 +221,7 @@ export async function findExistingOption(db, info) {
 
 /**
  * Check if page has variants.
- * @param {object} pageRef Page ref.
+ * @param {DocumentReference} pageRef Page ref.
  * @returns {Promise<boolean>} True if has variants.
  */
 async function pageHasVariants(pageRef) {
@@ -222,7 +231,7 @@ async function pageHasVariants(pageRef) {
 
 /**
  * Validate and get page path.
- * @param {object} pageRef Page ref.
+ * @param {DocumentReference} pageRef Page ref.
  * @returns {Promise<string | null>} Page path.
  */
 async function validateAndGetPagePath(pageRef) {
@@ -235,7 +244,7 @@ async function validateAndGetPagePath(pageRef) {
 
 /**
  * Validate page inputs.
- * @param {object} db Database.
+ * @param {Firestore} db Database.
  * @param {number} pageNumber Page number.
  * @returns {boolean} True if valid.
  */
@@ -245,9 +254,9 @@ function arePageInputsValid(db, pageNumber) {
 
 /**
  * Resolve a page reference when the page number is valid.
- * @param {object} db Database.
+ * @param {Firestore} db Database.
  * @param {number} pageNumber Page number.
- * @returns {Promise<object | null>} Page reference or null when not found.
+ * @returns {Promise<DocumentReference | null>} Page reference or null when not found.
  */
 async function resolvePageRefForNumber(db, pageNumber) {
   if (!arePageInputsValid(db, pageNumber)) {
@@ -258,7 +267,7 @@ async function resolvePageRefForNumber(db, pageNumber) {
 
 /**
  * Resolve a page document that already has at least one variant.
- * @param {object} db Firestore database instance.
+ * @param {Firestore} db Firestore database instance.
  * @param {number} pageNumber Page number to look up.
  * @returns {Promise<string|null>} Page document path or null when not found.
  */

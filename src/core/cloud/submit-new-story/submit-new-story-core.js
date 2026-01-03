@@ -45,6 +45,16 @@ import { createResponder } from '../responder-utils.js';
  */
 
 /**
+ * @typedef {{ uid?: string | null } | null | undefined} DecodedToken
+ * @typedef {{ title: string; content: string; author: string; options: string[] }} NormalizedSubmissionData
+ * @typedef {NormalizedSubmissionData & { authorId: string | null }} NewStorySubmissionInput
+ * @typedef {{ allowedOrigins?: string[]; methods?: string[] }} CorsOptions
+ * @typedef {{ allowedOrigins: string[]; methods: string[] }} NormalizedCorsOptions
+ * @typedef {{ status?: number; body?: unknown }} CorsErrorHandlerOptions
+ * @typedef {{ status: (code: number) => { json: (payload: unknown) => void } }} CorsResponse
+ */
+
+/**
  * Standard response returned when a non-POST request is received.
  * @type {HttpResponse}
  */
@@ -61,7 +71,7 @@ function getRequestGetter(request) {
 
 /**
  * Get auth header from getter.
- * @param {Function} getter Getter.
+ * @param {SubmitNewStoryRequest['get'] | undefined} getter Getter.
  * @returns {string | null} Auth header.
  */
 function getAuthFromGetter(getter) {
@@ -202,9 +212,10 @@ function processOption(body, index, maxLength) {
  * @returns {string[]} Normalized non-empty poll options.
  */
 function collectOptions(body, maxLength) {
-  return [0, 1, 2, 3]
+  const options = [0, 1, 2, 3]
     .map(index => processOption(body, index, maxLength))
     .filter(Boolean);
+  return /** @type {string[]} */ (options);
 }
 
 /**
@@ -230,7 +241,7 @@ function getValidUid(uid) {
 
 /**
  * Validate decoded token.
- * @param {object} decoded Decoded token.
+ * @param {DecodedToken} decoded Decoded token.
  * @returns {string | null} UID or null.
  */
 function validateDecodedToken(decoded) {
@@ -253,7 +264,7 @@ export function resolveAuthorId(request, verifyIdToken) {
 
 /**
  * Get allowed origins from options.
- * @param {object} options Options.
+ * @param {CorsOptions} options Options.
  * @returns {string[]} Allowed origins.
  */
 function getAllowedOrigins(options) {
@@ -265,7 +276,7 @@ function getAllowedOrigins(options) {
 
 /**
  * Get methods from options.
- * @param {object} options Options.
+ * @param {CorsOptions} options Options.
  * @returns {string[]} Methods.
  */
 function getMethods(options) {
@@ -274,8 +285,8 @@ function getMethods(options) {
 
 /**
  * Normalize CORS options.
- * @param {object} options Options.
- * @returns {{ allowedOrigins: string[], methods: string[] }} Normalized options.
+ * @param {CorsOptions | undefined} options Options.
+ * @returns {NormalizedCorsOptions} Normalized options.
  */
 export function normalizeCorsOptions(options) {
   const opts = options || {};
@@ -287,9 +298,7 @@ export function normalizeCorsOptions(options) {
 
 /**
  * Build CORS configuration for the submit-new-story endpoint.
- * @param {object} config - CORS configuration values.
- * @param {string[]} [config.allowedOrigins] - Whitelisted origins permitted to access the endpoint.
- * @param {string[]} [config.methods] - Allowed HTTP methods for the route. Defaults to ['POST'].
+ * @param {CorsOptions} config - CORS configuration values (allowedOrigins, methods).
  * @returns {{ origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }} Express-compatible CORS options.
  */
 export function createCorsOptions(config) {
@@ -312,7 +321,7 @@ function isCorsError(err) {
 
 /**
  * Handle CORS error response.
- * @param {object} res Response object.
+ * @param {CorsResponse} res Response object.
  * @param {number} status Status code.
  * @param {unknown} body Response body.
  */
@@ -322,7 +331,7 @@ function sendCorsError(res, status, body) {
 
 /**
  * Get status from options.
- * @param {object} options Options.
+ * @param {CorsErrorHandlerOptions} options Options.
  * @returns {number} Status.
  */
 function getStatus(options) {
@@ -331,7 +340,7 @@ function getStatus(options) {
 
 /**
  * Get body from options.
- * @param {object} options Options.
+ * @param {CorsErrorHandlerOptions} options Options.
  * @returns {unknown} Body.
  */
 function getBody(options) {
@@ -340,7 +349,7 @@ function getBody(options) {
 
 /**
  * Normalize CORS error handler options.
- * @param {object} options Options.
+ * @param {CorsErrorHandlerOptions | undefined} options Options.
  * @returns {{ status: number, body: unknown }} Normalized options.
  */
 function normalizeCorsErrorHandlerOptions(options) {
@@ -353,9 +362,7 @@ function normalizeCorsErrorHandlerOptions(options) {
 
 /**
  * Produce an Express error handler that converts CORS denials into structured responses.
- * @param {object} [options] - Overrides for the generated error handler. Defaults to an object emitting a 403 response.
- * @param {number} [options.status] - Status code to use when the origin is rejected. Defaults to 403.
- * @param {unknown} [options.body] - JSON payload sent on origin rejection. Defaults to { error: 'Origin not allowed' }.
+ * @param {CorsErrorHandlerOptions | undefined} [options] - Overrides for the generated error handler (status and body).
  * @returns {(err: unknown, req: object, res: { status: (code: number) => { json: (payload: unknown) => void } }, next: (error?: unknown) => void) => void} Express-style error middleware.
  */
 export function createCorsErrorHandler(options) {
@@ -395,7 +402,7 @@ function normalizeTitle(title) {
 /**
  * Normalize submission data from request body.
  * @param {Record<string, unknown>} body - Request body.
- * @returns {object} Normalized data.
+ * @returns {NormalizedSubmissionData} Normalized data.
  */
 function normalizeSubmissionData(body) {
   const title = normalizeTitle(body.title);
@@ -417,9 +424,9 @@ function isPostMethod(method) {
 
 /**
  * Save the submission.
- * @param {object} deps Dependencies.
+ * @param {SubmitNewStoryDependencies} deps Dependencies.
  * @param {string} id ID.
- * @param {object} data Data.
+ * @param {NewStorySubmissionInput} data Data.
  * @returns {Promise<void>} Promise.
  */
 async function saveNewStory(deps, id, data) {
@@ -472,7 +479,7 @@ async function processSubmission(deps, request) {
 
 /**
  * Handle the incoming request and delegate to the submission processor.
- * @param {SubmitNewStoryDependencies | Record<string, unknown>} deps Dependencies for the handler.
+ * @param {SubmitNewStoryDependencies} deps Dependencies for the handler.
  * @param {SubmitNewStoryRequest | undefined} request Incoming request data.
  * @returns {Promise<HttpResponse>} Response returned to the caller.
  */
