@@ -12,8 +12,8 @@ export const VISIBILITY_THRESHOLD = 0.5;
  * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
  * @typedef {object} AncestorReference
- * @property {Function} get
- * @property {AncestorReference | null | undefined} [parent]
+ * @property {Function} get Function to resolve the referenced ancestor.
+ * @property {AncestorReference | null | undefined} [parent] Optional parent reference in the ancestor chain.
  * @typedef {AncestorReference | null | undefined} OptionalAncestorReference
  * @typedef {{
  *   name: string;
@@ -27,16 +27,16 @@ export const VISIBILITY_THRESHOLD = 0.5;
  * @typedef {{ number: number; incomingOption?: string }} PageDocument
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot<PageDocument>} PageSnapshot
  * @typedef {object} OptionDocument
- * @property {string} content
- * @property {number} position
- * @property {number} [targetPageNumber]
- * @property {import('firebase-admin/firestore').DocumentReference} [targetPage]
+ * @property {string} content Option body text stored in Firestore.
+ * @property {number} position Floating-order index used when sorting options.
+ * @property {number} [targetPageNumber] Optional page number that is chosen when this option redirects.
+ * @property {import('firebase-admin/firestore').DocumentReference} [targetPage] Optional Firestore reference to the destination page document.
  * @typedef {{ content: string; position: number; targetPageNumber?: number; targetVariantName?: string; targetVariants?: { name: string; weight: number }[] }} OptionMetadata
  * @typedef {OptionMetadata[]} OptionCollection
  * @typedef {{ rootVariantRef?: OptionalAncestorReference; rootPageRef?: OptionalAncestorReference }} ParentReferences
  * @typedef {{ parentVariantSnap?: DocumentSnapshotData; parentPageSnap?: DocumentSnapshotData } | null} ParentSnapshots
  * @typedef {object} StoryMetadata
- * @property {DocumentReferenceData | undefined} [rootPage]
+ * @property {DocumentReferenceData | undefined} [rootPage] Optional reference to the story's root page.
  * @typedef {StoryMetadata & { rootPage: DocumentReferenceData }} StoryDataWithRoot
  * @typedef {{ variant: { authorId?: string }; db: FirestoreLike; bucket: StorageBucketLike; consoleError?: ConsoleError }} AuthorLookupDeps
  * @typedef {{ variant: { incomingOption?: string }; db: FirestoreLike; consoleError?: ConsoleError }} ParentResolutionDeps
@@ -2490,6 +2490,16 @@ function isPageSnapValid(pageSnap) {
 }
 
 /**
+ * @typedef {object} RenderMetadataDeps
+ * @property {VariantSnapshot} snap Variant snapshot targeted by the render.
+ * @property {FirestoreLike} db Firestore helper used for metadata lookups.
+ * @property {StorageBucketLike} bucket Storage bucket handle used by helper routines.
+ * @property {PageSnapshot} pageSnap Parent page snapshot that backs the variant.
+ * @property {PageDocument} page Parent page document data extracted from the snapshot.
+ * @property {ConsoleError} [consoleError] Optional logger for reporting issues.
+ * @property {number} [visibilityThreshold] Threshold that determines visible options.
+ * @property {VariantDocument} variant Variant document record stored in Firestore.
+ *
  * Gather metadata for rendering.
  * @param {RenderMetadataDeps} deps Dependencies required to resolve the render metadata.
  * @returns {Promise<RenderMetadata>} Metadata object suitable for templates and persistence.

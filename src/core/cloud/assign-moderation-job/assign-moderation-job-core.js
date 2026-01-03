@@ -818,8 +818,8 @@ export function createFetchVariantSnapshotFromDbFactory(
 
 /**
  * @typedef {object} GuardResult
- * @property {GuardContext} [context]
- * @property {GuardError} [error]
+ * @property {GuardContext} [context] Guard context returned when the guard succeeds.
+ * @property {GuardError} [error] Guard error payload returned when execution halts.
  */
 
 /**
