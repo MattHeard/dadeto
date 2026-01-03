@@ -37,7 +37,12 @@ export function focusLens(parentLens, key) {
   return createStorageLens(
     () => parentLens.get(key),
     (...args) => {
-      const candidateValue = args.length >= 2 ? args[1] : args[0];
+      let candidateValue;
+      if (args.length >= 2) {
+        candidateValue = args[1];
+      } else {
+        candidateValue = args[0];
+      }
       const value = /** @type {TValue} */ (candidateValue);
       parentLens.set(key, value);
     }

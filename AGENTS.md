@@ -54,7 +54,7 @@ For full workflow details: `bd prime`
 - Treat ESLint complexity warnings as actionable; optional chaining, ternaries, and nested callbacks all count, so extract helpers until functions sit comfortably below the threshold.
 - Refactor in small steps, running `npm run lint` (and targeted tests) after each extraction to catch new hotspots introduced by helpers.
 - Keep helpers single-purpose with clear branching, and prefer early returns to avoid hidden decision points that push complexity back up.
-- When you’re fixing a function flagged for high complexity, run `node src/build/cyclomatic-factors.js <file>` (or import `describeCyclomaticFactors`) so the agent has a ranked list of branching sources to target and can avoid repeatedly recomputing the same information manually.
+- When reducing the complexity of a function, run `node src/build/cyclomatic-factors.js <file>` (or import `describeCyclomaticFactors`) so the agent has a JSON list of unique branching factors to target; use that ordered list to guide refactors instead of re-evaluating the same operators manually.
 
 ## Testing Guidelines
 - Tests run under Jest + jsdom. Name files `*.test.js` and colocate them with the modules they exercise.
