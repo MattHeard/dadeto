@@ -103,6 +103,8 @@ For full workflow details: `bd prime`
 
 1. **File issues for remaining work** - Create issues for anything that needs follow-up
 2. **Run quality gates** (if code changed) - Tests, linters, builds
+   - Always run `npm test` before closing any bead so the baseline suite stays green.
+   - Capture that `npm test` run in the bead comment (command, result, and any follow-ups) before you close the bead.
 3. **Update issue status** - Close finished work, update in-progress items
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
