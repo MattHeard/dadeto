@@ -200,7 +200,7 @@ function handleValidAppliedMoves(moves, board, result) {
 
 /**
  * Initialize an empty board and seen positions tracker.
- * @returns {TicTacToeBoardState}
+ * @returns {TicTacToeBoardState} The empty board/seen state for the next move.
  */
 function initializeBoardAndSeen() {
   const board = Array.from({ length: 3 }, () => Array(3).fill(null));
@@ -250,7 +250,7 @@ function isInvalidMoves(moves) {
  * @param {number} i - Move index.
  * @param {TicTacToeMove[]} moves - Moves array.
  * @param {(move: TicTacToeMove) => boolean} apply - Callback that applies the move.
- * @returns {boolean}
+ * @returns {boolean} True when applying the move at index `i` is valid.
  */
 function isMoveApplicationValid(i, moves, apply) {
   const move = moves[i];
@@ -263,7 +263,7 @@ function isMoveApplicationValid(i, moves, apply) {
  * Decide whether to stop processing moves.
  * @param {boolean} valid - Current validity flag.
  * @param {boolean} earlyWin - Indicates if a win was already detected.
- * @returns {boolean}
+ * @returns {boolean} True when processing should halt (either invalid move or early win).
  */
 function shouldStop(valid, earlyWin) {
   return !valid || earlyWin;
@@ -274,7 +274,7 @@ function shouldStop(valid, earlyWin) {
  * @param {TicTacToeMove[]} moves - Moves array.
  * @param {TicTacToeBoardState['board']} board - Board state.
  * @param {Set<string>} seen - Seen positions.
- * @returns {(acc: MoveAccumulator, _: TicTacToeMove | undefined, i: number) => MoveAccumulator}
+ * @returns {(acc: MoveAccumulator, _: TicTacToeMove | undefined, i: number) => MoveAccumulator} Reducer that walks through the move list until it stops.
  */
 function applyMoveReducer(moves, board, seen) {
   return function (acc, _, i) {
