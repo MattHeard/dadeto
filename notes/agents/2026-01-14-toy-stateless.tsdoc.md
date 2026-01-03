@@ -1,0 +1,6 @@
+# toy helper tsdoc follow-up
+- **Unexpected**: `tsdoc` refused to treat `BaitResponse` as discriminated because the success branch lacked an `isError` property; the fix was to add `isError?: false` to `BaitDetails` so the runtime guard could narrow to `BaitError`/`BaitDetails` and the downstream stage could treat the post-check value as typed.
+- **Diagnosis**: `getData` started returning `null` more often and the strict-null sweep kept object-valued helpers on the hook, so every callsite needed explicit `@type` annotations + early returns before `tsdoc` would stop flagging `object | unknown[]` as incompatible with the existing guard helpers.
+- **Learning**: When reintroducing strict guards over `checkJs` data, favor narrow preconditions (null early-returns, typed inline parameters) instead of wholesale `@type` casts; this keeps the runtime behavior explicit while letting the type checker follow the logic.
+- **Tests**: `npm run tsdoc:check` (still fails because the pre-existing backlog now begins with the presenter/tic-tac-toe/battleship helper suite, so those refs will need to be picked up by their own beads).
+- **Next steps**: Continue working through the remaining `dadeto-` beads (e.g., presenter, cloud, toy coverage bursts) and rerun `tsdoc` once those files settle so we can see whether the AGM's broader `strictNullChecks` rollout can close the epic.
