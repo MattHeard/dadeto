@@ -2144,7 +2144,7 @@ export function updateAuthControlsDisplay(user, signIns, signOuts) {
  */
 export function setupFirebase(initApp) {
   initApp({
-    apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ',
+    apiKey: 'AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ', // Firebase client key, not a secret.
     authDomain: 'irien-465710.firebaseapp.com',
     projectId: 'irien-465710',
   });
