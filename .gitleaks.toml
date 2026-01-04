@@ -1,0 +1,4 @@
+[[allowlist]]
+description = "Allow the Firebase client API key that is intentionally public in admin-core.js."
+regex = "AIzaSyDRc1CakoDi6airj7t7DgY4KDSlxNwKIIQ"
+path = "src/core/browser/admin-core.js"
