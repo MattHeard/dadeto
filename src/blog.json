@@ -1,6 +1,34 @@
 {
   "posts": [
     {
+      "key": "TWOW1",
+      "title": "Two-Way Door Architecture",
+      "publicationDate": "2026-01-04",
+      "content": [
+        "Amazon tells us to avoid one-way doors. This is critical with vibe coding. There are architectural and software design decisions that are one-way doors, and vibe coding is incredibly dangerous when built with these patterns. The challenge for human developers is to detect the one-way doors and vibe code without them. Using automated verification, coding agents can run very fast and go back through the two-way doors when needed. Guardrails can also be built with these patterns, allowing the whole pipeline to run at top speed."
+      ],
+      "tags": [
+        "vibe-coding",
+        "software-design",
+        "architecture",
+        "AI"
+      ]
+    },
+    {
+      "key": "BEYO1",
+      "title": "Beyond the Ritual",
+      "publicationDate": "2026-01-04",
+      "content": [
+        "Rituals connect us to each other. Rituals are a shorthand which allows us to quickly see where other people fit in. However, rituals can become unmoored and mismatched from reality. They become absurd when Camus's Meursault doesn't perform the rituals expected—for example, crying at his mother's funeral or responding affirmatively to Marie's marriage proposal—he becomes disconnected. He's convicted because of this disconnect. When he confronts the chaplain, he realizes the absurdity of human action and life and finally understands that he is happy through his real connection beyond the ritual."
+      ],
+      "tags": [
+        "camus",
+        "ritual",
+        "absurdism",
+        "philosophy"
+      ]
+    },
+    {
       "key": "PREP1",
       "title": "Preparing for Camus",
       "publicationDate": "2026-01-01",
@@ -198,7 +226,7 @@
       "illustration": {
         "fileType": "png",
         "fileName": "2025-07-04",
-        "altText": "a traditional ink-style black and white illustration of a tree diagram branching from a central box labeled \u201cthe first split\u201d and \u201cnarrative atomization\u201d with empty squares beneath and fractal limbs extending above."
+        "altText": "a traditional ink-style black and white illustration of a tree diagram branching from a central box labeled “the first split” and “narrative atomization” with empty squares beneath and fractal limbs extending above."
       },
       "toy": {
         "modulePath": "/core/browser/toys/2025-07-04/transformDendriteStory.js",
@@ -250,7 +278,7 @@
           "author": "Frank Jackson",
           "source": "Royal Institute of Philosophy Supplement 53 (2003)",
           "type": "article",
-          "quote": "Although I once dissented from the majority, I have capitulated and now see the interesting issue as being where the arguments from the intuitions against physicalism\u2014-the arguments that seem so compelling\u2014-go wrong."
+          "quote": "Although I once dissented from the majority, I have capitulated and now see the interesting issue as being where the arguments from the intuitions against physicalism—-the arguments that seem so compelling—-go wrong."
         },
         {
           "url": "https://mitpress.mit.edu/9780262621892/theres-something-about-mary/",
@@ -305,7 +333,7 @@
         },
         {
           "url": "https://philpapers.org/rec/NEMSTI",
-          "title": "So This Is What It\u2019s Like: A Defense of the Ability Hypothesis",
+          "title": "So This Is What It’s Like: A Defense of the Ability Hypothesis",
           "author": "Laurence Nemirow",
           "type": "article"
         }
@@ -353,7 +381,7 @@
         {
           "url": "https://plato.stanford.edu/entries/qualia-knowledge/",
           "title": "Qualia: The Knowledge Argument",
-          "author": "Nida-R\u00fcmelin, Martine and Donnchadh O Conaill",
+          "author": "Nida-Rümelin, Martine and Donnchadh O Conaill",
           "source": "The Stanford Encyclopedia of Philosophy",
           "type": "article"
         }
@@ -689,7 +717,7 @@
       "illustration": {
         "fileType": "png",
         "fileName": "2025-03-29-1",
-        "altText": "a tarot-style illustration titled \u201cthe data\u201d showing a black triangular prism splitting a white light beam into a rainbow, with stars, a crescent moon, and a sun in the background"
+        "altText": "a tarot-style illustration titled “the data” showing a black triangular prism splitting a white light beam into a rainbow, with stars, a crescent moon, and a sun in the background"
       },
       "toy": {
         "modulePath": "/core/browser/toys/2025-03-29/get.js",
@@ -873,7 +901,7 @@
       ],
       "illustration": {
         "fileType": "png",
-        "altText": "a japanese zen-inspired ink drawing of a minimalist desk beneath a vast, open sky. the desk contains a blank-paged journal, a pen, and a small, simple inbox holding a few odd items. the expressive ink strokes create a sense of balance, calmness, and clarity, resembling traditional sumi-e or shod\u014d ink art. the composition conveys mental organization and peace."
+        "altText": "a japanese zen-inspired ink drawing of a minimalist desk beneath a vast, open sky. the desk contains a blank-paged journal, a pen, and a small, simple inbox holding a few odd items. the expressive ink strokes create a sense of balance, calmness, and clarity, resembling traditional sumi-e or shodō ink art. the composition conveys mental organization and peace."
       },
       "relatedLinks": [
         {
@@ -912,7 +940,7 @@
       ],
       "illustration": {
         "fileType": "png",
-        "altText": "a cyberpunk-style illustration of a person standing before a mirror in a neon-lit futuristic cityscape. the reflection in the mirror is not their own but a smooth, featureless mannequin, creating an eerie contrast. the person\u2019s edges subtly glitch, hinting at digital distortion. cool blue and purple neon lights cast an otherworldly glow, emphasizing the unsettling atmosphere. the background features a blurred cyberpunk city, reinforcing the theme of technology and identity"
+        "altText": "a cyberpunk-style illustration of a person standing before a mirror in a neon-lit futuristic cityscape. the reflection in the mirror is not their own but a smooth, featureless mannequin, creating an eerie contrast. the person’s edges subtly glitch, hinting at digital distortion. cool blue and purple neon lights cast an otherworldly glow, emphasizing the unsettling atmosphere. the background features a blurred cyberpunk city, reinforcing the theme of technology and identity"
       },
       "audio": {
         "fileType": "m4a"
@@ -920,7 +948,7 @@
       "relatedLinks": [
         {
           "url": "https://x.com/AdjectiveAlli/status/1898943307843018778",
-          "title": "Empathy is goated\u2026",
+          "title": "Empathy is goated…",
           "author": "@AdjectiveAlli",
           "type": "microblog"
         },
@@ -988,7 +1016,7 @@
       "title": "Hello World",
       "illustration": {
         "fileType": "png",
-        "altText": "a kawaii techno-pop illustration of a smiling cartoon computer displaying \u201chello world\u201d in colorful pixel text. the computer has blushing cheeks, big shiny eyes, and sits against a pastel background filled with sparkles, hearts, stars, and floating digital icons like a floppy disk and keyboard. the overall vibe is cheerful, playful, and digitally cute."
+        "altText": "a kawaii techno-pop illustration of a smiling cartoon computer displaying “hello world” in colorful pixel text. the computer has blushing cheeks, big shiny eyes, and sits against a pastel background filled with sparkles, hearts, stars, and floating digital icons like a floppy disk and keyboard. the overall vibe is cheerful, playful, and digitally cute."
       },
       "content": [
         "Returns 'Hello world'."
@@ -1005,11 +1033,11 @@
       "content": [
         "I was eight years old when I had my earliest metaphysical reflection. (This excludes religious doubt.)",
         "My thoughts:",
-        "It was obvious that \u201cbigger\u201d and \u201csmaller\u201d were adjectives describing relations between objects. But \u201cbig\u201d and \u201csmall\u201d were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not \u201calive\u201d alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton."
+        "It was obvious that “bigger” and “smaller” were adjectives describing relations between objects. But “big” and “small” were also relations between objects and not properties of a single object. I am big compared to an ant, and small compared to the Milky Way, but I am neither big nor small alone. I conjected that there were no properties, only relations. I am not “alive” alone; I am more alive than someone in a vegetative state, who is more alive than a skeleton."
       ],
       "illustration": {
         "fileType": "webp",
-        "altText": "An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled \u2018big\u2019, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants."
+        "altText": "An illustration of a child deep in thought, surrounded by thought bubbles. One bubble shows an ant labeled ‘big’, another shows the Milky Way. Nearby are skeletons, pensive old men, and more ants."
       },
       "audio": {
         "fileType": "m4a"
@@ -1025,10 +1053,10 @@
       "title": "On Amir's Egoism",
       "publicationDate": "2024-04-13",
       "content": [
-        "_Lonely and Horny_ was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There\u2019s an interesting speech made by Ruby in _Lonely and Horny_. He gives a spirited, funny, and coherent defence of philosophical egoism that I haven\u2019t seen often.",
+        "_Lonely and Horny_ was a web video series created and acted by Jake Hurwitz and Amir Blumenfeld. Amir plays an obnoxious character named Ruby who only cares about himself. There’s an interesting speech made by Ruby in _Lonely and Horny_. He gives a spirited, funny, and coherent defence of philosophical egoism that I haven’t seen often.",
         {
           "type": "quote",
-          "content": "_\"I'm the only one that I am, dude\u2026 I don't care about *other* people, because they're not me. \u2026 Me is the only feelings I know and can have, so I\u2019m invested in *my* feelings *being good* for *me*.\"_"
+          "content": "_\"I'm the only one that I am, dude… I don't care about *other* people, because they're not me. … Me is the only feelings I know and can have, so I’m invested in *my* feelings *being good* for *me*.\"_"
         }
       ],
       "audio": {
@@ -1058,7 +1086,7 @@
       "title": "Ethics' Divine Suspension",
       "publicationDate": "2024-04-06",
       "content": [
-        "S\u00f8ren Kierkegaard wrote in \"Fear and Trembling\" about Abraham sacrificing his son. Despite its contradiction with universal moral norms, Abraham was willing to obey God. This is Kierkegaard's example of \"teleological suspension of the ethical\". Here, the duty to obey God supersedes moral duty. I'm interested in coherent moral codes, which allow for determinate decision-making. I would frame this obedience to God as a \"trumping\" duty within a pluralistic moral framework. Reasoning drives quotidian decisions but a command from God would override that all. Kierkegaard appears to object to fitting this sublime duty of obedience into morality. Seems odd."
+        "Søren Kierkegaard wrote in \"Fear and Trembling\" about Abraham sacrificing his son. Despite its contradiction with universal moral norms, Abraham was willing to obey God. This is Kierkegaard's example of \"teleological suspension of the ethical\". Here, the duty to obey God supersedes moral duty. I'm interested in coherent moral codes, which allow for determinate decision-making. I would frame this obedience to God as a \"trumping\" duty within a pluralistic moral framework. Reasoning drives quotidian decisions but a command from God would override that all. Kierkegaard appears to object to fitting this sublime duty of obedience into morality. Seems odd."
       ],
       "illustration": {
         "fileType": "webp",
@@ -1191,7 +1219,7 @@
         },
         {
           "url": "https://www.scmp.com/business/article/3202402/asias-lithium-capital-grinds-halt-output-battery-material-stops-yichun-amid-pollution-investigation",
-          "title": "\u2018Asia\u2019s lithium capital\u2019 grinds to a halt as output of battery material stops in Yichun amid pollution investigation in Jiangxi province\u2019s Jin River",
+          "title": "‘Asia’s lithium capital’ grinds to a halt as output of battery material stops in Yichun amid pollution investigation in Jiangxi province’s Jin River",
           "author": "Yujie Xue",
           "source": "South China Morning Post",
           "type": "article"
@@ -1401,9 +1429,9 @@
       "title": "Climate Change Optimism",
       "publicationDate": "2019-12-16",
       "content": [
-        "Climate change is likely to cause hundreds of millions of extra people to die this century. Billions more will suffer. It cannot be \u201cstopped\u201d. In the face of this, grief is reasonable.",
-        "But preventing climate change is not binary: not only success or only failure. It is a matter of degree. With every degree increased, millions more suffer. 6\u00b0 is worse than 5\u00b0 and 4\u00b0.",
-        "In turn, 4\u00b0 is better than 5\u00b0 and 6\u00b0. With every degree averted, millions more avoid suffering. So, even small actions have tremendous impacts. Choosing to avoid meat, or cycle, or catch a train helps."
+        "Climate change is likely to cause hundreds of millions of extra people to die this century. Billions more will suffer. It cannot be “stopped”. In the face of this, grief is reasonable.",
+        "But preventing climate change is not binary: not only success or only failure. It is a matter of degree. With every degree increased, millions more suffer. 6° is worse than 5° and 4°.",
+        "In turn, 4° is better than 5° and 6°. With every degree averted, millions more avoid suffering. So, even small actions have tremendous impacts. Choosing to avoid meat, or cycle, or catch a train helps."
       ],
       "illustration": {
         "fileType": "png",
@@ -1444,7 +1472,7 @@
       "relatedLinks": [
         {
           "url": "https://twitter.com/JackKleeman/status/1190354757308862468",
-          "title": "1500 microservices at @monzo\u2026",
+          "title": "1500 microservices at @monzo…",
           "author": "@JackKleeman",
           "type": "microblog"
         },
@@ -1466,14 +1494,14 @@
       "title": "Failed to Vote",
       "publicationDate": "2019-05-06",
       "content": [
-        "I missed the deadline to register to vote in Germany for the European Union elections. I am very proud of having voted in every national and local election I could, until now. I\u2019m not proud of every vote, but proud that I voted.",
+        "I missed the deadline to register to vote in Germany for the European Union elections. I am very proud of having voted in every national and local election I could, until now. I’m not proud of every vote, but proud that I voted.",
         "I have lots of excuses for missing the registration deadline:",
         "1. Brexit",
         "2. Taking a working holiday in New Zealand",
         "3. The deadline being on a Sunday",
         "4. Not having a printer for my form",
-        "But they\u2019re all bad excuses.",
-        "I knew that I could have been eligible, and should have sorted out my registration well in advance. I\u2019m ashamed now."
+        "But they’re all bad excuses.",
+        "I knew that I could have been eligible, and should have sorted out my registration well in advance. I’m ashamed now."
       ],
       "illustration": {
         "fileType": "png",
@@ -1506,7 +1534,7 @@
       "title": "Opportunity Cost Considerations",
       "publicationDate": "2017-03-07",
       "content": [
-        "Benjamin Franklin said that time was money. You could have earned ten shillings today, but you spent half of it sitting idle. You only got five shillings for the half-day you did work. To Franklin, you spent (or threw away) the other five shillings in front of the television. Suppose we talk about ten thousand dollars instead. You would likely save a child\u2019s life by donating ten thousand dollars worth of mosquito nets. Have you spent (or thrown away) that child\u2019s life by not fighting for a raise? Or upgrading a good car for a newer model?"
+        "Benjamin Franklin said that time was money. You could have earned ten shillings today, but you spent half of it sitting idle. You only got five shillings for the half-day you did work. To Franklin, you spent (or threw away) the other five shillings in front of the television. Suppose we talk about ten thousand dollars instead. You would likely save a child’s life by donating ten thousand dollars worth of mosquito nets. Have you spent (or thrown away) that child’s life by not fighting for a raise? Or upgrading a good car for a newer model?"
       ],
       "illustration": {
         "fileType": "png",
@@ -1531,7 +1559,7 @@
       "publicationDate": "2016-12-31",
       "content": [
         "1. What single thing could you do differently that will have the biggest positive impact?",
-        "2. When was the last time you should have admitted you were wrong, but didn\u2019t?",
+        "2. When was the last time you should have admitted you were wrong, but didn’t?",
         "3. Did you discover a hobby that you need to make more time for?",
         "4. Are there any books you wish you had read earlier?",
         "5. Any books you wish you had never read?",
@@ -1555,7 +1583,7 @@
       "title": "Muted Star Trek",
       "publicationDate": "2016-10-07",
       "content": [
-        "Our daughter is almost two, and we now also have a two-month old son. As I settled him back to sleep after his night feeds, I watched the original series of Star Trek on mute with subtitles. After a great first season I ordered some wireless headphones and continued watching. When they arrived I excitedly set them up, but the sound was jarring; I felt like somebody had taken Kirk, Spock, and McCoy and dubbed over their original voices. Of course I knew these were their voices, but I couldn\u2019t continue watching without feeling like the show had become corrupted.",
+        "Our daughter is almost two, and we now also have a two-month old son. As I settled him back to sleep after his night feeds, I watched the original series of Star Trek on mute with subtitles. After a great first season I ordered some wireless headphones and continued watching. When they arrived I excitedly set them up, but the sound was jarring; I felt like somebody had taken Kirk, Spock, and McCoy and dubbed over their original voices. Of course I knew these were their voices, but I couldn’t continue watching without feeling like the show had become corrupted.",
         "My favourite _Star Trek_ episodes so far:",
         "1. _The City on the Edge of Forever_ (season 1, episode 28)",
         "2. _The Deadly Years_ (season 2, episode 12)",
@@ -1709,7 +1737,7 @@
           "author": "Chris Agar",
           "source": "Screen Rant",
           "type": "article",
-          "quote": "A subplot is going to be how the general public has become 'bored' of dinosaurs and are in need of a shiny new attraction to revitalize interest\u2026"
+          "quote": "A subplot is going to be how the general public has become 'bored' of dinosaurs and are in need of a shiny new attraction to revitalize interest…"
         }
       ],
       "tags": [
@@ -1738,7 +1766,7 @@
         },
         {
           "url": "https://www.facebook.com/zuck/posts/10101319050523971",
-          "title": "I'm excited to announce that we've agreed to acquire Oculus VR\u2026",
+          "title": "I'm excited to announce that we've agreed to acquire Oculus VR…",
           "author": "Mark Zuckerberg",
           "source": "Facebook",
           "type": "article"
@@ -1815,7 +1843,7 @@
           "author": "Moira Forbes",
           "source": "Forbes",
           "type": "article",
-          "quote": "'The problem is the [earnings] averages don't work, because there are not enough parts for women to star in to get paid,' shared Amy Pascal, co-chair of Sony Pictures Entertainment\u2026"
+          "quote": "'The problem is the [earnings] averages don't work, because there are not enough parts for women to star in to get paid,' shared Amy Pascal, co-chair of Sony Pictures Entertainment…"
         }
       ],
       "tags": [
@@ -1948,14 +1976,14 @@
           "title": "The role of livestock in climate change",
           "source": "United Nations Food and Agriculture Organization (UN FAO)",
           "type": "article",
-          "quote": "Globally, the [livestock] sector contributes 18 percent (7.1 billion tonnes CO\u2082 equivalent) of global greenhouse gas emissions."
+          "quote": "Globally, the [livestock] sector contributes 18 percent (7.1 billion tonnes CO₂ equivalent) of global greenhouse gas emissions."
         },
         {
           "url": "http://www.worldwatch.org/files/pdf/Livestock%20and%20Climate%20Change.pdf",
           "title": "Livestock and Climate Change",
           "source": "World Watch",
           "type": "article",
-          "quote": "\u2026 our analysis shows that livestock and their byproducts actually account for at least 32,564 million tons of CO\u2082e per year, or 51 percent of annual worldwide GHG emissions."
+          "quote": "… our analysis shows that livestock and their byproducts actually account for at least 32,564 million tons of CO₂e per year, or 51 percent of annual worldwide GHG emissions."
         }
       ],
       "tags": [
@@ -2092,7 +2120,7 @@
       "title": "The Great Depression",
       "publicationDate": "2014-04-23",
       "content": [
-        "I was sitting by a pool in a sunny resort in Fiji. Next to me there was a pi\u00f1a colada with condensation beading on the glass. And I couldn't put down _The Grapes of Wrath_ by John Steinbeck. The pain and poverty of its heroes was jarring against the luxurious, tropical backdrop. After adjusting for inflation, someone in 1937 would need to have picked over half a US ton of peaches to pay for the pi\u00f1a colada I had. Nonetheless, the novel has unrelenting optimism about perserverence through hardship. Meanwhile, Benjamin Graham made 14.7% per annum during the Great Depression."
+        "I was sitting by a pool in a sunny resort in Fiji. Next to me there was a piña colada with condensation beading on the glass. And I couldn't put down _The Grapes of Wrath_ by John Steinbeck. The pain and poverty of its heroes was jarring against the luxurious, tropical backdrop. After adjusting for inflation, someone in 1937 would need to have picked over half a US ton of peaches to pay for the piña colada I had. Nonetheless, the novel has unrelenting optimism about perserverence through hardship. Meanwhile, Benjamin Graham made 14.7% per annum during the Great Depression."
       ],
       "illustration": {
         "fileType": "png",
@@ -2578,7 +2606,7 @@
         "Wow, that's really off-topic.",
         {
           "type": "quote",
-          "content": "\"Voil\u00e0! In view, a humble vaudevillian veteran, cast vicariously as both victim and villain by the vicissitudes of Fate. This visage, no mere veneer of vanity, is it vestige of the vox populi, now vacant, vanished, as the once vital voice of the verisimilitude now venerates what they once vilified. However, this valorous visitation of a by-gone vexation, stands vivified, and has vowed to vanquish these venal and virulent vermin vanguarding vice and vouchsafing the violently vicious and voracious violation of volition. The only verdict is vengeance; a vendetta, held as a votive, not in vain, for the value and veracity of such shall one day vindicate the vigilant and the virtuous. Verily, this vichyssoise of verbiage veers most verbose vis-\u00e0-vis an introduction, and so it is my very good honor to meet you and you may call me V.\""
+          "content": "\"Voilà! In view, a humble vaudevillian veteran, cast vicariously as both victim and villain by the vicissitudes of Fate. This visage, no mere veneer of vanity, is it vestige of the vox populi, now vacant, vanished, as the once vital voice of the verisimilitude now venerates what they once vilified. However, this valorous visitation of a by-gone vexation, stands vivified, and has vowed to vanquish these venal and virulent vermin vanguarding vice and vouchsafing the violently vicious and voracious violation of volition. The only verdict is vengeance; a vendetta, held as a votive, not in vain, for the value and veracity of such shall one day vindicate the vigilant and the virtuous. Verily, this vichyssoise of verbiage veers most verbose vis-à-vis an introduction, and so it is my very good honor to meet you and you may call me V.\""
         }
       ]
     },
