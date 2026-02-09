@@ -339,6 +339,27 @@ const functionSpecificCommonCoreCopies = functionSpecificCommonCoreFiles.flatMap
   return { source, target };
 });
 
+// Shared utility files that need to be copied to all function directories
+const sharedUtilityFiles = [
+  'submit-shared.js',
+  'handler-utils.js',
+  'parallel-utils.js',
+  'response-utils.js',
+  'request-normalization.js',
+  'responder-utils.js',
+  'auth-helpers.js',
+  'allowed-origins.js',
+  'http-method-guard.js',
+  'firestore-helpers.js',
+];
+
+const sharedUtilityCopies = functionDirectories.flatMap(functionName =>
+  sharedUtilityFiles.map(file => ({
+    source: join(srcCoreCloudDir, file),
+    target: join(infraFunctionsDir, functionName, file === 'firestore-helpers.js' ? 'firestore.js' : file),
+  }))
+);
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
@@ -1055,6 +1076,7 @@ const individualFileCopies = [
   ...corsConfigCopies,
   ...commonCoreCopies,
   ...functionSpecificCommonCoreCopies,
+  ...sharedUtilityCopies,
   ...packageFileCopies,
 ];
 
