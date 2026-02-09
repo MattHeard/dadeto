@@ -112,6 +112,11 @@ const assignModerationCoreSource = join(
 const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
 const commonCoreSource = join(srcCoreDir, 'commonCore.js');
 
+const commonCoreCopies = functionDirectories.map(name => ({
+  source: commonCoreSource,
+  target: join(infraFunctionsDir, name, 'commonCore.js'),
+}));
+
 const generateStatsCoreSource = join(
   srcCoreCloudDir,
   'generate-stats',
@@ -1030,6 +1035,7 @@ const individualFileCopies = [
   ...browserFileCopies,
   ...firestoreCopies,
   ...corsConfigCopies,
+  ...commonCoreCopies,
   ...packageFileCopies,
 ];
 
