@@ -1061,22 +1061,29 @@ function formatForLog(targetPath) {
  * @returns {Promise<void>} Promise that resolves once the file has been updated or skipped.
  */
 async function rewriteImport(filePath, from, to) {
-  const original = await fs.readFile(filePath, 'utf8');
+  try {
+    const original = await fs.readFile(filePath, 'utf8');
 
-  if (!original.includes(from)) {
-    return;
+    if (!original.includes(from)) {
+      return;
+    }
+
+    const updated = original.replaceAll(from, to);
+
+    if (updated === original) {
+      return;
+    }
+
+    await fs.writeFile(filePath, updated);
+    logger.info(
+      `Rewrote ${formatForLog(filePath)} import from "${from}" to "${to}"`
+    );
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+    // File doesn't exist, skip silently
   }
-
-  const updated = original.replaceAll(from, to);
-
-  if (updated === original) {
-    return;
-  }
-
-  await fs.writeFile(filePath, updated);
-  logger.info(
-    `Rewrote ${formatForLog(filePath)} import from "${from}" to "${to}"`
-  );
 }
 
 await runCopyToInfra({
@@ -1087,6 +1094,31 @@ await runCopyToInfra({
 });
 
 await Promise.all([
+  // Rewrite relative imports for all cloud functions
+  // Common imports that need path rewriting when copied to infra/cloud-functions/<function>/
+  ...functionDirectories.flatMap(functionDir => [
+    rewriteImport(
+      join(infraFunctionsDir, functionDir, `${functionDir}-core.js`),
+      '../common-core.js',
+      './commonCore.js'
+    ),
+    rewriteImport(
+      join(infraFunctionsDir, functionDir, `${functionDir}-core.js`),
+      '../commonCore.js',
+      './commonCore.js'
+    ),
+    rewriteImport(
+      join(infraFunctionsDir, functionDir, `${functionDir}-core.js`),
+      '../firestore-helpers.js',
+      './firestore.js'
+    ),
+    rewriteImport(
+      join(infraFunctionsDir, functionDir, 'common-core.js'),
+      '../commonCore.js',
+      './commonCore.js'
+    ),
+  ]),
+  // Specific rewrites for cross-function imports
   rewriteImport(
     processNewStoryCoreFile,
     '../process-new-page/process-new-page-core.js',
