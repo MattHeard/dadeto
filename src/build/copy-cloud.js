@@ -1095,29 +1095,75 @@ await runCopyToInfra({
 
 await Promise.all([
   // Rewrite relative imports for all cloud functions
-  // Common imports that need path rewriting when copied to infra/cloud-functions/<function>/
-  ...functionDirectories.flatMap(functionDir => [
-    rewriteImport(
-      join(infraFunctionsDir, functionDir, `${functionDir}-core.js`),
-      '../common-core.js',
-      './commonCore.js'
-    ),
-    rewriteImport(
-      join(infraFunctionsDir, functionDir, `${functionDir}-core.js`),
-      '../commonCore.js',
-      './commonCore.js'
-    ),
-    rewriteImport(
-      join(infraFunctionsDir, functionDir, `${functionDir}-core.js`),
-      '../firestore-helpers.js',
-      './firestore.js'
-    ),
-    rewriteImport(
-      join(infraFunctionsDir, functionDir, 'common-core.js'),
-      '../commonCore.js',
-      './commonCore.js'
-    ),
-  ]),
+  ...functionDirectories.flatMap(functionDir => {
+    const functionDirPath = join(infraFunctionsDir, functionDir);
+
+    // All JS files in the function directory that might need rewrites
+    const filePatterns = [
+      `${functionDir}-core.js`,
+      `${functionDir}-gcf.js`,
+      'common-gcf.js',
+      'common-core.js',
+      'helpers.js',
+      'admin-config.js',
+      'cloud-core.js',
+      'firebase-functions.js',
+      'cors-config.js',
+      'verifyAdmin.js',
+      'firestore.js',
+    ];
+
+    const importRewrites = [
+      // Core and common module rewrites
+      ['../common-core.js', './commonCore.js'],
+      ['../commonCore.js', './commonCore.js'],
+      ['../../commonCore.js', './commonCore.js'],
+      ['.././commonCore.js', './commonCore.js'],
+
+      // Cloud core rewrites
+      ['../core/cloud/cloud-core.js', './cloud-core.js'],
+      ['../cloud-core.js', './cloud-core.js'],
+
+      // Firestore and database rewrites
+      ['../firestore-helpers.js', './firestore.js'],
+      ['../firestore.js', './firestore.js'],
+
+      // Admin and auth rewrites
+      ['../admin-config.js', './admin-config.js'],
+      ['../auth-helpers.js', './auth-helpers.js'],
+
+      // HTTP and utility rewrites
+      ['../http-method-guard.js', './http-method-guard.js'],
+      ['../response-utils.js', './response-utils.js'],
+      ['../responder-utils.js', './responder-utils.js'],
+      ['../allowed-origins.js', './allowed-origins.js'],
+      ['../handler-utils.js', './handler-utils.js'],
+      ['../submit-shared.js', './submit-shared.js'],
+
+      // Cross-function rewrites
+      ['../process-new-page/process-new-page-core.js', './process-new-page-core.js'],
+      ['../generate-stats/generate-stats-core.js', './generate-stats-core.js'],
+      ['../submit-new-page/submit-new-page-core.js', './submit-new-page-core.js'],
+      ['../submit-new-story/submit-new-story-core.js', './submit-new-story-core.js'],
+      ['../assign-moderation-job/assign-moderation-job-core.js', './assign-moderation-job-core.js'],
+
+      // Verification admin rewrites
+      ['../mark-variant-dirty/verifyAdmin.js', './mark-variant-dirty-verifyAdmin.js'],
+      ['../generate-stats/verifyAdmin.js', './verifyAdmin.js'],
+
+      // Firebase and cors rewrites
+      ['../firebase-functions.js', './firebase-functions.js'],
+      ['../cors-config.js', './cors-config.js'],
+    ];
+
+    return filePatterns.flatMap(filename => {
+      const filePath = join(functionDirPath, filename);
+      return importRewrites.map(([from, to]) =>
+        rewriteImport(filePath, from, to)
+      );
+    });
+  }),
+
   // Specific rewrites for cross-function imports
   rewriteImport(
     processNewStoryCoreFile,
