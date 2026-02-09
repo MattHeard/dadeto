@@ -36,10 +36,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Build cloud function sources
+      - name: Build cloud function sources and Dendrite static site
         working-directory: ./
         run: |
           npm ci
+          npm run build:dendritestories-co-nz
           npm run build:cloud
 
       - name: Set up Google Cloud auth
