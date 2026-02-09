@@ -1121,6 +1121,7 @@ await Promise.all([
 
     const importRewrites = [
       // Core and common module rewrites
+      ['../../core/commonCore.js', './commonCore.js'],
       ['../common-core.js', './commonCore.js'],
       ['../commonCore.js', './commonCore.js'],
       ['../../commonCore.js', './commonCore.js'],
