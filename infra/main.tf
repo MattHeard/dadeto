@@ -245,6 +245,28 @@ resource "google_storage_bucket_object" "dendrite_static_files" {
   cache_control = try(each.value.cache_control, null)
 }
 
+# Upload browser files from build output
+resource "google_storage_bucket_object" "dendrite_browser_files" {
+  for_each = fileset("${path.module}/browser", "**")
+
+  name   = "browser/${each.value}"
+  bucket = local.dendrite_static_bucket_name
+  source = "${path.module}/browser/${each.value}"
+
+  content_type = endswith(each.value, ".js") ? "application/javascript" : "application/octet-stream"
+}
+
+# Upload core files from build output
+resource "google_storage_bucket_object" "dendrite_core_files" {
+  for_each = fileset("${path.module}/core", "**")
+
+  name   = "core/${each.value}"
+  bucket = local.dendrite_static_bucket_name
+  source = "${path.module}/core/${each.value}"
+
+  content_type = endswith(each.value, ".js") ? "application/javascript" : "application/octet-stream"
+}
+
 resource "google_storage_bucket_object" "dendrite_mod" {
   name   = "mod.html"
   bucket = local.dendrite_static_bucket_name
