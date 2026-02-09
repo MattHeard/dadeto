@@ -1,1 +1,1 @@
-export { ADMIN_UID } from './common-core.js';
+export * from './common-core.js';
