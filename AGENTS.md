@@ -77,6 +77,26 @@ For full workflow details: `bd prime`
 - Build reusable fixture builders for complex object graphs (e.g., nested Firestore-style document chains) so tests share consistent setups and avoid missing links.
 - When Watchman causes Jest issues, rerun with `--watchman=false` to keep targeted suites running; capture any such flags in your PR notes.
 
+## End-to-End Testing (Playwright)
+
+**E2E tests are designed to run exclusively in Google Cloud via Cloud Run Jobs, not locally.** Do not attempt to run them on your machine.
+
+Playwright tests require:
+- `REPORT_BUCKET` environment variable (Google Cloud Storage bucket for test reports)
+- `BASE_URL` pointing to the GCS proxy internal load balancer
+- Google Cloud authentication and VPC access
+- Docker container with pre-installed Playwright browsers
+
+Tests are provisioned and executed through the `gcp-test.yml` GitHub workflow, which:
+1. Generates a unique ephemeral test environment (`t-<hash>`)
+2. Builds a Docker image with Playwright and pushes to Google Artifact Registry
+3. Builds and deploys GCS proxy, VPC connectors, and Load Balancer infrastructure via Terraform
+4. Executes tests via `gcloud run jobs execute` with 2 CPU and 2GB memory
+5. Uploads HTML reports and traces to GCS for review
+6. Destroys ephemeral infrastructure after completion
+
+**For local development**, use Jest unit tests only (`npm test`). When modifying e2e test files (under `test/e2e/`), commit your changes normally—the workflow will execute them on the next manual trigger via GitHub Actions.
+
 ## Commit & Pull Request Guidelines
 - Write concise commit messages that summarize the change and its intent.
 - Pull requests must include a "Summary" of code changes and a "Testing" section listing executed commands (e.g., `npm test`, `npm run lint`).
