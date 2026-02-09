@@ -157,7 +157,6 @@ const getApiKeyCreditCreateDbSource = join(
   'get-api-key-credit-v2',
   'create-db.js'
 );
-const getApiKeyCreditValidationSource = join(srcCoreDir, 'validation.js');
 const getApiKeyCreditGcfSource = join(
   srcCloudDir,
   'get-api-key-credit',
@@ -510,10 +509,6 @@ const individualFileCopies = [
   {
     source: getApiKeyCreditCreateDbSource,
     target: join(infraFunctionsDir, 'get-api-key-credit', 'create-db.js'),
-  },
-  {
-    source: getApiKeyCreditValidationSource,
-    target: join(infraFunctionsDir, 'get-api-key-credit', 'validation.js'),
   },
   {
     source: cloudCoreSource,
@@ -1092,11 +1087,6 @@ await runCopyToInfra({
 });
 
 await Promise.all([
-  rewriteImport(
-    getApiKeyCreditCoreFile,
-    '../../validation.js',
-    './validation.js'
-  ),
   rewriteImport(
     processNewStoryCoreFile,
     '../process-new-page/process-new-page-core.js',
