@@ -321,6 +321,24 @@ const firebaseFunctionsCopies = functionDirectories.map(name => ({
   target: join(infraFunctionsDir, name, 'firebase-functions.js'),
 }));
 
+// Function-specific common-core.js files that need to be copied
+const functionSpecificCommonCoreFiles = [
+  'get-api-key-credit',
+  'get-api-key-credit-v2',
+  'submit-new-story',
+  'submit-new-page',
+  'render-contents',
+  'submit-moderation-rating',
+  'generate-stats',
+  'render-variant',
+];
+
+const functionSpecificCommonCoreCopies = functionSpecificCommonCoreFiles.flatMap(name => {
+  const source = join(srcCoreCloudDir, name, 'common-core.js');
+  const target = join(infraFunctionsDir, name, 'common-core.js');
+  return { source, target };
+});
+
 const individualFileCopies = [
   {
     source: join(browserDir, 'admin.js'),
@@ -1036,6 +1054,7 @@ const individualFileCopies = [
   ...firestoreCopies,
   ...corsConfigCopies,
   ...commonCoreCopies,
+  ...functionSpecificCommonCoreCopies,
   ...packageFileCopies,
 ];
 
