@@ -147,10 +147,11 @@ function initializeFilterButtons() {
       buttons.forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
 
-      // Apply filter
+      // Apply filter (always reset first to reveal hidden articles)
+      resetFilters();
       switch (filterType) {
         case 'all':
-          resetFilters();
+          // All articles already visible after resetFilters
           break;
         case 'blog':
           hideArticlesByClass('tag-toy', dom);
