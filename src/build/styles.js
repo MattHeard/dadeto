@@ -269,5 +269,10 @@ export function styles() {
     margin-top: 1em;
     margin-bottom: 1em;
   }
+
+  /* Style nav key in green for visibility */
+  .nav-entry > .key {
+    color: #00FF00;
+  }
 `;
 }
