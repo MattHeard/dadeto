@@ -1,5 +1,5 @@
 import { setupAudio } from './audio-controls.js';
-import { handleTagLinks } from './tags.js';
+import { handleTagLinks, hideArticlesByClass, hideArticlesWithoutClass } from './tags.js';
 import { createBlogDataController, getEncodeBase64 } from './data.js';
 import {
   createOutputDropdownHandler,
@@ -22,6 +22,7 @@ import {
   hasNoInteractiveComponents,
   getInteractiveComponentCount,
   getInteractiveComponents,
+  reveal,
 } from './document.js';
 import { revealBetaArticles } from './beta.js';
 import { createMemoryStorageLens } from '../core/browser/memoryStorageLens.js';
@@ -119,6 +120,50 @@ initializeVisibleComponents(
 // --- Tag Filtering ---
 
 handleTagLinks(dom);
+
+// --- Navbar Filter Buttons ---
+
+/**
+ * Reset all filters to show everything.
+ */
+function resetFilters() {
+  const articles = Array.from(dom.getElementsByTagName('article'));
+  for (const article of articles) {
+    reveal(article);
+  }
+}
+
+/**
+ * Initialize filter button event handlers for the navbar.
+ */
+function initializeFilterButtons() {
+  const buttons = document.querySelectorAll('.filter-button');
+
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const filterType = button.dataset.filter;
+
+      // Update active button state
+      buttons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      // Apply filter
+      switch (filterType) {
+        case 'all':
+          resetFilters();
+          break;
+        case 'blog':
+          hideArticlesByClass('tag-toy', dom);
+          break;
+        case 'toys':
+          hideArticlesWithoutClass('tag-toy', dom);
+          break;
+      }
+    });
+  });
+}
+
+initializeFilterButtons();
 
 // --- Initial Data Fetch ---
 fetchBlogData(globalState);
