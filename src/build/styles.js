@@ -251,51 +251,23 @@ export function styles() {
     margin: 0;
   }
 
-  body {
-    padding-top: 4.5em;
-  }
-
-  #navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background-color: #121212;
-    border-bottom: 2px solid #00FFFF;
-    z-index: 1000;
-    padding: 1em 0;
-  }
-
-  #navbar .navbar-content {
-    max-width: 85rch;
-    margin: 0 auto;
-    padding: 0 0.5em;
-    display: flex;
-    gap: 1em;
-  }
-
   .filter-button {
-    background-color: #121212;
-    border: 2px solid #33CCFF;
-    color: #33CCFF;
-    font-family: "Sono", Consolas, monospace;
-    font-size: 16px;
-    padding: 0.5em 1em;
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
   .filter-button:hover {
-    border-color: #00FFFF;
-    color: #00FFFF;
     text-decoration: underline;
   }
 
   .filter-button.active {
-    background-color: #00FFFF;
-    border-color: #00FFFF;
-    color: #121212;
     font-weight: bold;
+  }
+
+  /* Add spacing around nav entry */
+  .nav-entry {
+    margin-top: 1em;
+    margin-bottom: 1em;
   }
 `;
 }

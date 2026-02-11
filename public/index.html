@@ -291,51 +291,23 @@
         margin: 0;
       }
 
-      body {
-        padding-top: 4.5em;
-      }
-
-      #navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: #121212;
-        border-bottom: 2px solid #00ffff;
-        z-index: 1000;
-        padding: 1em 0;
-      }
-
-      #navbar .navbar-content {
-        max-width: 85rch;
-        margin: 0 auto;
-        padding: 0 0.5em;
-        display: flex;
-        gap: 1em;
-      }
-
       .filter-button {
-        background-color: #121212;
-        border: 2px solid #33ccff;
-        color: #33ccff;
-        font-family: 'Sono', Consolas, monospace;
-        font-size: 16px;
-        padding: 0.5em 1em;
         cursor: pointer;
         transition: all 0.2s ease;
       }
 
       .filter-button:hover {
-        border-color: #00ffff;
-        color: #00ffff;
         text-decoration: underline;
       }
 
       .filter-button.active {
-        background-color: #00ffff;
-        border-color: #00ffff;
-        color: #121212;
         font-weight: bold;
+      }
+
+      /* Add spacing around nav entry */
+      .nav-entry {
+        margin-top: 1em;
+        margin-bottom: 1em;
       }
     </style>
     <!-- Define the component management system in the head -->
@@ -375,15 +347,6 @@
     </script>
   </head>
   <body>
-    <nav id="navbar">
-      <div class="navbar-content">
-        <button class="filter-button active" data-filter="all">
-          Everything
-        </button>
-        <button class="filter-button" data-filter="blog">Blog</button>
-        <button class="filter-button" data-filter="toys">Toys</button>
-      </div>
-    </nav>
     <div id="container">
       <!-- Header -->
       <div class="entry">
@@ -410,6 +373,15 @@
         <div class="value metadata">
           Software developer and philosopher in Berlin
         </div>
+      </div>
+      <!-- Navigation -->
+      <div class="entry nav-entry">
+        <div class="key">nav</div>
+        <p class="value metadata">
+          <a class="filter-button active" data-filter="all">everything</a>,
+          <a class="filter-button" data-filter="blog">blog</a>,
+          <a class="filter-button" data-filter="toys">toys</a>
+        </p>
       </div>
       <article
         class="entry tag-vibe-coding tag-software-design tag-architecture tag-ai"

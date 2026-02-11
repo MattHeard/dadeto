@@ -1,20 +1,21 @@
 /**
- * Generate the HTML for the filter navbar.
+ * Generate the HTML for the filter navbar using key/value entry style.
  * The navbar provides three filter options:
- * - Everything: Shows all articles
- * - Blog: Shows only blog posts (hides toys with tag-toy)
- * - Toys: Shows only interactive toys
+ * - everything: Shows all articles
+ * - blog: Shows only blog posts (hides toys with tag-toy)
+ * - toys: Shows only interactive toys
  *
  * @returns {string} HTML for the navbar component
  */
 export function createNavbar() {
   return `
-    <nav id="navbar">
-      <div class="navbar-content">
-        <button class="filter-button active" data-filter="all">Everything</button>
-        <button class="filter-button" data-filter="blog">Blog</button>
-        <button class="filter-button" data-filter="toys">Toys</button>
-      </div>
-    </nav>
+    <div class="entry nav-entry">
+      <div class="key">nav</div>
+      <p class="value metadata">
+        <a class="filter-button active" data-filter="all">everything</a>,
+        <a class="filter-button" data-filter="blog">blog</a>,
+        <a class="filter-button" data-filter="toys">toys</a>
+      </p>
+    </div>
   `;
 }

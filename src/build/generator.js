@@ -312,10 +312,11 @@ function createHeaderContentArray(headerElement) {
   return [
     headElement(),
     '<body>',
-    createNavbar(),
     createContainerDivOpen(),
     '<!-- Header -->',
     headerElement,
+    '<!-- Navigation -->',
+    createNavbar(),
   ];
 }
 

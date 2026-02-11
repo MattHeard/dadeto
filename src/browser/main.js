@@ -140,7 +140,8 @@ function initializeFilterButtons() {
   const buttons = document.querySelectorAll('.filter-button');
 
   buttons.forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', e => {
+      e.preventDefault();
       const filterType = button.dataset.filter;
 
       // Update active button state
