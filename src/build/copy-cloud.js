@@ -101,7 +101,6 @@ const packageFileCopies = functionDirectories.flatMap(name =>
 );
 
 const adminCoreSource = join(srcCoreBrowserDir, 'admin-core.js');
-const adminConfigSource = join(srcCoreDir, 'admin-config.js');
 
 const assignModerationCoreSource = join(
   srcCoreCloudDir,
@@ -305,17 +304,6 @@ const generateStatsVerifyAdminFile = join(
   'verifyAdmin.js'
 );
 
-const adminConfigFunctionDirectories = [
-  'generate-stats',
-  'mark-variant-dirty',
-  'render-contents',
-];
-
-const adminConfigFunctionCopies = adminConfigFunctionDirectories.map(name => ({
-  source: adminConfigSource,
-  target: join(infraFunctionsDir, name, 'admin-config.js'),
-}));
-
 const firebaseFunctionsCopies = functionDirectories.map(name => ({
   source: join(srcCloudDir, 'firebase-functions.js'),
   target: join(infraFunctionsDir, name, 'firebase-functions.js'),
@@ -372,10 +360,6 @@ const individualFileCopies = [
   {
     source: commonCoreSource,
     target: join(infraDir, 'commonCore.js'),
-  },
-  {
-    source: adminConfigSource,
-    target: join(infraDir, 'core', 'admin-config.js'),
   },
   {
     source: join(srcCoreBrowserDir, 'browser-core.js'),
@@ -1070,7 +1054,6 @@ const individualFileCopies = [
     source: commonGcfSource,
     target: join(infraFunctionsDir, 'submit-new-story', 'common-gcf.js'),
   },
-  ...adminConfigFunctionCopies,
   ...browserFileCopies,
   ...firestoreCopies,
   ...corsConfigCopies,
@@ -1152,7 +1135,6 @@ await Promise.all([
       'common-gcf.js',
       'common-core.js',
       'helpers.js',
-      'admin-config.js',
       'cloud-core.js',
       'firebase-functions.js',
       'cors-config.js',
@@ -1176,8 +1158,7 @@ await Promise.all([
       ['../firestore-helpers.js', './firestore.js'],
       ['../firestore.js', './firestore.js'],
 
-      // Admin and auth rewrites
-      ['../admin-config.js', './admin-config.js'],
+      // Auth rewrites
       ['../auth-helpers.js', './auth-helpers.js'],
 
       // HTTP and utility rewrites

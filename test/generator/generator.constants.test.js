@@ -33,12 +33,15 @@ describe('generator constants usage', () => {
     expect(html.includes('<div class="value"><div class="value')).toBe(false);
   });
 
-  test('header key divs are empty', () => {
+  test('header key divs are empty except for nav', () => {
     const html = generateBlogOuter({ posts: [] });
     const keyDivs = [...html.matchAll(/<div class="key">([^<]*)<\/div>/g)];
     expect(keyDivs.length).toBeGreaterThan(0);
     keyDivs.forEach(([, content]) => {
-      expect(content).toBe('');
+      // nav key contains the filter button text, others are empty
+      if (content !== 'nav') {
+        expect(content).toBe('');
+      }
     });
   });
 

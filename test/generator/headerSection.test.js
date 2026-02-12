@@ -8,15 +8,18 @@ describe('header section generation', () => {
     expect(html).toContain('Software developer and philosopher in Berlin');
   });
 
-  test('header labeled sections have empty keys', async () => {
+  test('header labeled sections have empty keys except nav', async () => {
     const { getBlogGenerationArgs } = await import(
       '../../src/build/generator.js'
     );
     const { header } = getBlogGenerationArgs();
     const keyMatches = [...header.matchAll(/<div class="key">([^<]*)<\/div>/g)];
-    expect(keyMatches).toHaveLength(2);
+    expect(keyMatches).toHaveLength(3);
     keyMatches.forEach(([, text]) => {
-      expect(text).toBe('');
+      // nav key contains the filter buttons, others are empty
+      if (text !== 'nav') {
+        expect(text).toBe('');
+      }
     });
   });
 
