@@ -25,6 +25,7 @@ export function resetFindAvailablePageNumberResolver() {
  * @typedef {import('firebase-admin/firestore').DocumentReference} DocumentReference
  * @typedef {import('firebase-admin/firestore').WriteBatch} WriteBatch
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot | import('firebase-admin/firestore').QueryDocumentSnapshot} FirestoreDocumentSnapshot
+ * @typedef {{ params?: Record<string, string> }} TriggerContext
  */
 
 /**
@@ -33,7 +34,8 @@ export function resetFindAvailablePageNumberResolver() {
  * @returns {Record<string, unknown> | null} Submission payload when available.
  */
 function getSubmissionData(snapshot) {
-  return getSnapshotData(snapshot);
+  const data = getSnapshotData(snapshot);
+  return data && typeof data === 'object' ? /** @type {Record<string, unknown>} */ (data) : null;
 }
 
 /**
@@ -330,14 +332,18 @@ function markSnapshotAsProcessed(batch, snapshot) {
 /**
  * Resolve the Firestore document reference for a snapshot when available.
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
- * @returns {import('firebase-admin/firestore').DocumentReference | null} Document reference when present.
+ * @returns {DocumentReference | null} Document reference when present.
  */
 function getSnapshotReference(snapshot) {
   if (!snapshot) {
     return null;
   }
 
-  return snapshot.ref;
+  if ('ref' in snapshot) {
+    return /** @type {DocumentReference} */ (snapshot.ref);
+  }
+
+  return null;
 }
 
 /**
@@ -359,7 +365,8 @@ function isSnapshotAvailable(snapshot) {
  * @returns {Promise<void>} Resolves once the author document is scheduled for creation when needed.
  */
 async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
-  const authorRef = resolveAuthorRef(db, submission.authorId);
+  const authorId = submission.authorId;
+  const authorRef = resolveAuthorRef(db, typeof authorId === 'string' ? authorId : null);
   if (!authorRef) {
     return;
   }
@@ -369,8 +376,8 @@ async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
 
 /**
  * Create an author document when the reference is missing.
- * @param {import('@google-cloud/firestore').DocumentReference} authorRef Author document reference.
- * @param {import('@google-cloud/firestore').WriteBatch} batch Write batch used to queue the creation.
+ * @param {DocumentReference} authorRef Author document reference.
+ * @param {WriteBatch} batch Write batch used to queue the creation.
  * @param {() => string} randomUUID UUID generator for new documents.
  * @returns {Promise<void>} Resolves once the author record has been scheduled for insertion.
  */
@@ -382,13 +389,47 @@ async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
 }
 
 /**
+ * Map handler arguments to processStorySubmission parameters.
+ * @typedef {object} ProcessStoryParams
+ * @property {Record<string, unknown>} submission Submission payload.
+ * @property {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
+ * @property {TriggerContext | undefined} context Trigger context.
+ * @property {Firestore} db Firestore instance.
+ * @property {() => string} randomUUID UUID generator.
+ * @property {() => number} random Random number generator.
+ * @property {() => FieldValue} getServerTimestamp Server timestamp helper.
+ */
+
+/**
+ * Map handler arguments to processStorySubmission parameters.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
+ * @param {TriggerContext | undefined} context Trigger context.
+ * @param {Firestore} db Firestore instance.
+ * @param {() => string} randomUUID UUID generator.
+ * @param {() => number} random Random number generator.
+ * @param {() => FieldValue} getServerTimestamp Server timestamp helper.
+ * @returns {ProcessStoryParams} Mapped parameters for processStorySubmission.
+ */
+function mapProcessStoryParams(snapshot, context, db, randomUUID, random, getServerTimestamp) {
+  return {
+    submission: resolveSubmission(snapshot),
+    snapshot: snapshot ?? null,
+    context,
+    db,
+    randomUUID,
+    random,
+    getServerTimestamp,
+  };
+}
+
+/**
  * Create the handler that processes new story submissions.
  * @param {object} options Collaborators required by the handler.
  * @param {Firestore} options.db Firestore instance.
  * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper with timestamp and increment helpers.
  * @param {() => string} options.randomUUID UUID generator.
  * @param {() => number} [options.random] Random number generator (defaults to Math.random).
- * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler.
+ * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Firestore trigger handler.
  */
 export function createProcessNewStoryHandler({
   db,
@@ -398,18 +439,14 @@ export function createProcessNewStoryHandler({
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
-  return createAsyncDomainHandler({
-    execute: processStorySubmission,
-    mapParams: (snapshot, context = {}) => ({
-      submission: resolveSubmission(snapshot),
-      snapshot,
-      context,
-      db,
-      randomUUID,
-      random,
-      getServerTimestamp,
-    }),
-  });
+  // Create wrapper function with correct signature to satisfy type requirements
+  /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */
+  const handler = async (snapshot, context = {}) => {
+    const params = mapProcessStoryParams(snapshot, context, db, randomUUID, random, getServerTimestamp);
+    return processStorySubmission(params);
+  };
+
+  return handler;
 }
 
 /**
