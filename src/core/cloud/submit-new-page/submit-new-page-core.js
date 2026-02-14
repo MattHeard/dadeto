@@ -288,7 +288,8 @@ function collectOptions(body) {
  */
 function resolveHeaderGetter(request) {
   if (typeof request.get === 'function') {
-    return name => request.get(name);
+    const getFunc = request.get;
+    return name => getFunc(name);
   }
   return () => undefined;
 }
