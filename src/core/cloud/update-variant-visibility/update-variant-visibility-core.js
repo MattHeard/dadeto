@@ -2,6 +2,19 @@ import { getNumericValueOrZero } from '../cloud-core.js';
 import { when } from '../../commonCore.js';
 
 /**
+ * @typedef {object} VariantUpdatePayload
+ * @property {string} variantId Variant identifier.
+ * @property {boolean} isApproved Approval status.
+ */
+
+/**
+ * @typedef {object} VariantStats
+ * @property {number} visibility Visibility score.
+ * @property {number} count Moderation rating count.
+ * @property {number} reputation Moderator reputation sum.
+ */
+
+/**
  * Validate a Firestore client using the provided predicate.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  * @param {(candidate: import('firebase-admin/firestore').Firestore) => boolean} predicate Validation predicate.
@@ -51,11 +64,6 @@ function assertDocumentSnapshot(snapshot) {
 }
 
 /**
- * Extract the underlying data from a snapshot when it is available.
- * @param {import('firebase-admin/firestore').DocumentSnapshot | null | undefined} snapshot Snapshot returned by a trigger.
- * @returns {Record<string, unknown> | null} Stored document data, if present.
- */
-/**
  * Normalize a variant identifier into a Firestore document path.
  * @param {string | null | undefined} variantId Raw variant identifier.
  * @returns {string} Cleaned variant path without a leading slash.
@@ -89,11 +97,7 @@ function getModeratorReputationSum(variantData) {
 
 /**
  * Calculate the updated visibility score based on the new rating.
- * @param {{
- *   visibility?: number,
- *   moderationRatingCount?: number,
- *   moderatorReputationSum?: number,
- * }} variantData Existing variant state.
+ * @param {Record<string, unknown>} variantData Existing variant state.
  * @param {number} newRating Numeric representation of the latest rating.
  * @returns {number} Updated visibility score.
  */
@@ -145,7 +149,7 @@ function isValidApproval(isApproved) {
 /**
  * Update the variant document with new stats.
  * @param {import('firebase-admin/firestore').DocumentReference} ref Document reference.
- * @param {{ visibility: number, count: number, reputation: number }} stats New stats.
+ * @param {VariantStats} stats New stats.
  * @returns {Promise<void>} Promise.
  */
 async function updateVariantStats(ref, { visibility, count, reputation }) {
@@ -160,7 +164,7 @@ async function updateVariantStats(ref, { visibility, count, reputation }) {
  * Calculate new stats from data and rating.
  * @param {Record<string, unknown>} variantData Variant data.
  * @param {number} newRating New rating.
- * @returns {{ visibility: number, count: number, reputation: number }} New stats.
+ * @returns {VariantStats} New stats.
  */
 function calculateNewStats(variantData, newRating) {
   const updatedVisibility = calculateUpdatedVisibility(variantData, newRating);
@@ -246,7 +250,7 @@ function validateApproval(isApproved) {
 /**
  * Extracts validated variant update inputs.
  * @param {Record<string, unknown>} data Raw trigger payload.
- * @returns {{ variantId: string; isApproved: boolean } | null} Sanitized payload for processing.
+ * @returns {VariantUpdatePayload | null} Sanitized payload for processing.
  */
 function getValidVariantUpdatePayload(data) {
   if (typeof data.variantId !== 'string') {
@@ -260,13 +264,15 @@ function getValidVariantUpdatePayload(data) {
  * Build the final payload when approval status is valid.
  * @param {string} variantId Variant identifier.
  * @param {unknown} isApproved Approval flag.
- * @returns {{ variantId: string; isApproved: boolean } | null} Payload for processing.
+ * @returns {VariantUpdatePayload | null} Payload for processing.
  */
 function buildVariantUpdatePayload(variantId, isApproved) {
-  return when(validateApproval(isApproved), () => ({
-    variantId,
-    isApproved,
-  }));
+  return /** @type {VariantUpdatePayload | null} */ (
+    when(validateApproval(isApproved), () => ({
+      variantId,
+      isApproved: /** @type {boolean} */ (isApproved),
+    }))
+  );
 }
 
 /**
@@ -333,7 +339,7 @@ async function applyVariantUpdate(db, payload) {
 /**
  * Extracts a sanitized payload directly from the snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Firestore snapshot.
- * @returns {{ variantId: string; isApproved: boolean } | null} Validated payload or null.
+ * @returns {VariantUpdatePayload | null} Validated payload or null.
  */
 function getVariantUpdatePayloadFromSnapshot(snapshot) {
   const data = snapshot.data();
