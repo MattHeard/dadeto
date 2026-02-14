@@ -23,7 +23,7 @@ export function styles() {
     display: grid;
     grid-template-columns: 5ch auto;
     padding-bottom: 1em;
-    gap: 0em 1rch;
+    gap: 1em 1rch;
     align-items: start;
   }
   .key {
