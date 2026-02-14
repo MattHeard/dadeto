@@ -85,6 +85,40 @@ export const VISIBILITY_THRESHOLD = 0.5;
  *   consoleError?: ConsoleError;
  * }} StoryMetadataDeps
  * @typedef {{ pageSnap: PageSnapshot; page: PageDocument; consoleError?: ConsoleError }} StoryMetadataLookupDeps
+ * @typedef {{ exists: boolean; data: () => Record<string, any> }} DocumentLike
+ * @typedef {{ get: () => Promise<DocumentLike> }} DocumentRefLike
+ * @typedef {{ parentVariantRef: DocumentRefLike; parentPageRef: DocumentRefLike }} ParentReferencePair
+ * @typedef {{ parentVariantSnap: DocumentLike; parentPageSnap: DocumentLike }} ParentSnapshotPair
+ * @typedef {{
+ *   db: FirestoreLike;
+ *   storage: { bucket: (name: string) => StorageBucketLike };
+ *   fetchFn: Function;
+ *   randomUUID: Function;
+ *   projectId: string;
+ *   urlMapName: string;
+ *   cdnHost: string;
+ *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void;
+ *   bucketName?: string;
+ *   visibilityThreshold?: number;
+ * }} RenderVariantDependencies
+ * @typedef {{
+ *   db: FirestoreLike;
+ *   bucket: StorageBucketLike;
+ *   consoleError: (message?: unknown, ...optionalParams: unknown[]) => void;
+ *   visibilityThreshold: number;
+ *   invalidatePaths: (paths: string[]) => Promise<void>;
+ * }} RenderHandlerDeps
+ * @typedef {{
+ *   snap: VariantSnapshot;
+ *   db: FirestoreLike;
+ *   bucket: StorageBucketLike;
+ *   pageSnap: PageSnapshot;
+ *   page: PageDocument;
+ *   consoleError?: ConsoleError;
+ *   visibilityThreshold?: number;
+ *   variant?: VariantDocument;
+ * }} GatherMetadataDeps
+ * @typedef {{ after?: DocumentLike; before?: DocumentLike; params?: Record<string, string> }} FirestoreChange
  */
 
 /**
