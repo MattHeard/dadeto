@@ -22,7 +22,7 @@ export function styles() {
   .entry {
     display: grid;
     grid-template-columns: 5ch auto;
-    padding-bottom: 1em;
+    padding-bottom: 0;
     gap: 0em 1rch;
     align-items: start;
   }
