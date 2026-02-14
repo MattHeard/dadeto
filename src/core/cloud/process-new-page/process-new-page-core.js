@@ -127,7 +127,7 @@ function ensureDocumentReference(reference, message) {
 /**
  * Ensure the reference exposes the collection helper.
  * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} reference Candidate reference.
- * @returns {boolean} True when the reference is valid.
+ * @returns {reference is import('firebase-admin/firestore').DocumentReference} True when the reference is valid.
  */
 function isDocumentReference(reference) {
   return Boolean(reference && typeof reference.collection === 'function');
@@ -143,11 +143,11 @@ function isDocumentReference(reference) {
 /**
  * Choose a random page number that is not already taken.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {() => number} [random] Random number generator (defaults to Math.random).
- * @param {number} [depth] Recursion depth used to widen the search range (defaults to 0).
+ * @param {(() => number)=} random Random number generator (defaults to Math.random).
+ * @param {number=} depth Recursion depth used to widen the search range (defaults to 0).
  * @returns {Promise<number>} A unique page number.
  */
-export async function findAvailablePageNumber(db, random, depth = 0) {
+export async function findAvailablePageNumber(db, random = Math.random, depth = 0) {
   assertRandom(random);
 
   const max = 2 ** depth;
@@ -186,40 +186,53 @@ function resolveAvailablePageResult({
   depth,
 }) {
   if (existing.empty) {
-    return candidate;
+    return Promise.resolve(candidate);
   }
 
   return findAvailablePageNumber(db, random, depth + 1);
 }
 
 /**
+ * @typedef {object} StoryReferences
+ * @property {import('firebase-admin/firestore').DocumentReference | null} variantRef Reference to variant document.
+ * @property {import('firebase-admin/firestore').DocumentReference | null} pageRef Reference to page document.
+ * @property {import('firebase-admin/firestore').DocumentReference | null} storyRef Reference to story document.
+ */
+
+/**
  * Resolve the related Firestore references for an option document.
- * @param {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null | undefined} optionRef
+ * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} optionRef
  *   Document reference for the incoming option.
- * @returns {{
- *   variantRef: import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null,
- *   pageRef: import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null,
- *   storyRef: import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null,
- * }} Collection of related Firestore references.
+ * @returns {StoryReferences} Collection of related Firestore references.
  */
 function resolveStoryRefFromOption(optionRef) {
-  const variantRef = optionRef.parent.parent;
-  const pageRef = variantRef.parent.parent;
-  const storyRef = pageRef.parent.parent;
+  if (!optionRef) {
+    return { variantRef: null, pageRef: null, storyRef: null };
+  }
+
+  const variantRef = /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+    (/** @type {any} */ (optionRef).parent?.parent) || null
+  );
+  const pageRef = /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+    (/** @type {any} */ (variantRef)?.parent?.parent) || null
+  );
+  const storyRef = /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+    (/** @type {any} */ (pageRef)?.parent?.parent) || null
+  );
 
   return { variantRef, pageRef, storyRef };
 }
 
 /**
  * Confirm that an option target points to a page document reference.
- * @param {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null | undefined} targetPage
+ * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage
  *   Reference stored on the option document.
- * @returns {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> | null}
+ * @returns {import('firebase-admin/firestore').DocumentReference | null}
  *   A page reference when valid, otherwise null.
  */
 function resolvePageFromTarget(targetPage) {
   if (isPageReference(targetPage)) {
-    return targetPage;
+    return /** @type {import('firebase-admin/firestore').DocumentReference} */ (targetPage);
   }
 
   return null;
@@ -228,7 +241,7 @@ function resolvePageFromTarget(targetPage) {
 /**
  * Confirm that the target page reference exposes the expected API.
  * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage Candidate page reference.
- * @returns {boolean} True when the reference is valid.
+ * @returns {targetPage is import('firebase-admin/firestore').DocumentReference} True when the reference is valid.
  */
 function isPageReference(targetPage) {
   return Boolean(targetPage && typeof targetPage.get === 'function');
