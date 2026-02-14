@@ -242,7 +242,7 @@ function createHeaderContent() {
   const bio = createLabeledSection({
     label: 'bio',
     valueHTML: `<p class="${CLASS.VALUE} ${CLASS.METADATA}" style="margin-top: 1em;">${BIO_TEXT}</p>`,
-    wrapValueDiv: false,
+    wrapValueDiv: true,
   });
   return join([banner, bio]);
 }
