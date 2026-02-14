@@ -239,12 +239,16 @@ function createHeaderContent() {
     valueHTML: createValueDiv(headerBanner()),
     wrapValueDiv: false,
   });
+  const blankLine = createLabeledSection({
+    label: '',
+    valueHTML: '<p></p>',
+    wrapValueDiv: false,
+  });
   const bio = createLabeledSection({
     label: 'bio',
     valueHTML: `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${BIO_TEXT}</p>`,
     wrapValueDiv: false,
   });
-  const blankLine = '<p></p>';
   return join([banner, blankLine, bio]);
 }
 
