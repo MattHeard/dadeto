@@ -134,6 +134,12 @@ function resolveVariantId(variantId) {
  * @typedef {RemoveVariantHtmlResult | * | null} RemoveVariantLoadResult
  */
 
+/**
+ * @typedef {object} SnapshotLike
+ * @property {*} data - Data method or value
+ * @property {boolean} exists - Whether the document exists
+ */
+
 export const VISIBILITY_THRESHOLD = DEFAULT_VISIBILITY_THRESHOLD;
 
 /**
@@ -239,13 +245,14 @@ export function createBucketFileRemover({
   validateStorage(storage);
 
   return function deleteRenderedFile(path) {
-    return deleteIfPathValid(path, () =>
-      storage
+    return deleteIfPathValid(path, () => {
+      const validatedStorage = /** @type {{ bucket: (name: string) => { file: (path: string) => { delete: (config: { ignoreNotFound: boolean }) => Promise<*> } } }} */ (storage);
+      return validatedStorage
         .bucket(validatedBucketName)
         .file(path)
         .delete({ ignoreNotFound: true })
-        .then(() => undefined)
-    );
+        .then(() => undefined);
+    });
   };
 }
 
@@ -256,7 +263,7 @@ export function createBucketFileRemover({
  */
 function validateBucketName(bucketName) {
   ensureBucketName(bucketName);
-  return bucketName;
+  return /** @type {string} */ (bucketName);
 }
 
 /**
@@ -325,10 +332,10 @@ function ensureStorageBucketComponent(storage) {
 /**
  * Determine whether the storage helper exposes a bucket method.
  * @param {unknown} storage Storage dependency.
- * @returns {boolean} True when storage.bucket is callable.
+ * @returns {storage is { bucket: Function }} True when storage.bucket is callable.
  */
 function hasBucketFunction(storage) {
-  return Boolean(storage && typeof storage.bucket === 'function');
+  return Boolean(storage && typeof (/** @type {*} */ (storage)).bucket === 'function');
 }
 
 /**
@@ -446,7 +453,7 @@ function resolveParentPageRef(ref) {
     return null;
   }
 
-  return ref.parent.parent;
+  return ref?.parent?.parent ?? null;
 }
 
 /**
@@ -479,7 +486,7 @@ export function getVariantVisibility(snapshot) {
 
 /**
  * Extract the numeric visibility value from the snapshot data.
- * @param {{ visibility?: number } | null | undefined} data Visibility payload.
+ * @param {unknown} data Visibility payload.
  * @returns {number} The visibility score or zero when unavailable.
  */
 function extractVisibility(data) {
@@ -492,11 +499,11 @@ function extractVisibility(data) {
 
 /**
  * Check whether the data contains a numeric visibility value.
- * @param {{ visibility?: unknown } | null | undefined} data Snapshot payload.
+ * @param {unknown} data Snapshot payload.
  * @returns {data is { visibility: number }} True when a numeric visibility is available.
  */
 function hasVisibilityValue(data) {
-  return Boolean(data && typeof data.visibility === 'number');
+  return Boolean(data && typeof (/** @type {*} */ (data)).visibility === 'number');
 }
 
 /**
@@ -572,12 +579,12 @@ function resolveVariantVisibilityOptions({
 
 /**
  * Choose the visibility extractor, defaulting to the built-in helper.
- * @param {(snapshot: *) => number | undefined} getVisibility Candidate extractor.
+ * @param {((snapshot: *) => number) | ((snapshot: *) => number | undefined) | undefined} getVisibility Candidate extractor.
  * @returns {(snapshot: *) => number} Resolved extractor function.
  */
 function selectVisibilityExtractor(getVisibility) {
   if (typeof getVisibility === 'function') {
-    return getVisibility;
+    return /** @type {(snapshot: *) => number} */ (getVisibility);
   }
 
   return getVariantVisibility;
@@ -613,11 +620,11 @@ function assertVariantVisibilityDependencies(
 /**
  * Create a handler that responds to visibility transitions crossing the threshold.
  * @param {{
- *   removeVariantHtmlForSnapshot: (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>,
- *   getVisibility: (snapshot: import('firebase-admin/firestore').DocumentSnapshot) => number,
+ *   removeVariantHtmlForSnapshot: (snapshot: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike) => Promise<null>,
+ *   getVisibility: (snapshot: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike) => number,
  *   visibilityThreshold: number,
  * }} params Transition dependencies.
- * @returns {(change: { before: import('firebase-admin/firestore').DocumentSnapshot, after: { exists: boolean } }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
+ * @returns {(change: { before: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike, after: import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike | { exists: boolean } }) => Promise<null>} Handler invoked when the snapshot visibility crosses the threshold.
  */
 function createVisibilityTransitionHandler(params) {
   const { removeVariantHtmlForSnapshot, getVisibility, visibilityThreshold } =
@@ -625,7 +632,7 @@ function createVisibilityTransitionHandler(params) {
 
   return async function visibilityTransition({ before, after }) {
     const beforeVisibility = getVisibility(before);
-    const afterVisibility = getVisibility(after);
+    const afterVisibility = getVisibility(/** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (after));
 
     if (
       shouldRemoveRenderedHtml(
@@ -634,7 +641,7 @@ function createVisibilityTransitionHandler(params) {
         visibilityThreshold
       )
     ) {
-      return removeVariantHtmlForSnapshot(after);
+      return removeVariantHtmlForSnapshot(/** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (after));
     }
 
     return null;
