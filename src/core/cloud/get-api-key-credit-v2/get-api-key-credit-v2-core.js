@@ -75,39 +75,45 @@ function resolveFirstValue(resolvers) {
 
 /**
  * Extract an API key UUID from a request-like object.
- * @param {{
- *   path?: string,
- *   params?: Record<string, unknown>,
- *   query?: Record<string, unknown>,
- * }} [request] Incoming request data.
+ * @param {unknown} [request] Incoming request data.
  * @returns {string} Extracted UUID or an empty string when missing.
  */
-export function extractUuid(request = {}) {
+export function extractUuid(request) {
+  if (!request || typeof request !== 'object') {
+    return '';
+  }
+
+  const typedRequest = /** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (request);
   const resolvers = [
-    () => matchPathUuid(request.path),
-    () => ensureString(request.params?.uuid),
-    () => ensureString(request.query?.uuid),
+    () => matchPathUuid(typedRequest.path),
+    () => ensureString(typedRequest.params?.uuid),
+    () => ensureString(typedRequest.query?.uuid),
   ];
 
   return resolveFirstValue(resolvers);
 }
 
 /**
- * Factory for the HTTPS handler serving API key credit data.
- * @param {{
- *   fetchCredit: (uuid: string) => Promise<number | null>,
+ * @typedef {{
+ *   fetchCredit?: (uuid: string) => Promise<number | null>,
  *   getUuid?: (request: unknown) => string,
  *   logError?: (error: unknown) => void,
- * }} deps Runtime dependencies for the handler.
+ * }} HandlerDependencies
+ */
+
+/**
+ * Factory for the HTTPS handler serving API key credit data.
+ * @param {HandlerDependencies} [deps] Runtime dependencies for the handler.
  * @returns {(request: { method?: string } & Record<string, unknown>) => Promise<{
  *   status: number,
  *   body: string | { credit: number },
  *   headers?: Record<string, string>,
  * }>} Handler producing HTTP response metadata.
  */
-export function createGetApiKeyCreditV2Handler(deps = {}) {
+export function createGetApiKeyCreditV2Handler(deps) {
+  deps = deps || {};
   const { fetchCredit, resolveUuid, errorLogger } =
-    resolveV2HandlerDependencies(deps);
+    resolveV2HandlerDependencies(/** @type {HandlerDependencies} */ (deps));
 
   return async function handleRequest(request = {}) {
     const method = deriveRequestMethod(request.method);
@@ -121,23 +127,24 @@ export function createGetApiKeyCreditV2Handler(deps = {}) {
 }
 
 /**
- * Resolve runtime dependencies for the API handler.
- * @param {{
- *   fetchCredit: (uuid: string) => Promise<number | null>,
- *   getUuid?: (request: unknown) => string,
- *   logError?: (error: unknown) => void,
- * }} deps Handler dependencies.
- * @returns {{
+ * @typedef {{
  *   fetchCredit: (uuid: string) => Promise<number | null>,
  *   resolveUuid: (request: unknown) => string,
  *   errorLogger: (error: unknown) => void,
- * }} Runtime helpers for the handler.
+ * }} ResolvedHandlerDependencies
  */
-function resolveV2HandlerDependencies({ fetchCredit, getUuid, logError }) {
+
+/**
+ * Resolve runtime dependencies for the API handler.
+ * @param {HandlerDependencies} deps Handler dependencies.
+ * @returns {ResolvedHandlerDependencies} Runtime helpers for the handler.
+ */
+function resolveV2HandlerDependencies(deps) {
+  const { fetchCredit, getUuid, logError } = deps;
   ensureFetchCredit(fetchCredit);
 
   return {
-    fetchCredit,
+    fetchCredit: /** @type {(uuid: string) => Promise<number | null>} */ (fetchCredit),
     resolveUuid: resolveUuidDependency(getUuid),
     errorLogger: resolveErrorLogger(logError),
   };
@@ -164,16 +171,21 @@ function resolveUuidDependency(getUuid) {
     return getUuid;
   }
 
-  return extractUuid;
+  return (request) => {
+    if (request && typeof request === 'object') {
+      return extractUuid(/** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (request));
+    }
+    return extractUuid(request);
+  };
 }
 
 /**
  * Select a logger for handler errors.
- * @param {(error: unknown) => void | undefined} logError Optional logger.
+ * @param {((error: unknown) => void) | undefined} logError Optional logger.
  * @returns {(error: unknown) => void} Logger that safely ignores errors.
  */
 function resolveErrorLogger(logError) {
-  return functionOrFallback(logError, () => () => {});
+  return (/** @type {(error: unknown) => void} */ (functionOrFallback(logError, () => () => {})));
 }
 
 /**
@@ -220,14 +232,14 @@ function resolveRequestValidationError(method, uuid) {
 /**
  * Build the response after validation.
  * @param {{ status: number, body: string, headers?: Record<string, string> } | null} validationError Validation result.
- * @param {() => {
+ * @param {() => Promise<{
  *   status: number,
  *   body: string | { credit: number },
  *   headers?: Record<string, string>,
- * }} onSuccess Success callback returning HTTP metadata.
- * @returns {{ status: number, body: string | { credit: number }, headers?: Record<string, string> }} HTTP response information.
+ * }>} onSuccess Success callback returning HTTP metadata.
+ * @returns {Promise<{ status: number, body: string | { credit: number }, headers?: Record<string, string> }>} HTTP response information.
  */
-function resolveRequestResponse(validationError, onSuccess) {
+async function resolveRequestResponse(validationError, onSuccess) {
   if (validationError) {
     return validationError;
   }
