@@ -9,6 +9,9 @@ export { DEFAULT_BUCKET_NAME } from './common-core.js';
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 
+/** @typedef {{ code?: string, message?: unknown }} FirebaseError */
+/** @typedef {(value: unknown) => boolean} BooleanPredicate */
+
 export const MISSING_AUTHORIZATION_RESPONSE = {
   status: 401,
   body: 'Missing or invalid Authorization header',
@@ -64,7 +67,10 @@ export function getSnapshotData(snapshot) {
  * @returns {boolean} True when the error represents a duplicate app instance.
  */
 export function isDuplicateAppError(error) {
-  return Boolean(error) && hasDuplicateAppIdentifierMessage(error);
+  if (!error) {
+    return false;
+  }
+  return hasDuplicateAppIdentifierMessage(/** @type {FirebaseError} */ (error));
 }
 
 /**
@@ -86,7 +92,10 @@ export function extractErrorMessage(error) {
  * @returns {error is { message: string }} True when a message string is present.
  */
 export function hasStringMessage(error) {
-  return Boolean(error) && typeof error.message === 'string';
+  if (!error) {
+    return false;
+  }
+  return typeof (/** @type {FirebaseError} */ (error)).message === 'string';
 }
 
 /**
@@ -195,7 +204,7 @@ export function classifyDeploymentEnvironment(environment) {
   );
 
   if (classifier) {
-    return classifier.value;
+    return /** @type {'prod' | 'test'} */ (classifier.value);
   }
 
   throw new Error(
@@ -439,11 +448,14 @@ export function tryGetHeader(getter, name) {
  * @returns {string} Normalized string respecting the requested length.
  */
 export function normalizeString(value, maxLength) {
+  let stringValue;
   if (typeof value !== 'string') {
-    value = normalizeNonStringValue(value);
+    stringValue = normalizeNonStringValue(value);
+  } else {
+    stringValue = value;
   }
 
-  return value.trim().slice(0, maxLength);
+  return stringValue.trim().slice(0, maxLength);
 }
 
 /**
@@ -636,8 +648,14 @@ const defaultMissingTokenMessage = 'Missing token';
  * @returns {string} Message sent to clients when token validation fails.
  */
 function defaultInvalidTokenMessage(error) {
-  const candidate = error?.message;
-  return ['Invalid token', candidate][Number(typeof candidate === 'string')];
+  if (!error || typeof error !== 'object' || !('message' in error)) {
+    return 'Invalid token';
+  }
+  const candidate = (/** @type {FirebaseError} */ (error)).message;
+  if (typeof candidate === 'string') {
+    return candidate;
+  }
+  return 'Invalid token';
 }
 
 /**
