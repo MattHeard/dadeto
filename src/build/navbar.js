@@ -19,3 +19,27 @@ export function createNavbar() {
     </div>
   `;
 }
+
+/**
+ * Generate the HTML for the external links bar using key/value entry style.
+ * The links bar displays social and professional links:
+ * - twitter: https://x.com/mattheard
+ * - substack: https://somethinglikeamind.substack.com
+ * - linkedin: https://www.linkedin.com/in/matthewjohnheard
+ * - dott: https://ridedott.com
+ *
+ * @returns {string} HTML for the links bar component
+ */
+export function createLinksBar() {
+  return `
+    <div class="entry nav-entry">
+      <div class="key">links</div>
+      <p class="value metadata">
+        <a href="https://x.com/mattheard" target="_blank" rel="noopener">twitter</a>,
+        <a href="https://somethinglikeamind.substack.com" target="_blank" rel="noopener">substack</a>,
+        <a href="https://www.linkedin.com/in/matthewjohnheard" target="_blank" rel="noopener">linkedin</a>,
+        <a href="https://ridedott.com" target="_blank" rel="noopener">dott</a>
+      </p>
+    </div>
+  `;
+}

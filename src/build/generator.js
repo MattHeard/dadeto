@@ -1,7 +1,7 @@
 import { headElement } from './head.js';
 import { fullWidthElement } from './full-width.js';
 import { headerBanner } from './title.js';
-import { createNavbar } from './navbar.js';
+import { createNavbar, createLinksBar } from './navbar.js';
 import {
   createTag,
   createAttrPair,
@@ -317,6 +317,7 @@ function createHeaderContentArray(headerElement) {
     headerElement,
     '<!-- Navigation -->',
     createNavbar(),
+    createLinksBar(),
   ];
 }
 
