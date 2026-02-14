@@ -62,6 +62,43 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  */
 
 /**
+ * @typedef {object} UidResult
+ * @property {string | null | undefined} uid Authenticated user identifier or null when invalid.
+ * @property {unknown} error Error raised during token verification or null when successful.
+ */
+
+/**
+ * @typedef {object} DecodedTokenPayload
+ * @property {string | null | undefined} [uid] Optional user identifier from decoded token.
+ */
+
+/**
+ * @typedef {object} AuthorizedRequestParams
+ * @property {FirestoreLike} db Firestore instance.
+ * @property {AuthLike} auth Authentication instance.
+ * @property {string} token Bearer token string.
+ */
+
+/**
+ * @typedef {object} BuildResponseParams
+ * @property {FirestoreLike} db Firestore instance.
+ * @property {string} uid Authenticated user identifier.
+ */
+
+/**
+ * @typedef {object} VariantTitleAndOptions
+ * @property {string} storyTitle Normalized story title.
+ * @property {VariantOption[]} options Variant moderation options.
+ */
+
+/**
+ * @typedef {object} VariantResponseParams
+ * @property {string} storyTitle Normalized story title.
+ * @property {Record<string, unknown>} variantData Variant document data.
+ * @property {VariantOption[]} options Variant moderation options.
+ */
+
+/**
  * @typedef {object} VariantSnapshot
  * @property {FirestoreDocumentSnapshot} variantSnap Variant document snapshot.
  * @property {FirestoreDocumentReference} variantRef Variant document reference.
@@ -187,10 +224,15 @@ function extractBearerToken(value) {
  * @returns {string | null} Authorization header string when provided, otherwise null.
  */
 function getAuthorizationHeader(request) {
+  if (!request || typeof request.get !== 'function') {
+    return null;
+  }
+
   const headerKeys = ['Authorization', 'authorization'];
+  const headerGetter = /** @type {(name: string) => string | null | undefined} */ (request.get);
   return headerKeys
-    .map(key => request.get(key))
-    .find(value => typeof value === 'string');
+    .map(key => headerGetter(key))
+    .find(value => typeof value === 'string') || null;
 }
 
 /**
@@ -212,7 +254,11 @@ async function fetchVariantSnapshot(db, uid) {
   const moderatorSnap = await db.collection('moderators').doc(uid).get();
   const variantRef = resolveModeratorVariantRef(moderatorSnap);
 
-  return when(variantRef, () => fetchVariantResponse(variantRef));
+  if (!variantRef) {
+    return null;
+  }
+
+  return fetchVariantResponse(variantRef);
 }
 
 /**
@@ -251,7 +297,7 @@ function extractVariantReference(moderatorData) {
     return null;
   }
 
-  return resolveVariantFromData(moderatorData.variant);
+  return resolveVariantFromData(/** @type {FirestoreDocumentReference | null | undefined} */ (moderatorData.variant));
 }
 
 /**
@@ -286,12 +332,30 @@ async function fetchVariantResponse(variantRef) {
  * @returns {Promise<string>} Story title string.
  */
 async function fetchStoryTitle(variantRef) {
-  const pageRef = variantRef.parent.parent;
-  const storyRef = pageRef.parent.parent;
-  const storySnap = await storyRef.get();
-  const storyData = storySnap.data();
+  const variantParent = variantRef.parent;
+  if (!variantParent) {
+    return '';
+  }
 
-  return normalizeString(storyData.title);
+  const pageRef = variantParent.parent;
+  if (!pageRef) {
+    return '';
+  }
+
+  const storyParent = pageRef.parent;
+  if (!storyParent) {
+    return '';
+  }
+
+  const storyRef = storyParent.parent;
+  if (!storyRef) {
+    return '';
+  }
+
+  const storySnap = await storyRef.get();
+  const storyData = storySnap.data() ?? {};
+
+  return normalizeString(/** @type {string | null | undefined} */ (storyData.title), 120);
 }
 /**
  * Maps a Firestore option document into a serializable payload.
@@ -300,10 +364,10 @@ async function fetchStoryTitle(variantRef) {
  */
 function mapOptionDoc(doc) {
   const data = doc.data() ?? {};
-  const content = normalizeString(data.content);
+  const content = normalizeString(/** @type {string | null | undefined} */ (data.content), 500);
   const { targetPageNumber } = data;
 
-  return buildVariantOptionPayload(content, targetPageNumber);
+  return buildVariantOptionPayload(content, /** @type {number | undefined} */ (targetPageNumber));
 }
 
 /**
@@ -364,11 +428,7 @@ export function createGetModerationVariantResponder({ db, auth }) {
 
 /**
  * Resolve and respond to an authenticated request.
- * @param {{
- *   db: FirestoreLike,
- *   auth: AuthLike,
- *   token: string,
- * }} params Authenticated request dependencies.
+ * @param {AuthorizedRequestParams} params Authenticated request dependencies.
  * @returns {Promise<ResponderResult>} Response payload for the authorized request.
  */
 async function handleAuthorizedRequest({ db, auth, token }) {
@@ -379,12 +439,12 @@ async function handleAuthorizedRequest({ db, auth, token }) {
     return invalidResponse;
   }
 
-  return buildVariantResponse({ db, uid: uidResult.uid });
+  return buildVariantResponse({ db, uid: /** @type {string} */ (uidResult.uid) });
 }
 
 /**
  * Return an invalid token response when verification fails.
- * @param {{ uid: string | null | undefined, error: unknown }} uidResult Result from token verification.
+ * @param {UidResult} uidResult Result from token verification.
  * @returns {ResponderResult | null} Response to send or null when the token is valid.
  */
 function getInvalidTokenResponseFromResult(uidResult) {
@@ -426,7 +486,7 @@ function getMissingUidResponse(uid) {
  * Verify the ID token and return the decoded UID.
  * @param {AuthLike} auth Firebase auth helper.
  * @param {string} token ID token string.
- * @returns {Promise<{ uid: string | undefined | null, error: unknown }>} UID result and any verification error.
+ * @returns {Promise<UidResult>} UID result and any verification error.
  */
 function resolveUidFromToken(auth, token) {
   return auth
@@ -437,8 +497,8 @@ function resolveUidFromToken(auth, token) {
 
 /**
  * Build the UID result when token verification succeeds.
- * @param {{ uid?: string | null }} decoded Decoded token payload.
- * @returns {{ uid: string | null, error: null }} Normalized UID result.
+ * @param {unknown} decoded Decoded token payload.
+ * @returns {UidResult} Normalized UID result.
  */
 function buildDecodedUidResult(decoded) {
   return { uid: getDecodedUidValue(decoded), error: null };
@@ -446,7 +506,7 @@ function buildDecodedUidResult(decoded) {
 
 /**
  * Extract a UID string from a decoded token payload when available.
- * @param {{ uid?: string | null } | null | undefined} decoded Decoded token payload.
+ * @param {unknown} decoded Decoded token payload.
  * @returns {string | null} Normalized UID or null when missing.
  */
 function getDecodedUidValue(decoded) {
@@ -454,7 +514,7 @@ function getDecodedUidValue(decoded) {
     return null;
   }
 
-  return extractStringUid(decoded);
+  return extractStringUid(/** @type {DecodedTokenPayload} */ (decoded));
 }
 
 /**
@@ -468,7 +528,7 @@ function isDecodedObject(decoded) {
 
 /**
  * Return the uid field when it is a string.
- * @param {{ uid?: string | null }} decoded Decoded payload that contains the uid.
+ * @param {DecodedTokenPayload} decoded Decoded payload that contains the uid.
  * @returns {string | null} UID string when valid.
  */
 function extractStringUid(decoded) {
@@ -482,7 +542,7 @@ function extractStringUid(decoded) {
 /**
  * Build the UID result when token verification fails.
  * @param {unknown} error Verification error raised by Firebase Auth.
- * @returns {{ uid: null, error: unknown }} Error result for the resolver.
+ * @returns {UidResult} Error result for the resolver.
  */
 function buildUidErrorResult(error) {
   return { uid: null, error };
@@ -506,13 +566,14 @@ function createInvalidTokenResponse(error) {
  * @returns {string} Message displayed to the client.
  */
 function getInvalidTokenMessage(error) {
-  const normalized = normalizeString(error?.message);
+  const message = error && typeof error === 'object' && 'message' in error ? (error.message) : null;
+  const normalized = normalizeString(/** @type {string | null | undefined} */ (message), 200);
   return resolveMessageOrDefault(normalized, INVALID_TOKEN_RESPONSE.body);
 }
 
 /**
  * Load the variant snapshot and build the successful response payload.
- * @param {{ db: FirestoreLike, uid: string }} params Dependencies for authorized response building.
+ * @param {BuildResponseParams} params Dependencies for authorized response building.
  * @returns {Promise<ResponderResult>} Response when a variant is assigned.
  */
 async function buildVariantResponse({ db, uid }) {
@@ -527,21 +588,21 @@ async function buildVariantResponse({ db, uid }) {
 
 /**
  * Resolve the response for an existing variant snapshot.
- * @param {VariantSnapshot} variantSnapshot Snapshot describing the assigned variant.
+ * @param {VariantSnapshot | ResponderResult} variantSnapshot Snapshot describing the assigned variant or error response.
  * @returns {Promise<ResponderResult>} Response payload for the snapshot.
  */
 async function handleVariantSnapshotResponse(variantSnapshot) {
   if ('status' in variantSnapshot) {
-    return variantSnapshot;
+    return /** @type {ResponderResult} */ (variantSnapshot);
   }
 
-  return buildSuccessVariantResponse(variantSnapshot);
+  return buildSuccessVariantResponse(/** @type {VariantSnapshot} */ (variantSnapshot));
 }
 
 /**
  * Load the normalized story title and option list for a variant snapshot.
  * @param {VariantSnapshot} variantSnapshot Snapshot describing the assigned variant.
- * @returns {Promise<{ storyTitle: string, options: VariantOption[] }>} Title and options payload.
+ * @returns {Promise<VariantTitleAndOptions>} Title and options payload.
  */
 async function resolveVariantTitleAndOptions(variantSnapshot) {
   const { variantRef } = variantSnapshot;
@@ -573,7 +634,7 @@ async function buildSuccessVariantResponse(variantSnapshot) {
 
 /**
  * Build the HTTP response payload for a successful variant lookup.
- * @param {{ storyTitle: string, variantData: Record<string, unknown>, options: VariantOption[] }} params Response data.
+ * @param {VariantResponseParams} params Response data.
  * @returns {ResponderResult} Successful response payload.
  */
 function buildVariantResponsePayload({ storyTitle, variantData, options }) {
@@ -581,8 +642,8 @@ function buildVariantResponsePayload({ storyTitle, variantData, options }) {
     status: 200,
     body: {
       title: storyTitle,
-      content: normalizeString(variantData.content),
-      author: normalizeString(variantData.author),
+      content: normalizeString(/** @type {string | null | undefined} */ (variantData.content), 10_000),
+      author: normalizeString(/** @type {string | null | undefined} */ (variantData.author), 120),
       options,
     },
   };
@@ -595,5 +656,5 @@ function buildVariantResponsePayload({ storyTitle, variantData, options }) {
  */
 function extractVariantData(variantSnapshot) {
   const { variantSnap } = variantSnapshot;
-  return variantSnap.data();
+  return variantSnap.data() ?? {};
 }
