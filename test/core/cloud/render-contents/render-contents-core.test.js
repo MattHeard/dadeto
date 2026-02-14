@@ -170,7 +170,7 @@ describe('createFetchStoryInfo', () => {
     const fetchStoryInfo = createFetchStoryInfo(db);
     await expect(fetchStoryInfo('missing-number')).resolves.toEqual({
       title: '',
-      pageNumber: undefined,
+      pageNumber: null,
     });
   });
 });

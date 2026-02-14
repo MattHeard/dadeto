@@ -22,10 +22,27 @@ const DEFAULT_PAGE_SIZE = 100;
  */
 
 /**
+ * @typedef {object} FetchResponse
+ * @property {boolean} ok Whether the response was successful.
+ * @property {number} status HTTP status code.
+ * @property {() => Promise<any>} json Parse response body as JSON.
+ */
+
+/**
+ * @typedef {object} DbInstance
+ * @property {Function} collection Firestore collection accessor.
+ */
+
+/**
+ * @typedef {object} StorageInstance
+ * @property {Function} bucket Cloud storage bucket accessor.
+ */
+
+/**
  * @typedef {object} RenderOptions
- * @property {{ collection: Function }} [db] Firestore-like instance used for lookup helpers.
- * @property {{ bucket: Function }} [storage] Cloud storage-like instance.
- * @property {(input: string, init?: object) => Promise<any>} fetchFn Fetch implementation.
+ * @property {DbInstance} [db] Firestore-like instance used for lookup helpers.
+ * @property {StorageInstance} [storage] Cloud storage-like instance.
+ * @property {(input: string, init?: object) => Promise<FetchResponse>} fetchFn Fetch implementation.
  * @property {() => string} randomUUID UUID generator for cache invalidation.
  * @property {string} [projectId] Google Cloud project identifier.
  * @property {string} [urlMapName] Compute URL map identifier.
@@ -115,7 +132,7 @@ function escapeHtml(text) {
 
 /**
  * Render a single list entry pointing to the provided page number.
- * @param {number|string} pageNumber Identifier for the story page.
+ * @param {number | string | null} pageNumber Identifier for the story page.
  * @param {string} title Escaped story title.
  * @returns {string} List item HTML snippet.
  */
@@ -190,7 +207,11 @@ const MOBILE_MENU_HTML = `    <!-- Mobile menu -->
       </div>
     </div>`;
 
-const MAIN_HTML = list => `    <main>
+/**
+ * @param {string} list Rendered list HTML.
+ * @returns {string} Main section HTML.
+ */
+const MAIN_HTML = (list) => `    <main>
       <h1>Contents</h1>
       <ol class="contents">${list}</ol>
     </main>`;
@@ -222,7 +243,7 @@ ${MENU_TOGGLE_SCRIPT}
 
 /**
  * Build an HTML document for the provided story summaries.
- * @param {{ pageNumber: number|string, title: string }[]} items Story info items to render.
+ * @param {StoryInfo[]} items Story info items to render.
  * @returns {string} Rendered HTML string for the dashboard page.
  */
 export function buildHtml(items) {
@@ -248,7 +269,7 @@ export function createFetchTopStoryIds(db) {
       .limit(1000)
       .get();
 
-    return snapshot.docs.map(doc => doc.id);
+    return snapshot.docs.map(/** @param {{ id: string }} doc */ doc => doc.id);
   };
 }
 
@@ -269,9 +290,9 @@ export function createFetchStoryInfo(db) {
 /**
  * Build summary metadata from a story snapshot when it exists.
  * @param {{ exists?: boolean, data: () => Record<string, any> }} storySnap Story document snapshot.
- * @returns {StoryInfo | null} Story info with title and page number or null when missing.
+ * @returns {Promise<StoryInfo | null>} Story info with title and page number or null when missing.
  */
-function buildStoryInfoFromSnap(storySnap) {
+async function buildStoryInfoFromSnap(storySnap) {
   if (!storySnap.exists) {
     return null;
   }
@@ -284,25 +305,15 @@ function buildStoryInfoFromSnap(storySnap) {
  * @param {Record<string, any>} story Firestore story document data.
  * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
  */
-/**
- * Resolve a story's metadata once the document is present.
- * @param {Record<string, any>} story Firestore story document data.
- * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
- */
 async function resolveStoryInfoFromStory(story) {
   if (!hasStoryRootPage(story)) {
     return null;
   }
 
-  return resolveStoryInfoFromRoot(story.rootPage, story);
+  const result = await resolveStoryInfoFromRoot(story.rootPage, story);
+  return result;
 }
 
-/**
- * Resolve the root page data for the story.
- * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} rootRef Document reference for the root page.
- * @param {Record<string, any>} story Firestore story document data.
- * @returns {Promise<StoryInfo | null>} Story info describing title and page number.
- */
 /**
  * Resolve story information once the root page return value arrives.
  * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} rootRef Document reference for the root page.
@@ -314,12 +325,6 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
   return buildStoryInfoFromPage(pageSnap, story);
 }
 
-/**
- * Build story info from a retrieved page snapshot.
- * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
- * @param {Record<string, any>} story Story document data that owns the page.
- * @returns {StoryInfo | null} Story metadata or null when the page is missing.
- */
 /**
  * Build story metadata once the page snapshot has been fetched.
  * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
@@ -334,7 +339,7 @@ function buildStoryInfoFromPage(pageSnap, story) {
   const page = pageSnap.data();
   return {
     title: extractStoryTitle(story),
-    pageNumber: extractPageNumber(page),
+    pageNumber: extractPageNumber(page) ?? null,
   };
 }
 
@@ -348,11 +353,6 @@ function hasPageSnapshot(pageSnap) {
 }
 
 /**
- * Extract story title.
- * @param {Record<string, any>} story Story.
- * @returns {string} Title.
- */
-/**
  * Extract the story title when present.
  * @param {Record<string, any>} story Story document data.
  * @returns {string} Title string or empty string when missing.
@@ -365,11 +365,6 @@ function extractStoryTitle(story) {
   return story.title;
 }
 
-/**
- * Extract page number.
- * @param {Record<string, any>} page Page.
- * @returns {number | undefined} Page number.
- */
 /**
  * Extract the numeric page number from a page document.
  * @param {Record<string, any>} page Page document data.
@@ -413,7 +408,7 @@ function hasPageNumber(page) {
 /**
  * Create a helper for invalidating cached CDN paths.
  * @param {object} root0 Options for the invalidation routine.
- * @param {(input: string, init?: object) => Promise<{ ok: boolean, status: number, json: () => Promise<any> }>} root0.fetchFn Fetch-like implementation.
+ * @param {(input: string, init?: object) => Promise<FetchResponse>} root0.fetchFn Fetch-like implementation.
  * @param {string} [root0.projectId] Google Cloud project identifier.
  * @param {string} [root0.urlMapName] Compute URL map used for invalidation.
  * @param {string} [root0.cdnHost] CDN host name to include with invalidations.
@@ -530,9 +525,9 @@ function resolveUrlMapName(urlMapName) {
 /**
  * Create the actual path invalidation routine.
  * @param {object} params Runner options.
- * @param {(input: string, init?: object) => Promise<Response>} params.fetchFn Fetch implementation.
+ * @param {(input: string, init?: object) => Promise<FetchResponse>} params.fetchFn Fetch implementation.
  * @param {() => string} params.randomUUID UUID generator.
- * @param {(message: string, error?: unknown) => void} [params.consoleError] Logger.
+ * @param {((message: string, error?: unknown) => void) | undefined} [params.consoleError] Logger.
  * @param {{ host: string, url: string }} params.config Invalidation configuration.
  * @returns {(paths: string[]) => Promise<void>} Invalidation handler.
  */
@@ -567,7 +562,7 @@ function createPathInvalidationRunner({
 
 /**
  * Acquire an access token from the metadata service.
- * @param {(input: string, init?: object) => Promise<Response>} fetchFn Fetch implementation.
+ * @param {(input: string, init?: object) => Promise<FetchResponse>} fetchFn Fetch implementation.
  * @returns {Promise<string>} OAuth access token.
  */
 async function getAccessToken(fetchFn) {
@@ -583,7 +578,7 @@ async function getAccessToken(fetchFn) {
 
 /**
  * Throw when the response is not successful.
- * @param {Response} response Fetch response to inspect.
+ * @param {FetchResponse} response Fetch response to inspect.
  * @param {string} label Context label for the thrown error.
  * @returns {void}
  */
@@ -595,7 +590,7 @@ function ensureResponseOk(response, label) {
 
 /**
  * Extract the access token string from the metadata response.
- * @param {Response} response Response that contains JSON with an access_token property.
+ * @param {FetchResponse} response Response that contains JSON with an access_token property.
  * @returns {Promise<string>} Resolved token string.
  */
 async function extractAccessToken(response) {
@@ -610,9 +605,9 @@ async function extractAccessToken(response) {
  * @param {string} options.token OAuth bearer token.
  * @param {string} options.url Compute URL map invalidation endpoint.
  * @param {string} options.host CDN host name.
- * @param {(input: string, init?: object) => Promise<Response>} options.fetchFn Fetch implementation.
+ * @param {(input: string, init?: object) => Promise<FetchResponse>} options.fetchFn Fetch implementation.
  * @param {() => string} options.randomUUID UUID generator for request IDs.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [options.consoleError] Error logger.
+ * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} [options.consoleError] Error logger.
  * @returns {Promise<void>} Resolves when the invalidation request completes.
  */
 async function invalidatePathItem({
@@ -644,9 +639,9 @@ async function invalidatePathItem({
 
 /**
  * Log invalidation failures when the response is not OK.
- * @param {Response} response Fetch response object.
+ * @param {FetchResponse} response Fetch response object.
  * @param {string} path Path that was invalidated.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional error logger.
+ * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} consoleError Optional error logger.
  * @returns {void}
  */
 function logInvalidateResponse(response, path, consoleError) {
@@ -660,22 +655,22 @@ function logInvalidateResponse(response, path, consoleError) {
  * Report an invalidation error when the logger is available.
  * @param {string} path CDN path.
  * @param {number} status HTTP status code.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} consoleError Optional logger.
  * @returns {void}
  */
 function logInvalidateFailure(path, status, consoleError) {
-  consoleError(`invalidate ${path} failed: ${status}`);
+  consoleError?.(`invalidate ${path} failed: ${status}`);
 }
 
 /**
  * Report invalidation errors via the provided logger.
  * @param {unknown} error Error or rejection reason.
  * @param {string} path Path that triggered the failure.
- * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
+ * @param {((message: string, ...optionalParams: unknown[]) => void) | undefined} consoleError Optional logger.
  * @returns {void}
  */
 function handleInvalidateError(error, path, consoleError) {
-  consoleError(`invalidate ${path} error`, extractMessageFromError(error));
+  consoleError?.(`invalidate ${path} error`, extractMessageFromError(error));
 }
 
 /**
@@ -761,15 +756,15 @@ function normalizeRenderContentsOptions(
     pageSize,
   } = params;
 
-  assertStorage(storage);
+  assertStorage(/** @type {StorageInstance} */ (storage));
   assertFunction(fetchFn, 'fetchFn');
   assertFunction(randomUUID, 'randomUUID');
 
   return {
-    db,
-    storage,
-    fetchFn,
-    randomUUID,
+    db: /** @type {DbInstance | undefined} */ (db),
+    storage: /** @type {StorageInstance} */ (storage),
+    fetchFn: /** @type {(input: string, init?: object) => Promise<FetchResponse>} */ (fetchFn),
+    randomUUID: /** @type {() => string} */ (randomUUID),
     projectId,
     urlMapName,
     cdnHost,
@@ -781,11 +776,11 @@ function normalizeRenderContentsOptions(
 
 /**
  * Ensure a console error helper is available for logging.
- * @param {(message: string, error?: unknown) => void | undefined} value Candidate logger.
+ * @param {((message: string, error?: unknown) => void) | undefined} value Candidate logger.
  * @returns {(message: string, error?: unknown) => void} Resolved console error helper.
  */
 function resolveRenderContentsConsoleError(value) {
-  return value ?? console.error;
+  return value ?? (console.error.bind(console) ?? console.error);
 }
 
 /**
@@ -803,7 +798,8 @@ function resolveRenderContentsBucketName(value) {
  * @returns {number} Page size that should be used.
  */
 function resolveRenderContentsPageSize(value) {
-  return value ?? DEFAULT_PAGE_SIZE;
+  const resolved = value ?? DEFAULT_PAGE_SIZE;
+  return /** @type {number} */ (resolved);
 }
 
 /**
@@ -825,7 +821,7 @@ function instantiateRenderContents(deps) {
     pageSize,
   } = deps;
 
-  const bucket = storage.bucket(bucketName);
+  const bucket = (/** @type {StorageInstance} */ (storage)).bucket(bucketName);
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     projectId,
@@ -836,21 +832,29 @@ function instantiateRenderContents(deps) {
   });
 
   return createRenderContentsHandler({
-    db,
+    db: /** @type {DbInstance} */ (db),
     bucket,
     invalidatePaths,
-    pageSize,
+    pageSize: /** @type {number} */ (pageSize),
   });
 }
 
 /**
+ * @typedef {object} BucketFileAccessor
+ * @property {(path: string) => { save: (content: string, options: object) => Promise<unknown> }} file File accessor.
+ */
+
+/**
+ * @typedef {object} RenderContentsHandlerConfig
+ * @property {DbInstance} db Firestore instance.
+ * @property {BucketFileAccessor} bucket Storage bucket file accessor.
+ * @property {(paths: string[]) => Promise<void>} invalidatePaths Path invalidation function.
+ * @property {number} pageSize Number of items per page.
+ */
+
+/**
  * Build the renderer closure that caches fetchers between invocations.
- * @param {{
- *   db: { collection: Function },
- *   bucket: { file: (path: string) => { save: (content: string, options: object) => Promise<unknown> } },
- *   invalidatePaths: (paths: string[]) => Promise<void>,
- *   pageSize: number
- * }} config Handler dependencies.
+ * @param {RenderContentsHandlerConfig} config Handler dependencies.
  * @returns {(deps?: RenderDependencies) => Promise<null>} Renderer factory.
  */
 function createRenderContentsHandler(config) {
@@ -943,6 +947,7 @@ function getOrCreateFetcher({ cache, database, factory, setCache }) {
  */
 async function buildStoryItems(loadIds, loadInfo) {
   const ids = await loadIds();
+  /** @type {StoryInfo[]} */
   const items = [];
 
   for (const id of ids) {
@@ -955,8 +960,8 @@ async function buildStoryItems(loadIds, loadInfo) {
 
 /**
  * Append the provided value when it is present.
- * @param {any[]} collection Array collecting items.
- * @param {any} value Item to add when truthy.
+ * @param {StoryInfo[]} collection Array collecting items.
+ * @param {StoryInfo | null} value Item to add when truthy.
  * @returns {void}
  */
 function pushIfPresent(collection, value) {
@@ -1024,21 +1029,15 @@ function buildPageSaveOptions(pageNumber, maxPages) {
 }
 
 /**
- *
- * @param database
- * @param factory
- * @param setCache
- */
-/**
  * Create a cached fetcher when none is provided.
- * @param {{ collection: Function } | undefined} database Firestore-like instance used by the factory.
- * @param {(db: { collection: Function }) => Function} factory Factory that produces the fetcher.
+ * @param {DbInstance | undefined} database Firestore-like instance used by the factory.
+ * @param {(db: DbInstance) => Function} factory Factory that produces the fetcher.
  * @param {(fn: Function) => void} setCache Setter for caching the created fetcher.
  * @returns {Function} Newly created fetch implementation.
  */
 function createFetcherFromDatabase(database, factory, setCache) {
-  assertDb(database);
-  const created = factory(database);
+  assertDb(/** @type {DbInstance} */ (database));
+  const created = factory(/** @type {DbInstance} */ (database));
   setCache(created);
   return created;
 }
@@ -1100,9 +1099,15 @@ function chooseAllowedOrigins(parsedOrigins) {
 }
 
 /**
+ * @typedef {object} NativeHttpResponseWithSet
+ * @property {(name: string, value: string) => void} set Set response header.
+ * @property {Function} [status] Set response status.
+ */
+
+/**
  * Create a helper that applies CORS headers to outgoing responses.
  * @param {{ allowedOrigins?: string[] }} root0 Options for configuring origins.
- * @returns {(req: NativeHttpRequest, res: { set: (name: string, value: string) => void, status?: Function }) => boolean} Header applier returning whether the origin is allowed.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponseWithSet) => boolean} Header applier returning whether the origin is allowed.
  */
 export function createApplyCorsHeaders({ allowedOrigins }) {
   /** @type {string[]} */
@@ -1124,7 +1129,7 @@ export function createApplyCorsHeaders({ allowedOrigins }) {
 /**
  * Extract the Origin header when available on the request object.
  * @param {NativeHttpRequest} req Request-like helper.
- * @returns {string | undefined} Origin header string, when present.
+ * @returns {unknown} Origin header string, when present.
  */
 function resolveOriginHeader(req) {
   return callHeaderGetter(req?.get, 'Origin');
@@ -1133,12 +1138,12 @@ function resolveOriginHeader(req) {
 /**
  * Apply the appropriate Access-Control response based on the resolved origin.
  * @param {{ set: (name: string, value: string) => void }} res Response helper.
- * @param {string | undefined} origin Origin header value.
+ * @param {unknown} origin Origin header value.
  * @param {string[]} origins Allowlist of origins.
  * @returns {boolean} True when the origin is considered allowed.
  */
 function respondToOrigin(res, origin, origins) {
-  if (!origin) {
+  if (!origin || typeof origin !== 'string') {
     setWildcardOrigin(res);
     return true;
   }
@@ -1184,15 +1189,21 @@ function setStaticCorsHeaders(res) {
 }
 
 /**
+ * @typedef {object} ResponseWithStatusSend
+ * @property {(code: number) => { send: (body: string) => void }} status Set response status.
+ * @property {(body: string) => void} send Send response.
+ */
+
+/**
  * Create a request validator that ensures CORS and method requirements.
- * @param {{ applyCorsHeaders: (req: NativeHttpRequest, res: { set: (name: string, value: string) => void, status: Function, send: Function }) => boolean }} root0 Dependencies.
- * @returns {(req: NativeHttpRequest, res: { status: Function, send: Function }) => boolean} Validator indicating if the request should continue.
+ * @param {{ applyCorsHeaders: (req: NativeHttpRequest, res: NativeHttpResponseWithSet & ResponseWithStatusSend) => boolean }} root0 Dependencies.
+ * @returns {(req: NativeHttpRequest, res: ResponseWithStatusSend) => boolean} Validator indicating if the request should continue.
  */
 export function createValidateRequest({ applyCorsHeaders }) {
   assertFunction(applyCorsHeaders, 'applyCorsHeaders');
 
   return function validateRequest(req, res) {
-    const originAllowed = applyCorsHeaders(req, res);
+    const originAllowed = applyCorsHeaders(req, /** @type {NativeHttpResponseWithSet & ResponseWithStatusSend} */ (res));
 
     if (handlePreflight(req, res, originAllowed)) {
       return false;
@@ -1205,7 +1216,7 @@ export function createValidateRequest({ applyCorsHeaders }) {
 /**
  * Handle OPTIONS preflight requests.
  * @param {NativeHttpRequest} req Incoming request.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {ResponseWithStatusSend} res Response helper.
  * @param {boolean} originAllowed Whether the request origin passed CORS checks.
  * @returns {boolean} True when the request was handled and no further processing is needed.
  */
@@ -1220,7 +1231,7 @@ function handlePreflight(req, res, originAllowed) {
 
 /**
  * Send the preflight response body and status.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {ResponseWithStatusSend} res Response helper.
  * @param {boolean} originAllowed Whether the origin was authorized.
  * @returns {void}
  */
@@ -1236,7 +1247,7 @@ function respondToPreflight(res, originAllowed) {
 /**
  * Enforce that the origin is allowed and the method is POST.
  * @param {NativeHttpRequest} req Incoming request helper.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {ResponseWithStatusSend} res Response helper.
  * @param {boolean} originAllowed Whether the origin is allowed.
  * @returns {boolean} True when the request should continue.
  */
@@ -1251,7 +1262,7 @@ function ensureOriginAndMethodAllowed(req, res, originAllowed) {
 /**
  * Ensure the request uses the POST method.
  * @param {NativeHttpRequest} req Request helper.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {ResponseWithStatusSend} res Response helper.
  * @returns {boolean} True when the method is POST.
  */
 function ensurePostMethod(req, res) {
@@ -1287,7 +1298,7 @@ function isPostRequest(req) {
  * @returns {unknown} Value returned by {@code req.get('Authorization')} or {@code req.get('authorization')}.
  */
 function getAuthorizationHeaderFromGetter(req) {
-  const getter = req.get;
+  const getter = /** @type {((name: string) => unknown) | undefined} */ (req.get);
   const authorizationHeader = callHeaderGetter(getter, 'Authorization');
   if (isDefined(authorizationHeader)) {
     return authorizationHeader;
@@ -1323,7 +1334,7 @@ export function resolveAuthorizationHeader(req) {
 
 /**
  * Safely invoke a header getter when a function is provided.
- * @param {(name: string) => unknown | undefined} getter Header getter helper.
+ * @param {(((name: string) => unknown) | undefined)} getter Header getter helper.
  * @param {string} key Header name to read.
  * @returns {unknown} Header value when available.
  */
@@ -1421,7 +1432,7 @@ function extractBearerToken(header) {
  *   verifyIdToken: (token: string) => Promise<{ uid?: string }>,
  *   adminUid: string
  * }} root0 - Authorization dependencies.
- * @returns {(options: { req: NativeHttpRequest, res: { status: Function, send: Function } }) => Promise<{ uid?: string } | null>} Authorization checker.
+ * @returns {(options: { req: NativeHttpRequest, res: ResponseWithStatusSend }) => Promise<{ uid?: string } | null>} Authorization checker.
  */
 export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
   assertFunction(verifyIdToken, 'verifyIdToken');
@@ -1449,7 +1460,7 @@ export function createAuthorizeRequest({ verifyIdToken, adminUid }) {
  * Confirm the decoded token matches the configured admin UID.
  * @param {{ uid?: string } | null} decoded Decoded token payload.
  * @param {string} adminUid Expected admin user ID.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {ResponseWithStatusSend} res Response helper.
  * @returns {{ uid?: string } | null} Decoded payload when the UID matches.
  */
 function ensureAdminIdentity(decoded, adminUid, res) {
@@ -1474,7 +1485,7 @@ function isInvalidAdminIdentity(decoded, adminUid) {
 /**
  * Respond to verification failures with a standard error body.
  * @param {unknown} error Error produced by the verifier.
- * @param {{ status: (code: number) => { send: (body: string) => void } }} res Response helper.
+ * @param {ResponseWithStatusSend} res Response helper.
  * @returns {null} Always returns null so the caller can abort processing.
  */
 function handleAuthError(error, res) {
