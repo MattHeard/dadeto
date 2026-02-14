@@ -8,16 +8,14 @@
  * @returns {string} HTML for the navbar component
  */
 export function createNavbar() {
-  return `
-    <div class="entry nav-entry">
+  return `<div class="entry nav-entry">
       <div class="key">nav</div>
       <p class="value metadata">
         <a class="filter-button active" data-filter="all">everything</a>,
         <a class="filter-button" data-filter="blog">blog</a>,
         <a class="filter-button" data-filter="toys">toys</a>
       </p>
-    </div>
-  `;
+    </div>`;
 }
 
 /**
@@ -31,8 +29,7 @@ export function createNavbar() {
  * @returns {string} HTML for the links bar component
  */
 export function createLinksBar() {
-  return `
-    <div class="entry nav-entry">
+  return `<div class="entry nav-entry">
       <div class="key">links</div>
       <p class="value metadata">
         <a href="https://x.com/mattheard" target="_blank" rel="noopener">twitter</a>,
@@ -40,6 +37,5 @@ export function createLinksBar() {
         <a href="https://www.linkedin.com/in/matthewjohnheard" target="_blank" rel="noopener">linkedin</a>,
         <a href="https://ridedott.com" target="_blank" rel="noopener">dott</a>
       </p>
-    </div>
-  `;
+    </div>`;
 }
