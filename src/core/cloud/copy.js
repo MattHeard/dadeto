@@ -197,22 +197,25 @@ export function createCopyToInfraCore({
 
   /**
    * Copy files defined by a declared list.
-   * @param {object} copyPlan - Copy configuration with source and target directories.
-   * @param {object} io - Filesystem adapters.
-   * @param {object} messageLogger - Logger to report progress.
+   * @param {DeclaredCopyPlan | undefined} copyPlan - Copy configuration with source and target directories.
+   * @param {EnsureAndCopyIo} io - Filesystem adapters.
+   * @param {CopyMessageLogger} messageLogger - Logger to report progress.
    * @returns {Promise<void>} Resolves when the declared files are copied.
    */
   async function copyDeclaredFiles(copyPlan, io, messageLogger) {
     if (!shouldCopyDeclaredFiles(copyPlan)) {
       return;
     }
+    if (!copyPlan) {
+      return;
+    }
     const { sourceDir, targetDir } = copyPlan;
     const files = extractDeclaredFiles(copyPlan);
     const copyParams = {
-      files,
+      files: files || [],
       sourceDir,
       targetDir,
-      io,
+      io: { ...io, readDirEntries: async () => [] },
       messageLogger,
     };
     await performCopy(copyParams);
@@ -283,8 +286,8 @@ export function createCopyToInfraCore({
   /**
    * Copy every configured directory using the provided helper.
    * @param {{ source: string, target: string }[]} directories - Directory copy plans.
-   * @param {{ ensureDirectory: (target: string) => Promise<void> }} io - Filesystem adapters.
-   * @param {{ info: (message: string) => void }} messageLogger - Logger for progress events.
+   * @param {CopyAsyncIo} io - Filesystem adapters.
+   * @param {CopyMessageLogger} messageLogger - Logger for progress events.
    * @returns {Promise<void>} Resolves once every directory copy finishes.
    */
   async function copyDirectories(directories, io, messageLogger) {
@@ -295,17 +298,7 @@ export function createCopyToInfraCore({
 
   /**
    * Execute the copy workflow using the provided configuration.
-   * @param {{
-   *   directoryCopies: { source: string, target: string }[],
-   *   fileCopies?: { sourceDir: string, targetDir: string, files: string[] },
-   *   individualFileCopies?: { source: string, target: string }[],
-   *   io: {
-   *     ensureDirectory: (target: string) => Promise<void>,
-   *     readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
-   *     copyFile: (source: string, destination: string) => Promise<void>,
-   *   },
-   *   messageLogger: { info: (message: string) => void },
-   * }} options - Copy workflow options.
+   * @param {RunCopyOptions} options - Copy workflow options.
    * @returns {Promise<void>} Resolves when all copy steps finish.
    */
   async function runCopyToInfra(options) {
@@ -322,7 +315,7 @@ export function createCopyToInfraCore({
     await copyIndividualFiles(individualFileCopies, io, messageLogger);
   }
 
-  return buildCopyExportMap([
+  return /** @type {CopyToInfraHelpers} */ (buildCopyExportMap([
     ['runCopyToInfra', runCopyToInfra],
     ['copyIndividualFiles', copyIndividualFiles],
     ['copyDeclaredFiles', copyDeclaredFiles],
@@ -330,5 +323,5 @@ export function createCopyToInfraCore({
     ['copyFileToTarget', copyFileToTarget],
     ['isCopyableFile', isCopyableFile],
     ['formatPathForLog', formatPathForLog],
-  ]);
+  ]));
 }
