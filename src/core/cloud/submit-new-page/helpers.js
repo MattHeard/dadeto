@@ -164,9 +164,10 @@ async function findOptionByPosition(variantRef, optionNumber) {
  */
 async function resolveVariantAndOption(pageRef, info) {
   const variantRef = await findVariantByName(pageRef, info.variantName);
-  return when(variantRef, () =>
-    findOptionByPosition(variantRef, info.optionNumber)
-  );
+  if (!variantRef) {
+    return null;
+  }
+  return findOptionByPosition(variantRef, info.optionNumber);
 }
 
 /**
