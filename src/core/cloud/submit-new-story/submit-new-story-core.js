@@ -62,8 +62,8 @@ const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 
 /**
  * Get getter function from request.
- * @param {SubmitNewStoryRequest} request Request.
- * @returns {Function | undefined} Getter.
+ * @param {SubmitNewStoryRequest | undefined} request Request.
+ * @returns {((name: string) => string | undefined) | undefined} Getter.
  */
 function getRequestGetter(request) {
   return request?.get;
@@ -71,10 +71,13 @@ function getRequestGetter(request) {
 
 /**
  * Get auth header from getter.
- * @param {SubmitNewStoryRequest['get'] | undefined} getter Getter.
+ * @param {((name: string) => string | undefined) | undefined} getter Getter.
  * @returns {string | null} Auth header.
  */
 function getAuthFromGetter(getter) {
+  if (!getter) {
+    return null;
+  }
   const uppercase = tryGetHeader(getter, 'Authorization');
   if (uppercase) {
     return uppercase;
@@ -111,7 +114,7 @@ function isValidHeaders(headers) {
  */
 function validateHeaders(headers) {
   if (isValidHeaders(headers)) {
-    return headers;
+    return /** @type {Record<string, unknown>} */ (headers);
   }
   return null;
 }
@@ -212,8 +215,9 @@ function processOption(body, index, maxLength) {
  * @returns {string[]} Normalized non-empty poll options.
  */
 function collectOptions(body, maxLength) {
+  const validBody = body || {};
   const options = [0, 1, 2, 3]
-    .map(index => processOption(body, index, maxLength))
+    .map(index => processOption(validBody, index, maxLength))
     .filter(Boolean);
   return /** @type {string[]} */ (options);
 }
@@ -234,7 +238,7 @@ function isValidUid(uid) {
  */
 function getValidUid(uid) {
   if (isValidUid(uid)) {
-    return uid;
+    return /** @type {string} */ (uid);
   }
   return null;
 }
@@ -405,8 +409,8 @@ function normalizeTitle(title) {
  * @returns {NormalizedSubmissionData} Normalized data.
  */
 function normalizeSubmissionData(body) {
-  const title = normalizeTitle(body.title);
-  const content = normalizeSubmissionContent(body.content);
+  const title = normalizeTitle(/** @type {string} */ (body.title));
+  const content = normalizeSubmissionContent(/** @type {string} */ (body.content));
   const author = normalizeAuthor(body.author ?? '???');
   const options = collectOptions(body, 120);
 
@@ -443,7 +447,7 @@ async function saveNewStory(deps, id, data) {
  * @returns {Record<string, unknown>} Body.
  */
 function extractBody(req) {
-  return req.body || {};
+  return /** @type {Record<string, unknown>} */ (req.body || {});
 }
 
 /**
@@ -500,11 +504,11 @@ function handleSubmitNewStoryRequest(deps, request) {
  * @returns {Promise<HttpResponse>} Response from the chosen callback.
  */
 function runWhenPostMethod(request, onPost, onFail) {
-  if (isPostMethod(request.method)) {
+  if (isPostMethod(request.method ?? '')) {
     return onPost(request);
   }
 
-  return onFail();
+  return Promise.resolve(onFail());
 }
 
 /**
@@ -513,13 +517,14 @@ function runWhenPostMethod(request, onPost, onFail) {
  * @returns {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} Domain responder for new story submissions.
  */
 export function createSubmitNewStoryResponder(dependencies) {
-  return createResponder({
+  const responder = createResponder({
     dependencies,
     requiredFunctionNames: ['verifyIdToken', 'saveSubmission'],
     handlerFactory: deps => {
-      return async function submitNewStoryResponder(request) {
-        return handleSubmitNewStoryRequest(deps, request);
+      return async function submitNewStoryResponder(/** @type {SubmitNewStoryRequest | undefined} */ request) {
+        return handleSubmitNewStoryRequest(/** @type {SubmitNewStoryDependencies} */ (deps), request);
       };
     },
   });
+  return /** @type {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} */ (responder);
 }
