@@ -211,7 +211,7 @@ const MOBILE_MENU_HTML = `    <!-- Mobile menu -->
  * @param {string} list Rendered list HTML.
  * @returns {string} Main section HTML.
  */
-const MAIN_HTML = (list) => `    <main>
+const MAIN_HTML = list => `    <main>
       <h1>Contents</h1>
       <ol class="contents">${list}</ol>
     </main>`;
@@ -763,7 +763,10 @@ function normalizeRenderContentsOptions(
   return {
     db: /** @type {DbInstance | undefined} */ (db),
     storage: /** @type {StorageInstance} */ (storage),
-    fetchFn: /** @type {(input: string, init?: object) => Promise<FetchResponse>} */ (fetchFn),
+    fetchFn:
+      /** @type {(input: string, init?: object) => Promise<FetchResponse>} */ (
+        fetchFn
+      ),
     randomUUID: /** @type {() => string} */ (randomUUID),
     projectId,
     urlMapName,
@@ -780,7 +783,7 @@ function normalizeRenderContentsOptions(
  * @returns {(message: string, error?: unknown) => void} Resolved console error helper.
  */
 function resolveRenderContentsConsoleError(value) {
-  return value ?? (console.error.bind(console) ?? console.error);
+  return value ?? console.error.bind(console) ?? console.error;
 }
 
 /**
@@ -821,7 +824,7 @@ function instantiateRenderContents(deps) {
     pageSize,
   } = deps;
 
-  const bucket = (/** @type {StorageInstance} */ (storage)).bucket(bucketName);
+  const bucket = /** @type {StorageInstance} */ (storage).bucket(bucketName);
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     projectId,
@@ -1203,7 +1206,10 @@ export function createValidateRequest({ applyCorsHeaders }) {
   assertFunction(applyCorsHeaders, 'applyCorsHeaders');
 
   return function validateRequest(req, res) {
-    const originAllowed = applyCorsHeaders(req, /** @type {NativeHttpResponseWithSet & ResponseWithStatusSend} */ (res));
+    const originAllowed = applyCorsHeaders(
+      req,
+      /** @type {NativeHttpResponseWithSet & ResponseWithStatusSend} */ (res)
+    );
 
     if (handlePreflight(req, res, originAllowed)) {
       return false;
@@ -1298,7 +1304,9 @@ function isPostRequest(req) {
  * @returns {unknown} Value returned by {@code req.get('Authorization')} or {@code req.get('authorization')}.
  */
 function getAuthorizationHeaderFromGetter(req) {
-  const getter = /** @type {((name: string) => unknown) | undefined} */ (req.get);
+  const getter = /** @type {((name: string) => unknown) | undefined} */ (
+    req.get
+  );
   const authorizationHeader = callHeaderGetter(getter, 'Authorization');
   if (isDefined(authorizationHeader)) {
     return authorizationHeader;

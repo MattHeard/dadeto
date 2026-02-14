@@ -315,13 +315,15 @@ export function createCopyToInfraCore({
     await copyIndividualFiles(individualFileCopies, io, messageLogger);
   }
 
-  return /** @type {CopyToInfraHelpers} */ (buildCopyExportMap([
-    ['runCopyToInfra', runCopyToInfra],
-    ['copyIndividualFiles', copyIndividualFiles],
-    ['copyDeclaredFiles', copyDeclaredFiles],
-    ['copyDirectory', copyDirectory],
-    ['copyFileToTarget', copyFileToTarget],
-    ['isCopyableFile', isCopyableFile],
-    ['formatPathForLog', formatPathForLog],
-  ]));
+  return /** @type {CopyToInfraHelpers} */ (
+    buildCopyExportMap([
+      ['runCopyToInfra', runCopyToInfra],
+      ['copyIndividualFiles', copyIndividualFiles],
+      ['copyDeclaredFiles', copyDeclaredFiles],
+      ['copyDirectory', copyDirectory],
+      ['copyFileToTarget', copyFileToTarget],
+      ['isCopyableFile', isCopyableFile],
+      ['formatPathForLog', formatPathForLog],
+    ])
+  );
 }

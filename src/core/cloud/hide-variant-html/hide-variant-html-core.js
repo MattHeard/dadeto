@@ -246,7 +246,10 @@ export function createBucketFileRemover({
 
   return function deleteRenderedFile(path) {
     return deleteIfPathValid(path, () => {
-      const validatedStorage = /** @type {{ bucket: (name: string) => { file: (path: string) => { delete: (config: { ignoreNotFound: boolean }) => Promise<*> } } }} */ (storage);
+      const validatedStorage =
+        /** @type {{ bucket: (name: string) => { file: (path: string) => { delete: (config: { ignoreNotFound: boolean }) => Promise<*> } } }} */ (
+          storage
+        );
       return validatedStorage
         .bucket(validatedBucketName)
         .file(path)
@@ -335,7 +338,9 @@ function ensureStorageBucketComponent(storage) {
  * @returns {storage is { bucket: Function }} True when storage.bucket is callable.
  */
 function hasBucketFunction(storage) {
-  return Boolean(storage && typeof (/** @type {*} */ (storage)).bucket === 'function');
+  return Boolean(
+    storage && typeof (/** @type {*} */ (storage).bucket) === 'function'
+  );
 }
 
 /**
@@ -503,7 +508,9 @@ function extractVisibility(data) {
  * @returns {data is { visibility: number }} True when a numeric visibility is available.
  */
 function hasVisibilityValue(data) {
-  return Boolean(data && typeof (/** @type {*} */ (data)).visibility === 'number');
+  return Boolean(
+    data && typeof (/** @type {*} */ (data).visibility) === 'number'
+  );
 }
 
 /**
@@ -632,7 +639,11 @@ function createVisibilityTransitionHandler(params) {
 
   return async function visibilityTransition({ before, after }) {
     const beforeVisibility = getVisibility(before);
-    const afterVisibility = getVisibility(/** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (after));
+    const afterVisibility = getVisibility(
+      /** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (
+        after
+      )
+    );
 
     if (
       shouldRemoveRenderedHtml(
@@ -641,7 +652,11 @@ function createVisibilityTransitionHandler(params) {
         visibilityThreshold
       )
     ) {
-      return removeVariantHtmlForSnapshot(/** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (after));
+      return removeVariantHtmlForSnapshot(
+        /** @type {import('firebase-admin/firestore').DocumentSnapshot | SnapshotLike} */ (
+          after
+        )
+      );
     }
 
     return null;

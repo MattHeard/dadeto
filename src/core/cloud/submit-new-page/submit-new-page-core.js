@@ -10,8 +10,8 @@ import {
 
 /**
  * @typedef {object} SubmitNewPageRequest
- * @property {Record<string, unknown>} [body]
- * @property {(name: string) => string | undefined} [get]
+ * @property {Record<string, unknown>} [body] Request body containing submission data.
+ * @property {(name: string) => string | undefined} [get] Function to get header values.
  * @typedef {{
  *   rawIncomingOption: unknown;
  *   rawPage: unknown;
@@ -57,6 +57,14 @@ import {
  *   findExistingOption: (option: unknown) => Promise<string | null>;
  *   findExistingPage: (page: number) => Promise<string | null>;
  * }} SubmitNewPageHandlerDeps
+ * @typedef {{
+ *   incomingOptionFullName: string | null;
+ *   pageNumber: number | null;
+ *   content: string;
+ *   author: string;
+ *   authorId: string | null;
+ *   options: string[];
+ * }} SubmitNewPageData
  */
 
 /**
@@ -359,6 +367,7 @@ export function createHandleSubmit(deps) {
   /**
    * Handle an incoming submission request.
    * @param {SubmitNewPageRequest} request Request object.
+   * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } | { error: string } }>} Response object.
    */
   return async function handleSubmit(request) {
     const body = getBody(request);

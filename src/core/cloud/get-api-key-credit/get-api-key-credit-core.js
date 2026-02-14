@@ -63,7 +63,9 @@ function resolveUuid(request, getUuid) {
  */
 function mapCreditToResponse(credit) {
   if (credit === null || credit === undefined) {
-    return CREDIT_RESPONSE_BY_VALUE.get(credit) ?? { status: 200, body: { credit } };
+    return (
+      CREDIT_RESPONSE_BY_VALUE.get(credit) ?? { status: 200, body: { credit } }
+    );
   }
   return { status: 200, body: { credit } };
 }

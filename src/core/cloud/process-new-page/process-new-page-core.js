@@ -157,7 +157,10 @@ function ensureDocumentReference(reference, message) {
  * @returns {reference is import('firebase-admin/firestore').DocumentReference} True when the reference is valid.
  */
 function isDocumentReference(reference) {
-  return Boolean(reference && typeof /** @type {any} */ (reference).collection === 'function');
+  return Boolean(
+    reference &&
+      typeof (/** @type {any} */ (reference).collection) === 'function'
+  );
 }
 
 /**
@@ -386,7 +389,10 @@ async function resolveIncomingOptionContext({
     optionRef,
     incomingOptionFullName,
     getServerTimestamp,
-    storyRef: /** @type {import('firebase-admin/firestore').DocumentReference} */ (storyRefCandidate),
+    storyRef:
+      /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+        storyRefCandidate
+      ),
   });
 
   return {
@@ -478,7 +484,9 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
 
   return {
     pageDocRef: targetPage,
-    pageNumber: /** @type {any} */ (/** @type {any} */ (existingPageSnap).data?.()).number || null,
+    pageNumber:
+      /** @type {any} */ (/** @type {any} */ (existingPageSnap).data?.())
+        .number || null,
   };
 }
 
@@ -581,7 +589,9 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
 
   return {
     pageDocRef,
-    storyRef: storyRef || /** @type {import('firebase-admin/firestore').DocumentReference} */ ({}),
+    storyRef:
+      storyRef ||
+      /** @type {import('firebase-admin/firestore').DocumentReference} */ ({}),
     variantRef: null,
     pageNumber: directPageNumber,
   };
@@ -627,7 +637,9 @@ async function createVariantWithOptions({
 
   batch.set(
     newVariantRef,
-    /** @type {import('firebase-admin/firestore').DocumentData} */ (buildVariantPayload(nextName, submission, { random, getServerTimestamp }))
+    /** @type {import('firebase-admin/firestore').DocumentData} */ (
+      buildVariantPayload(nextName, submission, { random, getServerTimestamp })
+    )
   );
 
   normalizeOptions(submission.options).forEach((text, position) => {
@@ -1112,8 +1124,14 @@ async function processSubmissionWithContext({
 
   await finalizeSubmission({
     batch,
-    pageDocRef: /** @type {import('firebase-admin/firestore').DocumentReference} */ (ensuredPageDocRef),
-    storyRef: /** @type {import('firebase-admin/firestore').DocumentReference} */ (ensuredStoryRef),
+    pageDocRef:
+      /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+        ensuredPageDocRef
+      ),
+    storyRef:
+      /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+        ensuredStoryRef
+      ),
     variantRef,
     submission,
     randomUUID,

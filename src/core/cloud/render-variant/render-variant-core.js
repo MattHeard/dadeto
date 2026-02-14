@@ -1328,35 +1328,39 @@ async function fetchTargetPageMetadata(
   visibilityThreshold,
   consoleError
 ) {
-  return /** @type {Promise<Omit<OptionMetadata, 'content' | 'position'>>} */ (targetPage
-    .get()
-    .then(
-      /**
-       * @param {import('firebase-admin/firestore').DocumentSnapshot} targetSnap - Target snapshot.
-       * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Metadata.
-       */
-      targetSnap => {
-        if (!targetSnap.exists) {
-          return Promise.resolve(/** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({}));
-        }
+  return /** @type {Promise<Omit<OptionMetadata, 'content' | 'position'>>} */ (
+    targetPage
+      .get()
+      .then(
+        /**
+         * @param {import('firebase-admin/firestore').DocumentSnapshot} targetSnap - Target snapshot.
+         * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Metadata.
+         */
+        targetSnap => {
+          if (!targetSnap.exists) {
+            return Promise.resolve(
+              /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({})
+            );
+          }
 
-        return processTargetSnap(
-          targetSnap,
-          /** @type {any} */ (targetPage),
-          visibilityThreshold
-        );
-      }
-    )
-    .catch(
-      /**
-       * @param {any} error - Error object.
-       * @returns {Omit<OptionMetadata, 'content' | 'position'>} Empty object.
-       */
-      error => {
-        handleTargetPageError(error, consoleError);
-        return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({});
-      }
-    ));
+          return processTargetSnap(
+            targetSnap,
+            /** @type {any} */ (targetPage),
+            visibilityThreshold
+          );
+        }
+      )
+      .catch(
+        /**
+         * @param {any} error - Error object.
+         * @returns {Omit<OptionMetadata, 'content' | 'position'>} Empty object.
+         */
+        error => {
+          handleTargetPageError(error, consoleError);
+          return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({});
+        }
+      )
+  );
 }
 
 /**
@@ -1646,7 +1650,10 @@ async function fetchRootPageUrl(storyData) {
     return undefined;
   }
 
-  return resolveUrlFromRootPage(/** @type {PageSnapshot} */ (rootPageSnap), storyData.rootPage);
+  return resolveUrlFromRootPage(
+    /** @type {PageSnapshot} */ (rootPageSnap),
+    storyData.rootPage
+  );
 }
 
 /**
@@ -1657,7 +1664,10 @@ async function fetchRootPageUrl(storyData) {
  */
 async function resolveUrlFromRootPage(rootPageSnap, rootPageRef) {
   const firstVariant = await getFirstVariant(rootPageRef);
-  return buildRootUrl(rootPageSnap, /** @type {VariantSnapshot | undefined} */ (firstVariant));
+  return buildRootUrl(
+    rootPageSnap,
+    /** @type {VariantSnapshot | undefined} */ (firstVariant)
+  );
 }
 
 /**
@@ -1998,7 +2008,10 @@ export function resolveParentReferences(optionRef) {
   if (!areParentRefsValid(parentVariantRef, parentPageRef)) {
     return null;
   }
-  return /** @type {ParentReferencePair} */ ({ parentVariantRef, parentPageRef });
+  return /** @type {ParentReferencePair} */ ({
+    parentVariantRef,
+    parentPageRef,
+  });
 }
 
 /**
@@ -2033,7 +2046,10 @@ async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
     return null;
   }
 
-  return /** @type {ParentSnapshotPair} */ ({ parentVariantSnap, parentPageSnap });
+  return /** @type {ParentSnapshotPair} */ ({
+    parentVariantSnap,
+    parentPageSnap,
+  });
 }
 
 /**
@@ -2077,10 +2093,9 @@ async function fetchParentData(db, incomingOption) {
   if (!references) {
     return null;
   }
-  return /** @type {Promise<ParentSnapshots>} */ (fetchParentSnapshots(
-    references.parentVariantRef,
-    references.parentPageRef
-  ));
+  return /** @type {Promise<ParentSnapshots>} */ (
+    fetchParentSnapshots(references.parentVariantRef, references.parentPageRef)
+  );
 }
 
 /**
@@ -2151,7 +2166,9 @@ function resolveParentRoute(snapshots) {
     return undefined;
   }
 
-  return normalizeRoute(buildRouteFromSnapshots(/** @type {ParentSnapshotPair} */ (snapshots)));
+  return normalizeRoute(
+    buildRouteFromSnapshots(/** @type {ParentSnapshotPair} */ (snapshots))
+  );
 }
 
 /**
@@ -2354,7 +2371,10 @@ function createRenderVariantHandler({
     return null;
   }
 
-  return async function render(/** @type {VariantSnapshot} */ snap, context = {}) {
+  return async function render(
+    /** @type {VariantSnapshot} */ snap,
+    context = {}
+  ) {
     return executeRenderWorkflow(
       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
       snap,
@@ -2707,7 +2727,7 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
  */
 async function saveAltsHtml(deps) {
   const { snap, bucket, page } = deps;
-  const variantsSnap = await (/** @type {any} */ (snap).ref.parent.get());
+  const variantsSnap = await /** @type {any} */ (snap).ref.parent.get();
   const variants = getVisibleVariants(variantsSnap.docs);
   const altsHtml = buildAltsHtml(page.number, variants);
   const altsPath = `p/${page.number}-alts.html`;
@@ -2847,7 +2867,9 @@ export function createHandleVariantWrite({
     getDeleteSentinel,
   }) {
     await renderVariant(/** @type {any} */ (change.after), context);
-    await (/** @type {any} */ (change.after).ref.update({ dirty: getDeleteSentinel() }));
+    await /** @type {any} */ (change.after).ref.update({
+      dirty: getDeleteSentinel(),
+    });
     return null;
   }
 
@@ -2866,7 +2888,10 @@ export function createHandleVariantWrite({
     return beforeVisibility < threshold && afterVisibility >= threshold;
   }
 
-  return async function handleVariantWrite(/** @type {FirestoreChange} */ change, context) {
+  return async function handleVariantWrite(
+    /** @type {FirestoreChange} */ change,
+    context
+  ) {
     if (!change.after.exists) {
       return null;
     }
@@ -2919,7 +2944,8 @@ export function createHandleVariantWrite({
       return true;
     }
 
-    const beforeVisibility = (/** @type {any} */ (change.before).data()).visibility;
+    const beforeVisibility = /** @type {any} */ (change.before).data()
+      .visibility;
     const afterVisibility = data.visibility;
 
     return didCrossVisibilityThreshold(

@@ -229,10 +229,13 @@ function getAuthorizationHeader(request) {
   }
 
   const headerKeys = ['Authorization', 'authorization'];
-  const headerGetter = /** @type {(name: string) => string | null | undefined} */ (request.get);
-  return headerKeys
-    .map(key => headerGetter(key))
-    .find(value => typeof value === 'string') || null;
+  const headerGetter =
+    /** @type {(name: string) => string | null | undefined} */ (request.get);
+  return (
+    headerKeys
+      .map(key => headerGetter(key))
+      .find(value => typeof value === 'string') || null
+  );
 }
 
 /**
@@ -297,7 +300,11 @@ function extractVariantReference(moderatorData) {
     return null;
   }
 
-  return resolveVariantFromData(/** @type {FirestoreDocumentReference | null | undefined} */ (moderatorData.variant));
+  return resolveVariantFromData(
+    /** @type {FirestoreDocumentReference | null | undefined} */ (
+      moderatorData.variant
+    )
+  );
 }
 
 /**
@@ -355,7 +362,10 @@ async function fetchStoryTitle(variantRef) {
   const storySnap = await storyRef.get();
   const storyData = storySnap.data() ?? {};
 
-  return normalizeString(/** @type {string | null | undefined} */ (storyData.title), 120);
+  return normalizeString(
+    /** @type {string | null | undefined} */ (storyData.title),
+    120
+  );
 }
 /**
  * Maps a Firestore option document into a serializable payload.
@@ -364,10 +374,16 @@ async function fetchStoryTitle(variantRef) {
  */
 function mapOptionDoc(doc) {
   const data = doc.data() ?? {};
-  const content = normalizeString(/** @type {string | null | undefined} */ (data.content), 500);
+  const content = normalizeString(
+    /** @type {string | null | undefined} */ (data.content),
+    500
+  );
   const { targetPageNumber } = data;
 
-  return buildVariantOptionPayload(content, /** @type {number | undefined} */ (targetPageNumber));
+  return buildVariantOptionPayload(
+    content,
+    /** @type {number | undefined} */ (targetPageNumber)
+  );
 }
 
 /**
@@ -439,7 +455,10 @@ async function handleAuthorizedRequest({ db, auth, token }) {
     return invalidResponse;
   }
 
-  return buildVariantResponse({ db, uid: /** @type {string} */ (uidResult.uid) });
+  return buildVariantResponse({
+    db,
+    uid: /** @type {string} */ (uidResult.uid),
+  });
 }
 
 /**
@@ -566,8 +585,14 @@ function createInvalidTokenResponse(error) {
  * @returns {string} Message displayed to the client.
  */
 function getInvalidTokenMessage(error) {
-  const message = error && typeof error === 'object' && 'message' in error ? (error.message) : null;
-  const normalized = normalizeString(/** @type {string | null | undefined} */ (message), 200);
+  const message =
+    error && typeof error === 'object' && 'message' in error
+      ? error.message
+      : null;
+  const normalized = normalizeString(
+    /** @type {string | null | undefined} */ (message),
+    200
+  );
   return resolveMessageOrDefault(normalized, INVALID_TOKEN_RESPONSE.body);
 }
 
@@ -596,7 +621,9 @@ async function handleVariantSnapshotResponse(variantSnapshot) {
     return /** @type {ResponderResult} */ (variantSnapshot);
   }
 
-  return buildSuccessVariantResponse(/** @type {VariantSnapshot} */ (variantSnapshot));
+  return buildSuccessVariantResponse(
+    /** @type {VariantSnapshot} */ (variantSnapshot)
+  );
 }
 
 /**
@@ -642,8 +669,14 @@ function buildVariantResponsePayload({ storyTitle, variantData, options }) {
     status: 200,
     body: {
       title: storyTitle,
-      content: normalizeString(/** @type {string | null | undefined} */ (variantData.content), 10_000),
-      author: normalizeString(/** @type {string | null | undefined} */ (variantData.author), 120),
+      content: normalizeString(
+        /** @type {string | null | undefined} */ (variantData.content),
+        10_000
+      ),
+      author: normalizeString(
+        /** @type {string | null | undefined} */ (variantData.author),
+        120
+      ),
       options,
     },
   };

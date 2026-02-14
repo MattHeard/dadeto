@@ -83,7 +83,10 @@ export function extractUuid(request) {
     return '';
   }
 
-  const typedRequest = /** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (request);
+  const typedRequest =
+    /** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (
+      request
+    );
   const resolvers = [
     () => matchPathUuid(typedRequest.path),
     () => ensureString(typedRequest.params?.uuid),
@@ -144,7 +147,9 @@ function resolveV2HandlerDependencies(deps) {
   ensureFetchCredit(fetchCredit);
 
   return {
-    fetchCredit: /** @type {(uuid: string) => Promise<number | null>} */ (fetchCredit),
+    fetchCredit: /** @type {(uuid: string) => Promise<number | null>} */ (
+      fetchCredit
+    ),
     resolveUuid: resolveUuidDependency(getUuid),
     errorLogger: resolveErrorLogger(logError),
   };
@@ -171,9 +176,13 @@ function resolveUuidDependency(getUuid) {
     return getUuid;
   }
 
-  return (request) => {
+  return request => {
     if (request && typeof request === 'object') {
-      return extractUuid(/** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (request));
+      return extractUuid(
+        /** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (
+          request
+        )
+      );
     }
     return extractUuid(request);
   };
@@ -185,7 +194,9 @@ function resolveUuidDependency(getUuid) {
  * @returns {(error: unknown) => void} Logger that safely ignores errors.
  */
 function resolveErrorLogger(logError) {
-  return (/** @type {(error: unknown) => void} */ (functionOrFallback(logError, () => () => {})));
+  return /** @type {(error: unknown) => void} */ (
+    functionOrFallback(logError, () => () => {})
+  );
 }
 
 /**

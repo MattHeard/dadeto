@@ -464,7 +464,8 @@ export function createGenerateStatsCore({
     const variantCountValue = statsDoc.data().variantCount;
     return {
       title: getStoryTitle(storyDoc.data(), statsDoc.id),
-      variantCount: typeof variantCountValue === 'number' ? variantCountValue : 0,
+      variantCount:
+        typeof variantCountValue === 'number' ? variantCountValue : 0,
     };
   }
 
@@ -791,7 +792,7 @@ function handleInvalidateResult(requestPromise, path, logger) {
     .then(res => {
       handleInvalidateResponse(res, path, logger);
     })
-    .catch((err) => {
+    .catch(err => {
       logInvalidateError(logger, path, err);
     });
 }
@@ -890,7 +891,7 @@ function isErrorWithMessage(err) {
     return false;
   }
 
-  return typeof (/** @type {any} */ (err)).message === 'string';
+  return typeof (/** @type {any} */ (err).message) === 'string';
 }
 
 /**
@@ -961,5 +962,7 @@ function sendGenerateFailure(res, err) {
  * @returns {string} Message sent in the response.
  */
 function getGenerateErrorMessage(err) {
-  return /** @type {string} */ (resolveErrorMessage(err, () => 'generate failed'));
+  return /** @type {string} */ (
+    resolveErrorMessage(err, () => 'generate failed')
+  );
 }

@@ -95,7 +95,7 @@ export function hasStringMessage(error) {
   if (!error) {
     return false;
   }
-  return typeof (/** @type {FirebaseError} */ (error)).message === 'string';
+  return typeof (/** @type {FirebaseError} */ (error).message) === 'string';
 }
 
 /**
@@ -651,7 +651,7 @@ function defaultInvalidTokenMessage(error) {
   if (!error || typeof error !== 'object' || !('message' in error)) {
     return 'Invalid token';
   }
-  const candidate = (/** @type {FirebaseError} */ (error)).message;
+  const candidate = /** @type {FirebaseError} */ (error).message;
   if (typeof candidate === 'string') {
     return candidate;
   }

@@ -410,7 +410,9 @@ function normalizeTitle(title) {
  */
 function normalizeSubmissionData(body) {
   const title = normalizeTitle(/** @type {string} */ (body.title));
-  const content = normalizeSubmissionContent(/** @type {string} */ (body.content));
+  const content = normalizeSubmissionContent(
+    /** @type {string} */ (body.content)
+  );
   const author = normalizeAuthor(body.author ?? '???');
   const options = collectOptions(body, 120);
 
@@ -521,10 +523,17 @@ export function createSubmitNewStoryResponder(dependencies) {
     dependencies,
     requiredFunctionNames: ['verifyIdToken', 'saveSubmission'],
     handlerFactory: deps => {
-      return async function submitNewStoryResponder(/** @type {SubmitNewStoryRequest | undefined} */ request) {
-        return handleSubmitNewStoryRequest(/** @type {SubmitNewStoryDependencies} */ (deps), request);
+      return async function submitNewStoryResponder(
+        /** @type {SubmitNewStoryRequest | undefined} */ request
+      ) {
+        return handleSubmitNewStoryRequest(
+          /** @type {SubmitNewStoryDependencies} */ (deps),
+          request
+        );
       };
     },
   });
-  return /** @type {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} */ (responder);
+  return /** @type {(request?: SubmitNewStoryRequest) => Promise<HttpResponse>} */ (
+    responder
+  );
 }

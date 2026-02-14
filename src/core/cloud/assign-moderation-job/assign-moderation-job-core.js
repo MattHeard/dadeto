@@ -276,7 +276,7 @@ function resolveTokenMessage(err) {
     return '';
   }
 
-  return (/** @type {ErrorWithMessage} */ (err)).message;
+  return /** @type {ErrorWithMessage} */ (err).message;
 }
 
 /**
@@ -1219,8 +1219,8 @@ async function persistAssignment(deps, data) {
   const { userRecord, variantDoc } = data;
   const moderatorRef = createModeratorRef(userRecord.uid);
   const createdAt = now();
-  await (/** @type {any} */ (moderatorRef)).set({
-    variant: (/** @type {any} */ (variantDoc)).ref,
+  await /** @type {any} */ (moderatorRef).set({
+    variant: /** @type {any} */ (variantDoc).ref,
     createdAt,
   });
 }

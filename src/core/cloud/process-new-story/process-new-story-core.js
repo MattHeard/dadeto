@@ -35,7 +35,9 @@ export function resetFindAvailablePageNumberResolver() {
  */
 function getSubmissionData(snapshot) {
   const data = getSnapshotData(snapshot);
-  return data && typeof data === 'object' ? /** @type {Record<string, unknown>} */ (data) : null;
+  return data && typeof data === 'object'
+    ? /** @type {Record<string, unknown>} */ (data)
+    : null;
 }
 
 /**
@@ -366,7 +368,10 @@ function isSnapshotAvailable(snapshot) {
  */
 async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
   const authorId = submission.authorId;
-  const authorRef = resolveAuthorRef(db, typeof authorId === 'string' ? authorId : null);
+  const authorRef = resolveAuthorRef(
+    db,
+    typeof authorId === 'string' ? authorId : null
+  );
   if (!authorRef) {
     return;
   }
@@ -410,7 +415,14 @@ async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
  * @param {() => FieldValue} getServerTimestamp Server timestamp helper.
  * @returns {ProcessStoryParams} Mapped parameters for processStorySubmission.
  */
-function mapProcessStoryParams(snapshot, context, db, randomUUID, random, getServerTimestamp) {
+function mapProcessStoryParams(
+  snapshot,
+  context,
+  db,
+  randomUUID,
+  random,
+  getServerTimestamp
+) {
   return {
     submission: resolveSubmission(snapshot),
     snapshot: snapshot ?? null,
@@ -442,7 +454,14 @@ export function createProcessNewStoryHandler({
   // Create wrapper function with correct signature to satisfy type requirements
   /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */
   const handler = async (snapshot, context = {}) => {
-    const params = mapProcessStoryParams(snapshot, context, db, randomUUID, random, getServerTimestamp);
+    const params = mapProcessStoryParams(
+      snapshot,
+      context,
+      db,
+      randomUUID,
+      random,
+      getServerTimestamp
+    );
     return processStorySubmission(params);
   };
 
