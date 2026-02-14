@@ -183,11 +183,17 @@ function isPostRequest(req) {
 }
 
 /**
+ * @typedef {object} ErrorWithMessage
+ * @property {string} message Error message.
+ */
+
+/**
  * Ensure the request method is POST.
- * @param {{ req: NativeHttpRequest }} context Guard context containing the request.
+ * @param {GuardContext} context Guard context containing the request.
  * @returns {GuardResult} Guard result with an error when the method is not POST.
  */
-function ensurePostMethod({ req }) {
+function ensurePostMethod(context) {
+  const req = /** @type {NativeHttpRequest} */ (context.req);
   if (isPostRequest(req)) {
     return {};
   }
@@ -239,7 +245,7 @@ function createTokenError(err) {
 
 /**
  * Retrieve a string message when present on an error object.
- * @param {unknown} err Error captured during token validation.
+ * @param {ErrorWithMessage | unknown} err Error captured during token validation.
  * @returns {string} Extracted message when available, otherwise an empty string.
  */
 function extractTokenErrorMessage(err) {
@@ -249,19 +255,20 @@ function extractTokenErrorMessage(err) {
 /**
  * Determine whether the error exposes a string message.
  * @param {unknown} err Error captured during token validation.
- * @returns {err is { message: string }} True when the message can be read as a string.
+ * @returns {boolean} True when the message can be read as a string.
  */
 function hasTokenMessage(err) {
   if (typeof err !== 'object' || err === null) {
     return false;
   }
 
-  return typeof err.message === 'string';
+  const obj = /** @type {any} */ (err);
+  return typeof obj.message === 'string';
 }
 
 /**
  * Extract the message text from the provided error object when available.
- * @param {unknown} err Error captured during token validation.
+ * @param {ErrorWithMessage | unknown} err Error captured during token validation.
  * @returns {string} Error message string or an empty string.
  */
 function resolveTokenMessage(err) {
@@ -269,7 +276,7 @@ function resolveTokenMessage(err) {
     return '';
   }
 
-  return err.message;
+  return (/** @type {ErrorWithMessage} */ (err)).message;
 }
 
 /**
@@ -347,6 +354,17 @@ async function fetchUserRecord(authInstance, uid) {
 }
 
 /**
+ * Get ID token from a guard context.
+ * @param {GuardContext} context Guard context containing the request.
+ * @returns {Promise<GuardResult> | GuardResult} Guard result with the ID token if available.
+ */
+function ensureIdTokenPresent(context) {
+  const req = context.req;
+  const request = /** @type {NativeHttpRequest} */ (req);
+  return getIdTokenGuardResult(getIdTokenFromRequest(request));
+}
+
+/**
  * Build the guard runner for the assign moderation workflow.
  * @param {{ verifyIdToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>, getUser: (uid: string) => Promise<import('firebase-admin/auth').UserRecord> }} authInstance
  * Firebase auth instance providing token verification and user lookup.
@@ -359,7 +377,7 @@ export function createRunGuards(authInstance) {
 
   return createGuardChain([
     ensurePostMethod,
-    ({ req }) => getIdTokenGuardResult(getIdTokenFromRequest(req)),
+    ensureIdTokenPresent,
     ensureValidIdToken,
     ensureUserRecord,
   ]);
@@ -551,7 +569,7 @@ function isSnapshotEmpty(snapshot, variantDoc) {
   return isMissingVariantDoc(variantDoc) || snapshotIsEmpty(snapshot);
 }
 
-/** @typedef {import('firebase-admin/firestore').QueryDocumentSnapshot} VariantDocSnapshot */
+/** @typedef {import('firebase-admin/firestore').QueryDocumentSnapshot<import('firebase-admin/firestore').DocumentData>} VariantDocSnapshot */
 
 /**
  * @typedef {{
@@ -727,6 +745,11 @@ export function buildVariantQueryPlan(randomValue) {
   ];
 }
 
+/**
+ * Check if snapshot contains results.
+ * @param {VariantSnapshot} snapshot Snapshot to check.
+ * @returns {boolean} True if snapshot has results.
+ */
 const snapshotHasResults = snapshot => snapshot?.empty === false;
 
 /**
@@ -793,10 +816,14 @@ export function createVariantSnapshotFetcher({ runQuery }) {
 }
 
 /**
+ * @typedef {(database: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} CreateRunVariantQueryFunction
+ */
+
+/**
  * Build a factory that produces Firestore-backed variant snapshot fetchers.
- * @param {(database: unknown) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} createRunVariantQueryFn
+ * @param {CreateRunVariantQueryFunction} createRunVariantQueryFn
  * Adapter factory that accepts a database instance and returns a query executor.
- * @returns {(database: unknown) => (randomValue: number) => Promise<VariantSnapshot>} Factory producing snapshot fetchers bound to a
+ * @returns {(database: import('firebase-admin/firestore').Firestore) => (randomValue: number) => Promise<VariantSnapshot>} Factory producing snapshot fetchers bound to a
  * Firestore database.
  */
 export function createFetchVariantSnapshotFromDbFactory(
@@ -999,13 +1026,19 @@ export function createAssignModerationWorkflow({
 }
 
 /**
+ * @typedef {object} AssignmentResponse
+ * @property {number} status HTTP status code.
+ * @property {string} [body] Response body.
+ */
+
+/**
  * Resolve assignment errors.
  * @param {unknown} err Error thrown during assignment.
- * @returns {{ status: number, body: string } | never} Summary response when the error is a response; otherwise rethrows.
+ * @returns {AssignmentResponse | never} Summary response when the error is a response; otherwise rethrows.
  */
 function handleAssignmentError(err) {
   if (isResponse(err)) {
-    return err;
+    return /** @type {AssignmentResponse} */ (err);
   }
 
   throw err;
@@ -1086,9 +1119,14 @@ function ensureGuardError(guardError) {
 }
 
 /**
+ * @typedef {object} UserRecordWithUid
+ * @property {string} uid User ID.
+ */
+
+/**
  * Validate user record or throw.
  * @param {object} userRecord User record.
- * @returns {object} Validated record.
+ * @returns {UserRecordWithUid} Validated record with UID.
  */
 function requireUserRecord(userRecord) {
   if (!isValidUserRecord(userRecord)) {
@@ -1110,10 +1148,10 @@ function isValidUserRecord(userRecord) {
 /**
  * Resolve user record from guard context.
  * @param {{ userRecord?: { uid?: string } }} context Context.
- * @returns {{ uid: string }} User record.
+ * @returns {UserRecordWithUid} User record.
  */
 function resolveUserRecord(context) {
-  return requireUserRecord(context?.userRecord);
+  return requireUserRecord(context?.userRecord ?? {});
 }
 
 /**
@@ -1127,6 +1165,7 @@ function resolveUserRecord(context) {
  * Fetch a candidate variant snapshot and resolve the selected variant document.
  * @param {ResolveVariantDocDeps} deps Dependencies required for variant resolution.
  * @returns {Promise<VariantDocSnapshot>} Variant document snapshot resolved for the current moderator.
+ * @throws {AssignmentResponse} When variant document cannot be resolved.
  */
 async function resolveVariantDoc({
   fetchVariantSnapshot,
@@ -1138,7 +1177,7 @@ async function resolveVariantDoc({
 
   ensureVariantDocAvailability(errorMessage, variantDoc);
 
-  return variantDoc;
+  return /** @type {VariantDocSnapshot} */ (variantDoc);
 }
 
 /**
@@ -1159,7 +1198,7 @@ function ensureVariantDocAvailability(errorMessage, variantDoc) {
 
 /**
  * @typedef {object} PersistAssignmentDeps
- * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference} createModeratorRef Factory returning moderator document references.
+ * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} createModeratorRef Factory returning moderator document references.
  * @property {() => unknown} now Clock used for timestamping assignments.
  */
 
@@ -1180,8 +1219,8 @@ async function persistAssignment(deps, data) {
   const { userRecord, variantDoc } = data;
   const moderatorRef = createModeratorRef(userRecord.uid);
   const createdAt = now();
-  await moderatorRef.set({
-    variant: variantDoc.ref,
+  await (/** @type {any} */ (moderatorRef)).set({
+    variant: (/** @type {any} */ (variantDoc)).ref,
     createdAt,
   });
 }
@@ -1189,10 +1228,14 @@ async function persistAssignment(deps, data) {
 /**
  * Determine if value is a response object.
  * @param {unknown} value Value.
- * @returns {value is { status: number, body?: string }} True if response.
+ * @returns {boolean} True if response.
  */
 function isResponse(value) {
-  return Boolean(value && typeof value.status === 'number');
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const obj = /** @type {any} */ (value);
+  return typeof obj.status === 'number';
 }
 
 /**
