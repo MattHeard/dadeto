@@ -1,4 +1,31 @@
 /**
+ * @typedef {object} SubmissionData
+ * @property {string} [content] Page content.
+ * @property {string} [author] Author identifier.
+ * @property {string} [authorId] Author user ID.
+ * @property {(string|string[])} [options] Variant options.
+ * @property {string} [incomingOptionFullName] Selected option name.
+ * @property {unknown} [targetPage] Target page reference.
+ * @property {number} [pageNumber] Direct page number for direct submission.
+ * @property {boolean} [processed] Whether the submission has been processed.
+ */
+
+/**
+ * @typedef {object} PageContext
+ * @property {import('firebase-admin/firestore').DocumentReference} pageDocRef Reference to page document.
+ * @property {import('firebase-admin/firestore').DocumentReference} storyRef Reference to story document.
+ * @property {import('firebase-admin/firestore').DocumentReference | null} variantRef Reference to variant document.
+ * @property {number} pageNumber The page number assigned.
+ */
+
+/**
+ * @typedef {object} OptionData
+ * @property {string} [targetPage] Target page identifier.
+ * @property {string} [content] Option text content.
+ * @property {unknown} [_docId] Document identifier.
+ */
+
+/**
  * Increment a variant name in base-26 alphabetic order.
  * @param {string} name Current variant name.
  * @returns {string} Next variant name.
@@ -126,11 +153,11 @@ function ensureDocumentReference(reference, message) {
 
 /**
  * Ensure the reference exposes the collection helper.
- * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} reference Candidate reference.
+ * @param {unknown} reference Candidate reference.
  * @returns {reference is import('firebase-admin/firestore').DocumentReference} True when the reference is valid.
  */
 function isDocumentReference(reference) {
-  return Boolean(reference && typeof reference.collection === 'function');
+  return Boolean(reference && typeof /** @type {any} */ (reference).collection === 'function');
 }
 
 /**
@@ -147,7 +174,11 @@ function isDocumentReference(reference) {
  * @param {number=} depth Recursion depth used to widen the search range (defaults to 0).
  * @returns {Promise<number>} A unique page number.
  */
-export async function findAvailablePageNumber(db, random = Math.random, depth = 0) {
+export async function findAvailablePageNumber(
+  db,
+  random = Math.random,
+  depth = 0
+) {
   assertRandom(random);
 
   const max = 2 ** depth;
@@ -210,15 +241,18 @@ function resolveStoryRefFromOption(optionRef) {
     return { variantRef: null, pageRef: null, storyRef: null };
   }
 
-  const variantRef = /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
-    (/** @type {any} */ (optionRef).parent?.parent) || null
-  );
-  const pageRef = /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
-    (/** @type {any} */ (variantRef)?.parent?.parent) || null
-  );
-  const storyRef = /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
-    (/** @type {any} */ (pageRef)?.parent?.parent) || null
-  );
+  const variantRef =
+    /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+      /** @type {any} */ (optionRef).parent?.parent || null
+    );
+  const pageRef =
+    /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+      /** @type {any} */ (variantRef)?.parent?.parent || null
+    );
+  const storyRef =
+    /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+      /** @type {any} */ (pageRef)?.parent?.parent || null
+    );
 
   return { variantRef, pageRef, storyRef };
 }
@@ -232,7 +266,9 @@ function resolveStoryRefFromOption(optionRef) {
  */
 function resolvePageFromTarget(targetPage) {
   if (isPageReference(targetPage)) {
-    return /** @type {import('firebase-admin/firestore').DocumentReference} */ (targetPage);
+    return /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+      targetPage
+    );
   }
 
   return null;
@@ -312,14 +348,7 @@ function resolveServerTimestamp(fieldValue) {
  * @param {() => string} params.randomUUID UUID generator used to create new document identifiers.
  * @param {() => number} params.random Random number generator for variant metadata.
  * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
- * @returns {Promise<
- *   null | {
- *     pageDocRef: import('firebase-admin/firestore').DocumentReference,
- *     storyRef: import('firebase-admin/firestore').DocumentReference | null,
- *     variantRef: import('firebase-admin/firestore').DocumentReference | null,
- *     pageNumber: number | null,
- *   }
- * >} Resolved context or null when the submission is already processed.
+ * @returns {Promise<PageContext | null>} Resolved context or null when the submission is already processed.
  */
 async function resolveIncomingOptionContext({
   db,
@@ -338,10 +367,13 @@ async function resolveIncomingOptionContext({
     return null;
   }
 
-  const { variantRef, storyRef: initialStoryRef } =
+  const { variantRef, storyRef: storyRefCandidate } =
     resolveStoryRefFromOption(optionRef);
 
-  const storyRef = initialStoryRef;
+  if (!storyRefCandidate) {
+    return null;
+  }
+
   const optionData = optionSnap.data();
   const targetPage = resolveTargetPageFromOption(optionData);
 
@@ -354,12 +386,12 @@ async function resolveIncomingOptionContext({
     optionRef,
     incomingOptionFullName,
     getServerTimestamp,
-    storyRef,
+    storyRef: /** @type {import('firebase-admin/firestore').DocumentReference} */ (storyRefCandidate),
   });
 
   return {
     ...pageContext,
-    storyRef,
+    storyRef: storyRefCandidate,
     variantRef,
   };
 }
@@ -367,10 +399,10 @@ async function resolveIncomingOptionContext({
 /**
  * Normalize the target page for an option submission.
  * @param {{ targetPage?: unknown } | undefined} optionData Option document data.
- * @returns {string | undefined} Target page identifier when present.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Target page reference when present.
  */
 function resolveTargetPageFromOption(optionData) {
-  return resolvePageFromTarget(optionData?.targetPage);
+  return resolvePageFromTarget(/** @type {any} */ (optionData?.targetPage));
 }
 
 /**
@@ -384,10 +416,10 @@ function resolveTargetPageFromOption(optionData) {
  * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef Option reference involved in the submission.
  * @param {string} params.incomingOptionFullName Full document path for the option.
  * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
- * @param {import('firebase-admin/firestore').DocumentReference | null} params.storyRef Story reference targeting the submission.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.storyRef Story reference targeting the submission.
  * @returns {Promise<{
  *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
- *   pageNumber: number | null,
+ *   pageNumber: number,
  * }>} Resolved context.
  */
 async function resolveIncomingOptionPageContext({
@@ -421,7 +453,7 @@ async function resolveIncomingOptionPageContext({
 /**
  * Resolve an existing page reference from a target page selection.
  * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage The referenced page.
- * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null }>}
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number }>}
  * Resolved context or null when no existing page is found.
  */
 async function resolveExistingPageContext(targetPage) {
@@ -436,7 +468,7 @@ async function resolveExistingPageContext(targetPage) {
  * Build the context object from an existing page snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot | null} existingPageSnap Snapshot to inspect.
  * @param {import('firebase-admin/firestore').DocumentReference} targetPage Page reference.
- * @returns {{ pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null } | null}
+ * @returns {{ pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number } | null}
  * Context object when the snapshot represents an existing page.
  */
 function buildExistingPageContext(existingPageSnap, targetPage) {
@@ -446,7 +478,7 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
 
   return {
     pageDocRef: targetPage,
-    pageNumber: existingPageSnap.data().number,
+    pageNumber: /** @type {any} */ (/** @type {any} */ (existingPageSnap).data?.()).number || null,
   };
 }
 
@@ -475,7 +507,7 @@ async function safeGetPage(targetPage) {
 /**
  * Create a new page context when no existing page was found for the option submission.
  * @param {object} params Parameters describing the creation request.
- * @param {import('firebase-admin/firestore').DocumentReference | null} params.storyRef Story reference inferred from the option.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.storyRef Story reference inferred from the option.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
  * @param {() => number} params.random Random number generator for variant ordering.
  * @param {() => string} params.randomUUID UUID generator for new page documents.
@@ -528,12 +560,7 @@ m the option.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to query existing pages.
  * @param {number} params.directPageNumber Page number requested by the submission.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
- * @returns {Promise<null | {
- *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
- *   storyRef: import('firebase-admin/firestore').DocumentReference | null,
- *   variantRef: null,
- *   pageNumber: number,
- * }>} Resolved context or null when the submission has already been handled.
+ * @returns {Promise<PageContext | null>} Resolved context or null when the submission has already been handled.
  */
 async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
   const pageSnap = await db
@@ -543,16 +570,18 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
     .get();
 
   if (pageSnap.empty) {
-    await snapshot.ref.update({ processed: true });
+    await /** @type {any} */ (snapshot).ref.update({
+      processed: true,
+    });
     return null;
   }
 
-  const pageDocRef = pageSnap.docs[0].ref;
-  const storyRef = pageDocRef.parent.parent;
+  const pageDocRef = /** @type {any} */ (pageSnap.docs[0]).ref;
+  const storyRef = /** @type {any} */ (pageDocRef).parent?.parent || null;
 
   return {
     pageDocRef,
-    storyRef,
+    storyRef: storyRef || /** @type {import('firebase-admin/firestore').DocumentReference} */ ({}),
     variantRef: null,
     pageNumber: directPageNumber,
   };
@@ -564,7 +593,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
  * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef Page document where the variant will be stored.
  * @param {import('firebase-admin/firestore').DocumentReference} params.snapshotRef Submission document reference used for deterministic IDs.
  * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to queue writes for commit.
- * @param {object} params.submission Submission payload containing variant content and options.
+ * @param {SubmissionData} params.submission Submission payload containing variant content and options.
  * @param {() => string} params.randomUUID UUID generator for new Firestore documents.
  * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
  * @param {() => number} params.random Random number generator for variant ordering.
@@ -598,7 +627,7 @@ async function createVariantWithOptions({
 
   batch.set(
     newVariantRef,
-    buildVariantPayload(nextName, submission, { random, getServerTimestamp })
+    /** @type {import('firebase-admin/firestore').DocumentData} */ (buildVariantPayload(nextName, submission, { random, getServerTimestamp }))
   );
 
   normalizeOptions(submission.options).forEach((text, position) => {
@@ -632,7 +661,7 @@ function fetchExistingVariants(pageDocRef) {
  * @param {object} params Parameters controlling author record initialization.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance used to resolve author documents.
  * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to schedule author writes.
- * @param {object} params.submission Submission payload containing author identifiers.
+ * @param {SubmissionData} params.submission Submission payload containing author identifiers.
  * @param {() => string} params.randomUUID UUID generator for new author documents.
  * @returns {Promise<void>} Promise that resolves when the author record has been ensured.
  */
@@ -764,7 +793,7 @@ function getSnapshotDocumentId(snapshotRef) {
 /**
  * Build the variant document payload written to Firestore.
  * @param {string} nextName Name assigned to the new variant.
- * @param {object} submission Submission payload containing variant content.
+ * @param {SubmissionData} submission Submission payload containing variant content.
  * @param {{
  *   random: () => number,
  *   getServerTimestamp: () => unknown,
@@ -815,7 +844,7 @@ function shouldSkipSubmission({ incomingOptionFullName, directPageNumber }) {
  * @returns {Promise<void>} Promise that resolves after the update completes.
  */
 async function markSubmissionProcessed(snapshot) {
-  await snapshot.ref.update({ processed: true });
+  await /** @type {any} */ (snapshot).ref.update({ processed: true });
 }
 
 /**
@@ -829,12 +858,7 @@ async function markSubmissionProcessed(snapshot) {
  * @param {() => string} params.randomUUID UUID generator.
  * @param {() => number} params.random Random number generator for variant ordering.
  * @param {() => unknown} params.getServerTimestamp Server timestamp helper.
- * @returns {Promise<null | {
- *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
- *   storyRef: import('firebase-admin/firestore').DocumentReference,
- *   variantRef: import('firebase-admin/firestore').DocumentReference | null,
- *   pageNumber: number,
- * }>} Resolved page context or null when the submission should be dropped.
+ * @returns {Promise<PageContext | null>} Resolved page context or null when the submission should be dropped.
  */
 async function resolveSubmissionPageContext({
   db,
@@ -858,9 +882,13 @@ async function resolveSubmissionPageContext({
     });
   }
 
+  if (!Number.isInteger(directPageNumber)) {
+    return null;
+  }
+
   return resolveDirectPageContext({
     db,
-    directPageNumber,
+    directPageNumber: /** @type {number} */ (directPageNumber),
     snapshot,
   });
 }
@@ -924,7 +952,7 @@ async function finalizeSubmission({
 }) {
   await createVariantWithOptions({
     pageDocRef,
-    snapshotRef: snapshot.ref,
+    snapshotRef: /** @type {any} */ (snapshot).ref,
     batch,
     submission,
     randomUUID,
@@ -935,15 +963,13 @@ async function finalizeSubmission({
 
   const storyStatsRef = resolveStoryStatsRef(db, storyRef);
 
-  batch.set(
-    storyStatsRef,
-    { variantCount: fieldValue.increment(1) },
-    { merge: true }
-  );
+  batch.update(storyStatsRef, {
+    variantCount: fieldValue.increment(1),
+  });
 
   queueVariantDirtyReset(batch, variantRef);
 
-  batch.update(snapshot?.ref, { processed: true });
+  batch.update(/** @type {any} */ (snapshot).ref, { processed: true });
   await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
 
   await batch.commit();
@@ -963,7 +989,7 @@ function queueVariantDirtyReset(batch, variantRef) {
 /**
  * Process a submission that still needs work.
  * @param {object} params Inputs required to process the submission.
- * @param {object} params.submission Submission payload.
+ * @param {SubmissionData} params.submission Submission payload.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
  * @param {() => string} params.randomUUID UUID generator for new documents.
@@ -1086,8 +1112,8 @@ async function processSubmissionWithContext({
 
   await finalizeSubmission({
     batch,
-    pageDocRef: ensuredPageDocRef,
-    storyRef: ensuredStoryRef,
+    pageDocRef: /** @type {import('firebase-admin/firestore').DocumentReference} */ (ensuredPageDocRef),
+    storyRef: /** @type {import('firebase-admin/firestore').DocumentReference} */ (ensuredStoryRef),
     variantRef,
     submission,
     randomUUID,
@@ -1123,7 +1149,8 @@ export function createProcessNewPageHandler({
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewPage(snapshot) {
-    const submission = snapshot.data();
+    const data = snapshot.data();
+    const submission = /** @type {SubmissionData} */ (data || {});
 
     if (submission.processed) {
       return null;
@@ -1134,7 +1161,7 @@ export function createProcessNewPageHandler({
       snapshot,
       db,
       randomUUID,
-      random,
+      random: random || Math.random,
       getServerTimestamp,
       fieldValue,
     });
