@@ -15,6 +15,7 @@ export { isDuplicateAppError };
 /** @typedef {Record<string, string | undefined>} EnvironmentMap */
 /** @typedef {{ randomUUID: () => string }} StatsCryptoModule */
 /** @typedef {{ error: (message: string, ...args: any[]) => void }} StatsLogger */
+/** @typedef {import('firebase-admin/auth').DecodedIdToken} DecodedIdToken */
 
 const STATS_PAGE_HEAD = `<!doctype html>
 <html lang="en">
@@ -262,7 +263,7 @@ function extractUrlMapFromResolved(resolved) {
     return DEFAULT_URL_MAP;
   }
 
-  return candidate;
+  return /** @type {string} */ (candidate);
 }
 
 /**
@@ -282,7 +283,7 @@ export function getCdnHostFromEnv(env) {
  */
 function selectCdnHost(candidate) {
   if (isNonEmptyString(candidate)) {
-    return candidate;
+    return /** @type {string} */ (candidate);
   }
 
   return DEFAULT_CDN_HOST;
@@ -460,9 +461,10 @@ export function createGenerateStatsCore({
    */
   async function buildTopStoryFromStatsDoc(dbRef, statsDoc) {
     const storyDoc = await dbRef.collection('stories').doc(statsDoc.id).get();
+    const variantCountValue = statsDoc.data().variantCount;
     return {
       title: getStoryTitle(storyDoc.data(), statsDoc.id),
-      variantCount: statsDoc.data().variantCount || 0,
+      variantCount: typeof variantCountValue === 'number' ? variantCountValue : 0,
     };
   }
 
@@ -499,7 +501,7 @@ export function createGenerateStatsCore({
       return fallback;
     }
 
-    return candidate;
+    return /** @type {string} */ (candidate);
   }
 
   /**
@@ -511,10 +513,14 @@ export function createGenerateStatsCore({
       headers: { 'Metadata-Flavor': 'Google' },
     });
     validateMetadataResponse(response);
-    const metadata = /** @type {{ access_token: string }} */ (
+    const metadata = /** @type {{ access_token: unknown }} */ (
       await response.json()
     );
-    return metadata.access_token;
+    const token = metadata.access_token;
+    if (typeof token !== 'string') {
+      throw new Error('invalid access_token in metadata response');
+    }
+    return token;
   }
 
   /**
@@ -606,7 +612,7 @@ export function createGenerateStatsCore({
 
   /**
    * @param {string} token OAuth token.
-   * @returns {Promise<unknown>} Verification result.
+   * @returns {Promise<DecodedIdToken>} Verification result.
    */
   const verifyToken = token => auth.verifyIdToken(token);
   /**
@@ -760,7 +766,7 @@ function resolveGlobalFetch() {
  * @param {object} deps Deps.
  * @param {string} deps.path Path.
  * @param {typeof fetch} deps.fetchImpl Fetch.
- * @param {string} deps.project Project.
+ * @param {string | undefined} deps.project Project.
  * @param {string} deps.resolvedUrlMap Url map.
  * @param {string} deps.resolvedCdnHost Host.
  * @param {() => string} deps.randomUUID UUID.
@@ -785,7 +791,7 @@ function handleInvalidateResult(requestPromise, path, logger) {
     .then(res => {
       handleInvalidateResponse(res, path, logger);
     })
-    .catch(err => {
+    .catch((err) => {
       logInvalidateError(logger, path, err);
     });
 }
@@ -794,7 +800,7 @@ function handleInvalidateResult(requestPromise, path, logger) {
  * Send invalidate request.
  * @param {object} deps Deps.
  * @param {typeof fetch} deps.fetchImpl HTTP client.
- * @param {string} deps.project Google Cloud project name.
+ * @param {string | undefined} deps.project Google Cloud project name.
  * @param {string} deps.resolvedUrlMap CDN URL map.
  * @param {string} deps.resolvedCdnHost CDN host header.
  * @param {() => string} deps.randomUUID Request ID generator.
@@ -875,10 +881,6 @@ function getLogMessage(err) {
 }
 
 /**
- *
- * @param err
- */
-/**
  * Decide whether the candidate payload exposes a string message.
  * @param {unknown} err Potential error value.
  * @returns {err is { message: string }} True when the payload carries a message.
@@ -888,7 +890,7 @@ function isErrorWithMessage(err) {
     return false;
   }
 
-  return typeof err.message === 'string';
+  return typeof (/** @type {any} */ (err)).message === 'string';
 }
 
 /**
@@ -959,5 +961,5 @@ function sendGenerateFailure(res, err) {
  * @returns {string} Message sent in the response.
  */
 function getGenerateErrorMessage(err) {
-  return resolveErrorMessage(err, () => 'generate failed');
+  return /** @type {string} */ (resolveErrorMessage(err, () => 'generate failed'));
 }
