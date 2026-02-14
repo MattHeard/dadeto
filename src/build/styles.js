@@ -266,7 +266,7 @@ export function styles() {
 
   /* Add spacing around nav entry */
   .nav-entry {
-    margin-top: 1em;
+    margin-top: 0;
     margin-bottom: 1em;
   }
 
