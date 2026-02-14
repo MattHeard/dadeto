@@ -90,25 +90,6 @@ export const VISIBILITY_THRESHOLD = 0.5;
  * @typedef {{ parentVariantRef: DocumentRefLike; parentPageRef: DocumentRefLike }} ParentReferencePair
  * @typedef {{ parentVariantSnap: DocumentLike; parentPageSnap: DocumentLike }} ParentSnapshotPair
  * @typedef {{
- *   db: FirestoreLike;
- *   storage: { bucket: (name: string) => StorageBucketLike };
- *   fetchFn: Function;
- *   randomUUID: Function;
- *   projectId: string;
- *   urlMapName: string;
- *   cdnHost: string;
- *   consoleError?: (message?: unknown, ...optionalParams: unknown[]) => void;
- *   bucketName?: string;
- *   visibilityThreshold?: number;
- * }} RenderVariantDependencies
- * @typedef {{
- *   db: FirestoreLike;
- *   bucket: StorageBucketLike;
- *   consoleError: (message?: unknown, ...optionalParams: unknown[]) => void;
- *   visibilityThreshold: number;
- *   invalidatePaths: (paths: string[]) => Promise<void>;
- * }} RenderHandlerDeps
- * @typedef {{
  *   snap: VariantSnapshot;
  *   db: FirestoreLike;
  *   bucket: StorageBucketLike;
@@ -118,7 +99,6 @@ export const VISIBILITY_THRESHOLD = 0.5;
  *   visibilityThreshold?: number;
  *   variant?: VariantDocument;
  * }} GatherMetadataDeps
- * @typedef {{ after?: DocumentLike; before?: DocumentLike; params?: Record<string, string> }} FirestoreChange
  */
 
 /**
@@ -1295,11 +1275,11 @@ async function buildOptionMetadata({
     consoleError
   );
 
-  return {
+  return /** @type {OptionMetadata} */ ({
     content: data.content,
     position: data.position,
     ...targetMetadata,
-  };
+  });
 }
 
 /**
@@ -1307,7 +1287,7 @@ async function buildOptionMetadata({
  * @param {OptionDocument} data Raw option document data.
  * @param {number} visibilityThreshold Minimum visibility required for variants.
  * @param {ConsoleError} [consoleError] Optional logger for errors.
- * @returns {Promise<OptionMetadata>} Target metadata derived from the option.
+ * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Target metadata derived from the option.
  */
 async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
   if (data.targetPage) {
@@ -1324,14 +1304,16 @@ async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
 /**
  * Derive the resolved page number metadata when no target reference exists.
  * @param {OptionDocument} data Option document payload.
- * @returns {{targetPageNumber?: number}} Metadata containing the target page number when set.
+ * @returns {Omit<OptionMetadata, 'content' | 'position'>} Metadata containing the target page number when set.
  */
 function resolveTargetPageNumber(data) {
   if (data.targetPageNumber !== undefined) {
-    return { targetPageNumber: data.targetPageNumber };
+    return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({
+      targetPageNumber: data.targetPageNumber,
+    });
   }
 
-  return {};
+  return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({});
 }
 
 /**
@@ -1339,23 +1321,23 @@ function resolveTargetPageNumber(data) {
  * @param {import('firebase-admin/firestore').DocumentReference} targetPage Firestore reference for the target page document.
  * @param {number} visibilityThreshold Minimum visibility required for a variant to be considered published.
  * @param {ConsoleError} [consoleError] Optional logger for unexpected failures.
- * @returns {Promise<OptionMetadata>} Metadata derived from the target page lookup.
+ * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Metadata derived from the target page lookup.
  */
 async function fetchTargetPageMetadata(
   targetPage,
   visibilityThreshold,
   consoleError
 ) {
-  return targetPage
+  return /** @type {Promise<Omit<OptionMetadata, 'content' | 'position'>>} */ (targetPage
     .get()
     .then(
       /**
        * @param {import('firebase-admin/firestore').DocumentSnapshot} targetSnap - Target snapshot.
-       * @returns {Promise<object>} Metadata.
+       * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Metadata.
        */
       targetSnap => {
         if (!targetSnap.exists) {
-          return Promise.resolve({});
+          return Promise.resolve(/** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({}));
         }
 
         return processTargetSnap(
@@ -1368,13 +1350,13 @@ async function fetchTargetPageMetadata(
     .catch(
       /**
        * @param {any} error - Error object.
-       * @returns {object} Empty object.
+       * @returns {Omit<OptionMetadata, 'content' | 'position'>} Empty object.
        */
       error => {
         handleTargetPageError(error, consoleError);
-        return {};
+        return /** @type {Omit<OptionMetadata, 'content' | 'position'>} */ ({});
       }
-    );
+    ));
 }
 
 /**
@@ -1579,7 +1561,6 @@ async function getStorySnapshot(storyRef) {
 /**
  * Build story metadata.
  * @param {StoryMetadataDeps} options Options.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void} [options.consoleError] Error logger.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata.
  */
 async function buildStoryMetadata({ storyData, page, consoleError }) {
@@ -1635,7 +1616,7 @@ function resolveRootPageUrl(storyData, consoleError) {
 /**
  * Handle root page error.
  * @param {Error} error Error.
- * @param {Function} [consoleError] Error logger.
+ * @param {ConsoleError} [consoleError] Error logger.
  */
 function handleRootPageError(error, consoleError) {
   if (!consoleError) {
@@ -1665,31 +1646,31 @@ async function fetchRootPageUrl(storyData) {
     return undefined;
   }
 
-  return resolveUrlFromRootPage(rootPageSnap, storyData.rootPage);
+  return resolveUrlFromRootPage(/** @type {PageSnapshot} */ (rootPageSnap), storyData.rootPage);
 }
 
 /**
  * Resolve URL from root page.
- * @param {import('firebase-admin/firestore').DocumentSnapshot} rootPageSnap Root page snapshot.
+ * @param {PageSnapshot} rootPageSnap Root page snapshot.
  * @param {import('firebase-admin/firestore').DocumentReference} rootPageRef Root page reference.
  * @returns {Promise<string | undefined>} Root page URL.
  */
 async function resolveUrlFromRootPage(rootPageSnap, rootPageRef) {
   const firstVariant = await getFirstVariant(rootPageRef);
-  return buildRootUrl(rootPageSnap, firstVariant);
+  return buildRootUrl(rootPageSnap, /** @type {VariantSnapshot | undefined} */ (firstVariant));
 }
 
 /**
  * Build root URL.
  * @param {PageSnapshot} snap Snap.
- * @param {VariantSnapshot} variant Variant.
+ * @param {VariantSnapshot | undefined} variant Variant.
  * @returns {string | undefined} URL.
  */
 function buildRootUrl(snap, variant) {
   if (!variant) {
     return undefined;
   }
-  return assembleRootUrl(snap, variant);
+  return assembleRootUrl(snap, /** @type {VariantSnapshot} */ (variant));
 }
 
 /**
@@ -1702,9 +1683,10 @@ function assembleRootUrl(snap, variant) {
   const data = snap.data();
   let pageNumber = '';
   if (data) {
-    pageNumber = data.number;
+    pageNumber = String(data.number);
   }
-  const variantName = variant.data().name;
+  const variantData = variant.data();
+  const variantName = (variantData || {}).name || '';
   return `/p/${pageNumber}${variantName}.html`;
 }
 
@@ -1725,7 +1707,7 @@ async function getFirstVariant(pageRef) {
 
 /**
  * Determine the owning story reference for the provided page snapshot.
- * @param {{ref?: {parent?: {parent?: any}}}} pageSnap Firestore snapshot describing a page document.
+ * @param {PageSnapshot} pageSnap Firestore snapshot describing a page document.
  * @returns {object|null} Story reference when available, otherwise null.
  */
 function extractStoryRef(pageSnap) {
@@ -1735,7 +1717,7 @@ function extractStoryRef(pageSnap) {
 
 /**
  * Return the Firestore reference for a page snapshot.
- * @param {{ ref?: unknown } | undefined | null} pageSnap Firestore page snapshot.
+ * @param {PageSnapshot | undefined | null} pageSnap Firestore page snapshot.
  * @returns {object | null} Document reference or null.
  */
 function getPageRef(pageSnap) {
@@ -1846,7 +1828,7 @@ async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
 /**
  * Handle author lookup error.
  * @param {unknown} error Error.
- * @param {Function} [consoleError] Error logger.
+ * @param {ConsoleError} [consoleError] Error logger.
  */
 function handleAuthorLookupError(error, consoleError) {
   if (!consoleError) {
@@ -1991,7 +1973,7 @@ function getParentRef(reference) {
     return null;
   }
 
-  return /** @type {{ parent?: unknown } | null} */ (reference.parent);
+  return /** @type {OptionalAncestorReference} */ (reference.parent);
 }
 
 export { getAncestorRef };
@@ -2009,14 +1991,14 @@ function areParentRefsValid(parentVariantRef, parentPageRef) {
 /**
  * Resolve the parent variant and page references from an option document.
  * @param {OptionalAncestorReference} optionRef Option reference from Firestore.
- * @returns {{ parentVariantRef: { get: Function }, parentPageRef: { get: Function } } | null} Parent references when resolvable.
+ * @returns {ParentReferencePair | null} Parent references when resolvable.
  */
 export function resolveParentReferences(optionRef) {
   const { parentVariantRef, parentPageRef } = extractParentRefs(optionRef);
   if (!areParentRefsValid(parentVariantRef, parentPageRef)) {
     return null;
   }
-  return { parentVariantRef, parentPageRef };
+  return /** @type {ParentReferencePair} */ ({ parentVariantRef, parentPageRef });
 }
 
 /**
@@ -2027,8 +2009,8 @@ export function resolveParentReferences(optionRef) {
  */
 /**
  * Check if snapshots exist.
- * @param {object} parentVariantSnap Variant snap.
- * @param {object} parentPageSnap Page snap.
+ * @param {DocumentLike} parentVariantSnap Variant snap.
+ * @param {DocumentLike} parentPageSnap Page snap.
  * @returns {boolean} True if exist.
  */
 function doSnapshotsExist(parentVariantSnap, parentPageSnap) {
@@ -2037,9 +2019,9 @@ function doSnapshotsExist(parentVariantSnap, parentPageSnap) {
 
 /**
  * Fetch the snapshots for the variant and page parents.
- * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} parentVariantRef Firestore reference to the parent variant.
- * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} parentPageRef Firestore reference to the parent page.
- * @returns {Promise<{ parentVariantSnap: { exists: boolean, data: () => Record<string, any> }, parentPageSnap: { exists: boolean, data: () => Record<string, any> } } | null>} Snapshots or null when missing.
+ * @param {DocumentRefLike} parentVariantRef Firestore reference to the parent variant.
+ * @param {DocumentRefLike} parentPageRef Firestore reference to the parent page.
+ * @returns {Promise<ParentSnapshotPair | null>} Snapshots or null when missing.
  */
 async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
   const [parentVariantSnap, parentPageSnap] = await Promise.all([
@@ -2051,7 +2033,7 @@ async function fetchParentSnapshots(parentVariantRef, parentPageRef) {
     return null;
   }
 
-  return { parentVariantSnap, parentPageSnap };
+  return /** @type {ParentSnapshotPair} */ ({ parentVariantSnap, parentPageSnap });
 }
 
 /**
@@ -2095,15 +2077,15 @@ async function fetchParentData(db, incomingOption) {
   if (!references) {
     return null;
   }
-  return fetchParentSnapshots(
+  return /** @type {Promise<ParentSnapshots>} */ (fetchParentSnapshots(
     references.parentVariantRef,
     references.parentPageRef
-  );
+  ));
 }
 
 /**
  * Build route from snapshots.
- * @param {ParentSnapshots} snapshots Snapshots.
+ * @param {ParentSnapshotPair} snapshots Snapshots.
  * @returns {string | null} Route.
  */
 function buildRouteFromSnapshots(snapshots) {
@@ -2129,7 +2111,7 @@ async function resolveParentUrl(options) {
 /**
  * Handle parent lookup error.
  * @param {Error} error Error.
- * @param {Function} consoleError Error logger.
+ * @param {ConsoleError} [consoleError] Error logger.
  */
 function handleParentLookupError(error, consoleError) {
   if (!consoleError) {
@@ -2169,7 +2151,7 @@ function resolveParentRoute(snapshots) {
     return undefined;
   }
 
-  return normalizeRoute(buildRouteFromSnapshots(snapshots));
+  return normalizeRoute(buildRouteFromSnapshots(/** @type {ParentSnapshotPair} */ (snapshots)));
 }
 
 /**
@@ -2182,7 +2164,7 @@ function normalizeRoute(route) {
     return undefined;
   }
 
-  return route;
+  return /** @type {string} */ (route);
 }
 
 /**
@@ -2261,8 +2243,8 @@ function buildRenderVariantOptions(dependencies) {
 
 /**
  * Provide a concrete error logger for the render variant pipeline.
- * @param {(message?: unknown, ...optionalParams: unknown[]) => void | undefined} value Logger provided by the caller.
- * @returns {(message?: unknown, ...optionalParams: unknown[]) => void} Resolved console error helper.
+ * @param {ConsoleError | undefined} value Logger provided by the caller.
+ * @returns {ConsoleError} Resolved console error helper.
  */
 function resolveRenderVariantConsoleError(value) {
   return value ?? console.error;
@@ -2316,7 +2298,7 @@ function validateDependencies(dependencies) {
 /**
  * Create render variant handler.
  * @param {RenderVariantDependencies} options Dependencies.
- * @returns {Function} Render function.
+ * @returns {(snap: any, context?: any) => Promise<null>} Render function.
  */
 function createRenderVariantHandler({
   db,
@@ -2333,8 +2315,8 @@ function createRenderVariantHandler({
   const bucket = storage.bucket(bucketName || DEFAULT_BUCKET_NAME);
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
-    projectId,
-    urlMapName,
+    projectId: /** @type {string} */ (projectId),
+    urlMapName: /** @type {string} */ (urlMapName),
     cdnHost,
     randomUUID,
     consoleError,
@@ -2372,7 +2354,7 @@ function createRenderVariantHandler({
     return null;
   }
 
-  return async function render(snap, context = {}) {
+  return async function render(/** @type {VariantSnapshot} */ snap, context = {}) {
     return executeRenderWorkflow(
       { db, bucket, consoleError, visibilityThreshold, invalidatePaths },
       snap,
@@ -2552,7 +2534,7 @@ async function gatherMetadata(deps) {
 
   const options = await loadOptions({
     snap,
-    visibilityThreshold,
+    visibilityThreshold: visibilityThreshold || VISIBILITY_THRESHOLD,
     consoleError,
   });
   const { storyTitle, firstPageUrl } = await resolveStoryMetadata({
@@ -2671,7 +2653,7 @@ async function buildRenderPlan({
   visibilityThreshold,
 }) {
   const { pageSnap, page } = pageData;
-  const variant = snap.data();
+  const variant = /** @type {VariantDocument} */ (snap.data());
   const metadata = await gatherMetadata({
     snap,
     db,
@@ -2725,7 +2707,7 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
  */
 async function saveAltsHtml(deps) {
   const { snap, bucket, page } = deps;
-  const variantsSnap = await snap.ref.parent.get();
+  const variantsSnap = await (/** @type {any} */ (snap).ref.parent.get());
   const variants = getVisibleVariants(variantsSnap.docs);
   const altsHtml = buildAltsHtml(page.number, variants);
   const altsPath = `p/${page.number}-alts.html`;
@@ -2833,12 +2815,13 @@ async function persistRenderPlan({
 }
 
 /**
+ * @typedef {{ before: DocumentLike; after: DocumentLike & { ref: { update: Function } }; }} FirestoreChange
  * Build a change handler that renders visible variants and clears dirty markers.
  * @param {object} options - Dependencies for the change handler.
  * @param {(snap: any, context?: object) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
  * @param {number} [options.visibilityThreshold] - Minimum visibility required before rendering.
- * @returns {(change: {before: {exists: boolean, data: () => Record<string, any>}, after: {exists: boolean, data: () => Record<string, any>, ref: {update: Function}}}, context?: {params?: Record<string, string>}) => Promise<null>} Firestore change handler.
+ * @returns {(change: FirestoreChange, context?: RenderContext) => Promise<null>} Firestore change handler.
  */
 export function createHandleVariantWrite({
   renderVariant,
@@ -2851,8 +2834,8 @@ export function createHandleVariantWrite({
   /**
    * Handle dirty variant.
    * @param {object} root0 Options.
-   * @param {object} root0.change Firestore change.
-   * @param {object} root0.context Event context.
+   * @param {FirestoreChange} root0.change Firestore change.
+   * @param {RenderContext | undefined} root0.context Event context.
    * @param {Function} root0.renderVariant Render function.
    * @param {Function} root0.getDeleteSentinel Sentinel function.
    * @returns {Promise<null>} Null.
@@ -2863,8 +2846,8 @@ export function createHandleVariantWrite({
     renderVariant,
     getDeleteSentinel,
   }) {
-    await renderVariant(change.after, context);
-    await change.after.ref.update({ dirty: getDeleteSentinel() });
+    await renderVariant(/** @type {any} */ (change.after), context);
+    await (/** @type {any} */ (change.after).ref.update({ dirty: getDeleteSentinel() }));
     return null;
   }
 
@@ -2883,7 +2866,7 @@ export function createHandleVariantWrite({
     return beforeVisibility < threshold && afterVisibility >= threshold;
   }
 
-  return async function handleVariantWrite(change, context) {
+  return async function handleVariantWrite(/** @type {FirestoreChange} */ change, context) {
     if (!change.after.exists) {
       return null;
     }
@@ -2892,8 +2875,8 @@ export function createHandleVariantWrite({
 
   /**
    * Process a variant change when the document still exists.
-   * @param {object} change - Firestore change payload describing the variant update.
-   * @param {object} context - Cloud Functions context for the trigger.
+   * @param {FirestoreChange} change - Firestore change payload describing the variant update.
+   * @param {RenderContext | undefined} context - Cloud Functions context for the trigger.
    * @returns {Promise<null>} Result of the processing workflow.
    */
   async function processExistingVariant(change, context) {
@@ -2912,31 +2895,31 @@ export function createHandleVariantWrite({
 
   /**
    * Handle the clean variant path when rendering is driven by visibility changes.
-   * @param {object} change - Firestore change payload.
-   * @param {object} context - Cloud Functions context for the trigger.
-   * @param {object} data - Variant data captured from the latest snapshot.
+   * @param {FirestoreChange} change - Firestore change payload.
+   * @param {RenderContext | undefined} context - Cloud Functions context for the trigger.
+   * @param {Record<string, any>} data - Variant data captured from the latest snapshot.
    * @returns {Promise<null>} Result of attempting to render or `null` when skipped.
    */
   async function handleCleanVariant(change, context, data) {
     if (shouldRenderVariant(change, data, visibilityThreshold)) {
-      return renderVariant(change.after, context);
+      return renderVariant(/** @type {any} */ (change.after), context);
     }
     return null;
   }
 
   /**
    * Decide if a variant should be rendered based on visibility threshold crossings.
-   * @param {object} change - Firestore change describing the before/after visibility values.
-   * @param {object} data - New variant data provided by the snapshot.
+   * @param {FirestoreChange} change - Firestore change describing the before/after visibility values.
+   * @param {Record<string, any>} data - New variant data provided by the snapshot.
    * @param {number} visibilityThreshold - Visibility threshold that must be exceeded.
    * @returns {boolean} True when the threshold was crossed and rendering is required.
    */
   function shouldRenderVariant(change, data, visibilityThreshold) {
-    if (!change.before.exists) {
+    if (!(/** @type {any} */ (change.before).exists)) {
       return true;
     }
 
-    const beforeVisibility = change.before.data().visibility;
+    const beforeVisibility = (/** @type {any} */ (change.before).data()).visibility;
     const afterVisibility = data.visibility;
 
     return didCrossVisibilityThreshold(
