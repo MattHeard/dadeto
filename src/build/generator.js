@@ -227,26 +227,25 @@ function formatDate(dateString) {
 
 // Header components
 // No longer using newlines and indentation
-const METADATA_TEXT = `Software developer and philosopher in Berlin`;
+const BIO_TEXT = `Software developer and philosopher in Berlin`;
 
 /**
  * Build the HTML for the page header section.
  * @returns {string} HTML representing the header section.
  */
 function createHeaderContent() {
-  const valueDivs = [
-    createValueDiv(headerBanner()),
-    createValueDiv(METADATA_TEXT, [CLASS.METADATA]),
-  ];
-  const parts = valueDivs.map(valueDiv =>
-    createLabeledSection({
-      label: '',
-      valueHTML: valueDiv,
-      wrapValueDiv: false,
-    })
-  );
+  const banner = createLabeledSection({
+    label: '',
+    valueHTML: createValueDiv(headerBanner()),
+    wrapValueDiv: false,
+  });
+  const bio = createLabeledSection({
+    label: 'bio',
+    valueHTML: createValueDiv(BIO_TEXT, [CLASS.METADATA]),
+    wrapValueDiv: false,
+  });
   const blankLine = '<p></p>';
-  return join([parts[0], blankLine, parts[1]]);
+  return join([banner, blankLine, bio]);
 }
 
 /**
