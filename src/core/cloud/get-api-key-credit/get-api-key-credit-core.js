@@ -50,7 +50,7 @@ export function createFirestore(FirestoreConstructor) {
  */
 function resolveUuid(request, getUuid) {
   const directUuid = request.uuid;
-  if (isValidString(directUuid)) {
+  if (typeof directUuid === 'string' && isValidString(directUuid)) {
     return directUuid;
   }
   return getUuid(request);
@@ -62,9 +62,10 @@ function resolveUuid(request, getUuid) {
  * @returns {{ status: number, body: unknown }} HTTP response describing the outcome.
  */
 function mapCreditToResponse(credit) {
-  return (
-    CREDIT_RESPONSE_BY_VALUE.get(credit) ?? { status: 200, body: { credit } }
-  );
+  if (credit === null || credit === undefined) {
+    return CREDIT_RESPONSE_BY_VALUE.get(credit) ?? { status: 200, body: { credit } };
+  }
+  return { status: 200, body: { credit } };
 }
 
 /**
@@ -88,7 +89,7 @@ async function fetchCreditResponse(fetchCredit, uuid) {
  * @returns {{ status: number, body: string } | null} Response when missing, otherwise null.
  */
 function getMissingUuidResponse(uuid) {
-  if (isValidString(uuid)) {
+  if (typeof uuid === 'string' && isValidString(uuid)) {
     return null;
   }
   return MISSING_UUID_RESPONSE;
@@ -109,7 +110,8 @@ async function fetchCreditWhenUuidPresent(fetchCredit, request, getUuid) {
     return missingUuidResponse;
   }
 
-  return fetchCreditResponse(fetchCredit, uuid);
+  // At this point, uuid is guaranteed to be a non-empty string (getMissingUuidResponse returned null)
+  return fetchCreditResponse(fetchCredit, /** @type {string} */ (uuid));
 }
 
 /**
