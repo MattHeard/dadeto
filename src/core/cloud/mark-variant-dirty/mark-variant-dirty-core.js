@@ -20,6 +20,80 @@ const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+
+/**
+ * @typedef {Object} FirebaseHelpers
+ * @property {typeof findPageRef} [findPageRef] Override for findPageRef.
+ * @property {typeof findPagesSnap} [findPagesSnap] Override for findPagesSnap.
+ * @property {typeof findVariantsSnap} [findVariantsSnap] Override for findVariantsSnap.
+ * @property {typeof refFromSnap} [refFromSnap] Override for refFromSnap.
+ */
+
+/**
+ * @typedef {Object} MarkVariantDirtyDeps
+ * @property {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @property {FirebaseHelpers} [firebase] Optional Firebase helper overrides.
+ * @property {typeof updateVariantDirty} [updateVariantDirty] Override for updateVariantDirty.
+ */
+
+/**
+ * @typedef {Object} FindVariantRefParams
+ * @property {import('firebase-admin/firestore').Firestore} database Firestore instance.
+ * @property {number} pageNumber Page number.
+ * @property {string} variantName Variant name.
+ * @property {FirebaseHelpers} [firebase] Optional Firebase helper overrides.
+ */
+
+/**
+ * @typedef {Object} VariantHelpers
+ * @property {typeof findPageRef} findPageRef Helper to find page reference.
+ * @property {typeof findVariantsSnap} findVariantsSnap Helper to find variants snapshot.
+ * @property {typeof findPagesSnap} findPagesSnap Helper to find pages snapshot.
+ * @property {typeof refFromSnap} refFromSnap Helper to extract reference from snapshot.
+ */
+
+/**
+ * @typedef {Object} MarkVariantRequestParams
+ * @property {number} pageNumber Page number.
+ * @property {string} variantName Variant name.
+ */
+
+/**
+ * @typedef {Object} HandleRequestOptions
+ * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification helper.
+ * @property {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Core mutation helper.
+ * @property {(body: unknown) => MarkVariantRequestParams} [parseRequestBody] Body parser.
+ * @property {string} [allowedMethod] Allowed HTTP method.
+ */
+
+/**
+ * @typedef {Object} HandleRequestDeps
+ * @property {typeof markVariantDirtyImpl} [markFn] Override for marking variant dirty.
+ * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} [verifyAdmin] Override for admin verification.
+ */
+
+/**
+ * @typedef {Object} ProcessRequestData
+ * @property {NativeHttpRequest} req Express request.
+ * @property {NativeHttpResponse} res Express response.
+ * @property {HandleRequestDeps} [deps] Optional overrides.
+ */
+
+/**
+ * @typedef {Object} HandlerDependencies
+ * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification function.
+ * @property {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Variant mutation helper.
+ * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Request parser.
+ * @property {string} allowedMethod Allowed HTTP method.
+ */
+
+/**
+ * @typedef {Object} MarkVariantAndRespondParams
+ * @property {NativeHttpResponse} res Response object.
+ * @property {(pageNumber: number, variantName: string) => Promise<boolean>} markFn Marking function.
+ * @property {number} pageNumber Page number.
+ * @property {string} variantName Variant name.
+ */
 /**
  * Build the cors middleware origin handler.
  * @param {(origin: string | null | undefined, origins: string[]) => boolean} isAllowedOriginFn Origin predicate.
@@ -57,7 +131,8 @@ function getDocRefFromSnapshot(snap) {
     return null;
   }
 
-  return getDocRef(snap.docs[0]);
+  // snap is guaranteed to be non-null here after hasSnapshotDocs check
+  return getDocRef(/** @type {import('firebase-admin/firestore').QuerySnapshot} */(snap).docs[0]);
 }
 
 /**
@@ -92,7 +167,9 @@ function extractDocReference(doc) {
     return null;
   }
 
-  return doc.ref;
+  // doc is guaranteed to be non-null and have a .ref property after hasDocReference check
+  // We assert the existence of .ref since TypeScript's type guard doesn't capture this
+  return /** @type {any} */(doc).ref;
 }
 
 /**
@@ -105,22 +182,21 @@ function hasDocReference(doc) {
     return false;
   }
 
-  return Boolean(doc.ref);
+  // We access .ref through any to avoid TypeScript ref property issue
+  return Boolean(/** @type {any} */(doc).ref);
 }
 
 /**
  * Find a reference to the page document.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @param {number} pageNumber Page number.
- * @param {{
- *   findPagesSnap?: typeof findPagesSnap,
- *   refFromSnap?: typeof refFromSnap,
- * }} [firebase] Optional Firebase helpers.
+ * @param {FirebaseHelpers} [firebase] Optional Firebase helpers.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Page doc ref.
  */
 export async function findPageRef(database, pageNumber, firebase = {}) {
-  const findPagesSnapFn = chooseHelper(firebase.findPagesSnap, findPagesSnap);
-  const refFromSnapFn = chooseHelper(firebase.refFromSnap, refFromSnap);
+  const firebaseHelpers = /** @type {FirebaseHelpers} */(firebase);
+  const findPagesSnapFn = /** @type {typeof findPagesSnap} */(chooseHelper(firebaseHelpers.findPagesSnap, findPagesSnap));
+  const refFromSnapFn = /** @type {typeof refFromSnap} */(chooseHelper(firebaseHelpers.refFromSnap, refFromSnap));
 
   const pagesSnap = await findPagesSnapFn(database, pageNumber);
   return refFromSnapFn(pagesSnap);
@@ -138,17 +214,7 @@ export function findVariantsSnap(pageRef, variantName) {
 
 /**
  * Find a reference to the variant document.
- * @param {{
- *   database: import('firebase-admin/firestore').Firestore,
- *   pageNumber: number,
- *   variantName: string,
- *   firebase?: {
- *     findPageRef?: typeof findPageRef,
- *     findPagesSnap?: typeof findPagesSnap,
- *     findVariantsSnap?: typeof findVariantsSnap,
- *     refFromSnap?: typeof refFromSnap,
- *   },
- * }} params - Dependencies used to locate the variant.
+ * @param {FindVariantRefParams} params - Dependencies used to locate the variant.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant doc ref.
  */
 export async function findVariantRef({
@@ -157,7 +223,8 @@ export async function findVariantRef({
   variantName,
   firebase = {},
 }) {
-  const helpers = resolveVariantHelpers(firebase);
+  const firebaseHelpers = /** @type {FirebaseHelpers} */(firebase);
+  const helpers = resolveVariantHelpers(firebaseHelpers);
   const pageRef = await helpers.findPageRef(database, pageNumber, {
     findPagesSnap: helpers.findPagesSnap,
     refFromSnap: helpers.refFromSnap,
@@ -168,14 +235,14 @@ export async function findVariantRef({
 
 /**
  * Resolve the variant reference when a page ref is present.
- * @param {object} helpers Firebase helpers.
+ * @param {VariantHelpers} helpers Firebase helpers.
  * @param {import('firebase-admin/firestore').DocumentReference | null} pageRef Page ref candidate.
  * @param {string} variantName Variant name.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant ref or null.
  */
 function resolveVariantRefFromPage(helpers, pageRef, variantName) {
   if (!pageRef) {
-    return null;
+    return Promise.resolve(null);
   }
 
   return findVariantRefFromPage(helpers, pageRef, variantName);
@@ -183,27 +250,28 @@ function resolveVariantRefFromPage(helpers, pageRef, variantName) {
 
 /**
  * Resolve variant helpers from overrides.
- * @param {object} firebase Firebase helpers.
- * @returns {object} Helpers.
+ * @param {FirebaseHelpers} firebase Firebase helpers.
+ * @returns {VariantHelpers} Helpers.
  */
 function resolveVariantHelpers(firebase) {
   return {
-    findPageRef: chooseHelper(firebase.findPageRef, findPageRef),
-    findVariantsSnap: chooseHelper(firebase.findVariantsSnap, findVariantsSnap),
-    findPagesSnap: chooseHelper(firebase.findPagesSnap, findPagesSnap),
-    refFromSnap: chooseHelper(firebase.refFromSnap, refFromSnap),
+    findPageRef: /** @type {typeof findPageRef} */(chooseHelper(firebase.findPageRef, findPageRef)),
+    findVariantsSnap: /** @type {typeof findVariantsSnap} */(chooseHelper(firebase.findVariantsSnap, findVariantsSnap)),
+    findPagesSnap: /** @type {typeof findPagesSnap} */(chooseHelper(firebase.findPagesSnap, findPagesSnap)),
+    refFromSnap: /** @type {typeof refFromSnap} */(chooseHelper(firebase.refFromSnap, refFromSnap)),
   };
 }
 
 /**
  * Choose helper override.
- * @param {unknown} override Override.
- * @param {Function} fallback Fallback.
- * @returns {Function} Helper.
+ * @template T
+ * @param {T | undefined} override Override.
+ * @param {T} fallback Fallback.
+ * @returns {T} Helper.
  */
 function chooseHelper(override, fallback) {
   if (typeof override === 'function') {
-    return override;
+    return /** @type {any} */(override);
   }
 
   return fallback;
@@ -211,7 +279,7 @@ function chooseHelper(override, fallback) {
 
 /**
  * Find variant ref from page ref.
- * @param {object} helpers Helpers.
+ * @param {VariantHelpers} helpers Helpers.
  * @param {import('firebase-admin/firestore').DocumentReference} pageRef Page ref.
  * @param {string} variantName Variant name.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant ref.
@@ -234,26 +302,20 @@ export function updateVariantDirty(variantRef) {
  * Mark a variant document as dirty so the render-variant function re-renders it.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
- * @param {{
- *   db: import('firebase-admin/firestore').Firestore,
- *   firebase?: {
- *     findPageRef?: typeof findPageRef,
- *     findPagesSnap?: typeof findPagesSnap,
- *     findVariantsSnap?: typeof findVariantsSnap,
- *     refFromSnap?: typeof refFromSnap,
- *   },
- *   updateVariantDirty?: typeof updateVariantDirty,
- * }} deps Dependencies required to locate and update the variant.
+ * @param {MarkVariantDirtyDeps} [deps] Dependencies required to locate and update the variant.
  * @returns {Promise<boolean>} True if the variant was updated.
  */
-export async function markVariantDirtyImpl(pageNumber, variantName, deps = {}) {
+export async function markVariantDirtyImpl(pageNumber, variantName, deps) {
+  // Ensure we have deps with db - will throw in resolveVariantReference if missing
+  const depsTyped = /** @type {MarkVariantDirtyDeps | undefined} */(deps);
+
   const variantRef = await resolveVariantReference(
-    deps,
+    depsTyped,
     pageNumber,
     variantName
   );
 
-  return updateVariantIfPresent(deps.updateVariantDirty, variantRef);
+  return updateVariantIfPresent(depsTyped?.updateVariantDirty, variantRef);
 }
 
 /**
@@ -273,18 +335,21 @@ async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
 
 /**
  * Gather the variant reference needed for marking dirty.
- * @param {object} deps Dependencies required to resolve the variant.
+ * @param {MarkVariantDirtyDeps | undefined} deps Dependencies required to resolve the variant.
  * @param {number} pageNumber Target page number.
  * @param {string} variantName Variant name to look up.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Resolved variant reference.
  */
 async function resolveVariantReference(deps, pageNumber, variantName) {
-  const { db, firebase = {} } = deps;
+  const { db, firebase = {} } = deps ?? {};
 
   enforceDatabase(db);
 
+  // After enforceDatabase, db is guaranteed to be non-null
+  const dbTyped = /** @type {import('firebase-admin/firestore').Firestore} */(db);
+
   return findVariantRef({
-    database: db,
+    database: dbTyped,
     pageNumber,
     variantName,
     firebase,
@@ -398,7 +463,8 @@ function getRequestBody(req) {
  * @returns {string | undefined} HTTP method or `undefined`.
  */
 function getRequestMethod(req) {
-  return getRequestProperty(req, 'method');
+  const method = getRequestProperty(req, 'method');
+  return typeof method === 'string' ? method : undefined;
 }
 
 /**
@@ -416,12 +482,7 @@ function isValidMarkRequest({ pageNumber, variantName }) {
 
 /**
  * Mark the variant dirty and send the appropriate response.
- * @param {{
- *   res: NativeHttpResponse,
- *   markFn: (pageNumber: number, variantName: string) => Promise<boolean>,
- *   pageNumber: number,
- *   variantName: string,
- * }} params - Response and mutation dependencies.
+ * @param {MarkVariantAndRespondParams} params - Response and mutation dependencies.
  * @returns {Promise<void>} Resolves when the response has been sent.
  */
 async function markVariantAndRespond({ res, markFn, pageNumber, variantName }) {
@@ -474,10 +535,11 @@ export function createIsAdminUid(adminUid) {
 /**
  * Parse the request body for mark-variant-dirty.
  * @param {unknown} body Request body candidate.
- * @returns {{ pageNumber: number, variantName: string }} Parsed parameters.
+ * @returns {MarkVariantRequestParams} Parsed parameters.
  */
 export function parseMarkVariantRequestBody(body) {
-  const { page, variant } = body ?? {};
+  const parsed = /** @type {Record<string, unknown> | null | undefined} */(body);
+  const { page, variant } = parsed ?? {};
   return {
     pageNumber: Number(page),
     variantName: resolveVariantName(variant),
@@ -490,29 +552,31 @@ export function parseMarkVariantRequestBody(body) {
  * @returns {string} Variant name or empty string.
  */
 function resolveVariantName(candidate) {
-  return ensureString(candidate);
+  const candidateStr = /** @type {string | undefined} */(ensureString(candidate));
+  return candidateStr ?? '';
 }
 
 /**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
- * @param {object} options Configuration for the handler.
- * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} options.verifyAdmin Admin verification helper.
- * @param {(pageNumber: number, variantName: string, deps?: object) => Promise<boolean>} options.markVariantDirty Core mutation helper.
- * @param {(body: unknown) => { pageNumber: number, variantName: string }} [options.parseRequestBody] Body parser.
- * @param {string} [options.allowedMethod] Allowed HTTP method.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof options.verifyAdmin }) => Promise<void>} Express request handler.
+ * @param {HandleRequestOptions} [options] Configuration for the handler.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
  */
-export function createHandleRequest(options = {}) {
-  const { verifyAdmin, markVariantDirty } = options;
-  const parseRequestBody = resolveParseRequestBody(options.parseRequestBody);
-  const allowedMethod = resolveAllowedMethod(options.allowedMethod);
+export function createHandleRequest(options) {
+  const optionsTyped = /** @type {HandleRequestOptions | undefined} */(options);
+  const { verifyAdmin, markVariantDirty } = optionsTyped ?? {};
+  const parseRequestBody = resolveParseRequestBody(optionsTyped?.parseRequestBody);
+  const allowedMethod = resolveAllowedMethod(optionsTyped?.allowedMethod);
 
   assertFunction(verifyAdmin, 'verifyAdmin');
   assertFunction(markVariantDirty, 'markVariantDirty');
 
+  // After assertFunction calls, these are guaranteed to be functions
+  const verifyAdminFn = /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */(verifyAdmin);
+  const markVariantDirtyFn = /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} */(markVariantDirty);
+
   return buildHandleRequest({
-    verifyAdmin,
-    markVariantDirty,
+    verifyAdmin: verifyAdminFn,
+    markVariantDirty: markVariantDirtyFn,
     parseRequestBody,
     allowedMethod,
   });
@@ -520,12 +584,12 @@ export function createHandleRequest(options = {}) {
 
 /**
  * Resolve the parser to use for incoming requests.
- * @param {Function | undefined} parser Candidate parser.
- * @returns {Function} Body parser.
+ * @param {((body: unknown) => MarkVariantRequestParams) | undefined} parser Candidate parser.
+ * @returns {(body: unknown) => MarkVariantRequestParams} Body parser.
  */
 function resolveParseRequestBody(parser) {
   if (typeof parser === 'function') {
-    return parser;
+    return /** @type {(body: unknown) => MarkVariantRequestParams} */(parser);
   }
 
   return parseMarkVariantRequestBody;
@@ -542,16 +606,13 @@ function resolveAllowedMethod(method) {
 
 /**
  * Build the HTTP handler once the inputs are normalized.
- * @param {object} handlerDeps Normalized handler dependencies.
- * @param {Function} handlerDeps.verifyAdmin Admin check.
- * @param {Function} handlerDeps.markVariantDirty Variant mutation helper.
- * @param {Function} handlerDeps.parseRequestBody Body parser.
- * @param {string} handlerDeps.allowedMethod Allowed HTTP method.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: { markFn?: typeof markVariantDirtyImpl, verifyAdmin?: typeof handlerDeps.verifyAdmin }) => Promise<void>} Express request handler.
+ * @param {HandlerDependencies} handlerDeps Normalized handler dependencies.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
  */
 function buildHandleRequest(handlerDeps) {
   return async function handleRequest(req, res, deps = {}) {
-    return processHandleRequest({ req, res, deps }, handlerDeps);
+    const depsTyped = /** @type {HandleRequestDeps} */(deps);
+    return processHandleRequest({ req, res, deps: depsTyped }, handlerDeps);
   };
 }
 
@@ -561,15 +622,8 @@ const REQUEST_HANDLED = Symbol('request-handled');
 
 /**
  * Core handler workflow that validates the request, authorizes the caller, and marks the variant dirty.
- * @param {object} requestData Request lifecycle dependencies.
- * @param {NativeHttpRequest} requestData.req Express request.
- * @param {NativeHttpResponse} requestData.res Express response.
- * @param {object} requestData.deps Optional overrides.
- * @param {object} handlerDeps Handler dependencies.
- * @param {Function} handlerDeps.verifyAdmin Admin verification function.
- * @param {Function} handlerDeps.markVariantDirty Variant mutation helper.
- * @param {(body: unknown) => { pageNumber: number, variantName: string }} handlerDeps.parseRequestBody Request parser.
- * @param {string} handlerDeps.allowedMethod Allowed HTTP method.
+ * @param {ProcessRequestData} requestData Request lifecycle dependencies.
+ * @param {HandlerDependencies} handlerDeps Handler dependencies.
  * @returns {Promise<void>} Promise resolved once handling completes.
  */
 async function processHandleRequest(requestData, handlerDeps) {
@@ -614,13 +668,14 @@ function handleProcessError(err) {
 
 /**
  * Pick verifyAdmin override.
- * @param {Function} verifyAdmin Default verify.
- * @param {object} deps Deps.
- * @returns {Function} Verify fn.
+ * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Default verify.
+ * @param {HandleRequestDeps | undefined} deps Deps.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Verify fn.
  */
 function pickVerifyAdminFn(verifyAdmin, deps) {
-  if (typeof deps.verifyAdmin === 'function') {
-    return deps.verifyAdmin;
+  const depsVerifyAdmin = deps?.verifyAdmin;
+  if (typeof depsVerifyAdmin === 'function') {
+    return depsVerifyAdmin;
   }
 
   return verifyAdmin;
@@ -628,13 +683,14 @@ function pickVerifyAdminFn(verifyAdmin, deps) {
 
 /**
  * Pick markFn override.
- * @param {Function} markVariantDirty Default mark.
- * @param {object} deps Deps.
- * @returns {Function} Mark fn.
+ * @param {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Default mark.
+ * @param {HandleRequestDeps | undefined} deps Deps.
+ * @returns {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} Mark fn.
  */
 function pickMarkFn(markVariantDirty, deps) {
-  if (typeof deps.markFn === 'function') {
-    return deps.markFn;
+  const depsMarkFn = deps?.markFn;
+  if (typeof depsMarkFn === 'function') {
+    return depsMarkFn;
   }
 
   return markVariantDirty;
