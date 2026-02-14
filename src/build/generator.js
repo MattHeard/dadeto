@@ -245,7 +245,8 @@ function createHeaderContent() {
       wrapValueDiv: false,
     })
   );
-  return join(parts);
+  const blankLine = '<p></p>';
+  return join([parts[0], blankLine, parts[1]]);
 }
 
 /**
