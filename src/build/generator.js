@@ -317,8 +317,8 @@ function createHeaderContentArray(headerElement) {
     '<!-- Header -->',
     headerElement,
     '<!-- Navigation -->',
-    createNavbar(),
     createLinksBar(),
+    createNavbar(),
   ];
 }
 
