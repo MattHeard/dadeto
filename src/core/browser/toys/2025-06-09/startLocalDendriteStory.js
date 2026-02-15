@@ -5,6 +5,10 @@ import {
   getEnvHelpers,
 } from '../browserToysCore.js';
 
+/** @typedef {import('../browserToysCore.js').EnvHelperFunc} EnvHelperFunc */
+/** @typedef {Map<string, EnvHelperFunc>} ToyEnv */
+/** @typedef {import('../browserToysCore.js').ToyStorage} ToyStorage */
+
 /**
  * @typedef {{ title: string, content: string }} DendriteStoryInput
  * @typedef {{id: string, title: string, content: string, options: object[]}} DendriteStoryResult
@@ -47,7 +51,7 @@ function createStoryResult(data, getUuid) {
 
 /**
  * Store the dendrite story result inside the environment's temporary data.
- * @param {Map<string, Function>} env - Environment helpers.
+ * @param {ToyEnv} env - Environment helpers.
  * @param {DendriteStoryResult} result - Story result to persist.
  * @returns {void}
  */
@@ -56,8 +60,11 @@ function persistStoryResult(env, result) {
   const currentData = getData();
   const newData = /** @type {DendriteStoryStorage} */ (deepClone(currentData));
   ensureTemporaryData(newData);
-  newData.temporary.DEND1.push(result);
-  setLocalTemporaryData(newData);
+  const storyStorage = /** @type {{ temporary: { DEND1: DendriteStoryResult[] } }} */ (
+    newData
+  );
+  storyStorage.temporary.DEND1.push(result);
+  setLocalTemporaryData(/** @type {ToyStorage} */ (storyStorage));
 }
 
 /**
@@ -66,14 +73,21 @@ function persistStoryResult(env, result) {
  * @param {Map<string, Function>} env - Environment with data accessors.
  * @returns {string} The serialized newly added story or empty object on error.
  */
+/**
+ * Adds a new dendrite story entry to the application's data store.
+ * @param {string} input - JSON string containing story data.
+ * @param {ToyEnv} env - Environment with data accessors.
+ * @returns {string} The serialized story or `'{}'` on error.
+ */
 export function startLocalDendriteStory(input, env) {
   return runToyWithParsedJson(
     input,
     /**
-     * @param {DendriteStoryInput} data - Parsed story payload from the caller.
+     * @param {object} parsed - Parsed payload from the caller.
      * @returns {string} Serialized story result saved into the temporary store.
      */
-    data => {
+    parsed => {
+      const data = /** @type {DendriteStoryInput} */ (parsed);
       const { getUuid } = getEnvHelpers(env);
       const result = createStoryResult(data, getUuid);
 
