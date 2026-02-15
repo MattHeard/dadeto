@@ -48,9 +48,11 @@ function extractRatingsPair({ moderatorA, moderatorB, ratings }) {
 function buildRatingsPair(ratings, moderatorA, moderatorB) {
   const firstRatings = getModeratorRatings(ratings, moderatorA);
 
-  return when(Boolean(firstRatings), () =>
-    buildSecondRatingsPair(firstRatings, ratings, moderatorB)
-  );
+  if (!firstRatings) {
+    return null;
+  }
+
+  return buildSecondRatingsPair(firstRatings, ratings, moderatorB);
 }
 
 /**
@@ -63,10 +65,14 @@ function buildRatingsPair(ratings, moderatorA, moderatorB) {
 function buildSecondRatingsPair(firstRatings, ratings, moderatorB) {
   const secondRatings = getModeratorRatings(ratings, moderatorB);
 
-  return when(Boolean(secondRatings), () => ({
+  if (!secondRatings) {
+    return null;
+  }
+
+  return {
     firstRatings,
     secondRatings,
-  }));
+  };
 }
 
 /**
