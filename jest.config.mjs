@@ -20,7 +20,11 @@ const config = {
   ...(process.env.STRYKER_TEST_ENV && {
     testEnvironment: '@stryker-mutator/jest-runner/jest-env/node',
   }),
-  testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/', '<rootDir>/test/e2e/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.stryker-tmp/',
+    '<rootDir>/test/e2e/',
+    '<rootDir>/e2e/',
+  ],
   coveragePathIgnorePatterns: [
     '/node_modules/',
     // Cloud function bridge shims that only re-export their underlying implementation.

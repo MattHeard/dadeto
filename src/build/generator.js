@@ -240,7 +240,7 @@ function createHeaderContent() {
     wrapValueDiv: false,
   });
   const bio = createLabeledSection({
-    label: 'bio',
+    label: '',
     valueHTML: `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${BIO_TEXT}</p>`,
     wrapValueDiv: true,
   });
