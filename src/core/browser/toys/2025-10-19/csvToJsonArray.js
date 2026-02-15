@@ -141,7 +141,7 @@ function removeTrailingEmptyLines(lines) {
  * @returns {number} Last index where the line is not empty, otherwise -1.
  */
 function findLastNonEmptyLineIndex(lines) {
-  return lines.findLastIndex(line => !isLineEmpty(line));
+  return lines.findLastIndex((/** @type {string} */ line) => !isLineEmpty(line));
 }
 
 /**

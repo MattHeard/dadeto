@@ -40,6 +40,12 @@ function shuffle(arr, env) {
   }
 }
 
+/**
+ * Generate a key string from coordinate values.
+ * @param {number} x - Horizontal coordinate.
+ * @param {number} y - Vertical coordinate.
+ * @returns {string} Stringified coordinate key.
+ */
 const key = (x, y) => `${x},${y}`;
 
 /**
@@ -101,8 +107,8 @@ function dxReducerForNeighbour(coord, dy) {
  */
 function neighbours(coord) {
   return [-1, 0, 1].reduce((acc, dy) => {
-    return acc.concat([-1, 0, 1].reduce(dxReducerForNeighbour(coord, dy), []));
-  }, []);
+    return acc.concat([-1, 0, 1].reduce(dxReducerForNeighbour(coord, dy), /** @type {Coord[]} */ ([])));
+  }, /** @type {Coord[]} */ ([]));
 }
 
 /**
@@ -116,7 +122,13 @@ function isNeighbourOccupied(n, cfg, occupied) {
   return inBounds(n, cfg) && occupied.has(key(n.x, n.y));
 }
 
-const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg =>
+/**
+ * Create a segment validator that checks for occupied neighbours.
+ * @param {FleetConfig} cfg - Board dimensions.
+ * @param {Set<string>} occupied - Occupied coordinate keys.
+ * @returns {(seg: Coord) => boolean} Validator function that returns true if no neighbours are occupied.
+ */
+const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => (seg) =>
   !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
 
 /**
@@ -269,6 +281,13 @@ function makeSegReducer(dir, start, occupied) {
   }
 }
 
+/**
+ * Validate that all segments avoid occupied neighbours.
+ * @param {FleetConfig} cfg - Board configuration.
+ * @param {Set<string>} occupied - Occupied coordinates.
+ * @param {Coord[]} segs - Candidate segments.
+ * @returns {boolean} True when all segments pass the neighbour check.
+ */
 const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
   const segHasNoOccupiedNeighbour = makeSegHasNoOccupiedNeighbour(
     cfg,
@@ -316,8 +335,8 @@ function isValidCandidate(boardState, segs, valid) {
  * @returns {Candidate[]} Valid candidates for both directions.
  */
 function collectCandidatesForStart({ start, length, cfg, occupied }) {
-  const directions = ['H', 'V'];
-  const candidates = [];
+  const directions = /** @type {Array<'H' | 'V'>} */ (['H', 'V']);
+  const candidates = /** @type {Candidate[]} */ ([]);
   for (const direction of directions) {
     collectCandidatesForDirection({
       direction,
@@ -619,8 +638,8 @@ function parseConfig(input) {
   const cfg = safeJsonParse(input);
   convertShipsToArray(cfg);
   parseDimensions(cfg);
-  ensureShipsArray(cfg);
-  return cfg;
+  ensureShipsArray(/** @type {FleetConfig & { ships: unknown }} */ (cfg));
+  return /** @type {FleetConfig} */ (cfg);
 }
 
 /**

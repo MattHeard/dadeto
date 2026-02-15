@@ -83,6 +83,11 @@ class CsvLineParser {
     return this.toggleQuote();
   }
 
+  /**
+   * Check whether the character is the quote character.
+   * @param {string} char - Character to check.
+   * @returns {boolean} True when the character is the quote character.
+   */
   isQuote(char) {
     return char === QUOTE;
   }

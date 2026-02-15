@@ -3,7 +3,7 @@ import { when } from '../../common.js';
 
 /**
  * @typedef {'X' | 'O'} TicTacToePlayer
- * @typedef {{ row: number, col: number }} TicTacToePosition
+ * @typedef {{ row: number, column: number }} TicTacToePosition
  * @typedef {{ player: TicTacToePlayer, position: TicTacToePosition }} TicTacToeMove
  * @typedef {{ moves: TicTacToeMove[] }} TicTacToePayload
  * @typedef {{
@@ -57,7 +57,10 @@ function isObject(val) {
  * @returns {TicTacToeMove[] | null} Moves when valid, otherwise null.
  */
 function getValidParsedMoves(parsed) {
-  return when(isValidParsedMoves(parsed), () => parsed.moves);
+  if (isValidParsedMoves(parsed)) {
+    return parsed.moves;
+  }
+  return null;
 }
 
 /**
@@ -133,7 +136,7 @@ function buildMoveResponse(moves) {
  * Build a response when a new move must be appended.
  * @param {TicTacToeMove[]} moves - Existing moves.
  * @param {TicTacToeMove} newMove - Move to append.
- * @returns {boolean} True when the moves list stays within the board limit.
+ * @returns {string} JSON payload containing updated moves.
  */
 function buildMoveResponseWithNewMove(moves, newMove) {
   const updatedMoves = [...moves, newMove];
@@ -143,7 +146,7 @@ function buildMoveResponseWithNewMove(moves, newMove) {
 /**
  * Build a response without adding a new move.
  * @param {TicTacToeMove[]} moves - Existing moves.
- * @returns {boolean} True when the moves array passes all validators.
+ * @returns {string} JSON payload containing current moves.
  */
 function buildMoveResponseWithoutNewMove(moves) {
   return buildMoveResponse(moves);
@@ -161,13 +164,16 @@ export function ticTacToeMove(input) {
   if (isInvalidMoves(moves)) {
     return returnInitialOptimalMove();
   }
+  if (!moves) {
+    return returnInitialOptimalMove();
+  }
   return handleValidMoves(moves);
 }
 
 /**
  * Continue processing when moves are valid.
  * @param {TicTacToeMove[]} moves - Moves array.
- * @returns {boolean} True when the move application is valid.
+ * @returns {string} JSON response payload.
  */
 function handleValidMoves(moves) {
   const { board, seen } = initializeBoardAndSeen();
@@ -183,7 +189,7 @@ function handleValidMoves(moves) {
  * @param {TicTacToeMove[]} moves - Applied moves.
  * @param {TicTacToeBoardState['board']} board - Current board state.
  * @param {MoveResult} result - Result of applying the moves.
- * @returns {boolean} True when processing should halt.
+ * @returns {string} JSON response payload.
  */
 function handleValidAppliedMoves(moves, board, result) {
   const earlyWin = result.earlyWin;
@@ -282,7 +288,7 @@ function applyMoveReducer(moves, board, seen) {
       return acc;
     }
 
-    const apply = move => applyMoveToBoard(board, move, seen);
+    const apply = (/** @type {TicTacToeMove} */ move) => applyMoveToBoard(board, move, seen);
     const valid = isMoveApplicationValid(i, moves, apply);
     const earlyWin = checkEarlyWin(board);
     const stop = shouldStop(valid, earlyWin);
@@ -386,7 +392,7 @@ function getBestScoredMove(scoredMoves) {
         return best;
       }
     },
-    { moveScore: -Infinity }
+    /** @type {ScoredMove} */ ({ moveScore: -Infinity, move: { row: 0, column: 0 } })
   );
 }
 
@@ -428,7 +434,7 @@ function getEmptyCells(board) {
         }
         return acc;
       }, cells),
-    []
+    /** @type {Array<{ r: number, c: number }>} */ ([])
   );
 }
 
@@ -578,7 +584,7 @@ function getAvailableMoves(board) {
         }
         return acc;
       }, moves),
-    []
+    /** @type {Array<[number, number]>} */ ([])
   );
 }
 
@@ -700,15 +706,16 @@ function isValidRowAndColumn(row, column) {
  * @returns {boolean} True when the move passes validation and turn-order checks so illegals are rejected before the play is applied.
  */
 function canMoveBeApplied(move, index, moves) {
-  if (!isObject(move)) {
+  if (!isObject(move) || !('player' in move) || !('position' in move)) {
     return false;
   }
-  return isMoveDetailsValid({ move, index, moves });
+  // After guard checks, treat move as TicTacToeMove for validation
+  return isMoveDetailsValid({ move: /** @type {TicTacToeMove} */ (move), index, moves });
 }
 
 /**
  * Validate that the move details satisfy all validators.
- * @param {{ move: unknown, index: number, moves: TicTacToeMove[] }} params - Move context.
+ * @param {{ move: TicTacToeMove, index: number, moves: TicTacToeMove[] }} params - Move context.
  * @returns {boolean} True when every validator accepts the move details, guaranteeing they meet all guard rails before evaluation.
  */
 function isMoveDetailsValid(params) {
