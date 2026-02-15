@@ -136,9 +136,12 @@ function parseFleet(input) {
   return returnErrorResultOrValue(error, () => fleet);
 }
 
+/**
+ * @type {[(candidate: unknown) => boolean, string][]}
+ */
 const fleetChecks = [
-  [fleet => fleet === undefined, 'Invalid input JSON'],
-  [fleet => !isValidFleet(fleet), 'Invalid fleet structure'],
+  [(/** @type {unknown} */ fleet) => fleet === undefined, 'Invalid input JSON'],
+  [(/** @type {unknown} */ fleet) => !isValidFleet(fleet), 'Invalid fleet structure'],
 ];
 
 /**

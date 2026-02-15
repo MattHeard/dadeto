@@ -14,7 +14,7 @@ const REQUIRED_FIELDS = ['isApproved', 'moderatorId', 'ratedAt', 'variantId'];
  */
 export function moderatorRatingCounts(input) {
   const ratings = parseRatings(input);
-  const counts = countModeratorRatings(ratings);
+  const counts = countModeratorRatings(/** @type {Array<ModeratorRatingEntry>} */ (ratings));
   return JSON.stringify(buildResultArray(counts));
 }
 
