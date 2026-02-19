@@ -2,10 +2,10 @@
   "posts": [
     {
       "key": "GERM1",
-      "title": "German Tokenizer",
+      "title": "German Tokeniser",
       "publicationDate": "2026-02-19",
       "content": [
-        "Splits a German sentence into normalized surface tokens.",
+        "Splits a German sentence into normalised surface tokens.",
         "Lowercases each token, strips surrounding punctuation (keeping internal hyphens and apostrophes), and preserves umlauts and ß.",
         "Returns a JSON array of tokens — the first step in the vaelith +1 reading pipeline."
       ],
@@ -17,7 +17,7 @@
       "tags": [
         "toy",
         "german",
-        "tokenizer",
+        "tokeniser",
         "vaelith",
         "nlp"
       ]
