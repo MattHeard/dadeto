@@ -1,6 +1,27 @@
 {
   "posts": [
     {
+      "key": "PLUS1",
+      "title": "+1 Annotator",
+      "publicationDate": "2026-02-19",
+      "content": [
+        "Annotates a German sentence with unknown token information, given a list of known words.",
+        "Enter a sentence and a newline-delimited list of known surface forms. The toy reports which tokens are unknown, how many there are, and whether the sentence qualifies as a +1 sentence — exactly one unknown word.",
+        "This is the core filtering step of the vaelith +1 reading pipeline."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-02-19/plusOneAnnotator.js",
+        "functionName": "plusOneAnnotatorToy",
+        "defaultInputMethod": "kv"
+      },
+      "tags": [
+        "toy",
+        "german",
+        "vaelith",
+        "nlp"
+      ]
+    },
+    {
       "key": "GERM1",
       "title": "German Tokeniser",
       "publicationDate": "2026-02-19",

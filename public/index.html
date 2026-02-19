@@ -418,6 +418,77 @@
           <a class="filter-button" data-filter="toys">toys</a>
         </p>
       </div>
+      <article class="entry tag-toy tag-german tag-vaelith tag-nlp" id="PLUS1">
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">PLUS1</div>
+        <div class="value">
+          <h2><a href="#PLUS1">+1 Annotator</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">19 Feb 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-german">german</a>,
+          <a class="tag-vaelith">vaelith</a>, <a class="tag-nlp">nlp</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Annotates a German sentence with unknown token information, given a
+          list of known words.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Enter a sentence and a newline-delimited list of known surface forms.
+          The toy reports which tokens are unknown, how many there are, and
+          whether the sentence qualifies as a +1 sentence — exactly one unknown
+          word.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          This is the core filtering step of the vaelith +1 reading pipeline.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea">textarea</option>
+            <option value="number">number</option>
+            <option value="kv" selected>kv</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'PLUS1',
+            '/core/browser/toys/2026-02-19/plusOneAnnotator.js',
+            'plusOneAnnotatorToy'
+          );
+        </script>
+      </article>
       <article
         class="entry tag-toy tag-german tag-tokeniser tag-vaelith tag-nlp"
         id="GERM1"
