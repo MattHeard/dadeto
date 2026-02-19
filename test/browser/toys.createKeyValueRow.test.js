@@ -28,6 +28,8 @@ describe('createKeyValueRow', () => {
       getValue: jest.fn(),
       setValue: jest.fn(),
       removeEventListener: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
 
     // Setup mock entries (key-value pairs)
@@ -80,7 +82,7 @@ describe('createKeyValueRow', () => {
       .mockReturnValueOnce(mockRowElement) // First call: row div
       .mockReturnValueOnce(mockInputElement) // Second call: key input
       .mockReturnValueOnce({}) // Third call: value input
-      .mockReturnValue({}); // Any other calls
+      .mockReturnValue({}); // Any other calls (select, options, toggle btn, button)
 
     // Call the row creator function
     rowCreator(['key1', 'value1'], 0);
@@ -102,8 +104,8 @@ describe('createKeyValueRow', () => {
       'key1'
     );
 
-    // Verify elements were appended to the row and the row was appended to the container
-    expect(mockDom.appendChild).toHaveBeenCalledTimes(4); // row + 3 children + container.appendChild(row)
+    // 6 row appends (key, value, toggle, select, button, container) + 4 option appends = 10
+    expect(mockDom.appendChild).toHaveBeenCalledTimes(10);
   });
 
   it('creates a button element with the correct tag', () => {
@@ -111,11 +113,17 @@ describe('createKeyValueRow', () => {
       .mockReturnValueOnce({}) // row div
       .mockReturnValueOnce({}) // key input
       .mockReturnValueOnce({}) // value input
+      .mockReturnValueOnce({}) // select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce({}) // toggle button
       .mockReturnValueOnce({}); // button element
 
     rowCreator(mockEntries[0], 0);
 
-    expect(mockDom.createElement.mock.calls[3][0]).toBe('button');
+    expect(mockDom.createElement.mock.calls[9][0]).toBe('button');
   });
 
   it('creates a remove button for non-last rows', () => {
@@ -125,6 +133,12 @@ describe('createKeyValueRow', () => {
       .mockReturnValueOnce({}) // row div
       .mockReturnValueOnce({}) // key input
       .mockReturnValueOnce({}) // value input
+      .mockReturnValueOnce({}) // select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce({}) // toggle button
       .mockReturnValue(mockButton); // remove button
 
     // Call the row creator function with isLast = false
@@ -141,6 +155,12 @@ describe('createKeyValueRow', () => {
       .mockReturnValueOnce({}) // row div
       .mockReturnValueOnce({}) // key input
       .mockReturnValueOnce({}) // value input
+      .mockReturnValueOnce({}) // select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce({}) // toggle button
       .mockReturnValue(mockButton); // add button
 
     // Call the row creator function with isLast = true
@@ -156,6 +176,12 @@ describe('createKeyValueRow', () => {
       .mockReturnValueOnce({})
       .mockReturnValueOnce({})
       .mockReturnValueOnce({})
+      .mockReturnValueOnce({}) // select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce({}) // toggle button
       .mockReturnValue(mockButton);
 
     rowCreator(mockEntries[0], 0);
@@ -169,6 +195,12 @@ describe('createKeyValueRow', () => {
       .mockReturnValueOnce({})
       .mockReturnValueOnce({})
       .mockReturnValueOnce({})
+      .mockReturnValueOnce({}) // select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce({}) // toggle button
       .mockReturnValue(mockButton);
 
     rowCreator(mockEntries[1], 1);
@@ -182,25 +214,39 @@ describe('createKeyValueRow', () => {
       .mockReturnValueOnce({})
       .mockReturnValueOnce({})
       .mockReturnValueOnce({})
+      .mockReturnValueOnce({}) // select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce({}) // toggle button
       .mockReturnValue(mockButton);
 
     rowCreator(mockEntries[0], 0);
 
-    expect(mockDom.createElement).toHaveBeenNthCalledWith(4, 'button');
+    expect(mockDom.createElement).toHaveBeenNthCalledWith(10, 'button');
     expect(mockDom.setType).toHaveBeenCalledWith(mockButton, 'button');
   });
 
-  it('adds event listeners for key and value changes', () => {
+  it('adds event listeners for key, value, type select, toggle, and button', () => {
     // Setup mock elements
     const mockKeyInput = {};
     const mockValueInput = {};
+    const mockTypeSelect = {};
+    const mockToggleBtn = {};
     const mockButton = {};
 
     mockDom.createElement
       .mockReturnValueOnce({}) // row div
       .mockReturnValueOnce(mockKeyInput) // key input
       .mockReturnValueOnce(mockValueInput) // value input
-      .mockReturnValue(mockButton); // button
+      .mockReturnValueOnce(mockTypeSelect) // type select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce(mockToggleBtn) // toggle button
+      .mockReturnValue(mockButton); // +/× button
 
     // Call the row creator function
     rowCreator(['key1', 'value1'], 0);
@@ -209,6 +255,8 @@ describe('createKeyValueRow', () => {
     expect(mockDom.addEventListener.mock.calls).toEqual([
       [mockKeyInput, 'input', expect.any(Function)],
       [mockValueInput, 'input', expect.any(Function)],
+      [mockTypeSelect, 'change', expect.any(Function)],
+      [mockToggleBtn, 'click', expect.any(Function)],
       [mockButton, 'click', expect.any(Function)],
     ]);
   });
@@ -256,11 +304,19 @@ describe('createKeyValueRow', () => {
     const rowEl = {};
     const keyInput = {};
     const valueInput = {};
+    const typeSelect = {};
+    const toggleBtn = {};
     const btnEl = {};
     mockDom.createElement
       .mockReturnValueOnce(rowEl)
       .mockReturnValueOnce(keyInput)
       .mockReturnValueOnce(valueInput)
+      .mockReturnValueOnce(typeSelect) // select
+      .mockReturnValueOnce({}) // option 1
+      .mockReturnValueOnce({}) // option 2
+      .mockReturnValueOnce({}) // option 3
+      .mockReturnValueOnce({}) // option 4
+      .mockReturnValueOnce(toggleBtn)
       .mockReturnValueOnce(btnEl);
 
     rowCreator(mockEntries[0], 0);
@@ -268,10 +324,13 @@ describe('createKeyValueRow', () => {
     const [
       [addedKeyEl, , keyHandler],
       [addedValueEl, , valueHandler],
+      [addedTypeSelect, , typeChangeHandler],
+      [addedToggleBtn, , toggleHandler],
       [addedBtnEl, , btnHandler],
     ] = mockDom.addEventListener.mock.calls;
 
-    const [keyDisposer, valueDisposer, btnDisposer] = mockDisposers;
+    const [keyDisposer, valueDisposer, typeDisposer, toggleDisposer, btnDisposer] =
+      mockDisposers;
 
     mockDom.removeEventListener.mockClear();
     keyDisposer();
@@ -290,6 +349,22 @@ describe('createKeyValueRow', () => {
     );
 
     mockDom.removeEventListener.mockClear();
+    typeDisposer();
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      addedTypeSelect,
+      'change',
+      typeChangeHandler
+    );
+
+    mockDom.removeEventListener.mockClear();
+    toggleDisposer();
+    expect(mockDom.removeEventListener).toHaveBeenCalledWith(
+      addedToggleBtn,
+      'click',
+      toggleHandler
+    );
+
+    mockDom.removeEventListener.mockClear();
     btnDisposer();
     expect(mockDom.removeEventListener).toHaveBeenCalledWith(
       addedBtnEl,
@@ -303,19 +378,33 @@ describe('createKeyValueRow', () => {
     const btn1 = {};
 
     mockDom.createElement
-      .mockReturnValueOnce({})
-      .mockReturnValueOnce({})
-      .mockReturnValueOnce({})
-      .mockReturnValueOnce(btn0)
-      .mockReturnValueOnce({})
-      .mockReturnValueOnce({})
-      .mockReturnValueOnce({})
-      .mockReturnValueOnce(btn1);
+      .mockReturnValueOnce({}) // row div 1
+      .mockReturnValueOnce({}) // key input 1
+      .mockReturnValueOnce({}) // value input 1
+      .mockReturnValueOnce({}) // select 1
+      .mockReturnValueOnce({}) // option 1a
+      .mockReturnValueOnce({}) // option 1b
+      .mockReturnValueOnce({}) // option 1c
+      .mockReturnValueOnce({}) // option 1d
+      .mockReturnValueOnce({}) // toggle btn 1
+      .mockReturnValueOnce(btn0) // button 1
+      .mockReturnValueOnce({}) // row div 2
+      .mockReturnValueOnce({}) // key input 2
+      .mockReturnValueOnce({}) // value input 2
+      .mockReturnValueOnce({}) // select 2
+      .mockReturnValueOnce({}) // option 2a
+      .mockReturnValueOnce({}) // option 2b
+      .mockReturnValueOnce({}) // option 2c
+      .mockReturnValueOnce({}) // option 2d
+      .mockReturnValueOnce({}) // toggle btn 2
+      .mockReturnValueOnce(btn1); // button 2
 
     rowCreator(mockEntries[0], 0);
     rowCreator(mockEntries[1], 1);
 
-    expect(mockDom.setTextContent).toHaveBeenNthCalledWith(1, btn0, '×');
-    expect(mockDom.setTextContent).toHaveBeenNthCalledWith(2, btn1, '+');
+    // setTextContent calls per row: 4 options + 1 toggle btn + 1 +/× btn = 6 per row
+    // btn0 is 6th call (index 5), btn1 is 12th call (index 11)
+    expect(mockDom.setTextContent).toHaveBeenNthCalledWith(6, btn0, '×');
+    expect(mockDom.setTextContent).toHaveBeenNthCalledWith(12, btn1, '+');
   });
 });

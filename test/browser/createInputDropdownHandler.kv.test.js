@@ -39,6 +39,7 @@ describe('createInputDropdownHandler kv type', () => {
       disable: jest.fn(),
       querySelectorAll: jest.fn(),
       createTextNode: jest.fn(),
+      addClass: jest.fn(),
     };
 
     const handler = toys.createInputDropdownHandler(dom);

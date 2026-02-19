@@ -26,6 +26,8 @@ describe('handleKVType', () => {
       addEventListener: jest.fn(),
       setTextContent: jest.fn(),
       appendChild: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
 
     // This test verifies the function can be called with an empty DOM object without throwing an error
@@ -65,6 +67,8 @@ describe('handleKVType', () => {
       getValue: jest.fn(() => '{}'),
       querySelectorAll: jest.fn(),
       createTextNode: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
 
     handleKVType(dom, container, textInput);

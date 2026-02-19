@@ -27,6 +27,8 @@ describe('Key-Value Input', () => {
       setTextContent: jest.fn(),
       appendChild: jest.fn(),
       getValue: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
     const result = ensureKeyValueInput(container, textInput, dom);
     expect(createElement).toHaveBeenNthCalledWith(1, 'div');

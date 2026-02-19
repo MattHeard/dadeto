@@ -187,11 +187,14 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const rows = parseExistingRows(dom, textInput);
   const disposers = [];
 
+  const rowTypes = Object.fromEntries(Object.keys(rows).map(k => [k, 'string']));
+
   const render = createRenderer({
     dom,
     disposersArray: disposers,
     container: kvContainer,
     rows,
+    rowTypes,
     textInput,
     syncHiddenField,
   });
@@ -678,10 +681,12 @@ function isUniqueNonEmpty(key, rows) {
  * @param {object} params.dom - DOM utilities.
  * @returns {void}
  */
-function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
+function migrateRowIfValid({ prevKey, newKey, rows, rowTypes, keyEl, dom }) {
   if (isUniqueNonEmpty(newKey, rows)) {
     rows[newKey] = rows[prevKey];
+    rowTypes[newKey] = rowTypes[prevKey] ?? 'string';
     delete rows[prevKey];
+    delete rowTypes[prevKey];
     dom.setDataAttribute(keyEl, 'prevKey', newKey);
   }
 }
@@ -697,7 +702,7 @@ function migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom }) {
  * @returns {Function} Event handler for key input.
  */
 export function createKeyInputHandler(options) {
-  const { dom, keyEl, textInput, rows, syncHiddenField } = options;
+  const { dom, keyEl, textInput, rows, rowTypes, syncHiddenField } = options;
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
@@ -708,7 +713,7 @@ export function createKeyInputHandler(options) {
       return;
     }
 
-    migrateRowIfValid({ prevKey, newKey, rows, keyEl, dom });
+    migrateRowIfValid({ prevKey, newKey, rows, rowTypes: rowTypes ?? {}, keyEl, dom });
     syncHiddenField(textInput, rows, dom);
   };
 }
@@ -748,6 +753,7 @@ export const createKeyElement = ({
   key,
   textInput,
   rows,
+  rowTypes,
   syncHiddenField,
   disposers,
 }) => {
@@ -763,6 +769,7 @@ export const createKeyElement = ({
     keyEl,
     textInput,
     rows,
+    rowTypes,
     syncHiddenField,
   });
   dom.addEventListener(keyEl, 'input', onKey);
@@ -818,17 +825,114 @@ export const createValueElement = ({
   return valueEl;
 };
 
+const TYPE_OPTIONS = ['string', 'number', 'boolean', 'json'];
+
+/**
+ * Create a toggle button that shows and hides the type select element.
+ * @param {object} options - Configuration options.
+ * @param {object} options.dom - DOM helper utilities.
+ * @param {HTMLElement} options.typeSelectEl - The type select element to toggle.
+ * @param {Array<Function>} options.disposers - Array to register cleanup functions.
+ * @returns {HTMLElement} The toggle button element.
+ */
+export const createTypeToggleButton = ({ dom, typeSelectEl, disposers }) => {
+  const btn = dom.createElement('button');
+  dom.setType(btn, 'button');
+  dom.setTextContent(btn, '\u25be');
+  dom.addClass(btn, 'kv-type-toggle');
+  dom.hide(typeSelectEl);
+
+  let hidden = true;
+
+  const onToggle = () => {
+    if (hidden) {
+      dom.reveal(typeSelectEl);
+    } else {
+      dom.hide(typeSelectEl);
+    }
+
+    hidden = !hidden;
+  };
+
+  dom.addEventListener(btn, 'click', onToggle);
+  const removeToggleListener = createRemoveListener({
+    dom,
+    el: btn,
+    event: 'click',
+    handler: onToggle,
+  });
+  disposers.push(removeToggleListener);
+
+  return btn;
+};
+
+/**
+ * Create the type selector <select> element for a kv row.
+ * @param {object} options - Configuration options.
+ * @param {object} options.dom - DOM helper utilities.
+ * @param {string} options.key - Current row key (used for rowTypes lookup).
+ * @param {object} options.rowTypes - Per-key type map to update on change.
+ * @param {HTMLElement} options.textInput - Hidden input element for syncHiddenField.
+ * @param {object} options.rows - Current rows object.
+ * @param {HTMLElement} options.keyEl - Key input element (to read current key).
+ * @param {Function} options.syncHiddenField - Function to sync the hidden field.
+ * @param {Array<Function>} options.disposers - Array to register cleanup functions.
+ * @returns {HTMLElement} The type select element.
+ */
+export const createTypeElement = ({
+  dom,
+  key,
+  rowTypes,
+  textInput,
+  rows,
+  keyEl,
+  syncHiddenField,
+  disposers,
+}) => {
+  const selectEl = dom.createElement('select');
+  dom.addClass(selectEl, 'kv-type');
+
+  TYPE_OPTIONS.forEach(opt => {
+    const option = dom.createElement('option');
+    dom.setValue(option, opt);
+    dom.setTextContent(option, opt);
+    dom.appendChild(selectEl, option);
+  });
+
+  const currentType = rowTypes[key] ?? 'string';
+  dom.setValue(selectEl, currentType);
+
+  const onChange = () => {
+    const currentKey = dom.getDataAttribute(keyEl, 'prevKey') ?? key;
+    rowTypes[currentKey] = String(dom.getValue(selectEl));
+    syncHiddenField(textInput, rows, dom);
+  };
+
+  dom.addEventListener(selectEl, 'change', onChange);
+  const removeChangeListener = createRemoveListener({
+    dom,
+    el: selectEl,
+    event: 'change',
+    handler: onChange,
+  });
+  disposers.push(removeChangeListener);
+
+  return selectEl;
+};
+
 /**
  * Creates an add button click handler for key-value rows
  * @param {object} rows - The rows object containing key-value pairs
+ * @param {object} rowTypes - Per-key type map to seed when a new row is added.
  * @param {Function} render - Function to re-render the key-value editor
  * @returns {Function} The click event handler function
  */
-export const createOnAddHandler = (rows, render) => {
+export const createOnAddHandler = (rows, rowTypes, render) => {
   return () => {
     // Add a new empty key only if there isn't already one
     if (!Object.hasOwn(rows, '')) {
       rows[''] = '';
+      rowTypes[''] = 'string';
       render();
     }
   };
@@ -837,13 +941,15 @@ export const createOnAddHandler = (rows, render) => {
 /**
  * Creates an event handler for removing a key-value row
  * @param {object} rows - The rows object containing key-value pairs
+ * @param {object} rowTypes - Per-key type map; entry for key is deleted on remove.
  * @param {Function} render - The render function to update the UI
  * @param {string} key - The key to remove
  * @returns {Function} The event handler function
  */
-export const createOnRemove = (rows, render, key) => e => {
+export const createOnRemove = (rows, rowTypes, render, key) => e => {
   e.preventDefault();
   delete rows[key];
+  delete rowTypes[key];
   render();
 };
 
@@ -857,9 +963,9 @@ export const createOnRemove = (rows, render, key) => e => {
  * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
  * @returns {void}
  */
-export const setupAddButton = ({ dom, button, rows, render, disposers }) => {
+export const setupAddButton = ({ dom, button, rows, rowTypes, render, disposers }) => {
   dom.setTextContent(button, '+');
-  const onAdd = createOnAddHandler(rows, render);
+  const onAdd = createOnAddHandler(rows, rowTypes ?? {}, render);
   dom.addEventListener(button, 'click', onAdd);
   const removeAddListener = createRemoveAddListener(dom, button, onAdd);
   disposers.push(removeAddListener);
@@ -880,12 +986,13 @@ export const setupRemoveButton = ({
   dom,
   button,
   rows,
+  rowTypes,
   render,
   key,
   disposers,
 }) => {
   dom.setTextContent(button, '×');
-  const onRemove = createOnRemove(rows, render, key);
+  const onRemove = createOnRemove(rows, rowTypes ?? {}, render, key);
   dom.addEventListener(button, 'click', onRemove);
   const removeRemoveListener = createRemoveRemoveListener(
     dom,
@@ -913,6 +1020,7 @@ export const setupRemoveButton = ({
  * @param {Array} options.entries - All [key, value] pairs.
  * @param {HTMLInputElement} options.textInput - Hidden JSON input.
  * @param {object} options.rows - Map of row values by key.
+ * @param {object} [options.rowTypes] - Per-key type map for value coercion.
  * @param {Function} options.syncHiddenField - Updates the hidden field.
  * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
  * @param {Function} options.render - Re-render function.
@@ -925,6 +1033,7 @@ export const createKeyValueRow =
     entries,
     textInput,
     rows,
+    rowTypes,
     syncHiddenField,
     disposers,
     render,
@@ -940,6 +1049,7 @@ export const createKeyValueRow =
       key,
       textInput,
       rows,
+      rowTypes: rowTypes ?? {},
       syncHiddenField,
       disposers,
     });
@@ -953,11 +1063,29 @@ export const createKeyValueRow =
       disposers,
     });
 
+    // Create type selector and toggle button (hidden by default)
+    const typeEl = createTypeElement({
+      dom,
+      key,
+      rowTypes: rowTypes ?? {},
+      textInput,
+      rows,
+      keyEl,
+      syncHiddenField,
+      disposers,
+    });
+    const toggleBtn = createTypeToggleButton({
+      dom,
+      typeSelectEl: typeEl,
+      disposers,
+    });
+
     // Create and set up the appropriate button type
     const btnEl = createButton({
       dom,
       isAddButton: idx === entries.length - 1,
       rows,
+      rowTypes: rowTypes ?? {},
       render,
       key,
       disposers,
@@ -965,18 +1093,20 @@ export const createKeyValueRow =
 
     dom.appendChild(rowEl, keyEl);
     dom.appendChild(rowEl, valueEl);
+    dom.appendChild(rowEl, toggleBtn);
+    dom.appendChild(rowEl, typeEl);
     dom.appendChild(rowEl, btnEl);
     dom.appendChild(container, rowEl);
   };
 
-const createButton = ({ dom, isAddButton, rows, render, key, disposers }) => {
+const createButton = ({ dom, isAddButton, rows, rowTypes, render, key, disposers }) => {
   const button = dom.createElement('button');
   dom.setType(button, 'button');
 
   if (isAddButton) {
-    setupAddButton({ dom, button, rows, render, disposers });
+    setupAddButton({ dom, button, rows, rowTypes, render, disposers });
   } else {
-    setupRemoveButton({ dom, button, rows, render, key, disposers });
+    setupRemoveButton({ dom, button, rows, rowTypes, render, key, disposers });
   }
 
   return button;
@@ -1308,15 +1438,49 @@ const filterNonEmptyEntries = rows =>
   Object.fromEntries(Object.entries(rows).filter(([k, v]) => k || v));
 
 /**
+ * Coerce a string value to the specified type for JSON serialisation.
+ * @param {string} value - Raw string value from the input field.
+ * @param {string} type - Target type: 'string', 'number', 'boolean', or 'json'.
+ * @returns {unknown} Coerced value; invalid number yields null, invalid json yields null.
+ */
+export const coerceValue = (value, type) => {
+  if (type === 'number') {
+    const n = parseFloat(value);
+    return Number.isNaN(n) ? null : n;
+  }
+
+  if (type === 'boolean') {
+    return value.toLowerCase() === 'true';
+  }
+
+  if (type === 'json') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return null;
+    }
+  }
+
+  return value;
+};
+
+/**
  * Synchronize the hidden field with the filtered rows.
  * @param {HTMLInputElement} textInput - Hidden input element to update.
  * @param {object} rows - Key-value pairs to serialise.
+ * @param {object} rowTypes - Per-key type map used to coerce values before serialisation.
  * @param {object} dom - DOM helper utilities.
  * @returns {void}
  */
-export const syncHiddenField = (textInput, rows, dom) => {
+export const syncHiddenField = (textInput, rows, rowTypes, dom) => {
   const filtered = filterNonEmptyEntries(rows);
-  const serialised = JSON.stringify(filtered);
+  const coerced = Object.fromEntries(
+    Object.entries(filtered).map(([k, v]) => [
+      k,
+      coerceValue(v, rowTypes[k] ?? 'string'),
+    ])
+  );
+  const serialised = JSON.stringify(coerced);
   dom.setValue(textInput, serialised);
   setInputValue(textInput, serialised);
 };
@@ -1335,13 +1499,22 @@ export const syncHiddenField = (textInput, rows, dom) => {
  * @param {Array} options.disposersArray - Array to store cleanup functions
  * @param {HTMLElement} options.container - The container element for the key-value pairs
  * @param {object} options.rows - The rows object containing key-value pairs
+ * @param {object} options.rowTypes - Per-key type map for value coercion.
  * @param {HTMLInputElement} options.textInput - The hidden input element
  * @param {Function} options.syncHiddenField - Function to sync the hidden field
  * @returns {Function} The render function
  */
 export const createRenderer = options => {
-  const { dom, disposersArray, container, rows, textInput, syncHiddenField } =
-    options;
+  const {
+    dom,
+    disposersArray,
+    container,
+    rows,
+    rowTypes,
+    textInput,
+    syncHiddenField,
+  } = options;
+  const syncWithTypes = (ti, r, d) => syncHiddenField(ti, r, rowTypes, d);
   /**
    * Renders the key-value input UI
    */
@@ -1361,14 +1534,15 @@ export const createRenderer = options => {
         entries,
         textInput,
         rows,
-        syncHiddenField,
+        rowTypes,
+        syncHiddenField: syncWithTypes,
         disposers: disposersArray,
         render,
         container,
       })
     );
 
-    syncHiddenField(textInput, rows, dom);
+    syncWithTypes(textInput, rows, dom);
   };
 
   return render;

@@ -26,7 +26,7 @@ describe('syncHiddenField', () => {
       '': '', // Excluded (both key and value are falsy)
     };
 
-    syncHiddenField(mockTextInput, rows, mockDom);
+    syncHiddenField(mockTextInput, rows, {}, mockDom);
 
     // Get the actual result
     const [, actualJson] = mockDom.setValue.mock.calls[0];
@@ -49,7 +49,7 @@ describe('syncHiddenField', () => {
   it('handles empty rows object', () => {
     const rows = {};
 
-    syncHiddenField(mockTextInput, rows, mockDom);
+    syncHiddenField(mockTextInput, rows, {}, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,
@@ -68,7 +68,7 @@ describe('syncHiddenField', () => {
       false: false, // Included (key is truthy, even though value is falsy)
     };
 
-    syncHiddenField(mockTextInput, rows, mockDom);
+    syncHiddenField(mockTextInput, rows, {}, mockDom);
 
     const [, actualJson] = mockDom.setValue.mock.calls[0];
     const actual = JSON.parse(actualJson);
@@ -98,7 +98,7 @@ describe('syncHiddenField', () => {
       array: [1, 2, 3],
     };
 
-    syncHiddenField(mockTextInput, rows, mockDom);
+    syncHiddenField(mockTextInput, rows, {}, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,
@@ -121,7 +121,7 @@ describe('syncHiddenField', () => {
       '': '', // Excluded (both key and value are empty)
     };
 
-    syncHiddenField(mockTextInput, rows, mockDom);
+    syncHiddenField(mockTextInput, rows, {}, mockDom);
 
     const [, actualJson] = mockDom.setValue.mock.calls[0];
     const actual = JSON.parse(actualJson);
@@ -137,6 +137,53 @@ describe('syncHiddenField', () => {
     // Verify no unexpected entries
     expect(Object.keys(actual).sort(compareStrings)).toEqual(
       ['  key  ', 'key2', '  ', '  key3  '].sort(compareStrings)
+    );
+  });
+
+  it('coerces a number-typed value to a number', () => {
+    const rows = { count: '42' };
+    const rowTypes = { count: 'number' };
+
+    syncHiddenField(mockTextInput, rows, rowTypes, mockDom);
+
+    expect(mockDom.setValue).toHaveBeenCalledWith(
+      mockTextInput,
+      JSON.stringify({ count: 42 })
+    );
+  });
+
+  it('coerces a boolean-typed value to a boolean', () => {
+    const rows = { active: 'true' };
+    const rowTypes = { active: 'boolean' };
+
+    syncHiddenField(mockTextInput, rows, rowTypes, mockDom);
+
+    expect(mockDom.setValue).toHaveBeenCalledWith(
+      mockTextInput,
+      JSON.stringify({ active: true })
+    );
+  });
+
+  it('coerces a json-typed value to a parsed object', () => {
+    const rows = { data: '{"x":1}' };
+    const rowTypes = { data: 'json' };
+
+    syncHiddenField(mockTextInput, rows, rowTypes, mockDom);
+
+    expect(mockDom.setValue).toHaveBeenCalledWith(
+      mockTextInput,
+      JSON.stringify({ data: { x: 1 } })
+    );
+  });
+
+  it('defaults to string coercion when key is absent from rowTypes', () => {
+    const rows = { name: 'Alice' };
+
+    syncHiddenField(mockTextInput, rows, {}, mockDom);
+
+    expect(mockDom.setValue).toHaveBeenCalledWith(
+      mockTextInput,
+      JSON.stringify({ name: 'Alice' })
     );
   });
 });

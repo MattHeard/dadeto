@@ -6,7 +6,6 @@ describe('createKeyValueRow argument handling', () => {
     const rowEl = {};
     const keyInput = {};
     const valueInput = {};
-    const button = {};
 
     const dom = {
       createElement: jest
@@ -14,7 +13,7 @@ describe('createKeyValueRow argument handling', () => {
         .mockReturnValueOnce(rowEl)
         .mockReturnValueOnce(keyInput)
         .mockReturnValueOnce(valueInput)
-        .mockReturnValueOnce(button),
+        .mockReturnValue({}),
       setClassName: jest.fn(),
       appendChild: jest.fn(),
       setType: jest.fn(),
@@ -23,6 +22,8 @@ describe('createKeyValueRow argument handling', () => {
       setValue: jest.fn(),
       setDataAttribute: jest.fn(),
       addEventListener: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
     const entries = [];
     const textInput = {};

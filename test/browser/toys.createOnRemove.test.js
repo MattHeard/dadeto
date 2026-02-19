@@ -3,6 +3,7 @@ import { createOnRemove } from '../../src/browser/toys.js';
 
 describe('createOnRemove', () => {
   let rows;
+  let rowTypes;
   let render;
   let handler;
   let mockEvent;
@@ -19,19 +20,24 @@ describe('createOnRemove', () => {
       key2: 'value2',
       key3: 'value3',
     };
+    rowTypes = {
+      [keyToRemove]: 'string',
+      key2: 'number',
+      key3: 'boolean',
+    };
     render = jest.fn();
-    handler = createOnRemove(rows, render, keyToRemove);
+    handler = createOnRemove(rows, rowTypes, render, keyToRemove);
   });
 
   it('exposes expected arity for factory and handler', () => {
-    expect(createOnRemove.length).toBe(3);
-    const fn = createOnRemove(rows, render, keyToRemove);
+    expect(createOnRemove.length).toBe(4);
+    const fn = createOnRemove(rows, rowTypes, render, keyToRemove);
     expect(typeof fn).toBe('function');
     expect(fn.length).toBe(1);
   });
 
   it('returns an event handler function', () => {
-    const result = createOnRemove(rows, render, keyToRemove);
+    const result = createOnRemove(rows, rowTypes, render, keyToRemove);
     expect(typeof result).toBe('function');
   });
 
@@ -48,6 +54,12 @@ describe('createOnRemove', () => {
       key2: 'value2',
       key3: 'value3',
     });
+  });
+
+  it('removes the specified key from rowTypes', () => {
+    handler(mockEvent);
+    expect(rowTypes).not.toHaveProperty(keyToRemove);
+    expect(rowTypes).toEqual({ key2: 'number', key3: 'boolean' });
   });
 
   it('calls preventDefault on the event', () => {
@@ -68,7 +80,7 @@ describe('createOnRemove', () => {
 
   it('does nothing if the key does not exist', () => {
     const nonExistentKey = 'nonExistent';
-    const handlerForNonExistent = createOnRemove(rows, render, nonExistentKey);
+    const handlerForNonExistent = createOnRemove(rows, rowTypes, render, nonExistentKey);
 
     // Call the handler with the mock event
     handlerForNonExistent(mockEvent);
@@ -87,7 +99,8 @@ describe('createOnRemove', () => {
 
   it('works with empty rows object', () => {
     const emptyRows = {};
-    const emptyHandler = createOnRemove(emptyRows, render, 'anyKey');
+    const emptyTypes = {};
+    const emptyHandler = createOnRemove(emptyRows, emptyTypes, render, 'anyKey');
 
     // Call the handler with the mock event
     emptyHandler(mockEvent);
@@ -100,7 +113,8 @@ describe('createOnRemove', () => {
 
   it('can remove the last remaining key', () => {
     const singleRow = { lastKey: 'lastValue' };
-    const singleHandler = createOnRemove(singleRow, render, 'lastKey');
+    const singleTypes = { lastKey: 'string' };
+    const singleHandler = createOnRemove(singleRow, singleTypes, render, 'lastKey');
 
     // Call the handler with the mock event
     singleHandler(mockEvent);
@@ -112,10 +126,11 @@ describe('createOnRemove', () => {
 
   it('removes a key when called directly', () => {
     const localRows = { a: 1, b: 2 };
+    const localTypes = { a: 'number', b: 'number' };
     const localRender = jest.fn();
     const evt = { preventDefault: jest.fn() };
 
-    const fn = createOnRemove(localRows, localRender, 'a');
+    const fn = createOnRemove(localRows, localTypes, localRender, 'a');
     expect(typeof fn).toBe('function');
 
     const result = fn(evt);
@@ -128,12 +143,13 @@ describe('createOnRemove', () => {
 
   it('can be called multiple times safely', () => {
     const rowsMap = { x: 1 };
+    const typesMap = { x: 'number' };
     const renderFn = jest.fn();
     const evt = { preventDefault: jest.fn() };
-    const handler = createOnRemove(rowsMap, renderFn, 'x');
+    const fn = createOnRemove(rowsMap, typesMap, renderFn, 'x');
 
-    handler(evt);
-    handler(evt);
+    fn(evt);
+    fn(evt);
 
     expect(rowsMap).toEqual({});
     expect(renderFn).toHaveBeenCalledTimes(2);
@@ -142,9 +158,10 @@ describe('createOnRemove', () => {
 
   it('returns undefined after removing the key', () => {
     const rowsMap = { a: 1 };
+    const typesMap = { a: 'string' };
     const renderFn = jest.fn();
     const evt = { preventDefault: jest.fn() };
-    const result = createOnRemove(rowsMap, renderFn, 'a')(evt);
+    const result = createOnRemove(rowsMap, typesMap, renderFn, 'a')(evt);
     expect(result).toBeUndefined();
     expect(rowsMap).toEqual({});
     expect(renderFn).toHaveBeenCalledTimes(1);
@@ -153,11 +170,12 @@ describe('createOnRemove', () => {
 
   it('creates independent handlers for different keys', () => {
     const rowsMap = { a: '1', b: '2' };
+    const typesMap = { a: 'string', b: 'string' };
     const renderFn = jest.fn();
     const evtA = { preventDefault: jest.fn() };
     const evtB = { preventDefault: jest.fn() };
-    const handlerA = createOnRemove(rowsMap, renderFn, 'a');
-    const handlerB = createOnRemove(rowsMap, renderFn, 'b');
+    const handlerA = createOnRemove(rowsMap, typesMap, renderFn, 'a');
+    const handlerB = createOnRemove(rowsMap, typesMap, renderFn, 'b');
     expect(handlerA).not.toBe(handlerB);
     handlerA(evtA);
     handlerB(evtB);
@@ -170,13 +188,15 @@ describe('createOnRemove', () => {
   it('creates independent handlers when called repeatedly with same arguments', () => {
     const rowsA = { a: 1 };
     const rowsB = { a: 1 };
+    const typesA = { a: 'string' };
+    const typesB = { a: 'string' };
     const renderA = jest.fn();
     const renderB = jest.fn();
     const evtA = { preventDefault: jest.fn() };
     const evtB = { preventDefault: jest.fn() };
 
-    const handlerA = createOnRemove(rowsA, renderA, 'a');
-    const handlerB = createOnRemove(rowsB, renderB, 'a');
+    const handlerA = createOnRemove(rowsA, typesA, renderA, 'a');
+    const handlerB = createOnRemove(rowsB, typesB, renderB, 'a');
 
     expect(handlerA).not.toBe(handlerB);
 

@@ -41,6 +41,7 @@ test('createInputDropdownHandler handles number then kv sequentially', () => {
     enable: jest.fn(),
     hide: jest.fn(),
     disable: jest.fn(),
+    addClass: jest.fn(),
   };
 
   const handler = createInputDropdownHandler(dom);

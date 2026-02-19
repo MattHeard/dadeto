@@ -33,6 +33,8 @@ describe('handleKVType effects', () => {
       getValue: jest.fn(() => '{}'),
       querySelectorAll: jest.fn(),
       createTextNode: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
 
     handleKVType(dom, container, textInput);
@@ -82,6 +84,8 @@ describe('handleKVType effects', () => {
       getValue: jest.fn(() => '{}'),
       querySelectorAll: jest.fn(),
       createTextNode: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
 
     handleKVType(dom, container, textInput);

@@ -83,6 +83,7 @@ describe('createInputDropdownHandler all types', () => {
       querySelectorAll: jest.fn(),
       createTextNode: jest.fn(),
       getTargetValue: jest.fn(),
+      addClass: jest.fn(),
     };
 
     const handler = createInputDropdownHandler(dom);

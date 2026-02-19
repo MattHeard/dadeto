@@ -3,14 +3,16 @@ import { createOnAddHandler } from '../../src/browser/toys.js';
 
 describe('createOnAddHandler', () => {
   let rows;
+  let rowTypes;
   let render;
   let handler;
 
   beforeEach(() => {
     // Initialize test data before each test
     rows = {};
+    rowTypes = {};
     render = jest.fn();
-    handler = createOnAddHandler(rows, render);
+    handler = createOnAddHandler(rows, rowTypes, render);
   });
 
   it('adds an empty key-value pair when no empty key exists', () => {
@@ -23,6 +25,9 @@ describe('createOnAddHandler', () => {
     // Should add an empty key
     expect(rows).toHaveProperty('');
     expect(rows['']).toBe('');
+
+    // Should seed rowTypes for the new empty key
+    expect(rowTypes['']).toBe('string');
 
     // Should call render to update the UI
     expect(render).toHaveBeenCalledTimes(1);
@@ -56,6 +61,9 @@ describe('createOnAddHandler', () => {
       key2: 'value2',
       '': '',
     });
+
+    // Should seed rowTypes for the new empty key
+    expect(rowTypes['']).toBe('string');
 
     // Should call render to update the UI
     expect(render).toHaveBeenCalledTimes(1);

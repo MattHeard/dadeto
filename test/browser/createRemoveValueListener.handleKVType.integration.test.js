@@ -25,6 +25,8 @@ describe('handleKVType integration with createRemoveValueListener', () => {
       getValue: jest.fn(() => '{}'),
       querySelectorAll: jest.fn(() => []),
       createTextNode: jest.fn(),
+      addClass: jest.fn(),
+      hide: jest.fn(),
     };
 
     const container = {};
