@@ -54,6 +54,28 @@
       ]
     },
     {
+      "key": "GERM1",
+      "title": "German Tokenizer",
+      "publicationDate": "2026-02-19",
+      "content": [
+        "Splits a German sentence into normalized surface tokens.",
+        "Lowercases each token, strips surrounding punctuation (keeping internal hyphens and apostrophes), and preserves umlauts and ß.",
+        "Returns a JSON array of tokens — the first step in the vaelith +1 reading pipeline."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-02-19/germanTokenizer.js",
+        "functionName": "germanTokenizerToy",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "german",
+        "tokenizer",
+        "vaelith",
+        "nlp"
+      ]
+    },
+    {
       "key": "MODE1",
       "title": "Moderator Rating Counts",
       "publicationDate": "2025-12-14",
