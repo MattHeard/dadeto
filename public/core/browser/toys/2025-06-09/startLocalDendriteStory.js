@@ -12,26 +12,23 @@ import {
 /**
  * @typedef {{ title: string, content: string }} DendriteStoryInput
  * @typedef {{id: string, title: string, content: string, options: object[]}} DendriteStoryResult
- * @typedef {{ temporary?: { DEND1?: DendriteStoryResult[] } }} DendriteStoryStorage
+ * @typedef {{ temporary?: { STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } }} DendriteStoryStorage
  */
-/**
- * Determines whether the provided object has a valid temporary structure.
- * @param {DendriteStoryStorage} obj - Object to inspect.
- * @returns {boolean} True when `obj.temporary.DEND1` is an array.
- */
-function hasValidTemporary(obj) {
-  return Array.isArray(obj.temporary?.DEND1);
-}
-
 /**
  * Ensures that the object contains the expected temporary data structure.
+ * Migrates legacy DEND1 data to STAR1 when present.
  * @param {DendriteStoryStorage} obj - Object to mutate if needed.
  * @returns {void}
  */
 function ensureTemporaryData(obj) {
-  if (!hasValidTemporary(obj)) {
-    obj.temporary = { DEND1: [] };
+  if (Array.isArray(obj.temporary?.STAR1)) {
+    return;
   }
+  if (Array.isArray(obj.temporary?.DEND1)) {
+    obj.temporary.STAR1 = obj.temporary.DEND1;
+    return;
+  }
+  obj.temporary = { STAR1: [] };
 }
 
 /**
@@ -60,10 +57,9 @@ function persistStoryResult(env, result) {
   const currentData = getData();
   const newData = /** @type {DendriteStoryStorage} */ (deepClone(currentData));
   ensureTemporaryData(newData);
-  const storyStorage = /** @type {{ temporary: { DEND1: DendriteStoryResult[] } }} */ (
-    newData
-  );
-  storyStorage.temporary.DEND1.push(result);
+  const storyStorage =
+    /** @type {{ temporary: { STAR1: DendriteStoryResult[] } }} */ (newData);
+  storyStorage.temporary.STAR1.push(result);
   setLocalTemporaryData(/** @type {ToyStorage} */ (storyStorage));
 }
 
