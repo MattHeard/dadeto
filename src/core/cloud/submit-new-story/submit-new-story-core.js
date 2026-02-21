@@ -70,6 +70,16 @@ function getRequestGetter(request) {
 }
 
 /**
+ * Get authorization header trying uppercase first, then lowercase.
+ * @param {(name: string) => string | undefined} getter Header getter function.
+ * @returns {string | null} Authorization header value.
+ */
+function getAuthHeaderWithFallback(getter) {
+  const uppercase = tryGetHeader(getter, 'Authorization');
+  return uppercase || tryGetHeader(getter, 'authorization') || null;
+}
+
+/**
  * Get auth header from getter.
  * @param {((name: string) => string | undefined) | undefined} getter Getter.
  * @returns {string | null} Auth header.
@@ -78,11 +88,7 @@ function getAuthFromGetter(getter) {
   if (!getter) {
     return null;
   }
-  const uppercase = tryGetHeader(getter, 'Authorization');
-  if (uppercase) {
-    return uppercase;
-  }
-  return tryGetHeader(getter, 'authorization');
+  return getAuthHeaderWithFallback(getter);
 }
 
 /**
@@ -499,6 +505,15 @@ function handleSubmitNewStoryRequest(deps, request) {
 }
 
 /**
+ * Get the HTTP method from request, defaulting to empty string.
+ * @param {unknown} method Request method.
+ * @returns {string} Method value or empty string.
+ */
+function getRequestMethod(method) {
+  return typeof method === 'string' ? method : '';
+}
+
+/**
  * Run the success callback only when the request uses POST; otherwise invoke the failure path.
  * @param {SubmitNewStoryRequest} request Request to inspect.
  * @param {(req: SubmitNewStoryRequest) => Promise<HttpResponse>} onPost Callback executed for POST requests.
@@ -506,7 +521,8 @@ function handleSubmitNewStoryRequest(deps, request) {
  * @returns {Promise<HttpResponse>} Response from the chosen callback.
  */
 function runWhenPostMethod(request, onPost, onFail) {
-  if (isPostMethod(request.method ?? '')) {
+  const method = getRequestMethod(request.method);
+  if (isPostMethod(method)) {
     return onPost(request);
   }
 
