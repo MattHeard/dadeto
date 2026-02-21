@@ -269,7 +269,14 @@ export function createFetchTopStoryIds(db) {
       .limit(1000)
       .get();
 
-    return snapshot.docs.map(/** @param {{ id: string }} doc */ doc => doc.id);
+    return snapshot.docs.map(
+      /**
+       * Extract story ID from document.
+       * @param {{ id: string }} doc - Document from snapshot.
+       * @returns {string} Story ID.
+       */
+      doc => doc.id
+    );
   };
 }
 
