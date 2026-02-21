@@ -93,6 +93,15 @@ export const DENDRITE_OPTION_KEYS = [
 ];
 
 /**
+ * Check if data is a valid non-empty string.
+ * @param {unknown} data - Data to validate.
+ * @returns {boolean} True if valid string with length.
+ */
+function isValidOptionString(data) {
+  return typeof data === 'string' && data.length > 0;
+}
+
+/**
  * Append a parsed option into the accumulator when valid.
  * @param {ToyOption[]} acc Accumulated options.
  * @param {string} key Candidate key to inspect.
@@ -104,11 +113,14 @@ export const DENDRITE_OPTION_KEYS = [
  */
 function addOption(acc, key, options) {
   const candidate = options.data[key];
-  if (typeof candidate !== 'string' || candidate.length === 0) {
+  if (!isValidOptionString(candidate)) {
     return acc;
   }
   /** @type {ToyOption} */
-  const option = { id: options.getUuid(), content: candidate };
+  const option = {
+    id: options.getUuid(),
+    content: /** @type {string} */ (candidate),
+  };
   if (options.pageId) {
     option.pageId = options.pageId;
   }

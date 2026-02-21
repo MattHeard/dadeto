@@ -88,6 +88,25 @@ function readExistingList(storageFn) {
 }
 
 /**
+ * Extract value from first key if present.
+ * @param {Record<string, unknown> | null | undefined} data - Data object.
+ * @param {string} key - Key to look up.
+ * @returns {unknown} Value or undefined.
+ */
+function getValueByKey(data, key) {
+  return data?.[key];
+}
+
+/**
+ * Extract stored value by key from data.
+ * @param {Record<string, unknown> | null | undefined} data - Data object.
+ * @returns {unknown} Value from TOY_KEY or LEGACY_TOY_KEY.
+ */
+function extractStoredValue(data) {
+  return getValueByKey(data, TOY_KEY) ?? getValueByKey(data, LEGACY_TOY_KEY);
+}
+
+/**
  * Read the current list contents from storage while ensuring a string is returned.
  * @param {(args: object) => unknown} storageFn - Storage accessor used to read the current list.
  * @returns {string} Stored list contents or an empty string.
@@ -95,9 +114,7 @@ function readExistingList(storageFn) {
 function getStoredListValue(storageFn) {
   const existingData =
     /** @type {Record<string, unknown> | null | undefined} */ (storageFn({}));
-  return ensureString(
-    existingData?.[TOY_KEY] ?? existingData?.[LEGACY_TOY_KEY]
-  );
+  return ensureString(extractStoredValue(existingData));
 }
 
 /**
