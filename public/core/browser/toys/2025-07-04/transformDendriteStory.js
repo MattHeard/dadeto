@@ -8,7 +8,7 @@ import {
 /**
  * Transform and store a Dendrite story submission.
  * @param {string} input - JSON string of a Dendrite story submission.
- * @param {Map<string, Function>} env - Environment providing getData/setLocalTemporaryData.
+ * @param {import('../browserToysCore.js').ToyEnv} env - Environment providing getData/setLocalTemporaryData.
  * @returns {string} JSON string of the new objects.
  */
 export function transformDendriteStory(input, env) {

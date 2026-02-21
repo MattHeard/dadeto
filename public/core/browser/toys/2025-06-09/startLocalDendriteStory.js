@@ -16,7 +16,7 @@ import {
  */
 /**
  * Check if temporary storage has a valid STAR1 array.
- * @param {object} temporary - Temporary storage object.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Temporary storage object.
  * @returns {boolean} True if STAR1 is an array.
  */
 function hasStar1Structure(temporary) {
@@ -25,7 +25,7 @@ function hasStar1Structure(temporary) {
 
 /**
  * Check if temporary storage has a valid DEND1 array.
- * @param {object} temporary - Temporary storage object.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Temporary storage object.
  * @returns {boolean} True if DEND1 is an array.
  */
 function hasDend1Structure(temporary) {
@@ -34,26 +34,26 @@ function hasDend1Structure(temporary) {
 
 /**
  * Resolve legacy DEND1 structure or empty array.
- * @param {object} temporary - Temporary storage object.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Temporary storage object.
  * @returns {DendriteStoryResult[]} DEND1 array or empty array.
  */
 function resolveLegacyStructure(temporary) {
-  if (hasDend1Structure(temporary)) {
-    return temporary.DEND1;
+  if (!temporary || !hasDend1Structure(temporary)) {
+    return [];
   }
-  return [];
+  return /** @type {DendriteStoryResult[]} */ (temporary.DEND1);
 }
 
 /**
  * Determine which story array to use, with DEND1 legacy migration.
- * @param {object} temporary - Temporary storage object.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Temporary storage object.
  * @returns {DendriteStoryResult[]} Array to use for STAR1.
  */
 function resolveStar1Structure(temporary) {
-  if (hasStar1Structure(temporary)) {
-    return temporary.STAR1;
+  if (!temporary || !hasStar1Structure(temporary)) {
+    return resolveLegacyStructure(temporary);
   }
-  return resolveLegacyStructure(temporary);
+  return /** @type {DendriteStoryResult[]} */ (temporary.STAR1);
 }
 
 /**
@@ -64,7 +64,7 @@ function resolveStar1Structure(temporary) {
  */
 function ensureTemporaryData(obj) {
   const star1Data = resolveStar1Structure(obj.temporary);
-  obj.temporary = { STAR1: star1Data };
+  obj.temporary = /** @type {NonNullable<DendriteStoryStorage['temporary']>} */ ({ STAR1: star1Data });
 }
 
 /**

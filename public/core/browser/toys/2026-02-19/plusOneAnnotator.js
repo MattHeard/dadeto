@@ -92,6 +92,7 @@ function buildKnownWordSet(knownWords) {
  * @returns {string[]} Unknown tokens.
  */
 function collectUnknownTokens(tokens, knownWordSet) {
+  /** @type {string[]} */
   const unknownTokens = [];
   tokens.forEach(token => {
     if (knownWordSet.has(token)) {

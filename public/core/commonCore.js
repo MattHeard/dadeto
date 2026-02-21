@@ -11,7 +11,7 @@ export const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
 
 /**
  * Checks if a string is non-empty.
- * @param {string} str - Candidate string to validate.
+ * @param {unknown} str - Candidate string to validate.
  * @returns {boolean} True when the input is a non-empty string.
  */
 export function isValidString(str) {

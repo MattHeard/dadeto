@@ -154,10 +154,10 @@ function buildMoveResponseWithoutNewMove(moves) {
 /**
  * Check if move input is valid.
  * @param {TicTacToeMove[] | null | undefined} moves - Parsed moves.
- * @returns {boolean} True if valid.
+ * @returns {moves is TicTacToeMove[]} True if valid.
  */
 function isValidMoveInput(moves) {
-  return !isInvalidMoves(moves) && moves;
+  return Array.isArray(moves) && !isInvalidMoves(moves);
 }
 
 /**
@@ -711,7 +711,7 @@ function isValidRowAndColumn(row, column) {
  * @returns {boolean} True if move has player and position.
  */
 function hasMoveProperties(move) {
-  return 'player' in move && 'position' in move;
+  return typeof move === 'object' && move !== null && 'player' in move && 'position' in move;
 }
 
 /**
