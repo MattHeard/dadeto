@@ -272,12 +272,6 @@ export function styles() {
     font-weight: bold;
   }
 
-  /* Add spacing around nav entry */
-  .nav-entry {
-    margin-top: 0;
-    margin-bottom: 1em;
-  }
-
   /* Style nav key in green for visibility */
   .nav-entry > .key {
     color: #00FF00;
