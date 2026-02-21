@@ -43,9 +43,10 @@ function isValidSubmissionData(data) {
  */
 function getSubmissionData(snapshot) {
   const data = getSnapshotData(snapshot);
-  return isValidSubmissionData(data)
-    ? /** @type {Record<string, unknown>} */ (data)
-    : null;
+  if (!isValidSubmissionData(data)) {
+    return null;
+  }
+  return /** @type {Record<string, unknown>} */ (data);
 }
 
 /**
@@ -354,9 +355,10 @@ function snapshotHasRef(snapshot) {
  * @returns {DocumentReference | null} Document reference when present.
  */
 function getSnapshotReference(snapshot) {
-  return snapshotHasRef(snapshot)
-    ? /** @type {DocumentReference} */ (snapshot.ref)
-    : null;
+  if (!snapshotHasRef(snapshot)) {
+    return null;
+  }
+  return /** @type {DocumentReference} */ (snapshot.ref);
 }
 
 /**

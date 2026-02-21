@@ -602,7 +602,10 @@ function isObjectType(value) {
  * @returns {boolean} True if error has message property.
  */
 function isErrorObject(error) {
-  return isObjectType(error) ? 'message' in error : false;
+  if (!isObjectType(error)) {
+    return false;
+  }
+  return 'message' in error;
 }
 
 /**
@@ -611,7 +614,10 @@ function isErrorObject(error) {
  * @returns {unknown} Error message or null.
  */
 function getErrorMessage(error) {
-  return isErrorObject(error) ? error.message : null;
+  if (!isErrorObject(error)) {
+    return null;
+  }
+  return error.message;
 }
 
 /**

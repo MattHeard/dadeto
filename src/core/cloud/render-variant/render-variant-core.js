@@ -1690,7 +1690,10 @@ function buildRootUrl(snap, variant) {
  */
 function extractPageNumber(snap) {
   const data = snap.data();
-  return data ? String(data.number) : '';
+  if (data) {
+    return String(data.number);
+  }
+  return '';
 }
 
 /**

@@ -339,12 +339,14 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
  * @returns {StoryInfo | null} Story metadata or null when the page is missing.
  */
 function buildStoryInfoFromPage(pageSnap, story) {
-  return hasPageSnapshot(pageSnap)
-    ? {
-        title: extractStoryTitle(story),
-        pageNumber: extractPageNumber(pageSnap.data()) ?? null,
-      }
-    : null;
+  if (!hasPageSnapshot(pageSnap)) {
+    return null;
+  }
+
+  return {
+    title: extractStoryTitle(story),
+    pageNumber: extractPageNumber(pageSnap.data()) ?? null,
+  };
 }
 
 /**

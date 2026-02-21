@@ -118,7 +118,10 @@ function hasValidUuid(uuid) {
  * @returns {{ status: number, body: string } | null} Response when missing, otherwise null.
  */
 function getMissingUuidResponse(uuid) {
-  return hasValidUuid(uuid) ? null : MISSING_UUID_RESPONSE;
+  if (hasValidUuid(uuid)) {
+    return null;
+  }
+  return MISSING_UUID_RESPONSE;
 }
 
 /**
