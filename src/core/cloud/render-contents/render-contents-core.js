@@ -339,15 +339,12 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
  * @returns {StoryInfo | null} Story metadata or null when the page is missing.
  */
 function buildStoryInfoFromPage(pageSnap, story) {
-  if (!hasPageSnapshot(pageSnap)) {
-    return null;
-  }
-
-  const page = pageSnap.data();
-  return {
-    title: extractStoryTitle(story),
-    pageNumber: extractPageNumber(page) ?? null,
-  };
+  return hasPageSnapshot(pageSnap)
+    ? {
+        title: extractStoryTitle(story),
+        pageNumber: extractPageNumber(pageSnap.data()) ?? null,
+      }
+    : null;
 }
 
 /**
@@ -785,12 +782,20 @@ function normalizeRenderContentsOptions(
 }
 
 /**
+ * Get default console error function.
+ * @returns {(message: string, error?: unknown) => void} Console error function.
+ */
+function getDefaultConsoleError() {
+  return console.error.bind(console) ?? console.error;
+}
+
+/**
  * Ensure a console error helper is available for logging.
  * @param {((message: string, error?: unknown) => void) | undefined} value Candidate logger.
  * @returns {(message: string, error?: unknown) => void} Resolved console error helper.
  */
 function resolveRenderContentsConsoleError(value) {
-  return value ?? console.error.bind(console) ?? console.error;
+  return value ?? getDefaultConsoleError();
 }
 
 /**
@@ -1146,6 +1151,15 @@ function resolveOriginHeader(req) {
 }
 
 /**
+ * Check if origin is a valid string.
+ * @param {unknown} origin - Origin to validate.
+ * @returns {boolean} True if valid origin string.
+ */
+function isValidOriginString(origin) {
+  return Boolean(origin) && typeof origin === 'string';
+}
+
+/**
  * Apply the appropriate Access-Control response based on the resolved origin.
  * @param {{ set: (name: string, value: string) => void }} res Response helper.
  * @param {unknown} origin Origin header value.
@@ -1153,11 +1167,11 @@ function resolveOriginHeader(req) {
  * @returns {boolean} True when the origin is considered allowed.
  */
 function respondToOrigin(res, origin, origins) {
-  if (!origin || typeof origin !== 'string') {
+  if (!isValidOriginString(origin)) {
     setWildcardOrigin(res);
     return true;
   }
-  return handleKnownOrigin(res, origin, origins);
+  return handleKnownOrigin(res, /** @type {string} */ (origin), origins);
 }
 
 /**

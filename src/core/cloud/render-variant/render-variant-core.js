@@ -1684,19 +1684,34 @@ function buildRootUrl(snap, variant) {
 }
 
 /**
+ * Extract page number from snapshot data.
+ * @param {PageSnapshot} snap - Page snapshot.
+ * @returns {string} Page number or empty string.
+ */
+function extractPageNumber(snap) {
+  const data = snap.data();
+  return data ? String(data.number) : '';
+}
+
+/**
+ * Extract variant name from variant data.
+ * @param {any} variantData - Variant data.
+ * @returns {string} Variant name or empty string.
+ */
+function extractVariantName(variantData) {
+  const name = (variantData || {}).name;
+  return name || '';
+}
+
+/**
  * Assemble root URL.
  * @param {PageSnapshot} snap Snap.
  * @param {VariantSnapshot} variant Variant.
  * @returns {string} URL.
  */
 function assembleRootUrl(snap, variant) {
-  const data = snap.data();
-  let pageNumber = '';
-  if (data) {
-    pageNumber = String(data.number);
-  }
-  const variantData = variant.data();
-  const variantName = (variantData || {}).name || '';
+  const pageNumber = extractPageNumber(snap);
+  const variantName = extractVariantName(variant.data());
   return `/p/${pageNumber}${variantName}.html`;
 }
 

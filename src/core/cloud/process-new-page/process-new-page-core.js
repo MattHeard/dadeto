@@ -471,6 +471,34 @@ async function resolveExistingPageContext(targetPage) {
 }
 
 /**
+ * Get data from snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
+ * @returns {any} Data from snapshot.
+ */
+function getSnapshotDataObj(snapshot) {
+  return /** @type {any} */ (snapshot).data?.();
+}
+
+/**
+ * Extract page number from data object.
+ * @param {any} data - Data object.
+ * @returns {number | null} Page number or null.
+ */
+function getPageNumberFromData(data) {
+  return data?.number ?? null;
+}
+
+/**
+ * Extract page number from snapshot data.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
+ * @returns {number | null} Page number or null.
+ */
+function extractPageNumberFromSnapshot(snapshot) {
+  const data = getSnapshotDataObj(snapshot);
+  return getPageNumberFromData(data);
+}
+
+/**
  * Build the context object from an existing page snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot | null} existingPageSnap Snapshot to inspect.
  * @param {import('firebase-admin/firestore').DocumentReference} targetPage Page reference.
@@ -484,9 +512,7 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
 
   return {
     pageDocRef: targetPage,
-    pageNumber:
-      /** @type {any} */ (/** @type {any} */ (existingPageSnap).data?.())
-        .number || null,
+    pageNumber: extractPageNumberFromSnapshot(existingPageSnap),
   };
 }
 

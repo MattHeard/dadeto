@@ -74,12 +74,21 @@ function resolveFirstValue(resolvers) {
 }
 
 /**
+ * Check if request is valid for UUID extraction.
+ * @param {unknown} request - Request data to validate.
+ * @returns {boolean} True if request is a valid object.
+ */
+function isValidRequestObject(request) {
+  return Boolean(request) && typeof request === 'object';
+}
+
+/**
  * Extract an API key UUID from a request-like object.
  * @param {unknown} [request] Incoming request data.
  * @returns {string} Extracted UUID or an empty string when missing.
  */
 export function extractUuid(request) {
-  if (!request || typeof request !== 'object') {
+  if (!isValidRequestObject(request)) {
     return '';
   }
 

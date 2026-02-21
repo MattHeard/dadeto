@@ -253,12 +253,21 @@ function extractTokenErrorMessage(err) {
 }
 
 /**
+ * Check if a value is a non-null object.
+ * @param {unknown} value Value to check.
+ * @returns {value is object} True if value is an object.
+ */
+function isObject(value) {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
  * Determine whether the error exposes a string message.
  * @param {unknown} err Error captured during token validation.
  * @returns {boolean} True when the message can be read as a string.
  */
 function hasTokenMessage(err) {
-  if (typeof err !== 'object' || err === null) {
+  if (!isObject(err)) {
     return false;
   }
 
@@ -1146,12 +1155,21 @@ function isValidUserRecord(userRecord) {
 }
 
 /**
+ * Extract user record from context.
+ * @param {{ userRecord?: { uid?: string } }} context - Context object.
+ * @returns {object} User record or empty object.
+ */
+function extractUserRecord(context) {
+  return context?.userRecord ?? {};
+}
+
+/**
  * Resolve user record from guard context.
  * @param {{ userRecord?: { uid?: string } }} context Context.
  * @returns {UserRecordWithUid} User record.
  */
 function resolveUserRecord(context) {
-  return requireUserRecord(context?.userRecord ?? {});
+  return requireUserRecord(extractUserRecord(context));
 }
 
 /**
@@ -1181,15 +1199,23 @@ async function resolveVariantDoc({
 }
 
 /**
+ * Throw when error message is present.
+ * @param {string | undefined} errorMessage - Error message.
+ */
+function throwIfErrorMessage(errorMessage) {
+  if (errorMessage) {
+    throw { status: 500, body: errorMessage };
+  }
+}
+
+/**
  * Throw an error when the resolved variant doc is missing or the selector signaled a failure.
  * @param {string | undefined} errorMessage Optional selector error message.
  * @param {VariantDocSnapshot | undefined} variantDoc Variant document snapshot.
  * @returns {void}
  */
 function ensureVariantDocAvailability(errorMessage, variantDoc) {
-  if (errorMessage) {
-    throw { status: 500, body: errorMessage };
-  }
+  throwIfErrorMessage(errorMessage);
 
   if (!variantDoc) {
     throw { status: 500, body: 'Variant fetch failed 🤷' };
@@ -1226,12 +1252,21 @@ async function persistAssignment(deps, data) {
 }
 
 /**
+ * Check if value is a valid object.
+ * @param {unknown} value - Value to check.
+ * @returns {boolean} True if value is an object.
+ */
+function isValidObject(value) {
+  return Boolean(value) && typeof value === 'object';
+}
+
+/**
  * Determine if value is a response object.
  * @param {unknown} value Value.
  * @returns {boolean} True if response.
  */
 function isResponse(value) {
-  if (!value || typeof value !== 'object') {
+  if (!isValidObject(value)) {
     return false;
   }
   const obj = /** @type {any} */ (value);

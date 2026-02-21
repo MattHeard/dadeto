@@ -218,12 +218,21 @@ function extractBearerToken(value) {
   return null;
 }
 /**
+ * Check if request has a valid get method.
+ * @param {unknown} request - Request to validate.
+ * @returns {boolean} True if request has get function.
+ */
+function hasValidGetMethod(request) {
+  return Boolean(request) && typeof request.get === 'function';
+}
+
+/**
  * Reads the Authorization header from an Express-style request object.
  * @param {RequestLike | null | undefined} request Incoming HTTP request.
  * @returns {string | null} Authorization header string when provided, otherwise null.
  */
 function getAuthorizationHeader(request) {
-  if (!request || typeof request.get !== 'function') {
+  if (!hasValidGetMethod(request)) {
     return null;
   }
 
@@ -579,15 +588,39 @@ function createInvalidTokenResponse(error) {
 }
 
 /**
+ * Check if value is a non-null object.
+ * @param {unknown} value - Value to check.
+ * @returns {boolean} True if value is an object.
+ */
+function isObjectType(value) {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Check if error is an object with a message property.
+ * @param {unknown} error - Value to check.
+ * @returns {boolean} True if error has message property.
+ */
+function isErrorObject(error) {
+  return isObjectType(error) ? 'message' in error : false;
+}
+
+/**
+ * Extract error message when available.
+ * @param {unknown} error - Error to extract from.
+ * @returns {unknown} Error message or null.
+ */
+function getErrorMessage(error) {
+  return isErrorObject(error) ? error.message : null;
+}
+
+/**
  * Normalize an error message for invalid token responses.
  * @param {unknown} error Error raised while verifying the token.
  * @returns {string} Message displayed to the client.
  */
 function getInvalidTokenMessage(error) {
-  let message = null;
-  if (error && typeof error === 'object' && 'message' in error) {
-    message = error.message;
-  }
+  const message = getErrorMessage(error);
   const normalized = normalizeString(
     /** @type {string | null | undefined} */ (message),
     200

@@ -28,16 +28,24 @@ export function resetFindAvailablePageNumberResolver() {
  */
 
 /**
+ * Check if data is a valid object for submission.
+ * @param {unknown} data - Data to validate.
+ * @returns {boolean} True if valid object.
+ */
+function isValidSubmissionData(data) {
+  return Boolean(data) && typeof data === 'object';
+}
+
+/**
  * Extract submission data from an incoming Firestore snapshot.
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot captured by the trigger.
  * @returns {Record<string, unknown> | null} Submission payload when available.
  */
 function getSubmissionData(snapshot) {
   const data = getSnapshotData(snapshot);
-  if (data && typeof data === 'object') {
-    return /** @type {Record<string, unknown>} */ (data);
-  }
-  return null;
+  return isValidSubmissionData(data)
+    ? /** @type {Record<string, unknown>} */ (data)
+    : null;
 }
 
 /**
@@ -332,20 +340,23 @@ function markSnapshotAsProcessed(batch, snapshot) {
 }
 
 /**
+ * Check if snapshot has a valid ref property.
+ * @param {FirestoreDocumentSnapshot | null | undefined} snapshot - Snapshot to check.
+ * @returns {boolean} True if snapshot has ref.
+ */
+function snapshotHasRef(snapshot) {
+  return Boolean(snapshot) && 'ref' in snapshot;
+}
+
+/**
  * Resolve the Firestore document reference for a snapshot when available.
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
  * @returns {DocumentReference | null} Document reference when present.
  */
 function getSnapshotReference(snapshot) {
-  if (!snapshot) {
-    return null;
-  }
-
-  if ('ref' in snapshot) {
-    return /** @type {DocumentReference} */ (snapshot.ref);
-  }
-
-  return null;
+  return snapshotHasRef(snapshot)
+    ? /** @type {DocumentReference} */ (snapshot.ref)
+    : null;
 }
 
 /**
@@ -358,6 +369,15 @@ function isSnapshotAvailable(snapshot) {
 }
 
 /**
+ * Extract author ID when it's a string.
+ * @param {unknown} authorId - Author ID to validate.
+ * @returns {string | null} Author ID or null.
+ */
+function getStringAuthorId(authorId) {
+  return typeof authorId === 'string' ? authorId : null;
+}
+
+/**
  * Ensure the author's document exists when an author identifier is provided.
  * @param {object} options Collaborators required to verify the author document.
  * @param {WriteBatch} options.batch Firestore batch instance.
@@ -367,11 +387,7 @@ function isSnapshotAvailable(snapshot) {
  * @returns {Promise<void>} Resolves once the author document is scheduled for creation when needed.
  */
 async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
-  const authorId = submission.authorId;
-  let resolvedAuthorId = null;
-  if (typeof authorId === 'string') {
-    resolvedAuthorId = authorId;
-  }
+  const resolvedAuthorId = getStringAuthorId(submission.authorId);
   const authorRef = resolveAuthorRef(db, resolvedAuthorId);
   if (!authorRef) {
     return;

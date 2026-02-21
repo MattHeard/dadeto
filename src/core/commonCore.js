@@ -264,9 +264,5 @@ function didExecutionFail(result) {
  */
 export function tryOr(action, fallback = () => undefined) {
   const result = executeSafely(action);
-  if (didExecutionFail(result)) {
-    return fallback();
-  }
-
-  return result;
+  return didExecutionFail(result) ? fallback() : result;
 }

@@ -152,21 +152,24 @@ function buildMoveResponseWithoutNewMove(moves) {
 }
 
 /**
+ * Check if move input is valid.
+ * @param {TicTacToeMove[] | null | undefined} moves - Parsed moves.
+ * @returns {boolean} True if valid.
+ */
+function isValidMoveInput(moves) {
+  return !isInvalidMoves(moves) && moves;
+}
+
+/**
  * Entry point for the Tic Tac Toe toy.
  * @param {string} input - JSON string describing moves.
  * @returns {string} Response payload.
  */
 export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
-
-  // Inline validateAndApplyMoves
-  if (isInvalidMoves(moves)) {
-    return returnInitialOptimalMove();
-  }
-  if (!moves) {
-    return returnInitialOptimalMove();
-  }
-  return handleValidMoves(moves);
+  return isValidMoveInput(moves)
+    ? handleValidMoves(moves)
+    : returnInitialOptimalMove();
 }
 
 /**
@@ -702,6 +705,24 @@ function isValidRowAndColumn(row, column) {
 }
 
 /**
+ * Check if move has required properties.
+ * @param {unknown} move - Move candidate.
+ * @returns {boolean} True if move has player and position.
+ */
+function hasMoveProperties(move) {
+  return 'player' in move && 'position' in move;
+}
+
+/**
+ * Check if move has required structure.
+ * @param {unknown} move - Move candidate.
+ * @returns {boolean} True if move has player and position properties.
+ */
+function hasMoveStructure(move) {
+  return isObject(move) ? hasMoveProperties(move) : false;
+}
+
+/**
  * Determine whether the move can be applied at the current index.
  * @param {unknown} move - Move candidate.
  * @param {number} index - Move index.
@@ -709,7 +730,7 @@ function isValidRowAndColumn(row, column) {
  * @returns {boolean} True when the move passes validation and turn-order checks so illegals are rejected before the play is applied.
  */
 function canMoveBeApplied(move, index, moves) {
-  if (!isObject(move) || !('player' in move) || !('position' in move)) {
+  if (!hasMoveStructure(move)) {
     return false;
   }
   // After guard checks, treat move as TicTacToeMove for validation

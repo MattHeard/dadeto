@@ -43,6 +43,15 @@ export function createFirestore(FirestoreConstructor) {
 }
 
 /**
+ * Check if a UUID is a valid string.
+ * @param {unknown} uuid Candidate UUID.
+ * @returns {boolean} True if UUID is valid string.
+ */
+function isValidUuid(uuid) {
+  return typeof uuid === 'string' && isValidString(uuid);
+}
+
+/**
  * Resolve the UUID from the request or dependency helper.
  * @param {Record<string, unknown>} request - Incoming request object.
  * @param {(request: unknown) => string | undefined} getUuid - Helper to derive the UUID.
@@ -50,10 +59,19 @@ export function createFirestore(FirestoreConstructor) {
  */
 function resolveUuid(request, getUuid) {
   const directUuid = request.uuid;
-  if (typeof directUuid === 'string' && isValidString(directUuid)) {
+  if (isValidUuid(directUuid)) {
     return directUuid;
   }
   return getUuid(request);
+}
+
+/**
+ * Check if credit value is special (null or undefined).
+ * @param {number | null | undefined} credit - Credit value to check.
+ * @returns {boolean} True if special value.
+ */
+function isSpecialCreditValue(credit) {
+  return credit === null || credit === undefined;
 }
 
 /**
@@ -62,7 +80,7 @@ function resolveUuid(request, getUuid) {
  * @returns {{ status: number, body: unknown }} HTTP response describing the outcome.
  */
 function mapCreditToResponse(credit) {
-  if (credit === null || credit === undefined) {
+  if (isSpecialCreditValue(credit)) {
     return (
       CREDIT_RESPONSE_BY_VALUE.get(credit) ?? { status: 200, body: { credit } }
     );
@@ -86,15 +104,21 @@ async function fetchCreditResponse(fetchCredit, uuid) {
 }
 
 /**
+ * Check if UUID is present and valid.
+ * @param {string | undefined} uuid - UUID candidate to check.
+ * @returns {boolean} True if UUID is valid.
+ */
+function hasValidUuid(uuid) {
+  return typeof uuid === 'string' && isValidString(uuid);
+}
+
+/**
  * Derive an error response when the UUID is missing.
  * @param {string | undefined} uuid - UUID candidate to check.
  * @returns {{ status: number, body: string } | null} Response when missing, otherwise null.
  */
 function getMissingUuidResponse(uuid) {
-  if (typeof uuid === 'string' && isValidString(uuid)) {
-    return null;
-  }
-  return MISSING_UUID_RESPONSE;
+  return hasValidUuid(uuid) ? null : MISSING_UUID_RESPONSE;
 }
 
 /**

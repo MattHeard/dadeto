@@ -581,6 +581,18 @@ function resolveVariantName(candidate) {
 }
 
 /**
+ * Validate and extract configuration from options.
+ * @param {HandleRequestOptions | undefined} optionsTyped - Typed options.
+ * @returns {object} Validated configuration.
+ */
+function extractValidatedConfig(optionsTyped) {
+  const { verifyAdmin, markVariantDirty } = optionsTyped ?? {};
+  assertFunction(verifyAdmin, 'verifyAdmin');
+  assertFunction(markVariantDirty, 'markVariantDirty');
+  return { verifyAdmin, markVariantDirty };
+}
+
+/**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
  * @param {HandleRequestOptions} [options] Configuration for the handler.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
@@ -589,16 +601,14 @@ export function createHandleRequest(options) {
   const optionsTyped = /** @type {HandleRequestOptions | undefined} */ (
     options
   );
-  const { verifyAdmin, markVariantDirty } = optionsTyped ?? {};
+  const { verifyAdmin, markVariantDirty } =
+    extractValidatedConfig(optionsTyped);
   const parseRequestBody = resolveParseRequestBody(
     optionsTyped?.parseRequestBody
   );
   const allowedMethod = resolveAllowedMethod(optionsTyped?.allowedMethod);
 
-  assertFunction(verifyAdmin, 'verifyAdmin');
-  assertFunction(markVariantDirty, 'markVariantDirty');
-
-  // After assertFunction calls, these are guaranteed to be functions
+  // After assertFunction calls in extractValidatedConfig, these are guaranteed to be functions
   const verifyAdminFn =
     /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
       verifyAdmin
