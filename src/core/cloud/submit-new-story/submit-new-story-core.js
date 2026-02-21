@@ -72,7 +72,7 @@ function getRequestGetter(request) {
 /**
  * Get lowercase header fallback.
  * @param {(name: string) => string | undefined} getter - Header getter.
- * @returns {string | undefined} Header value or undefined.
+ * @returns {string | null} Header value or null.
  */
 function getLowercaseHeaderFallback(getter) {
   return tryGetHeader(getter, 'authorization');
@@ -89,12 +89,12 @@ function resolveLowercaseHeader(lowercase) {
 
 /**
  * Resolve header with fallback to lowercase variant.
- * @param {string | undefined} uppercase - Uppercase header value.
- * @param {string | undefined} lowercase - Lowercase header value.
+ * @param {string | null} uppercase - Uppercase header value.
+ * @param {string | null} lowercase - Lowercase header value.
  * @returns {string | null} Header value or null.
  */
 function resolveBothHeaders(uppercase, lowercase) {
-  return uppercase ?? resolveLowercaseHeader(lowercase);
+  return (typeof uppercase === 'string' ? uppercase : null) ?? resolveLowercaseHeader(typeof lowercase === 'string' ? lowercase : undefined);
 }
 
 /**

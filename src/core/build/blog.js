@@ -78,7 +78,7 @@ export function createSharedDirectoryEntries({
 
 /**
  * Create helpers that orchestrate copying source assets into the public tree.
- * @param {{ directories: Record<string, string>, path: Pick<typeof import('path'), 'join' | 'dirname' | 'relative'> }} options - File system dependencies.
+ * @param {object} options - File system dependencies.
  * @param {Record<string, string>} options.directories - Directory configuration.
  * @param {Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.path - Node path helpers.
  * @returns {Record<string, Function>} Copy helper functions.
@@ -109,7 +109,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    *   readDirEntries: (dir: string) => import('fs').Dirent[],
    * }} io FS adapters.
    * @param {{
-   *   messageLogger: { info?: (message: string) => void, warn?: (message: string) => void },
+   *   messageLogger: { info: (message: string) => void },
    *   resolveMessage: (entry: { source: string, destination: string }) => string,
    * }} options Logger and message builder.
    * @returns {void}
@@ -204,9 +204,11 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   function findJsFiles(dir, listEntries) {
     const entries = listEntries(dir);
     return entries.reduce(
+      /** @param {string[]} jsFiles */
+      /** @param {import('fs').Dirent} entry */
       (jsFiles, entry) =>
         accumulateJsFiles(jsFiles, entry, { dir, listEntries }),
-      []
+      /** @type {string[]} */ ([])
     );
   }
 
@@ -502,7 +504,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyCoreConstants(dirs, io, messageLogger);
   }
 
-  return buildCopyExportMap([
+  return /** @type {Record<string, Function>} */ (buildCopyExportMap([
     ['runCopyWorkflow', runCopyWorkflow],
     ['copyBrowserTrees', copyBrowserTrees],
     ['copyCoreRootFiles', copyCoreRootFiles],
@@ -524,5 +526,5 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ['isJsFile', isJsFile],
     ['isCorrectJsFileEnding', isCorrectJsFileEnding],
     ['formatPathForLog', formatPathForLog],
-  ]);
+  ]));
 }

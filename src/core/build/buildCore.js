@@ -17,6 +17,20 @@ export function buildCopyExportMap(entries) {
  * @property {(message: string, error: unknown) => void} logError Logger invoked for error messages.
  */
 
+/**
+ * Format HTML using Prettier and write the result.
+ * @param {object} params - Formatting parameters.
+ * @param {(configPath: string) => Promise<object | null>} params.resolveConfig - Resolve Prettier config.
+ * @param {(html: string, options: object) => Promise<string>} params.formatHtml - Format HTML with Prettier.
+ * @param {string} params.configPath - Path to Prettier config.
+ * @param {string} params.html - HTML to format.
+ * @param {string} params.parser - HTML parser name.
+ * @param {string} params.outputPath - Where to write output.
+ * @param {string} [params.encoding] - File encoding.
+ * @param {(outputPath: string, contents: string, encoding?: string) => void} params.writeFile - Write file function.
+ * @param {(...args: any[]) => void} params.logInfo - Info logger.
+ * @returns {Promise<void>}
+ */
 const formatWithPrettier = async ({
   resolveConfig,
   formatHtml,
@@ -38,6 +52,18 @@ const formatWithPrettier = async ({
   logInfo(`HTML formatted with Prettier and written to ${outputPath}`);
 };
 
+/**
+ * Write unformatted HTML as fallback when formatting fails.
+ * @param {object} params - Write parameters.
+ * @param {(message: string, error: unknown) => void} params.logError - Error logger.
+ * @param {(outputPath: string, contents: string, encoding?: string) => void} params.writeFile - Write file function.
+ * @param {(...args: any[]) => void} params.logInfo - Info logger.
+ * @param {string} params.outputPath - Where to write output.
+ * @param {string} params.html - HTML content.
+ * @param {string} [params.encoding] - File encoding.
+ * @param {unknown} error - The error that occurred during formatting.
+ * @returns {void}
+ */
 const writeUnformattedHtml = (
   { logError, writeFile, logInfo, outputPath, html, encoding },
   error
@@ -47,6 +73,11 @@ const writeUnformattedHtml = (
   logInfo(`Unformatted HTML written to ${outputPath}`);
 };
 
+/**
+ * Write HTML with fallback handling.
+ * @param {any} options - Write options.
+ * @returns {Promise<void>}
+ */
 const writeWithFallback = async options => {
   try {
     await formatWithPrettier(options);

@@ -346,7 +346,7 @@ function markSnapshotAsProcessed(batch, snapshot) {
  * @returns {boolean} True if snapshot has ref.
  */
 function snapshotHasRef(snapshot) {
-  return Boolean(snapshot) && 'ref' in snapshot;
+  return Boolean(snapshot) && 'ref' in /** @type {object} */ (snapshot);
 }
 
 /**
@@ -358,7 +358,7 @@ function getSnapshotReference(snapshot) {
   if (!snapshotHasRef(snapshot)) {
     return null;
   }
-  return /** @type {DocumentReference} */ (snapshot.ref);
+  return /** @type {DocumentReference} */ ((/** @type {any} */ (snapshot)).ref);
 }
 
 /**

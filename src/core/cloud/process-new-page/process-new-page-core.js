@@ -468,9 +468,9 @@ async function markProcessedIfMissing(optionSnap, snapshot) {
  * @returns {{variantRef: any, storyRefCandidate: any} | null} References or null if story ref missing.
  */
 function extractAndValidateStoryRef(optionSnap) {
-  const { variantRef, storyRef: storyRefCandidate } = resolveStoryRefFromOption(
-    optionSnap.ref
-  );
+  const { variantRef, storyRef: storyRefCandidate } = /** @type {any} */ (resolveStoryRefFromOption(
+    (/** @type {any} */ (optionSnap)).ref
+  ));
 
   if (!storyRefCandidate) {
     return null;
@@ -667,9 +667,14 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
     return null;
   }
 
+  const pageNumber = extractPageNumberFromSnapshot(/** @type {any} */ (existingPageSnap));
+  if (pageNumber === null) {
+    return null;
+  }
+
   return {
     pageDocRef: targetPage,
-    pageNumber: extractPageNumberFromSnapshot(existingPageSnap),
+    pageNumber,
   };
 }
 
@@ -1456,11 +1461,11 @@ function extractSubmissionData(snapshot) {
  * @param {() => string} params.randomUUID - UUID generator.
  * @param {() => number} params.random - Random generator.
  * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
- * @param {object} params.fieldValue - FieldValue helper.
+ * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} params.fieldValue - FieldValue helper.
  * @returns {Promise<null>} Null when complete.
  */
 async function handleAndProcessSubmission(params) {
-  return processUnprocessedSubmission(params);
+  return /** @type {Promise<null>} */ (processUnprocessedSubmission(params));
 }
 
 /**
@@ -1469,7 +1474,7 @@ async function handleAndProcessSubmission(params) {
  * @returns {boolean} True if already processed.
  */
 function isSubmissionProcessed(submission) {
-  return submission.processed;
+  return Boolean(submission.processed);
 }
 
 /**
@@ -1481,6 +1486,16 @@ function isSubmissionProcessed(submission) {
  * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
  * @param {object} params.fieldValue - FieldValue helper.
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Submission handler.
+ */
+/**
+ * Build a submission handler from dependencies.
+ * @param {object} params - Dependencies.
+ * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
+ * @param {() => string} params.randomUUID - UUID generator.
+ * @param {(() => number) | undefined} params.random - Random generator.
+ * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
+ * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} params.fieldValue - FieldValue helper.
+ * @returns {(snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Handler function.
  */
 function buildSubmissionHandler({
   db,

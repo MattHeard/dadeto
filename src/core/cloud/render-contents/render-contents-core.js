@@ -351,7 +351,7 @@ function createStoryInfo(story, pageSnap) {
  * @returns {boolean} True when snapshot has valid data.
  */
 function isValidSnapshot(pageSnap) {
-  return pageSnap && pageSnap.exists;
+  return Boolean(pageSnap && pageSnap.exists);
 }
 
 /**

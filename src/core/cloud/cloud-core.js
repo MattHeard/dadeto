@@ -660,7 +660,7 @@ function hasMessageProperty(obj) {
   if (!isObject(obj)) {
     return false;
   }
-  return 'message' in obj;
+  return 'message' in /** @type {object} */ (obj);
 }
 
 /**
@@ -669,7 +669,7 @@ function hasMessageProperty(obj) {
  * @returns {string} Message or 'Invalid token'.
  */
 function resolveErrorMessageWithDefault(messageStr) {
-  return messageStr || 'Invalid token';
+  return (typeof messageStr === 'string' ? messageStr : null) || 'Invalid token';
 }
 
 /**

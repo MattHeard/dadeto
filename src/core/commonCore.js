@@ -81,7 +81,7 @@ function isAcceptableNormalizedString(normalized, isAcceptable) {
 function withStringFallback(value, fallback, isNormalizedAcceptable) {
   const normalized = getStringCandidate(value);
   if (isAcceptableNormalizedString(normalized, isNormalizedAcceptable)) {
-    return normalized;
+    return /** @type {string} */ (normalized);
   }
 
   return fallback();
@@ -94,11 +94,11 @@ function withStringFallback(value, fallback, isNormalizedAcceptable) {
  */
 export function ensureString(value) {
   const normalized = stringOrNull(value);
-  return when(
+  return /** @type {string} */ (when(
     normalized !== null,
     () => normalized,
     () => ''
-  );
+  ));
 }
 
 /**
@@ -114,11 +114,11 @@ export function stringOrDefault(value, fallback) {
     normalized => normalized !== undefined
   );
 
-  return when(
+  return /** @type {string} */ (when(
     normalized !== null,
     () => normalized,
     () => fallback
-  );
+  ));
 }
 
 /**

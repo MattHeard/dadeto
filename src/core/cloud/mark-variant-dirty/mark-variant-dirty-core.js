@@ -354,7 +354,7 @@ async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
  * @returns {MarkVariantDirtyDeps} Deps or empty object.
  */
 function resolveDepsOrEmpty(deps) {
-  return deps ?? {};
+  return deps ?? (/** @type {MarkVariantDirtyDeps} */ ({}));
 }
 
 /**
@@ -584,7 +584,7 @@ function resolveVariantName(candidate) {
 /**
  * Validate and extract configuration from options.
  * @param {HandleRequestOptions | undefined} optionsTyped - Typed options.
- * @returns {object} Validated configuration.
+ * @returns {{verifyAdmin: any, markVariantDirty: any}} Validated configuration.
  */
 function extractValidatedConfig(optionsTyped) {
   const { verifyAdmin, markVariantDirty } = optionsTyped ?? {};
@@ -707,7 +707,7 @@ export function createHandleRequest(options) {
   const optionsTyped = /** @type {HandleRequestOptions | undefined} */ (
     options
   );
-  const config = extractHandlerConfig(optionsTyped);
+  const config = /** @type {HandlerDependencies} */ (extractHandlerConfig(optionsTyped));
   return buildHandleRequest(config);
 }
 
@@ -816,7 +816,7 @@ function pickOverride(fn, defaultFn) {
  */
 function pickVerifyAdminFn(verifyAdmin, deps) {
   const depsVerifyAdmin = deps?.verifyAdmin;
-  return pickOverride(depsVerifyAdmin, verifyAdmin);
+  return /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (pickOverride(depsVerifyAdmin, verifyAdmin));
 }
 
 /**
@@ -827,7 +827,7 @@ function pickVerifyAdminFn(verifyAdmin, deps) {
  */
 function pickMarkFn(markVariantDirty, deps) {
   const depsMarkFn = deps?.markFn;
-  return pickOverride(depsMarkFn, markVariantDirty);
+  return /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps | undefined) => Promise<boolean>} */ (pickOverride(depsMarkFn, markVariantDirty));
 }
 
 /**

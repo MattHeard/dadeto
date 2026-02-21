@@ -60,7 +60,7 @@ function isValidUuid(uuid) {
 function resolveUuid(request, getUuid) {
   const directUuid = request.uuid;
   if (isValidUuid(directUuid)) {
-    return directUuid;
+    return /** @type {string} */ (directUuid);
   }
   return getUuid(request);
 }
@@ -80,7 +80,7 @@ function isSpecialCreditValue(credit) {
  * @returns {{ status: number, body: unknown }} Special response or default.
  */
 function getSpecialCreditResponse(credit) {
-  const special = CREDIT_RESPONSE_BY_VALUE.get(credit);
+  const special = typeof credit === 'number' ? undefined : CREDIT_RESPONSE_BY_VALUE.get(/** @type {null | undefined} */ (credit));
   if (special) {
     return special;
   }

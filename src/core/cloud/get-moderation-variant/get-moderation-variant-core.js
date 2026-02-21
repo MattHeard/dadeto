@@ -223,7 +223,7 @@ function extractBearerToken(value) {
  * @returns {boolean} True if request has get function.
  */
 function hasValidGetMethod(request) {
-  return Boolean(request) && typeof request.get === 'function';
+  return Boolean(request) && typeof (/** @type {any} */ (request)).get === 'function';
 }
 
 /**
@@ -253,7 +253,7 @@ function getAuthorizationHeader(request) {
   }
 
   const headerGetter =
-    /** @type {(name: string) => string | null | undefined} */ (request.get);
+    /** @type {(name: string) => string | null | undefined} */ ((/** @type {any} */ (request)).get);
   return findAuthHeader(headerGetter);
 }
 
@@ -358,7 +358,7 @@ async function fetchVariantResponse(variantRef) {
  * @returns {FirestoreDocumentReference | null} Page reference.
  */
 function extractPageFromVariant(variantRef) {
-  return variantRef.parent?.parent;
+  return variantRef.parent?.parent ?? null;
 }
 
 /**
@@ -367,7 +367,7 @@ function extractPageFromVariant(variantRef) {
  * @returns {FirestoreDocumentReference | null} Story parent.
  */
 function extractParentFromPage(pageRef) {
-  return pageRef?.parent;
+  return /** @type {FirestoreDocumentReference | null} */ (pageRef?.parent ?? null);
 }
 
 /**
@@ -376,7 +376,7 @@ function extractParentFromPage(pageRef) {
  * @returns {FirestoreDocumentReference | null} Story reference.
  */
 function extractStoryFromParent(parentRef) {
-  return parentRef?.parent;
+  return /** @type {FirestoreDocumentReference | null} */ (parentRef?.parent ?? null);
 }
 
 /**
@@ -646,7 +646,7 @@ function isErrorObject(error) {
   if (!isObjectType(error)) {
     return false;
   }
-  return 'message' in error;
+  return 'message' in /** @type {object} */ (error);
 }
 
 /**
@@ -658,7 +658,7 @@ function getErrorMessage(error) {
   if (!isErrorObject(error)) {
     return null;
   }
-  return error.message;
+  return (/** @type {any} */ (error)).message;
 }
 
 /**

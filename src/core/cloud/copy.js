@@ -203,7 +203,7 @@ export function createCopyToInfraCore({
    * @returns {Promise<void>} Resolves when the declared files are copied.
    */
   async function copyDeclaredFiles(copyPlan, io, messageLogger) {
-    if (!shouldCopyDeclaredFiles(copyPlan)) {
+    if (!shouldCopyDeclaredFiles(copyPlan) || !copyPlan) {
       return;
     }
     const { sourceDir, targetDir } = copyPlan;
