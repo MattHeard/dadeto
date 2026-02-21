@@ -8,6 +8,30 @@ const BLOG_KEY_FORM_CLASS = browserCore.DENDRITE_FORM_SELECTOR.slice(1);
 const TEXTAREA_CLASS = 'toy-textarea';
 
 /**
+ * Extract the title string from a parsed object, defaulting to empty string.
+ * @param {object} parsed - Parsed input object.
+ * @returns {string} Title string or empty string.
+ */
+function parseTitle(parsed) {
+  if (typeof (/** @type {any} */ (parsed).title) === 'string') {
+    return /** @type {any} */ (parsed).title;
+  }
+  return '';
+}
+
+/**
+ * Extract the existingKeys array from a parsed object, defaulting to empty array.
+ * @param {object} parsed - Parsed input object.
+ * @returns {string[]} Existing keys array or empty array.
+ */
+function parseExistingKeys(parsed) {
+  if (Array.isArray(/** @type {any} */ (parsed).existingKeys)) {
+    return /** @type {any} */ (parsed).existingKeys;
+  }
+  return [];
+}
+
+/**
  * Parse stored JSON into a BlogKeyData object with safe defaults.
  * @param {DOMHelpers} dom - DOM helpers.
  * @param {HTMLInputElement} textInput - Hidden input holding serialized data.
@@ -17,8 +41,8 @@ function parseData(dom, textInput) {
   const raw = browserCore.getInputValue(textInput) || '{}';
   const parsed = browserCore.parseJsonOrDefault(raw, {});
   return {
-    title: typeof parsed.title === 'string' ? parsed.title : '',
-    existingKeys: Array.isArray(parsed.existingKeys) ? parsed.existingKeys : [],
+    title: parseTitle(parsed),
+    existingKeys: parseExistingKeys(parsed),
   };
 }
 
@@ -48,18 +72,30 @@ function parseLines(value) {
 }
 
 /**
+ * Call the dispose method on a form element if one exists.
+ * @param {HTMLElement} existing - Form element to dispose.
+ * @returns {void}
+ */
+function disposeExisting(existing) {
+  const disposer = /** @type {any} */ (existing)._dispose;
+  if (typeof disposer === 'function') {
+    disposer();
+  }
+}
+
+/**
  * Remove any existing blog-key or dendrite form from the container.
  * @param {HTMLElement} container - Container element.
  * @param {DOMHelpers} dom - DOM helpers.
  * @returns {void}
  */
 function removeBlogKeyForm(container, dom) {
-  const existing = dom.querySelector(container, browserCore.DENDRITE_FORM_SELECTOR);
+  const existing = dom.querySelector(
+    container,
+    browserCore.DENDRITE_FORM_SELECTOR
+  );
   if (existing) {
-    const disposer = /** @type {any} */ (existing)._dispose;
-    if (typeof disposer === 'function') {
-      disposer();
-    }
+    disposeExisting(existing);
     dom.removeChild(container, existing);
   }
 }
@@ -80,8 +116,8 @@ function cleanContainer(dom, container) {
 }
 
 /**
- * Build a labelled wrapper div, append it to the form, and return the inner input.
- * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLElement }} options
+ * Build a labelled wrapper div and append it to the form.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLElement }} options - Label and input to wrap.
  * @returns {void}
  */
 function appendLabelledField({ dom, form, labelText, input }) {
@@ -95,7 +131,7 @@ function appendLabelledField({ dom, form, labelText, input }) {
 
 /**
  * Build and wire the title text input.
- * @param {{ dom: DOMHelpers, form: HTMLElement, data: BlogKeyData, textInput: HTMLInputElement, disposers: Disposer[] }} options
+ * @param {{ dom: DOMHelpers, form: HTMLElement, data: BlogKeyData, textInput: HTMLInputElement, disposers: Disposer[] }} options - Field construction dependencies.
  * @returns {void}
  */
 function buildTitleField({ dom, form, data, textInput, disposers }) {
@@ -114,7 +150,7 @@ function buildTitleField({ dom, form, data, textInput, disposers }) {
 
 /**
  * Build and wire the existingKeys textarea (one key per line).
- * @param {{ dom: DOMHelpers, form: HTMLElement, data: BlogKeyData, textInput: HTMLInputElement, disposers: Disposer[] }} options
+ * @param {{ dom: DOMHelpers, form: HTMLElement, data: BlogKeyData, textInput: HTMLInputElement, disposers: Disposer[] }} options - Field construction dependencies.
  * @returns {void}
  */
 function buildExistingKeysField({ dom, form, data, textInput, disposers }) {
@@ -130,12 +166,17 @@ function buildExistingKeysField({ dom, form, data, textInput, disposers }) {
   };
   dom.addEventListener(textarea, 'input', onInput);
   disposers.push(() => dom.removeEventListener(textarea, 'input', onInput));
-  appendLabelledField({ dom, form, labelText: 'existingKeys (one per line)', input: textarea });
+  appendLabelledField({
+    dom,
+    form,
+    labelText: 'existingKeys (one per line)',
+    input: textarea,
+  });
 }
 
 /**
  * Create, insert, and wire the blog-key form.
- * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form construction dependencies.
  * @returns {HTMLElement} The created form element.
  */
 function buildForm({ dom, container, textInput }) {
