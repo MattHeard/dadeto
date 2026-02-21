@@ -530,7 +530,10 @@ function handleSubmitNewStoryRequest(deps, request) {
  * @returns {string} Method value or empty string.
  */
 function getRequestMethod(method) {
-  return typeof method === 'string' ? method : '';
+  if (typeof method === 'string') {
+    return method;
+  }
+  return '';
 }
 
 /**

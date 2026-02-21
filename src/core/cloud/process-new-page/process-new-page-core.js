@@ -273,8 +273,10 @@ function extractStoryRefFromPageRef(pageRef) {
 }
 
 /**
- *
- * @param optionRef
+ * Extract references from an option document.
+ * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} optionRef
+ *   Reference to the option document.
+ * @returns {object} Object with variantRef, pageRef, and storyRef properties.
  */
 function resolveStoryRefFromOption(optionRef) {
   if (!optionRef) {
@@ -1239,7 +1241,10 @@ function extractSubmissionData(snapshot) {
  * @returns {null | undefined} null if processed, undefined otherwise.
  */
 function handleProcessedSubmission(submission) {
-  return submission.processed ? null : undefined;
+  if (submission.processed) {
+    return null;
+  }
+  return undefined;
 }
 
 /**

@@ -376,7 +376,10 @@ function isSnapshotAvailable(snapshot) {
  * @returns {string | null} Author ID or null.
  */
 function getStringAuthorId(authorId) {
-  return typeof authorId === 'string' ? authorId : null;
+  if (typeof authorId === 'string') {
+    return authorId;
+  }
+  return null;
 }
 
 /**
