@@ -1697,13 +1697,21 @@ function extractPageNumber(snap) {
 }
 
 /**
+ * Get variant name if it exists.
+ * @param {any} variantData - Variant data.
+ * @returns {string | undefined} Variant name or undefined.
+ */
+function getVariantNameOrUndefined(variantData) {
+  return variantData?.name;
+}
+
+/**
  * Extract variant name from variant data.
  * @param {any} variantData - Variant data.
  * @returns {string} Variant name or empty string.
  */
 function extractVariantName(variantData) {
-  if (!variantData) return '';
-  return variantData.name || '';
+  return getVariantNameOrUndefined(variantData) ?? '';
 }
 
 /**
