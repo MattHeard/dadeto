@@ -272,6 +272,12 @@ export function styles() {
     font-weight: bold;
   }
 
+  .toy-textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   /* Style nav key in green for visibility */
   .nav-entry > .key {
     color: #00FF00;
