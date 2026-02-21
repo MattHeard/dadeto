@@ -185,16 +185,12 @@ function resolveUuidDependency(getUuid) {
     return getUuid;
   }
 
-  return request => {
-    if (request && typeof request === 'object') {
-      return extractUuid(
-        /** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (
-          request
-        )
-      );
-    }
-    return extractUuid(request);
-  };
+  return request =>
+    extractUuid(
+      /** @type {{ path?: string, params?: Record<string, unknown>, query?: Record<string, unknown> }} */ (
+        request
+      )
+    );
 }
 
 /**

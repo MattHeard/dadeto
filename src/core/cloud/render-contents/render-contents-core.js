@@ -346,13 +346,24 @@ function createStoryInfo(story, pageSnap) {
 }
 
 /**
+ * Check if snapshot exists and has data.
+ * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Firestore snapshot.
+ * @returns {boolean} True when snapshot has valid data.
+ */
+function isValidSnapshot(pageSnap) {
+  return pageSnap && pageSnap.exists;
+}
+
+/**
  * Build story metadata once the page snapshot has been fetched.
  * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
  * @param {Record<string, any>} story Story document data that owns the page.
  * @returns {StoryInfo | null} Story metadata or null when the page is missing.
  */
 function buildStoryInfoFromPage(pageSnap, story) {
-  if (!pageSnap?.exists) return null;
+  if (!isValidSnapshot(pageSnap)) {
+    return null;
+  }
   return createStoryInfo(story, pageSnap);
 }
 
