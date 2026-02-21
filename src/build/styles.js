@@ -126,6 +126,7 @@ export function styles() {
   }
   .header-banner {
     margin: 0px;
+    margin-bottom: 1em;
   }
   #audio-controls {
     background-color: #1A1A1A;
