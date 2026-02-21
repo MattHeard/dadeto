@@ -14,7 +14,10 @@ function runToy(input) {
 
 describe('plusOneAnnotatorToy', () => {
   it('returns isPlusOne true when exactly one token is unknown', () => {
-    const result = runToy({ sentence: 'Ich gehe nach Hause', knownWords: 'ich\ngehe\nnach' });
+    const result = runToy({
+      sentence: 'Ich gehe nach Hause',
+      knownWords: 'ich\ngehe\nnach',
+    });
 
     expect(result.unknownCount).toBe(1);
     expect(result.unknownTokens).toEqual(['hause']);
@@ -45,7 +48,10 @@ describe('plusOneAnnotatorToy', () => {
   });
 
   it('strips punctuation before checking known words', () => {
-    const result = runToy({ sentence: 'Hallo, Welt!', knownWords: 'hallo\nwelt' });
+    const result = runToy({
+      sentence: 'Hallo, Welt!',
+      knownWords: 'hallo\nwelt',
+    });
 
     expect(result.unknownCount).toBe(0);
   });

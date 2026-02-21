@@ -329,8 +329,13 @@ describe('createKeyValueRow', () => {
       [addedBtnEl, , btnHandler],
     ] = mockDom.addEventListener.mock.calls;
 
-    const [keyDisposer, valueDisposer, typeDisposer, toggleDisposer, btnDisposer] =
-      mockDisposers;
+    const [
+      keyDisposer,
+      valueDisposer,
+      typeDisposer,
+      toggleDisposer,
+      btnDisposer,
+    ] = mockDisposers;
 
     mockDom.removeEventListener.mockClear();
     keyDisposer();

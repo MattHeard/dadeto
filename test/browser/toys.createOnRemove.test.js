@@ -80,7 +80,12 @@ describe('createOnRemove', () => {
 
   it('does nothing if the key does not exist', () => {
     const nonExistentKey = 'nonExistent';
-    const handlerForNonExistent = createOnRemove(rows, rowTypes, render, nonExistentKey);
+    const handlerForNonExistent = createOnRemove(
+      rows,
+      rowTypes,
+      render,
+      nonExistentKey
+    );
 
     // Call the handler with the mock event
     handlerForNonExistent(mockEvent);
@@ -100,7 +105,12 @@ describe('createOnRemove', () => {
   it('works with empty rows object', () => {
     const emptyRows = {};
     const emptyTypes = {};
-    const emptyHandler = createOnRemove(emptyRows, emptyTypes, render, 'anyKey');
+    const emptyHandler = createOnRemove(
+      emptyRows,
+      emptyTypes,
+      render,
+      'anyKey'
+    );
 
     // Call the handler with the mock event
     emptyHandler(mockEvent);
@@ -114,7 +124,12 @@ describe('createOnRemove', () => {
   it('can remove the last remaining key', () => {
     const singleRow = { lastKey: 'lastValue' };
     const singleTypes = { lastKey: 'string' };
-    const singleHandler = createOnRemove(singleRow, singleTypes, render, 'lastKey');
+    const singleHandler = createOnRemove(
+      singleRow,
+      singleTypes,
+      render,
+      'lastKey'
+    );
 
     // Call the handler with the mock event
     singleHandler(mockEvent);

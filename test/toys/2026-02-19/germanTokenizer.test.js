@@ -19,7 +19,9 @@ describe('normalizeToken', () => {
   });
 
   it('preserves internal hyphens', () => {
-    expect(normalizeToken('gut-gemeint')).toMatchInlineSnapshot('"gut-gemeint"');
+    expect(normalizeToken('gut-gemeint')).toMatchInlineSnapshot(
+      '"gut-gemeint"'
+    );
   });
 });
 

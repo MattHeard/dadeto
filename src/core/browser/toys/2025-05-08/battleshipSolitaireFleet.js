@@ -107,7 +107,12 @@ function dxReducerForNeighbour(coord, dy) {
  */
 function neighbours(coord) {
   return [-1, 0, 1].reduce((acc, dy) => {
-    return acc.concat([-1, 0, 1].reduce(dxReducerForNeighbour(coord, dy), /** @type {Coord[]} */ ([])));
+    return acc.concat(
+      [-1, 0, 1].reduce(
+        dxReducerForNeighbour(coord, dy),
+        /** @type {Coord[]} */ ([])
+      )
+    );
   }, /** @type {Coord[]} */ ([]));
 }
 
@@ -128,7 +133,7 @@ function isNeighbourOccupied(n, cfg, occupied) {
  * @param {Set<string>} occupied - Occupied coordinate keys.
  * @returns {(seg: Coord) => boolean} Validator function that returns true if no neighbours are occupied.
  */
-const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => (seg) =>
+const makeSegHasNoOccupiedNeighbour = (cfg, occupied) => seg =>
   !neighbours(seg).some(n => isNeighbourOccupied(n, cfg, occupied));
 
 /**
