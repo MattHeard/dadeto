@@ -27,6 +27,7 @@ When reducing complexity warnings, focus on patterns that WORK:
 **✅ What Works:**
 - **Logic simplification**: Remove conditions that are redundant or can be combined (e.g., removing an unnecessary if-check in an arrow function)
 - **Trivial extraction**: Extract complex logic into helper ONLY if the calling function becomes nearly empty (1-2 lines). Example: extract validation check into `isValidSnapshot()`, leaving caller with just one function call.
+- **Split chained operators**: For `a ?? b ?? c` (complexity 3), extract `b ?? c` into helper. Result: two functions with complexity 1 each. Example: `resolveBothHeaders(u, l)` → `u ?? resolveLowercaseHeader(l)` where helper is `l ?? null`. Both now pass complexity limit.
 - **Genuine refactoring**: Only when you understand the function deeply and can predict the complexity impact
 
 **❌ What Doesn't Work:**
