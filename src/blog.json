@@ -14,7 +14,7 @@
         "functionName": "generateBlogKey",
         "defaultInputMethod": "blog-key"
       },
-      "tags": ["toy", "blogging", "generator", "tools", "meta-commentary"]
+      "tags": ["toy", "blogging", "generator", "tools"]
     },
     {
       "key": "GERM2",
