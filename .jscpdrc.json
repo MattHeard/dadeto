@@ -1,0 +1,19 @@
+{
+  "threshold": 0,
+  "reporters": [
+    "html",
+    "json"
+  ],
+  "output": "./reports/duplication",
+  "gitignore": true,
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.next/**"
+  ],
+  "pattern": [
+    "src/**/*.js",
+    "src/**/*.ts"
+  ]
+}
