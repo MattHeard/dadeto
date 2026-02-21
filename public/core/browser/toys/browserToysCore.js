@@ -177,16 +177,34 @@ function getValidDend2OrNull(candidate) {
 }
 
 /**
+ * Extract TRAN1 from temporary storage.
+ * @param {object | undefined} temporary Temporary storage.
+ * @returns {any | null} Valid TRAN1 or null.
+ */
+function extractValidTran1(temporary) {
+  return getValidDend2OrNull(temporary?.TRAN1);
+}
+
+/**
+ * Extract DEND2 from temporary storage.
+ * @param {object | undefined} temporary Temporary storage.
+ * @returns {any | null} Valid DEND2 or null.
+ */
+function extractValidDend2(temporary) {
+  return getValidDend2OrNull(temporary?.DEND2);
+}
+
+/**
  * Try primary TRAN1 first, then fall back to legacy DEND2.
  * @param {object | undefined} temporary - Temporary storage.
  * @returns {any | null} Valid structure or null.
  */
 function tryResolveLegacyStructure(temporary) {
-  const tran1 = getValidDend2OrNull(temporary?.TRAN1);
+  const tran1 = extractValidTran1(temporary);
   if (tran1) {
     return tran1;
   }
-  return getValidDend2OrNull(temporary?.DEND2);
+  return extractValidDend2(temporary);
 }
 
 /**
