@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "GENE1",
+      "title": "Generate Blog Key",
+      "publicationDate": "2026-02-21",
+      "content": [
+        "Generates a unique blog key from a post title and a list of existing keys.",
+        "The key is the first four letter characters of the title, uppercased, followed by the lowest available number suffix.",
+        "Input is a JSON object with a \"title\" string and an \"existingKeys\" array."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-02-21/generateBlogKey.js",
+        "functionName": "generateBlogKey",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy"]
+    },
+    {
       "key": "GERM2",
       "title": "German Sentence Splitter",
       "publicationDate": "2026-02-21",
