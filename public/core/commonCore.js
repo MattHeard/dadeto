@@ -257,6 +257,19 @@ function didExecutionFail(result) {
 }
 
 /**
+ * Resolve a safe execution result, falling back when the action failed.
+ * @param {unknown} result - Result of the execution.
+ * @param {() => unknown} fallback - Fallback function to call when execution failed.
+ * @returns {unknown} The result or fallback value.
+ */
+function resolveSafeExecutionResult(result, fallback) {
+  if (didExecutionFail(result)) {
+    return fallback();
+  }
+  return result;
+}
+
+/**
  * Evaluate the action and return its result, falling back when an exception occurs.
  * @param {() => unknown} action - Function that may throw.
  * @param {() => unknown} [fallback] - Value returned when an error is thrown.
@@ -264,8 +277,5 @@ function didExecutionFail(result) {
  */
 export function tryOr(action, fallback = () => undefined) {
   const result = executeSafely(action);
-  if (didExecutionFail(result)) {
-    return fallback();
-  }
-  return result;
+  return resolveSafeExecutionResult(result, fallback);
 }

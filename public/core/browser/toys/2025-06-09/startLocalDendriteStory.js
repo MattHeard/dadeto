@@ -15,20 +15,47 @@ import {
  * @typedef {{ temporary?: { STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } }} DendriteStoryStorage
  */
 /**
+ * Check if temporary storage has a valid STAR1 array.
+ * @param {object} temporary - Temporary storage object.
+ * @returns {boolean} True if STAR1 is an array.
+ */
+function hasStar1Structure(temporary) {
+  return Array.isArray(temporary?.STAR1);
+}
+
+/**
+ * Check if temporary storage has a valid DEND1 array.
+ * @param {object} temporary - Temporary storage object.
+ * @returns {boolean} True if DEND1 is an array.
+ */
+function hasDend1Structure(temporary) {
+  return Array.isArray(temporary?.DEND1);
+}
+
+/**
+ * Determine which story array to use, with DEND1 legacy migration.
+ * @param {object} temporary - Temporary storage object.
+ * @returns {DendriteStoryResult[]} Array to use for STAR1.
+ */
+function resolveStar1Structure(temporary) {
+  if (hasStar1Structure(temporary)) {
+    return temporary.STAR1;
+  }
+  if (hasDend1Structure(temporary)) {
+    return temporary.DEND1;
+  }
+  return [];
+}
+
+/**
  * Ensures that the object contains the expected temporary data structure.
  * Migrates legacy DEND1 data to STAR1 when present.
  * @param {DendriteStoryStorage} obj - Object to mutate if needed.
  * @returns {void}
  */
 function ensureTemporaryData(obj) {
-  if (Array.isArray(obj.temporary?.STAR1)) {
-    return;
-  }
-  if (Array.isArray(obj.temporary?.DEND1)) {
-    obj.temporary.STAR1 = obj.temporary.DEND1;
-    return;
-  }
-  obj.temporary = { STAR1: [] };
+  const star1Data = resolveStar1Structure(obj.temporary);
+  obj.temporary = { STAR1: star1Data };
 }
 
 /**

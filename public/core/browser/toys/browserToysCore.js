@@ -165,20 +165,51 @@ function isValidDend2Structure(obj) {
 }
 
 /**
+ * Try to get a valid DEND2 structure from a candidate source.
+ * @param {any} candidate - Candidate DEND2 structure.
+ * @returns {any | null} Valid structure or null.
+ */
+function getValidDend2OrNull(candidate) {
+  if (isValidDend2Structure(candidate)) {
+    return candidate;
+  }
+  return null;
+}
+
+/**
+ * Try primary TRAN1 first, then fall back to legacy DEND2.
+ * @param {object | undefined} temporary - Temporary storage.
+ * @returns {any | null} Valid structure or null.
+ */
+function tryResolveLegacyStructure(temporary) {
+  const tran1 = getValidDend2OrNull(temporary?.TRAN1);
+  if (tran1) {
+    return tran1;
+  }
+  return getValidDend2OrNull(temporary?.DEND2);
+}
+
+/**
+ * Resolve TRAN1 structure from available sources.
+ * @param {ToyStorage} data - Storage object.
+ * @returns {any} Valid TRAN1 structure.
+ */
+function resolveTran1Structure(data) {
+  const resolved = tryResolveLegacyStructure(data.temporary);
+  if (resolved) {
+    return resolved;
+  }
+  return createEmptyDend2();
+}
+
+/**
  * Make certain the store exposes a valid `temporary.TRAN1` bucket.
  * Migrates legacy DEND2 data to TRAN1 when present.
  * @param {ToyStorage} data Storage object to update.
  * @returns {void}
  */
 export function ensureDend2(data) {
-  if (isValidDend2Structure(data.temporary?.TRAN1)) {
-    return;
-  }
-  if (isValidDend2Structure(data.temporary?.DEND2)) {
-    data.temporary.TRAN1 = data.temporary.DEND2;
-    return;
-  }
-  data.temporary = { TRAN1: createEmptyDend2() };
+  data.temporary = { TRAN1: resolveTran1Structure(data) };
 }
 
 /**
