@@ -588,6 +588,19 @@ m the option.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Final story reference.
  */
 /**
+ * Extract story reference from page document reference.
+ * @param {any} pageDocRef - Page document reference.
+ * @returns {import('firebase-admin/firestore').DocumentReference} Story reference or empty.
+ */
+function extractStoryRefFromPage(pageDocRef) {
+  const storyRef = /** @type {any} */ (pageDocRef).parent?.parent || null;
+  if (storyRef) {
+    return storyRef;
+  }
+  return /** @type {import('firebase-admin/firestore').DocumentReference} */ ({});
+}
+
+/**
  * Resolve page and story references when the submission provides a direct page number.
  * Returns null when the submission should simply be marked processed.
  * @param {object} params Parameters supplied when a submission specifies a direct page number.
@@ -611,13 +624,10 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
   }
 
   const pageDocRef = /** @type {any} */ (pageSnap.docs[0]).ref;
-  const storyRef = /** @type {any} */ (pageDocRef).parent?.parent || null;
 
   return {
     pageDocRef,
-    storyRef:
-      storyRef ||
-      /** @type {import('firebase-admin/firestore').DocumentReference} */ ({}),
+    storyRef: extractStoryRefFromPage(pageDocRef),
     variantRef: null,
     pageNumber: directPageNumber,
   };
