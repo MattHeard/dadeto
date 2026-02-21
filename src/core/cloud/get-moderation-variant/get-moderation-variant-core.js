@@ -227,6 +227,22 @@ function hasValidGetMethod(request) {
 }
 
 /**
+ * Find first valid authorization header from getter.
+ * @param {(name: string) => string | null | undefined} headerGetter - Header getter.
+ * @returns {string | null} Header value or null.
+ */
+function findAuthHeader(headerGetter) {
+  const headerKeys = ['Authorization', 'authorization'];
+  const found = headerKeys
+    .map(key => headerGetter(key))
+    .find(value => typeof value === 'string');
+  if (found) {
+    return found;
+  }
+  return null;
+}
+
+/**
  * Reads the Authorization header from an Express-style request object.
  * @param {RequestLike | null | undefined} request Incoming HTTP request.
  * @returns {string | null} Authorization header string when provided, otherwise null.
@@ -236,14 +252,9 @@ function getAuthorizationHeader(request) {
     return null;
   }
 
-  const headerKeys = ['Authorization', 'authorization'];
   const headerGetter =
     /** @type {(name: string) => string | null | undefined} */ (request.get);
-  return (
-    headerKeys
-      .map(key => headerGetter(key))
-      .find(value => typeof value === 'string') || null
-  );
+  return findAuthHeader(headerGetter);
 }
 
 /**

@@ -75,15 +75,26 @@ function isSpecialCreditValue(credit) {
 }
 
 /**
+ * Get response for special credit values.
+ * @param {number | null | undefined} credit - Credit value.
+ * @returns {{ status: number, body: unknown }} Special response or default.
+ */
+function getSpecialCreditResponse(credit) {
+  const special = CREDIT_RESPONSE_BY_VALUE.get(credit);
+  if (special) {
+    return special;
+  }
+  return { status: 200, body: { credit } };
+}
+
+/**
  * Map a credit value to the appropriate HTTP response.
  * @param {number | null | undefined} credit - Credit value fetched from storage.
  * @returns {{ status: number, body: unknown }} HTTP response describing the outcome.
  */
 function mapCreditToResponse(credit) {
   if (isSpecialCreditValue(credit)) {
-    return (
-      CREDIT_RESPONSE_BY_VALUE.get(credit) ?? { status: 200, body: { credit } }
-    );
+    return getSpecialCreditResponse(credit);
   }
   return { status: 200, body: { credit } };
 }

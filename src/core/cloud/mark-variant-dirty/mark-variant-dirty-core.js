@@ -711,6 +711,19 @@ function handleProcessError(err) {
 }
 
 /**
+ * Extract function from deps if available.
+ * @param {unknown} fn - Function candidate from deps.
+ * @param {unknown} defaultFn - Default function.
+ * @returns {unknown} Override or default.
+ */
+function pickOverride(fn, defaultFn) {
+  if (typeof fn === 'function') {
+    return fn;
+  }
+  return defaultFn;
+}
+
+/**
  * Pick verifyAdmin override.
  * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Default verify.
  * @param {HandleRequestDeps | undefined} deps Deps.
@@ -718,11 +731,7 @@ function handleProcessError(err) {
  */
 function pickVerifyAdminFn(verifyAdmin, deps) {
   const depsVerifyAdmin = deps?.verifyAdmin;
-  if (typeof depsVerifyAdmin === 'function') {
-    return depsVerifyAdmin;
-  }
-
-  return verifyAdmin;
+  return pickOverride(depsVerifyAdmin, verifyAdmin);
 }
 
 /**
@@ -733,11 +742,7 @@ function pickVerifyAdminFn(verifyAdmin, deps) {
  */
 function pickMarkFn(markVariantDirty, deps) {
   const depsMarkFn = deps?.markFn;
-  if (typeof depsMarkFn === 'function') {
-    return depsMarkFn;
-  }
-
-  return markVariantDirty;
+  return pickOverride(depsMarkFn, markVariantDirty);
 }
 
 /**
