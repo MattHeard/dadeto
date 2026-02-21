@@ -95,7 +95,9 @@ function readExistingList(storageFn) {
 function getStoredListValue(storageFn) {
   const existingData =
     /** @type {Record<string, unknown> | null | undefined} */ (storageFn({}));
-  return ensureString(existingData?.[TOY_KEY] ?? existingData?.[LEGACY_TOY_KEY]);
+  return ensureString(
+    existingData?.[TOY_KEY] ?? existingData?.[LEGACY_TOY_KEY]
+  );
 }
 
 /**
