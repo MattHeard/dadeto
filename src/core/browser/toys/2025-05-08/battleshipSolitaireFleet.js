@@ -512,21 +512,40 @@ function shouldAbortPlaceShip(acc) {
 }
 
 /**
+ * Check if placement validation fails.
+ * @param {Candidate[] | null} acc - Accumulation state.
+ * @returns {boolean} True if placement should abort.
+ */
+function shouldAbortPlacement(acc) {
+  return !acc || shouldAbortPlaceShip(acc);
+}
+
+/**
+ * Attempt to place a ship and add it to the accumulation.
+ * @param {Candidate[] | null} acc - Accumulated candidates.
+ * @param {Candidate | null} placed - Placed candidate.
+ * @returns {Candidate[] | null} Updated accumulation or null on failure.
+ */
+function addPlacedShip(acc, placed) {
+  if (!placed) {
+    return null;
+  }
+  acc.push(placed);
+  return acc;
+}
+
+/**
  * Build a reducer that slots ships sequentially.
  * @param {(length: number) => Candidate | null} placeShipWithArgs - Placement helper.
  * @returns {(acc: Candidate[] | null, len: number) => Candidate[] | null} Reducer used during placement.
  */
 function makePlaceShipReducer(placeShipWithArgs) {
   return (acc, len) => {
-    if (!acc || shouldAbortPlaceShip(acc)) {
+    if (shouldAbortPlacement(acc)) {
       return null;
     }
     const placed = placeShipWithArgs(len);
-    if (!placed) {
-      return null;
-    }
-    acc.push(placed);
-    return acc;
+    return addPlacedShip(acc, placed);
   };
 }
 

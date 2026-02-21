@@ -616,6 +616,89 @@ function castMarkVariantDirtyFn(fn) {
 }
 
 /**
+ * Extract validated admin and core functions.
+ * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
+ * @returns {{verifyAdmin: any, markVariantDirty: any}} Extracted functions.
+ */
+function extractCoreHandlers(optionsTyped) {
+  return extractValidatedConfig(optionsTyped);
+}
+
+/**
+ * Cast and combine core functions.
+ * @param {any} verifyAdmin - Admin verification function.
+ * @param {any} markVariantDirty - Dirty marking function.
+ * @returns {{verifyAdmin: Function, markVariantDirty: Function}} Cast functions.
+ */
+function castCoreFunctions(verifyAdmin, markVariantDirty) {
+  return {
+    verifyAdmin: castVerifyAdminFn(verifyAdmin),
+    markVariantDirty: castMarkVariantDirtyFn(markVariantDirty),
+  };
+}
+
+/**
+ * Resolve the request body parser.
+ * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
+ * @returns {Function} The request parser.
+ */
+function resolveRequestParser(optionsTyped) {
+  return resolveParseRequestBody(optionsTyped?.parseRequestBody);
+}
+
+/**
+ * Resolve the allowed HTTP method.
+ * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
+ * @returns {string} The allowed method.
+ */
+function resolveHttpMethod(optionsTyped) {
+  return resolveAllowedMethod(optionsTyped?.allowedMethod);
+}
+
+/**
+ * Resolve parser and method from options.
+ * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
+ * @returns {{parseRequestBody: Function, allowedMethod: string}} Parser and method.
+ */
+function resolveParserAndMethod(optionsTyped) {
+  return {
+    parseRequestBody: resolveRequestParser(optionsTyped),
+    allowedMethod: resolveHttpMethod(optionsTyped),
+  };
+}
+
+/**
+ * Resolve and cast all handler functions.
+ * @param {any} verifyAdmin - Admin verification function.
+ * @param {any} markVariantDirty - Dirty marking function.
+ * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
+ * @returns {{verifyAdmin: Function, markVariantDirty: Function, parseRequestBody: Function, allowedMethod: string}} Resolved handler config.
+ */
+function resolveCastHandlerFunctions(
+  verifyAdmin,
+  markVariantDirty,
+  optionsTyped
+) {
+  const core = castCoreFunctions(verifyAdmin, markVariantDirty);
+  const params = resolveParserAndMethod(optionsTyped);
+  return { ...core, ...params };
+}
+
+/**
+ * Extract and resolve handler configuration.
+ * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
+ * @returns {{verifyAdmin: Function, markVariantDirty: Function, parseRequestBody: Function, allowedMethod: string}} Resolved handler config.
+ */
+function extractHandlerConfig(optionsTyped) {
+  const { verifyAdmin, markVariantDirty } = extractCoreHandlers(optionsTyped);
+  return resolveCastHandlerFunctions(
+    verifyAdmin,
+    markVariantDirty,
+    optionsTyped
+  );
+}
+
+/**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
  * @param {HandleRequestOptions} [options] Configuration for the handler.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
@@ -624,19 +707,8 @@ export function createHandleRequest(options) {
   const optionsTyped = /** @type {HandleRequestOptions | undefined} */ (
     options
   );
-  const { verifyAdmin, markVariantDirty } =
-    extractValidatedConfig(optionsTyped);
-  const parseRequestBody = resolveParseRequestBody(
-    optionsTyped?.parseRequestBody
-  );
-  const allowedMethod = resolveAllowedMethod(optionsTyped?.allowedMethod);
-
-  return buildHandleRequest({
-    verifyAdmin: castVerifyAdminFn(verifyAdmin),
-    markVariantDirty: castMarkVariantDirtyFn(markVariantDirty),
-    parseRequestBody,
-    allowedMethod,
-  });
+  const config = extractHandlerConfig(optionsTyped);
+  return buildHandleRequest(config);
 }
 
 /**
