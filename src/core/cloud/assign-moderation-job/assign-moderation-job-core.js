@@ -1160,10 +1160,7 @@ function isValidUserRecord(userRecord) {
  * @returns {UserRecordWithUid} User record.
  */
 function resolveUserRecord(context) {
-  let userRecord = {};
-  if (context && context.userRecord) {
-    userRecord = context.userRecord;
-  }
+  const userRecord = context?.userRecord ?? {};
   return requireUserRecord(userRecord);
 }
 
