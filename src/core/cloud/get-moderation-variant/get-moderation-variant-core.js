@@ -353,14 +353,41 @@ async function fetchVariantResponse(variantRef) {
   return VARIANT_NOT_FOUND_RESPONSE;
 }
 /**
+ * Extract page reference from variant reference parent chain.
+ * @param {FirestoreDocumentReference} variantRef Variant reference.
+ * @returns {FirestoreDocumentReference | null} Page reference.
+ */
+function extractPageFromVariant(variantRef) {
+  return variantRef.parent?.parent;
+}
+
+/**
+ * Extract story parent from page reference parent chain.
+ * @param {FirestoreDocumentReference | null} pageRef Page reference.
+ * @returns {FirestoreDocumentReference | null} Story parent.
+ */
+function extractParentFromPage(pageRef) {
+  return pageRef?.parent;
+}
+
+/**
+ * Extract story reference from parent reference parent chain.
+ * @param {FirestoreDocumentReference | null} parentRef Parent reference.
+ * @returns {FirestoreDocumentReference | null} Story reference.
+ */
+function extractStoryFromParent(parentRef) {
+  return parentRef?.parent;
+}
+
+/**
  * Resolve story reference from variant reference through parent chain.
  * @param {FirestoreDocumentReference} variantRef - Variant document reference.
  * @returns {FirestoreDocumentReference | null} Story reference or null if chain is incomplete.
  */
 function resolveStoryRefFromVariant(variantRef) {
-  const pageRef = variantRef.parent?.parent;
-  const storyParent = pageRef?.parent;
-  const storyRef = storyParent?.parent;
+  const pageRef = extractPageFromVariant(variantRef);
+  const storyParent = extractParentFromPage(pageRef);
+  const storyRef = extractStoryFromParent(storyParent);
   return storyRef || null;
 }
 
