@@ -562,6 +562,76 @@
           );
         </script>
       </article>
+      <article class="entry tag-toy tag-german tag-vaelith tag-nlp" id="GERM2">
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">GERM2</div>
+        <div class="value">
+          <h2><a href="#GERM2">German Sentence Splitter</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">21 Feb 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-german">german</a>,
+          <a class="tag-vaelith">vaelith</a>, <a class="tag-nlp">nlp</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Splits a paragraph of German text into individual sentences.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Detects sentence boundaries at .!? followed by an uppercase letter,
+          while protecting common abbreviations such as z.B., u.a., Dr., and
+          Prof. from false splits.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Returns a JSON array of sentence strings — the step between document
+          extraction and tokenisation in the vaelith +1 reading pipeline.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'GERM2',
+            '/core/browser/toys/2026-02-21/germanSentenceSplitter.js',
+            'germanSentenceSplitterToy'
+          );
+        </script>
+      </article>
       <article
         class="entry tag-vibe-coding tag-software-design tag-architecture tag-ai"
         id="TWOW1"
