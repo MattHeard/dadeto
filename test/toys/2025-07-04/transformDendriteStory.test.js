@@ -30,18 +30,20 @@ describe('transformDendriteStory', () => {
         { id: 'b', pageId: 'page', content: 'B' },
       ],
     });
-    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-      temporary: {
-        DEND2: {
-          stories: [{ id: 'story', title: 'Title' }],
-          pages: [{ id: 'page', storyId: 'story', content: 'Body' }],
-          options: [
-            { id: 'a', pageId: 'page', content: 'A' },
-            { id: 'b', pageId: 'page', content: 'B' },
-          ],
-        },
-      },
-    });
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith(
+      expect.objectContaining({
+        temporary: expect.objectContaining({
+          TRAN1: {
+            stories: [{ id: 'story', title: 'Title' }],
+            pages: [{ id: 'page', storyId: 'story', content: 'Body' }],
+            options: [
+              { id: 'a', pageId: 'page', content: 'A' },
+              { id: 'b', pageId: 'page', content: 'B' },
+            ],
+          },
+        }),
+      })
+    );
   });
 
   test('creates missing DEND2 structure', () => {
@@ -57,7 +59,7 @@ describe('transformDendriteStory', () => {
     expect(result.stories[0]).toEqual({ id: 's', title: 't' });
     expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
-        DEND2: {
+        TRAN1: {
           stories: [{ id: 's', title: 't' }],
           pages: [{ id: 'p', storyId: 's', content: 'c' }],
           options: [],
@@ -91,7 +93,7 @@ describe('transformDendriteStory', () => {
     transformDendriteStory(input, env);
     expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: {
-        DEND2: {
+        TRAN1: {
           stories: [{ id: 's', title: 'title' }],
           pages: [{ id: 'p', storyId: 's', content: 'body' }],
           options: [],

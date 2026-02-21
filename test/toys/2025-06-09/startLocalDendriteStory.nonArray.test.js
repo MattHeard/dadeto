@@ -13,6 +13,6 @@ test('startLocalDendriteStory replaces non-array DEND1', () => {
   const expected = { id: 'id-1', title: 't', content: 'c', options: [] };
   expect(result).toEqual(expected);
   expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-    temporary: { DEND1: [expected] },
+    temporary: { STAR1: [expected] },
   });
 });

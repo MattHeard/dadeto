@@ -18,7 +18,9 @@ function isStoryArray(value) {
  * @returns {object[] | undefined} Possibly undefined stories array.
  */
 function extractDend2Stories(data) {
-  const candidate = tryOr(() => data.temporary.DEND2.stories);
+  const candidate = tryOr(
+    () => data.temporary.TRAN1?.stories ?? data.temporary.DEND2?.stories
+  );
   return /** @type {object[] | undefined} */ (candidate);
 }
 

@@ -22,7 +22,7 @@
       ]
     },
     {
-      "key": "PLUS1",
+      "key": "ANNO1",
       "title": "+1 Annotator",
       "publicationDate": "2026-02-19",
       "content": [
@@ -158,7 +158,7 @@
       ]
     },
     {
-      "key": "LIST1",
+      "key": "TEXT1",
       "title": "Text Append List",
       "publicationDate": "2025-11-01",
       "content": [
@@ -237,7 +237,7 @@
       ]
     },
     {
-      "key": "DEND4",
+      "key": "ADDD1",
       "title": "Add Dendrite Page",
       "publicationDate": "2025-07-05",
       "content": [
@@ -259,7 +259,7 @@
       ]
     },
     {
-      "key": "DEND3",
+      "key": "GETD2",
       "title": "Get Dendrite Story Titles",
       "publicationDate": "2025-07-05",
       "content": [
@@ -281,7 +281,7 @@
       ]
     },
     {
-      "key": "DEND2",
+      "key": "TRAN1",
       "title": "Transform Dendrite Story",
       "publicationDate": "2025-07-04",
       "content": [
@@ -452,7 +452,7 @@
       ]
     },
     {
-      "key": "DEND1",
+      "key": "STAR1",
       "title": "Start local Dendrite story",
       "publicationDate": "2025-06-09",
       "content": [

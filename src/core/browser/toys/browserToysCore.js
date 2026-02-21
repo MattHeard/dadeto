@@ -5,7 +5,7 @@ import { isNonNullObject, isValidString } from '../../commonCore.js';
  * @typedef {( ...args: any[]) => any} EnvHelperFunc
  * @typedef {Map<string, EnvHelperFunc>} ToyEnv
  * @typedef {{ stories: object[], pages: object[], options: object[] }} Dend2Data
- * @typedef {{ temporary?: { DEND2?: Dend2Data } }} ToyStorage
+ * @typedef {{ temporary?: { TRAN1?: Dend2Data, DEND2?: Dend2Data } }} ToyStorage
  * @typedef {{ id: string, optionId: string, content: string }} ToyPage
  * @typedef {{ id: string, title: string }} ToyStory
  * @typedef {{ id: string, content: string, pageId?: string }} ToyOption
@@ -143,26 +143,24 @@ function isValidDend2Structure(obj) {
 }
 
 /**
- * Confirm that the temporary storage contains a DEND2 payload.
- * @param {ToyStorage} data Storage object that should include `temporary`.
- * @returns {boolean} True when `temporary.DEND2` is valid.
- */
-function isTemporaryValid(data) {
-  if (!isNonNullObject(data.temporary)) {
-    return false;
-  }
-  return isValidDend2Structure(data.temporary.DEND2);
-}
-
-/**
- * Make certain the store exposes a valid `temporary.DEND2` bucket.
+ * Make certain the store exposes a valid `temporary.TRAN1` bucket.
+ * Migrates legacy DEND2 data to TRAN1 when present.
  * @param {ToyStorage} data Storage object to update.
  * @returns {void}
  */
 export function ensureDend2(data) {
-  if (!isTemporaryValid(data)) {
-    data.temporary = { DEND2: createEmptyDend2() };
+  if (isValidDend2Structure(data.temporary?.TRAN1)) {
+    return;
   }
+  if (isValidDend2Structure(data.temporary?.DEND2)) {
+    if (!isNonNullObject(data.temporary)) {
+      data.temporary = { TRAN1: createEmptyDend2() };
+    } else {
+      data.temporary.TRAN1 = data.temporary.DEND2;
+    }
+    return;
+  }
+  data.temporary = { TRAN1: createEmptyDend2() };
 }
 
 /**
@@ -199,8 +197,8 @@ export function cloneTemporaryDend2Data(getData) {
  * @returns {ToyStorage} The updated storage object.
  */
 export function appendPageAndOptions(data, page, opts) {
-  data.temporary.DEND2.pages.push(page);
-  data.temporary.DEND2.options.push(...opts);
+  data.temporary.TRAN1.pages.push(page);
+  data.temporary.TRAN1.options.push(...opts);
   return data;
 }
 
@@ -347,7 +345,7 @@ export function persistDendriteStory(parsed, env) {
   }));
 
   const newData = persistTemporaryData(env, { page, options: opts }, newData =>
-    newData.temporary.DEND2.stories.push(story)
+    newData.temporary.TRAN1.stories.push(story)
   );
 
   return buildPersistedResponse({ page, options: opts }, newData, () => ({

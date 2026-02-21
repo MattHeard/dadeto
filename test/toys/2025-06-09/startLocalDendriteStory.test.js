@@ -34,7 +34,7 @@ describe('startLocalDendriteStory', () => {
       ],
     });
     expect(mockSetData).toHaveBeenCalledWith(
-      expect.objectContaining({ temporary: { DEND1: [output] } })
+      expect.objectContaining({ temporary: { STAR1: [output] } })
     );
   });
 
@@ -106,9 +106,11 @@ describe('startLocalDendriteStory', () => {
       startLocalDendriteStory(JSON.stringify(inputObj), env)
     );
 
-    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-      temporary: { DEND1: [existing, output] },
-    });
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith(
+      expect.objectContaining({
+        temporary: expect.objectContaining({ STAR1: [existing, output] }),
+      })
+    );
   });
 
   test('returns empty object string on parse error', () => {

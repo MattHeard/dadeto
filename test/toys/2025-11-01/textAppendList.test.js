@@ -28,9 +28,9 @@ describe('textAppendList', () => {
     const result = textAppendList('Goblin', env);
 
     expect(result).toBe('Goblin\n');
-    expect(store.LIST1).toBe('Goblin\n');
+    expect(store.TEXT1).toBe('Goblin\n');
     expect(fn).toHaveBeenCalledTimes(2);
-    expect(fn).toHaveBeenNthCalledWith(2, { LIST1: 'Goblin\n' });
+    expect(fn).toHaveBeenNthCalledWith(2, { TEXT1: 'Goblin\n' });
   });
 
   it('appends to an existing list and returns the updated content', () => {
@@ -41,7 +41,7 @@ describe('textAppendList', () => {
     const result = textAppendList('Orc', env);
 
     expect(result).toBe('Goblin\nOrc\n');
-    expect(store.LIST1).toBe('Goblin\nOrc\n');
+    expect(store.TEXT1).toBe('Goblin\nOrc\n');
   });
 
   it('returns a newline when storage helpers are unavailable', () => {

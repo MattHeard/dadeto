@@ -7,7 +7,8 @@ import {
 // Toy: Text Append List
 // (string input, env) -> string
 
-const TOY_KEY = 'LIST1';
+const TOY_KEY = 'TEXT1';
+const LEGACY_TOY_KEY = 'LIST1';
 
 /**
  * Append input text to a persistent newline-delimited list stored in localStorage.
@@ -94,7 +95,7 @@ function readExistingList(storageFn) {
 function getStoredListValue(storageFn) {
   const existingData =
     /** @type {Record<string, unknown> | null | undefined} */ (storageFn({}));
-  return ensureString(existingData?.[TOY_KEY]);
+  return ensureString(existingData?.[TOY_KEY] ?? existingData?.[LEGACY_TOY_KEY]);
 }
 
 /**

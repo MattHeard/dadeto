@@ -15,7 +15,7 @@ describe('startLocalDendriteStory missing temporary', () => {
     const expected = { id: 'id-1', title: 't', content: 'c', options: [] };
     expect(output).toEqual(expected);
     expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-      temporary: { DEND1: [expected] },
+      temporary: { STAR1: [expected] },
     });
   });
 
@@ -31,7 +31,7 @@ describe('startLocalDendriteStory missing temporary', () => {
     const expected = { id: 'id-2', title: 'x', content: 'y', options: [] };
     expect(output).toEqual(expected);
     expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-      temporary: { DEND1: [expected] },
+      temporary: { STAR1: [expected] },
     });
   });
 });
