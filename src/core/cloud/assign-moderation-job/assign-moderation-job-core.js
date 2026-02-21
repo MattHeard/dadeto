@@ -1155,12 +1155,21 @@ function isValidUserRecord(userRecord) {
 }
 
 /**
+ * Extract user record from context.
+ * @param {{ userRecord?: { uid?: string } }} context Context.
+ * @returns {{ uid?: string } | undefined} User record or undefined.
+ */
+function extractUserRecordFromContext(context) {
+  return context?.userRecord;
+}
+
+/**
  * Resolve user record from guard context.
  * @param {{ userRecord?: { uid?: string } }} context Context.
  * @returns {UserRecordWithUid} User record.
  */
 function resolveUserRecord(context) {
-  const userRecord = context?.userRecord ?? {};
+  const userRecord = extractUserRecordFromContext(context) ?? {};
   return requireUserRecord(userRecord);
 }
 
