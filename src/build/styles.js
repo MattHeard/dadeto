@@ -23,11 +23,11 @@ export function styles() {
     display: grid;
     grid-template-columns: 5ch auto;
     padding-bottom: 0;
-    gap: 0.5em 1rch;
+    gap: 0em 1rch;
     align-items: start;
   }
   .entry:first-of-type {
-    gap: 0.5em 1rch;
+    gap: 0em 1rch;
   }
   .entry.nav-entry {
     gap: 0em 1rch;
