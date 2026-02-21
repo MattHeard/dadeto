@@ -11,7 +11,7 @@ export function styles() {
     color: #CCCCCC;
     font-family: "Sono", Consolas, monospace;
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1;
     margin: 0;
     padding: 0;
   }
