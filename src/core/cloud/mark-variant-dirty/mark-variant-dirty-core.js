@@ -357,20 +357,12 @@ async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
  */
 async function resolveVariantReference(deps, pageNumber, variantName) {
   const { db, firebase = {} } = deps ?? {};
-
   enforceDatabase(db);
 
-  // After enforceDatabase, db is guaranteed to be non-null
-  const dbTyped = /** @type {import('firebase-admin/firestore').Firestore} */ (
+  const database = /** @type {import('firebase-admin/firestore').Firestore} */ (
     db
   );
-
-  return findVariantRef({
-    database: dbTyped,
-    pageNumber,
-    variantName,
-    firebase,
-  });
+  return findVariantRef({ database, pageNumber, variantName, firebase });
 }
 
 /**
@@ -593,6 +585,28 @@ function extractValidatedConfig(optionsTyped) {
 }
 
 /**
+ * Cast function to admin verifier type.
+ * @param {any} fn - Function to cast.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Typed verifier function.
+ */
+function castVerifyAdminFn(fn) {
+  return /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
+    fn
+  );
+}
+
+/**
+ * Cast function to mark-variant-dirty type.
+ * @param {any} fn - Function to cast.
+ * @returns {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} Typed handler function.
+ */
+function castMarkVariantDirtyFn(fn) {
+  return /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} */ (
+    fn
+  );
+}
+
+/**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
  * @param {HandleRequestOptions} [options] Configuration for the handler.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
@@ -608,19 +622,9 @@ export function createHandleRequest(options) {
   );
   const allowedMethod = resolveAllowedMethod(optionsTyped?.allowedMethod);
 
-  // After assertFunction calls in extractValidatedConfig, these are guaranteed to be functions
-  const verifyAdminFn =
-    /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
-      verifyAdmin
-    );
-  const markVariantDirtyFn =
-    /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} */ (
-      markVariantDirty
-    );
-
   return buildHandleRequest({
-    verifyAdmin: verifyAdminFn,
-    markVariantDirty: markVariantDirtyFn,
+    verifyAdmin: castVerifyAdminFn(verifyAdmin),
+    markVariantDirty: castMarkVariantDirtyFn(markVariantDirty),
     parseRequestBody,
     allowedMethod,
   });

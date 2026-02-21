@@ -239,23 +239,51 @@ function resolveAvailablePageResult({
  *   Document reference for the incoming option.
  * @returns {StoryReferences} Collection of related Firestore references.
  */
+/**
+ * Extract variant reference from option reference.
+ * @param {any} optionRef - Option document reference.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Variant reference or null.
+ */
+function extractVariantRefFromOption(optionRef) {
+  return /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+    optionRef?.parent?.parent || null
+  );
+}
+
+/**
+ * Extract page reference from variant reference.
+ * @param {any} variantRef - Variant document reference.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Page reference or null.
+ */
+function extractPageRefFromVariant(variantRef) {
+  return /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+    variantRef?.parent?.parent || null
+  );
+}
+
+/**
+ * Extract story reference from page reference.
+ * @param {any} pageRef - Page document reference.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Story reference or null.
+ */
+function extractStoryRefFromPageRef(pageRef) {
+  return /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
+    pageRef?.parent?.parent || null
+  );
+}
+
+/**
+ *
+ * @param optionRef
+ */
 function resolveStoryRefFromOption(optionRef) {
   if (!optionRef) {
     return { variantRef: null, pageRef: null, storyRef: null };
   }
 
-  const variantRef =
-    /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
-      /** @type {any} */ (optionRef).parent?.parent || null
-    );
-  const pageRef =
-    /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
-      /** @type {any} */ (variantRef)?.parent?.parent || null
-    );
-  const storyRef =
-    /** @type {import('firebase-admin/firestore').DocumentReference | null} */ (
-      /** @type {any} */ (pageRef)?.parent?.parent || null
-    );
+  const variantRef = extractVariantRefFromOption(optionRef);
+  const pageRef = extractPageRefFromVariant(variantRef);
+  const storyRef = extractStoryRefFromPageRef(pageRef);
 
   return { variantRef, pageRef, storyRef };
 }
@@ -593,11 +621,11 @@ m the option.
  * @returns {import('firebase-admin/firestore').DocumentReference} Story reference or empty.
  */
 function extractStoryRefFromPage(pageDocRef) {
-  const storyRef = /** @type {any} */ (pageDocRef).parent?.parent || null;
-  if (storyRef) {
-    return storyRef;
-  }
-  return /** @type {import('firebase-admin/firestore').DocumentReference} */ ({});
+  const storyRef = /** @type {any} */ (pageDocRef).parent?.parent;
+  return (
+    storyRef ||
+    /** @type {import('firebase-admin/firestore').DocumentReference} */ ({})
+  );
 }
 
 /**
@@ -1194,6 +1222,35 @@ async function processSubmissionWithContext({
  *   The helper reuses the module-scoped {@link findAvailablePageNumber} and {@link incrementVariantName}.
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler that processes new page submissions.
  */
+
+/**
+ * Extract submission data from snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Snapshot containing submission data.
+ * @returns {SubmissionData} Submission data object.
+ */
+function extractSubmissionData(snapshot) {
+  const data = snapshot.data();
+  return /** @type {SubmissionData} */ (data || {});
+}
+
+/**
+ * Check if submission is already processed and return early value if so.
+ * @param {SubmissionData} submission - Submission data to check.
+ * @returns {null | undefined} null if processed, undefined otherwise.
+ */
+function handleProcessedSubmission(submission) {
+  return submission.processed ? null : undefined;
+}
+
+/**
+ * Create a Cloud Function handler for processing new page submissions.
+ * @param {object} options - Configuration object.
+ * @param {import('firebase-admin/firestore').Firestore} options.db - Firestore instance used for document access.
+ * @param {{ serverTimestamp: () => import('firebase-admin/firestore').FieldValue, increment: (value: number) => import('firebase-admin/firestore').FieldValue }} options.fieldValue - FieldValue helper with server timestamp and increment capabilities.
+ * @param {() => string} options.randomUUID - UUID generator used for new documents.
+ * @param {(() => number) | undefined} options.random - Random number generator (defaults to Math.random).
+ * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler that processes new page submissions.
+ */
 export function createProcessNewPageHandler({
   db,
   fieldValue,
@@ -1203,12 +1260,9 @@ export function createProcessNewPageHandler({
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
   return async function handleProcessNewPage(snapshot) {
-    const data = snapshot.data();
-    const submission = /** @type {SubmissionData} */ (data || {});
-
-    if (submission.processed) {
-      return null;
-    }
+    const submission = extractSubmissionData(snapshot);
+    const earlyReturn = handleProcessedSubmission(submission);
+    if (earlyReturn !== undefined) return earlyReturn;
 
     return processUnprocessedSubmission({
       submission,

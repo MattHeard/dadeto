@@ -165,18 +165,39 @@ function isValidDend2Structure(obj) {
 }
 
 /**
+ * Try to get a valid DEND2 structure from a candidate source.
+ * @param {any} candidate - Candidate DEND2 structure.
+ * @returns {any | null} Valid structure or null.
+ */
+function getValidDend2OrNull(candidate) {
+  if (isValidDend2Structure(candidate)) {
+    return candidate;
+  }
+  return null;
+}
+
+/**
+ * Try primary TRAN1 first, then fall back to legacy DEND2.
+ * @param {object | undefined} temporary - Temporary storage.
+ * @returns {any | null} Valid structure or null.
+ */
+function tryResolveLegacyStructure(temporary) {
+  const tran1 = getValidDend2OrNull(temporary?.TRAN1);
+  if (tran1) {
+    return tran1;
+  }
+  return getValidDend2OrNull(temporary?.DEND2);
+}
+
+/**
  * Resolve TRAN1 structure from available sources.
  * @param {ToyStorage} data - Storage object.
  * @returns {any} Valid TRAN1 structure.
  */
 function resolveTran1Structure(data) {
-  const tran1 = data.temporary?.TRAN1;
-  if (isValidDend2Structure(tran1)) {
-    return tran1;
-  }
-  const dend2 = data.temporary?.DEND2;
-  if (isValidDend2Structure(dend2)) {
-    return dend2;
+  const resolved = tryResolveLegacyStructure(data.temporary);
+  if (resolved) {
+    return resolved;
   }
   return createEmptyDend2();
 }

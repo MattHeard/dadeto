@@ -643,19 +643,35 @@ export function matchBearerToken(header) {
 const defaultMissingTokenMessage = 'Missing token';
 
 /**
+ * Check if a value is a non-null object.
+ * @param {unknown} value - Value to check.
+ * @returns {boolean} True when value is an object.
+ */
+function isObject(value) {
+  return Boolean(value) && typeof value === 'object';
+}
+
+/**
+ * Check if an object has a message property.
+ * @param {unknown} obj - Object to check.
+ * @returns {boolean} True when message property exists.
+ */
+function hasMessageProperty(obj) {
+  if (!isObject(obj)) {
+    return false;
+  }
+  return 'message' in obj;
+}
+
+/**
  * Build a human-friendly invalid token message.
  * @param {unknown} error Validation error.
  * @returns {string} Message sent to clients when token validation fails.
  */
 function defaultInvalidTokenMessage(error) {
-  if (!error || typeof error !== 'object' || !('message' in error)) {
-    return 'Invalid token';
-  }
-  const candidate = /** @type {FirebaseError} */ (error).message;
-  if (typeof candidate === 'string') {
-    return candidate;
-  }
-  return 'Invalid token';
+  if (!hasMessageProperty(error)) return 'Invalid token';
+  const messageStr = extractErrorMessage(error);
+  return messageStr || 'Invalid token';
 }
 
 /**

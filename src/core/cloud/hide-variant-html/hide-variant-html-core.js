@@ -449,6 +449,43 @@ function resolvePageRef(snapshot) {
 }
 
 /**
+ * Check if a reference is non-null and has a parent.
+ * @param {object | null | undefined} ref Reference object.
+ * @returns {boolean} True when ref has a parent property.
+ */
+function hasParentRef(ref) {
+  return Boolean(ref && ref.parent);
+}
+
+/**
+ * Check if a parent reference has a grandparent.
+ * @param {object | null | undefined} parent Parent reference.
+ * @returns {boolean} True when parent has a parent property.
+ */
+function hasGrandparentFromParent(parent) {
+  return Boolean(parent && parent.parent);
+}
+
+/**
+ * Check if ref has a valid grandparent chain.
+ * @param {{ parent?: { parent?: * } } | null | undefined} ref Reference object.
+ * @returns {boolean} True when the chain is valid.
+ */
+function hasValidGrandparentChain(ref) {
+  return hasParentRef(ref) && hasGrandparentFromParent(ref.parent);
+}
+
+/**
+ * Extract the grandparent reference when the chain supports it.
+ * @param {{ parent?: { parent?: * } } | null | undefined} ref Reference object.
+ * @returns {* | null} Grandparent reference or null.
+ */
+function extractGrandparentRef(ref) {
+  if (!hasValidGrandparentChain(ref)) return null;
+  return ref.parent.parent;
+}
+
+/**
  * Resolve the parent page reference from a Firestore reference chain.
  * @param {{ parent?: { parent?: * } } | null | undefined} ref Reference object.
  * @returns {*} The grandparent reference when available or `null`.
@@ -457,8 +494,7 @@ function resolveParentPageRef(ref) {
   if (!hasParentWithGrandparent(ref)) {
     return null;
   }
-
-  return ref?.parent?.parent ?? null;
+  return extractGrandparentRef(ref);
 }
 
 /**

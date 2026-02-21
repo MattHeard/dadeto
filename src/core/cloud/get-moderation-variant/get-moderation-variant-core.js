@@ -353,34 +353,28 @@ async function fetchVariantResponse(variantRef) {
   return VARIANT_NOT_FOUND_RESPONSE;
 }
 /**
+ * Resolve story reference from variant reference through parent chain.
+ * @param {FirestoreDocumentReference} variantRef - Variant document reference.
+ * @returns {FirestoreDocumentReference | null} Story reference or null if chain is incomplete.
+ */
+function resolveStoryRefFromVariant(variantRef) {
+  const pageRef = variantRef.parent?.parent;
+  const storyParent = pageRef?.parent;
+  const storyRef = storyParent?.parent;
+  return storyRef || null;
+}
+
+/**
  * Fetches the story title that owns the provided variant reference.
  * @param {FirestoreDocumentReference} variantRef Variant document reference.
  * @returns {Promise<string>} Story title string.
  */
 async function fetchStoryTitle(variantRef) {
-  const variantParent = variantRef.parent;
-  if (!variantParent) {
-    return '';
-  }
-
-  const pageRef = variantParent.parent;
-  if (!pageRef) {
-    return '';
-  }
-
-  const storyParent = pageRef.parent;
-  if (!storyParent) {
-    return '';
-  }
-
-  const storyRef = storyParent.parent;
-  if (!storyRef) {
-    return '';
-  }
+  const storyRef = resolveStoryRefFromVariant(variantRef);
+  if (!storyRef) return '';
 
   const storySnap = await storyRef.get();
   const storyData = storySnap.data() ?? {};
-
   return normalizeString(
     /** @type {string | null | undefined} */ (storyData.title),
     120

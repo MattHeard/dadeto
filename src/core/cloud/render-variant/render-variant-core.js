@@ -1702,8 +1702,8 @@ function extractPageNumber(snap) {
  * @returns {string} Variant name or empty string.
  */
 function extractVariantName(variantData) {
-  const name = (variantData || {}).name;
-  return name || '';
+  if (!variantData) return '';
+  return variantData.name || '';
 }
 
 /**

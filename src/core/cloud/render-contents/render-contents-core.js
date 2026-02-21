@@ -333,16 +333,12 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
 }
 
 /**
- * Build story metadata once the page snapshot has been fetched.
- * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
+ * Create story info from story and page data.
  * @param {Record<string, any>} story Story document data that owns the page.
- * @returns {StoryInfo | null} Story metadata or null when the page is missing.
+ * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
+ * @returns {StoryInfo} Story metadata object.
  */
-function buildStoryInfoFromPage(pageSnap, story) {
-  if (!hasPageSnapshot(pageSnap)) {
-    return null;
-  }
-
+function createStoryInfo(story, pageSnap) {
   return {
     title: extractStoryTitle(story),
     pageNumber: extractPageNumber(pageSnap.data()) ?? null,
@@ -350,12 +346,14 @@ function buildStoryInfoFromPage(pageSnap, story) {
 }
 
 /**
- * Check that the page snapshot exists.
- * @param {{ exists?: boolean }} pageSnap Snapshot.
- * @returns {boolean} True when exists.
+ * Build story metadata once the page snapshot has been fetched.
+ * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
+ * @param {Record<string, any>} story Story document data that owns the page.
+ * @returns {StoryInfo | null} Story metadata or null when the page is missing.
  */
-function hasPageSnapshot(pageSnap) {
-  return Boolean(pageSnap && pageSnap.exists);
+function buildStoryInfoFromPage(pageSnap, story) {
+  if (!pageSnap?.exists) return null;
+  return createStoryInfo(story, pageSnap);
 }
 
 /**
