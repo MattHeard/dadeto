@@ -13,14 +13,39 @@ function isStoryArray(value) {
 }
 
 /**
+ * Resolve TRAN1 stories from temporary storage.
+ * @param {*} data - Application state data.
+ * @returns {object[] | undefined} Stories from TRAN1 or undefined.
+ */
+function resolveTran1Stories(data) {
+  return data.temporary.TRAN1?.stories;
+}
+
+/**
+ * Resolve DEND2 stories as fallback.
+ * @param {*} data - Application state data.
+ * @returns {object[] | undefined} Stories from DEND2 temporary storage.
+ */
+function resolveDend2Stories(data) {
+  return data.temporary.DEND2?.stories;
+}
+
+/**
+ * Resolve TRAN1 stories with DEND2 fallback.
+ * @param {*} data - Application state data.
+ * @returns {object[] | undefined} Resolved stories array or undefined.
+ */
+function resolveTran1StoriesWithFallback(data) {
+  return resolveTran1Stories(data) ?? resolveDend2Stories(data);
+}
+
+/**
  * Safely retrieve nested DEND2 stories.
  * @param {*} data - Application state data.
  * @returns {object[] | undefined} Possibly undefined stories array.
  */
 function extractDend2Stories(data) {
-  const candidate = tryOr(
-    () => data.temporary.TRAN1?.stories ?? data.temporary.DEND2?.stories
-  );
+  const candidate = tryOr(() => resolveTran1StoriesWithFallback(data));
   return /** @type {object[] | undefined} */ (candidate);
 }
 
