@@ -33,6 +33,18 @@ function hasDend1Structure(temporary) {
 }
 
 /**
+ * Resolve legacy DEND1 structure or empty array.
+ * @param {object} temporary - Temporary storage object.
+ * @returns {DendriteStoryResult[]} DEND1 array or empty array.
+ */
+function resolveLegacyStructure(temporary) {
+  if (hasDend1Structure(temporary)) {
+    return temporary.DEND1;
+  }
+  return [];
+}
+
+/**
  * Determine which story array to use, with DEND1 legacy migration.
  * @param {object} temporary - Temporary storage object.
  * @returns {DendriteStoryResult[]} Array to use for STAR1.
@@ -41,10 +53,7 @@ function resolveStar1Structure(temporary) {
   if (hasStar1Structure(temporary)) {
     return temporary.STAR1;
   }
-  if (hasDend1Structure(temporary)) {
-    return temporary.DEND1;
-  }
-  return [];
+  return resolveLegacyStructure(temporary);
 }
 
 /**
