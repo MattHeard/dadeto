@@ -990,6 +990,7 @@ const INPUT_METHODS = [
   'textarea',
   'number',
   'kv',
+  'blog-key',
   'dendrite-story',
   'dendrite-page',
   'moderator-ratings',

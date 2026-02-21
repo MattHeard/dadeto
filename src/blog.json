@@ -12,7 +12,7 @@
       "toy": {
         "modulePath": "/core/browser/toys/2026-02-21/generateBlogKey.js",
         "functionName": "generateBlogKey",
-        "defaultInputMethod": "textarea"
+        "defaultInputMethod": "blog-key"
       },
       "tags": ["toy"]
     },
