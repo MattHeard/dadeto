@@ -31,6 +31,58 @@ function findUniqueKey(prefix, keySet) {
 }
 
 /**
+ * Return true when the parsed value has a string title field.
+ * @param {unknown} parsed - Value to check.
+ * @returns {boolean} Whether parsed is a valid input object.
+ */
+function isValidParsed(parsed) {
+  return (
+    Boolean(parsed) && typeof (/** @type {any} */ (parsed).title) === 'string'
+  );
+}
+
+/**
+ * Extract existingKeys array from parsed input, defaulting to empty.
+ * @param {object} parsed - Parsed input object.
+ * @returns {unknown[]} Array of existing keys.
+ */
+function getExistingKeys(parsed) {
+  if (Array.isArray(/** @type {any} */ (parsed).existingKeys)) {
+    return /** @type {any} */ (parsed).existingKeys;
+  }
+  return [];
+}
+
+/**
+ * Build a unique key from a prefix and list of existing keys.
+ * @param {string} prefix - Letter prefix extracted from title.
+ * @param {unknown[]} existingKeys - List of keys already in use.
+ * @returns {string} JSON string of the new key, or empty string if prefix too short.
+ */
+function buildKeyFromPrefix(prefix, existingKeys) {
+  if (prefix.length < 4) {
+    return JSON.stringify('');
+  }
+  return JSON.stringify(findUniqueKey(prefix, new Set(existingKeys)));
+}
+
+/**
+ * Build a unique key from a parsed input object.
+ * @param {unknown} parsed - Parsed JSON input.
+ * @returns {string} JSON string of the new key, or empty string on invalid input.
+ */
+function buildKeyFromParsed(parsed) {
+  if (!isValidParsed(parsed)) {
+    return JSON.stringify('');
+  }
+  const obj = /** @type {any} */ (parsed);
+  return buildKeyFromPrefix(
+    extractLetterPrefix(obj.title, 4),
+    getExistingKeys(obj)
+  );
+}
+
+/**
  * Generate a unique blog key from a title and list of existing keys.
  * @param {string} input - JSON string with `title` and `existingKeys`.
  * @param {Map<string, Function>} env - Environment (unused).
@@ -39,19 +91,7 @@ function findUniqueKey(prefix, keySet) {
 export function generateBlogKey(input, env) {
   void env;
   try {
-    const parsed = JSON.parse(input);
-    if (!parsed || typeof parsed.title !== 'string') {
-      return JSON.stringify('');
-    }
-    const prefix = extractLetterPrefix(parsed.title, 4);
-    if (prefix.length < 4) {
-      return JSON.stringify('');
-    }
-    const existingKeys = Array.isArray(parsed.existingKeys)
-      ? parsed.existingKeys
-      : [];
-    const keySet = new Set(existingKeys);
-    return JSON.stringify(findUniqueKey(prefix, keySet));
+    return buildKeyFromParsed(JSON.parse(input));
   } catch {
     return JSON.stringify('');
   }
