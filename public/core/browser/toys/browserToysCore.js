@@ -102,6 +102,23 @@ function isValidOptionString(data) {
 }
 
 /**
+ * Create option object from string candidate.
+ * @param {string} candidate - Option string.
+ * @param {object} options - Configuration.
+ * @returns {ToyOption} New option object.
+ */
+function createToyOption(candidate, options) {
+  const opt = {
+    id: options.getUuid(),
+    content: /** @type {string} */ (candidate),
+  };
+  if (options.pageId) {
+    opt.pageId = options.pageId;
+  }
+  return opt;
+}
+
+/**
  * Append a parsed option into the accumulator when valid.
  * @param {ToyOption[]} acc Accumulated options.
  * @param {string} key Candidate key to inspect.
@@ -116,15 +133,7 @@ function addOption(acc, key, options) {
   if (!isValidOptionString(candidate)) {
     return acc;
   }
-  /** @type {ToyOption} */
-  const option = {
-    id: options.getUuid(),
-    content: /** @type {string} */ (candidate),
-  };
-  if (options.pageId) {
-    option.pageId = options.pageId;
-  }
-  acc.push(option);
+  acc.push(createToyOption(candidate, options));
   return acc;
 }
 
