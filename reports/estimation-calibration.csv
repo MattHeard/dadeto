@@ -1,0 +1,4 @@
+estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestamp,completed_in_one_turn
+2026-02-21T20:39:13Z,dadeto-rps8,Fix csvToJsonArray.js findLastIndex compatibility,85,2026-02-21T20:44:21Z,true
+2026-02-21T20:45:32Z,dadeto-se2c,Tsdoc: finish toy helper typing (6 remaining code fixes),73,2026-02-21T20:51:45Z,true
+2026-02-21T20:52:15Z,dadeto-4srf,Achieve zero TypeScript/JSDoc errors,35,2026-02-21T21:18:45Z,true
