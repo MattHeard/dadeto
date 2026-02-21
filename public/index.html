@@ -419,6 +419,73 @@
           <a class="filter-button" data-filter="toys">toys</a>
         </p>
       </div>
+      <article class="entry tag-toy" id="GENE1">
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">GENE1</div>
+        <div class="value">
+          <h2><a href="#GENE1">Generate Blog Key</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">21 Feb 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata"><a class="tag-toy">toy</a></p>
+        <div class="key">text</div>
+        <p class="value">
+          Generates a unique blog key from a post title and a list of existing
+          keys.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The key is the first four letter characters of the title, uppercased,
+          followed by the lowest available number suffix.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Input is a JSON object with a "title" string and an "existingKeys"
+          array.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value"><button type="submit" disabled>Submit</button></div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'GENE1',
+            '/core/browser/toys/2026-02-21/generateBlogKey.js',
+            'generateBlogKey'
+          );
+        </script>
+      </article>
       <article class="entry tag-toy tag-german tag-vaelith tag-nlp" id="GERM2">
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
         <div class="value full-width">
