@@ -664,6 +664,15 @@ function hasMessageProperty(obj) {
 }
 
 /**
+ * Resolve message string with invalid token fallback.
+ * @param {unknown} messageStr Candidate message string.
+ * @returns {string} Message or 'Invalid token'.
+ */
+function resolveErrorMessageWithDefault(messageStr) {
+  return messageStr || 'Invalid token';
+}
+
+/**
  * Build a human-friendly invalid token message.
  * @param {unknown} error Validation error.
  * @returns {string} Message sent to clients when token validation fails.
@@ -671,7 +680,7 @@ function hasMessageProperty(obj) {
 function defaultInvalidTokenMessage(error) {
   if (!hasMessageProperty(error)) return 'Invalid token';
   const messageStr = extractErrorMessage(error);
-  return messageStr || 'Invalid token';
+  return resolveErrorMessageWithDefault(messageStr);
 }
 
 /**
