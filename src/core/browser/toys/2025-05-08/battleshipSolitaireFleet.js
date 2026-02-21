@@ -527,7 +527,7 @@ function shouldAbortPlacement(acc) {
  * @returns {Candidate[] | null} Updated accumulation or null on failure.
  */
 function addPlacedShip(acc, placed) {
-  if (!placed) {
+  if (!placed || !acc) {
     return null;
   }
   acc.push(placed);

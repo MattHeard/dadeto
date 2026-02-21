@@ -212,7 +212,7 @@ function getArrayIndex(segment) {
 
 /**
  * Determine whether the array contains an index matching the segment.
- * @param {object|unknown[]} currentValue - Array under inspection.
+ * @param {unknown[]} currentValue - Array under inspection.
  * @param {string} segment - Segment text to convert to an index.
  * @returns {boolean} True when the converted index is within bounds.
  */
@@ -401,7 +401,7 @@ function describeGetDataError(error, input) {
 /**
  * Retrieve a value from the environment's data using the provided path.
  * @param {string} input - Dot separated path to the desired value.
- * @param {Map<string,Function>} env - Environment map expected to contain `getData`.
+ * @param {import('../browserToysCore.js').ToyEnv} env - Environment map expected to contain `getData`.
  * @returns {string} JSON stringified value or an error description.
  */
 export function get(input, env) {
