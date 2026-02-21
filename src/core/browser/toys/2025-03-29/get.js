@@ -217,9 +217,6 @@ function getArrayIndex(segment) {
  * @returns {boolean} True when the converted index is within bounds.
  */
 function isValidArrayIndex(currentValue, segment) {
-  if (!Array.isArray(currentValue)) {
-    return false;
-  }
   const arrayIndex = getArrayIndex(segment);
   if (arrayIndex === null) {
     return false;
@@ -351,14 +348,8 @@ function isNotObjectOrArray(data) {
  * @param {string} input - Dot separated path string.
  * @returns {string} JSON stringified result or error message.
  */
-function getFinalResultInGet(
-  /** @type {object | unknown[] | null} */ data,
-  input
-) {
-  if (data === null) {
-    return "Error: 'getData' did not return a valid object or array.";
-  }
-  const value = getValueAtPath(data, input);
+function getFinalResultInGet(data, input) {
+  const value = getValueAtPath(/** @type {object | unknown[]} */ (data), input);
   return handleValueOrErrorResult(value, input);
 }
 

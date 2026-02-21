@@ -186,17 +186,12 @@ function processTextPreservingBold(text) {
  * @private
  */
 function formatBoldSegments(text) {
-  const segment = /** @type {BoldSegment | null} */ (findBoldSegments(text));
-
-  if (segment) {
-    return assembleProcessedText(
-      segment.beforeText,
-      segment.boldText,
-      segment.afterText
-    );
-  }
-
-  return processAllItalicStyles(text);
+  const segment = /** @type {BoldSegment} */ (findBoldSegments(text));
+  return assembleProcessedText(
+    segment.beforeText,
+    segment.boldText,
+    segment.afterText
+  );
 }
 
 /**

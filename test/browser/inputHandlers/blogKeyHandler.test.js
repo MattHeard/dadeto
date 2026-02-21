@@ -172,6 +172,40 @@ describe('blogKeyHandler', () => {
     );
   });
 
+  test('parseLines handles null getValue result without throwing', () => {
+    const dom = makeDom({ getValue: jest.fn(() => null) });
+    const container = { _children: [] };
+    const textInput = makeTextInput('');
+
+    blogKeyHandler(dom, container, textInput);
+
+    const textarea = dom.createElement.mock.results
+      .map(r => r.value)
+      .find(el => el.tag === 'textarea');
+
+    textarea._listeners['input']?.();
+
+    expect(dom.setValue).toHaveBeenCalledWith(
+      textInput,
+      JSON.stringify({ title: '', existingKeys: [] })
+    );
+  });
+
+  test('skips dispose call when existing form has no _dispose method', () => {
+    const existingForm = { _children: [] }; // no _dispose
+    const dom = makeDom({
+      querySelector: jest.fn((_el, selector) =>
+        selector === '.dendrite-form' ? existingForm : null
+      ),
+    });
+    const container = { _children: [existingForm] };
+    const textInput = makeTextInput('');
+
+    blogKeyHandler(dom, container, textInput);
+
+    expect(dom.removeChild).toHaveBeenCalledWith(container, existingForm);
+  });
+
   test('removes existing dendrite form before inserting new one', () => {
     const existingForm = { _dispose: jest.fn(), _children: [] };
     const dom = makeDom({

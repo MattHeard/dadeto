@@ -146,6 +146,39 @@ describe('get function with path traversal', () => {
     expect(mockGetData).toHaveBeenCalledTimes(1);
   });
 
+  test('should return error when getData is missing from env', () => {
+    const emptyEnv = new Map();
+    expect(get('any.path', emptyEnv)).toBe(
+      "Error: 'getData' dependency is missing."
+    );
+  });
+
+  test('should return error when getData throws a string', () => {
+    const throwingEnv = new Map([
+      ['getData', () => { throw 'storage unavailable'; }],
+    ]);
+    expect(get('some.path', throwingEnv)).toBe(
+      'Error during data retrieval or path traversal for "some.path": storage unavailable'
+    );
+  });
+
+  test('should return not-found error when array is accessed with non-integer key', () => {
+    mockGetData.mockReturnValue({ items: [1, 2, 3] });
+    const result = get('items.foo', env);
+    expect(result).toMatch(/not found/);
+  });
+
+  test('should handle stringify error when thrown value is a string', () => {
+    const objWithStringThrow = {
+      toJSON() { throw 'raw string error'; },
+    };
+    mockGetData.mockReturnValue({ val: objWithStringThrow });
+    const result = get('val', env);
+    expect(result).toBe(
+      'Error stringifying final value at path "val": raw string error'
+    );
+  });
+
   test('should return error when accessing deep property on null', () => {
     const nestedNull = { user: { profile: null } };
     mockGetData.mockReturnValue(nestedNull);

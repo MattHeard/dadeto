@@ -206,13 +206,10 @@ export function createCopyToInfraCore({
     if (!shouldCopyDeclaredFiles(copyPlan)) {
       return;
     }
-    if (!copyPlan) {
-      return;
-    }
     const { sourceDir, targetDir } = copyPlan;
-    const files = extractDeclaredFiles(copyPlan);
+    const files = /** @type {string[]} */ (extractDeclaredFiles(copyPlan));
     const copyParams = {
-      files: files || [],
+      files,
       sourceDir,
       targetDir,
       io: { ...io, readDirEntries: async () => [] },

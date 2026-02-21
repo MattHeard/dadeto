@@ -153,11 +153,7 @@ export function ensureDend2(data) {
     return;
   }
   if (isValidDend2Structure(data.temporary?.DEND2)) {
-    if (!isNonNullObject(data.temporary)) {
-      data.temporary = { TRAN1: createEmptyDend2() };
-    } else {
-      data.temporary.TRAN1 = data.temporary.DEND2;
-    }
+    data.temporary.TRAN1 = data.temporary.DEND2;
     return;
   }
   data.temporary = { TRAN1: createEmptyDend2() };

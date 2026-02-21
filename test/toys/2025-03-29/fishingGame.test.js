@@ -11,6 +11,13 @@ const createEnv = (randomValue, currentTime) =>
 describe('fishingGame', () => {
   // Test various outcomes based on bait and random values.
 
+  test('throws when a required env dependency is missing', () => {
+    const envWithoutDeps = new Map();
+    expect(() => fishingGame('worm', envWithoutDeps)).toThrow(
+      'Fishing game missing getCurrentTime dependency'
+    );
+  });
+
   test('handles empty input gracefully', () => {
     const env = createEnv(0.5, '2025-03-29T08:00:00');
     const output = fishingGame('   ', env);

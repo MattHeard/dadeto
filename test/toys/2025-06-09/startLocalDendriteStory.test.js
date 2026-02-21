@@ -113,6 +113,27 @@ describe('startLocalDendriteStory', () => {
     );
   });
 
+  test('appends to existing STAR1 array when STAR1 already present', () => {
+    const existing = { id: 'old', title: 'Old', content: 'Old', options: [] };
+    const uuids = ['id-new', 'id-a'];
+    let idx = 0;
+    const mockSetData = jest.fn();
+    const env = new Map([
+      ['getUuid', () => uuids[idx++]],
+      ['getData', () => ({ temporary: { STAR1: [existing] } })],
+      ['setLocalTemporaryData', mockSetData],
+    ]);
+    const inputObj = { title: 'New', content: 'Body', firstOption: 'A' };
+    const output = JSON.parse(
+      startLocalDendriteStory(JSON.stringify(inputObj), env)
+    );
+    expect(mockSetData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        temporary: expect.objectContaining({ STAR1: [existing, output] }),
+      })
+    );
+  });
+
   test('returns empty object string on parse error', () => {
     const mockSetData = jest.fn();
     const env = new Map([
