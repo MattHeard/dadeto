@@ -62,6 +62,16 @@ function getStringCandidate(value) {
 }
 
 /**
+ * Check if a normalized string is acceptable.
+ * @param {string | undefined} normalized Candidate normalized string.
+ * @param {(normalized: string | undefined) => boolean} isAcceptable Acceptance predicate.
+ * @returns {boolean} True if normalized is defined and acceptable.
+ */
+function isAcceptableNormalizedString(normalized, isAcceptable) {
+  return normalized !== undefined && isAcceptable(normalized);
+}
+
+/**
  * Apply a fallback when the string candidate doesn't meet the acceptance predicate.
  * @param {unknown} value Candidate value.
  * @param {() => string | null} fallback Fallback result supplier.
@@ -70,7 +80,7 @@ function getStringCandidate(value) {
  */
 function withStringFallback(value, fallback, isNormalizedAcceptable) {
   const normalized = getStringCandidate(value);
-  if (isNormalizedAcceptable(normalized) && normalized !== undefined) {
+  if (isAcceptableNormalizedString(normalized, isNormalizedAcceptable)) {
     return normalized;
   }
 
@@ -238,6 +248,15 @@ function executeSafely(action) {
 }
 
 /**
+ * Check if a result indicates an execution error.
+ * @param {unknown} result The result to check.
+ * @returns {boolean} True if result is undefined (indicating error).
+ */
+function didExecutionFail(result) {
+  return result === undefined;
+}
+
+/**
  * Evaluate the action and return its result, falling back when an exception occurs.
  * @param {() => unknown} action - Function that may throw.
  * @param {() => unknown} [fallback] - Value returned when an error is thrown.
@@ -245,7 +264,7 @@ function executeSafely(action) {
  */
 export function tryOr(action, fallback = () => undefined) {
   const result = executeSafely(action);
-  if (result === undefined) {
+  if (didExecutionFail(result)) {
     return fallback();
   }
 
