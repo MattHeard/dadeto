@@ -6,6 +6,7 @@ import {
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
   resolveMessageOrDefault,
+  isObject,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
 
@@ -223,7 +224,9 @@ function extractBearerToken(value) {
  * @returns {boolean} True if request has get function.
  */
 function hasValidGetMethod(request) {
-  return Boolean(request) && typeof (/** @type {any} */ (request)).get === 'function';
+  return (
+    Boolean(request) && typeof (/** @type {any} */ (request).get) === 'function'
+  );
 }
 
 /**
@@ -253,7 +256,9 @@ function getAuthorizationHeader(request) {
   }
 
   const headerGetter =
-    /** @type {(name: string) => string | null | undefined} */ ((/** @type {any} */ (request)).get);
+    /** @type {(name: string) => string | null | undefined} */ (
+      /** @type {any} */ (request).get
+    );
   return findAuthHeader(headerGetter);
 }
 
@@ -367,7 +372,9 @@ function extractPageFromVariant(variantRef) {
  * @returns {FirestoreDocumentReference | null} Story parent.
  */
 function extractParentFromPage(pageRef) {
-  return /** @type {FirestoreDocumentReference | null} */ (pageRef?.parent ?? null);
+  return /** @type {FirestoreDocumentReference | null} */ (
+    pageRef?.parent ?? null
+  );
 }
 
 /**
@@ -376,7 +383,9 @@ function extractParentFromPage(pageRef) {
  * @returns {FirestoreDocumentReference | null} Story reference.
  */
 function extractStoryFromParent(parentRef) {
-  return /** @type {FirestoreDocumentReference | null} */ (parentRef?.parent ?? null);
+  return /** @type {FirestoreDocumentReference | null} */ (
+    parentRef?.parent ?? null
+  );
 }
 
 /**
@@ -633,17 +642,13 @@ function createInvalidTokenResponse(error) {
  * @param {unknown} value - Value to check.
  * @returns {boolean} True if value is an object.
  */
-function isObjectType(value) {
-  return typeof value === 'object' && value !== null;
-}
-
 /**
  * Check if error is an object with a message property.
  * @param {unknown} error - Value to check.
  * @returns {boolean} True if error has message property.
  */
 function isErrorObject(error) {
-  if (!isObjectType(error)) {
+  if (!isObject(error)) {
     return false;
   }
   return 'message' in /** @type {object} */ (error);
@@ -658,7 +663,7 @@ function getErrorMessage(error) {
   if (!isErrorObject(error)) {
     return null;
   }
-  return (/** @type {any} */ (error)).message;
+  return /** @type {any} */ (error).message;
 }
 
 /**

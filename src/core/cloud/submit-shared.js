@@ -1,4 +1,4 @@
-import { normalizeShortString } from './cloud-core.js';
+import { normalizeShortString, isObject } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from './auth-helpers.js';
 import { assertFunction } from './common-core.js';
 import { normalizeExpressRequest } from './request-normalization.js';
@@ -65,22 +65,13 @@ function responderKeyByType(isUndefined) {
 }
 
 /**
- * Guard for object payloads so the response handler can treat them as JSON.
- * @param {unknown} value Candidate payload to evaluate.
- * @returns {value is Record<string, unknown>} True when the value is a non-null object.
- */
-function isObjectBody(value) {
-  return typeof value === 'object' && value !== null;
-}
-
-/**
  * Send an HTTP response based on the responder result payload.
  * @param {NativeHttpResponse} res - Response instance used to send data.
  * @param {number} status - HTTP status code emitted to the client.
  * @param {unknown} body - Payload returned by the domain responder.
  */
 export function sendResponderResult(res, status, body) {
-  if (isObjectBody(body)) {
+  if (isObject(body)) {
     /** @type {Record<string, unknown>} */
     const objectBody = body;
     responderHandlers.object(res, status, objectBody);

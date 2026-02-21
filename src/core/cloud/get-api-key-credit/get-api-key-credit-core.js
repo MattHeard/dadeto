@@ -80,7 +80,10 @@ function isSpecialCreditValue(credit) {
  * @returns {{ status: number, body: unknown }} Special response or default.
  */
 function getSpecialCreditResponse(credit) {
-  const special = typeof credit === 'number' ? undefined : CREDIT_RESPONSE_BY_VALUE.get(/** @type {null | undefined} */ (credit));
+  const special =
+    typeof credit === 'number'
+      ? undefined
+      : CREDIT_RESPONSE_BY_VALUE.get(/** @type {null | undefined} */ (credit));
   if (special) {
     return special;
   }
@@ -115,21 +118,12 @@ async function fetchCreditResponse(fetchCredit, uuid) {
 }
 
 /**
- * Check if UUID is present and valid.
- * @param {string | undefined} uuid - UUID candidate to check.
- * @returns {boolean} True if UUID is valid.
- */
-function hasValidUuid(uuid) {
-  return typeof uuid === 'string' && isValidString(uuid);
-}
-
-/**
  * Derive an error response when the UUID is missing.
  * @param {string | undefined} uuid - UUID candidate to check.
  * @returns {{ status: number, body: string } | null} Response when missing, otherwise null.
  */
 function getMissingUuidResponse(uuid) {
-  if (hasValidUuid(uuid)) {
+  if (isValidUuid(uuid)) {
     return null;
   }
   return MISSING_UUID_RESPONSE;

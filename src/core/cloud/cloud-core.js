@@ -647,7 +647,7 @@ const defaultMissingTokenMessage = 'Missing token';
  * @param {unknown} value - Value to check.
  * @returns {boolean} True when value is an object.
  */
-function isObject(value) {
+export function isObject(value) {
   return Boolean(value) && typeof value === 'object';
 }
 
@@ -669,7 +669,9 @@ function hasMessageProperty(obj) {
  * @returns {string} Message or 'Invalid token'.
  */
 function resolveErrorMessageWithDefault(messageStr) {
-  return (typeof messageStr === 'string' ? messageStr : null) || 'Invalid token';
+  return (
+    (typeof messageStr === 'string' ? messageStr : null) || 'Invalid token'
+  );
 }
 
 /**
