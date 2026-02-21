@@ -956,6 +956,16 @@ function createGuardChain(guards) {
 }
 
 /**
+ * Resolve context from guard result or keep existing.
+ * @param {unknown} resultContext Result context from guard.
+ * @param {GuardContext} currentContext Current context to fallback to.
+ * @returns {GuardContext} Resolved context.
+ */
+function resolveContextFromResult(resultContext, currentContext) {
+  return resultContext ?? currentContext;
+}
+
+/**
  * Execute guards sequentially.
  * @param {GuardFunction[]} guards Guard list.
  * @param {GuardContext} initialContext Starting context.
@@ -965,7 +975,7 @@ async function executeGuardSequence(guards, initialContext) {
   let context = initialContext;
   for (const guard of guards) {
     const guardResult = await executeSingleGuard(guard, context);
-    context = guardResult.context ?? context;
+    context = resolveContextFromResult(guardResult.context, context);
   }
   return { context };
 }
