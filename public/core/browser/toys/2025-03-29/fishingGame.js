@@ -116,46 +116,28 @@ function isBaitError(response) {
   return Boolean(response && response.isError);
 }
 
-const timeOfDayByHour = [
-  'night',
-  'night',
-  'night',
-  'night',
-  'night',
-  'morning',
-  'morning',
-  'morning',
-  'morning',
-  'morning',
-  'morning',
-  'morning',
-  'afternoon',
-  'afternoon',
-  'afternoon',
-  'afternoon',
-  'afternoon',
-  'evening',
-  'evening',
-  'evening',
-  'evening',
-  'night',
-  'night',
-  'night',
+/**
+ * Time-of-day periods mapped by start and end hours (exclusive).
+ * @type {Array<{start: number, end: number, label: TimeOfDayLabel}>}
+ */
+const timeOfDayPeriods = [
+  { start: 0, end: 5, label: 'night' },
+  { start: 5, end: 12, label: 'morning' },
+  { start: 12, end: 17, label: 'afternoon' },
+  { start: 17, end: 21, label: 'evening' },
+  { start: 21, end: 24, label: 'night' },
 ];
 
-const seasonByMonth = [
-  'winter',
-  'winter',
-  'spring',
-  'spring',
-  'spring',
-  'summer',
-  'summer',
-  'summer',
-  'fall',
-  'fall',
-  'fall',
-  'winter',
+/**
+ * Season periods mapped by start and end months (exclusive).
+ * @type {Array<{start: number, end: number, label: SeasonLabel}>}
+ */
+const seasonPeriods = [
+  { start: 0, end: 2, label: 'winter' },
+  { start: 2, end: 5, label: 'spring' },
+  { start: 5, end: 8, label: 'summer' },
+  { start: 8, end: 11, label: 'fall' },
+  { start: 11, end: 12, label: 'winter' },
 ];
 
 /**
@@ -165,9 +147,10 @@ const seasonByMonth = [
  */
 function findTimeOfDayLabel(hour) {
   const normalizedHour = ((hour % 24) + 24) % 24;
-  return /** @type {TimeOfDayLabel} */ (
-    timeOfDayByHour[normalizedHour] ?? 'night'
+  const period = timeOfDayPeriods.find(
+    (p) => normalizedHour >= p.start && normalizedHour < p.end
   );
+  return /** @type {TimeOfDayLabel} */ (period?.label ?? 'night');
 }
 
 /**
@@ -177,9 +160,10 @@ function findTimeOfDayLabel(hour) {
  */
 function findSeasonLabel(month) {
   const normalizedMonth = ((month % 12) + 12) % 12;
-  return /** @type {SeasonLabel} */ (
-    seasonByMonth[normalizedMonth] ?? 'winter'
+  const period = seasonPeriods.find(
+    (p) => normalizedMonth >= p.start && normalizedMonth < p.end
   );
+  return /** @type {SeasonLabel} */ (period?.label ?? 'winter');
 }
 
 /**
