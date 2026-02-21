@@ -551,6 +551,18 @@ export function deepMerge(target, source) {
 }
 
 /**
+ * Extract the existingKeys array from a parsed object, defaulting to empty array.
+ * @param {object} parsed - Parsed input object.
+ * @returns {string[]} Array of existing keys or empty array.
+ */
+export function parseExistingKeys(parsed) {
+  if (Array.isArray(/** @type {any} */ (parsed).existingKeys)) {
+    return /** @type {any} */ (parsed).existingKeys;
+  }
+  return [];
+}
+
+/**
  * Generates a disposer that removes an event listener.
  * @param {object} options - Parameters for the remover.
  * @param {DOMHelpers} options.dom - DOM helper utilities.
