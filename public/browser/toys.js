@@ -1,3 +1,4 @@
+import { blogKeyHandler } from './inputHandlers/blogKeyHandler.js';
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createPrefixedLoggers } from './document.js';
 import { deepClone } from '../core/browser/browser-core.js';
@@ -243,6 +244,7 @@ const inputHandlersMap = {
   textarea: textareaHandler,
   number: numberHandler,
   kv: kvHandler,
+  'blog-key': blogKeyHandler,
   'dendrite-story': dendriteStoryHandler,
   'dendrite-page': dendritePageHandler,
   'moderator-ratings': moderatorRatingsHandler,
