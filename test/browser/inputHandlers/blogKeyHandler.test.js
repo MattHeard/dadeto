@@ -2,6 +2,11 @@ import { describe, test, expect, jest } from '@jest/globals';
 import { blogKeyHandler } from '../../../src/core/browser/inputHandlers/blogKeyHandler.js';
 import { setInputValue } from '../../../src/core/browser/browser-core.js';
 
+/**
+ * Create a mock DOM object for testing.
+ * @param {object} overrides - Optional properties to override in the mock DOM.
+ * @returns {object} A mock DOM object.
+ */
 function makeDom(overrides = {}) {
   const elements = new Map();
   let elementCounter = 0;
@@ -12,19 +17,33 @@ function makeDom(overrides = {}) {
       elements.set(el._id, el);
       return el;
     }),
-    setClassName: jest.fn((el, cls) => { el.className = cls; }),
-    setType: jest.fn((el, type) => { el.type = type; }),
-    setPlaceholder: jest.fn((el, ph) => { el.placeholder = ph; }),
-    setTextContent: jest.fn((el, text) => { el.textContent = text; }),
-    setValue: jest.fn((el, val) => { el.value = val; }),
+    setClassName: jest.fn((el, cls) => {
+      el.className = cls;
+    }),
+    setType: jest.fn((el, type) => {
+      el.type = type;
+    }),
+    setPlaceholder: jest.fn((el, ph) => {
+      el.placeholder = ph;
+    }),
+    setTextContent: jest.fn((el, text) => {
+      el.textContent = text;
+    }),
+    setValue: jest.fn((el, val) => {
+      el.value = val;
+    }),
     getValue: jest.fn(el => el.value ?? ''),
-    appendChild: jest.fn((parent, child) => { parent._children.push(child); }),
+    appendChild: jest.fn((parent, child) => {
+      parent._children.push(child);
+    }),
     removeChild: jest.fn((parent, child) => {
       parent._children = parent._children.filter(c => c !== child);
     }),
     querySelector: jest.fn(() => null),
     getNextSibling: jest.fn(() => null),
-    insertBefore: jest.fn((parent, child) => { parent._children.push(child); }),
+    insertBefore: jest.fn((parent, child) => {
+      parent._children.push(child);
+    }),
     addEventListener: jest.fn((el, event, handler) => {
       el._listeners[event] = handler;
     }),
@@ -37,6 +56,11 @@ function makeDom(overrides = {}) {
   return dom;
 }
 
+/**
+ * Create a mock text input object for testing.
+ * @param {string} value - The initial value of the input.
+ * @returns {object} A mock text input object.
+ */
 function makeTextInput(value = '') {
   return { value, _inputValue: value };
 }
@@ -101,7 +125,10 @@ describe('blogKeyHandler', () => {
     const dom = makeDom();
     const container = { _children: [] };
     const textInput = makeTextInput();
-    setInputValue(textInput, JSON.stringify({ title: 'My Post', existingKeys: [] }));
+    setInputValue(
+      textInput,
+      JSON.stringify({ title: 'My Post', existingKeys: [] })
+    );
 
     blogKeyHandler(dom, container, textInput);
 
@@ -124,7 +151,7 @@ describe('blogKeyHandler', () => {
 
     // Simulate user typing keys into the textarea
     textarea.value = 'GERM1\nTEXT1';
-    textarea._listeners['input']?.();
+    textarea._listeners.input?.();
 
     expect(dom.setValue).toHaveBeenCalledWith(
       textInput,
@@ -144,7 +171,7 @@ describe('blogKeyHandler', () => {
       .find(el => el.type === 'text');
 
     titleInput.value = 'German Sentence Splitter';
-    titleInput._listeners['input']?.();
+    titleInput._listeners.input?.();
 
     expect(dom.setValue).toHaveBeenCalledWith(
       textInput,
@@ -164,7 +191,7 @@ describe('blogKeyHandler', () => {
       .find(el => el.tag === 'textarea');
 
     textarea.value = 'GERM1\n\n  \nTEXT1\n';
-    textarea._listeners['input']?.();
+    textarea._listeners.input?.();
 
     expect(dom.setValue).toHaveBeenCalledWith(
       textInput,
@@ -183,7 +210,7 @@ describe('blogKeyHandler', () => {
       .map(r => r.value)
       .find(el => el.tag === 'textarea');
 
-    textarea._listeners['input']?.();
+    textarea._listeners.input?.();
 
     expect(dom.setValue).toHaveBeenCalledWith(
       textInput,
