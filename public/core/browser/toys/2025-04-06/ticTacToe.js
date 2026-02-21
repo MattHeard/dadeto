@@ -288,7 +288,8 @@ function applyMoveReducer(moves, board, seen) {
       return acc;
     }
 
-    const apply = (/** @type {TicTacToeMove} */ move) => applyMoveToBoard(board, move, seen);
+    const apply = (/** @type {TicTacToeMove} */ move) =>
+      applyMoveToBoard(board, move, seen);
     const valid = isMoveApplicationValid(i, moves, apply);
     const earlyWin = checkEarlyWin(board);
     const stop = shouldStop(valid, earlyWin);
@@ -392,7 +393,10 @@ function getBestScoredMove(scoredMoves) {
         return best;
       }
     },
-    /** @type {ScoredMove} */ ({ moveScore: -Infinity, move: { row: 0, column: 0 } })
+    /** @type {ScoredMove} */ ({
+      moveScore: -Infinity,
+      move: { row: 0, column: 0 },
+    })
   );
 }
 
@@ -710,7 +714,11 @@ function canMoveBeApplied(move, index, moves) {
     return false;
   }
   // After guard checks, treat move as TicTacToeMove for validation
-  return isMoveDetailsValid({ move: /** @type {TicTacToeMove} */ (move), index, moves });
+  return isMoveDetailsValid({
+    move: /** @type {TicTacToeMove} */ (move),
+    index,
+    moves,
+  });
 }
 
 /**

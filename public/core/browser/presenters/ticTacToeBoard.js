@@ -92,10 +92,7 @@ function arePositionCoordinatesValid(position) {
  * @returns {boolean} True when the row is 0, 1, or 2.
  */
 function hasValidRow(position) {
-  if (!position) {
-    return false;
-  }
-  return isValidCoordinate(position.row);
+  return isValidCoordinate(position?.row);
 }
 
 /**
@@ -104,10 +101,7 @@ function hasValidRow(position) {
  * @returns {boolean} True when the column is 0, 1, or 2.
  */
 function hasValidColumn(position) {
-  if (!position) {
-    return false;
-  }
-  return isValidCoordinate(position.column);
+  return isValidCoordinate(position?.column);
 }
 
 /**

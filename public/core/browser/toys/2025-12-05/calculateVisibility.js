@@ -215,7 +215,9 @@ function sanitizeRatings(moderatorRatings) {
     return {};
   }
 
-  return Object.entries(/** @type {Record<string, unknown>} */ (moderatorRatings)).reduce(
+  return Object.entries(
+    /** @type {Record<string, unknown>} */ (moderatorRatings)
+  ).reduce(
     (acc, [pageId, value]) => assignPageRating(acc, pageId, value),
     /** @type {Record<string, boolean>} */ ({})
   );

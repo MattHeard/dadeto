@@ -72,24 +72,13 @@ function isEmpty(arr) {
 /**
  * Extract row and column clue arrays from the object.
  * @param {BattleshipClueCandidate} obj - Parsed clue object.
- * @returns {[unknown[], unknown[]]} A pair [rowClues, colClues] (defaults to empty arrays when missing).
+ * @returns {[unknown[], unknown[]]} A pair [rowClues, colClues].
  */
 function getClueArrays(obj) {
-  const rowClues = ensureArray(obj.rowClues);
-  const colClues = ensureArray(obj.colClues);
-  return [rowClues, colClues];
-}
-
-/**
- * Ensure a value is an array when accessing the clue fields.
- * @param {unknown} value - Value to inspect.
- * @returns {unknown[]} The array when present, otherwise an empty array.
- */
-function ensureArray(value) {
-  if (Array.isArray(value)) {
-    return value;
-  }
-  return [];
+  return [
+    /** @type {unknown[]} */ (obj.rowClues),
+    /** @type {unknown[]} */ (obj.colClues),
+  ];
 }
 
 /** @type {Array<[(obj: BattleshipClueCandidate) => boolean, string]>} */
