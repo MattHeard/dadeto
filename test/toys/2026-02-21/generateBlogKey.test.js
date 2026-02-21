@@ -3,12 +3,18 @@ import { describe, test, expect } from '@jest/globals';
 
 describe('generateBlogKey', () => {
   test('returns first 4 letters uppercased with suffix 1 when no conflicts', () => {
-    const input = JSON.stringify({ title: 'German Sentence Splitter', existingKeys: [] });
+    const input = JSON.stringify({
+      title: 'German Sentence Splitter',
+      existingKeys: [],
+    });
     expect(generateBlogKey(input, new Map())).toBe(JSON.stringify('GERM1'));
   });
 
   test('increments suffix when prefix conflicts exist', () => {
-    const input = JSON.stringify({ title: 'German Sentence Splitter', existingKeys: ['GERM1'] });
+    const input = JSON.stringify({
+      title: 'German Sentence Splitter',
+      existingKeys: ['GERM1'],
+    });
     expect(generateBlogKey(input, new Map())).toBe(JSON.stringify('GERM2'));
   });
 
@@ -26,12 +32,18 @@ describe('generateBlogKey', () => {
   });
 
   test('collects letters across word boundaries', () => {
-    const input = JSON.stringify({ title: 'Add Dendrite Page', existingKeys: [] });
+    const input = JSON.stringify({
+      title: 'Add Dendrite Page',
+      existingKeys: [],
+    });
     expect(generateBlogKey(input, new Map())).toBe(JSON.stringify('ADDD1'));
   });
 
   test('is case-insensitive when extracting prefix', () => {
-    const input = JSON.stringify({ title: 'text append list', existingKeys: [] });
+    const input = JSON.stringify({
+      title: 'text append list',
+      existingKeys: [],
+    });
     expect(generateBlogKey(input, new Map())).toBe(JSON.stringify('TEXT1'));
   });
 

@@ -96,20 +96,21 @@ export const DENDRITE_OPTION_KEYS = [
  * Append a parsed option into the accumulator when valid.
  * @param {ToyOption[]} acc Accumulated options.
  * @param {string} key Candidate key to inspect.
- * @param {Record<string, unknown>} data Source data.
- * @param {() => string} getUuid UUID generator.
- * @param {string} [pageId] Optional page ID.
+ * @param {object} options Configuration.
+ * @param {Record<string, unknown>} options.data Source data.
+ * @param {() => string} options.getUuid UUID generator.
+ * @param {string} [options.pageId] Optional page ID.
  * @returns {ToyOption[]} Accumulator with the new option when added.
  */
-function addOption(acc, key, data, getUuid, pageId) {
-  const candidate = data[key];
+function addOption(acc, key, options) {
+  const candidate = options.data[key];
   if (typeof candidate !== 'string' || candidate.length === 0) {
     return acc;
   }
   /** @type {ToyOption} */
-  const option = { id: getUuid(), content: candidate };
-  if (pageId) {
-    option.pageId = pageId;
+  const option = { id: options.getUuid(), content: candidate };
+  if (options.pageId) {
+    option.pageId = options.pageId;
   }
   acc.push(option);
   return acc;
@@ -168,7 +169,7 @@ export function ensureDend2(data) {
  */
 export function createOptions(data, getUuid, pageId) {
   return DENDRITE_OPTION_KEYS.reduce(
-    (acc, key) => addOption(acc, key, data, getUuid, pageId),
+    (acc, key) => addOption(acc, key, { data, getUuid, pageId }),
     /** @type {ToyOption[]} */ ([])
   );
 }

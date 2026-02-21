@@ -1,6 +1,5 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
-import { createAsyncDomainHandler } from '../handler-utils.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
 
@@ -35,9 +34,10 @@ export function resetFindAvailablePageNumberResolver() {
  */
 function getSubmissionData(snapshot) {
   const data = getSnapshotData(snapshot);
-  return data && typeof data === 'object'
-    ? /** @type {Record<string, unknown>} */ (data)
-    : null;
+  if (data && typeof data === 'object') {
+    return /** @type {Record<string, unknown>} */ (data);
+  }
+  return null;
 }
 
 /**
@@ -368,10 +368,11 @@ function isSnapshotAvailable(snapshot) {
  */
 async function ensureAuthorRecord({ batch, db, submission, randomUUID }) {
   const authorId = submission.authorId;
-  const authorRef = resolveAuthorRef(
-    db,
-    typeof authorId === 'string' ? authorId : null
-  );
+  let resolvedAuthorId = null;
+  if (typeof authorId === 'string') {
+    resolvedAuthorId = authorId;
+  }
+  const authorRef = resolveAuthorRef(db, resolvedAuthorId);
   if (!authorRef) {
     return;
   }
@@ -409,28 +410,22 @@ async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
  * Map handler arguments to processStorySubmission parameters.
  * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Trigger snapshot.
  * @param {TriggerContext | undefined} context Trigger context.
- * @param {Firestore} db Firestore instance.
- * @param {() => string} randomUUID UUID generator.
- * @param {() => number} random Random number generator.
- * @param {() => FieldValue} getServerTimestamp Server timestamp helper.
+ * @param {object} options Configuration.
+ * @param {Firestore} options.db Firestore instance.
+ * @param {() => string} options.randomUUID UUID generator.
+ * @param {() => number} options.random Random number generator.
+ * @param {() => FieldValue} options.getServerTimestamp Server timestamp helper.
  * @returns {ProcessStoryParams} Mapped parameters for processStorySubmission.
  */
-function mapProcessStoryParams(
-  snapshot,
-  context,
-  db,
-  randomUUID,
-  random,
-  getServerTimestamp
-) {
+function mapProcessStoryParams(snapshot, context, options) {
   return {
     submission: resolveSubmission(snapshot),
     snapshot: snapshot ?? null,
     context,
-    db,
-    randomUUID,
-    random,
-    getServerTimestamp,
+    db: options.db,
+    randomUUID: options.randomUUID,
+    random: options.random,
+    getServerTimestamp: options.getServerTimestamp,
   };
 }
 
@@ -454,14 +449,12 @@ export function createProcessNewStoryHandler({
   // Create wrapper function with correct signature to satisfy type requirements
   /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */
   const handler = async (snapshot, context = {}) => {
-    const params = mapProcessStoryParams(
-      snapshot,
-      context,
+    const params = mapProcessStoryParams(snapshot, context, {
       db,
       randomUUID,
       random,
-      getServerTimestamp
-    );
+      getServerTimestamp,
+    });
     return processStorySubmission(params);
   };
 

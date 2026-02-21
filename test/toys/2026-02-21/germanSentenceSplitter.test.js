@@ -19,10 +19,7 @@ describe('germanSentenceSplitterToy', () => {
   test('splits simple German sentences', () => {
     const input = 'Das ist ein Satz. Das ist ein anderer Satz.';
     const result = JSON.parse(germanSentenceSplitterToy(input, new Map()));
-    expect(result).toEqual([
-      'Das ist ein Satz.',
-      'Das ist ein anderer Satz.',
-    ]);
+    expect(result).toEqual(['Das ist ein Satz.', 'Das ist ein anderer Satz.']);
   });
 
   test('splits on exclamation and question marks', () => {

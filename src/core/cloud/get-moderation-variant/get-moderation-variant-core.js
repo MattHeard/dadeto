@@ -8,7 +8,6 @@ import {
   resolveMessageOrDefault,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
-import { when } from '../../commonCore.js';
 
 export { productionOrigins, coreIsAllowedOrigin as isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
@@ -585,10 +584,10 @@ function createInvalidTokenResponse(error) {
  * @returns {string} Message displayed to the client.
  */
 function getInvalidTokenMessage(error) {
-  const message =
-    error && typeof error === 'object' && 'message' in error
-      ? error.message
-      : null;
+  let message = null;
+  if (error && typeof error === 'object' && 'message' in error) {
+    message = error.message;
+  }
   const normalized = normalizeString(
     /** @type {string | null | undefined} */ (message),
     200

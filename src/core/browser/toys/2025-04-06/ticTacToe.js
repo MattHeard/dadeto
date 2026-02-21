@@ -1,5 +1,4 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
-import { when } from '../../common.js';
 
 /**
  * @typedef {'X' | 'O'} TicTacToePlayer

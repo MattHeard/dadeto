@@ -462,10 +462,13 @@ export function createGenerateStatsCore({
   async function buildTopStoryFromStatsDoc(dbRef, statsDoc) {
     const storyDoc = await dbRef.collection('stories').doc(statsDoc.id).get();
     const variantCountValue = statsDoc.data().variantCount;
+    let variantCount = 0;
+    if (typeof variantCountValue === 'number') {
+      variantCount = variantCountValue;
+    }
     return {
       title: getStoryTitle(storyDoc.data(), statsDoc.id),
-      variantCount:
-        typeof variantCountValue === 'number' ? variantCountValue : 0,
+      variantCount,
     };
   }
 

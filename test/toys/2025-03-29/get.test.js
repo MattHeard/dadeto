@@ -155,7 +155,12 @@ describe('get function with path traversal', () => {
 
   test('should return error when getData throws a string', () => {
     const throwingEnv = new Map([
-      ['getData', () => { throw 'storage unavailable'; }],
+      [
+        'getData',
+        () => {
+          throw 'storage unavailable';
+        },
+      ],
     ]);
     expect(get('some.path', throwingEnv)).toBe(
       'Error during data retrieval or path traversal for "some.path": storage unavailable'
@@ -170,7 +175,9 @@ describe('get function with path traversal', () => {
 
   test('should handle stringify error when thrown value is a string', () => {
     const objWithStringThrow = {
-      toJSON() { throw 'raw string error'; },
+      toJSON() {
+        throw 'raw string error';
+      },
     };
     mockGetData.mockReturnValue({ val: objWithStringThrow });
     const result = get('val', env);

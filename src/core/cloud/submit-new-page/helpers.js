@@ -2,7 +2,6 @@ import {
   buildVariantByNameQuery,
   buildPageByNumberQuery,
 } from '../firestore-helpers.js';
-import { when } from '../../commonCore.js';
 
 /**
  * @typedef {import('firebase-admin/firestore').Firestore} Firestore

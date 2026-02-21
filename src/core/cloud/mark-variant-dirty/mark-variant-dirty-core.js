@@ -481,7 +481,10 @@ function getRequestBody(req) {
  */
 function getRequestMethod(req) {
   const method = getRequestProperty(req, 'method');
-  return typeof method === 'string' ? method : undefined;
+  if (typeof method === 'string') {
+    return method;
+  }
+  return undefined;
 }
 
 /**
