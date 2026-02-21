@@ -627,16 +627,25 @@ m the option.
  * @returns {import('firebase-admin/firestore').DocumentReference | null} Final story reference.
  */
 /**
+ * Resolve story reference or empty object.
+ * @param {any} storyRef Story reference candidate.
+ * @returns {import('firebase-admin/firestore').DocumentReference} Reference or empty.
+ */
+function resolveStoryRefOrEmpty(storyRef) {
+  return (
+    storyRef ||
+    /** @type {import('firebase-admin/firestore').DocumentReference} */ ({})
+  );
+}
+
+/**
  * Extract story reference from page document reference.
  * @param {any} pageDocRef - Page document reference.
  * @returns {import('firebase-admin/firestore').DocumentReference} Story reference or empty.
  */
 function extractStoryRefFromPage(pageDocRef) {
   const storyRef = /** @type {any} */ (pageDocRef).parent?.parent;
-  return (
-    storyRef ||
-    /** @type {import('firebase-admin/firestore').DocumentReference} */ ({})
-  );
+  return resolveStoryRefOrEmpty(storyRef);
 }
 
 /**
