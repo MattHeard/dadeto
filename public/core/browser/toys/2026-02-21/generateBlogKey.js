@@ -1,6 +1,10 @@
 // Toy: Generate Blog Key
 // (input, env) -> string
 
+import { parseExistingKeys } from '../../browser-core.js';
+
+const EMPTY_RESULT = JSON.stringify('');
+
 /**
  * Extract the first `count` letter characters from a string, uppercased.
  * @param {string} title - Blog post title.
@@ -42,18 +46,6 @@ function isValidParsed(parsed) {
 }
 
 /**
- * Extract existingKeys array from parsed input, defaulting to empty.
- * @param {object} parsed - Parsed input object.
- * @returns {unknown[]} Array of existing keys.
- */
-function getExistingKeys(parsed) {
-  if (Array.isArray(/** @type {any} */ (parsed).existingKeys)) {
-    return /** @type {any} */ (parsed).existingKeys;
-  }
-  return [];
-}
-
-/**
  * Build a unique key from a prefix and list of existing keys.
  * @param {string} prefix - Letter prefix extracted from title.
  * @param {unknown[]} existingKeys - List of keys already in use.
@@ -61,7 +53,7 @@ function getExistingKeys(parsed) {
  */
 function buildKeyFromPrefix(prefix, existingKeys) {
   if (prefix.length < 4) {
-    return JSON.stringify('');
+    return EMPTY_RESULT;
   }
   return JSON.stringify(findUniqueKey(prefix, new Set(existingKeys)));
 }
@@ -73,12 +65,12 @@ function buildKeyFromPrefix(prefix, existingKeys) {
  */
 function buildKeyFromParsed(parsed) {
   if (!isValidParsed(parsed)) {
-    return JSON.stringify('');
+    return EMPTY_RESULT;
   }
   const obj = /** @type {any} */ (parsed);
   return buildKeyFromPrefix(
     extractLetterPrefix(obj.title, 4),
-    getExistingKeys(obj)
+    parseExistingKeys(obj)
   );
 }
 
@@ -93,6 +85,6 @@ export function generateBlogKey(input, env) {
   try {
     return buildKeyFromParsed(JSON.parse(input));
   } catch {
-    return JSON.stringify('');
+    return EMPTY_RESULT;
   }
 }

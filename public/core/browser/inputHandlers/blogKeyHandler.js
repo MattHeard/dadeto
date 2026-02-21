@@ -20,18 +20,6 @@ function parseTitle(parsed) {
 }
 
 /**
- * Extract the existingKeys array from a parsed object, defaulting to empty array.
- * @param {object} parsed - Parsed input object.
- * @returns {string[]} Existing keys array or empty array.
- */
-function parseExistingKeys(parsed) {
-  if (Array.isArray(/** @type {any} */ (parsed).existingKeys)) {
-    return /** @type {any} */ (parsed).existingKeys;
-  }
-  return [];
-}
-
-/**
  * Parse stored JSON into a BlogKeyData object with safe defaults.
  * @param {DOMHelpers} dom - DOM helpers.
  * @param {HTMLInputElement} textInput - Hidden input holding serialized data.
@@ -42,7 +30,7 @@ function parseData(dom, textInput) {
   const parsed = browserCore.parseJsonOrDefault(raw, {});
   return {
     title: parseTitle(parsed),
-    existingKeys: parseExistingKeys(parsed),
+    existingKeys: browserCore.parseExistingKeys(parsed),
   };
 }
 
@@ -130,6 +118,17 @@ function appendLabelledField({ dom, form, labelText, input }) {
 }
 
 /**
+ * Wire input events for a field and append it as a labelled row.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, element: HTMLElement, labelText: string, onInput: () => void, disposers: Disposer[] }} options - Wiring dependencies.
+ * @returns {void}
+ */
+function wireField({ dom, form, element, labelText, onInput, disposers }) {
+  dom.addEventListener(element, 'input', onInput);
+  disposers.push(() => dom.removeEventListener(element, 'input', onInput));
+  appendLabelledField({ dom, form, labelText, input: element });
+}
+
+/**
  * Build and wire the title text input.
  * @param {{ dom: DOMHelpers, form: HTMLElement, data: BlogKeyData, textInput: HTMLInputElement, disposers: Disposer[] }} options - Field construction dependencies.
  * @returns {void}
@@ -143,9 +142,14 @@ function buildTitleField({ dom, form, data, textInput, disposers }) {
     data.title = String(dom.getValue(input));
     syncHidden(dom, textInput, data);
   };
-  dom.addEventListener(input, 'input', onInput);
-  disposers.push(() => dom.removeEventListener(input, 'input', onInput));
-  appendLabelledField({ dom, form, labelText: 'title', input });
+  wireField({
+    dom,
+    form,
+    element: input,
+    labelText: 'title',
+    onInput,
+    disposers,
+  });
 }
 
 /**
@@ -164,13 +168,13 @@ function buildExistingKeysField({ dom, form, data, textInput, disposers }) {
     data.existingKeys = parseLines(dom.getValue(textarea));
     syncHidden(dom, textInput, data);
   };
-  dom.addEventListener(textarea, 'input', onInput);
-  disposers.push(() => dom.removeEventListener(textarea, 'input', onInput));
-  appendLabelledField({
+  wireField({
     dom,
     form,
+    element: textarea,
     labelText: 'existingKeys (one per line)',
-    input: textarea,
+    onInput,
+    disposers,
   });
 }
 
