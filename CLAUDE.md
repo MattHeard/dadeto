@@ -19,3 +19,20 @@
 - **Formatting**: Use consistent indentation (2 spaces)
 - **File Structure**: Modular components in separate files
 - **Linting**: Never use `eslint-disable` comments. Resolve warnings instead of suppressing them.
+
+## ESLint Complexity Reduction Patterns
+
+When reducing complexity warnings, focus on patterns that WORK:
+
+**✅ What Works:**
+- **Logic simplification**: Remove conditions that are redundant or can be combined (e.g., removing an unnecessary if-check in an arrow function)
+- **Trivial extraction**: Extract complex logic into helper ONLY if the calling function becomes nearly empty (1-2 lines). Example: extract validation check into `isValidSnapshot()`, leaving caller with just one function call.
+- **Genuine refactoring**: Only when you understand the function deeply and can predict the complexity impact
+
+**❌ What Doesn't Work:**
+- **Moving complexity**: Extracting a helper that has the same complexity as original (net-zero violation reduction)
+- **Blind extraction**: Creating helpers without ensuring the calling function becomes simpler
+- **Ignoring rule conflicts**: Remember no-ternary rule conflicts with complexity reduction via ternary conversion
+- **JSDoc loss**: Extraction that drops documentation creates new violations
+
+**Key Insight**: Complexity violations are legitimate. Not all can/should be "fixed"—some are hard-wired into the domain logic. Accept constraints and focus extraction on functions where the pattern genuinely simplifies structure.
