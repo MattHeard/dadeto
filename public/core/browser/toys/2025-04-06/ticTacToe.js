@@ -167,9 +167,10 @@ function isValidMoveInput(moves) {
  */
 export function ticTacToeMove(input) {
   const moves = parseInputSafely(input);
-  return isValidMoveInput(moves)
-    ? handleValidMoves(moves)
-    : returnInitialOptimalMove();
+  if (!isValidMoveInput(moves)) {
+    return returnInitialOptimalMove();
+  }
+  return handleValidMoves(moves);
 }
 
 /**
@@ -719,7 +720,10 @@ function hasMoveProperties(move) {
  * @returns {boolean} True if move has player and position properties.
  */
 function hasMoveStructure(move) {
-  return isObject(move) ? hasMoveProperties(move) : false;
+  if (!isObject(move)) {
+    return false;
+  }
+  return hasMoveProperties(move);
 }
 
 /**
