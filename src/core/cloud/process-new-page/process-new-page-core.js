@@ -510,12 +510,21 @@ function getSnapshotDataObj(snapshot) {
 }
 
 /**
+ * Extract number property from data object.
+ * @param {any} data - Data object.
+ * @returns {number | undefined} Number value or undefined.
+ */
+function extractNumberFromData(data) {
+  return data?.number;
+}
+
+/**
  * Extract page number from data object.
  * @param {any} data - Data object.
  * @returns {number | null} Page number or null.
  */
 function getPageNumberFromData(data) {
-  return data?.number ?? null;
+  return extractNumberFromData(data) ?? null;
 }
 
 /**

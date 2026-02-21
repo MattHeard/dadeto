@@ -349,6 +349,15 @@ async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
 }
 
 /**
+ * Resolve deps or empty object.
+ * @param {MarkVariantDirtyDeps | undefined} deps Dependencies.
+ * @returns {MarkVariantDirtyDeps} Deps or empty object.
+ */
+function resolveDepsOrEmpty(deps) {
+  return deps ?? {};
+}
+
+/**
  * Gather the variant reference needed for marking dirty.
  * @param {MarkVariantDirtyDeps | undefined} deps Dependencies required to resolve the variant.
  * @param {number} pageNumber Target page number.
@@ -356,7 +365,7 @@ async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Resolved variant reference.
  */
 async function resolveVariantReference(deps, pageNumber, variantName) {
-  const { db, firebase = {} } = deps ?? {};
+  const { db, firebase = {} } = resolveDepsOrEmpty(deps);
   enforceDatabase(db);
 
   const database = /** @type {import('firebase-admin/firestore').Firestore} */ (

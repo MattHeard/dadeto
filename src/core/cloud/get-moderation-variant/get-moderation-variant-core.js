@@ -365,6 +365,15 @@ function resolveStoryRefFromVariant(variantRef) {
 }
 
 /**
+ * Extract story data from snapshot.
+ * @param {FirestoreDocumentSnapshot} storySnap Story document snapshot.
+ * @returns {Record<string, unknown>} Story data or empty object.
+ */
+function extractStoryDataFromSnapshot(storySnap) {
+  return storySnap.data() ?? {};
+}
+
+/**
  * Fetches the story title that owns the provided variant reference.
  * @param {FirestoreDocumentReference} variantRef Variant document reference.
  * @returns {Promise<string>} Story title string.
@@ -374,7 +383,7 @@ async function fetchStoryTitle(variantRef) {
   if (!storyRef) return '';
 
   const storySnap = await storyRef.get();
-  const storyData = storySnap.data() ?? {};
+  const storyData = extractStoryDataFromSnapshot(storySnap);
   return normalizeString(
     /** @type {string | null | undefined} */ (storyData.title),
     120
