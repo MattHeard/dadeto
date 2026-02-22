@@ -141,10 +141,9 @@ describe('syncHiddenField', () => {
   });
 
   it('coerces a number-typed value to a number', () => {
-    const rows = { count: '42' };
-    const rowTypes = { count: 'number' };
+    const rowData = { rows: { count: '42' }, rowTypes: { count: 'number' } };
 
-    syncHiddenField(mockTextInput, rows, rowTypes, mockDom);
+    syncHiddenField(mockTextInput, rowData, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,
@@ -153,10 +152,9 @@ describe('syncHiddenField', () => {
   });
 
   it('coerces a boolean-typed value to a boolean', () => {
-    const rows = { active: 'true' };
-    const rowTypes = { active: 'boolean' };
+    const rowData = { rows: { active: 'true' }, rowTypes: { active: 'boolean' } };
 
-    syncHiddenField(mockTextInput, rows, rowTypes, mockDom);
+    syncHiddenField(mockTextInput, rowData, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,
@@ -165,10 +163,9 @@ describe('syncHiddenField', () => {
   });
 
   it('coerces a json-typed value to a parsed object', () => {
-    const rows = { data: '{"x":1}' };
-    const rowTypes = { data: 'json' };
+    const rowData = { rows: { data: '{"x":1}' }, rowTypes: { data: 'json' } };
 
-    syncHiddenField(mockTextInput, rows, rowTypes, mockDom);
+    syncHiddenField(mockTextInput, rowData, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,

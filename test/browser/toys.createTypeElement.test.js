@@ -89,9 +89,8 @@ describe('createTypeElement', () => {
     createTypeElement({
       dom,
       key: 'myKey',
-      rowTypes: {},
+      rowData: { rows: {}, rowTypes: {} },
       textInput: {},
-      rows: {},
       keyEl: {},
       syncHiddenField: jest.fn(),
       disposers,
@@ -105,9 +104,8 @@ describe('createTypeElement', () => {
     createTypeElement({
       dom,
       key: 'myKey',
-      rowTypes: {},
+      rowData: { rows: {}, rowTypes: {} },
       textInput: {},
-      rows: {},
       keyEl: {},
       syncHiddenField: jest.fn(),
       disposers,
@@ -126,9 +124,8 @@ describe('createTypeElement', () => {
     createTypeElement({
       dom,
       key: 'count',
-      rowTypes: { count: 'number' },
+      rowData: { rows: {}, rowTypes: { count: 'number' } },
       textInput: {},
-      rows: {},
       keyEl: {},
       syncHiddenField: jest.fn(),
       disposers,
@@ -144,9 +141,8 @@ describe('createTypeElement', () => {
     createTypeElement({
       dom,
       key: 'name',
-      rowTypes: {},
+      rowData: { rows: {}, rowTypes: {} },
       textInput: {},
-      rows: {},
       keyEl: {},
       syncHiddenField: jest.fn(),
       disposers,
@@ -160,9 +156,8 @@ describe('createTypeElement', () => {
     createTypeElement({
       dom,
       key: 'myKey',
-      rowTypes: {},
+      rowData: { rows: {}, rowTypes: {} },
       textInput: {},
-      rows: {},
       keyEl: {},
       syncHiddenField: jest.fn(),
       disposers,
@@ -180,9 +175,8 @@ describe('createTypeElement', () => {
     createTypeElement({
       dom,
       key: 'myKey',
-      rowTypes: {},
+      rowData: { rows: {}, rowTypes: {} },
       textInput: {},
-      rows: {},
       keyEl: {},
       syncHiddenField: jest.fn(),
       disposers,
@@ -197,24 +191,22 @@ describe('createTypeElement', () => {
     dom.getDataAttribute.mockReturnValue('myKey');
     dom.getValue.mockReturnValue('number');
     const syncHiddenField = jest.fn();
-    const rowTypes = {};
+    const rowData = { rows: {}, rowTypes: {} };
     const textInput = {};
-    const rows = {};
     const keyEl = {};
     const disposers = [];
     createTypeElement({
       dom,
       key: 'myKey',
-      rowTypes,
+      rowData,
       textInput,
-      rows,
       keyEl,
       syncHiddenField,
       disposers,
     });
     const [, , changeHandler] = dom.addEventListener.mock.calls[0];
     changeHandler();
-    expect(rowTypes.myKey).toBe('number');
-    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
+    expect(rowData.rowTypes.myKey).toBe('number');
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
   });
 });

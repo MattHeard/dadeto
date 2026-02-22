@@ -6,7 +6,7 @@ describe('createValueElement', () => {
   let valueEl;
   let keyEl;
   let textInput;
-  let rows;
+  let rowData;
   let syncHiddenField;
   let disposers;
 
@@ -27,7 +27,7 @@ describe('createValueElement', () => {
     // Set up test data
     keyEl = { value: 'testKey' };
     textInput = {};
-    rows = {};
+    rowData = { rows: {}, rowTypes: {} };
     syncHiddenField = jest.fn();
     disposers = [];
   });
@@ -40,7 +40,7 @@ describe('createValueElement', () => {
       value: initialValue,
       keyEl,
       textInput,
-      rows,
+      rowData,
       syncHiddenField,
       disposers,
     });
@@ -71,7 +71,7 @@ describe('createValueElement', () => {
     const key = 'testKey';
 
     // Set up initial state
-    rows[key] = initialValue;
+    rowData.rows[key] = initialValue;
 
     // Create the value element
     valueEl = createValueElement({
@@ -79,7 +79,7 @@ describe('createValueElement', () => {
       value: initialValue,
       keyEl,
       textInput,
-      rows,
+      rowData,
       syncHiddenField,
       disposers,
     });
@@ -95,10 +95,10 @@ describe('createValueElement', () => {
     inputHandler(mockEvent);
 
     // Verify the rows object was updated
-    expect(rows[key]).toBe(newValue);
+    expect(rowData.rows[key]).toBe(newValue);
 
-    // Verify syncHiddenField was called with the updated rows
-    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, mockDom);
+    // Verify syncHiddenField was called with the updated rowData
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, mockDom);
   });
 
   it('cleans up event listeners when disposer is called', () => {
@@ -107,7 +107,7 @@ describe('createValueElement', () => {
       value: 'testValue',
       keyEl,
       textInput,
-      rows,
+      rowData,
       syncHiddenField,
       disposers,
     });
@@ -132,7 +132,7 @@ describe('createValueElement', () => {
       value: 'testValue',
       keyEl,
       textInput,
-      rows,
+      rowData,
       syncHiddenField,
       disposers,
     });
@@ -158,7 +158,7 @@ describe('createValueElement', () => {
       value: 'multi',
       keyEl,
       textInput,
-      rows,
+      rowData,
       syncHiddenField,
       disposers,
     });
