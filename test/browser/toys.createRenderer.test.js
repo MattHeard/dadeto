@@ -22,16 +22,14 @@ describe('createRenderer', () => {
     const dom = makeDom();
     const disposers = [];
     const container = undefined;
-    const rows = { foo: 'bar' };
+    const rowData = { rows: { foo: 'bar' }, rowTypes: {} };
     const textInput = undefined;
     const syncHiddenField = jest.fn();
-    const rowTypes = {};
     const render = createRenderer({
       dom,
       disposersArray: disposers,
       container,
-      rows,
-      rowTypes,
+      rowData,
       textInput,
       syncHiddenField,
     });
@@ -43,41 +41,37 @@ describe('createRenderer', () => {
     const dom = makeDom();
     const disposers = [];
     const container = {};
-    const rows = {};
+    const rowData = { rows: {}, rowTypes: {} };
     const textInput = {};
     const syncHiddenField = jest.fn();
-    const rowTypes = {};
     const render = createRenderer({
       dom,
       disposersArray: disposers,
       container,
-      rows,
-      rowTypes,
+      rowData,
       textInput,
       syncHiddenField,
     });
     render();
-    expect(rows).toEqual({ '': '' });
+    expect(rowData.rows).toEqual({ '': '' });
   });
 
   it('does not add an empty row when rows already contain values', () => {
     const dom = makeDom();
     const disposers = [];
     const container = {};
-    const rows = { existing: 'val' };
+    const rowData = { rows: { existing: 'val' }, rowTypes: {} };
     const textInput = {};
     const syncHiddenField = jest.fn();
-    const rowTypes = {};
     const render = createRenderer({
       dom,
       disposersArray: disposers,
       container,
-      rows,
-      rowTypes,
+      rowData,
       textInput,
       syncHiddenField,
     });
     render();
-    expect(rows).toEqual({ existing: 'val' });
+    expect(rowData.rows).toEqual({ existing: 'val' });
   });
 });

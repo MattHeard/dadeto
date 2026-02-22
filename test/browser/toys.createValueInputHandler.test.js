@@ -6,7 +6,7 @@ describe('createValueInputHandler', () => {
   let dom;
   let keyEl;
   let textInput;
-  let rows;
+  let rowData;
   let syncHiddenField;
   let handler;
   let event;
@@ -22,10 +22,13 @@ describe('createValueInputHandler', () => {
     keyEl = {};
     textInput = {};
 
-    // Initial rows state
-    rows = {
-      existingKey: 'oldValue',
-      anotherKey: 'anotherValue',
+    // Initial rowData state
+    rowData = {
+      rows: {
+        existingKey: 'oldValue',
+        anotherKey: 'anotherValue',
+      },
+      rowTypes: {},
     };
 
     // Mock sync function
@@ -36,7 +39,7 @@ describe('createValueInputHandler', () => {
       dom,
       keyEl,
       textInput,
-      rows,
+      rowData,
       syncHiddenField,
     });
 
@@ -53,11 +56,11 @@ describe('createValueInputHandler', () => {
     handler(event);
 
     // Assert
-    expect(rows).toEqual({
+    expect(rowData.rows).toEqual({
       existingKey: 'newValue',
       anotherKey: 'anotherValue',
     });
-    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
   });
 
   it('should handle updating a different key', () => {
@@ -70,11 +73,11 @@ describe('createValueInputHandler', () => {
     handler(event);
 
     // Assert
-    expect(rows).toEqual({
+    expect(rowData.rows).toEqual({
       existingKey: 'oldValue',
       anotherKey: 'updatedAnotherValue',
     });
-    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
   });
 
   it('should handle empty string values', () => {
@@ -87,11 +90,11 @@ describe('createValueInputHandler', () => {
     handler(event);
 
     // Assert
-    expect(rows).toEqual({
+    expect(rowData.rows).toEqual({
       existingKey: '',
       anotherKey: 'anotherValue',
     });
-    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
   });
 
   it("calls getDataAttribute with 'prevKey'", () => {
@@ -114,11 +117,11 @@ describe('createValueInputHandler', () => {
     handler(event);
 
     // Assert
-    expect(rows).toEqual({
+    expect(rowData.rows).toEqual({
       existingKey: 'oldValue',
       anotherKey: 'anotherValue',
       nonExistentKey: 'newValue',
     });
-    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rows, dom);
+    expect(syncHiddenField).toHaveBeenCalledWith(textInput, rowData, dom);
   });
 });

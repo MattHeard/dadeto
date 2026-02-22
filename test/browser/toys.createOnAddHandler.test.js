@@ -2,32 +2,30 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { createOnAddHandler } from '../../src/browser/toys.js';
 
 describe('createOnAddHandler', () => {
-  let rows;
-  let rowTypes;
+  let rowData;
   let render;
   let handler;
 
   beforeEach(() => {
     // Initialize test data before each test
-    rows = {};
-    rowTypes = {};
+    rowData = { rows: {}, rowTypes: {} };
     render = jest.fn();
-    handler = createOnAddHandler(rows, rowTypes, render);
+    handler = createOnAddHandler(rowData, render);
   });
 
   it('adds an empty key-value pair when no empty key exists', () => {
     // Initially, rows should be empty
-    expect(Object.keys(rows)).toHaveLength(0);
+    expect(Object.keys(rowData.rows)).toHaveLength(0);
 
     // Call the handler
     handler();
 
     // Should add an empty key
-    expect(rows).toHaveProperty('');
-    expect(rows['']).toBe('');
+    expect(rowData.rows).toHaveProperty('');
+    expect(rowData.rows['']).toBe('');
 
     // Should seed rowTypes for the new empty key
-    expect(rowTypes['']).toBe('string');
+    expect(rowData.rowTypes['']).toBe('string');
 
     // Should call render to update the UI
     expect(render).toHaveBeenCalledTimes(1);
@@ -35,13 +33,13 @@ describe('createOnAddHandler', () => {
 
   it('does not add a new empty key if one already exists', () => {
     // Add an empty key first
-    rows[''] = 'existing';
+    rowData.rows[''] = 'existing';
 
     // Call the handler
     handler();
 
     // Should not modify the rows object
-    expect(rows).toEqual({ '': 'existing' });
+    expect(rowData.rows).toEqual({ '': 'existing' });
 
     // Should not call render again
     expect(render).toHaveBeenCalledTimes(0);
@@ -49,21 +47,21 @@ describe('createOnAddHandler', () => {
 
   it('preserves existing non-empty keys when adding an empty key', () => {
     // Add some existing keys
-    rows.key1 = 'value1';
-    rows.key2 = 'value2';
+    rowData.rows.key1 = 'value1';
+    rowData.rows.key2 = 'value2';
 
     // Call the handler
     handler();
 
     // Should add an empty key while preserving existing ones
-    expect(rows).toEqual({
+    expect(rowData.rows).toEqual({
       key1: 'value1',
       key2: 'value2',
       '': '',
     });
 
     // Should seed rowTypes for the new empty key
-    expect(rowTypes['']).toBe('string');
+    expect(rowData.rowTypes['']).toBe('string');
 
     // Should call render to update the UI
     expect(render).toHaveBeenCalledTimes(1);
@@ -71,14 +69,14 @@ describe('createOnAddHandler', () => {
 
   it('does not add an empty key if one exists, even with other keys', () => {
     // Add an empty key and some other keys
-    rows[''] = 'existing';
-    rows.key1 = 'value1';
+    rowData.rows[''] = 'existing';
+    rowData.rows.key1 = 'value1';
 
     // Call the handler
     handler();
 
     // Should not modify the rows object
-    expect(rows).toEqual({
+    expect(rowData.rows).toEqual({
       '': 'existing',
       key1: 'value1',
     });

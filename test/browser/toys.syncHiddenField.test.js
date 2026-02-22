@@ -26,7 +26,7 @@ describe('syncHiddenField', () => {
       '': '', // Excluded (both key and value are falsy)
     };
 
-    syncHiddenField(mockTextInput, rows, {}, mockDom);
+    syncHiddenField(mockTextInput, { rows, rowTypes: {} }, mockDom);
 
     // Get the actual result
     const [, actualJson] = mockDom.setValue.mock.calls[0];
@@ -49,7 +49,7 @@ describe('syncHiddenField', () => {
   it('handles empty rows object', () => {
     const rows = {};
 
-    syncHiddenField(mockTextInput, rows, {}, mockDom);
+    syncHiddenField(mockTextInput, { rows, rowTypes: {} }, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,
@@ -68,7 +68,7 @@ describe('syncHiddenField', () => {
       false: false, // Included (key is truthy, even though value is falsy)
     };
 
-    syncHiddenField(mockTextInput, rows, {}, mockDom);
+    syncHiddenField(mockTextInput, { rows, rowTypes: {} }, mockDom);
 
     const [, actualJson] = mockDom.setValue.mock.calls[0];
     const actual = JSON.parse(actualJson);
@@ -98,7 +98,7 @@ describe('syncHiddenField', () => {
       array: [1, 2, 3],
     };
 
-    syncHiddenField(mockTextInput, rows, {}, mockDom);
+    syncHiddenField(mockTextInput, { rows, rowTypes: {} }, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,
@@ -121,7 +121,7 @@ describe('syncHiddenField', () => {
       '': '', // Excluded (both key and value are empty)
     };
 
-    syncHiddenField(mockTextInput, rows, {}, mockDom);
+    syncHiddenField(mockTextInput, { rows, rowTypes: {} }, mockDom);
 
     const [, actualJson] = mockDom.setValue.mock.calls[0];
     const actual = JSON.parse(actualJson);
@@ -179,7 +179,7 @@ describe('syncHiddenField', () => {
   it('defaults to string coercion when key is absent from rowTypes', () => {
     const rows = { name: 'Alice' };
 
-    syncHiddenField(mockTextInput, rows, {}, mockDom);
+    syncHiddenField(mockTextInput, { rows, rowTypes: {} }, mockDom);
 
     expect(mockDom.setValue).toHaveBeenCalledWith(
       mockTextInput,

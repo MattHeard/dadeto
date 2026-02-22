@@ -188,14 +188,16 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
   const rows = parseExistingRows(dom, textInput);
   const disposers = [];
 
-  const rowTypes = Object.fromEntries(Object.keys(rows).map(k => [k, 'string']));
+  const rowData = {
+    rows,
+    rowTypes: Object.fromEntries(Object.keys(rows).map(k => [k, 'string'])),
+  };
 
   const render = createRenderer({
     dom,
     disposersArray: disposers,
     container: kvContainer,
-    rows,
-    rowTypes,
+    rowData,
     textInput,
     syncHiddenField,
   });
@@ -683,12 +685,12 @@ function isUniqueNonEmpty(key, rows) {
  * @param {object} params.dom - DOM utilities.
  * @returns {void}
  */
-function migrateRowIfValid({ prevKey, newKey, rows, rowTypes, keyEl, dom }) {
-  if (isUniqueNonEmpty(newKey, rows)) {
-    rows[newKey] = rows[prevKey];
-    rowTypes[newKey] = rowTypes[prevKey] ?? 'string';
-    delete rows[prevKey];
-    delete rowTypes[prevKey];
+function migrateRowIfValid({ prevKey, newKey, rowData, keyEl, dom }) {
+  if (isUniqueNonEmpty(newKey, rowData.rows)) {
+    rowData.rows[newKey] = rowData.rows[prevKey];
+    rowData.rowTypes[newKey] = rowData.rowTypes[prevKey] ?? 'string';
+    delete rowData.rows[prevKey];
+    delete rowData.rowTypes[prevKey];
     dom.setDataAttribute(keyEl, 'prevKey', newKey);
   }
 }
@@ -699,24 +701,24 @@ function migrateRowIfValid({ prevKey, newKey, rows, rowTypes, keyEl, dom }) {
  * @param {object} options.dom - DOM utilities.
  * @param {HTMLElement} options.keyEl - Input for the key.
  * @param {HTMLInputElement} options.textInput - Hidden JSON field.
- * @param {object} options.rows - Map of row values by key.
+ * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {Function} options.syncHiddenField - Syncs the hidden field.
  * @returns {Function} Event handler for key input.
  */
 export function createKeyInputHandler(options) {
-  const { dom, keyEl, textInput, rows, rowTypes, syncHiddenField } = options;
+  const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
   return e => {
     const prevKey = dom.getDataAttribute(keyEl, 'prevKey');
     const newKey = dom.getTargetValue(e);
 
     // If nothing changed, just keep the hidden JSON fresh.
     if (newKey === prevKey) {
-      syncHiddenField(textInput, rows, dom);
+      syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
       return;
     }
 
-    migrateRowIfValid({ prevKey, newKey, rows, rowTypes: rowTypes ?? {}, keyEl, dom });
-    syncHiddenField(textInput, rows, dom);
+    migrateRowIfValid({ prevKey, newKey, rowData: rowData ?? { rows: {}, rowTypes: {} }, keyEl, dom });
+    syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
   };
 }
 
@@ -726,16 +728,16 @@ export function createKeyInputHandler(options) {
  * @param {object} options.dom - DOM utilities.
  * @param {HTMLElement} options.keyEl - Key input element.
  * @param {HTMLInputElement} options.textInput - Hidden JSON input.
- * @param {object} options.rows - Map of row values by key.
+ * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {Function} options.syncHiddenField - Updates the hidden field.
  * @returns {Function} The event handler.
  */
 export function createValueInputHandler(options) {
-  const { dom, keyEl, textInput, rows, syncHiddenField } = options;
+  const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
   return e => {
     const rowKey = dom.getDataAttribute(keyEl, 'prevKey'); // may have changed via onKey
-    rows[rowKey] = dom.getTargetValue(e);
-    syncHiddenField(textInput, rows, dom);
+    rowData.rows[rowKey] = dom.getTargetValue(e);
+    syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
   };
 }
 
@@ -754,8 +756,7 @@ export const createKeyElement = ({
   dom,
   key,
   textInput,
-  rows,
-  rowTypes,
+  rowData,
   syncHiddenField,
   disposers,
 }) => {
@@ -770,8 +771,7 @@ export const createKeyElement = ({
     dom,
     keyEl,
     textInput,
-    rows,
-    rowTypes,
+    rowData,
     syncHiddenField,
   });
   dom.addEventListener(keyEl, 'input', onKey);
@@ -789,7 +789,7 @@ export const createKeyElement = ({
  * @param {string} options.value - The initial value
  * @param {HTMLElement} options.keyEl - The corresponding key input element
  * @param {HTMLElement} options.textInput - The hidden text input element
- * @param {object} options.rows - The rows object containing key-value pairs
+ * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @param {Array<Function>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
@@ -799,7 +799,7 @@ export const createValueElement = ({
   value,
   keyEl,
   textInput,
-  rows,
+  rowData,
   syncHiddenField,
   disposers,
 }) => {
@@ -812,7 +812,7 @@ export const createValueElement = ({
     dom,
     keyEl,
     textInput,
-    rows,
+    rowData,
     syncHiddenField,
   });
   dom.addEventListener(valueEl, 'input', onValue);
@@ -873,9 +873,8 @@ export const createTypeToggleButton = ({ dom, typeSelectEl, disposers }) => {
  * @param {object} options - Configuration options.
  * @param {object} options.dom - DOM helper utilities.
  * @param {string} options.key - Current row key (used for rowTypes lookup).
- * @param {object} options.rowTypes - Per-key type map to update on change.
+ * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {HTMLElement} options.textInput - Hidden input element for syncHiddenField.
- * @param {object} options.rows - Current rows object.
  * @param {HTMLElement} options.keyEl - Key input element (to read current key).
  * @param {Function} options.syncHiddenField - Function to sync the hidden field.
  * @param {Array<Function>} options.disposers - Array to register cleanup functions.
@@ -884,9 +883,8 @@ export const createTypeToggleButton = ({ dom, typeSelectEl, disposers }) => {
 export const createTypeElement = ({
   dom,
   key,
-  rowTypes,
+  rowData,
   textInput,
-  rows,
   keyEl,
   syncHiddenField,
   disposers,
@@ -901,13 +899,13 @@ export const createTypeElement = ({
     dom.appendChild(selectEl, option);
   });
 
-  const currentType = rowTypes[key] ?? 'string';
+  const currentType = rowData.rowTypes[key] ?? 'string';
   dom.setValue(selectEl, currentType);
 
   const onChange = () => {
     const currentKey = dom.getDataAttribute(keyEl, 'prevKey') ?? key;
-    rowTypes[currentKey] = String(dom.getValue(selectEl));
-    syncHiddenField(textInput, rows, dom);
+    rowData.rowTypes[currentKey] = String(dom.getValue(selectEl));
+    syncHiddenField(textInput, rowData ?? { rows: {}, rowTypes: {} }, dom);
   };
 
   dom.addEventListener(selectEl, 'change', onChange);
@@ -929,12 +927,12 @@ export const createTypeElement = ({
  * @param {Function} render - Function to re-render the key-value editor
  * @returns {Function} The click event handler function
  */
-export const createOnAddHandler = (rows, rowTypes, render) => {
+export const createOnAddHandler = (rowData, render) => {
   return () => {
     // Add a new empty key only if there isn't already one
-    if (!Object.hasOwn(rows, '')) {
-      rows[''] = '';
-      rowTypes[''] = 'string';
+    if (!Object.hasOwn(rowData.rows, '')) {
+      rowData.rows[''] = '';
+      rowData.rowTypes[''] = 'string';
       render();
     }
   };
@@ -942,16 +940,17 @@ export const createOnAddHandler = (rows, rowTypes, render) => {
 
 /**
  * Creates an event handler for removing a key-value row
- * @param {object} rows - The rows object containing key-value pairs
- * @param {object} rowTypes - Per-key type map; entry for key is deleted on remove.
+ * @param {object} rowData - Row data object containing rows and rowTypes.
+ * @param {object} rowData.rows - The rows object containing key-value pairs
+ * @param {object} rowData.rowTypes - Per-key type map; entry for key is deleted on remove.
  * @param {Function} render - The render function to update the UI
  * @param {string} key - The key to remove
  * @returns {Function} The event handler function
  */
-export const createOnRemove = (rows, rowTypes, render, key) => e => {
+export const createOnRemove = (rowData, render, key) => e => {
   e.preventDefault();
-  delete rows[key];
-  delete rowTypes[key];
+  delete rowData.rows[key];
+  delete rowData.rowTypes[key];
   render();
 };
 
@@ -960,14 +959,14 @@ export const createOnRemove = (rows, rowTypes, render, key) => e => {
  * @param {object} options - Configuration.
  * @param {object} options.dom - DOM utilities.
  * @param {HTMLElement} options.button - Button to set up.
- * @param {object} options.rows - Map of row values by key.
+ * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {Function} options.render - Re-render function.
  * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
  * @returns {void}
  */
-export const setupAddButton = ({ dom, button, rows, rowTypes, render, disposers }) => {
+export const setupAddButton = ({ dom, button, rowData, render, disposers }) => {
   dom.setTextContent(button, '+');
-  const onAdd = createOnAddHandler(rows, rowTypes ?? {}, render);
+  const onAdd = createOnAddHandler(rowData ?? { rows: {}, rowTypes: {} }, render);
   dom.addEventListener(button, 'click', onAdd);
   const removeAddListener = createRemoveAddListener(dom, button, onAdd);
   disposers.push(removeAddListener);
@@ -978,7 +977,7 @@ export const setupAddButton = ({ dom, button, rows, rowTypes, render, disposers 
  * @param {object} options - Configuration.
  * @param {object} options.dom - DOM utilities.
  * @param {HTMLElement} options.button - Button to set up.
- * @param {object} options.rows - Map of row values by key.
+ * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {Function} options.render - Re-render function.
  * @param {string} options.key - Key of the row to remove.
  * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
@@ -987,14 +986,13 @@ export const setupAddButton = ({ dom, button, rows, rowTypes, render, disposers 
 export const setupRemoveButton = ({
   dom,
   button,
-  rows,
-  rowTypes,
+  rowData,
   render,
   key,
   disposers,
 }) => {
   dom.setTextContent(button, '×');
-  const onRemove = createOnRemove(rows, rowTypes ?? {}, render, key);
+  const onRemove = createOnRemove(rowData ?? { rows: {}, rowTypes: {} }, render, key);
   dom.addEventListener(button, 'click', onRemove);
   const removeRemoveListener = createRemoveRemoveListener(
     dom,
@@ -1034,8 +1032,7 @@ export const createKeyValueRow =
     dom,
     entries,
     textInput,
-    rows,
-    rowTypes,
+    rowData,
     syncHiddenField,
     disposers,
     render,
@@ -1050,8 +1047,7 @@ export const createKeyValueRow =
       dom,
       key,
       textInput,
-      rows,
-      rowTypes: rowTypes ?? {},
+      rowData: rowData ?? { rows: {}, rowTypes: {} },
       syncHiddenField,
       disposers,
     });
@@ -1060,7 +1056,7 @@ export const createKeyValueRow =
       value,
       keyEl,
       textInput,
-      rows,
+      rowData: rowData ?? { rows: {}, rowTypes: {} },
       syncHiddenField,
       disposers,
     });
@@ -1069,9 +1065,8 @@ export const createKeyValueRow =
     const typeEl = createTypeElement({
       dom,
       key,
-      rowTypes: rowTypes ?? {},
+      rowData: rowData ?? { rows: {}, rowTypes: {} },
       textInput,
-      rows,
       keyEl,
       syncHiddenField,
       disposers,
@@ -1086,8 +1081,7 @@ export const createKeyValueRow =
     const btnEl = createButton({
       dom,
       isAddButton: idx === entries.length - 1,
-      rows,
-      rowTypes: rowTypes ?? {},
+      rowData: rowData ?? { rows: {}, rowTypes: {} },
       render,
       key,
       disposers,
@@ -1101,14 +1095,14 @@ export const createKeyValueRow =
     dom.appendChild(container, rowEl);
   };
 
-const createButton = ({ dom, isAddButton, rows, rowTypes, render, key, disposers }) => {
+const createButton = ({ dom, isAddButton, rowData, render, key, disposers }) => {
   const button = dom.createElement('button');
   dom.setType(button, 'button');
 
   if (isAddButton) {
-    setupAddButton({ dom, button, rows, rowTypes, render, disposers });
+    setupAddButton({ dom, button, rowData, render, disposers });
   } else {
-    setupRemoveButton({ dom, button, rows, rowTypes, render, key, disposers });
+    setupRemoveButton({ dom, button, rowData, render, key, disposers });
   }
 
   return button;
@@ -1474,12 +1468,12 @@ export const coerceValue = (value, type) => {
  * @param {object} dom - DOM helper utilities.
  * @returns {void}
  */
-export const syncHiddenField = (textInput, rows, rowTypes, dom) => {
-  const filtered = filterNonEmptyEntries(rows);
+export const syncHiddenField = (textInput, rowData, dom) => {
+  const filtered = filterNonEmptyEntries(rowData.rows);
   const coerced = Object.fromEntries(
     Object.entries(filtered).map(([k, v]) => [
       k,
-      coerceValue(v, rowTypes[k] ?? 'string'),
+      coerceValue(v, rowData.rowTypes[k] ?? 'string'),
     ])
   );
   const serialised = JSON.stringify(coerced);
@@ -1511,12 +1505,11 @@ export const createRenderer = options => {
     dom,
     disposersArray,
     container,
-    rows,
-    rowTypes,
+    rowData,
     textInput,
     syncHiddenField,
   } = options;
-  const syncWithTypes = (ti, r, d) => syncHiddenField(ti, r, rowTypes, d);
+  const syncWithRowData = (ti, rd, d) => syncHiddenField(ti, rd ?? { rows: {}, rowTypes: {} }, d);
   /**
    * Renders the key-value input UI
    */
@@ -1525,26 +1518,25 @@ export const createRenderer = options => {
     dom.removeAllChildren(container);
 
     // If no keys, add a single empty row
-    if (Object.keys(rows).length === 0) {
-      rows[''] = '';
+    if (Object.keys(rowData.rows).length === 0) {
+      rowData.rows[''] = '';
     }
 
-    const entries = Object.entries(rows);
+    const entries = Object.entries(rowData.rows);
     entries.forEach(
       createKeyValueRow({
         dom,
         entries,
         textInput,
-        rows,
-        rowTypes,
-        syncHiddenField: syncWithTypes,
+        rowData,
+        syncHiddenField: syncWithRowData,
         disposers: disposersArray,
         render,
         container,
       })
     );
 
-    syncWithTypes(textInput, rows, dom);
+    syncWithRowData(textInput, rowData, dom);
   };
 
   return render;
