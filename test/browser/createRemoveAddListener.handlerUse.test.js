@@ -8,11 +8,11 @@ test('setupAddButton disposer removes the exact click handler after invocation',
     removeEventListener: jest.fn(),
   };
   const btn = {};
-  const rows = {};
+  const rowData = { rows: {}, rowTypes: {} };
   const render = jest.fn();
   const disposers = [];
 
-  setupAddButton({ dom, button: btn, rows, render, disposers });
+  setupAddButton({ dom, button: btn, rowData, render, disposers });
 
   expect(disposers).toHaveLength(1);
   const dispose = disposers[0];
@@ -20,7 +20,7 @@ test('setupAddButton disposer removes the exact click handler after invocation',
 
   const [, , handler] = dom.addEventListener.mock.calls[0];
   handler();
-  expect(rows).toHaveProperty('');
+  expect(rowData.rows).toHaveProperty('');
   expect(render).toHaveBeenCalled();
 
   dispose();
