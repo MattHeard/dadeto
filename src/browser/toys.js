@@ -147,11 +147,17 @@ export const clearDisposers = disposersArray => {
  * @returns {Function} Cleanup function.
  */
 export const createDispose = config => {
-  const { disposers, dom, container, rows } = config;
+  const { disposers, dom, container, rowData, rows } = config;
   return () => {
     clearDisposers(disposers);
     dom.removeAllChildren(container);
-    rows.length = 0;
+    // Handle both rowData (object) and legacy rows (array) parameters
+    if (rowData) {
+      Object.keys(rowData.rows).forEach(key => delete rowData.rows[key]);
+      Object.keys(rowData.rowTypes).forEach(key => delete rowData.rowTypes[key]);
+    } else if (rows) {
+      rows.length = 0;
+    }
   };
 };
 
@@ -208,7 +214,7 @@ export const ensureKeyValueInput = (container, textInput, dom) => {
     disposers,
     dom,
     container: kvContainer,
-    rows,
+    rowData,
   });
   kvContainer._dispose = dispose;
 
