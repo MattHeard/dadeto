@@ -4,7 +4,7 @@ import { setupRemoveButton } from '../../src/browser/toys.js';
 describe('setupRemoveButton', () => {
   let mockDom;
   let button;
-  let rows;
+  let rowData;
   let render;
   let disposers;
   const rowKey = 'testKey';
@@ -19,7 +19,7 @@ describe('setupRemoveButton', () => {
     };
 
     button = {};
-    rows = { [rowKey]: 'testValue', otherKey: 'otherValue' };
+    rowData = { rows: { [rowKey]: 'testValue', otherKey: 'otherValue' }, rowTypes: {} };
     render = jest.fn();
     disposers = [];
   });
@@ -28,7 +28,7 @@ describe('setupRemoveButton', () => {
     setupRemoveButton({
       dom: mockDom,
       button,
-      rows,
+      rowData,
       render,
       key: rowKey,
       disposers,
@@ -49,7 +49,7 @@ describe('setupRemoveButton', () => {
     setupRemoveButton({
       dom: mockDom,
       button,
-      rows,
+      rowData,
       render,
       key: rowKey,
       disposers,
@@ -59,8 +59,8 @@ describe('setupRemoveButton', () => {
     clickHandler(mockEvent);
 
     // Should remove the row with the specified key
-    expect(rows).not.toHaveProperty(rowKey);
-    expect(rows).toHaveProperty('otherKey'); // Other rows should remain
+    expect(rowData.rows).not.toHaveProperty(rowKey);
+    expect(rowData.rows).toHaveProperty('otherKey'); // Other rows should remain
 
     // Should call preventDefault on the event
     expect(mockEvent.preventDefault).toHaveBeenCalledTimes(1);
@@ -83,7 +83,7 @@ describe('setupRemoveButton', () => {
     setupRemoveButton({
       dom: mockDom,
       button,
-      rows,
+      rowData,
       render,
       key: nonExistentKey,
       disposers,
@@ -93,7 +93,7 @@ describe('setupRemoveButton', () => {
     clickHandler(mockEvent);
 
     // Should not modify the rows object
-    expect(rows).toEqual({ [rowKey]: 'testValue', otherKey: 'otherValue' });
+    expect(rowData.rows).toEqual({ [rowKey]: 'testValue', otherKey: 'otherValue' });
 
     // Should call preventDefault (may be called twice - once in the test and once in the handler)
     expect(mockEvent.preventDefault).toHaveBeenCalled();
