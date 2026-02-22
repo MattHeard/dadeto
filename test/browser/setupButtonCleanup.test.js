@@ -9,10 +9,10 @@ describe('button cleanup helpers', () => {
       removeEventListener: jest.fn(),
     };
     const button = {};
-    const rows = {};
+    const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
-    setupAddButton({ dom, button, rows, render, disposers });
+    setupAddButton({ dom, button, rowData, render, disposers });
     expect(disposers).toHaveLength(1);
     const dispose = disposers[0];
     expect(typeof dispose).toBe('function');
@@ -31,11 +31,11 @@ describe('button cleanup helpers', () => {
       removeEventListener: jest.fn(),
     };
     const button = {};
-    const rows = {};
+    const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
 
-    setupAddButton({ dom, button, rows, render, disposers });
+    setupAddButton({ dom, button, rowData, render, disposers });
 
     const [, , onAdd] = dom.addEventListener.mock.calls[0];
     const dispose = disposers[0];
@@ -55,13 +55,13 @@ describe('button cleanup helpers', () => {
       removeEventListener: jest.fn(),
     };
     const button = {};
-    const rows = { k: 'v' };
+    const rowData = { rows: { k: 'v' }, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
     setupRemoveButton({
       dom,
       button,
-      rows,
+      rowData,
       render,
       key: 'k',
       disposers,
@@ -94,11 +94,11 @@ describe('button cleanup helpers', () => {
       }),
     };
     const button = {};
-    const rows = {};
+    const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
 
-    setupAddButton({ dom, button, rows, render, disposers });
+    setupAddButton({ dom, button, rowData, render, disposers });
 
     // Capture the click handler
     const clickHandler = handlers[0];
@@ -106,7 +106,7 @@ describe('button cleanup helpers', () => {
 
     // Trigger the click once
     clickHandler();
-    expect(rows).toHaveProperty('');
+    expect(rowData.rows).toHaveProperty('');
     expect(render).toHaveBeenCalledTimes(1);
 
     // Dispose and simulate another click
@@ -119,7 +119,7 @@ describe('button cleanup helpers', () => {
     }
 
     // Rows and render should remain unchanged after dispose
-    expect(Object.keys(rows)).toHaveLength(1);
+    expect(Object.keys(rowData.rows)).toHaveLength(1);
     expect(render).toHaveBeenCalledTimes(1);
   });
 
@@ -130,11 +130,11 @@ describe('button cleanup helpers', () => {
       removeEventListener: jest.fn(),
     };
     const button = {};
-    const rows = {};
+    const rowData = { rows: {}, rowTypes: {} };
     const render = jest.fn();
     const disposers = [];
 
-    setupAddButton({ dom, button, rows, render, disposers });
+    setupAddButton({ dom, button, rowData, render, disposers });
 
     const dispose = disposers[0];
     dispose();
