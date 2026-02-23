@@ -64,7 +64,10 @@ function resolveStar1Structure(temporary) {
  */
 function ensureTemporaryData(obj) {
   const star1Data = resolveStar1Structure(obj.temporary);
-  obj.temporary = /** @type {NonNullable<DendriteStoryStorage['temporary']>} */ ({ STAR1: star1Data });
+  obj.temporary =
+    /** @type {NonNullable<DendriteStoryStorage['temporary']>} */ ({
+      STAR1: star1Data,
+    });
 }
 
 /**

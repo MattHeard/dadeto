@@ -55,7 +55,9 @@ function buildKeyFromPrefix(prefix, existingKeys) {
   if (prefix.length < 4) {
     return EMPTY_RESULT;
   }
-  return JSON.stringify(findUniqueKey(prefix, /** @type {Set<string>} */ (new Set(existingKeys))));
+  return JSON.stringify(
+    findUniqueKey(prefix, /** @type {Set<string>} */ (new Set(existingKeys)))
+  );
 }
 
 /**

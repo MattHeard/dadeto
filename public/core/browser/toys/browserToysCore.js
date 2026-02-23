@@ -266,7 +266,9 @@ export function cloneTemporaryDend2Data(getData) {
  * @returns {ToyStorage} The updated storage object.
  */
 export function appendPageAndOptions(data, page, opts) {
-  const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (data.temporary);
+  const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
+    data.temporary
+  );
   const tran1 = /** @type {NonNullable<typeof temp['TRAN1']>} */ (temp.TRAN1);
   tran1.pages.push(page);
   tran1.options.push(...opts);
@@ -312,10 +314,7 @@ const EMPTY_STORY_RESPONSE = JSON.stringify({
  */
 export function isValidStoryInput(parsed) {
   if (!parsed) return false;
-  return (
-    isValidString(parsed.title) &&
-    isValidString(parsed.content)
-  );
+  return isValidString(parsed.title) && isValidString(parsed.content);
 }
 
 /**
@@ -418,11 +417,19 @@ export function persistDendriteStory(parsed, env) {
     pageId,
   }));
 
-  const newData = persistTemporaryData(env, { page, options: opts }, newData => {
-    const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (newData.temporary);
-    const tran1 = /** @type {NonNullable<typeof temp['TRAN1']>} */ (temp.TRAN1);
-    tran1.stories.push(story);
-  });
+  const newData = persistTemporaryData(
+    env,
+    { page, options: opts },
+    newData => {
+      const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
+        newData.temporary
+      );
+      const tran1 = /** @type {NonNullable<typeof temp['TRAN1']>} */ (
+        temp.TRAN1
+      );
+      tran1.stories.push(story);
+    }
+  );
 
   return buildPersistedResponse({ page, options: opts }, newData, () => ({
     stories: [story],
