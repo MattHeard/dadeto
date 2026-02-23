@@ -50,4 +50,8 @@ describe('createVerifyAdmin error responses', () => {
   test('resolveErrorMessageWithDefault returns default for empty string message', () => {
     expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('')).toBe('Invalid token');
   });
+
+  test('resolveErrorMessageWithDefault returns default for non-string message', () => {
+    expect(cloudCoreTestUtils.resolveErrorMessageWithDefault(42)).toBe('Invalid token');
+  });
 });
