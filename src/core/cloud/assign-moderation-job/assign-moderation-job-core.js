@@ -1387,3 +1387,14 @@ export function createHandleAssignModerationJobFromAuth({
 
   return createHandleAssignModerationJobCore(assignModerationWorkflow);
 }
+
+export const assignModerationJobTestUtils = {
+  hasTokenMessage,
+  createEnsureValidIdToken,
+  createEnsureUserRecord,
+  buildCorsOptions,
+  ensureSnapshot,
+  resolveContextFromResult,
+  ensureVariantDocAvailability,
+  isResponse,
+};

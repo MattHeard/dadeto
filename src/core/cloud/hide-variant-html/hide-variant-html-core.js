@@ -518,6 +518,15 @@ function hasGrandparent(ref) {
   return Boolean(ref && ref.parent);
 }
 
+export const hideVariantHtmlTestUtils = {
+  resolvePageRef,
+  hasValidGrandparentChain,
+  resolveParentPageRef,
+  hasParentWithGrandparent,
+  hasGrandparent,
+  extractGrandparentRef,
+};
+
 /**
  * Extract the visibility score from a Firestore snapshot.
  * @param {{ data?: () => * } | null | undefined} snapshot Firestore snapshot.

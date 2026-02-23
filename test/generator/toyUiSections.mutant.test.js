@@ -23,9 +23,10 @@ describe('toy UI sections mutant', () => {
 
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<div class="key">in</div>');
-    expect(html).toContain(
-      '<div class="key"></div><div class="value"><button type="submit" disabled>Submit</button></div>'
-    );
+    const buttonSection =
+      '<div class="key"></div><div class="value"><button type="submit" disabled>Submit</button>' +
+      '<label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" disabled /> Auto</label></div>';
+    expect(html).toContain(buttonSection);
     expect(html).toContain('<div class="key">out</div>');
     expect(html).toContain('This toy requires Javascript to run.');
   });

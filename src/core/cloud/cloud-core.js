@@ -793,3 +793,7 @@ export function createVerifyAdmin({
     });
   };
 }
+
+export const cloudCoreTestUtils = {
+  resolveErrorMessageWithDefault,
+};

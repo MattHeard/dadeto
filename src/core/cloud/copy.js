@@ -312,6 +312,11 @@ export function createCopyToInfraCore({
     await copyIndividualFiles(individualFileCopies, io, messageLogger);
   }
 
+  const copyCoreTestUtils = {
+    shouldCopyDeclaredFiles,
+    isNonEmptyArray,
+  };
+
   return /** @type {CopyToInfraHelpers} */ (
     buildCopyExportMap([
       ['runCopyToInfra', runCopyToInfra],
@@ -321,6 +326,7 @@ export function createCopyToInfraCore({
       ['copyFileToTarget', copyFileToTarget],
       ['isCopyableFile', isCopyableFile],
       ['formatPathForLog', formatPathForLog],
+      ['copyCoreTestUtils', copyCoreTestUtils],
     ])
   );
 }

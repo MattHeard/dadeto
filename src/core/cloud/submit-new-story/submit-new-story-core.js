@@ -262,6 +262,11 @@ function collectOptions(body, maxLength) {
   return /** @type {string[]} */ (options);
 }
 
+export const submitNewStoryCoreTestUtils = {
+  getAuthFromGetter,
+  collectOptions,
+};
+
 /**
  * Check if UID is valid string.
  * @param {unknown} uid UID.

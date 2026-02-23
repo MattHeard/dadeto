@@ -15,7 +15,7 @@
  * @property {import('firebase-admin/firestore').DocumentReference} pageDocRef Reference to page document.
  * @property {import('firebase-admin/firestore').DocumentReference} storyRef Reference to story document.
  * @property {import('firebase-admin/firestore').DocumentReference | null} variantRef Reference to variant document.
- * @property {number} pageNumber The page number assigned.
+ * @property {number | null} pageNumber The page number assigned, if available.
  */
 
 /**
@@ -518,6 +518,7 @@ async function resolveIncomingOptionContext({
 }) {
   const optionRef = db.doc(incomingOptionFullName);
   const optionSnap = await optionRef.get();
+  ensureOptionSnapshotRef(optionSnap, optionRef);
 
   const refs = await validateAndExtractOptionRefs(optionSnap, snapshot);
   if (!refs) {
@@ -548,6 +549,14 @@ async function resolveIncomingOptionContext({
     storyRef: storyRefCandidate,
     variantRef,
   };
+}
+
+function ensureOptionSnapshotRef(optionSnap, optionRef) {
+  if (!optionSnap.ref) {
+    optionSnap.ref = optionRef;
+  }
+
+  return optionSnap;
 }
 
 /**
@@ -607,7 +616,7 @@ async function resolveIncomingOptionPageContext({
 /**
  * Resolve an existing page reference from a target page selection.
  * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage The referenced page.
- * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number }>}
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null }>}
  * Resolved context or null when no existing page is found.
  */
 async function resolveExistingPageContext(targetPage) {
@@ -659,7 +668,7 @@ function extractPageNumberFromSnapshot(snapshot) {
  * Build the context object from an existing page snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot | null} existingPageSnap Snapshot to inspect.
  * @param {import('firebase-admin/firestore').DocumentReference} targetPage Page reference.
- * @returns {{ pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number } | null}
+ * @returns {{ pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null } | null}
  * Context object when the snapshot represents an existing page.
  */
 function buildExistingPageContext(existingPageSnap, targetPage) {
@@ -670,9 +679,6 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
   const pageNumber = extractPageNumberFromSnapshot(
     /** @type {any} */ (existingPageSnap)
   );
-  if (pageNumber === null) {
-    return null;
-  }
 
   return {
     pageDocRef: targetPage,
@@ -1479,6 +1485,22 @@ function isSubmissionProcessed(submission) {
   return Boolean(submission.processed);
 }
 
+export const processNewPageTestUtils = {
+  routeViaDirect,
+  routePageContext,
+  extractSubmissionData,
+  isSubmissionProcessed,
+  resolveRandomGenerator,
+  resolvePageDepth,
+  extractVariantRefFromOption,
+  extractPageRefFromVariant,
+  extractStoryRefFromPageRef,
+  resolveStoryRefFromOption,
+  extractAndValidateStoryRef,
+  ensureOptionSnapshotRef,
+  resolveStoryRefOrEmpty,
+};
+
 /**
  * Create a handler function for processing submissions.
  * @param {object} params - Processing parameters.
@@ -1511,7 +1533,7 @@ function buildSubmissionHandler({
    * @param {(() => number) | undefined} randomFn Random generator.
    * @returns {(() => number)} Resolved generator.
    */
-  const resolveRandom = randomFn => randomFn || Math.random;
+  const resolveRandom = randomFn => resolveRandomGenerator(randomFn);
 
   return async function handleProcessNewPage(snapshot) {
     const submission = extractSubmissionData(snapshot);

@@ -102,6 +102,12 @@ function mapCreditToResponse(credit) {
   return { status: 200, body: { credit } };
 }
 
+export const getApiKeyCreditTestUtils = {
+  isSpecialCreditValue,
+  getSpecialCreditResponse,
+  mapCreditToResponse,
+};
+
 /**
  * Fetch credit details and return the mapped response.
  * @param {(uuid: string) => Promise<number | null | undefined>} fetchCredit - Dependency used to retrieve credit.

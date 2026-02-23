@@ -10,11 +10,7 @@ import {
   buildPageByNumberQuery,
   buildVariantByNameQuery,
 } from '../firestore-helpers.js';
-import {
-  assertFunction,
-  ensureString,
-  stringOrDefault,
-} from '../common-core.js';
+import * as commonCore from '../common-core.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';
@@ -576,9 +572,13 @@ export function parseMarkVariantRequestBody(body) {
  */
 function resolveVariantName(candidate) {
   const candidateStr = /** @type {string | undefined} */ (
-    ensureString(candidate)
+    commonCore.ensureString(candidate)
   );
-  return candidateStr ?? '';
+  if (candidateStr) {
+    return candidateStr;
+  }
+
+  return '';
 }
 
 /**
@@ -588,10 +588,14 @@ function resolveVariantName(candidate) {
  */
 function extractValidatedConfig(optionsTyped) {
   const { verifyAdmin, markVariantDirty } = optionsTyped ?? {};
-  assertFunction(verifyAdmin, 'verifyAdmin');
-  assertFunction(markVariantDirty, 'markVariantDirty');
+  commonCore.assertFunction(verifyAdmin, 'verifyAdmin');
+  commonCore.assertFunction(markVariantDirty, 'markVariantDirty');
   return { verifyAdmin, markVariantDirty };
 }
+
+export const markVariantDirtyTestUtils = {
+  resolveVariantName,
+};
 
 /**
  * Cast function to admin verifier type.
@@ -732,7 +736,7 @@ function resolveParseRequestBody(parser) {
  * @returns {string} HTTP method.
  */
 function resolveAllowedMethod(method) {
-  return stringOrDefault(method, POST_METHOD);
+  return commonCore.stringOrDefault(method, POST_METHOD);
 }
 
 /**

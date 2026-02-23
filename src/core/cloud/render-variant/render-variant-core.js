@@ -4,6 +4,10 @@ import { assertFunction } from './common-core.js';
 export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;
 
+export function resolveVisibilityThreshold(visibilityThreshold) {
+  return visibilityThreshold ?? VISIBILITY_THRESHOLD;
+}
+
 /**
  * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
  * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} DocumentReferenceData
@@ -1714,6 +1718,13 @@ function extractVariantName(variantData) {
   return getVariantNameOrUndefined(variantData) ?? '';
 }
 
+export const renderVariantCoreTestUtils = {
+  extractVariantName,
+  gatherMetadata,
+  loadOptions,
+  resolveStoryMetadata,
+  resolveAuthorMetadata,
+};
 /**
  * Assemble root URL.
  * @param {PageSnapshot} snap Snap.
@@ -2580,7 +2591,7 @@ async function gatherMetadata(deps) {
 
   const options = await loadOptions({
     snap,
-    visibilityThreshold: visibilityThreshold || VISIBILITY_THRESHOLD,
+    visibilityThreshold: resolveVisibilityThreshold(visibilityThreshold),
     consoleError,
   });
   const { storyTitle, firstPageUrl } = await resolveStoryMetadata({

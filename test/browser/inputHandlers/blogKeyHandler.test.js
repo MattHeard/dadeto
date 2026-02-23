@@ -248,4 +248,14 @@ describe('blogKeyHandler', () => {
     expect(existingForm._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith(container, existingForm);
   });
+
+  test('handles case where existing dendrite form already removed', () => {
+    const dom = makeDom();
+    const container = { _children: [] };
+    const textInput = makeTextInput('');
+
+    // Verify it doesn't error when querySelector returns null
+    expect(() => blogKeyHandler(dom, container, textInput)).not.toThrow();
+    expect(dom.removeChild).not.toHaveBeenCalled();
+  });
 });

@@ -1,0 +1,4 @@
+## matt-e1t reflection
+- **Expectation vs reality:** The branch test tried to spy on `ensureString`, but that helper is exported via an ESM namespace, so the module object came back read-only and jest couldn't override the property. To unblock coverage I first tried to wrap `resolveVariantName` around `commonCore.ensureString`, but the spy still failed, so I ultimately rewired the test to hit the fallback by passing a non-string input and kept the module logic simple (truthy check + fallback string). That felt like the least invasive path while keeping the coverage requirement satisfied.
+- **What I learned:** When a branch needs to cover a helper that returns a safe fallback, mimicking real inputs beats fighting the runtime with spies if the export is read-only.
+- **Follow-up:** Should we revisit other branch-only tests that currently mock namespaced exports and see if real input scenarios can replace those mocks? EOF

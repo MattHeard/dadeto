@@ -67,6 +67,15 @@ describe('textAppendList additional branches', () => {
 
     expect(result).toBe('Gnome\nHalfling\n');
   });
+
+  it('handles empty string input with storage available', () => {
+    const { fn } = createStorageMock();
+    const env = new Map([['setLocalPermanentData', fn]]);
+
+    const result = textAppendList('', env);
+
+    expect(result).toBe('\n');
+  });
 });
 
 /**

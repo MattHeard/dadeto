@@ -775,3 +775,15 @@ function extractVariantData(variantSnapshot) {
   const { variantSnap } = variantSnapshot;
   return variantSnap.data() ?? {};
 }
+
+export const getModerationVariantTestUtils = {
+  getAuthorizationHeader,
+  resolveTokenFromRequest,
+  resolveVariantFromData,
+  extractPageFromVariant,
+  extractParentFromPage,
+  extractStoryFromParent,
+  resolveStoryRefFromVariant,
+  extractStoryDataFromSnapshot,
+  handleVariantSnapshotResponse,
+};

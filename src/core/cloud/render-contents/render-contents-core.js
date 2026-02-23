@@ -797,8 +797,17 @@ function normalizeRenderContentsOptions(
  * @returns {(message: string, error?: unknown) => void} Console error function.
  */
 function getDefaultConsoleError() {
-  return console.error.bind(console) ?? console.error;
+  const errorFn = console.error;
+  if (!errorFn) {
+    return () => {};
+  }
+
+  return errorFn.bind(console);
 }
+
+export const renderContentsTestUtils = {
+  getDefaultConsoleError,
+};
 
 /**
  * Ensure a console error helper is available for logging.
