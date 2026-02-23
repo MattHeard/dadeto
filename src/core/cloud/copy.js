@@ -196,6 +196,15 @@ export function createCopyToInfraCore({
   }
 
   /**
+   * Check if declared files copy should be skipped.
+   * @param {DeclaredCopyPlan | undefined} copyPlan - Copy configuration.
+   * @returns {boolean} True when copy should be skipped.
+   */
+  function shouldSkipDeclaredFilesCopy(copyPlan) {
+    return !shouldCopyDeclaredFiles(copyPlan) || !copyPlan;
+  }
+
+  /**
    * Copy files defined by a declared list.
    * @param {DeclaredCopyPlan | undefined} copyPlan - Copy configuration with source and target directories.
    * @param {EnsureAndCopyIo} io - Filesystem adapters.
@@ -203,7 +212,7 @@ export function createCopyToInfraCore({
    * @returns {Promise<void>} Resolves when the declared files are copied.
    */
   async function copyDeclaredFiles(copyPlan, io, messageLogger) {
-    if (!shouldCopyDeclaredFiles(copyPlan) || !copyPlan) {
+    if (shouldSkipDeclaredFilesCopy(copyPlan)) {
       return;
     }
     const { sourceDir, targetDir } = copyPlan;

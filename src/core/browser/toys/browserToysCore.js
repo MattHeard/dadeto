@@ -308,13 +308,22 @@ const EMPTY_STORY_RESPONSE = JSON.stringify({
 });
 
 /**
+ * Check if story object has valid title and content.
+ * @param {{ title?: string, content?: string }} story Story object.
+ * @returns {boolean} True when both fields are valid strings.
+ */
+function hasValidStoryFields(story) {
+  return isValidString(story.title) && isValidString(story.content);
+}
+
+/**
  * Determine whether the parsed story payload defines the required fields.
  * @param {{ title?: string, content?: string } | null | undefined} parsed Payload to validate.
  * @returns {boolean} True when both title and content are valid strings.
  */
 export function isValidStoryInput(parsed) {
   if (!parsed) return false;
-  return isValidString(parsed.title) && isValidString(parsed.content);
+  return hasValidStoryFields(parsed);
 }
 
 /**

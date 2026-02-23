@@ -664,14 +664,22 @@ function hasMessageProperty(obj) {
 }
 
 /**
+ * Extract string if candidate is a string type.
+ * @param {unknown} value - Candidate value.
+ * @returns {string | null} String or null.
+ */
+function extractStringOrNull(value) {
+  return typeof value === 'string' ? value : null;
+}
+
+/**
  * Resolve message string with invalid token fallback.
  * @param {unknown} messageStr Candidate message string.
  * @returns {string} Message or 'Invalid token'.
  */
 function resolveErrorMessageWithDefault(messageStr) {
-  return (
-    (typeof messageStr === 'string' ? messageStr : null) || 'Invalid token'
-  );
+  const message = extractStringOrNull(messageStr);
+  return message || 'Invalid token';
 }
 
 /**
