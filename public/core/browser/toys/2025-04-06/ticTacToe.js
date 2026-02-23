@@ -706,17 +706,33 @@ function isValidRowAndColumn(row, column) {
 }
 
 /**
+ * Check if value is a non-null object.
+ * @param {unknown} value - Value to check.
+ * @returns {boolean} True if value is an object.
+ */
+function isNonNullObject(value) {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Check if object has required move properties.
+ * @param {object} obj - Object to check.
+ * @returns {boolean} True if object has player and position.
+ */
+function hasMoveFields(obj) {
+  return 'player' in obj && 'position' in obj;
+}
+
+/**
  * Check if move has required properties.
  * @param {unknown} move - Move candidate.
  * @returns {boolean} True if move has player and position.
  */
 function hasMoveProperties(move) {
-  return (
-    typeof move === 'object' &&
-    move !== null &&
-    'player' in move &&
-    'position' in move
-  );
+  if (!isNonNullObject(move)) {
+    return false;
+  }
+  return hasMoveFields(/** @type {object} */ (move));
 }
 
 /**
