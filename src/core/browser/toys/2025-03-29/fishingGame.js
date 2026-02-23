@@ -141,16 +141,53 @@ const seasonPeriods = [
 ];
 
 /**
+ * Check if hour falls within period range.
+ * @param {number} hour - Hour to check.
+ * @param {{start: number, end: number}} period - Period with start and end.
+ * @returns {boolean} True when hour is in range.
+ */
+function isHourInPeriod(hour, period) {
+  return hour >= period.start && hour < period.end;
+}
+
+/**
+ * Check if month falls within period range.
+ * @param {number} month - Month to check.
+ * @param {{start: number, end: number}} period - Period with start and end.
+ * @returns {boolean} True when month is in range.
+ */
+function isMonthInPeriod(month, period) {
+  return month >= period.start && month < period.end;
+}
+
+/**
+ * Extract label from period when available.
+ * @param {{label: TimeOfDayLabel} | undefined} period - Period with label.
+ * @returns {TimeOfDayLabel | undefined} Period label or undefined.
+ */
+function getTimeOfDayLabelFromPeriod(period) {
+  return period?.label;
+}
+
+/**
+ * Extract label from period when available.
+ * @param {{label: SeasonLabel} | undefined} period - Period with label.
+ * @returns {SeasonLabel | undefined} Period label or undefined.
+ */
+function getSeasonLabelFromPeriod(period) {
+  return period?.label;
+}
+
+/**
  * Choose the matching time-of-day label from the configured ranges.
  * @param {number} hour - Hour of the day used as lookup key.
  * @returns {TimeOfDayLabel} The best matching time-of-day label.
  */
 function findTimeOfDayLabel(hour) {
   const normalizedHour = ((hour % 24) + 24) % 24;
-  const period = timeOfDayPeriods.find(
-    p => normalizedHour >= p.start && normalizedHour < p.end
-  );
-  return /** @type {TimeOfDayLabel} */ (period?.label ?? 'night');
+  const period = timeOfDayPeriods.find(p => isHourInPeriod(normalizedHour, p));
+  const label = getTimeOfDayLabelFromPeriod(period);
+  return label ?? 'night';
 }
 
 /**
@@ -160,10 +197,9 @@ function findTimeOfDayLabel(hour) {
  */
 function findSeasonLabel(month) {
   const normalizedMonth = ((month % 12) + 12) % 12;
-  const period = seasonPeriods.find(
-    p => normalizedMonth >= p.start && normalizedMonth < p.end
-  );
-  return /** @type {SeasonLabel} */ (period?.label ?? 'winter');
+  const period = seasonPeriods.find(p => isMonthInPeriod(normalizedMonth, p));
+  const label = getSeasonLabelFromPeriod(period);
+  return label ?? 'winter';
 }
 
 /**

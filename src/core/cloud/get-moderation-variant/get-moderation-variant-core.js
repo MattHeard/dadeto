@@ -358,12 +358,41 @@ async function fetchVariantResponse(variantRef) {
   return VARIANT_NOT_FOUND_RESPONSE;
 }
 /**
+ * Extract immediate parent of variant.
+ * @param {FirestoreDocumentReference} variantRef Variant reference.
+ * @returns {FirestoreDocumentReference | null | undefined} Immediate parent or undefined.
+ */
+function extractVariantParent(variantRef) {
+  return variantRef.parent;
+}
+
+/**
+ * Extract parent from reference when available.
+ * @param {FirestoreDocumentReference | null | undefined} ref Reference.
+ * @returns {FirestoreDocumentReference | null | undefined} Parent or undefined.
+ */
+function extractParentFromRef(ref) {
+  return ref?.parent;
+}
+
+/**
+ * Extract parent of parent reference when available.
+ * @param {FirestoreDocumentReference | null | undefined} parentRef Parent reference.
+ * @returns {FirestoreDocumentReference | null} Grandparent or null.
+ */
+function extractGrandparentRef(parentRef) {
+  const parent = extractParentFromRef(parentRef);
+  return parent ?? null;
+}
+
+/**
  * Extract page reference from variant reference parent chain.
  * @param {FirestoreDocumentReference} variantRef Variant reference.
  * @returns {FirestoreDocumentReference | null} Page reference.
  */
 function extractPageFromVariant(variantRef) {
-  return variantRef.parent?.parent ?? null;
+  const variantParent = extractVariantParent(variantRef);
+  return extractGrandparentRef(variantParent);
 }
 
 /**
@@ -372,9 +401,7 @@ function extractPageFromVariant(variantRef) {
  * @returns {FirestoreDocumentReference | null} Story parent.
  */
 function extractParentFromPage(pageRef) {
-  return /** @type {FirestoreDocumentReference | null} */ (
-    pageRef?.parent ?? null
-  );
+  return extractGrandparentRef(pageRef);
 }
 
 /**
@@ -383,9 +410,7 @@ function extractParentFromPage(pageRef) {
  * @returns {FirestoreDocumentReference | null} Story reference.
  */
 function extractStoryFromParent(parentRef) {
-  return /** @type {FirestoreDocumentReference | null} */ (
-    parentRef?.parent ?? null
-  );
+  return extractGrandparentRef(parentRef);
 }
 
 /**

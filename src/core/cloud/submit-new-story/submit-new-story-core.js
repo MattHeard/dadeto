@@ -79,6 +79,15 @@ function getLowercaseHeaderFallback(getter) {
 }
 
 /**
+ * Resolve uppercase header or return null.
+ * @param {unknown} uppercase - Uppercase header value.
+ * @returns {string | null} Header value or null.
+ */
+function resolveUppercaseHeader(uppercase) {
+  return typeof uppercase === 'string' ? uppercase : null;
+}
+
+/**
  * Resolve lowercase header or return null.
  * @param {string | undefined} lowercase - Lowercase header value.
  * @returns {string | null} Header value or null.
@@ -89,17 +98,12 @@ function resolveLowercaseHeader(lowercase) {
 
 /**
  * Resolve header with fallback to lowercase variant.
- * @param {string | null} uppercase - Uppercase header value.
- * @param {string | null} lowercase - Lowercase header value.
+ * @param {unknown} uppercase - Uppercase header value.
+ * @param {string | undefined} lowercase - Lowercase header value.
  * @returns {string | null} Header value or null.
  */
 function resolveBothHeaders(uppercase, lowercase) {
-  return (
-    (typeof uppercase === 'string' ? uppercase : null) ??
-    resolveLowercaseHeader(
-      typeof lowercase === 'string' ? lowercase : undefined
-    )
-  );
+  return resolveUppercaseHeader(uppercase) ?? resolveLowercaseHeader(lowercase);
 }
 
 /**
