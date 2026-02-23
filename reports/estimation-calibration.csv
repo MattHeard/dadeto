@@ -6,3 +6,6 @@ estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestam
 2026-02-21T21:35:42Z,dadeto-ohog,Reduce jscpd clones to zero,60,2026-02-21T22:43:00Z,false
 2026-02-22T07:30:04Z,matt-elh,Consolidate rows and rowTypes into rowData parameter object,72,2026-02-22T07:39:52Z,true
 2026-02-22T08:12:21Z,matt-1qi,Update ensureKeyValueInput for rowTypes,85,2026-02-22T08:19:55Z,true
+2026-02-23T08:28:58Z,matt-ikq,Add Auto submit checkbox to toy submit buttons,75,,
+2026-02-23T08:41:46Z,matt-ikq,Add Auto submit checkbox to toy submit buttons,80,,
+2026-02-23T08:43:10Z,dadeto-pcai,Add Auto submit checkbox to toy submit buttons (P2 feature),80,2026-02-23T08:51:42Z,true

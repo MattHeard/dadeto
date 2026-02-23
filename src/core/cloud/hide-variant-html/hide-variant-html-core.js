@@ -454,7 +454,7 @@ function resolvePageRef(snapshot) {
  * @returns {boolean} True when ref has a parent property.
  */
 function hasParentRef(ref) {
-  return Boolean(ref && (/** @type {any} */ (ref)).parent);
+  return Boolean(ref && /** @type {any} */ (ref).parent);
 }
 
 /**
@@ -463,7 +463,7 @@ function hasParentRef(ref) {
  * @returns {boolean} True when parent has a parent property.
  */
 function hasGrandparentFromParent(parent) {
-  return Boolean(parent && (/** @type {any} */ (parent)).parent);
+  return Boolean(parent && /** @type {any} */ (parent).parent);
 }
 
 /**
@@ -472,7 +472,10 @@ function hasGrandparentFromParent(parent) {
  * @returns {boolean} True when the chain is valid.
  */
 function hasValidGrandparentChain(ref) {
-  return hasParentRef(ref) && hasGrandparentFromParent((/** @type {any} */ (ref)).parent);
+  return (
+    hasParentRef(ref) &&
+    hasGrandparentFromParent(/** @type {any} */ (ref).parent)
+  );
 }
 
 /**
@@ -482,7 +485,7 @@ function hasValidGrandparentChain(ref) {
  */
 function extractGrandparentRef(ref) {
   if (!hasValidGrandparentChain(ref)) return null;
-  return (/** @type {any} */ (ref)).parent.parent;
+  return /** @type {any} */ (ref).parent.parent;
 }
 
 /**

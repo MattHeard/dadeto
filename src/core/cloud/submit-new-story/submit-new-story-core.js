@@ -94,7 +94,12 @@ function resolveLowercaseHeader(lowercase) {
  * @returns {string | null} Header value or null.
  */
 function resolveBothHeaders(uppercase, lowercase) {
-  return (typeof uppercase === 'string' ? uppercase : null) ?? resolveLowercaseHeader(typeof lowercase === 'string' ? lowercase : undefined);
+  return (
+    (typeof uppercase === 'string' ? uppercase : null) ??
+    resolveLowercaseHeader(
+      typeof lowercase === 'string' ? lowercase : undefined
+    )
+  );
 }
 
 /**

@@ -358,7 +358,7 @@ function getSnapshotReference(snapshot) {
   if (!snapshotHasRef(snapshot)) {
     return null;
   }
-  return /** @type {DocumentReference} */ ((/** @type {any} */ (snapshot)).ref);
+  return /** @type {DocumentReference} */ (/** @type {any} */ (snapshot).ref);
 }
 
 /**

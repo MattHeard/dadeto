@@ -39,6 +39,8 @@ export const convertArrayToKeyValueObject = array => {
   );
 };
 
+const AUTO_SUBMIT_CHECKBOX_SELECTOR = '.auto-submit-checkbox';
+
 /**
  * Normalizes previously stored rows into an object.
  * @param {unknown} existing - Existing rows value.
@@ -1264,6 +1266,33 @@ export const createHandleSubmit =
     handleInputProcessing(elements, processingFunction, env);
   };
 
+function registerAutoSubmitListener({
+  dom,
+  inputElement,
+  handleSubmit,
+  autoSubmitState,
+}) {
+  if (autoSubmitState.inputListenerRemover) {
+    return;
+  }
+  const autoInputListener = event => handleSubmit(event);
+  dom.addEventListener(inputElement, 'input', autoInputListener);
+  autoSubmitState.inputListenerRemover = createRemoveListener({
+    dom,
+    el: inputElement,
+    event: 'input',
+    handler: autoInputListener,
+  });
+}
+
+function unregisterAutoSubmitListener(autoSubmitState) {
+  const remover = autoSubmitState.inputListenerRemover;
+  if (remover) {
+    remover();
+    autoSubmitState.inputListenerRemover = null;
+  }
+}
+
 /**
  * Disable the input field and submit button for an interactive component.
  * @param {HTMLInputElement} inputElement - Input field to disable.
@@ -1372,6 +1401,31 @@ export function initializeInteractiveComponent(
     env
   );
 
+  const autoSubmitCheckbox = dom.querySelector(
+    article,
+    AUTO_SUBMIT_CHECKBOX_SELECTOR
+  );
+  const autoSubmitState = { inputListenerRemover: null };
+  const handleAutoCheckboxChange = () => {
+    if (!autoSubmitCheckbox) {
+      return;
+    }
+    if (autoSubmitCheckbox.checked) {
+      registerAutoSubmitListener({
+        dom,
+        inputElement,
+        handleSubmit,
+        autoSubmitState,
+      });
+      return;
+    }
+    unregisterAutoSubmitListener(autoSubmitState);
+  };
+  if (autoSubmitCheckbox) {
+    dom.addEventListener(autoSubmitCheckbox, 'change', handleAutoCheckboxChange);
+    autoSubmitCheckbox.checked = false;
+  }
+
   // Add event listener to the submit button
   dom.addEventListener(submitButton, 'click', handleSubmit);
 
@@ -1388,6 +1442,10 @@ export function initializeInteractiveComponent(
     dom,
     presenterKey
   );
+
+  if (autoSubmitCheckbox) {
+    dom.enable(autoSubmitCheckbox);
+  }
 }
 
 /**

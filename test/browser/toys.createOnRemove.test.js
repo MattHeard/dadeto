@@ -104,11 +104,7 @@ describe('createOnRemove', () => {
 
   it('works with empty rows object', () => {
     const emptyRowData = { rows: {}, rowTypes: {} };
-    const emptyHandler = createOnRemove(
-      emptyRowData,
-      render,
-      'anyKey'
-    );
+    const emptyHandler = createOnRemove(emptyRowData, render, 'anyKey');
 
     // Call the handler with the mock event
     emptyHandler(mockEvent);
@@ -120,12 +116,11 @@ describe('createOnRemove', () => {
   });
 
   it('can remove the last remaining key', () => {
-    const singleRowData = { rows: { lastKey: 'lastValue' }, rowTypes: { lastKey: 'string' } };
-    const singleHandler = createOnRemove(
-      singleRowData,
-      render,
-      'lastKey'
-    );
+    const singleRowData = {
+      rows: { lastKey: 'lastValue' },
+      rowTypes: { lastKey: 'string' },
+    };
+    const singleHandler = createOnRemove(singleRowData, render, 'lastKey');
 
     // Call the handler with the mock event
     singleHandler(mockEvent);
@@ -136,7 +131,10 @@ describe('createOnRemove', () => {
   });
 
   it('removes a key when called directly', () => {
-    const localRowData = { rows: { a: 1, b: 2 }, rowTypes: { a: 'number', b: 'number' } };
+    const localRowData = {
+      rows: { a: 1, b: 2 },
+      rowTypes: { a: 'number', b: 'number' },
+    };
     const localRender = jest.fn();
     const evt = { preventDefault: jest.fn() };
 
@@ -177,7 +175,10 @@ describe('createOnRemove', () => {
   });
 
   it('creates independent handlers for different keys', () => {
-    const rowDataMap = { rows: { a: '1', b: '2' }, rowTypes: { a: 'string', b: 'string' } };
+    const rowDataMap = {
+      rows: { a: '1', b: '2' },
+      rowTypes: { a: 'string', b: 'string' },
+    };
     const renderFn = jest.fn();
     const evtA = { preventDefault: jest.fn() };
     const evtB = { preventDefault: jest.fn() };

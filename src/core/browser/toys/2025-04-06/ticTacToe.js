@@ -711,7 +711,12 @@ function isValidRowAndColumn(row, column) {
  * @returns {boolean} True if move has player and position.
  */
 function hasMoveProperties(move) {
-  return typeof move === 'object' && move !== null && 'player' in move && 'position' in move;
+  return (
+    typeof move === 'object' &&
+    move !== null &&
+    'player' in move &&
+    'position' in move
+  );
 }
 
 /**

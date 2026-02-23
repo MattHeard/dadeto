@@ -152,7 +152,10 @@ describe('syncHiddenField', () => {
   });
 
   it('coerces a boolean-typed value to a boolean', () => {
-    const rowData = { rows: { active: 'true' }, rowTypes: { active: 'boolean' } };
+    const rowData = {
+      rows: { active: 'true' },
+      rowTypes: { active: 'boolean' },
+    };
 
     syncHiddenField(mockTextInput, rowData, mockDom);
 

@@ -205,7 +205,10 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     const entries = listEntries(dir);
     return entries.reduce(
       /** @param {string[]} jsFiles */
-      /** @param {import('fs').Dirent} entry */
+      /**
+       * @param jsFiles
+       * @param {import('fs').Dirent} entry
+       */
       (jsFiles, entry) =>
         accumulateJsFiles(jsFiles, entry, { dir, listEntries }),
       /** @type {string[]} */ ([])
@@ -504,27 +507,29 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyCoreConstants(dirs, io, messageLogger);
   }
 
-  return /** @type {Record<string, Function>} */ (buildCopyExportMap([
-    ['runCopyWorkflow', runCopyWorkflow],
-    ['copyBrowserTrees', copyBrowserTrees],
-    ['copyCoreRootFiles', copyCoreRootFiles],
-    ['copyCoreConstants', copyCoreConstants],
-    ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
-    ['copyDirRecursive', copyDirRecursive],
-    ['processDirectoryEntries', processDirectoryEntries],
-    ['handleDirectoryEntry', handleDirectoryEntry],
-    ['copyFilePairs', copyFilePairs],
-    ['copyEntries', copyEntries],
-    ['copyFileWithDirectories', copyFileWithDirectories],
-    ['ensureDirectoryExists', ensureDirectoryExists],
-    ['createCopyPairs', createCopyPairs],
-    ['findJsFiles', findJsFiles],
-    ['accumulateJsFiles', accumulateJsFiles],
-    ['getPossibleNewFiles', getPossibleNewFiles],
-    ['getActualNewFiles', getActualNewFiles],
-    ['shouldCheckEntry', shouldCheckEntry],
-    ['isJsFile', isJsFile],
-    ['isCorrectJsFileEnding', isCorrectJsFileEnding],
-    ['formatPathForLog', formatPathForLog],
-  ]));
+  return /** @type {Record<string, Function>} */ (
+    buildCopyExportMap([
+      ['runCopyWorkflow', runCopyWorkflow],
+      ['copyBrowserTrees', copyBrowserTrees],
+      ['copyCoreRootFiles', copyCoreRootFiles],
+      ['copyCoreConstants', copyCoreConstants],
+      ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
+      ['copyDirRecursive', copyDirRecursive],
+      ['processDirectoryEntries', processDirectoryEntries],
+      ['handleDirectoryEntry', handleDirectoryEntry],
+      ['copyFilePairs', copyFilePairs],
+      ['copyEntries', copyEntries],
+      ['copyFileWithDirectories', copyFileWithDirectories],
+      ['ensureDirectoryExists', ensureDirectoryExists],
+      ['createCopyPairs', createCopyPairs],
+      ['findJsFiles', findJsFiles],
+      ['accumulateJsFiles', accumulateJsFiles],
+      ['getPossibleNewFiles', getPossibleNewFiles],
+      ['getActualNewFiles', getActualNewFiles],
+      ['shouldCheckEntry', shouldCheckEntry],
+      ['isJsFile', isJsFile],
+      ['isCorrectJsFileEnding', isCorrectJsFileEnding],
+      ['formatPathForLog', formatPathForLog],
+    ])
+  );
 }

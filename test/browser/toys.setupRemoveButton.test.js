@@ -19,7 +19,10 @@ describe('setupRemoveButton', () => {
     };
 
     button = {};
-    rowData = { rows: { [rowKey]: 'testValue', otherKey: 'otherValue' }, rowTypes: {} };
+    rowData = {
+      rows: { [rowKey]: 'testValue', otherKey: 'otherValue' },
+      rowTypes: {},
+    };
     render = jest.fn();
     disposers = [];
   });
@@ -93,7 +96,10 @@ describe('setupRemoveButton', () => {
     clickHandler(mockEvent);
 
     // Should not modify the rows object
-    expect(rowData.rows).toEqual({ [rowKey]: 'testValue', otherKey: 'otherValue' });
+    expect(rowData.rows).toEqual({
+      [rowKey]: 'testValue',
+      otherKey: 'otherValue',
+    });
 
     // Should call preventDefault (may be called twice - once in the test and once in the handler)
     expect(mockEvent.preventDefault).toHaveBeenCalled();

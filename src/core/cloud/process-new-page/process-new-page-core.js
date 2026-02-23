@@ -468,9 +468,9 @@ async function markProcessedIfMissing(optionSnap, snapshot) {
  * @returns {{variantRef: any, storyRefCandidate: any} | null} References or null if story ref missing.
  */
 function extractAndValidateStoryRef(optionSnap) {
-  const { variantRef, storyRef: storyRefCandidate } = /** @type {any} */ (resolveStoryRefFromOption(
-    (/** @type {any} */ (optionSnap)).ref
-  ));
+  const { variantRef, storyRef: storyRefCandidate } = /** @type {any} */ (
+    resolveStoryRefFromOption(/** @type {any} */ (optionSnap).ref)
+  );
 
   if (!storyRefCandidate) {
     return null;
@@ -667,7 +667,9 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
     return null;
   }
 
-  const pageNumber = extractPageNumberFromSnapshot(/** @type {any} */ (existingPageSnap));
+  const pageNumber = extractPageNumberFromSnapshot(
+    /** @type {any} */ (existingPageSnap)
+  );
   if (pageNumber === null) {
     return null;
   }

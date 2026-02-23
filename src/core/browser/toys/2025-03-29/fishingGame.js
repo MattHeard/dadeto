@@ -148,7 +148,7 @@ const seasonPeriods = [
 function findTimeOfDayLabel(hour) {
   const normalizedHour = ((hour % 24) + 24) % 24;
   const period = timeOfDayPeriods.find(
-    (p) => normalizedHour >= p.start && normalizedHour < p.end
+    p => normalizedHour >= p.start && normalizedHour < p.end
   );
   return /** @type {TimeOfDayLabel} */ (period?.label ?? 'night');
 }
@@ -161,7 +161,7 @@ function findTimeOfDayLabel(hour) {
 function findSeasonLabel(month) {
   const normalizedMonth = ((month % 12) + 12) % 12;
   const period = seasonPeriods.find(
-    (p) => normalizedMonth >= p.start && normalizedMonth < p.end
+    p => normalizedMonth >= p.start && normalizedMonth < p.end
   );
   return /** @type {SeasonLabel} */ (period?.label ?? 'winter');
 }

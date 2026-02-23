@@ -1042,7 +1042,11 @@ const TOY_UI_SECTIONS_CONFIG = [
   },
   {
     label: '',
-    content: () => '<button type="submit" disabled>Submit</button>',
+    content: () =>
+      '<button type="submit" disabled>Submit</button>' +
+      '<label class="auto-submit-label">' +
+      '<input type="checkbox" class="auto-submit-checkbox" disabled /> Auto' +
+      '</label>',
   },
   {
     label: 'out',
