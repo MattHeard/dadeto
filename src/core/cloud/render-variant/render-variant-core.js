@@ -4,6 +4,10 @@ import { assertFunction } from './common-core.js';
 export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;
 
+/**
+ *
+ * @param visibilityThreshold
+ */
 export function resolveVisibilityThreshold(visibilityThreshold) {
   return visibilityThreshold ?? VISIBILITY_THRESHOLD;
 }

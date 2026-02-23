@@ -75,15 +75,24 @@ function isSpecialCreditValue(credit) {
 }
 
 /**
+ * Resolve special response for non-numeric credit values.
+ * @param {unknown} credit - Credit value to lookup.
+ * @returns {{ status: number, body: unknown } | undefined} Special response or undefined.
+ */
+function resolveSpecialCreditMapping(credit) {
+  if (typeof credit === 'number') {
+    return undefined;
+  }
+  return CREDIT_RESPONSE_BY_VALUE.get(/** @type {null | undefined} */ (credit));
+}
+
+/**
  * Get response for special credit values.
  * @param {number | null | undefined} credit - Credit value.
  * @returns {{ status: number, body: unknown }} Special response or default.
  */
 function getSpecialCreditResponse(credit) {
-  const special =
-    typeof credit === 'number'
-      ? undefined
-      : CREDIT_RESPONSE_BY_VALUE.get(/** @type {null | undefined} */ (credit));
+  const special = resolveSpecialCreditMapping(credit);
   if (special) {
     return special;
   }

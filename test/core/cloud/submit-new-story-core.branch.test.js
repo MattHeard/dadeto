@@ -6,6 +6,8 @@ describe('submitNewStoryCoreTestUtils', () => {
   });
 
   test('collectOptions falls back when body missing', () => {
-    expect(submitNewStoryCoreTestUtils.collectOptions(undefined, 10)).toEqual([]);
+    expect(submitNewStoryCoreTestUtils.collectOptions(undefined, 10)).toEqual(
+      []
+    );
   });
 });

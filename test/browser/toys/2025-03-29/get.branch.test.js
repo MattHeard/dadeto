@@ -27,25 +27,45 @@ describe('get toy error handling', () => {
     const env = createEnv(getData);
 
     const result = get('page', env);
-    expect(result).toContain('Error during data retrieval or path traversal for "page": oomph');
+    expect(result).toContain(
+      'Error during data retrieval or path traversal for "page": oomph'
+    );
   });
 
   test('formats stringified errors when JSON.stringify throws a string', () => {
-    const env = createEnv(() => ({ nested: { toJSON: () => { throw 'boom'; } } }));
+    const env = createEnv(() => ({
+      nested: {
+        toJSON: () => {
+          throw 'boom';
+        },
+      },
+    }));
 
     const result = get('nested', env);
     expect(result).toContain('boom');
   });
 
   test('reports JSON.stringify errors when an Error is thrown', () => {
-    const env = createEnv(() => ({ nested: { toJSON: () => { throw new Error('boom error'); } } }));
+    const env = createEnv(() => ({
+      nested: {
+        toJSON: () => {
+          throw new Error('boom error');
+        },
+      },
+    }));
 
     const result = get('nested', env);
     expect(result).toContain('boom error');
   });
 
   test('reports stringify failures with non-string throws as unknown errors', () => {
-    const env = createEnv(() => ({ nested: { toJSON: () => { throw 99; } } }));
+    const env = createEnv(() => ({
+      nested: {
+        toJSON: () => {
+          throw 99;
+        },
+      },
+    }));
 
     const result = get('nested', env);
     expect(result).toContain('unknown error');

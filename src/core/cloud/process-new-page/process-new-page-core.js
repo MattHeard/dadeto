@@ -551,6 +551,11 @@ async function resolveIncomingOptionContext({
   };
 }
 
+/**
+ *
+ * @param optionSnap
+ * @param optionRef
+ */
 function ensureOptionSnapshotRef(optionSnap, optionRef) {
   if (!optionSnap.ref) {
     optionSnap.ref = optionRef;

@@ -33,12 +33,30 @@ function hasDend1Structure(temporary) {
 }
 
 /**
+ * Check if temporary object is missing or lacks DEND1 structure.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Storage object.
+ * @returns {boolean} True when temporary is invalid or missing DEND1.
+ */
+function shouldSkipDend1(temporary) {
+  return !temporary || !hasDend1Structure(temporary);
+}
+
+/**
+ * Check if temporary object is missing or lacks STAR1 structure.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Storage object.
+ * @returns {boolean} True when temporary is invalid or missing STAR1.
+ */
+function shouldSkipStar1(temporary) {
+  return !temporary || !hasStar1Structure(temporary);
+}
+
+/**
  * Resolve legacy DEND1 structure or empty array.
  * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Temporary storage object.
  * @returns {DendriteStoryResult[]} DEND1 array or empty array.
  */
 function resolveLegacyStructure(temporary) {
-  if (!temporary || !hasDend1Structure(temporary)) {
+  if (shouldSkipDend1(temporary)) {
     return [];
   }
   return /** @type {DendriteStoryResult[]} */ (temporary.DEND1);
@@ -50,7 +68,7 @@ function resolveLegacyStructure(temporary) {
  * @returns {DendriteStoryResult[]} Array to use for STAR1.
  */
 function resolveStar1Structure(temporary) {
-  if (!temporary || !hasStar1Structure(temporary)) {
+  if (shouldSkipStar1(temporary)) {
     return resolveLegacyStructure(temporary);
   }
   return /** @type {DendriteStoryResult[]} */ (temporary.STAR1);

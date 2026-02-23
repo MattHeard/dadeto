@@ -14,7 +14,9 @@ describe('hideVariantHtmlTestUtils', () => {
   });
 
   test('hasParentWithGrandparent returns false for shallow refs', () => {
-    expect(hideVariantHtmlTestUtils.hasParentWithGrandparent({ parent: null })).toBe(false);
+    expect(
+      hideVariantHtmlTestUtils.hasParentWithGrandparent({ parent: null })
+    ).toBe(false);
   });
 
   test('hasGrandparent returns false for empty ref', () => {

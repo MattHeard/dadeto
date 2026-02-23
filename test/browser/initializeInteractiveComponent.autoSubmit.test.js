@@ -88,8 +88,7 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
     initializeInteractiveComponent(article, processingFunction, config);
 
     const changeListener = addedListeners.find(
-      entry =>
-        entry.element === autoSubmitCheckbox && entry.event === 'change'
+      entry => entry.element === autoSubmitCheckbox && entry.event === 'change'
     );
     expect(changeListener).toBeDefined();
     expect(config.dom.enable).toHaveBeenCalledWith(autoSubmitCheckbox);
@@ -124,19 +123,14 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
   });
 
   it('does not register a second listener when already auto submitting', () => {
-    const {
-      config,
-      autoSubmitCheckbox,
-      addedListeners,
-      inputElement,
-    } = createAutoSubmitContext({ includeAutoSubmit: true });
+    const { config, autoSubmitCheckbox, addedListeners, inputElement } =
+      createAutoSubmitContext({ includeAutoSubmit: true });
     const processingFunction = createProcessingFunction();
 
     initializeInteractiveComponent(article, processingFunction, config);
 
     const changeListener = addedListeners.find(
-      entry =>
-        entry.element === autoSubmitCheckbox && entry.event === 'change'
+      entry => entry.element === autoSubmitCheckbox && entry.event === 'change'
     );
     autoSubmitCheckbox.checked = true;
     changeListener.handler();
@@ -165,8 +159,7 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
     initializeInteractiveComponent(article, processingFunction, config);
 
     const changeListener = addedListeners.find(
-      entry =>
-        entry.element === autoSubmitCheckbox && entry.event === 'change'
+      entry => entry.element === autoSubmitCheckbox && entry.event === 'change'
     );
 
     changeListener.handler();
@@ -175,12 +168,8 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
   });
 
   it('skips auto submit wiring when no checkbox exists', () => {
-    const {
-      config,
-      addedListeners,
-      inputElement,
-      submitButton,
-    } = createAutoSubmitContext({ includeAutoSubmit: false });
+    const { config, addedListeners, inputElement, submitButton } =
+      createAutoSubmitContext({ includeAutoSubmit: false });
     const processingFunction = createProcessingFunction();
 
     initializeInteractiveComponent(article, processingFunction, config);

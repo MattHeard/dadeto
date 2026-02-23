@@ -13,7 +13,9 @@ describe('getModerationVariantTestUtils', () => {
   });
 
   test('resolveVariantFromData returns null when undefined', () => {
-    expect(getModerationVariantTestUtils.resolveVariantFromData(undefined)).toBeNull();
+    expect(
+      getModerationVariantTestUtils.resolveVariantFromData(undefined)
+    ).toBeNull();
   });
 
   test('extractPageFromVariant handles missing parent', () => {
@@ -35,13 +37,24 @@ describe('getModerationVariantTestUtils', () => {
   });
 
   test('handleVariantSnapshotResponse returns error response when status present', async () => {
-    const result = await getModerationVariantTestUtils.handleVariantSnapshotResponse(
-      { status: 418, body: {} }
-    );
+    const result =
+      await getModerationVariantTestUtils.handleVariantSnapshotResponse({
+        status: 418,
+        body: {},
+      });
     expect(result.status).toBe(418);
   });
 
-  function createVariantSnapshot({ variantData = null, storyTitle = null } = {}) {
+  /**
+   *
+   * @param root0
+   * @param root0.variantData
+   * @param root0.storyTitle
+   */
+  function createVariantSnapshot({
+    variantData = null,
+    storyTitle = null,
+  } = {}) {
     const storyRef = storyTitle
       ? {
           get: async () => ({ data: () => ({ title: storyTitle }) }),
@@ -69,9 +82,10 @@ describe('getModerationVariantTestUtils', () => {
 
   test('handles variant snapshot without story reference and data', async () => {
     const snapshot = createVariantSnapshot();
-    const result = await getModerationVariantTestUtils.handleVariantSnapshotResponse(
-      snapshot
-    );
+    const result =
+      await getModerationVariantTestUtils.handleVariantSnapshotResponse(
+        snapshot
+      );
 
     expect(result.status).toBe(200);
     expect(result.body.title).toBe('');
@@ -84,9 +98,10 @@ describe('getModerationVariantTestUtils', () => {
       storyTitle: 'Story Name',
     });
 
-    const result = await getModerationVariantTestUtils.handleVariantSnapshotResponse(
-      snapshot
-    );
+    const result =
+      await getModerationVariantTestUtils.handleVariantSnapshotResponse(
+        snapshot
+      );
 
     expect(result.body.title).toBe('Story Name');
     expect(result.body.content).toBe('body');

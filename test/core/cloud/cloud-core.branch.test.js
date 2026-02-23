@@ -38,20 +38,28 @@ describe('createVerifyAdmin error responses', () => {
   });
 
   test('uses default invalid token message for raw string errors', async () => {
-    const { handler, sendUnauthorized } = buildEnv(() => Promise.reject('oops'));
+    const { handler, sendUnauthorized } = buildEnv(() =>
+      Promise.reject('oops')
+    );
     await handler(req, {});
     expect(sendUnauthorized).toHaveBeenCalledWith({}, 'Invalid token');
   });
 
   test('resolveErrorMessageWithDefault returns provided string', () => {
-    expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('boom')).toBe('boom');
+    expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('boom')).toBe(
+      'boom'
+    );
   });
 
   test('resolveErrorMessageWithDefault returns default for empty string message', () => {
-    expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('')).toBe('Invalid token');
+    expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('')).toBe(
+      'Invalid token'
+    );
   });
 
   test('resolveErrorMessageWithDefault returns default for non-string message', () => {
-    expect(cloudCoreTestUtils.resolveErrorMessageWithDefault(42)).toBe('Invalid token');
+    expect(cloudCoreTestUtils.resolveErrorMessageWithDefault(42)).toBe(
+      'Invalid token'
+    );
   });
 });

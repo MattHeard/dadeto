@@ -31,7 +31,9 @@ describe('generate stats helpers', () => {
       { ok: true, json: async () => ({ access_token: 'token' }) },
       { ok: false, status: 500 },
     ];
-    const fetchMock = jest.fn().mockImplementation(() => Promise.resolve(responses.shift()));
+    const fetchMock = jest
+      .fn()
+      .mockImplementation(() => Promise.resolve(responses.shift()));
     const logger = { error: jest.fn() };
     const core = createGenerateStatsCore({
       ...baseDeps,

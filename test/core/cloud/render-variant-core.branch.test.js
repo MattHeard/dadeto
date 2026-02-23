@@ -8,8 +8,8 @@ describe('renderVariantCoreTestUtils', () => {
   });
 
   test('resolveVisibilityThreshold returns default when undefined', () => {
-    expect(
-      renderVariantCore.resolveVisibilityThreshold(undefined)
-    ).toBe(renderVariantCore.VISIBILITY_THRESHOLD);
+    expect(renderVariantCore.resolveVisibilityThreshold(undefined)).toBe(
+      renderVariantCore.VISIBILITY_THRESHOLD
+    );
   });
 });

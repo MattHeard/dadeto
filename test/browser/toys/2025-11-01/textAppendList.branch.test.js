@@ -27,6 +27,10 @@ describe('textAppendList normalization fallback', () => {
 });
 
 describe('textAppendList storage integration', () => {
+  /**
+   *
+   * @param storageFn
+   */
   function createStorageEnv(storageFn) {
     return {
       get(key) {

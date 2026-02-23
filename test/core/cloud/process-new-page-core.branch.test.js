@@ -13,17 +13,21 @@ describe('processNewPageTestUtils', () => {
 
   test('extractSubmissionData returns empty object when snapshot missing data', () => {
     const fakeSnapshot = { data: () => null };
-    expect(processNewPageTestUtils.extractSubmissionData(fakeSnapshot)).toEqual({});
+    expect(processNewPageTestUtils.extractSubmissionData(fakeSnapshot)).toEqual(
+      {}
+    );
   });
 
   test('isSubmissionProcessed returns true when flagged', () => {
-    expect(processNewPageTestUtils.isSubmissionProcessed({ processed: true })).toBe(true);
+    expect(
+      processNewPageTestUtils.isSubmissionProcessed({ processed: true })
+    ).toBe(true);
   });
 
   test('resolveRandomGenerator falls back when missing', () => {
-    expect(typeof processNewPageTestUtils.resolveRandomGenerator(undefined)).toBe(
-      'function'
-    );
+    expect(
+      typeof processNewPageTestUtils.resolveRandomGenerator(undefined)
+    ).toBe('function');
   });
 
   test('resolvePageDepth defaults to zero', () => {
@@ -66,9 +70,9 @@ describe('processNewPageTestUtils', () => {
   test('ensureOptionSnapshotRef attaches ref when missing', () => {
     const optionRef = {};
     const snap = { ref: null };
-    expect(processNewPageTestUtils.ensureOptionSnapshotRef(snap, optionRef)).toBe(
-      snap
-    );
+    expect(
+      processNewPageTestUtils.ensureOptionSnapshotRef(snap, optionRef)
+    ).toBe(snap);
     expect(snap.ref).toBe(optionRef);
   });
 
@@ -76,9 +80,9 @@ describe('processNewPageTestUtils', () => {
     expect(processNewPageTestUtils.resolveStoryRefOrEmpty(null)).toEqual({});
   });
 });
-  test('ensureOptionSnapshotRef keeps existing ref when present', () => {
-    const optionRef = {};
-    const snap = { ref: optionRef };
-    expect(processNewPageTestUtils.ensureOptionSnapshotRef(snap, {})).toBe(snap);
-    expect(snap.ref).toBe(optionRef);
-  });
+test('ensureOptionSnapshotRef keeps existing ref when present', () => {
+  const optionRef = {};
+  const snap = { ref: optionRef };
+  expect(processNewPageTestUtils.ensureOptionSnapshotRef(snap, {})).toBe(snap);
+  expect(snap.ref).toBe(optionRef);
+});
