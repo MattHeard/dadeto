@@ -206,8 +206,10 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     return entries.reduce(
       /** @param {string[]} jsFiles */
       /**
-       * @param jsFiles
-       * @param {import('fs').Dirent} entry
+       * Accumulate discovered JS files from a directory entry.
+       * @param {string[]} jsFiles - Files collected so far.
+       * @param {import('fs').Dirent} entry - Directory entry to inspect.
+       * @returns {string[]} Updated JS file list.
        */
       (jsFiles, entry) =>
         accumulateJsFiles(jsFiles, entry, { dir, listEntries }),

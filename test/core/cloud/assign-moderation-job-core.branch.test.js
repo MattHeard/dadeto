@@ -30,7 +30,6 @@ describe('assignModerationJobTestUtils', () => {
   });
 
   test('buildCorsOptions enforces POST method', () => {
-    const corsFn = () => null;
     const handler = () => null;
     const options = assignModerationJobTestUtils.buildCorsOptions(handler, {
       allowedOrigins: ['https://example.com'],

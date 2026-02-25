@@ -5,8 +5,9 @@ export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;
 
 /**
- *
- * @param visibilityThreshold
+ * Normalize visibility threshold with a default.
+ * @param {number | null | undefined} visibilityThreshold - Candidate threshold.
+ * @returns {number} Visibility threshold to use.
  */
 export function resolveVisibilityThreshold(visibilityThreshold) {
   return visibilityThreshold ?? VISIBILITY_THRESHOLD;

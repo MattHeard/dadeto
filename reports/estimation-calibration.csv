@@ -16,3 +16,5 @@ estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestam
 2026-02-23T19:41:49Z,matt-e1t,Achieve 100% branch coverage,78,2026-02-23T19:53:00Z,false
 2026-02-23T23:30:00Z,matt-e1t,Achieve 100% branch coverage (continued session),85,2026-02-23T23:45:00Z,true
 2026-02-23T23:50:00Z,dadeto-c8r1,Eliminate all ESLint complexity warnings,82,,
+2026-02-23T23:50:00Z,dadeto-c8r1,Eliminate all ESLint complexity warnings,82,2026-02-24T00:45:00Z,true
+2026-02-25T19:06:33Z,dadeto-ipfv,Reduce ESLint warnings from 31 to 20 (batch 1),88,2026-02-25T19:09:14Z,true

@@ -669,7 +669,10 @@ function hasMessageProperty(obj) {
  * @returns {string | null} String or null.
  */
 function extractStringOrNull(value) {
-  return typeof value === 'string' ? value : null;
+  if (typeof value === 'string') {
+    return value;
+  }
+  return null;
 }
 
 /**

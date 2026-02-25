@@ -552,9 +552,10 @@ async function resolveIncomingOptionContext({
 }
 
 /**
- *
- * @param optionSnap
- * @param optionRef
+ * Ensure option snapshot exposes its reference.
+ * @param {{ref?: unknown}} optionSnap - Option snapshot object to mutate.
+ * @param {unknown} optionRef - Snapshot reference to assign when missing.
+ * @returns {void}
  */
 function ensureOptionSnapshotRef(optionSnap, optionRef) {
   if (!optionSnap.ref) {

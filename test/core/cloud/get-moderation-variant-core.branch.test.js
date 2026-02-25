@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { getModerationVariantTestUtils } from '../../../src/core/cloud/get-moderation-variant/get-moderation-variant-core.js';
 
 describe('getModerationVariantTestUtils', () => {
@@ -46,10 +45,11 @@ describe('getModerationVariantTestUtils', () => {
   });
 
   /**
-   *
-   * @param root0
-   * @param root0.variantData
-   * @param root0.storyTitle
+   * Create a variant snapshot double.
+   * @param {object} [root0] - Optional configuration.
+   * @param {object | null} [root0.variantData] - Variant data payload returned by snapshot.
+   * @param {string | null} [root0.storyTitle] - Story title resolved through parent refs.
+   * @returns {{data: () => (object | null), ref: object}} Snapshot double.
    */
   function createVariantSnapshot({
     variantData = null,

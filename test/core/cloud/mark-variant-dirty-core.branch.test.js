@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import * as commonCore from '../../../src/core/commonCore.js';
 import { markVariantDirtyTestUtils } from '../../../src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js';
 
 describe('markVariantDirtyTestUtils', () => {

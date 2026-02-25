@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import * as commonCore from '../../../../src/core/commonCore.js';
 import { textAppendList } from '../../../../src/core/browser/toys/2025-11-01/textAppendList.js';
 
 describe('textAppendList normalization fallback', () => {
@@ -28,8 +27,9 @@ describe('textAppendList normalization fallback', () => {
 
 describe('textAppendList storage integration', () => {
   /**
-   *
-   * @param storageFn
+   * Build a storage test environment wrapper.
+   * @param {(value: string) => void} storageFn - Storage writer callback.
+   * @returns {{get: (key: string) => unknown}} Environment accessor object.
    */
   function createStorageEnv(storageFn) {
     return {

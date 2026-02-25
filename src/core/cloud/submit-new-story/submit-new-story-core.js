@@ -84,7 +84,10 @@ function getLowercaseHeaderFallback(getter) {
  * @returns {string | null} Header value or null.
  */
 function resolveUppercaseHeader(uppercase) {
-  return typeof uppercase === 'string' ? uppercase : null;
+  if (typeof uppercase === 'string') {
+    return uppercase;
+  }
+  return null;
 }
 
 /**
