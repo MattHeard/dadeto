@@ -62,6 +62,20 @@ test('returns optimal move for malformed schema', () => {
   });
 });
 
+test('returns optimal move when moves array contains non-object item', () => {
+  const env = new Map();
+  const input = {
+    moves: [0],
+  };
+  const result = ticTacToeMove(JSON.stringify(input), env);
+  const output = JSON.parse(result);
+  expect(output.moves).toHaveLength(1);
+  expect(output.moves[0]).toEqual({
+    player: 'X',
+    position: { row: 1, column: 1 },
+  });
+});
+
 test('detects invalid player alternation', () => {
   const env = new Map();
   const input = {

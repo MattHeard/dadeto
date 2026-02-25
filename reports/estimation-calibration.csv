@@ -34,3 +34,11 @@ estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestam
 2026-02-25T19:24:50Z,dadeto-0w2,Improve coverage for core/browser/inputHandlers/dendritePage.js,70,2026-02-25T19:24:50Z,true
 2026-02-25T19:24:50Z,dadeto-93l,Improve coverage for core/browser/inputHandlers/dendriteStory.js,65,2026-02-25T19:24:50Z,true
 2026-02-25T19:24:50Z,dadeto-5rc,Improve coverage for core/browser/admin/core.js,80,2026-02-25T19:24:50Z,true
+2026-02-25T19:28:59Z,dadeto-57va,Improve coverage for core/browser/toys/2025-04-06/ticTacToe.js,90,2026-02-25T19:33:47Z,true
+2026-02-25T19:28:59Z,dadeto-2bj,Improve coverage for core/admin-config.js,60,2026-02-25T19:28:59Z,true
+2026-02-25T19:28:59Z,dadeto-4qb,Improve coverage for core/core/encoding.js,60,2026-02-25T19:28:59Z,true
+2026-02-25T19:28:59Z,dadeto-4t1,Improve coverage for core/validation.js,60,2026-02-25T19:28:59Z,true
+2026-02-25T19:28:59Z,dadeto-bmc,Improve coverage for core/objectUtils.js,60,2026-02-25T19:28:59Z,true
+2026-02-25T19:28:59Z,dadeto-ox2,Improve coverage for core/cloud/submit-common.js,60,2026-02-25T19:28:59Z,true
+2026-02-25T19:28:59Z,dadeto-rl4,Improve coverage for core/browser/inputHandlers/removeElements.js,60,2026-02-25T19:28:59Z,true
+2026-02-25T19:28:59Z,dadeto-sg6,Improve coverage for core/browser/inputHandlers/default.js,60,2026-02-25T19:28:59Z,true
