@@ -18,3 +18,19 @@ estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestam
 2026-02-23T23:50:00Z,dadeto-c8r1,Eliminate all ESLint complexity warnings,82,,
 2026-02-23T23:50:00Z,dadeto-c8r1,Eliminate all ESLint complexity warnings,82,2026-02-24T00:45:00Z,true
 2026-02-25T19:06:33Z,dadeto-ipfv,Reduce ESLint warnings from 31 to 20 (batch 1),88,2026-02-25T19:09:14Z,true
+2026-02-25T19:23:42Z,dadeto-06u,Improve coverage for core/cloud/assign-moderation-job/assign-moderation-job-core.js,98,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-2kr,Improve coverage for core/browser/toys/browserToysCore.js,98,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-3w6,Improve coverage for core/browser/presenters/ticTacToeBoard.js,97,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-7ot,Improve coverage for core/browser/presenters/battleshipSolitaireClues.js,97,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-9jw,Improve coverage for core/browser/toys/2025-11-01/textAppendList.js,98,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-e3h,Improve coverage for core/browser/toys/2025-03-21/italics.js,98,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-kl7,Improve coverage for core/browser/toys/2025-03-29/fishingGame.js,95,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-q8d,Improve coverage for core/browser/toys/2025-03-29/get.js,98,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-7wf,Improve coverage for core/browser/admin/token-action.js,80,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-13x,Improve coverage for core/browser/toys/2025-11-15/dijkstra.js,75,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-2pn,Improve coverage for core/browser/toys/2025-11-15/index.js,75,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-3xh,Improve coverage for core/browser/toys/2025-11-15/edgeWeight.js,75,2026-02-25T19:23:42Z,true
+2026-02-25T19:23:42Z,dadeto-etq,Improve coverage for core/browser/toys/2025-11-15/calculateVisibility.js,75,2026-02-25T19:23:42Z,true
+2026-02-25T19:24:50Z,dadeto-0w2,Improve coverage for core/browser/inputHandlers/dendritePage.js,70,2026-02-25T19:24:50Z,true
+2026-02-25T19:24:50Z,dadeto-93l,Improve coverage for core/browser/inputHandlers/dendriteStory.js,65,2026-02-25T19:24:50Z,true
+2026-02-25T19:24:50Z,dadeto-5rc,Improve coverage for core/browser/admin/core.js,80,2026-02-25T19:24:50Z,true
