@@ -783,8 +783,12 @@ export const createKeyElement = ({
     syncHiddenField,
   });
   dom.addEventListener(keyEl, 'input', onKey);
-  const removeKeyListener = () =>
-    dom.removeEventListener(keyEl, 'input', onKey);
+  const removeKeyListener = createRemoveListener({
+    dom,
+    el: keyEl,
+    event: 'input',
+    handler: onKey,
+  });
   disposers.push(removeKeyListener);
 
   return keyEl;
@@ -976,7 +980,12 @@ export const setupAddButton = ({ dom, button, rowData, render, disposers }) => {
   dom.setTextContent(button, '+');
   const onAdd = createOnAddHandler(rowData ?? { rows: {}, rowTypes: {} }, render);
   dom.addEventListener(button, 'click', onAdd);
-  const removeAddListener = createRemoveAddListener(dom, button, onAdd);
+  const removeAddListener = createRemoveListener({
+    dom,
+    el: button,
+    event: 'click',
+    handler: onAdd,
+  });
   disposers.push(removeAddListener);
 };
 
@@ -1002,11 +1011,12 @@ export const setupRemoveButton = ({
   dom.setTextContent(button, '×');
   const onRemove = createOnRemove(rowData ?? { rows: {}, rowTypes: {} }, render, key);
   dom.addEventListener(button, 'click', onRemove);
-  const removeRemoveListener = createRemoveRemoveListener(
+  const removeRemoveListener = createRemoveListener({
     dom,
-    button,
-    onRemove
-  );
+    el: button,
+    event: 'click',
+    handler: onRemove,
+  });
   disposers.push(removeRemoveListener);
 };
 
@@ -1115,26 +1125,6 @@ const createButton = ({ dom, isAddButton, rowData, render, key, disposers }) => 
 
   return button;
 };
-
-/**
- * Creates a function that removes a click event listener from a button
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} btnEl - The button element to remove the listener from
- * @param {Function} onRemove - The click event handler to remove
- * @returns {Function} A function that removes the click event listener
- */
-const createRemoveRemoveListener = (dom, btnEl, onRemove) => () =>
-  dom.removeEventListener(btnEl, 'click', onRemove);
-
-/**
- * Creates a function that removes an event listener for add button clicks
- * @param {object} dom - The DOM utilities object
- * @param {HTMLElement} btnEl - The button element to remove the listener from
- * @param {Function} handler - The click event handler function to remove
- * @returns {Function} A function that removes the click event listener
- */
-const createRemoveAddListener = (dom, btnEl, handler) => () =>
-  dom.removeEventListener(btnEl, 'click', handler);
 
 const parsedRequestPredicates = [isObject, hasRequestField, hasStringUrl];
 
