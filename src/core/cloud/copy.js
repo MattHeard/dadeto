@@ -221,7 +221,7 @@ export function createCopyToInfraCore({
       files,
       sourceDir,
       targetDir,
-      io: { ...io, readDirEntries: async () => [] },
+      io,
       messageLogger,
     };
     await performCopy(copyParams);

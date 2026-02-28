@@ -34,6 +34,7 @@ describe('local workflow core', () => {
   test('extracts level-one headings and detects heading-only content', () => {
     expect(extractLevelOneHeading('# Title\n\nBody')).toBe('Title');
     expect(extractLevelOneHeading('No heading')).toBe('');
+    expect(hasOnlyLevelOneHeading('')).toBe(false);
     expect(hasOnlyLevelOneHeading('# Title')).toBe(true);
     expect(hasOnlyLevelOneHeading('# Title\n\nBody')).toBe(false);
   });

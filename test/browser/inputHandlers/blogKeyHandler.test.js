@@ -249,6 +249,35 @@ describe('blogKeyHandler', () => {
     expect(dom.removeChild).toHaveBeenCalledWith(container, existingForm);
   });
 
+  test('disposes field listeners when replacing a generated form', () => {
+    const dom = makeDom();
+    const container = { _children: [] };
+    const textInput = makeTextInput('');
+
+    blogKeyHandler(dom, container, textInput);
+
+    const generatedForm = container._children[0];
+    dom.querySelector.mockImplementation((_el, selector) =>
+      selector === '.dendrite-form' ? generatedForm : null
+    );
+
+    blogKeyHandler(dom, container, textInput);
+
+    expect(dom.removeEventListener).toHaveBeenCalledTimes(2);
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ type: 'text' }),
+      'input',
+      expect.any(Function)
+    );
+    expect(dom.removeEventListener).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ tag: 'textarea' }),
+      'input',
+      expect.any(Function)
+    );
+  });
+
   test('handles case where existing dendrite form already removed', () => {
     const dom = makeDom();
     const container = { _children: [] };

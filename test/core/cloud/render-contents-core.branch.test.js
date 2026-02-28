@@ -13,6 +13,7 @@ describe('renderContentsTestUtils', () => {
 
     const fn = renderContentsTestUtils.getDefaultConsoleError();
     expect(typeof fn).toBe('function');
+    expect(() => fn('ignored')).not.toThrow();
 
     console.error = original;
   });
