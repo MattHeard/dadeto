@@ -1,10 +1,16 @@
 import * as browserCore from '../browser-core.js';
+import {
+  appendLabelledField,
+  cleanContainer,
+  createManagedFormShell,
+  registerInputListener,
+  syncHiddenInput,
+} from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ title: string, existingKeys: string[] }} BlogKeyData */
 /** @typedef {() => void} Disposer */
 
-const BLOG_KEY_FORM_CLASS = browserCore.DENDRITE_FORM_SELECTOR.slice(1);
 const TEXTAREA_CLASS = 'toy-textarea';
 
 /**
@@ -35,19 +41,6 @@ function parseData(dom, textInput) {
 }
 
 /**
- * Serialize the current data state into the hidden text input.
- * @param {DOMHelpers} dom - DOM helpers.
- * @param {HTMLInputElement} textInput - Hidden input element.
- * @param {BlogKeyData} data - Current data state.
- * @returns {void}
- */
-function syncHidden(dom, textInput, data) {
-  const serialized = JSON.stringify(data);
-  dom.setValue(textInput, serialized);
-  browserCore.setInputValue(textInput, serialized);
-}
-
-/**
  * Parse newline-separated textarea content into a trimmed, non-empty string array.
  * @param {string | number | boolean | string[] | FileList | null | undefined} value - Raw textarea value.
  * @returns {string[]} Parsed lines.
@@ -60,71 +53,12 @@ function parseLines(value) {
 }
 
 /**
- * Call the dispose method on a form element if one exists.
- * @param {HTMLElement} existing - Form element to dispose.
- * @returns {void}
- */
-function disposeExisting(existing) {
-  const disposer = /** @type {any} */ (existing)._dispose;
-  if (typeof disposer === 'function') {
-    disposer();
-  }
-}
-
-/**
- * Remove any existing blog-key or dendrite form from the container.
- * @param {HTMLElement} container - Container element.
- * @param {DOMHelpers} dom - DOM helpers.
- * @returns {void}
- */
-function removeBlogKeyForm(container, dom) {
-  const existing = dom.querySelector(
-    container,
-    browserCore.DENDRITE_FORM_SELECTOR
-  );
-  if (existing) {
-    disposeExisting(existing);
-    dom.removeChild(container, existing);
-  }
-}
-
-/**
- * Remove other special inputs before rendering the blog-key form.
- * @param {DOMHelpers} dom - DOM helpers.
- * @param {HTMLElement} container - Container element.
- * @returns {void}
- */
-function cleanContainer(dom, container) {
-  [
-    browserCore.maybeRemoveNumber,
-    browserCore.maybeRemoveKV,
-    browserCore.maybeRemoveTextarea,
-    removeBlogKeyForm,
-  ].forEach(fn => fn(container, dom));
-}
-
-/**
- * Build a labelled wrapper div and append it to the form.
- * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLElement }} options - Label and input to wrap.
- * @returns {void}
- */
-function appendLabelledField({ dom, form, labelText, input }) {
-  const wrapper = dom.createElement('div');
-  const label = dom.createElement('label');
-  dom.setTextContent(label, labelText);
-  dom.appendChild(wrapper, label);
-  dom.appendChild(wrapper, input);
-  dom.appendChild(form, wrapper);
-}
-
-/**
  * Wire input events for a field and append it as a labelled row.
  * @param {{ dom: DOMHelpers, form: HTMLElement, element: HTMLElement, labelText: string, onInput: () => void, disposers: Disposer[] }} options - Wiring dependencies.
  * @returns {void}
  */
 function wireField({ dom, form, element, labelText, onInput, disposers }) {
-  dom.addEventListener(element, 'input', onInput);
-  disposers.push(() => dom.removeEventListener(element, 'input', onInput));
+  registerInputListener({ dom, input: element, handler: onInput, disposers });
   appendLabelledField({ dom, form, labelText, input: element });
 }
 
@@ -140,7 +74,7 @@ function buildTitleField({ dom, form, data, textInput, disposers }) {
   dom.setValue(input, data.title);
   const onInput = () => {
     data.title = String(dom.getValue(input));
-    syncHidden(dom, textInput, data);
+    syncHiddenInput(dom, textInput, data);
   };
   wireField({
     dom,
@@ -166,7 +100,7 @@ function buildExistingKeysField({ dom, form, data, textInput, disposers }) {
   dom.setValue(textarea, data.existingKeys.join('\n'));
   const onInput = () => {
     data.existingKeys = parseLines(dom.getValue(textarea));
-    syncHidden(dom, textInput, data);
+    syncHiddenInput(dom, textInput, data);
   };
   wireField({
     dom,
@@ -185,20 +119,18 @@ function buildExistingKeysField({ dom, form, data, textInput, disposers }) {
  */
 function buildForm({ dom, container, textInput }) {
   const data = parseData(dom, textInput);
-  const form = /** @type {HTMLElement & { _dispose?: Disposer }} */ (
-    dom.createElement('div')
-  );
-  dom.setClassName(form, BLOG_KEY_FORM_CLASS);
-  const nextSibling = dom.getNextSibling(textInput);
-  dom.insertBefore(container, form, nextSibling);
-
   /** @type {Disposer[]} */
   const disposers = [];
+  const form = createManagedFormShell({
+    dom,
+    container,
+    textInput,
+    disposers,
+  });
   buildTitleField({ dom, form, data, textInput, disposers });
   buildExistingKeysField({ dom, form, data, textInput, disposers });
 
-  syncHidden(dom, textInput, data);
-  form._dispose = () => disposers.forEach(fn => fn());
+  syncHiddenInput(dom, textInput, data);
 
   return form;
 }

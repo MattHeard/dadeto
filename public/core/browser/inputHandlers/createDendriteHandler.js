@@ -10,7 +10,7 @@ import * as browserCore from '../browser-core.js';
  * @param {HTMLElement & { _dispose?: Disposer }} node - Node to clean up.
  * @returns {void}
  */
-function disposeIfPossible(node) {
+export function disposeIfPossible(node) {
   const disposer = node._dispose;
   if (typeof disposer === 'function') {
     disposer();
@@ -23,7 +23,7 @@ function disposeIfPossible(node) {
  * @param {DOMHelpers} dom - DOM helpers.
  * @returns {void}
  */
-function removeExistingForm(container, dom) {
+export function removeExistingForm(container, dom) {
   const existing = dom.querySelector(
     container,
     browserCore.DENDRITE_FORM_SELECTOR
@@ -117,9 +117,9 @@ function createSetValueFactory(dom) {
  * Serialize the user data and mirror it in the hidden JSON input.
  * @param {DOMHelpers} dom - DOM helpers.
  * @param {HTMLInputElement} textInput - Hidden input element.
- * @param {DendriteData} data - Current payload snapshot.
+ * @param {Record<string, unknown>} data - Current payload snapshot.
  */
-function syncHiddenInput(dom, textInput, data) {
+export function syncHiddenInput(dom, textInput, data) {
   const serialised = JSON.stringify(data);
   const setValue = createSetValueFactory(dom);
   const syncFns = [setValue, browserCore.setInputValue];
@@ -161,6 +161,17 @@ function createInputListenerDisposer(dom, input, handler) {
 }
 
 /**
+ * Register an input listener and capture its disposer.
+ * @param {{ dom: DOMHelpers, input: HTMLInputElement | HTMLTextAreaElement | HTMLElement, handler: DOMEventListener, disposers: Disposer[] }} options - Listener registration dependencies.
+ * @returns {void}
+ */
+export function registerInputListener({ dom, input, handler, disposers }) {
+  dom.addEventListener(input, 'input', handler);
+  const inputDisposer = createInputListenerDisposer(dom, input, handler);
+  disposers.push(inputDisposer);
+}
+
+/**
  * Create an appender for a specific wrapper element.
  * @param {DOMHelpers} dom - DOM helpers.
  * @param {HTMLElement} wrapper - Container to append into.
@@ -168,6 +179,19 @@ function createInputListenerDisposer(dom, input, handler) {
  */
 function createWrapperAppender(dom, wrapper) {
   return child => dom.appendChild(wrapper, child);
+}
+
+/**
+ * Build a labelled wrapper div and append it to the form.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLElement }} options - Label and field to append.
+ * @returns {void}
+ */
+export function appendLabelledField({ dom, form, labelText, input }) {
+  const { fieldWrapper, label } = createFieldWrapper(dom);
+  dom.setTextContent(label, labelText);
+  const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
+  [label, input].forEach(appendToWrapper);
+  dom.appendChild(form, fieldWrapper);
 }
 
 /**
@@ -187,9 +211,7 @@ function createFieldInput(options) {
     textInput,
     data,
   });
-  dom.addEventListener(input, 'input', onInput);
-  const inputDisposer = createInputListenerDisposer(dom, input, onInput);
-  disposers.push(inputDisposer);
+  registerInputListener({ dom, input, handler: onInput, disposers });
   return input;
 }
 
@@ -273,6 +295,28 @@ function createDisposeForm(disposers) {
 }
 
 /**
+ * Create and insert the shared dendrite-style form shell.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement, disposers: Disposer[] }} options - Form shell dependencies.
+ * @returns {HTMLElement & { _dispose?: Disposer }} Inserted form shell.
+ */
+export function createManagedFormShell({
+  dom,
+  container,
+  textInput,
+  disposers,
+}) {
+  const dendriteFormClassName = browserCore.DENDRITE_FORM_SELECTOR.slice(1);
+  const form = /** @type {HTMLElement & { _dispose?: Disposer }} */ (
+    dom.createElement('div')
+  );
+  dom.setClassName(form, dendriteFormClassName);
+  const nextSibling = dom.getNextSibling(textInput);
+  dom.insertBefore(container, form, nextSibling);
+  form._dispose = createDisposeForm(disposers);
+  return form;
+}
+
+/**
  * Capture the arguments shared between field renderers and form builders.
  * @param {{data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Sync helpers for the form data.
  * @returns {{data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} Shared payload.
@@ -304,25 +348,31 @@ function runRemoverForContainer(container, dom, remover) {
 }
 
 /**
- *
- * @param dom
- * @param container
+ * Run a list of remover helpers against the current container.
+ * @param {HTMLElement} container - Container element to clean up.
+ * @param {DOMHelpers} dom - DOM helpers.
+ * @param {Function[]} removers - Cleanup helpers to execute.
+ * @returns {void}
  */
+export function runContainerRemovers(container, dom, removers) {
+  const runForContainer = runRemoverForContainer.bind(null, container, dom);
+  removers.forEach(runForContainer);
+}
+
 /**
  * Remove existing inputs and forms from the container.
  * @param {DOMHelpers} dom - DOM utilities.
  * @param {HTMLElement} container - Container element.
  * @returns {void}
  */
-function cleanContainer(dom, container) {
+export function cleanContainer(dom, container) {
   const removers = [
     browserCore.maybeRemoveNumber,
     browserCore.maybeRemoveKV,
     browserCore.maybeRemoveTextarea,
     removeExistingForm,
   ];
-  const runForContainer = runRemoverForContainer.bind(null, container, dom);
-  removers.forEach(runForContainer);
+  runContainerRemovers(container, dom, removers);
 }
 
 /**
@@ -332,13 +382,12 @@ function cleanContainer(dom, container) {
  */
 function createBuildForm(fields) {
   return function buildForm(dom, { container, textInput, data, disposers }) {
-    const dendriteFormClassName = browserCore.DENDRITE_FORM_SELECTOR.slice(1);
-    const form = /** @type {HTMLElement & { _dispose?: Disposer }} */ (
-      dom.createElement('div')
-    );
-    dom.setClassName(form, dendriteFormClassName);
-    const nextSibling = dom.getNextSibling(textInput);
-    dom.insertBefore(container, form, nextSibling);
+    const form = createManagedFormShell({
+      dom,
+      container,
+      textInput,
+      disposers,
+    });
 
     const renderField = createFieldRenderer({
       dom,
@@ -350,8 +399,6 @@ function createBuildForm(fields) {
     fields.forEach(renderField);
 
     syncHiddenInput(dom, textInput, data);
-
-    form._dispose = createDisposeForm(disposers);
 
     return form;
   };
