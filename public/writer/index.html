@@ -22,6 +22,8 @@
         --strong-line: rgba(29, 38, 31, 0.28);
         --accent: #a03c2f;
         --accent-soft: rgba(160, 60, 47, 0.14);
+        --pin: #2f6c8f;
+        --pin-soft: rgba(47, 108, 143, 0.12);
         --success: #2d6a4f;
       }
 
@@ -276,7 +278,7 @@
       }
 
       .panel-text-line.is-target {
-        background: rgba(160, 60, 47, 0.08);
+        background: var(--pin-soft);
       }
 
       .panel-text-line.is-selected {
@@ -322,7 +324,7 @@
       }
 
       .editor-highlight.is-target {
-        background: rgba(160, 60, 47, 0.08);
+        background: var(--pin-soft);
       }
 
       .editor-highlight.is-selected {
@@ -434,6 +436,14 @@
           >
             Clear Pin
           </button>
+          <button
+            id="toggle-pin-visibility"
+            class="mini-button"
+            type="button"
+            title="Hide pin highlights"
+          >
+            Hide Pins
+          </button>
           <span class="pill" id="line-pin-status">No line pins</span>
         </div>
         <div class="sequence" id="sequence"></div>
@@ -490,6 +500,7 @@
       const linePinActionButton = document.getElementById('line-pin-action');
       const linePinStatus = document.getElementById('line-pin-status');
       const clearLinePinButton = document.getElementById('clear-line-pin');
+      const togglePinVisibilityButton = document.getElementById('toggle-pin-visibility');
       const previousContent = document.getElementById('previous-content');
       const currentTitle = document.getElementById('current-title');
       const currentStats = document.getElementById('current-stats');
@@ -565,6 +576,7 @@
         selectedLineSource: 'current',
         linePins: {},
         pendingPinSelection: null,
+        arePinsVisible: true,
       };
 
       const STORAGE_PREFERENCE_KEY = 'dadeto.writer.storage-preference';
@@ -1120,7 +1132,7 @@
         previousContent.scrollTo({ top, behavior: 'smooth' });
       };
 
-      const measureTextareaLineTop = lineNumber => {
+      const measureTextareaLineMetrics = lineNumber => {
         const mirror = document.createElement('div');
         const computedStyle = window.getComputedStyle(currentContent);
         mirror.style.position = 'absolute';
@@ -1134,29 +1146,35 @@
         mirror.style.letterSpacing = computedStyle.letterSpacing;
         mirror.style.whiteSpace = 'pre-wrap';
         mirror.style.overflowWrap = 'anywhere';
-
         const lines = currentContent.value.replace(/\r\n/g, '\n').split('\n');
-        const beforeText = lines.slice(0, Math.max(lineNumber - 1, 0)).join('\n');
-        const marker = document.createElement('span');
-        marker.textContent = '\u200b';
-        mirror.textContent = beforeText;
-        mirror.appendChild(marker);
+        const lineWrapper = document.createElement('div');
+        lines.forEach(line => {
+          const lineElement = document.createElement('div');
+          lineElement.style.minHeight = computedStyle.lineHeight;
+          lineElement.style.whiteSpace = 'pre-wrap';
+          lineElement.style.overflowWrap = 'anywhere';
+          lineElement.textContent = line || ' ';
+          lineWrapper.appendChild(lineElement);
+        });
+        mirror.appendChild(lineWrapper);
         document.body.appendChild(mirror);
-        const top = marker.offsetTop;
-        mirror.remove();
-        return top;
-      };
 
-      const measureTextareaLineHeight = lineNumber => {
-        const startTop = measureTextareaLineTop(lineNumber);
-        const nextTop = measureTextareaLineTop(lineNumber + 1);
-        return Math.max(27.2, nextTop - startTop);
+        const targetIndex = Math.min(Math.max(lineNumber - 1, 0), Math.max(lines.length - 1, 0));
+        const targetLine = lineWrapper.children[targetIndex];
+        const top = targetLine?.offsetTop ?? 0;
+        const height = targetLine?.offsetHeight ?? Number.parseFloat(computedStyle.lineHeight);
+        mirror.remove();
+        return {
+          top,
+          height: Math.max(27.2, height),
+        };
       };
 
       const scrollCurrentToLine = lineNumber => {
+        const { top: lineTop } = measureTextareaLineMetrics(lineNumber);
         const top = Math.max(
           0,
-          measureTextareaLineTop(lineNumber) - (currentContent.clientHeight / 2)
+          lineTop - (currentContent.clientHeight / 2)
         );
         currentContent.scrollTo({ top, behavior: 'smooth' });
       };
@@ -1176,11 +1194,32 @@
           .forEach(line => line.classList.remove(className));
       };
 
+      const clearPreviousPinHighlights = () => {
+        clearPreviousLineClasses('is-target');
+      };
+
       const highlightPreviousSelection = lineNumber => {
         clearPreviousLineClasses('is-selected');
         const target = previousContent.querySelector(`[data-line-number="${lineNumber}"]`);
         if (target) {
           target.classList.add('is-selected');
+        }
+      };
+
+      const refreshPreviousPinHighlight = () => {
+        clearPreviousPinHighlights();
+        if (!state.arePinsVisible) {
+          return;
+        }
+
+        const targetLine = getPinnedPreviousLine(state.selectedCurrentLine);
+        if (!targetLine) {
+          return;
+        }
+
+        const target = previousContent.querySelector(`[data-line-number="${targetLine}"]`);
+        if (target) {
+          target.classList.add('is-target');
         }
       };
 
@@ -1196,7 +1235,7 @@
         }
 
         const pinnedLine = getPinnedCurrentLine(state.selectedPreviousLine);
-        if (pinnedLine) {
+        if (state.arePinsVisible && pinnedLine) {
           selections.push({
             lineNumber: pinnedLine,
             className:
@@ -1214,10 +1253,11 @@
           }
           seen.add(key);
 
+          const { top, height } = measureTextareaLineMetrics(lineNumber);
           const highlight = document.createElement('div');
           highlight.className = `editor-highlight ${className}`;
-          highlight.style.top = `${measureTextareaLineTop(lineNumber) - currentContent.scrollTop}px`;
-          highlight.style.height = `${measureTextareaLineHeight(lineNumber)}px`;
+          highlight.style.top = `${top - currentContent.scrollTop}px`;
+          highlight.style.height = `${height}px`;
           currentHighlightLayer.appendChild(highlight);
         });
       };
@@ -1255,6 +1295,8 @@
           linePinActionButton.textContent = 'Add Pin';
           linePinActionButton.disabled = true;
           clearLinePinButton.disabled = true;
+          togglePinVisibilityButton.disabled = true;
+          togglePinVisibilityButton.textContent = 'Hide Pins';
           return;
         }
 
@@ -1274,6 +1316,11 @@
         linePinActionButton.textContent = selectedPin ? 'Change Pin' : 'Add Pin';
         linePinActionButton.disabled = !hasPreviousDocument;
         clearLinePinButton.disabled = !selectedPin;
+        togglePinVisibilityButton.disabled = pins.length === 0;
+        togglePinVisibilityButton.textContent = state.arePinsVisible ? 'Hide Pins' : 'Show Pins';
+        togglePinVisibilityButton.title = state.arePinsVisible
+          ? 'Hide pin highlights'
+          : 'Show pin highlights';
       };
 
       const syncFromPreviousLine = lineNumber => {
@@ -1285,10 +1332,13 @@
         }
         const targetLine = getPinnedCurrentLine(lineNumber);
         if (targetLine) {
-          scrollCurrentToLine(targetLine);
-          state.selectedCurrentLine = targetLine;
+          if (state.arePinsVisible) {
+            scrollCurrentToLine(targetLine);
+            state.selectedCurrentLine = targetLine;
+          }
         }
         renderCurrentHighlights();
+        refreshPreviousPinHighlight();
         updateLinePinStatus();
       };
 
@@ -1300,10 +1350,13 @@
         }
         const targetLine = getPinnedPreviousLine(lineNumber);
         if (targetLine) {
-          scrollPreviousToLine(targetLine);
-          state.selectedPreviousLine = targetLine;
+          if (state.arePinsVisible) {
+            scrollPreviousToLine(targetLine);
+            state.selectedPreviousLine = targetLine;
+          }
         }
         renderCurrentHighlights();
+        refreshPreviousPinHighlight();
         updateLinePinStatus();
       };
 
@@ -1415,6 +1468,7 @@
         );
         state.pendingPinSelection = null;
         renderCurrentHighlights();
+        refreshPreviousPinHighlight();
         updateLinePinStatus();
         state.lastSavedValues = Object.fromEntries(
           state.workflow.documents.map(document => [document.id, document.content])
@@ -1548,10 +1602,25 @@
         );
         setPinsForVisiblePair(nextPins);
         state.pendingPinSelection = null;
-        clearPreviousLineClasses('is-target');
+        clearPreviousPinHighlights();
         renderCurrentHighlights();
+        refreshPreviousPinHighlight();
         updateLinePinStatus();
         setSaveState('Cleared line pin', 'saved');
+      });
+
+      togglePinVisibilityButton.addEventListener('click', () => {
+        state.arePinsVisible = !state.arePinsVisible;
+        if (!state.arePinsVisible) {
+          clearPreviousPinHighlights();
+        }
+        renderCurrentHighlights();
+        refreshPreviousPinHighlight();
+        updateLinePinStatus();
+        setSaveState(
+          state.arePinsVisible ? 'Pin highlights shown' : 'Pin highlights hidden',
+          'saved'
+        );
       });
 
       currentContent.addEventListener('input', () => {
