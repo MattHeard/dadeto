@@ -1,6 +1,7 @@
 import {
   assertFunction,
   ensureString,
+  isNonNullObject,
   normalizeNonStringValue,
   stringOrNull,
 } from './common-core.js';
@@ -642,14 +643,7 @@ export function matchBearerToken(header) {
 
 const defaultMissingTokenMessage = 'Missing token';
 
-/**
- * Check if a value is a non-null object.
- * @param {unknown} value - Value to check.
- * @returns {boolean} True when value is an object.
- */
-export function isObject(value) {
-  return Boolean(value) && typeof value === 'object';
-}
+export const isObject = isNonNullObject;
 
 /**
  * Check if an object has a message property.
@@ -664,24 +658,12 @@ function hasMessageProperty(obj) {
 }
 
 /**
- * Extract string if candidate is a string type.
- * @param {unknown} value - Candidate value.
- * @returns {string | null} String or null.
- */
-function extractStringOrNull(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-  return null;
-}
-
-/**
  * Resolve message string with invalid token fallback.
  * @param {unknown} messageStr Candidate message string.
  * @returns {string} Message or 'Invalid token'.
  */
 function resolveErrorMessageWithDefault(messageStr) {
-  const message = extractStringOrNull(messageStr);
+  const message = normalizeHeaderValue(messageStr);
   return message || 'Invalid token';
 }
 

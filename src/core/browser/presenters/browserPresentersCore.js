@@ -9,3 +9,6 @@ export function createPreFromContent(content, dom) {
   dom.setTextContent(pre, content);
   return pre;
 }
+
+/** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
+/** @typedef {Pick<DOMHelpers, 'createElement'|'setTextContent'>} PresenterDOMHelpers */

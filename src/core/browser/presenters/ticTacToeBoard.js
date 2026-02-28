@@ -1,7 +1,6 @@
 import { createPreFromContent } from './browserPresentersCore.js';
 
-/** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
-/** @typedef {Pick<DOMHelpers, 'createElement'|'setTextContent'>} PresenterDOMHelpers */
+/** @typedef {import('./browserPresentersCore.js').PresenterDOMHelpers} PresenterDOMHelpers */
 
 /**
  * @typedef {object} TicTacToePosition

@@ -66,15 +66,6 @@ function resolveUuid(request, getUuid) {
 }
 
 /**
- * Check if credit value is special (null or undefined).
- * @param {number | null | undefined} credit - Credit value to check.
- * @returns {boolean} True if special value.
- */
-function isSpecialCreditValue(credit) {
-  return credit === null || credit === undefined;
-}
-
-/**
  * Resolve special response for non-numeric credit values.
  * @param {unknown} credit - Credit value to lookup.
  * @returns {{ status: number, body: unknown } | undefined} Special response or undefined.
@@ -105,14 +96,10 @@ function getSpecialCreditResponse(credit) {
  * @returns {{ status: number, body: unknown }} HTTP response describing the outcome.
  */
 function mapCreditToResponse(credit) {
-  if (isSpecialCreditValue(credit)) {
-    return getSpecialCreditResponse(credit);
-  }
-  return { status: 200, body: { credit } };
+  return getSpecialCreditResponse(credit);
 }
 
 export const getApiKeyCreditTestUtils = {
-  isSpecialCreditValue,
   getSpecialCreditResponse,
   mapCreditToResponse,
 };

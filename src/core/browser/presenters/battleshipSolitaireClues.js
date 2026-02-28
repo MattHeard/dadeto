@@ -27,8 +27,7 @@ import { isObject } from '../common.js';
 import { safeParseJson, getFirstErrorMessage } from '../browser-core.js';
 import { createPreFromContent } from './browserPresentersCore.js';
 
-/** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
-/** @typedef {Pick<DOMHelpers, 'createElement'|'setTextContent'>} PresenterDOMHelpers */
+/** @typedef {import('./browserPresentersCore.js').PresenterDOMHelpers} PresenterDOMHelpers */
 
 /**
  * @typedef {object} BattleshipClueCandidate

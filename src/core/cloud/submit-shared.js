@@ -115,11 +115,7 @@ function normalizeHeadersRecord(headers) {
  * @returns {string | null} Normalized header value or null.
  */
 function getAuthorizationHeaderValue(headers, key) {
-  if (!headers) {
-    return null;
-  }
-
-  return normalizeAuthorizationCandidate(headers[key]);
+  return normalizeAuthorizationCandidate(headers?.[key]);
 }
 
 /**

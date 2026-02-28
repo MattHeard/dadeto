@@ -65,11 +65,8 @@ function traversePathSegments(data, pathSegments) {
  */
 function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = getNextPath(currentPath, segment);
-  const errorResult = createNonObjectErrorResult(
-    currentValue,
-    segment,
-    nextPath
-  );
+  const traversalArgs = [currentValue, segment, nextPath];
+  const errorResult = createNonObjectErrorResult(...traversalArgs);
   return errorResult ?? getSegmentValueOrError(currentValue, segment, nextPath);
 }
 
@@ -113,6 +110,17 @@ function getSegmentValueOrError(currentValue, segment, nextPath) {
 }
 
 /**
+ * Build a traversal state object.
+ * @param {*} value Value at the current traversal point.
+ * @param {string} path Fully qualified traversal path.
+ * @param {string | null} error Error message when traversal failed.
+ * @returns {PathTraversalState} Structured traversal state.
+ */
+function createTraversalState(value, path, error) {
+  return { value, path, error };
+}
+
+/**
  * Attempt to resolve the array entry for the active segment.
  * @param {object|unknown[]} currentValue - Current value being inspected.
  * @param {string} segment - Segment text interpreted as an index.
@@ -127,7 +135,7 @@ function getArraySegmentValue(currentValue, segment, nextPath) {
   if (arrayIndex === null || arrayIndex >= currentValue.length) {
     return null;
   }
-  return { value: currentValue[arrayIndex], path: nextPath, error: null };
+  return createTraversalState(currentValue[arrayIndex], nextPath, null);
 }
 
 /**
@@ -142,7 +150,7 @@ function getSegmentObjectValue(currentValue, segment, nextPath) {
     return null;
   }
   const objectValue = /** @type {Record<string, unknown>} */ (currentValue);
-  return { value: objectValue[segment], path: nextPath, error: null };
+  return createTraversalState(objectValue[segment], nextPath, null);
 }
 
 /**
@@ -179,11 +187,7 @@ function createNonObjectErrorResult(currentValue, segment, nextPath) {
     nextPath
   );
   if (nonObjectError !== null) {
-    return {
-      value: currentValue,
-      path: nextPath,
-      error: nonObjectError,
-    };
+    return createTraversalState(currentValue, nextPath, nonObjectError);
   }
   return null;
 }

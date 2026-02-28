@@ -63,53 +63,98 @@ function wireField({ dom, form, element, labelText, onInput, disposers }) {
 }
 
 /**
- * Build and wire the title text input.
- * @param {{ dom: DOMHelpers, form: HTMLElement, data: BlogKeyData, textInput: HTMLInputElement, disposers: Disposer[] }} options - Field construction dependencies.
+ * Run a blog-key data mutation and resync the hidden payload.
+ * @param {{ dom: DOMHelpers, textInput: HTMLInputElement, data: BlogKeyData, applyMutation: () => void }} options Update inputs.
  * @returns {void}
  */
-function buildTitleField({ dom, form, data, textInput, disposers }) {
-  const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
-  dom.setType(input, 'text');
-  dom.setPlaceholder(input, 'Blog post title');
-  dom.setValue(input, data.title);
-  const onInput = () => {
-    data.title = String(dom.getValue(input));
-    syncHiddenInput(dom, textInput, data);
-  };
+function updateBlogKeyData({ dom, textInput, data, applyMutation }) {
+  applyMutation();
+  syncHiddenInput(dom, textInput, data);
+}
+
+/**
+ * Build and wire a blog-key field using the shared labelled-field flow.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   form: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   data: BlogKeyData,
+ *   disposers: Disposer[],
+ *   element: HTMLElement,
+ *   initialValue: string,
+ *   labelText: string,
+ *   configureElement: (element: HTMLElement) => void,
+ *   updateData: () => void
+ * }} options Field configuration.
+ * @returns {void}
+ */
+function buildBlogKeyField(options) {
+  const {
+    dom,
+    form,
+    textInput,
+    data,
+    disposers,
+    element,
+    initialValue,
+    labelText,
+    configureElement,
+    updateData,
+  } = options;
+  configureElement(element);
+  dom.setValue(element, initialValue);
+  const onInput = () =>
+    updateBlogKeyData({ dom, textInput, data, applyMutation: updateData });
   wireField({
     dom,
     form,
-    element: input,
-    labelText: 'title',
+    element,
+    labelText,
     onInput,
     disposers,
   });
 }
 
 /**
- * Build and wire the existingKeys textarea (one key per line).
- * @param {{ dom: DOMHelpers, form: HTMLElement, data: BlogKeyData, textInput: HTMLInputElement, disposers: Disposer[] }} options - Field construction dependencies.
- * @returns {void}
+ * Create the field definitions used by the blog-key form.
+ * @param {{ dom: DOMHelpers, data: BlogKeyData }} options Field-definition collaborators.
+ * @returns {Array<Omit<Parameters<typeof buildBlogKeyField>[0], 'form' | 'textInput' | 'disposers' | 'data'>>} Blog-key field definitions.
  */
-function buildExistingKeysField({ dom, form, data, textInput, disposers }) {
+function createBlogKeyFields({ dom, data }) {
+  const titleInput = /** @type {HTMLInputElement} */ (
+    dom.createElement('input')
+  );
   const textarea = /** @type {HTMLTextAreaElement} */ (
     dom.createElement('textarea')
   );
-  dom.setClassName(textarea, TEXTAREA_CLASS);
-  dom.setPlaceholder(textarea, 'GERM1\nTEXT1\nSTAR1');
-  dom.setValue(textarea, data.existingKeys.join('\n'));
-  const onInput = () => {
-    data.existingKeys = parseLines(dom.getValue(textarea));
-    syncHiddenInput(dom, textInput, data);
-  };
-  wireField({
-    dom,
-    form,
-    element: textarea,
-    labelText: 'existingKeys (one per line)',
-    onInput,
-    disposers,
-  });
+  return [
+    {
+      dom,
+      element: titleInput,
+      initialValue: data.title,
+      labelText: 'title',
+      configureElement: field => {
+        dom.setType(/** @type {HTMLInputElement} */ (field), 'text');
+        dom.setPlaceholder(field, 'Blog post title');
+      },
+      updateData: () => {
+        data.title = String(dom.getValue(titleInput));
+      },
+    },
+    {
+      dom,
+      element: textarea,
+      initialValue: data.existingKeys.join('\n'),
+      labelText: 'existingKeys (one per line)',
+      configureElement: field => {
+        dom.setClassName(field, TEXTAREA_CLASS);
+        dom.setPlaceholder(field, 'GERM1\nTEXT1\nSTAR1');
+      },
+      updateData: () => {
+        data.existingKeys = parseLines(dom.getValue(textarea));
+      },
+    },
+  ];
 }
 
 /**
@@ -127,8 +172,16 @@ function buildForm({ dom, container, textInput }) {
     textInput,
     disposers,
   });
-  buildTitleField({ dom, form, data, textInput, disposers });
-  buildExistingKeysField({ dom, form, data, textInput, disposers });
+  const fieldDefinitions = createBlogKeyFields({ dom, data });
+  fieldDefinitions.forEach(field =>
+    buildBlogKeyField({
+      ...field,
+      form,
+      textInput,
+      data,
+      disposers,
+    })
+  );
 
   syncHiddenInput(dom, textInput, data);
 
