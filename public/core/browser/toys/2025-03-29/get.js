@@ -65,6 +65,7 @@ function traversePathSegments(data, pathSegments) {
  */
 function traverseSegment(currentValue, segment, currentPath) {
   const nextPath = getNextPath(currentPath, segment);
+  /** @type {[unknown, string, string]} */
   const traversalArgs = [currentValue, segment, nextPath];
   const errorResult = createNonObjectErrorResult(...traversalArgs);
   return errorResult ?? getSegmentValueOrError(currentValue, segment, nextPath);

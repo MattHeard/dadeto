@@ -35,7 +35,7 @@ export function textAppendList(input, env) {
  * @returns {string} Normalized string value.
  */
 function normalizeInput(value) {
-  return stringOrFallback(value, normalizeNonStringValue);
+  return stringOrFallback(value, () => normalizeNonStringValue(value)) || '';
 }
 
 /**
