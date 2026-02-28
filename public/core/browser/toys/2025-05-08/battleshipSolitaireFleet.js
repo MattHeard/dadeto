@@ -647,10 +647,11 @@ function convertShipsToArray(cfg) {
  * @returns {number} Parsed number.
  */
 function parseDimension(value) {
-  if (typeof value === 'string') {
-    return parseInt(value, 10);
+  if (typeof value !== 'string') {
+    return value;
   }
-  return value;
+
+  return Number.parseInt(value, 10);
 }
 
 /**

@@ -161,20 +161,11 @@ function isMonthInPeriod(month, period) {
 }
 
 /**
- * Extract label from period when available.
- * @param {{label: TimeOfDayLabel} | undefined} period - Period with label.
- * @returns {TimeOfDayLabel | undefined} Period label or undefined.
+ * Extract the label from a configured period when available.
+ * @param {{label?: TimeOfDayLabel | SeasonLabel} | undefined} period Configured period.
+ * @returns {TimeOfDayLabel | SeasonLabel | undefined} Period label or undefined.
  */
-function getTimeOfDayLabelFromPeriod(period) {
-  return period?.label;
-}
-
-/**
- * Extract label from period when available.
- * @param {{label: SeasonLabel} | undefined} period - Period with label.
- * @returns {SeasonLabel | undefined} Period label or undefined.
- */
-function getSeasonLabelFromPeriod(period) {
+function getPeriodLabel(period) {
   return period?.label;
 }
 
@@ -186,7 +177,7 @@ function getSeasonLabelFromPeriod(period) {
 function findTimeOfDayLabel(hour) {
   const normalizedHour = ((hour % 24) + 24) % 24;
   const period = timeOfDayPeriods.find(p => isHourInPeriod(normalizedHour, p));
-  const label = getTimeOfDayLabelFromPeriod(period);
+  const label = getPeriodLabel(period);
   return label ?? 'night';
 }
 
@@ -198,7 +189,7 @@ function findTimeOfDayLabel(hour) {
 function findSeasonLabel(month) {
   const normalizedMonth = ((month % 12) + 12) % 12;
   const period = seasonPeriods.find(p => isMonthInPeriod(normalizedMonth, p));
-  const label = getSeasonLabelFromPeriod(period);
+  const label = getPeriodLabel(period);
   return label ?? 'winter';
 }
 

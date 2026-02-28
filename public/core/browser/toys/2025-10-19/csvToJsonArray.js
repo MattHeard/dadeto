@@ -1,11 +1,3 @@
-/**
- * CSV to JSON Array Toy
- * ----------------------------------------------------------
- * Converts a CSV string containing a header row and one or more data rows into
- * a JSON array string. Each data row becomes an object whose keys are sourced
- * from the header. Empty values are omitted from the resulting objects.
- */
-
 import { parseCsvLine } from './toys-core.js';
 import { buildWhen } from '../../common.js';
 import { whenString } from '../../../commonCore.js';

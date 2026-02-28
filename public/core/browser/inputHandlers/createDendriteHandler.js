@@ -182,6 +182,17 @@ function createWrapperAppender(dom, wrapper) {
 }
 
 /**
+ * Append the label/input pair into a wrapper and then insert that wrapper into the form.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, fieldWrapper: HTMLElement, label: HTMLElement, input: HTMLElement }} options Wrapper insertion helpers.
+ * @returns {void}
+ */
+function appendWrappedField({ dom, form, fieldWrapper, label, input }) {
+  const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
+  [label, input].forEach(appendToWrapper);
+  dom.appendChild(form, fieldWrapper);
+}
+
+/**
  * Build a labelled wrapper div and append it to the form.
  * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLElement }} options - Label and field to append.
  * @returns {void}
@@ -189,9 +200,7 @@ function createWrapperAppender(dom, wrapper) {
 export function appendLabelledField({ dom, form, labelText, input }) {
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, labelText);
-  const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
-  [label, input].forEach(appendToWrapper);
-  dom.appendChild(form, fieldWrapper);
+  appendWrappedField({ dom, form, fieldWrapper, label, input });
 }
 
 /**
@@ -221,15 +230,26 @@ function createFieldInput(options) {
  * @returns {{fieldWrapper: HTMLElement}} Wrapped elements ready for insertion.
  */
 function createFieldElements(options) {
-  const { dom, placeholder } = options;
+  const { dom, placeholder, form } =
+    /** @type {{ dom: DOMHelpers, placeholder: string, form: HTMLElement }} */ (
+      options
+    );
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, placeholder);
 
   const input = createFieldInput(options);
-  const appendToWrapper = createWrapperAppender(dom, fieldWrapper);
-  [label, input].forEach(appendToWrapper);
+  appendWrappedField({ dom, form, fieldWrapper, label, input });
 
   return { fieldWrapper };
+}
+
+/**
+ * Build and wire a field wrapper while preserving creation order.
+ * @param {{dom: DOMHelpers, form: HTMLElement, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options Field render inputs.
+ * @returns {void}
+ */
+function buildWrappedField(options) {
+  createFieldElements(options);
 }
 
 /**
@@ -247,13 +267,13 @@ function buildField({
   disposers,
 }) {
   const sharedArgs = getSharedFormArgs({ data, textInput, disposers });
-  const { fieldWrapper } = createFieldElements({
+  buildWrappedField({
     dom,
+    form,
     key,
     placeholder,
     ...sharedArgs,
   });
-  dom.appendChild(form, fieldWrapper);
 }
 
 /**

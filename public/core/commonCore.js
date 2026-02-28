@@ -94,13 +94,7 @@ function withStringFallback(value, fallback, isNormalizedAcceptable) {
  */
 export function ensureString(value) {
   const normalized = stringOrNull(value);
-  return /** @type {string} */ (
-    when(
-      normalized !== null,
-      () => normalized,
-      () => ''
-    )
-  );
+  return resolveNormalizedString(normalized, () => '');
 }
 
 /**
@@ -116,13 +110,7 @@ export function stringOrDefault(value, fallback) {
     normalized => normalized !== undefined
   );
 
-  return /** @type {string} */ (
-    when(
-      normalized !== null,
-      () => normalized,
-      () => fallback
-    )
-  );
+  return resolveNormalizedString(normalized, () => fallback);
 }
 
 /**
@@ -271,6 +259,18 @@ function resolveSafeExecutionResult(result, fallback) {
     return fallback();
   }
   return result;
+}
+
+/**
+ * Resolve a normalized string with a fallback when the normalized value is null.
+ * @param {string | null} normalized Candidate normalized string.
+ * @param {() => string} fallback Fallback value producer.
+ * @returns {string} Normalized string or fallback.
+ */
+function resolveNormalizedString(normalized, fallback) {
+  return /** @type {string} */ (
+    when(normalized !== null, () => normalized, fallback)
+  );
 }
 
 /**

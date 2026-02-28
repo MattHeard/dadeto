@@ -1,5 +1,5 @@
-import { withFallback } from '../../common.js';
 import { whenString } from '../../../commonCore.js';
+import { withFallback } from '../../common.js';
 
 const STRIP_CHARS = new Set([
   '(',
