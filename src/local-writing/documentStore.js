@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export const DEFAULT_WORKFLOW_DIR = path.resolve(
@@ -37,6 +37,13 @@ function getDocumentFilename(id) {
  */
 function isDraftId(id) {
   return /^draft-\d+$/.test(id);
+}
+
+/**
+ * @param {{ id: string }} step
+ */
+function getDraftNumber(step) {
+  return Number.parseInt(step.id.replace('draft-', ''), 10);
 }
 
 /**
@@ -119,11 +126,13 @@ export function createDocumentStore(options = {}) {
     await Promise.all(
       workflow.steps.map(async (step, index) => {
         const initialContent = index === 0 ? legacyContent : '';
-        await writeFile(
-          getDocumentPath(documentDir, step),
-          initialContent,
-          'utf8'
-        );
+        if (initialContent) {
+          await writeFile(
+            getDocumentPath(documentDir, step),
+            initialContent,
+            'utf8'
+          );
+        }
       })
     );
     await writeWorkflow(workflow);
@@ -133,6 +142,42 @@ export function createDocumentStore(options = {}) {
 
   async function loadStepContent(step) {
     return readText(getDocumentPath(documentDir, step));
+  }
+
+  async function pruneEmptyTrailingDrafts(workflow) {
+    await mkdir(documentDir, { recursive: true });
+
+    while (
+      workflow.steps.length > DEFAULT_SEQUENCE.length &&
+      workflow.steps.length - 1 > workflow.activeIndex
+    ) {
+      const lastStep = workflow.steps.at(-1);
+      if (!lastStep || !isDraftId(lastStep.id)) {
+        break;
+      }
+
+      const content = await loadStepContent(lastStep);
+      if (content.trim()) {
+        break;
+      }
+
+      await rm(getDocumentPath(documentDir, lastStep), { force: true });
+      workflow.steps.pop();
+    }
+
+    const draftSteps = workflow.steps.filter(step => isDraftId(step.id));
+    draftSteps.forEach((step, index) => {
+      const nextNumber = index + 1;
+      if (getDraftNumber(step) !== nextNumber) {
+        step.id = `draft-${nextNumber}`;
+        step.title = `Draft ${nextNumber}`;
+      }
+    });
+
+    workflow.activeIndex = Math.min(
+      workflow.activeIndex,
+      Math.max(1, workflow.steps.length - 1)
+    );
   }
 
   async function serializeWorkflow(workflow) {
@@ -156,6 +201,8 @@ export function createDocumentStore(options = {}) {
     workflowPath,
     async loadWorkflow() {
       const workflow = await ensureWorkflow();
+      await pruneEmptyTrailingDrafts(workflow);
+      await writeWorkflow(workflow);
       return serializeWorkflow(workflow);
     },
     async saveDocument(documentId, content) {
@@ -167,7 +214,13 @@ export function createDocumentStore(options = {}) {
       }
 
       await mkdir(documentDir, { recursive: true });
-      await writeFile(getDocumentPath(documentDir, step), content, 'utf8');
+      if (content.trim()) {
+        await writeFile(getDocumentPath(documentDir, step), content, 'utf8');
+      } else {
+        await rm(getDocumentPath(documentDir, step), { force: true });
+      }
+      await pruneEmptyTrailingDrafts(workflow);
+      await writeWorkflow(workflow);
 
       return {
         bytes: Buffer.byteLength(content, 'utf8'),
@@ -191,8 +244,6 @@ export function createDocumentStore(options = {}) {
             title: `Draft ${nextDraftNumber}`,
           };
           workflow.steps.push(newStep);
-          await mkdir(documentDir, { recursive: true });
-          await writeFile(getDocumentPath(documentDir, newStep), '', 'utf8');
         }
       }
 
@@ -201,6 +252,7 @@ export function createDocumentStore(options = {}) {
         Math.max(1, workflow.steps.length - 1)
       );
       workflow.activeIndex = nextIndex;
+      await pruneEmptyTrailingDrafts(workflow);
       await writeWorkflow(workflow);
 
       return serializeWorkflow(workflow);
@@ -211,6 +263,7 @@ export function createDocumentStore(options = {}) {
         Math.max(nextIndex, 1),
         Math.max(1, workflow.steps.length - 1)
       );
+      await pruneEmptyTrailingDrafts(workflow);
       await writeWorkflow(workflow);
 
       return serializeWorkflow(workflow);

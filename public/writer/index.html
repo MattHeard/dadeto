@@ -156,6 +156,12 @@
         background: rgba(160, 60, 47, 0.08);
       }
 
+      .sequence-step.visible-secondary {
+        border-color: rgba(160, 60, 47, 0.4);
+        color: var(--ink);
+        background: rgba(160, 60, 47, 0.04);
+      }
+
       .workspace {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -398,6 +404,7 @@
 
         const ensureDocumentFile = step =>
           documentsDirHandle.getFileHandle(`${step.id}.md`, { create: true });
+        const getDocumentFileName = step => `${step.id}.md`;
 
         const readWorkflowDefinition = async () => {
           const rawWorkflow = await readFileText(workflowFileHandle);
@@ -423,9 +430,45 @@
         const writeWorkflowDefinition = workflow =>
           writeFileText(workflowFileHandle, JSON.stringify(workflow, null, 2));
 
+        const deleteDocumentFile = async step => {
+          await documentsDirHandle.removeEntry(getDocumentFileName(step));
+        };
+
+        const pruneEmptyTrailingDrafts = async workflow => {
+          while (workflow.steps.length > DEFAULT_SEQUENCE.length) {
+            const lastStep = workflow.steps.at(-1);
+            if (!lastStep || !isDraftId(lastStep.id)) {
+              break;
+            }
+
+            const handle = await ensureDocumentFile(lastStep);
+            const content = await readFileText(handle);
+            if (content.trim()) {
+              break;
+            }
+
+            await deleteDocumentFile(lastStep);
+            workflow.steps.pop();
+          }
+
+          const draftSteps = workflow.steps.filter(step => isDraftId(step.id));
+          draftSteps.forEach((step, index) => {
+            const nextNumber = index + 1;
+            step.id = `draft-${nextNumber}`;
+            step.title = `Draft ${nextNumber}`;
+          });
+
+          workflow.activeIndex = Math.min(
+            workflow.activeIndex,
+            Math.max(1, workflow.steps.length - 1)
+          );
+        };
+
         const ensureWorkflowDefinition = async () => {
           const existingWorkflow = await readWorkflowDefinition();
           if (existingWorkflow) {
+            await pruneEmptyTrailingDrafts(existingWorkflow);
+            await writeWorkflowDefinition(existingWorkflow);
             return existingWorkflow;
           }
 
@@ -483,6 +526,8 @@
 
             const handle = await ensureDocumentFile(step);
             await writeFileText(handle, content);
+            await pruneEmptyTrailingDrafts(workflow);
+            await writeWorkflowDefinition(workflow);
 
             return {
               documentId,
@@ -517,6 +562,7 @@
               Math.max(1, workflow.steps.length - 1)
             );
             workflow.activeIndex = nextIndex;
+            await pruneEmptyTrailingDrafts(workflow);
             await writeWorkflowDefinition(workflow);
             return serializeWorkflow(workflow);
           },
@@ -526,6 +572,7 @@
               Math.max(activeIndex, 1),
               Math.max(1, workflow.steps.length - 1)
             );
+            await pruneEmptyTrailingDrafts(workflow);
             await writeWorkflowDefinition(workflow);
             return serializeWorkflow(workflow);
           },
@@ -541,12 +588,25 @@
       const renderSequence = () => {
         sequence.replaceChildren();
         state.workflow.documents.forEach((workflowDocument, index) => {
+          const isFutureDocument = index > state.workflow.activeIndex;
+          const isEmptyFutureDocument =
+            isFutureDocument && !(workflowDocument.content ?? '').trim();
+
+          if (isEmptyFutureDocument) {
+            return;
+          }
+
           const step = document.createElement('span');
           step.textContent = `${index + 1}. ${workflowDocument.title}`;
-          step.className =
-            index === state.workflow.activeIndex
-              ? 'sequence-step active'
-              : 'sequence-step';
+          const isCurrent = index === state.workflow.activeIndex;
+          const isPrevious = index === state.workflow.activeIndex - 1;
+
+          step.className = 'sequence-step';
+          if (isCurrent) {
+            step.classList.add('active');
+          } else if (isPrevious) {
+            step.classList.add('visible-secondary');
+          }
           step.addEventListener('click', () => {
             selectWorkflowIndex(index).catch(error => {
               setSaveState(error.message, 'saving');

@@ -71,7 +71,7 @@ describe('documentStore', () => {
         path.join(tempDir, 'workflow', 'documents', 'draft-2.md'),
         'utf8'
       )
-    ).resolves.toBe('');
+    ).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
   test('setActiveIndex clamps to a valid editable document index', async () => {
@@ -84,5 +84,44 @@ describe('documentStore', () => {
 
     expect(workflow.activeIndex).toBe(3);
     expect(workflow.documents[workflow.activeIndex].title).toBe('Draft 1');
+  });
+
+  test('saving an empty trailing draft removes it from workflow and disk', async () => {
+    const store = createDocumentStore({
+      workflowPath,
+      legacyDocumentPath,
+    });
+
+    await store.moveActiveIndex(1);
+    await store.moveActiveIndex(1);
+    await store.saveDocument('draft-1', 'draft content');
+    const movedWorkflow = await store.moveActiveIndex(1);
+    expect(movedWorkflow.activeIndex).toBe(4);
+    const saveResult = await store.saveDocument('draft-2', '');
+
+    expect(saveResult.path).toContain(path.join('workflow', 'documents', 'draft-2.md'));
+    await expect(
+      readFile(
+        path.join(tempDir, 'workflow', 'documents', 'draft-2.md'),
+        'utf8'
+      )
+    ).rejects.toMatchObject({ code: 'ENOENT' });
+    const activeWorkflow = await store.loadWorkflow();
+    expect(activeWorkflow.documents.map(document => document.title)).toEqual([
+      'Thesis',
+      'Syllogistic Argument',
+      'Outline',
+      'Draft 1',
+      'Draft 2',
+    ]);
+
+    await store.setActiveIndex(3);
+    const reloadedWorkflow = await store.loadWorkflow();
+    expect(reloadedWorkflow.documents.map(document => document.title)).toEqual([
+      'Thesis',
+      'Syllogistic Argument',
+      'Outline',
+      'Draft 1',
+    ]);
   });
 });
