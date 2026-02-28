@@ -482,7 +482,10 @@
         };
 
         const pruneEmptyTrailingDrafts = async workflow => {
-          while (workflow.steps.length > DEFAULT_SEQUENCE.length) {
+          while (
+            workflow.steps.length > DEFAULT_SEQUENCE.length &&
+            workflow.steps.length - 1 > workflow.activeIndex
+          ) {
             const lastStep = workflow.steps.at(-1);
             if (!lastStep || !isDraftId(lastStep.id)) {
               break;
@@ -579,7 +582,15 @@
             }
 
             const handle = await ensureDocumentFile(step);
-            await writeFileText(handle, content);
+            if (content.trim()) {
+              await writeFileText(handle, content);
+            } else {
+              await deleteDocumentFile(step).catch(error => {
+                if (error?.name !== 'NotFoundError') {
+                  throw error;
+                }
+              });
+            }
             await pruneEmptyTrailingDrafts(workflow);
             await writeWorkflowDefinition(workflow);
 
