@@ -6,16 +6,10 @@ estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestam
 2026-02-21T21:35:42Z,dadeto-ohog,Reduce jscpd clones to zero,60,2026-02-21T22:43:00Z,false
 2026-02-22T07:30:04Z,matt-elh,Consolidate rows and rowTypes into rowData parameter object,72,2026-02-22T07:39:52Z,true
 2026-02-22T08:12:21Z,matt-1qi,Update ensureKeyValueInput for rowTypes,85,2026-02-22T08:19:55Z,true
-2026-02-23T08:28:58Z,matt-ikq,Add Auto submit checkbox to toy submit buttons,75,,
-2026-02-23T08:41:46Z,matt-ikq,Add Auto submit checkbox to toy submit buttons,80,,
 2026-02-23T08:43:10Z,dadeto-pcai,Add Auto submit checkbox to toy submit buttons (P2 feature),80,2026-02-23T08:51:42Z,true
-2026-02-23T09:01:06Z,matt-3vk,Restore test branch coverage to 100%,70,,
 2026-02-23T09:10:34Z,matt-21j,Fix failing process-new-page-core.test.js expectations,80,2026-02-23T09:23:18Z,true
-2026-02-23T09:42:47Z,matt-e1t,Achieve 100% branch coverage,80,,
-2026-02-23T10:47:42Z,matt-e1t,Achieve 100% branch coverage,80,,
 2026-02-23T19:41:49Z,matt-e1t,Achieve 100% branch coverage,78,2026-02-23T19:53:00Z,false
 2026-02-23T23:30:00Z,matt-e1t,Achieve 100% branch coverage (continued session),85,2026-02-23T23:45:00Z,true
-2026-02-23T23:50:00Z,dadeto-c8r1,Eliminate all ESLint complexity warnings,82,,
 2026-02-23T23:50:00Z,dadeto-c8r1,Eliminate all ESLint complexity warnings,82,2026-02-24T00:45:00Z,true
 2026-02-25T19:06:33Z,dadeto-ipfv,Reduce ESLint warnings from 31 to 20 (batch 1),88,2026-02-25T19:09:14Z,true
 2026-02-25T19:23:42Z,dadeto-06u,Improve coverage for core/cloud/assign-moderation-job/assign-moderation-job-core.js,98,2026-02-25T19:23:42Z,true
@@ -43,3 +37,4 @@ estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestam
 2026-02-25T19:28:59Z,dadeto-rl4,Improve coverage for core/browser/inputHandlers/removeElements.js,60,2026-02-25T19:28:59Z,true
 2026-02-25T19:28:59Z,dadeto-sg6,Improve coverage for core/browser/inputHandlers/default.js,60,2026-02-25T19:28:59Z,true
 2026-02-28T23:09:00Z,dadeto-dww1.1,Deduplicate blog-key and dendrite input form helpers,78,2026-02-28T22:14:06Z,true
+2026-02-28T22:23:29Z,dadeto-dww1.2,Deduplicate workflow.js self-clones,90,2026-02-28T22:23:29Z,true

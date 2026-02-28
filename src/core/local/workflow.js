@@ -85,17 +85,21 @@ function isNonEmptySingleLine(trimmedContent) {
   return !trimmedContent.includes('\n');
 }
 
+/** @typedef {{ steps?: Array<{ id: string, title: string }>, activeIndex?: number, heading?: string } | undefined} WorkflowCandidate */
+
 /**
- * Resolve the optional workflow step list from a workflow candidate.
- * @param {{ steps?: Array<{ id: string, title: string }> } | undefined} workflow - Workflow candidate to inspect.
- * @returns {Array<{ id: string, title: string }> | undefined} Provided steps when present.
+ * Resolve an optional property from a workflow candidate.
+ * @template {keyof NonNullable<WorkflowCandidate>} K
+ * @param {WorkflowCandidate} workflow - Workflow candidate to inspect.
+ * @param {K} key - Property name to read.
+ * @returns {NonNullable<WorkflowCandidate>[K] | undefined} Property value when present.
  */
-function getWorkflowSteps(workflow) {
+function getWorkflowProperty(workflow, key) {
   if (!workflow) {
     return undefined;
   }
 
-  return workflow.steps;
+  return workflow[key];
 }
 
 /**
@@ -113,7 +117,7 @@ function hasWorkflowSteps(steps) {
  * @returns {Array<{ id: string, title: string }>} Normalized step list.
  */
 function normalizeSteps(workflow) {
-  const steps = getWorkflowSteps(workflow);
+  const steps = getWorkflowProperty(workflow, 'steps');
   if (hasWorkflowSteps(steps)) {
     return steps.map(cloneStep);
   }
@@ -128,7 +132,7 @@ function normalizeSteps(workflow) {
  * @returns {number} Clamped active index.
  */
 function normalizeActiveIndex(workflow, maxIndex) {
-  const activeIndex = getWorkflowActiveIndex(workflow);
+  const activeIndex = getWorkflowProperty(workflow, 'activeIndex');
   if (Number.isInteger(activeIndex)) {
     return Math.min(Math.max(activeIndex, 0), maxIndex);
   }
@@ -137,38 +141,12 @@ function normalizeActiveIndex(workflow, maxIndex) {
 }
 
 /**
- * Resolve the optional active index field from a workflow candidate.
- * @param {{ activeIndex?: number } | undefined} workflow - Workflow candidate to inspect.
- * @returns {number | undefined} Active index when present.
- */
-function getWorkflowActiveIndex(workflow) {
-  if (!workflow) {
-    return undefined;
-  }
-
-  return workflow.activeIndex;
-}
-
-/**
- * Resolve the optional heading field from a workflow candidate.
- * @param {{ heading?: string } | undefined} workflow - Workflow candidate to inspect.
- * @returns {string | undefined} Heading when present.
- */
-function getWorkflowHeading(workflow) {
-  if (!workflow) {
-    return undefined;
-  }
-
-  return workflow.heading;
-}
-
-/**
  * Normalize the shared workflow heading field.
  * @param {{ heading?: string } | undefined} workflow - Workflow candidate to normalize.
  * @returns {string} Trimmed heading or an empty string.
  */
 function normalizeHeading(workflow) {
-  const heading = getWorkflowHeading(workflow);
+  const heading = getWorkflowProperty(workflow, 'heading');
   if (typeof heading !== 'string') {
     return '';
   }
