@@ -80,7 +80,13 @@ function tryReadGetterHeader(getter, name) {
     return null;
   }
 
-  return tryGetHeader(getter, name);
+  return tryGetHeader(
+    headerName => {
+      const value = getter(headerName);
+      return value === null ? undefined : value;
+    },
+    name
+  );
 }
 
 /**
@@ -218,8 +224,11 @@ function responderKeyByType(isUndefined) {
  */
 export function sendResponderResult(res, status, body) {
   if (isObject(body)) {
-    /** @type {Record<string, unknown>} */
-    const objectBody = body;
+    const objectBody = normalizeHeadersRecord(body);
+    if (!objectBody) {
+      responderHandlers.default(res, status, String(body));
+      return;
+    }
     responderHandlers.object(res, status, objectBody);
     return;
   }

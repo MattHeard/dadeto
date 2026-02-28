@@ -59,6 +59,9 @@ function resolveLegacyStructure(temporary) {
   if (shouldSkipDend1(temporary)) {
     return [];
   }
+  if (!temporary || !temporary.DEND1) {
+    return [];
+  }
   return /** @type {DendriteStoryResult[]} */ (temporary.DEND1);
 }
 
@@ -69,6 +72,9 @@ function resolveLegacyStructure(temporary) {
  */
 function resolveStar1Structure(temporary) {
   if (shouldSkipStar1(temporary)) {
+    return resolveLegacyStructure(temporary);
+  }
+  if (!temporary || !temporary.STAR1) {
     return resolveLegacyStructure(temporary);
   }
   return /** @type {DendriteStoryResult[]} */ (temporary.STAR1);

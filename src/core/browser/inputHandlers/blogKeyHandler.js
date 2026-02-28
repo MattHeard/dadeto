@@ -54,7 +54,7 @@ function parseLines(value) {
 
 /**
  * Wire input events for a field and append it as a labelled row.
- * @param {{ dom: DOMHelpers, form: HTMLElement, element: HTMLElement, labelText: string, onInput: () => void, disposers: Disposer[] }} options - Wiring dependencies.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, element: HTMLInputElement | HTMLTextAreaElement, labelText: string, onInput: () => void, disposers: Disposer[] }} options - Wiring dependencies.
  * @returns {void}
  */
 function wireField({ dom, form, element, labelText, onInput, disposers }) {
@@ -80,10 +80,10 @@ function updateBlogKeyData({ dom, textInput, data, applyMutation }) {
  *   textInput: HTMLInputElement,
  *   data: BlogKeyData,
  *   disposers: Disposer[],
- *   element: HTMLElement,
+ *   element: HTMLInputElement | HTMLTextAreaElement,
  *   initialValue: string,
  *   labelText: string,
- *   configureElement: (element: HTMLElement) => void,
+ *   configureElement: (element: HTMLInputElement | HTMLTextAreaElement) => void,
  *   updateData: () => void
  * }} options Field configuration.
  * @returns {void}
@@ -118,7 +118,14 @@ function buildBlogKeyField(options) {
 /**
  * Create the field definitions used by the blog-key form.
  * @param {{ dom: DOMHelpers, data: BlogKeyData }} options Field-definition collaborators.
- * @returns {Array<Omit<Parameters<typeof buildBlogKeyField>[0], 'form' | 'textInput' | 'disposers' | 'data'>>} Blog-key field definitions.
+ * @returns {Array<{
+ *   dom: DOMHelpers,
+ *   element: HTMLInputElement | HTMLTextAreaElement,
+ *   initialValue: string,
+ *   labelText: string,
+ *   configureElement: (field: HTMLInputElement | HTMLTextAreaElement) => void,
+ *   updateData: () => void,
+ * }>} Blog-key field definitions.
  */
 function createBlogKeyFields({ dom, data }) {
   const titleInput = /** @type {HTMLInputElement} */ (

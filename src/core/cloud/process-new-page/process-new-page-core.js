@@ -543,6 +543,9 @@ async function resolveIncomingOptionContext({
         storyRefCandidate
       ),
   });
+  if (!pageContext) {
+    return null;
+  }
 
   return {
     ...pageContext,
@@ -553,13 +556,17 @@ async function resolveIncomingOptionContext({
 
 /**
  * Ensure option snapshot exposes its reference.
- * @param {{ref?: unknown}} optionSnap - Option snapshot object to mutate.
- * @param {unknown} optionRef - Snapshot reference to assign when missing.
- * @returns {void}
+ * @param {unknown} optionSnap - Option snapshot object to mutate.
+ * @param {import('firebase-admin/firestore').DocumentReference} optionRef - Snapshot reference to assign when missing.
+ * @returns {unknown} The mutated snapshot.
  */
 function ensureOptionSnapshotRef(optionSnap, optionRef) {
-  if (!optionSnap.ref) {
-    optionSnap.ref = optionRef;
+  const snapshotWithRef =
+    /** @type {{ ref?: import('firebase-admin/firestore').DocumentReference }} */ (
+      optionSnap
+    );
+  if (!snapshotWithRef.ref) {
+    snapshotWithRef.ref = optionRef;
   }
 
   return optionSnap;
@@ -588,7 +595,7 @@ function resolveTargetPageFromOption(optionData) {
  * @param {import('firebase-admin/firestore').DocumentReference} params.storyRef Story reference targeting the submission.
  * @returns {Promise<{
  *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
- *   pageNumber: number,
+ *   pageNumber: number | null,
  * }>} Resolved context.
  */
 async function resolveIncomingOptionPageContext({
@@ -685,7 +692,6 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
   const pageNumber = extractPageNumberFromSnapshot(
     /** @type {any} */ (existingPageSnap)
   );
-
   return {
     pageDocRef: targetPage,
     pageNumber,

@@ -327,13 +327,14 @@ function getTargetError(target) {
 function finalizeSubmissionResponse(params) {
   const { deps, request, body, target, content, author } = params;
   const targetError = getTargetError(target);
+  const successfulTarget = /** @type {SubmissionTargetSuccess} */ (target);
   return /** @type {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} */ (
     when(
       targetError !== null,
       () => targetError,
       () =>
         processValidSubmission(deps, {
-          target,
+          target: successfulTarget,
           content,
           author,
           authHeader: getAuthorizationHeader(request) || '',

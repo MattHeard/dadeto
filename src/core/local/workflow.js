@@ -105,7 +105,7 @@ function getWorkflowProperty(workflow, key) {
 /**
  * Determine whether a step list is populated and safe to normalize.
  * @param {Array<{ id: string, title: string }> | undefined} steps - Candidate workflow steps.
- * @returns {boolean} True when the provided steps should be used.
+ * @returns {steps is Array<{ id: string, title: string }>} True when the provided steps should be used.
  */
 function hasWorkflowSteps(steps) {
   return Array.isArray(steps) && steps.length > 0;
@@ -117,9 +117,9 @@ function hasWorkflowSteps(steps) {
  * @returns {Array<{ id: string, title: string }>} Normalized step list.
  */
 function normalizeSteps(workflow) {
-  const steps = getWorkflowProperty(workflow, 'steps');
-  if (hasWorkflowSteps(steps)) {
-    return steps.map(cloneStep);
+  const workflowSteps = getWorkflowProperty(workflow, 'steps');
+  if (hasWorkflowSteps(workflowSteps)) {
+    return workflowSteps.map(cloneStep);
   }
 
   return DEFAULT_SEQUENCE.map(cloneStep);
@@ -132,9 +132,12 @@ function normalizeSteps(workflow) {
  * @returns {number} Clamped active index.
  */
 function normalizeActiveIndex(workflow, maxIndex) {
-  const activeIndex = getWorkflowProperty(workflow, 'activeIndex');
-  if (Number.isInteger(activeIndex)) {
-    return Math.min(Math.max(activeIndex, 0), maxIndex);
+  const workflowActiveIndex = getWorkflowProperty(workflow, 'activeIndex');
+  if (
+    typeof workflowActiveIndex === 'number' &&
+    Number.isInteger(workflowActiveIndex)
+  ) {
+    return Math.min(Math.max(workflowActiveIndex, 0), maxIndex);
   }
 
   return Math.min(1, maxIndex);

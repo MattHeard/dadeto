@@ -162,7 +162,7 @@ function createInputListenerDisposer(dom, input, handler) {
 
 /**
  * Register an input listener and capture its disposer.
- * @param {{ dom: DOMHelpers, input: HTMLInputElement | HTMLTextAreaElement | HTMLElement, handler: DOMEventListener, disposers: Disposer[] }} options - Listener registration dependencies.
+ * @param {{ dom: DOMHelpers, input: HTMLInputElement | HTMLTextAreaElement, handler: DOMEventListener, disposers: Disposer[] }} options - Listener registration dependencies.
  * @returns {void}
  */
 export function registerInputListener({ dom, input, handler, disposers }) {
@@ -226,14 +226,11 @@ function createFieldInput(options) {
 
 /**
  * Create the wrapper, label, and input elements for a field and append them.
- * @param {{dom: DOMHelpers, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Field render inputs.
+ * @param {{dom: DOMHelpers, form: HTMLElement, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Field render inputs.
  * @returns {{fieldWrapper: HTMLElement}} Wrapped elements ready for insertion.
  */
 function createFieldElements(options) {
-  const { dom, placeholder, form } =
-    /** @type {{ dom: DOMHelpers, placeholder: string, form: HTMLElement }} */ (
-      options
-    );
+  const { dom, placeholder, form } = options;
   const { fieldWrapper, label } = createFieldWrapper(dom);
   dom.setTextContent(label, placeholder);
 

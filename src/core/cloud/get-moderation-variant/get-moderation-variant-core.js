@@ -281,10 +281,13 @@ function resolveTokenFromRequest(request) {
 async function fetchVariantSnapshot(db, uid) {
   const moderatorSnap = await db.collection('moderators').doc(uid).get();
   const variantRef = resolveModeratorVariantRef(moderatorSnap);
-  return when(
-    Boolean(variantRef),
-    () => fetchVariantResponse(variantRef),
-    () => null
+  const hasVariant = Boolean(variantRef);
+  if (!hasVariant) {
+    return null;
+  }
+
+  return fetchVariantResponse(
+    /** @type {FirestoreDocumentReference} */ (variantRef)
   );
 }
 
@@ -360,7 +363,7 @@ async function fetchVariantResponse(variantRef) {
 /**
  * Extract immediate parent of variant.
  * @param {FirestoreDocumentReference} variantRef Variant reference.
- * @returns {FirestoreDocumentReference | null | undefined} Immediate parent or undefined.
+ * @returns {{ parent?: FirestoreDocumentReference | undefined } | null | undefined} Immediate parent or undefined.
  */
 function extractVariantParent(variantRef) {
   return variantRef.parent;
@@ -369,7 +372,7 @@ function extractVariantParent(variantRef) {
 /**
  * Extract parent from reference when available.
  * @param {FirestoreDocumentReference | null | undefined} ref Reference.
- * @returns {FirestoreDocumentReference | null | undefined} Parent or undefined.
+ * @returns {{ parent?: FirestoreDocumentReference | undefined } | null | undefined} Parent or undefined.
  */
 function extractParentFromRef(ref) {
   return ref?.parent;
@@ -382,7 +385,7 @@ function extractParentFromRef(ref) {
  */
 function extractGrandparentRef(parentRef) {
   const parent = extractParentFromRef(parentRef);
-  return parent ?? null;
+  return /** @type {FirestoreDocumentReference | null} */ (parent ?? null);
 }
 
 /**
@@ -391,7 +394,10 @@ function extractGrandparentRef(parentRef) {
  * @returns {FirestoreDocumentReference | null} Page reference.
  */
 function extractPageFromVariant(variantRef) {
-  const variantParent = extractVariantParent(variantRef);
+  const variantParent =
+    /** @type {FirestoreDocumentReference | null | undefined} */ (
+      extractVariantParent(variantRef)
+    );
   return extractGrandparentRef(variantParent);
 }
 

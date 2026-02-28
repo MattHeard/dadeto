@@ -215,8 +215,12 @@ export function createCopyToInfraCore({
     if (shouldSkipDeclaredFilesCopy(copyPlan)) {
       return;
     }
-    const { sourceDir, targetDir } = copyPlan;
-    const files = /** @type {string[]} */ (extractDeclaredFiles(copyPlan));
+    const declaredCopyPlan = /** @type {DeclaredCopyPlan} */ (copyPlan);
+    await io.ensureDirectory(declaredCopyPlan.targetDir);
+    const { sourceDir, targetDir } = declaredCopyPlan;
+    const files = /** @type {string[]} */ (
+      extractDeclaredFiles(declaredCopyPlan)
+    );
     const copyParams = {
       files,
       sourceDir,
@@ -252,7 +256,7 @@ export function createCopyToInfraCore({
    *   files: string[],
    *   sourceDir: string,
    *   targetDir: string,
-   *   io: CopyAsyncIo,
+   *   io: EnsureAndCopyIo,
    *   messageLogger: CopyMessageLogger,
    * }} options Copy details.
    * @returns {Promise<void>} Resolves when every file is copied.
@@ -280,7 +284,7 @@ export function createCopyToInfraCore({
    *   files: string[],
    *   sourceDir: string,
    *   targetDir: string,
-   *   io: CopyAsyncIo,
+   *   io: EnsureAndCopyIo,
    *   messageLogger: CopyMessageLogger,
    * }} details Prepared copy parameters.
    * @returns {Promise<void>}

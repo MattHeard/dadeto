@@ -326,16 +326,13 @@ async function executeVariantUpdate(db, snapshot) {
  */
 async function applyVariantUpdate(db, payload) {
   const variantRef = resolveVariantRef(db, payload.variantId);
-  return when(
-    Boolean(variantRef),
-    async () => {
-      const variantSnap = await variantRef.get();
-      await processVariantUpdate(variantSnap, variantRef, payload.isApproved);
+  if (!variantRef) {
+    return null;
+  }
 
-      return null;
-    },
-    () => null
-  );
+  const variantSnap = await variantRef.get();
+  await processVariantUpdate(variantSnap, variantRef, payload.isApproved);
+  return null;
 }
 
 /**
