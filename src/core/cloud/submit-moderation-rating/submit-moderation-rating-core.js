@@ -1,14 +1,15 @@
 import { isNonNullObject, whenString } from './common-core.js';
 import {
   matchBearerToken,
-  getHeaderFromGetter,
   isAllowedOrigin,
   createResponse,
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
-  normalizeAuthorizationCandidate,
 } from './cloud-core.js';
-import { createCloudSubmitHandler } from '../submit-shared.js';
+import {
+  createCloudSubmitHandler,
+  getAuthorizationHeader,
+} from '../submit-shared.js';
 import { createResponder } from '../responder-utils.js';
 import { validatePostMethod } from '../http-method-guard.js';
 
@@ -79,124 +80,6 @@ const INVALID_BODY_RESPONSE = {
 /**
  * @typedef {SubmitModerationRatingContextSuccess | SubmitModerationRatingErrorResult} SubmitModerationRatingContextResult
  */
-
-/**
- * Try authorization headers.
- * @param {((name: string) => string | null | undefined) | undefined} getter Getter.
- * @returns {string | null} Header.
- */
-function tryAuthorizationHeaders(getter) {
-  if (!getter) {
-    return null;
-  }
-
-  return resolveFirstNonNullValue(
-    () => getHeaderFromGetter(getter, 'Authorization'),
-    () => getHeaderFromGetter(getter, 'authorization')
-  );
-}
-
-/**
- * Resolve the Authorization header from Express-like request shapes.
- * @param {SubmitModerationRatingRequest | undefined} request Request object supplied by the adapter.
- * @returns {string | null} Raw Authorization header value or null when absent.
- */
-function readAuthorizationFromGetter(request) {
-  return tryAuthorizationHeaders(request?.get);
-}
-
-/**
- * Coerce an Authorization header candidate into a normalized string.
- * @param {unknown} value Header value sourced from Express request metadata.
- * @returns {string | null} String representation of the header or null when unavailable.
- */
-function coerceAuthorizationHeader(value) {
-  return normalizeAuthorizationCandidate(value);
-}
-
-/**
- * Resolve the Authorization header from a headers object.
- * @param {Record<string, unknown> | null | undefined} headers Raw headers provided by the caller.
- * @returns {string | null} Header value when present, otherwise null.
- */
-/**
- * Find auth in headers.
- * @param {Record<string, unknown>} headers Headers.
- * @returns {string | null} Auth header.
- */
-function findAuthInHeaders(headers) {
-  const lowercase = coerceAuthorizationHeader(headers.authorization);
-  if (lowercase !== null) {
-    return lowercase;
-  }
-  return coerceAuthorizationHeader(headers.Authorization);
-}
-
-/**
- * Parse the Authorization header from a raw headers object.
- * @param {Record<string, unknown> | null | undefined} headers Headers provided by the HTTP adapter.
- * @returns {string | null} Normalized Authorization value or null when absent.
- */
-function readAuthorizationFromHeaders(headers) {
-  const normalizedHeaders = normalizeHeadersObject(headers);
-  if (!normalizedHeaders) {
-    return null;
-  }
-
-  return findAuthInHeaders(normalizedHeaders);
-}
-
-/**
- * Normalize headers to an object when possible.
- * @param {unknown} headers Headers.
- * @returns {Record<string, unknown> | null} Headers or null.
- */
-function normalizeHeadersObject(headers) {
-  if (!isNonNullObject(headers)) {
-    return null;
-  }
-
-  return /** @type {Record<string, unknown>} */ (headers);
-}
-
-/**
- * Resolve an Authorization header from a heterogeneous request shape.
- * @param {{ get?: (name: string) => unknown, headers?: Record<string, unknown> | null } | undefined} request Request-like value.
- * @returns {string | null} Header value when present, otherwise null.
- */
-function getAuthorizationHeader(request) {
-  const typedRequest =
-    /** @type {SubmitModerationRatingRequest | undefined} */ (request);
-  const typedHeaders =
-    /** @type {Record<string, unknown> | null | undefined} */ (
-      request?.headers
-    );
-
-  return resolveFirstNonNullValue(
-    () => readAuthorizationFromGetter(typedRequest),
-    () => readAuthorizationFromHeaders(typedHeaders)
-  );
-}
-
-/**
- * Iterate through resolver callbacks until a non-null string is returned.
- * @param {...() => string | null} resolvers Resolver callbacks evaluated in order.
- * @returns {string | null} First non-null result or null when none match.
- */
-function resolveFirstNonNullValue(...resolvers) {
-  return resolvers.reduce(
-    /** @type {(result: string | null, resolver: () => string | null) => string | null} */ (
-      (result, resolver) => {
-        if (result === null) {
-          return resolver();
-        }
-
-        return result;
-      }
-    ),
-    /** @type {string | null} */ (null)
-  );
-}
 
 /**
  * Extract a bearer token from an Authorization header string.

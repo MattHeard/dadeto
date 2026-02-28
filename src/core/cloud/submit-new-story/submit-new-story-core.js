@@ -1,17 +1,19 @@
 import {
   normalizeAuthor,
   normalizeSubmissionContent,
-  normalizeString,
   normalizeMethod,
-  normalizeAuthorizationCandidate,
-  tryGetHeader,
   isAllowedOrigin,
   createCorsOriginHandler,
   createResponse,
   normalizeShortString,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
-import { createCloudSubmitHandler } from '../submit-shared.js';
+import {
+  createCloudSubmitHandler,
+  collectSubmissionOptions,
+  getAuthorizationHeader,
+  getAuthorizationFromGetter,
+} from '../submit-shared.js';
 import { createResponder } from '../responder-utils.js';
 
 /**
@@ -61,198 +63,12 @@ import { createResponder } from '../responder-utils.js';
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 
 /**
- * Get getter function from request.
- * @param {SubmitNewStoryRequest | undefined} request Request.
- * @returns {((name: string) => string | undefined) | undefined} Getter.
- */
-function getRequestGetter(request) {
-  return request?.get;
-}
-
-/**
- * Get lowercase header fallback.
- * @param {(name: string) => string | undefined} getter - Header getter.
- * @returns {string | null} Header value or null.
- */
-function getLowercaseHeaderFallback(getter) {
-  return tryGetHeader(getter, 'authorization');
-}
-
-/**
- * Resolve uppercase header or return null.
- * @param {unknown} uppercase - Uppercase header value.
- * @returns {string | null} Header value or null.
- */
-function resolveUppercaseHeader(uppercase) {
-  if (typeof uppercase === 'string') {
-    return uppercase;
-  }
-  return null;
-}
-
-/**
- * Resolve lowercase header or return null.
- * @param {string | undefined} lowercase - Lowercase header value.
- * @returns {string | null} Header value or null.
- */
-function resolveLowercaseHeader(lowercase) {
-  return lowercase ?? null;
-}
-
-/**
- * Resolve header with fallback to lowercase variant.
- * @param {unknown} uppercase - Uppercase header value.
- * @param {string | undefined} lowercase - Lowercase header value.
- * @returns {string | null} Header value or null.
- */
-function resolveBothHeaders(uppercase, lowercase) {
-  return resolveUppercaseHeader(uppercase) ?? resolveLowercaseHeader(lowercase);
-}
-
-/**
- * Get authorization header trying uppercase first, then lowercase.
- * @param {(name: string) => string | undefined} getter Header getter function.
- * @returns {string | null} Authorization header value.
- */
-function getAuthHeaderWithFallback(getter) {
-  const uppercase = tryGetHeader(getter, 'Authorization');
-  const lowercase = getLowercaseHeaderFallback(getter);
-  return resolveBothHeaders(uppercase, lowercase);
-}
-
-/**
  * Get auth header from getter.
  * @param {((name: string) => string | undefined) | undefined} getter Getter.
  * @returns {string | null} Auth header.
  */
 function getAuthFromGetter(getter) {
-  if (!getter) {
-    return null;
-  }
-  return getAuthHeaderWithFallback(getter);
-}
-
-/**
- * Retrieve the Authorization header using an Express-style getter.
- * @param {SubmitNewStoryRequest | undefined} request - Express or plain-object request instance.
- * @returns {string | null} Header value when available.
- */
-function readAuthorizationFromGetter(request) {
-  const getter = getRequestGetter(request);
-  if (typeof getter !== 'function') {
-    return null;
-  }
-  return getAuthFromGetter(getter);
-}
-
-/**
- * Check if headers object is valid.
- * @param {unknown} headers Headers.
- * @returns {boolean} True if valid.
- */
-function isValidHeaders(headers) {
-  return Boolean(headers) && typeof headers === 'object';
-}
-
-/**
- * Validate headers object.
- * @param {unknown} headers Headers.
- * @returns {Record<string, unknown> | null} Headers or null.
- */
-function validateHeaders(headers) {
-  if (isValidHeaders(headers)) {
-    return /** @type {Record<string, unknown>} */ (headers);
-  }
-  return null;
-}
-
-/**
- * Find authorization header in headers object.
- * @param {Record<string, unknown>} headers Headers.
- * @returns {string | null} Auth header.
- */
-function findAuthInHeaders(headers) {
-  const lowercase = normalizeAuthorizationCandidate(headers.authorization);
-  if (lowercase) {
-    return lowercase;
-  }
-  return normalizeAuthorizationCandidate(headers.Authorization);
-}
-
-/**
- * Read the Authorization header from a headers bag.
- * @param {SubmitNewStoryRequest['headers']} headers - Raw headers map.
- * @returns {string | null} Header value when present.
- */
-function readAuthorizationFromHeadersBag(headers) {
-  const validHeaders = validateHeaders(headers);
-  if (!validHeaders) {
-    return null;
-  }
-  return findAuthInHeaders(validHeaders);
-}
-
-/**
- * Get headers bag from request.
- * @param {SubmitNewStoryRequest | undefined} request Request.
- * @returns {SubmitNewStoryRequest['headers']} Headers.
- */
-function getHeadersBag(request) {
-  if (!request) {
-    return undefined;
-  }
-  return request.headers;
-}
-
-/**
- * Retrieve the Authorization header from an incoming request object.
- * @param {SubmitNewStoryRequest | undefined} request - Express or plain-object request instance.
- * @returns {string | null} Header value when available.
- */
-function getAuthorizationHeader(request) {
-  const getterHeader = readAuthorizationFromGetter(request);
-  if (getterHeader) {
-    return getterHeader;
-  }
-
-  return readAuthorizationFromHeadersBag(getHeadersBag(request));
-}
-
-/**
- * Get raw option.
- * @param {Record<string, unknown>} body Body.
- * @param {string} key Key.
- * @returns {unknown} Raw value.
- */
-function getRawOption(body, key) {
-  return body?.[key];
-}
-
-/**
- * Check if raw option is present.
- * @param {unknown} raw Raw option.
- * @returns {boolean} True if present.
- */
-function isOptionPresent(raw) {
-  return raw !== null && raw !== undefined;
-}
-
-/**
- * Process a single option candidate.
- * @param {Record<string, unknown>} body - Request body.
- * @param {number} index - Option index.
- * @param {number} maxLength - Max length.
- * @returns {string | null} Normalized option or null.
- */
-function processOption(body, index, maxLength) {
-  const key = `option${index}`;
-  const raw = getRawOption(body, key);
-
-  if (!isOptionPresent(raw)) {
-    return null;
-  }
-
-  return normalizeString(raw, maxLength);
+  return getAuthorizationFromGetter(getter);
 }
 
 /**
@@ -262,11 +78,7 @@ function processOption(body, index, maxLength) {
  * @returns {string[]} Normalized non-empty poll options.
  */
 function collectOptions(body, maxLength) {
-  const validBody = body || {};
-  const options = [0, 1, 2, 3]
-    .map(index => processOption(validBody, index, maxLength))
-    .filter(Boolean);
-  return /** @type {string[]} */ (options);
+  return collectSubmissionOptions(body, maxLength);
 }
 
 export const submitNewStoryCoreTestUtils = {

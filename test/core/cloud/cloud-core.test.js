@@ -104,6 +104,15 @@ describe('cloud-core', () => {
     test('returns null when the getter is not callable', () => {
       expect(getHeaderFromGetter(undefined, 'Authorization')).toBeNull();
     });
+
+    test('normalizes the returned header when the getter is callable', () => {
+      expect(
+        getHeaderFromGetter(
+          name => (name === 'Authorization' ? 'Bearer token' : null),
+          'Authorization'
+        )
+      ).toBe('Bearer token');
+    });
   });
 
   describe('whenBodyPresent', () => {

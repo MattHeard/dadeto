@@ -1,11 +1,13 @@
 import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,
-  normalizeString,
 } from './cloud-core.js';
+import { when } from '../../commonCore.js';
 import {
   normalizeShortString,
   resolveAuthorIdFromHeader,
+  collectSubmissionOptions,
+  getAuthorizationHeader,
 } from '../submit-shared.js';
 
 /**
@@ -249,49 +251,12 @@ async function resolveSubmissionTarget(deps) {
 }
 
 /**
- * Check if option is present.
- * @param {unknown} raw Raw option.
- * @returns {boolean} True if present.
- */
-function isOptionPresent(raw) {
-  return raw !== undefined && raw !== null;
-}
-
-/**
- * Process a single option candidate.
- * @param {Record<string, unknown>} body - Request body.
- * @param {number} index - Option index.
- * @returns {string | null} Normalized option or null.
- */
-function processOption(body, index) {
-  const raw = body[`option${index}`];
-  if (!isOptionPresent(raw)) {
-    return null;
-  }
-  return normalizeString(raw, 120);
-}
-
-/**
  * Gather non-empty submission options from the request body.
  * @param {Record<string, unknown>} body Raw request body provided by Express.
  * @returns {string[]} Trimmed option strings provided by the submitter.
  */
 function collectOptions(body) {
-  const options = [0, 1, 2, 3].map(i => processOption(body, i)).filter(Boolean);
-  return /** @type {string[]} */ (options);
-}
-
-/**
- * Resolve a header getter from the request.
- * @param {SubmitNewPageRequest} request - Request object.
- * @returns {(name: string) => string | undefined} Header getter.
- */
-function resolveHeaderGetter(request) {
-  if (typeof request.get === 'function') {
-    const getFunc = request.get;
-    return name => getFunc(name);
-  }
-  return () => undefined;
+  return collectSubmissionOptions(body, 120);
 }
 
 /**
@@ -339,21 +304,52 @@ async function processValidSubmission(deps, context) {
 }
 
 /**
+ * Extract the error response from a target result.
+ * @param {SubmissionTargetResult} target Submission target result.
+ * @returns {{ status: number; body: { error: string } } | null} Error response or null.
+ */
+function getTargetError(target) {
+  return target.error || null;
+}
+
+/**
+ * Resolve the final response once the target lookup has completed.
+ * @param {{
+ *   deps: SubmitNewPageHandlerDeps,
+ *   request: SubmitNewPageRequest,
+ *   body: Record<string, unknown>,
+ *   target: SubmissionTargetResult,
+ *   content: string,
+ *   author: string
+ * }} params Finalization inputs.
+ * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} Final response.
+ */
+function finalizeSubmissionResponse(params) {
+  const { deps, request, body, target, content, author } = params;
+  const targetError = getTargetError(target);
+  return /** @type {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} */ (
+    when(
+      targetError !== null,
+      () => targetError,
+      () =>
+        processValidSubmission(deps, {
+          target,
+          content,
+          author,
+          authHeader: getAuthorizationHeader(request) || '',
+          options: collectOptions(body),
+        })
+    )
+  );
+}
+
+/**
  * Get body from request.
  * @param {SubmitNewPageRequest} request Request.
  * @returns {Record<string, unknown>} Body.
  */
 function getBody(request) {
   return request.body || {};
-}
-
-/**
- * Get auth header.
- * @param {(name: string) => string | undefined} getHeader Getter.
- * @returns {string} Auth header.
- */
-function getAuthHeader(getHeader) {
-  return getHeader('Authorization') || '';
 }
 
 /**
@@ -372,7 +368,6 @@ export function createHandleSubmit(deps) {
    */
   return async function handleSubmit(request) {
     const body = getBody(request);
-    const getHeader = resolveHeaderGetter(request);
     const { incomingOption, pageStr, content, author } =
       normalizeSubmissionBody(body);
 
@@ -383,17 +378,13 @@ export function createHandleSubmit(deps) {
       findExistingOption,
       findExistingPage,
     });
-
-    if (target.error) {
-      return target.error;
-    }
-
-    return processValidSubmission(deps, {
+    return finalizeSubmissionResponse({
+      deps,
+      request,
+      body,
       target,
       content,
       author,
-      authHeader: getAuthHeader(getHeader),
-      options: collectOptions(body),
     });
   };
 }
