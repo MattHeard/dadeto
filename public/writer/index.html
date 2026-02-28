@@ -64,6 +64,12 @@
 
       .masthead {
         padding: 1.25rem 1.25rem 1rem;
+        overflow: hidden;
+        transition: padding 180ms ease;
+      }
+
+      .masthead.condensed {
+        padding: 0.8rem 1.25rem 0.75rem;
       }
 
       h1,
@@ -99,6 +105,45 @@
         align-items: center;
         color: var(--muted);
         font-size: 0.95rem;
+      }
+
+      .masthead.condensed .subhead,
+      .masthead.condensed .button-row,
+      .masthead.condensed .sequence {
+        display: none;
+      }
+
+      .masthead.condensed .status-row {
+        margin-top: 0.5rem;
+      }
+
+      .masthead-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .masthead-tools {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+      }
+
+      .collapse-hint {
+        color: var(--muted);
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+
+      .hint-key {
+        display: inline-block;
+        margin-left: 0.2rem;
+        padding: 0.12rem 0.38rem;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.55);
+        color: var(--ink);
       }
 
       .pill {
@@ -253,13 +298,30 @@
         .panel-body {
           padding: 1rem;
         }
+
+        .masthead-top {
+          flex-direction: column;
+        }
+
+        .masthead-tools {
+          align-items: flex-start;
+        }
       }
     </style>
   </head>
   <body>
     <main class="shell">
       <section class="masthead">
-        <h1 id="masthead-title">Untitled Post</h1>
+        <div class="masthead-top">
+          <h1 id="masthead-title">Untitled Post</h1>
+          <div class="masthead-tools">
+            <button id="toggle-masthead" type="button">Condense Header</button>
+            <div class="collapse-hint" id="collapse-hint">
+              Toggle header
+              <span class="hint-key">Alt+M</span>
+            </div>
+          </div>
+        </div>
         <p class="subhead">
           Write forward through a sequence: thesis, syllogistic argument,
           outline, then numbered drafts. Use <strong>Alt+Left</strong> and
@@ -319,6 +381,9 @@
       const currentTitle = document.getElementById('current-title');
       const currentContent = document.getElementById('current-content');
       const mastheadTitle = document.getElementById('masthead-title');
+      const masthead = document.querySelector('.masthead');
+      const toggleMastheadButton = document.getElementById('toggle-masthead');
+      const collapseHint = document.getElementById('collapse-hint');
 
       const DEFAULT_SEQUENCE = [
         { id: 'thesis', title: 'Thesis' },
@@ -343,6 +408,7 @@
         storage: null,
         introMessage: INTRO_MESSAGES[0],
         introVisible: false,
+        isMastheadCondensed: false,
       };
 
       const STORAGE_PREFERENCE_KEY = 'dadeto.writer.storage-preference';
@@ -353,6 +419,21 @@
       const setSaveState = (message, className = '') => {
         saveState.textContent = message;
         saveState.className = `save-state ${className}`.trim();
+      };
+
+      const renderMastheadState = () => {
+        masthead.classList.toggle('condensed', state.isMastheadCondensed);
+        toggleMastheadButton.textContent = state.isMastheadCondensed
+          ? 'Expand Header'
+          : 'Condense Header';
+        collapseHint.innerHTML = state.isMastheadCondensed
+          ? 'Expand header <span class="hint-key">Alt+M</span>'
+          : 'Toggle header <span class="hint-key">Alt+M</span>';
+      };
+
+      const setMastheadCondensed = nextValue => {
+        state.isMastheadCondensed = nextValue;
+        renderMastheadState();
       };
 
       const cloneStep = step => ({
@@ -851,6 +932,7 @@
           state.workflow.documents.map(document => [document.id, document.content])
         );
         renderSequence();
+        renderMastheadState();
       };
 
       const loadWorkflow = async () => {
@@ -948,6 +1030,16 @@
         });
       });
 
+      toggleMastheadButton.addEventListener('click', () => {
+        setMastheadCondensed(!state.isMastheadCondensed);
+      });
+
+      currentContent.addEventListener('input', () => {
+        if (!state.isMastheadCondensed && currentContent.value.trim()) {
+          setMastheadCondensed(true);
+        }
+      });
+
       window.addEventListener('keydown', event => {
         if (!event.altKey) {
           return;
@@ -965,6 +1057,11 @@
           moveWorkflow('right').catch(error => {
             setSaveState(error.message, 'saving');
           });
+        }
+
+        if (event.key.toLowerCase() === 'm') {
+          event.preventDefault();
+          setMastheadCondensed(!state.isMastheadCondensed);
         }
       });
 
