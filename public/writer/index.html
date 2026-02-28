@@ -14,7 +14,8 @@
       :root {
         --bg: #f3efe3;
         --bg-accent: #e2d5bb;
-        --panel: rgba(255, 252, 245, 0.88);
+        --panel: rgba(255, 252, 245, 0.92);
+        --panel-muted: rgba(244, 236, 220, 0.88);
         --ink: #1d261f;
         --muted: #5d665f;
         --line: rgba(29, 38, 31, 0.14);
@@ -39,7 +40,7 @@
       }
 
       .shell {
-        width: min(1100px, calc(100vw - 2rem));
+        width: min(1400px, calc(100vw - 2rem));
         margin: 1rem auto;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
@@ -47,7 +48,7 @@
       }
 
       .masthead,
-      .editor-panel {
+      .workflow-panel {
         border: 1px solid var(--strong-line);
         background: var(--panel);
         backdrop-filter: blur(10px);
@@ -58,18 +59,27 @@
         padding: 1.25rem 1.25rem 1rem;
       }
 
-      h1 {
+      h1,
+      h2 {
         margin: 0;
         font-family: 'Instrument Serif', serif;
-        font-size: clamp(2.3rem, 6vw, 4.7rem);
         font-weight: 400;
-        line-height: 0.92;
         letter-spacing: 0.02em;
+      }
+
+      h1 {
+        font-size: clamp(2.3rem, 6vw, 4.7rem);
+        line-height: 0.92;
+      }
+
+      h2 {
+        font-size: clamp(1.45rem, 3vw, 2.2rem);
+        line-height: 1;
       }
 
       .subhead {
         margin: 0.75rem 0 0;
-        max-width: 42rem;
+        max-width: 52rem;
         color: var(--muted);
         line-height: 1.5;
       }
@@ -98,28 +108,84 @@
         color: var(--success);
       }
 
-      .editor-panel {
-        overflow: hidden;
+      .sequence {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
       }
 
-      textarea {
+      .sequence-step {
+        border: 1px solid var(--line);
+        padding: 0.4rem 0.65rem;
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--muted);
+      }
+
+      .sequence-step.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(160, 60, 47, 0.08);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 1rem;
+      }
+
+      .workflow-panel {
+        overflow: hidden;
+        min-height: 70vh;
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: baseline;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-header.previous {
+        background: var(--panel-muted);
+      }
+
+      .panel-meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .panel-body {
         display: block;
         width: 100%;
-        min-height: calc(100vh - 15rem);
+        min-height: calc(70vh - 4.25rem);
         border: 0;
         padding: 1.25rem;
-        resize: vertical;
         background:
           linear-gradient(transparent 0, transparent calc(1.7rem - 1px), rgba(29, 38, 31, 0.06) calc(1.7rem - 1px), rgba(29, 38, 31, 0.06) 1.7rem);
         background-size: 100% 1.7rem;
         color: var(--ink);
         font: 500 1rem/1.7 'IBM Plex Mono', monospace;
+        white-space: pre-wrap;
+        overflow: auto;
+      }
+
+      textarea.panel-body {
+        resize: none;
         caret-color: var(--accent);
       }
 
-      textarea:focus {
+      textarea.panel-body:focus {
         outline: none;
         box-shadow: inset 0 0 0 2px var(--accent-soft);
+      }
+
+      @media (max-width: 900px) {
+        .workspace {
+          grid-template-columns: minmax(0, 1fr);
+        }
       }
 
       @media (max-width: 720px) {
@@ -129,12 +195,9 @@
         }
 
         .masthead,
-        textarea {
+        .panel-header,
+        .panel-body {
           padding: 1rem;
-        }
-
-        textarea {
-          min-height: calc(100vh - 13rem);
         }
       }
     </style>
@@ -144,78 +207,179 @@
       <section class="masthead">
         <h1>Dadeto Writer</h1>
         <p class="subhead">
-          A local markdown draft pad. It reloads from disk on open and autosaves
-          your changes every second.
+          Write forward through a sequence: thesis, syllogistic argument,
+          outline, then numbered drafts. Use <strong>Alt+Left</strong> and
+          <strong>Alt+Right</strong> to page through adjacent documents.
         </p>
         <div class="status-row">
-          <span class="pill" id="file-path">Loading file…</span>
+          <span class="pill" id="workflow-path">Loading workflow…</span>
+          <span class="pill" id="document-path">Loading document…</span>
           <span class="save-state" id="save-state">Loading…</span>
         </div>
+        <div class="sequence" id="sequence"></div>
       </section>
-      <section class="editor-panel">
-        <textarea
-          id="editor"
-          spellcheck="false"
-          placeholder="# Start writing"
-          aria-label="Markdown editor"
-        ></textarea>
+      <section class="workspace">
+        <article class="workflow-panel">
+          <header class="panel-header previous">
+            <div>
+              <div class="panel-meta">Earlier document</div>
+              <h2 id="previous-title">Loading…</h2>
+            </div>
+          </header>
+          <pre class="panel-body" id="previous-content"></pre>
+        </article>
+        <article class="workflow-panel">
+          <header class="panel-header">
+            <div>
+              <div class="panel-meta">Current document</div>
+              <h2 id="current-title">Loading…</h2>
+            </div>
+          </header>
+          <textarea
+            class="panel-body"
+            id="current-content"
+            spellcheck="false"
+            placeholder="# Start writing"
+            aria-label="Current markdown document"
+          ></textarea>
+        </article>
       </section>
     </main>
     <script type="module">
-      const editor = document.getElementById('editor');
+      const workflowPath = document.getElementById('workflow-path');
+      const documentPath = document.getElementById('document-path');
       const saveState = document.getElementById('save-state');
-      const filePath = document.getElementById('file-path');
+      const sequence = document.getElementById('sequence');
+      const previousTitle = document.getElementById('previous-title');
+      const previousContent = document.getElementById('previous-content');
+      const currentTitle = document.getElementById('current-title');
+      const currentContent = document.getElementById('current-content');
 
-      let lastSavedValue = '';
-      let isLoaded = false;
+      const state = {
+        workflow: null,
+        lastSavedValue: '',
+        isLoaded: false,
+      };
 
       const setSaveState = (message, className = '') => {
         saveState.textContent = message;
         saveState.className = `save-state ${className}`.trim();
       };
 
-      const loadDocument = async () => {
-        const response = await fetch('/api/writer/document');
+      const getCurrentDocument = () =>
+        state.workflow?.documents?.[state.workflow.activeIndex] ?? null;
+
+      const getPreviousDocument = () =>
+        state.workflow?.documents?.[state.workflow.activeIndex - 1] ?? null;
+
+      const renderSequence = () => {
+        sequence.replaceChildren();
+        state.workflow.documents.forEach((workflowDocument, index) => {
+          const step = document.createElement('span');
+          step.textContent = `${index + 1}. ${workflowDocument.title}`;
+          step.className =
+            index === state.workflow.activeIndex
+              ? 'sequence-step active'
+              : 'sequence-step';
+          sequence.appendChild(step);
+        });
+      };
+
+      const renderWorkflow = () => {
+        const previousDocument = getPreviousDocument();
+        const currentDocument = getCurrentDocument();
+
+        workflowPath.textContent = state.workflow.workflowPath;
+        documentPath.textContent = currentDocument?.path ?? 'No document';
+        previousTitle.textContent = previousDocument?.title ?? 'No earlier document';
+        previousContent.textContent = previousDocument?.content ?? '';
+        currentTitle.textContent = currentDocument?.title ?? 'No current document';
+        currentContent.value = currentDocument?.content ?? '';
+        state.lastSavedValue = currentContent.value;
+        renderSequence();
+      };
+
+      const loadWorkflow = async () => {
+        const response = await fetch('/api/writer/workflow');
         if (!response.ok) {
-          throw new Error('Failed to load document');
+          throw new Error('Failed to load workflow');
         }
 
-        const payload = await response.json();
-        editor.value = payload.content;
-        lastSavedValue = payload.content;
-        filePath.textContent = payload.documentPath;
+        state.workflow = await response.json();
+        state.isLoaded = true;
+        renderWorkflow();
         setSaveState('Loaded', 'saved');
-        isLoaded = true;
       };
 
       const saveDocument = async () => {
-        const currentValue = editor.value;
+        const currentDocument = getCurrentDocument();
+        const nextValue = currentContent.value;
 
-        if (!isLoaded || currentValue === lastSavedValue) {
+        if (!state.isLoaded || !currentDocument || nextValue === state.lastSavedValue) {
           return;
         }
 
         setSaveState('Saving…', 'saving');
 
-        const response = await fetch('/api/writer/document', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ content: currentValue }),
-        });
+        const response = await fetch(
+          `/api/writer/document/${currentDocument.id}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: nextValue }),
+          }
+        );
 
         if (!response.ok) {
           throw new Error('Failed to save document');
         }
 
         const payload = await response.json();
-        lastSavedValue = currentValue;
-        filePath.textContent = payload.documentPath;
+        currentDocument.content = nextValue;
+        state.lastSavedValue = nextValue;
+        documentPath.textContent = payload.path;
         setSaveState(`Saved ${new Date(payload.savedAt).toLocaleTimeString()}`, 'saved');
       };
 
-      loadDocument().catch(error => {
+      const moveWorkflow = async direction => {
+        await saveDocument();
+
+        const response = await fetch('/api/writer/workflow/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ direction }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to move workflow');
+        }
+
+        state.workflow = await response.json();
+        renderWorkflow();
+        setSaveState(`Moved ${direction}`, 'saved');
+      };
+
+      window.addEventListener('keydown', event => {
+        if (!event.altKey) {
+          return;
+        }
+
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          moveWorkflow('left').catch(error => {
+            setSaveState(error.message, 'saving');
+          });
+        }
+
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          moveWorkflow('right').catch(error => {
+            setSaveState(error.message, 'saving');
+          });
+        }
+      });
+
+      loadWorkflow().catch(error => {
         setSaveState(error.message, 'saving');
       });
 

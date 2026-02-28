@@ -1,37 +1,209 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-export const DEFAULT_DOCUMENT_PATH = path.resolve(
+export const DEFAULT_WORKFLOW_DIR = path.resolve(
+  process.cwd(),
+  'local-data',
+  'writer-workflow'
+);
+
+export const DEFAULT_WORKFLOW_PATH = path.join(
+  DEFAULT_WORKFLOW_DIR,
+  'workflow.json'
+);
+
+export const LEGACY_DOCUMENT_PATH = path.resolve(
   process.cwd(),
   'local-data',
   'writer.md'
 );
 
+const DEFAULT_SEQUENCE = [
+  { id: 'thesis', title: 'Thesis' },
+  { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+  { id: 'outline', title: 'Outline' },
+  { id: 'draft-1', title: 'Draft 1' },
+];
+
 /**
- * @param {{ documentPath?: string }} [options]
+ * @param {string} id
  */
-export function createDocumentStore(options = {}) {
-  const documentPath = options.documentPath ?? DEFAULT_DOCUMENT_PATH;
+function getDocumentFilename(id) {
+  return `${id}.md`;
+}
+
+/**
+ * @param {string} id
+ */
+function isDraftId(id) {
+  return /^draft-\d+$/.test(id);
+}
+
+/**
+ * @param {{ id: string, title: string }} step
+ */
+function cloneStep(step) {
+  return {
+    id: step.id,
+    title: step.title,
+  };
+}
+
+/**
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex?: number }} workflow
+ */
+function normalizeWorkflow(workflow) {
+  const steps = Array.isArray(workflow?.steps) && workflow.steps.length > 0
+    ? workflow.steps.map(cloneStep)
+    : DEFAULT_SEQUENCE.map(cloneStep);
+  const maxIndex = Math.max(0, steps.length - 1);
+  const rawActiveIndex = Number.isInteger(workflow?.activeIndex)
+    ? workflow.activeIndex
+    : Math.min(1, maxIndex);
+  const activeIndex = Math.min(Math.max(rawActiveIndex, 0), maxIndex);
 
   return {
-    documentPath,
-    async load() {
-      try {
-        return await readFile(documentPath, 'utf8');
-      } catch (error) {
-        if (error && error.code === 'ENOENT') {
-          return '';
-        }
+    steps,
+    activeIndex,
+  };
+}
+
+/**
+ * @param {string} documentDir
+ * @param {{ id: string }} step
+ */
+function getDocumentPath(documentDir, step) {
+  return path.join(documentDir, getDocumentFilename(step.id));
+}
+
+/**
+ * @param {{ workflowPath?: string, workflowDir?: string, legacyDocumentPath?: string }} [options]
+ */
+export function createDocumentStore(options = {}) {
+  const workflowPath = options.workflowPath ?? DEFAULT_WORKFLOW_PATH;
+  const workflowDir = options.workflowDir ?? path.dirname(workflowPath);
+  const documentDir = path.join(workflowDir, 'documents');
+  const legacyDocumentPath =
+    options.legacyDocumentPath ?? LEGACY_DOCUMENT_PATH;
+
+  async function readText(filePath) {
+    try {
+      return await readFile(filePath, 'utf8');
+    } catch (error) {
+      if (error && error.code === 'ENOENT') {
+        return '';
+      }
+      throw error;
+    }
+  }
+
+  async function writeWorkflow(workflow) {
+    await mkdir(workflowDir, { recursive: true });
+    await writeFile(workflowPath, JSON.stringify(workflow, null, 2), 'utf8');
+  }
+
+  async function ensureWorkflow() {
+    try {
+      const rawWorkflow = await readFile(workflowPath, 'utf8');
+      return normalizeWorkflow(JSON.parse(rawWorkflow));
+    } catch (error) {
+      if (!error || error.code !== 'ENOENT') {
         throw error;
       }
+    }
+
+    const workflow = normalizeWorkflow({});
+    const legacyContent = await readText(legacyDocumentPath);
+
+    await mkdir(documentDir, { recursive: true });
+    await Promise.all(
+      workflow.steps.map(async (step, index) => {
+        const initialContent = index === 0 ? legacyContent : '';
+        await writeFile(
+          getDocumentPath(documentDir, step),
+          initialContent,
+          'utf8'
+        );
+      })
+    );
+    await writeWorkflow(workflow);
+
+    return workflow;
+  }
+
+  async function loadStepContent(step) {
+    return readText(getDocumentPath(documentDir, step));
+  }
+
+  async function serializeWorkflow(workflow) {
+    const documents = await Promise.all(
+      workflow.steps.map(async step => ({
+        id: step.id,
+        title: step.title,
+        path: getDocumentPath(documentDir, step),
+        content: await loadStepContent(step),
+      }))
+    );
+
+    return {
+      workflowPath,
+      activeIndex: workflow.activeIndex,
+      documents,
+    };
+  }
+
+  return {
+    workflowPath,
+    async loadWorkflow() {
+      const workflow = await ensureWorkflow();
+      return serializeWorkflow(workflow);
     },
-    async save(content) {
-      await mkdir(path.dirname(documentPath), { recursive: true });
-      await writeFile(documentPath, content, 'utf8');
+    async saveDocument(documentId, content) {
+      const workflow = await ensureWorkflow();
+      const step = workflow.steps.find(candidate => candidate.id === documentId);
+
+      if (!step) {
+        throw new Error(`Unknown document id: ${documentId}`);
+      }
+
+      await mkdir(documentDir, { recursive: true });
+      await writeFile(getDocumentPath(documentDir, step), content, 'utf8');
+
       return {
         bytes: Buffer.byteLength(content, 'utf8'),
         savedAt: new Date().toISOString(),
+        documentId,
+        path: getDocumentPath(documentDir, step),
       };
+    },
+    async moveActiveIndex(direction) {
+      const workflow = await ensureWorkflow();
+      let nextIndex = workflow.activeIndex + direction;
+
+      if (direction > 0 && workflow.activeIndex === workflow.steps.length - 1) {
+        const lastStep = workflow.steps.at(-1);
+        if (lastStep && isDraftId(lastStep.id)) {
+          const nextDraftNumber = workflow.steps.filter(step =>
+            isDraftId(step.id)
+          ).length + 1;
+          const newStep = {
+            id: `draft-${nextDraftNumber}`,
+            title: `Draft ${nextDraftNumber}`,
+          };
+          workflow.steps.push(newStep);
+          await mkdir(documentDir, { recursive: true });
+          await writeFile(getDocumentPath(documentDir, newStep), '', 'utf8');
+        }
+      }
+
+      nextIndex = Math.min(
+        Math.max(nextIndex, 1),
+        Math.max(1, workflow.steps.length - 1)
+      );
+      workflow.activeIndex = nextIndex;
+      await writeWorkflow(workflow);
+
+      return serializeWorkflow(workflow);
     },
   };
 }
