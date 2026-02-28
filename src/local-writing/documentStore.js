@@ -65,6 +65,18 @@ function extractLevelOneHeading(content) {
 }
 
 /**
+ * @param {string} content
+ */
+function hasOnlyLevelOneHeading(content) {
+  const trimmedContent = content.trim();
+  if (!trimmedContent) {
+    return false;
+  }
+
+  return /^# .+$/.test(trimmedContent) && !trimmedContent.includes('\n');
+}
+
+/**
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex?: number, heading?: string }} workflow
  */
 function normalizeWorkflow(workflow) {
@@ -169,7 +181,7 @@ export function createDocumentStore(options = {}) {
       }
 
       const content = await loadStepContent(lastStep);
-      if (content.trim()) {
+      if (content.trim() && !hasOnlyLevelOneHeading(content)) {
         break;
       }
 

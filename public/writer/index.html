@@ -343,6 +343,11 @@
         storage: null,
       };
 
+      const STORAGE_PREFERENCE_KEY = 'dadeto.writer.storage-preference';
+      const DIRECTORY_HANDLE_DB_NAME = 'dadeto-writer-storage';
+      const DIRECTORY_HANDLE_STORE_NAME = 'handles';
+      const DIRECTORY_HANDLE_KEY = 'last-directory';
+
       const setSaveState = (message, className = '') => {
         saveState.textContent = message;
         saveState.className = `save-state ${className}`.trim();
@@ -358,6 +363,15 @@
       const extractLevelOneHeading = content => {
         const match = content.match(/^# (.+)$/m);
         return match ? match[1].trim() : '';
+      };
+
+      const hasOnlyLevelOneHeading = content => {
+        const trimmedContent = content.trim();
+        if (!trimmedContent) {
+          return false;
+        }
+
+        return /^# .+$/.test(trimmedContent) && !trimmedContent.includes('\n');
       };
 
       const getWorkflowHeading = workflow =>
@@ -377,6 +391,7 @@
       };
 
       const createServerStorage = () => ({
+        type: 'server',
         label: 'server',
         async loadWorkflow() {
           const response = await fetch('/api/writer/workflow');
@@ -425,6 +440,67 @@
           return response.json();
         },
       });
+
+      const openDirectoryHandleDatabase = () =>
+        new Promise((resolve, reject) => {
+          const request = window.indexedDB.open(DIRECTORY_HANDLE_DB_NAME, 1);
+          request.addEventListener('upgradeneeded', () => {
+            request.result.createObjectStore(DIRECTORY_HANDLE_STORE_NAME);
+          });
+          request.addEventListener('success', () => resolve(request.result));
+          request.addEventListener('error', () => reject(request.error));
+        });
+
+      const readStoredDirectoryHandle = async () => {
+        if (!window.indexedDB) {
+          return null;
+        }
+
+        const database = await openDirectoryHandleDatabase();
+        return new Promise((resolve, reject) => {
+          const transaction = database.transaction(DIRECTORY_HANDLE_STORE_NAME, 'readonly');
+          const store = transaction.objectStore(DIRECTORY_HANDLE_STORE_NAME);
+          const request = store.get(DIRECTORY_HANDLE_KEY);
+          request.addEventListener('success', () => resolve(request.result ?? null));
+          request.addEventListener('error', () => reject(request.error));
+        }).finally(() => {
+          database.close();
+        });
+      };
+
+      const writeStoredDirectoryHandle = async directoryHandle => {
+        if (!window.indexedDB) {
+          return;
+        }
+
+        const database = await openDirectoryHandleDatabase();
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction(DIRECTORY_HANDLE_STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(DIRECTORY_HANDLE_STORE_NAME);
+          const request = store.put(directoryHandle, DIRECTORY_HANDLE_KEY);
+          request.addEventListener('success', () => resolve());
+          request.addEventListener('error', () => reject(request.error));
+        }).finally(() => {
+          database.close();
+        });
+      };
+
+      const clearStoredDirectoryHandle = async () => {
+        if (!window.indexedDB) {
+          return;
+        }
+
+        const database = await openDirectoryHandleDatabase();
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction(DIRECTORY_HANDLE_STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(DIRECTORY_HANDLE_STORE_NAME);
+          const request = store.delete(DIRECTORY_HANDLE_KEY);
+          request.addEventListener('success', () => resolve());
+          request.addEventListener('error', () => reject(request.error));
+        }).finally(() => {
+          database.close();
+        });
+      };
 
       const readFileText = async handle => {
         const file = await handle.getFile();
@@ -493,7 +569,7 @@
 
             const handle = await ensureDocumentFile(lastStep);
             const content = await readFileText(handle);
-            if (content.trim()) {
+            if (content.trim() && !hasOnlyLevelOneHeading(content)) {
               break;
             }
 
@@ -564,7 +640,9 @@
         };
 
         return {
+          type: 'directory',
           label: `directory:${directoryHandle.name}`,
+          directoryHandle,
           async loadWorkflow() {
             return serializeWorkflow(await ensureWorkflowDefinition());
           },
@@ -642,6 +720,47 @@
             return serializeWorkflow(workflow);
           },
         };
+      };
+
+      const persistStoragePreference = async storage => {
+        localStorage.setItem(STORAGE_PREFERENCE_KEY, storage?.type ?? 'server');
+
+        if (storage?.type === 'directory' && storage.directoryHandle) {
+          await writeStoredDirectoryHandle(storage.directoryHandle);
+          return;
+        }
+
+        await clearStoredDirectoryHandle();
+      };
+
+      const restorePreferredStorage = async () => {
+        const preferredStorage = localStorage.getItem(STORAGE_PREFERENCE_KEY);
+        if (preferredStorage !== 'directory') {
+          return createServerStorage();
+        }
+
+        if (typeof window.showDirectoryPicker !== 'function') {
+          localStorage.setItem(STORAGE_PREFERENCE_KEY, 'server');
+          return createServerStorage();
+        }
+
+        try {
+          const directoryHandle = await readStoredDirectoryHandle();
+          if (!directoryHandle) {
+            throw new Error('Missing directory handle');
+          }
+
+          const permission = await directoryHandle.queryPermission({ mode: 'readwrite' });
+          if (permission !== 'granted') {
+            throw new Error('Directory handle permission unavailable');
+          }
+
+          return createDirectoryStorage(directoryHandle);
+        } catch {
+          localStorage.setItem(STORAGE_PREFERENCE_KEY, 'server');
+          await clearStoredDirectoryHandle().catch(() => {});
+          return createServerStorage();
+        }
       };
 
       const getCurrentDocument = () =>
@@ -780,6 +899,7 @@
         documentPath.textContent = 'Loading document…';
         storageMode.textContent = `Storage: ${state.storage?.label ?? 'server'}`;
         await loadWorkflow();
+        await persistStoragePreference(state.storage);
       };
 
       pickDirectoryButton.addEventListener('click', () => {
@@ -829,10 +949,14 @@
         }
       });
 
-      state.storage = createServerStorage();
-      loadWorkflow().catch(error => {
-        setSaveState(error.message, 'saving');
-      });
+      restorePreferredStorage()
+        .then(storage => {
+          state.storage = storage;
+          return loadWorkflow();
+        })
+        .catch(error => {
+          setSaveState(error.message, 'saving');
+        });
 
       window.setInterval(() => {
         saveDocument().catch(error => {

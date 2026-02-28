@@ -150,4 +150,35 @@ describe('documentStore', () => {
       'Draft 1',
     ]);
   });
+
+  test('moving left prunes trailing drafts that only contain a level one heading', async () => {
+    const store = createDocumentStore({
+      workflowPath,
+      legacyDocumentPath,
+    });
+
+    await store.moveActiveIndex(1);
+    await store.moveActiveIndex(1);
+    await store.saveDocument('draft-1', '# Working Title');
+    const movedWorkflow = await store.moveActiveIndex(1);
+
+    expect(movedWorkflow.activeIndex).toBe(4);
+    expect(movedWorkflow.documents.at(-1)?.title).toBe('Draft 2');
+
+    await store.setActiveIndex(3);
+    const reloadedWorkflow = await store.loadWorkflow();
+
+    expect(reloadedWorkflow.documents.map(document => document.title)).toEqual([
+      'Thesis',
+      'Syllogistic Argument',
+      'Outline',
+      'Draft 1',
+    ]);
+    await expect(
+      readFile(
+        path.join(tempDir, 'workflow', 'documents', 'draft-2.md'),
+        'utf8'
+      )
+    ).rejects.toMatchObject({ code: 'ENOENT' });
+  });
 });
