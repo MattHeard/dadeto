@@ -249,6 +249,34 @@
         align-items: baseline;
       }
 
+      .panel-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .mini-button {
+        padding: 0.32rem 0.55rem;
+        font-size: 0.76rem;
+      }
+
+      .panel-lines {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+      }
+
+      .panel-text-line {
+        min-height: 1.7rem;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .panel-text-line.is-target {
+        background: rgba(160, 60, 47, 0.08);
+      }
+
       .panel-body {
         display: block;
         width: 100%;
@@ -359,8 +387,27 @@
               <div class="panel-meta-row">
                 <div class="panel-meta">Earlier document</div>
                 <div class="panel-meta" id="previous-stats">(0 lines, 0 words)</div>
+                <div class="panel-meta" id="line-pin-status">No line pin</div>
               </div>
               <h2 id="previous-title">Loading…</h2>
+            </div>
+            <div class="panel-controls">
+              <button
+                id="pin-current-lines"
+                class="mini-button"
+                type="button"
+                title="Pin current visible lines (Alt+P)"
+              >
+                Pin Lines
+              </button>
+              <button
+                id="clear-line-pin"
+                class="mini-button"
+                type="button"
+                title="Clear line pin"
+              >
+                Clear Pin
+              </button>
             </div>
           </header>
           <div
@@ -398,6 +445,9 @@
       const useServerStorageButton = document.getElementById('use-server-storage');
       const previousTitle = document.getElementById('previous-title');
       const previousStats = document.getElementById('previous-stats');
+      const linePinStatus = document.getElementById('line-pin-status');
+      const pinCurrentLinesButton = document.getElementById('pin-current-lines');
+      const clearLinePinButton = document.getElementById('clear-line-pin');
       const previousContent = document.getElementById('previous-content');
       const currentTitle = document.getElementById('current-title');
       const currentStats = document.getElementById('current-stats');
@@ -467,16 +517,32 @@
         introMessage: INTRO_MESSAGES[0],
         introVisible: false,
         isMastheadCondensed: false,
+        selectedPreviousLine: 1,
+        selectedCurrentLine: 1,
+        linePins: {},
       };
 
       const STORAGE_PREFERENCE_KEY = 'dadeto.writer.storage-preference';
       const DIRECTORY_HANDLE_DB_NAME = 'dadeto-writer-storage';
       const DIRECTORY_HANDLE_STORE_NAME = 'handles';
       const DIRECTORY_HANDLE_KEY = 'last-directory';
+      const LINE_PINS_KEY = 'dadeto.writer.line-pins';
 
       const setSaveState = (message, className = '') => {
         saveState.textContent = message;
         saveState.className = `save-state ${className}`.trim();
+      };
+
+      const readStoredLinePins = () => {
+        try {
+          return JSON.parse(localStorage.getItem(LINE_PINS_KEY) ?? '{}');
+        } catch {
+          return {};
+        }
+      };
+
+      const persistLinePins = () => {
+        localStorage.setItem(LINE_PINS_KEY, JSON.stringify(state.linePins));
       };
 
       const renderMastheadState = () => {
@@ -523,6 +589,11 @@
         const trimmedContent = normalizedContent.trim();
         const words = trimmedContent ? trimmedContent.split(/\s+/).length : 0;
         return `(${lines} lines, ${words} words)`;
+      };
+
+      const getLogicalLineCount = content => {
+        const normalizedContent = content.replace(/\r\n/g, '\n');
+        return normalizedContent ? normalizedContent.split('\n').length : 1;
       };
 
       const getWorkflowHeading = workflow =>
@@ -920,6 +991,184 @@
       const getPreviousDocument = () =>
         state.workflow?.documents?.[state.workflow.activeIndex - 1] ?? null;
 
+      const clampLineNumber = (lineNumber, content) =>
+        Math.min(Math.max(lineNumber, 1), getLogicalLineCount(content));
+
+      const getCurrentCursorLine = () => {
+        const beforeCursor = currentContent.value.slice(0, currentContent.selectionStart);
+        return beforeCursor.split('\n').length;
+      };
+
+      const getStorageKey = () => state.storage?.label ?? 'server';
+
+      const getVisiblePairKey = () => {
+        const previousDocument = getPreviousDocument();
+        const currentDocument = getCurrentDocument();
+        if (!previousDocument || !currentDocument) {
+          return '';
+        }
+
+        return [getStorageKey(), previousDocument.id, currentDocument.id].join('::');
+      };
+
+      const getActiveLinePin = () => {
+        const pairKey = getVisiblePairKey();
+        return pairKey ? state.linePins[pairKey] ?? null : null;
+      };
+
+      const setActiveLinePin = pin => {
+        const pairKey = getVisiblePairKey();
+        if (!pairKey) {
+          return;
+        }
+
+        if (pin) {
+          state.linePins[pairKey] = pin;
+        } else {
+          delete state.linePins[pairKey];
+        }
+        persistLinePins();
+      };
+
+      const getPinnedCurrentLine = previousLine => {
+        const pin = getActiveLinePin();
+        const currentDocument = getCurrentDocument();
+        if (!pin || !currentDocument) {
+          return null;
+        }
+
+        return clampLineNumber(
+          previousLine - pin.previousLine + pin.currentLine,
+          getPrefilledDocumentContent(currentDocument)
+        );
+      };
+
+      const getPinnedPreviousLine = currentLine => {
+        const pin = getActiveLinePin();
+        const previousDocument = getPreviousDocument();
+        if (!pin || !previousDocument) {
+          return null;
+        }
+
+        return clampLineNumber(
+          currentLine - pin.currentLine + pin.previousLine,
+          previousDocument.content ?? ''
+        );
+      };
+
+      const scrollPreviousToLine = lineNumber => {
+        const target = previousContent.querySelector(`[data-line-number="${lineNumber}"]`);
+        if (!target) {
+          return;
+        }
+
+        previousContent
+          .querySelectorAll('.panel-text-line.is-target')
+          .forEach(line => line.classList.remove('is-target'));
+        target.classList.add('is-target');
+
+        const top = Math.max(
+          0,
+          target.offsetTop - (previousContent.clientHeight / 2) + (target.offsetHeight / 2)
+        );
+        previousContent.scrollTo({ top, behavior: 'smooth' });
+      };
+
+      const measureTextareaLineTop = lineNumber => {
+        const mirror = document.createElement('div');
+        const computedStyle = window.getComputedStyle(currentContent);
+        mirror.style.position = 'absolute';
+        mirror.style.visibility = 'hidden';
+        mirror.style.pointerEvents = 'none';
+        mirror.style.inset = '0 auto auto -99999px';
+        mirror.style.width = `${currentContent.clientWidth}px`;
+        mirror.style.padding = computedStyle.padding;
+        mirror.style.font = computedStyle.font;
+        mirror.style.lineHeight = computedStyle.lineHeight;
+        mirror.style.letterSpacing = computedStyle.letterSpacing;
+        mirror.style.whiteSpace = 'pre-wrap';
+        mirror.style.overflowWrap = 'anywhere';
+
+        const lines = currentContent.value.replace(/\r\n/g, '\n').split('\n');
+        const beforeText = lines.slice(0, Math.max(lineNumber - 1, 0)).join('\n');
+        const marker = document.createElement('span');
+        marker.textContent = '\u200b';
+        mirror.textContent = beforeText;
+        mirror.appendChild(marker);
+        document.body.appendChild(mirror);
+        const top = marker.offsetTop;
+        mirror.remove();
+        return top;
+      };
+
+      const scrollCurrentToLine = lineNumber => {
+        const top = Math.max(
+          0,
+          measureTextareaLineTop(lineNumber) - (currentContent.clientHeight / 2)
+        );
+        currentContent.scrollTo({ top, behavior: 'smooth' });
+      };
+
+      const updateLinePinStatus = () => {
+        const activePin = getActiveLinePin();
+        const hasPreviousDocument = Boolean(getPreviousDocument());
+        linePinStatus.textContent = activePin
+          ? `Pinned L${activePin.previousLine} ↔ L${activePin.currentLine}`
+          : 'No line pin';
+        pinCurrentLinesButton.disabled = !hasPreviousDocument;
+        clearLinePinButton.disabled = !activePin;
+      };
+
+      const syncFromPreviousLine = lineNumber => {
+        state.selectedPreviousLine = lineNumber;
+        const targetLine = getPinnedCurrentLine(lineNumber);
+        if (targetLine) {
+          scrollCurrentToLine(targetLine);
+          state.selectedCurrentLine = targetLine;
+        }
+      };
+
+      const syncFromCurrentLine = lineNumber => {
+        state.selectedCurrentLine = lineNumber;
+        const targetLine = getPinnedPreviousLine(lineNumber);
+        if (targetLine) {
+          scrollPreviousToLine(targetLine);
+          state.selectedPreviousLine = targetLine;
+        }
+      };
+
+      const renderPreviousPanelContent = () => {
+        const previousDocument = getPreviousDocument();
+        previousContent.replaceChildren();
+
+        if (previousDocument) {
+          const lines = previousDocument.content.replace(/\r\n/g, '\n').split('\n');
+          const lineWrapper = document.createElement('div');
+          lineWrapper.className = 'panel-lines';
+          lines.forEach((line, index) => {
+            const lineElement = document.createElement('div');
+            lineElement.className = 'panel-text-line';
+            lineElement.dataset.lineNumber = String(index + 1);
+            lineElement.textContent = line || ' ';
+            lineWrapper.appendChild(lineElement);
+          });
+          previousContent.appendChild(lineWrapper);
+
+          const activePin = getActiveLinePin();
+          if (activePin) {
+            scrollPreviousToLine(
+              clampLineNumber(activePin.previousLine, previousDocument.content ?? '')
+            );
+          }
+          return;
+        }
+
+        const emoji = document.createElement('span');
+        emoji.className = 'intro-emoji';
+        emoji.textContent = state.introMessage.emoji;
+        previousContent.append(emoji, state.introMessage.greeting);
+      };
+
       const getRandomIntroMessage = () => {
         if (INTRO_MESSAGES.length === 1) {
           return INTRO_MESSAGES[0];
@@ -986,18 +1235,19 @@
         previousTitle.textContent =
           previousDocument?.title ?? 'Warm-up';
         previousStats.textContent = getDocumentCounts(previousDocument?.content ?? '');
-        previousContent.replaceChildren();
-        if (previousDocument) {
-          previousContent.textContent = previousDocument.content;
-        } else {
-          const emoji = document.createElement('span');
-          emoji.className = 'intro-emoji';
-          emoji.textContent = state.introMessage.emoji;
-          previousContent.append(emoji, state.introMessage.greeting);
-        }
+        renderPreviousPanelContent();
         currentTitle.textContent = currentDocument?.title ?? 'No current document';
         currentContent.value = currentValue;
         currentStats.textContent = getDocumentCounts(currentValue);
+        state.selectedPreviousLine = Math.min(
+          state.selectedPreviousLine,
+          getLogicalLineCount(previousDocument?.content ?? '')
+        );
+        state.selectedCurrentLine = Math.min(
+          state.selectedCurrentLine,
+          getLogicalLineCount(currentValue)
+        );
+        updateLinePinStatus();
         state.lastSavedValues = Object.fromEntries(
           state.workflow.documents.map(document => [document.id, document.content])
         );
@@ -1104,10 +1354,65 @@
         setMastheadCondensed(!state.isMastheadCondensed);
       });
 
+      pinCurrentLinesButton.addEventListener('click', () => {
+        const previousDocument = getPreviousDocument();
+        if (!previousDocument || !getCurrentDocument()) {
+          return;
+        }
+
+        setActiveLinePin({
+          previousLine: clampLineNumber(
+            state.selectedPreviousLine,
+            previousDocument.content ?? ''
+          ),
+          currentLine: clampLineNumber(getCurrentCursorLine(), currentContent.value),
+        });
+        updateLinePinStatus();
+        setSaveState('Pinned visible lines', 'saved');
+      });
+
+      clearLinePinButton.addEventListener('click', () => {
+        setActiveLinePin(null);
+        previousContent
+          .querySelectorAll('.panel-text-line.is-target')
+          .forEach(line => line.classList.remove('is-target'));
+        updateLinePinStatus();
+        setSaveState('Cleared line pin', 'saved');
+      });
+
       currentContent.addEventListener('input', () => {
         if (!state.isMastheadCondensed && currentContent.value.trim()) {
           setMastheadCondensed(true);
         }
+        currentStats.textContent = getDocumentCounts(currentContent.value);
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('click', () => {
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('keyup', () => {
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('select', () => {
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      previousContent.addEventListener('click', event => {
+        const targetLine = event.target.closest('[data-line-number]');
+        if (!targetLine) {
+          return;
+        }
+
+        const lineNumber = Number(targetLine.dataset.lineNumber);
+        if (!Number.isInteger(lineNumber)) {
+          return;
+        }
+
+        scrollPreviousToLine(lineNumber);
+        syncFromPreviousLine(lineNumber);
       });
 
       window.addEventListener('keydown', event => {
@@ -1133,7 +1438,14 @@
           event.preventDefault();
           setMastheadCondensed(!state.isMastheadCondensed);
         }
+
+        if (event.key.toLowerCase() === 'p') {
+          event.preventDefault();
+          pinCurrentLinesButton.click();
+        }
       });
+
+      state.linePins = readStoredLinePins();
 
       restorePreferredStorage()
         .then(storage => {
