@@ -100,6 +100,26 @@
         background: rgba(255, 255, 255, 0.55);
       }
 
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      button {
+        border: 1px solid var(--strong-line);
+        background: rgba(255, 255, 255, 0.66);
+        color: var(--ink);
+        padding: 0.55rem 0.85rem;
+        font: 500 0.95rem/1 'IBM Plex Mono', monospace;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: rgba(255, 255, 255, 0.92);
+      }
+
       .save-state.saving {
         color: var(--accent);
       }
@@ -212,9 +232,14 @@
           <strong>Alt+Right</strong> to page through adjacent documents.
         </p>
         <div class="status-row">
+          <span class="pill" id="storage-mode">Storage: server</span>
           <span class="pill" id="workflow-path">Loading workflow…</span>
           <span class="pill" id="document-path">Loading document…</span>
           <span class="save-state" id="save-state">Loading…</span>
+        </div>
+        <div class="button-row">
+          <button id="pick-directory" type="button">Pick Blog Directory</button>
+          <button id="use-server-storage" type="button">Use Server Storage</button>
         </div>
         <div class="sequence" id="sequence"></div>
       </section>
@@ -248,22 +273,223 @@
     <script type="module">
       const workflowPath = document.getElementById('workflow-path');
       const documentPath = document.getElementById('document-path');
+      const storageMode = document.getElementById('storage-mode');
       const saveState = document.getElementById('save-state');
       const sequence = document.getElementById('sequence');
+      const pickDirectoryButton = document.getElementById('pick-directory');
+      const useServerStorageButton = document.getElementById('use-server-storage');
       const previousTitle = document.getElementById('previous-title');
       const previousContent = document.getElementById('previous-content');
       const currentTitle = document.getElementById('current-title');
       const currentContent = document.getElementById('current-content');
 
+      const DEFAULT_SEQUENCE = [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-1', title: 'Draft 1' },
+      ];
+
       const state = {
         workflow: null,
         lastSavedValue: '',
         isLoaded: false,
+        storage: null,
       };
 
       const setSaveState = (message, className = '') => {
         saveState.textContent = message;
         saveState.className = `save-state ${className}`.trim();
+      };
+
+      const cloneStep = step => ({
+        id: step.id,
+        title: step.title,
+      });
+
+      const isDraftId = id => /^draft-\d+$/.test(id);
+
+      const createServerStorage = () => ({
+        label: 'server',
+        async loadWorkflow() {
+          const response = await fetch('/api/writer/workflow');
+          if (!response.ok) {
+            throw new Error('Failed to load workflow');
+          }
+          return response.json();
+        },
+        async saveDocument(documentId, content) {
+          const response = await fetch(`/api/writer/document/${documentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to save document');
+          }
+
+          return response.json();
+        },
+        async moveWorkflow(direction) {
+          const response = await fetch('/api/writer/workflow/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ direction }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to move workflow');
+          }
+
+          return response.json();
+        },
+      });
+
+      const readFileText = async handle => {
+        const file = await handle.getFile();
+        return file.text();
+      };
+
+      const writeFileText = async (handle, content) => {
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+      };
+
+      const createDirectoryStorage = async directoryHandle => {
+        const workflowFileHandle = await directoryHandle.getFileHandle('workflow.json', {
+          create: true,
+        });
+        const documentsDirHandle = await directoryHandle.getDirectoryHandle('documents', {
+          create: true,
+        });
+
+        const ensureDocumentFile = step =>
+          documentsDirHandle.getFileHandle(`${step.id}.md`, { create: true });
+
+        const readWorkflowDefinition = async () => {
+          const rawWorkflow = await readFileText(workflowFileHandle);
+          if (!rawWorkflow.trim()) {
+            return null;
+          }
+
+          const parsedWorkflow = JSON.parse(rawWorkflow);
+          const steps = Array.isArray(parsedWorkflow?.steps) && parsedWorkflow.steps.length > 0
+            ? parsedWorkflow.steps.map(cloneStep)
+            : DEFAULT_SEQUENCE.map(cloneStep);
+          const maxIndex = Math.max(1, steps.length - 1);
+          const activeIndex = Number.isInteger(parsedWorkflow?.activeIndex)
+            ? Math.min(Math.max(parsedWorkflow.activeIndex, 1), maxIndex)
+            : Math.min(1, maxIndex);
+
+          return {
+            steps,
+            activeIndex,
+          };
+        };
+
+        const writeWorkflowDefinition = workflow =>
+          writeFileText(workflowFileHandle, JSON.stringify(workflow, null, 2));
+
+        const ensureWorkflowDefinition = async () => {
+          const existingWorkflow = await readWorkflowDefinition();
+          if (existingWorkflow) {
+            return existingWorkflow;
+          }
+
+          const workflow = {
+            steps: DEFAULT_SEQUENCE.map(cloneStep),
+            activeIndex: 1,
+          };
+
+          await Promise.all(
+            workflow.steps.map(async step => {
+              const handle = await ensureDocumentFile(step);
+              const existingContent = await readFileText(handle);
+              if (!existingContent) {
+                await writeFileText(handle, '');
+              }
+            })
+          );
+          await writeWorkflowDefinition(workflow);
+
+          return workflow;
+        };
+
+        const serializeWorkflow = async workflow => {
+          const documents = await Promise.all(
+            workflow.steps.map(async step => {
+              const handle = await ensureDocumentFile(step);
+              return {
+                id: step.id,
+                title: step.title,
+                path: `${directoryHandle.name}/documents/${step.id}.md`,
+                content: await readFileText(handle),
+              };
+            })
+          );
+
+          return {
+            workflowPath: `${directoryHandle.name}/workflow.json`,
+            activeIndex: workflow.activeIndex,
+            documents,
+          };
+        };
+
+        return {
+          label: `directory:${directoryHandle.name}`,
+          async loadWorkflow() {
+            return serializeWorkflow(await ensureWorkflowDefinition());
+          },
+          async saveDocument(documentId, content) {
+            const workflow = await ensureWorkflowDefinition();
+            const step = workflow.steps.find(candidate => candidate.id === documentId);
+
+            if (!step) {
+              throw new Error(`Unknown document id: ${documentId}`);
+            }
+
+            const handle = await ensureDocumentFile(step);
+            await writeFileText(handle, content);
+
+            return {
+              documentId,
+              path: `${directoryHandle.name}/documents/${documentId}.md`,
+              savedAt: new Date().toISOString(),
+            };
+          },
+          async moveWorkflow(direction) {
+            const workflow = await ensureWorkflowDefinition();
+            let nextIndex = workflow.activeIndex + (direction === 'left' ? -1 : 1);
+
+            if (direction === 'right' && workflow.activeIndex === workflow.steps.length - 1) {
+              const lastStep = workflow.steps.at(-1);
+              if (lastStep && isDraftId(lastStep.id)) {
+                const nextDraftNumber =
+                  workflow.steps.filter(step => isDraftId(step.id)).length + 1;
+                const nextStep = {
+                  id: `draft-${nextDraftNumber}`,
+                  title: `Draft ${nextDraftNumber}`,
+                };
+                workflow.steps.push(nextStep);
+                const nextHandle = await ensureDocumentFile(nextStep);
+                const existingContent = await readFileText(nextHandle);
+                if (!existingContent) {
+                  await writeFileText(nextHandle, '');
+                }
+              }
+            }
+
+            nextIndex = Math.min(
+              Math.max(nextIndex, 1),
+              Math.max(1, workflow.steps.length - 1)
+            );
+            workflow.activeIndex = nextIndex;
+            await writeWorkflowDefinition(workflow);
+            return serializeWorkflow(workflow);
+          },
+        };
       };
 
       const getCurrentDocument = () =>
@@ -289,6 +515,7 @@
         const previousDocument = getPreviousDocument();
         const currentDocument = getCurrentDocument();
 
+        storageMode.textContent = `Storage: ${state.storage?.label ?? 'server'}`;
         workflowPath.textContent = state.workflow.workflowPath;
         documentPath.textContent = currentDocument?.path ?? 'No document';
         previousTitle.textContent = previousDocument?.title ?? 'No earlier document';
@@ -300,12 +527,7 @@
       };
 
       const loadWorkflow = async () => {
-        const response = await fetch('/api/writer/workflow');
-        if (!response.ok) {
-          throw new Error('Failed to load workflow');
-        }
-
-        state.workflow = await response.json();
+        state.workflow = await state.storage.loadWorkflow();
         state.isLoaded = true;
         renderWorkflow();
         setSaveState('Loaded', 'saved');
@@ -321,20 +543,7 @@
 
         setSaveState('Saving…', 'saving');
 
-        const response = await fetch(
-          `/api/writer/document/${currentDocument.id}`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: nextValue }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to save document');
-        }
-
-        const payload = await response.json();
+        const payload = await state.storage.saveDocument(currentDocument.id, nextValue);
         currentDocument.content = nextValue;
         state.lastSavedValue = nextValue;
         documentPath.textContent = payload.path;
@@ -344,20 +553,44 @@
       const moveWorkflow = async direction => {
         await saveDocument();
 
-        const response = await fetch('/api/writer/workflow/move', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ direction }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to move workflow');
-        }
-
-        state.workflow = await response.json();
+        state.workflow = await state.storage.moveWorkflow(direction);
         renderWorkflow();
         setSaveState(`Moved ${direction}`, 'saved');
       };
+
+      const switchStorage = async nextStorage => {
+        await saveDocument();
+        state.storage = nextStorage;
+        state.isLoaded = false;
+        await loadWorkflow();
+      };
+
+      pickDirectoryButton.addEventListener('click', () => {
+        if (typeof window.showDirectoryPicker !== 'function') {
+          setSaveState('Directory picker is not supported in this browser', 'saving');
+          return;
+        }
+
+        window
+          .showDirectoryPicker({ mode: 'readwrite' })
+          .then(createDirectoryStorage)
+          .then(switchStorage)
+          .then(() => {
+            setSaveState('Directory connected', 'saved');
+          })
+          .catch(error => {
+            if (error?.name === 'AbortError') {
+              return;
+            }
+            setSaveState(error.message, 'saving');
+          });
+      });
+
+      useServerStorageButton.addEventListener('click', () => {
+        switchStorage(createServerStorage()).catch(error => {
+          setSaveState(error.message, 'saving');
+        });
+      });
 
       window.addEventListener('keydown', event => {
         if (!event.altKey) {
@@ -379,6 +612,7 @@
         }
       });
 
+      state.storage = createServerStorage();
       loadWorkflow().catch(error => {
         setSaveState(error.message, 'saving');
       });
