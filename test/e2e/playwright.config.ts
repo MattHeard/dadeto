@@ -20,4 +20,7 @@ export const chromiumProject = {
 
 export default defineConfig({
   projects: [chromiumProject],
+  use: {
+    baseURL: process.env.PLAYWRIGHT_BASE_URL,
+  },
 });

@@ -8,7 +8,10 @@ const __dirname = path.dirname(__filename);
 const publicDir = path.resolve(__dirname, '../../public');
 const writerDir = path.join(publicDir, 'writer');
 const port = Number.parseInt(process.env.WRITER_PORT ?? '4321', 10);
-const store = createDocumentStore();
+const store = createDocumentStore({
+  workflowPath: process.env.WRITER_WORKFLOW_PATH,
+  legacyDocumentPath: process.env.WRITER_LEGACY_DOCUMENT_PATH,
+});
 
 const app = express();
 
