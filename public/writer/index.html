@@ -128,6 +128,17 @@
         gap: 0.5rem;
       }
 
+      .icon-button {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        line-height: 1;
+      }
+
       .pill {
         padding: 0.35rem 0.6rem;
         border: 1px solid var(--line);
@@ -297,7 +308,15 @@
         <div class="masthead-top">
           <h1 id="masthead-title">Untitled Post</h1>
           <div class="masthead-tools">
-            <button id="toggle-masthead" type="button">Condense Header (Alt+M)</button>
+            <button
+              id="toggle-masthead"
+              class="icon-button"
+              type="button"
+              title="Condense Header (Alt+M)"
+              aria-label="Condense Header (Alt+M)"
+            >
+              <span aria-hidden="true">▴</span>
+            </button>
           </div>
         </div>
         <p class="subhead">
@@ -400,9 +419,14 @@
 
       const renderMastheadState = () => {
         masthead.classList.toggle('condensed', state.isMastheadCondensed);
-        toggleMastheadButton.textContent = state.isMastheadCondensed
+        const label = state.isMastheadCondensed
           ? 'Expand Header (Alt+M)'
           : 'Condense Header (Alt+M)';
+        toggleMastheadButton.title = label;
+        toggleMastheadButton.setAttribute('aria-label', label);
+        toggleMastheadButton.innerHTML = state.isMastheadCondensed
+          ? '<span aria-hidden="true">▾</span>'
+          : '<span aria-hidden="true">▴</span>';
       };
 
       const setMastheadCondensed = nextValue => {
