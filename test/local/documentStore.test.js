@@ -1,7 +1,7 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { createDocumentStore } from '../../src/local-writing/documentStore.js';
+import { createDocumentStore } from '../../src/local/documentStore.js';
 
 describe('documentStore', () => {
   let tempDir;
