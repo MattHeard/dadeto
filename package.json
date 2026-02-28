@@ -21,7 +21,8 @@
     "build:browser": "npm run build:mattheard-net",
     "build": "npm run build:mattheard-net",
     "duplication": "jscpd",
-    "start": "npx serve public"
+    "start": "npx serve public",
+    "start:writer": "node src/local-writing/server.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.9",
