@@ -31,7 +31,8 @@
 
       body {
         margin: 0;
-        min-height: 100vh;
+        height: 100vh;
+        overflow: hidden;
         color: var(--ink);
         font-family: 'IBM Plex Mono', monospace;
         background:
@@ -39,11 +40,17 @@
           linear-gradient(135deg, var(--bg), #efe6d2 56%, var(--bg-accent));
       }
 
+      html {
+        height: 100vh;
+        overflow: hidden;
+      }
+
       .shell {
         width: min(1400px, calc(100vw - 2rem));
         margin: 1rem auto;
+        height: calc(100vh - 2rem);
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
         gap: 1rem;
       }
 
@@ -140,6 +147,7 @@
         padding: 0.4rem 0.65rem;
         background: rgba(255, 255, 255, 0.5);
         color: var(--muted);
+        cursor: pointer;
       }
 
       .sequence-step.active {
@@ -151,12 +159,16 @@
       .workspace {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        min-height: 0;
         gap: 1rem;
       }
 
       .workflow-panel {
         overflow: hidden;
-        min-height: 70vh;
+        min-height: 0;
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
       }
 
       .panel-header {
@@ -180,7 +192,8 @@
       .panel-body {
         display: block;
         width: 100%;
-        min-height: calc(70vh - 4.25rem);
+        min-height: 0;
+        height: 100%;
         border: 0;
         padding: 1.25rem;
         background:
@@ -195,6 +208,7 @@
       textarea.panel-body {
         resize: none;
         caret-color: var(--accent);
+        white-space: pre-wrap;
       }
 
       textarea.panel-body:focus {
@@ -233,7 +247,6 @@
         </p>
         <div class="status-row">
           <span class="pill" id="storage-mode">Storage: server</span>
-          <span class="pill" id="workflow-path">Loading workflow…</span>
           <span class="pill" id="document-path">Loading document…</span>
           <span class="save-state" id="save-state">Loading…</span>
         </div>
@@ -251,7 +264,13 @@
               <h2 id="previous-title">Loading…</h2>
             </div>
           </header>
-          <pre class="panel-body" id="previous-content"></pre>
+          <textarea
+            class="panel-body"
+            id="previous-content"
+            spellcheck="false"
+            placeholder="# Earlier document"
+            aria-label="Earlier markdown document"
+          ></textarea>
         </article>
         <article class="workflow-panel">
           <header class="panel-header">
@@ -271,7 +290,6 @@
       </section>
     </main>
     <script type="module">
-      const workflowPath = document.getElementById('workflow-path');
       const documentPath = document.getElementById('document-path');
       const storageMode = document.getElementById('storage-mode');
       const saveState = document.getElementById('save-state');
@@ -292,7 +310,7 @@
 
       const state = {
         workflow: null,
-        lastSavedValue: '',
+        lastSavedValues: {},
         isLoaded: false,
         storage: null,
       };
@@ -340,6 +358,19 @@
 
           if (!response.ok) {
             throw new Error('Failed to move workflow');
+          }
+
+          return response.json();
+        },
+        async setActiveIndex(activeIndex) {
+          const response = await fetch('/api/writer/workflow/select', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activeIndex }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to select document');
           }
 
           return response.json();
@@ -430,8 +461,8 @@
             })
           );
 
-          return {
-            workflowPath: `${directoryHandle.name}/workflow.json`,
+        return {
+          workflowPath: `${directoryHandle.name}/workflow.json`,
             activeIndex: workflow.activeIndex,
             documents,
           };
@@ -489,6 +520,15 @@
             await writeWorkflowDefinition(workflow);
             return serializeWorkflow(workflow);
           },
+          async setActiveIndex(activeIndex) {
+            const workflow = await ensureWorkflowDefinition();
+            workflow.activeIndex = Math.min(
+              Math.max(activeIndex, 1),
+              Math.max(1, workflow.steps.length - 1)
+            );
+            await writeWorkflowDefinition(workflow);
+            return serializeWorkflow(workflow);
+          },
         };
       };
 
@@ -507,6 +547,11 @@
             index === state.workflow.activeIndex
               ? 'sequence-step active'
               : 'sequence-step';
+          step.addEventListener('click', () => {
+            selectWorkflowIndex(index).catch(error => {
+              setSaveState(error.message, 'saving');
+            });
+          });
           sequence.appendChild(step);
         });
       };
@@ -516,13 +561,14 @@
         const currentDocument = getCurrentDocument();
 
         storageMode.textContent = `Storage: ${state.storage?.label ?? 'server'}`;
-        workflowPath.textContent = state.workflow.workflowPath;
         documentPath.textContent = currentDocument?.path ?? 'No document';
         previousTitle.textContent = previousDocument?.title ?? 'No earlier document';
-        previousContent.textContent = previousDocument?.content ?? '';
+        previousContent.value = previousDocument?.content ?? '';
         currentTitle.textContent = currentDocument?.title ?? 'No current document';
         currentContent.value = currentDocument?.content ?? '';
-        state.lastSavedValue = currentContent.value;
+        state.lastSavedValues = Object.fromEntries(
+          state.workflow.documents.map(document => [document.id, document.content])
+        );
         renderSequence();
       };
 
@@ -533,21 +579,32 @@
         setSaveState('Loaded', 'saved');
       };
 
-      const saveDocument = async () => {
-        const currentDocument = getCurrentDocument();
-        const nextValue = currentContent.value;
-
-        if (!state.isLoaded || !currentDocument || nextValue === state.lastSavedValue) {
+      const saveVisibleDocument = async (documentRecord, nextValue) => {
+        if (
+          !state.isLoaded ||
+          !documentRecord ||
+          nextValue === state.lastSavedValues[documentRecord.id]
+        ) {
           return;
         }
 
         setSaveState('Saving…', 'saving');
 
-        const payload = await state.storage.saveDocument(currentDocument.id, nextValue);
-        currentDocument.content = nextValue;
-        state.lastSavedValue = nextValue;
-        documentPath.textContent = payload.path;
-        setSaveState(`Saved ${new Date(payload.savedAt).toLocaleTimeString()}`, 'saved');
+        const payload = await state.storage.saveDocument(documentRecord.id, nextValue);
+        documentRecord.content = nextValue;
+        state.lastSavedValues[documentRecord.id] = nextValue;
+        if (getCurrentDocument()?.id === documentRecord.id) {
+          documentPath.textContent = payload.path;
+        }
+        setSaveState(
+          `Saved ${new Date(payload.savedAt).toLocaleTimeString()}`,
+          'saved'
+        );
+      };
+
+      const saveDocument = async () => {
+        await saveVisibleDocument(getPreviousDocument(), previousContent.value);
+        await saveVisibleDocument(getCurrentDocument(), currentContent.value);
       };
 
       const moveWorkflow = async direction => {
@@ -556,6 +613,13 @@
         state.workflow = await state.storage.moveWorkflow(direction);
         renderWorkflow();
         setSaveState(`Moved ${direction}`, 'saved');
+      };
+
+      const selectWorkflowIndex = async nextIndex => {
+        await saveDocument();
+        state.workflow = await state.storage.setActiveIndex(nextIndex);
+        renderWorkflow();
+        setSaveState(`Selected ${state.workflow.documents[nextIndex]?.title ?? 'document'}`, 'saved');
       };
 
       const switchStorage = async nextStorage => {

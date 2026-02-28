@@ -73,4 +73,16 @@ describe('documentStore', () => {
       )
     ).resolves.toBe('');
   });
+
+  test('setActiveIndex clamps to a valid editable document index', async () => {
+    const store = createDocumentStore({
+      workflowPath,
+      legacyDocumentPath,
+    });
+
+    const workflow = await store.setActiveIndex(999);
+
+    expect(workflow.activeIndex).toBe(3);
+    expect(workflow.documents[workflow.activeIndex].title).toBe('Draft 1');
+  });
 });

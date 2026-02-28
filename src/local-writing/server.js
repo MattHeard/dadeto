@@ -32,6 +32,17 @@ app.post('/api/writer/workflow/move', async (req, res, next) => {
   }
 });
 
+app.post('/api/writer/workflow/select', async (req, res, next) => {
+  try {
+    const nextIndex = Number.isInteger(req.body?.activeIndex)
+      ? req.body.activeIndex
+      : 1;
+    res.json(await store.setActiveIndex(nextIndex));
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.put('/api/writer/document/:documentId', async (req, res, next) => {
   try {
     const content =

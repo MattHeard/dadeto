@@ -205,5 +205,15 @@ export function createDocumentStore(options = {}) {
 
       return serializeWorkflow(workflow);
     },
+    async setActiveIndex(nextIndex) {
+      const workflow = await ensureWorkflow();
+      workflow.activeIndex = Math.min(
+        Math.max(nextIndex, 1),
+        Math.max(1, workflow.steps.length - 1)
+      );
+      await writeWorkflow(workflow);
+
+      return serializeWorkflow(workflow);
+    },
   };
 }
