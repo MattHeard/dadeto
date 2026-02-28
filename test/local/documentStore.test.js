@@ -51,7 +51,9 @@ describe('documentStore', () => {
 
     expect(content).toBe('1. Intro');
     expect(result.documentId).toBe('outline');
-    expect(result.path).toContain(path.join('workflow', 'documents', 'outline.md'));
+    expect(result.path).toContain(
+      path.join('workflow', 'documents', 'outline.md')
+    );
   });
 
   test('paging right from the last draft creates the next draft document', async () => {
@@ -104,7 +106,10 @@ describe('documentStore', () => {
       legacyDocumentPath,
     });
 
-    await store.saveDocument('thesis', '# Inevitable Government Conflict\n\n## Thesis');
+    await store.saveDocument(
+      'thesis',
+      '# Inevitable Government Conflict\n\n## Thesis'
+    );
     await store.saveDocument('outline', '# Revised Working Title\n\n1. Intro');
 
     const workflow = await store.loadWorkflow();
@@ -125,7 +130,9 @@ describe('documentStore', () => {
     expect(movedWorkflow.activeIndex).toBe(4);
     const saveResult = await store.saveDocument('draft-2', '');
 
-    expect(saveResult.path).toContain(path.join('workflow', 'documents', 'draft-2.md'));
+    expect(saveResult.path).toContain(
+      path.join('workflow', 'documents', 'draft-2.md')
+    );
     await expect(
       readFile(
         path.join(tempDir, 'workflow', 'documents', 'draft-2.md'),

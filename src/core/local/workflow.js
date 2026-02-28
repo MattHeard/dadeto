@@ -6,7 +6,9 @@ export const DEFAULT_SEQUENCE = [
 ];
 
 /**
- * @param {{ id: string, title: string }} step
+ * Clone a workflow step so callers can mutate the result safely.
+ * @param {{ id: string, title: string }} step - Workflow step to copy.
+ * @returns {{ id: string, title: string }} Copied workflow step.
  */
 export function cloneStep(step) {
   return {
@@ -16,56 +18,177 @@ export function cloneStep(step) {
 }
 
 /**
- * @param {string} id
+ * Determine whether a workflow identifier is a numbered draft id.
+ * @param {string} id - Workflow document identifier.
+ * @returns {boolean} True when the id matches the `draft-N` pattern.
  */
 export function isDraftId(id) {
   return /^draft-\d+$/.test(id);
 }
 
 /**
- * @param {{ id: string }} step
+ * Extract the numeric suffix from a draft step id.
+ * @param {{ id: string }} step - Workflow step with a draft id.
+ * @returns {number} Parsed draft number.
  */
 export function getDraftNumber(step) {
   return Number.parseInt(step.id.replace('draft-', ''), 10);
 }
 
 /**
- * @param {string} content
+ * Read the latest level-one heading from markdown content.
+ * @param {string} content - Markdown content to inspect.
+ * @returns {string} Heading text without the leading `#`, or an empty string.
  */
 export function extractLevelOneHeading(content) {
   const match = content.match(/^# (.+)$/m);
-  return match ? match[1].trim() : '';
+  if (!match) {
+    return '';
+  }
+
+  return match[1].trim();
 }
 
 /**
- * @param {string} content
+ * Check whether markdown content contains only a single level-one heading.
+ * @param {string} content - Markdown content to inspect.
+ * @returns {boolean} True when the content is exactly one non-empty `# Heading` line.
  */
 export function hasOnlyLevelOneHeading(content) {
   const trimmedContent = content.trim();
+  return isSingleHeadingLine(trimmedContent);
+}
+
+/**
+ * Check whether trimmed markdown content is a single level-one heading line.
+ * @param {string} trimmedContent - Trimmed markdown content.
+ * @returns {boolean} True when the content is exactly one non-empty `# Heading` line.
+ */
+function isSingleHeadingLine(trimmedContent) {
+  if (!isNonEmptySingleLine(trimmedContent)) {
+    return false;
+  }
+
+  return /^# .+$/.test(trimmedContent);
+}
+
+/**
+ * Check whether trimmed content is present and fits on a single line.
+ * @param {string} trimmedContent - Trimmed markdown content.
+ * @returns {boolean} True when the content is non-empty and contains no newlines.
+ */
+function isNonEmptySingleLine(trimmedContent) {
   if (!trimmedContent) {
     return false;
   }
 
-  return /^# .+$/.test(trimmedContent) && !trimmedContent.includes('\n');
+  return !trimmedContent.includes('\n');
 }
 
 /**
- * @param {{ steps: Array<{ id: string, title: string }>, activeIndex?: number, heading?: string }} workflow
+ * Resolve the optional workflow step list from a workflow candidate.
+ * @param {{ steps?: Array<{ id: string, title: string }> } | undefined} workflow - Workflow candidate to inspect.
+ * @returns {Array<{ id: string, title: string }> | undefined} Provided steps when present.
+ */
+function getWorkflowSteps(workflow) {
+  if (!workflow) {
+    return undefined;
+  }
+
+  return workflow.steps;
+}
+
+/**
+ * Determine whether a step list is populated and safe to normalize.
+ * @param {Array<{ id: string, title: string }> | undefined} steps - Candidate workflow steps.
+ * @returns {boolean} True when the provided steps should be used.
+ */
+function hasWorkflowSteps(steps) {
+  return Array.isArray(steps) && steps.length > 0;
+}
+
+/**
+ * Resolve the workflow steps, falling back to the default sequence when needed.
+ * @param {{ steps?: Array<{ id: string, title: string }> } | undefined} workflow - Workflow candidate to normalize.
+ * @returns {Array<{ id: string, title: string }>} Normalized step list.
+ */
+function normalizeSteps(workflow) {
+  const steps = getWorkflowSteps(workflow);
+  if (hasWorkflowSteps(steps)) {
+    return steps.map(cloneStep);
+  }
+
+  return DEFAULT_SEQUENCE.map(cloneStep);
+}
+
+/**
+ * Resolve the active workflow index and clamp it within the step bounds.
+ * @param {{ activeIndex?: number } | undefined} workflow - Workflow candidate to normalize.
+ * @param {number} maxIndex - Maximum valid active index.
+ * @returns {number} Clamped active index.
+ */
+function normalizeActiveIndex(workflow, maxIndex) {
+  const activeIndex = getWorkflowActiveIndex(workflow);
+  if (Number.isInteger(activeIndex)) {
+    return Math.min(Math.max(activeIndex, 0), maxIndex);
+  }
+
+  return Math.min(1, maxIndex);
+}
+
+/**
+ * Resolve the optional active index field from a workflow candidate.
+ * @param {{ activeIndex?: number } | undefined} workflow - Workflow candidate to inspect.
+ * @returns {number | undefined} Active index when present.
+ */
+function getWorkflowActiveIndex(workflow) {
+  if (!workflow) {
+    return undefined;
+  }
+
+  return workflow.activeIndex;
+}
+
+/**
+ * Resolve the optional heading field from a workflow candidate.
+ * @param {{ heading?: string } | undefined} workflow - Workflow candidate to inspect.
+ * @returns {string | undefined} Heading when present.
+ */
+function getWorkflowHeading(workflow) {
+  if (!workflow) {
+    return undefined;
+  }
+
+  return workflow.heading;
+}
+
+/**
+ * Normalize the shared workflow heading field.
+ * @param {{ heading?: string } | undefined} workflow - Workflow candidate to normalize.
+ * @returns {string} Trimmed heading or an empty string.
+ */
+function normalizeHeading(workflow) {
+  const heading = getWorkflowHeading(workflow);
+  if (typeof heading !== 'string') {
+    return '';
+  }
+
+  return heading.trim();
+}
+
+/**
+ * Normalize persisted workflow state and apply sane defaults.
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex?: number, heading?: string } | undefined} workflow - Workflow payload from storage.
+ * @returns {{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }} Normalized workflow state.
  */
 export function normalizeWorkflow(workflow) {
-  const steps = Array.isArray(workflow?.steps) && workflow.steps.length > 0
-    ? workflow.steps.map(cloneStep)
-    : DEFAULT_SEQUENCE.map(cloneStep);
+  const steps = normalizeSteps(workflow);
   const maxIndex = Math.max(0, steps.length - 1);
-  const rawActiveIndex = Number.isInteger(workflow?.activeIndex)
-    ? workflow.activeIndex
-    : Math.min(1, maxIndex);
-  const activeIndex = Math.min(Math.max(rawActiveIndex, 0), maxIndex);
+  const activeIndex = normalizeActiveIndex(workflow, maxIndex);
 
   return {
     steps,
     activeIndex,
-    heading:
-      typeof workflow?.heading === 'string' ? workflow.heading.trim() : '',
+    heading: normalizeHeading(workflow),
   };
 }

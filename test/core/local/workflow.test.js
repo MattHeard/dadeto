@@ -36,6 +36,7 @@ describe('local workflow core', () => {
     expect(extractLevelOneHeading('No heading')).toBe('');
     expect(hasOnlyLevelOneHeading('')).toBe(false);
     expect(hasOnlyLevelOneHeading('# Title')).toBe(true);
+    expect(hasOnlyLevelOneHeading('Title only')).toBe(false);
     expect(hasOnlyLevelOneHeading('# Title\n\nBody')).toBe(false);
   });
 
@@ -56,6 +57,20 @@ describe('local workflow core', () => {
       steps: [{ id: 'draft-1', title: 'Draft 1' }],
       activeIndex: 0,
       heading: 'Heading',
+    });
+  });
+
+  test('normalizes empty workflow fields back to defaults', () => {
+    expect(
+      normalizeWorkflow({
+        steps: [],
+        activeIndex: undefined,
+        heading: /** @type {any} */ (null),
+      })
+    ).toEqual({
+      steps: DEFAULT_SEQUENCE,
+      activeIndex: 1,
+      heading: '',
     });
   });
 });
