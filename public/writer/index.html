@@ -300,6 +300,36 @@
         overflow: auto;
       }
 
+      .editor-panel {
+        position: relative;
+        min-height: 0;
+        height: 100%;
+      }
+
+      .editor-highlight-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .editor-highlight {
+        position: absolute;
+        left: 1.25rem;
+        right: 1.25rem;
+        border-radius: 2px;
+      }
+
+      .editor-highlight.is-target {
+        background: rgba(160, 60, 47, 0.08);
+      }
+
+      .editor-highlight.is-selected {
+        box-shadow: inset 0 0 0 1px rgba(160, 60, 47, 0.4);
+        background: rgba(160, 60, 47, 0.12);
+      }
+
       .panel-body.readonly {
         border: 0;
       }
@@ -315,6 +345,8 @@
       }
 
       textarea.panel-body {
+        position: relative;
+        z-index: 1;
         resize: none;
         caret-color: var(--accent);
         white-space: pre-wrap;
@@ -433,13 +465,16 @@
               <h2 id="current-title">Loading…</h2>
             </div>
           </header>
-          <textarea
-            class="panel-body"
-            id="current-content"
-            spellcheck="false"
-            placeholder="# Start writing"
-            aria-label="Current markdown document"
-          ></textarea>
+          <div class="editor-panel">
+            <div class="editor-highlight-layer" id="current-highlight-layer"></div>
+            <textarea
+              class="panel-body"
+              id="current-content"
+              spellcheck="false"
+              placeholder="# Start writing"
+              aria-label="Current markdown document"
+            ></textarea>
+          </div>
         </article>
       </section>
     </main>
@@ -458,6 +493,7 @@
       const previousContent = document.getElementById('previous-content');
       const currentTitle = document.getElementById('current-title');
       const currentStats = document.getElementById('current-stats');
+      const currentHighlightLayer = document.getElementById('current-highlight-layer');
       const currentContent = document.getElementById('current-content');
       const mastheadTitle = document.getElementById('masthead-title');
       const masthead = document.querySelector('.masthead');
@@ -1111,6 +1147,12 @@
         return top;
       };
 
+      const measureTextareaLineHeight = lineNumber => {
+        const startTop = measureTextareaLineTop(lineNumber);
+        const nextTop = measureTextareaLineTop(lineNumber + 1);
+        return Math.max(27.2, nextTop - startTop);
+      };
+
       const scrollCurrentToLine = lineNumber => {
         const top = Math.max(
           0,
@@ -1140,6 +1182,44 @@
         if (target) {
           target.classList.add('is-selected');
         }
+      };
+
+      const renderCurrentHighlights = () => {
+        currentHighlightLayer.replaceChildren();
+
+        const selections = [];
+        if (state.selectedLineSource === 'current') {
+          selections.push({
+            lineNumber: state.selectedCurrentLine,
+            className: 'is-selected',
+          });
+        }
+
+        const pinnedLine = getPinnedCurrentLine(state.selectedPreviousLine);
+        if (pinnedLine) {
+          selections.push({
+            lineNumber: pinnedLine,
+            className:
+              state.selectedLineSource === 'current' && pinnedLine === state.selectedCurrentLine
+                ? 'is-selected'
+                : 'is-target',
+          });
+        }
+
+        const seen = new Set();
+        selections.forEach(({ lineNumber, className }) => {
+          const key = `${lineNumber}:${className}`;
+          if (seen.has(key)) {
+            return;
+          }
+          seen.add(key);
+
+          const highlight = document.createElement('div');
+          highlight.className = `editor-highlight ${className}`;
+          highlight.style.top = `${measureTextareaLineTop(lineNumber) - currentContent.scrollTop}px`;
+          highlight.style.height = `${measureTextareaLineHeight(lineNumber)}px`;
+          currentHighlightLayer.appendChild(highlight);
+        });
       };
 
       const completePendingPin = (targetSide, targetLine) => {
@@ -1208,6 +1288,7 @@
           scrollCurrentToLine(targetLine);
           state.selectedCurrentLine = targetLine;
         }
+        renderCurrentHighlights();
         updateLinePinStatus();
       };
 
@@ -1222,6 +1303,7 @@
           scrollPreviousToLine(targetLine);
           state.selectedPreviousLine = targetLine;
         }
+        renderCurrentHighlights();
         updateLinePinStatus();
       };
 
@@ -1332,6 +1414,7 @@
           getLogicalLineCount(currentValue)
         );
         state.pendingPinSelection = null;
+        renderCurrentHighlights();
         updateLinePinStatus();
         state.lastSavedValues = Object.fromEntries(
           state.workflow.documents.map(document => [document.id, document.content])
@@ -1466,6 +1549,7 @@
         setPinsForVisiblePair(nextPins);
         state.pendingPinSelection = null;
         clearPreviousLineClasses('is-target');
+        renderCurrentHighlights();
         updateLinePinStatus();
         setSaveState('Cleared line pin', 'saved');
       });
@@ -1488,6 +1572,10 @@
 
       currentContent.addEventListener('select', () => {
         syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('scroll', () => {
+        renderCurrentHighlights();
       });
 
       previousContent.addEventListener('click', event => {
