@@ -1200,6 +1200,9 @@
 
       const highlightPreviousSelection = lineNumber => {
         clearPreviousLineClasses('is-selected');
+        if (!state.arePinsVisible) {
+          return;
+        }
         const target = previousContent.querySelector(`[data-line-number="${lineNumber}"]`);
         if (target) {
           target.classList.add('is-selected');
@@ -1225,6 +1228,9 @@
 
       const renderCurrentHighlights = () => {
         currentHighlightLayer.replaceChildren();
+        if (!state.arePinsVisible) {
+          return;
+        }
 
         const selections = [];
         if (state.selectedLineSource === 'current') {
