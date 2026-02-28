@@ -440,9 +440,9 @@
             id="toggle-pin-visibility"
             class="mini-button"
             type="button"
-            title="Hide pin highlights"
+            title="Show pin highlights"
           >
-            Hide Pins
+            Show Pins
           </button>
           <span class="pill" id="line-pin-status">No line pins</span>
         </div>
@@ -576,7 +576,7 @@
         selectedLineSource: 'current',
         linePins: {},
         pendingPinSelection: null,
-        arePinsVisible: true,
+        arePinsVisible: false,
       };
 
       const STORAGE_PREFERENCE_KEY = 'dadeto.writer.storage-preference';
@@ -1302,7 +1302,8 @@
           linePinActionButton.disabled = true;
           clearLinePinButton.disabled = true;
           togglePinVisibilityButton.disabled = true;
-          togglePinVisibilityButton.textContent = 'Hide Pins';
+          togglePinVisibilityButton.textContent = 'Show Pins';
+          togglePinVisibilityButton.title = 'Show pin highlights';
           return;
         }
 
@@ -1615,6 +1616,7 @@
         state.arePinsVisible = !state.arePinsVisible;
         if (!state.arePinsVisible) {
           clearPreviousPinHighlights();
+          clearPreviousLineClasses('is-selected');
         }
         renderCurrentHighlights();
         refreshPreviousPinHighlight();
