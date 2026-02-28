@@ -242,6 +242,13 @@
         font-size: 0.9rem;
       }
 
+      .panel-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: baseline;
+      }
+
       .panel-body {
         display: block;
         width: 100%;
@@ -349,7 +356,10 @@
         <article class="workflow-panel">
           <header class="panel-header previous">
             <div>
-              <div class="panel-meta">Earlier document</div>
+              <div class="panel-meta-row">
+                <div class="panel-meta">Earlier document</div>
+                <div class="panel-meta" id="previous-stats">(0 lines, 0 words)</div>
+              </div>
               <h2 id="previous-title">Loading…</h2>
             </div>
           </header>
@@ -362,7 +372,10 @@
         <article class="workflow-panel">
           <header class="panel-header">
             <div>
-              <div class="panel-meta">Current document</div>
+              <div class="panel-meta-row">
+                <div class="panel-meta">Current document</div>
+                <div class="panel-meta" id="current-stats">(0 lines, 0 words)</div>
+              </div>
               <h2 id="current-title">Loading…</h2>
             </div>
           </header>
@@ -384,8 +397,10 @@
       const pickDirectoryButton = document.getElementById('pick-directory');
       const useServerStorageButton = document.getElementById('use-server-storage');
       const previousTitle = document.getElementById('previous-title');
+      const previousStats = document.getElementById('previous-stats');
       const previousContent = document.getElementById('previous-content');
       const currentTitle = document.getElementById('current-title');
+      const currentStats = document.getElementById('current-stats');
       const currentContent = document.getElementById('current-content');
       const mastheadTitle = document.getElementById('masthead-title');
       const masthead = document.querySelector('.masthead');
@@ -500,6 +515,14 @@
         }
 
         return /^# .+$/.test(trimmedContent) && !trimmedContent.includes('\n');
+      };
+
+      const getDocumentCounts = content => {
+        const normalizedContent = content.replace(/\r\n/g, '\n');
+        const lines = normalizedContent ? normalizedContent.split('\n').length : 0;
+        const trimmedContent = normalizedContent.trim();
+        const words = trimmedContent ? trimmedContent.split(/\s+/).length : 0;
+        return `(${lines} lines, ${words} words)`;
       };
 
       const getWorkflowHeading = workflow =>
@@ -962,6 +985,7 @@
         document.title = getWorkflowHeading(state.workflow);
         previousTitle.textContent =
           previousDocument?.title ?? 'Warm-up';
+        previousStats.textContent = getDocumentCounts(previousDocument?.content ?? '');
         previousContent.replaceChildren();
         if (previousDocument) {
           previousContent.textContent = previousDocument.content;
@@ -973,6 +997,7 @@
         }
         currentTitle.textContent = currentDocument?.title ?? 'No current document';
         currentContent.value = currentValue;
+        currentStats.textContent = getDocumentCounts(currentValue);
         state.lastSavedValues = Object.fromEntries(
           state.workflow.documents.map(document => [document.id, document.content])
         );
