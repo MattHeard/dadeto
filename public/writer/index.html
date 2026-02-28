@@ -129,14 +129,23 @@
       }
 
       .icon-button {
-        width: 2.5rem;
+        min-width: 4.8rem;
         height: 2.5rem;
-        padding: 0;
+        padding: 0 0.45rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 0.35rem;
         font-size: 1.2rem;
         line-height: 1;
+      }
+
+      .icon-button .button-shortcut {
+        font-size: 0.72rem;
+        line-height: 1;
+        padding: 0.12rem 0.28rem;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.55);
       }
 
       .pill {
@@ -259,7 +268,7 @@
 
       .intro-emoji {
         display: block;
-        font-size: 2.2rem;
+        font-size: 4.4rem;
         margin-bottom: 0.5rem;
       }
 
@@ -316,6 +325,7 @@
               aria-label="Condense Header (Alt+M)"
             >
               <span aria-hidden="true">▴</span>
+              <span class="button-shortcut" aria-hidden="true">Alt+M</span>
             </button>
           </div>
         </div>
@@ -425,8 +435,8 @@
         toggleMastheadButton.title = label;
         toggleMastheadButton.setAttribute('aria-label', label);
         toggleMastheadButton.innerHTML = state.isMastheadCondensed
-          ? '<span aria-hidden="true">▾</span>'
-          : '<span aria-hidden="true">▴</span>';
+          ? '<span aria-hidden="true">▾</span><span class="button-shortcut" aria-hidden="true">Alt+M</span>'
+          : '<span aria-hidden="true">▴</span><span class="button-shortcut" aria-hidden="true">Alt+M</span>';
       };
 
       const setMastheadCondensed = nextValue => {
@@ -914,7 +924,7 @@
         mastheadTitle.textContent = getWorkflowHeading(state.workflow);
         document.title = getWorkflowHeading(state.workflow);
         previousTitle.textContent =
-          previousDocument?.title ?? `${state.introMessage.emoji} Warm-up`;
+          previousDocument?.title ?? 'Warm-up';
         previousContent.replaceChildren();
         if (previousDocument) {
           previousContent.textContent = previousDocument.content;
