@@ -38,3 +38,4 @@ estimation_timestamp,bead_code,bead_title,confidence_percent,evaluation_timestam
 2026-02-25T19:28:59Z,dadeto-sg6,Improve coverage for core/browser/inputHandlers/default.js,60,2026-02-25T19:28:59Z,true
 2026-02-28T23:09:00Z,dadeto-dww1.1,Deduplicate blog-key and dendrite input form helpers,78,2026-02-28T22:14:06Z,true
 2026-02-28T22:23:29Z,dadeto-dww1.2,Deduplicate workflow.js self-clones,90,2026-02-28T22:23:29Z,true
+2026-02-28T22:29:18Z,dadeto-dww1.3,Deduplicate moderation variant cloud helpers,80,2026-02-28T22:34:57Z,true,
