@@ -108,13 +108,10 @@
       }
 
       .masthead.condensed .subhead,
+      .masthead.condensed .status-row,
       .masthead.condensed .button-row,
       .masthead.condensed .sequence {
         display: none;
-      }
-
-      .masthead.condensed .status-row {
-        margin-top: 0.5rem;
       }
 
       .masthead-top {
@@ -129,21 +126,6 @@
         flex-direction: column;
         align-items: flex-end;
         gap: 0.5rem;
-      }
-
-      .collapse-hint {
-        color: var(--muted);
-        font-size: 0.85rem;
-        white-space: nowrap;
-      }
-
-      .hint-key {
-        display: inline-block;
-        margin-left: 0.2rem;
-        padding: 0.12rem 0.38rem;
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.55);
-        color: var(--ink);
       }
 
       .pill {
@@ -315,11 +297,7 @@
         <div class="masthead-top">
           <h1 id="masthead-title">Untitled Post</h1>
           <div class="masthead-tools">
-            <button id="toggle-masthead" type="button">Condense Header</button>
-            <div class="collapse-hint" id="collapse-hint">
-              Toggle header
-              <span class="hint-key">Alt+M</span>
-            </div>
+            <button id="toggle-masthead" type="button">Condense Header (Alt+M)</button>
           </div>
         </div>
         <p class="subhead">
@@ -383,7 +361,6 @@
       const mastheadTitle = document.getElementById('masthead-title');
       const masthead = document.querySelector('.masthead');
       const toggleMastheadButton = document.getElementById('toggle-masthead');
-      const collapseHint = document.getElementById('collapse-hint');
 
       const DEFAULT_SEQUENCE = [
         { id: 'thesis', title: 'Thesis' },
@@ -424,11 +401,8 @@
       const renderMastheadState = () => {
         masthead.classList.toggle('condensed', state.isMastheadCondensed);
         toggleMastheadButton.textContent = state.isMastheadCondensed
-          ? 'Expand Header'
-          : 'Condense Header';
-        collapseHint.innerHTML = state.isMastheadCondensed
-          ? 'Expand header <span class="hint-key">Alt+M</span>'
-          : 'Toggle header <span class="hint-key">Alt+M</span>';
+          ? 'Expand Header (Alt+M)'
+          : 'Condense Header (Alt+M)';
       };
 
       const setMastheadCondensed = nextValue => {
