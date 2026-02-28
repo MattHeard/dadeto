@@ -762,7 +762,12 @@
       const switchStorage = async nextStorage => {
         await saveDocument();
         state.storage = nextStorage;
+        state.workflow = null;
         state.isLoaded = false;
+        mastheadTitle.textContent = 'Loading…';
+        document.title = 'Loading…';
+        documentPath.textContent = 'Loading document…';
+        storageMode.textContent = `Storage: ${state.storage?.label ?? 'server'}`;
         await loadWorkflow();
       };
 
