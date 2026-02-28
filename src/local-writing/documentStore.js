@@ -57,7 +57,15 @@ function cloneStep(step) {
 }
 
 /**
- * @param {{ steps: Array<{ id: string, title: string }>, activeIndex?: number }} workflow
+ * @param {string} content
+ */
+function extractLevelOneHeading(content) {
+  const match = content.match(/^# (.+)$/m);
+  return match ? match[1].trim() : '';
+}
+
+/**
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex?: number, heading?: string }} workflow
  */
 function normalizeWorkflow(workflow) {
   const steps = Array.isArray(workflow?.steps) && workflow.steps.length > 0
@@ -72,6 +80,8 @@ function normalizeWorkflow(workflow) {
   return {
     steps,
     activeIndex,
+    heading:
+      typeof workflow?.heading === 'string' ? workflow.heading.trim() : '',
   };
 }
 
@@ -119,8 +129,10 @@ export function createDocumentStore(options = {}) {
       }
     }
 
-    const workflow = normalizeWorkflow({});
     const legacyContent = await readText(legacyDocumentPath);
+    const workflow = normalizeWorkflow({
+      heading: extractLevelOneHeading(legacyContent),
+    });
 
     await mkdir(documentDir, { recursive: true });
     await Promise.all(
@@ -176,7 +188,7 @@ export function createDocumentStore(options = {}) {
 
     workflow.activeIndex = Math.min(
       workflow.activeIndex,
-      Math.max(1, workflow.steps.length - 1)
+      Math.max(0, workflow.steps.length - 1)
     );
   }
 
@@ -193,6 +205,7 @@ export function createDocumentStore(options = {}) {
     return {
       workflowPath,
       activeIndex: workflow.activeIndex,
+      heading: workflow.heading,
       documents,
     };
   }
@@ -211,6 +224,11 @@ export function createDocumentStore(options = {}) {
 
       if (!step) {
         throw new Error(`Unknown document id: ${documentId}`);
+      }
+
+      const nextHeading = extractLevelOneHeading(content);
+      if (nextHeading) {
+        workflow.heading = nextHeading;
       }
 
       await mkdir(documentDir, { recursive: true });
@@ -248,8 +266,8 @@ export function createDocumentStore(options = {}) {
       }
 
       nextIndex = Math.min(
-        Math.max(nextIndex, 1),
-        Math.max(1, workflow.steps.length - 1)
+        Math.max(nextIndex, 0),
+        Math.max(0, workflow.steps.length - 1)
       );
       workflow.activeIndex = nextIndex;
       await pruneEmptyTrailingDrafts(workflow);
@@ -260,8 +278,8 @@ export function createDocumentStore(options = {}) {
     async setActiveIndex(nextIndex) {
       const workflow = await ensureWorkflow();
       workflow.activeIndex = Math.min(
-        Math.max(nextIndex, 1),
-        Math.max(1, workflow.steps.length - 1)
+        Math.max(nextIndex, 0),
+        Math.max(0, workflow.steps.length - 1)
       );
       await pruneEmptyTrailingDrafts(workflow);
       await writeWorkflow(workflow);

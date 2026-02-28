@@ -211,6 +211,20 @@
         overflow: auto;
       }
 
+      .panel-body.readonly {
+        border: 0;
+      }
+
+      .panel-body.readonly:focus {
+        outline: none;
+      }
+
+      .intro-emoji {
+        display: block;
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+      }
+
       textarea.panel-body {
         resize: none;
         caret-color: var(--accent);
@@ -245,7 +259,7 @@
   <body>
     <main class="shell">
       <section class="masthead">
-        <h1>Dadeto Writer</h1>
+        <h1 id="masthead-title">Untitled Post</h1>
         <p class="subhead">
           Write forward through a sequence: thesis, syllogistic argument,
           outline, then numbered drafts. Use <strong>Alt+Left</strong> and
@@ -270,13 +284,11 @@
               <h2 id="previous-title">Loading…</h2>
             </div>
           </header>
-          <textarea
-            class="panel-body"
+          <div
+            class="panel-body readonly"
             id="previous-content"
-            spellcheck="false"
-            placeholder="# Earlier document"
             aria-label="Earlier markdown document"
-          ></textarea>
+          ></div>
         </article>
         <article class="workflow-panel">
           <header class="panel-header">
@@ -306,12 +318,22 @@
       const previousContent = document.getElementById('previous-content');
       const currentTitle = document.getElementById('current-title');
       const currentContent = document.getElementById('current-content');
+      const mastheadTitle = document.getElementById('masthead-title');
 
       const DEFAULT_SEQUENCE = [
         { id: 'thesis', title: 'Thesis' },
         { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
         { id: 'outline', title: 'Outline' },
         { id: 'draft-1', title: 'Draft 1' },
+      ];
+
+      const INTRO_MESSAGES = [
+        { emoji: '🌞', greeting: 'Good morning. The thesis is ready when you are.' },
+        { emoji: '🪴', greeting: 'Small steps compound. Start with the core claim.' },
+        { emoji: '⚔️', greeting: 'Sharpen the premise before you swing at the draft.' },
+        { emoji: '🧭', greeting: 'Orientation first. Then argument.' },
+        { emoji: '🔥', greeting: 'Write the dangerous sentence first.' },
+        { emoji: '🌊', greeting: 'Stay calm. Make the next paragraph inevitable.' },
       ];
 
       const state = {
@@ -332,6 +354,27 @@
       });
 
       const isDraftId = id => /^draft-\d+$/.test(id);
+
+      const extractLevelOneHeading = content => {
+        const match = content.match(/^# (.+)$/m);
+        return match ? match[1].trim() : '';
+      };
+
+      const getWorkflowHeading = workflow =>
+        workflow?.heading?.trim() || 'Untitled Post';
+
+      const getPrefilledDocumentContent = workflowDocument => {
+        if (!workflowDocument) {
+          return '';
+        }
+
+        if (workflowDocument.content.trim()) {
+          return workflowDocument.content;
+        }
+
+        const heading = state.workflow?.heading?.trim();
+        return heading ? `# ${heading}\n\n` : '';
+      };
 
       const createServerStorage = () => ({
         label: 'server',
@@ -416,14 +459,18 @@
           const steps = Array.isArray(parsedWorkflow?.steps) && parsedWorkflow.steps.length > 0
             ? parsedWorkflow.steps.map(cloneStep)
             : DEFAULT_SEQUENCE.map(cloneStep);
-          const maxIndex = Math.max(1, steps.length - 1);
+          const maxIndex = Math.max(0, steps.length - 1);
           const activeIndex = Number.isInteger(parsedWorkflow?.activeIndex)
-            ? Math.min(Math.max(parsedWorkflow.activeIndex, 1), maxIndex)
+            ? Math.min(Math.max(parsedWorkflow.activeIndex, 0), maxIndex)
             : Math.min(1, maxIndex);
 
           return {
             steps,
             activeIndex,
+            heading:
+              typeof parsedWorkflow?.heading === 'string'
+                ? parsedWorkflow.heading.trim()
+                : '',
           };
         };
 
@@ -460,7 +507,7 @@
 
           workflow.activeIndex = Math.min(
             workflow.activeIndex,
-            Math.max(1, workflow.steps.length - 1)
+            Math.max(0, workflow.steps.length - 1)
           );
         };
 
@@ -475,6 +522,7 @@
           const workflow = {
             steps: DEFAULT_SEQUENCE.map(cloneStep),
             activeIndex: 1,
+            heading: '',
           };
 
           await Promise.all(
@@ -507,6 +555,7 @@
         return {
           workflowPath: `${directoryHandle.name}/workflow.json`,
             activeIndex: workflow.activeIndex,
+            heading: workflow.heading ?? '',
             documents,
           };
         };
@@ -522,6 +571,11 @@
 
             if (!step) {
               throw new Error(`Unknown document id: ${documentId}`);
+            }
+
+            const nextHeading = extractLevelOneHeading(content);
+            if (nextHeading) {
+              workflow.heading = nextHeading;
             }
 
             const handle = await ensureDocumentFile(step);
@@ -558,8 +612,8 @@
             }
 
             nextIndex = Math.min(
-              Math.max(nextIndex, 1),
-              Math.max(1, workflow.steps.length - 1)
+              Math.max(nextIndex, 0),
+              Math.max(0, workflow.steps.length - 1)
             );
             workflow.activeIndex = nextIndex;
             await pruneEmptyTrailingDrafts(workflow);
@@ -569,8 +623,8 @@
           async setActiveIndex(activeIndex) {
             const workflow = await ensureWorkflowDefinition();
             workflow.activeIndex = Math.min(
-              Math.max(activeIndex, 1),
-              Math.max(1, workflow.steps.length - 1)
+              Math.max(activeIndex, 0),
+              Math.max(0, workflow.steps.length - 1)
             );
             await pruneEmptyTrailingDrafts(workflow);
             await writeWorkflowDefinition(workflow);
@@ -584,6 +638,11 @@
 
       const getPreviousDocument = () =>
         state.workflow?.documents?.[state.workflow.activeIndex - 1] ?? null;
+
+      const getIntroMessage = () => {
+        const sourceIndex = state.workflow?.activeIndex ?? 0;
+        return INTRO_MESSAGES[sourceIndex % INTRO_MESSAGES.length];
+      };
 
       const renderSequence = () => {
         sequence.replaceChildren();
@@ -619,13 +678,26 @@
       const renderWorkflow = () => {
         const previousDocument = getPreviousDocument();
         const currentDocument = getCurrentDocument();
+        const introMessage = getIntroMessage();
+        const currentValue = getPrefilledDocumentContent(currentDocument);
 
         storageMode.textContent = `Storage: ${state.storage?.label ?? 'server'}`;
         documentPath.textContent = currentDocument?.path ?? 'No document';
-        previousTitle.textContent = previousDocument?.title ?? 'No earlier document';
-        previousContent.value = previousDocument?.content ?? '';
+        mastheadTitle.textContent = getWorkflowHeading(state.workflow);
+        document.title = getWorkflowHeading(state.workflow);
+        previousTitle.textContent =
+          previousDocument?.title ?? `${introMessage.emoji} Warm-up`;
+        previousContent.replaceChildren();
+        if (previousDocument) {
+          previousContent.textContent = previousDocument.content;
+        } else {
+          const emoji = document.createElement('span');
+          emoji.className = 'intro-emoji';
+          emoji.textContent = introMessage.emoji;
+          previousContent.append(emoji, introMessage.greeting);
+        }
         currentTitle.textContent = currentDocument?.title ?? 'No current document';
-        currentContent.value = currentDocument?.content ?? '';
+        currentContent.value = currentValue;
         state.lastSavedValues = Object.fromEntries(
           state.workflow.documents.map(document => [document.id, document.content])
         );
@@ -653,6 +725,12 @@
         const payload = await state.storage.saveDocument(documentRecord.id, nextValue);
         documentRecord.content = nextValue;
         state.lastSavedValues[documentRecord.id] = nextValue;
+        const nextHeading = extractLevelOneHeading(nextValue);
+        if (nextHeading) {
+          state.workflow.heading = nextHeading;
+          mastheadTitle.textContent = nextHeading;
+          document.title = nextHeading;
+        }
         if (getCurrentDocument()?.id === documentRecord.id) {
           documentPath.textContent = payload.path;
         }
@@ -663,7 +741,6 @@
       };
 
       const saveDocument = async () => {
-        await saveVisibleDocument(getPreviousDocument(), previousContent.value);
         await saveVisibleDocument(getCurrentDocument(), currentContent.value);
       };
 

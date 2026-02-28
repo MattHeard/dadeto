@@ -86,6 +86,32 @@ describe('documentStore', () => {
     expect(workflow.documents[workflow.activeIndex].title).toBe('Draft 1');
   });
 
+  test('setActiveIndex allows the first document to sit on the right panel', async () => {
+    const store = createDocumentStore({
+      workflowPath,
+      legacyDocumentPath,
+    });
+
+    const workflow = await store.setActiveIndex(0);
+
+    expect(workflow.activeIndex).toBe(0);
+    expect(workflow.documents[workflow.activeIndex].title).toBe('Thesis');
+  });
+
+  test('tracks the latest level one heading for workflow prefill and title display', async () => {
+    const store = createDocumentStore({
+      workflowPath,
+      legacyDocumentPath,
+    });
+
+    await store.saveDocument('thesis', '# Inevitable Government Conflict\n\n## Thesis');
+    await store.saveDocument('outline', '# Revised Working Title\n\n1. Intro');
+
+    const workflow = await store.loadWorkflow();
+
+    expect(workflow.heading).toBe('Revised Working Title');
+  });
+
   test('saving an empty trailing draft removes it from workflow and disk', async () => {
     const store = createDocumentStore({
       workflowPath,
