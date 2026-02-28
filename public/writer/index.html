@@ -398,14 +398,51 @@
         { id: 'draft-1', title: 'Draft 1' },
       ];
 
-      const INTRO_MESSAGES = [
-        { emoji: '🌞', greeting: 'Good morning. The thesis is ready when you are.' },
-        { emoji: '🪴', greeting: 'Small steps compound. Start with the core claim.' },
-        { emoji: '⚔️', greeting: 'Sharpen the premise before you swing at the draft.' },
-        { emoji: '🧭', greeting: 'Orientation first. Then argument.' },
-        { emoji: '🔥', greeting: 'Write the dangerous sentence first.' },
-        { emoji: '🌊', greeting: 'Stay calm. Make the next paragraph inevitable.' },
+      const INTRO_EMOJIS = [
+        '🌞', '🪴', '⚔️', '🧭', '🔥', '🌊', '🌱', '🛶', '🛰️', '🧠',
+        '🕯️', '📚', '🛠️', '🪶', '🌤️', '🎯', '🗺️', '🧱', '🪵', '🌾',
       ];
+      const INTRO_OPENINGS = [
+        'Good morning.',
+        'Steady now.',
+        'Clear the table.',
+        'One sharp sentence.',
+        'Start with the center.',
+        'Take the line seriously.',
+        'No drift today.',
+        'Make this simple first.',
+        'Begin where the pressure is.',
+        'You already know the point.',
+      ];
+      const INTRO_ACTIONS = [
+        'Name the claim plainly',
+        'Write the dangerous sentence',
+        'State the premise without apology',
+        'Find the hinge of the argument',
+        'Cut to the real contention',
+        'Draft the paragraph that unlocks the rest',
+        'Make the next move inevitable',
+        'Sharpen the thesis before the outline sprawls',
+        'Set the rhythm with one clean paragraph',
+        'Put the core conflict on the page',
+      ];
+      const INTRO_CLOSERS = [
+        'and let the rest follow.',
+        'before the draft gets noisy.',
+        'while the thought is still hot.',
+        'and trust revision after that.',
+        'before the world interrupts.',
+      ];
+      const INTRO_MESSAGES = INTRO_EMOJIS.flatMap(emoji =>
+        INTRO_OPENINGS.flatMap(opening =>
+          INTRO_ACTIONS.flatMap(action =>
+            INTRO_CLOSERS.map(closer => ({
+              emoji,
+              greeting: `${opening} ${action} ${closer}`,
+            }))
+          )
+        )
+      ).slice(0, 500);
 
       const state = {
         workflow: null,
