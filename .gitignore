@@ -33,6 +33,7 @@ build/
 *.temp
 *.bak
 tmp/
+local-data/
 
 # Generated files
 *.class
