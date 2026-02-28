@@ -1338,10 +1338,8 @@
         }
         const targetLine = getPinnedCurrentLine(lineNumber);
         if (targetLine) {
-          if (state.arePinsVisible) {
-            scrollCurrentToLine(targetLine);
-            state.selectedCurrentLine = targetLine;
-          }
+          scrollCurrentToLine(targetLine);
+          state.selectedCurrentLine = targetLine;
         }
         renderCurrentHighlights();
         refreshPreviousPinHighlight();
@@ -1356,10 +1354,8 @@
         }
         const targetLine = getPinnedPreviousLine(lineNumber);
         if (targetLine) {
-          if (state.arePinsVisible) {
-            scrollPreviousToLine(targetLine);
-            state.selectedPreviousLine = targetLine;
-          }
+          scrollPreviousToLine(targetLine);
+          state.selectedPreviousLine = targetLine;
         }
         renderCurrentHighlights();
         refreshPreviousPinHighlight();
