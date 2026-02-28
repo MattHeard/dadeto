@@ -109,6 +109,7 @@
 
       .masthead.condensed .subhead,
       .masthead.condensed .status-row,
+      .masthead.condensed .pin-controls,
       .masthead.condensed .button-row,
       .masthead.condensed .sequence {
         display: none;
@@ -159,6 +160,14 @@
         flex-wrap: wrap;
         gap: 0.75rem;
         margin-top: 1rem;
+      }
+
+      .pin-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        align-items: center;
       }
 
       button {
@@ -249,13 +258,6 @@
         align-items: baseline;
       }
 
-      .panel-controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-      }
-
       .mini-button {
         padding: 0.32rem 0.55rem;
         font-size: 0.76rem;
@@ -275,6 +277,11 @@
 
       .panel-text-line.is-target {
         background: rgba(160, 60, 47, 0.08);
+      }
+
+      .panel-text-line.is-selected {
+        box-shadow: inset 0 0 0 1px rgba(160, 60, 47, 0.4);
+        background: rgba(160, 60, 47, 0.12);
       }
 
       .panel-body {
@@ -378,6 +385,25 @@
           <button id="pick-directory" type="button">Pick Blog Directory</button>
           <button id="use-server-storage" type="button">Use Server Storage</button>
         </div>
+        <div class="pin-controls">
+          <button
+            id="line-pin-action"
+            class="mini-button"
+            type="button"
+            title="Add or change a line pin (Alt+P)"
+          >
+            Add Pin
+          </button>
+          <button
+            id="clear-line-pin"
+            class="mini-button"
+            type="button"
+            title="Clear the selected line pin"
+          >
+            Clear Pin
+          </button>
+          <span class="pill" id="line-pin-status">No line pins</span>
+        </div>
         <div class="sequence" id="sequence"></div>
       </section>
       <section class="workspace">
@@ -387,27 +413,8 @@
               <div class="panel-meta-row">
                 <div class="panel-meta">Earlier document</div>
                 <div class="panel-meta" id="previous-stats">(0 lines, 0 words)</div>
-                <div class="panel-meta" id="line-pin-status">No line pin</div>
               </div>
               <h2 id="previous-title">Loading…</h2>
-            </div>
-            <div class="panel-controls">
-              <button
-                id="pin-current-lines"
-                class="mini-button"
-                type="button"
-                title="Pin current visible lines (Alt+P)"
-              >
-                Pin Lines
-              </button>
-              <button
-                id="clear-line-pin"
-                class="mini-button"
-                type="button"
-                title="Clear line pin"
-              >
-                Clear Pin
-              </button>
             </div>
           </header>
           <div
@@ -445,8 +452,8 @@
       const useServerStorageButton = document.getElementById('use-server-storage');
       const previousTitle = document.getElementById('previous-title');
       const previousStats = document.getElementById('previous-stats');
+      const linePinActionButton = document.getElementById('line-pin-action');
       const linePinStatus = document.getElementById('line-pin-status');
-      const pinCurrentLinesButton = document.getElementById('pin-current-lines');
       const clearLinePinButton = document.getElementById('clear-line-pin');
       const previousContent = document.getElementById('previous-content');
       const currentTitle = document.getElementById('current-title');
@@ -519,7 +526,9 @@
         isMastheadCondensed: false,
         selectedPreviousLine: 1,
         selectedCurrentLine: 1,
+        selectedLineSource: 'current',
         linePins: {},
+        pendingPinSelection: null,
       };
 
       const STORAGE_PREFERENCE_KEY = 'dadeto.writer.storage-preference';
@@ -1011,49 +1020,50 @@
         return [getStorageKey(), previousDocument.id, currentDocument.id].join('::');
       };
 
-      const getActiveLinePin = () => {
+      const getPinsForVisiblePair = () => {
         const pairKey = getVisiblePairKey();
-        return pairKey ? state.linePins[pairKey] ?? null : null;
+        return pairKey ? state.linePins[pairKey] ?? [] : [];
       };
 
-      const setActiveLinePin = pin => {
+      const setPinsForVisiblePair = pins => {
         const pairKey = getVisiblePairKey();
         if (!pairKey) {
           return;
         }
 
-        if (pin) {
-          state.linePins[pairKey] = pin;
+        if (pins.length > 0) {
+          state.linePins[pairKey] = pins;
         } else {
           delete state.linePins[pairKey];
         }
         persistLinePins();
       };
 
+      const getLinePinForSelection = (side, lineNumber) =>
+        getPinsForVisiblePair().find(pin =>
+          side === 'previous'
+            ? pin.previousLine === lineNumber
+            : pin.currentLine === lineNumber
+        ) ?? null;
+
       const getPinnedCurrentLine = previousLine => {
-        const pin = getActiveLinePin();
+        const pin = getLinePinForSelection('previous', previousLine);
         const currentDocument = getCurrentDocument();
         if (!pin || !currentDocument) {
           return null;
         }
 
-        return clampLineNumber(
-          previousLine - pin.previousLine + pin.currentLine,
-          getPrefilledDocumentContent(currentDocument)
-        );
+        return clampLineNumber(pin.currentLine, getPrefilledDocumentContent(currentDocument));
       };
 
       const getPinnedPreviousLine = currentLine => {
-        const pin = getActiveLinePin();
+        const pin = getLinePinForSelection('current', currentLine);
         const previousDocument = getPreviousDocument();
         if (!pin || !previousDocument) {
           return null;
         }
 
-        return clampLineNumber(
-          currentLine - pin.currentLine + pin.previousLine,
-          previousDocument.content ?? ''
-        );
+        return clampLineNumber(pin.previousLine, previousDocument.content ?? '');
       };
 
       const scrollPreviousToLine = lineNumber => {
@@ -1109,32 +1119,110 @@
         currentContent.scrollTo({ top, behavior: 'smooth' });
       };
 
+      const getSelectedLine = () => (
+        state.selectedLineSource === 'previous'
+          ? state.selectedPreviousLine
+          : state.selectedCurrentLine
+      );
+
+      const getSelectedLinePin = () =>
+        getLinePinForSelection(state.selectedLineSource, getSelectedLine());
+
+      const clearPreviousLineClasses = className => {
+        previousContent
+          .querySelectorAll(`.panel-text-line.${className}`)
+          .forEach(line => line.classList.remove(className));
+      };
+
+      const highlightPreviousSelection = lineNumber => {
+        clearPreviousLineClasses('is-selected');
+        const target = previousContent.querySelector(`[data-line-number="${lineNumber}"]`);
+        if (target) {
+          target.classList.add('is-selected');
+        }
+      };
+
+      const completePendingPin = (targetSide, targetLine) => {
+        const pendingPin = state.pendingPinSelection;
+        if (!pendingPin || pendingPin.side === targetSide) {
+          return false;
+        }
+
+        const nextPin = pendingPin.side === 'previous'
+          ? { previousLine: pendingPin.line, currentLine: targetLine }
+          : { previousLine: targetLine, currentLine: pendingPin.line };
+        const nextPins = getPinsForVisiblePair().filter(pin =>
+          pin.previousLine !== nextPin.previousLine && pin.currentLine !== nextPin.currentLine
+        );
+        nextPins.push(nextPin);
+        nextPins.sort((left, right) => left.previousLine - right.previousLine);
+        setPinsForVisiblePair(nextPins);
+        state.pendingPinSelection = null;
+        updateLinePinStatus();
+        setSaveState(
+          `Pinned L${nextPin.previousLine} ↔ L${nextPin.currentLine}`,
+          'saved'
+        );
+        return true;
+      };
+
       const updateLinePinStatus = () => {
-        const activePin = getActiveLinePin();
         const hasPreviousDocument = Boolean(getPreviousDocument());
-        linePinStatus.textContent = activePin
-          ? `Pinned L${activePin.previousLine} ↔ L${activePin.currentLine}`
-          : 'No line pin';
-        pinCurrentLinesButton.disabled = !hasPreviousDocument;
-        clearLinePinButton.disabled = !activePin;
+        const pins = getPinsForVisiblePair();
+        const selectedPin = getSelectedLinePin();
+        if (!hasPreviousDocument) {
+          linePinStatus.textContent = 'No line pins';
+          linePinActionButton.textContent = 'Add Pin';
+          linePinActionButton.disabled = true;
+          clearLinePinButton.disabled = true;
+          return;
+        }
+
+        if (state.pendingPinSelection) {
+          const targetSide = state.pendingPinSelection.side === 'previous'
+            ? 'current'
+            : 'previous';
+          linePinStatus.textContent = `Select ${targetSide} line to finish pin`;
+        } else if (selectedPin) {
+          linePinStatus.textContent = `Pinned L${selectedPin.previousLine} ↔ L${selectedPin.currentLine}`;
+        } else if (pins.length > 0) {
+          linePinStatus.textContent = `${pins.length} pin${pins.length === 1 ? '' : 's'} in view`;
+        } else {
+          linePinStatus.textContent = 'No line pins';
+        }
+
+        linePinActionButton.textContent = selectedPin ? 'Change Pin' : 'Add Pin';
+        linePinActionButton.disabled = !hasPreviousDocument;
+        clearLinePinButton.disabled = !selectedPin;
       };
 
       const syncFromPreviousLine = lineNumber => {
         state.selectedPreviousLine = lineNumber;
+        state.selectedLineSource = 'previous';
+        highlightPreviousSelection(lineNumber);
+        if (completePendingPin('previous', lineNumber)) {
+          return;
+        }
         const targetLine = getPinnedCurrentLine(lineNumber);
         if (targetLine) {
           scrollCurrentToLine(targetLine);
           state.selectedCurrentLine = targetLine;
         }
+        updateLinePinStatus();
       };
 
       const syncFromCurrentLine = lineNumber => {
         state.selectedCurrentLine = lineNumber;
+        state.selectedLineSource = 'current';
+        if (completePendingPin('current', lineNumber)) {
+          return;
+        }
         const targetLine = getPinnedPreviousLine(lineNumber);
         if (targetLine) {
           scrollPreviousToLine(targetLine);
           state.selectedPreviousLine = targetLine;
         }
+        updateLinePinStatus();
       };
 
       const renderPreviousPanelContent = () => {
@@ -1153,13 +1241,9 @@
             lineWrapper.appendChild(lineElement);
           });
           previousContent.appendChild(lineWrapper);
-
-          const activePin = getActiveLinePin();
-          if (activePin) {
-            scrollPreviousToLine(
-              clampLineNumber(activePin.previousLine, previousDocument.content ?? '')
-            );
-          }
+          highlightPreviousSelection(
+            clampLineNumber(state.selectedPreviousLine, previousDocument.content ?? '')
+          );
           return;
         }
 
@@ -1247,6 +1331,7 @@
           state.selectedCurrentLine,
           getLogicalLineCount(currentValue)
         );
+        state.pendingPinSelection = null;
         updateLinePinStatus();
         state.lastSavedValues = Object.fromEntries(
           state.workflow.documents.map(document => [document.id, document.content])
@@ -1354,28 +1439,33 @@
         setMastheadCondensed(!state.isMastheadCondensed);
       });
 
-      pinCurrentLinesButton.addEventListener('click', () => {
+      linePinActionButton.addEventListener('click', () => {
         const previousDocument = getPreviousDocument();
         if (!previousDocument || !getCurrentDocument()) {
           return;
         }
 
-        setActiveLinePin({
-          previousLine: clampLineNumber(
-            state.selectedPreviousLine,
-            previousDocument.content ?? ''
-          ),
-          currentLine: clampLineNumber(getCurrentCursorLine(), currentContent.value),
-        });
+        state.pendingPinSelection = {
+          side: state.selectedLineSource,
+          line: getSelectedLine(),
+        };
         updateLinePinStatus();
-        setSaveState('Pinned visible lines', 'saved');
+        setSaveState('Select a line in the other panel to finish pinning', 'saved');
       });
 
       clearLinePinButton.addEventListener('click', () => {
-        setActiveLinePin(null);
-        previousContent
-          .querySelectorAll('.panel-text-line.is-target')
-          .forEach(line => line.classList.remove('is-target'));
+        const selectedPin = getSelectedLinePin();
+        if (!selectedPin) {
+          return;
+        }
+
+        const nextPins = getPinsForVisiblePair().filter(pin =>
+          pin.previousLine !== selectedPin.previousLine ||
+          pin.currentLine !== selectedPin.currentLine
+        );
+        setPinsForVisiblePair(nextPins);
+        state.pendingPinSelection = null;
+        clearPreviousLineClasses('is-target');
         updateLinePinStatus();
         setSaveState('Cleared line pin', 'saved');
       });
@@ -1441,7 +1531,7 @@
 
         if (event.key.toLowerCase() === 'p') {
           event.preventDefault();
-          pinCurrentLinesButton.click();
+          linePinActionButton.click();
         }
       });
 
