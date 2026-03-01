@@ -117,7 +117,7 @@ export function styles() {
     background-color: #1A1A1A;
     color: #00FFFF;
   }
-  pre {
+  pre:not(.header-banner) {
     background: linear-gradient(0deg, #00ffff, #ff00ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -125,8 +125,12 @@ export function styles() {
     margin: 1.5em 0px;
   }
   .header-banner {
+    background: linear-gradient(0deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin: 0px;
     margin-bottom: 1em;
+    overflow: visible;
   }
   #audio-controls {
     background-color: #1A1A1A;
