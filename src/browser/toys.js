@@ -1256,31 +1256,56 @@ export const createHandleSubmit =
     handleInputProcessing(elements, processingFunction, env);
   };
 
-function registerAutoSubmitListener({
-  dom,
-  inputElement,
-  handleSubmit,
-  autoSubmitState,
-}) {
-  if (autoSubmitState.inputListenerRemover) {
-    return;
-  }
-  const autoInputListener = event => handleSubmit(event);
-  dom.addEventListener(inputElement, 'input', autoInputListener);
-  autoSubmitState.inputListenerRemover = createRemoveListener({
-    dom,
-    el: inputElement,
-    event: 'input',
-    handler: autoInputListener,
-  });
+function readLiveInputValue(dom, inputElement) {
+  return String(getDomValue(dom, inputElement) ?? inputElement.value ?? '');
 }
 
-function unregisterAutoSubmitListener(autoSubmitState) {
-  const remover = autoSubmitState.inputListenerRemover;
-  if (remover) {
-    remover();
-    autoSubmitState.inputListenerRemover = null;
+function requestAutoSubmitFrame(callback) {
+  if (typeof globalThis.requestAnimationFrame === 'function') {
+    return globalThis.requestAnimationFrame(callback);
   }
+  return globalThis.setTimeout(() => callback(Date.now()), 16);
+}
+
+function cancelAutoSubmitFrame(frameId) {
+  if (frameId === null) {
+    return;
+  }
+  if (typeof globalThis.cancelAnimationFrame === 'function') {
+    globalThis.cancelAnimationFrame(frameId);
+    return;
+  }
+  globalThis.clearTimeout(frameId);
+}
+
+function registerAutoSubmitPolling({
+  elements,
+  processingFunction,
+  env,
+  inputElement,
+  autoSubmitState,
+}) {
+  const { dom } = env;
+  if (autoSubmitState.frameId !== null) {
+    return;
+  }
+  autoSubmitState.lastValue = readLiveInputValue(dom, inputElement);
+  const poll = () => {
+    const nextValue = readLiveInputValue(dom, inputElement);
+    if (nextValue !== autoSubmitState.lastValue) {
+      autoSubmitState.lastValue = nextValue;
+      setInputValue(inputElement, nextValue);
+      handleInputProcessing(elements, processingFunction, env);
+    }
+    autoSubmitState.frameId = requestAutoSubmitFrame(poll);
+  };
+  autoSubmitState.frameId = requestAutoSubmitFrame(poll);
+}
+
+function unregisterAutoSubmitPolling(autoSubmitState) {
+  cancelAutoSubmitFrame(autoSubmitState.frameId);
+  autoSubmitState.frameId = null;
+  autoSubmitState.lastValue = null;
 }
 
 /**
@@ -1395,21 +1420,29 @@ export function initializeInteractiveComponent(
     article,
     AUTO_SUBMIT_CHECKBOX_SELECTOR
   );
-  const autoSubmitState = { inputListenerRemover: null };
+  const autoSubmitState = { frameId: null, lastValue: null };
   const handleAutoCheckboxChange = () => {
     if (!autoSubmitCheckbox) {
       return;
     }
     if (autoSubmitCheckbox.checked) {
-      registerAutoSubmitListener({
-        dom,
+      registerAutoSubmitPolling({
+        elements: {
+          inputElement,
+          outputElement: initialisingWarning,
+          outputParent,
+          outputParentElement: outputParent,
+          outputSelect,
+          article,
+        },
+        processingFunction,
+        env,
         inputElement,
-        handleSubmit,
         autoSubmitState,
       });
       return;
     }
-    unregisterAutoSubmitListener(autoSubmitState);
+    unregisterAutoSubmitPolling(autoSubmitState);
   };
   if (autoSubmitCheckbox) {
     dom.addEventListener(autoSubmitCheckbox, 'change', handleAutoCheckboxChange);
