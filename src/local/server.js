@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDocumentStore } from './documentStore.js';
+import { formatListenErrorMessage } from './serverMessages.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,6 +67,17 @@ app.use((error, _req, res, _next) => {
   });
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`writer server listening on http://localhost:${port}/writer/`);
+});
+
+server.on('error', (error) => {
+  if (error.code === 'EPERM' || error.code === 'EACCES') {
+    console.error(formatListenErrorMessage(port));
+
+    process.exitCode = 1;
+    return;
+  }
+
+  throw error;
 });
