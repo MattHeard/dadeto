@@ -183,6 +183,7 @@ import { textareaHandler } from './inputHandlers/textarea.js';
 import { numberHandler } from './inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
+import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
 import { KV_CONTAINER_SELECTOR } from '../core/browser/browser-core.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
@@ -260,6 +261,7 @@ const inputHandlersMap = {
   'dendrite-page': dendritePageHandler,
   'moderator-ratings': moderatorRatingsHandler,
   'keyboard-capture': keyboardCaptureHandler,
+  'gamepad-capture': gamepadCaptureHandler,
   default: defaultHandler,
 };
 

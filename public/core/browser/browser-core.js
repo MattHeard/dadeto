@@ -20,6 +20,7 @@ export const TEXTAREA_SELECTOR = '.toy-textarea';
 export const DENDRITE_FORM_SELECTOR = '.dendrite-form';
 export const MODERATOR_RATINGS_FORM_SELECTOR = '.moderator-ratings-form';
 export const KEYBOARD_CAPTURE_FORM_SELECTOR = '.keyboard-capture-form';
+export const GAMEPAD_CAPTURE_FORM_SELECTOR = '.gamepad-capture-form';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 import { tryOr } from './common.js';
 export { assertFunction as ensureFunction } from '../commonCore.js';
@@ -208,6 +209,9 @@ export const maybeRemoveModeratorRatings = createElementRemover(
 export const maybeRemoveKeyboardCapture = createElementRemover(
   KEYBOARD_CAPTURE_FORM_SELECTOR
 );
+export const maybeRemoveGamepadCapture = createElementRemover(
+  GAMEPAD_CAPTURE_FORM_SELECTOR
+);
 /** @type {ContainerHandler[]} */
 export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveKV,
@@ -215,6 +219,7 @@ export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveTextarea,
   maybeRemoveModeratorRatings,
   maybeRemoveKeyboardCapture,
+  maybeRemoveGamepadCapture,
 ];
 
 /**

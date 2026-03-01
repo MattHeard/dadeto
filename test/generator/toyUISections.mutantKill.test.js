@@ -23,7 +23,7 @@ describe('TOY_UI_SECTIONS exact markup', () => {
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     const inSection =
-      '<div class="key">in</div><div class="value"><select class="input"><option value="text">text</option><option value="textarea">textarea</option><option value="number">number</option><option value="kv">kv</option><option value="blog-key">blog-key</option><option value="dendrite-story">dendrite-story</option><option value="dendrite-page">dendrite-page</option><option value="moderator-ratings">moderator-ratings</option><option value="keyboard-capture">keyboard-capture</option></select><input type="text" disabled></div>';
+      '<div class="key">in</div><div class="value"><select class="input"><option value="text">text</option><option value="textarea">textarea</option><option value="number">number</option><option value="kv">kv</option><option value="blog-key">blog-key</option><option value="dendrite-story">dendrite-story</option><option value="dendrite-page">dendrite-page</option><option value="moderator-ratings">moderator-ratings</option><option value="keyboard-capture">keyboard-capture</option><option value="gamepad-capture">gamepad-capture</option></select><input type="text" disabled></div>';
     const buttonSection =
       '<div class="key"></div><div class="value"><button type="submit" disabled>Submit</button>' +
       '<label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" disabled /> Auto</label></div>';

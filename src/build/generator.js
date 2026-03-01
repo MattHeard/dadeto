@@ -995,6 +995,7 @@ const INPUT_METHODS = [
   'dendrite-page',
   'moderator-ratings',
   'keyboard-capture',
+  'gamepad-capture',
 ];
 
 /**
