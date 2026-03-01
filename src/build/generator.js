@@ -933,6 +933,7 @@ function hasToy(post) {
 const TOY_OUTPUT_TYPES = [
   ['text', 'text'],
   ['pre', 'pre'],
+  ['joycon-mapping', 'joycon-mapping'],
   ['tic-tac-toe', 'tic-tac-toe'],
   ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
   [
@@ -996,6 +997,7 @@ const INPUT_METHODS = [
   'moderator-ratings',
   'keyboard-capture',
   'gamepad-capture',
+  'gamepad-button-mapper',
 ];
 
 /**

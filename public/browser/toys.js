@@ -167,6 +167,7 @@ import { createPreElement } from './presenters/pre.js';
 import { createTicTacToeBoardElement } from './presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from './presenters/battleshipSolitaireFleet.js';
 import { createBattleshipCluesBoardElement } from './presenters/battleshipSolitaireClues.js';
+import { createJoyConMappingElement } from './presenters/joyConMapping.js';
 
 /**
  * Creates a handler for input dropdown changes
@@ -184,6 +185,7 @@ import { numberHandler } from './inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
 import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
+import { joyConMapperHandler } from './inputHandlers/joyConMapper.js';
 import { KV_CONTAINER_SELECTOR } from '../core/browser/browser-core.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
@@ -262,6 +264,7 @@ const inputHandlersMap = {
   'moderator-ratings': moderatorRatingsHandler,
   'keyboard-capture': keyboardCaptureHandler,
   'gamepad-capture': gamepadCaptureHandler,
+  'gamepad-button-mapper': joyConMapperHandler,
   default: defaultHandler,
 };
 
@@ -383,6 +386,7 @@ const presentersMap = {
   'tic-tac-toe': createTicTacToeBoardElement,
   'battleship-solitaire-fleet': createBattleshipFleetBoardElement,
   'battleship-solitaire-clues-presenter': createBattleshipCluesBoardElement,
+  'joycon-mapping': createJoyConMappingElement,
 };
 
 /**

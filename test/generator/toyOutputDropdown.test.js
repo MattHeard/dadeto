@@ -22,6 +22,7 @@ const blog = {
 const OPTIONS = [
   '<option value="text">text</option>',
   '<option value="pre">pre</option>',
+  '<option value="joycon-mapping">joycon-mapping</option>',
   '<option value="tic-tac-toe">tic-tac-toe</option>',
   '<option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option>',
   '<option value="battleship-solitaire-clues-presenter">battleship-solitaire-clues-presenter</option>',
@@ -70,6 +71,7 @@ describe('toy output dropdown', () => {
     const expectedPairs = [
       ['text', 'text'],
       ['pre', 'pre'],
+      ['joycon-mapping', 'joycon-mapping'],
       ['tic-tac-toe', 'tic-tac-toe'],
       ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
       [

@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "JOYC1",
+      "title": "Joy-Con Button Mapper",
+      "publicationDate": "2026-03-01",
+      "content": [
+        "Guides you through the known left Joy-Con controls one by one and captures the matching gamepad button or stick direction.",
+        "Every control is optional, so you can click Skip Current at any step and leave it unmapped.",
+        "The toy saves the mapping to Dadeto's permanent local storage and renders the saved result through a custom mapping presenter."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-03-01/joyConMapper.js",
+        "functionName": "joyConMapperToy",
+        "defaultInputMethod": "gamepad-button-mapper"
+      },
+      "tags": ["toy", "joycon", "gamepad", "input", "storage"]
+    },
+    {
       "key": "HILO1",
       "title": "Hi-Lo Card Game",
       "publicationDate": "2026-03-01",

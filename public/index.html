@@ -423,6 +423,93 @@
           <a class="filter-button" data-filter="toys">toys</a>
         </p>
       </div>
+      <article
+        class="entry tag-toy tag-joycon tag-gamepad tag-input tag-storage"
+        id="JOYC1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">JOYC1</div>
+        <div class="value">
+          <h2><a href="#JOYC1">Joy-Con Button Mapper</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">1 Mar 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-joycon">joycon</a>,
+          <a class="tag-gamepad">gamepad</a>, <a class="tag-input">input</a>,
+          <a class="tag-storage">storage</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Guides you through the known left Joy-Con controls one by one and
+          captures the matching gamepad button or stick direction.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Every control is optional, so you can click Skip Current at any step
+          and leave it unmapped.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The toy saves the mapping to Dadeto's permanent local storage and
+          renders the saved result through a custom mapping presenter.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea">textarea</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper" selected>
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'JOYC1',
+            '/core/browser/toys/2026-03-01/joyConMapper.js',
+            'joyConMapperToy'
+          );
+        </script>
+      </article>
       <article class="entry tag-toy tag-game tag-cards tag-keyboard" id="HILO1">
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
         <div class="value full-width">
@@ -466,7 +553,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture" selected>keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -482,6 +572,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -548,7 +639,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -564,6 +658,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -627,7 +722,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -643,6 +741,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -707,7 +806,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -723,6 +825,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -789,7 +892,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -805,6 +911,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -987,7 +1094,10 @@
               moderator-ratings
             </option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1003,6 +1113,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1065,7 +1176,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1081,6 +1195,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1139,7 +1254,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1155,6 +1273,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1208,7 +1327,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1224,6 +1346,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1285,7 +1408,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1301,6 +1427,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1359,7 +1486,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1375,6 +1505,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1435,7 +1566,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1451,6 +1585,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1509,7 +1644,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1525,6 +1663,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1583,7 +1722,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1599,6 +1741,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1926,7 +2069,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -1942,6 +2088,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2000,7 +2147,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2016,6 +2166,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2169,7 +2320,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2185,6 +2339,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2249,7 +2404,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2265,6 +2423,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2332,7 +2491,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2348,6 +2510,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2415,7 +2578,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2431,6 +2597,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2489,7 +2656,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2505,6 +2675,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2599,7 +2770,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2615,6 +2789,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2673,7 +2848,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2689,6 +2867,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2788,7 +2967,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2804,6 +2986,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2865,7 +3048,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2881,6 +3067,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2939,7 +3126,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -2955,6 +3145,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3013,7 +3204,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -3029,6 +3223,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3087,7 +3282,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -3103,6 +3301,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3172,7 +3371,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -3188,6 +3390,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3248,7 +3451,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -3264,6 +3470,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3333,7 +3540,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -3349,6 +3559,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3415,7 +3626,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -3431,6 +3645,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3732,7 +3947,10 @@
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option></select
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
           ><input type="text" disabled />
         </div>
         <div class="key"></div>
@@ -3748,6 +3966,7 @@
           <select class="output">
             <option value="text">text</option>
             <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
