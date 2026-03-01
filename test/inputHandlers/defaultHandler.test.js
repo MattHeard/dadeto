@@ -13,7 +13,8 @@ describe('defaultHandler', () => {
       .mockReturnValueOnce(number)
       .mockReturnValueOnce(kv)
       .mockReturnValueOnce(null)
-      .mockReturnValueOnce(textarea);
+      .mockReturnValueOnce(textarea)
+      .mockReturnValueOnce(null);
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
@@ -43,6 +44,7 @@ describe('defaultHandler', () => {
       .mockReturnValueOnce(number)
       .mockReturnValueOnce(kv)
       .mockReturnValueOnce(dendrite)
+      .mockReturnValueOnce(null)
       .mockReturnValueOnce(null);
     const dom = {
       hide: jest.fn(),
@@ -62,6 +64,11 @@ describe('defaultHandler', () => {
       4,
       container,
       '.toy-textarea'
+    );
+    expect(querySelector).toHaveBeenNthCalledWith(
+      5,
+      container,
+      '.keyboard-capture-form'
     );
     expect(dendrite._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith(container, dendrite);

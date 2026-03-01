@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "HILO1",
+      "title": "Hi-Lo Card Game",
+      "publicationDate": "2026-03-01",
+      "content": [
+        "Guess whether the next card will be higher or lower than the current one.",
+        "Click Capture keyboard, then use the up arrow for higher and the down arrow for lower. Press Escape to release keyboard capture.",
+        "The game ignores invalid keys, requires a key release before the next guess, and tracks correct, incorrect, and total guesses."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-03-01/hiLoCardGame.js",
+        "functionName": "hiLoCardGameToy",
+        "defaultInputMethod": "keyboard-capture"
+      },
+      "tags": ["toy", "game", "cards", "keyboard"]
+    },
+    {
       "key": "GENE1",
       "title": "Generate Blog Key",
       "publicationDate": "2026-02-21",

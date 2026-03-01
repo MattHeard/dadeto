@@ -19,6 +19,7 @@ export const KV_CONTAINER_SELECTOR = '.kv-container';
 export const TEXTAREA_SELECTOR = '.toy-textarea';
 export const DENDRITE_FORM_SELECTOR = '.dendrite-form';
 export const MODERATOR_RATINGS_FORM_SELECTOR = '.moderator-ratings-form';
+export const KEYBOARD_CAPTURE_FORM_SELECTOR = '.keyboard-capture-form';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 import { tryOr } from './common.js';
 export { assertFunction as ensureFunction } from '../commonCore.js';
@@ -204,12 +205,16 @@ export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
 export const maybeRemoveModeratorRatings = createElementRemover(
   MODERATOR_RATINGS_FORM_SELECTOR
 );
+export const maybeRemoveKeyboardCapture = createElementRemover(
+  KEYBOARD_CAPTURE_FORM_SELECTOR
+);
 /** @type {ContainerHandler[]} */
 export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveKV,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
   maybeRemoveModeratorRatings,
+  maybeRemoveKeyboardCapture,
 ];
 
 /**
@@ -463,6 +468,7 @@ export const defaultHandler = createDefaultHandler([
   maybeRemoveKV,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
+  maybeRemoveKeyboardCapture,
 ]);
 
 export const dendritePageHandler = createDendriteHandler(
