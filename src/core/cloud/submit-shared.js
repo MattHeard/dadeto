@@ -80,13 +80,13 @@ function tryReadGetterHeader(getter, name) {
     return null;
   }
 
-  return tryGetHeader(
-    headerName => {
-      const value = getter(headerName);
-      return value === null ? undefined : value;
-    },
-    name
-  );
+  return tryGetHeader(headerName => {
+    const value = getter(headerName);
+    if (value === null) {
+      return undefined;
+    }
+    return value;
+  }, name);
 }
 
 /**
@@ -221,18 +221,41 @@ function responderKeyByType(isUndefined) {
  * @param {NativeHttpResponse} res - Response instance used to send data.
  * @param {number} status - HTTP status code emitted to the client.
  * @param {unknown} body - Payload returned by the domain responder.
+ * @returns {void} Response is written directly.
  */
 export function sendResponderResult(res, status, body) {
   if (isObject(body)) {
-    const objectBody = normalizeHeadersRecord(body);
-    if (!objectBody) {
-      responderHandlers.default(res, status, String(body));
-      return;
-    }
-    responderHandlers.object(res, status, objectBody);
+    return handleObjectResponderResult(res, status, body);
+  }
+
+  return sendNonObjectResponderResult(res, status, body);
+}
+
+/**
+ * Send an object responder result or fall back to the default string path.
+ * @param {NativeHttpResponse} res - Response instance used to send data.
+ * @param {number} status - HTTP status code emitted to the client.
+ * @param {unknown} body - Original response body.
+ * @returns {void} Response is written directly.
+ */
+function handleObjectResponderResult(res, status, body) {
+  const objectBody = normalizeHeadersRecord(body);
+  if (!objectBody) {
+    responderHandlers.default(res, status, String(body));
     return;
   }
 
+  responderHandlers.object(res, status, objectBody);
+}
+
+/**
+ * Send a non-object responder result using the resolved primitive handler.
+ * @param {NativeHttpResponse} res - Response instance used to send data.
+ * @param {number} status - HTTP status code emitted to the client.
+ * @param {unknown} body - Primitive or undefined response body.
+ * @returns {void} Response is written directly.
+ */
+function sendNonObjectResponderResult(res, status, body) {
   const handlerKey = responderKeyByType(body === undefined);
   responderHandlers[handlerKey](res, status, body);
 }

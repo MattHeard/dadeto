@@ -24,12 +24,22 @@ function serializePayload(payload) {
  * @returns {void}
  */
 function enableAutoSubmit(autoSubmitCheckbox) {
-  if (!autoSubmitCheckbox) {
+  const checkbox = autoSubmitCheckbox;
+  if (!checkbox) {
     return;
   }
 
-  autoSubmitCheckbox.checked = true;
-  autoSubmitCheckbox.dispatchEvent?.(new Event('change'));
+  triggerAutoSubmit(checkbox);
+}
+
+/**
+ * Trigger auto-submit on the associated checkbox.
+ * @param {HTMLInputElement} checkbox - Auto-submit checkbox.
+ * @returns {void}
+ */
+function triggerAutoSubmit(checkbox) {
+  checkbox.checked = true;
+  checkbox.dispatchEvent?.(new Event('change'));
 }
 
 /**
@@ -70,7 +80,19 @@ function updateCaptureButton(dom, button, isCapturing) {
  * @returns {HTMLElement | null} Closest article element.
  */
 function getArticle(container) {
-  return container.closest?.('article.entry') ?? null;
+  return resolveClosestArticle(container.closest?.('article.entry'));
+}
+
+/**
+ * Normalize a closest-article lookup.
+ * @param {HTMLElement | null | undefined} article - Candidate article element.
+ * @returns {HTMLElement | null} Closest article or null.
+ */
+function resolveClosestArticle(article) {
+  if (article) {
+    return article;
+  }
+  return null;
 }
 
 /**
@@ -146,7 +168,7 @@ function createKeyboardHandler(options) {
  * @returns {boolean} True when capture was released.
  */
 function releaseCaptureOnEscape(event, options) {
-  if (event.type !== 'keydown' || event.key !== ESCAPE_KEY) {
+  if (!isEscapeKeydown(event)) {
     return false;
   }
 
@@ -166,6 +188,15 @@ function releaseCaptureOnEscape(event, options) {
 }
 
 /**
+ * Check whether the event is the escape keydown that releases capture.
+ * @param {KeyboardEvent} event - Keyboard event to inspect.
+ * @returns {boolean} True when the event is the escape keydown.
+ */
+function isEscapeKeydown(event) {
+  return event.type === 'keydown' && event.key === ESCAPE_KEY;
+}
+
+/**
  * Forward a captured keyboard event into the toy input.
  * @param {KeyboardEvent} event - Browser keyboard event.
  * @param {{
@@ -178,15 +209,55 @@ function releaseCaptureOnEscape(event, options) {
  * @returns {void}
  */
 function handleKeyboardEvent(event, options) {
-  if (!options.state.capturing) {
+  const capturing = options.state.capturing;
+  if (!capturing) {
     return;
   }
 
+  preventKeyboardDefault(event);
+  handleCapturedKeyboardEvent(event, options);
+}
+
+/**
+ * Prevent the browser default for captured keyboard events.
+ * @param {KeyboardEvent} event - Browser keyboard event.
+ * @returns {void}
+ */
+function preventKeyboardDefault(event) {
   event.preventDefault?.();
-  if (releaseCaptureOnEscape(event, options)) {
+}
+
+/**
+ * Handle the captured event after the active-capture guard has passed.
+ * @param {KeyboardEvent} event - Browser keyboard event.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   button: HTMLButtonElement,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ *   state: { capturing: boolean },
+ * }} options - Keyboard event dependencies.
+ * @returns {void}
+ */
+function handleCapturedKeyboardEvent(event, options) {
+  const releasedCapture = releaseCaptureOnEscape(event, options);
+  if (releasedCapture) {
     return;
   }
+  forwardCapturedKey(event, options);
+}
 
+/**
+ * Forward a non-escape keyboard event into the toy input.
+ * @param {KeyboardEvent} event - Browser keyboard event.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ * }} options - Keyboard forwarding dependencies.
+ * @returns {void}
+ */
+function forwardCapturedKey(event, options) {
   syncToyInput({
     dom: options.dom,
     textInput: options.textInput,

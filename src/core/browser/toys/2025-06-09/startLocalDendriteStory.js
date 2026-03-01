@@ -59,10 +59,7 @@ function resolveLegacyStructure(temporary) {
   if (shouldSkipDend1(temporary)) {
     return [];
   }
-  if (!temporary || !temporary.DEND1) {
-    return [];
-  }
-  return /** @type {DendriteStoryResult[]} */ (temporary.DEND1);
+  return getLegacyDend1(temporary);
 }
 
 /**
@@ -74,10 +71,52 @@ function resolveStar1Structure(temporary) {
   if (shouldSkipStar1(temporary)) {
     return resolveLegacyStructure(temporary);
   }
-  if (!temporary || !temporary.STAR1) {
-    return resolveLegacyStructure(temporary);
+  return getStar1Stories(temporary, resolveLegacyStructure(temporary));
+}
+
+/**
+ * Resolve the legacy DEND1 story array.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Temporary storage object.
+ * @returns {DendriteStoryResult[]} DEND1 stories or an empty array.
+ */
+function getLegacyDend1(temporary) {
+  return readStoryArray(temporary?.DEND1);
+}
+
+/**
+ * Resolve STAR1 stories with a provided fallback.
+ * @param {{ STAR1?: DendriteStoryResult[], DEND1?: DendriteStoryResult[] } | undefined} temporary - Temporary storage object.
+ * @param {DendriteStoryResult[]} fallback - Fallback story list.
+ * @returns {DendriteStoryResult[]} STAR1 stories or the fallback.
+ */
+function getStar1Stories(temporary, fallback) {
+  const stories = readStoryArray(temporary?.STAR1);
+  return pickPrimaryStories(stories, fallback);
+}
+
+/**
+ * Choose the primary STAR1 array when populated.
+ * @param {DendriteStoryResult[]} stories - Primary story array.
+ * @param {DendriteStoryResult[]} fallback - Fallback story array.
+ * @returns {DendriteStoryResult[]} Primary stories when populated, otherwise the fallback.
+ */
+function pickPrimaryStories(stories, fallback) {
+  if (stories.length > 0) {
+    return stories;
   }
-  return /** @type {DendriteStoryResult[]} */ (temporary.STAR1);
+  return fallback;
+}
+
+/**
+ * Normalize a stored story array candidate.
+ * @param {DendriteStoryResult[] | undefined} stories - Story list candidate.
+ * @returns {DendriteStoryResult[]} Story array or an empty array.
+ */
+function readStoryArray(stories) {
+  if (stories) {
+    return /** @type {DendriteStoryResult[]} */ (stories);
+  }
+  return [];
 }
 
 /**

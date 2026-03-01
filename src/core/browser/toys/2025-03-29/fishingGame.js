@@ -170,15 +170,46 @@ function getPeriodLabel(period) {
 }
 
 /**
+ * Normalize an hour to the 0-23 range.
+ * @param {number} hour - Hour candidate.
+ * @returns {number} Normalized hour.
+ */
+function normalizeHour(hour) {
+  return ((hour % 24) + 24) % 24;
+}
+
+/**
+ * Normalize a month index to the 0-11 range.
+ * @param {number} month - Month candidate.
+ * @returns {number} Normalized month.
+ */
+function normalizeMonth(month) {
+  return ((month % 12) + 12) % 12;
+}
+
+/**
+ * Resolve a configured period label or return a fallback.
+ * @param {{label?: TimeOfDayLabel | SeasonLabel} | undefined} period - Matching period.
+ * @param {TimeOfDayLabel | SeasonLabel} fallback - Fallback label.
+ * @returns {TimeOfDayLabel | SeasonLabel} Period label or fallback.
+ */
+function resolvePeriodLabel(period, fallback) {
+  const label = getPeriodLabel(period);
+  if (label) {
+    return label;
+  }
+  return fallback;
+}
+
+/**
  * Choose the matching time-of-day label from the configured ranges.
  * @param {number} hour - Hour of the day used as lookup key.
  * @returns {TimeOfDayLabel} The best matching time-of-day label.
  */
 function findTimeOfDayLabel(hour) {
-  const normalizedHour = ((hour % 24) + 24) % 24;
+  const normalizedHour = normalizeHour(hour);
   const period = timeOfDayPeriods.find(p => isHourInPeriod(normalizedHour, p));
-  const label = period?.label;
-  return label ?? 'night';
+  return /** @type {TimeOfDayLabel} */ (resolvePeriodLabel(period, 'night'));
 }
 
 /**
@@ -187,10 +218,9 @@ function findTimeOfDayLabel(hour) {
  * @returns {SeasonLabel} The season that contains the given month.
  */
 function findSeasonLabel(month) {
-  const normalizedMonth = ((month % 12) + 12) % 12;
+  const normalizedMonth = normalizeMonth(month);
   const period = seasonPeriods.find(p => isMonthInPeriod(normalizedMonth, p));
-  const label = period?.label;
-  return label ?? 'winter';
+  return /** @type {SeasonLabel} */ (resolvePeriodLabel(period, 'winter'));
 }
 
 /**

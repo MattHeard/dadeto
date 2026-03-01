@@ -540,9 +540,6 @@ function addPlacedShip(acc, placed) {
   if (!areShipPlacementArgsValid(acc, placed)) {
     return null;
   }
-  if (!acc || !placed) {
-    return null;
-  }
   acc.push(placed);
   return acc;
 }

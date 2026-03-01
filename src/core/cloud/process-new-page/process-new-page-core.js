@@ -495,6 +495,15 @@ async function validateAndExtractOptionRefs(optionSnap, snapshot) {
 }
 
 /**
+ * Return the extracted refs when present.
+ * @param {{variantRef: any, storyRefCandidate: any} | null} refs - Extracted option refs.
+ * @returns {{variantRef: any, storyRefCandidate: any} | null} Valid refs or null.
+ */
+function getValidIncomingOptionRefs(refs) {
+  return refs;
+}
+
+/**
  * Resolve page and story references when a submission targets an existing option.
  * Returns null when the submission should be marked as processed without further work.
  * @param {object} params Parameters required to resolve the context from an option submission.
@@ -519,16 +528,55 @@ async function resolveIncomingOptionContext({
   const optionRef = db.doc(incomingOptionFullName);
   const optionSnap = await optionRef.get();
   ensureOptionSnapshotRef(optionSnap, optionRef);
-
-  const refs = await validateAndExtractOptionRefs(optionSnap, snapshot);
-  if (!refs) {
+  const validRefs = await resolveIncomingOptionRefs(optionSnap, snapshot);
+  if (!validRefs) {
     return null;
   }
+  return buildIncomingOptionContext({
+    validRefs,
+    optionSnap,
+    db,
+    batch,
+    random,
+    randomUUID,
+    optionRef,
+    incomingOptionFullName,
+    getServerTimestamp,
+  });
+}
 
-  const { variantRef, storyRefCandidate } = refs;
+/**
+ * Build the incoming option context from resolved refs and option data.
+ * @param {object} params - Context-building dependencies.
+ * @param {{variantRef: any, storyRefCandidate: any}} params.validRefs - Validated variant and story refs.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} params.optionSnap - Option document snapshot.
+ * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance used for lookups.
+ * @param {import('firebase-admin/firestore').WriteBatch} params.batch - Write batch collecting updates.
+ * @param {() => number} params.random - Random number generator for variant metadata.
+ * @param {() => string} params.randomUUID - UUID generator for new document identifiers.
+ * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef - Option document reference.
+ * @param {string} params.incomingOptionFullName - Full document path for the incoming option.
+ * @param {() => unknown} params.getServerTimestamp - Function returning the server timestamp sentinel.
+ * @returns {Promise<PageContext | null>} Resolved page context or null.
+ */
+async function buildIncomingOptionContext({
+  validRefs,
+  optionSnap,
+  db,
+  batch,
+  random,
+  randomUUID,
+  optionRef,
+  incomingOptionFullName,
+  getServerTimestamp,
+}) {
+  const { variantRef, storyRefCandidate } = validRefs;
   const optionData = optionSnap.data();
   const targetPage = resolveTargetPageFromOption(optionData);
-
+  const storyRef =
+    /** @type {import('firebase-admin/firestore').DocumentReference} */ (
+      storyRefCandidate
+    );
   const pageContext = await resolveIncomingOptionPageContext({
     targetPage,
     db,
@@ -538,10 +586,7 @@ async function resolveIncomingOptionContext({
     optionRef,
     incomingOptionFullName,
     getServerTimestamp,
-    storyRef:
-      /** @type {import('firebase-admin/firestore').DocumentReference} */ (
-        storyRefCandidate
-      ),
+    storyRef,
   });
   if (!pageContext) {
     return null;
@@ -552,6 +597,29 @@ async function resolveIncomingOptionContext({
     storyRef: storyRefCandidate,
     variantRef,
   };
+}
+
+/**
+ * Resolve incoming option refs or return null when processing should stop.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} optionSnap - Option document snapshot.
+ * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot - Submission snapshot.
+ * @returns {Promise<{variantRef: any, storyRefCandidate: any} | null>} Valid refs or null.
+ */
+async function resolveIncomingOptionRefs(optionSnap, snapshot) {
+  const refs = await validateAndExtractOptionRefs(optionSnap, snapshot);
+  if (shouldSkipIncomingOptionRefs(refs)) {
+    return null;
+  }
+  return getValidIncomingOptionRefs(refs);
+}
+
+/**
+ * Check whether incoming option refs are missing.
+ * @param {{variantRef: any, storyRefCandidate: any} | null} refs - Extracted option refs.
+ * @returns {boolean} True when processing should stop.
+ */
+function shouldSkipIncomingOptionRefs(refs) {
+  return !refs;
 }
 
 /**

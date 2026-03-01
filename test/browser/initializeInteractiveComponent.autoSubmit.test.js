@@ -1,4 +1,11 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  jest,
+  beforeEach,
+  afterEach,
+} from '@jest/globals';
 import { initializeInteractiveComponent } from '../../src/browser/toys.js';
 
 const createAutoSubmitContext = ({ includeAutoSubmit = true } = {}) => {

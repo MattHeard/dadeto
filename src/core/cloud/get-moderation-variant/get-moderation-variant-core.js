@@ -9,8 +9,6 @@ import {
   isObject,
 } from './cloud-core.js';
 import { isAllowedOrigin as coreIsAllowedOrigin } from './cors.js';
-import { when } from '../../commonCore.js';
-
 export { productionOrigins, coreIsAllowedOrigin as isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
 export { getAllowedOrigins } from '../allowed-origins.js';

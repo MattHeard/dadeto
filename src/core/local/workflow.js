@@ -133,14 +133,20 @@ function normalizeSteps(workflow) {
  */
 function normalizeActiveIndex(workflow, maxIndex) {
   const workflowActiveIndex = getWorkflowProperty(workflow, 'activeIndex');
-  if (
-    typeof workflowActiveIndex === 'number' &&
-    Number.isInteger(workflowActiveIndex)
-  ) {
+  if (isWorkflowIndex(workflowActiveIndex)) {
     return Math.min(Math.max(workflowActiveIndex, 0), maxIndex);
   }
 
   return Math.min(1, maxIndex);
+}
+
+/**
+ * Check whether a workflow active index is a valid integer.
+ * @param {unknown} value - Candidate active index.
+ * @returns {value is number} True when the index is an integer.
+ */
+function isWorkflowIndex(value) {
+  return typeof value === 'number' && Number.isInteger(value);
 }
 
 /**
