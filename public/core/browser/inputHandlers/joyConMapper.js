@@ -359,24 +359,106 @@ function registerClick(dom, element, handler, disposers) {
 
 function injectStyles(dom, form) {
   const style = createElement(dom, 'style', '', `
-    .${DENDRITE_FORM_CLASS}.joycon-mapper-form { display:grid; gap:12px; }
-    .joycon-mapper-hero { display:grid; gap:10px; padding:14px; border:1px solid #30445b; border-radius:14px; background:#172231; color:#f3f7fb; }
-    .joycon-mapper-status { display:flex; align-items:center; gap:8px; font-weight:700; color:#ffd166; }
-    .joycon-mapper-dot { width:10px; height:10px; border-radius:999px; background:#ff7a59; }
-    .joycon-mapper-dot.connected { background:#52d273; box-shadow:0 0 0 8px rgba(82,210,115,0.12); }
-    .joycon-mapper-prompt { font-size:1.4rem; font-weight:800; line-height:1; }
-    .joycon-mapper-subprompt { color:#9cb0c3; }
-    .joycon-mapper-actions { display:flex; flex-wrap:wrap; gap:8px; }
-    .joycon-mapper-actions button { border:1px solid #30445b; border-radius:999px; padding:8px 14px; background:#223246; color:#f3f7fb; cursor:pointer; }
-    .joycon-mapper-actions .primary { background:#ffd166; color:#111923; font-weight:700; }
-    .joycon-mapper-meta { display:grid; gap:6px; color:#9cb0c3; font-size:0.92rem; }
-    .joycon-mapper-list { display:grid; gap:8px; }
-    .joycon-mapper-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; padding:10px 12px; border:1px solid #30445b; border-radius:12px; background:#0f1824; }
-    .joycon-mapper-row.active { border-color:#7ed9ff; background:rgba(126,217,255,0.12); }
-    .joycon-mapper-row.done { border-color:#52d273; }
-    .joycon-mapper-row.skipped { border-color:#5e7389; opacity:0.9; }
-    .joycon-mapper-name { font-weight:700; color:#f3f7fb; }
-    .joycon-mapper-value { color:#9cb0c3; font-family:monospace; }
+    .${DENDRITE_FORM_CLASS}.joycon-mapper-form {
+      display: grid;
+      gap: 0.75em;
+      width: 100%;
+      margin: 0.25em 0 0;
+    }
+    .joycon-mapper-hero {
+      display: grid;
+      gap: 0.5em;
+      color: inherit;
+    }
+    .joycon-mapper-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      color: #33ccff;
+      font-weight: 700;
+      text-transform: lowercase;
+    }
+    .joycon-mapper-dot {
+      width: 0.65em;
+      height: 0.65em;
+      border-radius: 999px;
+      background: #ff00ff;
+      flex: 0 0 auto;
+    }
+    .joycon-mapper-dot.connected {
+      background: #00ff00;
+    }
+    .joycon-mapper-prompt {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .joycon-mapper-subprompt {
+      color: #cccccc;
+      line-height: 1.2;
+    }
+    .joycon-mapper-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+    .joycon-mapper-actions button {
+      border: 1px solid #33ccff;
+      border-radius: 0;
+      padding: 0.3em 0.6em;
+      background: #1a1a1a;
+      color: #00ffff;
+      cursor: pointer;
+      font: inherit;
+      line-height: 1;
+    }
+    .joycon-mapper-actions .primary {
+      background: #00ffff;
+      color: #121212;
+      font-weight: 700;
+    }
+    .joycon-mapper-meta {
+      display: grid;
+      gap: 0.2em;
+      color: #33ccff;
+      font-size: 0.95em;
+    }
+    .joycon-mapper-list {
+      display: grid;
+      border-top: 1px solid #333333;
+      border-bottom: 1px solid #333333;
+    }
+    .joycon-mapper-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1em;
+      padding: 0.45em 0.6em;
+      border-top: 1px solid #222222;
+      align-items: baseline;
+    }
+    .joycon-mapper-row:first-child {
+      border-top: 0;
+    }
+    .joycon-mapper-row.active {
+      background: rgba(0, 255, 255, 0.08);
+      color: #ffffff;
+    }
+    .joycon-mapper-row.done .joycon-mapper-value {
+      color: #00ff00;
+    }
+    .joycon-mapper-row.skipped .joycon-mapper-value {
+      color: #999999;
+    }
+    .joycon-mapper-name {
+      font-weight: 700;
+      color: inherit;
+    }
+    .joycon-mapper-value {
+      color: #cccccc;
+      font-family: inherit;
+      text-transform: lowercase;
+    }
   `);
   dom.appendChild(form, style);
 }
