@@ -137,18 +137,26 @@ export function styles() {
     color: #00FFFF;
     display: inline-block;
   }
-  .audio-btn {
-    padding: 0em 1em;
-    border: none;
-    background: #00FF00;
-    color: #1A1A1A;
-    font-family: Consolas, monospace;
+  button {
+    border: 1px solid #33CCFF;
+    border-radius: 0;
+    padding: 0.3em 0.6em;
+    background: #1A1A1A;
+    color: #00FFFF;
     cursor: pointer;
+    font: inherit;
+    line-height: 1;
+  }
+  button:hover {
+    text-decoration: underline;
+  }
+  button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+  .audio-btn {
     height: 2em;
     margin-right: 1em;
-  }
-  .audio-btn:hover {
-    text-decoration: underline;
   }
 
   blockquote {
