@@ -433,7 +433,6 @@ function injectStyles(dom, form) {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 1em;
-      padding: 0.45em 0.6em;
       border-top: 1px solid #222222;
       align-items: baseline;
     }
