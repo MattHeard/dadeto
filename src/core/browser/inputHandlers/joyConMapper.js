@@ -182,12 +182,16 @@ function detectAxisCapture(previous, current, expectedDirection) {
 }
 
 function buildPayload(action, state, extra = {}) {
-  return {
-    toy: MAPPER_STORAGE_KEY,
+  const payload = {
     action,
-    currentControlKey: state.currentControl?.key ?? null,
     ...extra,
   };
+
+  if (state.currentControl?.key) {
+    payload.currentControlKey = state.currentControl.key;
+  }
+
+  return payload;
 }
 
 function renderMapperList(state) {
