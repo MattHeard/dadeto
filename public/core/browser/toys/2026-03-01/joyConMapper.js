@@ -70,15 +70,36 @@ function normalizeSkippedControls(skippedControls) {
 
 /**
  * @param {{ get: (name: string) => unknown }} env Toy runtime environment.
+ * @returns {(() => Record<string, unknown> | null | undefined) | null} Local data getter when available.
+ */
+function getLocalPermanentDataGetter(env) {
+  const getLocalPermanentData = env.get('getLocalPermanentData');
+  if (typeof getLocalPermanentData !== 'function') {
+    return null;
+  }
+
+  return getLocalPermanentData;
+}
+
+/**
+ * @param {{ get: (name: string) => unknown }} env Toy runtime environment.
+ * @returns {unknown} Stored Joy-Con mapper state candidate.
+ */
+function getStoredValue(env) {
+  const getLocalPermanentData = getLocalPermanentDataGetter(env);
+  if (!getLocalPermanentData) {
+    return null;
+  }
+
+  return getLocalPermanentData()?.[TOY_STORAGE_KEY];
+}
+
+/**
+ * @param {{ get: (name: string) => unknown }} env Toy runtime environment.
  * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] }} Normalized persisted state.
  */
 function readStoredState(env) {
-  const getLocalPermanentData = env.get('getLocalPermanentData');
-  if (typeof getLocalPermanentData !== 'function') {
-    return { ...DEFAULT_STATE };
-  }
-
-  const stored = getLocalPermanentData()?.[TOY_STORAGE_KEY];
+  const stored = getStoredValue(env);
   if (!isObjectValue(stored)) {
     return { ...DEFAULT_STATE };
   }
@@ -110,11 +131,11 @@ function persistState(env, nextState) {
  * @returns {string[]} Updated skipped control keys.
  */
 function uniquePush(items, value) {
-  if (!value || items.includes(value)) {
+  if (!value) {
     return items;
   }
 
-  return [...items, value];
+  return [...new Set([...items, value])];
 }
 
 /**
@@ -165,11 +186,50 @@ function handleCaptureAction(storedState, parsed) {
  * @returns {boolean} Whether the parsed action is a valid capture payload.
  */
 function isCaptureAction(parsed) {
-  return (
-    parsed.action === 'capture' &&
-    Boolean(parsed.currentControlKey) &&
-    Boolean(parsed.capture)
-  );
+  if (parsed.action !== 'capture') {
+    return false;
+  }
+
+  return ['currentControlKey', 'capture'].every(key => Boolean(parsed[key]));
+}
+
+/**
+ * @param {Record<string, unknown> | null} parsed Parsed Joy-Con mapper action.
+ * @returns {parsed is Record<string, unknown>} Whether the parsed action is object-like.
+ */
+function isParsedAction(parsed) {
+  return isObjectValue(parsed);
+}
+
+/**
+ * @param {{ mappings: Record<string, unknown>, skippedControls: string[] }} storedState Current persisted state.
+ * @param {Record<string, unknown>} parsed Parsed Joy-Con mapper action.
+ * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] } | null} State update for non-capture actions.
+ */
+function getActionResult(storedState, parsed) {
+  const actionHandlers = {
+    reset: () => ({ ...DEFAULT_STATE }),
+    skip: () => handleSkipAction(storedState, parsed),
+  };
+  const handler = actionHandlers[parsed.action];
+  if (typeof handler !== 'function') {
+    return null;
+  }
+
+  return handler();
+}
+
+/**
+ * @param {{ mappings: Record<string, unknown>, skippedControls: string[] }} storedState Current persisted state.
+ * @param {Record<string, unknown>} parsed Parsed Joy-Con mapper action.
+ * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] } | null} State update for any recognized action.
+ */
+function getResolvedActionState(storedState, parsed) {
+  if (isCaptureAction(parsed)) {
+    return handleCaptureAction(storedState, parsed);
+  }
+
+  return getActionResult(storedState, parsed);
 }
 
 /**
@@ -178,24 +238,16 @@ function isCaptureAction(parsed) {
  * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] }} Next persisted state.
  */
 function handleAction(parsed, storedState) {
-  if (!parsed || typeof parsed !== 'object') {
+  if (!isParsedAction(parsed)) {
     return storedState;
   }
 
-  if (isCaptureAction(parsed)) {
-    return handleCaptureAction(storedState, parsed);
-  }
-
-  const actionHandlers = {
-    reset: () => ({ ...DEFAULT_STATE }),
-    skip: () => handleSkipAction(storedState, parsed),
-  };
-  const handler = actionHandlers[parsed.action];
-  if (typeof handler !== 'function') {
+  const nextState = getResolvedActionState(storedState, parsed);
+  if (!nextState) {
     return storedState;
   }
 
-  return handler();
+  return nextState;
 }
 
 /**
