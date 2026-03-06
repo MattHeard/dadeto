@@ -50,17 +50,24 @@ const CONTROLS = /** @type {MapperControl[]} */ ([
 ]);
 
 /**
+ * Finds the article wrapper that owns the mapper UI.
  * @param {Element} container
+ *   Mapper root container.
  * @returns {Element | null}
+ *   Closest article entry, if present.
  */
 function getClosestArticle(container) {
   return container.closest?.('article.entry') ?? null;
 }
 
 /**
+ * Reads the article-level auto-submit checkbox used by the toy shell.
  * @param {Element} container
+ *   Mapper root container.
  * @param {DOMHelpers} dom
+ *   DOM helper facade for queries and writes.
  * @returns {HTMLInputElement | null}
+ *   Auto-submit checkbox for the current article.
  */
 function getAutoSubmitCheckbox(container, dom) {
   const article = getClosestArticle(container);
@@ -75,6 +82,7 @@ function getAutoSubmitCheckbox(container, dom) {
 
 /**
  * @param {HTMLInputElement} checkbox
+ *   Checkbox to notify after the checked state changes.
  * @returns {void}
  */
 function dispatchChangeEvent(checkbox) {
@@ -83,6 +91,7 @@ function dispatchChangeEvent(checkbox) {
 
 /**
  * @param {HTMLInputElement | null} autoSubmitCheckbox
+ *   Optional auto-submit checkbox associated with the mapper toy.
  * @returns {void}
  */
 function enableAutoSubmit(autoSubmitCheckbox) {
@@ -96,6 +105,7 @@ function enableAutoSubmit(autoSubmitCheckbox) {
 
 /**
  * @param {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, payload: Record<string, unknown> }} input
+ *   Dependencies and payload required to sync the hidden toy input field.
  * @returns {void}
  */
 function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
@@ -107,6 +117,7 @@ function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
 
 /**
  * @returns {Gamepad | null}
+ *   First connected gamepad exposed by the browser, if any.
  */
 function currentPad() {
   return Array.from(navigator.getGamepads?.() ?? []).find(Boolean) ?? null;
@@ -114,7 +125,9 @@ function currentPad() {
 
 /**
  * @param {GamepadButton} button
+ *   Raw browser gamepad button state.
  * @returns {ButtonSnapshot}
+ *   Serializable pressed/value pair for later comparisons.
  */
 function snapshotButton(button) {
   return {
@@ -125,7 +138,9 @@ function snapshotButton(button) {
 
 /**
  * @param {Gamepad | null | undefined} gamepad
+ *   Live browser gamepad object to snapshot.
  * @returns {GamepadSnapshot | null}
+ *   Serializable copy of button and axis values.
  */
 function snapshotGamepad(gamepad) {
   if (!gamepad) {
@@ -140,9 +155,13 @@ function snapshotGamepad(gamepad) {
 
 /**
  * @param {DOMHelpers} dom
+ *   DOM helper facade for element construction.
  * @param {string} tag
+ *   Tag name for the new element.
  * @param {ElementOptions} [options]
+ *   Optional class and text content to apply.
  * @returns {HTMLElement}
+ *   Newly created DOM element.
  */
 function createElement(dom, tag, options = {}) {
   const { className = '', text } = options;
@@ -158,7 +177,9 @@ function createElement(dom, tag, options = {}) {
 
 /**
  * @param {CaptureResult | null | undefined} mapping
+ *   Stored capture metadata for one mapper control.
  * @returns {string}
+ *   Human-readable label used in the mapper list.
  */
 function describeCapture(mapping) {
   if (!mapping) {
@@ -174,6 +195,7 @@ function describeCapture(mapping) {
 
 /**
  * @returns {StoredMapperState}
+ *   Persisted mappings and skipped controls from local storage.
  */
 function readStoredMapperState() {
   try {
@@ -200,7 +222,9 @@ function readStoredMapperState() {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {number}
+ *   Index of the first unmapped, unskipped control or `-1`.
  */
 function firstPendingIndex(state) {
   return CONTROLS.findIndex(control => {
@@ -213,8 +237,11 @@ function firstPendingIndex(state) {
 
 /**
  * @param {GamepadSnapshot | null} previous
+ *   Previous gamepad snapshot.
  * @param {GamepadSnapshot | null} current
+ *   Current gamepad snapshot.
  * @returns {CaptureResult | null}
+ *   Strongest newly pressed button capture, if detected.
  */
 function detectButtonCapture(previous, current) {
   if (!previous || !current) {
@@ -241,8 +268,11 @@ function detectButtonCapture(previous, current) {
 
 /**
  * @param {number} value
+ *   Current axis value.
  * @param {'negative' | 'positive'} expectedDirection
+ *   Direction the active control expects.
  * @returns {boolean}
+ *   Whether the axis currently points far enough in the expected direction.
  */
 function axisMatchesDirection(value, expectedDirection) {
   if (expectedDirection === 'positive') {
@@ -254,8 +284,11 @@ function axisMatchesDirection(value, expectedDirection) {
 
 /**
  * @param {number} delta
+ *   Difference between the current and previous axis value.
  * @param {'negative' | 'positive'} expectedDirection
+ *   Direction the active control expects.
  * @returns {number}
+ *   Direction-aware delta magnitude.
  */
 function directionalDelta(delta, expectedDirection) {
   if (expectedDirection === 'positive') {
@@ -267,9 +300,13 @@ function directionalDelta(delta, expectedDirection) {
 
 /**
  * @param {GamepadSnapshot | null} previous
+ *   Previous gamepad snapshot.
  * @param {GamepadSnapshot | null} current
+ *   Current gamepad snapshot.
  * @param {'negative' | 'positive'} expectedDirection
+ *   Direction the active control expects.
  * @returns {CaptureResult | null}
+ *   Strongest axis movement capture, if detected.
  */
 function detectAxisCapture(previous, current, expectedDirection) {
   if (!previous || !current) {
@@ -297,9 +334,13 @@ function detectAxisCapture(previous, current, expectedDirection) {
 
 /**
  * @param {string} action
+ *   Mapper action name written into the hidden toy input.
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @param {Record<string, unknown>} [extra]
+ *   Additional payload properties for the action.
  * @returns {Record<string, unknown>}
+ *   Serialized action payload for the toy runtime.
  */
 function buildPayload(action, state, extra = {}) {
   const payload = {
@@ -316,9 +357,13 @@ function buildPayload(action, state, extra = {}) {
 
 /**
  * @param {MapperControl} control
+ *   Control currently being rendered.
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @param {number} index
+ *   Control index within the ordered list.
  * @returns {string}
+ *   Row value label for mapped, skipped, active, or optional states.
  */
 function getRowValueText(control, state, index) {
   const isDone = Boolean(state.stored.mappings[control.key]);
@@ -343,6 +388,7 @@ function getRowValueText(control, state, index) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function renderMapperList(state) {
@@ -383,7 +429,9 @@ function renderMapperList(state) {
 
 /**
  * @param {DOMHelpers} dom
+ *   DOM helper facade for element mutation.
  * @param {Element} node
+ *   Parent node whose children should be removed.
  * @returns {void}
  */
 function domRemoveAllChildren(dom, node) {
@@ -392,6 +440,7 @@ function domRemoveAllChildren(dom, node) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function renderPrompt(state) {
@@ -443,6 +492,7 @@ function renderPrompt(state) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function renderMeta(state) {
@@ -461,6 +511,7 @@ function renderMeta(state) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function refreshStoredState(state) {
@@ -474,6 +525,7 @@ function refreshStoredState(state) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function render(state) {
@@ -485,6 +537,7 @@ function render(state) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function advanceToNextControl(state) {
@@ -502,7 +555,9 @@ function advanceToNextControl(state) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @param {CaptureResult} capture
+ *   Captured button or axis mapping for the active control.
  * @returns {void}
  */
 function captureCurrentControl(state, capture) {
@@ -522,6 +577,7 @@ function captureCurrentControl(state, capture) {
 
 /**
  * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function maybeCapture(state) {
@@ -552,9 +608,13 @@ function maybeCapture(state) {
 
 /**
  * @param {DOMHelpers} dom
+ *   DOM helper facade for listener registration.
  * @param {HTMLElement} element
+ *   Click target element.
  * @param {(event: Event) => void} handler
+ *   Click handler to register.
  * @param {Array<() => void>} disposers
+ *   Cleanup callbacks collected for the form lifecycle.
  * @returns {void}
  */
 function registerClick(dom, element, handler, disposers) {
@@ -564,7 +624,9 @@ function registerClick(dom, element, handler, disposers) {
 
 /**
  * @param {DOMHelpers} dom
+ *   DOM helper facade for style injection.
  * @param {HTMLElement} form
+ *   Form shell that owns the mapper UI.
  * @returns {void}
  */
 function injectStyles(dom, form) {
@@ -676,8 +738,11 @@ function injectStyles(dom, form) {
 
 /**
  * @param {DOMHelpers} dom
+ *   DOM helper facade for UI creation and updates.
  * @param {Element} container
+ *   Host element for the mapper control.
  * @param {HTMLInputElement} textInput
+ *   Hidden toy input synchronized with mapper actions.
  * @returns {void}
  */
 export function joyConMapperHandler(dom, container, textInput) {
