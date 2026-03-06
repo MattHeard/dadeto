@@ -5,14 +5,26 @@ const DEFAULT_STATE = {
 };
 
 /**
- * @param {string} input Serialized Joy-Con mapper action payload.
- * @returns {Record<string, unknown> | null} Parsed action object or null for invalid input.
+ * @param {unknown} value Candidate object-like value.
+ * @returns {boolean} Whether the value is a non-null object.
  */
-function parseInput(input) {
-  if (typeof input !== 'string' || input.length === 0) {
-    return null;
-  }
+function isObjectValue(value) {
+  return Boolean(value) && typeof value === 'object';
+}
 
+/**
+ * @param {unknown} value Candidate serialized payload.
+ * @returns {value is string} Whether the value is a non-empty string.
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.length > 0;
+}
+
+/**
+ * @param {string} input Serialized Joy-Con mapper action payload.
+ * @returns {Record<string, unknown> | null} Parsed JSON value or null on parse failure.
+ */
+function parseJsonInput(input) {
   try {
     return JSON.parse(input);
   } catch {
@@ -21,11 +33,23 @@ function parseInput(input) {
 }
 
 /**
+ * @param {string} input Serialized Joy-Con mapper action payload.
+ * @returns {Record<string, unknown> | null} Parsed action object or null for invalid input.
+ */
+function parseInput(input) {
+  if (!isNonEmptyString(input)) {
+    return null;
+  }
+
+  return parseJsonInput(input);
+}
+
+/**
  * @param {unknown} mappings Stored mapping payload from local permanent data.
  * @returns {Record<string, unknown>} Normalized mappings object.
  */
 function normalizeMappings(mappings) {
-  if (!mappings || typeof mappings !== 'object') {
+  if (!isObjectValue(mappings)) {
     return {};
   }
 
@@ -54,9 +78,8 @@ function readStoredState(env) {
     return { ...DEFAULT_STATE };
   }
 
-  const root = getLocalPermanentData() ?? {};
-  const stored = root?.[TOY_STORAGE_KEY];
-  if (!stored || typeof stored !== 'object') {
+  const stored = getLocalPermanentData()?.[TOY_STORAGE_KEY];
+  if (!isObjectValue(stored)) {
     return { ...DEFAULT_STATE };
   }
 
@@ -90,6 +113,7 @@ function uniquePush(items, value) {
   if (!value || items.includes(value)) {
     return items;
   }
+
   return [...items, value];
 }
 
@@ -137,6 +161,18 @@ function handleCaptureAction(storedState, parsed) {
 }
 
 /**
+ * @param {Record<string, unknown>} parsed Parsed Joy-Con mapper action.
+ * @returns {boolean} Whether the parsed action is a valid capture payload.
+ */
+function isCaptureAction(parsed) {
+  return (
+    parsed.action === 'capture' &&
+    Boolean(parsed.currentControlKey) &&
+    Boolean(parsed.capture)
+  );
+}
+
+/**
  * @param {Record<string, unknown> | null} parsed Parsed Joy-Con mapper action.
  * @param {{ mappings: Record<string, unknown>, skippedControls: string[] }} storedState Current persisted state.
  * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] }} Next persisted state.
@@ -146,19 +182,20 @@ function handleAction(parsed, storedState) {
     return storedState;
   }
 
-  if (parsed.action === 'reset') {
-    return { ...DEFAULT_STATE };
-  }
-
-  if (parsed.action === 'skip') {
-    return handleSkipAction(storedState, parsed);
-  }
-
-  if (parsed.action === 'capture' && parsed.currentControlKey && parsed.capture) {
+  if (isCaptureAction(parsed)) {
     return handleCaptureAction(storedState, parsed);
   }
 
-  return storedState;
+  const actionHandlers = {
+    reset: () => ({ ...DEFAULT_STATE }),
+    skip: () => handleSkipAction(storedState, parsed),
+  };
+  const handler = actionHandlers[parsed.action];
+  if (typeof handler !== 'function') {
+    return storedState;
+  }
+
+  return handler();
 }
 
 /**
