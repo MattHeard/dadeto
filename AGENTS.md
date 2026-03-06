@@ -42,11 +42,26 @@ Start here before broad changes:
 - `docs/repo-map.md`
 - `docs/loop/manifesto.md`
 - `docs/loop/wiggum-playbook.md`
+- `docs/loop/agent-invocation.md`
 - `docs/quality/evaluator-matrix.md`
 - `docs/failure-modes/`
 - `docs/toys/`
 - `docs/toys/README.md` (new toy creation flow and required templates)
 - `docs/toys/_template/` (mandatory base files for every new toy)
+
+## Invocation Entry Points
+
+Treat the following user requests as canonical loop entry points:
+
+- `Take bead <id>`
+  - Load `docs/loop/agent-invocation.md`, inspect the bead, and translate it into one bounded Wiggum loop before editing.
+- `Pop a bead`
+  - Select one ready/open bead, claim it if needed, load `docs/loop/agent-invocation.md`, and run exactly one bounded Wiggum loop.
+- `Take any bead`
+  - Same as `Pop a bead`; prefer the highest-priority ready bead with the clearest local acceptance evidence.
+
+Do not ask the user to restate hypothesis, acceptance, or stop conditions if the bead and repo docs are sufficient to derive them.
+If they are not sufficient, tighten the bead first by adding the missing loop contract in `bd` before making code changes.
 
 ## Non-Negotiable Workflow Constraints
 
