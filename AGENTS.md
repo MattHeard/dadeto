@@ -20,6 +20,7 @@ A loop is complete only when **both** are true:
 
 - It delivers **user-visible value** OR a **loop-value artifact** (test, harness, guardrail, doc update, or automation).
 - It records **evidence**: artifact path and/or command output proving success.
+- It verifies required quality gates in `docs/quality/evaluator-matrix.md` and `docs/quality/definition-of-done.md` before closure.
 
 ### Single Loop First
 
