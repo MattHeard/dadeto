@@ -31,6 +31,7 @@ Only split into multi-agent choreography after failure evidence shows a single l
 
 If an agent cannot see it in repo docs, tests, scripts, or harnesses, it does not exist operationally.
 Encode important behavior in the repository before claiming completion.
+For every new toy folder under `docs/toys/`, start by copying all files from `docs/toys/_template/` and fill them before considering the loop complete.
 
 ## Where to look first
 
@@ -42,6 +43,8 @@ Start here before broad changes:
 - `docs/quality/evaluator-matrix.md`
 - `docs/failure-modes/`
 - `docs/toys/`
+- `docs/toys/README.md` (new toy creation flow and required templates)
+- `docs/toys/_template/` (mandatory base files for every new toy)
 
 ## Non-Negotiable Workflow Constraints
 
