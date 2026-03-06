@@ -9,10 +9,11 @@ Run work as a tight, evidence-driven loop:
 
 1. Select one bounded task.
 2. Define acceptance evidence.
-3. Execute one loop.
-4. Observe the failure mode.
-5. Encode the fix into repo memory/harness.
-6. Re-run the loop.
+3. Record the loop contract in `bd` (hypothesis, acceptance command/artifact, owner).
+4. Execute one loop.
+5. Observe the failure mode.
+6. Encode the fix into repo memory/harness.
+7. Re-run the loop.
 
 ### Loop Completion Criteria
 
@@ -20,6 +21,7 @@ A loop is complete only when **both** are true:
 
 - It delivers **user-visible value** OR a **loop-value artifact** (test, harness, guardrail, doc update, or automation).
 - It records **evidence**: artifact path and/or command output proving success.
+- It leaves **durable repo memory**: updated test, harness, doc, script, or `notes/agents/` entry that another agent can follow without terminal history.
 - It verifies required quality gates in `docs/quality/evaluator-matrix.md` and `docs/quality/definition-of-done.md` before closure.
 
 ### Single Loop First
@@ -62,6 +64,9 @@ Start here before broad changes:
   - `bd close <id>`
   - `bd sync`
 - If quality warnings appear (tests/lint/coverage/etc.) and no bead exists, create one.
+- At loop start, record the hypothesis and named acceptance evidence in the owning bead.
+- After each evaluator run, add/update bead comments with exact commands, pass/fail state, and artifact paths.
+- If a loop fails twice without a tighter hypothesis or better evaluator, stop broad implementation and convert the blocker into a bead/doc/harness follow-up.
 
 For full triage/autoloop details: `bd prime` and docs linked above.
 

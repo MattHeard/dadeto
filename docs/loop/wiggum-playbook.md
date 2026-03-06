@@ -24,6 +24,7 @@ Define acceptance before implementation.
 - Name the exact command(s) or artifact path(s) that prove success.
 - Separate pass conditions from observation-only diagnostics.
 - Ensure evidence is reproducible by another agent.
+- Record the hypothesis and evidence plan in the owning `bd` bead before editing files.
 
 ### 4) Implementation Pass
 Apply the minimal change needed to test the hypothesis.
@@ -38,6 +39,7 @@ Run the cheapest reliable evaluator first, then expand scope only if risk justif
 - Start with narrow unit/lint/check commands.
 - Escalate to heavier validation for cross-module or runtime behavior.
 - Save logs, snapshots, or reports that prove outcomes.
+- After each run, retain the exact command, result, and artifact path in `bd` comments instead of relying on terminal history.
 
 ### 6) Failure Classification
 If the loop fails, classify failure mode before changing more code.
@@ -45,6 +47,7 @@ If the loop fails, classify failure mode before changing more code.
 - Use a taxonomy label from [Failure Taxonomy Labels](#failure-taxonomy-labels).
 - Record observed symptom, likely root cause, and next smallest fix.
 - Avoid stacking multiple speculative fixes in one loop.
+- If two consecutive attempts fail without narrowing the hypothesis or improving the evaluator, stop and convert the blocker into tracked follow-up work.
 
 ### 7) Repo-Memory Upgrade
 Encode loop learning so future agents can see and reuse it.
@@ -63,6 +66,8 @@ Each completed loop must produce all of the following:
    - At least one verifiable artifact, such as a test run output, log, snapshot, or report path.
 3. **One memory artifact**
    - At least one durable repository update that captures learning (doc/rule/harness update).
+4. **One retained issue record**
+   - The owning `bd` bead must include the loop hypothesis, executed evaluators, outcomes, and next action or closure evidence.
 
 ## Failure Taxonomy Labels
 
@@ -78,6 +83,19 @@ Use one primary label per loop failure to standardize learning:
   - Runtime or tooling behavior differs due to config, dependency, or environment mismatch.
 - **architecture mismatch**
   - Proposed change conflicts with established module boundaries or system shape.
+- **nondeterministic evaluator**
+  - Tests or harnesses produce flaky or irreproducible signals, blocking confident loop closure.
+- **scope mismatch**
+  - The chosen slice is too broad or too narrow to validate the hypothesis cleanly.
+
+## Abort / Escalation Conditions
+
+Stop the current implementation loop and escalate when any of the following becomes true:
+
+- The evaluator signal is flaky or irreproducible after basic stabilization work.
+- The smallest plausible fix now requires a cross-cutting refactor unrelated to the original slice.
+- The hypothesis changed materially from the one recorded in `bd`; start a new loop instead of silently widening scope.
+- Required evidence cannot be produced locally and no CI/cloud owner or artifact path has been named.
 
 ## Boundary Push Checklist (new toys)
 
