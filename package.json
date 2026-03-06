@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "check": "npm test && npm run lint",
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false",
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
     "test:e2e": "playwright test",

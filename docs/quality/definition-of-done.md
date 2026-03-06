@@ -18,6 +18,8 @@ Every change (code, docs, config, or infra) is done only when all of the followi
 
 Run fast local checks first, then expensive/cloud checks:
 
+Use `npm run check` when you want the default local aggregate gate for most changes. It runs `npm test` followed by `npm run lint` without replacing any underlying subsystem-specific commands.
+
 1. `npm test`
 2. `npm run lint`
 3. `npm run build` (when build-relevant paths changed)
