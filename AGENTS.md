@@ -1,147 +1,136 @@
-# Repository Guidelines
+# Repository Routing Guide
 
-## Issue Tracking
+This file is a **short operating router** for agents in this repo.
+Detailed policy and playbooks live under `docs/`.
 
-This project uses **bd (beads)** for issue tracking.
-Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for auto-injection.
+## Wiggum Loop Operating Model
 
-**Pro tip:** try each `bd` command without `--no-daemon` first; if it fails or times out due to daemon / lock issues, rerun it with `--no-daemon` to skip the background service.
+Run work as a tight, evidence-driven loop:
 
-**Quick reference:**
-- `bd ready` - Find unblocked work
-- `bd create "Title" --type task --priority 2` - Create issue
-- `bd close <id>` - Complete work
-- `bd sync` - Sync with git (run at session end)
-- If a quality tool (lint, tests, coverage, etc.) raises a warning and no bead exists for it, create one so the warning is tracked.
+1. Select one bounded task.
+2. Define acceptance evidence.
+3. Execute one loop.
+4. Observe the failure mode.
+5. Encode the fix into repo memory/harness.
+6. Re-run the loop.
 
-- **Autoloop: Next Bead**
-- After finishing a bead (tests run, changes committed, bead updated/closed, evidence recorded) immediately start the next one—do not wait for a prompt.
-- 1. List your ready work with `bd ready --sort priority`. If an ID appears, claim it via `bd update <id> --claim` and begin.
-- 2. If nothing is assigned yet still ready, run `bd ready --sort priority --unassigned`; pick that bead (priority order makes it deterministic) and claim it the same way.
-- 3. When more than one bead matches either list, the `--sort priority` ordering ensures the worker always picks higher-priority (lower number) work; continue to the next bead before touching lower priority work later.
-- 4. If a bead needs human input, immediately `bd update <id> --status blocked --add-label blocked:needs-human`, leave a blocking note via `bd comments add <id> "Describe the missing input"`, and jump back to step 1 to find the next ready bead instead of idling.
-- 5. If no eligible bead exists, idle (sleep/backoff for a minute), then rerun steps 1–2 until something is available.
-- 6. After wrapping each bead, close it with `bd close <id>` before looping; the cycle keeps the agent working through ready beads.
-- 7. Always run `npm test` before closing any bead so the baseline suite stays green and so reviewers can trust each bead closure.
+### Loop Completion Criteria
 
-- Before closing any bead, run `npm test` with the working tree in its current state and record the command and outcome via `bd comments add <id> ...` so every closure leaves evidence that the baseline suite passed.
-- Before editing any files for a bead, mark it in progress via `bd update <id> --status=in_progress` so the status reflects your work.
-- Treat missing branch coverage beads (e.g., coverage falling below 100%) as higher-priority chores; address them before tackling other open chores when possible so coverage regressions don’t linger.
+A loop is complete only when **both** are true:
 
-For full workflow details: `bd prime`
+- It delivers **user-visible value** OR a **loop-value artifact** (test, harness, guardrail, doc update, or automation).
+- It records **evidence**: artifact path and/or command output proving success.
 
-## General Recommendations for Future Agents
-- **Consult guidelines and past notes first.** Review relevant documentation, retrospectives, and prior changes before starting work so your approach aligns with established patterns and known pitfalls.
-- **Plan broad changes carefully.** Script repetitive edits, break large refactors into incremental steps, update related docs, and validate each phase—especially configs and tests—before moving on.
-- **Map renames before moving code.** Scope the blast radius of any file move or rename with a global search (source, tests, scripts, infra) and update all references in the same change; jot a short retrospective so the rationale stays discoverable.
-- **Test and lint early and often.** Run the suite and lint checks throughout your work, address failures immediately, and record the commands and outcomes in your PR notes.
-- **Practice defensive programming.** Anticipate edge cases, validate inputs, prefer safe defaults, and resolve lint findings instead of disabling rules so the system fails gracefully when surprises occur.
-- **Keep project guidelines cohesive.** When you add or revise rules, integrate them with existing sections, update references after structural changes, and maintain the established tone and formatting.
-- **Emphasize learning in retrospectives.** Capture unexpected hurdles, how you diagnosed them, and actionable follow-ups so future agents can apply the lessons without repeating the discovery process.
-- **Communicate clearly and proactively.** Use descriptive commit messages, summarize intent and testing in PRs, link supporting artifacts, and flag any behavioral changes that reviewers should note.
+### Single Loop First
 
-## Project Structure & Module Organization
-- `src/` holds the blog generator, including `generator.js`, HTML helpers, and the `blog.json` content source; keep new modules focused on a single responsibility.
-- `public/` contains generated assets. Do not edit files here directly—run the generator instead.
-- `test/` stores Jest suites mirroring the `src/` layout. Place fixtures alongside the tests that consume them.
-- `infra/` houses Terraform definitions that are applied via GitHub Actions; update workflows rather than running Terraform locally.
-- Support directories such as `reports/` and `docker/` store tooling output and scripts; avoid checking in derived artifacts outside these folders.
+Default to **one-agent / one-task / one-loop** execution.
+Only split into multi-agent choreography after failure evidence shows a single loop is insufficient.
 
-## Build, Test, and Development Commands
-- `npm install` installs dependencies; rerun when scripts complain about missing packages.
-- `npm run generate` builds the blog into `public/index.html`; pair with `npm run copy` when static assets change.
-- `npm run build` (alias for `build:browser`) performs the full copy-and-generate pipeline.
-- `npm test` executes Jest with coverage; expect 100% branch coverage before submitting.
-- `npm run lint` formats and lints using ESLint and Prettier, writing the report to `reports/lint/lint.txt`.
-- `npm run start` serves the generated site for manual review.
-- `./tcr.sh "message"` runs the TCR workflow; use it when practicing test-driven iterations.
+### Repo Memory Rule
 
-## Coding Style & Naming Conventions
-- Follow `CLAUDE.md`: two-space indentation, ES modules, camelCase functions, and UPPER_SNAKE_CASE constants.
-- Keep generator utilities composable, documented with JSDoc, and defensive (null checks, `escapeHtml` for user content).
-- Run Prettier through the configured ESLint integration; never add `eslint-disable` comments.
+If an agent cannot see it in repo docs, tests, scripts, or harnesses, it does not exist operationally.
+Encode important behavior in the repository before claiming completion.
 
-## Refactoring & Complexity
-- Treat ESLint complexity warnings as actionable; optional chaining, ternaries, and nested callbacks all count, so extract helpers until functions sit comfortably below the threshold.
-- Refactor in small steps, running `npm run lint` (and targeted tests) after each extraction to catch new hotspots introduced by helpers.
-- Keep helpers single-purpose with clear branching, and prefer early returns to avoid hidden decision points that push complexity back up.
-- When reducing the complexity of a function, run `node src/build/cyclomatic-factors.js <file>` (or import `describeCyclomaticFactors`) so the agent has a JSON list of unique branching factors to target; use that ordered list to guide refactors instead of re-evaluating the same operators manually.
+## Where to look first
 
-## Testing Guidelines
-- Tests run under Jest + jsdom. Name files `*.test.js` and colocate them with the modules they exercise.
-- Avoid `jest.resetModules`, `jest.unstable_mockModule`, and `import.meta.url`; they break mutation testing.
-- Always run `npm test` and `npm run lint` before pushing. If they fail, document the failure and corrective steps in your PR.
-- If any files under `src/core/` are modified, run `npm test` after your changes to ensure the core logic remains stable.
-- Use exported entry points instead of loading internals via `eval` or dynamic imports; export pure helpers (clearly marked as internal/test-only) when deeper testing is required.
-- Prefer focused unit tests for helper logic over piling edge cases into a single integration test; keep integration coverage for the main flow and let unit tests exercise the branches.
-- Build reusable fixture builders for complex object graphs (e.g., nested Firestore-style document chains) so tests share consistent setups and avoid missing links.
-- When Watchman causes Jest issues, rerun with `--watchman=false` to keep targeted suites running; capture any such flags in your PR notes.
+Start here before broad changes:
 
-## End-to-End Testing (Playwright)
+- `docs/repo-map.md`
+- `docs/loop/manifesto.md`
+- `docs/quality/evaluator-matrix.md`
+- `docs/failure-modes/`
+- `docs/toys/`
 
-**E2E tests are designed to run exclusively in Google Cloud via Cloud Run Jobs, not locally.** Do not attempt to run them on your machine.
+## Non-Negotiable Workflow Constraints
 
-Playwright tests require:
-- `REPORT_BUCKET` environment variable (Google Cloud Storage bucket for test reports)
-- `BASE_URL` pointing to the GCS proxy internal load balancer
-- Google Cloud authentication and VPC access
-- Docker container with pre-installed Playwright browsers
+## 1) Issue tracking (`bd`) is required
 
-Tests are provisioned and executed through the `gcp-test.yml` GitHub workflow, which:
-1. Generates a unique ephemeral test environment (`t-<hash>`)
-2. Builds a Docker image with Playwright and pushes to Google Artifact Registry
-3. Builds and deploys GCS proxy, VPC connectors, and Load Balancer infrastructure via Terraform
-4. Executes tests via `gcloud run jobs execute` with 2 CPU and 2GB memory
-5. Uploads HTML reports and traces to GCS for review
-6. Destroys ephemeral infrastructure after completion
+- This repo tracks work in **bd (beads)**.
+- Run `bd prime` for full workflow context.
+- Use daemon mode first; retry with `--no-daemon` only if daemon/lock issues occur.
+- Core commands:
+  - `bd ready --sort priority`
+  - `bd ready --sort priority --unassigned`
+  - `bd update <id> --claim`
+  - `bd update <id> --status=in_progress`
+  - `bd comments add <id> "...evidence..."`
+  - `bd close <id>`
+  - `bd sync`
+- If quality warnings appear (tests/lint/coverage/etc.) and no bead exists, create one.
 
-**For local development**, use Jest unit tests only (`npm test`). When modifying e2e test files (under `test/e2e/`), commit your changes normally—the workflow will execute them on the next manual trigger via GitHub Actions.
+For full triage/autoloop details: `bd prime` and docs linked above.
 
-## Commit & Pull Request Guidelines
-- Write concise commit messages that summarize the change and its intent.
-- Pull requests must include a "Summary" of code changes and a "Testing" section listing executed commands (e.g., `npm test`, `npm run lint`).
-- Link relevant issues and include screenshots or artifacts when UI behavior changes.
-- Ensure generated outputs or reports are up to date, but avoid committing transient build products outside approved directories.
-- Always stage all modifications in one shot (e.g., `git add -A`) before running `git commit`; avoid selectively staging files so retreats and follow-up agents see the full change set.
-- Add and commit every modified file in each change set; never leave unstaged work or skip files when preparing commits so the repo snapshot remains complete.
+## 2) Test-before-close is required
 
-## Agent Retrospectives
-- After completing your work, add a reflective note in a new file under `notes/agents/`. Create the directory if it does not yet exist.
-- Focus on **unexpected** hurdles or surprises. Describe what threw you off, how you diagnosed the issue, and the options you considered before landing on a fix.
-- Capture what you learned or would do differently next time. Convert that learning into actionable guidance (links to source, scripts, or checklists) so future agents can benefit immediately.
-- Close with any open questions or follow-up ideas that surfaced while solving the problem.
-- Keep the note concise (a few focused paragraphs or bullets) but specific enough that another agent could reuse the insight without rereading the entire codebase.
+- Run `npm test` before closing any bead.
+- Record the exact command + outcome in bead comments as closure evidence.
+- Keep branch coverage expectations at 100%; create/fix beads for gaps.
 
-## Automation & Deployment Notes
-- Terraform changes are applied by `.github/workflows/gcp-prod.yml`; modify the workflow to adjust behavior instead of running Terraform manually.
-- Mutation analysis and quality gates rely on Stryker and Sonar scripts—run `npm run stryker` or `npm run sonar-issues` only when coordinated with maintainers, and capture their reports under `reports/` if shared.
-- If tool output is hard to interpret, use more targeted options (e.g., ESLint JSON output with a lower local complexity threshold) to surface hot spots before broader refactors.
+See:
+- `docs/quality/evaluator-matrix.md`
+- `docs/failure-modes/`
 
-## Landing the Plane (Session Completion)
+## 3) Landing-the-plane is required (session is not done until pushed)
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+When code/docs change, complete this flow:
 
-**MANDATORY WORKFLOW:**
+```bash
+git pull --rebase
+bd sync
+git push
+git status   # must show up to date with origin
+```
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-   - Always run `npm test` before closing any bead so the baseline suite stays green.
-   - Capture that `npm test` run in the bead comment (command, result, and any follow-ups) before you close the bead.
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Record evidence** - Before closing a bead, add a comment that covers what changed, commands run, outcomes, and follow-ups.
-8. **Hand off** - Provide context for next session
+Rules:
 
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
+- Never end with unpushed local commits.
+- Never hand off with “ready to push”; you must push.
+- If push fails, resolve and retry until success.
+
+Use canonical procedures in:
+- `docs/loop/manifesto.md`
+- `docs/failure-modes/`
+
+## Build / Test / Dev command quick list
+
+- `npm install`
+- `npm run build`
+- `npm test`
+- `npm run lint`
+- `npm run start`
+
+Prefer repo docs for command intent and troubleshooting over duplicating long instructions here.
+
+## Coding and review expectations
+
+- Follow project conventions in `CLAUDE.md` (style, naming, defensive coding).
+- Keep changes bounded; extract helpers to manage complexity.
+- Avoid `eslint-disable` comments unless explicitly approved.
+- PRs must include **Summary** and **Testing** sections with executed commands.
+
+## E2E policy (important)
+
+- Playwright E2E is cloud-executed (Cloud Run Jobs), not local-first.
+- For local validation, use Jest/unit workflows unless explicitly instructed otherwise.
+- Commit e2e changes normally; CI workflow executes them in GCP.
+
+See related docs under `docs/` and workflow files under `.github/workflows/`.
+
+## Agent retrospective requirement
+
+After completing meaningful work, add a concise note under `notes/agents/` covering:
+
+- unexpected hurdle,
+- diagnosis path,
+- chosen fix,
+- next-time guidance or open questions.
+
+## Commit hygiene
+
+- Stage all changes together (`git add -A`) before commit.
+- Do not leave modified files unstaged/uncommitted.
+- Use concise commit messages that state intent.
+
+---
+
+If any instruction here conflicts with system/developer/user directives, follow that higher-priority instruction and document the deviation in your evidence.
