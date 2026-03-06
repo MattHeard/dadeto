@@ -43,6 +43,7 @@ Start here before broad changes:
 - `docs/loop/manifesto.md`
 - `docs/loop/wiggum-playbook.md`
 - `docs/loop/agent-invocation.md`
+- `docs/loop/two-agent-model.md`
 - `docs/quality/evaluator-matrix.md`
 - `docs/failure-modes/`
 - `docs/toys/`
@@ -62,6 +63,21 @@ Treat the following user requests as canonical loop entry points:
 
 Do not ask the user to restate hypothesis, acceptance, or stop conditions if the bead and repo docs are sufficient to derive them.
 If they are not sufficient, tighten the bead first by adding the missing loop contract in `bd` before making code changes.
+
+## Two-Agent Mode
+
+When operating with a foreground orchestrator agent and a background runner agent:
+
+- `super-nintendo-chalmers` is the orchestrator.
+  - Talks to the user.
+  - Creates, splits, prioritizes, and clarifies beads.
+  - Reviews runner comments and decides whether to tighten an existing bead, create follow-up beads, or redirect the runner.
+- `ralph` is the runner.
+  - Pulls one ready bead at a time.
+  - Runs one bounded Wiggum loop per bead.
+  - Leaves `bd` comments with loop contract, evidence, blockers, and next recommended action when it cannot finish.
+
+Load `docs/loop/two-agent-model.md` before using this mode.
 
 ## Non-Negotiable Workflow Constraints
 

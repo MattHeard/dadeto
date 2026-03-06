@@ -3,6 +3,8 @@
 Use this document when a user says `Take bead <id>`, `Take any bead`, or `Pop a bead`.
 The purpose is to convert a short user instruction into one bounded Wiggum loop without requiring a pasted prompt.
 
+If the repo is operating in the two-agent pattern, pair this document with `docs/loop/two-agent-model.md`.
+
 ## Canonical Entry Commands
 
 ### 1) `Take bead <id>`
@@ -22,6 +24,8 @@ Interpret this as:
 2. Prefer the highest-priority bead with clear local evidence and a bounded slice.
 3. Claim/update the bead if needed.
 4. Derive one loop contract and execute exactly one bounded loop.
+
+If two-agent mode is active, the runner should also leave a bead comment summarizing the attempt even when it finishes cleanly, so the orchestrator can monitor queue health without reconstructing terminal history.
 
 ### 3) `Take any bead`
 
