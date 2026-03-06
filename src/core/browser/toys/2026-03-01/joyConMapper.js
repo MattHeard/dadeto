@@ -82,16 +82,24 @@ function getLocalPermanentDataGetter(env) {
 }
 
 /**
+ * @param {(() => Record<string, unknown> | null | undefined) | null} getLocalPermanentData Local data getter when available.
+ * @returns {Record<string, unknown>} Local permanent data root.
+ */
+function getLocalPermanentDataRoot(getLocalPermanentData) {
+  if (!getLocalPermanentData) {
+    return {};
+  }
+
+  return getLocalPermanentData() ?? {};
+}
+
+/**
  * @param {{ get: (name: string) => unknown }} env Toy runtime environment.
  * @returns {unknown} Stored Joy-Con mapper state candidate.
  */
 function getStoredValue(env) {
   const getLocalPermanentData = getLocalPermanentDataGetter(env);
-  if (!getLocalPermanentData) {
-    return null;
-  }
-
-  return getLocalPermanentData()?.[TOY_STORAGE_KEY];
+  return getLocalPermanentDataRoot(getLocalPermanentData)[TOY_STORAGE_KEY];
 }
 
 /**
@@ -235,19 +243,23 @@ function getResolvedActionState(storedState, parsed) {
 /**
  * @param {Record<string, unknown> | null} parsed Parsed Joy-Con mapper action.
  * @param {{ mappings: Record<string, unknown>, skippedControls: string[] }} storedState Current persisted state.
+ * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] } | null} Resolved state candidate.
+ */
+function getNextState(parsed, storedState) {
+  if (!isParsedAction(parsed)) {
+    return null;
+  }
+
+  return getResolvedActionState(storedState, parsed);
+}
+
+/**
+ * @param {Record<string, unknown> | null} parsed Parsed Joy-Con mapper action.
+ * @param {{ mappings: Record<string, unknown>, skippedControls: string[] }} storedState Current persisted state.
  * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] }} Next persisted state.
  */
 function handleAction(parsed, storedState) {
-  if (!isParsedAction(parsed)) {
-    return storedState;
-  }
-
-  const nextState = getResolvedActionState(storedState, parsed);
-  if (!nextState) {
-    return storedState;
-  }
-
-  return nextState;
+  return getNextState(parsed, storedState) ?? storedState;
 }
 
 /**
