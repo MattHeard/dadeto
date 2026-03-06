@@ -17,6 +17,7 @@ const AUTO_SUBMIT_CHECKBOX_SELECTOR = '.auto-submit-checkbox';
 const AXIS_THRESHOLD = 0.55;
 const AXIS_DELTA_THRESHOLD = 0.18;
 const BUTTON_THRESHOLD = 0.65;
+const EMPTY_MAPPER_STATE = { mappings: {}, skippedControls: [] };
 
 const CONTROLS = /** @type {MapperControl[]} */ ([
   { key: 'l', label: 'L', type: 'button' },
@@ -57,7 +58,12 @@ const CONTROLS = /** @type {MapperControl[]} */ ([
  *   Closest article entry, if present.
  */
 function getClosestArticle(container) {
-  return container.closest?.('article.entry') ?? null;
+  const closest = container.closest;
+  if (typeof closest !== 'function') {
+    return null;
+  }
+
+  return closest.call(container, 'article.entry');
 }
 
 /**
@@ -120,7 +126,12 @@ function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
  *   First connected gamepad exposed by the browser, if any.
  */
 function currentPad() {
-  return Array.from(navigator.getGamepads?.() ?? []).find(Boolean) ?? null;
+  const getGamepads = navigator.getGamepads;
+  if (typeof getGamepads !== 'function') {
+    return null;
+  }
+
+  return Array.from(getGamepads.call(navigator)).find(Boolean) ?? null;
 }
 
 /**
@@ -166,13 +177,43 @@ function snapshotGamepad(gamepad) {
 function createElement(dom, tag, options = {}) {
   const { className = '', text } = options;
   const element = dom.createElement(tag);
-  if (className) {
-    dom.setClassName(element, className);
-  }
-  if (typeof text === 'string') {
-    dom.setTextContent(element, text);
-  }
+  applyElementClassName(dom, element, className);
+  applyElementText(dom, element, text);
   return element;
+}
+
+/**
+ * @param {DOMHelpers} dom
+ *   DOM helper facade for element construction.
+ * @param {HTMLElement} element
+ *   Element being configured.
+ * @param {string} className
+ *   Optional class name to assign.
+ * @returns {void}
+ */
+function applyElementClassName(dom, element, className) {
+  if (!className) {
+    return;
+  }
+
+  dom.setClassName(element, className);
+}
+
+/**
+ * @param {DOMHelpers} dom
+ *   DOM helper facade for element construction.
+ * @param {HTMLElement} element
+ *   Element being configured.
+ * @param {string | undefined} text
+ *   Optional text content to assign.
+ * @returns {void}
+ */
+function applyElementText(dom, element, text) {
+  if (typeof text !== 'string') {
+    return;
+  }
+
+  dom.setTextContent(element, text);
 }
 
 /**
@@ -190,7 +231,21 @@ function describeCapture(mapping) {
     return `button ${mapping.index}`;
   }
 
-  return `axis ${mapping.axis} ${mapping.direction === 'negative' ? '-' : '+'}`;
+  return describeAxisCapture(mapping);
+}
+
+/**
+ * @param {{ axis: number, direction: 'negative' | 'positive' }} mapping
+ *   Axis capture metadata for one mapper control.
+ * @returns {string}
+ *   Human-readable axis mapping label.
+ */
+function describeAxisCapture(mapping) {
+  if (mapping.direction === 'negative') {
+    return `axis ${mapping.axis} -`;
+  }
+
+  return `axis ${mapping.axis} +`;
 }
 
 /**
@@ -204,20 +259,43 @@ function readStoredMapperState() {
     );
     const stored = root?.[MAPPER_STORAGE_KEY];
     if (!stored || typeof stored !== 'object') {
-      return { mappings: {}, skippedControls: [] };
+      return EMPTY_MAPPER_STATE;
     }
     return {
-      mappings:
-        stored.mappings && typeof stored.mappings === 'object'
-          ? stored.mappings
-          : {},
-      skippedControls: Array.isArray(stored.skippedControls)
-        ? stored.skippedControls
-        : [],
+      mappings: normalizeStoredMappings(stored.mappings),
+      skippedControls: normalizeSkippedControls(stored.skippedControls),
     };
   } catch {
-    return { mappings: {}, skippedControls: [] };
+    return EMPTY_MAPPER_STATE;
   }
+}
+
+/**
+ * @param {unknown} mappings
+ *   Candidate stored mappings payload.
+ * @returns {Record<string, unknown>}
+ *   Normalized stored mappings object.
+ */
+function normalizeStoredMappings(mappings) {
+  if (!mappings || typeof mappings !== 'object') {
+    return {};
+  }
+
+  return /** @type {Record<string, unknown>} */ (mappings);
+}
+
+/**
+ * @param {unknown} skippedControls
+ *   Candidate stored skipped-controls payload.
+ * @returns {string[]}
+ *   Normalized skipped-controls list.
+ */
+function normalizeSkippedControls(skippedControls) {
+  if (!Array.isArray(skippedControls)) {
+    return [];
+  }
+
+  return skippedControls;
 }
 
 /**
@@ -343,16 +421,23 @@ function detectAxisCapture(previous, current, expectedDirection) {
  *   Serialized action payload for the toy runtime.
  */
 function buildPayload(action, state, extra = {}) {
-  const payload = {
-    action,
-    ...extra,
-  };
-
-  if (state.currentControl?.key) {
-    payload.currentControlKey = state.currentControl.key;
+  const payload = { action, ...extra };
+  const currentControlKey = getCurrentControlKey(state);
+  if (currentControlKey) {
+    payload.currentControlKey = currentControlKey;
   }
 
   return payload;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {string | null}
+ *   Active control key, if present.
+ */
+function getCurrentControlKey(state) {
+  return state.currentControl?.key ?? null;
 }
 
 /**
@@ -476,18 +561,21 @@ function renderPrompt(state) {
   }
 
   state.dom.setTextContent(state.prompt, `Press ${control.label}`);
+  state.dom.setTextContent(state.subprompt, getActivePromptText(control));
+}
+
+/**
+ * @param {MapperControl} control
+ *   Active mapper control.
+ * @returns {string}
+ *   Prompt text for the current control type.
+ */
+function getActivePromptText(control) {
   if (control.type === 'button') {
-    state.dom.setTextContent(
-      state.subprompt,
-      'The next newly pressed gamepad button will be saved for this control, or click Skip Current.'
-    );
-    return;
+    return 'The next newly pressed gamepad button will be saved for this control, or click Skip Current.';
   }
 
-  state.dom.setTextContent(
-    state.subprompt,
-    'Move the stick in the highlighted direction until the mapper captures it, or click Skip Current.'
-  );
+  return 'Move the stick in the highlighted direction until the mapper captures it, or click Skip Current.';
 }
 
 /**
@@ -498,15 +586,51 @@ function renderPrompt(state) {
 function renderMeta(state) {
   const gamepad = currentPad();
   state.dot.classList.toggle('connected', Boolean(gamepad));
-  state.dom.setTextContent(
-    state.statusText,
-    gamepad ? 'Gamepad detected' : 'Waiting for gamepad'
-  );
-  state.dom.setTextContent(
-    state.metaIndex,
-    `Index: ${gamepad ? String(gamepad.index) : '-'}`
-  );
-  state.dom.setTextContent(state.metaId, `ID: ${gamepad ? gamepad.id : '-'}`);
+  state.dom.setTextContent(state.statusText, getGamepadStatusText(gamepad));
+  state.dom.setTextContent(state.metaIndex, getGamepadIndexText(gamepad));
+  state.dom.setTextContent(state.metaId, getGamepadIdText(gamepad));
+}
+
+/**
+ * @param {Gamepad | null} gamepad
+ *   Connected gamepad, if present.
+ * @returns {string}
+ *   UI status text for gamepad presence.
+ */
+function getGamepadStatusText(gamepad) {
+  if (gamepad) {
+    return 'Gamepad detected';
+  }
+
+  return 'Waiting for gamepad';
+}
+
+/**
+ * @param {Gamepad | null} gamepad
+ *   Connected gamepad, if present.
+ * @returns {string}
+ *   UI metadata line for gamepad index.
+ */
+function getGamepadIndexText(gamepad) {
+  if (!gamepad) {
+    return 'Index: -';
+  }
+
+  return `Index: ${String(gamepad.index)}`;
+}
+
+/**
+ * @param {Gamepad | null} gamepad
+ *   Connected gamepad, if present.
+ * @returns {string}
+ *   UI metadata line for gamepad id.
+ */
+function getGamepadIdText(gamepad) {
+  if (!gamepad) {
+    return 'ID: -';
+  }
+
+  return `ID: ${gamepad.id}`;
 }
 
 /**
@@ -517,10 +641,23 @@ function renderMeta(state) {
 function refreshStoredState(state) {
   state.stored = readStoredMapperState();
   if (!state.started) {
-    const pending = firstPendingIndex(state);
-    state.currentIndex = pending === -1 ? CONTROLS.length : pending;
+    state.currentIndex = normalizePendingIndex(firstPendingIndex(state));
   }
   state.currentControl = CONTROLS[state.currentIndex] ?? null;
+}
+
+/**
+ * @param {number} pendingIndex
+ *   Candidate pending control index.
+ * @returns {number}
+ *   Normalized pending index or completion marker.
+ */
+function normalizePendingIndex(pendingIndex) {
+  if (pendingIndex === -1) {
+    return CONTROLS.length;
+  }
+
+  return pendingIndex;
 }
 
 /**
@@ -549,7 +686,7 @@ function advanceToNextControl(state) {
     );
   });
 
-  state.currentIndex = nextIndex === -1 ? CONTROLS.length : nextIndex;
+  state.currentIndex = normalizePendingIndex(nextIndex);
   state.currentControl = CONTROLS[state.currentIndex] ?? null;
 }
 
