@@ -63,6 +63,7 @@ Treat the following user requests as canonical loop entry points:
 
 Do not ask the user to restate hypothesis, acceptance, or stop conditions if the bead and repo docs are sufficient to derive them.
 If they are not sufficient, tighten the bead first by adding the missing loop contract in `bd` before making code changes.
+In two-agent mode, SNC should also add a `Runner suitability` comment before sending a bead to Ralph unless the bead is trivially bounded.
 
 ## Two-Agent Mode
 

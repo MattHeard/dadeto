@@ -67,6 +67,39 @@ Interpret this as:
 1. The orchestrator prefers the highest-priority ready bead with clear local evidence.
 2. The runner executes one bounded loop on that bead.
 
+## Runner-Safe Bead Convention
+
+A bead is **runner-safe** when `super-nintendo-chalmers` has already reduced it to one bounded loop that `ralph` can execute without inventing queue policy.
+
+Mark a bead as runner-safe by adding a bead comment in this shape:
+
+```text
+Runner suitability
+- status: runner-safe
+- scope: one bounded loop
+- primary evaluator: <command>
+- stop condition: <when ralph must stop and hand back>
+- notes: <optional risk or file boundary>
+```
+
+Minimum criteria for `runner-safe`:
+
+1. The bead has a clear minimal slice.
+2. The first evaluator is known and locally runnable, unless the bead explicitly names a CI/cloud artifact path.
+3. The stop condition is explicit.
+4. The bead does not require queue reshaping, product prioritization, or major architectural choice before starting.
+
+Use these non-runner-safe statuses when needed:
+
+- `needs-triage`
+  - The bead still needs SNC to clarify scope, evaluator, or intent.
+- `orchestrator-only`
+  - The bead is mostly queue shaping, planning, splitting, or policy definition.
+- `blocked`
+  - The bead depends on another task, environment fix, or external decision.
+
+If no runner-suitability comment exists, `ralph` should assume the bead is **not** runner-safe and hand it back to SNC unless the task is trivially bounded from existing evidence.
+
 ## Runner Loop Contract
 
 For every bead `ralph` touches, it must leave enough Beads state that `super-nintendo-chalmers` can understand what happened without terminal access.
@@ -92,6 +125,8 @@ At minimum, add/update bead comments with:
    - next smallest action
    - whether to tighten, split, requeue, or deprioritize the bead
 
+If the bead was marked `runner-safe`, mention whether that classification still appears correct after the attempt.
+
 ## Required Runner Handoff Comment
 
 When `ralph` cannot finish a bead, leave a direct handoff comment in this shape:
@@ -107,6 +142,13 @@ Runner handoff for super-nintendo-chalmers
 ```
 
 Use the failure taxonomy from `docs/loop/wiggum-playbook.md`.
+
+`ralph` should use the handoff path instead of continuing when:
+
+- the bead is missing a runner-suitability comment and is not trivially bounded
+- the requested work expands into multiple plausible next beads
+- the evaluator path is unclear or unavailable
+- success requires an architectural or prioritization decision from SNC
 
 ## Orchestrator Review Cycle
 

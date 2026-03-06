@@ -82,3 +82,14 @@ Ask only if one of these is true:
 - The bead is too vague to derive even an initial hypothesis and minimal slice.
 
 Otherwise, proceed with the derived loop contract.
+
+## Two-Agent Shortcut
+
+When SNC is preparing work for Ralph, prefer this sequence:
+
+1. tighten the bead into one bounded loop
+2. add a `Runner suitability` comment
+3. send Ralph to that bead
+
+When Ralph receives a bead, check for that comment first.
+If it is missing and the bead is not obviously trivial, hand it back instead of improvising queue policy.
