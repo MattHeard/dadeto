@@ -23,6 +23,7 @@
     "build": "npm run build:mattheard-net",
     "duplication": "jscpd",
     "start": "npx serve public",
+    "start:symphony": "node src/local/symphony/server.js",
     "start:writer": "node src/local/server.js",
     "start:writer:watch": "node --watch src/local/server.js"
   },

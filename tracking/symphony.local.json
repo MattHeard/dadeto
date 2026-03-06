@@ -1,0 +1,11 @@
+{
+  "tracker": {
+    "kind": "bd",
+    "readyCommand": "bd ready --sort priority"
+  },
+  "workspaceRoot": ".worktrees/symphony",
+  "logDir": "tracking/symphony",
+  "pollIntervalMs": 30000,
+  "maxConcurrentRuns": 1,
+  "defaultBranch": "main"
+}
