@@ -1,138 +1,106 @@
-# Dadeto - Blog Generator
+# Dadeto
 
-A simple, elegant static blog generator that transforms JSON content into a styled HTML blog.
+Dadeto is a multi-environment JavaScript monorepo that powers three related interfaces:
 
-## Overview
+1. **mattheard.net blog** – a static site generated from `src/blog.json`.
+2. **Dendrite** – a cloud-backed story/variant workflow with browser admin tooling and Google Cloud Functions.
+3. **Local writing tool** – a local-first `/writer/` app served by Express for drafting workflow documents.
 
-Dadeto is a lightweight, JavaScript-based static site generator designed to create a personal blog from structured JSON data. It converts blog posts defined in a JSON file into a fully formatted HTML page with support for various media types including text, images, audio, and YouTube embeds.
+The repo is intentionally split so most business logic lives in shared **core** modules, while environment-specific folders provide adapters, entry points, and deployment packaging.
 
-## Features
+## What this repository actually does
 
-- **Static Site Generation**: Generates a complete HTML blog from JSON data
-- **Media Support**: Handles text, images, audio files, and YouTube embeds
-- **Related Links**: Supports linking to related content
-- **Responsive Design**: Creates a clean, readable blog layout
-- **Formatting**: Uses Prettier for consistent HTML formatting
-- **Text Formatting**: Supports basic text formatting like bold text
+- Generates and publishes the static Matt Heard blog (`npm run build:mattheard-net`).
+- Packages browser + core assets for Dendrite static hosting (`npm run build:dendritestories-co-nz`).
+- Packages Cloud Function source + shared runtime modules for Dendrite backend deployment (`npm run build:cloud`).
+- Runs a local writer server that persists markdown workflow state on disk (`npm run start:writer`).
 
-## Getting Started
+## Architecture boundary (core vs environments)
 
-### Prerequisites
+### Core (shared domain logic)
 
-- Node.js (latest LTS version recommended)
-- npm
+`src/core/` contains logic meant to be reused across execution environments:
 
-### Installation
+- `src/core/build/` – build pipeline orchestration and reusable build utilities.
+- `src/core/browser/` – browser-safe logic that does not own page bootstrapping.
+- `src/core/cloud/` – cloud/domain logic used by function wrappers.
+- `src/core/local/` – local workflow state rules used by the writer tool.
 
-Install project dependencies before running commands:
+**Boundary rule:** `src/core/**` should express behavior; environment layers should inject side effects (filesystem, network, Firebase/Firestore SDK, DOM globals, process env, etc.).
 
-```bash
-npm install
-```
+### Environment layers
 
-### Usage
+- **Browser environment (`src/browser/`)**
+  - Owns browser entry points, DOM wiring, event listeners, and UI composition.
+  - Consumes core helpers and browser input/presenter modules.
 
-1. Edit the blog content in `src/blog.json`
-2. Generate the HTML:
-   ```
-   npm run generate
-   ```
-3. The generated blog will be available at `public/index.html`
+- **Build environment (`src/build/`)**
+  - Owns CLI scripts for generating static output and copying deployable assets.
+  - Uses `src/core/build/**` for reusable workflow logic.
 
-## Development
+- **Cloud environment (`src/cloud/`)**
+  - Owns Google Cloud Function wrappers, per-function entry points, and runtime adapters.
+  - Delegates request/response/domain behavior to `src/core/cloud/**`.
 
-### Project Structure
+- **Local environment (`src/local/`)**
+  - Owns Express server endpoints and local filesystem persistence adapters.
+  - Delegates workflow rules to `src/core/local/workflow.js`.
 
-- `src/` - Source code
-  - `blog.json` - Blog content in JSON format
-  - `generator.js` - Main generator logic
-  - `html.js` - HTML utility functions
-  - `textFormatter.js` - Text formatting utilities
-  - Other component files
-- `public/` - Generated output and static assets copied from `src/browser/assets`
-- `test/` - Test files
+## Interface map
 
-### Commands
+### 1) mattheard.net blog
 
-- `npm test` - Run all tests
-- `npm run test-watch` - Run tests in watch mode
-- `npm test -- -t "test pattern"` - Run specific test matching pattern
-- `npm run generate` - Generate the blog HTML
-- `./tcr.sh [commit message]` - Test && Commit || Revert (TCR workflow)
+- Content source: `src/blog.json`
+- Static site generation: `src/build/generate.js`
+- Public output target: `public/`
+- Primary build command: `npm run build:mattheard-net`
 
-### Code Style
+This interface is a generated static site with optional interactive browser components.
 
-- **ES Modules**: Uses import/export syntax
-- **Naming**: Constants in UPPERCASE, functions in camelCase
-- **Function Docs**: JSDoc comments for functions
-- **HTML Generation**: Composable helper functions
-- **Error Handling**: Defensive coding (null checks)
-- **Quotation**: Double quotes for HTML attributes and strings
-- **Constants**: Reusable constants for HTML elements/attributes
-- **Security**: Uses escapeHtml for user-provided content
-- **Formatting**: Consistent indentation (2 spaces)
-- **File Structure**: Modular components in separate files
+### 2) Dendrite
 
-## Terraform Workflows
+Dendrite spans multiple layers:
 
-Infrastructure is managed with Terraform via GitHub Actions. The **gcp-prod**
-workflow applies changes automatically when commits modify the `infra/` directory.
-After confirming that newly provisioned resources function as expected, run the
-manual **Cleanup Terraform Services** workflow to disable any deprecated services.
+- Browser/admin assets: `src/browser/`
+- Cloud function wrappers: `src/cloud/*`
+- Shared cloud logic: `src/core/cloud/*`
+- Infra packaging target: `infra/`
+- Build commands:
+  - `npm run build:dendritestories-co-nz` (copies browser/core assets for infra)
+  - `npm run build:cloud` (copies cloud functions + shared modules for deployment)
 
-## Refactoring Principles
+### 3) Local writing tool
 
-- **Don't Repeat Yourself:** Eliminate duplication in content and structure.
-- **Do One Thing and Do It Well:** Each function or expression should have a single responsibility.
-- **Consistent Abstraction Layers:** Each module, function, or expression should represent only one layer of abstraction.
-- **Avoid Mutable State:** Favor immutability by not altering state once it's defined.
-- **One Expression per Statement:** Each statement should perform a single expression.
-- **Extract til you drop:** Continually extract reusable components and abstractions until no further improvement is possible.
+- Server entry point: `src/local/server.js`
+- Persistence adapter: `src/local/documentStore.js`
+- Shared workflow logic: `src/core/local/workflow.js`
+- Local data path (default): `local-data/writer-workflow/`
+- Start command: `npm run start:writer`
 
-## Blog Post Format
+The local writer exposes REST endpoints under `/api/writer/*` and serves a browser app at `/writer/`.
 
-Blog posts are defined in the `src/blog.json` file with the following structure:
+## Repository structure
 
-```json
-{
-  "posts": [
-    {
-      "key": "UNIQUE_KEY",
-      "title": "Post Title",
-      "publicationDate": "YYYY-MM-DD",
-      "content": ["Paragraph 1", "Paragraph 2", "..."],
-      "illustration": {
-        "fileType": "png|webp",
-        "altText": "Description of the image"
-      },
-      "audio": {
-        "fileType": "m4a"
-      },
-      "youtube": {
-        "id": "YOUTUBE_VIDEO_ID",
-        "title": "Video Title",
-        "timestamp": 0
-      },
-      "relatedLinks": [
-        {
-          "url": "https://example.com",
-          "title": "Link Title",
-          "author": "Author Name",
-          "type": "article|book|microblog"
-        }
-      ]
-    }
-  ]
-}
-```
+- `src/` – source code for all environments + shared core.
+- `public/` – generated/static output artifacts.
+- `infra/` – Terraform and deployment packaging targets.
+- `test/` – Jest and e2e test suites.
+- `reports/` – generated quality reports.
 
-## Beta Feature Flag
+## Common commands
 
-Posts can be marked as beta by adding `"release": "beta"` in `blog.json`.
-Beta posts are hidden by default with the `release-beta` class. When the
-current page URL includes a `beta` query parameter (e.g. `?beta`), the
-`revealBetaArticles` function makes these posts visible using the
-`hasBetaParam` helper from the DOM utilities.
+- `npm install` – install dependencies.
+- `npm test` – run Jest with coverage.
+- `npm run lint` – run ESLint/Prettier checks.
+- `npm run build:mattheard-net` – build mattheard.net static output.
+- `npm run build:dendritestories-co-nz` – package Dendrite static assets.
+- `npm run build:cloud` – package Dendrite cloud functions.
+- `npm run start:writer` – run local writing server.
+
+## Deployment notes
+
+- Dendrite infrastructure is managed via Terraform under `infra/` and GitHub Actions workflows.
+- E2E Playwright coverage is intended for cloud execution (Cloud Run Jobs), not local execution.
 
 ## License
 
