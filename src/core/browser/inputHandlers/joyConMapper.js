@@ -5,6 +5,10 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ pressed: boolean, value: number }} ButtonSnapshot */
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
 /** @typedef {{ key: string, label: string, type: 'button' | 'axis', direction?: 'negative' | 'positive' }} MapperControl */
+/** @typedef {{ mappings: Record<string, unknown>, skippedControls: string[] }} StoredMapperState */
+/** @typedef {{ type: 'button', index: number, value: number } | { type: 'axis', axis: number, direction: 'negative' | 'positive', magnitude: number }} CaptureResult */
+/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
+/** @typedef {{ className?: string, text?: string }} ElementOptions */
 
 const MAPPER_STORAGE_KEY = 'JOYMAP1';
 const PERMANENT_DATA_KEY = 'permanentData';
@@ -24,16 +28,40 @@ const CONTROLS = /** @type {MapperControl[]} */ ([
   { key: 'dpad_down', label: 'D-Pad Down', type: 'button' },
   { key: 'dpad_left', label: 'D-Pad Left', type: 'button' },
   { key: 'dpad_right', label: 'D-Pad Right', type: 'button' },
-  { key: 'stick_left', label: 'Stick Left', type: 'axis', direction: 'negative' },
-  { key: 'stick_right', label: 'Stick Right', type: 'axis', direction: 'positive' },
+  {
+    key: 'stick_left',
+    label: 'Stick Left',
+    type: 'axis',
+    direction: 'negative',
+  },
+  {
+    key: 'stick_right',
+    label: 'Stick Right',
+    type: 'axis',
+    direction: 'positive',
+  },
   { key: 'stick_up', label: 'Stick Up', type: 'axis', direction: 'negative' },
-  { key: 'stick_down', label: 'Stick Down', type: 'axis', direction: 'positive' },
+  {
+    key: 'stick_down',
+    label: 'Stick Down',
+    type: 'axis',
+    direction: 'positive',
+  },
 ]);
 
+/**
+ * @param {Element} container
+ * @returns {Element | null}
+ */
 function getClosestArticle(container) {
   return container.closest?.('article.entry') ?? null;
 }
 
+/**
+ * @param {Element} container
+ * @param {DOMHelpers} dom
+ * @returns {HTMLInputElement | null}
+ */
 function getAutoSubmitCheckbox(container, dom) {
   const article = getClosestArticle(container);
   if (!article) {
@@ -45,10 +73,18 @@ function getAutoSubmitCheckbox(container, dom) {
   );
 }
 
+/**
+ * @param {HTMLInputElement} checkbox
+ * @returns {void}
+ */
 function dispatchChangeEvent(checkbox) {
   checkbox.dispatchEvent(new Event('change'));
 }
 
+/**
+ * @param {HTMLInputElement | null} autoSubmitCheckbox
+ * @returns {void}
+ */
 function enableAutoSubmit(autoSubmitCheckbox) {
   if (!autoSubmitCheckbox) {
     return;
@@ -58,6 +94,10 @@ function enableAutoSubmit(autoSubmitCheckbox) {
   dispatchChangeEvent(autoSubmitCheckbox);
 }
 
+/**
+ * @param {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, payload: Record<string, unknown> }} input
+ * @returns {void}
+ */
 function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
   const serialised = JSON.stringify(payload);
   dom.setValue(textInput, serialised);
@@ -65,10 +105,17 @@ function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
   enableAutoSubmit(autoSubmitCheckbox);
 }
 
+/**
+ * @returns {Gamepad | null}
+ */
 function currentPad() {
   return Array.from(navigator.getGamepads?.() ?? []).find(Boolean) ?? null;
 }
 
+/**
+ * @param {GamepadButton} button
+ * @returns {ButtonSnapshot}
+ */
 function snapshotButton(button) {
   return {
     pressed: button.pressed,
@@ -76,6 +123,10 @@ function snapshotButton(button) {
   };
 }
 
+/**
+ * @param {Gamepad | null | undefined} gamepad
+ * @returns {GamepadSnapshot | null}
+ */
 function snapshotGamepad(gamepad) {
   if (!gamepad) {
     return null;
@@ -87,7 +138,14 @@ function snapshotGamepad(gamepad) {
   };
 }
 
-function createElement(dom, tag, className, text) {
+/**
+ * @param {DOMHelpers} dom
+ * @param {string} tag
+ * @param {ElementOptions} [options]
+ * @returns {HTMLElement}
+ */
+function createElement(dom, tag, options = {}) {
+  const { className = '', text } = options;
   const element = dom.createElement(tag);
   if (className) {
     dom.setClassName(element, className);
@@ -98,6 +156,10 @@ function createElement(dom, tag, className, text) {
   return element;
 }
 
+/**
+ * @param {CaptureResult | null | undefined} mapping
+ * @returns {string}
+ */
 function describeCapture(mapping) {
   if (!mapping) {
     return 'optional';
@@ -110,29 +172,50 @@ function describeCapture(mapping) {
   return `axis ${mapping.axis} ${mapping.direction === 'negative' ? '-' : '+'}`;
 }
 
+/**
+ * @returns {StoredMapperState}
+ */
 function readStoredMapperState() {
   try {
-    const root = JSON.parse(globalThis.localStorage?.getItem(PERMANENT_DATA_KEY) ?? '{}');
+    const root = JSON.parse(
+      globalThis.localStorage?.getItem(PERMANENT_DATA_KEY) ?? '{}'
+    );
     const stored = root?.[MAPPER_STORAGE_KEY];
     if (!stored || typeof stored !== 'object') {
       return { mappings: {}, skippedControls: [] };
     }
     return {
-      mappings: stored.mappings && typeof stored.mappings === 'object' ? stored.mappings : {},
-      skippedControls: Array.isArray(stored.skippedControls) ? stored.skippedControls : [],
+      mappings:
+        stored.mappings && typeof stored.mappings === 'object'
+          ? stored.mappings
+          : {},
+      skippedControls: Array.isArray(stored.skippedControls)
+        ? stored.skippedControls
+        : [],
     };
   } catch {
     return { mappings: {}, skippedControls: [] };
   }
 }
 
+/**
+ * @param {MapperState} state
+ * @returns {number}
+ */
 function firstPendingIndex(state) {
   return CONTROLS.findIndex(control => {
-    return !state.stored.mappings[control.key] &&
-      !state.stored.skippedControls.includes(control.key);
+    return (
+      !state.stored.mappings[control.key] &&
+      !state.stored.skippedControls.includes(control.key)
+    );
   });
 }
 
+/**
+ * @param {GamepadSnapshot | null} previous
+ * @param {GamepadSnapshot | null} current
+ * @returns {CaptureResult | null}
+ */
 function detectButtonCapture(previous, current) {
   if (!previous || !current) {
     return null;
@@ -142,7 +225,8 @@ function detectButtonCapture(previous, current) {
   current.buttons.forEach((button, index) => {
     const oldButton = previous.buttons[index] ?? { pressed: false, value: 0 };
     const becamePressed = button.pressed && !oldButton.pressed;
-    const crossedThreshold = button.value >= BUTTON_THRESHOLD && oldButton.value < BUTTON_THRESHOLD;
+    const crossedThreshold =
+      button.value >= BUTTON_THRESHOLD && oldButton.value < BUTTON_THRESHOLD;
     if (!becamePressed && !crossedThreshold) {
       return;
     }
@@ -155,6 +239,38 @@ function detectButtonCapture(previous, current) {
   return best;
 }
 
+/**
+ * @param {number} value
+ * @param {'negative' | 'positive'} expectedDirection
+ * @returns {boolean}
+ */
+function axisMatchesDirection(value, expectedDirection) {
+  if (expectedDirection === 'positive') {
+    return value >= AXIS_THRESHOLD;
+  }
+
+  return value <= -AXIS_THRESHOLD;
+}
+
+/**
+ * @param {number} delta
+ * @param {'negative' | 'positive'} expectedDirection
+ * @returns {number}
+ */
+function directionalDelta(delta, expectedDirection) {
+  if (expectedDirection === 'positive') {
+    return delta;
+  }
+
+  return -delta;
+}
+
+/**
+ * @param {GamepadSnapshot | null} previous
+ * @param {GamepadSnapshot | null} current
+ * @param {'negative' | 'positive'} expectedDirection
+ * @returns {CaptureResult | null}
+ */
 function detectAxisCapture(previous, current, expectedDirection) {
   if (!previous || !current) {
     return null;
@@ -164,11 +280,9 @@ function detectAxisCapture(previous, current, expectedDirection) {
   current.axes.forEach((value, axis) => {
     const oldValue = previous.axes[axis] ?? 0;
     const delta = value - oldValue;
-    const directionMatches = expectedDirection === 'positive'
-      ? value >= AXIS_THRESHOLD
-      : value <= -AXIS_THRESHOLD;
-    const directionalDelta = expectedDirection === 'positive' ? delta : -delta;
-    if (!directionMatches || directionalDelta <= AXIS_DELTA_THRESHOLD) {
+    const directionMatches = axisMatchesDirection(value, expectedDirection);
+    const nextDirectionalDelta = directionalDelta(delta, expectedDirection);
+    if (!directionMatches || nextDirectionalDelta <= AXIS_DELTA_THRESHOLD) {
       return;
     }
 
@@ -181,6 +295,12 @@ function detectAxisCapture(previous, current, expectedDirection) {
   return best;
 }
 
+/**
+ * @param {string} action
+ * @param {MapperState} state
+ * @param {Record<string, unknown>} [extra]
+ * @returns {Record<string, unknown>}
+ */
 function buildPayload(action, state, extra = {}) {
   const payload = {
     action,
@@ -194,17 +314,48 @@ function buildPayload(action, state, extra = {}) {
   return payload;
 }
 
+/**
+ * @param {MapperControl} control
+ * @param {MapperState} state
+ * @param {number} index
+ * @returns {string}
+ */
+function getRowValueText(control, state, index) {
+  const isDone = Boolean(state.stored.mappings[control.key]);
+  if (isDone) {
+    return describeCapture(
+      /** @type {CaptureResult} */ (state.stored.mappings[control.key])
+    );
+  }
+
+  const isSkipped = state.stored.skippedControls.includes(control.key);
+  if (isSkipped) {
+    return 'skipped';
+  }
+
+  const isActive = state.started && state.currentIndex === index;
+  if (isActive) {
+    return 'listening...';
+  }
+
+  return 'optional';
+}
+
+/**
+ * @param {MapperState} state
+ * @returns {void}
+ */
 function renderMapperList(state) {
   domRemoveAllChildren(state.dom, state.list);
 
   CONTROLS.forEach((control, index) => {
-    const row = createElement(state.dom, 'div', 'joycon-mapper-row');
+    const row = createElement(state.dom, 'div', {
+      className: 'joycon-mapper-row',
+    });
     const isDone = Boolean(state.stored.mappings[control.key]);
     const isSkipped = state.stored.skippedControls.includes(control.key);
-    const isActive = state.started &&
-      state.currentIndex === index &&
-      !isDone &&
-      !isSkipped;
+    const isActive =
+      state.started && state.currentIndex === index && !isDone && !isSkipped;
 
     if (isDone) {
       row.classList.add('done');
@@ -216,29 +367,33 @@ function renderMapperList(state) {
       row.classList.add('active');
     }
 
-    const name = createElement(state.dom, 'div', 'joycon-mapper-name', control.label);
-    const value = createElement(
-      state.dom,
-      'div',
-      'joycon-mapper-value',
-      isDone
-        ? describeCapture(state.stored.mappings[control.key])
-        : isSkipped
-          ? 'skipped'
-          : isActive
-            ? 'listening...'
-            : 'optional'
-    );
+    const name = createElement(state.dom, 'div', {
+      className: 'joycon-mapper-name',
+      text: control.label,
+    });
+    const value = createElement(state.dom, 'div', {
+      className: 'joycon-mapper-value',
+      text: getRowValueText(control, state, index),
+    });
     state.dom.appendChild(row, name);
     state.dom.appendChild(row, value);
     state.dom.appendChild(state.list, row);
   });
 }
 
+/**
+ * @param {DOMHelpers} dom
+ * @param {Element} node
+ * @returns {void}
+ */
 function domRemoveAllChildren(dom, node) {
   dom.removeAllChildren(node);
 }
 
+/**
+ * @param {MapperState} state
+ * @returns {void}
+ */
 function renderPrompt(state) {
   const control = state.currentControl;
   const complete = state.currentIndex >= CONTROLS.length;
@@ -272,22 +427,42 @@ function renderPrompt(state) {
   }
 
   state.dom.setTextContent(state.prompt, `Press ${control.label}`);
+  if (control.type === 'button') {
+    state.dom.setTextContent(
+      state.subprompt,
+      'The next newly pressed gamepad button will be saved for this control, or click Skip Current.'
+    );
+    return;
+  }
+
   state.dom.setTextContent(
     state.subprompt,
-    control.type === 'button'
-      ? 'The next newly pressed gamepad button will be saved for this control, or click Skip Current.'
-      : 'Move the stick in the highlighted direction until the mapper captures it, or click Skip Current.'
+    'Move the stick in the highlighted direction until the mapper captures it, or click Skip Current.'
   );
 }
 
+/**
+ * @param {MapperState} state
+ * @returns {void}
+ */
 function renderMeta(state) {
   const gamepad = currentPad();
   state.dot.classList.toggle('connected', Boolean(gamepad));
-  state.dom.setTextContent(state.statusText, gamepad ? 'Gamepad detected' : 'Waiting for gamepad');
-  state.dom.setTextContent(state.metaIndex, `Index: ${gamepad ? String(gamepad.index) : '-'}`);
+  state.dom.setTextContent(
+    state.statusText,
+    gamepad ? 'Gamepad detected' : 'Waiting for gamepad'
+  );
+  state.dom.setTextContent(
+    state.metaIndex,
+    `Index: ${gamepad ? String(gamepad.index) : '-'}`
+  );
   state.dom.setTextContent(state.metaId, `ID: ${gamepad ? gamepad.id : '-'}`);
 }
 
+/**
+ * @param {MapperState} state
+ * @returns {void}
+ */
 function refreshStoredState(state) {
   state.stored = readStoredMapperState();
   if (!state.started) {
@@ -297,6 +472,10 @@ function refreshStoredState(state) {
   state.currentControl = CONTROLS[state.currentIndex] ?? null;
 }
 
+/**
+ * @param {MapperState} state
+ * @returns {void}
+ */
 function render(state) {
   refreshStoredState(state);
   renderMeta(state);
@@ -304,17 +483,28 @@ function render(state) {
   renderMapperList(state);
 }
 
+/**
+ * @param {MapperState} state
+ * @returns {void}
+ */
 function advanceToNextControl(state) {
   const nextIndex = CONTROLS.findIndex((control, index) => {
-    return index > state.currentIndex &&
+    return (
+      index > state.currentIndex &&
       !state.stored.mappings[control.key] &&
-      !state.stored.skippedControls.includes(control.key);
+      !state.stored.skippedControls.includes(control.key)
+    );
   });
 
   state.currentIndex = nextIndex === -1 ? CONTROLS.length : nextIndex;
   state.currentControl = CONTROLS[state.currentIndex] ?? null;
 }
 
+/**
+ * @param {MapperState} state
+ * @param {CaptureResult} capture
+ * @returns {void}
+ */
 function captureCurrentControl(state, capture) {
   if (!state.currentControl) {
     return;
@@ -330,6 +520,10 @@ function captureCurrentControl(state, capture) {
   render(state);
 }
 
+/**
+ * @param {MapperState} state
+ * @returns {void}
+ */
 function maybeCapture(state) {
   if (!state.started || !state.currentControl) {
     return;
@@ -356,13 +550,26 @@ function maybeCapture(state) {
   state.previousSnapshot = snapshot;
 }
 
+/**
+ * @param {DOMHelpers} dom
+ * @param {HTMLElement} element
+ * @param {(event: Event) => void} handler
+ * @param {Array<() => void>} disposers
+ * @returns {void}
+ */
 function registerClick(dom, element, handler, disposers) {
   dom.addEventListener(element, 'click', handler);
   disposers.push(() => dom.removeEventListener(element, 'click', handler));
 }
 
+/**
+ * @param {DOMHelpers} dom
+ * @param {HTMLElement} form
+ * @returns {void}
+ */
 function injectStyles(dom, form) {
-  const style = createElement(dom, 'style', '', `
+  const style = createElement(dom, 'style', {
+    text: `
     .${DENDRITE_FORM_CLASS}.joycon-mapper-form {
       display: grid;
       gap: 0.75em;
@@ -462,10 +669,17 @@ function injectStyles(dom, form) {
       font-family: inherit;
       text-transform: lowercase;
     }
-  `);
+  `,
+  });
   dom.appendChild(form, style);
 }
 
+/**
+ * @param {DOMHelpers} dom
+ * @param {Element} container
+ * @param {HTMLInputElement} textInput
+ * @returns {void}
+ */
 export function joyConMapperHandler(dom, container, textInput) {
   browserCore.hideAndDisable(textInput, dom);
   const disposers = [];
@@ -473,32 +687,57 @@ export function joyConMapperHandler(dom, container, textInput) {
   form.classList.add('joycon-mapper-form');
   injectStyles(dom, form);
 
-  const hero = createElement(dom, 'div', 'joycon-mapper-hero');
-  const status = createElement(dom, 'div', 'joycon-mapper-status');
-  const dot = createElement(dom, 'span', 'joycon-mapper-dot');
-  const statusText = createElement(dom, 'span', '', 'Waiting for gamepad');
+  const hero = createElement(dom, 'div', { className: 'joycon-mapper-hero' });
+  const status = createElement(dom, 'div', {
+    className: 'joycon-mapper-status',
+  });
+  const dot = createElement(dom, 'span', { className: 'joycon-mapper-dot' });
+  const statusText = createElement(dom, 'span', {
+    text: 'Waiting for gamepad',
+  });
   dom.appendChild(status, dot);
   dom.appendChild(status, statusText);
 
-  const prompt = createElement(dom, 'div', 'joycon-mapper-prompt', 'Connect a gamepad to begin');
-  const subprompt = createElement(dom, 'div', 'joycon-mapper-subprompt', 'The mapper will resume as soon as the left Joy-Con appears.');
-  const actions = createElement(dom, 'div', 'joycon-mapper-actions');
-  const startButton = /** @type {HTMLButtonElement} */ (createElement(dom, 'button', 'primary', 'Start Mapping'));
-  const skipButton = /** @type {HTMLButtonElement} */ (createElement(dom, 'button', '', 'Skip Current'));
-  const resetButton = /** @type {HTMLButtonElement} */ (createElement(dom, 'button', '', 'Reset Mapping'));
-  [startButton, skipButton, resetButton].forEach(button => dom.appendChild(actions, button));
+  const prompt = createElement(dom, 'div', {
+    className: 'joycon-mapper-prompt',
+    text: 'Connect a gamepad to begin',
+  });
+  const subprompt = createElement(dom, 'div', {
+    className: 'joycon-mapper-subprompt',
+    text: 'The mapper will resume as soon as the left Joy-Con appears.',
+  });
+  const actions = createElement(dom, 'div', {
+    className: 'joycon-mapper-actions',
+  });
+  const startButton = /** @type {HTMLButtonElement} */ (
+    createElement(dom, 'button', {
+      className: 'primary',
+      text: 'Start Mapping',
+    })
+  );
+  const skipButton = /** @type {HTMLButtonElement} */ (
+    createElement(dom, 'button', { text: 'Skip Current' })
+  );
+  const resetButton = /** @type {HTMLButtonElement} */ (
+    createElement(dom, 'button', { text: 'Reset Mapping' })
+  );
+  [startButton, skipButton, resetButton].forEach(button =>
+    dom.appendChild(actions, button)
+  );
 
-  const meta = createElement(dom, 'div', 'joycon-mapper-meta');
-  const metaIndex = createElement(dom, 'div', '', 'Index: -');
-  const metaId = createElement(dom, 'div', '', 'ID: -');
+  const meta = createElement(dom, 'div', { className: 'joycon-mapper-meta' });
+  const metaIndex = createElement(dom, 'div', { text: 'Index: -' });
+  const metaId = createElement(dom, 'div', { text: 'ID: -' });
   dom.appendChild(meta, metaIndex);
   dom.appendChild(meta, metaId);
 
-  const list = createElement(dom, 'div', 'joycon-mapper-list');
-  [status, prompt, subprompt, actions, meta, list].forEach(element => dom.appendChild(hero, element));
+  const list = createElement(dom, 'div', { className: 'joycon-mapper-list' });
+  [status, prompt, subprompt, actions, meta, list].forEach(element =>
+    dom.appendChild(hero, element)
+  );
   dom.appendChild(form, hero);
 
-  const state = {
+  const state = /** @type {MapperState} */ ({
     dom,
     textInput,
     autoSubmitCheckbox: getAutoSubmitCheckbox(container, dom),
@@ -514,51 +753,68 @@ export function joyConMapperHandler(dom, container, textInput) {
     statusText,
     metaIndex,
     metaId,
-  };
+  });
 
-  registerClick(dom, startButton, () => {
-    state.started = true;
-    const pending = firstPendingIndex(state);
-    state.currentIndex = pending === -1 ? CONTROLS.length : pending;
-    state.currentControl = CONTROLS[state.currentIndex] ?? null;
-    state.previousSnapshot = snapshotGamepad(currentPad());
-    syncToyInput({
-      dom,
-      textInput,
-      autoSubmitCheckbox: state.autoSubmitCheckbox,
-      payload: buildPayload('initialize', state),
-    });
-    render(state);
-  }, disposers);
-
-  registerClick(dom, skipButton, () => {
-    if (!state.started) {
+  registerClick(
+    dom,
+    startButton,
+    () => {
       state.started = true;
-    }
-    const skippedControl = state.currentControl;
-    syncToyInput({
-      dom,
-      textInput,
-      autoSubmitCheckbox: state.autoSubmitCheckbox,
-      payload: buildPayload('skip', state, { skippedControlKey: skippedControl?.key ?? null }),
-    });
-    advanceToNextControl(state);
-    render(state);
-  }, disposers);
+      const pending = firstPendingIndex(state);
+      state.currentIndex = pending === -1 ? CONTROLS.length : pending;
+      state.currentControl = CONTROLS[state.currentIndex] ?? null;
+      state.previousSnapshot = snapshotGamepad(currentPad());
+      syncToyInput({
+        dom,
+        textInput,
+        autoSubmitCheckbox: state.autoSubmitCheckbox,
+        payload: buildPayload('initialize', state),
+      });
+      render(state);
+    },
+    disposers
+  );
 
-  registerClick(dom, resetButton, () => {
-    state.started = false;
-    state.currentIndex = 0;
-    state.currentControl = CONTROLS[0] ?? null;
-    state.previousSnapshot = snapshotGamepad(currentPad());
-    syncToyInput({
-      dom,
-      textInput,
-      autoSubmitCheckbox: state.autoSubmitCheckbox,
-      payload: buildPayload('reset', state),
-    });
-    render(state);
-  }, disposers);
+  registerClick(
+    dom,
+    skipButton,
+    () => {
+      if (!state.started) {
+        state.started = true;
+      }
+      const skippedControl = state.currentControl;
+      syncToyInput({
+        dom,
+        textInput,
+        autoSubmitCheckbox: state.autoSubmitCheckbox,
+        payload: buildPayload('skip', state, {
+          skippedControlKey: skippedControl?.key ?? null,
+        }),
+      });
+      advanceToNextControl(state);
+      render(state);
+    },
+    disposers
+  );
+
+  registerClick(
+    dom,
+    resetButton,
+    () => {
+      state.started = false;
+      state.currentIndex = 0;
+      state.currentControl = CONTROLS[0] ?? null;
+      state.previousSnapshot = snapshotGamepad(currentPad());
+      syncToyInput({
+        dom,
+        textInput,
+        autoSubmitCheckbox: state.autoSubmitCheckbox,
+        payload: buildPayload('reset', state),
+      });
+      render(state);
+    },
+    disposers
+  );
 
   const intervalId = globalThis.setInterval(() => maybeCapture(state), 50);
   disposers.push(() => globalThis.clearInterval(intervalId));
