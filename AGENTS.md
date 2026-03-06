@@ -37,6 +37,7 @@ Start here before broad changes:
 
 - `docs/repo-map.md`
 - `docs/loop/manifesto.md`
+- `docs/loop/wiggum-playbook.md`
 - `docs/quality/evaluator-matrix.md`
 - `docs/failure-modes/`
 - `docs/toys/`
@@ -89,6 +90,7 @@ Rules:
 
 Use canonical procedures in:
 - `docs/loop/manifesto.md`
+- `docs/loop/wiggum-playbook.md`
 - `docs/failure-modes/`
 
 ## Build / Test / Dev command quick list
