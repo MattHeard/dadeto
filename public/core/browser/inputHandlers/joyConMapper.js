@@ -573,30 +573,98 @@ function getCurrentControlKey(state) {
  *   Control currently being rendered.
  * @param {MapperState} state
  *   Current Joy-Con mapper runtime state.
+ * @returns {CaptureResult | null}
+ *   Stored capture mapping for the control, if present.
+ */
+function getStoredControlCapture(control, state) {
+  const capture = state.stored.mappings[control.key];
+  if (!capture) {
+    return null;
+  }
+
+  return /** @type {CaptureResult} */ (capture);
+}
+
+const ROW_STATE_VALUE_TEXT = {
+  active: 'listening...',
+  optional: 'optional',
+  skipped: 'skipped',
+};
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {number} index
+ *   Control index within the ordered list.
+ * @returns {'active' | 'optional'}
+ *   Active/optional row state for an unmapped control.
+ */
+function getPendingRowState(state, index) {
+  if (!state.started) {
+    return 'optional';
+  }
+
+  if (state.currentIndex === index) {
+    return 'active';
+  }
+
+  return 'optional';
+}
+
+/**
+ * @param {MapperControl} control
+ *   Control currently being rendered.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {number} index
+ *   Control index within the ordered list.
+ * @returns {'skipped' | 'active' | 'optional'}
+ *   Row state for an unmapped control.
+ */
+function getUnmappedRowState(control, state, index) {
+  if (state.stored.skippedControls.includes(control.key)) {
+    return 'skipped';
+  }
+
+  return getPendingRowState(state, index);
+}
+
+/**
+ * @param {MapperControl} control
+ *   Control currently being rendered.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {number} index
+ *   Control index within the ordered list.
+ * @returns {'done' | 'skipped' | 'active' | 'optional'}
+ *   Row state for class and value rendering.
+ */
+function getRowState(control, state, index) {
+  if (getStoredControlCapture(control, state)) {
+    return 'done';
+  }
+
+  return getUnmappedRowState(control, state, index);
+}
+
+/**
+ * @param {MapperControl} control
+ *   Control currently being rendered.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @param {number} index
  *   Control index within the ordered list.
  * @returns {string}
  *   Row value label for mapped, skipped, active, or optional states.
  */
 function getRowValueText(control, state, index) {
-  const isDone = Boolean(state.stored.mappings[control.key]);
-  if (isDone) {
-    return describeCapture(
-      /** @type {CaptureResult} */ (state.stored.mappings[control.key])
-    );
+  const capture = getStoredControlCapture(control, state);
+  if (capture) {
+    return describeCapture(capture);
   }
 
-  const isSkipped = state.stored.skippedControls.includes(control.key);
-  if (isSkipped) {
-    return 'skipped';
-  }
-
-  const isActive = state.started && state.currentIndex === index;
-  if (isActive) {
-    return 'listening...';
-  }
-
-  return 'optional';
+  const rowState = getRowState(control, state, index);
+  return ROW_STATE_VALUE_TEXT[rowState];
 }
 
 /**
@@ -611,19 +679,9 @@ function renderMapperList(state) {
     const row = createElement(state.dom, 'div', {
       className: 'joycon-mapper-row',
     });
-    const isDone = Boolean(state.stored.mappings[control.key]);
-    const isSkipped = state.stored.skippedControls.includes(control.key);
-    const isActive =
-      state.started && state.currentIndex === index && !isDone && !isSkipped;
-
-    if (isDone) {
-      row.classList.add('done');
-    }
-    if (isSkipped) {
-      row.classList.add('skipped');
-    }
-    if (isActive) {
-      row.classList.add('active');
+    const rowState = getRowState(control, state, index);
+    if (rowState !== 'optional') {
+      row.classList.add(rowState);
     }
 
     const name = createElement(state.dom, 'div', {
@@ -652,44 +710,111 @@ function domRemoveAllChildren(dom, node) {
 }
 
 /**
+ * @returns {{ prompt: string, subprompt: string }}
+ *   Prompt copy for a disconnected gamepad state.
+ */
+function getDisconnectedPromptCopy() {
+  return {
+    prompt: 'Connect a gamepad to begin',
+    subprompt: 'The mapper will resume as soon as the left Joy-Con appears.',
+  };
+}
+
+/**
+ * @returns {{ prompt: string, subprompt: string }}
+ *   Prompt copy for a ready-to-start mapping state.
+ */
+function getReadyPromptCopy() {
+  return {
+    prompt: 'Ready to map the left Joy-Con',
+    subprompt:
+      'Press Start Mapping. Every control is optional and can be skipped.',
+  };
+}
+
+/**
+ * @returns {{ prompt: string, subprompt: string }}
+ *   Prompt copy for a completed mapping state.
+ */
+function getCompletePromptCopy() {
+  return {
+    prompt: 'Mapping complete',
+    subprompt:
+      'The saved mapping is persisted locally and shown in the output panel.',
+  };
+}
+
+/**
+ * @param {MapperControl} control
+ *   Active mapper control.
+ * @returns {{ prompt: string, subprompt: string }}
+ *   Prompt copy for the active control state.
+ */
+function getActivePromptCopy(control) {
+  return {
+    prompt: `Press ${control.label}`,
+    subprompt: getActivePromptText(control),
+  };
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {boolean}
+ *   Whether all controls have been processed or no current control remains.
+ */
+function isPromptComplete(state) {
+  if (state.currentIndex >= CONTROLS.length) {
+    return true;
+  }
+
+  return state.currentControl === null;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {{ prompt: string, subprompt: string }}
+ *   Prompt copy after mapping has started.
+ */
+function getStartedPromptCopy(state) {
+  if (isPromptComplete(state)) {
+    return getCompletePromptCopy();
+  }
+
+  return getActivePromptCopy(
+    /** @type {MapperControl} */ (state.currentControl)
+  );
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {{ prompt: string, subprompt: string }}
+ *   Prompt copy when a gamepad is connected.
+ */
+function getConnectedPromptCopy(state) {
+  if (!state.started) {
+    return getReadyPromptCopy();
+  }
+
+  return getStartedPromptCopy(state);
+}
+
+/**
  * @param {MapperState} state
  *   Current Joy-Con mapper runtime state.
  * @returns {void}
  */
 function renderPrompt(state) {
-  const control = state.currentControl;
-  const complete = state.currentIndex >= CONTROLS.length;
   const gamepad = currentPad();
-
-  if (!gamepad) {
-    state.dom.setTextContent(state.prompt, 'Connect a gamepad to begin');
-    state.dom.setTextContent(
-      state.subprompt,
-      'The mapper will resume as soon as the left Joy-Con appears.'
-    );
-    return;
+  let copy = getDisconnectedPromptCopy();
+  if (gamepad) {
+    copy = getConnectedPromptCopy(state);
   }
 
-  if (!state.started) {
-    state.dom.setTextContent(state.prompt, 'Ready to map the left Joy-Con');
-    state.dom.setTextContent(
-      state.subprompt,
-      'Press Start Mapping. Every control is optional and can be skipped.'
-    );
-    return;
-  }
-
-  if (complete || !control) {
-    state.dom.setTextContent(state.prompt, 'Mapping complete');
-    state.dom.setTextContent(
-      state.subprompt,
-      'The saved mapping is persisted locally and shown in the output panel.'
-    );
-    return;
-  }
-
-  state.dom.setTextContent(state.prompt, `Press ${control.label}`);
-  state.dom.setTextContent(state.subprompt, getActivePromptText(control));
+  state.dom.setTextContent(state.prompt, copy.prompt);
+  state.dom.setTextContent(state.subprompt, copy.subprompt);
 }
 
 /**
@@ -786,6 +911,40 @@ function normalizePendingIndex(pendingIndex) {
   }
 
   return pendingIndex;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {void}
+ */
+function syncCurrentControlFromIndex(state) {
+  state.currentControl = CONTROLS[state.currentIndex] ?? null;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {void}
+ */
+function startMapping(state) {
+  state.started = true;
+  state.currentIndex = normalizePendingIndex(firstPendingIndex(state));
+  syncCurrentControlFromIndex(state);
+  state.previousSnapshot = snapshotGamepad(currentPad());
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {void}
+ */
+function ensureStarted(state) {
+  if (state.started) {
+    return;
+  }
+
+  state.started = true;
 }
 
 /**
@@ -1089,11 +1248,7 @@ export function joyConMapperHandler(dom, container, textInput) {
     dom,
     startButton,
     () => {
-      state.started = true;
-      const pending = firstPendingIndex(state);
-      state.currentIndex = pending === -1 ? CONTROLS.length : pending;
-      state.currentControl = CONTROLS[state.currentIndex] ?? null;
-      state.previousSnapshot = snapshotGamepad(currentPad());
+      startMapping(state);
       syncToyInput({
         dom,
         textInput,
@@ -1109,9 +1264,7 @@ export function joyConMapperHandler(dom, container, textInput) {
     dom,
     skipButton,
     () => {
-      if (!state.started) {
-        state.started = true;
-      }
+      ensureStarted(state);
       const skippedControl = state.currentControl;
       syncToyInput({
         dom,
