@@ -108,4 +108,97 @@ describe('local symphony scaffold', () => {
       )
     ).resolves.toContain('"event": "startup"');
   });
+
+  test('bootstraps ready status with the selected bead from tracker polling', async () => {
+    await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
+    await writeFile(
+      path.join(tempDir, 'tracking', 'symphony.local.json'),
+      JSON.stringify({
+        tracker: {
+          kind: 'bd',
+          readyCommand: 'bd ready --sort priority',
+        },
+        logDir: 'tracking/symphony',
+      }),
+      'utf8'
+    );
+    await writeFile(
+      path.join(tempDir, 'WORKFLOW.md'),
+      '# Workflow\n\n## Allowed command families\n- `bd`\n',
+      'utf8'
+    );
+
+    const { status } = await bootstrapSymphony({
+      repoRoot: tempDir,
+      now: () => new Date('2026-03-06T21:00:00.000Z'),
+      trackerFactory: () => ({
+        async pollReadyBeads() {
+          return {
+            command: 'bd ready --sort priority',
+            readyBeads: [
+              {
+                id: 'dadeto-639o',
+                title:
+                  'Implement Symphony tracker polling and bead selection loop',
+                priority: '● P2',
+              },
+            ],
+            queueSummary: [
+              'dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop',
+            ],
+            selectedBead: {
+              id: 'dadeto-639o',
+              title:
+                'Implement Symphony tracker polling and bead selection loop',
+              priority: '● P2',
+            },
+          };
+        },
+      }),
+    });
+
+    expect(status.state).toBe('ready');
+    expect(status.currentBeadId).toBe('dadeto-639o');
+    expect(status.lastPoll).toEqual({
+      readyCount: 1,
+      queueSummary: [
+        'dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop',
+      ],
+      selectedBead: {
+        id: 'dadeto-639o',
+        title: 'Implement Symphony tracker polling and bead selection loop',
+        priority: '● P2',
+      },
+    });
+    expect(status.queueEvidence).toEqual([
+      'dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop',
+    ]);
+    expect(status.latestEvidence).toContain(
+      'selected dadeto-639o from 1 ready bead(s):'
+    );
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-06T21-00-00.000Z--startup.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain('"currentBeadId": "dadeto-639o"');
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-06T21-00-00.000Z--startup.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain('dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop');
+  });
 });

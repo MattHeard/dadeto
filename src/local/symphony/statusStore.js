@@ -50,6 +50,12 @@ export function createSymphonyStatusStore(options) {
             event: 'startup',
             startedAt: status.startedAt,
             state: status.state,
+            currentBeadId: status.currentBeadId ?? null,
+            currentBeadTitle: status.currentBeadTitle ?? null,
+            latestEvidence: status.latestEvidence ?? '',
+            queueEvidence: Array.isArray(status.queueEvidence)
+              ? status.queueEvidence
+              : [],
             workflowExists: status.workflow?.exists ?? false,
             trackerKind: status.config?.tracker?.kind ?? 'unknown',
           },
