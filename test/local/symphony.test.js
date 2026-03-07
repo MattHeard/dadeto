@@ -45,10 +45,16 @@ describe('local symphony scaffold', () => {
     expect(config.pollIntervalMs).toBe(45000);
   });
 
-  test('summarizes workflow policy sections when WORKFLOW.md exists', async () => {
+  test('parses workflow front matter and prompt template when WORKFLOW.md exists', async () => {
     await writeFile(
       path.join(tempDir, 'WORKFLOW.md'),
       [
+        '---',
+        'model: gpt-5',
+        'max_turns: 6',
+        'allow_dirty_worktree: true',
+        '---',
+        '',
         '# Workflow',
         '',
         '## Allowed command families',
@@ -67,6 +73,26 @@ describe('local symphony scaffold', () => {
     const workflow = await loadSymphonyWorkflow({ repoRoot: tempDir });
 
     expect(workflow.exists).toBe(true);
+    expect(workflow.config).toEqual({
+      model: 'gpt-5',
+      max_turns: 6,
+      allow_dirty_worktree: true,
+    });
+    expect(workflow.prompt_template).toBe(
+      [
+        '# Workflow',
+        '',
+        '## Allowed command families',
+        '- `bd`',
+        '- `git`',
+        '',
+        '## Required quality gates',
+        '- `npm test`',
+        '',
+        '## Handoff requirements',
+        '- leave notes',
+      ].join('\n')
+    );
     expect(workflow.allowedCommandFamilies).toEqual(['`bd`', '`git`']);
     expect(workflow.requiredQualityGates).toEqual(['`npm test`']);
     expect(workflow.handoffRequirements).toEqual(['leave notes']);
@@ -89,6 +115,8 @@ describe('local symphony scaffold', () => {
 
     expect(status.state).toBe('blocked');
     expect(status.workflow.exists).toBe(false);
+    expect(status.workflow.config).toEqual({});
+    expect(status.workflow.prompt_template).toBe('');
     await expect(
       readFile(
         path.join(tempDir, 'tracking', 'symphony', 'status.json'),
@@ -124,7 +152,16 @@ describe('local symphony scaffold', () => {
     );
     await writeFile(
       path.join(tempDir, 'WORKFLOW.md'),
-      '# Workflow\n\n## Allowed command families\n- `bd`\n',
+      [
+        '---',
+        'model: gpt-5',
+        '---',
+        '',
+        '# Workflow',
+        '',
+        '## Allowed command families',
+        '- `bd`',
+      ].join('\n'),
       'utf8'
     );
 
@@ -160,6 +197,10 @@ describe('local symphony scaffold', () => {
     expect(status.state).toBe('ready');
     expect(status.currentBeadId).toBe('dadeto-639o');
     expect(status.currentBeadPriority).toBe('● P2');
+    expect(status.workflow.config).toEqual({ model: 'gpt-5' });
+    expect(status.workflow.prompt_template).toBe(
+      '# Workflow\n\n## Allowed command families\n- `bd`'
+    );
     expect(status.lastPollSummary).toBe(
       '1 ready bead(s): dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop'
     );
