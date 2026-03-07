@@ -48,13 +48,34 @@ export function summarizeReadyBeadQueue(beads) {
 
 /**
  * @param {{ id: string, title: string, priority: string } | null} selectedBead Selected bead or null.
+ * @param {'id' | 'title' | 'priority'} field Selected bead field to read.
+ * @returns {string | null} Selected bead field value or null.
+ */
+function getSelectedBeadField(selectedBead, field) {
+  if (!selectedBead) {
+    return null;
+  }
+
+  return selectedBead[field];
+}
+
+/**
+ * @param {{ readyCount: number, queueSummary?: string[] }} pollResult Poll result summary.
+ * @returns {string[]} Queue summary lines.
+ */
+function getQueueSummary(pollResult) {
+  return pollResult.queueSummary ?? [];
+}
+
+/**
+ * @param {{ id: string, title: string, priority: string } | null} selectedBead Selected bead or null.
  * @returns {{ currentBeadId: string | null, currentBeadTitle: string | null, currentBeadPriority: string | null }} Top-level status fields for the selected bead.
  */
 export function buildSelectedBeadStatus(selectedBead) {
   return {
-    currentBeadId: selectedBead?.id ?? null,
-    currentBeadTitle: selectedBead?.title ?? null,
-    currentBeadPriority: selectedBead?.priority ?? null,
+    currentBeadId: getSelectedBeadField(selectedBead, 'id'),
+    currentBeadTitle: getSelectedBeadField(selectedBead, 'title'),
+    currentBeadPriority: getSelectedBeadField(selectedBead, 'priority'),
   };
 }
 
@@ -63,7 +84,7 @@ export function buildSelectedBeadStatus(selectedBead) {
  * @returns {string} Compact poll summary for operator-visible logs.
  */
 export function summarizePollResult(pollResult) {
-  const queueSummary = pollResult.queueSummary ?? [];
+  const queueSummary = getQueueSummary(pollResult);
   if (queueSummary.length === 0) {
     return `${String(pollResult.readyCount)} ready bead(s)`;
   }
@@ -114,6 +135,18 @@ function getIdleSelectionSummary(input) {
 }
 
 /**
+ * @param {{ id: string, title: string, priority: string } | null} selectedBead Selected bead or null.
+ * @returns {'idle' | 'ready'} Tracker selection state when workflow exists.
+ */
+function getActiveSelectionStateKey(selectedBead) {
+  if (!selectedBead) {
+    return 'idle';
+  }
+
+  return 'ready';
+}
+
+/**
  * @param {{
  *   workflowExists: boolean,
  *   selectedBead: { id: string, title: string, priority: string } | null
@@ -125,7 +158,7 @@ function getSelectionStateKey(input) {
     return 'blocked';
   }
 
-  return input.selectedBead ? 'ready' : 'idle';
+  return getActiveSelectionStateKey(input.selectedBead);
 }
 
 /**
