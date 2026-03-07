@@ -52,6 +52,8 @@ export function createSymphonyStatusStore(options) {
             state: status.state,
             currentBeadId: status.currentBeadId ?? null,
             currentBeadTitle: status.currentBeadTitle ?? null,
+            currentBeadPriority: status.currentBeadPriority ?? null,
+            lastPollSummary: status.lastPollSummary ?? '',
             latestEvidence: status.latestEvidence ?? '',
             queueEvidence: Array.isArray(status.queueEvidence)
               ? status.queueEvidence

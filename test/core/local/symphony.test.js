@@ -1,6 +1,8 @@
 import {
+  buildSelectedBeadStatus,
   parseReadyBeads,
   selectNextBead,
+  summarizePollResult,
   summarizeReadyBeadQueue,
   summarizeTrackerSelection,
 } from '../../../src/core/local/symphony.js';
@@ -44,10 +46,45 @@ describe('core local symphony helpers', () => {
         { id: 'dadeto-639o', title: 'First', priority: '● P2' },
         { id: 'dadeto-abcd', title: 'Second', priority: '● P3' },
       ])
-    ).toEqual([
-      'dadeto-639o (● P2) First',
-      'dadeto-abcd (● P3) Second',
-    ]);
+    ).toEqual(['dadeto-639o (● P2) First', 'dadeto-abcd (● P3) Second']);
+  });
+
+  test('builds selected bead top-level status fields', () => {
+    expect(
+      buildSelectedBeadStatus({
+        id: 'dadeto-639o',
+        title: 'First',
+        priority: '● P2',
+      })
+    ).toEqual({
+      currentBeadId: 'dadeto-639o',
+      currentBeadTitle: 'First',
+      currentBeadPriority: '● P2',
+    });
+
+    expect(buildSelectedBeadStatus(null)).toEqual({
+      currentBeadId: null,
+      currentBeadTitle: null,
+      currentBeadPriority: null,
+    });
+  });
+
+  test('summarizes poll results for compact status output', () => {
+    expect(
+      summarizePollResult({
+        readyCount: 2,
+        queueSummary: ['dadeto-639o (● P2) First', 'dadeto-abcd (● P3) Second'],
+      })
+    ).toBe(
+      '2 ready bead(s): dadeto-639o (● P2) First; dadeto-abcd (● P3) Second'
+    );
+
+    expect(
+      summarizePollResult({
+        readyCount: 0,
+        queueSummary: [],
+      })
+    ).toBe('0 ready bead(s)');
   });
 
   test('summarizes ready and idle tracker states', () => {
@@ -58,17 +95,17 @@ describe('core local symphony helpers', () => {
         lastCommand: 'bd ready --sort priority',
         pollResult: {
           readyCount: 2,
-          queueSummary: ['dadeto-639o (● P2) First', 'dadeto-abcd (● P3) Second'],
+          queueSummary: [
+            'dadeto-639o (● P2) First',
+            'dadeto-abcd (● P3) Second',
+          ],
         },
       })
     ).toEqual({
       state: 'ready',
       latestEvidence:
         'bd ready --sort priority selected dadeto-639o from 2 ready bead(s): dadeto-639o (● P2) First; dadeto-abcd (● P3) Second.',
-      queueEvidence: [
-        'dadeto-639o (● P2) First',
-        'dadeto-abcd (● P3) Second',
-      ],
+      queueEvidence: ['dadeto-639o (● P2) First', 'dadeto-abcd (● P3) Second'],
     });
 
     expect(

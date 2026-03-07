@@ -159,6 +159,10 @@ describe('local symphony scaffold', () => {
 
     expect(status.state).toBe('ready');
     expect(status.currentBeadId).toBe('dadeto-639o');
+    expect(status.currentBeadPriority).toBe('● P2');
+    expect(status.lastPollSummary).toBe(
+      '1 ready bead(s): dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop'
+    );
     expect(status.lastPoll).toEqual({
       readyCount: 1,
       queueSummary: [
@@ -199,6 +203,34 @@ describe('local symphony scaffold', () => {
         ),
         'utf8'
       )
-    ).resolves.toContain('dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop');
+    ).resolves.toContain('"currentBeadPriority": "● P2"');
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-06T21-00-00.000Z--startup.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain(
+      '"lastPollSummary": "1 ready bead(s): dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop"'
+    );
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-06T21-00-00.000Z--startup.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain(
+      'dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop'
+    );
   });
 });

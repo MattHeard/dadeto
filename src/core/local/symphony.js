@@ -47,10 +47,35 @@ export function summarizeReadyBeadQueue(beads) {
 }
 
 /**
+ * @param {{ id: string, title: string, priority: string } | null} selectedBead Selected bead or null.
+ * @returns {{ currentBeadId: string | null, currentBeadTitle: string | null, currentBeadPriority: string | null }} Top-level status fields for the selected bead.
+ */
+export function buildSelectedBeadStatus(selectedBead) {
+  return {
+    currentBeadId: selectedBead?.id ?? null,
+    currentBeadTitle: selectedBead?.title ?? null,
+    currentBeadPriority: selectedBead?.priority ?? null,
+  };
+}
+
+/**
+ * @param {{ readyCount: number, queueSummary?: string[] }} pollResult Poll result summary.
+ * @returns {string} Compact poll summary for operator-visible logs.
+ */
+export function summarizePollResult(pollResult) {
+  const queueSummary = pollResult.queueSummary ?? [];
+  if (queueSummary.length === 0) {
+    return `${String(pollResult.readyCount)} ready bead(s)`;
+  }
+
+  return `${String(pollResult.readyCount)} ready bead(s): ${queueSummary.join('; ')}`;
+}
+
+/**
  * @param {{
  *   workflowExists: boolean,
-  *   selectedBead: { id: string, title: string, priority: string } | null,
-  *   lastCommand: string,
+ *   selectedBead: { id: string, title: string, priority: string } | null,
+ *   lastCommand: string,
  *   pollResult: { readyCount: number, queueSummary?: string[] }
  * }} input Tracker polling state.
  * @returns {{ state: string, latestEvidence: string, queueEvidence: string[] }} Tracker selection status summary.
@@ -59,7 +84,7 @@ function getReadySelectionSummary(input) {
   const queueEvidence = input.pollResult.queueSummary ?? [];
   return {
     state: 'ready',
-    latestEvidence: `${input.lastCommand} selected ${input.selectedBead.id} from ${String(input.pollResult.readyCount)} ready bead(s): ${queueEvidence.join('; ')}.`,
+    latestEvidence: `${input.lastCommand} selected ${input.selectedBead.id} from ${summarizePollResult(input.pollResult)}.`,
     queueEvidence,
   };
 }
@@ -106,8 +131,8 @@ function getSelectionStateKey(input) {
 /**
  * @param {{
  *   workflowExists: boolean,
-  *   selectedBead: { id: string, title: string, priority: string } | null,
-  *   lastCommand: string,
+ *   selectedBead: { id: string, title: string, priority: string } | null,
+ *   lastCommand: string,
  *   pollResult: { readyCount: number, queueSummary?: string[] }
  * }} input Tracker polling state.
  * @returns {{ state: string, latestEvidence: string, queueEvidence: string[] }} Tracker selection status summary.

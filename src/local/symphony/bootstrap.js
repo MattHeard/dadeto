@@ -1,5 +1,9 @@
 import { createSymphonyStatusStore } from './statusStore.js';
-import { summarizeTrackerSelection } from '../../core/local/symphony.js';
+import {
+  buildSelectedBeadStatus,
+  summarizePollResult,
+  summarizeTrackerSelection,
+} from '../../core/local/symphony.js';
 import { loadSymphonyConfig } from './config.js';
 import { createBdTracker } from './trackerBd.js';
 import { loadSymphonyWorkflow } from './workflow.js';
@@ -53,15 +57,19 @@ export async function bootstrapSymphony(options = {}) {
       queueSummary: pollResult.queueSummary,
     },
   });
+  const selectedBeadStatus = buildSelectedBeadStatus(pollResult.selectedBead);
 
   const status = {
     service: 'dadeto-local-symphony',
     state: trackerSummary.state,
     startedAt: now().toISOString(),
     repoRoot,
-    currentBeadId: pollResult.selectedBead?.id ?? null,
-    currentBeadTitle: pollResult.selectedBead?.title ?? null,
+    ...selectedBeadStatus,
     lastCommand: pollResult.command,
+    lastPollSummary: summarizePollResult({
+      readyCount: pollResult.readyBeads.length,
+      queueSummary: pollResult.queueSummary,
+    }),
     lastPoll: {
       readyCount: pollResult.readyBeads.length,
       queueSummary: pollResult.queueSummary,
