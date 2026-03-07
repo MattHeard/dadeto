@@ -82,6 +82,14 @@ function getLocalPermanentDataGetter(env) {
 }
 
 /**
+ * @param {Record<string, unknown> | null | undefined} value Candidate local permanent data root.
+ * @returns {Record<string, unknown>} Normalized local permanent data root.
+ */
+function normalizeLocalPermanentDataRoot(value) {
+  return value ?? {};
+}
+
+/**
  * @param {(() => Record<string, unknown> | null | undefined) | null} getLocalPermanentData Local data getter when available.
  * @returns {Record<string, unknown>} Local permanent data root.
  */
@@ -90,7 +98,7 @@ function getLocalPermanentDataRoot(getLocalPermanentData) {
     return {};
   }
 
-  return getLocalPermanentData() ?? {};
+  return normalizeLocalPermanentDataRoot(getLocalPermanentData());
 }
 
 /**
