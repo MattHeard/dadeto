@@ -18,7 +18,9 @@ Every change (code, docs, config, or infra) is done only when all of the followi
 
 Run fast local checks first, then expensive/cloud checks:
 
-Use `npm run check` when you want the default local aggregate gate for most changes. It runs `npm test` followed by `npm run lint` without replacing any underlying subsystem-specific commands.
+Use `npm run check` when you want the default fast local aggregate gate for most changes. It runs `npm test` followed by `npm run lint` without replacing any underlying subsystem-specific commands.
+
+Use `npm run check:full` when you want the broader local sweep before landing or when a change touches generated output / shared structure. It extends `npm run check` with `npm run build` and `npm run duplication`. Keep subsystem-specific packaging commands such as `npm run build:cloud` and `npm run build:dendritestories-co-nz` separate, and keep `npm run tsdoc:check` out of the default aggregate path until the known typing backlog is intentionally being worked.
 
 1. `npm test`
 2. `npm run lint`

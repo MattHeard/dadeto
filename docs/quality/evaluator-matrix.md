@@ -24,6 +24,11 @@ Use this as the canonical checklist before closure.
   1. Apply fixes locally and re-run lint.
   2. If tooling/config is broken, create/attach a `bd` bead with failing output.
 
+### Aggregate shortcuts
+- **`npm run check`:** default fast local aggregate gate (`npm test` + `npm run lint`).
+- **`npm run check:full`:** broader local aggregate gate (`npm run check` + `npm run build` + `npm run duplication`).
+- **What stays out:** `npm run tsdoc:check`, `npm run build:cloud`, and `npm run build:dendritestories-co-nz` remain opt-in / subsystem-specific until their owning beads call for them.
+
 ### 3) Build pipeline smoke — static generation/package build
 - **Purpose:** Ensure the repository can compile/package after changed sources.
 - **Command/workflow:** `npm run build`

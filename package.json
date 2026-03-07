@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "check": "npm test && npm run lint",
+    "check:full": "npm run check && npm run build && npm run duplication",
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false",
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
     "test:e2e": "playwright test",
