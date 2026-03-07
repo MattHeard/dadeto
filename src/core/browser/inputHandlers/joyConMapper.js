@@ -326,20 +326,90 @@ function detectButtonCapture(previous, current) {
     return null;
   }
 
-  let best = null;
-  current.buttons.forEach((button, index) => {
+  return current.buttons.reduce((best, button, index) => {
     const oldButton = previous.buttons[index] ?? { pressed: false, value: 0 };
-    const becamePressed = button.pressed && !oldButton.pressed;
-    const crossedThreshold =
-      button.value >= BUTTON_THRESHOLD && oldButton.value < BUTTON_THRESHOLD;
-    if (!becamePressed && !crossedThreshold) {
-      return;
+    const candidate = getButtonCaptureCandidate(button, oldButton, index);
+    if (!candidate) {
+      return best;
     }
 
-    if (!best || button.value > best.value) {
-      best = { type: 'button', index, value: button.value };
-    }
-  });
+    return selectStrongerButtonCapture(best, candidate);
+  }, null);
+}
+
+/**
+ * @param {ButtonSnapshot} button
+ *   Current button snapshot.
+ * @param {ButtonSnapshot} oldButton
+ *   Previous button snapshot.
+ * @returns {boolean}
+ *   Whether the button became newly pressed.
+ */
+function becamePressed(button, oldButton) {
+  return button.pressed && !oldButton.pressed;
+}
+
+/**
+ * @param {ButtonSnapshot} button
+ *   Current button snapshot.
+ * @param {ButtonSnapshot} oldButton
+ *   Previous button snapshot.
+ * @returns {boolean}
+ *   Whether the button crossed the configured capture threshold.
+ */
+function crossedButtonThreshold(button, oldButton) {
+  return button.value >= BUTTON_THRESHOLD && oldButton.value < BUTTON_THRESHOLD;
+}
+
+/**
+ * @param {ButtonSnapshot} button
+ *   Current button snapshot.
+ * @param {ButtonSnapshot} oldButton
+ *   Previous button snapshot.
+ * @returns {boolean}
+ *   Whether the button should be considered a capture candidate.
+ */
+function hasButtonCaptureTransition(button, oldButton) {
+  return (
+    becamePressed(button, oldButton) ||
+    crossedButtonThreshold(button, oldButton)
+  );
+}
+
+/**
+ * @param {ButtonSnapshot} button
+ *   Current button snapshot.
+ * @param {ButtonSnapshot} oldButton
+ *   Previous button snapshot.
+ * @param {number} index
+ *   Current button index.
+ * @returns {CaptureResult | null}
+ *   Capture candidate for this button, if it qualifies.
+ */
+function getButtonCaptureCandidate(button, oldButton, index) {
+  if (!hasButtonCaptureTransition(button, oldButton)) {
+    return null;
+  }
+
+  return { type: 'button', index, value: button.value };
+}
+
+/**
+ * @param {CaptureResult | null} best
+ *   Current strongest capture.
+ * @param {CaptureResult} candidate
+ *   Candidate capture to compare.
+ * @returns {CaptureResult}
+ *   Stronger button capture.
+ */
+function selectStrongerButtonCapture(best, candidate) {
+  if (!best) {
+    return candidate;
+  }
+
+  if (candidate.value > best.value) {
+    return candidate;
+  }
 
   return best;
 }
@@ -391,21 +461,79 @@ function detectAxisCapture(previous, current, expectedDirection) {
     return null;
   }
 
-  let best = null;
-  current.axes.forEach((value, axis) => {
+  return current.axes.reduce((best, value, axis) => {
     const oldValue = previous.axes[axis] ?? 0;
-    const delta = value - oldValue;
-    const directionMatches = axisMatchesDirection(value, expectedDirection);
-    const nextDirectionalDelta = directionalDelta(delta, expectedDirection);
-    if (!directionMatches || nextDirectionalDelta <= AXIS_DELTA_THRESHOLD) {
-      return;
+    const candidate = getAxisCaptureCandidate(value, axis, {
+      oldValue,
+      expectedDirection,
+    });
+    if (!candidate) {
+      return best;
     }
 
-    const magnitude = Math.abs(value);
-    if (!best || magnitude > best.magnitude) {
-      best = { type: 'axis', axis, direction: expectedDirection, magnitude };
-    }
-  });
+    return selectStrongerAxisCapture(best, candidate);
+  }, null);
+}
+
+/**
+ * @param {number} oldValue
+ *   Previous axis value.
+ * @param {number} value
+ *   Current axis value.
+ * @param {'negative' | 'positive'} expectedDirection
+ *   Direction the active control expects.
+ * @returns {boolean}
+ *   Whether the axis changed enough in the expected direction.
+ */
+function hasAxisCaptureDelta(oldValue, value, expectedDirection) {
+  const delta = value - oldValue;
+  return directionalDelta(delta, expectedDirection) > AXIS_DELTA_THRESHOLD;
+}
+
+/**
+ * @param {number} value
+ *   Current axis value.
+ * @param {number} axis
+ *   Current axis index.
+ * @param {{ oldValue: number, expectedDirection: 'negative' | 'positive' }} context
+ *   Previous axis value and direction context.
+ * @returns {CaptureResult | null}
+ *   Capture candidate for this axis, if it qualifies.
+ */
+function getAxisCaptureCandidate(value, axis, context) {
+  const { oldValue, expectedDirection } = context;
+  if (!axisMatchesDirection(value, expectedDirection)) {
+    return null;
+  }
+
+  if (!hasAxisCaptureDelta(oldValue, value, expectedDirection)) {
+    return null;
+  }
+
+  return {
+    type: 'axis',
+    axis,
+    direction: expectedDirection,
+    magnitude: Math.abs(value),
+  };
+}
+
+/**
+ * @param {CaptureResult | null} best
+ *   Current strongest capture.
+ * @param {CaptureResult} candidate
+ *   Candidate capture to compare.
+ * @returns {CaptureResult}
+ *   Stronger axis capture.
+ */
+function selectStrongerAxisCapture(best, candidate) {
+  if (!best) {
+    return candidate;
+  }
+
+  if (candidate.magnitude > best.magnitude) {
+    return candidate;
+  }
 
   return best;
 }
