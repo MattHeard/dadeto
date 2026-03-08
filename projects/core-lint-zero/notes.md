@@ -24,3 +24,11 @@ Prefer small warning-family or file-local beads over broad refactors. Keep behav
 - Create one bead for the non-complexity warnings in `joyConMapper.js` (`max-params` and `no-ternary`).
 - Create one bead for the highest-complexity hotspots in `joyConMapper.js`.
 - Decide what minimal regression guard should define “keep them at zero” once cleanup is complete.
+
+## Tentative sequence
+
+1. Remove non-complexity warnings first so the remaining queue is complexity-only.
+2. Reduce the worst complexity hotspots in `joyConMapper.js` before touching smaller local warnings.
+3. Continue by re-reading the lint report after each bead and selecting the next smallest hotspot cluster.
+4. Split out any warning cluster that looks contract-shaped or design-shaped instead of grinding it through repeated micro-refactors.
+5. Once `src/core` reaches zero warnings, define the smallest guardrail that will keep it there.

@@ -49,6 +49,11 @@ When acting as orchestrator, `super-nintendo-chalmers` should apply these rules 
    - After `pop bead <id>` or equivalent, `ralph` should execute immediately unless blocked by missing scope, evaluator, or environment.
    - When `ralph` hands work back, treat the comment as queue-shaping evidence: tighten the bead, split it, redirect it, or mark it blocked. Do not bounce it back unchanged.
 
+6. **Store tentative sequences in project notes before turning them into beads**
+   - When a project has an obvious likely sequence of future slices, record that sequence in the project note first instead of creating a long queue of speculative beads.
+   - Prefer keeping only the current ready slice, and at most one clearly stable next slice, as actual beads.
+   - Re-read the live repo state after each closed bead before promoting the next tentative slice into a runner-safe bead.
+
 ### `ralph` (runner)
 
 Owns:
