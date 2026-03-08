@@ -1031,17 +1031,17 @@ function maybeCapture(state) {
 }
 
 /**
- * @param {DOMHelpers} dom
- *   DOM helper facade for listener registration.
- * @param {HTMLElement} element
- *   Click target element.
- * @param {(event: Event) => void} handler
- *   Click handler to register.
- * @param {Array<() => void>} disposers
- *   Cleanup callbacks collected for the form lifecycle.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   element: HTMLElement,
+ *   handler: (event: Event) => void,
+ *   disposers: Array<() => void>
+ * }} options
+ *   Click registration inputs.
  * @returns {void}
  */
-function registerClick(dom, element, handler, disposers) {
+function registerClick(options) {
+  const { dom, element, handler, disposers } = options;
   dom.addEventListener(element, 'click', handler);
   disposers.push(() => dom.removeEventListener(element, 'click', handler));
 }
@@ -1244,10 +1244,10 @@ export function joyConMapperHandler(dom, container, textInput) {
     metaId,
   });
 
-  registerClick(
+  registerClick({
     dom,
-    startButton,
-    () => {
+    element: startButton,
+    handler: () => {
       startMapping(state);
       syncToyInput({
         dom,
@@ -1257,13 +1257,13 @@ export function joyConMapperHandler(dom, container, textInput) {
       });
       render(state);
     },
-    disposers
-  );
+    disposers,
+  });
 
-  registerClick(
+  registerClick({
     dom,
-    skipButton,
-    () => {
+    element: skipButton,
+    handler: () => {
       ensureStarted(state);
       const skippedControl = state.currentControl;
       syncToyInput({
@@ -1277,13 +1277,13 @@ export function joyConMapperHandler(dom, container, textInput) {
       advanceToNextControl(state);
       render(state);
     },
-    disposers
-  );
+    disposers,
+  });
 
-  registerClick(
+  registerClick({
     dom,
-    resetButton,
-    () => {
+    element: resetButton,
+    handler: () => {
       state.started = false;
       state.currentIndex = 0;
       state.currentControl = CONTROLS[0] ?? null;
@@ -1296,8 +1296,8 @@ export function joyConMapperHandler(dom, container, textInput) {
       });
       render(state);
     },
-    disposers
-  );
+    disposers,
+  });
 
   const intervalId = globalThis.setInterval(() => maybeCapture(state), 50);
   disposers.push(() => globalThis.clearInterval(intervalId));
