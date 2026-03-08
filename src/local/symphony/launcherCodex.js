@@ -7,8 +7,6 @@ import { mkdir, open } from 'node:fs/promises';
 export const DEFAULT_CODEX_RALPH_ARGS = [
   'exec',
   '--skip-git-repo-check',
-  '--model',
-  'gpt-5-mini',
   '--sandbox',
   'workspace-write',
 ];

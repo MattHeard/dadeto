@@ -44,8 +44,6 @@ describe('local symphony scaffold', () => {
       args: [
         'exec',
         '--skip-git-repo-check',
-        '--model',
-        'gpt-5-mini',
         '--sandbox',
         'workspace-write',
       ],

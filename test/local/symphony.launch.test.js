@@ -40,8 +40,6 @@ describe('local symphony runner launch', () => {
             args: [
               'exec',
               '--skip-git-repo-check',
-              '--model',
-              'gpt-5-mini',
               '--sandbox',
               'workspace-write',
             ],
@@ -57,8 +55,6 @@ describe('local symphony runner launch', () => {
             args: [
               'exec',
               '--skip-git-repo-check',
-              '--model',
-              'gpt-5-mini',
               '--sandbox',
               'workspace-write',
               'you are ralph',

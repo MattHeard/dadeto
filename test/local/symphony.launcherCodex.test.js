@@ -12,8 +12,6 @@ describe('local symphony codex launcher', () => {
       args: [
         'exec',
         '--skip-git-repo-check',
-        '--model',
-        'gpt-5-mini',
         '--sandbox',
         'workspace-write',
       ],
@@ -63,8 +61,6 @@ describe('local symphony codex launcher', () => {
         args: [
           'exec',
           '--skip-git-repo-check',
-          '--model',
-          'gpt-5-mini',
           '--sandbox',
           'workspace-write',
           [
