@@ -328,6 +328,7 @@ function buildCompletedOutcomeStatus(status, outcome) {
       outcome: outcome.outcome,
       summary: outcome.summary,
     },
+    activeRun: null,
   };
 }
 
@@ -351,6 +352,7 @@ function buildBlockedOutcomeStatus(status, outcome) {
       outcome: outcome.outcome,
       summary: outcome.summary,
     },
+    activeRun: null,
   };
 }
 

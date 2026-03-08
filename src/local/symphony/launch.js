@@ -1,6 +1,7 @@
 import {
   applyRunnerLaunch,
   applyRunnerLaunchFailure,
+  applyRunnerOutcome,
 } from '../../core/local/symphony.js';
 import {
   createCodexRalphLauncher,
@@ -48,6 +49,12 @@ export async function launchSelectedRunnerLoop(options) {
   const runId = `${startedAt}--${currentBeadId}`;
   const launchRequest = `pop ${currentBeadId}`;
   const launcher = options.launcher ?? createConfiguredLauncher(status, options);
+  const onRunnerExit = createRunnerExitHandler({
+    statusStore: options.statusStore,
+    runId,
+    beadId: currentBeadId,
+    beadTitle: currentBeadTitle,
+  });
 
   try {
     const invocation = await launcher.launchRunner({
@@ -55,6 +62,7 @@ export async function launchSelectedRunnerLoop(options) {
       beadId: currentBeadId,
       beadTitle: currentBeadTitle,
       runId,
+      onExit: onRunnerExit,
     });
     const launchedStatus = applyRunnerLaunch(status, {
       runId,
@@ -199,4 +207,107 @@ function getLaunchErrorMessage(error) {
   }
 
   return 'Unknown launcher failure.';
+}
+
+/**
+ * @param {{
+ *   statusStore: {
+ *     readStatus: () => Promise<Record<string, unknown> | null>,
+ *     writeStatus: (status: Record<string, unknown>) => Promise<void>
+ *   },
+ *   runId: string,
+ *   beadId: string,
+ *   beadTitle: string | null
+ * }} options
+ * @returns {((exitInfo: { exitCode: number | null, signal: string | null }) => Promise<void>) | undefined}
+ */
+export function createRunnerExitHandler(options) {
+  if (
+    !options.statusStore ||
+    typeof options.statusStore.readStatus !== 'function' ||
+    typeof options.statusStore.writeStatus !== 'function'
+  ) {
+    return undefined;
+  }
+
+  return async (exitInfo) => {
+    try {
+      const storedStatus = await options.statusStore.readStatus();
+      if (!storedStatus) {
+        console.warn(
+          `Symphony status missing when runner ${options.runId} exited; skipping update.`
+        );
+        return;
+      }
+
+      const outcome = buildRunnerExitOutcome({
+        runId: options.runId,
+        beadId: options.beadId,
+        beadTitle: options.beadTitle,
+        exitCode: exitInfo.exitCode,
+        signal: exitInfo.signal,
+      });
+
+      const updatedStatus = applyRunnerOutcome(storedStatus, outcome);
+      await options.statusStore.writeStatus(updatedStatus);
+    } catch (error) {
+      console.error(
+        `Failed to persist Symphony status after runner ${options.runId} exit:`,
+        error
+      );
+    }
+  };
+}
+
+/**
+ * @param {{
+ *   runId: string,
+ *   beadId: string,
+ *   beadTitle: string | null,
+ *   exitCode: number | null,
+ *   signal: string | null
+ * }} input
+ * @returns {{ beadId: string, beadTitle: string | null, outcome: 'completed' | 'blocked', summary: string }}
+ */
+function buildRunnerExitOutcome(input) {
+  const outcomeKind = getRunnerExitOutcomeKind(input.exitCode, input.signal);
+  return {
+    beadId: input.beadId,
+    beadTitle: input.beadTitle ?? null,
+    outcome: outcomeKind,
+    summary: formatRunnerExitSummary({
+      runId: input.runId,
+      exitCode: input.exitCode,
+      signal: input.signal,
+    }),
+  };
+}
+
+/**
+ * @param {number | null} exitCode
+ * @param {string | null} signal
+ * @returns {'completed' | 'blocked'}
+ */
+function getRunnerExitOutcomeKind(exitCode, signal) {
+  if (exitCode === 0 && !signal) {
+    return 'completed';
+  }
+
+  return 'blocked';
+}
+
+/**
+ * @param {{ runId: string, exitCode: number | null, signal: string | null }} input
+ * @returns {string}
+ */
+function formatRunnerExitSummary(input) {
+  if (typeof input.signal === 'string' && input.signal) {
+    return `Runner ${input.runId} terminated with signal ${input.signal}.`;
+  }
+
+  if (typeof input.exitCode === 'number') {
+    return `Runner ${input.runId} exited with code ${input.exitCode}.`;
+  }
+
+  return `Runner ${input.runId} exited.`;
 }

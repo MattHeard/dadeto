@@ -29,6 +29,13 @@ export const DEFAULT_CODEX_RALPH_ARGS = [
  *     beadId: string,
  *     beadTitle?: string | null,
  *     runId: string
+ *     onExit?: (options: {
+ *       runId: string,
+ *       beadId: string,
+ *       beadTitle: string | null,
+ *       exitCode: number | null,
+ *       signal: string | null
+ *     }) => unknown
  *   }) => Promise<{
  *     launcherKind: string,
  *     command: string,
@@ -56,13 +63,32 @@ export function createCodexRalphLauncher(options) {
           openImpl,
         });
 
-      const child = spawnImpl(options.command, args, {
-        cwd: options.cwd ?? payload.repoRoot,
-        detached: true,
-        stdio: ['ignore', stdoutFd, stderrFd],
-      });
+    const child = spawnImpl(options.command, args, {
+      cwd: options.cwd ?? payload.repoRoot,
+      detached: true,
+      stdio: ['ignore', stdoutFd, stderrFd],
+    });
 
-      child.unref();
+    if (typeof payload.onExit === 'function') {
+      child.once('exit', (code, signal) => {
+        const exitPayload = {
+          runId: payload.runId,
+          beadId: payload.beadId,
+          beadTitle: payload.beadTitle ?? null,
+          exitCode: typeof code === 'number' ? code : null,
+          signal: signal ?? null,
+        };
+
+        Promise.resolve(payload.onExit(exitPayload)).catch((error) => {
+          console.error(
+            `Failed to handle Symphony runner exit for ${payload.runId}:`,
+            error
+          );
+        });
+      });
+    }
+
+    child.unref();
 
       return {
         launcherKind: 'codex',

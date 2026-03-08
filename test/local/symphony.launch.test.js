@@ -96,6 +96,7 @@ describe('local symphony runner launch', () => {
         beadTitle:
           'Invoke a real Ralph agent session from Symphony runner launch',
         runId: '2026-03-08T19:15:00.000Z--dadeto-0fzi',
+        onExit: expect.any(Function),
       },
     ]);
     expect(launchedStatus).toMatchObject({
