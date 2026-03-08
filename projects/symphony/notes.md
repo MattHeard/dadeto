@@ -2,48 +2,40 @@
 
 ## Outcome
 
-Establish Symphony as the repo's active project for planner-driven bead generation and small worker execution loops.
+Keep Symphony usable as Dadeto's local-first operator surface for selecting one ready bead, launching one Ralph run, and leaving enough status and log evidence for the next planner pass.
 
-## Current state
+## MVP now
 
-Local Symphony already has a runnable scaffold in `src/local/symphony/` with config loading, workflow loading, status persistence, ready-bead polling, launch triggering, and operator recommendations for `ready`, `idle`, `blocked`, and one detached `running` run. A launched Ralph child is intentionally detached, so the HTTP server is only a convenience surface; the durable source of truth after launch is still `tracking/symphony/status.json` plus the per-run logs under `tracking/symphony/runs/`.
+- The local Symphony surface exists in `src/local/symphony/` with workflow/config loading, `bd ready --sort priority` polling, status persistence, and an operator-visible HTTP/status shell.
+- Symphony can launch one detached Ralph run for the selected bead and record the launch request, bead metadata, stdout path, stderr path, and run id under `tracking/symphony/status.json` and `tracking/symphony/runs/`.
+- Planner review guidance for `status.json`, `queueEvidence`, and run-log inspection is already encoded here and in `WORKFLOW.md`; SNC should not need terminal history to understand the active run.
 
-## Constraints
+## Current limits
 
-Keep Symphony local-first for now. Do not add dispatch automation, multi-workspace orchestration, or external integrations until the local planner and worker loop is easier to review from repo docs alone.
+- Symphony still reports stale `state: "running"` after a launched Ralph run finishes. That is the main MVP trust gap now.
+- The current loop is single-run and local-first. Do not widen into retries, multi-run scheduling, multi-workspace orchestration, or external integrations yet.
+- The HTTP server remains a convenience surface, not the durable source of truth; trust the persisted status file and run logs first.
 
-## Open questions
+## Planner review order
 
-- What is the smallest planner review cadence that should be reflected in repo docs without adding automation?
-- Which single status artifact should SNC trust first when deciding whether Symphony is ready for another worker bead?
-- When should open beads in the new file-based scaffold be refreshed versus archived?
+1. `tracking/symphony/status.json`
+2. `projects/symphony/notes.md`
+3. `WORKFLOW.md`
+4. `tracking/symphony/runs/` for the matching run logs when `latestEvidence`, `lastPollSummary`, or `queueEvidence` need explanation
 
-## Planner review
+Read `status.json` first. `currentBeadId`, `lastPollSummary`, `latestEvidence`, and `activeRun` should usually tell SNC whether a bead was selected, launched, or is now stale enough to need reconciliation. Use run logs only when that summary is not enough.
 
-Review Symphony at least once per runner handoff or repo-closure pass, and also whenever `tracking/symphony/status.json` shows a blocked or idle state. Before creating, refreshing, or archiving a worker bead, inspect these inputs in order:
+## Open beads that match the live MVP
 
-1. `projects/symphony/notes.md` for current outcome, constraints, open questions, and candidate next actions.
-2. `WORKFLOW.md` for the active local operator contract and required quality gates.
-3. `tracking/symphony/status.json` for the current state, selected bead, `lastPollSummary`, and `latestEvidence`.
-4. `tracking/symphony/runs/` logs or persisted `queueEvidence` when bead selection or queue shape needs explanation.
+- `dadeto-n3nd`: reconcile finished Ralph runs back into Symphony status so completed runs stop looking active.
+- `dadeto-6tgv`: exercise one full Symphony Ralph loop and report the spawned-agent outcome against the current launch flow.
+- `dadeto-vrk8`: finish the Codex model-pin work only if the launcher configuration still needs to be brought back to a stable supported setting.
 
-Treat `tracking/symphony/status.json` as the first planner artifact. `state: "ready"` means a bead can usually be refreshed or handed to a runner using `currentBeadId`, `lastPollSummary`, and `latestEvidence` as the short justification. `state: "blocked"` means SNC should inspect `latestEvidence` and `WORKFLOW.md` first before creating more work. `state: "idle"` means the queue was empty at the last poll, so planner effort should usually shift to creating or reshaping the next bead. `state: "running"` means one detached Ralph run has already been launched; do not infer that the HTTP server must still be alive, and recover state from `operatorArtifacts.statusPath`, `activeRun.stdoutPath`, and `activeRun.stderrPath` before deciding whether to retry or hand off.
+## Not current anymore
 
-Inspect `tracking/symphony/runs/` when `status.json` is not enough to explain why a bead was selected, why the queue looked empty, or whether a handoff should stay blocked. Use `queueEvidence` and the matching run log to decide whether to create a fresh bead, refresh the current bead with clearer acceptance evidence, archive stale work that no longer matches the queue, or hand a bead back because the logged evidence shows a real blocker instead of missing planner context.
+- Launch is no longer the missing feature. Symphony already polls ready beads, records queue evidence, launches a detached Ralph process, and writes per-run stdout/stderr logs.
+- Pre-launch placeholder next actions should be treated as stale unless they point to the remaining reconciliation or operator-trust gaps above.
 
-For the file-based scaffold under `beads/open/`, treat 24 hours as the freshness limit. If an open bead is still the right slice but its wording or acceptance evidence is stale, refresh the file in place. If the work is done, invalid, or superseded by a better-scoped replacement, move it to `beads/archive/`. If a bead is older than 24 hours and no longer matches the current queue shape, rewrite it as a new bead instead of quietly reusing the stale file.
-
-## Future consideration
-
-Symphony may eventually formalize project completion through evolving behavior-driven acceptance scenarios rather than fully specifying acceptance criteria up front. One possible model is to start with a one-sentence project outcome, derive MVP use cases as beads, and then refine the project-level acceptance scenarios after each deployed iteration based on real user feedback. Under that model, a project is done when user feedback no longer meaningfully changes those acceptance scenarios.
-
-## External references
+## External reference
 
 - OpenAI Symphony spec: https://github.com/openai/symphony/blob/main/SPEC.md
-
-## Candidate next actions
-
-- Launch one runner loop for the selected Symphony bead (`dadeto-u210`).
-- Replace the placeholder file-based bead with a real Symphony example bead if the file-based scaffold is still being used as operator memory.
-- After launch exists, expose the operator recommendation more clearly at the root Symphony HTTP surface.
-- Only after launch works reliably, keep extending the autonomous loop from launched-run state toward repeatable scheduler behavior.
