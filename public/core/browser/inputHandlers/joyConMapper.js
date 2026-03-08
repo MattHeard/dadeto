@@ -254,20 +254,49 @@ function describeAxisCapture(mapping) {
  */
 function readStoredMapperState() {
   try {
-    const root = JSON.parse(
-      globalThis.localStorage?.getItem(PERMANENT_DATA_KEY) ?? '{}'
+    return normalizeStoredMapperState(
+      readMapperStorageEntry(readStoredMapperRoot())
     );
-    const stored = root?.[MAPPER_STORAGE_KEY];
-    if (!stored || typeof stored !== 'object') {
-      return EMPTY_MAPPER_STATE;
-    }
-    return {
-      mappings: normalizeStoredMappings(stored.mappings),
-      skippedControls: normalizeSkippedControls(stored.skippedControls),
-    };
   } catch {
     return EMPTY_MAPPER_STATE;
   }
+}
+
+/**
+ * @returns {unknown}
+ *   Parsed local-storage root payload for mapper state.
+ */
+function readStoredMapperRoot() {
+  return JSON.parse(
+    globalThis.localStorage?.getItem(PERMANENT_DATA_KEY) ?? '{}'
+  );
+}
+
+/**
+ * @param {unknown} root
+ *   Parsed local-storage root payload.
+ * @returns {unknown}
+ *   Mapper-specific storage payload, if present.
+ */
+function readMapperStorageEntry(root) {
+  return root?.[MAPPER_STORAGE_KEY];
+}
+
+/**
+ * @param {unknown} stored
+ *   Candidate mapper-specific storage payload.
+ * @returns {StoredMapperState}
+ *   Normalized mapper storage state.
+ */
+function normalizeStoredMapperState(stored) {
+  if (!stored || typeof stored !== 'object') {
+    return EMPTY_MAPPER_STATE;
+  }
+
+  return {
+    mappings: normalizeStoredMappings(stored.mappings),
+    skippedControls: normalizeSkippedControls(stored.skippedControls),
+  };
 }
 
 /**
@@ -1005,29 +1034,58 @@ function captureCurrentControl(state, capture) {
  * @returns {void}
  */
 function maybeCapture(state) {
-  if (!state.started || !state.currentControl) {
+  if (shouldSkipCapture(state)) {
     return;
   }
 
-  const gamepad = currentPad();
-  const snapshot = snapshotGamepad(gamepad);
-  let capture = null;
+  updateCaptureState(state, snapshotGamepad(currentPad()));
+}
 
-  if (state.currentControl.type === 'button') {
-    capture = detectButtonCapture(state.previousSnapshot, snapshot);
-  } else {
-    capture = detectAxisCapture(
-      state.previousSnapshot,
-      snapshot,
-      /** @type {'negative' | 'positive'} */ (state.currentControl.direction)
-    );
-  }
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {boolean}
+ *   Whether capture polling should be skipped.
+ */
+function shouldSkipCapture(state) {
+  return !state.started || !state.currentControl;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {GamepadSnapshot | null} snapshot
+ *   Current gamepad snapshot.
+ * @returns {void}
+ */
+function updateCaptureState(state, snapshot) {
+  const capture = detectCurrentControlCapture(state, snapshot);
 
   if (capture) {
     captureCurrentControl(state, capture);
   }
 
   state.previousSnapshot = snapshot;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {GamepadSnapshot | null} snapshot
+ *   Current gamepad snapshot.
+ * @returns {CaptureResult | null}
+ *   Capture for the active control, if one is present.
+ */
+function detectCurrentControlCapture(state, snapshot) {
+  if (state.currentControl.type === 'button') {
+    return detectButtonCapture(state.previousSnapshot, snapshot);
+  }
+
+  return detectAxisCapture(
+    state.previousSnapshot,
+    snapshot,
+    /** @type {'negative' | 'positive'} */ (state.currentControl.direction)
+  );
 }
 
 /**
