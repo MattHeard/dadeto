@@ -18,6 +18,15 @@ Keep Symphony local-first for now. Do not add dispatch automation, multi-workspa
 - Which single status artifact should SNC trust first when deciding whether Symphony is ready for another worker bead?
 - When should open beads in the new file-based scaffold be refreshed versus archived?
 
+## Planner review
+
+Review Symphony at least once per runner handoff or repo-closure pass, and also whenever `tracking/symphony/status.json` shows a blocked or idle state. Before creating, refreshing, or archiving a worker bead, inspect these inputs in order:
+
+1. `projects/symphony/notes.md` for current outcome, constraints, open questions, and candidate next actions.
+2. `WORKFLOW.md` for the active local operator contract and required quality gates.
+3. `tracking/symphony/status.json` for the current state, selected bead, `lastPollSummary`, and `latestEvidence`.
+4. `tracking/symphony/runs/` logs or persisted `queueEvidence` when bead selection or queue shape needs explanation.
+
 ## Candidate next actions
 
 - Document the planner review cadence and decision inputs in a short Symphony-specific workflow note.
