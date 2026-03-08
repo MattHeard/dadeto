@@ -6,7 +6,7 @@ Establish Symphony as the repo's active project for planner-driven bead generati
 
 ## Current state
 
-Local Symphony already has a runnable scaffold in `src/local/symphony/` with config loading, workflow loading, status persistence, ready-bead polling, and operator recommendations for `ready`, `idle`, and `blocked` states. The local status surface can now represent completed and blocked runner outcomes, but Symphony still does not yet launch a runner loop on its own. The current open MVP execution bead is `dadeto-u210`.
+Local Symphony already has a runnable scaffold in `src/local/symphony/` with config loading, workflow loading, status persistence, ready-bead polling, launch triggering, and operator recommendations for `ready`, `idle`, `blocked`, and one detached `running` run. A launched Ralph child is intentionally detached, so the HTTP server is only a convenience surface; the durable source of truth after launch is still `tracking/symphony/status.json` plus the per-run logs under `tracking/symphony/runs/`.
 
 ## Constraints
 
@@ -27,7 +27,7 @@ Review Symphony at least once per runner handoff or repo-closure pass, and also 
 3. `tracking/symphony/status.json` for the current state, selected bead, `lastPollSummary`, and `latestEvidence`.
 4. `tracking/symphony/runs/` logs or persisted `queueEvidence` when bead selection or queue shape needs explanation.
 
-Treat `tracking/symphony/status.json` as the first planner artifact. `state: "ready"` means a bead can usually be refreshed or handed to a runner using `currentBeadId`, `lastPollSummary`, and `latestEvidence` as the short justification. `state: "blocked"` means SNC should inspect `latestEvidence` and `WORKFLOW.md` first before creating more work. `state: "idle"` means the queue was empty at the last poll, so planner effort should usually shift to creating or reshaping the next bead.
+Treat `tracking/symphony/status.json` as the first planner artifact. `state: "ready"` means a bead can usually be refreshed or handed to a runner using `currentBeadId`, `lastPollSummary`, and `latestEvidence` as the short justification. `state: "blocked"` means SNC should inspect `latestEvidence` and `WORKFLOW.md` first before creating more work. `state: "idle"` means the queue was empty at the last poll, so planner effort should usually shift to creating or reshaping the next bead. `state: "running"` means one detached Ralph run has already been launched; do not infer that the HTTP server must still be alive, and recover state from `operatorArtifacts.statusPath`, `activeRun.stdoutPath`, and `activeRun.stderrPath` before deciding whether to retry or hand off.
 
 Inspect `tracking/symphony/runs/` when `status.json` is not enough to explain why a bead was selected, why the queue looked empty, or whether a handoff should stay blocked. Use `queueEvidence` and the matching run log to decide whether to create a fresh bead, refresh the current bead with clearer acceptance evidence, archive stale work that no longer matches the queue, or hand a bead back because the logged evidence shows a real blocker instead of missing planner context.
 

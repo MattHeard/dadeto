@@ -9,12 +9,7 @@ describe('local symphony codex launcher', () => {
     let unrefCalled = false;
     const launcher = createCodexRalphLauncher({
       command: 'codex',
-      args: [
-        'exec',
-        '--skip-git-repo-check',
-        '--sandbox',
-        'workspace-write',
-      ],
+      args: ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write'],
       cwd: '/tmp/repo',
       logDir: '/tmp/repo/tracking/symphony',
       async openImpl(filePath, flags) {
@@ -45,13 +40,11 @@ describe('local symphony codex launcher', () => {
     expect(unrefCalled).toBe(true);
     expect(openCalls).toEqual([
       {
-        path:
-          '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stdout.log',
+        path: '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stdout.log',
         flags: 'a',
       },
       {
-        path:
-          '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stderr.log',
+        path: '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stderr.log',
         flags: 'a',
       },
     ]);

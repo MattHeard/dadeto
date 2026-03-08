@@ -41,12 +41,7 @@ describe('local symphony scaffold', () => {
     expect(config.launcher).toEqual({
       kind: 'codex',
       command: 'codex',
-      args: [
-        'exec',
-        '--skip-git-repo-check',
-        '--sandbox',
-        'workspace-write',
-      ],
+      args: ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write'],
     });
     expect(config.workspaceRoot).toBe(
       path.join(tempDir, '.worktrees', 'symphony')
@@ -132,6 +127,10 @@ describe('local symphony scaffold', () => {
     expect(status.operatorRecommendation).toBe(
       'Add WORKFLOW.md so Symphony can decide what the runner should do next.'
     );
+    expect(status.operatorArtifacts).toEqual({
+      statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+      runsDir: path.join(tempDir, 'tracking', 'symphony', 'runs'),
+    });
     await expect(
       readFile(
         path.join(tempDir, 'tracking', 'symphony', 'status.json'),
@@ -247,6 +246,10 @@ describe('local symphony scaffold', () => {
     expect(status.operatorRecommendation).toBe(
       'Run the next worker loop on dadeto-639o.'
     );
+    expect(status.operatorArtifacts).toEqual({
+      statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+      runsDir: path.join(tempDir, 'tracking', 'symphony', 'runs'),
+    });
     await expect(
       readFile(
         path.join(
@@ -299,6 +302,18 @@ describe('local symphony scaffold', () => {
     ).resolves.toContain(
       '"operatorRecommendation": "Run the next worker loop on dadeto-639o."'
     );
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-06T21-00-00.000Z--startup.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain('"operatorArtifacts"');
     await expect(
       readFile(
         path.join(

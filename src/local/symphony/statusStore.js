@@ -61,6 +61,10 @@ export function createSymphonyStatusStore(options) {
             queueEvidence: Array.isArray(status.queueEvidence)
               ? status.queueEvidence
               : [],
+            operatorArtifacts:
+              status.operatorArtifacts && typeof status.operatorArtifacts === 'object'
+                ? status.operatorArtifacts
+                : null,
             activeRun:
               status.activeRun && typeof status.activeRun === 'object'
                 ? status.activeRun

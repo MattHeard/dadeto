@@ -70,6 +70,9 @@ export async function launchSelectedRunnerLoop(options) {
       stdoutPath: invocation.stdoutPath,
       stderrPath: invocation.stderrPath,
     });
+    launchedStatus.operatorRecommendation = buildLaunchLifecycleRecommendation(
+      launchedStatus
+    );
 
     await options.statusStore.writeStatus(launchedStatus);
 
@@ -88,6 +91,34 @@ export async function launchSelectedRunnerLoop(options) {
 
     return failedStatus;
   }
+}
+
+/**
+ * @param {Record<string, unknown>} status Current launched Symphony status.
+ * @returns {string} Operator-facing lifecycle guidance for the launched run.
+ */
+function buildLaunchLifecycleRecommendation(status) {
+  const beadId = getRequiredString(status.currentBeadId, 'currentBeadId');
+  const operatorArtifacts =
+    status.operatorArtifacts && typeof status.operatorArtifacts === 'object'
+      ? status.operatorArtifacts
+      : null;
+  const activeRun =
+    status.activeRun && typeof status.activeRun === 'object' ? status.activeRun : null;
+  const statusPath = getOptionalString(operatorArtifacts?.statusPath);
+  const stdoutPath = getOptionalString(activeRun?.stdoutPath);
+  const stderrPath = getOptionalString(activeRun?.stderrPath);
+  const persistedArtifacts = [statusPath, stdoutPath, stderrPath].filter(Boolean);
+
+  if (persistedArtifacts.length === 0) {
+    return `Wait for the runner loop on ${beadId} to finish before launching another bead.`;
+  }
+
+  return [
+    `Wait for the runner loop on ${beadId} to finish before launching another bead.`,
+    'The launched Ralph process is detached and may continue even if the Symphony server stops.',
+    `If the server is unavailable, inspect ${persistedArtifacts.join(', ')}.`,
+  ].join(' ');
 }
 
 /**

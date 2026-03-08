@@ -86,6 +86,10 @@ export async function bootstrapSymphony(options = {}) {
       tracker: config.tracker,
       launcher: config.launcher,
     },
+    operatorArtifacts: {
+      statusPath: config.statusPath,
+      runsDir: `${config.logDir}/runs`,
+    },
     workflow,
     latestEvidence: trackerSummary.latestEvidence,
     operatorRecommendation: trackerSummary.operatorRecommendation,

@@ -33,6 +33,10 @@ describe('local symphony runner launch', () => {
         currentBeadTitle:
           'Invoke a real Ralph agent session from Symphony runner launch',
         currentBeadPriority: '● P2',
+        operatorArtifacts: {
+          statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+          runsDir: path.join(tempDir, 'tracking', 'symphony', 'runs'),
+        },
         config: {
           launcher: {
             kind: 'codex',
@@ -60,22 +64,20 @@ describe('local symphony runner launch', () => {
               'you are ralph',
             ],
             pid: 43210,
-            stdoutPath:
-              path.join(
-                tempDir,
-                'tracking',
-                'symphony',
-                'runs',
-                '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log'
-              ),
-            stderrPath:
-              path.join(
-                tempDir,
-                'tracking',
-                'symphony',
-                'runs',
-                '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log'
-              ),
+            stdoutPath: path.join(
+              tempDir,
+              'tracking',
+              'symphony',
+              'runs',
+              '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log'
+            ),
+            stderrPath: path.join(
+              tempDir,
+              'tracking',
+              'symphony',
+              'runs',
+              '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log'
+            ),
           };
         },
       },
@@ -95,6 +97,12 @@ describe('local symphony runner launch', () => {
     expect(launchedStatus).toMatchObject({
       state: 'running',
       currentBeadId: 'dadeto-0fzi',
+      operatorRecommendation:
+        `Wait for the runner loop on dadeto-0fzi to finish before launching another bead. ` +
+        'The launched Ralph process is detached and may continue even if the Symphony server stops. ' +
+        `If the server is unavailable, inspect ${path.join(tempDir, 'tracking', 'symphony', 'status.json')}, ` +
+        `${path.join(tempDir, 'tracking', 'symphony', 'runs', '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log')}, ` +
+        `${path.join(tempDir, 'tracking', 'symphony', 'runs', '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log')}.`,
       activeRun: {
         runId: '2026-03-08T19:15:00.000Z--dadeto-0fzi',
         pid: 43210,
@@ -137,6 +145,12 @@ describe('local symphony runner launch', () => {
     await expect(statusStore.readStatus()).resolves.toMatchObject({
       state: 'running',
       currentBeadId: 'dadeto-0fzi',
+      operatorRecommendation:
+        `Wait for the runner loop on dadeto-0fzi to finish before launching another bead. ` +
+        'The launched Ralph process is detached and may continue even if the Symphony server stops. ' +
+        `If the server is unavailable, inspect ${path.join(tempDir, 'tracking', 'symphony', 'status.json')}, ` +
+        `${path.join(tempDir, 'tracking', 'symphony', 'runs', '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log')}, ` +
+        `${path.join(tempDir, 'tracking', 'symphony', 'runs', '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log')}.`,
       activeRun: {
         runId: '2026-03-08T19:15:00.000Z--dadeto-0fzi',
         pid: 43210,
