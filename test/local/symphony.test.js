@@ -1,9 +1,11 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { applyRunnerOutcome } from '../../src/core/local/symphony.js';
 import { bootstrapSymphony } from '../../src/local/symphony/bootstrap.js';
 import { loadSymphonyConfig } from '../../src/local/symphony/config.js';
 import { loadSymphonyWorkflow } from '../../src/local/symphony/workflow.js';
+import { createSymphonyStatusStore } from '../../src/local/symphony/statusStore.js';
 
 describe('local symphony scaffold', () => {
   let tempDir;
@@ -349,5 +351,73 @@ describe('local symphony scaffold', () => {
     ).resolves.toContain(
       '"operatorRecommendation": "Create or refresh the next bead before starting another runner loop."'
     );
+  });
+
+  test('persists one completed and one blocked runner outcome as scheduler-visible status', async () => {
+    const statusStore = createSymphonyStatusStore({
+      statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+      logDir: path.join(tempDir, 'tracking', 'symphony'),
+    });
+
+    const completedStatus = applyRunnerOutcome(
+      {
+        service: 'dadeto-local-symphony',
+        startedAt: '2026-03-06T23:00:00.000Z',
+        state: 'ready',
+        currentBeadId: 'dadeto-639o',
+        currentBeadTitle: 'First',
+        currentBeadPriority: '● P2',
+        queueEvidence: ['dadeto-639o (● P2) First'],
+      },
+      {
+        beadId: 'dadeto-639o',
+        beadTitle: 'First',
+        outcome: 'completed',
+        summary: 'Closed bead and pushed changes.',
+      }
+    );
+
+    await statusStore.writeStatus(completedStatus);
+
+    await expect(statusStore.readStatus()).resolves.toMatchObject({
+      state: 'idle',
+      currentBeadId: null,
+      operatorRecommendation:
+        'Refresh the queue and choose the next ready bead before launching another runner loop.',
+      lastOutcome: {
+        beadId: 'dadeto-639o',
+        outcome: 'completed',
+      },
+    });
+
+    const blockedStatus = applyRunnerOutcome(
+      {
+        ...completedStatus,
+        startedAt: '2026-03-06T23:10:00.000Z',
+        currentBeadId: 'dadeto-abcd',
+        currentBeadTitle: 'Blocked bead',
+        currentBeadPriority: '● P2',
+      },
+      {
+        beadId: 'dadeto-abcd',
+        beadTitle: 'Blocked bead',
+        outcome: 'blocked',
+        summary: 'Waiting on clarified workflow guidance.',
+      }
+    );
+
+    await statusStore.writeStatus(blockedStatus);
+
+    await expect(statusStore.readStatus()).resolves.toMatchObject({
+      state: 'blocked',
+      currentBeadId: 'dadeto-abcd',
+      operatorRecommendation:
+        'Inspect the blocker, update the bead or workflow guidance, and only then launch another runner loop.',
+      queueEvidence: ['dadeto-abcd: Waiting on clarified workflow guidance.'],
+      lastOutcome: {
+        beadId: 'dadeto-abcd',
+        outcome: 'blocked',
+      },
+    });
   });
 });

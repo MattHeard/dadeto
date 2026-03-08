@@ -1,4 +1,5 @@
 import {
+  applyRunnerOutcome,
   buildSelectedBeadStatus,
   parseReadyBeads,
   selectNextBead,
@@ -122,6 +123,76 @@ describe('core local symphony helpers', () => {
       operatorRecommendation:
         'Create or refresh the next bead before starting another runner loop.',
       queueEvidence: [],
+    });
+  });
+
+  test('applies completed and blocked runner outcomes to scheduler-visible state', () => {
+    expect(
+      applyRunnerOutcome(
+        {
+          state: 'ready',
+          currentBeadId: 'dadeto-639o',
+          currentBeadTitle: 'First',
+          currentBeadPriority: '● P2',
+          queueEvidence: ['dadeto-639o (● P2) First'],
+        },
+        {
+          beadId: 'dadeto-639o',
+          beadTitle: 'First',
+          outcome: 'completed',
+          summary: 'Closed bead and pushed changes.',
+        }
+      )
+    ).toMatchObject({
+      state: 'idle',
+      currentBeadId: null,
+      currentBeadTitle: null,
+      currentBeadPriority: null,
+      latestEvidence:
+        'Runner completed dadeto-639o: Closed bead and pushed changes.',
+      operatorRecommendation:
+        'Refresh the queue and choose the next ready bead before launching another runner loop.',
+      queueEvidence: [],
+      lastOutcome: {
+        beadId: 'dadeto-639o',
+        beadTitle: 'First',
+        outcome: 'completed',
+        summary: 'Closed bead and pushed changes.',
+      },
+    });
+
+    expect(
+      applyRunnerOutcome(
+        {
+          state: 'ready',
+          currentBeadId: 'dadeto-abcd',
+          currentBeadTitle: 'Blocked bead',
+          currentBeadPriority: '● P2',
+          queueEvidence: [],
+        },
+        {
+          beadId: 'dadeto-abcd',
+          beadTitle: 'Blocked bead',
+          outcome: 'blocked',
+          summary: 'Missing workflow guidance for the next step.',
+        }
+      )
+    ).toMatchObject({
+      state: 'blocked',
+      currentBeadId: 'dadeto-abcd',
+      currentBeadTitle: 'Blocked bead',
+      currentBeadPriority: '● P2',
+      latestEvidence:
+        'Runner blocked dadeto-abcd: Missing workflow guidance for the next step.',
+      operatorRecommendation:
+        'Inspect the blocker, update the bead or workflow guidance, and only then launch another runner loop.',
+      queueEvidence: ['dadeto-abcd: Missing workflow guidance for the next step.'],
+      lastOutcome: {
+        beadId: 'dadeto-abcd',
+        beadTitle: 'Blocked bead',
+        outcome: 'blocked',
+        summary: 'Missing workflow guidance for the next step.',
+      },
     });
   });
 });

@@ -202,3 +202,94 @@ export function summarizeTrackerSelection(input) {
       ),
   });
 }
+
+/**
+ * @param {{
+ *   state?: string,
+ *   currentBeadId?: string | null,
+ *   currentBeadTitle?: string | null,
+ *   currentBeadPriority?: string | null,
+ *   queueEvidence?: string[],
+ *   [key: string]: unknown
+ * }} status Current scheduler-visible status.
+ * @param {{
+ *   beadId: string,
+ *   beadTitle?: string,
+ *   outcome: 'completed' | 'blocked',
+ *   summary: string
+ * }} outcome Runner outcome to apply.
+ * @returns {Record<string, unknown>} Updated scheduler-visible status.
+ */
+export function applyRunnerOutcome(status, outcome) {
+  if (outcome.outcome === 'blocked') {
+    return buildBlockedOutcomeStatus(status, outcome);
+  }
+
+  return buildCompletedOutcomeStatus(status, outcome);
+}
+
+/**
+ * @param {Record<string, unknown>} status Current scheduler-visible status.
+ * @param {{ beadId: string, beadTitle?: string, outcome: 'completed' | 'blocked', summary: string }} outcome
+ *   Runner outcome to apply.
+ * @returns {Record<string, unknown>} Updated status after a completed runner loop.
+ */
+function buildCompletedOutcomeStatus(status, outcome) {
+  return {
+    ...status,
+    state: 'idle',
+    currentBeadId: null,
+    currentBeadTitle: null,
+    currentBeadPriority: null,
+    latestEvidence: buildRunnerOutcomeEvidence('completed', outcome),
+    operatorRecommendation:
+      'Refresh the queue and choose the next ready bead before launching another runner loop.',
+    queueEvidence: [],
+    lastOutcome: {
+      beadId: outcome.beadId,
+      beadTitle: outcome.beadTitle ?? null,
+      outcome: outcome.outcome,
+      summary: outcome.summary,
+    },
+  };
+}
+
+/**
+ * @param {Record<string, unknown>} status Current scheduler-visible status.
+ * @param {{ beadId: string, beadTitle?: string, outcome: 'completed' | 'blocked', summary: string }} outcome
+ *   Runner outcome to apply.
+ * @returns {Record<string, unknown>} Updated status after a blocked runner handoff.
+ */
+function buildBlockedOutcomeStatus(status, outcome) {
+  return {
+    ...status,
+    state: 'blocked',
+    latestEvidence: buildRunnerOutcomeEvidence('blocked', outcome),
+    operatorRecommendation:
+      'Inspect the blocker, update the bead or workflow guidance, and only then launch another runner loop.',
+    queueEvidence: [buildRunnerOutcomeQueueEvidence(outcome)],
+    lastOutcome: {
+      beadId: outcome.beadId,
+      beadTitle: outcome.beadTitle ?? null,
+      outcome: outcome.outcome,
+      summary: outcome.summary,
+    },
+  };
+}
+
+/**
+ * @param {'completed' | 'blocked'} outcomeKind Outcome kind label.
+ * @param {{ beadId: string, summary: string }} outcome Runner outcome to apply.
+ * @returns {string} Operator-visible evidence line for the outcome.
+ */
+function buildRunnerOutcomeEvidence(outcomeKind, outcome) {
+  return `Runner ${outcomeKind} ${outcome.beadId}: ${outcome.summary}`;
+}
+
+/**
+ * @param {{ beadId: string, summary: string }} outcome Runner outcome to apply.
+ * @returns {string} Queue evidence line for blocked outcomes.
+ */
+function buildRunnerOutcomeQueueEvidence(outcome) {
+  return `${outcome.beadId}: ${outcome.summary}`;
+}
