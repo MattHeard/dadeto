@@ -27,9 +27,17 @@ Review Symphony at least once per runner handoff or repo-closure pass, and also 
 3. `tracking/symphony/status.json` for the current state, selected bead, `lastPollSummary`, and `latestEvidence`.
 4. `tracking/symphony/runs/` logs or persisted `queueEvidence` when bead selection or queue shape needs explanation.
 
+Treat `tracking/symphony/status.json` as the first planner artifact. `state: "ready"` means a bead can usually be refreshed or handed to a runner using `currentBeadId`, `lastPollSummary`, and `latestEvidence` as the short justification. `state: "blocked"` means SNC should inspect `latestEvidence` and `WORKFLOW.md` first before creating more work. `state: "idle"` means the queue was empty at the last poll, so planner effort should usually shift to creating or reshaping the next bead.
+
+Inspect `tracking/symphony/runs/` when `status.json` is not enough to explain why a bead was selected, why the queue looked empty, or whether a handoff should stay blocked. Use `queueEvidence` and the matching run log to decide whether to create a fresh bead, refresh the current bead with clearer acceptance evidence, archive stale work that no longer matches the queue, or hand a bead back because the logged evidence shows a real blocker instead of missing planner context.
+
 ## Future consideration
 
 Symphony may eventually formalize project completion through evolving behavior-driven acceptance scenarios rather than fully specifying acceptance criteria up front. One possible model is to start with a one-sentence project outcome, derive MVP use cases as beads, and then refine the project-level acceptance scenarios after each deployed iteration based on real user feedback. Under that model, a project is done when user feedback no longer meaningfully changes those acceptance scenarios.
+
+## External references
+
+- OpenAI Symphony spec: https://github.com/openai/symphony/blob/main/SPEC.md
 
 ## Candidate next actions
 
