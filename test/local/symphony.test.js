@@ -48,8 +48,6 @@ describe('local symphony scaffold', () => {
         'gpt-5-mini',
         '--sandbox',
         'workspace-write',
-        '--ask-for-approval',
-        'never',
       ],
     });
     expect(config.workspaceRoot).toBe(

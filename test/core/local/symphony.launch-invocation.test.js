@@ -34,8 +34,6 @@ describe('core local symphony launch invocation state', () => {
             'gpt-5-mini',
             '--sandbox',
             'workspace-write',
-            '--ask-for-approval',
-            'never',
             'you are ralph',
           ],
           pid: 43210,

@@ -11,8 +11,6 @@ export const DEFAULT_CODEX_RALPH_ARGS = [
   'gpt-5-mini',
   '--sandbox',
   'workspace-write',
-  '--ask-for-approval',
-  'never',
 ];
 
 /**

@@ -16,8 +16,6 @@ describe('local symphony codex launcher', () => {
         'gpt-5-mini',
         '--sandbox',
         'workspace-write',
-        '--ask-for-approval',
-        'never',
       ],
       cwd: '/tmp/repo',
       logDir: '/tmp/repo/tracking/symphony',
@@ -69,8 +67,6 @@ describe('local symphony codex launcher', () => {
           'gpt-5-mini',
           '--sandbox',
           'workspace-write',
-          '--ask-for-approval',
-          'never',
           [
             'you are ralph',
             'pop dadeto-0fzi',
