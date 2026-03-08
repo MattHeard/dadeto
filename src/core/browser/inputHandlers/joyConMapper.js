@@ -267,9 +267,19 @@ function readStoredMapperState() {
  *   Parsed local-storage root payload for mapper state.
  */
 function readStoredMapperRoot() {
-  return JSON.parse(
-    globalThis.localStorage?.getItem(PERMANENT_DATA_KEY) ?? '{}'
+  return parseStoredMapperRoot(
+    globalThis.localStorage?.getItem(PERMANENT_DATA_KEY)
   );
+}
+
+/**
+ * @param {string | null | undefined} serializedRoot
+ *   Serialized local-storage root payload.
+ * @returns {unknown}
+ *   Parsed local-storage root payload for mapper state.
+ */
+function parseStoredMapperRoot(serializedRoot) {
+  return JSON.parse(serializedRoot ?? '{}');
 }
 
 /**
@@ -289,7 +299,7 @@ function readMapperStorageEntry(root) {
  *   Normalized mapper storage state.
  */
 function normalizeStoredMapperState(stored) {
-  if (!stored || typeof stored !== 'object') {
+  if (!isStoredMapperObject(stored)) {
     return EMPTY_MAPPER_STATE;
   }
 
@@ -297,6 +307,16 @@ function normalizeStoredMapperState(stored) {
     mappings: normalizeStoredMappings(stored.mappings),
     skippedControls: normalizeSkippedControls(stored.skippedControls),
   };
+}
+
+/**
+ * @param {unknown} stored
+ *   Candidate mapper-specific storage payload.
+ * @returns {stored is { mappings?: unknown, skippedControls?: unknown }}
+ *   Whether the mapper storage payload is object-like.
+ */
+function isStoredMapperObject(stored) {
+  return Boolean(stored) && typeof stored === 'object';
 }
 
 /**
