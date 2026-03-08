@@ -150,6 +150,23 @@ Use the failure taxonomy from `docs/loop/wiggum-playbook.md`.
 - the evaluator path is unclear or unavailable
 - success requires an architectural or prioritization decision from SNC
 
+## Ralph Loop Closure
+
+When `ralph` finishes a bead without handing it back, use this as the canonical closure contract. Do not treat the bead as done until every required step below has succeeded.
+
+1. Run the required evaluator set for the bead, including `npm test` when repo policy requires the full suite before closure.
+2. Record execution evidence in `bd`, including exact commands, pass/fail results, and relevant artifact paths or proof points.
+3. Add the required `notes/agents/` retrospective when the loop produced meaningful repo work or a durable lesson.
+4. Stage the full intended result with `git add -A` so closure does not leave partial tracked changes behind.
+5. Create the commit for the completed loop.
+6. Run `git pull --rebase` before push. If the worktree has unrelated unstaged edits that must be preserved, use the smallest safe equivalent such as `git pull --rebase --autostash`.
+7. Run `bd sync`.
+8. Run `git push`.
+9. Run `git status` and verify the branch is up to date with `origin` before closing the bead.
+10. Only after push and status verification succeed, run `bd close`.
+
+If any non-mechanical closure step fails, `ralph` must resolve or escalate instead of stopping early. Typical examples are rebase conflicts, push rejection, unexpected dirty-state collisions, or ambiguous diffs that make `git add -A` unsafe. In those cases, preserve evidence in `bd`, describe the blocker clearly, and hand the bead back rather than claiming completion.
+
 ## Orchestrator Review Cycle
 
 `super-nintendo-chalmers` should periodically review runner comments and do one of the following:
@@ -164,14 +181,9 @@ The orchestrator should treat runner comments as queue-shaping input, not as a r
 
 ## Completion Rules
 
-A bead is done only when the runner or orchestrator has:
+A bead is done only when the runner or orchestrator has completed the `Ralph Loop Closure` procedure or an equivalent orchestrator-owned closure path with the same guarantees.
 
-- recorded evidence in `bd`
-- satisfied required evaluators
-- left durable repo memory
-- committed and pushed the result if repo files changed
-
-If the runner stops before push, the loop is not complete.
+If the runner stops before push succeeds and `git status` is verified, the loop is not complete.
 
 ## Recommended User Interaction Pattern
 

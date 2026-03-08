@@ -93,3 +93,5 @@ When SNC is preparing work for Ralph, prefer this sequence:
 
 When Ralph receives a bead, check for that comment first.
 If it is missing and the bead is not obviously trivial, hand it back instead of improvising queue policy.
+
+For end-of-loop closure, use the canonical runner procedure in `docs/loop/two-agent-model.md#ralph-loop-closure` rather than reconstructing the landing-the-plane sequence from multiple docs.
