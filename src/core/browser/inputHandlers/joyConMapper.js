@@ -10,6 +10,8 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
 /** @typedef {{ className?: string, text?: string }} ElementOptions */
 
+const EMPTY_ELEMENT_OPTIONS = Object.freeze({ className: '' });
+
 const MAPPER_STORAGE_KEY = 'JOYMAP1';
 const PERMANENT_DATA_KEY = 'permanentData';
 const DENDRITE_FORM_CLASS = browserCore.DENDRITE_FORM_SELECTOR.slice(1);
@@ -126,12 +128,20 @@ function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
  *   First connected gamepad exposed by the browser, if any.
  */
 function currentPad() {
+  return readConnectedGamepads().find(Boolean) ?? null;
+}
+
+/**
+ * @returns {Gamepad[]}
+ *   Connected gamepads exposed by the browser, or an empty array when unsupported.
+ */
+function readConnectedGamepads() {
   const getGamepads = navigator.getGamepads;
   if (typeof getGamepads !== 'function') {
-    return null;
+    return [];
   }
 
-  return Array.from(getGamepads.call(navigator)).find(Boolean) ?? null;
+  return Array.from(getGamepads.call(navigator));
 }
 
 /**
@@ -175,11 +185,25 @@ function snapshotGamepad(gamepad) {
  *   Newly created DOM element.
  */
 function createElement(dom, tag, options = {}) {
-  const { className = '', text } = options;
   const element = dom.createElement(tag);
-  applyElementClassName(dom, element, className);
-  applyElementText(dom, element, text);
+  applyCreatedElementOptions(dom, element, options);
   return element;
+}
+
+/**
+ * @param {DOMHelpers} dom
+ *   DOM helper facade for element construction.
+ * @param {HTMLElement} element
+ *   Element being configured.
+ * @param {ElementOptions | undefined} options
+ *   Optional class and text content to apply.
+ * @returns {void}
+ *   Applies normalized options to the new element.
+ */
+function applyCreatedElementOptions(dom, element, options) {
+  const normalizedOptions = options ?? EMPTY_ELEMENT_OPTIONS;
+  applyElementClassName(dom, element, normalizedOptions.className);
+  applyElementText(dom, element, normalizedOptions.text);
 }
 
 /**
@@ -227,6 +251,16 @@ function describeCapture(mapping) {
     return 'optional';
   }
 
+  return describeMappedCapture(mapping);
+}
+
+/**
+ * @param {CaptureResult} mapping
+ *   Stored capture metadata for one mapper control.
+ * @returns {string}
+ *   Human-readable label for button or axis mappings.
+ */
+function describeMappedCapture(mapping) {
   if (mapping.type === 'button') {
     return `button ${mapping.index}`;
   }
