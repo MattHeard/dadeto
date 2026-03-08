@@ -9,7 +9,14 @@ describe('local symphony codex launcher', () => {
     let unrefCalled = false;
     const launcher = createCodexRalphLauncher({
       command: 'codex',
-      args: ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write'],
+      args: [
+        'exec',
+        '--skip-git-repo-check',
+        '--model',
+        'gpt-5.4',
+        '--sandbox',
+        'workspace-write',
+      ],
       cwd: '/tmp/repo',
       logDir: '/tmp/repo/tracking/symphony',
       async openImpl(filePath, flags) {
@@ -54,6 +61,8 @@ describe('local symphony codex launcher', () => {
         args: [
           'exec',
           '--skip-git-repo-check',
+          '--model',
+          'gpt-5.4',
           '--sandbox',
           'workspace-write',
           [

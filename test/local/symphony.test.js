@@ -41,7 +41,14 @@ describe('local symphony scaffold', () => {
     expect(config.launcher).toEqual({
       kind: 'codex',
       command: 'codex',
-      args: ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write'],
+      args: [
+        'exec',
+        '--skip-git-repo-check',
+        '--model',
+        'gpt-5.4',
+        '--sandbox',
+        'workspace-write',
+      ],
     });
     expect(config.workspaceRoot).toBe(
       path.join(tempDir, '.worktrees', 'symphony')
