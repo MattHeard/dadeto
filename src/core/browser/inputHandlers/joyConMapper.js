@@ -405,11 +405,33 @@ function firstPendingIndex(state) {
  *   Strongest newly pressed button capture, if detected.
  */
 function detectButtonCapture(previous, current) {
-  if (!previous || !current) {
+  if (isMissingButtonSnapshots(previous, current)) {
     return null;
   }
 
-  return current.buttons.reduce((best, button, index) => {
+  return current.buttons.reduce(makeButtonCaptureReducer(previous), null);
+}
+
+/**
+ * @param {GamepadSnapshot | null} previous
+ *   Previous gamepad snapshot.
+ * @param {GamepadSnapshot | null} current
+ *   Current gamepad snapshot.
+ * @returns {boolean}
+ *   Whether button capture cannot run because one snapshot is missing.
+ */
+function isMissingButtonSnapshots(previous, current) {
+  return !previous || !current;
+}
+
+/**
+ * @param {GamepadSnapshot} previous
+ *   Previous gamepad snapshot.
+ * @returns {(best: CaptureResult | null, button: ButtonSnapshot, index: number) => CaptureResult | null}
+ *   Reducer for selecting the strongest button capture across all buttons.
+ */
+function makeButtonCaptureReducer(previous) {
+  return (best, button, index) => {
     const oldButton = previous.buttons[index] ?? { pressed: false, value: 0 };
     const candidate = getButtonCaptureCandidate(button, oldButton, index);
     if (!candidate) {
@@ -417,7 +439,7 @@ function detectButtonCapture(previous, current) {
     }
 
     return selectStrongerButtonCapture(best, candidate);
-  }, null);
+  };
 }
 
 /**
@@ -490,7 +512,31 @@ function selectStrongerButtonCapture(best, candidate) {
     return candidate;
   }
 
-  if (candidate.value > best.value) {
+  return pickStrongerButtonCapture(candidate, best);
+}
+
+/**
+ * @param {CaptureResult} candidate
+ *   Candidate capture to compare.
+ * @param {CaptureResult} best
+ *   Current strongest capture.
+ * @returns {boolean}
+ *   Whether the candidate should replace the current best capture.
+ */
+function isStrongerButtonCapture(candidate, best) {
+  return candidate.value > best.value;
+}
+
+/**
+ * @param {CaptureResult} candidate
+ *   Candidate capture to compare.
+ * @param {CaptureResult} best
+ *   Current strongest capture.
+ * @returns {CaptureResult}
+ *   Stronger of the two button captures.
+ */
+function pickStrongerButtonCapture(candidate, best) {
+  if (isStrongerButtonCapture(candidate, best)) {
     return candidate;
   }
 
