@@ -31,6 +31,8 @@ Treat `tracking/symphony/status.json` as the first planner artifact. `state: "re
 
 Inspect `tracking/symphony/runs/` when `status.json` is not enough to explain why a bead was selected, why the queue looked empty, or whether a handoff should stay blocked. Use `queueEvidence` and the matching run log to decide whether to create a fresh bead, refresh the current bead with clearer acceptance evidence, archive stale work that no longer matches the queue, or hand a bead back because the logged evidence shows a real blocker instead of missing planner context.
 
+For the file-based scaffold under `beads/open/`, treat 24 hours as the freshness limit. If an open bead is still the right slice but its wording or acceptance evidence is stale, refresh the file in place. If the work is done, invalid, or superseded by a better-scoped replacement, move it to `beads/archive/`. If a bead is older than 24 hours and no longer matches the current queue shape, rewrite it as a new bead instead of quietly reusing the stale file.
+
 ## Future consideration
 
 Symphony may eventually formalize project completion through evolving behavior-driven acceptance scenarios rather than fully specifying acceptance criteria up front. One possible model is to start with a one-sentence project outcome, derive MVP use cases as beads, and then refine the project-level acceptance scenarios after each deployed iteration based on real user feedback. Under that model, a project is done when user feedback no longer meaningfully changes those acceptance scenarios.
