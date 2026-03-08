@@ -213,6 +213,38 @@ export function summarizeTrackerSelection(input) {
  *   [key: string]: unknown
  * }} status Current scheduler-visible status.
  * @param {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle?: string | null,
+ *   beadPriority?: string | null,
+ *   launchRequest: string
+ * }} launch Runner launch to apply.
+ * @returns {Record<string, unknown>} Updated scheduler-visible status.
+ */
+export function applyRunnerLaunch(status, launch) {
+  return {
+    ...status,
+    state: 'running',
+    currentBeadId: launch.beadId,
+    currentBeadTitle: getLaunchTextField(launch.beadTitle),
+    currentBeadPriority: getLaunchTextField(launch.beadPriority),
+    latestEvidence: buildRunnerLaunchEvidence(launch),
+    operatorRecommendation: buildRunnerLaunchRecommendation(launch),
+    activeRun: buildActiveRunStatus(launch),
+  };
+}
+
+/**
+ * @param {{
+ *   state?: string,
+ *   currentBeadId?: string | null,
+ *   currentBeadTitle?: string | null,
+ *   currentBeadPriority?: string | null,
+ *   queueEvidence?: string[],
+ *   [key: string]: unknown
+ * }} status Current scheduler-visible status.
+ * @param {{
  *   beadId: string,
  *   beadTitle?: string,
  *   outcome: 'completed' | 'blocked',
@@ -284,6 +316,61 @@ function buildBlockedOutcomeStatus(status, outcome) {
  */
 function buildRunnerOutcomeEvidence(outcomeKind, outcome) {
   return `Runner ${outcomeKind} ${outcome.beadId}: ${outcome.summary}`;
+}
+
+/**
+ * @param {{ runId: string, beadId: string, launchRequest: string }} launch Runner launch to apply.
+ * @returns {string} Operator-visible evidence line for the launched run.
+ */
+function buildRunnerLaunchEvidence(launch) {
+  return `Runner launch ${launch.runId} started for ${launch.beadId}: ${launch.launchRequest}`;
+}
+
+/**
+ * @param {string | null | undefined} value Candidate launch text field.
+ * @returns {string | null} Normalized launch text field.
+ */
+function getLaunchTextField(value) {
+  return value ?? null;
+}
+
+/**
+ * @param {{ beadId: string }} launch Runner launch to apply.
+ * @returns {string} Operator recommendation for the launched run.
+ */
+function buildRunnerLaunchRecommendation(launch) {
+  return `Wait for the runner loop on ${launch.beadId} to finish before launching another bead.`;
+}
+
+/**
+ * @param {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle?: string | null,
+ *   beadPriority?: string | null,
+ *   launchRequest: string
+ * }} launch Runner launch to apply.
+ * @returns {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle: string | null,
+ *   beadPriority: string | null,
+ *   launchRequest: string,
+ *   state: string
+ * }} Active run status summary.
+ */
+function buildActiveRunStatus(launch) {
+  return {
+    runId: launch.runId,
+    startedAt: launch.startedAt,
+    beadId: launch.beadId,
+    beadTitle: getLaunchTextField(launch.beadTitle),
+    beadPriority: getLaunchTextField(launch.beadPriority),
+    launchRequest: launch.launchRequest,
+    state: 'running',
+  };
 }
 
 /**

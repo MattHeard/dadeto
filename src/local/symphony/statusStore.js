@@ -34,10 +34,12 @@ export function createSymphonyStatusStore(options) {
     },
 
     async writeStatus(status) {
+      const logEvent = getStatusLogEvent(status);
+      const logStartedAt = getStatusLogStartedAt(status);
       const logPath = path.join(
         options.logDir,
         'runs',
-        `${status.startedAt.replaceAll(':', '-')}--startup.log`
+        `${logStartedAt.replaceAll(':', '-')}--${logEvent}.log`
       );
 
       await mkdirImpl(path.dirname(options.statusPath), { recursive: true });
@@ -47,8 +49,8 @@ export function createSymphonyStatusStore(options) {
         logPath,
         JSON.stringify(
           {
-            event: 'startup',
-            startedAt: status.startedAt,
+            event: logEvent,
+            startedAt: logStartedAt,
             state: status.state,
             currentBeadId: status.currentBeadId ?? null,
             currentBeadTitle: status.currentBeadTitle ?? null,
@@ -59,6 +61,14 @@ export function createSymphonyStatusStore(options) {
             queueEvidence: Array.isArray(status.queueEvidence)
               ? status.queueEvidence
               : [],
+            activeRun:
+              status.activeRun && typeof status.activeRun === 'object'
+                ? status.activeRun
+                : null,
+            lastOutcome:
+              status.lastOutcome && typeof status.lastOutcome === 'object'
+                ? status.lastOutcome
+                : null,
             workflowExists: status.workflow?.exists ?? false,
             trackerKind: status.config?.tracker?.kind ?? 'unknown',
           },
@@ -69,4 +79,44 @@ export function createSymphonyStatusStore(options) {
       );
     },
   };
+}
+
+/**
+ * @param {Record<string, unknown>} status Current scheduler-visible status.
+ * @returns {string} Log event name for the current status snapshot.
+ */
+function getStatusLogEvent(status) {
+  if (status.activeRun && typeof status.activeRun === 'object') {
+    return 'launch';
+  }
+
+  if (
+    status.lastOutcome &&
+    typeof status.lastOutcome === 'object' &&
+    typeof status.lastOutcome.outcome === 'string'
+  ) {
+    return status.lastOutcome.outcome;
+  }
+
+  return 'startup';
+}
+
+/**
+ * @param {Record<string, unknown>} status Current scheduler-visible status.
+ * @returns {string} Timestamp used to name the log artifact.
+ */
+function getStatusLogStartedAt(status) {
+  if (
+    status.activeRun &&
+    typeof status.activeRun === 'object' &&
+    typeof status.activeRun.startedAt === 'string'
+  ) {
+    return status.activeRun.startedAt;
+  }
+
+  if (typeof status.startedAt === 'string') {
+    return status.startedAt;
+  }
+
+  throw new Error('Cannot write Symphony status without a startedAt timestamp.');
 }
