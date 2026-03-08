@@ -99,37 +99,42 @@ export function summarizePollResult(pollResult) {
  *   lastCommand: string,
  *   pollResult: { readyCount: number, queueSummary?: string[] }
  * }} input Tracker polling state.
- * @returns {{ state: string, latestEvidence: string, queueEvidence: string[] }} Tracker selection status summary.
+ * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Tracker selection status summary.
  */
 function getReadySelectionSummary(input) {
   const queueEvidence = input.pollResult.queueSummary ?? [];
   return {
     state: 'ready',
     latestEvidence: `${input.lastCommand} selected ${input.selectedBead.id} from ${summarizePollResult(input.pollResult)}.`,
+    operatorRecommendation: `Run the next worker loop on ${input.selectedBead.id}.`,
     queueEvidence,
   };
 }
 
 /**
- * @returns {{ state: string, latestEvidence: string, queueEvidence: string[] }} Blocked tracker selection status summary.
+ * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Blocked tracker selection status summary.
  */
 function getBlockedSelectionSummary() {
   return {
     state: 'blocked',
     latestEvidence:
       'WORKFLOW.md is missing; add it before enabling runner scheduling.',
+    operatorRecommendation:
+      'Add WORKFLOW.md so Symphony can decide what the runner should do next.',
     queueEvidence: [],
   };
 }
 
 /**
  * @param {{ lastCommand: string }} input Tracker polling state.
- * @returns {{ state: string, latestEvidence: string, queueEvidence: string[] }} Idle tracker selection status summary.
+ * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Idle tracker selection status summary.
  */
 function getIdleSelectionSummary(input) {
   return {
     state: 'idle',
     latestEvidence: `${input.lastCommand} found no ready beads.`,
+    operatorRecommendation:
+      'Create or refresh the next bead before starting another runner loop.',
     queueEvidence: [],
   };
 }
@@ -168,7 +173,7 @@ function getSelectionStateKey(input) {
  *   lastCommand: string,
  *   pollResult: { readyCount: number, queueSummary?: string[] }
  * }} input Tracker polling state.
- * @returns {{ state: string, latestEvidence: string, queueEvidence: string[] }} Tracker selection status summary.
+ * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Tracker selection status summary.
  */
 export function summarizeTrackerSelection(input) {
   const selectionSummaries = {

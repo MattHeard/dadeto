@@ -117,12 +117,23 @@ describe('local symphony scaffold', () => {
     expect(status.workflow.exists).toBe(false);
     expect(status.workflow.config).toEqual({});
     expect(status.workflow.prompt_template).toBe('');
+    expect(status.operatorRecommendation).toBe(
+      'Add WORKFLOW.md so Symphony can decide what the runner should do next.'
+    );
     await expect(
       readFile(
         path.join(tempDir, 'tracking', 'symphony', 'status.json'),
         'utf8'
       )
     ).resolves.toContain('"state": "blocked"');
+    await expect(
+      readFile(
+        path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+        'utf8'
+      )
+    ).resolves.toContain(
+      '"operatorRecommendation": "Add WORKFLOW.md so Symphony can decide what the runner should do next."'
+    );
     await expect(
       readFile(
         path.join(
@@ -221,6 +232,9 @@ describe('local symphony scaffold', () => {
     expect(status.latestEvidence).toContain(
       'selected dadeto-639o from 1 ready bead(s):'
     );
+    expect(status.operatorRecommendation).toBe(
+      'Run the next worker loop on dadeto-639o.'
+    );
     await expect(
       readFile(
         path.join(
@@ -271,7 +285,69 @@ describe('local symphony scaffold', () => {
         'utf8'
       )
     ).resolves.toContain(
+      '"operatorRecommendation": "Run the next worker loop on dadeto-639o."'
+    );
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-06T21-00-00.000Z--startup.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain(
       'dadeto-639o (● P2) Implement Symphony tracker polling and bead selection loop'
+    );
+  });
+
+  test('bootstraps idle status with an operator recommendation when no beads are ready', async () => {
+    await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
+    await writeFile(
+      path.join(tempDir, 'tracking', 'symphony.local.json'),
+      JSON.stringify({
+        tracker: {
+          kind: 'bd',
+          readyCommand: 'bd ready --sort priority',
+        },
+        logDir: 'tracking/symphony',
+      }),
+      'utf8'
+    );
+    await writeFile(
+      path.join(tempDir, 'WORKFLOW.md'),
+      ['# Workflow', '', '## Allowed command families', '- `bd`'].join('\n'),
+      'utf8'
+    );
+
+    const { status } = await bootstrapSymphony({
+      repoRoot: tempDir,
+      now: () => new Date('2026-03-06T22:00:00.000Z'),
+      trackerFactory: () => ({
+        async pollReadyBeads() {
+          return {
+            command: 'bd ready --sort priority',
+            readyBeads: [],
+            queueSummary: [],
+            selectedBead: null,
+          };
+        },
+      }),
+    });
+
+    expect(status.state).toBe('idle');
+    expect(status.operatorRecommendation).toBe(
+      'Create or refresh the next bead before starting another runner loop.'
+    );
+    await expect(
+      readFile(
+        path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+        'utf8'
+      )
+    ).resolves.toContain(
+      '"operatorRecommendation": "Create or refresh the next bead before starting another runner loop."'
     );
   });
 });

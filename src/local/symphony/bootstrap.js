@@ -87,6 +87,7 @@ export async function bootstrapSymphony(options = {}) {
     },
     workflow,
     latestEvidence: trackerSummary.latestEvidence,
+    operatorRecommendation: trackerSummary.operatorRecommendation,
     queueEvidence: trackerSummary.queueEvidence,
   };
 

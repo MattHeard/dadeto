@@ -105,6 +105,7 @@ describe('core local symphony helpers', () => {
       state: 'ready',
       latestEvidence:
         'bd ready --sort priority selected dadeto-639o from 2 ready bead(s): dadeto-639o (● P2) First; dadeto-abcd (● P3) Second.',
+      operatorRecommendation: 'Run the next worker loop on dadeto-639o.',
       queueEvidence: ['dadeto-639o (● P2) First', 'dadeto-abcd (● P3) Second'],
     });
 
@@ -118,6 +119,8 @@ describe('core local symphony helpers', () => {
     ).toEqual({
       state: 'idle',
       latestEvidence: 'bd ready --sort priority found no ready beads.',
+      operatorRecommendation:
+        'Create or refresh the next bead before starting another runner loop.',
       queueEvidence: [],
     });
   });

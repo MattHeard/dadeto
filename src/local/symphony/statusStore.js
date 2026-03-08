@@ -55,6 +55,7 @@ export function createSymphonyStatusStore(options) {
             currentBeadPriority: status.currentBeadPriority ?? null,
             lastPollSummary: status.lastPollSummary ?? '',
             latestEvidence: status.latestEvidence ?? '',
+            operatorRecommendation: status.operatorRecommendation ?? '',
             queueEvidence: Array.isArray(status.queueEvidence)
               ? status.queueEvidence
               : [],
