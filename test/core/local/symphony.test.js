@@ -186,7 +186,9 @@ describe('core local symphony helpers', () => {
         'Runner blocked dadeto-abcd: Missing workflow guidance for the next step.',
       operatorRecommendation:
         'Inspect the blocker, update the bead or workflow guidance, and only then launch another runner loop.',
-      queueEvidence: ['dadeto-abcd: Missing workflow guidance for the next step.'],
+      queueEvidence: [
+        'dadeto-abcd: Missing workflow guidance for the next step.',
+      ],
       lastOutcome: {
         beadId: 'dadeto-abcd',
         beadTitle: 'Blocked bead',

@@ -38,6 +38,20 @@ describe('local symphony scaffold', () => {
 
     const config = await loadSymphonyConfig({ repoRoot: tempDir });
 
+    expect(config.launcher).toEqual({
+      kind: 'codex',
+      command: 'codex',
+      args: [
+        'exec',
+        '--skip-git-repo-check',
+        '--model',
+        'gpt-5-mini',
+        '--sandbox',
+        'workspace-write',
+        '--ask-for-approval',
+        'never',
+      ],
+    });
     expect(config.workspaceRoot).toBe(
       path.join(tempDir, '.worktrees', 'symphony')
     );

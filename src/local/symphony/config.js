@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { DEFAULT_CODEX_RALPH_ARGS } from './launcherCodex.js';
 
 export const DEFAULT_SYMPHONY_CONFIG = {
   tracker: {
@@ -9,7 +10,7 @@ export const DEFAULT_SYMPHONY_CONFIG = {
   launcher: {
     kind: 'codex',
     command: 'codex',
-    args: ['exec', '--skip-git-repo-check', '--full-auto'],
+    args: DEFAULT_CODEX_RALPH_ARGS,
   },
   workspaceRoot: '.worktrees/symphony',
   logDir: 'tracking/symphony',

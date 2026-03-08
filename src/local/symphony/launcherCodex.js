@@ -1,5 +1,18 @@
 import { spawn } from 'node:child_process';
 
+// Keep Ralph launches cheap and bounded while still allowing a single bead loop
+// to edit files and run local checks inside the repo workspace.
+export const DEFAULT_CODEX_RALPH_ARGS = [
+  'exec',
+  '--skip-git-repo-check',
+  '--model',
+  'gpt-5-mini',
+  '--sandbox',
+  'workspace-write',
+  '--ask-for-approval',
+  'never',
+];
+
 /**
  * @param {{
  *   command: string,

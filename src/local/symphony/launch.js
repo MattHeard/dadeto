@@ -2,7 +2,10 @@ import {
   applyRunnerLaunch,
   applyRunnerLaunchFailure,
 } from '../../core/local/symphony.js';
-import { createCodexRalphLauncher } from './launcherCodex.js';
+import {
+  createCodexRalphLauncher,
+  DEFAULT_CODEX_RALPH_ARGS,
+} from './launcherCodex.js';
 
 /**
  * @param {{
@@ -147,7 +150,7 @@ function getLauncherConfig(status) {
       typeof launcherConfig === 'object' &&
       Array.isArray(launcherConfig.args)
         ? launcherConfig.args.filter(arg => typeof arg === 'string')
-        : ['exec', '--skip-git-repo-check', '--full-auto'],
+        : [...DEFAULT_CODEX_RALPH_ARGS],
   };
 }
 

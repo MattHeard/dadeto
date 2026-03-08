@@ -7,7 +7,16 @@ describe('local symphony codex launcher', () => {
     let unrefCalled = false;
     const launcher = createCodexRalphLauncher({
       command: 'codex',
-      args: ['exec', '--skip-git-repo-check', '--full-auto'],
+      args: [
+        'exec',
+        '--skip-git-repo-check',
+        '--model',
+        'gpt-5-mini',
+        '--sandbox',
+        'workspace-write',
+        '--ask-for-approval',
+        'never',
+      ],
       cwd: '/tmp/repo',
       spawnImpl(command, args, options) {
         calls.push({ command, args, options });
@@ -35,7 +44,12 @@ describe('local symphony codex launcher', () => {
         args: [
           'exec',
           '--skip-git-repo-check',
-          '--full-auto',
+          '--model',
+          'gpt-5-mini',
+          '--sandbox',
+          'workspace-write',
+          '--ask-for-approval',
+          'never',
           [
             'you are ralph',
             'pop dadeto-0fzi',
