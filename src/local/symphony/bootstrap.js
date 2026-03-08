@@ -84,6 +84,7 @@ export async function bootstrapSymphony(options = {}) {
       maxConcurrentRuns: config.maxConcurrentRuns,
       defaultBranch: config.defaultBranch,
       tracker: config.tracker,
+      launcher: config.launcher,
     },
     workflow,
     latestEvidence: trackerSummary.latestEvidence,

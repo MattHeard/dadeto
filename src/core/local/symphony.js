@@ -232,6 +232,51 @@ export function applyRunnerLaunch(status, launch) {
     latestEvidence: buildRunnerLaunchEvidence(launch),
     operatorRecommendation: buildRunnerLaunchRecommendation(launch),
     activeRun: buildActiveRunStatus(launch),
+    lastLaunchAttempt: buildSuccessfulLaunchAttempt(launch),
+  };
+}
+
+/**
+ * @param {{
+ *   state?: string,
+ *   currentBeadId?: string | null,
+ *   currentBeadTitle?: string | null,
+ *   currentBeadPriority?: string | null,
+ *   queueEvidence?: string[],
+ *   [key: string]: unknown
+ * }} status Current scheduler-visible status.
+ * @param {{
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle?: string | null,
+ *   beadPriority?: string | null,
+ *   launchRequest: string,
+ *   error: string
+ * }} failure Failed runner launch to apply.
+ * @returns {Record<string, unknown>} Updated scheduler-visible status.
+ */
+export function applyRunnerLaunchFailure(status, failure) {
+  return {
+    ...status,
+    startedAt: failure.startedAt,
+    state: 'blocked',
+    currentBeadId: failure.beadId,
+    currentBeadTitle: getLaunchTextField(failure.beadTitle),
+    currentBeadPriority: getLaunchTextField(failure.beadPriority),
+    latestEvidence: buildRunnerLaunchFailureEvidence(failure),
+    operatorRecommendation:
+      'Inspect the Ralph launcher configuration or local Codex availability before retrying this bead.',
+    queueEvidence: [buildRunnerLaunchFailureQueueEvidence(failure)],
+    activeRun: null,
+    lastLaunchAttempt: {
+      startedAt: failure.startedAt,
+      beadId: failure.beadId,
+      beadTitle: getLaunchTextField(failure.beadTitle),
+      beadPriority: getLaunchTextField(failure.beadPriority),
+      launchRequest: failure.launchRequest,
+      outcome: 'failed',
+      error: failure.error,
+    },
   };
 }
 
@@ -327,6 +372,14 @@ function buildRunnerLaunchEvidence(launch) {
 }
 
 /**
+ * @param {{ beadId: string, error: string }} failure Failed runner launch to apply.
+ * @returns {string} Operator-visible evidence line for the failed launch.
+ */
+function buildRunnerLaunchFailureEvidence(failure) {
+  return `Runner launch failed for ${failure.beadId}: ${failure.error}`;
+}
+
+/**
  * @param {string | null | undefined} value Candidate launch text field.
  * @returns {string | null} Normalized launch text field.
  */
@@ -340,6 +393,49 @@ function getLaunchTextField(value) {
  */
 function buildRunnerLaunchRecommendation(launch) {
   return `Wait for the runner loop on ${launch.beadId} to finish before launching another bead.`;
+}
+
+/**
+ * @param {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle?: string | null,
+ *   beadPriority?: string | null,
+ *   launchRequest: string,
+ *   launcherKind?: string | null,
+ *   command?: string | null,
+ *   args?: string[] | null,
+ *   pid?: number | null
+ * }} launch Runner launch to apply.
+ * @returns {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle: string | null,
+ *   beadPriority: string | null,
+ *   launchRequest: string,
+ *   outcome: string,
+ *   launcherKind: string | null,
+ *   command: string | null,
+ *   args: string[],
+ *   pid: number | null
+ * }} Successful launch summary.
+ */
+function buildSuccessfulLaunchAttempt(launch) {
+  return {
+    runId: launch.runId,
+    startedAt: launch.startedAt,
+    beadId: launch.beadId,
+    beadTitle: getLaunchTextField(launch.beadTitle),
+    beadPriority: getLaunchTextField(launch.beadPriority),
+    launchRequest: launch.launchRequest,
+    outcome: 'started',
+    launcherKind: getLaunchTextField(launch.launcherKind),
+    command: getLaunchTextField(launch.command),
+    args: getLaunchArgs(launch.args),
+    pid: getLaunchPid(launch.pid),
+  };
 }
 
 /**
@@ -369,8 +465,44 @@ function buildActiveRunStatus(launch) {
     beadTitle: getLaunchTextField(launch.beadTitle),
     beadPriority: getLaunchTextField(launch.beadPriority),
     launchRequest: launch.launchRequest,
+    launcherKind: getLaunchTextField(launch.launcherKind),
+    command: getLaunchTextField(launch.command),
+    args: getLaunchArgs(launch.args),
+    pid: getLaunchPid(launch.pid),
     state: 'running',
   };
+}
+
+/**
+ * @param {unknown} value Candidate launch args.
+ * @returns {string[]} Normalized launch args.
+ */
+function getLaunchArgs(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value;
+}
+
+/**
+ * @param {unknown} value Candidate launch pid.
+ * @returns {number | null} Normalized launch pid.
+ */
+function getLaunchPid(value) {
+  if (typeof value !== 'number') {
+    return null;
+  }
+
+  return value;
+}
+
+/**
+ * @param {{ beadId: string, error: string }} failure Failed runner launch to apply.
+ * @returns {string} Queue evidence line for failed launches.
+ */
+function buildRunnerLaunchFailureQueueEvidence(failure) {
+  return `${failure.beadId}: launch failed - ${failure.error}`;
 }
 
 /**

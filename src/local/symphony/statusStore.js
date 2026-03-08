@@ -91,6 +91,14 @@ function getStatusLogEvent(status) {
   }
 
   if (
+    status.lastLaunchAttempt &&
+    typeof status.lastLaunchAttempt === 'object' &&
+    status.lastLaunchAttempt.outcome === 'failed'
+  ) {
+    return 'launch-failed';
+  }
+
+  if (
     status.lastOutcome &&
     typeof status.lastOutcome === 'object' &&
     typeof status.lastOutcome.outcome === 'string'

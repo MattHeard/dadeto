@@ -6,6 +6,11 @@ export const DEFAULT_SYMPHONY_CONFIG = {
     kind: 'bd',
     readyCommand: 'bd ready --sort priority',
   },
+  launcher: {
+    kind: 'codex',
+    command: 'codex',
+    args: ['exec', '--skip-git-repo-check', '--full-auto'],
+  },
   workspaceRoot: '.worktrees/symphony',
   logDir: 'tracking/symphony',
   pollIntervalMs: 30000,
@@ -28,6 +33,41 @@ function normalizeTracker(tracker) {
         ? tracker.readyCommand.trim()
         : DEFAULT_SYMPHONY_CONFIG.tracker.readyCommand,
   };
+}
+
+function normalizeLauncher(launcher) {
+  if (!launcher || typeof launcher !== 'object') {
+    return { ...DEFAULT_SYMPHONY_CONFIG.launcher };
+  }
+
+  return {
+    kind:
+      typeof launcher.kind === 'string' && launcher.kind.trim()
+        ? launcher.kind.trim()
+        : DEFAULT_SYMPHONY_CONFIG.launcher.kind,
+    command:
+      typeof launcher.command === 'string' && launcher.command.trim()
+        ? launcher.command.trim()
+        : DEFAULT_SYMPHONY_CONFIG.launcher.command,
+    args: normalizeLauncherArgs(launcher.args),
+  };
+}
+
+function normalizeLauncherArgs(args) {
+  if (!Array.isArray(args)) {
+    return [...DEFAULT_SYMPHONY_CONFIG.launcher.args];
+  }
+
+  const normalizedArgs = args
+    .filter(value => typeof value === 'string')
+    .map(value => value.trim())
+    .filter(Boolean);
+
+  if (normalizedArgs.length === 0) {
+    return [...DEFAULT_SYMPHONY_CONFIG.launcher.args];
+  }
+
+  return normalizedArgs;
 }
 
 function normalizeNumber(value, fallback) {
@@ -53,6 +93,7 @@ function normalizePathValue(value, fallback) {
  * @returns {{
  *   configPath: string,
  *   tracker: { kind: string, readyCommand: string },
+ *   launcher: { kind: string, command: string, args: string[] },
  *   workspaceRoot: string,
  *   logDir: string,
  *   statusPath: string,
@@ -71,6 +112,7 @@ export function normalizeSymphonyConfig(config, repoRoot, configPath) {
   return {
     configPath,
     tracker: normalizeTracker(config?.tracker),
+    launcher: normalizeLauncher(config?.launcher),
     workspaceRoot: path.resolve(repoRoot, workspaceRoot),
     logDir: path.resolve(repoRoot, logDir),
     statusPath: path.resolve(repoRoot, logDir, 'status.json'),
