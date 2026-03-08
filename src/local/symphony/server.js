@@ -1,5 +1,6 @@
 import { createSymphonyApp } from './app.js';
 import { bootstrapSymphony } from './bootstrap.js';
+import { launchSelectedRunnerLoop } from './launch.js';
 import { formatSymphonyListenErrorMessage } from '../serverMessages.js';
 
 const port = Number.parseInt(process.env.SYMPHONY_PORT ?? '4322', 10);
@@ -7,6 +8,8 @@ const { status, statusStore } = await bootstrapSymphony();
 const app = createSymphonyApp({
   initialStatus: status,
   statusStore,
+  launchSelectedRunnerLoop,
+  repoRoot: process.cwd(),
 });
 
 const server = app.listen(port, () => {

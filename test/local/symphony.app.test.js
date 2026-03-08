@@ -1,9 +1,34 @@
-import http from 'node:http';
-import { createSymphonyApp } from '../../src/local/symphony/app.js';
+import {
+  createSymphonyLaunchHandler,
+  createSymphonyStatusHandler,
+} from '../../src/local/symphony/app.js';
 
-describe('local symphony app', () => {
-  test('serves operator recommendation at both root and status endpoints', async () => {
-    const app = createSymphonyApp({
+/**
+ * @returns {{
+ *   statusCode: number,
+ *   jsonValue: unknown,
+ *   status: (code: number) => unknown,
+ *   json: (value: unknown) => unknown
+ * }} Response test double for Symphony app handlers.
+ */
+function createResponseDouble() {
+  return {
+    statusCode: 200,
+    jsonValue: null,
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(value) {
+      this.jsonValue = value;
+      return this;
+    },
+  };
+}
+
+describe('local symphony app handlers', () => {
+  test('serves operator recommendation from the status handler', async () => {
+    const handler = createSymphonyStatusHandler({
       initialStatus: {
         state: 'ready',
         operatorRecommendation: 'Run the next worker loop on dadeto-82el.',
@@ -17,39 +42,100 @@ describe('local symphony app', () => {
         },
       },
     });
+    const response = createResponseDouble();
 
-    const server = http.createServer(app);
-    await new Promise(resolve => server.listen(0, resolve));
-    const { port } = server.address();
+    await handler({}, response, error => {
+      throw error;
+    });
 
-    try {
-      const rootResponse = await fetch(`http://127.0.0.1:${String(port)}/`);
-      const statusResponse = await fetch(
-        `http://127.0.0.1:${String(port)}/api/symphony/status`
-      );
+    expect(response.statusCode).toBe(200);
+    expect(response.jsonValue).toEqual({
+      state: 'ready',
+      operatorRecommendation: 'Run the next worker loop on dadeto-82el.',
+    });
+  });
 
-      expect(rootResponse.status).toBe(200);
-      await expect(rootResponse.json()).resolves.toEqual({
+  test('starts one Symphony Ralph launch from the operator trigger handler', async () => {
+    const launchCalls = [];
+    const handler = createSymphonyLaunchHandler({
+      initialStatus: {
         state: 'ready',
-        operatorRecommendation: 'Run the next worker loop on dadeto-82el.',
-      });
+        currentBeadId: 'dadeto-cc6z',
+      },
+      launchSelectedRunnerLoop: async options => {
+        launchCalls.push(options);
+        return {
+          state: 'running',
+          currentBeadId: 'dadeto-cc6z',
+          activeRun: {
+            runId: '2026-03-08T20:00:00.000Z--dadeto-cc6z',
+          },
+        };
+      },
+      repoRoot: '/tmp/dadeto',
+      statusStore: {
+        async readStatus() {
+          return {
+            state: 'ready',
+            currentBeadId: 'dadeto-cc6z',
+          };
+        },
+        async writeStatus() {},
+      },
+    });
+    const response = createResponseDouble();
 
-      expect(statusResponse.status).toBe(200);
-      await expect(statusResponse.json()).resolves.toEqual({
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(response.statusCode).toBe(202);
+    expect(response.jsonValue).toEqual({
+      state: 'running',
+      currentBeadId: 'dadeto-cc6z',
+      activeRun: {
+        runId: '2026-03-08T20:00:00.000Z--dadeto-cc6z',
+      },
+    });
+    expect(launchCalls).toEqual([
+      {
+        repoRoot: '/tmp/dadeto',
+        status: {
+          state: 'ready',
+          currentBeadId: 'dadeto-cc6z',
+        },
+        statusStore: expect.objectContaining({
+          readStatus: expect.any(Function),
+          writeStatus: expect.any(Function),
+        }),
+      },
+    ]);
+  });
+
+  test('reports missing launch configuration from the operator trigger handler', async () => {
+    const handler = createSymphonyLaunchHandler({
+      initialStatus: {
         state: 'ready',
-        operatorRecommendation: 'Run the next worker loop on dadeto-82el.',
-      });
-    } finally {
-      await new Promise((resolve, reject) => {
-        server.close(error => {
-          if (error) {
-            reject(error);
-            return;
-          }
+        currentBeadId: 'dadeto-cc6z',
+      },
+      statusStore: {
+        async readStatus() {
+          return {
+            state: 'ready',
+            currentBeadId: 'dadeto-cc6z',
+          };
+        },
+      },
+    });
+    const response = createResponseDouble();
 
-          resolve();
-        });
-      });
-    }
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(response.statusCode).toBe(501);
+    expect(response.jsonValue).toEqual({
+      error: 'Symphony launch trigger is not configured.',
+    });
   });
 });
