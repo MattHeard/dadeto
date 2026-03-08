@@ -6,7 +6,7 @@ Establish Symphony as the repo's active project for planner-driven bead generati
 
 ## Current state
 
-Local Symphony already has a runnable scaffold in `src/local/symphony/` with config loading, workflow loading, status persistence, and ready-bead polling evidence. The repo also now has a minimal `projects/` and `beads/` structure, but the Symphony project note has not yet carried enough structured context for recurring planner review.
+Local Symphony already has a runnable scaffold in `src/local/symphony/` with config loading, workflow loading, status persistence, ready-bead polling, and operator recommendations for `ready`, `idle`, and `blocked` states. The local status surface can now represent completed and blocked runner outcomes, but Symphony still does not yet launch a runner loop on its own. The current open MVP execution bead is `dadeto-u210`.
 
 ## Constraints
 
@@ -43,7 +43,7 @@ Symphony may eventually formalize project completion through evolving behavior-d
 
 ## Candidate next actions
 
-- Document the planner review cadence and decision inputs in a short Symphony-specific workflow note.
-- Add one example `beads/open/` file for a real Symphony follow-up task instead of the placeholder example bead.
-- Write a short note describing how `tracking/symphony/status.json` and run logs should be read during planner review.
-- Tighten the file-based bead scaffold format so expiry and archive expectations are explicit in docs.
+- Launch one runner loop for the selected Symphony bead (`dadeto-u210`).
+- Replace the placeholder file-based bead with a real Symphony example bead if the file-based scaffold is still being used as operator memory.
+- After launch exists, expose the operator recommendation more clearly at the root Symphony HTTP surface.
+- Only after launch works reliably, keep extending the autonomous loop from launched-run state toward repeatable scheduler behavior.

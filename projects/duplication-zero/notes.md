@@ -6,7 +6,7 @@ Reduce Dadeto duplication warnings to zero and keep them at zero while steadily 
 
 ## Current state
 
-The repo runs `npm run duplication` via `jscpd` over `src/core`. Current config already enforces a zero duplication threshold and records reports under `reports/duplication/`. The active detection difficulty is currently controlled by `minTokens` in `.jscpd.json`, which is set to `18`.
+The repo runs `npm run duplication` via `jscpd` over `src/core`. Current config already enforces a zero duplication threshold and records reports under `reports/duplication/`. The active detection difficulty is currently controlled by `minTokens` in `.jscpd.json`, which is set to `18`. The duplication inventory is now recorded in this note, and the active open implementation beads target two independent families: the larger `gamepadCapture.js` ↔ `keyboardCapture.js` setup cluster (`dadeto-qmh8`) and the smaller toy/helper cluster spanning `joyConMapper`, `hiLoCardGame`, and `joyConMapping` (`dadeto-trjd`).
 
 ## Constraints
 
@@ -20,18 +20,19 @@ Prefer small clone-cluster or helper-extraction beads over broad abstraction chu
 
 ## Candidate next actions
 
-- Record the current duplication inventory in a short project note with clone clusters and the active `minTokens` setting.
-- Create one bead for the smallest high-signal clone cluster in `src/core`.
-- Create one bead to ratchet `minTokens` upward after the repo stays clean at the current difficulty.
+- Remove the small toy/helper clone cluster (`dadeto-trjd`).
+- Remove one small shared setup clone cluster between `gamepadCapture.js` and `keyboardCapture.js` (`dadeto-qmh8`).
+- After the repo is clean at `minTokens: 18`, create a threshold-ratchet bead to raise the duplication difficulty.
 - Decide what minimal regression guard should define “keep it at zero” once the threshold has been pushed higher.
 
 ## Tentative sequence
 
 1. Remove the smallest high-signal clone clusters first instead of chasing every duplicate at once.
 2. Re-run `npm run duplication` after each bead and select the next smallest stable clone cluster.
-3. When the report stays clean at the current `minTokens`, raise the threshold slightly and treat the new clone surface as the next queue.
-4. Continue ratcheting the threshold upward only when the repo is clean at the current setting.
-5. Stop the ratchet only when the threshold becomes unreasonably high for this codebase and further increases mostly create noise instead of useful pressure.
+3. The toy/helper family should generally land before the larger cross-input-handler family if both remain viable.
+4. When the report stays clean at the current `minTokens`, raise the threshold slightly and treat the new clone surface as the next queue.
+5. Continue ratcheting the threshold upward only when the repo is clean at the current setting.
+6. Stop the ratchet only when the threshold becomes unreasonably high for this codebase and further increases mostly create noise instead of useful pressure.
 
 ## Current duplication inventory
 

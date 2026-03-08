@@ -6,7 +6,7 @@ Reduce Dadeto `npm run tsdoc:check` failures to zero and keep them at zero throu
 
 ## Current state
 
-`npm run tsdoc:check` currently fails across several `src/core` browser/input-handler files, presenter files, toy files, and `src/core/local/symphony.js`. The current error mix includes DOM element narrowing issues, nullable value mismatches, implicit `any` cases, index-signature issues, and union/type-guard gaps.
+`npm run tsdoc:check` still fails across several `src/core` browser/input-handler files, presenter files, toy files, and browser helpers, but the local Symphony file slice has already been fixed. The current open file-local bead is `dadeto-t33b`, which targets `src/core/browser/inputHandlers/keyboardCapture.js`.
 
 ## Constraints
 
@@ -20,15 +20,15 @@ Prefer small file-local or error-family beads over broad typing rewrites. Keep r
 
 ## Candidate next actions
 
-- Record the current `npm run tsdoc:check` failure inventory in a short project note with file and error-family counts.
-- Create one bead for the `src/core/local/symphony.js` failures.
-- Create one bead for one browser input-handler file such as `gamepadCapture.js`, `joyConMapper.js`, or `keyboardCapture.js`.
+- Fix the current `keyboardCapture.js` failure (`dadeto-t33b`).
+- Re-run `npm run tsdoc:check` and choose the next smallest stable file-local slice from the remaining failures.
+- Prefer other isolated helper or local-surface files before the largest browser input-handler clusters.
 - Decide what minimal regression guard should define “keep them at zero” once cleanup is complete.
 
 ## Tentative sequence
 
 1. Start with the smallest high-signal file or module slice, not the whole check surface.
-2. Prefer local Symphony and isolated helper files before the largest browser input-handler clusters.
+2. Local Symphony is already clean; continue with isolated helper files before the largest browser input-handler clusters.
 3. Re-run `npm run tsdoc:check` after each bead and select the next smallest stable cluster from the remaining failures.
 4. Split out any contract-shaped typing issue that suggests a broader API redesign instead of grinding through speculative local fixes.
 5. Once `npm run tsdoc:check` reaches zero, define the smallest guardrail that will keep it there.

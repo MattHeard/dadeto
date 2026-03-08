@@ -6,7 +6,7 @@ Reduce Dadeto `src/core` lint warnings to zero and keep them at zero through fut
 
 ## Current state
 
-`src/core/browser/inputHandlers/joyConMapper.js` currently carries the known `src/core` lint warnings, including `complexity`, `max-params`, and `no-ternary` findings.
+`src/core/browser/inputHandlers/joyConMapper.js` is still the active warning surface, but the non-complexity warnings and several early helper/hotspot clusters have already been removed. The remaining queue has narrowed to complexity-only cleanup, with the current open bead focused on the axis-helper cluster in `detectAxisCapture` and `selectStrongerAxisCapture` (`dadeto-mjpv`).
 
 ## Constraints
 
@@ -20,15 +20,15 @@ Prefer small warning-family or file-local beads over broad refactors. Keep behav
 
 ## Candidate next actions
 
-- Record the current `src/core` lint warning inventory in a short project note with file and rule counts.
-- Create one bead for the non-complexity warnings in `joyConMapper.js` (`max-params` and `no-ternary`).
-- Create one bead for the highest-complexity hotspots in `joyConMapper.js`.
+- Reduce the next axis-helper complexity cluster in `joyConMapper.js` (`dadeto-mjpv`).
+- Continue with the next smallest stable complexity cluster after re-reading the lint report.
+- Split out any remaining warning family that turns out to be contract-shaped instead of helper-shaped.
 - Decide what minimal regression guard should define “keep them at zero” once cleanup is complete.
 
 ## Tentative sequence
 
-1. Remove non-complexity warnings first so the remaining queue is complexity-only.
-2. Reduce the worst complexity hotspots in `joyConMapper.js` before touching smaller local warnings.
-3. Continue by re-reading the lint report after each bead and selecting the next smallest hotspot cluster.
+1. Non-complexity warnings are already gone, so the queue is now complexity-only.
+2. Continue by re-reading the lint report after each bead and selecting the next smallest hotspot cluster.
+3. Prefer local helper clusters before broader handler-level cleanup.
 4. Split out any warning cluster that looks contract-shaped or design-shaped instead of grinding it through repeated micro-refactors.
 5. Once `src/core` reaches zero warnings, define the smallest guardrail that will keep it there.
