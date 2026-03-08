@@ -8,7 +8,7 @@ export function parseReadyBeads(output) {
     .map(line => line.trim())
     .filter(Boolean)
     .map(parseReadyLine)
-    .filter(Boolean);
+    .filter(isReadyBead);
 }
 
 /**
@@ -28,6 +28,15 @@ function parseReadyLine(line) {
     id: match[2],
     title: match[3],
   };
+}
+
+/**
+ * @param {{ id: string, title: string, priority: string } | null} bead Parsed bead summary.
+ * @returns {bead is { id: string, title: string, priority: string }}
+ *   Whether the parsed bead summary is non-null.
+ */
+function isReadyBead(bead) {
+  return bead !== null;
 }
 
 /**
@@ -95,7 +104,7 @@ export function summarizePollResult(pollResult) {
 /**
  * @param {{
  *   workflowExists: boolean,
- *   selectedBead: { id: string, title: string, priority: string } | null,
+ *   selectedBead: { id: string, title: string, priority: string },
  *   lastCommand: string,
  *   pollResult: { readyCount: number, queueSummary?: string[] }
  * }} input Tracker polling state.
@@ -176,16 +185,20 @@ function getSelectionStateKey(input) {
  * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Tracker selection status summary.
  */
 export function summarizeTrackerSelection(input) {
-  const selectionSummaries = {
-    blocked: () => getBlockedSelectionSummary(),
-    idle: () => getIdleSelectionSummary(input),
-    ready: () =>
-      getReadySelectionSummary(
-        /** @type {typeof input & { selectedBead: { id: string, title: string, priority: string } }} */ (
-          input
-        )
-      ),
-  };
+  const selectionStateKey = getSelectionStateKey(input);
+  if (selectionStateKey === 'blocked') {
+    return getBlockedSelectionSummary();
+  }
 
-  return selectionSummaries[getSelectionStateKey(input)]();
+  if (selectionStateKey === 'idle') {
+    return getIdleSelectionSummary(input);
+  }
+
+  return getReadySelectionSummary({
+    ...input,
+    selectedBead:
+      /** @type {{ id: string, title: string, priority: string }} */ (
+        input.selectedBead
+      ),
+  });
 }
