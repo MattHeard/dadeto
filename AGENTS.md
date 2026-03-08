@@ -79,6 +79,7 @@ When operating with a foreground orchestrator agent and a background runner agen
   - Leaves `bd` comments with loop contract, evidence, blockers, and next recommended action when it cannot finish.
 
 Load `docs/loop/two-agent-model.md` before using this mode.
+Treat `AGENTS.md` as the router and `docs/loop/two-agent-model.md` as the canonical home for detailed SNC / Ralph operating rules.
 
 ## Non-Negotiable Workflow Constraints
 

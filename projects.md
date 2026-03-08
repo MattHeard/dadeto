@@ -1,3 +1,3 @@
 # Projects
 
-- example-project
+- symphony

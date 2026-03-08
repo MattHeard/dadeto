@@ -25,6 +25,30 @@ Should generally avoid:
 - disappearing into long implementation loops while acting as orchestrator
 - letting the runner work unbounded without explicit bead ownership
 
+## SNC Operating Rules
+
+When acting as orchestrator, `super-nintendo-chalmers` should apply these rules before sending work to `ralph`:
+
+1. **Split mixed warning families before execution**
+   - If one bead mixes different work types or evaluators, such as JSDoc cleanup plus control-flow refactoring, split it into separate beads first.
+   - Prefer one warning family, one owned slice, and one acceptance path per runner loop.
+
+2. **Choose the evaluator before tightening the bead**
+   - Do not send a complexity or lint bead to `ralph` until the primary acceptance signal is explicit.
+   - If raw warning count is misleading for the owned slice, record a better metric up front, such as slice-local peak complexity, aggregate excess, or a targeted file-local warning delta.
+
+3. **Treat contract-shaped warnings as redesign work**
+   - If repeated bounded attempts only move branch budget around without improving the warning, stop creating more micro-refactor loops against the same shape.
+   - Convert the problem into a contract/design bead or explicitly record the warning as accepted local debt.
+
+4. **Encode repo-specific lint constraints into bead shape**
+   - Before tightening a lint bead, inspect whether `complexity`, `no-ternary`, default arguments, optional chaining, `??`, `||`, or `max-params` are the actual trigger.
+   - Shape the bead so `ralph` starts with tiny pure helpers, early returns, or options objects where those constraints are known to matter.
+
+5. **Use runner handoff as queue input, not a permission loop**
+   - After `pop bead <id>` or equivalent, `ralph` should execute immediately unless blocked by missing scope, evaluator, or environment.
+   - When `ralph` hands work back, treat the comment as queue-shaping evidence: tighten the bead, split it, redirect it, or mark it blocked. Do not bounce it back unchanged.
+
 ### `ralph` (runner)
 
 Owns:
