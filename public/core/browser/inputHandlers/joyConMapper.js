@@ -580,28 +580,29 @@ function directionalDelta(delta, expectedDirection) {
  *   Previous gamepad snapshot.
  * @param {GamepadSnapshot | null} current
  *   Current gamepad snapshot.
+ * @returns {boolean}
+ *   Whether both snapshots are available for axis comparison.
+ */
+function hasAxisSnapshots(previous, current) {
+  return previous !== null && current !== null;
+}
+
+/**
+ * @param {GamepadSnapshot | null} previous
+ *   Previous gamepad snapshot.
+ * @param {GamepadSnapshot | null} current
+ *   Current gamepad snapshot.
  * @param {'negative' | 'positive'} expectedDirection
  *   Direction the active control expects.
  * @returns {CaptureResult | null}
  *   Strongest axis movement capture, if detected.
  */
 function detectAxisCapture(previous, current, expectedDirection) {
-  if (!previous || !current) {
+  if (!hasAxisSnapshots(previous, current)) {
     return null;
   }
 
-  return current.axes.reduce((best, value, axis) => {
-    const oldValue = previous.axes[axis] ?? 0;
-    const candidate = getAxisCaptureCandidate(value, axis, {
-      oldValue,
-      expectedDirection,
-    });
-    if (!candidate) {
-      return best;
-    }
-
-    return selectStrongerAxisCapture(best, candidate);
-  }, null);
+  return findStrongestAxisCapture(current.axes, previous, expectedDirection);
 }
 
 /**
@@ -648,6 +649,43 @@ function getAxisCaptureCandidate(value, axis, context) {
 }
 
 /**
+ * @param {number[]} axes
+ *   Current axis values.
+ * @param {GamepadSnapshot} previous
+ *   Previous gamepad snapshot.
+ * @param {'negative' | 'positive'} expectedDirection
+ *   Direction the active control expects.
+ * @returns {CaptureResult | null}
+ *   Strongest qualifying axis capture, if any.
+ */
+function findStrongestAxisCapture(axes, previous, expectedDirection) {
+  return axes.reduce((best, value, axis) => {
+    const oldValue = previous.axes[axis] ?? 0;
+    const candidate = getAxisCaptureCandidate(value, axis, {
+      oldValue,
+      expectedDirection,
+    });
+    return mergeAxisCaptureCandidate(best, candidate);
+  }, null);
+}
+
+/**
+ * @param {CaptureResult | null} best
+ *   Current strongest capture.
+ * @param {CaptureResult | null} candidate
+ *   Candidate capture to compare.
+ * @returns {CaptureResult | null}
+ *   Stronger capture after considering the candidate.
+ */
+function mergeAxisCaptureCandidate(best, candidate) {
+  if (!candidate) {
+    return best;
+  }
+
+  return selectStrongerAxisCapture(best, candidate);
+}
+
+/**
  * @param {CaptureResult | null} best
  *   Current strongest capture.
  * @param {CaptureResult} candidate
@@ -656,15 +694,9 @@ function getAxisCaptureCandidate(value, axis, context) {
  *   Stronger axis capture.
  */
 function selectStrongerAxisCapture(best, candidate) {
-  if (!best) {
-    return candidate;
-  }
-
-  if (candidate.magnitude > best.magnitude) {
-    return candidate;
-  }
-
-  return best;
+  return [best, candidate]
+    .filter(Boolean)
+    .sort((left, right) => right.magnitude - left.magnitude)[0];
 }
 
 /**
