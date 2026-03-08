@@ -406,7 +406,9 @@ function buildRunnerLaunchRecommendation(launch) {
  *   launcherKind?: string | null,
  *   command?: string | null,
  *   args?: string[] | null,
- *   pid?: number | null
+ *   pid?: number | null,
+ *   stdoutPath?: string | null,
+ *   stderrPath?: string | null
  * }} launch Runner launch to apply.
  * @returns {{
  *   runId: string,
@@ -419,7 +421,9 @@ function buildRunnerLaunchRecommendation(launch) {
  *   launcherKind: string | null,
  *   command: string | null,
  *   args: string[],
- *   pid: number | null
+ *   pid: number | null,
+ *   stdoutPath: string | null,
+ *   stderrPath: string | null
  * }} Successful launch summary.
  */
 function buildSuccessfulLaunchAttempt(launch) {
@@ -435,6 +439,8 @@ function buildSuccessfulLaunchAttempt(launch) {
     command: getLaunchTextField(launch.command),
     args: getLaunchArgs(launch.args),
     pid: getLaunchPid(launch.pid),
+    stdoutPath: getLaunchTextField(launch.stdoutPath),
+    stderrPath: getLaunchTextField(launch.stderrPath),
   };
 }
 
@@ -454,6 +460,12 @@ function buildSuccessfulLaunchAttempt(launch) {
  *   beadTitle: string | null,
  *   beadPriority: string | null,
  *   launchRequest: string,
+ *   launcherKind: string | null,
+ *   command: string | null,
+ *   args: string[],
+ *   pid: number | null,
+ *   stdoutPath: string | null,
+ *   stderrPath: string | null,
  *   state: string
  * }} Active run status summary.
  */
@@ -469,6 +481,8 @@ function buildActiveRunStatus(launch) {
     command: getLaunchTextField(launch.command),
     args: getLaunchArgs(launch.args),
     pid: getLaunchPid(launch.pid),
+    stdoutPath: getLaunchTextField(launch.stdoutPath),
+    stderrPath: getLaunchTextField(launch.stderrPath),
     state: 'running',
   };
 }

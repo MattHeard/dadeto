@@ -1,9 +1,11 @@
 import { createCodexRalphLauncher } from '../../src/local/symphony/launcherCodex.js';
 
 describe('local symphony codex launcher', () => {
-  test('spawns a detached codex exec session with the Ralph prompt contract', async () => {
+  test('spawns a detached codex exec session with append-only run logs', async () => {
     /** @type {Array<{ command: string, args: string[], options: Record<string, unknown> }>} */
     const calls = [];
+    /** @type {Array<{ path: string, flags: string }>} */
+    const openCalls = [];
     let unrefCalled = false;
     const launcher = createCodexRalphLauncher({
       command: 'codex',
@@ -18,6 +20,13 @@ describe('local symphony codex launcher', () => {
         'never',
       ],
       cwd: '/tmp/repo',
+      logDir: '/tmp/repo/tracking/symphony',
+      async openImpl(filePath, flags) {
+        openCalls.push({ path: filePath, flags });
+        return {
+          fd: openCalls.length + 39,
+        };
+      },
       spawnImpl(command, args, options) {
         calls.push({ command, args, options });
         return {
@@ -38,6 +47,18 @@ describe('local symphony codex launcher', () => {
     });
 
     expect(unrefCalled).toBe(true);
+    expect(openCalls).toEqual([
+      {
+        path:
+          '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stdout.log',
+        flags: 'a',
+      },
+      {
+        path:
+          '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stderr.log',
+        flags: 'a',
+      },
+    ]);
     expect(calls).toEqual([
       {
         command: 'codex',
@@ -60,7 +81,7 @@ describe('local symphony codex launcher', () => {
         options: {
           cwd: '/tmp/repo',
           detached: true,
-          stdio: 'ignore',
+          stdio: ['ignore', 40, 41],
         },
       },
     ]);
@@ -69,6 +90,10 @@ describe('local symphony codex launcher', () => {
       command: 'codex',
       args: calls[0].args,
       pid: 43210,
+      stdoutPath:
+        '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stdout.log',
+      stderrPath:
+        '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stderr.log',
     });
   });
 });

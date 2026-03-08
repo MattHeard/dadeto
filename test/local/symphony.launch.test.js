@@ -68,6 +68,22 @@ describe('local symphony runner launch', () => {
               'you are ralph',
             ],
             pid: 43210,
+            stdoutPath:
+              path.join(
+                tempDir,
+                'tracking',
+                'symphony',
+                'runs',
+                '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log'
+              ),
+            stderrPath:
+              path.join(
+                tempDir,
+                'tracking',
+                'symphony',
+                'runs',
+                '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log'
+              ),
           };
         },
       },
@@ -91,10 +107,38 @@ describe('local symphony runner launch', () => {
         runId: '2026-03-08T19:15:00.000Z--dadeto-0fzi',
         pid: 43210,
         launcherKind: 'codex',
+        stdoutPath: path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log'
+        ),
+        stderrPath: path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log'
+        ),
       },
       lastLaunchAttempt: {
         outcome: 'started',
         pid: 43210,
+        stdoutPath: path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log'
+        ),
+        stderrPath: path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log'
+        ),
       },
     });
 
@@ -104,6 +148,20 @@ describe('local symphony runner launch', () => {
       activeRun: {
         runId: '2026-03-08T19:15:00.000Z--dadeto-0fzi',
         pid: 43210,
+        stdoutPath: path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--dadeto-0fzi--stdout.log'
+        ),
+        stderrPath: path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--dadeto-0fzi--stderr.log'
+        ),
       },
     });
 
@@ -131,6 +189,30 @@ describe('local symphony runner launch', () => {
         'utf8'
       )
     ).resolves.toContain('"pid": 43210');
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--launch.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain('--stdout.log');
+    await expect(
+      readFile(
+        path.join(
+          tempDir,
+          'tracking',
+          'symphony',
+          'runs',
+          '2026-03-08T19-15-00.000Z--launch.log'
+        ),
+        'utf8'
+      )
+    ).resolves.toContain('--stderr.log');
   });
 
   test('records a failed launch when the Ralph launcher integration errors', async () => {

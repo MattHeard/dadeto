@@ -39,6 +39,10 @@ describe('core local symphony launch invocation state', () => {
             'you are ralph',
           ],
           pid: 43210,
+          stdoutPath:
+            'tracking/symphony/runs/2026-03-08T19-30-00.000Z--dadeto-0fzi--stdout.log',
+          stderrPath:
+            'tracking/symphony/runs/2026-03-08T19-30-00.000Z--dadeto-0fzi--stderr.log',
         }
       )
     ).toMatchObject({
@@ -47,12 +51,20 @@ describe('core local symphony launch invocation state', () => {
         launcherKind: 'codex',
         command: 'codex',
         pid: 43210,
+        stdoutPath:
+          'tracking/symphony/runs/2026-03-08T19-30-00.000Z--dadeto-0fzi--stdout.log',
+        stderrPath:
+          'tracking/symphony/runs/2026-03-08T19-30-00.000Z--dadeto-0fzi--stderr.log',
       },
       lastLaunchAttempt: {
         outcome: 'started',
         launcherKind: 'codex',
         command: 'codex',
         pid: 43210,
+        stdoutPath:
+          'tracking/symphony/runs/2026-03-08T19-30-00.000Z--dadeto-0fzi--stdout.log',
+        stderrPath:
+          'tracking/symphony/runs/2026-03-08T19-30-00.000Z--dadeto-0fzi--stderr.log',
       },
     });
   });

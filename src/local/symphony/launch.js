@@ -22,7 +22,9 @@ import {
  *       launcherKind?: string | null,
  *       command?: string | null,
  *       args?: string[] | null,
- *       pid?: number | null
+ *       pid?: number | null,
+ *       stdoutPath?: string | null,
+ *       stderrPath?: string | null
  *     }>
  *   },
  *   now?: () => Date
@@ -65,6 +67,8 @@ export async function launchSelectedRunnerLoop(options) {
       command: invocation.command,
       args: invocation.args,
       pid: invocation.pid,
+      stdoutPath: invocation.stdoutPath,
+      stderrPath: invocation.stderrPath,
     });
 
     await options.statusStore.writeStatus(launchedStatus);
