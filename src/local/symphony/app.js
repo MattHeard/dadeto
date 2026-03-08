@@ -10,18 +10,17 @@ import express from 'express';
 export function createSymphonyApp(options) {
   const app = express();
 
-  app.get('/api/symphony/status', async (_req, res, next) => {
+  const sendStatus = async (_req, res, next) => {
     try {
       const storedStatus = await options.statusStore.readStatus();
       res.json(storedStatus ?? options.initialStatus);
     } catch (error) {
       next(error);
     }
-  });
+  };
 
-  app.get('/', (_req, res) => {
-    res.redirect('/api/symphony/status');
-  });
+  app.get('/api/symphony/status', sendStatus);
+  app.get('/', sendStatus);
 
   app.use((error, _req, res, _next) => {
     res.status(500).json({
