@@ -31,7 +31,7 @@ describe('core local symphony launch invocation state', () => {
             'exec',
             '--skip-git-repo-check',
             '--model',
-            'gpt-5.4',
+            'gpt-5.1-codex-mini',
             '--sandbox',
             'workspace-write',
             'you are ralph',
