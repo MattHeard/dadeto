@@ -159,7 +159,12 @@ function syncIfPayload(options) {
     return;
   }
 
-  syncToyInput(options);
+  syncToyInput({
+    dom: options.dom,
+    textInput: options.textInput,
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    payload: options.payload,
+  });
 }
 
 /**
@@ -212,7 +217,7 @@ function cancelPoll(state) {
     return;
   }
 
-  runCancelAnimationFrame(frameId);
+  runCancelAnimationFrame(/** @type {number} */ (frameId));
   state.animationFrameId = null;
 }
 
@@ -289,7 +294,15 @@ function getConnectedGamepads() {
  * @returns {Gamepad[]} Connected gamepads only.
  */
 function toConnectedGamepads(gamepads) {
-  return Array.from(gamepads ?? []).filter(Boolean);
+  return Array.from(gamepads ?? []).filter(isPresentGamepad);
+}
+
+/**
+ * @param {Gamepad | null} gamepad - Candidate gamepad entry.
+ * @returns {gamepad is Gamepad} True when the entry is a connected gamepad object.
+ */
+function isPresentGamepad(gamepad) {
+  return gamepad !== null;
 }
 
 /**
@@ -660,7 +673,12 @@ function handleConnectionEvent(options, event) {
     return;
   }
 
-  storeSnapshot(options.state, event.gamepad);
+  const gamepad = getEventGamepad(event);
+  if (gamepad === null) {
+    return;
+  }
+
+  storeSnapshot(options.state, gamepad);
   syncToyInput({
     dom: options.dom,
     textInput: options.textInput,
