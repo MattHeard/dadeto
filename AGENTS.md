@@ -149,6 +149,8 @@ Prefer repo docs for command intent and troubleshooting over duplicating long in
 
 - Follow project conventions in `CLAUDE.md` (style, naming, defensive coding).
 - Keep changes bounded; extract helpers to manage complexity.
+- Exploratory shared-module convention: prefer one primary shared module per directory, named after the directory, as the default home for new cross-file helpers.
+- Treat that convention as guidance, not a hard law; if the directory-named shared module becomes incoherent, prefer exploring a directory split or a narrower concept file instead of flattening unrelated helpers into one module.
 - Avoid `eslint-disable` comments unless explicitly approved.
 - PRs must include **Summary** and **Testing** sections with executed commands.
 
