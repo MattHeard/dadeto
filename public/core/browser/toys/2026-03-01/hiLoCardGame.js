@@ -1,3 +1,5 @@
+import { isObjectValue, parseJsonObject } from '../../jsonValueHelpers.js';
+
 const GAME_STATE_KEY = 'hiLoCardGame:gameState';
 const KEYBOARD_STATE_KEY = 'hiLoCardGame:keyboardState';
 const HIGHER_KEY = 'ArrowUp';
@@ -74,11 +76,11 @@ export function parseHiLoInput(input) {
  * @returns {HiLoInputEvent | null} Parsed event or null.
  */
 function parseInputPayload(input) {
-  try {
-    return normalizeParsedEvent(JSON.parse(input));
-  } catch {
+  const parsed = parseJsonObject(input);
+  if (!parsed) {
     return null;
   }
+  return normalizeParsedEvent(parsed);
 }
 
 /**
@@ -99,7 +101,7 @@ function hasInputPayload(input) {
  * @returns {HiLoInputEvent | null} Valid input event or null.
  */
 function normalizeParsedEvent(parsed) {
-  if (!isObjectCandidate(parsed)) {
+  if (!isObjectValue(parsed)) {
     return null;
   }
   return buildNormalizedParsedEvent(
@@ -129,10 +131,6 @@ function buildNormalizedParsedEvent(candidate) {
  * @param {unknown} value - Parsed input candidate.
  * @returns {boolean} True when the value is an object.
  */
-function isObjectCandidate(value) {
-  return Boolean(value) && typeof value === 'object';
-}
-
 /**
  * Check whether a parsed record contains an event type.
  * @param {Record<string, unknown>} candidate - Parsed input record.
@@ -172,7 +170,7 @@ function getOptionalString(value) {
  * @returns {HiLoScore} Safe score value.
  */
 function normalizeScore(value) {
-  if (!isObjectCandidate(value)) {
+  if (!isObjectValue(value)) {
     return createInitialScore();
   }
 
@@ -200,7 +198,7 @@ function toScoreNumber(value) {
  * @returns {HiLoGameState} Safe game state.
  */
 export function normalizeGameState(value, getRandomNumber) {
-  if (!isObjectCandidate(value)) {
+  if (!isObjectValue(value)) {
     return createInitialGameState(getRandomNumber);
   }
   return buildNormalizedGameState(
@@ -233,7 +231,7 @@ function buildNormalizedGameState(candidate, getRandomNumber) {
  * @returns {HiLoKeyboardState} Safe keyboard state.
  */
 export function normalizeKeyboardState(value) {
-  if (!isObjectCandidate(value)) {
+  if (!isObjectValue(value)) {
     return createInitialKeyboardState();
   }
 
