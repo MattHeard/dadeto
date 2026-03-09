@@ -24,6 +24,7 @@ Treat this as an experiment, not a settled architecture mandate. Prefer small tr
 - Document the exploratory convention in repo guidance as a preferred default, not a strict law.
 - Trial the convention in `src/core/browser/inputHandlers` and record what becomes cleaner or more awkward.
 - Identify one or two additional directories where a shared-module consolidation or directory split would provide useful feedback.
+- Define a small experiment rubric so future trial beads capture comparable evidence instead of only subjective impressions.
 - Decide what evidence would be strong enough to promote the experiment into a firmer repo convention.
 
 ## Tentative sequence
@@ -32,3 +33,40 @@ Treat this as an experiment, not a settled architecture mandate. Prefer small tr
 2. Record what agents find more predictable about imports and shared helper placement.
 3. When a shared module becomes incoherent, treat that as evidence to explore a directory split rather than adding more ad hoc helper files.
 4. Only after several real examples, decide whether to codify this as a stronger architectural rule.
+
+## Experiment design
+
+Run a small comparative experiment using real maintenance/refactor beads in a few directories with shared-helper pressure rather than one broad rewrite.
+
+Suggested setup:
+
+1. Pick `2-3` directories with live shared-helper decisions to make.
+2. Treat the current convention as the experimental default:
+   - prefer one primary shared module per directory, named after the directory
+   - put new cross-file helpers there by default
+   - if that file becomes incoherent, treat that as evidence to split the directory instead of adding more miscellaneous helper files
+3. After each trial bead, record the same evidence so different trials stay comparable.
+
+Suggested evidence rubric for each trial:
+
+- which directory and bead were used for the trial
+- what shared/helper placement decision had to be made
+- where the agent looked first for shared logic
+- whether the correct placement felt obvious or required exploration
+- whether the trial reduced or increased helper-file sprawl
+- whether the shared module stayed coherent or started mixing unrelated helper families
+- whether the pressure suggested a directory split
+- whether imports became more predictable for future work
+
+Success signals:
+
+- agents look for the directory-named shared module first
+- fewer ad hoc `shared`, `helpers`, or `utils` files appear in the same directory
+- helper placement becomes faster and more predictable
+- incoherence surfaces as a clear directory-splitting signal instead of silent file sprawl
+
+Failure signals:
+
+- the shared module becomes a junk drawer quickly
+- agents still add side helper files because the convention does not fit the directory
+- the rule adds friction without making placement decisions more predictable
