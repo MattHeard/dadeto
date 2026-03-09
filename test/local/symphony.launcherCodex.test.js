@@ -67,6 +67,10 @@ describe('local symphony codex launcher', () => {
           'workspace-write',
           [
             'you are ralph',
+            'run exactly one bounded bead loop as the repo runner',
+            'keep terminal usage terse and evidence-driven',
+            'prefer focused rg/sed reads over broad scans or large file dumps',
+            'if blocked or partial, leave bead evidence and stop instead of widening scope',
             'pop dadeto-0fzi',
             'bead title: Invoke a real Ralph agent session from Symphony runner launch',
             'run id: 2026-03-08T19:20:00.000Z--dadeto-0fzi',

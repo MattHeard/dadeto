@@ -111,7 +111,14 @@ export function createCodexRalphLauncher(options) {
  * @returns {string} Prompt passed to the Codex runner session.
  */
 function buildRalphPrompt(payload) {
-  const lines = ['you are ralph', `pop ${payload.beadId}`];
+  const lines = [
+    'you are ralph',
+    'run exactly one bounded bead loop as the repo runner',
+    'keep terminal usage terse and evidence-driven',
+    'prefer focused rg/sed reads over broad scans or large file dumps',
+    'if blocked or partial, leave bead evidence and stop instead of widening scope',
+    `pop ${payload.beadId}`,
+  ];
   if (payload.beadTitle) {
     lines.push(`bead title: ${payload.beadTitle}`);
   }
