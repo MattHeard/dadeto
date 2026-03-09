@@ -59,6 +59,25 @@ export function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
 }
 
 /**
+ * Mirror a structured payload into the hidden toy input using shared DOM dependencies.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ * }} input - Shared toy-input dependencies.
+ * @param {Record<string, unknown>} payload - Structured event payload to store.
+ * @returns {void}
+ */
+export function syncToyPayload(input, payload) {
+  syncToyInput({
+    dom: input.dom,
+    textInput: input.textInput,
+    autoSubmitCheckbox: input.autoSubmitCheckbox,
+    payload,
+  });
+}
+
+/**
  * Resolve the article wrapper for the current container.
  * @param {HTMLElement} container - Input container inside the article.
  * @returns {HTMLElement | null} Closest article element.

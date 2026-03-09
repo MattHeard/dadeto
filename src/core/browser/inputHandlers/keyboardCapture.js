@@ -1,7 +1,7 @@
 import * as browserCore from '../browser-core.js';
 import {
   getAutoSubmitCheckbox,
-  syncToyInput,
+  syncToyPayload,
 } from './captureFormShared.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
@@ -44,15 +44,17 @@ function createCaptureToggleHandler(options) {
   return () => {
     state.capturing = !state.capturing;
     updateCaptureButton(dom, button, state.capturing);
-    syncToyInput({
-      dom,
-      textInput,
-      autoSubmitCheckbox,
-      payload: {
+    syncToyPayload(
+      {
+        dom,
+        textInput,
+        autoSubmitCheckbox,
+      },
+      {
         type: 'capture',
         capturing: state.capturing,
-      },
-    });
+      }
+    );
   };
 }
 
@@ -91,15 +93,17 @@ function releaseCaptureOnEscape(event, options) {
   const { dom, button, textInput, autoSubmitCheckbox, state } = options;
   state.capturing = false;
   updateCaptureButton(dom, button, false);
-  syncToyInput({
-    dom,
-    textInput,
-    autoSubmitCheckbox,
-    payload: {
+  syncToyPayload(
+    {
+      dom,
+      textInput,
+      autoSubmitCheckbox,
+    },
+    {
       type: 'capture',
       capturing: false,
-    },
-  });
+    }
+  );
   return true;
 }
 
@@ -174,14 +178,9 @@ function handleCapturedKeyboardEvent(event, options) {
  * @returns {void}
  */
 function forwardCapturedKey(event, options) {
-  syncToyInput({
-    dom: options.dom,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    payload: {
-      type: event.type,
-      key: event.key,
-    },
+  syncToyPayload(options, {
+    type: event.type,
+    key: event.key,
   });
 }
 
