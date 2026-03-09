@@ -1,3 +1,5 @@
+import { parseJsonObject } from '../jsonValueHelpers.js';
+
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ key: string, label: string }} ControlLabel */
 /** @typedef {{ className?: string, text?: string }} TextNodeOptions */
@@ -29,11 +31,7 @@ const MAPPING_DESCRIBERS = Object.freeze({
  * @returns {Record<string, unknown> | null} Parsed state object or null on invalid JSON.
  */
 function parseState(inputString) {
-  try {
-    return JSON.parse(inputString);
-  } catch {
-    return null;
-  }
+  return parseJsonObject(inputString);
 }
 
 /**

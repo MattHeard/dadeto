@@ -1,16 +1,10 @@
+import { isObjectValue, parseJsonObject } from '../../jsonValueHelpers.js';
+
 const TOY_STORAGE_KEY = 'JOYMAP1';
 const DEFAULT_STATE = {
   mappings: {},
   skippedControls: [],
 };
-
-/**
- * @param {unknown} value Candidate object-like value.
- * @returns {boolean} Whether the value is a non-null object.
- */
-function isObjectValue(value) {
-  return Boolean(value) && typeof value === 'object';
-}
 
 /**
  * @param {unknown} value Candidate serialized payload.
@@ -25,11 +19,7 @@ function isNonEmptyString(value) {
  * @returns {Record<string, unknown> | null} Parsed JSON value or null on parse failure.
  */
 function parseJsonInput(input) {
-  try {
-    return JSON.parse(input);
-  } catch {
-    return null;
-  }
+  return parseJsonObject(input);
 }
 
 /**
