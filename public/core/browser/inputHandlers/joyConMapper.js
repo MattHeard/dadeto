@@ -623,6 +623,22 @@ function hasAxisCaptureDelta(oldValue, value, expectedDirection) {
 /**
  * @param {number} value
  *   Current axis value.
+ * @param {{ oldValue: number, expectedDirection: 'negative' | 'positive' }} context
+ *   Previous axis value and direction context.
+ * @returns {boolean}
+ *   True when the axis still matches the expected direction and moved enough.
+ */
+function isAxisCaptureCandidate(value, context) {
+  const { oldValue, expectedDirection } = context;
+  return (
+    axisMatchesDirection(value, expectedDirection) &&
+    hasAxisCaptureDelta(oldValue, value, expectedDirection)
+  );
+}
+
+/**
+ * @param {number} value
+ *   Current axis value.
  * @param {number} axis
  *   Current axis index.
  * @param {{ oldValue: number, expectedDirection: 'negative' | 'positive' }} context
@@ -631,15 +647,11 @@ function hasAxisCaptureDelta(oldValue, value, expectedDirection) {
  *   Capture candidate for this axis, if it qualifies.
  */
 function getAxisCaptureCandidate(value, axis, context) {
-  const { oldValue, expectedDirection } = context;
-  if (!axisMatchesDirection(value, expectedDirection)) {
+  if (!isAxisCaptureCandidate(value, context)) {
     return null;
   }
 
-  if (!hasAxisCaptureDelta(oldValue, value, expectedDirection)) {
-    return null;
-  }
-
+  const { expectedDirection } = context;
   return {
     type: 'axis',
     axis,
