@@ -1,4 +1,8 @@
 import * as browserCore from '../browser-core.js';
+import {
+  getAutoSubmitCheckbox,
+  syncToyInput,
+} from './captureFormShared.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -13,63 +17,8 @@ const CAPTURE_BUTTON_LABEL = 'Capture gamepad';
 const RELEASE_BUTTON_LABEL = 'Release gamepad';
 const ESCAPE_KEY = 'Escape';
 const AXIS_EPSILON = 0.01;
-const AUTO_SUBMIT_CHECKBOX_SELECTOR = '.auto-submit-checkbox';
 const GAMEPAD_CONNECTED_EVENT = 'gamepadconnected';
 const GAMEPAD_DISCONNECTED_EVENT = 'gamepaddisconnected';
-
-/**
- * Serialize an event payload for the hidden text input.
- * @param {Record<string, unknown>} payload - Structured event payload to store.
- * @returns {string} JSON-encoded event payload.
- */
-function serializePayload(payload) {
-  return JSON.stringify(payload);
-}
-
-/**
- * Mark the paired toy as auto-submitting when the checkbox exists.
- * @param {HTMLInputElement | null} autoSubmitCheckbox - Checkbox controlling auto-submit.
- * @returns {void}
- */
-function enableAutoSubmit(autoSubmitCheckbox) {
-  if (autoSubmitCheckbox === null) {
-    return;
-  }
-
-  autoSubmitCheckbox.checked = true;
-  dispatchChangeEvent(autoSubmitCheckbox);
-}
-
-/**
- * Dispatch a change event on the given checkbox.
- * @param {HTMLInputElement} checkbox - Checkbox that should emit a change event.
- * @returns {void}
- */
-function dispatchChangeEvent(checkbox) {
-  const dispatchEvent = checkbox.dispatchEvent;
-  if (typeof dispatchEvent !== 'function') {
-    return;
-  }
-
-  dispatchEvent.call(checkbox, new Event('change'));
-}
-
-/**
- * Mirror a structured payload into the hidden toy input.
- * @param {{
- *   dom: DOMHelpers,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   payload: Record<string, unknown>,
- * }} options - DOM and payload dependencies.
- * @returns {void}
- */
-function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
-  const serialised = serializePayload(payload);
-  dom.setValue(textInput, serialised);
-  browserCore.setInputValue(textInput, serialised);
-  enableAutoSubmit(autoSubmitCheckbox);
-}
 
 /**
  * Resolve the current button label for capture state.
@@ -93,46 +42,6 @@ function getCaptureButtonLabel(isCapturing) {
  */
 function updateCaptureButton(dom, button, isCapturing) {
   dom.setTextContent(button, getCaptureButtonLabel(isCapturing));
-}
-
-/**
- * Find the enclosing article for the current toy.
- * @param {HTMLElement} container - Toy input container element.
- * @returns {HTMLElement | null} Closest article wrapper when present.
- */
-function getArticle(container) {
-  const article = getClosestArticle(container);
-  if (article) {
-    return article;
-  }
-
-  return null;
-}
-
-/**
- * Look up the closest article entry for a container.
- * @param {HTMLElement} container - Toy input container element.
- * @returns {HTMLElement | null | undefined} Closest article candidate.
- */
-function getClosestArticle(container) {
-  return container.closest?.('article.entry');
-}
-
-/**
- * Find the auto-submit checkbox associated with the toy.
- * @param {HTMLElement} container - Toy input container element.
- * @param {DOMHelpers} dom - DOM helper bucket.
- * @returns {HTMLInputElement | null} Matching checkbox when present.
- */
-function getAutoSubmitCheckbox(container, dom) {
-  const article = getArticle(container);
-  if (article === null) {
-    return null;
-  }
-
-  return /** @type {HTMLInputElement | null} */ (
-    dom.querySelector(article, AUTO_SUBMIT_CHECKBOX_SELECTOR)
-  );
 }
 
 /**
