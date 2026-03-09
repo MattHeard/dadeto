@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import {
   createSymphonyLaunchHandler,
   createSymphonyStatusHandler,
@@ -27,6 +28,9 @@ function createResponseDouble() {
 }
 
 describe('local symphony app handlers', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
   test('serves operator recommendation from the status handler', async () => {
     const handler = createSymphonyStatusHandler({
       initialStatus: {
@@ -53,6 +57,101 @@ describe('local symphony app handlers', () => {
       state: 'ready',
       operatorRecommendation: 'Run the next worker loop on dadeto-82el.',
     });
+  });
+
+  test('reconciles active run when the pid no longer exists', async () => {
+    const response = createResponseDouble();
+    const statusStore = {
+      readStatus: jest.fn().mockResolvedValue({
+        state: 'running',
+        currentBeadId: 'dadeto-xyz',
+        currentBeadTitle: 'Reconcile finished Ralph runs back into Symphony status',
+        activeRun: {
+          runId: '2026-03-08T22:38:07.435Z--dadeto-n3nd',
+          beadId: 'dadeto-n3nd',
+          beadTitle: 'Reconcile finished Ralph runs back into Symphony status',
+          pid: 777777,
+          stdoutPath: '/tmp/run.stdout',
+          stderrPath: '/tmp/run.stderr',
+        },
+      }),
+      writeStatus: jest.fn().mockResolvedValue(undefined),
+    };
+
+    jest.spyOn(process, 'kill').mockImplementation(() => {
+      const error = new Error('not found');
+      error.code = 'ESRCH';
+      throw error;
+    });
+
+    const handler = createSymphonyStatusHandler({
+      initialStatus: {
+        state: 'ready',
+      },
+      statusStore,
+    });
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(statusStore.writeStatus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        state: 'blocked',
+        activeRun: null,
+        lastOutcome: expect.objectContaining({
+          beadId: 'dadeto-n3nd',
+          outcome: 'blocked',
+          summary: expect.stringContaining(
+            'Runner 2026-03-08T22:38:07.435Z--dadeto-n3nd (pid 777777) is not running'
+          ),
+        }),
+      })
+    );
+    expect(response.jsonValue).toEqual(
+      expect.objectContaining({
+        state: 'blocked',
+        activeRun: null,
+      })
+    );
+  });
+
+  test('does not reconcile active run when the pid is still alive', async () => {
+    const response = createResponseDouble();
+    const statusStore = {
+      readStatus: jest.fn().mockResolvedValue({
+        state: 'running',
+        currentBeadId: 'dadeto-alive',
+        activeRun: {
+          beadId: 'dadeto-alive',
+          pid: 888888,
+        },
+      }),
+      writeStatus: jest.fn().mockResolvedValue(undefined),
+    };
+
+    jest.spyOn(process, 'kill').mockImplementation(() => undefined);
+
+    const handler = createSymphonyStatusHandler({
+      initialStatus: {
+        state: 'ready',
+      },
+      statusStore,
+    });
+
+    await handler({}, response, error => {
+      throw error;
+    });
+
+    expect(statusStore.writeStatus).not.toHaveBeenCalled();
+    expect(response.jsonValue).toEqual(
+      expect.objectContaining({
+        state: 'running',
+        activeRun: expect.objectContaining({
+          beadId: 'dadeto-alive',
+        }),
+      })
+    );
   });
 
   test('starts one Symphony Ralph launch from the operator trigger handler', async () => {
