@@ -49,11 +49,13 @@ export async function launchSelectedRunnerLoop(options) {
   const runId = `${startedAt}--${currentBeadId}`;
   const launchRequest = `pop ${currentBeadId}`;
   const launcher = options.launcher ?? createConfiguredLauncher(status, options);
+  const launchStatusWrite = createDeferredPromise();
   const onRunnerExit = createRunnerExitHandler({
     statusStore: options.statusStore,
     runId,
     beadId: currentBeadId,
     beadTitle: currentBeadTitle,
+    waitForLaunchStatusWrite: () => launchStatusWrite.promise,
   });
 
   try {
@@ -82,10 +84,16 @@ export async function launchSelectedRunnerLoop(options) {
       launchedStatus
     );
 
-    await options.statusStore.writeStatus(launchedStatus);
+    const writePromise = options.statusStore.writeStatus(launchedStatus);
+    try {
+      await writePromise;
+    } finally {
+      launchStatusWrite.resolve();
+    }
 
     return launchedStatus;
   } catch (error) {
+    launchStatusWrite.resolve();
     const failedStatus = applyRunnerLaunchFailure(status, {
       startedAt,
       beadId: currentBeadId,
@@ -217,7 +225,8 @@ function getLaunchErrorMessage(error) {
  *   },
  *   runId: string,
  *   beadId: string,
- *   beadTitle: string | null
+ *   beadTitle: string | null,
+ *   waitForLaunchStatusWrite?: () => Promise<void>
  * }} options
  * @returns {((exitInfo: { exitCode: number | null, signal: string | null }) => Promise<void>) | undefined}
  */
@@ -230,7 +239,23 @@ export function createRunnerExitHandler(options) {
     return undefined;
   }
 
+  const waitForLaunchStatusWrite =
+    typeof options.waitForLaunchStatusWrite === 'function'
+      ? options.waitForLaunchStatusWrite
+      : null;
+
   return async (exitInfo) => {
+    if (waitForLaunchStatusWrite) {
+      try {
+        await waitForLaunchStatusWrite();
+      } catch (waitError) {
+        console.error(
+          `Failed to wait for the launch status write before handling runner ${options.runId} exit:`,
+          waitError
+        );
+      }
+    }
+
     try {
       const storedStatus = await options.statusStore.readStatus();
       if (!storedStatus) {
@@ -256,6 +281,23 @@ export function createRunnerExitHandler(options) {
         error
       );
     }
+  };
+}
+
+/**
+ * @returns {{ promise: Promise<void>, resolve: () => void }}
+ */
+function createDeferredPromise() {
+  let resolver = () => {};
+  const promise = new Promise((resolve) => {
+    resolver = resolve;
+  });
+  return {
+    promise,
+    resolve: () => {
+      resolver();
+      resolver = () => {};
+    },
   };
 }
 

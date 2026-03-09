@@ -226,6 +226,96 @@ describe('local symphony runner launch', () => {
     ).resolves.toContain('--stderr.log');
   });
 
+  test('keeps the stored status idle when the runner exits before the launch write completes', async () => {
+    const statusStore = createSymphonyStatusStore({
+      statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+      logDir: path.join(tempDir, 'tracking', 'symphony'),
+    });
+    let exitPromise = Promise.resolve();
+
+    await launchSelectedRunnerLoop({
+      repoRoot: tempDir,
+      status: {
+        service: 'dadeto-local-symphony',
+        startedAt: '2026-03-08T19:14:00.000Z',
+        state: 'ready',
+        currentBeadId: 'dadeto-0fzi',
+        currentBeadTitle:
+          'Invoke a real Ralph agent session from Symphony runner launch',
+        currentBeadPriority: '● P2',
+        operatorArtifacts: {
+          statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+          runsDir: path.join(tempDir, 'tracking', 'symphony', 'runs'),
+        },
+        config: {
+          launcher: {
+            kind: 'codex',
+            command: 'codex',
+            args: [
+              'exec',
+              '--skip-git-repo-check',
+              '--model',
+              'gpt-5.1-codex-mini',
+              '--sandbox',
+              'workspace-write',
+            ],
+          },
+        },
+      },
+      launcher: {
+        async launchRunner(payload) {
+          const invocation = {
+            launcherKind: 'codex',
+            command: 'codex',
+            args: [
+              'exec',
+              '--skip-git-repo-check',
+              '--model',
+              'gpt-5.1-codex-mini',
+              '--sandbox',
+              'workspace-write',
+              'you are ralph',
+            ],
+            pid: 43210,
+            stdoutPath: path.join(
+              tempDir,
+              'tracking',
+              'symphony',
+              'runs',
+              '2026-03-08T19-15-05.000Z--dadeto-0fzi--stdout.log'
+            ),
+            stderrPath: path.join(
+              tempDir,
+              'tracking',
+              'symphony',
+              'runs',
+              '2026-03-08T19-15-05.000Z--dadeto-0fzi--stderr.log'
+            ),
+          };
+
+          exitPromise = payload.onExit
+            ? payload.onExit({ exitCode: 0, signal: null })
+            : Promise.resolve();
+
+          return invocation;
+        },
+      },
+      statusStore,
+      now: () => new Date('2026-03-08T19:15:05.000Z'),
+    });
+
+    await exitPromise;
+
+    await expect(statusStore.readStatus()).resolves.toMatchObject({
+      state: 'idle',
+      activeRun: null,
+      lastOutcome: {
+        beadId: 'dadeto-0fzi',
+        outcome: 'completed',
+      },
+    });
+  });
+
   test('records a failed launch when the Ralph launcher integration errors', async () => {
     const statusStore = createSymphonyStatusStore({
       statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
