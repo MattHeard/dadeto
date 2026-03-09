@@ -85,12 +85,12 @@ function getArticle(container) {
 
 /**
  * Normalize a closest-article lookup.
- * @param {HTMLElement | null | undefined} article - Candidate article element.
+ * @param {Element | null | undefined} article - Candidate article element.
  * @returns {HTMLElement | null} Closest article or null.
  */
 function resolveClosestArticle(article) {
   if (article) {
-    return article;
+    return /** @type {HTMLElement} */ (article);
   }
   return null;
 }
