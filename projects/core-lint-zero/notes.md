@@ -6,7 +6,13 @@ Reduce Dadeto `src/core` lint warnings to zero and keep them at zero through fut
 
 ## Current state
 
-`src/core/browser/inputHandlers/joyConMapper.js` is still the active warning surface, but the non-complexity warnings and several early helper/hotspot clusters have already been removed. The remaining queue has narrowed to complexity-only cleanup, with the current open bead focused on the axis-helper cluster in `detectAxisCapture` and `selectStrongerAxisCapture` (`dadeto-mjpv`).
+`src/core/browser/inputHandlers/joyConMapper.js` is still the active warning surface, but the non-complexity warnings and the earlier axis-helper cleanup have already landed. The remaining queue is now complexity-only, with the current smallest adjacent helper cluster around:
+
+- `buildPayload`
+- `getCurrentControlKey`
+- `getPendingRowState`
+
+These helpers sit in one local payload/row-state slice before the report widens back out to stored-state refresh and handler-level warnings.
 
 ## Constraints
 
@@ -20,7 +26,7 @@ Prefer small warning-family or file-local beads over broad refactors. Keep behav
 
 ## Candidate next actions
 
-- Reduce the next axis-helper complexity cluster in `joyConMapper.js` (`dadeto-mjpv`).
+- Reduce the next payload/row-state helper cluster in `joyConMapper.js`.
 - Continue with the next smallest stable complexity cluster after re-reading the lint report.
 - Split out any remaining warning family that turns out to be contract-shaped instead of helper-shaped.
 - Decide what minimal regression guard should define “keep them at zero” once cleanup is complete.
@@ -28,7 +34,7 @@ Prefer small warning-family or file-local beads over broad refactors. Keep behav
 ## Tentative sequence
 
 1. Non-complexity warnings are already gone, so the queue is now complexity-only.
-2. Continue by re-reading the lint report after each bead and selecting the next smallest hotspot cluster.
+2. Continue with the local payload/row-state helper cluster before touching stored-state refresh or handler-level warnings.
 3. Prefer local helper clusters before broader handler-level cleanup.
 4. Split out any warning cluster that looks contract-shaped or design-shaped instead of grinding it through repeated micro-refactors.
 5. Once `src/core` reaches zero warnings, define the smallest guardrail that will keep it there.
