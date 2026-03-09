@@ -53,7 +53,7 @@ export function assertFunction(candidate, name) {
  * @param {unknown} value Candidate value.
  * @returns {string | undefined} String when provided, otherwise undefined.
  */
-function getStringCandidate(value) {
+export function getStringCandidate(value) {
   if (typeof value === 'string') {
     return value;
   }

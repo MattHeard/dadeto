@@ -1,3 +1,4 @@
+import { getStringCandidate } from '../../../commonCore.js';
 import { isObjectValue, parseJsonObject } from '../../jsonValueHelpers.js';
 
 const GAME_STATE_KEY = 'hiLoCardGame:gameState';
@@ -122,7 +123,7 @@ function buildNormalizedParsedEvent(candidate) {
 
   return {
     type: eventType,
-    key: getOptionalString(candidate.key),
+    key: getStringCandidate(candidate.key),
   };
 }
 
@@ -150,18 +151,6 @@ function readEventType(candidate) {
     return candidate.type;
   }
   return null;
-}
-
-/**
- * Convert unknown values into optional strings.
- * @param {unknown} value - Candidate string value.
- * @returns {string | undefined} String when valid.
- */
-function getOptionalString(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-  return undefined;
 }
 
 /**
@@ -256,7 +245,7 @@ function hasCurrentCard(currentCard) {
  * @returns {string | null} Active key or null.
  */
 function readActiveKey(value) {
-  return getOptionalString(value) ?? null;
+  return getStringCandidate(value) ?? null;
 }
 
 /**
