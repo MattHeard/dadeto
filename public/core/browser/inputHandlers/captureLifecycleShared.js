@@ -7,18 +7,19 @@
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
  *   updateButtonLabel: (dom: DOMHelpers, button: HTMLButtonElement, capturing: boolean) => void,
- *   emitPayload: (options: {
- *     dom: DOMHelpers,
- *     textInput: HTMLInputElement,
- *     autoSubmitCheckbox: HTMLInputElement | null,
- *     payload: Record<string, unknown>,
- *   }) => void,
+ *   emitPayload: (
+ *     input: {
+ *       dom: DOMHelpers,
+ *       textInput: HTMLInputElement,
+ *       autoSubmitCheckbox: HTMLInputElement | null,
+ *     },
+ *     payload: Record<string, unknown>
+ *   ) => void,
  * }} CaptureLifecycleOptions
  */
 
 /**
  * Mirror capture state changes to the UI and hidden toy input.
- *
  * @param {CaptureLifecycleOptions} options - Shared UI and syncing dependencies.
  * @param {boolean} capturing - The capture state being broadcast.
  * @returns {void}

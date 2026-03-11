@@ -1,6 +1,7 @@
 import * as browserCore from '../browser-core.js';
 import { getAutoSubmitCheckbox, syncToyPayload } from './captureFormShared.js';
 import { emitCaptureState } from './captureLifecycleShared.js';
+import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -37,24 +38,6 @@ function updateCaptureButton(dom, button, isCapturing) {
  * }} options - Click-handler dependencies.
  * @returns {() => void} Click handler.
  */
-function createCaptureToggleHandler(options) {
-  const { dom, button, textInput, autoSubmitCheckbox, state } = options;
-  return () => {
-    state.capturing = !state.capturing;
-    emitCaptureState(
-      {
-        dom,
-        button,
-        textInput,
-        autoSubmitCheckbox,
-        updateButtonLabel: updateCaptureButton,
-        emitPayload: syncToyPayload,
-      },
-      state.capturing
-    );
-  };
-}
-
 /**
  * Build the global keyboard event handler.
  * @param {{
@@ -203,12 +186,14 @@ function buildKeyboardCaptureForm({ dom, container, textInput }) {
 
   const state = { capturing: false };
   const autoSubmitCheckbox = getAutoSubmitCheckbox(container, dom);
-  const handleToggle = createCaptureToggleHandler({
+  const handleToggle = createCaptureLifecycleToggleHandler({
     dom,
     button,
     textInput,
     autoSubmitCheckbox,
     state,
+    updateButtonLabel: updateCaptureButton,
+    emitPayload: syncToyPayload,
   });
   const handleKeyboard = createKeyboardHandler({
     dom,
