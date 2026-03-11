@@ -1,5 +1,7 @@
 import * as browserCore from '../browser-core.js';
 import { getAutoSubmitCheckbox, syncToyInput } from './captureFormShared.js';
+import { emitCaptureState } from './captureLifecycleShared.js';
+import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -171,23 +173,6 @@ function syncIfPayload(options) {
  */
 function resetSnapshots(state) {
   state.snapshots = {};
-}
-
-/**
- * Emit the capture-state payload.
- * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {void}
- */
-function syncCaptureState(options) {
-  syncToyInput({
-    dom: options.dom,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    payload: {
-      type: 'capture',
-      capturing: options.state.capturing,
-    },
-  });
 }
 
 /**
@@ -532,12 +517,31 @@ function isEscapeReleaseEvent(event) {
  * @param {HandlerOptions} options - Shared handler dependencies.
  * @returns {void}
  */
-function releaseCapture(options) {
-  options.state.capturing = false;
+function stopCaptureSideEffects(options) {
   resetSnapshots(options.state);
   cancelPoll(options.state);
-  updateCaptureButton(options.dom, options.button, false);
-  syncCaptureState(options);
+}
+
+/**
+ * Release capture, clear snapshots, and notify the toy.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @returns {void}
+ */
+function releaseCapture(options) {
+  options.state.capturing = false;
+  stopCaptureSideEffects(options);
+  emitCaptureState(
+    {
+      dom: options.dom,
+      button: options.button,
+      textInput: options.textInput,
+      autoSubmitCheckbox: options.autoSubmitCheckbox,
+      updateButtonLabel: updateCaptureButton,
+      emitPayload: ({ dom, textInput, autoSubmitCheckbox }, payload) =>
+        syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }),
+    },
+    false
+  );
 }
 
 /**
@@ -545,31 +549,6 @@ function releaseCapture(options) {
  * @param {HandlerOptions} options - Shared handler dependencies.
  * @returns {() => void} Click handler for the capture toggle.
  */
-function createCaptureToggleHandler(options) {
-  return () => {
-    toggleCaptureState(options);
-  };
-}
-
-/**
- * Toggle capture on or off and run the required side effects.
- * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {void}
- */
-function toggleCaptureState(options) {
-  options.state.capturing = !options.state.capturing;
-  updateCaptureButton(options.dom, options.button, options.state.capturing);
-  syncCaptureState(options);
-
-  if (options.state.capturing) {
-    queuePoll(options);
-    return;
-  }
-
-  resetSnapshots(options.state);
-  cancelPoll(options.state);
-}
-
 /**
  * Build the global escape-key handler.
  * @param {HandlerOptions} options - Shared handler dependencies.
@@ -752,7 +731,17 @@ function getHandledDisconnectionPayload(state, event) {
  * @returns {void}
  */
 function registerGamepadListeners(options, cleanupFns) {
-  const handleToggle = createCaptureToggleHandler(options);
+  const handleToggle = createCaptureLifecycleToggleHandler({
+    dom: options.dom,
+    button: options.button,
+    textInput: options.textInput,
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    state: options.state,
+    updateButtonLabel: updateCaptureButton,
+    emitPayload: (input, payload) => syncToyInput({ ...input, payload }),
+    onStart: () => queuePoll(options),
+    onStop: () => stopCaptureSideEffects(options),
+  });
   const handleEscape = createEscapeHandler(options);
   const handleConnect = createConnectionHandler(options);
   const handleDisconnect = createDisconnectHandler(options);

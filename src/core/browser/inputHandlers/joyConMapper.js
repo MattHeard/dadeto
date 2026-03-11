@@ -441,15 +441,15 @@ function isMissingButtonSnapshots(previous, current) {
  *   Reducer for selecting the strongest button capture across all buttons.
  */
 function makeButtonCaptureReducer(previous) {
-  return (best, button, index) => {
-    const oldButton = previous.buttons[index] ?? { pressed: false, value: 0 };
-    const candidate = getButtonCaptureCandidate(button, oldButton, index);
-    if (!candidate) {
-      return best;
-    }
-
-    return selectStrongerButtonCapture(best, candidate);
-  };
+  return (best, button, index) =>
+    selectStrongerButtonCapture(
+      best,
+      getButtonCaptureCandidate(
+        button,
+        previous.buttons[index] ?? { pressed: false, value: 0 },
+        index
+      )
+    );
 }
 
 /**
@@ -512,12 +512,28 @@ function getButtonCaptureCandidate(button, oldButton, index) {
 /**
  * @param {CaptureResult | null} best
  *   Current strongest capture.
- * @param {CaptureResult} candidate
+ * @param {CaptureResult | null} candidate
  *   Candidate capture to compare.
- * @returns {CaptureResult}
+ * @returns {CaptureResult | null}
  *   Stronger button capture.
  */
 function selectStrongerButtonCapture(best, candidate) {
+  if (!candidate) {
+    return best;
+  }
+
+  return selectCapturedButton(best, candidate);
+}
+
+/**
+ * @param {CaptureResult | null} best
+ *   Current strongest capture.
+ * @param {CaptureResult} candidate
+ *   Candidate capture to compare.
+ * @returns {CaptureResult}
+ *   Stronger candidate capture.
+ */
+function selectCapturedButton(best, candidate) {
   if (!best) {
     return candidate;
   }
@@ -1424,6 +1440,131 @@ function injectStyles(dom, form) {
 }
 
 /**
+ * Append every child element to its parent using the DOM helper.
+ * @param {DOMHelpers} dom DOM helper facade for element lifecycle.
+ * @param {Element} parent Parent element that should receive the children.
+ * @param {Element[]} children Children to append to the parent element.
+ * @returns {void}
+ */
+function appendChildren(dom, parent, children) {
+  children.forEach(child => dom.appendChild(parent, child));
+}
+
+/**
+ * Invoke every registered disposer.
+ * @param {Array<() => void>} disposers Callbacks to clean up when the mapper is disposed.
+ * @returns {void}
+ */
+function disposeAll(disposers) {
+  for (const dispose of disposers) {
+    dispose();
+  }
+}
+
+/**
+ * Extract the key from a control if it still exists.
+ * @param {MapperControl | null} control Control that was skipped.
+ * @returns {string | null} The control key or null if no control was active.
+ */
+function getSkippedControlKey(control) {
+  if (!control) {
+    return null;
+  }
+
+  return control.key;
+}
+
+/**
+ * Start the periodic capture loop and register the disposer.
+ * @param {MapperState} state Mapper state that tracks the current capture session.
+ * @param {Array<() => void>} disposers Cleanup callbacks that should clear the interval.
+ * @returns {void} Ensures the capture interval is scheduled and cleared when disposed.
+ */
+function startJoyConCaptureLoop(state, disposers) {
+  const intervalId = globalThis.setInterval(() => maybeCapture(state), 50);
+  disposers.push(() => globalThis.clearInterval(intervalId));
+}
+
+/**
+ * Schedule the initial payload sync using requestAnimationFrame when available.
+ * @param {DOMHelpers} dom DOM helper facade for the mapper.
+ * @param {HTMLInputElement} textInput Hidden input that mirrors mapper payloads.
+ * @param {MapperState} state The mapper state whose payload should be sent.
+ * @returns {void} Schedules the initial sync payload if the browser supports requestAnimationFrame.
+ */
+function queueJoyConInitialSync(dom, textInput, state) {
+  if (typeof globalThis.requestAnimationFrame !== 'function') {
+    return;
+  }
+
+  globalThis.requestAnimationFrame(() => {
+    syncToyInput({
+      dom,
+      textInput,
+      autoSubmitCheckbox: state.autoSubmitCheckbox,
+      payload: buildPayload('initialize', state),
+    });
+  });
+}
+
+/**
+ * Start mapping, sync the payload, and render the updated state.
+ * @param {MapperState} state The mapper state shared between the buttons and capture loop.
+ */
+function handleJoyConMapperStart(state) {
+  const { dom, textInput, autoSubmitCheckbox } = state;
+
+  startMapping(state);
+  syncToyInput({
+    dom,
+    textInput,
+    autoSubmitCheckbox,
+    payload: buildPayload('initialize', state),
+  });
+  render(state);
+}
+
+/**
+ * Advance past the current control while syncing the skip payload.
+ * @param {MapperState} state Mapper state to update for the pending control.
+ */
+function handleJoyConMapperSkip(state) {
+  const { dom, textInput, autoSubmitCheckbox } = state;
+
+  ensureStarted(state);
+  syncToyInput({
+    dom,
+    textInput,
+    autoSubmitCheckbox,
+    payload: buildPayload('skip', state, {
+      skippedControlKey: getSkippedControlKey(state.currentControl),
+    }),
+  });
+  advanceToNextControl(state);
+  render(state);
+}
+
+/**
+ * Reset the mapper state to its initial baseline and re-render.
+ * @param {MapperState} state Mapper state that should be rewound to the start.
+ */
+function handleJoyConMapperReset(state) {
+  const { dom, textInput, autoSubmitCheckbox } = state;
+
+  state.started = false;
+  state.currentIndex = 0;
+  state.currentControl = CONTROLS[0] ?? null;
+  state.previousSnapshot = snapshotGamepad(currentPad());
+  syncToyInput({
+    dom,
+    textInput,
+    autoSubmitCheckbox,
+    payload: buildPayload('reset', state),
+  });
+  render(state);
+}
+
+/**
  * @param {DOMHelpers} dom
  *   DOM helper facade for UI creation and updates.
  * @param {Element} container
@@ -1473,9 +1614,7 @@ export function joyConMapperHandler(dom, container, textInput) {
   const resetButton = /** @type {HTMLButtonElement} */ (
     createElement(dom, 'button', { text: 'Reset Mapping' })
   );
-  [startButton, skipButton, resetButton].forEach(button =>
-    dom.appendChild(actions, button)
-  );
+  appendChildren(dom, actions, [startButton, skipButton, resetButton]);
 
   const meta = createElement(dom, 'div', { className: 'joycon-mapper-meta' });
   const metaIndex = createElement(dom, 'div', { text: 'Index: -' });
@@ -1484,9 +1623,7 @@ export function joyConMapperHandler(dom, container, textInput) {
   dom.appendChild(meta, metaId);
 
   const list = createElement(dom, 'div', { className: 'joycon-mapper-list' });
-  [status, prompt, subprompt, actions, meta, list].forEach(element =>
-    dom.appendChild(hero, element)
-  );
+  appendChildren(dom, hero, [status, prompt, subprompt, actions, meta, list]);
   dom.appendChild(form, hero);
 
   const state = /** @type {MapperState} */ ({
@@ -1510,70 +1647,28 @@ export function joyConMapperHandler(dom, container, textInput) {
   registerClick({
     dom,
     element: startButton,
-    handler: () => {
-      startMapping(state);
-      syncToyInput({
-        dom,
-        textInput,
-        autoSubmitCheckbox: state.autoSubmitCheckbox,
-        payload: buildPayload('initialize', state),
-      });
-      render(state);
-    },
+    handler: () => handleJoyConMapperStart(state),
     disposers,
   });
 
   registerClick({
     dom,
     element: skipButton,
-    handler: () => {
-      ensureStarted(state);
-      const skippedControl = state.currentControl;
-      syncToyInput({
-        dom,
-        textInput,
-        autoSubmitCheckbox: state.autoSubmitCheckbox,
-        payload: buildPayload('skip', state, {
-          skippedControlKey: skippedControl?.key ?? null,
-        }),
-      });
-      advanceToNextControl(state);
-      render(state);
-    },
+    handler: () => handleJoyConMapperSkip(state),
     disposers,
   });
 
   registerClick({
     dom,
     element: resetButton,
-    handler: () => {
-      state.started = false;
-      state.currentIndex = 0;
-      state.currentControl = CONTROLS[0] ?? null;
-      state.previousSnapshot = snapshotGamepad(currentPad());
-      syncToyInput({
-        dom,
-        textInput,
-        autoSubmitCheckbox: state.autoSubmitCheckbox,
-        payload: buildPayload('reset', state),
-      });
-      render(state);
-    },
+    handler: () => handleJoyConMapperReset(state),
     disposers,
   });
 
-  const intervalId = globalThis.setInterval(() => maybeCapture(state), 50);
-  disposers.push(() => globalThis.clearInterval(intervalId));
-  form._dispose = () => disposers.forEach(dispose => dispose());
+  startJoyConCaptureLoop(state, disposers);
+  form._dispose = () => disposeAll(disposers);
 
   render(state);
 
-  globalThis.requestAnimationFrame?.(() => {
-    syncToyInput({
-      dom,
-      textInput,
-      autoSubmitCheckbox: state.autoSubmitCheckbox,
-      payload: buildPayload('initialize', state),
-    });
-  });
+  queueJoyConInitialSync(dom, textInput, state);
 }

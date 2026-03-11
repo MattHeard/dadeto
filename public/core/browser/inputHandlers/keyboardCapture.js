@@ -1,5 +1,6 @@
 import * as browserCore from '../browser-core.js';
 import { getAutoSubmitCheckbox, syncToyPayload } from './captureFormShared.js';
+import { emitCaptureState } from './captureLifecycleShared.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -40,17 +41,16 @@ function createCaptureToggleHandler(options) {
   const { dom, button, textInput, autoSubmitCheckbox, state } = options;
   return () => {
     state.capturing = !state.capturing;
-    updateCaptureButton(dom, button, state.capturing);
-    syncToyPayload(
+    emitCaptureState(
       {
         dom,
+        button,
         textInput,
         autoSubmitCheckbox,
+        updateButtonLabel: updateCaptureButton,
+        emitPayload: syncToyPayload,
       },
-      {
-        type: 'capture',
-        capturing: state.capturing,
-      }
+      state.capturing
     );
   };
 }
@@ -89,17 +89,16 @@ function releaseCaptureOnEscape(event, options) {
 
   const { dom, button, textInput, autoSubmitCheckbox, state } = options;
   state.capturing = false;
-  updateCaptureButton(dom, button, false);
-  syncToyPayload(
+  emitCaptureState(
     {
       dom,
+      button,
       textInput,
       autoSubmitCheckbox,
+      updateButtonLabel: updateCaptureButton,
+      emitPayload: syncToyPayload,
     },
-    {
-      type: 'capture',
-      capturing: false,
-    }
+    false
   );
   return true;
 }

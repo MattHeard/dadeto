@@ -1,5 +1,6 @@
 import * as browserCore from '../browser-core.js';
 import { getAutoSubmitCheckbox, syncToyInput } from './captureFormShared.js';
+import { emitCaptureState } from './captureLifecycleShared.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -171,23 +172,6 @@ function syncIfPayload(options) {
  */
 function resetSnapshots(state) {
   state.snapshots = {};
-}
-
-/**
- * Emit the capture-state payload.
- * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {void}
- */
-function syncCaptureState(options) {
-  syncToyInput({
-    dom: options.dom,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    payload: {
-      type: 'capture',
-      capturing: options.state.capturing,
-    },
-  });
 }
 
 /**
@@ -536,8 +520,17 @@ function releaseCapture(options) {
   options.state.capturing = false;
   resetSnapshots(options.state);
   cancelPoll(options.state);
-  updateCaptureButton(options.dom, options.button, false);
-  syncCaptureState(options);
+  emitCaptureState(
+    {
+      dom: options.dom,
+      button: options.button,
+      textInput: options.textInput,
+      autoSubmitCheckbox: options.autoSubmitCheckbox,
+      updateButtonLabel: updateCaptureButton,
+      emitPayload: (input, payload) => syncToyInput({ ...input, payload }),
+    },
+    false
+  );
 }
 
 /**
@@ -558,8 +551,17 @@ function createCaptureToggleHandler(options) {
  */
 function toggleCaptureState(options) {
   options.state.capturing = !options.state.capturing;
-  updateCaptureButton(options.dom, options.button, options.state.capturing);
-  syncCaptureState(options);
+  emitCaptureState(
+    {
+      dom: options.dom,
+      button: options.button,
+      textInput: options.textInput,
+      autoSubmitCheckbox: options.autoSubmitCheckbox,
+      updateButtonLabel: updateCaptureButton,
+      emitPayload: (input, payload) => syncToyInput({ ...input, payload }),
+    },
+    options.state.capturing
+  );
 
   if (options.state.capturing) {
     queuePoll(options);

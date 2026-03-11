@@ -1,0 +1,4 @@
+- **Unexpected hurdle:** jest raised `TypeError: Cannot assign to read only property …` while spying on ESM exports (`dispatchCheckboxChange`/`setInputValue`).
+- **Diagnosis:** Babel/Esm-local modules expose read-only bindings, so jest.spyOn tried to mutate them and the suite blew up before coverage could run.
+- **Fix:** dropped the spies, exercised the real helpers, and checked the downstream storage state (`readStoredOrElementValue`) instead of mocking `browserCore.setInputValue`.
+- **Next-time guidance:** avoid spying on module-bound helpers in this repo; assert the observable side effects or wrap the helper under test in a thin adapter before mocking if mutation is unavoidable.
