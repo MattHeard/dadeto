@@ -16,6 +16,7 @@ Symphony already exposes `/api/symphony/status`, but visibility is limited to JS
 - The dashboard should remain readable inside a cramped tmux pane and fit concisely within a viewport about `40` characters wide by `10` lines high without wrapping into noise.
 - Any keyboard-triggered action should be explicit, low-risk, and easy to understand in a small pane.
 - The selected bead ID should be visually prominent so an operator can identify the active work item at a glance, even in the compact view.
+- Pressing `L` at the wrong time should fail as a clear operator-state problem, not an internal `500`-style server fault; the worst case should be a `4xx` response or equivalent "not ready yet" message.
 
 ## Running
 
@@ -37,7 +38,20 @@ Symphony already exposes `/api/symphony/status`, but visibility is limited to JS
 - Tighten the rendering so the most important state still fits cleanly in a `40x10` tmux pane.
 - Make the selected bead ID more visually prominent than the bead title in the compact dashboard.
 - Add a keyboard shortcut that triggers the next Symphony loop through the existing local HTTP launch surface.
-- After the observational surface works, consider adding keyboard-driven refresh or queue-summary highlights.
+- Add a keyboard shortcut that explicitly refreshes Symphony through the existing refresh endpoint.
+- After the observational surface works, consider queue-summary highlights or other small operator aids.
+
+## Launch shortcut behavior
+
+- The TUI now renders a `Shortcut: L -> launch next bead` reminder and keeps a `Launch: …` line so operators can see the result of the POST.
+- Pressing `L` POSTs to `/api/symphony/launch`, reusing the same endpoint that Symphony’s web UI already calls for “pop <bead>”. Success feedback shows the launched bead ID/title and the default fallback text when the JSON payload lacks those fields.
+- When the Symphony server is offline, the fetch rejects (e.g., `ECONNREFUSED`), so the TUI keeps showing the offline status and updates the launch line to `Launch error: <connect error>`, matching the existing friendly polling message.
+- When Symphony is not ready yet, the launch path should surface a clear operator-state failure instead of an HTTP `500`.
+
+## Refresh shortcut behavior
+
+- Add an `R` shortcut that POSTs to the existing refresh endpoint so the operator can prime the next bead without leaving the TUI.
+- The refresh feedback should be as visible and compact as the launch feedback, including friendly handling for offline or empty-queue states.
 
 ## MVP checklist
 
@@ -47,4 +61,6 @@ Symphony already exposes `/api/symphony/status`, but visibility is limited to JS
 4. The default dashboard stays legible in a pane roughly `40x10` characters.
 5. The selected bead ID is visually prominent enough to scan quickly in the compact layout.
 6. The operator can trigger the next Symphony loop with a documented keyboard shortcut.
-7. The CLI leaves room for future enhancements (refresh timer, log viewing).
+7. The operator can explicitly refresh Symphony with a documented keyboard shortcut.
+8. Launching at the wrong time yields a clear operator-state failure rather than an HTTP `500`-style server error.
+9. The CLI leaves room for future enhancements (refresh timer, log viewing).
