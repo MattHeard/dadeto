@@ -158,6 +158,20 @@ function syncIfPayload(options) {
     return;
   }
 
+  emitToyPayload(options);
+}
+
+/**
+ * Send a payload to the toy synchronously, even when null.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ *   payload: Record<string, unknown> | null,
+ * }} options - Payload delivery dependencies.
+ * @returns {void}
+ */
+function emitToyPayload(options) {
   syncToyInput({
     dom: options.dom,
     textInput: options.textInput,
@@ -655,7 +669,7 @@ function handleConnectionEvent(options, event) {
   }
 
   storeSnapshot(options.state, gamepad);
-  syncToyInput({
+  emitToyPayload({
     dom: options.dom,
     textInput: options.textInput,
     autoSubmitCheckbox: options.autoSubmitCheckbox,
@@ -688,7 +702,7 @@ function handleDisconnectEvent(options, event) {
   }
 
   removeSnapshot(options.state, getEventGamepad(event));
-  syncToyInput({
+  emitToyPayload({
     dom: options.dom,
     textInput: options.textInput,
     autoSubmitCheckbox: options.autoSubmitCheckbox,

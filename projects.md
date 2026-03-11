@@ -9,3 +9,4 @@
 - duplication-zero
 - symphony
 - tsdoc-zero
+- snapshot-to-behaviour
