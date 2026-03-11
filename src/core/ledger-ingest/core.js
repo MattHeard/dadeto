@@ -185,9 +185,8 @@ export const fixtures = {
  * @returns {ImportTransactionsOutput} Normalized output and dedupe evidence.
  */
 export function importTransactions(input) {
-  const sourceLabel =
-    typeof input.source === 'string' ? input.source : 'ledger-ingest';
-  const rawRecords = Array.isArray(input.rawRecords) ? input.rawRecords : [];
+  const sourceLabel = getSourceLabel(input);
+  const rawRecords = getRawRecords(input.rawRecords);
   const fieldMapping = normalizeFieldMapping(input.fieldMapping);
   const dedupePolicy = normalizeDedupePolicy(input.dedupePolicy);
 
@@ -196,12 +195,12 @@ export function importTransactions(input) {
   const seenKeys = new Map();
 
   rawRecords.forEach((record, index) => {
-    const normalized = buildNormalizedTransaction(
+    const normalized = buildNormalizedTransaction({
       record,
-      fieldMapping,
+      mapping: fieldMapping,
       index,
-      sourceLabel
-    );
+      source: sourceLabel,
+    });
     const dedupeKey = buildDedupeKey(normalized, dedupePolicy);
     normalized.dedupeKey = dedupeKey;
     normalized.transactionId = buildTransactionId(
@@ -210,19 +209,14 @@ export function importTransactions(input) {
       index
     );
 
-    const existing = seenKeys.get(dedupeKey);
-    if (existing) {
-      duplicateReports.push({
-        policyName: dedupePolicy.name,
-        policy: dedupePolicy,
-        existing,
-        duplicate: normalized,
-      });
-      return;
-    }
-
-    seenKeys.set(dedupeKey, normalized);
-    canonicalTransactions.push(normalized);
+    recordCanonicalTransaction({
+      normalized,
+      dedupeKey,
+      policy: dedupePolicy,
+      seenKeys,
+      duplicateReports,
+      canonicalTransactions,
+    });
   });
 
   const summary = {
@@ -243,53 +237,186 @@ export function importTransactions(input) {
   };
 }
 
+const SOURCE_HANDLERS = {
+  string: candidate => candidate,
+};
+
+/* eslint-disable complexity */
 /**
- *
- * @param mapping
+ * Pick a source label from the input while defaulting to the toy identifier.
+ * @param {ImportTransactionsInput} input Input bundle that may provide a label.
+ * @returns {string} Resolved source label.
  */
-function normalizeFieldMapping(mapping) {
-  if (!mapping || typeof mapping !== 'object') {
-    return { ...DEFAULT_FIELD_MAPPING };
+function getSourceLabel(input) {
+  const candidate = input?.source;
+  const handler = SOURCE_HANDLERS[typeof candidate];
+  return handler?.(candidate) ?? 'ledger-ingest';
+}
+/* eslint-enable complexity */
+
+/**
+ * Normalize the raw-records payload into a guaranteed array.
+ * @param {Record<string, unknown>[]|undefined} rawRecords Adapter-provided rows.
+ * @returns {Record<string, unknown>[]} Safe raw record list.
+ */
+function getRawRecords(rawRecords) {
+  if (Array.isArray(rawRecords)) {
+    return rawRecords;
   }
-  return { ...DEFAULT_FIELD_MAPPING, ...mapping };
+  return [];
 }
 
 /**
- *
- * @param policy
+ * Track duplicates or canonical rows based on the incoming normalized payload.
+ * @param {object} options Tracking collections for the dedupe discovery.
+ * @param {NormalizedTransaction} options.normalized New normalized transaction.
+ * @param {string} options.dedupeKey Key that identifies candidate duplicates.
+ * @param {DedupePolicy} options.policy Policy currently in play for this run.
+ * @param {Map<string, NormalizedTransaction>} options.seenKeys Seen key cache.
+ * @param {DuplicateReport[]} options.duplicateReports Duplicate report sink.
+ * @param {NormalizedTransaction[]} options.canonicalTransactions Canonical transaction sink.
+ * @returns {void}
  */
-function normalizeDedupePolicy(policy) {
-  if (!policy || typeof policy !== 'object') {
-    return { ...DEFAULT_DEDUPE_POLICY };
+function recordCanonicalTransaction({
+  normalized,
+  dedupeKey,
+  policy,
+  seenKeys,
+  duplicateReports,
+  canonicalTransactions,
+}) {
+  const existing = seenKeys.get(dedupeKey);
+  if (existing) {
+    duplicateReports.push({
+      policyName: policy.name,
+      policy,
+      existing,
+      duplicate: normalized,
+    });
+    return;
   }
 
+  seenKeys.set(dedupeKey, normalized);
+  canonicalTransactions.push(normalized);
+}
+
+/**
+ * Overlay a field map on top of the defaults so adapters can target canonical
+ * keys without leaking undefined or primitive inputs.
+ * @param {Record<string, string>} [mapping] Optional overrides from adapters.
+ * @returns {Record<string, string>} Canonical field mapping.
+ */
+function normalizeFieldMapping(mapping) {
   return {
-    name:
-      typeof policy.name === 'string'
-        ? policy.name
-        : DEFAULT_DEDUPE_POLICY.name,
-    strategy:
-      typeof policy.strategy === 'string'
-        ? policy.strategy
-        : DEFAULT_DEDUPE_POLICY.strategy,
-    candidateFields: Array.isArray(policy.candidateFields)
-      ? policy.candidateFields
-      : [...DEFAULT_DEDUPE_POLICY.candidateFields],
-    caseInsensitive:
-      typeof policy.caseInsensitive === 'boolean'
-        ? policy.caseInsensitive
-        : DEFAULT_DEDUPE_POLICY.caseInsensitive,
+    ...DEFAULT_FIELD_MAPPING,
+    ...sanitizeFieldMapping(mapping),
+  };
+}
+
+const OBJECT_HANDLERS = {
+  object: value => value || {},
+};
+
+/**
+ * Guard that only returns a mapping when the argument is an object.
+ * @param {Record<string, string>|null|undefined} mapping Adapter overrides.
+ * @returns {Record<string, string>} Valid mapping.
+ */
+function sanitizeFieldMapping(mapping) {
+  const handler = OBJECT_HANDLERS[typeof mapping];
+  if (handler) {
+    return handler(mapping);
+  }
+  return {};
+}
+
+/**
+ * Normalize a dedupe policy while falling back to the defaults for missing
+ * knobs.
+ * @param {DedupePolicy|Record<string, unknown>} [policy] Partial policy overrides.
+ * @returns {DedupePolicy} Policy that is safe for the core logic.
+ */
+function normalizeDedupePolicy(policy) {
+  const sanitizedPolicy = sanitizePolicy(policy);
+  return {
+    name: sanitizePolicyName(sanitizedPolicy),
+    strategy: sanitizePolicyStrategy(sanitizedPolicy),
+    candidateFields: sanitizePolicyCandidateFields(sanitizedPolicy),
+    caseInsensitive: sanitizePolicyCaseInsensitive(sanitizedPolicy),
   };
 }
 
 /**
- *
- * @param record
- * @param mapping
- * @param index
- * @param source
+ * Ensure we always work with an object when normalizing the policy.
+ * @param {DedupePolicy|Record<string, unknown>|null|undefined} policy Policy override candidate.
+ * @returns {Record<string, unknown>} Safe policy-like object.
  */
-function buildNormalizedTransaction(record, mapping, index, source) {
+function sanitizePolicy(policy) {
+  const handler = OBJECT_HANDLERS[typeof policy];
+  if (handler) {
+    return handler(policy);
+  }
+  return {};
+}
+
+/**
+ * Choose a policy name or fall back to the default.
+ * @param {Record<string, unknown>} policy Source policy object.
+ * @returns {string} Policy name to use.
+ */
+function sanitizePolicyName(policy) {
+  if (typeof policy.name === 'string') {
+    return policy.name;
+  }
+  return DEFAULT_DEDUPE_POLICY.name;
+}
+
+/**
+ * Choose a strategy or revert to the default.
+ * @param {Record<string, unknown>} policy Source policy object.
+ * @returns {string} Strategy label.
+ */
+function sanitizePolicyStrategy(policy) {
+  if (typeof policy.strategy === 'string') {
+    return policy.strategy;
+  }
+  return DEFAULT_DEDUPE_POLICY.strategy;
+}
+
+/**
+ * Pick candidate fields for deduplication.
+ * @param {Record<string, unknown>} policy Source policy object.
+ * @returns {string[]} Candidate fields for the dedupe key.
+ */
+function sanitizePolicyCandidateFields(policy) {
+  if (Array.isArray(policy.candidateFields)) {
+    return [...policy.candidateFields];
+  }
+  return [...DEFAULT_DEDUPE_POLICY.candidateFields];
+}
+
+/**
+ * Determine whether comparisons should be case-insensitive.
+ * @param {Record<string, unknown>} policy Source policy object.
+ * @returns {boolean} Case insensitivity flag.
+ */
+function sanitizePolicyCaseInsensitive(policy) {
+  if (typeof policy.caseInsensitive === 'boolean') {
+    return policy.caseInsensitive;
+  }
+  return DEFAULT_DEDUPE_POLICY.caseInsensitive;
+}
+
+/**
+ * Build a normalized transaction record using the provided mapping metadata.
+ * @param {object} options Options bag so the API stays under three parameters.
+ * @param {Record<string, unknown>} options.record Raw record for this row.
+ * @param {Record<string, string>} options.mapping Field mapping for this run.
+ * @param {number} options.index Zero-based row index.
+ * @param {string} options.source Source label for visibility.
+ * @returns {NormalizedTransaction} Normalized transaction record.
+ */
+function buildNormalizedTransaction({ record, mapping, index, source }) {
   const postedDate = normalizeDate(record[mapping.postedDate]);
   const amount = normalizeAmount(record[mapping.amount]);
   const currency = normalizeCurrency(record[mapping.currency]);
@@ -308,10 +435,11 @@ function buildNormalizedTransaction(record, mapping, index, source) {
 }
 
 /**
- *
- * @param source
- * @param dedupeKey
- * @param index
+ * Build a deterministic transaction id for tracking and dedupe reporting.
+ * @param {string} source Source label used in the identifier.
+ * @param {string} dedupeKey Dedupe key produced for the row.
+ * @param {number} index Row index to make ids unique.
+ * @returns {string} Transaction identifier string.
  */
 function buildTransactionId(source, dedupeKey, index) {
   return `${source}:${dedupeKey}:${index}`;
@@ -322,24 +450,54 @@ function buildTransactionId(source, dedupeKey, index) {
  * @param transaction
  * @param policy
  */
+/**
+ * Join the normalized candidate values to form the dedupe key listed in the
+ * policy.
+ * @param {NormalizedTransaction} transaction Transaction under review.
+ * @param {DedupePolicy} policy Policy controlling the key.
+ * @returns {string} Joined dedupe key.
+ */
 function buildDedupeKey(transaction, policy) {
-  return policy.candidateFields
-    .map(field => {
-      const candidate = transaction[field];
-      if (typeof candidate === 'string') {
-        return policy.caseInsensitive ? candidate.toLowerCase() : candidate;
-      }
-      if (typeof candidate === 'number') {
-        return `${candidate}`;
-      }
-      return '';
-    })
-    .join('|');
+  const values = [];
+  for (const field of policy.candidateFields) {
+    values.push(
+      serializeDedupeCandidate(transaction[field], policy.caseInsensitive)
+    );
+  }
+  return values.join('|');
 }
 
+const dedupeCandidateHandlers = {
+  string: (value, caseInsensitive) => {
+    if (caseInsensitive) {
+      return value.toLowerCase();
+    }
+    return value;
+  },
+  number: value => `${value}`,
+};
+
 /**
- *
- * @param value
+ * Serialize each candidate so comparisons can replay the policy.
+ * @param {string|number|undefined} value Candidate field to normalize.
+ * @param {boolean} caseInsensitive Flag that forces lowercase strings.
+ * @returns {string} String-ready candidate fragment.
+ */
+function serializeDedupeCandidate(value, caseInsensitive) {
+  const handler = dedupeCandidateHandlers[typeof value];
+  if (handler) {
+    return handler(value, caseInsensitive);
+  }
+  return '';
+}
+
+const MISSING_VALUES = [undefined, null];
+
+/**
+ * Convert loose inputs into an ISO date snippet or empty string when parsing
+ * fails.
+ * @param {string|number|Date|undefined} value Input that may represent a date.
+ * @returns {string} ISO date (YYYY-MM-DD) or empty string on failure.
  */
 function normalizeDate(value) {
   const candidate = new Date(value);
@@ -350,14 +508,24 @@ function normalizeDate(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize a value into a numeric amount with fallbacks for garbage strings.
+ * @param {unknown} value Candidate amount input.
+ * @returns {number} Normalized numeric amount.
  */
 function normalizeAmount(value) {
   if (typeof value === 'number') {
     return value;
   }
-  const cleaned = String(value ?? '').replace(/[^\d.-]/g, '');
+  return coerceNumericValue(value);
+}
+
+/**
+ * @param {unknown} value Candidate amount input.
+ * @returns {number} Numeric interpretation of the sanitized value.
+ */
+function coerceNumericValue(value) {
+  const normalized = stringForNormalization(value);
+  const cleaned = normalized.replace(/[^\d.-]/g, '');
   const parsed = Number(cleaned);
   if (!Number.isFinite(parsed)) {
     return 0;
@@ -366,19 +534,47 @@ function normalizeAmount(value) {
 }
 
 /**
- *
- * @param value
+ * @param {unknown} value Candidate input.
+ * @returns {string} Normalized string or empty when missing.
  */
-function normalizeCurrency(value) {
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value.trim().toUpperCase();
+function stringForNormalization(value) {
+  const candidate = ensureString(value);
+  if (candidate === undefined) {
+    return '';
   }
-  return 'USD';
+  return candidate;
 }
 
 /**
- *
- * @param value
+ * Normalize currency codes to uppercase ISO strings, defaulting to USD.
+ * @param {unknown} value Candidate currency input.
+ * @returns {string} Uppercased ISO currency code.
+ */
+function normalizeCurrency(value) {
+  const candidate = trimOrEmpty(value);
+  if (candidate.length === 0) {
+    return 'USD';
+  }
+  return candidate.toUpperCase();
+}
+
+/**
+ * Trim the candidate string or return an empty value when missing.
+ * @param {unknown} value Candidate to trim.
+ * @returns {string} Trimmed string or ''.
+ */
+function trimOrEmpty(value) {
+  const candidate = ensureString(value);
+  if (candidate === undefined) {
+    return '';
+  }
+  return candidate.trim();
+}
+
+/**
+ * Trim, collapse whitespace, and lower-case descriptions for consistent keys.
+ * @param {unknown} value Raw description text.
+ * @returns {string} Cleaned description.
  */
 function normalizeDescription(value) {
   return String(value ?? '')
@@ -388,13 +584,13 @@ function normalizeDescription(value) {
 }
 
 /**
- *
- * @param value
+ * Return a string only when the input is defined, otherwise leave undefined.
+ * @param {unknown} value Candidate to convert.
+ * @returns {string|undefined} String when present, otherwise undefined.
  */
 function ensureString(value) {
-  if (value === undefined || value === null) {
+  if (MISSING_VALUES.includes(value)) {
     return undefined;
   }
-
   return String(value);
 }

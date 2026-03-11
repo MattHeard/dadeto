@@ -1,0 +1,4 @@
+- unexpected hurdle: depcruise now warns about `src/build/generate.js → src/blog.json` once I added the new subdirectory constraints.
+- diagnosis path: confirmed the warning after running `npm run depcruise` and traced it to the `src/build` rule (build helper still touches shared blog data) before concluding the warning is the cleanup target.
+- chosen fix: added the requested bounded forbidden rules for each src subdirectory plus the node_modules safeguard for core/browser.
+- next-time guidance: clean the `src/build → src/blog.json` dependency or relax the new rule before flipping severity to error so the warning stays quiet.
