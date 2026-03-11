@@ -10,5 +10,17 @@ export function createPreFromContent(content, dom) {
   return pre;
 }
 
+/**
+ * Create a paragraph element containing the provided text.
+ * @param {string} inputString - Raw text for the paragraph.
+ * @param {{createElement: Function, setTextContent: Function}} dom - DOM helpers.
+ * @returns {HTMLElement} `<p>` populated with the supplied string.
+ */
+export function createParagraphElement(inputString, dom) {
+  const paragraph = dom.createElement('p');
+  dom.setTextContent(paragraph, inputString);
+  return paragraph;
+}
+
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {Pick<DOMHelpers, 'createElement'|'setTextContent'>} PresenterDOMHelpers */
