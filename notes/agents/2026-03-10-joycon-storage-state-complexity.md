@@ -1,0 +1,6 @@
+# Agent Retrospective: joyConMapper storage-state complexity cluster
+
+- **Unexpected hurdle:** The remaining storage helpers were already tiny, so the reported complexity came from the shared boolean checks inside `normalizeStoredMappings`, `firstPendingIndex`, `refreshStoredState`, and the control-advance predicate; tearing out an entire chunk would overshoot the cluster’s bounds.
+- **Diagnosis path:** Re-ran `npm run lint` to confirm the storage-state warnings, read the `joyConMapper.js` helper block, and realized each evaluation was folding multiple guard expressions into the same function instead of delegating to predicate helpers that stay within the `complexity: 2` budget.
+- **Chosen fix:** Introduced `isObjectLike` for storage normalization, split the pending-control checks into `isControlPending`/`isPendingControlAfterIndex`, and added `getRefreshedCurrentIndex` so the stored-state refresh flow has only one decision point while still honoring the pre-start guard; those helpers keep the storage-state cluster bounded.
+- **Next-time guidance:** When a lint bead hits a tight cluster, carve the extra guards into tiny predicate helpers instead of reshaping the full handler, and double-check the lint log after `npm run lint` so we know exactly which helper lines still trip the complexity rule.

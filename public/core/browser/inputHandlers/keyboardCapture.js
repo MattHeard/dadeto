@@ -1,8 +1,5 @@
 import * as browserCore from '../browser-core.js';
-import {
-  getAutoSubmitCheckbox,
-  syncToyPayload,
-} from './captureFormShared.js';
+import { getAutoSubmitCheckbox, syncToyPayload } from './captureFormShared.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */

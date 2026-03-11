@@ -3,6 +3,9 @@
     "kind": "bd",
     "readyCommand": "bd ready --sort priority"
   },
+  "launcher": {
+    "mcpServers": []
+  },
   "workspaceRoot": ".worktrees/symphony",
   "logDir": "tracking/symphony",
   "pollIntervalMs": 30000,

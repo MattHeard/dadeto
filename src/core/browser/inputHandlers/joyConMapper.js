@@ -333,7 +333,7 @@ function readMapperStorageEntry(root) {
  *   Normalized mapper storage state.
  */
 function normalizeStoredMapperState(stored) {
-  if (!isStoredMapperObject(stored)) {
+  if (!isObjectLike(stored)) {
     return EMPTY_MAPPER_STATE;
   }
 
@@ -344,13 +344,13 @@ function normalizeStoredMapperState(stored) {
 }
 
 /**
- * @param {unknown} stored
- *   Candidate mapper-specific storage payload.
- * @returns {stored is { mappings?: unknown, skippedControls?: unknown }}
- *   Whether the mapper storage payload is object-like.
+ * @param {unknown} value
+ *   Candidate value that might be object-like.
+ * @returns {value is object}
+ *   Whether the value is an object.
  */
-function isStoredMapperObject(stored) {
-  return Boolean(stored) && typeof stored === 'object';
+function isObjectLike(value) {
+  return Boolean(value) && typeof value === 'object';
 }
 
 /**
@@ -360,7 +360,7 @@ function isStoredMapperObject(stored) {
  *   Normalized stored mappings object.
  */
 function normalizeStoredMappings(mappings) {
-  if (!mappings || typeof mappings !== 'object') {
+  if (!isObjectLike(mappings)) {
     return {};
   }
 
@@ -384,16 +384,26 @@ function normalizeSkippedControls(skippedControls) {
 /**
  * @param {MapperState} state
  *   Current Joy-Con mapper runtime state.
+ * @param {MapperControl} control
+ *   Candidate mapper control being evaluated.
+ * @returns {boolean}
+ *   Whether the control is still pending mapping.
+ */
+function isControlPending(state, control) {
+  return (
+    !state.stored.mappings[control.key] &&
+    !state.stored.skippedControls.includes(control.key)
+  );
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {number}
  *   Index of the first unmapped, unskipped control or `-1`.
  */
 function firstPendingIndex(state) {
-  return CONTROLS.findIndex(control => {
-    return (
-      !state.stored.mappings[control.key] &&
-      !state.stored.skippedControls.includes(control.key)
-    );
-  });
+  return CONTROLS.findIndex(control => isControlPending(state, control));
 }
 
 /**
@@ -722,12 +732,24 @@ function selectStrongerAxisCapture(best, candidate) {
  *   Serialized action payload for the toy runtime.
  */
 function buildPayload(action, state, extra = {}) {
-  const payload = { action, ...extra };
-  const currentControlKey = getCurrentControlKey(state);
-  if (currentControlKey) {
-    payload.currentControlKey = currentControlKey;
+  return attachCurrentControlKey({ action, ...extra }, state);
+}
+
+/**
+ * @param {Record<string, unknown>} payload
+ *   Partially built payload to mutate.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {Record<string, unknown>}
+ *   Payload augmented with the active control key, if any.
+ */
+function attachCurrentControlKey(payload, state) {
+  const controlKey = getCurrentControlKey(state);
+  if (!controlKey) {
+    return payload;
   }
 
+  payload.currentControlKey = controlKey;
   return payload;
 }
 
@@ -738,7 +760,12 @@ function buildPayload(action, state, extra = {}) {
  *   Active control key, if present.
  */
 function getCurrentControlKey(state) {
-  return state.currentControl?.key ?? null;
+  const control = state.currentControl;
+  if (!control) {
+    return null;
+  }
+
+  return control.key;
 }
 
 /**
@@ -777,6 +804,18 @@ function getPendingRowState(state, index) {
     return 'optional';
   }
 
+  return getPendingRowStateForStarted(state, index);
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {number} index
+ *   Control index within the ordered list.
+ * @returns {'active' | 'optional'}
+ *   State for an in-flight control after input capture has started.
+ */
+function getPendingRowStateForStarted(state, index) {
   if (state.currentIndex === index) {
     return 'active';
   }
@@ -1066,10 +1105,22 @@ function getGamepadIdText(gamepad) {
  */
 function refreshStoredState(state) {
   state.stored = readStoredMapperState();
-  if (!state.started) {
-    state.currentIndex = normalizePendingIndex(firstPendingIndex(state));
-  }
+  state.currentIndex = getRefreshedCurrentIndex(state);
   state.currentControl = CONTROLS[state.currentIndex] ?? null;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {number}
+ *   Current index that should be used after refreshing stored state.
+ */
+function getRefreshedCurrentIndex(state) {
+  if (state.started) {
+    return state.currentIndex;
+  }
+
+  return normalizePendingIndex(firstPendingIndex(state));
 }
 
 /**
@@ -1138,16 +1189,26 @@ function render(state) {
  * @returns {void}
  */
 function advanceToNextControl(state) {
-  const nextIndex = CONTROLS.findIndex((control, index) => {
-    return (
-      index > state.currentIndex &&
-      !state.stored.mappings[control.key] &&
-      !state.stored.skippedControls.includes(control.key)
-    );
-  });
+  const nextIndex = CONTROLS.findIndex((control, index) =>
+    isPendingControlAfterIndex(state, control, index)
+  );
 
   state.currentIndex = normalizePendingIndex(nextIndex);
   state.currentControl = CONTROLS[state.currentIndex] ?? null;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {MapperControl} control
+ *   Candidate mapper control being evaluated.
+ * @param {number} index
+ *   Current control index.
+ * @returns {boolean}
+ *   Whether the control is pending and sits after the active index.
+ */
+function isPendingControlAfterIndex(state, control, index) {
+  return index > state.currentIndex && isControlPending(state, control);
 }
 
 /**

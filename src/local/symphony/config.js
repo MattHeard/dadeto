@@ -11,6 +11,7 @@ export const DEFAULT_SYMPHONY_CONFIG = {
     kind: 'codex',
     command: 'codex',
     args: DEFAULT_CODEX_RALPH_ARGS,
+    mcpServers: [],
   },
   workspaceRoot: '.worktrees/symphony',
   logDir: 'tracking/symphony',
@@ -51,6 +52,7 @@ function normalizeLauncher(launcher) {
         ? launcher.command.trim()
         : DEFAULT_SYMPHONY_CONFIG.launcher.command,
     args: normalizeLauncherArgs(launcher.args),
+    mcpServers: normalizeLauncherMcpServers(launcher.mcpServers),
   };
 }
 
@@ -69,6 +71,17 @@ function normalizeLauncherArgs(args) {
   }
 
   return normalizedArgs;
+}
+
+function normalizeLauncherMcpServers(mcpServers) {
+  if (!Array.isArray(mcpServers)) {
+    return [...DEFAULT_SYMPHONY_CONFIG.launcher.mcpServers];
+  }
+
+  return mcpServers
+    .filter(value => typeof value === 'string')
+    .map(value => value.trim())
+    .filter(Boolean);
 }
 
 function normalizeNumber(value, fallback) {
@@ -94,7 +107,7 @@ function normalizePathValue(value, fallback) {
  * @returns {{
  *   configPath: string,
  *   tracker: { kind: string, readyCommand: string },
- *   launcher: { kind: string, command: string, args: string[] },
+ *   launcher: { kind: string, command: string, args: string[], mcpServers: string[] },
  *   workspaceRoot: string,
  *   logDir: string,
  *   statusPath: string,

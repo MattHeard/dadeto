@@ -2,7 +2,10 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { applyRunnerOutcome } from '../../src/core/local/symphony.js';
-import { bootstrapSymphony } from '../../src/local/symphony/bootstrap.js';
+import {
+  bootstrapSymphony,
+  refreshSymphonyStatus,
+} from '../../src/local/symphony/bootstrap.js';
 import { loadSymphonyConfig } from '../../src/local/symphony/config.js';
 import { loadSymphonyWorkflow } from '../../src/local/symphony/workflow.js';
 import { createSymphonyStatusStore } from '../../src/local/symphony/statusStore.js';
@@ -27,6 +30,9 @@ describe('local symphony scaffold', () => {
           kind: 'bd',
           readyCommand: 'bd ready --sort priority',
         },
+        launcher: {
+          mcpServers: [],
+        },
         workspaceRoot: '.worktrees/symphony',
         logDir: 'tracking/symphony',
         pollIntervalMs: 45000,
@@ -49,6 +55,7 @@ describe('local symphony scaffold', () => {
         '--sandbox',
         'workspace-write',
       ],
+      mcpServers: [],
     });
     expect(config.workspaceRoot).toBe(
       path.join(tempDir, '.worktrees', 'symphony')
@@ -383,6 +390,81 @@ describe('local symphony scaffold', () => {
     ).resolves.toContain(
       '"operatorRecommendation": "Create or refresh the next bead before starting another runner loop."'
     );
+  });
+
+  test('refreshSymphonyStatus re-runs the tracker poll and persists the refreshed status', async () => {
+    await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
+    await writeFile(
+      path.join(tempDir, 'tracking', 'symphony.local.json'),
+      JSON.stringify({
+        tracker: {
+          kind: 'bd',
+          readyCommand: 'bd ready --sort priority',
+        },
+        logDir: 'tracking/symphony',
+      }),
+      'utf8'
+    );
+    await writeFile(
+      path.join(tempDir, 'WORKFLOW.md'),
+      [
+        '---',
+        'model: gpt-5',
+        '---',
+        '',
+        '# Workflow',
+        '',
+        '## Allowed command families',
+        '- `bd`',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const statusStore = createSymphonyStatusStore({
+      statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+      logDir: path.join(tempDir, 'tracking', 'symphony'),
+    });
+    const snapshot = await refreshSymphonyStatus({
+      repoRoot: tempDir,
+      statusStore,
+      now: () => new Date('2026-03-11T04:00:00.000Z'),
+      trackerFactory: () => ({
+        async pollReadyBeads() {
+          return {
+            command: 'bd ready --sort priority',
+            readyBeads: [
+              {
+                id: 'dadeto-jo9z',
+                title: 'Add symphony refresh endpoint',
+                priority: '● P2',
+              },
+            ],
+            queueSummary: ['dadeto-jo9z (● P2) Add symphony refresh endpoint'],
+            selectedBead: {
+              id: 'dadeto-jo9z',
+              title: 'Add symphony refresh endpoint',
+              priority: '● P2',
+            },
+          };
+        },
+      }),
+    });
+
+    expect(snapshot.status.state).toBe('ready');
+    expect(snapshot.status.currentBeadId).toBe('dadeto-jo9z');
+    expect(snapshot.status.latestEvidence).toContain(
+      'selected dadeto-jo9z from 1 ready bead(s):'
+    );
+    expect(snapshot.status.operatorRecommendation).toBe(
+      'Run the next worker loop on dadeto-jo9z.'
+    );
+    expect(snapshot.status.queueEvidence).toEqual([
+      'dadeto-jo9z (● P2) Add symphony refresh endpoint',
+    ]);
+    await expect(statusStore.readStatus()).resolves.toMatchObject({
+      state: 'ready',
+      currentBeadId: 'dadeto-jo9z',
+    });
   });
 
   test('persists one completed and one blocked runner outcome as scheduler-visible status', async () => {

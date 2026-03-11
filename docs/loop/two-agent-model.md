@@ -69,7 +69,13 @@ Should generally avoid:
 
 - chatting with the user
 - reshaping the whole queue
+- planning beads, inventory beads, or policy-definition beads that SNC should own directly
 - inventing new multi-bead plans without leaving them for orchestrator review
+
+Exception:
+
+- SNC may still send Ralph one bounded spike-research bead when that evidence is needed to shape the next implementation bead.
+- That exception is for targeted evidence gathering, not for routine queue planning.
 
 ## Queue Protocol
 
@@ -123,9 +129,14 @@ Use these non-runner-safe statuses when needed:
 - `needs-triage`
   - The bead still needs SNC to clarify scope, evaluator, or intent.
 - `orchestrator-only`
-  - The bead is mostly queue shaping, planning, splitting, or policy definition.
+  - The bead is mostly queue shaping, planning, splitting, policy definition, or inventory work that should stay with SNC.
 - `blocked`
   - The bead depends on another task, environment fix, or external decision.
+
+Default rule:
+
+- Ralph is the do-er and SNC is the planner.
+- If a bead is primarily deciding what should happen next rather than doing the next bounded implementation slice, it should stay with SNC unless SNC explicitly marks it as a spike-research exception.
 
 If no runner-suitability comment exists, `ralph` should assume the bead is **not** runner-safe and hand it back to SNC unless the task is trivially bounded from existing evidence.
 

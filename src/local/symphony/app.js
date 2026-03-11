@@ -1,5 +1,6 @@
 import express from 'express';
 import { applyRunnerOutcome } from '../../core/local/symphony.js';
+import { refreshSymphonyStatus } from './bootstrap.js';
 
 /**
  * @param {{
@@ -79,6 +80,52 @@ export function createSymphonyLaunchHandler(options) {
  *     readStatus: () => Promise<Record<string, unknown> | null>,
  *     writeStatus?: (status: Record<string, unknown>) => Promise<void>
  *   },
+ *   configLoader?: typeof import('./config.js').loadSymphonyConfig,
+ *   workflowLoader?: typeof import('./workflow.js').loadSymphonyWorkflow,
+ *   trackerFactory?: typeof import('./trackerBd.js').createBdTracker,
+ *   now?: () => Date,
+ *   repoRoot?: string
+ * }} options
+ * @returns {(req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => Promise<void>} Refresh handler for the operator trigger.
+ */
+export function createSymphonyRefreshHandler(options) {
+  return async (_req, res, next) => {
+    try {
+      if (!options.statusStore || typeof options.statusStore.writeStatus !== 'function') {
+        res.status(501).json({
+          error: 'Symphony refresh trigger is not configured.',
+        });
+        return;
+      }
+
+      const snapshot = await refreshSymphonyStatus({
+        repoRoot: options.repoRoot,
+        configLoader: options.configLoader,
+        workflowLoader: options.workflowLoader,
+        trackerFactory: options.trackerFactory,
+        now: options.now,
+        statusStore: options.statusStore,
+      });
+
+      res.status(202).json({
+        queued: true,
+        coalesced: false,
+        requested_at: snapshot.status.startedAt,
+        operations: ['poll', 'reconcile'],
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+/**
+ * @param {{
+ *   initialStatus: Record<string, unknown>,
+ *   statusStore: {
+ *     readStatus: () => Promise<Record<string, unknown> | null>,
+ *     writeStatus?: (status: Record<string, unknown>) => Promise<void>
+ *   },
  *   launchSelectedRunnerLoop?: (options: {
  *     status: Record<string, unknown>,
  *     statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
@@ -92,10 +139,12 @@ export function createSymphonyApp(options) {
   const app = express();
   const sendStatus = createSymphonyStatusHandler(options);
   const launchSelectedBead = createSymphonyLaunchHandler(options);
+  const refreshQueue = createSymphonyRefreshHandler(options);
 
   app.get('/api/symphony/status', sendStatus);
   app.get('/', sendStatus);
   app.post('/api/symphony/launch', launchSelectedBead);
+  app.post('/api/v1/refresh', refreshQueue);
 
   app.use((error, _req, res, _next) => {
     res.status(500).json({

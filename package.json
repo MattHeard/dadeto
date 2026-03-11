@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "check": "npm test && npm run lint",
+    "check": "npm test && npm run lint && npm run depcruise",
     "check:full": "npm run check && npm run build && npm run duplication",
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js",
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
@@ -22,6 +22,7 @@
     "build:dendritestories-co-nz": "npm run copy:dendrite",
     "build:browser": "npm run build:mattheard-net",
     "build": "npm run build:mattheard-net",
+    "depcruise": "depcruise --config dependency-cruiser.config.cjs src",
     "duplication": "jscpd",
     "start": "npx serve public",
     "start:symphony": "node src/local/symphony/server.js",

@@ -1,0 +1,6 @@
+# Agent Retrospective: joyConMapper payload/row-state helper cluster
+
+- **Unexpected hurdle:** The remaining complexity warnings were distributed across the tiny payload helper and pending-row logic, so my first instinct to inline another guard would have just moved the warning instead of eliminating it.
+- **Diagnosis path:** Re-ran `npm run lint` to confirm the only lingering warnings in `joyConMapper.js` were `buildPayload`, `getCurrentControlKey`, and `getPendingRowState`; noted that each helper had multiple `if`/`??` blocks that pushed the cyclomatic count over the `max: 2` budget.
+- **Chosen fix:** Added `attachCurrentControlKey` to handle the optional payload property so `buildPayload` stays branch-free, turned `getCurrentControlKey` into a single-guard helper, and introduced `getPendingRowStateForStarted` so the pending-row logic is factored into two functions that each contain only one decision point; all helpers now satisfy the `complexity` rule.
+- **Next-time guidance:** When targeting a small helper cluster, explicitly separate the guard-level helpers instead of adding more branching inside the existing function so each function can stay under the `complexity: 2` ceiling without touching unrelated sections of the file.

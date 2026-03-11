@@ -10,6 +10,9 @@ describe('Symphony runner exit handler', () => {
     currentBeadPriority: '● P2',
   };
 
+  /**
+   *
+   */
   function createStatusStore() {
     return {
       readStatus: jest.fn().mockResolvedValue({ ...baseStatus }),
@@ -37,7 +40,8 @@ describe('Symphony runner exit handler', () => {
           beadId: 'dadeto-test',
           beadTitle: 'Verify runner completion',
           outcome: 'completed',
-          summary: 'Runner 2026-03-08T21:15:00.000Z--dadeto-test exited with code 0.',
+          summary:
+            'Runner 2026-03-08T21:15:00.000Z--dadeto-test exited with code 0.',
         },
       })
     );
@@ -62,7 +66,8 @@ describe('Symphony runner exit handler', () => {
           beadId: 'dadeto-test',
           beadTitle: 'Verify runner completion',
           outcome: 'blocked',
-          summary: 'Runner 2026-03-08T21:30:00.000Z--dadeto-test terminated with signal SIGTERM.',
+          summary:
+            'Runner 2026-03-08T21:30:00.000Z--dadeto-test terminated with signal SIGTERM.',
         },
       })
     );

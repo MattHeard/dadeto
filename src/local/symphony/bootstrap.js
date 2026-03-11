@@ -13,16 +13,62 @@ import { loadSymphonyWorkflow } from './workflow.js';
  *   repoRoot?: string,
   *   now?: () => Date,
   *   configLoader?: typeof loadSymphonyConfig,
- *   trackerFactory?: typeof createBdTracker,
+  *   trackerFactory?: typeof createBdTracker,
   *   workflowLoader?: typeof loadSymphonyWorkflow,
   *   statusStoreFactory?: typeof createSymphonyStatusStore
- * }} [options]
+  * }} [options]
  * @returns {Promise<{
  *   status: Record<string, unknown>,
  *   statusStore: ReturnType<typeof createSymphonyStatusStore>
  * }>} Bootstrapped local Symphony status shell.
  */
 export async function bootstrapSymphony(options = {}) {
+  const snapshot = await buildSymphonyStatusSnapshot(options);
+  const statusStoreFactory =
+    options.statusStoreFactory ?? createSymphonyStatusStore;
+  const statusStore = statusStoreFactory({
+    statusPath: snapshot.config.statusPath,
+    logDir: snapshot.config.logDir,
+  });
+
+  await statusStore.writeStatus(snapshot.status);
+
+  return { status: snapshot.status, statusStore };
+}
+
+/**
+ * @param {{
+ *   repoRoot?: string,
+  *   now?: () => Date,
+  *   configLoader?: typeof loadSymphonyConfig,
+  *   trackerFactory?: typeof createBdTracker,
+  *   workflowLoader?: typeof loadSymphonyWorkflow,
+  *   statusStore: ReturnType<typeof createSymphonyStatusStore>
+  * }} options
+ * @returns {Promise<{
+ *   status: Record<string, unknown>,
+ *   config: ReturnType<typeof loadSymphonyConfig>,
+ *   workflow: ReturnType<typeof loadSymphonyWorkflow>,
+ *   pollResult: {
+ *     command: string,
+ *     readyBeads: Array<{ id: string, title: string, priority: string }>,
+ *     queueSummary: string[],
+ *     selectedBead: { id: string, title: string, priority: string } | null
+ *   }
+ * }>} Snapshot for a refreshed Symphony status.
+ */
+export async function refreshSymphonyStatus(options = {}) {
+  if (!options.statusStore || typeof options.statusStore.writeStatus !== 'function') {
+    throw new Error('Symphony refresh requires a writable status store.');
+  }
+
+  const snapshot = await buildSymphonyStatusSnapshot(options);
+  await options.statusStore.writeStatus(snapshot.status);
+
+  return snapshot;
+}
+
+async function buildSymphonyStatusSnapshot(options = {}) {
   const now = options.now ?? (() => new Date());
   const configLoader = options.configLoader ?? loadSymphonyConfig;
   const trackerFactory = options.trackerFactory ?? createBdTracker;
@@ -42,12 +88,6 @@ export async function bootstrapSymphony(options = {}) {
         queueSummary: [],
         selectedBead: null,
       };
-  const statusStoreFactory =
-    options.statusStoreFactory ?? createSymphonyStatusStore;
-  const statusStore = statusStoreFactory({
-    statusPath: config.statusPath,
-    logDir: config.logDir,
-  });
   const trackerSummary = summarizeTrackerSelection({
     workflowExists: workflow.exists,
     selectedBead: pollResult.selectedBead,
@@ -58,6 +98,10 @@ export async function bootstrapSymphony(options = {}) {
     },
   });
   const selectedBeadStatus = buildSelectedBeadStatus(pollResult.selectedBead);
+  const lastPollSummary = summarizePollResult({
+    readyCount: pollResult.readyBeads.length,
+    queueSummary: pollResult.queueSummary,
+  });
 
   const status = {
     service: 'dadeto-local-symphony',
@@ -66,10 +110,7 @@ export async function bootstrapSymphony(options = {}) {
     repoRoot,
     ...selectedBeadStatus,
     lastCommand: pollResult.command,
-    lastPollSummary: summarizePollResult({
-      readyCount: pollResult.readyBeads.length,
-      queueSummary: pollResult.queueSummary,
-    }),
+    lastPollSummary,
     lastPoll: {
       readyCount: pollResult.readyBeads.length,
       queueSummary: pollResult.queueSummary,
@@ -96,7 +137,10 @@ export async function bootstrapSymphony(options = {}) {
     queueEvidence: trackerSummary.queueEvidence,
   };
 
-  await statusStore.writeStatus(status);
-
-  return { status, statusStore };
+  return {
+    status,
+    config,
+    workflow,
+    pollResult,
+  };
 }

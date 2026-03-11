@@ -65,7 +65,8 @@ describe('local symphony app handlers', () => {
       readStatus: jest.fn().mockResolvedValue({
         state: 'running',
         currentBeadId: 'dadeto-xyz',
-        currentBeadTitle: 'Reconcile finished Ralph runs back into Symphony status',
+        currentBeadTitle:
+          'Reconcile finished Ralph runs back into Symphony status',
         activeRun: {
           runId: '2026-03-08T22:38:07.435Z--dadeto-n3nd',
           beadId: 'dadeto-n3nd',

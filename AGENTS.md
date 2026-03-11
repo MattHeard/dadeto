@@ -72,10 +72,13 @@ When operating with a foreground orchestrator agent and a background runner agen
 - `super-nintendo-chalmers` is the orchestrator.
   - Talks to the user.
   - Creates, splits, prioritizes, and clarifies beads.
+  - Owns planning by default.
   - Reviews runner comments and decides whether to tighten an existing bead, create follow-up beads, or redirect the runner.
 - `ralph` is the runner.
   - Pulls one ready bead at a time.
   - Runs one bounded Wiggum loop per bead.
+  - Defaults to implementation, not planning.
+  - Only takes planning-adjacent spike research when SNC explicitly frames it as bounded evidence gathering.
   - Leaves `bd` comments with loop contract, evidence, blockers, and next recommended action when it cannot finish.
 
 Load `docs/loop/two-agent-model.md` before using this mode.
