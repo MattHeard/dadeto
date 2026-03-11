@@ -2,7 +2,7 @@
 
 Dadeto is a multi-environment JavaScript monorepo that powers three related interfaces:
 
-1. **mattheard.net blog** – a static site generated from `src/blog.json`.
+1. **mattheard.net blog** – a static site generated from `src/build/blog.json`.
 2. **Dendrite** – a cloud-backed story/variant workflow with browser admin tooling and Google Cloud Functions.
 3. **Local writing tool** – a local-first `/writer/` app served by Express for drafting workflow documents.
 
@@ -50,7 +50,7 @@ The repo is intentionally split so most business logic lives in shared **core** 
 
 ### 1) mattheard.net blog
 
-- Content source: `src/blog.json`
+- Content source: `src/build/blog.json`
 - Static site generation: `src/build/generate.js`
 - Public output target: `public/`
 - Primary build command: `npm run build:mattheard-net`

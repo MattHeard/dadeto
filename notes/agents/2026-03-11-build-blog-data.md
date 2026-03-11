@@ -1,0 +1,4 @@
+- unexpected hurdle: build-only-core warning lived because `src/build/generate.js` still imported `../blog.json` after tightening the dependency rules.
+- diagnosis path: re-ran `npm run depcruise`, confirmed the warning, and traced it to the generator requiring the shared blog JSON asset from outside its folder.
+- chosen fix: moved `blog.json` under `src/build/`, updated the generator and insert-post CLI to load the local copy, and refreshed README to mention the new content source.
+- next-time guidance: keep env-specific assets under their folder (e.g., `src/build/`) so forbidden rules continue to describe observed boundaries without extra overrides.

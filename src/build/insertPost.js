@@ -10,7 +10,7 @@ import { dirname, join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const BLOG_JSON_PATH = join(__dirname, "../blog.json");
+const BLOG_JSON_PATH = join(__dirname, "./blog.json");
 
 /**
  * Generate a key from a title.

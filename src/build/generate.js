@@ -13,7 +13,7 @@ import { createWriteFormattedHtml } from '../core/build/buildCore.js';
 const require = createRequire(import.meta.url);
 
 // Construct a sample blog object
-const blog = require('../blog.json');
+const blog = require('./blog.json');
 
 const writeFormattedHtml = createWriteFormattedHtml({
   generateHtml: generateBlogOuter,
