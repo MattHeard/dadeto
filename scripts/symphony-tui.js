@@ -3,9 +3,12 @@ import os from 'node:os';
 import process from 'node:process';
 
 const STATUS_URL = 'http://localhost:4322/api/symphony/status';
+const LAUNCH_URL = 'http://localhost:4322/api/symphony/launch';
 const REFRESH_MS = 5000;
 const MAX_WIDTH = 40;
 const MAX_LINES = 10;
+const ANSI_BOLD = '\u001b[1m';
+const ANSI_RESET = '\u001b[0m';
 
 if (typeof fetch !== 'function') {
   console.error('This tool needs a Node runtime that provides fetch.');
@@ -37,6 +40,11 @@ function clampLine(text = '') {
 function pushLine(lines, text = '') {
   if (lines.length >= MAX_LINES) return;
   lines.push(clampLine(text));
+}
+
+function highlightLine(text) {
+  if (!text) return '';
+  return `${ANSI_BOLD}${clampLine(text)}${ANSI_RESET}`;
 }
 
 function formatField(label, value) {
@@ -78,22 +86,32 @@ function renderStatus(status) {
     pushLine(lines, 'Waiting for service (polls every 5s)');
   } else {
     pushLine(lines, formatField('State', status.state ?? 'unknown'));
-    pushLine(
-      lines,
-      formatField(
-        'Bead',
-        status.currentBeadTitle ?? status.currentBeadId ?? 'none'
-      )
-    );
+    const beadId = status.currentBeadId ?? 'none';
+    const beadTitle = status.currentBeadTitle ? ` - ${status.currentBeadTitle}` : '';
+    const beadValue = `ID ${beadId}${beadTitle}`;
+    pushLine(lines, highlightLine(formatField('Bead', beadValue)));
     pushLine(lines, formatField('Run', renderActiveRun(status.activeRun)));
     pushLine(
       lines,
       formatField('Rec', status.operatorRecommendation ?? 'none')
     );
-    pushLine(lines, 'Evidence:');
-    formatEvidenceLines(status.latestEvidence).forEach((line) =>
-      pushLine(lines, line)
+    const evidenceSlots = Math.max(
+      MAX_LINES -
+        lines.length -
+        3 - // reserved for shortcut, launch, polling footer
+        1, // evidence header line
+      0
     );
+    if (evidenceSlots > 0) {
+      pushLine(lines, 'Evidence:');
+      formatEvidenceLines(status.latestEvidence)
+        .slice(0, evidenceSlots)
+        .forEach((line) => pushLine(lines, line));
+    }
+  }
+  pushLine(lines, formatField('Shortcut', 'L -> launch next bead'));
+  if (launchFeedback) {
+    pushLine(lines, clampLine(`Launch: ${launchFeedback}`));
   }
   pushLine(lines, 'Polling every 5 seconds.');
   console.log(lines.join(os.EOL));
@@ -115,6 +133,72 @@ async function refreshLoop() {
   }
 }
 
+let launchFeedback = 'Press L to launch the next bead.';
+let launchInFlight = false;
+
+async function triggerLaunch() {
+  if (launchInFlight) {
+    launchFeedback = 'Launch already in flight.';
+    return;
+  }
+
+  launchInFlight = true;
+  launchFeedback = 'Launching...';
+  try {
+    const response = await fetch(LAUNCH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    });
+    const rawBody = await response.text();
+    if (!response.ok) {
+      let message = rawBody;
+      try {
+        const json = JSON.parse(rawBody);
+        message = json?.error ?? json?.message ?? message;
+      } catch {
+        // keep raw text fallback
+      }
+      throw new Error(`HTTP ${response.status}: ${message}`);
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      payload = null;
+    }
+    const beadKey =
+      payload?.currentBeadTitle ?? payload?.currentBeadId ?? 'next bead';
+    launchFeedback = `Launched ${beadKey}.`;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    launchFeedback = `Launch error: ${message}`;
+  } finally {
+    launchInFlight = false;
+  }
+}
+
+function setupInput() {
+  if (!process.stdin.isTTY) {
+    return;
+  }
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.on('data', (chunk) => {
+    const key = chunk.toString('utf8');
+    if (key === 'l' || key === 'L') {
+      void triggerLaunch();
+      return;
+    }
+    if (key === '\u0003') {
+      clearInterval(timer);
+      process.stdout.write(os.EOL);
+      process.exit(0);
+    }
+  });
+}
+
 function start() {
   refreshLoop();
   timer = setInterval(refreshLoop, REFRESH_MS);
@@ -123,6 +207,7 @@ function start() {
     process.stdout.write(os.EOL);
     process.exit(0);
   });
+  setupInput();
 }
 
 start();
