@@ -34,6 +34,10 @@ describe('parseHiLoInput', () => {
       key: 'ArrowUp',
     });
   });
+
+  it('returns null when json parses but is not an object', () => {
+    expect(parseHiLoInput('"scalar"')).toBeNull();
+  });
 });
 
 describe('applyHiLoEvent', () => {
@@ -141,5 +145,25 @@ describe('hiLoCardGameToy', () => {
     expect(secondGuess).toBe(
       'Current card: 2. Score: 2 correct / 0 incorrect / 2 total.'
     );
+  });
+
+  it('keeps the active key held when an unrelated keyup arrives', () => {
+    const env = makeEnv([0, 0.6]);
+
+    const initialGuess = hiLoCardGameToy(
+      JSON.stringify({ type: 'keydown', key: 'ArrowDown' }),
+      env
+    );
+    const unrelatedRelease = hiLoCardGameToy(
+      JSON.stringify({ type: 'keyup', key: 'ArrowUp' }),
+      env
+    );
+    const blockedGuess = hiLoCardGameToy(
+      JSON.stringify({ type: 'keydown', key: 'ArrowUp' }),
+      env
+    );
+
+    expect(unrelatedRelease).toBe(initialGuess);
+    expect(blockedGuess).toBe(initialGuess);
   });
 });
