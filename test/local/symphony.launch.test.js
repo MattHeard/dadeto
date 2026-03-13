@@ -372,4 +372,76 @@ describe('local symphony runner launch', () => {
       )
     ).resolves.toContain('"event": "launch-failed"');
   });
+
+  test('records the rejection when Symphony is not ready', async () => {
+    const statusStore = createSymphonyStatusStore({
+      statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+      logDir: path.join(tempDir, 'tracking', 'symphony'),
+    });
+
+    await expect(
+      launchSelectedRunnerLoop({
+        repoRoot: tempDir,
+        status: {
+          service: 'dadeto-local-symphony',
+          startedAt: '2026-03-08T19:14:00.000Z',
+          state: 'blocked',
+          currentBeadId: 'dadeto-0fzi',
+          currentBeadTitle:
+            'Invoke a real Ralph agent session from Symphony runner launch',
+          currentBeadPriority: '● P2',
+        },
+        statusStore,
+        now: () => new Date('2026-03-08T19:20:00.000Z'),
+      })
+    ).rejects.toThrow(
+      'Cannot launch runner loop unless Symphony is ready. Current state: blocked.'
+    );
+
+    await expect(statusStore.readStatus()).resolves.toMatchObject({
+      state: 'blocked',
+      currentBeadId: 'dadeto-0fzi',
+      latestEvidence:
+        'Runner launch failed for dadeto-0fzi: Cannot launch runner loop unless Symphony is ready. Current state: blocked.',
+      lastLaunchAttempt: {
+        outcome: 'failed',
+        error:
+          'Cannot launch runner loop unless Symphony is ready. Current state: blocked.',
+      },
+    });
+  });
+
+  test('records failure reason when the selected bead id is missing', async () => {
+    const statusStore = createSymphonyStatusStore({
+      statusPath: path.join(tempDir, 'tracking', 'symphony', 'status.json'),
+      logDir: path.join(tempDir, 'tracking', 'symphony'),
+    });
+
+    await expect(
+      launchSelectedRunnerLoop({
+        repoRoot: tempDir,
+        status: {
+          service: 'dadeto-local-symphony',
+          startedAt: '2026-03-08T19:14:00.000Z',
+          state: 'ready',
+          currentBeadTitle:
+            'Invoke a real Ralph agent session from Symphony runner launch',
+          currentBeadPriority: '● P2',
+        },
+        statusStore,
+        now: () => new Date('2026-03-08T19:21:00.000Z'),
+      })
+    ).rejects.toThrow('Cannot launch runner loop without currentBeadId.');
+
+    await expect(statusStore.readStatus()).resolves.toMatchObject({
+      state: 'blocked',
+      currentBeadId: 'unknown-bead',
+      latestEvidence:
+        'Runner launch failed for unknown-bead: Cannot launch runner loop without currentBeadId.',
+      lastLaunchAttempt: {
+        outcome: 'failed',
+        error: 'Cannot launch runner loop without currentBeadId.',
+      },
+    });
+  });
 });

@@ -1,0 +1,5 @@
+# 2026-03-13: keep Symphony auto loop waiting for the active run
+- **Unexpected hurdle:** The auto loop immediately re-scheduled after launching a run, so the TUI would keep refreshing the queue and could fire a second launch even while the previous run’s `activeRun` record was still stuck in `status.json`.
+- **Diagnosis path:** Walked through `runAutoLoopCycle` in `scripts/symphony-tui.js`, verified that the guard only checked for a `ready` state before launching and never blocked the next cycle until `activeRun` disappeared, and confirmed nothing else in this script persisted the launched run ID.
+- **Chosen fix:** After a successful auto launch we now re-fetch the status, capture the launched run’s ID, and run `waitForActiveRunCompletion` so the loop stays paused until `lastSymphonyStatus.activeRun.runId` no longer matches that ID; only then do we mark the cycle complete and schedule the next refresh.
+- **Next-time guidance:** When you touch the auto-loop behavior again, keep both the refresh timer and the dedicated completion wait in sync so the UI never slips a new launch while the current run is still tracked in `status.json`.

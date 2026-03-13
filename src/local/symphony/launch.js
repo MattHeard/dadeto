@@ -35,19 +35,52 @@ import {
 export async function launchSelectedRunnerLoop(options) {
   const now = options.now ?? (() => new Date());
   const status = options.status;
-  const currentBeadId = getRequiredString(status.currentBeadId, 'currentBeadId');
+  const requestedBeadId = getOptionalString(status.currentBeadId);
   const currentBeadTitle = getOptionalString(status.currentBeadTitle);
   const currentBeadPriority = getOptionalString(status.currentBeadPriority);
+  const startedAt = now().toISOString();
+  const failureBeadId = requestedBeadId ?? 'unknown-bead';
+  const failureLaunchRequest = formatLaunchRequestForBead(requestedBeadId);
 
   if (status.state !== 'ready') {
-    throw new Error(
-      `Cannot launch runner loop unless Symphony is ready. Current state: ${String(status.state ?? 'unknown')}.`
+    const guardError = new Error(
+      `Cannot launch runner loop unless Symphony is ready. Current state: ${String(
+        status.state ?? 'unknown'
+      )}.`
     );
+
+    await persistLaunchFailure(options.statusStore, status, {
+      startedAt,
+      beadId: failureBeadId,
+      beadTitle: currentBeadTitle,
+      beadPriority: currentBeadPriority,
+      launchRequest: failureLaunchRequest,
+      error: guardError.message,
+    });
+
+    throw guardError;
   }
 
-  const startedAt = now().toISOString();
+  let currentBeadId;
+  try {
+    currentBeadId = getRequiredString(requestedBeadId, 'currentBeadId');
+  } catch (error) {
+    const normalizedError =
+      error instanceof Error ? error : new Error(String(error));
+    await persistLaunchFailure(options.statusStore, status, {
+      startedAt,
+      beadId: failureBeadId,
+      beadTitle: currentBeadTitle,
+      beadPriority: currentBeadPriority,
+      launchRequest: failureLaunchRequest,
+      error: normalizedError.message,
+    });
+
+    throw normalizedError;
+  }
+
+  const launchRequest = formatLaunchRequestForBead(currentBeadId);
   const runId = `${startedAt}--${currentBeadId}`;
-  const launchRequest = `pop ${currentBeadId}`;
   const launcher = options.launcher ?? createConfiguredLauncher(status, options);
   const launchStatusWrite = createDeferredPromise();
   const onRunnerExit = createRunnerExitHandler({
@@ -94,7 +127,7 @@ export async function launchSelectedRunnerLoop(options) {
     return launchedStatus;
   } catch (error) {
     launchStatusWrite.resolve();
-    const failedStatus = applyRunnerLaunchFailure(status, {
+    const failedStatus = await persistLaunchFailure(options.statusStore, status, {
       startedAt,
       beadId: currentBeadId,
       beadTitle: currentBeadTitle,
@@ -102,8 +135,6 @@ export async function launchSelectedRunnerLoop(options) {
       launchRequest,
       error: getLaunchErrorMessage(error),
     });
-
-    await options.statusStore.writeStatus(failedStatus);
 
     return failedStatus;
   }
@@ -215,6 +246,43 @@ function getLaunchErrorMessage(error) {
   }
 
   return 'Unknown launcher failure.';
+}
+
+/**
+ * @param {string | null} beadId Candidate bead id.
+ * @returns {string} Launch request text for logging.
+ */
+function formatLaunchRequestForBead(beadId) {
+  if (typeof beadId === 'string' && beadId.trim()) {
+    return `pop ${beadId}`;
+  }
+
+  return 'pop <missing bead id>';
+}
+
+/**
+ * @param {{
+ *   writeStatus: (status: Record<string, unknown>) => Promise<void>
+ * } | undefined | null} statusStore
+ * @param {Record<string, unknown>} status
+ * @param {{
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle?: string | null,
+ *   beadPriority?: string | null,
+ *   launchRequest: string,
+ *   error: string
+ * }} failure
+ * @returns {Promise<Record<string, unknown>>}
+ */
+async function persistLaunchFailure(statusStore, status, failure) {
+  if (!statusStore || typeof statusStore.writeStatus !== 'function') {
+    return applyRunnerLaunchFailure(status, failure);
+  }
+
+  const failedStatus = applyRunnerLaunchFailure(status, failure);
+  await statusStore.writeStatus(failedStatus);
+  return failedStatus;
 }
 
 /**

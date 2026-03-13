@@ -1,0 +1,6 @@
+# Symphony launch rejection reason
+
+- **Unexpected hurdle**: Trying to persist the rejection reason failed whenever Symphony sent a launch while not ready or without a current bead ID because `launchSelectedRunnerLoop` dereferenced `currentBeadId` before guard-closing, so the throw escaped before any status/log writes could record why the operator call failed.
+- **Diagnosis path**: Walked through `launchSelectedRunnerLoop`, confirmed the early `getRequiredString` call threw before the guard and before `persistLaunchFailure` could write, and verified the TUI/notes evidence gaps matched what `status.json` showed when a launch raced a stale poll.
+- **Chosen fix**: Track the trimmed bead metadata up front, insert a guarded failure path that writes the fallback bead/launch request whenever the state or bead ID are invalid, and delay `getRequiredString` plus `launchRequest` creation until after the guards so the rejection reason stays in `status.json` and the new helper still formats the recorded request text.; fresh tests now cover an empty `currentBeadId` plus the existing not-ready guard.
+- **Next-time guidance**: When a guard run throws before writing status, plug in a fallback bead/launch request early so `persistLaunchFailure` can still persist context; also add smoke tests for any new guard so the TUI never loses operator evidence in the future.

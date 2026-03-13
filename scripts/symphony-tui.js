@@ -5,6 +5,9 @@ import process from 'node:process';
 const STATUS_URL = 'http://localhost:4322/api/symphony/status';
 const LAUNCH_URL = 'http://localhost:4322/api/symphony/launch';
 const REFRESH_MS = 5000;
+const REFRESH_URL = 'http://localhost:4322/api/v1/refresh';
+const AUTO_LOOP_INTERVAL_MS = 5000;
+const RUN_COMPLETION_POLL_MS = 5000;
 const MAX_WIDTH = 40;
 const MAX_LINES = 10;
 const ANSI_BOLD = '\u001b[1m';
@@ -109,11 +112,23 @@ function renderStatus(status) {
         .forEach((line) => pushLine(lines, line));
     }
   }
-  pushLine(lines, formatField('Shortcut', 'L -> launch next bead'));
+  const autoLoopLabel = autoLoopEnabled
+    ? 'ON (press A to pause)'
+    : 'OFF (press A to start)';
+  pushLine(lines, highlightLine(formatField('Auto-loop', autoLoopLabel)));
+  if (autoLoopFeedback) {
+    pushLine(lines, clampLine(autoLoopFeedback));
+  }
+  if (statusFeedback) {
+    pushLine(lines, clampLine(statusFeedback));
+  }
   if (launchFeedback) {
     pushLine(lines, clampLine(`Launch: ${launchFeedback}`));
   }
-  pushLine(lines, 'Polling every 5 seconds.');
+  if (refreshFeedback) {
+    pushLine(lines, clampLine(`Refresh: ${refreshFeedback}`));
+  }
+  pushLine(lines, `Polling every ${Math.floor(REFRESH_MS / 1000)} seconds.`);
   console.log(lines.join(os.EOL));
 }
 
@@ -126,24 +141,39 @@ async function refreshLoop() {
       throw new Error(`HTTP ${response.status}`);
     }
     const body = await response.json();
+    lastSymphonyStatus = body;
+    statusFeedback = '';
     renderStatus(body);
+    return body;
   } catch (error) {
+    lastSymphonyStatus = null;
+    const message = error instanceof Error ? error.message : String(error);
     renderStatus(null);
-    console.error('  ' + (error instanceof Error ? error.message : String(error)));
+    statusFeedback = `Status error: ${message}`;
+    console.error('  ' + message);
+    return null;
   }
 }
 
-let launchFeedback = 'Press L to launch the next bead.';
+let launchFeedback = 'Launch idle.';
 let launchInFlight = false;
+let refreshFeedback = '';
+let refreshInFlight = false;
+let statusFeedback = '';
+let lastSymphonyStatus = null;
+let autoLoopEnabled = false;
+let autoLoopRunning = false;
+let autoLoopTimer;
+let autoLoopFeedback = '';
 
-async function triggerLaunch() {
+async function triggerLaunch({ label = 'Launch' } = {}) {
   if (launchInFlight) {
-    launchFeedback = 'Launch already in flight.';
-    return;
+    launchFeedback = `${label} already in flight.`;
+    return false;
   }
 
   launchInFlight = true;
-  launchFeedback = 'Launching...';
+  launchFeedback = `${label}...`;
   try {
     const response = await fetch(LAUNCH_URL, {
       method: 'POST',
@@ -171,11 +201,128 @@ async function triggerLaunch() {
     const beadKey =
       payload?.currentBeadTitle ?? payload?.currentBeadId ?? 'next bead';
     launchFeedback = `Launched ${beadKey}.`;
+    return true;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    launchFeedback = `Launch error: ${message}`;
+    launchFeedback = `${label} error: ${message}`;
+    return false;
   } finally {
     launchInFlight = false;
+  }
+}
+
+async function triggerRefresh({ label = 'Refresh' } = {}) {
+  if (refreshInFlight) {
+    refreshFeedback = `${label} already in flight.`;
+    return false;
+  }
+
+  refreshInFlight = true;
+  refreshFeedback = `${label}...`;
+  try {
+    const response = await fetch(REFRESH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    });
+    const rawBody = await response.text();
+    if (!response.ok) {
+      let message = rawBody;
+      try {
+        const json = JSON.parse(rawBody);
+        message = json?.error ?? json?.message ?? message;
+      } catch {
+        // keep raw text fallback
+      }
+      throw new Error(`HTTP ${response.status}: ${message}`);
+    }
+
+    refreshFeedback = `${label} queued.`;
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    refreshFeedback = `${label} error: ${message}`;
+    return false;
+  } finally {
+    refreshInFlight = false;
+  }
+}
+
+function clearAutoLoopTimer() {
+  if (autoLoopTimer) {
+    clearTimeout(autoLoopTimer);
+    autoLoopTimer = undefined;
+  }
+}
+
+function scheduleAutoLoopCycle() {
+  if (!autoLoopEnabled) {
+    return;
+  }
+  clearAutoLoopTimer();
+  autoLoopTimer = setTimeout(() => {
+    autoLoopTimer = undefined;
+    void runAutoLoopCycle();
+  }, AUTO_LOOP_INTERVAL_MS);
+}
+
+async function runAutoLoopCycle() {
+  if (!autoLoopEnabled || autoLoopRunning) {
+    return;
+  }
+  autoLoopRunning = true;
+  autoLoopFeedback = 'Auto loop running...';
+  try {
+    const refreshOk = await triggerRefresh({ label: 'Auto refresh' });
+    if (!refreshOk) {
+      autoLoopFeedback = 'Auto loop error: refresh failed.';
+      return;
+    }
+    const refreshedStatus = await refreshLoop();
+    const refreshedState = refreshedStatus?.state ?? 'unknown';
+    if (refreshedState !== 'ready') {
+      autoLoopFeedback = `Auto loop paused: Symphony state ${refreshedState}.`;
+      return;
+    }
+    const launchOk = await triggerLaunch({ label: 'Auto launch' });
+    if (!launchOk) {
+      autoLoopFeedback = 'Auto loop error: launch failed.';
+      return;
+    }
+    const postLaunchStatus = await refreshLoop();
+    const launchedRunId = postLaunchStatus?.activeRun?.runId;
+    await waitForActiveRunCompletion(launchedRunId);
+    autoLoopFeedback = 'Auto loop cycle complete.';
+  } finally {
+    autoLoopRunning = false;
+    if (autoLoopEnabled) {
+      scheduleAutoLoopCycle();
+    }
+  }
+}
+
+async function waitForActiveRunCompletion(runId) {
+  if (!runId) {
+    return;
+  }
+
+  while (
+    autoLoopEnabled &&
+    lastSymphonyStatus?.activeRun?.runId === runId
+  ) {
+    autoLoopFeedback = `Auto loop waiting for ${runId} to finish...`;
+    await new Promise((resolve) => setTimeout(resolve, RUN_COMPLETION_POLL_MS));
+  }
+}
+
+function toggleAutoLoop() {
+  autoLoopEnabled = !autoLoopEnabled;
+  if (autoLoopEnabled) {
+    autoLoopFeedback = 'Auto loop enabled.';
+    void runAutoLoopCycle();
+  } else {
+    autoLoopFeedback = 'Auto loop paused.';
+    clearAutoLoopTimer();
   }
 }
 
@@ -188,11 +335,20 @@ function setupInput() {
   process.stdin.on('data', (chunk) => {
     const key = chunk.toString('utf8');
     if (key === 'l' || key === 'L') {
-      void triggerLaunch();
+      void triggerLaunch({ label: 'Manual launch' });
+      return;
+    }
+    if (key === 'r' || key === 'R') {
+      void triggerRefresh({ label: 'Manual refresh' });
+      return;
+    }
+    if (key === 'a' || key === 'A') {
+      toggleAutoLoop();
       return;
     }
     if (key === '\u0003') {
       clearInterval(timer);
+      clearAutoLoopTimer();
       process.stdout.write(os.EOL);
       process.exit(0);
     }
@@ -204,6 +360,7 @@ function start() {
   timer = setInterval(refreshLoop, REFRESH_MS);
   process.on('SIGINT', () => {
     clearInterval(timer);
+    clearAutoLoopTimer();
     process.stdout.write(os.EOL);
     process.exit(0);
   });
