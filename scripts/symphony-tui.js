@@ -75,6 +75,22 @@ function formatEvidenceLines(evidence) {
   });
 }
 
+function getRunId(activeRun) {
+  if (!activeRun || typeof activeRun === 'string') {
+    return null;
+  }
+
+  return activeRun.runId ?? activeRun.id ?? activeRun.beadId ?? null;
+}
+
+function getAutoLoopLabel() {
+  if (!autoLoopEnabled) {
+    return 'off';
+  }
+
+  return autoLoopPhase;
+}
+
 function renderStatus(status) {
   const lines = [];
   screen.clear();
@@ -109,31 +125,74 @@ function renderStatus(status) {
         .forEach((line) => pushLine(lines, line));
     }
   }
-  pushLine(lines, formatField('Shortcut', 'L -> launch next bead'));
+  pushLine(lines, formatField('Auto', getAutoLoopLabel()));
   if (launchFeedback) {
     pushLine(lines, clampLine(`Launch: ${launchFeedback}`));
+  }
+  if (statusError) {
+    pushLine(lines, clampLine(`Status: ${statusError}`));
   }
   pushLine(lines, 'Polling every 5 seconds.');
   console.log(lines.join(os.EOL));
 }
 
 let timer;
+let statusError = null;
+let autoLoopEnabled = false;
+let autoLoopInFlight = false;
+let autoLoopPhase = 'idle';
+
+async function fetchStatus() {
+  const response = await fetch(STATUS_URL, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
 
 async function refreshLoop() {
   try {
-    const response = await fetch(STATUS_URL, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const body = await response.json();
-    renderStatus(body);
+    const status = await fetchStatus();
+    statusError = null;
+    renderStatus(status);
+    return status;
   } catch (error) {
+    statusError = error instanceof Error ? error.message : String(error);
     renderStatus(null);
-    console.error('  ' + (error instanceof Error ? error.message : String(error)));
+    console.error(`  ${statusError}`);
+    return null;
   }
 }
 
-let launchFeedback = 'Press L to launch the next bead.';
+function wait(delayMs) {
+  return new Promise((resolve) => {
+    globalThis.setTimeout(resolve, delayMs);
+  });
+}
+
+async function waitForActiveRunCompletion(runId) {
+  while (autoLoopEnabled) {
+    autoLoopPhase = 'waiting';
+    const status = await refreshLoop();
+    if (getRunId(status?.activeRun) !== runId) {
+      return true;
+    }
+    await wait(REFRESH_MS);
+  }
+
+  return false;
+}
+
+function scheduleNextAutoLoopCycle() {
+  globalThis.setTimeout(() => {
+    if (autoLoopEnabled) {
+      void runAutoLoopCycle();
+    }
+  }, REFRESH_MS);
+}
+
+let launchFeedback = 'Press A for auto, L to launch.';
 let launchInFlight = false;
 
 async function triggerLaunch() {
@@ -179,6 +238,70 @@ async function triggerLaunch() {
   }
 }
 
+async function runAutoLoopCycle() {
+  if (!autoLoopEnabled || autoLoopInFlight || launchInFlight) {
+    return;
+  }
+
+  autoLoopInFlight = true;
+  try {
+    autoLoopPhase = 'searching';
+    const status = await refreshLoop();
+    if (!autoLoopEnabled) {
+      return;
+    }
+    if (!status) {
+      scheduleNextAutoLoopCycle();
+      return;
+    }
+
+    if (status.state !== 'ready') {
+      launchFeedback = `Auto waiting for ${status.state ?? 'unknown'}.`;
+      scheduleNextAutoLoopCycle();
+      return;
+    }
+
+    await triggerLaunch();
+    if (!autoLoopEnabled) {
+      return;
+    }
+
+    const launchedStatus = await refreshLoop();
+    const launchedRunId = getRunId(launchedStatus?.activeRun);
+    if (!launchedRunId) {
+      launchFeedback = 'Auto launch missing run id.';
+      scheduleNextAutoLoopCycle();
+      return;
+    }
+
+    const completed = await waitForActiveRunCompletion(launchedRunId);
+    if (!completed || !autoLoopEnabled) {
+      return;
+    }
+
+    autoLoopPhase = 'searching';
+    scheduleNextAutoLoopCycle();
+  } finally {
+    autoLoopInFlight = false;
+    if (!autoLoopEnabled) {
+      autoLoopPhase = 'off';
+    }
+  }
+}
+
+function toggleAutoLoop() {
+  autoLoopEnabled = !autoLoopEnabled;
+  if (!autoLoopEnabled) {
+    autoLoopPhase = 'off';
+    launchFeedback = 'Auto loop disabled.';
+    return;
+  }
+
+  autoLoopPhase = 'searching';
+  launchFeedback = 'Auto loop enabled.';
+  void runAutoLoopCycle();
+}
+
 function setupInput() {
   if (!process.stdin.isTTY) {
     return;
@@ -189,6 +312,10 @@ function setupInput() {
     const key = chunk.toString('utf8');
     if (key === 'l' || key === 'L') {
       void triggerLaunch();
+      return;
+    }
+    if (key === 'a' || key === 'A') {
+      toggleAutoLoop();
       return;
     }
     if (key === '\u0003') {
