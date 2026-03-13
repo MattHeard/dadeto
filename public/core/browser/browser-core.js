@@ -347,6 +347,29 @@ export function safeJsonParse(input) {
 }
 
 /**
+ * Determine whether a value is an object-like result.
+ * @param {unknown} value - Candidate value.
+ * @returns {boolean} True when the value is an object.
+ */
+export function isObjectValue(value) {
+  return Boolean(value) && typeof value === 'object';
+}
+
+/**
+ * Parse a JSON string and return its value or `null` on failure.
+ * @param {string} input - JSON string to parse.
+ * @returns {Record<string, unknown> | null} Parsed payload or null.
+ */
+export function parseJsonObject(input) {
+  const parsed = safeJsonParse(input);
+  if (!parsed.ok) {
+    return null;
+  }
+
+  return parsed.data;
+}
+
+/**
  * Parses JSON or returns a provided default when parsing fails.
  * @param {string} json - JSON string to parse.
  * @param {object} [fallback] - Default value when parsing fails.
