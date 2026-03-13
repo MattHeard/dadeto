@@ -331,19 +331,9 @@ function formatJsonParseError(error) {
 }
 
 /**
- * @typedef {{
- *   ok: true;
- *   data: unknown;
- * } | {
- *   ok: false;
- *   message: string;
- * }} SafeJsonParseResult
- */
-
-/**
  * Safely parse a JSON string.
  * @param {string} input - JSON string to parse.
- * @returns {SafeJsonParseResult} Parsed result.
+ * @returns {{ok: boolean, message?: string, data?: object}} Parsed result.
  */
 export function safeJsonParse(input) {
   try {
@@ -372,11 +362,11 @@ export function isObjectValue(value) {
  */
 export function parseJsonObject(input) {
   const parsed = safeJsonParse(input);
-  if (!parsed.ok || !isNonNullObject(parsed.data)) {
+  if (!parsed.ok) {
     return null;
   }
 
-  return /** @type {Record<string, unknown>} */ (parsed.data);
+  return parsed.data;
 }
 
 /**
