@@ -1,8 +1,14 @@
 import * as browserCore from '../browser-core.js';
-import { getAutoSubmitCheckbox, syncToyInput } from './captureFormShared.js';
+import {
+  getAutoSubmitCheckbox,
+  syncToyInput,
+  makeCaptureFormBuilder,
+  withCaptureFormContext,
+  prepareCaptureHandler,
+  registerGlobalListener,
+} from './captureFormShared.js';
 import { emitCaptureState } from './captureLifecycleShared.js';
 import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js';
-import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {() => void} CleanupFn */
@@ -10,8 +16,7 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
 /** @typedef {{ capturing: boolean, animationFrameId: number | null, snapshots: Record<number, GamepadSnapshot> }} CaptureState */
 /** @typedef {{ button: HTMLButtonElement, dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, state: CaptureState }} HandlerOptions */
-
-const FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
+const GAMEPAD_FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
 const CAPTURE_BUTTON_LABEL = 'Capture gamepad';
 const RELEASE_BUTTON_LABEL = 'Release gamepad';
 const ESCAPE_KEY = 'Escape';
@@ -154,11 +159,17 @@ function didAxisChange(previous, current) {
  * @returns {void}
  */
 function syncIfPayload(options) {
-  if (options.payload === null) {
+  const { dom, textInput, autoSubmitCheckbox, payload } = options;
+  if (payload === null) {
     return;
   }
 
-  emitToyPayload(options);
+  emitToyPayload({
+    dom,
+    textInput,
+    autoSubmitCheckbox,
+    payload,
+  });
 }
 
 /**
@@ -167,11 +178,15 @@ function syncIfPayload(options) {
  *   dom: DOMHelpers,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
- *   payload: Record<string, unknown> | null,
+ *   payload: Record<string, unknown>,
  * }} options - Payload delivery dependencies.
  * @returns {void}
  */
 function emitToyPayload(options) {
+  if (options.payload === null) {
+    return;
+  }
+
   syncToyInput({
     dom: options.dom,
     textInput: options.textInput,
@@ -761,9 +776,21 @@ function registerGamepadListeners(options, cleanupFns) {
   const handleDisconnect = createDisconnectHandler(options);
 
   options.dom.addEventListener(options.button, 'click', handleToggle);
-  globalThis.addEventListener('keydown', handleEscape);
-  globalThis.addEventListener(GAMEPAD_CONNECTED_EVENT, handleConnect);
-  globalThis.addEventListener(GAMEPAD_DISCONNECTED_EVENT, handleDisconnect);
+  registerGlobalListener({
+    cleanupFns,
+    type: 'keydown',
+    handler: handleEscape,
+  });
+  registerGlobalListener({
+    cleanupFns,
+    type: GAMEPAD_CONNECTED_EVENT,
+    handler: handleConnect,
+  });
+  registerGlobalListener({
+    cleanupFns,
+    type: GAMEPAD_DISCONNECTED_EVENT,
+    handler: handleDisconnect,
+  });
 
   cleanupFns.push(() => {
     cancelPoll(options.state);
@@ -772,38 +799,15 @@ function registerGamepadListeners(options, cleanupFns) {
   cleanupFns.push(() =>
     options.dom.removeEventListener(options.button, 'click', handleToggle)
   );
-  cleanupFns.push(() =>
-    globalThis.removeEventListener('keydown', handleEscape)
-  );
-  cleanupFns.push(() =>
-    globalThis.removeEventListener(GAMEPAD_CONNECTED_EVENT, handleConnect)
-  );
-  cleanupFns.push(() =>
-    globalThis.removeEventListener(GAMEPAD_DISCONNECTED_EVENT, handleDisconnect)
-  );
 }
 
-/**
- * Build and insert the gamepad capture form UI.
- * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
- * @returns {HTMLElement} Inserted form element.
- */
-function buildGamepadCaptureForm({ dom, container, textInput }) {
-  /** @type {CleanupFn[]} */
-  const cleanupFns = [];
-  const form = createManagedFormShell({
-    dom,
-    container,
-    textInput,
-    disposers: cleanupFns,
-  });
-  dom.setClassName(form, FORM_CLASS);
-
-  const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
-  dom.setType(button, 'button');
-  updateCaptureButton(dom, button, false);
-  dom.appendChild(form, button);
-
+function initializeGamepadCaptureFormContext({
+  button,
+  cleanupFns,
+  container,
+  dom,
+  textInput,
+}) {
   registerGamepadListeners(
     {
       button,
@@ -818,9 +822,25 @@ function buildGamepadCaptureForm({ dom, container, textInput }) {
     },
     cleanupFns
   );
-
-  return form;
 }
+
+function handleGamepadCaptureFormContext(options) {
+  withCaptureFormContext(
+    options,
+    updateCaptureButton,
+    initializeGamepadCaptureFormContext
+  );
+}
+
+/**
+ * Build and insert the gamepad capture form UI.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
+ * @returns {HTMLElement} Inserted form element.
+ */
+const buildGamepadCaptureForm = makeCaptureFormBuilder(
+  GAMEPAD_FORM_CLASS,
+  handleGamepadCaptureFormContext
+);
 
 /**
  * Switch the toy input UI to the gamepad capture mode.
@@ -830,11 +850,6 @@ function buildGamepadCaptureForm({ dom, container, textInput }) {
  * @returns {void}
  */
 export function gamepadCaptureHandler(dom, container, textInput) {
-  browserCore.hideAndDisable(textInput, dom);
-  browserCore.applyBaseCleanupHandlers({
-    container,
-    dom,
-    extraHandlers: [browserCore.maybeRemoveNumber],
-  });
+  prepareCaptureHandler({ dom, container, textInput });
   buildGamepadCaptureForm({ dom, container, textInput });
 }
