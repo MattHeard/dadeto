@@ -1,18 +1,13 @@
 import * as browserCore from '../browser-core.js';
-import {
-  getAutoSubmitCheckbox,
-  syncToyPayload,
-  makeCaptureFormBuilder,
-  prepareCaptureHandler,
-  registerGlobalListener,
-  withCaptureFormContext,
-} from './captureFormShared.js';
+import { getAutoSubmitCheckbox, syncToyPayload } from './captureFormShared.js';
 import { emitCaptureState } from './captureLifecycleShared.js';
 import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js';
+import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {() => void} CleanupFn */
-const KEYBOARD_FORM_CLASS = browserCore.KEYBOARD_CAPTURE_FORM_SELECTOR.slice(1);
+
+const FORM_CLASS = browserCore.KEYBOARD_CAPTURE_FORM_SELECTOR.slice(1);
 const CAPTURE_BUTTON_LABEL = 'Capture keyboard';
 const RELEASE_BUTTON_LABEL = 'Release keyboard';
 const ESCAPE_KEY = 'Escape';
@@ -173,51 +168,55 @@ function forwardCapturedKey(event, options) {
  * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
  * @returns {HTMLElement} The inserted form element.
  */
-const buildKeyboardCaptureForm = makeCaptureFormBuilder(
-  KEYBOARD_FORM_CLASS,
-  options => {
-    withCaptureFormContext(
-      options,
-      updateCaptureButton,
-      ({ dom, button, cleanupFns, container, textInput }) => {
-        const state = { capturing: false };
-        const autoSubmitCheckbox = getAutoSubmitCheckbox(container, dom);
-        const handleToggle = createCaptureLifecycleToggleHandler({
-          dom,
-          button,
-          textInput,
-          autoSubmitCheckbox,
-          state,
-          updateButtonLabel: updateCaptureButton,
-          emitPayload: syncToyPayload,
-        });
-        const handleKeyboard = createKeyboardHandler({
-          dom,
-          button,
-          textInput,
-          autoSubmitCheckbox,
-          state,
-        });
+function buildKeyboardCaptureForm({ dom, container, textInput }) {
+  /** @type {CleanupFn[]} */
+  const cleanupFns = [];
+  const form = createManagedFormShell({
+    dom,
+    container,
+    textInput,
+    disposers: cleanupFns,
+  });
+  dom.setClassName(form, FORM_CLASS);
 
-        dom.addEventListener(button, 'click', handleToggle);
-        registerGlobalListener({
-          cleanupFns,
-          type: 'keydown',
-          handler: handleKeyboard,
-        });
-        registerGlobalListener({
-          cleanupFns,
-          type: 'keyup',
-          handler: handleKeyboard,
-        });
+  const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
+  dom.setType(button, 'button');
+  updateCaptureButton(dom, button, false);
+  dom.appendChild(form, button);
 
-        cleanupFns.push(() =>
-          dom.removeEventListener(button, 'click', handleToggle)
-        );
-      }
-    );
-  }
-);
+  const state = { capturing: false };
+  const autoSubmitCheckbox = getAutoSubmitCheckbox(container, dom);
+  const handleToggle = createCaptureLifecycleToggleHandler({
+    dom,
+    button,
+    textInput,
+    autoSubmitCheckbox,
+    state,
+    updateButtonLabel: updateCaptureButton,
+    emitPayload: syncToyPayload,
+  });
+  const handleKeyboard = createKeyboardHandler({
+    dom,
+    button,
+    textInput,
+    autoSubmitCheckbox,
+    state,
+  });
+
+  dom.addEventListener(button, 'click', handleToggle);
+  globalThis.addEventListener('keydown', handleKeyboard);
+  globalThis.addEventListener('keyup', handleKeyboard);
+
+  cleanupFns.push(() => dom.removeEventListener(button, 'click', handleToggle));
+  cleanupFns.push(() =>
+    globalThis.removeEventListener('keydown', handleKeyboard)
+  );
+  cleanupFns.push(() =>
+    globalThis.removeEventListener('keyup', handleKeyboard)
+  );
+
+  return form;
+}
 
 /**
  * Switch the UI to the keyboard capture controller.
@@ -227,6 +226,11 @@ const buildKeyboardCaptureForm = makeCaptureFormBuilder(
  * @returns {void}
  */
 export function keyboardCaptureHandler(dom, container, textInput) {
-  prepareCaptureHandler({ dom, container, textInput });
+  browserCore.hideAndDisable(textInput, dom);
+  browserCore.applyBaseCleanupHandlers({
+    container,
+    dom,
+    extraHandlers: [browserCore.maybeRemoveNumber],
+  });
   buildKeyboardCaptureForm({ dom, container, textInput });
 }
