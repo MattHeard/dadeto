@@ -39,8 +39,12 @@ describe('addDendritePage', () => {
   });
 
   it('returns an empty payload when JSON is invalid', () => {
-    const { map } = buildEnv();
+    const { map, fns } = buildEnv();
     const result = addDendritePage('not json', map);
-    expect(result).toBe(JSON.stringify({ pages: [], options: [] }));
+    const parsed = JSON.parse(result);
+
+    expect(parsed.pages).toHaveLength(0);
+    expect(parsed.options).toHaveLength(0);
+    expect(fns.setLocalTemporaryData).not.toHaveBeenCalled();
   });
 });

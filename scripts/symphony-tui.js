@@ -319,8 +319,13 @@ function wait(delayMs) {
 async function waitForActiveRunCompletion(runId) {
   while (autoLoopEnabled) {
     autoLoopPhase = 'waiting';
-    const status = await refreshLoop();
-    if (getRunId(status?.activeRun) !== runId) {
+    const status = await triggerRefresh();
+    if (!status) {
+      await wait(REFRESH_MS);
+      continue;
+    }
+
+    if (getRunId(status.activeRun) !== runId) {
       return true;
     }
     await wait(REFRESH_MS);
@@ -386,11 +391,12 @@ async function triggerLaunch() {
 async function triggerRefresh() {
   if (refreshInFlight) {
     refreshFeedback = 'Refresh already in flight.';
-    return;
+    return null;
   }
 
   refreshInFlight = true;
   refreshFeedback = 'Refreshing...';
+  let refreshedStatus = null;
   try {
     const response = await fetch(REFRESH_URL, {
       method: 'POST',
@@ -421,13 +427,14 @@ async function triggerRefresh() {
       payload?.status ??
       payload?.result ??
       'Refresh requested.';
-    await refreshLoop();
+    refreshedStatus = await refreshLoop();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     refreshFeedback = `Refresh error: ${message}`;
   } finally {
     refreshInFlight = false;
   }
+  return refreshedStatus;
 }
 
 async function runAutoLoopCycle() {
@@ -438,7 +445,7 @@ async function runAutoLoopCycle() {
   autoLoopInFlight = true;
   try {
     autoLoopPhase = 'searching';
-    const status = await refreshLoop();
+    const status = await triggerRefresh();
     if (!autoLoopEnabled) {
       return;
     }

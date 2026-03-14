@@ -612,4 +612,52 @@ describe('gamepadCaptureHandler', () => {
       globalThis.navigator = previousNavigator;
     }
   });
+
+  it('stops requeueing poll frames once capture ends before the queued frame runs', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const frames = [];
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(callback => {
+      frames.push(callback);
+      return frames.length;
+    });
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = {
+      getGamepads: jest.fn(() => [createGamepad()]),
+    };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+
+      button._listeners.click();
+      expect(frames).toHaveLength(1);
+
+      button._listeners.click();
+      expect(globalThis.cancelAnimationFrame).toHaveBeenCalledWith(1);
+      expect(frames).toHaveLength(1);
+
+      frames[0]();
+      expect(globalThis.requestAnimationFrame).toHaveBeenCalledTimes(1);
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
 });

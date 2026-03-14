@@ -1,0 +1,6 @@
+# 2026-03-14 dadeto-kwl3 runner loop (poll guard)
+
+- unexpected hurdle: The coverage gap report still flagged shouldQueuePoll's false branch, but the guard only runs when capture stops between scheduling and running a frame, so simulating that timing reliably under Jest took extra thought.
+- diagnosis path: Inspection of reports/coverage/coverage-final.json showed branch 8 (line 248) still at zero hits; I realized running the queued callback after releasing capture would force shouldQueuePoll to run with state.capturing === false and prevent another requestAnimationFrame from being scheduled.
+- chosen fix: Added a Jest slice that toggles capture on, clicks release before running the first queued animation frame, then fires the saved callback and asserts cancelAnimationFrame was invoked while requestAnimationFrame stayed at one invocation; reran npm test -- test/browser/inputHandlers/gamepadCaptureHandler.test.js -- --runInBand to regenerate coverage artifacts.
+- next-time guidance: When poll scheduling guards are missing coverage, the safest approach is to queue the callback manually and flip capturing off before it runs so you can exercise the branch without introducing extra gamepad activity.

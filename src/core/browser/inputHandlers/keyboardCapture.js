@@ -1,17 +1,7 @@
 import * as browserCore from '../browser-core.js';
-import {
-  getAutoSubmitCheckbox,
-  syncToyPayload,
-  makeCaptureFormBuilder,
-  prepareCaptureHandler,
-  registerGlobalListener,
-  withCaptureFormContext,
-} from './captureFormShared.js';
-import { emitCaptureState } from './captureLifecycleShared.js';
-import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js';
+import captureLifecycleDeps from './captureLifecycleDeps.js';
 
-/** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
-/** @typedef {() => void} CleanupFn */
+/** @typedef {import('../domHelpers.js').DOMHelpers} KeyboardDOMHelpers */
 const KEYBOARD_FORM_CLASS = browserCore.KEYBOARD_CAPTURE_FORM_SELECTOR.slice(1);
 const CAPTURE_BUTTON_LABEL = 'Capture keyboard';
 const RELEASE_BUTTON_LABEL = 'Release keyboard';
@@ -19,7 +9,7 @@ const ESCAPE_KEY = 'Escape';
 
 /**
  * Update the capture button label to reflect the current mode.
- * @param {DOMHelpers} dom - DOM helper utilities.
+ * @param {KeyboardDOMHelpers} dom - DOM helper utilities.
  * @param {HTMLButtonElement} button - Capture button element.
  * @param {boolean} isCapturing - Whether capture is active.
  * @returns {void}
@@ -35,7 +25,7 @@ function updateCaptureButton(dom, button, isCapturing) {
 /**
  * Build the capture button click handler.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: KeyboardDOMHelpers,
  *   button: HTMLButtonElement,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
@@ -46,7 +36,7 @@ function updateCaptureButton(dom, button, isCapturing) {
 /**
  * Build the global keyboard event handler.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: KeyboardDOMHelpers,
  *   button: HTMLButtonElement,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
@@ -62,7 +52,7 @@ function createKeyboardHandler(options) {
  * Release capture on escape and update the toy input.
  * @param {KeyboardEvent} event - Keyboard event to inspect.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: KeyboardDOMHelpers,
  *   button: HTMLButtonElement,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
@@ -77,14 +67,14 @@ function releaseCaptureOnEscape(event, options) {
 
   const { dom, button, textInput, autoSubmitCheckbox, state } = options;
   state.capturing = false;
-  emitCaptureState(
+  captureLifecycleDeps.emitCaptureState(
     {
       dom,
       button,
       textInput,
       autoSubmitCheckbox,
       updateButtonLabel: updateCaptureButton,
-      emitPayload: syncToyPayload,
+      emitPayload: captureLifecycleDeps.syncToyPayload,
     },
     false
   );
@@ -104,7 +94,7 @@ function isEscapeKeydown(event) {
  * Forward a captured keyboard event into the toy input.
  * @param {KeyboardEvent} event - Browser keyboard event.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: KeyboardDOMHelpers,
  *   button: HTMLButtonElement,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
@@ -135,7 +125,7 @@ function preventKeyboardDefault(event) {
  * Handle the captured event after the active-capture guard has passed.
  * @param {KeyboardEvent} event - Browser keyboard event.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: KeyboardDOMHelpers,
  *   button: HTMLButtonElement,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
@@ -155,14 +145,14 @@ function handleCapturedKeyboardEvent(event, options) {
  * Forward a non-escape keyboard event into the toy input.
  * @param {KeyboardEvent} event - Browser keyboard event.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: KeyboardDOMHelpers,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
  * }} options - Keyboard forwarding dependencies.
  * @returns {void}
  */
 function forwardCapturedKey(event, options) {
-  syncToyPayload(options, {
+  captureLifecycleDeps.syncToyPayload(options, {
     type: event.type,
     key: event.key,
   });
@@ -170,27 +160,31 @@ function forwardCapturedKey(event, options) {
 
 /**
  * Create and wire the keyboard capture form.
- * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
+ * @param {{ dom: KeyboardDOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
  * @returns {HTMLElement} The inserted form element.
  */
-const buildKeyboardCaptureForm = makeCaptureFormBuilder(
+const buildKeyboardCaptureForm = captureLifecycleDeps.makeCaptureFormBuilder(
   KEYBOARD_FORM_CLASS,
   options => {
-    withCaptureFormContext(
+    captureLifecycleDeps.withCaptureFormContext(
       options,
       updateCaptureButton,
       ({ dom, button, cleanupFns, container, textInput }) => {
         const state = { capturing: false };
-        const autoSubmitCheckbox = getAutoSubmitCheckbox(container, dom);
-        const handleToggle = createCaptureLifecycleToggleHandler({
-          dom,
-          button,
-          textInput,
-          autoSubmitCheckbox,
-          state,
-          updateButtonLabel: updateCaptureButton,
-          emitPayload: syncToyPayload,
-        });
+        const autoSubmitCheckbox = captureLifecycleDeps.getAutoSubmitCheckbox(
+          container,
+          dom
+        );
+        const handleToggle =
+          captureLifecycleDeps.createCaptureLifecycleToggleHandler({
+            dom,
+            button,
+            textInput,
+            autoSubmitCheckbox,
+            state,
+            updateButtonLabel: updateCaptureButton,
+            emitPayload: captureLifecycleDeps.syncToyPayload,
+          });
         const handleKeyboard = createKeyboardHandler({
           dom,
           button,
@@ -200,12 +194,12 @@ const buildKeyboardCaptureForm = makeCaptureFormBuilder(
         });
 
         dom.addEventListener(button, 'click', handleToggle);
-        registerGlobalListener({
+        captureLifecycleDeps.registerGlobalListener({
           cleanupFns,
           type: 'keydown',
           handler: handleKeyboard,
         });
-        registerGlobalListener({
+        captureLifecycleDeps.registerGlobalListener({
           cleanupFns,
           type: 'keyup',
           handler: handleKeyboard,
@@ -221,12 +215,12 @@ const buildKeyboardCaptureForm = makeCaptureFormBuilder(
 
 /**
  * Switch the UI to the keyboard capture controller.
- * @param {DOMHelpers} dom - DOM helper utilities.
+ * @param {KeyboardDOMHelpers} dom - DOM helper utilities.
  * @param {HTMLElement} container - Container element for the toy input.
  * @param {HTMLInputElement} textInput - Hidden text input used by auto-submit.
  * @returns {void}
  */
 export function keyboardCaptureHandler(dom, container, textInput) {
-  prepareCaptureHandler({ dom, container, textInput });
+  captureLifecycleDeps.prepareCaptureHandler({ dom, container, textInput });
   buildKeyboardCaptureForm({ dom, container, textInput });
 }

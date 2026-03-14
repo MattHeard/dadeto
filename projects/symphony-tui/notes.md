@@ -86,6 +86,8 @@ The TUI currently exists as a script entrypoint in `scripts/symphony-tui.js` and
 - The TUI should render concise information about the backlog of other Ralph-ready beads, not just the currently selected bead.
 - In a cramped pane, this may be as small as a ready count plus one short summary line; in a larger terminal, it should expand into a more informative queue view.
 - Backlog rendering should stay subordinate to the currently running bead and active run state, but it should still help the operator understand whether Symphony has more ready work waiting behind the current bead.
+- Backlog rendering now consumes the tracker’s queue summary payloads (`status.lastPoll.queueSummary` with a `status.queueEvidence` fallback) so the ready count and backlog lines reflect the same strings the tracker already logs.
+- That behavior is covered by `scripts/symphony-tui.js` helper functions (`getQueueSummary`, `renderBacklog`) and the existing `test/core/local/symphony.test.js` cases for `summarizePollResult`/`summarizeTrackerSelection`, which assert the queue evidence is preserved in the status snapshot.
 
 ## Event visibility
 

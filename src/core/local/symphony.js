@@ -343,7 +343,10 @@ function buildCompletedOutcomeStatus(status, outcome) {
     activeRun: null,
   };
 
-  return addSymphonyEvent(updatedStatus, buildRunnerOutcomeEventMessage(outcome));
+  return addSymphonyEvent(
+    updatedStatus,
+    buildRunnerOutcomeEventMessage(outcome)
+  );
 }
 
 /**
@@ -369,7 +372,10 @@ function buildBlockedOutcomeStatus(status, outcome) {
     activeRun: null,
   };
 
-  return addSymphonyEvent(updatedStatus, buildRunnerOutcomeEventMessage(outcome));
+  return addSymphonyEvent(
+    updatedStatus,
+    buildRunnerOutcomeEventMessage(outcome)
+  );
 }
 
 /**
@@ -551,6 +557,10 @@ function buildRunnerOutcomeQueueEvidence(outcome) {
   return `${outcome.beadId}: ${outcome.summary}`;
 }
 
+/**
+ *
+ * @param outcome
+ */
 function buildRunnerOutcomeEventMessage(outcome) {
   if (outcome.outcome === 'completed') {
     return `bead closed: ${outcome.beadId ?? 'unknown bead'}`;
@@ -564,6 +574,13 @@ function buildRunnerOutcomeEventMessage(outcome) {
   );
 }
 
+/**
+ *
+ * @param exitCode
+ * @param signal
+ * @param summary
+ * @param beadId
+ */
 function formatAgentFailureEventMessage(exitCode, signal, summary, beadId) {
   if (signal) {
     return `agent failure: signal ${signal}`;
@@ -581,16 +598,29 @@ function formatAgentFailureEventMessage(exitCode, signal, summary, beadId) {
   return `agent failure: ${beadId ?? 'unknown bead'}`;
 }
 
+/**
+ *
+ * @param launch
+ */
 function buildBeadStartedEvent(launch) {
   return `bead started: ${launch.beadId ?? 'unknown bead'}`;
 }
 
+/**
+ *
+ * @param failure
+ */
 function buildLaunchRejectedEvent(failure) {
   const beadId = failure.beadId ?? 'unknown bead';
   const error = failure.error ?? 'unknown error';
   return `launch rejected: ${beadId}: ${error}`;
 }
 
+/**
+ *
+ * @param status
+ * @param message
+ */
 function addSymphonyEvent(status, message) {
   const normalizedMessage = typeof message === 'string' ? message.trim() : '';
   if (!normalizedMessage) {
