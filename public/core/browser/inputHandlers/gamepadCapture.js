@@ -1,21 +1,12 @@
 import * as browserCore from '../browser-core.js';
-import {
-  getAutoSubmitCheckbox,
-  syncToyInput,
-  makeCaptureFormBuilder,
-  withCaptureFormContext,
-  prepareCaptureHandler,
-  registerGlobalListener,
-} from './captureFormShared.js';
-import { emitCaptureState } from './captureLifecycleShared.js';
-import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js';
+import captureLifecycleDeps from './captureLifecycleDeps.js';
 
-/** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
+/** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
 /** @typedef {() => void} CleanupFn */
 /** @typedef {{ pressed: boolean, value: number }} ButtonSnapshot */
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
 /** @typedef {{ capturing: boolean, animationFrameId: number | null, snapshots: Record<number, GamepadSnapshot> }} CaptureState */
-/** @typedef {{ button: HTMLButtonElement, dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, state: CaptureState }} HandlerOptions */
+/** @typedef {{ button: HTMLButtonElement, dom: GamepadDOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, state: CaptureState }} HandlerOptions */
 /** @typedef {import('./captureFormShared.js').CaptureFormContext} CaptureFormContext */
 /** @typedef {CaptureFormContext & { form: HTMLElement }} GamepadCaptureFormBuilderContext */
 const GAMEPAD_FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
@@ -41,7 +32,7 @@ function getCaptureButtonLabel(isCapturing) {
 
 /**
  * Update the capture button label.
- * @param {DOMHelpers} dom - DOM helper bucket.
+ * @param {GamepadDOMHelpers} dom - DOM helper bucket.
  * @param {HTMLButtonElement} button - Capture toggle button.
  * @param {boolean} isCapturing - Whether capture is currently active.
  * @returns {void}
@@ -153,7 +144,7 @@ function didAxisChange(previous, current) {
 /**
  * Forward a payload only when one exists.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: GamepadDOMHelpers,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
  *   payload: Record<string, unknown> | null,
@@ -177,7 +168,7 @@ function syncIfPayload(options) {
 /**
  * Send a payload to the toy synchronously, even when null.
  * @param {{
- *   dom: DOMHelpers,
+ *   dom: GamepadDOMHelpers,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
  *   payload: Record<string, unknown>,
@@ -189,7 +180,7 @@ function emitToyPayload(options) {
     return;
   }
 
-  syncToyInput({
+  captureLifecycleDeps.syncToyInput({
     dom: options.dom,
     textInput: options.textInput,
     autoSubmitCheckbox: options.autoSubmitCheckbox,
@@ -561,7 +552,7 @@ function stopCaptureSideEffects(options) {
 function releaseCapture(options) {
   options.state.capturing = false;
   stopCaptureSideEffects(options);
-  emitCaptureState(
+  captureLifecycleDeps.emitCaptureState(
     {
       dom: options.dom,
       button: options.button,
@@ -569,7 +560,12 @@ function releaseCapture(options) {
       autoSubmitCheckbox: options.autoSubmitCheckbox,
       updateButtonLabel: updateCaptureButton,
       emitPayload: ({ dom, textInput, autoSubmitCheckbox }, payload) =>
-        syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }),
+        captureLifecycleDeps.syncToyInput({
+          dom,
+          textInput,
+          autoSubmitCheckbox,
+          payload,
+        }),
     },
     false
   );
@@ -762,33 +758,36 @@ function getHandledDisconnectionPayload(state, event) {
  * @returns {void}
  */
 function registerGamepadListeners(options, cleanupFns) {
-  const handleToggle = createCaptureLifecycleToggleHandler({
-    dom: options.dom,
-    button: options.button,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    state: options.state,
-    updateButtonLabel: updateCaptureButton,
-    emitPayload: (input, payload) => syncToyInput({ ...input, payload }),
-    onStart: () => queuePoll(options),
-    onStop: () => stopCaptureSideEffects(options),
-  });
+  const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
+    {
+      dom: options.dom,
+      button: options.button,
+      textInput: options.textInput,
+      autoSubmitCheckbox: options.autoSubmitCheckbox,
+      state: options.state,
+      updateButtonLabel: updateCaptureButton,
+      emitPayload: (input, payload) =>
+        captureLifecycleDeps.syncToyInput({ ...input, payload }),
+      onStart: () => queuePoll(options),
+      onStop: () => stopCaptureSideEffects(options),
+    }
+  );
   const handleEscape = createEscapeHandler(options);
   const handleConnect = createConnectionHandler(options);
   const handleDisconnect = createDisconnectHandler(options);
 
   options.dom.addEventListener(options.button, 'click', handleToggle);
-  registerGlobalListener({
+  captureLifecycleDeps.registerGlobalListener({
     cleanupFns,
     type: 'keydown',
     handler: handleEscape,
   });
-  registerGlobalListener({
+  captureLifecycleDeps.registerGlobalListener({
     cleanupFns,
     type: GAMEPAD_CONNECTED_EVENT,
     handler: handleConnect,
   });
-  registerGlobalListener({
+  captureLifecycleDeps.registerGlobalListener({
     cleanupFns,
     type: GAMEPAD_DISCONNECTED_EVENT,
     handler: handleDisconnect,
@@ -815,7 +814,10 @@ function initializeGamepadCaptureFormContext(options) {
       button,
       dom,
       textInput,
-      autoSubmitCheckbox: getAutoSubmitCheckbox(container, dom),
+      autoSubmitCheckbox: captureLifecycleDeps.getAutoSubmitCheckbox(
+        container,
+        dom
+      ),
       state: {
         capturing: false,
         animationFrameId: null,
@@ -828,11 +830,11 @@ function initializeGamepadCaptureFormContext(options) {
 
 /**
  * Bridge the shared capture context into the gamepad listener wiring.
- * @param {GamepadCaptureFormBuilderContext} options - Context provided by `makeCaptureFormBuilder`.
+ * @param {GamepadCaptureFormBuilderContext} options - Context provided by `captureLifecycleDeps.makeCaptureFormBuilder`.
  * @returns {void}
  */
 function handleGamepadCaptureFormContext(options) {
-  withCaptureFormContext(
+  captureLifecycleDeps.withCaptureFormContext(
     options,
     updateCaptureButton,
     initializeGamepadCaptureFormContext
@@ -841,22 +843,22 @@ function handleGamepadCaptureFormContext(options) {
 
 /**
  * Build and insert the gamepad capture form UI.
- * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
+ * @param {{ dom: GamepadDOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
  * @returns {HTMLElement} Inserted form element.
  */
-const buildGamepadCaptureForm = makeCaptureFormBuilder(
+const buildGamepadCaptureForm = captureLifecycleDeps.makeCaptureFormBuilder(
   GAMEPAD_FORM_CLASS,
   handleGamepadCaptureFormContext
 );
 
 /**
  * Switch the toy input UI to the gamepad capture mode.
- * @param {DOMHelpers} dom - DOM helper bucket.
+ * @param {GamepadDOMHelpers} dom - DOM helper bucket.
  * @param {HTMLElement} container - Toy input container element.
  * @param {HTMLInputElement} textInput - Hidden text input used for toy submission.
  * @returns {void}
  */
 export function gamepadCaptureHandler(dom, container, textInput) {
-  prepareCaptureHandler({ dom, container, textInput });
+  captureLifecycleDeps.prepareCaptureHandler({ dom, container, textInput });
   buildGamepadCaptureForm({ dom, container, textInput });
 }
