@@ -203,6 +203,8 @@ export function summarizeTrackerSelection(input) {
   });
 }
 
+const MAX_EVENT_LOG_ENTRIES = 5;
+
 /**
  * @param {{
  *   state?: string,
@@ -218,12 +220,18 @@ export function summarizeTrackerSelection(input) {
  *   beadId: string,
  *   beadTitle?: string | null,
  *   beadPriority?: string | null,
- *   launchRequest: string
+ *   launchRequest: string,
+ *   launcherKind?: string | null,
+ *   command?: string | null,
+ *   args?: unknown,
+ *   pid?: number | null,
+ *   stdoutPath?: string | null,
+ *   stderrPath?: string | null
  * }} launch Runner launch to apply.
  * @returns {Record<string, unknown>} Updated scheduler-visible status.
  */
 export function applyRunnerLaunch(status, launch) {
-  return {
+  const updatedStatus = {
     ...status,
     state: 'running',
     currentBeadId: launch.beadId,
@@ -234,6 +242,8 @@ export function applyRunnerLaunch(status, launch) {
     activeRun: buildActiveRunStatus(launch),
     lastLaunchAttempt: buildSuccessfulLaunchAttempt(launch),
   };
+
+  return addSymphonyEvent(updatedStatus, buildBeadStartedEvent(launch));
 }
 
 /**
@@ -256,7 +266,7 @@ export function applyRunnerLaunch(status, launch) {
  * @returns {Record<string, unknown>} Updated scheduler-visible status.
  */
 export function applyRunnerLaunchFailure(status, failure) {
-  return {
+  const failedStatus = {
     ...status,
     startedAt: failure.startedAt,
     state: 'blocked',
@@ -278,6 +288,8 @@ export function applyRunnerLaunchFailure(status, failure) {
       error: failure.error,
     },
   };
+
+  return addSymphonyEvent(failedStatus, buildLaunchRejectedEvent(failure));
 }
 
 /**
@@ -312,7 +324,7 @@ export function applyRunnerOutcome(status, outcome) {
  * @returns {Record<string, unknown>} Updated status after a completed runner loop.
  */
 function buildCompletedOutcomeStatus(status, outcome) {
-  return {
+  const updatedStatus = {
     ...status,
     state: 'idle',
     currentBeadId: null,
@@ -330,6 +342,8 @@ function buildCompletedOutcomeStatus(status, outcome) {
     },
     activeRun: null,
   };
+
+  return addSymphonyEvent(updatedStatus, buildRunnerOutcomeEventMessage(outcome));
 }
 
 /**
@@ -339,7 +353,7 @@ function buildCompletedOutcomeStatus(status, outcome) {
  * @returns {Record<string, unknown>} Updated status after a blocked runner handoff.
  */
 function buildBlockedOutcomeStatus(status, outcome) {
-  return {
+  const updatedStatus = {
     ...status,
     state: 'blocked',
     latestEvidence: buildRunnerOutcomeEvidence('blocked', outcome),
@@ -354,6 +368,8 @@ function buildBlockedOutcomeStatus(status, outcome) {
     },
     activeRun: null,
   };
+
+  return addSymphonyEvent(updatedStatus, buildRunnerOutcomeEventMessage(outcome));
 }
 
 /**
@@ -407,7 +423,7 @@ function buildRunnerLaunchRecommendation(launch) {
  *   launchRequest: string,
  *   launcherKind?: string | null,
  *   command?: string | null,
- *   args?: string[] | null,
+ *   args?: unknown,
  *   pid?: number | null,
  *   stdoutPath?: string | null,
  *   stderrPath?: string | null
@@ -453,7 +469,13 @@ function buildSuccessfulLaunchAttempt(launch) {
  *   beadId: string,
  *   beadTitle?: string | null,
  *   beadPriority?: string | null,
- *   launchRequest: string
+ *   launchRequest: string,
+ *   launcherKind?: string | null,
+ *   command?: string | null,
+ *   args?: unknown,
+ *   pid?: number | null,
+ *   stdoutPath?: string | null,
+ *   stderrPath?: string | null
  * }} launch Runner launch to apply.
  * @returns {{
  *   runId: string,
@@ -527,4 +549,57 @@ function buildRunnerLaunchFailureQueueEvidence(failure) {
  */
 function buildRunnerOutcomeQueueEvidence(outcome) {
   return `${outcome.beadId}: ${outcome.summary}`;
+}
+
+function buildRunnerOutcomeEventMessage(outcome) {
+  if (outcome.outcome === 'completed') {
+    return `bead closed: ${outcome.beadId ?? 'unknown bead'}`;
+  }
+
+  return formatAgentFailureEventMessage(
+    typeof outcome.exitCode === 'number' ? outcome.exitCode : null,
+    typeof outcome.signal === 'string' ? outcome.signal : null,
+    typeof outcome.summary === 'string' ? outcome.summary : null,
+    outcome.beadId
+  );
+}
+
+function formatAgentFailureEventMessage(exitCode, signal, summary, beadId) {
+  if (signal) {
+    return `agent failure: signal ${signal}`;
+  }
+
+  if (typeof exitCode === 'number') {
+    return `agent failure: exited ${exitCode}`;
+  }
+
+  const normalizedSummary = (summary ?? '').trim().replace(/\s+/g, ' ');
+  if (normalizedSummary) {
+    return `agent failure: ${normalizedSummary}`;
+  }
+
+  return `agent failure: ${beadId ?? 'unknown bead'}`;
+}
+
+function buildBeadStartedEvent(launch) {
+  return `bead started: ${launch.beadId ?? 'unknown bead'}`;
+}
+
+function buildLaunchRejectedEvent(failure) {
+  const beadId = failure.beadId ?? 'unknown bead';
+  const error = failure.error ?? 'unknown error';
+  return `launch rejected: ${beadId}: ${error}`;
+}
+
+function addSymphonyEvent(status, message) {
+  const normalizedMessage = typeof message === 'string' ? message.trim() : '';
+  if (!normalizedMessage) {
+    return status;
+  }
+
+  const events = Array.isArray(status.eventLog) ? status.eventLog : [];
+  return {
+    ...status,
+    eventLog: [normalizedMessage, ...events].slice(0, MAX_EVENT_LOG_ENTRIES),
+  };
 }

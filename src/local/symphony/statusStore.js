@@ -78,6 +78,7 @@ export function createSymphonyStatusStore(options) {
               typeof status.lastLaunchAttempt === 'object'
                 ? status.lastLaunchAttempt
                 : null,
+            eventLog: Array.isArray(status.eventLog) ? status.eventLog : [],
             workflowExists: status.workflow?.exists ?? false,
             trackerKind: status.config?.tracker?.kind ?? 'unknown',
           },

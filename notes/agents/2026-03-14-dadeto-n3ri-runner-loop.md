@@ -1,0 +1,5 @@
+# 2026-03-14 dadeto-n3ri runner loop
+- unexpected hurdle: `npm run tsdoc:check` (run id 2026-03-14T09:23:14.783Z--dadeto-n3ri) still fails because the project already carries dozens of unrelated TS2322/TS7xxx errors; the new browser-core signal now must be extracted from a wall of noise.
+- diagnosis path: inspected the `parseJsonObject` guard and noted the TS2322 complaint came from `safeJsonParse` reporting `data?: object`, so TypeScript still saw `parsed.data` as `undefined` even after the runtime guard; the existing cast was not enough without a discriminated return type.
+- chosen fix: narrowed `safeJsonParse`'s documented return to the discriminated union `{ok: true, data: unknown} | {ok: false, message: string}` so its success branch guarantees `data` exists, letting `parseJsonObject` prove its `Record<string, unknown>` return without changing runtime behavior.
+- next-time guidance: rerun `npm run tsdoc:check` both before and after the fix and point reviewers to the specific browser-core lines so they can ignore the unrelated raft of remaining errors.

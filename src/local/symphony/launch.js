@@ -390,6 +390,8 @@ function buildRunnerExitOutcome(input) {
       exitCode: input.exitCode,
       signal: input.signal,
     }),
+    exitCode: input.exitCode,
+    signal: input.signal,
   };
 }
 

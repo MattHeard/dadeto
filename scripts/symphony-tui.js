@@ -4,6 +4,7 @@ import process from 'node:process';
 
 const STATUS_URL = 'http://localhost:4322/api/symphony/status';
 const LAUNCH_URL = 'http://localhost:4322/api/symphony/launch';
+const REFRESH_URL = 'http://localhost:4322/api/v1/refresh';
 const REFRESH_MS = 5000;
 const MAX_WIDTH = 40;
 const MAX_LINES = 10;
@@ -75,6 +76,55 @@ function formatEvidenceLines(evidence) {
   });
 }
 
+function formatEventLines(events) {
+  if (!Array.isArray(events) || events.length === 0) {
+    return [];
+  }
+
+  return events.map((event, index) => {
+    const text = typeof event === 'string' ? event : JSON.stringify(event);
+    return `E${index + 1}> ${text.replace(/\s+/g, ' ')}`;
+  });
+}
+
+function renderEventAndEvidence(status, lines, slots) {
+  if (slots <= 0) {
+    return;
+  }
+
+  let remaining = slots;
+  const eventLines = formatEventLines(status.eventLog);
+  const availableEventSlots = Math.max(remaining - 1, 0);
+  const eventLinesToShow = eventLines.slice(0, availableEventSlots);
+
+  if (eventLinesToShow.length > 0) {
+    pushLine(lines, 'Events:');
+    remaining -= 1;
+    for (const eventLine of eventLinesToShow) {
+      if (remaining <= 0) {
+        break;
+      }
+      pushLine(lines, eventLine);
+      remaining -= 1;
+    }
+  }
+
+  if (remaining <= 0) {
+    return;
+  }
+
+  const evidenceLines = formatEvidenceLines(status.latestEvidence);
+  pushLine(lines, 'Evidence:');
+  remaining -= 1;
+  for (const evidenceLine of evidenceLines.slice(0, remaining)) {
+    if (remaining <= 0) {
+      break;
+    }
+    pushLine(lines, evidenceLine);
+    remaining -= 1;
+  }
+}
+
 function getRunId(activeRun) {
   if (!activeRun || typeof activeRun === 'string') {
     return null;
@@ -111,23 +161,23 @@ function renderStatus(status) {
       lines,
       formatField('Rec', status.operatorRecommendation ?? 'none')
     );
-    const evidenceSlots = Math.max(
-      MAX_LINES -
-        lines.length -
-        3 - // reserved for shortcut, launch, polling footer
-        1, // evidence header line
+    const footerLinesCount =
+      2 +
+      (launchFeedback ? 1 : 0) +
+      (refreshFeedback ? 1 : 0) +
+      (statusError ? 1 : 0);
+    const availableSlots = Math.max(
+      MAX_LINES - lines.length - footerLinesCount,
       0
     );
-    if (evidenceSlots > 0) {
-      pushLine(lines, 'Evidence:');
-      formatEvidenceLines(status.latestEvidence)
-        .slice(0, evidenceSlots)
-        .forEach((line) => pushLine(lines, line));
-    }
+    renderEventAndEvidence(status, lines, availableSlots);
   }
   pushLine(lines, formatField('Auto', getAutoLoopLabel()));
   if (launchFeedback) {
     pushLine(lines, clampLine(`Launch: ${launchFeedback}`));
+  }
+  if (refreshFeedback) {
+    pushLine(lines, clampLine(`Refresh: ${refreshFeedback}`));
   }
   if (statusError) {
     pushLine(lines, clampLine(`Status: ${statusError}`));
@@ -141,6 +191,8 @@ let statusError = null;
 let autoLoopEnabled = false;
 let autoLoopInFlight = false;
 let autoLoopPhase = 'idle';
+let refreshFeedback = 'Press R to refresh.';
+let refreshInFlight = false;
 
 async function fetchStatus() {
   const response = await fetch(STATUS_URL, { cache: 'no-store' });
@@ -238,6 +290,53 @@ async function triggerLaunch() {
   }
 }
 
+async function triggerRefresh() {
+  if (refreshInFlight) {
+    refreshFeedback = 'Refresh already in flight.';
+    return;
+  }
+
+  refreshInFlight = true;
+  refreshFeedback = 'Refreshing...';
+  try {
+    const response = await fetch(REFRESH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    });
+    const rawBody = await response.text();
+    if (!response.ok) {
+      let message = rawBody;
+      try {
+        const json = JSON.parse(rawBody);
+        message = json?.error ?? json?.message ?? message;
+      } catch {
+        // keep raw text fallback
+      }
+      throw new Error(`HTTP ${response.status}: ${message}`);
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      payload = null;
+    }
+
+    refreshFeedback =
+      payload?.message ??
+      payload?.status ??
+      payload?.result ??
+      'Refresh requested.';
+    await refreshLoop();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    refreshFeedback = `Refresh error: ${message}`;
+  } finally {
+    refreshInFlight = false;
+  }
+}
+
 async function runAutoLoopCycle() {
   if (!autoLoopEnabled || autoLoopInFlight || launchInFlight) {
     return;
@@ -316,6 +415,10 @@ function setupInput() {
     }
     if (key === 'a' || key === 'A') {
       toggleAutoLoop();
+      return;
+    }
+    if (key === 'r' || key === 'R') {
+      void triggerRefresh();
       return;
     }
     if (key === '\u0003') {

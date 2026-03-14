@@ -1,4 +1,6 @@
 import {
+  applyRunnerLaunch,
+  applyRunnerLaunchFailure,
   applyRunnerOutcome,
   buildSelectedBeadStatus,
   parseReadyBeads,
@@ -196,5 +198,80 @@ describe('core local symphony helpers', () => {
         summary: 'Missing workflow guidance for the next step.',
       },
     });
+  });
+
+  test('records event log entries for Symphony transitions', () => {
+    const launchedStatus = applyRunnerLaunch(
+      {
+        state: 'ready',
+        currentBeadId: 'dadeto-639o',
+        currentBeadTitle: 'First',
+        currentBeadPriority: '● P2',
+        eventLog: ['prior event'],
+      },
+      {
+        runId: '2026-03-14T10:00:00Z--dadeto-639o',
+        startedAt: '2026-03-14T10:00:00Z',
+        beadId: 'dadeto-639o',
+        beadTitle: 'First',
+        beadPriority: '● P2',
+        launchRequest: 'pop dadeto-639o',
+        launcherKind: null,
+        command: null,
+        args: [],
+        pid: null,
+        stdoutPath: null,
+        stderrPath: null,
+      }
+    );
+    expect(launchedStatus.eventLog?.[0]).toBe('bead started: dadeto-639o');
+    expect(launchedStatus.eventLog?.[1]).toBe('prior event');
+
+    const rejectedStatus = applyRunnerLaunchFailure(
+      {
+        state: 'ready',
+        eventLog: ['existing'],
+      },
+      {
+        startedAt: '2026-03-14T10:01:00Z',
+        beadId: 'dadeto-639o',
+        beadTitle: 'First',
+        beadPriority: '● P2',
+        launchRequest: 'pop dadeto-639o',
+        error: 'guarded',
+      }
+    );
+    expect(rejectedStatus.eventLog?.[0]).toBe(
+      'launch rejected: dadeto-639o: guarded'
+    );
+
+    const completedStatus = applyRunnerOutcome(
+      {
+        state: 'running',
+        eventLog: [],
+      },
+      {
+        beadId: 'dadeto-639o',
+        beadTitle: 'First',
+        outcome: 'completed',
+        summary: 'Done.',
+      }
+    );
+    expect(completedStatus.eventLog?.[0]).toBe('bead closed: dadeto-639o');
+
+    const blockedStatus = applyRunnerOutcome(
+      {
+        state: 'running',
+        eventLog: [],
+      },
+      {
+        beadId: 'dadeto-639o',
+        beadTitle: 'First',
+        outcome: 'blocked',
+        summary: 'Failure.',
+        exitCode: 1,
+      }
+    );
+    expect(blockedStatus.eventLog?.[0]).toBe('agent failure: exited 1');
   });
 });
