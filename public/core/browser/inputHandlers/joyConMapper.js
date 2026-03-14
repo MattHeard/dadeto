@@ -748,24 +748,40 @@ function selectStrongerAxisCapture(best, candidate) {
  *   Serialized action payload for the toy runtime.
  */
 function buildPayload(action, state, extra = {}) {
-  const payload = { action, ...extra };
-  return attachCurrentControlKey(payload, state.currentControl);
+  return attachCurrentControlKey({ action, ...extra }, state);
 }
 
 /**
  * @param {Record<string, unknown>} payload
  *   Partially built payload to mutate.
- * @param {MapperControl | null} control
- *   Control that may supply a current key.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
  * @returns {Record<string, unknown>}
  *   Payload augmented with the active control key, if any.
  */
-function attachCurrentControlKey(payload, control) {
-  if (!control) {
+function attachCurrentControlKey(payload, state) {
+  const controlKey = getCurrentControlKey(state);
+  if (!controlKey) {
     return payload;
   }
 
-  return { ...payload, currentControlKey: control.key };
+  payload.currentControlKey = controlKey;
+  return payload;
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {string | null}
+ *   Active control key, if present.
+ */
+function getCurrentControlKey(state) {
+  const control = state.currentControl;
+  if (!control) {
+    return null;
+  }
+
+  return control.key;
 }
 
 /**
@@ -792,6 +808,56 @@ const ROW_STATE_VALUE_TEXT = {
 };
 
 /**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {number} index
+ *   Control index within the ordered list.
+ * @returns {'active' | 'optional'}
+ *   Active/optional row state for an unmapped control.
+ */
+function getPendingRowState(state, index) {
+  if (!state.started) {
+    return 'optional';
+  }
+
+  return getPendingRowStateForStarted(state, index);
+}
+
+/**
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {number} index
+ *   Control index within the ordered list.
+ * @returns {'active' | 'optional'}
+ *   State for an in-flight control after input capture has started.
+ */
+function getPendingRowStateForStarted(state, index) {
+  if (state.currentIndex === index) {
+    return 'active';
+  }
+
+  return 'optional';
+}
+
+/**
+ * @param {MapperControl} control
+ *   Control currently being rendered.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {number} index
+ *   Control index within the ordered list.
+ * @returns {'skipped' | 'active' | 'optional'}
+ *   Row state for an unmapped control.
+ */
+function getUnmappedRowState(control, state, index) {
+  if (state.stored.skippedControls.includes(control.key)) {
+    return 'skipped';
+  }
+
+  return getPendingRowState(state, index);
+}
+
+/**
  * @param {MapperControl} control
  *   Control currently being rendered.
  * @param {MapperState} state
@@ -802,84 +868,11 @@ const ROW_STATE_VALUE_TEXT = {
  *   Row state for class and value rendering.
  */
 function getRowState(control, state, index) {
-  return (
-    getRowStateFromStored(control, state) ||
-    getActiveOrOptionalRowState(state, index)
-  );
-}
-
-/**
- * @param {MapperControl} control
- *   Control currently being rendered.
- * @param {MapperState} state
- *   Current Joy-Con mapper runtime state.
- * @returns {'done' | 'skipped' | null}
- *   Stored row state when a mapping exists or a control has been skipped.
- */
-function getRowStateFromStored(control, state) {
-  return (
-    getCompletedRowState(control, state) || getSkippedRowState(control, state)
-  );
-}
-
-/**
- * @param {MapperControl} control
- *   Control currently being rendered.
- * @param {MapperState} state
- *   Current Joy-Con mapper runtime state.
- * @returns {'done' | null}
- *   Completed row state when a stored mapping exists.
- */
-function getCompletedRowState(control, state) {
   if (getStoredControlCapture(control, state)) {
     return 'done';
   }
 
-  return null;
-}
-
-/**
- * @param {MapperControl} control
- *   Control currently being rendered.
- * @param {MapperState} state
- *   Current Joy-Con mapper runtime state.
- * @returns {'skipped' | null}
- *   Skipped row state when the control is marked as skipped.
- */
-function getSkippedRowState(control, state) {
-  if (state.stored.skippedControls.includes(control.key)) {
-    return 'skipped';
-  }
-
-  return null;
-}
-
-/**
- * @param {MapperState} state
- *   Current Joy-Con mapper runtime state.
- * @param {number} index
- *   Control index within the ordered list.
- * @returns {'active' | 'optional'}
- *   Row state reflecting whether the mapper has started and this row is the active index.
- */
-function getActiveOrOptionalRowState(state, index) {
-  if (isActiveRow(state, index)) {
-    return 'active';
-  }
-
-  return 'optional';
-}
-
-/**
- * @param {MapperState} state
- *   Current Joy-Con mapper runtime state.
- * @param {number} index
- *   Control index within the ordered list.
- * @returns {boolean}
- *   Whether the mapper is started and the provided index matches the current control.
- */
-function isActiveRow(state, index) {
-  return state.started && state.currentIndex === index;
+  return getUnmappedRowState(control, state, index);
 }
 
 /**
@@ -1297,56 +1290,23 @@ function updateCaptureState(state, snapshot) {
 }
 
 /**
- * @typedef {object} CaptureDetectionContext
- * @property {MapperControl} control Control that is currently being evaluated for capture.
- * @property {GamepadSnapshot | null} previousSnapshot Prior snapshot against which deltas are compared.
- * @property {GamepadSnapshot | null} snapshot Latest snapshot that may contain a capture event.
- */
-
-/**
- * @param {CaptureDetectionContext} context
- *   Shared axis/button detection inputs.
- * @returns {CaptureResult | null}
- *   Capture when a button control is active and a press/change is detected.
- */
-function detectButtonControlCapture(context) {
-  return detectButtonCapture(context.previousSnapshot, context.snapshot);
-}
-
-/**
- * @param {CaptureDetectionContext} context
- *   Shared axis/button detection inputs.
- * @returns {CaptureResult | null}
- *   Capture when an axis control is active and the stick moves far enough.
- */
-function detectAxisControlCapture(context) {
-  return detectAxisCapture(
-    context.previousSnapshot,
-    context.snapshot,
-    /** @type {'negative' | 'positive'} */ (context.control.direction)
-  );
-}
-
-const CAPTURE_DETECTORS = {
-  button: detectButtonControlCapture,
-  axis: detectAxisControlCapture,
-};
-
-/**
  * @param {MapperState} state
  *   Current Joy-Con mapper runtime state.
  * @param {GamepadSnapshot | null} snapshot
- *   Latest gamepad snapshot.
+ *   Current gamepad snapshot.
  * @returns {CaptureResult | null}
  *   Capture for the active control, if one is present.
  */
 function detectCurrentControlCapture(state, snapshot) {
-  const detector = CAPTURE_DETECTORS[state.currentControl.type];
-  return detector({
-    control: state.currentControl,
-    previousSnapshot: state.previousSnapshot,
+  if (state.currentControl.type === 'button') {
+    return detectButtonCapture(state.previousSnapshot, snapshot);
+  }
+
+  return detectAxisCapture(
+    state.previousSnapshot,
     snapshot,
-  });
+    /** @type {'negative' | 'positive'} */ (state.currentControl.direction)
+  );
 }
 
 /**

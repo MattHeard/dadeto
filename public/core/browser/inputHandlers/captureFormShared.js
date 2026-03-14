@@ -1,6 +1,18 @@
 import * as browserCore from '../browser-core.js';
+import { createManagedFormShell } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
+/** @typedef {() => void} CleanupFn */
+
+/**
+ * @typedef {{
+ *   dom: DOMHelpers,
+ *   button: HTMLButtonElement,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   cleanupFns: CleanupFn[],
+ * }} CaptureFormContext
+ */
 
 const AUTO_SUBMIT_CHECKBOX_SELECTOR = '.auto-submit-checkbox';
 
@@ -78,6 +90,132 @@ export function syncToyPayload(input, payload) {
 }
 
 /**
+ * Build the shared capture form skeleton used by keyboard and gamepad handlers.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement, formClass: string }} options - Setup dependencies.
+ * @returns {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} Shared nodes and cleanup stack.
+ */
+export function buildCaptureForm({ dom, container, textInput, formClass }) {
+  /** @type {CleanupFn[]} */
+  const cleanupFns = [];
+  const form = createManagedFormShell({
+    dom,
+    container,
+    textInput,
+    disposers: cleanupFns,
+  });
+  dom.setClassName(form, formClass);
+
+  const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
+  dom.setType(button, 'button');
+  dom.appendChild(form, button);
+
+  return { form, button, cleanupFns };
+}
+
+/**
+ * Normalize the shared capture form context into a typed bundle.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   button: HTMLButtonElement,
+ *   cleanupFns: CleanupFn[],
+ * }} options - Shared form wiring state.
+ * @returns {CaptureFormContext} Normalized context.
+ */
+export function getCaptureFormContext(options) {
+  const { dom, button, cleanupFns, container, textInput } = options;
+  return { dom, button, cleanupFns, container, textInput };
+}
+
+/**
+ * @typedef {(dom: DOMHelpers, button: HTMLButtonElement, isCapturing: boolean) => void} CaptureButtonUpdater
+ */
+
+/**
+ * Normalize the shared capture form context, reset its button state, and invoke a handler callback.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   button: HTMLButtonElement,
+ *   cleanupFns: CleanupFn[],
+ * }} options - Shared form wiring state.
+ * @param {CaptureButtonUpdater} updateButton - Button updater used by the handler.
+ * @param {(context: CaptureFormContext) => void} onReady - Callback that receives the initialized context.
+ * @returns {void}
+ */
+export function withCaptureFormContext(options, updateButton, onReady) {
+  const context = getCaptureFormContext(options);
+  updateButton(context.dom, context.button, false);
+  onReady(context);
+}
+
+/**
+ * Create and configure a capture form instance while reusing shared DOM wiring.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   formClass: string,
+ *   onFormReady: (context: {
+ *     dom: DOMHelpers,
+ *     container: HTMLElement,
+ *     textInput: HTMLInputElement,
+ *     form: HTMLElement,
+ *     button: HTMLButtonElement,
+ *     cleanupFns: CleanupFn[],
+ *   }) => void,
+ * }} options - Capture form wiring options.
+ * @returns {HTMLElement} Rendered capture form element.
+ */
+export function createCaptureForm(options) {
+  const { dom, container, textInput, formClass, onFormReady } = options;
+  const { form, button, cleanupFns } = buildCaptureForm({
+    dom,
+    container,
+    textInput,
+    formClass,
+  });
+  onFormReady({ dom, container, textInput, form, button, cleanupFns });
+  return form;
+}
+
+/**
+ * Build a capture-form factory so individual handlers can share the boilerplate call.
+ * @param {string} formClass - CSS class attached to the form wrapper.
+ * @param {(
+ *   context: {
+ *     dom: DOMHelpers,
+ *     container: HTMLElement,
+ *     textInput: HTMLInputElement,
+ *     form: HTMLElement,
+ *     button: HTMLButtonElement,
+ *     cleanupFns: CleanupFn[],
+ *   }
+ * ) => void} onFormReady - Handler-specific wiring that runs after the form is created.
+ * @returns {(options: { dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }) => HTMLElement} Factory that renders the configured form.
+ */
+export function makeCaptureFormBuilder(formClass, onFormReady) {
+  return ({ dom, container, textInput }) =>
+    createCaptureForm({ dom, container, textInput, formClass, onFormReady });
+}
+
+/**
+ * Prepare the shared capture handler UI before the specific form is mounted.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Handler entry dependencies.
+ * @returns {void}
+ */
+export function prepareCaptureHandler({ dom, container, textInput }) {
+  browserCore.hideAndDisable(textInput, dom);
+  browserCore.applyBaseCleanupHandlers({
+    container,
+    dom,
+    extraHandlers: [browserCore.maybeRemoveNumber],
+  });
+}
+
+/**
  * Resolve the article wrapper for the current container.
  * @param {HTMLElement} container - Input container inside the article.
  * @returns {HTMLElement | null} Closest article element.
@@ -105,4 +243,18 @@ export function getAutoSubmitCheckbox(container, dom) {
   return /** @type {HTMLInputElement | null} */ (
     dom.querySelector(article, AUTO_SUBMIT_CHECKBOX_SELECTOR)
   );
+}
+
+/**
+ * Register a global event listener that automatically records cleanup.
+ * @param {{
+ *   cleanupFns: CleanupFn[],
+ *   type: string,
+ *   handler: EventListenerOrEventListenerObject,
+ * }} options - Listener wiring options.
+ * @returns {void}
+ */
+export function registerGlobalListener({ cleanupFns, type, handler }) {
+  globalThis.addEventListener(type, handler);
+  cleanupFns.push(() => globalThis.removeEventListener(type, handler));
 }
