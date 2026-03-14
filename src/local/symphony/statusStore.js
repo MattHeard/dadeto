@@ -73,6 +73,11 @@ export function createSymphonyStatusStore(options) {
               status.lastOutcome && typeof status.lastOutcome === 'object'
                 ? status.lastOutcome
                 : null,
+            lastLaunchAttempt:
+              status.lastLaunchAttempt &&
+              typeof status.lastLaunchAttempt === 'object'
+                ? status.lastLaunchAttempt
+                : null,
             workflowExists: status.workflow?.exists ?? false,
             trackerKind: status.config?.tracker?.kind ?? 'unknown',
           },

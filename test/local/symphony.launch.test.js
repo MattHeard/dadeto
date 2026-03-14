@@ -359,18 +359,21 @@ describe('local symphony runner launch', () => {
       },
     });
 
-    await expect(
-      readFile(
-        path.join(
-          tempDir,
-          'tracking',
-          'symphony',
-          'runs',
-          '2026-03-08T19-16-00.000Z--launch-failed.log'
-        ),
-        'utf8'
-      )
-    ).resolves.toContain('"event": "launch-failed"');
+    const failedLaunchLogPath = path.join(
+      tempDir,
+      'tracking',
+      'symphony',
+      'runs',
+      '2026-03-08T19-16-00.000Z--launch-failed.log'
+    );
+    const failedLaunchLogContent = await readFile(failedLaunchLogPath, 'utf8');
+    expect(failedLaunchLogContent).toContain('"event": "launch-failed"');
+
+    const failedLaunchLog = JSON.parse(failedLaunchLogContent);
+    expect(failedLaunchLog.lastLaunchAttempt).toMatchObject({
+      outcome: 'failed',
+      error: 'spawn codex ENOENT',
+    });
   });
 
   test('records the rejection when Symphony is not ready', async () => {
@@ -409,6 +412,20 @@ describe('local symphony runner launch', () => {
           'Cannot launch runner loop unless Symphony is ready. Current state: blocked.',
       },
     });
+
+    const notReadyLogPath = path.join(
+      tempDir,
+      'tracking',
+      'symphony',
+      'runs',
+      '2026-03-08T19-20-00.000Z--launch-failed.log'
+    );
+    const notReadyLog = JSON.parse(await readFile(notReadyLogPath, 'utf8'));
+    expect(notReadyLog.lastLaunchAttempt).toMatchObject({
+      outcome: 'failed',
+      error:
+        'Cannot launch runner loop unless Symphony is ready. Current state: blocked.',
+    });
   });
 
   test('records failure reason when the selected bead id is missing', async () => {
@@ -442,6 +459,21 @@ describe('local symphony runner launch', () => {
         outcome: 'failed',
         error: 'Cannot launch runner loop without currentBeadId.',
       },
+    });
+
+    const missingBeadLogPath = path.join(
+      tempDir,
+      'tracking',
+      'symphony',
+      'runs',
+      '2026-03-08T19-21-00.000Z--launch-failed.log'
+    );
+    const missingBeadLog = JSON.parse(
+      await readFile(missingBeadLogPath, 'utf8')
+    );
+    expect(missingBeadLog.lastLaunchAttempt).toMatchObject({
+      outcome: 'failed',
+      error: 'Cannot launch runner loop without currentBeadId.',
     });
   });
 });
