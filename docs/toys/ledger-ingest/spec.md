@@ -16,6 +16,7 @@
   - Explicit `ImportTransactionsInput`/`ImportTransactionsOutput` schemas.
   - Normalization examples (dates, amounts, descriptions) and dedupe key policy.
   - At least two fixtures that prove normalization, dedupe, and summary behavior.
+  - Structured error reporting for rows that are missing required fields so adapters can react without crashing.
   - Tests that read the fixtures and validate the core behavior without relying on adapters.
 - Out of scope:
   - CSV parsing, database writes, network calls, adapter orchestration, or UI layers.
@@ -38,7 +39,8 @@
 
 ## Dependencies
 - Internal dependencies:
-  - `src/core/ledger-ingest/core.js` – contract, normalization examples, fixtures.
+  - `src/core/browser/toys/2026-03-13/ledger-ingest/core.js` – contract, normalization examples, fixtures.
+  - `src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js` – thin runnable presenter that runs a named fixture and exposes canonical rows, duplicates, errors, and summary data.
   - `test/toys/2026-03-10/ledger-ingest.test.js` – proof harness that exercises fixtures.
 - External dependencies:
   - `npm test` (Jest) – run the fixture suite before closing beads.

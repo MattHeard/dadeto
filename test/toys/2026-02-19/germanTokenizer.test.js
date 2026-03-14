@@ -7,21 +7,19 @@ import {
 
 describe('normalizeToken', () => {
   it('strips trailing comma and lowercases', () => {
-    expect(normalizeToken('Häuser,')).toMatchInlineSnapshot('"häuser"');
+    expect(normalizeToken('Häuser,')).toBe('häuser');
   });
 
   it('lowercases ß correctly', () => {
-    expect(normalizeToken('Straße')).toMatchInlineSnapshot('"straße"');
+    expect(normalizeToken('Straße')).toBe('straße');
   });
 
   it('strips surrounding parentheses and exclamation mark', () => {
-    expect(normalizeToken(' (Hallo!) ')).toMatchInlineSnapshot('"hallo"');
+    expect(normalizeToken(' (Hallo!) ')).toBe('hallo');
   });
 
   it('preserves internal hyphens', () => {
-    expect(normalizeToken('gut-gemeint')).toMatchInlineSnapshot(
-      '"gut-gemeint"'
-    );
+    expect(normalizeToken('gut-gemeint')).toBe('gut-gemeint');
   });
 });
 

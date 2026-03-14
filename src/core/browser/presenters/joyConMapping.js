@@ -3,6 +3,20 @@ import { parseJsonObject } from '../jsonValueHelpers.js';
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ key: string, label: string }} ControlLabel */
 /** @typedef {{ className?: string, text?: string }} TextNodeOptions */
+/**
+ * @typedef JoyConMappingRecord
+ * @property {string} [type]
+ * @property {string} [axis]
+ * @property {string} [direction]
+ * @property {number} [index]
+ * @property {string} [value]
+ */
+/** @typedef {Record<string, JoyConMappingRecord>} JoyConMappingRecords */
+/**
+ * @typedef JoyConMappingState
+ * @property {JoyConMappingRecords} [mappings]
+ * @property {string[]} [skippedControls]
+ */
 
 const CONTROL_LABELS = /** @type {ControlLabel[]} */ ([
   { key: 'l', label: 'L' },
@@ -20,6 +34,9 @@ const CONTROL_LABELS = /** @type {ControlLabel[]} */ ([
   { key: 'stick_down', label: 'Stick Down' },
 ]);
 const FALLBACK_MAPPING_TYPE = 'fallback';
+/**
+ * @type {Record<string, (mapping: JoyConMappingRecord) => string>}
+ */
 const MAPPING_DESCRIBERS = Object.freeze({
   axis: describeAxisMapping,
   button: describeButtonMapping,
@@ -28,14 +45,16 @@ const MAPPING_DESCRIBERS = Object.freeze({
 
 /**
  * @param {string} inputString Parsed presenter payload string.
- * @returns {Record<string, unknown> | null} Parsed state object or null on invalid JSON.
+ * @returns {JoyConMappingState | null} Parsed state object or null on invalid JSON.
  */
 function parseState(inputString) {
-  return parseJsonObject(inputString);
+  return /** @type {JoyConMappingState | null} */ (
+    parseJsonObject(inputString)
+  );
 }
 
 /**
- * @param {Record<string, unknown>} mapping Synthetic fallback mapping.
+ * @param {JoyConMappingRecord} mapping Synthetic fallback mapping.
  * @returns {string} Placeholder text for unmapped controls.
  */
 function describeOptionalMapping(mapping) {
@@ -43,7 +62,7 @@ function describeOptionalMapping(mapping) {
 }
 
 /**
- * @param {Record<string, unknown>} mapping Stored button mapping for one control.
+ * @param {JoyConMappingRecord} mapping Stored button mapping for one control.
  * @returns {string} Human-readable button mapping label.
  */
 function describeButtonMapping(mapping) {
@@ -51,15 +70,17 @@ function describeButtonMapping(mapping) {
 }
 
 /**
- * @param {Record<string, unknown>} mapping Stored mapping for one control.
+ * @param {JoyConMappingRecord} mapping Stored mapping for one control.
  * @returns {string} Human-readable mapping label.
  */
 function describeMapping(mapping) {
-  return MAPPING_DESCRIBERS[String(mapping.type)](mapping);
+  const descriptor =
+    MAPPING_DESCRIBERS[String(mapping.type)] ?? describeOptionalMapping;
+  return descriptor(mapping);
 }
 
 /**
- * @param {Record<string, unknown>} mapping Stored axis mapping for one control.
+ * @param {JoyConMappingRecord} mapping Stored axis mapping for one control.
  * @returns {string} Human-readable axis mapping label.
  */
 function describeAxisMapping(mapping) {
@@ -111,7 +132,7 @@ function createTextNode(dom, tag, options) {
 
 /**
  * @param {string} key Persisted control key.
- * @param {Record<string, unknown>} parsed Parsed mapping payload.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
  * @returns {string} Presenter text for the control value.
  */
 function getValueText(key, parsed) {
@@ -120,30 +141,31 @@ function getValueText(key, parsed) {
 
 /**
  * @param {string} key Persisted control key.
- * @param {Record<string, unknown>} parsed Parsed mapping payload.
- * @returns {Record<string, string>} Synthetic mapping placeholder for skipped or optional controls.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
+ * @returns {JoyConMappingRecord} Synthetic mapping placeholder for skipped or optional controls.
  */
 function getUnmappedMapping(key, parsed) {
+  const skippedControls = Array.isArray(parsed.skippedControls)
+    ? parsed.skippedControls
+    : [];
   return [
     { type: FALLBACK_MAPPING_TYPE, value: 'optional' },
     { type: FALLBACK_MAPPING_TYPE, value: 'skipped' },
-  ][Number(parsed.skippedControls?.includes(key))];
+  ][Number(skippedControls.includes(key))];
 }
 
 /**
  * @param {string} key Persisted control key.
- * @param {Record<string, unknown>} parsed Parsed mapping payload.
- * @returns {Record<string, unknown>} Stored mapping or a synthetic fallback mapping.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
+ * @returns {JoyConMappingRecord} Stored mapping or a synthetic fallback mapping.
  */
 function getStoredOrFallbackMapping(key, parsed) {
   const mapping = parsed.mappings?.[key];
-  return /** @type {Record<string, unknown>} */ (
-    [getUnmappedMapping(key, parsed), mapping][Number(mapping !== undefined)]
-  );
+  return mapping ?? getUnmappedMapping(key, parsed);
 }
 
 /**
- * @param {Record<string, unknown>} parsed Parsed mapping payload.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
  * @returns {string} Summary text shown above the mapping list.
  */
 function getSummaryText(parsed) {
@@ -151,7 +173,7 @@ function getSummaryText(parsed) {
 }
 
 /**
- * @param {Record<string, unknown>} parsed Parsed mapping payload.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
  * @returns {number} Number of persisted mappings.
  */
 function getMappedCount(parsed) {
@@ -159,11 +181,14 @@ function getMappedCount(parsed) {
 }
 
 /**
- * @param {Record<string, unknown>} parsed Parsed mapping payload.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
  * @returns {number} Number of skipped controls.
  */
 function getSkippedCount(parsed) {
-  return (parsed.skippedControls || []).length;
+  const skippedControls = Array.isArray(parsed.skippedControls)
+    ? parsed.skippedControls
+    : [];
+  return skippedControls.length;
 }
 
 /**
@@ -191,11 +216,11 @@ export function createJoyConMappingElement(inputString, dom) {
   const root = dom.createElement('div');
   dom.setClassName(root, 'joycon-mapping-output');
   const title = createTextNode(dom, 'h3', {
-    className: '',
+    className: 'joycon-mapping-title',
     text: 'Joy-Con Mapping',
   });
   const summary = createTextNode(dom, 'p', {
-    className: '',
+    className: 'joycon-mapping-summary',
     text: getSummaryText(parsed),
   });
   const list = dom.createElement('div');

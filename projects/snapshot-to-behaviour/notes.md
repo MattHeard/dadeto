@@ -4,9 +4,17 @@
 
 Replace Dadeto snapshot tests with behaviour-driven unit tests so the suite states desired behaviour explicitly instead of relying on snapshot approval as the primary specification tool.
 
+## Priority
+
+- MoSCoW: Could have. This is valuable test-quality work, but it is not currently blocking delivery or orchestration.
+- RICE: Medium impact with small slices, but lower overall reach than the architecture and operator projects.
+- Cost of Delay: Low-to-medium. The debt grows mainly in areas that are actively changing.
+
 ## Current state
 
-The repo still contains snapshot-style assertions, including inline snapshots in `test/toys/2026-02-19/germanTokenizer.test.js`. Those checks are useful as broad regression alarms, but they are weak at communicating intent and often make it too easy to accept output churn without clarifying the expected behaviour. This project is about migrating each snapshot surface toward explicit assertions over inputs, outputs, and observable rules.
+The first migration slices have already landed. `dadeto-2oyo` replaced the inline snapshots in `test/toys/2026-02-19/germanTokenizer.test.js` with explicit behaviour-driven assertions, and `dadeto-10lz` followed that by identifying the next snapshot-style surface and replacing a whole-output string assertion in `test/toys/2025-10-19/csvToJsonObject.test.js` with parsed field-level assertions.
+
+The project has therefore moved from “prove the idea” to “continue the migration pattern and keep improving assertion quality.” Snapshot-style assertions are already much rarer, and the current emphasis is on bounded one-file conversions plus characterization-style tests when the existing behaviour is still fuzzy.
 
 ## Constraints
 
@@ -22,8 +30,8 @@ When the current behaviour is not yet well understood, prefer characterization t
 
 ## Candidate next actions
 
-- Replace the inline snapshots in `test/toys/2026-02-19/germanTokenizer.test.js` with explicit string assertions that state the normalization rules directly.
-- Inventory any remaining `toMatchSnapshot` and `toMatchInlineSnapshot` uses and turn the smallest one into the next bounded bead.
+- Shape the next bounded one-file migration bead from the remaining whole-output or snapshot-like assertion surfaces now that `germanTokenizer` and `csvToJsonObject` are done.
+- Prefer characterization-style assertions first when the legacy behaviour is not yet obvious enough to state confidently.
 - When a snapshot covers messy or poorly understood legacy output, first write characterization assertions for the current behaviour, then remove the snapshot once the behaviour is described explicitly.
 - Document the testing preference in repo workflow notes once at least one concrete migration lands cleanly.
 - Decide whether a lint/check guard should eventually ban new snapshot assertions.

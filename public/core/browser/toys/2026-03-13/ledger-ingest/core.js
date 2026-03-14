@@ -20,6 +20,9 @@ const DEFAULT_DEDUPE_POLICY = {
   caseInsensitive: true,
 };
 
+const REQUIRED_CANONICAL_FIELDS = ['postedDate', 'amount'];
+const INVALID_ROW_REASON_MISSING_FIELDS = 'missing-required-fields';
+
 export const normalizationExamples = [
   'Dates are coerced into YYYY-MM-DD (ISO 8601 date portion) to align postings across sources.',
   'Amounts are converted into signed numbers so debit/credit semantics are explicit.',
@@ -44,6 +47,7 @@ export const dedupePolicyExamples = [
  * @property {string} source Source label passed through from the input.
  * @property {NormalizedTransaction[]} canonicalTransactions Normalized, deduped transactions ready for downstream.
  * @property {DuplicateReport[]} duplicateReports Reported duplicates when policy rejects later rows.
+ * @property {InvalidRowReport[]} errorReports Structured errors collected while validating the batch.
  * @property {ImportSummary} summary Aggregated counts and the policy the run relied on.
  * @property {DedupePolicy} policy The dedupe policy used during the run.
  */
@@ -83,9 +87,18 @@ export const dedupePolicyExamples = [
  * @property {number} rawRecords Number of raw rows processed.
  * @property {number} canonicalTransactions Total canonical transactions produced.
  * @property {number} duplicatesDetected Reported duplicate rows.
+ * @property {number} errorsDetected Number of rows rejected with structured errors.
  * @property {string[]} dedupeFields Candidate fields used for dedupe keys.
  * @property {string} dedupeStrategy Name of the dedupe strategy (mirrors policy.name).
  * @property {string[]} normalizationSteps Human-readable summary of normalization passes.
+ */
+
+/**
+ * @typedef {object} InvalidRowReport
+ * @property {number} index Index (0-based) of the invalid row in the input batch.
+ * @property {string[]} missingFields Canonical fields that were not provided.
+ * @property {Record<string, unknown>} rawRecord Original raw record that triggered the report.
+ * @property {string} reason Machine-readable reason code for the rejection.
  */
 
 /**
@@ -177,6 +190,80 @@ export const fixtures = {
       ],
     },
   },
+  repeatImport: {
+    name: 'repeat import rows treated as duplicates',
+    description:
+      'Verifies that importing the same logical row twice only counts once as canonical.',
+    input: {
+      source: 'core-processor',
+      fieldMapping: {
+        postedDate: 'date',
+        amount: 'amount',
+        description: 'description',
+        currency: 'currency',
+        recordId: 'id',
+      },
+      dedupePolicy: {
+        name: DEFAULT_DEDUPE_POLICY.name,
+        strategy: DEFAULT_DEDUPE_POLICY.strategy,
+        candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
+        caseInsensitive: true,
+      },
+      rawRecords: [
+        {
+          id: 'repeat-001',
+          date: '2026-03-07',
+          amount: '55',
+          description: 'Gym membership',
+          currency: 'USD',
+        },
+        {
+          id: 'repeat-002',
+          date: '2026-03-07T00:00:00Z',
+          amount: '55.00',
+          description: 'Gym Membership ',
+          currency: 'usd',
+        },
+      ],
+    },
+  },
+  invalidRow: {
+    name: 'invalid rows report structured errors',
+    description:
+      'Proves that missing required fields are surfaced as structured errors instead of new transactions.',
+    input: {
+      source: 'virtual-credit',
+      fieldMapping: {
+        postedDate: 'date',
+        amount: 'amount',
+        description: 'description',
+        currency: 'currency',
+        recordId: 'id',
+      },
+      dedupePolicy: {
+        name: DEFAULT_DEDUPE_POLICY.name,
+        strategy: DEFAULT_DEDUPE_POLICY.strategy,
+        candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
+        caseInsensitive: true,
+      },
+      rawRecords: [
+        {
+          id: 'valid-001',
+          date: '2026-03-08',
+          amount: '120.75',
+          description: 'Valid row',
+          currency: 'usd',
+        },
+        {
+          id: 'invalid-001',
+          date: '',
+          amount: null,
+          description: 'Missing critical fields',
+          currency: 'usd',
+        },
+      ],
+    },
+  },
 };
 
 /**
@@ -192,9 +279,21 @@ export function importTransactions(input) {
 
   const canonicalTransactions = [];
   const duplicateReports = [];
+  const errorReports = [];
   const seenKeys = new Map();
 
   rawRecords.forEach((record, index) => {
+    const missingFields = findMissingRequiredFields(record, fieldMapping);
+    if (missingFields.length > 0) {
+      errorReports.push({
+        index,
+        missingFields,
+        rawRecord: record,
+        reason: INVALID_ROW_REASON_MISSING_FIELDS,
+      });
+      return;
+    }
+
     const normalized = buildNormalizedTransaction({
       record,
       mapping: fieldMapping,
@@ -223,6 +322,7 @@ export function importTransactions(input) {
     rawRecords: rawRecords.length,
     canonicalTransactions: canonicalTransactions.length,
     duplicatesDetected: duplicateReports.length,
+    errorsDetected: errorReports.length,
     dedupeFields: [...dedupePolicy.candidateFields],
     dedupeStrategy: dedupePolicy.name,
     normalizationSteps: normalizationExamples,
@@ -232,6 +332,7 @@ export function importTransactions(input) {
     source: sourceLabel,
     canonicalTransactions,
     duplicateReports,
+    errorReports,
     summary,
     policy: dedupePolicy,
   };
@@ -264,6 +365,43 @@ function getRawRecords(rawRecords) {
     return rawRecords;
   }
   return [];
+}
+
+/**
+ * Identify missing canonical values before normalization runs.
+ * @param {Record<string, unknown>} record Raw row under review.
+ * @param {Record<string, string>} mapping Field mapping for this run.
+ * @returns {string[]} Canonical fields that were not provided.
+ */
+function findMissingRequiredFields(record, mapping) {
+  const missingFields = [];
+  for (const field of REQUIRED_CANONICAL_FIELDS) {
+    const rawKey = mapping[field];
+    if (!rawKey) {
+      continue;
+    }
+    const value = record?.[rawKey];
+    if (isMissingRequiredValue(value)) {
+      missingFields.push(field);
+    }
+  }
+  return missingFields;
+}
+
+/**
+ * Determine whether a raw value should be treated as missing.
+ * Strings that are empty or whitespace-only count as missing.
+ * @param {unknown} value Candidate input.
+ * @returns {boolean} True when the value is absent.
+ */
+function isMissingRequiredValue(value) {
+  if (MISSING_VALUES.includes(value)) {
+    return true;
+  }
+  if (typeof value === 'string' && value.trim().length === 0) {
+    return true;
+  }
+  return false;
 }
 
 /**

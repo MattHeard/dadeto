@@ -112,6 +112,18 @@ module.exports = {
         path: 'node_modules',
       },
     },
+    {
+      name: 'src-local-no-cloud',
+      comment:
+        'Keep local tools insulated from cloud integration code so the local runner stays focused.',
+      severity: 'warn',
+      from: {
+        path: '^src/local',
+      },
+      to: {
+        path: '^src/cloud',
+      },
+    },
   ],
   options: {
     doNotFollow: {

@@ -1,0 +1,4 @@
+- **Hurdle:** `bd comments add` reran `npm test` (the hooks run tests again when updating beads).
+- **Diagnosis:** The bead workflow triggers the same validation pipeline on every `bd` write, so my `bd comments add` command re-ran the full Jest suite even though the code was unchanged.
+- **Fix:** Added the `R` key refresh POST, transient feedback, and key handling, then recorded the loop results before closing the bead (tests remain green).
+- **Next-time guidance:** Expect bead operations to re-run the test suite; reserve longer-running validators for when the code really changes or batch bead updates together.

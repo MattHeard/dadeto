@@ -8,6 +8,38 @@ export function buildCopyExportMap(entries) {
 }
 
 /**
+ * Choose the most readable representation for a relative path.
+ * @param {string} absolutePath - Original absolute path provided to the logger.
+ * @param {string} relativePath - Path relative to the project root.
+ * @returns {string} Either the relative path or original absolute path when outside the project.
+ */
+export function selectReadablePath(absolutePath, relativePath) {
+  if (relativePath.startsWith('..')) {
+    return absolutePath;
+  }
+  return relativePath;
+}
+
+/**
+ * Format a target path relative to the provided project root.
+ * @param {string} projectRoot - Root directory to use for relative comparisons.
+ * @param {string} targetPath - Path to format for display.
+ * @param {(from: string, to: string) => string} relativeFn - Path.relative implementation.
+ * @returns {string} Human-readable representation of the path.
+ */
+export function formatPathRelativeToProject(
+  projectRoot,
+  targetPath,
+  relativeFn
+) {
+  const relativePath = relativeFn(projectRoot, targetPath);
+  if (!relativePath) {
+    return '.';
+  }
+  return selectReadablePath(targetPath, relativePath);
+}
+
+/**
  * @typedef {object} WriteFormattedHtmlDeps
  * @property {(blog: unknown) => string} generateHtml Function producing HTML from the provided blog data.
  * @property {(configPath: string) => Promise<object | null>} resolveConfig Function resolving Prettier configuration.

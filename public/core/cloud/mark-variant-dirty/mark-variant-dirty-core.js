@@ -1,4 +1,6 @@
 import {
+  buildPageByNumberQuery,
+  buildVariantByNameQuery,
   createCorsOriginHandler,
   createCorsOptions,
   extractErrorMessage,
@@ -6,10 +8,6 @@ import {
   sendOkResponse,
   resolveMessageOrDefault,
 } from '../cloud-core.js';
-import {
-  buildPageByNumberQuery,
-  buildVariantByNameQuery,
-} from '../firestore-helpers.js';
 import {
   assertFunction,
   ensureString,

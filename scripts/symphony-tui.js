@@ -7,7 +7,8 @@ const LAUNCH_URL = 'http://localhost:4322/api/symphony/launch';
 const REFRESH_URL = 'http://localhost:4322/api/v1/refresh';
 const REFRESH_MS = 5000;
 const MAX_WIDTH = 40;
-const MAX_LINES = 10;
+const BASE_MAX_LINES = 10;
+const MAX_EXTRA_LINES = 6;
 const ANSI_BOLD = '\u001b[1m';
 const ANSI_RESET = '\u001b[0m';
 
@@ -38,8 +39,25 @@ function clampLine(text = '') {
   return `${line.slice(0, MAX_WIDTH - 3)}...`;
 }
 
+function getTerminalRows() {
+  if (process.stdout && typeof process.stdout.rows === 'number') {
+    return Math.max(0, process.stdout.rows);
+  }
+
+  return 0;
+}
+
+function getMaxLines() {
+  if (!process.stdout || typeof process.stdout.rows !== 'number') {
+    return BASE_MAX_LINES;
+  }
+
+  const available = Math.max(BASE_MAX_LINES, process.stdout.rows - 2);
+  return Math.min(BASE_MAX_LINES + MAX_EXTRA_LINES, available);
+}
+
 function pushLine(lines, text = '') {
-  if (lines.length >= MAX_LINES) return;
+  if (lines.length >= getMaxLines()) return;
   lines.push(clampLine(text));
 }
 
@@ -125,6 +143,67 @@ function renderEventAndEvidence(status, lines, slots) {
   }
 }
 
+function getQueueSummary(status) {
+  const pollSummary = Array.isArray(status?.lastPoll?.queueSummary)
+    ? status.lastPoll.queueSummary
+    : [];
+  if (pollSummary.length > 0) {
+    return pollSummary;
+  }
+
+  if (Array.isArray(status?.queueEvidence) && status.queueEvidence.length > 0) {
+    return status.queueEvidence;
+  }
+
+  return [];
+}
+
+function calculateBacklogSlots(totalSlots, queueLength, maxLines) {
+  if (totalSlots <= 0) {
+    return 0;
+  }
+
+  const hasQueue = queueLength > 0;
+  const minSlots = hasQueue ? 2 : 1;
+  if (totalSlots <= minSlots) {
+    return Math.min(totalSlots, minSlots);
+  }
+
+  const extraCapacity = Math.max(0, totalSlots - minSlots);
+  const extraRows = Math.max(0, maxLines - BASE_MAX_LINES);
+  const maxExtraBacklog =
+    extraRows > 0 ? Math.max(1, Math.floor(extraRows / 2)) : 1;
+  const queueExtra = hasQueue ? Math.min(queueLength - 1, extraCapacity) : 0;
+  const bonusSlots = Math.min(queueExtra, extraCapacity, maxExtraBacklog);
+
+  return minSlots + bonusSlots;
+}
+
+function renderBacklog(status, lines, slots, queueSummary) {
+  if (slots <= 0) {
+    return 0;
+  }
+
+  const readyCount =
+    typeof status?.lastPoll?.readyCount === 'number'
+      ? status.lastPoll.readyCount
+      : queueSummary.length;
+  pushLine(lines, formatField('Queue', `${readyCount} ready`));
+
+  let used = 1;
+  if (slots <= 1) {
+    return used;
+  }
+
+  const backlogEntries = queueSummary.slice(0, Math.max(0, slots - 1));
+  for (let index = 0; index < backlogEntries.length && used < slots; index += 1) {
+    pushLine(lines, `B${index + 1}> ${clampLine(backlogEntries[index])}`);
+    used += 1;
+  }
+
+  return used;
+}
+
 function getRunId(activeRun) {
   if (!activeRun || typeof activeRun === 'string') {
     return null;
@@ -166,11 +245,25 @@ function renderStatus(status) {
       (launchFeedback ? 1 : 0) +
       (refreshFeedback ? 1 : 0) +
       (statusError ? 1 : 0);
-    const availableSlots = Math.max(
-      MAX_LINES - lines.length - footerLinesCount,
+    const maxLines = getMaxLines();
+    const totalSlots = Math.max(
+      maxLines - lines.length - footerLinesCount,
       0
     );
-    renderEventAndEvidence(status, lines, availableSlots);
+    const queueSummary = getQueueSummary(status);
+    const backlogSlots = calculateBacklogSlots(
+      totalSlots,
+      queueSummary.length,
+      maxLines
+    );
+    const usedBacklogLines = renderBacklog(
+      status,
+      lines,
+      backlogSlots,
+      queueSummary
+    );
+    const remainingSlots = Math.max(totalSlots - usedBacklogLines, 0);
+    renderEventAndEvidence(status, lines, remainingSlots);
   }
   pushLine(lines, formatField('Auto', getAutoLoopLabel()));
   if (launchFeedback) {

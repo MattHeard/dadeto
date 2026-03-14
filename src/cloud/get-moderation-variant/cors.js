@@ -1,1 +1,1 @@
-export { isAllowedOrigin } from '../../core/cloud/get-moderation-variant/cors.js';
+export { isAllowedOrigin } from '../../core/cloud/get-moderation-variant/get-moderation-variant-core.js';

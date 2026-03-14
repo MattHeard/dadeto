@@ -1,28 +1,28 @@
 {
   "total": {
     "lines": {
-      "total": 7035,
-      "covered": 6599,
+      "total": 7099,
+      "covered": 6666,
       "skipped": 0,
-      "pct": 93.8
+      "pct": 93.9
     },
     "statements": {
-      "total": 7194,
-      "covered": 6749,
+      "total": 7258,
+      "covered": 6816,
       "skipped": 0,
-      "pct": 93.81
+      "pct": 93.91
     },
     "functions": {
-      "total": 2873,
-      "covered": 2723,
+      "total": 2882,
+      "covered": 2736,
       "skipped": 0,
-      "pct": 94.77
+      "pct": 94.93
     },
     "branches": {
-      "total": 2689,
-      "covered": 2450,
+      "total": 2743,
+      "covered": 2506,
       "skipped": 0,
-      "pct": 91.11
+      "pct": 91.35
     },
     "branchesTrue": {
       "total": 0,
@@ -137,26 +137,26 @@
   },
   "/home/matt/dadeto/src/core/browser/browser-core.js": {
     "lines": {
-      "total": 109,
-      "covered": 109,
+      "total": 114,
+      "covered": 114,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 52,
-      "covered": 52,
+      "total": 54,
+      "covered": 54,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 115,
-      "covered": 115,
+      "total": 120,
+      "covered": 120,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 36,
-      "covered": 36,
+      "total": 42,
+      "covered": 42,
       "skipped": 0,
       "pct": 100
     }
@@ -319,26 +319,26 @@
   },
   "/home/matt/dadeto/src/core/browser/jsonValueHelpers.js": {
     "lines": {
-      "total": 4,
-      "covered": 4,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 2,
-      "covered": 2,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 4,
-      "covered": 4,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 2,
-      "covered": 2,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     }
@@ -579,22 +579,22 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/captureFormShared.js": {
     "lines": {
-      "total": 36,
-      "covered": 36,
+      "total": 45,
+      "covered": 45,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 11,
-      "covered": 11,
+      "total": 16,
+      "covered": 15,
       "skipped": 0,
-      "pct": 100
+      "pct": 93.75
     },
     "statements": {
-      "total": 36,
-      "covered": 36,
+      "total": 46,
+      "covered": 45,
       "skipped": 0,
-      "pct": 100
+      "pct": 97.82
     },
     "branches": {
       "total": 8,
@@ -683,48 +683,48 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
     "lines": {
-      "total": 190,
-      "covered": 155,
+      "total": 184,
+      "covered": 164,
       "skipped": 0,
-      "pct": 81.57
+      "pct": 89.13
     },
     "functions": {
-      "total": 70,
-      "covered": 64,
+      "total": 68,
+      "covered": 65,
       "skipped": 0,
-      "pct": 91.42
+      "pct": 95.58
     },
     "statements": {
-      "total": 191,
-      "covered": 156,
+      "total": 185,
+      "covered": 165,
       "skipped": 0,
-      "pct": 81.67
+      "pct": 89.18
     },
     "branches": {
       "total": 68,
-      "covered": 39,
+      "covered": 51,
       "skipped": 0,
-      "pct": 57.35
+      "pct": 75
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
     "lines": {
-      "total": 314,
-      "covered": 12,
+      "total": 317,
+      "covered": 11,
       "skipped": 0,
-      "pct": 3.82
+      "pct": 3.47
     },
     "functions": {
-      "total": 115,
+      "total": 112,
       "covered": 0,
       "skipped": 0,
       "pct": 0
     },
     "statements": {
-      "total": 320,
-      "covered": 12,
+      "total": 323,
+      "covered": 11,
       "skipped": 0,
-      "pct": 3.75
+      "pct": 3.4
     },
     "branches": {
       "total": 140,
@@ -735,22 +735,22 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {
     "lines": {
-      "total": 44,
-      "covered": 41,
+      "total": 40,
+      "covered": 38,
       "skipped": 0,
-      "pct": 93.18
+      "pct": 95
     },
     "functions": {
-      "total": 14,
-      "covered": 11,
+      "total": 13,
+      "covered": 12,
       "skipped": 0,
-      "pct": 78.57
+      "pct": 92.3
     },
     "statements": {
-      "total": 46,
-      "covered": 42,
+      "total": 41,
+      "covered": 39,
       "skipped": 0,
-      "pct": 91.3
+      "pct": 95.12
     },
     "branches": {
       "total": 10,
@@ -2113,10 +2113,10 @@
   },
   "/home/matt/dadeto/src/core/browser/toys/2026-03-01/hiLoCardGame.js": {
     "lines": {
-      "total": 100,
-      "covered": 92,
+      "total": 103,
+      "covered": 101,
       "skipped": 0,
-      "pct": 92
+      "pct": 98.05
     },
     "functions": {
       "total": 38,
@@ -2125,16 +2125,16 @@
       "pct": 100
     },
     "statements": {
-      "total": 100,
-      "covered": 92,
+      "total": 103,
+      "covered": 101,
       "skipped": 0,
-      "pct": 92
+      "pct": 98.05
     },
     "branches": {
-      "total": 48,
-      "covered": 40,
+      "total": 50,
+      "covered": 48,
       "skipped": 0,
-      "pct": 83.33
+      "pct": 96
     }
   },
   "/home/matt/dadeto/src/core/browser/toys/2026-03-01/joyConMapper.js": {
@@ -2163,54 +2163,106 @@
       "pct": 0
     }
   },
-  "/home/matt/dadeto/src/core/build/blog.js": {
+  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/core.js": {
     "lines": {
-      "total": 97,
-      "covered": 95,
+      "total": 129,
+      "covered": 112,
       "skipped": 0,
-      "pct": 97.93
+      "pct": 86.82
     },
     "functions": {
-      "total": 35,
-      "covered": 35,
+      "total": 31,
+      "covered": 31,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 98,
-      "covered": 96,
+      "total": 129,
+      "covered": 112,
       "skipped": 0,
-      "pct": 97.95
+      "pct": 86.82
     },
     "branches": {
-      "total": 31,
-      "covered": 30,
+      "total": 52,
+      "covered": 32,
       "skipped": 0,
-      "pct": 96.77
+      "pct": 61.53
+    }
+  },
+  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js": {
+    "lines": {
+      "total": 12,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    },
+    "functions": {
+      "total": 3,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    },
+    "statements": {
+      "total": 12,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    },
+    "branches": {
+      "total": 4,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    }
+  },
+  "/home/matt/dadeto/src/core/build/blog.js": {
+    "lines": {
+      "total": 90,
+      "covered": 88,
+      "skipped": 0,
+      "pct": 97.77
+    },
+    "functions": {
+      "total": 33,
+      "covered": 33,
+      "skipped": 0,
+      "pct": 100
+    },
+    "statements": {
+      "total": 91,
+      "covered": 89,
+      "skipped": 0,
+      "pct": 97.8
+    },
+    "branches": {
+      "total": 27,
+      "covered": 26,
+      "skipped": 0,
+      "pct": 96.29
     }
   },
   "/home/matt/dadeto/src/core/build/buildCore.js": {
     "lines": {
-      "total": 18,
-      "covered": 18,
+      "total": 25,
+      "covered": 25,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 6,
-      "covered": 6,
+      "total": 8,
+      "covered": 8,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 18,
-      "covered": 18,
+      "total": 25,
+      "covered": 25,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 2,
-      "covered": 2,
+      "total": 6,
+      "covered": 6,
       "skipped": 0,
       "pct": 100
     }
@@ -2269,20 +2321,20 @@
   },
   "/home/matt/dadeto/src/core/cloud/cloud-core.js": {
     "lines": {
-      "total": 158,
-      "covered": 158,
+      "total": 160,
+      "covered": 160,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 59,
-      "covered": 59,
+      "total": 61,
+      "covered": 61,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 159,
-      "covered": 159,
+      "total": 161,
+      "covered": 161,
       "skipped": 0,
       "pct": 100
     },
@@ -2347,20 +2399,20 @@
   },
   "/home/matt/dadeto/src/core/cloud/firestore-helpers.js": {
     "lines": {
-      "total": 2,
-      "covered": 2,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 2,
-      "covered": 2,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 2,
-      "covered": 2,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
@@ -2763,52 +2815,52 @@
   },
   "/home/matt/dadeto/src/core/cloud/get-moderation-variant/cors.js": {
     "lines": {
-      "total": 4,
-      "covered": 4,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 2,
-      "covered": 2,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 4,
-      "covered": 4,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 4,
-      "covered": 4,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     }
   },
   "/home/matt/dadeto/src/core/cloud/get-moderation-variant/get-moderation-variant-core.js": {
     "lines": {
-      "total": 142,
-      "covered": 142,
+      "total": 146,
+      "covered": 146,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 54,
-      "covered": 54,
+      "total": 56,
+      "covered": 56,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 143,
-      "covered": 143,
+      "total": 147,
+      "covered": 147,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 70,
-      "covered": 70,
+      "total": 74,
+      "covered": 74,
       "skipped": 0,
       "pct": 100
     }
@@ -3049,52 +3101,52 @@
   },
   "/home/matt/dadeto/src/core/cloud/submit-new-page/helpers.js": {
     "lines": {
-      "total": 60,
-      "covered": 60,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 22,
-      "covered": 22,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 60,
-      "covered": 60,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 30,
-      "covered": 30,
+      "total": 0,
+      "covered": 0,
       "skipped": 0,
       "pct": 100
     }
   },
   "/home/matt/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js": {
     "lines": {
-      "total": 57,
-      "covered": 57,
+      "total": 117,
+      "covered": 117,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 23,
-      "covered": 23,
+      "total": 45,
+      "covered": 45,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 57,
-      "covered": 57,
+      "total": 117,
+      "covered": 117,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 22,
-      "covered": 22,
+      "total": 52,
+      "covered": 52,
       "skipped": 0,
       "pct": 100
     }
@@ -3151,56 +3203,30 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/ledger-ingest/core.js": {
-    "lines": {
-      "total": 108,
-      "covered": 92,
-      "skipped": 0,
-      "pct": 85.18
-    },
-    "functions": {
-      "total": 29,
-      "covered": 29,
-      "skipped": 0,
-      "pct": 100
-    },
-    "statements": {
-      "total": 108,
-      "covered": 92,
-      "skipped": 0,
-      "pct": 85.18
-    },
-    "branches": {
-      "total": 40,
-      "covered": 21,
-      "skipped": 0,
-      "pct": 52.5
-    }
-  },
   "/home/matt/dadeto/src/core/local/symphony.js": {
     "lines": {
-      "total": 56,
-      "covered": 56,
+      "total": 81,
+      "covered": 79,
       "skipped": 0,
-      "pct": 100
+      "pct": 97.53
     },
     "functions": {
-      "total": 33,
-      "covered": 33,
+      "total": 38,
+      "covered": 38,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 57,
-      "covered": 57,
+      "total": 82,
+      "covered": 80,
       "skipped": 0,
-      "pct": 100
+      "pct": 97.56
     },
     "branches": {
-      "total": 32,
-      "covered": 28,
+      "total": 64,
+      "covered": 49,
       "skipped": 0,
-      "pct": 87.5
+      "pct": 76.56
     }
   },
   "/home/matt/dadeto/src/core/local/workflow.js": {

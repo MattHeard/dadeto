@@ -1,0 +1,5 @@
+# 2026-03-13 dadeto-n3ri runner loop
+- unexpected hurdle: `npm run tsdoc:check` (run id 2026-03-13T21:20:53.624Z--dadeto-n3ri) still fails because the project already ships dozens of TS2322/TS709x errors in browser input handlers, toys, and ledger-ingest, so the command cannot succeed end-to-end right now.
+- diagnosis path: compared tsdoc output before/after the edit and confirmed the only new browser-core error from src/core/browser/browser-core.js:369 (object | undefined vs Record) disappeared after guarding the parsed payload and type-casting it before returning.
+- chosen fix: updated `parseJsonObject` to bail out when `safeJsonParse` did not produce an object and to cast the result to `Record<string, unknown>` before returning, aligning the runtime behavior with the documented @returns shape.
+- next-time guidance: run the acceptance command both before and after the change to confirm its signal cleans up a single target and write the remaining failures into the bead comment so follow-up loops can pick up on them instead of rerunning the full tsdoc suite every time.

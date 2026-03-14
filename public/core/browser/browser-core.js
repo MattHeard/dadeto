@@ -362,11 +362,11 @@ export function isObjectValue(value) {
  */
 export function parseJsonObject(input) {
   const parsed = safeJsonParse(input);
-  if (!parsed.ok) {
+  if (!parsed.ok || !isObjectValue(parsed.data)) {
     return null;
   }
 
-  return parsed.data;
+  return /** @type {Record<string, unknown>} */ (parsed.data);
 }
 
 /**

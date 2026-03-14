@@ -4,15 +4,17 @@
 
 Reduce Dadeto `src/core` lint warnings to zero and keep them at zero through future changes.
 
+## Priority
+
+- MoSCoW: Should have. This is important code-health work, but it is less foundational than the Symphony/operator surfaces.
+- RICE: High impact on future maintenance with moderate reach, and the project already decomposes into small bounded slices.
+- Cost of Delay: High. Active warning hotspots in `src/core` get more expensive as more changes accumulate around them.
+
 ## Current state
 
-`src/core/browser/inputHandlers/joyConMapper.js` is still the active warning surface, but the non-complexity warnings and the earlier axis-helper cleanup have already landed. The remaining queue is now complexity-only, with the current smallest adjacent helper cluster around:
+`src/core/browser/inputHandlers/joyConMapper.js` is still the active warning surface, but several small slices have already landed. The payload/row-state helper cluster is gone, and the earlier handler-level complexity warning was also removed. The repo-wide lint output is now down to a smaller warning set spread across `joyConMapper.js`, `captureFormShared.js`, `captureLifecycleToggle.js`, `gamepadCapture.js`, local Symphony, and a couple of test files.
 
-- `buildPayload`
-- `getCurrentControlKey`
-- `getPendingRowState`
-
-These helpers sit in one local payload/row-state slice before the report widens back out to stored-state refresh and handler-level warnings.
+The current ready bead for this project is `dadeto-m6am`, which picks up the next remaining `joyConMapper.js` complexity slice after the closed `dadeto-5fgp` cleanup.
 
 ## Constraints
 
@@ -26,7 +28,7 @@ Prefer small warning-family or file-local beads over broad refactors. Keep behav
 
 ## Candidate next actions
 
-- Reduce the next payload/row-state helper cluster in `joyConMapper.js`.
+- Land `dadeto-m6am` so the next remaining `joyConMapper.js` complexity slice disappears.
 - Continue with the next smallest stable complexity cluster after re-reading the lint report.
 - Split out any remaining warning family that turns out to be contract-shaped instead of helper-shaped.
 - Decide what minimal regression guard should define “keep them at zero” once cleanup is complete.

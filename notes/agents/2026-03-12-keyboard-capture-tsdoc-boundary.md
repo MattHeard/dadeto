@@ -1,0 +1,5 @@
+# Keyboard capture TSDoc boundary
+- **Unexpected hurdle:** TSDoc/typed-JS kept flagging the keyboard capture form-ready callback because the shared context type only described `dom`, `form`, `button`, and `cleanupFns`, yet the handler also pulled `container` and `textInput` from that object.
+- **Diagnosis path:** Reviewed the `makeCaptureFormBuilder` usage and the builder callback in `keyboardCapture.js`; the typed errors aligned with the callback asking for properties the shared typedef didn’t promise.
+- **Fix:** Added a local `KeyboardCaptureFormContext` typedef and pulled `container`/`textInput` out of the callback via a scoped type assertion so the shared callable stays compatible while the handler still gets the DOM inputs it needs.
+- **Next time guidance:** Consider propagating the fuller context shape from `createCaptureForm` into the shared typedefs so all capture handlers can rely on it without repeating assertions; meanwhile expect the similar gamepad handler to need the same guardrail.

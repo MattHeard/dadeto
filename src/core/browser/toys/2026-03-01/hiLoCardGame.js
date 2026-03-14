@@ -148,7 +148,7 @@ function hasEventType(candidate) {
  */
 function readEventType(candidate) {
   if (hasEventType(candidate)) {
-    return candidate.type;
+    return /** @type {string} */ (candidate.type);
   }
   return null;
 }
@@ -294,12 +294,12 @@ function isCardInRange(card) {
  * @returns {string} Human-readable label.
  */
 export function formatCard(card) {
-  const labels = {
+  const labels = /** @type {Record<number, string>} */ ({
     1: 'Ace',
     11: 'Jack',
     12: 'Queen',
     13: 'King',
-  };
+  });
   if (labels[card]) {
     return labels[card];
   }
@@ -351,7 +351,11 @@ export function applyHiLoEvent(inputEvent, state, getRandomNumber) {
   if (shouldIgnoreHiLoEvent(inputEvent)) {
     return state;
   }
-  return resolveHiLoEvent(inputEvent, state, getRandomNumber);
+  return resolveHiLoEvent(
+    /** @type {HiLoInputEvent} */ (inputEvent),
+    state,
+    getRandomNumber
+  );
 }
 
 /**
@@ -441,9 +445,14 @@ function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
     return state;
   }
 
+  const guessKey = inputEvent.key;
+  if (typeof guessKey !== 'string') {
+    return state;
+  }
+
   return {
-    gameState: applyGuess(gameState, inputEvent.key, getRandomNumber),
-    keyboardState: { activeKey: inputEvent.key },
+    gameState: applyGuess(gameState, guessKey, getRandomNumber),
+    keyboardState: { activeKey: guessKey },
   };
 }
 

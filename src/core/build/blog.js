@@ -1,4 +1,9 @@
-import { buildCopyExportMap } from './buildCore.js';
+import {
+  buildCopyExportMap,
+  selectReadablePath,
+  formatPathRelativeToProject,
+} from './buildCore.js';
+export { selectReadablePath, formatPathRelativeToProject };
 
 export const sharedDirectoryPairs = [
   { key: 'Browser', relativePath: 'browser', publicRelativePath: 'browser' },
@@ -9,38 +14,6 @@ export const sharedDirectoryPairs = [
   },
   { key: 'Core', relativePath: 'core', publicRelativePath: 'core' },
 ];
-
-/**
- * Choose the most readable representation for a relative path.
- * @param {string} absolutePath - Original absolute path provided to the logger.
- * @param {string} relativePath - Path relative to the project root.
- * @returns {string} Either the relative path or original absolute path when outside the project.
- */
-export function selectReadablePath(absolutePath, relativePath) {
-  if (relativePath.startsWith('..')) {
-    return absolutePath;
-  }
-  return relativePath;
-}
-
-/**
- * Format a target path relative to the provided project root.
- * @param {string} projectRoot - Root directory to use for relative comparisons.
- * @param {string} targetPath - Path to format for display.
- * @param {(from: string, to: string) => string} relativeFn - Path.relative implementation.
- * @returns {string} Human-readable representation of the path.
- */
-export function formatPathRelativeToProject(
-  projectRoot,
-  targetPath,
-  relativeFn
-) {
-  const relativePath = relativeFn(projectRoot, targetPath);
-  if (!relativePath) {
-    return '.';
-  }
-  return selectReadablePath(targetPath, relativePath);
-}
 
 /**
  * Build the directory entry tuples used to configure shared copy locations.
@@ -489,6 +462,40 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy the generated blog JSON payload from src/build into the public root.
+   * @param {Record<string, string>} dirs - Directory map for the copy workflow.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   *   readDirEntries: (dir: string) => import('fs').Dirent[],
+   * }} io - File system adapters.
+   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for updates.
+   * @returns {void}
+   */
+  function copyBlogJson(dirs, io, messageLogger) {
+    const buildDir = join(dirs.srcDir, 'build');
+    if (!io.directoryExists(buildDir)) {
+      messageLogger.warn(
+        `Warning: build directory not found at ${formatPathForLog(buildDir)}`
+      );
+      return;
+    }
+
+    const source = join(buildDir, 'blog.json');
+    const destination = join(dirs.publicDir, 'blog.json');
+
+    copyFileWithDirectories(io, {
+      source,
+      destination,
+      messageLogger,
+      message: `Blog data copied from ${formatPathForLog(
+        source
+      )} to ${formatPathForLog(destination)}`,
+    });
+  }
+
+  /**
    * Execute the full copy workflow for the static site.
    * @param {{
    *   directories: Record<string, string>,
@@ -507,6 +514,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyBrowserTrees(dirs, io, messageLogger);
     copyCoreRootFiles(dirs, io, messageLogger);
     copyCoreConstants(dirs, io, messageLogger);
+    copyBlogJson(dirs, io, messageLogger);
   }
 
   return /** @type {Record<string, Function>} */ (
@@ -515,6 +523,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       ['copyBrowserTrees', copyBrowserTrees],
       ['copyCoreRootFiles', copyCoreRootFiles],
       ['copyCoreConstants', copyCoreConstants],
+      ['copyBlogJson', copyBlogJson],
       ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
       ['copyDirRecursive', copyDirRecursive],
       ['processDirectoryEntries', processDirectoryEntries],

@@ -3,12 +3,12 @@ import { csvToJsonObjectToy } from '../../../src/core/browser/toys/2025-10-19/cs
 describe('csvToJsonObjectToy', () => {
   it('converts two-line CSV into a JSON object string', () => {
     const input = 'name,age\nAlice,30';
-    const expected = JSON.stringify({
-      name: 'Alice',
-      age: '30',
-    });
 
-    expect(csvToJsonObjectToy(input)).toBe(expected);
+    const parsed = JSON.parse(csvToJsonObjectToy(input));
+
+    expect(parsed.name).toBe('Alice');
+    expect(parsed.age).toBe('30');
+    expect(Object.keys(parsed)).toEqual(['name', 'age']);
   });
 
   it('omits keys that have no corresponding value', () => {

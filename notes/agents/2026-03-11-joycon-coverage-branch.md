@@ -1,0 +1,5 @@
+# JoyConMapping branch coverage loop
+- **Unexpected hurdle:** The latest `reports/coverage/coverage-final.json` branch map for `src/core/browser/presenters/joyConMapping.js` showed six branch slots still untouched (describeOptionalMapping fallbacks, applyClassName truthy path, non-array skippers/mappings).
+- **Diagnosis path:** Examined the branch map output and traced each missing branch back to a specific helper path (fallback descriptor, `applyClassName`, and the `Array.isArray`/`Object.keys` guards).
+- **Fix:** Added real class names to the `title`/`summary` text nodes so `applyClassName` fires both paths, then introduced regression tests for unknown mapping types without `value` and for payloads that omit array fields so the missing branch outcomes are exercised. Verified the resulting coverage: `joyConMapping.js` now reports 100% branches.
+- **Next-time guidance:** When branch coverage stays low on a small presenter, inspect `reports/coverage/coverage-final.json` first to link zero-hit entries to specific helper logic before adding tests.

@@ -1,0 +1,6 @@
+# 2026-03-13: guard Symphony run log handles against GC
+
+- **Unexpected hurdle:** Symphony can’t bind to any port inside this sandbox, so I could not reproduce the descriptor warning by launching the server and had to double-click the launcher code instead.
+- **Diagnosis path:** Inspected `src/local/symphony/launcherCodex.js` and noticed `openRunLogFiles` returns FileHandles that are never closed; that leaves descriptors for Node to collect later, matching the garbage-collection warning. The issue matures only when `codex exec` writes to the persisted `stdout`/`stderr` logs, so I reasoned a handle leak there would surface at every launch.
+- **Chosen fix/outcome:** Added a `closeRunLogHandles` helper and invoke it after spawning the runner so both FileHandles get closed while the child still owns the FD; documented the new behavior with a launcher test that watches for `close()` calls and reran `npm test` to prove the suite still succeeds.
+- **Next-time guidance:** Whenever a spawn opens persistent logs, wrap the handles in a closer or use `fs.openSync` + `fs.closeSync` around the child invocation so GC warnings never recur; if the warning resurfaces, grep `tracking/symphony/runs/` for “file descriptor” to spot the leaking path before diving into new code.

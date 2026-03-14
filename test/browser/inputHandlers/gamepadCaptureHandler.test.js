@@ -261,6 +261,267 @@ describe('gamepadCaptureHandler', () => {
     }
   });
 
+  it('skips syncing when a poll sees no new payload', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const frames = [];
+    let gamepads = [];
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(callback => {
+      frames.push(callback);
+      return frames.length;
+    });
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = {
+      getGamepads: jest.fn(() => gamepads),
+    };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+      button._listeners.click();
+
+      const connectedGamepad = createGamepad();
+      gamepads = [connectedGamepad];
+      globals.listeners.gamepadconnected({ gamepad: connectedGamepad });
+
+      const baseline = JSON.parse(readStoredOrElementValue(textInput));
+      expect(frames.length).toBeGreaterThan(0);
+
+      frames.shift()();
+
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual(baseline);
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
+  it('ignores connection events when capture is inactive', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn();
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+
+      globals.listeners.gamepadconnected({ gamepad: createGamepad() });
+
+      expect(textInput.value).toBe('');
+      expect(autoSubmitCheckbox.checked).toBe(false);
+      expect(autoSubmitCheckbox.dispatchEvent).not.toHaveBeenCalled();
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
+  it('ignores disconnection events when capture is inactive', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn();
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = {
+      getGamepads: jest.fn(() => []),
+    };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+
+      globals.listeners.gamepaddisconnected({ gamepad: createGamepad() });
+
+      expect(readStoredOrElementValue(textInput)).toBe('');
+      expect(autoSubmitCheckbox.checked).toBe(false);
+      expect(autoSubmitCheckbox.dispatchEvent).not.toHaveBeenCalled();
+      expect(globalThis.requestAnimationFrame).not.toHaveBeenCalled();
+      expect(globalThis.cancelAnimationFrame).not.toHaveBeenCalled();
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
+  it('ignores connection events without identifiable gamepads while capturing', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(() => 7);
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+      button._listeners.click();
+
+      globals.listeners.gamepadconnected({});
+
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'capture',
+        capturing: true,
+      });
+      expect(autoSubmitCheckbox.checked).toBe(true);
+      expect(autoSubmitCheckbox.dispatchEvent).toHaveBeenCalled();
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
+  it('ignores non-keydown escape events while capturing', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(() => 7);
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+      button._listeners.click();
+
+      const preventDefault = jest.fn();
+      globals.listeners.keydown({
+        type: 'keyup',
+        key: 'Escape',
+        preventDefault,
+      });
+
+      expect(button.textContent).toBe('Release gamepad');
+      expect(preventDefault).not.toHaveBeenCalled();
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'capture',
+        capturing: true,
+      });
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
+  it('ignores escape events when capture is inactive', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn();
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+
+      globals.listeners.keydown({
+        type: 'keydown',
+        key: 'Escape',
+        preventDefault: jest.fn(),
+      });
+
+      expect(button.textContent).toBe('Capture gamepad');
+      expect(autoSubmitCheckbox.checked).toBe(false);
+      expect(autoSubmitCheckbox.dispatchEvent).not.toHaveBeenCalled();
+      expect(readStoredOrElementValue(textInput)).toBe('');
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
   it('releases capture on escape', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
@@ -294,6 +555,51 @@ describe('gamepadCaptureHandler', () => {
 
       expect(button.textContent).toBe('Capture gamepad');
       expect(globalThis.cancelAnimationFrame).toHaveBeenCalledWith(3);
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'capture',
+        capturing: false,
+      });
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
+  it('releases capture even when event lacks preventDefault', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(() => 21);
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+      button._listeners.click();
+
+      globals.listeners.keydown({
+        type: 'keydown',
+        key: 'Escape',
+      });
+
+      expect(button.textContent).toBe('Capture gamepad');
+      expect(globalThis.cancelAnimationFrame).toHaveBeenCalledWith(21);
       expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
         type: 'capture',
         capturing: false,

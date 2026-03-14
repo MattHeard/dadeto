@@ -1,0 +1,4 @@
+- unexpected hurdle: the next duplication slice report still pointed at a tiny cross-handler block around the capture-form bootstrapping, so I had to inspect both handlers to identify which lines were matching.
+- diagnosis path: verified `npm run duplication` to see the reported `gamepadCapture.js` ↔ `keyboardCapture.js` block, tracked it down to the shared context setup + default button label call in each `build*CaptureForm`.
+- chosen fix: added `withCaptureFormContext` so the shared helper now owns the context plumbing and default button label before invoking each handler’s listener wiring, removing the identical bootstrapping slice while leaving the rest of the handler logic untouched; reran `npm run duplication` and `npm test`.
+- next-time guidance/open question: when peeling small cross-file clones, put shared plumbing under a helper before proliferating handler-specific state so the duplication matcher drifts toward fresher surfaces.

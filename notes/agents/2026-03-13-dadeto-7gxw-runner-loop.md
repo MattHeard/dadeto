@@ -1,0 +1,5 @@
+# 2026-03-13 dadeto-7gxw runner loop
+- unexpected hurdle: a Dolt lock keeps the `bd` CLI from touching the bead database—the same `bd update`/`bd status` commands reporting “database is locked by another dolt process” even after removing `.beads/dolt-access.lock` via Python.
+- diagnosis path: retried the CLI after verifying no stray `dolt` processes (`pgrep -af dolt`/`ps -ef`), watched the error switch from “failed to acquire access lock” to “database is locked,” and concluded the backend is still contested by an unseen process.
+- chosen fix: since the remaining work was already in the diff for `test/toys/2025-07-05/getDend2Titles.test.js`, reran the full suite (`npm test`, i.e. `node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js`) to capture pass/coverage evidence even though the bead state couldn’t be updated.
+- next-time guidance: when the Dolt backend blocks `bd`, note the failure in repo memory and either wait for the competing process to finish or run the bead loop entirely in JSONL mode so manual evidence can still be added before closing.

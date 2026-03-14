@@ -1,0 +1,5 @@
+# 2026-03-13 dadeto-7gxw loop
+- unexpected hurdle: prior loop already converted the snapshot-like `JSON.stringify` assertions to parsed equality but the bead was left in progress; the work history had to be rediscovered instead of added from scratch.
+- diagnosis path: reviewed bead comments/diff for `test/toys/2025-07-05/getDend2Titles.test.js`, confirmed only JSON parsing/equality remained, and reran `npm test` (full suite via `node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js`) to prove nothing regressed.
+- chosen fix: replayed the prior value assertions (JSON.parse + `toEqual`), treated the rerun as completion evidence for loop `2026-03-13T21:33:16.750Z--dadeto-7gxw`, and documented the command/coverage summary in repo memory.
+- next-time guidance: when relaunching an in-progress bead, double-check whether the residual work is purely documentation/test verification before making new code edits; note the specific assertion lines being cleaned up in the bead comments for future reference.

@@ -4,19 +4,24 @@
 
 Raise Dadeto branch coverage to 100% and keep it there through future changes.
 
+## Priority
+
+- MoSCoW: Should have. Better coverage lowers regression risk, but it is not blocking current operator-loop work.
+- RICE: Medium impact with moderate effort because each bead removes risk in one surface but does not usually unlock broad repo change.
+- Cost of Delay: Medium. Coverage debt matters most where active code keeps changing, but the pain is less immediate than orchestration or architecture drift.
+
 ## Current state
 
-The repo runs `npm test` with coverage and now rewrites `reports/coverage/coverage-summary.json` from the repo-wide raw map in `reports/coverage/coverage-final.json`. A fresh full-suite run on 2026-03-09 shows the summary is again usable as a planning artifact.
+The repo still uses `npm test` plus the regenerated `reports/coverage/coverage-summary.json` as the planning artifact, but the project has moved beyond the old smallest helper gaps. Recent slices pushed `captureFormShared.js` and `src/core/browser/presenters/joyConMapping.js` to full branch coverage, so the remaining work is now concentrated in larger browser input-handler and toy surfaces.
 
-Current highest-gap files from the repaired summary are:
+The broadest remaining branch gaps are still concentrated in:
 
-- `src/core/browser/inputHandlers/joyConMapper.js`: `0/141` branches (`0%`)
-- `src/core/browser/toys/2026-03-01/joyConMapper.js`: `0/30` branches (`0%`)
-- `src/core/browser/inputHandlers/gamepadCapture.js`: `38/66` branches (`57.57%`)
-- `src/core/browser/presenters/joyConMapping.js`: `0/10` branches (`0%`)
-- `src/core/browser/toys/2026-03-01/hiLoCardGame.js`: `38/48` branches (`79.16%`)
+- `src/core/browser/inputHandlers/joyConMapper.js`
+- `src/core/browser/toys/2026-03-01/joyConMapper.js`
+- `src/core/browser/inputHandlers/gamepadCapture.js`
+- `src/core/browser/toys/2026-03-01/hiLoCardGame.js`
 
-The broad `joyConMapper` surfaces are still too large for one safe first coverage bead. The next smallest stable uncovered cluster is `src/core/browser/inputHandlers/captureFormShared.js`, which currently has `4/8` covered branches (`50%`) and only `4` missed branches. That is the current best next implementation target from the repaired artifact.
+There is currently no fresh ready bead for this project, so the next planner pass should shape a new bounded slice from the latest coverage artifact instead of reusing the old helper-focused plan.
 
 ## Constraints
 
@@ -30,8 +35,8 @@ Prefer small file-local or behavior-local coverage beads over broad test rewrite
 
 ## Candidate next actions
 
-- Create one bead for `src/core/browser/inputHandlers/captureFormShared.js` to cover the remaining `4` missed branches.
-- After that, choose between `src/core/browser/toys/2026-03-01/hiLoCardGame.js` and `src/core/browser/presenters/joyConMapping.js` as the next bounded file-local slice.
+- Create one new bead from the current coverage artifact for the next smallest stable gap now that `captureFormShared.js` and `joyConMapping.js` are fully covered.
+- Prefer `hiLoCardGame.js` or a bounded `gamepadCapture.js` branch cluster before touching the very large `joyConMapper` surfaces again.
 - Keep the repaired `coverage-summary.json` as the canonical top-level branch-gap artifact and refresh project notes from it after each coverage bead.
 - Create one bead to tighten the repo policy/docs around how branch-coverage gaps should be turned into runner-safe beads if artifact ambiguity keeps recurring.
 - Decide what minimal regression guard should define “keep it at 100%” once coverage reaches the target.

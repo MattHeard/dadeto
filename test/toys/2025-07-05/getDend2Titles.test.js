@@ -18,8 +18,8 @@ describe('getDend2Titles', () => {
         }),
       ],
     ]);
-    const result = getDend2Titles('ignored', env);
-    expect(result).toBe(JSON.stringify(['First', 'Second']));
+    const result = JSON.parse(getDend2Titles('ignored', env));
+    expect(result).toEqual(['First', 'Second']);
   });
 
   test('returns titles from DEND2 stories (legacy fallback)', () => {
@@ -38,13 +38,13 @@ describe('getDend2Titles', () => {
         }),
       ],
     ]);
-    const result = getDend2Titles('ignored', env);
-    expect(result).toBe(JSON.stringify(['First', 'Second']));
+    const result = JSON.parse(getDend2Titles('ignored', env));
+    expect(result).toEqual(['First', 'Second']);
   });
 
   test('returns empty array when structure is missing', () => {
     const env = new Map([['getData', () => ({ temporary: {} })]]);
-    expect(getDend2Titles('x', env)).toBe(JSON.stringify([]));
+    expect(JSON.parse(getDend2Titles('x', env))).toEqual([]);
   });
 
   test('returns empty array on error', () => {
@@ -56,11 +56,11 @@ describe('getDend2Titles', () => {
         }),
       ],
     ]);
-    expect(getDend2Titles('x', env)).toBe(JSON.stringify([]));
+    expect(JSON.parse(getDend2Titles('x', env))).toEqual([]);
   });
 
   test('returns empty array when getData is missing', () => {
     const env = new Map();
-    expect(getDend2Titles('x', env)).toBe(JSON.stringify([]));
+    expect(JSON.parse(getDend2Titles('x', env))).toEqual([]);
   });
 });

@@ -333,7 +333,7 @@ function formatJsonParseError(error) {
 /**
  * Safely parse a JSON string.
  * @param {string} input - JSON string to parse.
- * @returns {{ok: boolean, message?: string, data?: object}} Parsed result.
+ * @returns {{ok: true, data: unknown} | {ok: false, message: string}} Parsed result.
  */
 export function safeJsonParse(input) {
   try {
@@ -362,11 +362,11 @@ export function isObjectValue(value) {
  */
 export function parseJsonObject(input) {
   const parsed = safeJsonParse(input);
-  if (!parsed.ok) {
+  if (!parsed.ok || !isObjectValue(parsed.data)) {
     return null;
   }
 
-  return parsed.data;
+  return /** @type {Record<string, unknown>} */ (parsed.data);
 }
 
 /**

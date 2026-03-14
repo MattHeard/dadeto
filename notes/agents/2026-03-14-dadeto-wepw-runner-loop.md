@@ -1,0 +1,5 @@
+# 2026-03-14 dadeto-wepw runner loop
+- unexpected hurdle: the `npm test -- test/toys/2026-03-10/ledger-ingest.test.js` command still runs the entire Jest suite because the `package.json` test script ignores additional arguments, so the loop had to wait for all 476 suites to finish.
+- diagnosis path: confirmed the ledger ingest fixtures and toy docs already point at `src/core/browser/toys/2026-03-13/ledger-ingest/`, verified the new presenter file exists, and reran the documented harness command to prove the surface still works after the reshaping.
+- chosen fix: executed `npm test -- test/toys/2026-03-10/ledger-ingest.test.js` (full suite) and appended the timestamped result to `reports/toys/ledger-ingest/commands.log` so future loops can cite the latest end-to-end validation.
+- next-time guidance: consider adding a dedicated script (e.g., `npm run test:ledger-ingest`) or invoking Jest directly to save time when rerunning this harness, then log the helper in the toy docs so runners know the faster path.

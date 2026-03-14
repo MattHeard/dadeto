@@ -4,11 +4,17 @@
 
 Reduce Dadeto duplication warnings to zero and keep them at zero while steadily increasing the duplication-detection difficulty until the threshold becomes unreasonably high.
 
+## Priority
+
+- MoSCoW: Should have. Duplication cleanup improves maintainability, but it is not as urgent as orchestration or architectural drift.
+- RICE: Medium-to-high impact with moderate reach because each small clone removal makes future edits safer in recurring hotspots.
+- Cost of Delay: Medium-high. Clone families tend to expand if they are left alone for too long.
+
 ## Current state
 
 The repo runs `npm run duplication` via `jscpd` over `src/core`. Current config still enforces a zero duplication threshold and records reports under `reports/duplication/`. The active detection difficulty remains `minTokens: 18` in `.jscpd.json`.
 
-After the recent helper cleanups, the old toy/helper family around `joyConMapper`, `hiLoCardGame`, and `joyConMapping` is no longer the best next target. The current remaining report is dominated by:
+After the recent helper cleanups, the old toy/helper family around `joyConMapper`, `hiLoCardGame`, and `joyConMapping` is no longer the best next target. `dadeto-0xd5` removed one small `gamepadCapture.js` clone by extracting an `emitToyPayload` helper, but the bead is still sitting `in_progress` even though it already recorded passing `npm test` and `npm run duplication` evidence. The current remaining report is still dominated by:
 
 - one broad `gamepadCapture.js` ↔ `keyboardCapture.js` family
 - several internal `gamepadCapture.js` duplicates
@@ -28,7 +34,8 @@ Prefer small clone-cluster or helper-extraction beads over broad abstraction chu
 
 ## Candidate next actions
 
-- Remove one small `gamepadCapture.js` ↔ `keyboardCapture.js` capture-lifecycle subcluster rather than attacking the whole family at once.
+- Close or refresh `dadeto-0xd5` based on its existing evidence so the project queue reflects reality.
+- Then remove the next small `gamepadCapture.js` ↔ `keyboardCapture.js` capture-lifecycle or event-payload subcluster rather than attacking the whole family at once.
 - Inspect the remaining `hiLoCardGame.js` spillover overlaps and decide which are meaningful maintenance risks versus generic guard noise.
 - After the repo is clean at `minTokens: 18`, create a threshold-ratchet bead to raise the duplication difficulty.
 - Decide what minimal regression guard should define “keep it at zero” once the threshold has been pushed higher.

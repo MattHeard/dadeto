@@ -3,7 +3,7 @@ import {
   importTransactions,
   fixtures,
   normalizationExamples,
-} from '../../../src/core/ledger-ingest/core.js';
+} from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/core.js';
 
 describe('importTransactions', () => {
   it('normalizes mapped rows, records normalization steps, and exposes summaries', () => {
@@ -53,5 +53,42 @@ describe('importTransactions', () => {
       result.canonicalTransactions[0].transactionId
     );
     expect(report.policyName).toBe('posted-date-amount-description');
+  });
+
+  it('counts a repeat import row as duplicate instead of another canonical entry', () => {
+    const { input } = fixtures.repeatImport;
+    const result = importTransactions(input);
+
+    expect(result.summary.rawRecords).toBe(2);
+    expect(result.summary.canonicalTransactions).toBe(1);
+    expect(result.summary.duplicatesDetected).toBe(1);
+    expect(result.canonicalTransactions).toHaveLength(1);
+    expect(result.canonicalTransactions[0].sourceRecordId).toBe('repeat-001');
+    expect(result.duplicateReports).toHaveLength(1);
+
+    const report = result.duplicateReports[0];
+    expect(report.duplicate.sourceRecordId).toBe('repeat-002');
+    expect(report.existing.sourceRecordId).toBe('repeat-001');
+  });
+
+  it('records structured errors when required fields are missing', () => {
+    const { input } = fixtures.invalidRow;
+    const result = importTransactions(input);
+
+    expect(result.summary.rawRecords).toBe(2);
+    expect(result.summary.canonicalTransactions).toBe(1);
+    expect(result.summary.errorsDetected).toBe(1);
+    expect(result.summary.duplicatesDetected).toBe(0);
+    expect(result.duplicateReports).toHaveLength(0);
+    expect(result.canonicalTransactions).toHaveLength(1);
+    expect(result.errorReports).toHaveLength(1);
+
+    const [errorReport] = result.errorReports;
+    expect(errorReport).toMatchObject({
+      index: 1,
+      missingFields: ['postedDate', 'amount'],
+      reason: 'missing-required-fields',
+    });
+    expect(errorReport.rawRecord.id).toBe('invalid-001');
   });
 });

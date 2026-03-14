@@ -1,7 +1,7 @@
 import {
   buildVariantByNameQuery,
   buildPageByNumberQuery,
-} from '../firestore-helpers.js';
+} from '../cloud-core.js';
 import { when } from '../../common-core.js';
 
 /**

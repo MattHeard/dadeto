@@ -6,6 +6,8 @@ describe('local symphony codex launcher', () => {
     const calls = [];
     /** @type {Array<{ path: string, flags: string }>} */
     const openCalls = [];
+    /** @type {string[]} */
+    const closeCalls = [];
     let unrefCalled = false;
     const launcher = createCodexRalphLauncher({
       command: 'codex',
@@ -23,6 +25,10 @@ describe('local symphony codex launcher', () => {
         openCalls.push({ path: filePath, flags });
         return {
           fd: openCalls.length + 39,
+          close() {
+            closeCalls.push(filePath);
+            return Promise.resolve();
+          },
         };
       },
       spawnImpl(command, args, options) {
@@ -93,5 +99,9 @@ describe('local symphony codex launcher', () => {
       stderrPath:
         '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stderr.log',
     });
+    expect(closeCalls).toEqual([
+      '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stdout.log',
+      '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stderr.log',
+    ]);
   });
 });

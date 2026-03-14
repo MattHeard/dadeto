@@ -1,4 +1,6 @@
 import {
+  buildPageByNumberQuery,
+  buildVariantByNameQuery,
   createCorsOriginHandler,
   createCorsOptions,
   extractErrorMessage,
@@ -6,10 +8,6 @@ import {
   sendOkResponse,
   resolveMessageOrDefault,
 } from '../cloud-core.js';
-import {
-  buildPageByNumberQuery,
-  buildVariantByNameQuery,
-} from '../firestore-helpers.js';
 import * as commonCore from '../common-core.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 const POST_METHOD = 'POST';

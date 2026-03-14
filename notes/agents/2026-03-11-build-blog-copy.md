@@ -1,0 +1,4 @@
+- unexpected hurdle: blog.json now lives inside src/build/ but the public copy flow never touched that directory, so the runtime payload still pointed at the old source.
+- diagnosis path: reviewed src/build/copy.js and src/core/build/blog.js to understand what directories are walked; there was no step that copies src/build/blog.json, so the published blog stayed stale.
+- chosen fix: introduced copyBlogJson (src/core/build/blog.js) that copies src/build/blog.json into public/blog.json and wires it into runCopyWorkflow, then reran npm run copy and npm test to prove the new publish path is consumed.
+- next-time guidance: whenever moving shared data assets, pair the move with an explicit copy step and regenerate the public artifact plus coverage/tests before closing the loop.

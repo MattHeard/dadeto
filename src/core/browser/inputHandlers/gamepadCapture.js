@@ -16,6 +16,8 @@ import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
 /** @typedef {{ capturing: boolean, animationFrameId: number | null, snapshots: Record<number, GamepadSnapshot> }} CaptureState */
 /** @typedef {{ button: HTMLButtonElement, dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, state: CaptureState }} HandlerOptions */
+/** @typedef {import('./captureFormShared.js').CaptureFormContext} CaptureFormContext */
+/** @typedef {CaptureFormContext & { form: HTMLElement }} GamepadCaptureFormBuilderContext */
 const GAMEPAD_FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
 const CAPTURE_BUTTON_LABEL = 'Capture gamepad';
 const RELEASE_BUTTON_LABEL = 'Release gamepad';
@@ -801,13 +803,13 @@ function registerGamepadListeners(options, cleanupFns) {
   );
 }
 
-function initializeGamepadCaptureFormContext({
-  button,
-  cleanupFns,
-  container,
-  dom,
-  textInput,
-}) {
+/**
+ * Prepare the listener context after the shared form is ready.
+ * @param {CaptureFormContext} options - Shared capture form context provided by the builder.
+ * @returns {void}
+ */
+function initializeGamepadCaptureFormContext(options) {
+  const { button, cleanupFns, container, dom, textInput } = options;
   registerGamepadListeners(
     {
       button,
@@ -824,6 +826,11 @@ function initializeGamepadCaptureFormContext({
   );
 }
 
+/**
+ * Bridge the shared capture context into the gamepad listener wiring.
+ * @param {GamepadCaptureFormBuilderContext} options - Context provided by `makeCaptureFormBuilder`.
+ * @returns {void}
+ */
 function handleGamepadCaptureFormContext(options) {
   withCaptureFormContext(
     options,

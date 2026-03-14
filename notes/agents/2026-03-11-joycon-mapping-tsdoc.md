@@ -1,0 +1,4 @@
+- **Unexpected hurdle:** `joyConMapping.js` serialized payload helpers were typed just as `Record<string, unknown>`, so the tsdoc check complained whenever we indexed `mappings` or called `includes` on `skippedControls`.
+- **Diagnosis:** TSDoc/tsc needs concrete typedefs plus safe handling of optional arrays/objects; without them the file-level helpers still looked like `{}` and the descriptor lookup by `mapping.type` had no index signature.
+- **Fix:** added `JoyConMappingRecord/State` typedefs, typed `MAPPING_DESCRIBERS`, guarded `skippedControls` with `Array.isArray`, and made `parseState`/helper docblocks return those typed shapes before calling `describeMapping`.
+- **Next-time guidance:** whenever a presenter serializes a structured payload, declare precise JSDoc shapes and coerce optional arrays/records right where they’re consumed so future tsdoc slices have the needed type hints before expanding to bigger surfaces.

@@ -5,6 +5,7 @@ import {
   createInitialGameState,
   createInitialKeyboardState,
   hiLoCardGameToy,
+  normalizeGameState,
   parseHiLoInput,
 } from '../../../src/core/browser/toys/2026-03-01/hiLoCardGame.js';
 
@@ -37,6 +38,14 @@ describe('parseHiLoInput', () => {
 
   it('returns null when json parses but is not an object', () => {
     expect(parseHiLoInput('"scalar"')).toBeNull();
+  });
+
+  it('returns null for non-string inputs', () => {
+    expect(parseHiLoInput(null)).toBeNull();
+  });
+
+  it('returns null when the payload omits a type', () => {
+    expect(parseHiLoInput(JSON.stringify({ key: 'ArrowUp' }))).toBeNull();
   });
 });
 
@@ -108,6 +117,59 @@ describe('applyHiLoEvent', () => {
 
     expect(result.keyboardState.activeKey).toBeNull();
     expect(result.gameState).toEqual(initial);
+  });
+
+  it('ignores non-guess keydown events', () => {
+    const initial = {
+      currentCard: 6,
+      score: { correct: 0, incorrect: 0, total: 0 },
+    };
+    const keyboard = createInitialKeyboardState();
+    const result = applyHiLoEvent(
+      { type: 'keydown', key: 'Enter' },
+      { gameState: initial, keyboardState: keyboard },
+      () => 0.5
+    );
+
+    expect(result).toEqual({ gameState: initial, keyboardState: keyboard });
+  });
+
+  it('ignores non-keydown events even when guess keys arrive', () => {
+    const initial = {
+      currentCard: 6,
+      score: { correct: 0, incorrect: 0, total: 0 },
+    };
+    const keyboard = createInitialKeyboardState();
+    const result = applyHiLoEvent(
+      { type: 'keypress', key: 'ArrowUp' },
+      { gameState: initial, keyboardState: keyboard },
+      () => 0.5
+    );
+
+    expect(result).toEqual({ gameState: initial, keyboardState: keyboard });
+  });
+});
+
+describe('normalizeGameState', () => {
+  it('resets invalid stored scores without mutating current card', () => {
+    const stored = { currentCard: 5, score: 'not an object' };
+    const normalized = normalizeGameState(stored, () => 0.5);
+
+    expect(normalized.currentCard).toBe(5);
+    expect(normalized.score).toEqual({ correct: 0, incorrect: 0, total: 0 });
+  });
+
+  it('creates a fresh state when the stored card is out of range', () => {
+    const stored = {
+      currentCard: 99,
+      score: { correct: 1, incorrect: 1, total: 2 },
+    };
+    const normalized = normalizeGameState(stored, () => 0);
+
+    expect(normalized).toEqual({
+      currentCard: 1,
+      score: { correct: 0, incorrect: 0, total: 0 },
+    });
   });
 });
 

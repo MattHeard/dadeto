@@ -14,7 +14,7 @@
 ## First-Response Playbook
 1. Capture the failing command (`npm test ...`) and copy the output into `reports/toys/ledger-ingest/commands.log`.
 2. Inspect fixtures to see which normalization or dedupe assertion failed (missing date, amount, or description hygiene).
-3. Update `src/core/ledger-ingest/core.js` (or fixtures) so the normalization/dedupe logic matches the intended contract, then rerun the targeted test.
+3. Update `src/core/browser/toys/2026-03-13/ledger-ingest/core.js` (or fixtures) so the normalization/dedupe logic matches the intended contract, then rerun the targeted test.
 
 ## Promoted from Real Failures
 - None yet; core contract and fixtures are new.

@@ -4,9 +4,17 @@
 
 Experiment with a directory convention where each directory prefers one primary shared module named after the directory, and use the shape of that shared module to discover when the directory should be split.
 
+## Priority
+
+- MoSCoW: Could have. This is exploratory architecture guidance rather than an urgent operational or product need.
+- RICE: Lower reach and lower near-term impact because the project is intentionally experimental and evidence-gathering.
+- Cost of Delay: Low. Waiting mostly postpones learning rather than increasing concrete failure cost.
+
 ## Current state
 
 Dadeto has at least one strong example of this pattern in `src/core/browser/inputHandlers/browserInputHandlersCore.js`, but it also has narrower shared/helper files such as `captureFormShared.js`. The project is exploratory: the goal is to gather enough practical refactoring feedback to decide whether this convention improves predictability for coding agents and whether “shared file becoming incoherent” is a useful signal that the directory structure itself should split.
+
+Two real trial slices have already been run and recorded, so the project is now past the first proof-of-concept stage. The next ready bead, `dadeto-zpi1`, is to choose and document a third real trial target using the existing rubric so the comparison set gets broader than the initial input-handler examples.
 
 ## Constraints
 
@@ -22,7 +30,7 @@ Treat this as an experiment, not a settled architecture mandate. Prefer small tr
 ## Candidate next actions
 
 - Document the exploratory convention in repo guidance as a preferred default, not a strict law.
-- Trial the convention in `src/core/browser/inputHandlers` and record what becomes cleaner or more awkward.
+- Use `dadeto-zpi1` to pick and run the third real trial in a different directory with shared-helper pressure.
 - Identify one or two additional directories where a shared-module consolidation or directory split would provide useful feedback.
 - Define a small experiment rubric so future trial beads capture comparable evidence instead of only subjective impressions.
 - Decide what evidence would be strong enough to promote the experiment into a firmer repo convention.

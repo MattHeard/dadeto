@@ -66,4 +66,35 @@ describe('createJoyConMappingElement', () => {
     expect(findRow('D-Pad Left').children[1].textContent).toBe('skipped');
     expect(findRow('Stick Right').children[1].textContent).toBe('optional');
   });
+
+  test('falls back to optional text for unknown mapping types without value', () => {
+    const dom = createMockDom();
+    const payload = {
+      mappings: {
+        stick_right: { type: 'mystery' },
+      },
+      skippedControls: [],
+    };
+    const element = createJoyConMappingElement(JSON.stringify(payload), dom);
+    const [title, summary, list] = element.children;
+
+    expect(summary.textContent).toBe('1 mapped, 0 skipped');
+
+    const findRow = label =>
+      list.children.find(row => row.children[0].textContent === label);
+
+    expect(findRow('Stick Right').children[1].textContent).toBe('optional');
+  });
+
+  test('renders zero mappings when payload lacks arrays or mappings', () => {
+    const dom = createMockDom();
+    const payload = {
+      skippedControls: null,
+    };
+    const element = createJoyConMappingElement(JSON.stringify(payload), dom);
+    const [title, summary, list] = element.children;
+
+    expect(summary.textContent).toBe('0 mapped, 0 skipped');
+    expect(list.children[0].children[1].textContent).toBe('optional');
+  });
 });

@@ -55,40 +55,51 @@ export function createCodexRalphLauncher(options) {
     async launchRunner(payload) {
       const prompt = buildRalphPrompt(payload);
       const args = [...(options.args ?? []), prompt];
-      const { stdoutPath, stderrPath, stdoutFd, stderrFd } =
-        await openRunLogFiles({
-          logDir: options.logDir ?? path.join(payload.repoRoot, 'tracking', 'symphony'),
-          runId: payload.runId,
-          mkdirImpl,
-          openImpl,
-        });
-
-    const child = spawnImpl(options.command, args, {
-      cwd: options.cwd ?? payload.repoRoot,
-      detached: true,
-      stdio: ['ignore', stdoutFd, stderrFd],
-    });
-
-    if (typeof payload.onExit === 'function') {
-      child.once('exit', (code, signal) => {
-        const exitPayload = {
-          runId: payload.runId,
-          beadId: payload.beadId,
-          beadTitle: payload.beadTitle ?? null,
-          exitCode: typeof code === 'number' ? code : null,
-          signal: signal ?? null,
-        };
-
-        Promise.resolve(payload.onExit(exitPayload)).catch((error) => {
-          console.error(
-            `Failed to handle Symphony runner exit for ${payload.runId}:`,
-            error
-          );
-        });
+      const {
+        stdoutPath,
+        stderrPath,
+        stdoutFd,
+        stderrFd,
+        stdoutHandle,
+        stderrHandle,
+      } = await openRunLogFiles({
+        logDir: options.logDir ?? path.join(payload.repoRoot, 'tracking', 'symphony'),
+        runId: payload.runId,
+        mkdirImpl,
+        openImpl,
       });
-    }
 
-    child.unref();
+      let child;
+      try {
+        child = spawnImpl(options.command, args, {
+          cwd: options.cwd ?? payload.repoRoot,
+          detached: true,
+          stdio: ['ignore', stdoutFd, stderrFd],
+        });
+      } finally {
+        await closeRunLogHandles({ stdoutHandle, stderrHandle });
+      }
+
+      if (typeof payload.onExit === 'function') {
+        child.once('exit', (code, signal) => {
+          const exitPayload = {
+            runId: payload.runId,
+            beadId: payload.beadId,
+            beadTitle: payload.beadTitle ?? null,
+            exitCode: typeof code === 'number' ? code : null,
+            signal: signal ?? null,
+          };
+
+          Promise.resolve(payload.onExit(exitPayload)).catch((error) => {
+            console.error(
+              `Failed to handle Symphony runner exit for ${payload.runId}:`,
+              error
+            );
+          });
+        });
+      }
+
+      child.unref();
 
       return {
         launcherKind: 'codex',
@@ -138,7 +149,9 @@ function buildRalphPrompt(payload) {
  *   stdoutPath: string,
  *   stderrPath: string,
  *   stdoutFd: number,
- *   stderrFd: number
+ *   stderrFd: number,
+ *   stdoutHandle: { close?: () => Promise<void> | void },
+ *   stderrHandle: { close?: () => Promise<void> | void }
  * }>} Opened append-only run log files.
  */
 async function openRunLogFiles(options) {
@@ -158,5 +171,37 @@ async function openRunLogFiles(options) {
     stderrPath,
     stdoutFd: stdoutHandle.fd,
     stderrFd: stderrHandle.fd,
+    stdoutHandle,
+    stderrHandle,
   };
+}
+
+/**
+ * @param {{
+ *   stdoutHandle?: { close?: () => Promise<void> | void },
+ *   stderrHandle?: { close?: () => Promise<void> | void }
+ * }} handles
+ * @returns {Promise<void>}
+ */
+async function closeRunLogHandles({ stdoutHandle, stderrHandle }) {
+  const closers = [];
+
+  if (stdoutHandle && typeof stdoutHandle.close === 'function') {
+    closers.push(stdoutHandle.close());
+  }
+
+  if (stderrHandle && typeof stderrHandle.close === 'function') {
+    closers.push(stderrHandle.close());
+  }
+
+  if (closers.length === 0) {
+    return;
+  }
+
+  const results = await Promise.allSettled(closers);
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      console.error('Failed to close run log handle:', result.reason);
+    }
+  }
 }

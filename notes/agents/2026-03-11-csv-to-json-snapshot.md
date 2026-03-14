@@ -1,0 +1,5 @@
+# CSV to JSON snapshot assertion loop
+- unexpected hurdle: `rg` for `toMatchSnapshot`/`toMatchInlineSnapshot` returned nothing, so the remaining "snapshot" surface turned out to be a raw JSON string equality in `csvToJsonObject` rather than a Jest helper; inventorying it meant reasoning about behaviour rather than a straight grep hit.
+- diagnosis path: started with the notes in `projects/snapshot-to-behaviour`, then confirmed no actual snapshot helpers remain, scanned for `JSON.stringify` expectations, and pinned the smallest stable target to `test/toys/2025-10-19/csvToJsonObject.test.js` before touching the assertion.
+- chosen fix: parse the toy output inside the first test and assert `name`, `age`, and the key set instead of comparing the entire JSON string, keeping the rest of the file unchanged and rerunning `npm test` for full-suite evidence.
+- next-time guidance: keep keeping track of pure string equality checks that resemble snapshots (e.g. `JSON.stringify` literals) and bite-sized loops like this one, and keep the bd comment pointing at the renamed assertion so other agents can trade on the same surface without rediscovery.
