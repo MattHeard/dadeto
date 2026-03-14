@@ -1,0 +1,5 @@
+# 2026-03-13 dadeto-6tmw runner loop
+- unexpected hurdle: the Symphony TUI had silently lost its manual refresh control while the auto-loop code was still intact, so I had to reintroduce it without disrupting the existing auto-loop state machine or the compact view layout.
+- diagnosis path: traced the bead description to `scripts/symphony-tui.js`, confirmed there was no `REFRESH_URL`/`triggerRefresh` or `R` handler, and decided to add a dedicated refresh feedback flow that reuses the status render path.
+- chosen fix: added `REFRESH_URL`, `refreshFeedback`, and `refreshInFlight`, implemented `triggerRefresh()` to POST to `/api/v1/refresh` and re-render status, wired the `R` key, and exposed the new feedback line while keeping auto loop behavior untouched; followed up with `npm test` to capture a clean run.
+- next-time guidance: when resurrecting UI shortcuts, double-check whether the status render already anticipates the feedback line so the view remains compact, and re-fetch the status after the manual POST to keep the TUI in sync.
