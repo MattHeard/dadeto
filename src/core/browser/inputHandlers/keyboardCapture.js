@@ -1,11 +1,11 @@
 import * as browserCore from '../browser-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
+import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} KeyboardDOMHelpers */
 const KEYBOARD_FORM_CLASS = browserCore.KEYBOARD_CAPTURE_FORM_SELECTOR.slice(1);
 const CAPTURE_BUTTON_LABEL = 'Capture keyboard';
 const RELEASE_BUTTON_LABEL = 'Release keyboard';
-const ESCAPE_KEY = 'Escape';
 
 /**
  * Update the capture button label to reflect the current mode.
@@ -79,15 +79,6 @@ function releaseCaptureOnEscape(event, options) {
     false
   );
   return true;
-}
-
-/**
- * Check whether the event is the escape keydown that releases capture.
- * @param {KeyboardEvent} event - Keyboard event to inspect.
- * @returns {boolean} True when the event is the escape keydown.
- */
-function isEscapeKeydown(event) {
-  return event.type === 'keydown' && event.key === ESCAPE_KEY;
 }
 
 /**
