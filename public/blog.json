@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "LEDG1",
+      "title": "Ledger Ingest",
+      "publicationDate": "2026-03-13",
+      "content": [
+        "Runs a deterministic transaction-import core against a named fixture and returns canonical rows, duplicate reports, structured errors, and summary data.",
+        "Provide JSON like {\"fixture\":\"happyPath\"} or switch to duplicateDetection, repeatImport, or invalidRow to inspect different import outcomes.",
+        "The toy is a thin wrapper over the ledger-ingest core so the import flow can be tried end to end without adding file IO, network calls, or persistence."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js",
+        "functionName": "ledgerIngestToy",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "ledger", "finance", "import", "json"]
+    },
+    {
       "key": "JOYC1",
       "title": "Joy-Con Button Mapper",
       "publicationDate": "2026-03-01",
