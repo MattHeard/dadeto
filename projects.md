@@ -1,6 +1,7 @@
 # Projects
 
 - symphony
+- sqlite-beads-backend
 - symphony-tui
 - dependency-cruiser
 - core-lint-zero
