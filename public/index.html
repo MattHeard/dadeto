@@ -432,6 +432,96 @@
         </p>
       </div>
       <article
+        class="entry tag-toy tag-ledger tag-finance tag-import tag-json"
+        id="LEDG1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">LEDG1</div>
+        <div class="value">
+          <h2><a href="#LEDG1">Ledger Ingest</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">13 Mar 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-ledger">ledger</a>,
+          <a class="tag-finance">finance</a>, <a class="tag-import">import</a>,
+          <a class="tag-json">json</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Runs a deterministic transaction-import core against a named fixture
+          and returns canonical rows, duplicate reports, structured errors, and
+          summary data.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Provide JSON like {"fixture":"happyPath"} or switch to
+          duplicateDetection, repeatImport, or invalidRow to inspect different
+          import outcomes.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The toy is a thin wrapper over the ledger-ingest core so the import
+          flow can be tried end to end without adding file IO, network calls, or
+          persistence.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'LEDG1',
+            '/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js',
+            'ledgerIngestToy'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-joycon tag-gamepad tag-input tag-storage"
         id="JOYC1"
       >
