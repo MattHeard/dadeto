@@ -232,9 +232,10 @@ function renderStatus(status) {
   } else {
     pushLine(lines, formatField('State', status.state ?? 'unknown'));
     const beadId = status.currentBeadId ?? 'none';
-    const beadTitle = status.currentBeadTitle ? ` - ${status.currentBeadTitle}` : '';
-    const beadValue = `ID ${beadId}${beadTitle}`;
-    pushLine(lines, highlightLine(formatField('Bead', beadValue)));
+    pushLine(lines, highlightLine(formatField('Bead ID', beadId)));
+    if (status.currentBeadTitle) {
+      pushLine(lines, formatField('Title', status.currentBeadTitle));
+    }
     pushLine(lines, formatField('Run', renderActiveRun(status.activeRun)));
     pushLine(
       lines,

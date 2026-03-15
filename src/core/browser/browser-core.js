@@ -356,17 +356,30 @@ export function isObjectValue(value) {
 }
 
 /**
- * Parse a JSON string and return its value or `null` on failure.
- * @param {string} input - JSON string to parse.
- * @returns {Record<string, unknown> | null} Parsed payload or null.
+ * Convert an object-like value into a typed record or return `null`.
+ * @param {unknown} value - Candidate payload.
+ * @returns {Record<string, unknown> | null} The value when object-like; otherwise `null`.
  */
-export function parseJsonObject(input) {
-  const parsed = safeJsonParse(input);
-  if (!parsed.ok || !isObjectValue(parsed.data)) {
+function toRecord(value) {
+  if (!isObjectValue(value)) {
     return null;
   }
 
-  return /** @type {Record<string, unknown>} */ (parsed.data);
+  return /** @type {Record<string, unknown>} */ (value);
+}
+
+/**
+ * Parse a JSON string and return its value or `null` on failure.
+ * @param {string} input - JSON string to parse.
+ * @returns {Record<string, unknown> | null} Parsed payload or `null`.
+ */
+export function parseJsonObject(input) {
+  const parsed = safeJsonParse(input);
+  if (!parsed.ok) {
+    return null;
+  }
+
+  return toRecord(parsed.data);
 }
 
 /**

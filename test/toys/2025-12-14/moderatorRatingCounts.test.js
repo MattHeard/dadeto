@@ -52,9 +52,11 @@ describe('moderatorRatingCounts', () => {
       },
     ];
 
-    expect(moderatorRatingCounts(JSON.stringify(invalidRatings))).toBe('[]');
-    expect(moderatorRatingCounts(JSON.stringify({}))).toBe('[]');
-    expect(moderatorRatingCounts('[1, 2, 3]')).toBe('[]');
-    expect(moderatorRatingCounts(null)).toBe('[]');
+    const parseResult = input => JSON.parse(moderatorRatingCounts(input));
+
+    expect(parseResult(JSON.stringify(invalidRatings))).toEqual([]);
+    expect(parseResult(JSON.stringify({}))).toEqual([]);
+    expect(parseResult('[1, 2, 3]')).toEqual([]);
+    expect(parseResult(null)).toEqual([]);
   });
 });
