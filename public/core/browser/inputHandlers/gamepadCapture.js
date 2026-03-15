@@ -1,5 +1,6 @@
 import * as browserCore from '../browser-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
+import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
 /** @typedef {() => void} CleanupFn */
@@ -12,7 +13,6 @@ import captureLifecycleDeps from './captureLifecycleDeps.js';
 const GAMEPAD_FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
 const CAPTURE_BUTTON_LABEL = 'Capture gamepad';
 const RELEASE_BUTTON_LABEL = 'Release gamepad';
-const ESCAPE_KEY = 'Escape';
 const AXIS_EPSILON = 0.01;
 const GAMEPAD_CONNECTED_EVENT = 'gamepadconnected';
 const GAMEPAD_DISCONNECTED_EVENT = 'gamepaddisconnected';
@@ -522,19 +522,6 @@ function pollGamepads(options) {
 }
 
 /**
- * Determine whether an escape keydown should release capture.
- * @param {KeyboardEvent} event - Browser keyboard event.
- * @returns {boolean} True when capture should be released.
- */
-function isEscapeReleaseEvent(event) {
-  if (event.type !== 'keydown') {
-    return false;
-  }
-
-  return event.key === ESCAPE_KEY;
-}
-
-/**
  * Release capture, clear snapshots, and notify the toy.
  * @param {HandlerOptions} options - Shared handler dependencies.
  * @returns {void}
@@ -603,7 +590,7 @@ function shouldIgnoreEscapeEvent(state, event) {
     return true;
   }
 
-  return !isEscapeReleaseEvent(event);
+  return !isEscapeKeydown(event);
 }
 
 /**
