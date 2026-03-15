@@ -285,7 +285,7 @@ let statusError = null;
 let autoLoopEnabled = false;
 let autoLoopInFlight = false;
 let autoLoopPhase = 'idle';
-let refreshFeedback = 'Press R to refresh.';
+let refreshFeedback = '';
 let refreshInFlight = false;
 
 async function fetchStatus() {
@@ -343,7 +343,7 @@ function scheduleNextAutoLoopCycle() {
   }, REFRESH_MS);
 }
 
-let launchFeedback = 'Press A for auto, L to launch.';
+let launchFeedback = '';
 let launchInFlight = false;
 
 async function triggerLaunch() {
