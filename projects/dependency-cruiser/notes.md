@@ -46,3 +46,4 @@ Introduce the tool incrementally. Prefer one small rule family at a time over a 
 
 - **2026-03-10:** Added a `core-no-local-deps` forbidden rule so shared `src/core` modules cannot depend on runner-specific `src/local` helpers; the boundary is enforced with severity `error` because the current baseline is already clean.
 - **2026-03-11:** Added broader `src/*` warning rules, promoted `local-writer-no-cycles` to `error`, cleaned the `src/build/generate.js` violation, and opened a follow-up to keep `public/blog.json` aligned with the new `src/build/blog.json` source.
+- **2026-03-15:** Following the blog publish path repair, promoted `src-local-only-core` to severity `error` so local tooling remains restricted to `src/local` and `src/core` as the boundary matures.

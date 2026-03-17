@@ -68,7 +68,7 @@ module.exports = {
       name: 'src-local-only-core',
       comment:
         'Allow local tooling to depend only on itself or src/core for clearer layering.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/local',
       },

@@ -1,0 +1,4 @@
+- unexpected hurdle: dependency-cruiser already clean post blog-publish fix, so the loop mostly verified that the next boundary was safe to harden rather than chasing a real violation.
+- diagnosis path: reran `npm run depcruise` after the copy fix, inspected the config and repo layout to ensure `src/local` only touches `src/local` or `src/core`, and confirmed no warning-level breaches remained.
+- chosen fix: promoted `src-local-only-core` from warn to error and recorded the tighter rule in `projects/dependency-cruiser/notes.md` so the new baseline is visible, then reran the cruiser check to ensure the rule stays green.
+- next-time guidance or open questions: as more published artifacts move around, keep the duplicated `public` copies in sync before ratcheting dependency rules so the enforcement stays a low-noise gate.

@@ -412,13 +412,13 @@ export function random() {
  * @param {string[]} allowedOrigins Allowed origins.
  * @returns {boolean} True if allowed.
  */
-function isOriginAllowed(origin, allowedOrigins) {
+function isOriginAllowed(origin, allowedOrigins = []) {
   return !origin || allowedOrigins.includes(origin);
 }
 
 /**
  * Build an Express-compatible origin handler from the resolved allow-list.
- * @param {string[]} allowedOrigins Origins permitted to call the moderation API.
+ * @param {string[] | undefined} [allowedOrigins] Origins permitted to call the moderation API.
  * @returns {CorsOriginHandler} Origin handler used by CORS middleware.
  */
 export function createCorsOriginHandler(allowedOrigins) {
@@ -570,8 +570,8 @@ export function configureUrlencodedBodyParser(appInstance, expressModule) {
 
 /**
  * Check if snapshot is empty.
- * @param {object} snapshot Snapshot.
- * @param {unknown} variantDoc Variant doc.
+ * @param {VariantSnapshot | undefined} snapshot Snapshot.
+ * @param {VariantDocSnapshot | undefined} variantDoc Variant doc.
  * @returns {boolean} True if empty.
  */
 function isSnapshotEmpty(snapshot, variantDoc) {
@@ -613,7 +613,7 @@ function snapshotIsEmpty(snapshot) {
 
 /**
  * Select the primary variant document from a query snapshot when it exists.
- * @param {VariantSnapshot} snapshot Query snapshot containing candidate documents.
+ * @param {VariantSnapshot | undefined} snapshot Query snapshot containing candidate documents.
  * @returns {SelectVariantDocResult} Selected document when present or an error message when missing.
  */
 export function selectVariantDoc(snapshot) {
@@ -636,7 +636,7 @@ function resolveSnapshotDocs(snapshot) {
     return [];
   }
 
-  return snapshot.docs;
+  return snapshot.docs ?? [];
 }
 
 /**
