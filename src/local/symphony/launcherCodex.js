@@ -8,7 +8,7 @@ export const DEFAULT_CODEX_RALPH_ARGS = [
   'exec',
   '--skip-git-repo-check',
   '--model',
-  'gpt-5.1-codex-mini',
+  'gpt-5.4-mini',
   '--sandbox',
   'workspace-write',
 ];

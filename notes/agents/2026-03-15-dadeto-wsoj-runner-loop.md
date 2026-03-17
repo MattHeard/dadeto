@@ -1,0 +1,8 @@
+# 2026-03-15 dadeto-wsoj Runner Loop
+
+- **Unexpected hurdle:** `bd migrate --to-sqlite` would not finish: the early run reported a duplicate primary key on dadeto-007 even though the Dolt schema had no duplicates, and every subsequent attempt hit prefix mismatches because the new SQLite file defaulted to `bd-test-` while the JSONL contained `gm/ mh/ dadeto` prefixes. The `mh` shard also failed at first because `subtask` is not a builtin type.
+- **Diagnosis path:** Re-ran the migration several times while inspecting the metadata, config table, and import logs. Spun up a throwaway `bd init --backend sqlite` workspace to generate a clean schema, then tested imports shard-by-shard so we could align the `issue_prefix` entry, add the missing `subtask` type, and inspect the `bd import` warnings.
+- **Chosen fix:** Copied the template SQLite file into `~/dadeto/.beads/beads.db`, set `.beads/metadata.json` to `backend: sqlite`, added `types.custom = subtask`, and imported the JSONL in three passes (gm, mh, dadeto) while toggling the config’s `issue_prefix` row and prefix setting before each pass. The mh pass emitted four dependency warnings (mh-007 → dadeto-007, mh-8kp → dadeto-8kp, mh-nmo → dadeto-nmo, mh-D60 → mh-vwf), which need to be reviewed once their targets are fully migrated.
+- **Next-time guidance / open questions:** Any further imports should keep the gm/mh/dadeto shards separated or use `--rename-on-import` because the CLI refuses to mix prefixes. Keep `subtask` listed under `types.custom` so future imports do not hit validation errors. Once the live Db is stable, delete the old `.beads/dolt` tree and ensure the `mh-*` dependency edges above are restored against the migrated parents.
+
+Runner evidence: 2026-03-15T11:31:26.150Z--dadeto-wsoj
