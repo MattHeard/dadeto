@@ -171,20 +171,21 @@ function syncIfPayload(options) {
  *   dom: GamepadDOMHelpers,
  *   textInput: HTMLInputElement,
  *   autoSubmitCheckbox: HTMLInputElement | null,
- *   payload: Record<string, unknown>,
+ *   payload: Record<string, unknown> | null,
  * }} options - Payload delivery dependencies.
  * @returns {void}
  */
 function emitToyPayload(options) {
-  if (options.payload === null) {
+  const { dom, textInput, autoSubmitCheckbox, payload } = options;
+  if (payload === null) {
     return;
   }
 
   captureLifecycleDeps.syncToyInput({
-    dom: options.dom,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    payload: options.payload,
+    dom,
+    textInput,
+    autoSubmitCheckbox,
+    payload,
   });
 }
 
