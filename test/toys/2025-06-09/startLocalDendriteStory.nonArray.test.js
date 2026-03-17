@@ -10,9 +10,21 @@ test('startLocalDendriteStory replaces non-array DEND1', () => {
   const result = JSON.parse(
     startLocalDendriteStory('{"title":"t","content":"c"}', env)
   );
-  const expected = { id: 'id-1', title: 't', content: 'c', options: [] };
-  expect(result).toEqual(expected);
+
+  expect(result.id).toBe('id-1');
+  expect(result.title).toBe('t');
+  expect(result.content).toBe('c');
+  expect(result.options).toEqual([]);
   expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
-    temporary: { STAR1: [expected] },
+    temporary: {
+      STAR1: [
+        {
+          id: 'id-1',
+          title: 't',
+          content: 'c',
+          options: [],
+        },
+      ],
+    },
   });
 });
