@@ -14,6 +14,8 @@ Provide a Node-based terminal interface for the local Symphony server so operato
 
 The TUI currently exists as a script entrypoint in `scripts/symphony-tui.js` and already renders a compact status view with polling plus launch and auto-loop controls. However, it is not yet trustworthy enough for unattended autolooping, and the current code shape is too script-heavy: terminal/interface wiring, state interpretation, and loop logic still live together instead of being split into a local interface layer plus reusable core-local logic.
 
+- Freshness check: reviewed on 2026-03-17 and still aligned with the compact-status and auto-loop trust gap.
+
 ## Constraints
 
 - Use only Node.js dependencies already on the repo or light-weight new ones (e.g., `blessed`).
@@ -50,6 +52,7 @@ The TUI currently exists as a script entrypoint in `scripts/symphony-tui.js` and
 - Land `dadeto-tusi` so the bead id becomes more prominent than the title in the compact view.
 - Move the current script-heavy implementation toward the intended split: interface code in `src/local/`, reusable logic in `src/core/local/`, and only a thin launcher in `scripts/`.
 - Add a responsive layout pass so the TUI scales up and down with the available terminal size instead of behaving like a fixed tiny dashboard.
+- Add version stamps to the Symphony server and TUI status so the dashboard can prompt for a restart when one side is stale.
 - Add an `R` refresh shortcut through the existing refresh endpoint.
 - Add a toggle that starts and stops an auto refresh-then-launch loop so the TUI can drive one-bead-at-a-time operation without repeated manual key presses.
 - Render concise backlog information for other Ralph-ready beads so the operator can see what remains in the queue beyond the currently selected bead.

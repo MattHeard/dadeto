@@ -1,0 +1,4 @@
+- **Unexpected hurdle:** `dadeto-ni2e` was a duplicate of the already-closed `dadeto-8m7n`, so the loop had to verify the live workspace state instead of chasing a second migration path.
+- **Diagnosis path:** Checked `.beads/metadata.json`, `bd backend show`, `bd config get issue-prefix`, and `bd config get types.custom`. The workspace bead backend is `sqlite`, with `beads.db` as the DB file, and the config knobs still resolve to `gm` and `subtask`.
+- **Chosen fix:** No code change was needed. The verification path is already reflected in repo memory through the existing sqlite-beads-backend notes, and this loop only confirmed the current workspace still matches that snapshot.
+- **Next-time guidance:** Treat `dadeto-ni2e` as closed-state verification only unless a future bead shows the backend config or lock behavior has diverged from the documented snapshot.

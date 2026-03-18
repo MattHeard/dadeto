@@ -1,4 +1,4 @@
-import { isValidString } from '../../../commonCore.js';
+import { areValidStrings } from '../../../commonCore.js';
 import { calculateEdgeWeight } from './edgeWeight.js';
 import { isPlainObject } from '../browserToysCore.js';
 import { guardThen } from '../../common.js';
@@ -292,7 +292,7 @@ function buildNodeList(ratings, moderatorId, adminId) {
  * @returns {boolean} True when both are valid.
  */
 function areIdsValid(moderatorId, adminId) {
-  return isValidString(moderatorId) && isValidString(adminId);
+  return areValidStrings(moderatorId, adminId);
 }
 
 /**

@@ -23,6 +23,8 @@ The broadest remaining branch gaps are still concentrated in:
 
 There is currently no fresh ready bead for this project, so the next planner pass should shape a new bounded slice from the latest coverage artifact instead of reusing the old helper-focused plan.
 
+- Freshness check: reviewed on 2026-03-17 and still tracking against the current coverage-summary artifact.
+
 ## Constraints
 
 Prefer small file-local or behavior-local coverage beads over broad test rewrites. Keep runtime behavior stable, and favor durable regression tests that clearly explain which branches are being covered.

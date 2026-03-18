@@ -6,6 +6,7 @@ import {
   createInitialKeyboardState,
   hiLoCardGameToy,
   normalizeGameState,
+  normalizeParsedEvent,
   parseHiLoInput,
 } from '../../../src/core/browser/toys/2026-03-01/hiLoCardGame.js';
 
@@ -40,12 +41,22 @@ describe('parseHiLoInput', () => {
     expect(parseHiLoInput('"scalar"')).toBeNull();
   });
 
+  it('returns null when json parses to an array', () => {
+    expect(parseHiLoInput('[]')).toBeNull();
+  });
+
   it('returns null for non-string inputs', () => {
     expect(parseHiLoInput(null)).toBeNull();
   });
 
   it('returns null when the payload omits a type', () => {
     expect(parseHiLoInput(JSON.stringify({ key: 'ArrowUp' }))).toBeNull();
+  });
+});
+
+describe('normalizeParsedEvent', () => {
+  it('returns null for a non-object parsed payload', () => {
+    expect(normalizeParsedEvent(null)).toBeNull();
   });
 });
 
@@ -147,6 +158,46 @@ describe('applyHiLoEvent', () => {
     );
 
     expect(result).toEqual({ gameState: initial, keyboardState: keyboard });
+  });
+
+  it('ignores keydown events without a string key', () => {
+    const initial = {
+      currentCard: 6,
+      score: { correct: 0, incorrect: 0, total: 0 },
+    };
+    const keyboard = createInitialKeyboardState();
+    const result = applyHiLoEvent(
+      { type: 'keydown' },
+      { gameState: initial, keyboardState: keyboard },
+      () => 0.5
+    );
+
+    expect(result).toEqual({ gameState: initial, keyboardState: keyboard });
+  });
+
+  it('returns the original state when a key getter becomes non-string after guess validation', () => {
+    const initial = {
+      currentCard: 6,
+      score: { correct: 0, incorrect: 0, total: 0 },
+    };
+    const keyboard = createInitialKeyboardState();
+    let readCount = 0;
+    const inputEvent = {
+      type: 'keydown',
+      get key() {
+        readCount += 1;
+        return readCount === 1 ? 'ArrowUp' : 123;
+      },
+    };
+
+    const result = applyHiLoEvent(
+      /** @type {{ type: 'keydown', key?: string }} */ (inputEvent),
+      { gameState: initial, keyboardState: keyboard },
+      () => 0.5
+    );
+
+    expect(result).toEqual({ gameState: initial, keyboardState: keyboard });
+    expect(readCount).toBe(2);
   });
 });
 

@@ -142,7 +142,7 @@ If no runner-suitability comment exists, `ralph` should assume the bead is **not
 
 ## Runner Loop Contract
 
-For every bead `ralph` touches, it must leave enough Beads state that `super-nintendo-chalmers` can understand what happened without terminal access.
+For every bead `ralph` touches, it must leave enough Beads state that `super-nintendo-chalmers` can understand what happened without terminal access. If the bead's acceptance path includes a full test or verification command, `ralph` should allow that command to complete before deciding the bead is partial or blocked.
 
 At minimum, add/update bead comments with:
 

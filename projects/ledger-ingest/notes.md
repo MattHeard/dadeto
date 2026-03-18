@@ -16,6 +16,8 @@ This project now has a first real implementation slice rather than only a PRD, b
 
 The intended core remains a deterministic JSON-in / JSON-out import function that performs mapping, normalization, validation, deduplication, and summary generation without direct filesystem, database, network, or implicit clock dependencies. However, that core should live inside the toy structure like the repo's other toys, and each meaningful iteration should move the toy toward a user-testable end-to-end flow rather than stopping at inaccessible internal seams.
 
+- Freshness check: reviewed on 2026-03-17 and still aligned with the thin-wrapper / user-testable flow goal.
+
 ## Constraints
 
 Keep the pure-function core explicit and free of hidden file IO, persistence, or network calls, but do not let the project stall as a core-only library. Prefer stable JSON schemas, explicit policy inputs, and fixture-driven unit tests, while ensuring each iteration still moves toward a thin user-testable toy wrapper that can be validated end to end. The MVP should solve statement import cleanly before expanding into categorization, forecasting, dashboards, or bank sync.

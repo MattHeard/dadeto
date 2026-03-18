@@ -101,7 +101,7 @@ function hasInputPayload(input) {
  * @param {unknown} parsed - Parsed json candidate.
  * @returns {HiLoInputEvent | null} Valid input event or null.
  */
-function normalizeParsedEvent(parsed) {
+export function normalizeParsedEvent(parsed) {
   if (!isObjectValue(parsed)) {
     return null;
   }

@@ -58,7 +58,7 @@ Use this as the canonical checklist before closure.
 
 ### 6) Local runtime smoke (writer)
 - **Purpose:** Confirm local writer runtime can boot and serve expected endpoints.
-- **Command/workflow:** `npm run start:writer` with an HTTP probe/log check.
+- **Command/workflow:** `npm run start:writer:playwright` with an HTTP probe/log check.
 - **When required:** Mandatory for local writer/runtime changes; optional otherwise.
 - **Artifact location:** Local server logs and probe command output.
 - **Failure escalation path:**

@@ -19,6 +19,15 @@ export function isValidString(str) {
 }
 
 /**
+ * Checks whether every candidate is a non-empty string.
+ * @param {...unknown} values Candidate values to validate.
+ * @returns {boolean} True when all inputs are non-empty strings.
+ */
+export function areValidStrings(...values) {
+  return values.every(isValidString);
+}
+
+/**
  * Detects whether a value is `null` or `undefined`.
  * @param {unknown} value Candidate value.
  * @returns {boolean} True when the input is nullish.

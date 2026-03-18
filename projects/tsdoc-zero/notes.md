@@ -14,6 +14,8 @@ Reduce Dadeto `npm run tsdoc:check` failures to zero and keep them at zero throu
 
 `npm run tsdoc:check` still fails across several browser/input-handler and toy surfaces, but the recent `dadeto-814r` slice removed the `joyConMapping`-owned failures. The next active front of the project is now `src/core/browser/inputHandlers/gamepadCapture.js`, with `dadeto-lvu1` targeting the current smallest file-local type error there before the much larger `joyConMapper.js` surface.
 
+- Freshness check: reviewed on 2026-03-17 and still aligned with the remaining file-local typed-JS surfaces.
+
 ## Constraints
 
 Prefer small file-local or error-family beads over broad typing rewrites. Keep runtime behavior stable while tightening types, and favor durable guards that make future TSDoc/typed-JS checks easier to keep at zero.

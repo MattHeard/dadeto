@@ -16,6 +16,8 @@ Dadeto has at least one strong example of this pattern in `src/core/browser/inpu
 
 Two real trial slices have already been run and recorded, so the project is now past the first proof-of-concept stage. The next ready bead, `dadeto-zpi1`, is to choose and document a third real trial target using the existing rubric so the comparison set gets broader than the initial input-handler examples.
 
+- Freshness check: reviewed on 2026-03-17 and still tracking toward the next comparative trial.
+
 ## Constraints
 
 Treat this as an experiment, not a settled architecture mandate. Prefer small trials in real directories over broad repo-wide rewrites. Capture feedback from actual refactors and agent usage before hardening the rule into a stronger policy.

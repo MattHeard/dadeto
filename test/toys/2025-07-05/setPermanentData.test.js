@@ -15,13 +15,13 @@ describe('setPermanentData', () => {
     const mock = jest.fn();
     const env = new Map([['setLocalPermanentData', mock]]);
     const output = setPermanentData('not json', env);
-    expect(output).toBe(JSON.stringify({}));
+    expect(JSON.parse(output)).toEqual({});
     expect(mock).not.toHaveBeenCalled();
   });
 
   test('returns empty object when the storage helper is not available', () => {
     const env = new Map();
     const output = setPermanentData('{"foo": "bar"}', env);
-    expect(output).toBe(JSON.stringify({}));
+    expect(JSON.parse(output)).toEqual({});
   });
 });

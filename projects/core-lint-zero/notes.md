@@ -16,6 +16,8 @@ Reduce Dadeto `src/core` lint warnings to zero and keep them at zero through fut
 
 The current ready bead for this project is `dadeto-m6am`, which picks up the next remaining `joyConMapper.js` complexity slice after the closed `dadeto-5fgp` cleanup.
 
+- Freshness check: reviewed on 2026-03-17 and still points at the current `joyConMapper.js` cleanup queue.
+
 ## Constraints
 
 Prefer small warning-family or file-local beads over broad refactors. Keep behavior stable while reducing warnings, and favor durable guardrails that help prevent regressions after cleanup.
@@ -28,7 +30,6 @@ Prefer small warning-family or file-local beads over broad refactors. Keep behav
 
 ## Candidate next actions
 
-- Land `dadeto-m6am` so the next remaining `joyConMapper.js` complexity slice disappears.
 - Continue with the next smallest stable complexity cluster after re-reading the lint report.
 - Split out any remaining warning family that turns out to be contract-shaped instead of helper-shaped.
 - Decide what minimal regression guard should define “keep them at zero” once cleanup is complete.

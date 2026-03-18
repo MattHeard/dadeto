@@ -14,3 +14,5 @@
 12. **Preserve architectural boundaries.** Keep side effects in environment adapters and maintain `core` domain portability.
 13. **Document decisions with next-loop utility.** Capture what changed, why it worked, and what should be watched next.
 14. **Finish with landing-the-plane discipline.** Sync, test, commit, and publish state so no useful loop output remains local-only.
+
+15. **Let required validation finish.** Keep the implementation slice bounded, but do not interrupt a required acceptance check once it has started.

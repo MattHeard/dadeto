@@ -4,6 +4,7 @@ import {
   summarizePollResult,
   summarizeTrackerSelection,
 } from '../../core/local/symphony.js';
+import { getSymphonyRuntimeVersion } from './runtimeVersion.js';
 import { loadSymphonyConfig } from './config.js';
 import { createBdTracker } from './trackerBd.js';
 import { loadSymphonyWorkflow } from './workflow.js';
@@ -84,6 +85,7 @@ async function buildSymphonyStatusSnapshot(options = {}) {
   const repoRoot = options.repoRoot ?? process.cwd();
   const config = await configLoader({ repoRoot });
   const workflow = await workflowLoader({ repoRoot });
+  const runtimeVersion = getSymphonyRuntimeVersion({ repoRoot });
   const tracker = trackerFactory({
     readyCommand: config.tracker.readyCommand,
     cwd: repoRoot,
@@ -145,10 +147,13 @@ async function buildSymphonyStatusSnapshot(options = {}) {
     latestEvidence: trackerSummary.latestEvidence,
     operatorRecommendation: trackerSummary.operatorRecommendation,
     queueEvidence: trackerSummary.queueEvidence,
+    runtime: {
+      version: runtimeVersion,
+    },
     eventLog: preservedEventLog,
   };
 
-  if (shouldPreserveRunningStatus(previousStatus)) {
+  if (shouldPreserveRunningStatus(previousStatus, status)) {
     status = preserveRunningStatus(status, previousStatus);
   }
 
@@ -196,13 +201,30 @@ function getPreservedEventLog(previousStatus) {
   return [...previousStatus.eventLog];
 }
 
-function shouldPreserveRunningStatus(previousStatus) {
+function shouldPreserveRunningStatus(previousStatus, status) {
+  const previousBeadId =
+    previousStatus &&
+    typeof previousStatus === 'object' &&
+    typeof previousStatus.currentBeadId === 'string' &&
+    previousStatus.currentBeadId
+      ? previousStatus.currentBeadId
+      : null;
+  const selectedBeadId =
+    status &&
+    typeof status === 'object' &&
+    typeof status.currentBeadId === 'string' &&
+    status.currentBeadId
+      ? status.currentBeadId
+      : null;
+
   return (
     !!previousStatus &&
     typeof previousStatus === 'object' &&
     previousStatus.state === 'running' &&
     previousStatus.activeRun &&
-    typeof previousStatus.activeRun === 'object'
+    typeof previousStatus.activeRun === 'object' &&
+    previousBeadId !== null &&
+    previousBeadId === selectedBeadId
   );
 }
 

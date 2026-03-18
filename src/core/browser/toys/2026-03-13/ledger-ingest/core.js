@@ -23,6 +23,25 @@ const DEFAULT_DEDUPE_POLICY = {
 const REQUIRED_CANONICAL_FIELDS = ['postedDate', 'amount'];
 const INVALID_ROW_REASON_MISSING_FIELDS = 'missing-required-fields';
 
+/**
+ *
+ * @param source
+ * @param rawRecords
+ */
+function createStandardFixtureInput(source, rawRecords) {
+  return {
+    source,
+    fieldMapping: { ...DEFAULT_FIELD_MAPPING },
+    dedupePolicy: {
+      name: DEFAULT_DEDUPE_POLICY.name,
+      strategy: DEFAULT_DEDUPE_POLICY.strategy,
+      candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
+      caseInsensitive: true,
+    },
+    rawRecords,
+  };
+}
+
 export const normalizationExamples = [
   'Dates are coerced into YYYY-MM-DD (ISO 8601 date portion) to align postings across sources.',
   'Amounts are converted into signed numbers so debit/credit semantics are explicit.',
@@ -113,156 +132,92 @@ export const fixtures = {
     name: 'single-source mapping and normalization',
     description:
       'Shows how field mappings, normalization steps, and summary generation tie together.',
-    input: {
-      source: 'ember-bank-us',
-      fieldMapping: {
-        postedDate: 'date',
-        amount: 'amount',
-        description: 'description',
-        currency: 'currency',
-        recordId: 'id',
+    input: createStandardFixtureInput('ember-bank-us', [
+      {
+        id: 'HV-001',
+        date: '2026-03-01',
+        amount: '-45.50',
+        description: 'Coffee Shop   - Seattle',
+        currency: 'usd',
       },
-      dedupePolicy: {
-        name: DEFAULT_DEDUPE_POLICY.name,
-        strategy: DEFAULT_DEDUPE_POLICY.strategy,
-        candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
-        caseInsensitive: true,
+      {
+        id: 'HV-002',
+        date: '2026-03-02T07:00:00Z',
+        amount: '200.00',
+        description: 'Payroll Deposit ',
+        currency: 'usd',
       },
-      rawRecords: [
-        {
-          id: 'HV-001',
-          date: '2026-03-01',
-          amount: '-45.50',
-          description: 'Coffee Shop   - Seattle',
-          currency: 'usd',
-        },
-        {
-          id: 'HV-002',
-          date: '2026-03-02T07:00:00Z',
-          amount: '200.00',
-          description: 'Payroll Deposit ',
-          currency: 'usd',
-        },
-      ],
-    },
+    ]),
   },
   duplicateDetection: {
     name: 'duplicate detection with first-wins policy',
     description:
       'Ensures that the policy reports a duplicate when successive rows share the same normalized key.',
-    input: {
-      source: 'local-credit-card',
-      fieldMapping: {
-        postedDate: 'date',
-        amount: 'amount',
-        description: 'description',
-        currency: 'currency',
-        recordId: 'id',
+    input: createStandardFixtureInput('local-credit-card', [
+      {
+        id: 'dup-001',
+        date: '2026-03-05',
+        amount: '120.00',
+        description: 'Electric bill',
+        currency: 'usd',
       },
-      dedupePolicy: {
-        name: DEFAULT_DEDUPE_POLICY.name,
-        strategy: DEFAULT_DEDUPE_POLICY.strategy,
-        candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
-        caseInsensitive: true,
+      {
+        id: 'dup-002',
+        date: '2026-03-05T00:00:00Z',
+        amount: '120.00',
+        description: 'electric bill ',
+        currency: 'USD',
       },
-      rawRecords: [
-        {
-          id: 'dup-001',
-          date: '2026-03-05',
-          amount: '120.00',
-          description: 'Electric bill',
-          currency: 'usd',
-        },
-        {
-          id: 'dup-002',
-          date: '2026-03-05T00:00:00Z',
-          amount: '120.00',
-          description: 'electric bill ',
-          currency: 'USD',
-        },
-        {
-          id: 'dup-003',
-          date: '2026-03-06',
-          amount: '-15.50',
-          description: 'Lunch spot',
-          currency: 'usd',
-        },
-      ],
-    },
+      {
+        id: 'dup-003',
+        date: '2026-03-06',
+        amount: '-15.50',
+        description: 'Lunch spot',
+        currency: 'usd',
+      },
+    ]),
   },
   repeatImport: {
     name: 'repeat import rows treated as duplicates',
     description:
       'Verifies that importing the same logical row twice only counts once as canonical.',
-    input: {
-      source: 'core-processor',
-      fieldMapping: {
-        postedDate: 'date',
-        amount: 'amount',
-        description: 'description',
-        currency: 'currency',
-        recordId: 'id',
+    input: createStandardFixtureInput('core-processor', [
+      {
+        id: 'repeat-001',
+        date: '2026-03-07',
+        amount: '55',
+        description: 'Gym membership',
+        currency: 'USD',
       },
-      dedupePolicy: {
-        name: DEFAULT_DEDUPE_POLICY.name,
-        strategy: DEFAULT_DEDUPE_POLICY.strategy,
-        candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
-        caseInsensitive: true,
+      {
+        id: 'repeat-002',
+        date: '2026-03-07T00:00:00Z',
+        amount: '55.00',
+        description: 'Gym Membership ',
+        currency: 'usd',
       },
-      rawRecords: [
-        {
-          id: 'repeat-001',
-          date: '2026-03-07',
-          amount: '55',
-          description: 'Gym membership',
-          currency: 'USD',
-        },
-        {
-          id: 'repeat-002',
-          date: '2026-03-07T00:00:00Z',
-          amount: '55.00',
-          description: 'Gym Membership ',
-          currency: 'usd',
-        },
-      ],
-    },
+    ]),
   },
   invalidRow: {
     name: 'invalid rows report structured errors',
     description:
       'Proves that missing required fields are surfaced as structured errors instead of new transactions.',
-    input: {
-      source: 'virtual-credit',
-      fieldMapping: {
-        postedDate: 'date',
-        amount: 'amount',
-        description: 'description',
-        currency: 'currency',
-        recordId: 'id',
+    input: createStandardFixtureInput('virtual-credit', [
+      {
+        id: 'valid-001',
+        date: '2026-03-08',
+        amount: '120.75',
+        description: 'Valid row',
+        currency: 'usd',
       },
-      dedupePolicy: {
-        name: DEFAULT_DEDUPE_POLICY.name,
-        strategy: DEFAULT_DEDUPE_POLICY.strategy,
-        candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
-        caseInsensitive: true,
+      {
+        id: 'invalid-001',
+        date: '',
+        amount: null,
+        description: 'Missing critical fields',
+        currency: 'usd',
       },
-      rawRecords: [
-        {
-          id: 'valid-001',
-          date: '2026-03-08',
-          amount: '120.75',
-          description: 'Valid row',
-          currency: 'usd',
-        },
-        {
-          id: 'invalid-001',
-          date: '',
-          amount: null,
-          description: 'Missing critical fields',
-          currency: 'usd',
-        },
-      ],
-    },
+    ]),
   },
 };
 

@@ -14,6 +14,8 @@ Replace Dadeto snapshot tests with behaviour-driven unit tests so the suite stat
 
 The first migration slices have already landed. `dadeto-2oyo` replaced the inline snapshots in `test/toys/2026-02-19/germanTokenizer.test.js` with explicit behaviour-driven assertions, and `dadeto-10lz` followed that by identifying the next snapshot-style surface and replacing a whole-output string assertion in `test/toys/2025-10-19/csvToJsonObject.test.js` with parsed field-level assertions.
 
+- Freshness check: reviewed on 2026-03-17 and still oriented around small characterization-driven migrations rather than broad snapshot rewrites.
+
 The project has therefore moved from “prove the idea” to “continue the migration pattern and keep improving assertion quality.” Snapshot-style assertions are already much rarer, and the current emphasis is on bounded one-file conversions plus characterization-style tests when the existing behaviour is still fuzzy.
 
 ## Constraints

@@ -4,6 +4,7 @@ import {
   fixtures,
   normalizationExamples,
 } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/core.js';
+import { ledgerIngestToy } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js';
 
 describe('importTransactions', () => {
   it('normalizes mapped rows, records normalization steps, and exposes summaries', () => {
@@ -37,6 +38,7 @@ describe('importTransactions', () => {
     expect(
       result.canonicalTransactions.every(tx => Boolean(tx.metadata.rawRecord))
     ).toBe(true);
+    expectCanonicalTransactionShape(result.canonicalTransactions[0]);
   });
 
   it('reports duplicates when normalized keys collide', () => {
@@ -91,4 +93,41 @@ describe('importTransactions', () => {
     });
     expect(errorReport.rawRecord.id).toBe('invalid-001');
   });
+
+  it('wraps the core in a runnable toy response with fixture selection', () => {
+    const result = JSON.parse(ledgerIngestToy('{"fixture":"duplicateDetection"}'));
+
+    expect(result.fixture).toBe('duplicateDetection');
+    expect(result.canonicalTransactions).toHaveLength(2);
+    expect(result.duplicateReports).toHaveLength(1);
+    expect(result.errorReports).toHaveLength(0);
+    expect(result.summary.canonicalTransactions).toBe(2);
+    expect(result.summary.duplicatesDetected).toBe(1);
+  });
+
+  it('falls back to the default fixture for invalid payloads', () => {
+    const result = JSON.parse(ledgerIngestToy('not-json'));
+
+    expect(result.fixture).toBe('happyPath');
+    expect(result.canonicalTransactions).toHaveLength(2);
+    expect(result.summary.canonicalTransactions).toBe(2);
+  });
 });
+
+function expectCanonicalTransactionShape(transaction) {
+  expect(Object.keys(transaction).sort()).toEqual(
+    [
+      'amount',
+      'dedupeKey',
+      'description',
+      'metadata',
+      'postedDate',
+      'rawIndex',
+      'source',
+      'sourceRecordId',
+      'transactionId',
+      'currency',
+    ].sort()
+  );
+  expect(Object.keys(transaction.metadata)).toEqual(['rawRecord']);
+}

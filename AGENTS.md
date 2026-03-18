@@ -24,6 +24,14 @@ A loop is complete only when **both** are true:
 - It leaves **durable repo memory**: updated test, harness, doc, script, or `notes/agents/` entry that another agent can follow without terminal history.
 - It verifies required quality gates in `docs/quality/evaluator-matrix.md` and `docs/quality/definition-of-done.md` before closure.
 
+### Small-Step Success
+
+If a loop satisfies the stated bead objective in the letter and clearly advances the spirit of the goal, treat that as success even when the step is small. This includes bounded characterization work, proof that a branch or condition is reachable, or a partial extraction that cleanly isolates the next follow-up. Do not require the whole surrounding problem to be solved in one loop if the current slice has moved the work unambiguously forward and the remaining work is documented as a follow-up bead or note.
+
+### Stale Preconditions
+
+If a bead depends on a precondition that no longer exists in the current repo state, and the agent can verify that the requested slice is stale rather than merely hard, close the bead instead of forcing a speculative rewrite. Record the stale condition in a comment or note, and create a new bead only if the follow-up work is genuinely distinct and actionable in the current state.
+
 ### Single Loop First
 
 Default to **one-agent / one-task / one-loop** execution.
@@ -103,6 +111,13 @@ Treat `AGENTS.md` as the router and `docs/loop/two-agent-model.md` as the canoni
 - At loop start, record the hypothesis and named acceptance evidence in the owning bead.
 - After each evaluator run, add/update bead comments with exact commands, pass/fail state, and artifact paths.
 - If a loop fails twice without a tighter hypothesis or better evaluator, stop broad implementation and convert the blocker into a bead/doc/harness follow-up.
+
+### Bead Creation Hygiene
+
+- Before creating a new bead, search `bd list`, `bd ready`, and `bd show` for an existing open bead that already owns the same task intent.
+- Prefer one canonical open bead per real task; do not create a second bead just because the title wording is slightly different.
+- If a duplicate bead is created by mistake, close it immediately and keep the cleaner canonical bead.
+- If a task is only a follow-up or a narrower slice of an existing bead, record that relationship in the existing bead before creating anything new.
 
 For full triage/autoloop details: `bd prime` and docs linked above.
 

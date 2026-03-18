@@ -16,14 +16,18 @@ Keep Symphony usable as Dadeto's local-first operator surface for selecting one 
 - The Express app exposes `/api/symphony/status` for the read-only view, `/api/symphony/launch` to call `launchSelectedRunnerLoop`, and `/api/v1/refresh` to re-run the tracker poll + status reconciliation. The TUI at `scripts/symphony-tui.js` (Ctrl+C exit) hits those endpoints so operators see `State`, `Bead`, `Run`, `Rec`, and coming-soon evidence lines every five seconds.
 - Launching now runs `createCodexRalphLauncher`, which spawns `codex exec --skip-git-repo-check --model gpt-5.4-mini --sandbox workspace-write` with the Ralph prompt contract (`you are ralph ... pop <bead>` plus `run id`). The launch writes `activeRun`/`lastLaunchAttempt` in `status.json`, persists `tracking/symphony/runs/<runId>--launch.log|--stdout.log|--stderr.log`, and offers `operatorRecommendation` pointing at the artifacts.
 - The spawned process has an `onExit` handler (`createRunnerExitHandler`) that waits for the initial status write, reads the persisted file, runs `applyRunnerOutcome`, and writes `state: idle` (or `blocked`) plus a `lastOutcome` summary when the detached Ralph loop exits. Recent closures such as the run tracked in `tracking/symphony/runs/2026-03-12T19-43-55.699Z--dadeto-x2yg` prove the endpoint lifecycle completes end-to-end.
+- The persisted Symphony status snapshot now includes a runtime version stamp from `package.json`, so the TUI can tell when the server is stale and prompt for a restart.
 
 ## Current limits
+
+- Freshness check: reviewed on 2026-03-17 and still aligned with the live status/launch flow and the remaining operator-trust gaps below.
 
 - Symphony still runs one detached Ralph loop at a time (maxConcurrentRuns: 1) and exposes only the single highest-priority ready bead. There is no scheduler logic to move beads into `in_progress`, re-prioritize them automatically, or handle multiple workspaces.
 - Operators must refresh manually (or wait for the 30 s poll) to update queue state and then click “L”/POST `/api/symphony/launch`; there is no dashboard that reconciles `bd` statuses with `tracking/symphony/status.json`, so some beads still stay open even after the runner finishes.
 - The current launcher is deliberately pinned to the cheap `gpt-5.4-mini` model with `workspace-write` sandboxing; configuration changes still require editing `tracking/symphony.local.json` and restarting the Symphony server.
 - Run artifacts live under `tracking/symphony/runs/` and are the durable source of truth when `status.json` is stale, but navigating them remains a manual chore for the operator; the TUI surface simply points at those files in `operatorRecommendation`.
 - Symphony does not yet expose a concise recent event stream such as `bead started`, `bead closed`, `launch rejected`, or `agent failure`, so operators can end up staring at `idle` state without enough context to understand what just happened.
+- When the TUI and server runtime versions differ, the status surface should make that mismatch obvious and tell the operator to restart the stale side.
 
 ## Planner review order
 

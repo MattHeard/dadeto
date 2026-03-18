@@ -13,7 +13,7 @@ The repo is intentionally split so most business logic lives in shared **core** 
 - Generates and publishes the static Matt Heard blog (`npm run build:mattheard-net`).
 - Packages browser + core assets for Dendrite static hosting (`npm run build:dendritestories-co-nz`).
 - Packages Cloud Function source + shared runtime modules for Dendrite backend deployment (`npm run build:cloud`).
-- Runs a local writer server that persists markdown workflow state on disk (`npm run start:writer`).
+- Runs a local writer server that persists markdown workflow state on disk (`npm run start:writer` or `npm run start:writer:playwright`).
 
 ## Architecture boundary (core vs environments)
 
@@ -76,6 +76,7 @@ Dendrite spans multiple layers:
 - Shared workflow logic: `src/core/local/workflow.js`
 - Local data path (default): `local-data/writer-workflow/`
 - Start command: `npm run start:writer`
+- Playwright-friendly start command: `npm run start:writer:playwright`
 
 The local writer exposes REST endpoints under `/api/writer/*` and serves a browser app at `/writer/`.
 
@@ -96,6 +97,7 @@ The local writer exposes REST endpoints under `/api/writer/*` and serves a brows
 - `npm run build:dendritestories-co-nz` – package Dendrite static assets.
 - `npm run build:cloud` – package Dendrite cloud functions.
 - `npm run start:writer` – run local writing server.
+- `npm run start:writer:playwright` – run local writing server for Playwright/base-URL smoke workflows.
 
 ## Deployment notes
 

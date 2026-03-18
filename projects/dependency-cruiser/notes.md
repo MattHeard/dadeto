@@ -16,6 +16,8 @@ Dependency-cruiser is now wired in and several constraint families have already 
 
 That change exposed a second issue: the runtime `public/blog.json` publish path also needs to be kept in sync. `dadeto-jnj6` is the active follow-up slice for restoring the copy workflow so `src/build/blog.json` flows to `public/blog.json` without weakening the rule.
 
+- Freshness check: reviewed on 2026-03-17 and still tracking the publish-path follow-up.
+
 ## Constraints
 
 Introduce the tool incrementally. Prefer one small rule family at a time over a broad initial policy that floods the repo with noise. Keep the first setup slice focused on installing the tool, adding a baseline config, and wiring it into the existing check workflow without blocking unrelated work prematurely.
@@ -29,7 +31,6 @@ Introduce the tool incrementally. Prefer one small rule family at a time over a 
 
 ## Candidate next actions
 
-- Land `dadeto-jnj6` so the build-layer source move is reflected in the `public/blog.json` publish path.
 - After that, rerun depcruise and choose the next real violation or the next high-signal rule family to tighten.
 - Record the first rule-tightening sequence in project notes so future SNC sessions ratchet constraints deliberately.
 - Use real violations to decide whether the next move is a code cleanup bead or a rule-refinement bead.

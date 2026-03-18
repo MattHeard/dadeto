@@ -527,7 +527,7 @@ function shouldAbortPlacement(acc) {
  * @returns {boolean} True when both are valid.
  */
 function areShipPlacementArgsValid(acc, placed) {
-  return Boolean(acc && placed);
+  return acc !== null && placed !== null;
 }
 
 /**
@@ -537,7 +537,7 @@ function areShipPlacementArgsValid(acc, placed) {
  * @returns {Candidate[] | null} Updated accumulation or null on failure.
  */
 function addPlacedShip(acc, placed) {
-  if (!areShipPlacementArgsValid(acc, placed)) {
+  if (acc === null || placed === null) {
     return null;
   }
   acc.push(placed);

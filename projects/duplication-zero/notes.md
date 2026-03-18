@@ -22,6 +22,8 @@ After the recent helper cleanups, the old toy/helper family around `joyConMapper
 
 The next smallest stable implementation slice is now a capture-lifecycle subcluster inside the cross-input-handler family rather than another toy/helper extraction.
 
+- Freshness check: reviewed on 2026-03-17 and still aligned with the current duplication report shape.
+
 ## Constraints
 
 Prefer small clone-cluster or helper-extraction beads over broad abstraction churn. Keep behavior stable while reducing duplication, and treat the `minTokens` value as a ratcheting difficulty knob that should only move upward when the repo stays clean at the current setting.
@@ -34,7 +36,6 @@ Prefer small clone-cluster or helper-extraction beads over broad abstraction chu
 
 ## Candidate next actions
 
-- Close or refresh `dadeto-0xd5` based on its existing evidence so the project queue reflects reality.
 - Then remove the next small `gamepadCapture.js` ↔ `keyboardCapture.js` capture-lifecycle or event-payload subcluster rather than attacking the whole family at once.
 - Inspect the remaining `hiLoCardGame.js` spillover overlaps and decide which are meaningful maintenance risks versus generic guard noise.
 - After the repo is clean at `minTokens: 18`, create a threshold-ratchet bead to raise the duplication difficulty.

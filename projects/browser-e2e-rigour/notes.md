@@ -20,6 +20,8 @@ The first smoke harness now exists under `e2e/smoke.spec.js`, but recent runner 
 
 Recent `dadeto-t5ca` attempts clarified that the current failure is a startup-class problem rather than a smoke-assertion problem: the Playwright command hangs before Chromium reaches a real launch/test phase, produces little or no useful output, and leaves no browser artifacts. That means the next high-signal work is to classify the hang precisely instead of adding more smoke assertions.
 
+- Freshness check: reviewed on 2026-03-17 and still points at startup diagnostics before broader smoke assertions.
+
 ## Constraints
 
 Keep the first slices small and high-signal. Prefer a few stable, production-like browser checks over a large brittle Playwright suite. Tests in this project should bias toward verifying what a real user can actually load and do in a browser, especially against locally served `public/` assets or other deployment-like surfaces, rather than recreating implementation details already covered by unit tests.

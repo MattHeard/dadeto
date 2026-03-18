@@ -24,9 +24,8 @@ beforeAll(async () => {
 describe('getBaitOptions', () => {
   test('contains insect with description and modifier', () => {
     const options = getBaitOptions();
-    expect(options.insect).toEqual({
-      modifier: 0.05,
-      description: 'a lively insect',
-    });
+    expect(options.insect).toBeDefined();
+    expect(options.insect.description).toBe('a lively insect');
+    expect(options.insect.modifier).toBe(0.05);
   });
 });

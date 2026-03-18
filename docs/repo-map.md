@@ -38,6 +38,6 @@
 | `npm run build:dendritestories-co-nz` | Dendrite browser packaging | Copies browser/core artifacts for static Dendrite deploy.
 | `npm run build:cloud` | Cloud function packaging | Assembles cloud deploy payload from cloud + shared modules.
 | `npm run start` | Static serving | Serves generated `public/` output for local inspection.
-| `npm run start:writer` | Local writer runtime | Runs Express writer server with filesystem-backed state.
+| `npm run start:writer` / `npm run start:writer:playwright` | Local writer runtime | Runs Express writer server with filesystem-backed state.
 | `npm run test:e2e` | Cloud E2E validation | Executes Playwright suite intended for cloud/CI execution.
 | `npm run duplication` | Architecture hygiene | Runs duplication analysis (`jscpd`) across repo sources.

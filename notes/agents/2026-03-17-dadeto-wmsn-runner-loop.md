@@ -1,0 +1,4 @@
+- unexpected hurdle: the expected stable clone slice did not disappear from the report; it shifted from the fixture literals into the new shared helper body.
+- diagnosis path: ran `npm run duplication`, then compared the remaining `ledger-ingest/core.js` clones to the refactor site and confirmed the helper now owns the repeated shape.
+- chosen fix: extracted `createStandardFixtureInput` to remove repeated fixture boilerplate and kept the loop bounded when the same family reappeared in helper-vs-use form.
+- next-time guidance/open question: if the goal is to clear this family entirely, the next slice likely needs to split the helper into smaller pieces or move one more repeated field out of the helper.

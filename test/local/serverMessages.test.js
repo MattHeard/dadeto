@@ -10,7 +10,7 @@ describe('serverMessages', () => {
         'writer server could not bind to port 4321.',
         'This usually happens when the process is started inside a restricted sandbox.',
         'Start it from a full shell instead, for example:',
-        '  npm run start:writer:watch',
+        '  npm run start:writer:playwright',
         'Then open http://localhost:4321/writer/',
       ].join('\n')
     );

@@ -1,0 +1,5 @@
+- Unexpected hurdle: `npx playwright test --config=playwright.config.js e2e/smoke.spec.js` produced no startup logs and timed out.
+- Diagnosis path: checked the bead contract and smoke harness, then ran the smallest browser probe with a hard timeout to separate assertion failure from bootstrap failure.
+- Chosen fix: classify the current failure as a pre-launch/bootstrap hang; do not widen into smoke assertions until the reusable server path emits startup evidence.
+- Next-time guidance: add a tiny startup log or shell probe around the reusable Playwright server so future loops can distinguish server startup, browser launch, and test bootstrap from one run.
+- Latest probe on 2026-03-18: `timeout 20s npm run start:writer:playwright` exited at the sandbox bind step with `writer server could not bind to port 4321`, and `curl -fsS http://127.0.0.1:4321/api/writer/workflow` failed with `curl: (7) Failed to connect to 127.0.0.1 port 4321`. This classifies the failure as sandboxed server startup/bind, not browser launch.

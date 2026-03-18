@@ -50,6 +50,8 @@ Before editing files, translate the bead into this loop contract and retain it i
 
 If the bead does not contain enough context to fill these fields, the next action is to tighten the bead, not to improvise a broad implementation.
 
+The loop is still bounded in scope, but required acceptance checks are allowed to run to completion if they are part of the bead's evidence. Do not cut off a full test or verification command just because the implementation slice itself is small; instead, stop widening scope, keep the evidence trail, and let the needed check finish.
+
 ## Default Heuristics
 
 When the user gives only a bead reference, use these defaults unless the bead clearly requires something else:
@@ -59,7 +61,7 @@ When the user gives only a bead reference, use these defaults unless the bead cl
 - **Acceptance evidence:** required evaluator(s) from `docs/quality/definition-of-done.md` plus one bead-specific proof point.
 - **Cheapest first evaluator:** start narrow, then escalate only if risk justifies it.
 - **Repo-memory artifact:** at minimum, the required `notes/agents/` entry; prefer tests/harness/docs when they create a reusable guardrail.
-- **Stop condition:** after two failed attempts without a tighter hypothesis, better evaluator, or smaller slice, stop and open follow-up beads.
+- **Stop condition:** after two failed attempts without a tighter hypothesis, better evaluator, or smaller slice, stop and open follow-up beads. If a required acceptance check is already running, let it finish before stopping the loop.
 
 ## How Users Can Help Without Pasting Prompts
 

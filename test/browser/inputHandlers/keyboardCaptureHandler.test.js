@@ -102,6 +102,39 @@ describe('keyboardCaptureHandler', () => {
     }
   });
 
+  it('ignores keyboard events before capture starts', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const preventDefault = jest.fn();
+
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+
+    try {
+      keyboardCaptureHandler(dom, container, textInput);
+
+      globals.listeners.keydown({
+        type: 'keydown',
+        key: 'ArrowUp',
+        preventDefault,
+      });
+
+      expect(preventDefault).not.toHaveBeenCalled();
+      expect(textInput.value).toBe('');
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+    }
+  });
+
   it('forwards key events while captured and releases capture on escape', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);

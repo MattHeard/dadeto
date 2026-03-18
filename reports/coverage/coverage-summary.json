@@ -2,27 +2,27 @@
   "total": {
     "lines": {
       "total": 7101,
-      "covered": 6672,
+      "covered": 6686,
       "skipped": 0,
-      "pct": 93.95
+      "pct": 94.15
     },
     "statements": {
       "total": 7260,
-      "covered": 6822,
+      "covered": 6836,
       "skipped": 0,
-      "pct": 93.96
+      "pct": 94.15
     },
     "functions": {
-      "total": 2882,
-      "covered": 2737,
+      "total": 2886,
+      "covered": 2743,
       "skipped": 0,
-      "pct": 94.96
+      "pct": 95.04
     },
     "branches": {
-      "total": 2744,
-      "covered": 2508,
+      "total": 2740,
+      "covered": 2509,
       "skipped": 0,
-      "pct": 91.39
+      "pct": 91.56
     },
     "branchesTrue": {
       "total": 0,
@@ -33,20 +33,20 @@
   },
   "/home/matt/dadeto/src/core/commonCore.js": {
     "lines": {
-      "total": 59,
-      "covered": 59,
+      "total": 60,
+      "covered": 60,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 31,
-      "covered": 31,
+      "total": 32,
+      "covered": 32,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 62,
-      "covered": 62,
+      "total": 63,
+      "covered": 63,
       "skipped": 0,
       "pct": 100
     },
@@ -527,8 +527,8 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/blogKeyHandler.js": {
     "lines": {
-      "total": 39,
-      "covered": 39,
+      "total": 38,
+      "covered": 38,
       "skipped": 0,
       "pct": 100
     },
@@ -539,8 +539,8 @@
       "pct": 100
     },
     "statements": {
-      "total": 39,
-      "covered": 39,
+      "total": 38,
+      "covered": 38,
       "skipped": 0,
       "pct": 100
     },
@@ -579,8 +579,8 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/captureFormShared.js": {
     "lines": {
-      "total": 46,
-      "covered": 46,
+      "total": 45,
+      "covered": 45,
       "skipped": 0,
       "pct": 100
     },
@@ -591,10 +591,10 @@
       "pct": 93.75
     },
     "statements": {
-      "total": 47,
-      "covered": 46,
+      "total": 46,
+      "covered": 45,
       "skipped": 0,
-      "pct": 97.87
+      "pct": 97.82
     },
     "branches": {
       "total": 8,
@@ -631,26 +631,26 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/captureLifecycleShared.js": {
     "lines": {
-      "total": 2,
-      "covered": 2,
+      "total": 3,
+      "covered": 3,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 1,
-      "covered": 1,
-      "skipped": 0,
-      "pct": 100
-    },
-    "statements": {
       "total": 2,
       "covered": 2,
       "skipped": 0,
       "pct": 100
     },
+    "statements": {
+      "total": 3,
+      "covered": 3,
+      "skipped": 0,
+      "pct": 100
+    },
     "branches": {
-      "total": 0,
-      "covered": 0,
+      "total": 2,
+      "covered": 2,
       "skipped": 0,
       "pct": 100
     }
@@ -683,20 +683,20 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/createDendriteHandler.js": {
     "lines": {
-      "total": 94,
-      "covered": 94,
+      "total": 99,
+      "covered": 99,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 42,
-      "covered": 42,
+      "total": 44,
+      "covered": 44,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 99,
-      "covered": 99,
+      "total": 104,
+      "covered": 104,
       "skipped": 0,
       "pct": 100
     },
@@ -735,28 +735,28 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
     "lines": {
-      "total": 181,
-      "covered": 164,
+      "total": 178,
+      "covered": 161,
       "skipped": 0,
-      "pct": 90.6
+      "pct": 90.44
     },
     "functions": {
-      "total": 67,
-      "covered": 65,
+      "total": 66,
+      "covered": 64,
       "skipped": 0,
-      "pct": 97.01
+      "pct": 96.96
     },
     "statements": {
-      "total": 182,
-      "covered": 165,
+      "total": 179,
+      "covered": 162,
       "skipped": 0,
-      "pct": 90.65
+      "pct": 90.5
     },
     "branches": {
-      "total": 66,
-      "covered": 51,
+      "total": 64,
+      "covered": 49,
       "skipped": 0,
-      "pct": 77.27
+      "pct": 76.56
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
@@ -787,10 +787,10 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {
     "lines": {
-      "total": 38,
-      "covered": 36,
+      "total": 35,
+      "covered": 34,
       "skipped": 0,
-      "pct": 94.73
+      "pct": 97.14
     },
     "functions": {
       "total": 12,
@@ -799,16 +799,16 @@
       "pct": 91.66
     },
     "statements": {
-      "total": 39,
-      "covered": 37,
+      "total": 36,
+      "covered": 35,
       "skipped": 0,
-      "pct": 94.87
+      "pct": 97.22
     },
     "branches": {
-      "total": 8,
-      "covered": 7,
+      "total": 6,
+      "covered": 6,
       "skipped": 0,
-      "pct": 87.5
+      "pct": 100
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
@@ -1568,27 +1568,27 @@
   "/home/matt/dadeto/src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js": {
     "lines": {
       "total": 162,
-      "covered": 162,
+      "covered": 161,
       "skipped": 0,
-      "pct": 100
+      "pct": 99.38
     },
     "functions": {
       "total": 71,
-      "covered": 71,
+      "covered": 70,
       "skipped": 0,
-      "pct": 100
+      "pct": 98.59
     },
     "statements": {
       "total": 172,
-      "covered": 172,
+      "covered": 171,
       "skipped": 0,
-      "pct": 100
+      "pct": 99.41
     },
     "branches": {
-      "total": 58,
+      "total": 60,
       "covered": 58,
       "skipped": 0,
-      "pct": 100
+      "pct": 96.66
     }
   },
   "/home/matt/dadeto/src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js": {
@@ -1949,8 +1949,8 @@
       "pct": 100
     },
     "branches": {
-      "total": 32,
-      "covered": 32,
+      "total": 30,
+      "covered": 30,
       "skipped": 0,
       "pct": 100
     }
@@ -1975,8 +1975,8 @@
       "pct": 100
     },
     "branches": {
-      "total": 22,
-      "covered": 22,
+      "total": 20,
+      "covered": 20,
       "skipped": 0,
       "pct": 100
     }
@@ -2166,9 +2166,9 @@
   "/home/matt/dadeto/src/core/browser/toys/2026-03-01/hiLoCardGame.js": {
     "lines": {
       "total": 103,
-      "covered": 101,
+      "covered": 103,
       "skipped": 0,
-      "pct": 98.05
+      "pct": 100
     },
     "functions": {
       "total": 38,
@@ -2178,15 +2178,15 @@
     },
     "statements": {
       "total": 103,
-      "covered": 101,
+      "covered": 103,
       "skipped": 0,
-      "pct": 98.05
+      "pct": 100
     },
     "branches": {
       "total": 50,
-      "covered": 48,
+      "covered": 50,
       "skipped": 0,
-      "pct": 96
+      "pct": 100
     }
   },
   "/home/matt/dadeto/src/core/browser/toys/2026-03-01/joyConMapper.js": {
@@ -2217,22 +2217,22 @@
   },
   "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/core.js": {
     "lines": {
-      "total": 129,
-      "covered": 112,
+      "total": 130,
+      "covered": 113,
       "skipped": 0,
-      "pct": 86.82
+      "pct": 86.92
     },
     "functions": {
-      "total": 31,
-      "covered": 31,
+      "total": 32,
+      "covered": 32,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 129,
-      "covered": 112,
+      "total": 130,
+      "covered": 113,
       "skipped": 0,
-      "pct": 86.82
+      "pct": 86.92
     },
     "branches": {
       "total": 52,
@@ -2244,27 +2244,27 @@
   "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js": {
     "lines": {
       "total": 12,
-      "covered": 0,
+      "covered": 12,
       "skipped": 0,
-      "pct": 0
+      "pct": 100
     },
     "functions": {
       "total": 3,
-      "covered": 0,
+      "covered": 3,
       "skipped": 0,
-      "pct": 0
+      "pct": 100
     },
     "statements": {
       "total": 12,
-      "covered": 0,
+      "covered": 12,
       "skipped": 0,
-      "pct": 0
+      "pct": 100
     },
     "branches": {
       "total": 4,
-      "covered": 0,
+      "covered": 4,
       "skipped": 0,
-      "pct": 0
+      "pct": 100
     }
   },
   "/home/matt/dadeto/src/core/build/blog.js": {

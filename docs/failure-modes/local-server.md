@@ -1,7 +1,7 @@
 # Local Server Failure Mode Seeds
 
 ## Symptom
-- `npm run start:writer` boots but endpoints fail, hang, or return inconsistent data.
+- `npm run start:writer:playwright` boots but endpoints fail, hang, or return inconsistent data.
 
 ## Likely cause
 - Filesystem permission/path mismatch, malformed workflow payloads, or stale local data fixtures.

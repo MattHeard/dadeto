@@ -1,4 +1,4 @@
-import { isValidString, whenString } from '../../../commonCore.js';
+import { areValidStrings, whenString } from '../../../commonCore.js';
 import { when } from '../../common.js';
 import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
@@ -147,7 +147,7 @@ function parseInput(input) {
  * @returns {boolean} True when both identifiers are valid strings.
  */
 function areIdentifiersValid(pageId, adminId) {
-  return isValidString(pageId) && isValidString(adminId);
+  return areValidStrings(pageId, adminId);
 }
 
 /**

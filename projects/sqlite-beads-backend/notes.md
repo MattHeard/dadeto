@@ -14,6 +14,8 @@ Switch the Beads working memory backend for both `~/.beads` and `~/dadeto/.beads
 
 We already have most working memory exported to Dolt, but the locking model frequently rejects `bd ready`/`bd update` requests during heavy agent activity, forcing manual lock removal (`.beads/dolt-access.lock`). A working SQLite backend exists in the `bd` codebase but is not wired into this workspace yet, so every runner is subject to those Dolt access failures until the migration completes.
 
+- Freshness check: reviewed on 2026-03-17 and still reflects the SQLite migration path and lock-failure motivation.
+
 ## Constraints
 
 - Keep the user-visible `bd` commands unchanged; the chunked output should remain the same once the backend switch is done.
@@ -30,7 +32,7 @@ We already have most working memory exported to Dolt, but the locking model freq
 ## Candidate next actions
 
 - Wire `bd` to configure SQLite for both bead databases and add the necessary config snippet to shared dotfiles.
-- Create a migration bead that exports the Dolt issues JSONL and re-imports them into SQLite before switching the default backend.
+- Create a migration step that exports the Dolt issues JSONL and re-imports them into SQLite before switching the default backend.
 - Add regression tests that run `bd ready`/`bd update` while holding locks to prove SQLite no longer times out.
 - Document the new backend in workspace setup docs so future sessions know to expect SQLite.
 - Decide whether any symphony-local processes need config tweaks to point at the new `.beads` backend.
@@ -59,6 +61,25 @@ We already have most working memory exported to Dolt, but the locking model freq
 3. Mirror the prefix-handling steps above: split `~/.beads/issues.jsonl` by prefix (e.g., the Python snippet used during this loop) so you can run `bd config set issue-prefix gm` before importing the gm shard, then update the SQLite `config` table’s `issue_prefix` row to the same prefix. Repeat for `mh` and `dadeto`, adding `subtask` to `types.custom` before the mh import and noting the same dependency warnings for later cleanup.
 4. Import each shard with `bd import -i <shard>` (import order: gm, mh, dadeto), keeping an eye on `bd import`’s warning list and repairing references afterwards.
 5. After the import, run `bd backend show` and `bd ready --sort priority` from a clean shell to prove the global database now reports SQLite and can answer the same ready queue before removing the old `.beads/dolt` tree.
+
+## Prefix-split import helper
+
+- Script: [`scripts/beads-prefix-split-import.js`](../../scripts/beads-prefix-split-import.js)
+- Dry run:
+
+```bash
+node scripts/beads-prefix-split-import.js --root ~/.beads --dry-run
+```
+
+- Apply:
+
+```bash
+node scripts/beads-prefix-split-import.js --root ~/.beads --apply
+```
+
+- The script backs up `~/.beads` to `~/.beads.bak`, splits `issues.jsonl` into `gm.jsonl`, `mh.jsonl`, and `dadeto.jsonl`, sets `types.custom=subtask` once, then runs `bd config set issue-prefix <prefix>` and `bd import -i <shard>` in prefix order.
+- If `bd` still needs the SQLite config row updated manually in a specific environment, write the same prefix to the `config.issue_prefix` row before each import and keep the script output as the shard list to follow.
+- Confirm the cutover with `bd backend show` and `bd ready --sort priority`.
 
 ## Verification snapshot (2026-03-15)
 

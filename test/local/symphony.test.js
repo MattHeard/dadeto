@@ -470,7 +470,7 @@ describe('local symphony scaffold', () => {
     });
   });
 
-  test('refreshSymphonyStatus preserves running selection while an active run is present', async () => {
+  test('refreshSymphonyStatus preserves running selection while the refreshed bead matches the active run', async () => {
     await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
     await writeFile(
       path.join(tempDir, 'tracking', 'symphony.local.json'),
@@ -524,7 +524,8 @@ describe('local symphony scaffold', () => {
     const runningStatus = applyRunnerLaunch(initialStatus, runningLaunch);
     await statusStore.writeStatus(runningStatus);
 
-    const queueLine = 'dadeto-abc (● P2) Inspect new check';
+    const queueLine =
+      'dadeto-jwwk (● P1) Fix Symphony TUI auto-loop bead-selection race';
     const snapshot = await refreshSymphonyStatus({
       repoRoot: tempDir,
       statusStore,
@@ -535,16 +536,16 @@ describe('local symphony scaffold', () => {
             command: 'bd ready --sort priority',
             readyBeads: [
               {
-                id: 'dadeto-abc',
-                title: 'Inspect new check',
-                priority: '● P2',
+                id: 'dadeto-jwwk',
+                title: 'Fix Symphony TUI auto-loop bead-selection race',
+                priority: '● P1',
               },
             ],
             queueSummary: [queueLine],
             selectedBead: {
-              id: 'dadeto-abc',
-              title: 'Inspect new check',
-              priority: '● P2',
+              id: 'dadeto-jwwk',
+              title: 'Fix Symphony TUI auto-loop bead-selection race',
+              priority: '● P1',
             },
           };
         },
@@ -563,6 +564,93 @@ describe('local symphony scaffold', () => {
       'Wait for the runner loop on dadeto-jwwk to finish before launching another bead.'
     );
     expect(snapshot.status.queueEvidence).toEqual([queueLine]);
+  });
+
+  test('refreshSymphonyStatus reconciles a running status when queue polling selects a different bead', async () => {
+    await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
+    await writeFile(
+      path.join(tempDir, 'tracking', 'symphony.local.json'),
+      JSON.stringify({
+        tracker: {
+          kind: 'bd',
+          readyCommand: 'bd ready --sort priority',
+        },
+        logDir: 'tracking/symphony',
+      }),
+      'utf8'
+    );
+    await writeFile(
+      path.join(tempDir, 'WORKFLOW.md'),
+      [
+        '---',
+        'model: gpt-5',
+        '---',
+        '',
+        '# Workflow',
+        '',
+        '## Allowed command families',
+        '- `bd`',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const { status: initialStatus, statusStore } = await bootstrapSymphony({
+      repoRoot: tempDir,
+      now: () => new Date('2026-03-13T09:00:00.000Z'),
+      trackerFactory: () => ({
+        async pollReadyBeads() {
+          return {
+            command: 'bd ready --sort priority',
+            readyBeads: [],
+            queueSummary: [],
+            selectedBead: null,
+          };
+        },
+      }),
+    });
+
+    const runningStatus = applyRunnerLaunch(initialStatus, {
+      runId: 'runner-2',
+      startedAt: '2026-03-13T09:02:00.000Z',
+      beadId: 'dadeto-jwwk',
+      beadTitle: 'Fix Symphony TUI auto-loop bead-selection race',
+      beadPriority: '● P1',
+      launchRequest: 'bd run dadeto-jwwk',
+    });
+    await statusStore.writeStatus(runningStatus);
+
+    const snapshot = await refreshSymphonyStatus({
+      repoRoot: tempDir,
+      statusStore,
+      now: () => new Date('2026-03-13T09:03:00.000Z'),
+      trackerFactory: () => ({
+        async pollReadyBeads() {
+          return {
+            command: 'bd ready --sort priority',
+            readyBeads: [
+              {
+                id: 'dadeto-abc',
+                title: 'Inspect new check',
+                priority: '● P2',
+              },
+            ],
+            queueSummary: ['dadeto-abc (● P2) Inspect new check'],
+            selectedBead: {
+              id: 'dadeto-abc',
+              title: 'Inspect new check',
+              priority: '● P2',
+            },
+          };
+        },
+      }),
+    });
+
+    expect(snapshot.status.state).toBe('ready');
+    expect(snapshot.status.currentBeadId).toBe('dadeto-abc');
+    expect(snapshot.status.activeRun).toBeUndefined();
+    expect(snapshot.status.operatorRecommendation).toBe(
+      'Run the next worker loop on dadeto-abc.'
+    );
   });
 
   test('persists one completed and one blocked runner outcome as scheduler-visible status', async () => {

@@ -1,0 +1,4 @@
+- unexpected hurdle: `jscpd` still reported the blog-key/capture-form slice even after the earlier shared-shell extraction, but the remaining overlap was only the repeated shell-state destructure.
+- diagnosis path: inspected the exact spans in `blogKeyHandler.js` and `captureFormShared.js`, confirmed both files were calling `createManagedFormShellState({ dom, container, textInput })`, then checked the shared builder in `createDendriteHandler.js`.
+- chosen fix: added `createManagedFormShellBundle` in `src/core/browser/inputHandlers/createDendriteHandler.js` and switched `blogKeyHandler.js` plus `captureFormShared.js` to use it, which removed the duplicated destructure block.
+- next-time guidance: when `jscpd` shows a clone that is already a helper call, look for a tiny normalization wrapper before widening the refactor.
