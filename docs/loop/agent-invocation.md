@@ -52,6 +52,8 @@ If the bead does not contain enough context to fill these fields, the next actio
 
 The loop is still bounded in scope, but required acceptance checks are allowed to run to completion if they are part of the bead's evidence. Do not cut off a full test or verification command just because the implementation slice itself is small; instead, stop widening scope, keep the evidence trail, and let the needed check finish.
 
+When the acceptance evidence is satisfied and the bead no longer needs follow-up, the runner should close the bead instead of leaving it open in `in_progress`. If the work should continue, create or requeue a separate bead for the follow-up.
+
 ## Default Heuristics
 
 When the user gives only a bead reference, use these defaults unless the bead clearly requires something else:
