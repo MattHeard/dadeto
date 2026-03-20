@@ -58,6 +58,7 @@ export function createSymphonyStatusStore(options) {
             lastPollSummary: status.lastPollSummary ?? '',
             latestEvidence: status.latestEvidence ?? '',
             operatorRecommendation: status.operatorRecommendation ?? '',
+            operatorTrustReason: status.operatorTrustReason ?? '',
             queueEvidence: Array.isArray(status.queueEvidence)
               ? status.queueEvidence
               : [],

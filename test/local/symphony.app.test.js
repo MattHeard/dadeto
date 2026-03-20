@@ -100,6 +100,8 @@ describe('local symphony app handlers', () => {
       expect.objectContaining({
         state: 'blocked',
         activeRun: null,
+        operatorTrustReason:
+          'Symphony marked run 2026-03-08T22:38:07.435Z--dadeto-n3nd as blocked because pid 777777 was no longer alive when status was requested.',
         lastOutcome: expect.objectContaining({
           beadId: 'dadeto-n3nd',
           outcome: 'blocked',
@@ -113,6 +115,8 @@ describe('local symphony app handlers', () => {
       expect.objectContaining({
         state: 'blocked',
         activeRun: null,
+        operatorTrustReason:
+          'Symphony marked run 2026-03-08T22:38:07.435Z--dadeto-n3nd as blocked because pid 777777 was no longer alive when status was requested.',
       })
     );
   });

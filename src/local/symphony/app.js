@@ -194,7 +194,10 @@ async function reconcileOrphanedRun(status, statusStore) {
     summary: buildOrphanedRunSummary(status.activeRun, pid),
   };
 
-  const updatedStatus = applyRunnerOutcome(status, outcome);
+  const updatedStatus = {
+    ...applyRunnerOutcome(status, outcome),
+    operatorTrustReason: buildOrphanedRunTrustReason(status.activeRun, pid),
+  };
   await statusStore.writeStatus(updatedStatus);
   return updatedStatus;
 }
@@ -249,4 +252,13 @@ function buildOrphanedRunSummary(activeRun, pid) {
   }
 
   return `${baseMessage} Logs: ${logPaths.join(', ')}.`;
+}
+
+function buildOrphanedRunTrustReason(activeRun, pid) {
+  const runId =
+    typeof activeRun.runId === 'string' && activeRun.runId
+      ? activeRun.runId
+      : activeRun.beadId ?? 'unknown';
+
+  return `Symphony marked run ${runId} as blocked because pid ${pid} was no longer alive when status was requested.`;
 }

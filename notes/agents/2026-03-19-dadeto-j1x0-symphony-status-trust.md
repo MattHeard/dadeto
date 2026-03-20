@@ -1,0 +1,4 @@
+- **Unexpected hurdle:** The orphaned-run status path already repaired `activeRun`, but it had no explicit trust marker for the operator to inspect.
+- **Diagnosis path:** I traced `src/local/symphony/app.js` to `reconcileOrphanedRun`, then checked `src/core/local/symphony.js` and `src/local/symphony/statusStore.js` to confirm the repair already wrote `lastOutcome` and `eventLog` but no dedicated trust field.
+- **Chosen fix:** Added `operatorTrustReason` to the reconciled status for stale/orphaned runs and persisted it in the Symphony status log artifact; locked the slice with `test/local/symphony.app.test.js`.
+- **Next-time guidance:** If this gap comes back, keep the slice bounded to a single operator-visible trust field or event-log line in the status path instead of widening into broader Symphony lifecycle work.

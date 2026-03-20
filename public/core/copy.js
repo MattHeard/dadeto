@@ -457,6 +457,40 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy the generated blog JSON payload from src/build into the public root.
+   * @param {Record<string, string>} dirs - Directory map for the copy workflow.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   *   readDirEntries: (dir: string) => import('fs').Dirent[],
+   * }} io - File system adapters.
+   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for updates.
+   * @returns {void}
+   */
+  function copyBlogJson(dirs, io, messageLogger) {
+    const buildDir = join(dirs.srcDir, 'build');
+    if (!io.directoryExists(buildDir)) {
+      messageLogger.warn(
+        `Warning: build directory not found at ${formatPathForLog(buildDir)}`
+      );
+      return;
+    }
+
+    const source = join(buildDir, 'blog.json');
+    const destination = join(dirs.publicDir, 'blog.json');
+
+    copyFileWithDirectories(io, {
+      source,
+      destination,
+      messageLogger,
+      message: `Blog data copied from ${formatPathForLog(
+        source
+      )} to ${formatPathForLog(destination)}`,
+    });
+  }
+
+  /**
    * Execute the full copy workflow for the static site.
    * @param {{
    *   directories: Record<string, string>,
@@ -475,6 +509,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyBrowserTrees(dirs, io, messageLogger);
     copyCoreRootFiles(dirs, io, messageLogger);
     copyCoreConstants(dirs, io, messageLogger);
+    copyBlogJson(dirs, io, messageLogger);
   }
 
   return buildCopyExportMap([
@@ -482,6 +517,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ['copyBrowserTrees', copyBrowserTrees],
     ['copyCoreRootFiles', copyCoreRootFiles],
     ['copyCoreConstants', copyCoreConstants],
+    ['copyBlogJson', copyBlogJson],
     ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
     ['copyDirRecursive', copyDirRecursive],
     ['processDirectoryEntries', processDirectoryEntries],

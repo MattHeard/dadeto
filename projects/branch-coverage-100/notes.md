@@ -23,7 +23,8 @@ The broadest remaining branch gaps are still concentrated in:
 
 There is currently no fresh ready bead for this project, so the next planner pass should shape a new bounded slice from the latest coverage artifact instead of reusing the old helper-focused plan.
 
-- Freshness check: reviewed on 2026-03-17 and still tracking against the current coverage-summary artifact.
+- Freshness check: reviewed on 2026-03-19 and still tracking against the current coverage-summary artifact.
+- Fresh branch-map check on 2026-03-19: `src/core/browser/inputHandlers/keyboardCapture.js` is the next bounded slice because `reports/coverage/coverage-final.json` still shows one uncovered branch at the `if (!capturing)` guard in `handleKeyboardEvent`.
 
 ## Constraints
 
@@ -38,6 +39,8 @@ Prefer small file-local or behavior-local coverage beads over broad test rewrite
 ## Candidate next actions
 
 - Create one new bead from the current coverage artifact for the next smallest stable gap now that `captureFormShared.js` and `joyConMapping.js` are fully covered.
+- Create one new bead for `src/core/browser/inputHandlers/captureFormShared.js`, which is the next smallest stable uncovered cluster in the repaired summary.
+- Prefer `src/core/browser/inputHandlers/keyboardCapture.js` for the next runner-safe coverage slice if the fresh branch map is trusted over the older summary artifact.
 - Prefer `hiLoCardGame.js` or a bounded `gamepadCapture.js` branch cluster before touching the very large `joyConMapper` surfaces again.
 - Keep the repaired `coverage-summary.json` as the canonical top-level branch-gap artifact and refresh project notes from it after each coverage bead.
 - Create one bead to tighten the repo policy/docs around how branch-coverage gaps should be turned into runner-safe beads if artifact ambiguity keeps recurring.
@@ -46,7 +49,7 @@ Prefer small file-local or behavior-local coverage beads over broad test rewrite
 ## Tentative sequence
 
 1. Start with `captureFormShared.js` as the smallest missed-branch cluster from the repaired summary.
-2. Then prefer the next smallest bounded slice such as `joyConMapping.js` or `hiLoCardGame.js` before touching the very large `joyConMapper` surfaces.
+2. Then prefer `src/core/browser/inputHandlers/keyboardCapture.js`, which the fresh branch map shows still has one uncovered guard branch, before touching the very large `joyConMapper` surfaces.
 3. Keep using the repaired `coverage-summary.json` to choose the next target after each bead.
 4. Split out any gap that appears to reflect a design or reachability problem instead of layering speculative tests on top.
 5. Once branch coverage reaches 100%, define the smallest guardrail that will keep it there.
