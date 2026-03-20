@@ -16,3 +16,7 @@
 14. **Finish with landing-the-plane discipline.** Sync, test, commit, and publish state so no useful loop output remains local-only.
 
 15. **Let required validation finish.** Keep the implementation slice bounded, but do not interrupt a required acceptance check once it has started.
+16. **Decompose recursively from user value.** Define each project as a desired outcome plus user stories, then split it into small, independently testable milestones that each deliver observable value.
+17. **Treat milestones as vertical slices.** A milestone should cross the relevant state, UI, network, or resilience boundary far enough to produce user-visible behavior, not just an internal technical step.
+18. **Rebuild the tree after each milestone.** After one milestone lands, reevaluate the parent goal and remaining branches, then instantiate only the next smallest executable slice.
+19. **Prefer learning over fixed plans.** If a milestone cannot be completed in the time box, treat the failure as information, decompose further, and adjust the tree to match reality.
