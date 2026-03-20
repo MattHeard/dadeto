@@ -20,6 +20,7 @@
  * @typedef {{ cfg: FleetConfig, occupied: Set<string> }} BoardState
  * @typedef {{ segs: Coord[], valid: boolean }} SegmentAccumulator
  * @typedef {{ width: number, height: number, ships: Candidate[] }} GeneratedFleet
+ * @typedef {{ cfg: FleetConfig, occupied: Set<string>, segs: Coord[] }} NoTouchingContext
  */
 
 // ────────────────────── Helper utilities ────────────────────── //
@@ -303,12 +304,10 @@ const allSegsHaveNoOccupiedNeighbour = (cfg, occupied, segs) => {
 
 /**
  * Determine whether the placement violates the no-touching rule.
- * @param {FleetConfig} cfg - Board configuration.
- * @param {Set<string>} occupied - Occupied coordinates.
- * @param {Coord[]} segs - Candidate segments.
+ * @param {NoTouchingContext} root0 - Board configuration and candidate segments.
  * @returns {boolean} True when the no-touching rule rejects the segments.
  */
-function isForbiddenTouch(cfg, occupied, segs) {
+function isForbiddenTouch({ cfg, occupied, segs }) {
   return (
     cfg.noTouching === true &&
     !allSegsHaveNoOccupiedNeighbour(cfg, occupied, segs)
@@ -326,11 +325,11 @@ function isValidCandidate(boardState, segs, valid) {
   if (!valid) {
     return false;
   }
-  const forbiddenTouch = isForbiddenTouch(
-    boardState.cfg,
-    boardState.occupied,
-    segs
-  );
+  const forbiddenTouch = isForbiddenTouch({
+    cfg: boardState.cfg,
+    occupied: boardState.occupied,
+    segs,
+  });
   return !forbiddenTouch;
 }
 
@@ -527,7 +526,7 @@ function shouldAbortPlacement(acc) {
  * @returns {boolean} True when both are valid.
  */
 function areShipPlacementArgsValid(acc, placed) {
-  return Boolean(acc && placed);
+  return acc !== null && placed !== null;
 }
 
 /**
@@ -537,7 +536,7 @@ function areShipPlacementArgsValid(acc, placed) {
  * @returns {Candidate[] | null} Updated accumulation or null on failure.
  */
 function addPlacedShip(acc, placed) {
-  if (!areShipPlacementArgsValid(acc, placed)) {
+  if (acc === null || placed === null) {
     return null;
   }
   acc.push(placed);

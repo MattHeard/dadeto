@@ -31,24 +31,39 @@ export function createCaptureLifecycleToggleHandler(options) {
   return () => {
     const capturing = !options.state.capturing;
     options.state.capturing = capturing;
-
-    emitCaptureState(
-      {
-        dom: options.dom,
-        button: options.button,
-        textInput: options.textInput,
-        autoSubmitCheckbox: options.autoSubmitCheckbox,
-        updateButtonLabel: options.updateButtonLabel,
-        emitPayload: options.emitPayload,
-      },
-      capturing
-    );
-
-    if (capturing) {
-      options.onStart?.();
-      return;
-    }
-
-    options.onStop?.();
+    emitCaptureLifecycleToggle(options, capturing);
   };
+}
+
+/**
+ * Emit the capture lifecycle state and notify the matching hook.
+ * @param {CaptureLifecycleToggleOptions} options - UI and lifecycle dependencies.
+ * @param {boolean} capturing - Whether capture is active.
+ */
+function emitCaptureLifecycleToggle(options, capturing) {
+  emitCaptureState(
+    {
+      dom: options.dom,
+      button: options.button,
+      textInput: options.textInput,
+      autoSubmitCheckbox: options.autoSubmitCheckbox,
+      updateButtonLabel: options.updateButtonLabel,
+      emitPayload: options.emitPayload,
+    },
+    capturing
+  );
+
+  notifyCaptureLifecycleToggle(options, capturing);
+}
+
+/**
+ * Notify the start/stop hook for the current capture state.
+ * @param {CaptureLifecycleToggleOptions} options - UI and lifecycle dependencies.
+ * @param {boolean} capturing - Whether capture is active.
+ */
+function notifyCaptureLifecycleToggle(options, capturing) {
+  const lifecycleHook = { true: options.onStart, false: options.onStop }[
+    capturing
+  ];
+  lifecycleHook?.();
 }

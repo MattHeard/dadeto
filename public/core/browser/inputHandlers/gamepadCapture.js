@@ -1,5 +1,6 @@
 import * as browserCore from '../browser-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
+import { updateCaptureButtonLabel } from './captureLifecycleShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
@@ -18,19 +19,6 @@ const GAMEPAD_CONNECTED_EVENT = 'gamepadconnected';
 const GAMEPAD_DISCONNECTED_EVENT = 'gamepaddisconnected';
 
 /**
- * Resolve the current button label for capture state.
- * @param {boolean} isCapturing - Whether capture is currently active.
- * @returns {string} Button label matching the current state.
- */
-function getCaptureButtonLabel(isCapturing) {
-  if (isCapturing) {
-    return RELEASE_BUTTON_LABEL;
-  }
-
-  return CAPTURE_BUTTON_LABEL;
-}
-
-/**
  * Update the capture button label.
  * @param {GamepadDOMHelpers} dom - DOM helper bucket.
  * @param {HTMLButtonElement} button - Capture toggle button.
@@ -38,7 +26,13 @@ function getCaptureButtonLabel(isCapturing) {
  * @returns {void}
  */
 function updateCaptureButton(dom, button, isCapturing) {
-  dom.setTextContent(button, getCaptureButtonLabel(isCapturing));
+  updateCaptureButtonLabel(
+    dom,
+    button,
+    isCapturing,
+    CAPTURE_BUTTON_LABEL,
+    RELEASE_BUTTON_LABEL
+  );
 }
 
 /**

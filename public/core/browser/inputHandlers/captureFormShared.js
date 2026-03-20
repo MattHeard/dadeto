@@ -1,5 +1,5 @@
 import * as browserCore from '../browser-core.js';
-import { createManagedFormShell } from './createDendriteHandler.js';
+import { createManagedFormShellBundle } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {() => void} CleanupFn */
@@ -95,13 +95,10 @@ export function syncToyPayload(input, payload) {
  * @returns {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} Shared nodes and cleanup stack.
  */
 export function buildCaptureForm({ dom, container, textInput, formClass }) {
-  /** @type {CleanupFn[]} */
-  const cleanupFns = [];
-  const form = createManagedFormShell({
+  const { form, cleanupFns } = createManagedFormShellBundle({
     dom,
     container,
     textInput,
-    disposers: cleanupFns,
   });
   dom.setClassName(form, formClass);
 

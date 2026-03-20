@@ -334,6 +334,37 @@ export function createManagedFormShell({
 }
 
 /**
+ * Create a managed form shell with its cleanup stack.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form setup dependencies.
+ * @returns {{ form: HTMLElement, disposers: Disposer[] }} Managed form shell and cleanup stack.
+ */
+export function createManagedFormShellState({ dom, container, textInput }) {
+  /** @type {Disposer[]} */
+  const disposers = [];
+  const form = createManagedFormShell({
+    dom,
+    container,
+    textInput,
+    disposers,
+  });
+  return { form, disposers };
+}
+
+/**
+ * Create a managed form shell and normalize the cleanup stack name.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form setup dependencies.
+ * @returns {{ form: HTMLElement, cleanupFns: Disposer[] }} Managed form shell and cleanup stack.
+ */
+export function createManagedFormShellBundle({ dom, container, textInput }) {
+  const { form, disposers: cleanupFns } = createManagedFormShellState({
+    dom,
+    container,
+    textInput,
+  });
+  return { form, cleanupFns };
+}
+
+/**
  * Capture the arguments shared between field renderers and form builders.
  * @param {{data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Sync helpers for the form data.
  * @returns {{data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} Shared payload.

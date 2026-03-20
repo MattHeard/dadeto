@@ -1,5 +1,6 @@
 import * as browserCore from '../browser-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
+import { updateCaptureButtonLabel } from './captureLifecycleShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} KeyboardDOMHelpers */
@@ -15,11 +16,13 @@ const RELEASE_BUTTON_LABEL = 'Release keyboard';
  * @returns {void}
  */
 function updateCaptureButton(dom, button, isCapturing) {
-  let label = CAPTURE_BUTTON_LABEL;
-  if (isCapturing) {
-    label = RELEASE_BUTTON_LABEL;
-  }
-  dom.setTextContent(button, label);
+  updateCaptureButtonLabel(
+    dom,
+    button,
+    isCapturing,
+    CAPTURE_BUTTON_LABEL,
+    RELEASE_BUTTON_LABEL
+  );
 }
 
 /**
