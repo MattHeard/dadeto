@@ -54,6 +54,11 @@ When acting as orchestrator, `super-nintendo-chalmers` should apply these rules 
    - Prefer keeping only the current ready slice, and at most one clearly stable next slice, as actual beads.
    - Re-read the live repo state after each closed bead before promoting the next tentative slice into a runner-safe bead.
 
+7. **Keep next-slice selection with SNC**
+   - If the remaining work is only to decide what the next bead should be, keep that work in SNC and project notes instead of assigning it to Ralph.
+   - Do not create a bead whose primary task is "choose what to do next" unless it is explicitly an SNC-owned queue-shaping bead.
+   - Only hand Ralph a bead after SNC has selected a concrete bounded slice with a clear evaluator and stop condition.
+
 ### `ralph` (runner)
 
 Owns:
@@ -70,6 +75,7 @@ Should generally avoid:
 - chatting with the user
 - reshaping the whole queue
 - planning beads, inventory beads, or policy-definition beads that SNC should own directly
+- deciding which next slice should become a bead
 - inventing new multi-bead plans without leaving them for orchestrator review
 
 Exception:

@@ -50,6 +50,8 @@ Before editing files, translate the bead into this loop contract and retain it i
 
 If the bead does not contain enough context to fill these fields, the next action is to tighten the bead, not to improvise a broad implementation.
 
+If the remaining work is only to decide what the next bead should be, stop there and return to SNC or project notes instead of creating a runner bead. Ralph should only receive a bead after SNC has already chosen a concrete bounded slice.
+
 The loop is still bounded in scope, but required acceptance checks are allowed to run to completion if they are part of the bead's evidence. Do not cut off a full test or verification command just because the implementation slice itself is small; instead, stop widening scope, keep the evidence trail, and let the needed check finish.
 
 When the acceptance evidence is satisfied and the bead no longer needs follow-up, the runner should close the bead instead of leaving it open in `in_progress`. If the work should continue, create or requeue a separate bead for the follow-up.
