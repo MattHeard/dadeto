@@ -16,6 +16,8 @@ This project now has a first real implementation slice rather than only a PRD, a
 
 The intended core remains a deterministic JSON-in / JSON-out import function that performs mapping, normalization, validation, deduplication, and summary generation without direct filesystem, database, network, or implicit clock dependencies. That core is already living inside the toy structure like the repo's other toys, so each meaningful iteration should now move the toy toward a better user-testable end-to-end flow rather than stopping at inaccessible internal seams.
 
+The next visible toy should stop pretending the user starts from internal fixtures and instead accept a semicolon-delimited transaction CSV, convert it into JSON adapter records, and then feed those records into the existing import core. The CSV contract for that adapter lives in `projects/ledger-ingest/csv-schema.md`.
+
 - Freshness check: reviewed on 2026-03-30 and updated to reflect the existing thin-wrapper / user-testable flow.
 
 ## Constraints
@@ -33,7 +35,8 @@ Keep the pure-function core explicit and free of hidden file IO, persistence, or
 ## Candidate next actions
 
 - Improve the toy surface so a user can see the canonical rows, duplicate reports, and structured errors more directly.
-- Add a real UI affordance or local command path for selecting a fixture or sample import input.
+- Add a real UI affordance or local command path for pasting or uploading a transaction CSV instead of selecting a fixture.
+- Build the CSV-to-JSON adapter toy that parses the documented semicolon-delimited schema into the existing import core input shape.
 - Continue adding narrow fixtures for structured error reporting or institution mapping edge cases, but only in support of the user-testable toy flow.
 - Define the first canonical transaction schema and structured error format in code-level tests where that contract is still implicit.
 - Decide which open question most threatens MVP correctness and shape a bead around it only if it blocks the next user-visible slice.
@@ -41,10 +44,11 @@ Keep the pure-function core explicit and free of hidden file IO, persistence, or
 ## Tentative sequence
 
 1. Keep the core pure and keep the toy wrapper thin.
-2. Improve the user-facing toy flow so the canonical rows, duplicates, and structured errors are easier to inspect.
-3. Prove normalization, deduplication, and structured errors through that toy plus fixture-backed tests.
-4. Add a second source or edge case only after the first end-to-end import path is stable and understandable.
-5. Tighten the schema and duplicate policy gradually as real user feedback accumulates.
+2. Add the CSV-to-JSON adapter toy so the input path matches real personal exports instead of internal fixtures.
+3. Improve the user-facing toy flow so the canonical rows, duplicates, and structured errors are easier to inspect.
+4. Prove normalization, deduplication, and structured errors through that toy plus focused tests.
+5. Add a second source or edge case only after the first CSV import path is stable and understandable.
+6. Tighten the schema and duplicate policy gradually as real user feedback accumulates.
 
 ## MVP shape
 
