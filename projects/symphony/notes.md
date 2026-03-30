@@ -20,7 +20,7 @@ Keep Symphony usable as Dadeto's local-first operator surface for selecting one 
 
 ## Current limits
 
-- Freshness check: reviewed on 2026-03-17 and still aligned with the live status/launch flow and the remaining operator-trust gaps below.
+- Freshness check: reviewed on 2026-03-30 and still aligned with the live status/launch flow and the remaining operator-trust gaps below.
 
 - Symphony still runs one detached Ralph loop at a time (maxConcurrentRuns: 1) and exposes only the single highest-priority ready bead. There is no scheduler logic to move beads into `in_progress`, re-prioritize them automatically, or handle multiple workspaces.
 - Operators must refresh manually (or wait for the 30 s poll) to update queue state and then click “L”/POST `/api/symphony/launch`; there is no dashboard that reconciles `bd` statuses with `tracking/symphony/status.json`, so some beads still stay open even after the runner finishes.
@@ -40,7 +40,6 @@ Read `status.json` first. `currentBeadId`, `lastPollSummary`, `latestEvidence`, 
 
 ## Open beads that match the live MVP
 
-- `dadeto-x2yg`: reconcile this project note with the live Symphony behavior after refresh/launch/status improvements.
 - Add a bounded bead to identify and eliminate the file-descriptor-on-garbage-collection warning so the local server stops leaking or deferring cleanup.
 - Add a bounded bead to persist a recent agent-event log that surfaces key transitions like `bead started`, `bead closed`, `launch rejected`, and `agent failure` in operator-visible status output.
 - Future Symphony-facing slices should focus on operator trust, durable launch/trigger visibility, and stronger “land the plane” closure behavior rather than rebuilding refresh/launch basics.
@@ -56,6 +55,7 @@ Read `status.json` first. `currentBeadId`, `lastPollSummary`, `latestEvidence`, 
 - Launch is no longer the missing feature. Symphony already polls ready beads, records queue evidence, launches a detached Ralph process, and writes per-run stdout/stderr logs.
 - Model-selection compatibility is no longer the current blocker. Symphony is already pinned to `gpt-5.4-mini`, and fresh runs get past launch/model selection into real repo inspection.
 - Queue refresh is no longer the missing feature either. Symphony already exposes and uses the refresh trigger, and the TUI/project queue now assumes that refresh exists.
+- The old open-bead placeholder `dadeto-x2yg` is no longer part of the active queue; the note should now be read against the live bead list instead.
 - Pre-launch placeholder next actions should be treated as stale unless they point to the remaining reconciliation or operator-trust gaps above.
 
 ## External reference

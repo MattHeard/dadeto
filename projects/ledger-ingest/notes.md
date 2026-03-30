@@ -6,17 +6,17 @@ Build a Dadeto toy that imports raw bank and card transaction exports into one c
 
 ## Priority
 
-- MoSCoW: Could have. This is real product-building work, but it is less urgent than the repo-health and operator-trust projects.
+- MoSCoW: Should have. This is now the top-ranked project because it is the clearest Dadeto toy candidate and the first product-surface slice worth keeping visible.
 - RICE: Medium impact and moderate effort because it can prove a useful Dadeto pattern, but its reach is narrower than the shared infrastructure work.
 - Cost of Delay: Low-to-medium. The main cost is delayed product value rather than compounding repo-wide debt.
 
 ## Current state
 
-This project now has a first real implementation slice rather than only a PRD, but the current shape is still too internal: the pure core exists and core-focused fixtures have landed, yet there is still no thin end-to-end toy surface that a user can actually try. That makes the project easy to overfit to internal contracts and harder to validate through real user feedback.
+This project now has a first real implementation slice rather than only a PRD, and the thin toy wrapper already exists. The core is exposed through `src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js`, and the focused toy test already exercises the wrapper path. The remaining work is not to invent the first wrapper, but to make the toy more useful and user-visible in small increments.
 
-The intended core remains a deterministic JSON-in / JSON-out import function that performs mapping, normalization, validation, deduplication, and summary generation without direct filesystem, database, network, or implicit clock dependencies. However, that core should live inside the toy structure like the repo's other toys, and each meaningful iteration should move the toy toward a user-testable end-to-end flow rather than stopping at inaccessible internal seams.
+The intended core remains a deterministic JSON-in / JSON-out import function that performs mapping, normalization, validation, deduplication, and summary generation without direct filesystem, database, network, or implicit clock dependencies. That core is already living inside the toy structure like the repo's other toys, so each meaningful iteration should now move the toy toward a better user-testable end-to-end flow rather than stopping at inaccessible internal seams.
 
-- Freshness check: reviewed on 2026-03-17 and still aligned with the thin-wrapper / user-testable flow goal.
+- Freshness check: reviewed on 2026-03-30 and updated to reflect the existing thin-wrapper / user-testable flow.
 
 ## Constraints
 
@@ -32,16 +32,16 @@ Keep the pure-function core explicit and free of hidden file IO, persistence, or
 
 ## Candidate next actions
 
-- Move the ledger-ingest core into a toy subdir so its structure matches the repo's other toys and the import surface is easier to discover.
-- Add the thinnest possible end-to-end toy wrapper that lets a user supply sample data, run the core, and inspect canonical rows, duplicates, and errors.
+- Improve the toy surface so a user can see the canonical rows, duplicate reports, and structured errors more directly.
+- Add a real UI affordance or local command path for selecting a fixture or sample import input.
 - Continue adding narrow fixtures for structured error reporting or institution mapping edge cases, but only in support of the user-testable toy flow.
 - Define the first canonical transaction schema and structured error format in code-level tests where that contract is still implicit.
-- Decide which open question most threatens MVP correctness and shape a bead around it only if it blocks the first core slice.
+- Decide which open question most threatens MVP correctness and shape a bead around it only if it blocks the next user-visible slice.
 
 ## Tentative sequence
 
-1. Keep the core pure, but place it inside the toy structure so the repo shape matches other toys.
-2. Add the thinnest end-to-end toy flow that a user can actually run and comment on.
+1. Keep the core pure and keep the toy wrapper thin.
+2. Improve the user-facing toy flow so the canonical rows, duplicates, and structured errors are easier to inspect.
 3. Prove normalization, deduplication, and structured errors through that toy plus fixture-backed tests.
 4. Add a second source or edge case only after the first end-to-end import path is stable and understandable.
 5. Tighten the schema and duplicate policy gradually as real user feedback accumulates.
