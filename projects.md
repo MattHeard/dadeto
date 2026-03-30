@@ -1,5 +1,7 @@
 # Projects
 
+Priority order, highest first.
+
 1. symphony
 2. sqlite-beads-backend
 3. symphony-tui
