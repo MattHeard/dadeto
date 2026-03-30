@@ -1,6 +1,6 @@
 # Ledger Ingest CSV Schema
 
-This document describes the semicolon-delimited transaction export shape that can be adapted into `ImportTransactionsInput` for the ledger-ingest toy.
+This document describes the semicolon-delimited transaction export shape that can be adapted into `ImportTransactionsInput` for the ledger-ingest converter toy.
 
 The CSV is treated as a raw adapter format. The parser should convert each row into a JSON record before the existing import core runs.
 
@@ -42,10 +42,13 @@ Recommended intermediate JSON shape:
   currency: string;
   accountIban: string;
   category: string;
+  recordId?: string;
 }
 ```
 
 This is still an adapter shape, not the final ledger-ingest core shape.
+
+The converter toy should wrap these row objects in a copyable `ImportTransactionsInput` payload before handing them to the main ledger-ingest toy.
 
 ## Adapter Mapping Goals
 
@@ -63,7 +66,7 @@ Expected adapter responsibilities:
 
 - The header row must contain the required columns.
 - Each record row must have the same number of columns as the header.
-- Required fields must not be empty after trimming.
+- Required fields should be present and non-empty for successful import, but rows with missing required values may still be preserved as raw records so the import core can emit structured errors.
 - Amount values must be parseable as signed decimals.
 - Dates must be parseable as calendar dates in the expected locale format.
 - Currency values must be present for every row.
@@ -76,4 +79,3 @@ The following decisions are still adapter policy choices rather than fixed schem
 - whether `Transaction type` participates in duplicate detection
 - whether `Category` remains metadata or becomes a normalization signal
 - whether the adapter should treat the CSV source as a single account or allow multi-account imports
-

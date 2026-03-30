@@ -1,28 +1,28 @@
 {
   "total": {
     "lines": {
-      "total": 7101,
-      "covered": 6686,
+      "total": 7186,
+      "covered": 6758,
       "skipped": 0,
-      "pct": 94.15
+      "pct": 94.04
     },
     "statements": {
-      "total": 7260,
-      "covered": 6836,
+      "total": 7347,
+      "covered": 6910,
       "skipped": 0,
-      "pct": 94.15
+      "pct": 94.05
     },
     "functions": {
-      "total": 2888,
-      "covered": 2745,
+      "total": 2897,
+      "covered": 2754,
       "skipped": 0,
-      "pct": 95.04
+      "pct": 95.06
     },
     "branches": {
-      "total": 2738,
-      "covered": 2507,
+      "total": 2804,
+      "covered": 2546,
       "skipped": 0,
-      "pct": 91.56
+      "pct": 90.79
     },
     "branchesTrue": {
       "total": 0,
@@ -2241,28 +2241,54 @@
       "pct": 61.53
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js": {
+  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js": {
     "lines": {
-      "total": 12,
-      "covered": 12,
+      "total": 81,
+      "covered": 68,
       "skipped": 0,
-      "pct": 100
+      "pct": 83.95
     },
     "functions": {
-      "total": 3,
-      "covered": 3,
+      "total": 8,
+      "covered": 8,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 12,
-      "covered": 12,
+      "total": 83,
+      "covered": 70,
+      "skipped": 0,
+      "pct": 84.33
+    },
+    "branches": {
+      "total": 61,
+      "covered": 34,
+      "skipped": 0,
+      "pct": 55.73
+    }
+  },
+  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js": {
+    "lines": {
+      "total": 16,
+      "covered": 16,
+      "skipped": 0,
+      "pct": 100
+    },
+    "functions": {
+      "total": 4,
+      "covered": 4,
+      "skipped": 0,
+      "pct": 100
+    },
+    "statements": {
+      "total": 16,
+      "covered": 16,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 4,
-      "covered": 4,
+      "total": 9,
+      "covered": 9,
       "skipped": 0,
       "pct": 100
     }

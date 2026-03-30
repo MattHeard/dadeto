@@ -12,11 +12,11 @@ Build a Dadeto toy that imports raw bank and card transaction exports into one c
 
 ## Current state
 
-This project now has a first real implementation slice rather than only a PRD, and the thin toy wrapper already exists. The core is exposed through `src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js`, and the focused toy test already exercises the wrapper path. The remaining work is not to invent the first wrapper, but to make the toy more useful and user-visible in small increments.
+This project now has a first real implementation slice rather than only a PRD, and the thin toy wrapper already exists. The core is exposed through `src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js`, the focused toy test already exercises the wrapper path, and there is now a separate CSV converter toy that emits copyable JSON for the main import toy. The remaining work is not to invent the first wrapper, but to make the two toy surfaces more useful and user-visible in small increments.
 
 The intended core remains a deterministic JSON-in / JSON-out import function that performs mapping, normalization, validation, deduplication, and summary generation without direct filesystem, database, network, or implicit clock dependencies. That core is already living inside the toy structure like the repo's other toys, so each meaningful iteration should now move the toy toward a better user-testable end-to-end flow rather than stopping at inaccessible internal seams.
 
-The next visible toy should stop pretending the user starts from internal fixtures and instead accept a semicolon-delimited transaction CSV, convert it into JSON adapter records, and then feed those records into the existing import core. The CSV contract for that adapter lives in `projects/ledger-ingest/csv-schema.md`.
+The main import toy should stay focused on the JSON/import path: it can run named fixtures for demos, or accept a pasted `ImportTransactionsInput` payload directly. The separate CSV converter toy should be the first personal-use surface: it accepts a semicolon-delimited transaction CSV, converts it into JSON adapter records, and emits the JSON payload that the main toy accepts. The CSV contract for that adapter lives in `projects/ledger-ingest/csv-schema.md`.
 
 - Freshness check: reviewed on 2026-03-30 and updated to reflect the existing thin-wrapper / user-testable flow.
 
@@ -35,20 +35,22 @@ Keep the pure-function core explicit and free of hidden file IO, persistence, or
 ## Candidate next actions
 
 - Improve the toy surface so a user can see the canonical rows, duplicate reports, and structured errors more directly.
-- Add a real UI affordance or local command path for pasting or uploading a transaction CSV instead of selecting a fixture.
-- Build the CSV-to-JSON adapter toy that parses the documented semicolon-delimited schema into the existing import core input shape.
+- Add a real UI affordance or local command path for pasting or uploading a transaction CSV into the converter toy instead of selecting a fixture.
+- Keep the import toy focused on accepting JSON directly, then make that copy-paste path obvious in the UI.
+- Build or refine the CSV-to-JSON adapter toy that parses the documented semicolon-delimited schema into the existing import core input shape.
 - Continue adding narrow fixtures for structured error reporting or institution mapping edge cases, but only in support of the user-testable toy flow.
 - Define the first canonical transaction schema and structured error format in code-level tests where that contract is still implicit.
 - Decide which open question most threatens MVP correctness and shape a bead around it only if it blocks the next user-visible slice.
 
 ## Tentative sequence
 
-1. Keep the core pure and keep the toy wrapper thin.
-2. Add the CSV-to-JSON adapter toy so the input path matches real personal exports instead of internal fixtures.
-3. Improve the user-facing toy flow so the canonical rows, duplicates, and structured errors are easier to inspect.
-4. Prove normalization, deduplication, and structured errors through that toy plus focused tests.
-5. Add a second source or edge case only after the first CSV import path is stable and understandable.
-6. Tighten the schema and duplicate policy gradually as real user feedback accumulates.
+1. Keep the core pure and keep the main toy wrapper thin.
+2. Keep the main toy focused on JSON import payloads and the fixture demo path.
+3. Keep the separate CSV converter toy focused on producing copyable JSON for the main toy.
+4. Improve the user-facing toy flow so the canonical rows, duplicates, and structured errors are easier to inspect.
+5. Prove normalization, deduplication, and structured errors through the JSON import path plus focused tests.
+6. Add a second source or edge case only after the first CSV conversion path is stable and understandable.
+7. Tighten the schema and duplicate policy gradually as real user feedback accumulates.
 
 ## MVP shape
 

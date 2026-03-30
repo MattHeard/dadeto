@@ -5,8 +5,8 @@
       "title": "Ledger Ingest",
       "publicationDate": "2026-03-13",
       "content": [
-        "Runs a deterministic transaction-import core against a named fixture and returns canonical rows, duplicate reports, structured errors, and summary data.",
-        "Provide JSON like {\"fixture\":\"happyPath\"} or switch to duplicateDetection, repeatImport, or invalidRow to inspect different import outcomes.",
+        "Runs a deterministic transaction-import core against either a named fixture or a pasted ImportTransactionsInput JSON payload and returns canonical rows, duplicate reports, structured errors, and summary data.",
+        "Provide JSON like {\"fixture\":\"happyPath\"} for demo runs, or paste the JSON payload emitted by the CSV converter toy to inspect a real personal import path.",
         "The toy is a thin wrapper over the ledger-ingest core so the import flow can be tried end to end without adding file IO, network calls, or persistence."
       ],
       "toy": {
@@ -15,6 +15,22 @@
         "defaultInputMethod": "textarea"
       },
       "tags": ["toy", "ledger", "finance", "import", "json"]
+    },
+    {
+      "key": "LEDG2",
+      "title": "Ledger Ingest CSV Converter",
+      "publicationDate": "2026-03-30",
+      "content": [
+        "Converts a semicolon-delimited transaction CSV into a copyable ImportTransactionsInput JSON payload.",
+        "Paste the CSV here, copy the emitted JSON, and then paste that JSON into the main Ledger Ingest toy to run the core.",
+        "The converter preserves the source rows as adapter records and emits the field mapping needed by the import core."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js",
+        "functionName": "ledgerIngestCsvConverterToy",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "ledger", "finance", "csv", "converter", "json"]
     },
     {
       "key": "JOYC1",
