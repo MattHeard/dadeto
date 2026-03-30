@@ -112,6 +112,48 @@ describe('importTransactions', () => {
     expect(result.canonicalTransactions).toHaveLength(2);
     expect(result.summary.canonicalTransactions).toBe(2);
   });
+
+  it('accepts a semicolon-delimited csv sample and routes it through the core', () => {
+    const csv = [
+      'Booking date;Value date;Transaction type;Booking text;Amount;Currency;Account IBAN;Category',
+      '30.03.2026;30.03.2026;Debit;Coffee Shop Seattle;-12,50;EUR;DE00123456789012345678;Living Expenses',
+      '30.03.2026;30.03.2026;Debit;Coffee Shop Seattle;-12,50;EUR;DE00123456789012345678;Living Expenses',
+      '30.03.2026;30.03.2026;Debit;Missing amount;;EUR;DE00123456789012345678;Living Expenses',
+    ].join('\n');
+
+    const result = JSON.parse(ledgerIngestToy(csv));
+
+    expect(result.fixture).toBe('csvAdapter');
+    expect(result.canonicalTransactions).toHaveLength(1);
+    expect(result.duplicateReports).toHaveLength(1);
+    expect(result.errorReports).toHaveLength(1);
+    expect(result.summary.rawRecords).toBe(3);
+    expect(result.summary.canonicalTransactions).toBe(1);
+    expect(result.summary.duplicatesDetected).toBe(1);
+    expect(result.summary.errorsDetected).toBe(1);
+    expect(result.canonicalTransactions[0]).toMatchObject({
+      postedDate: '2026-03-30',
+      amount: -12.5,
+      currency: 'EUR',
+      description: 'coffee shop seattle',
+      sourceRecordId: 'DE00123456789012345678:1',
+    });
+    expect(result.canonicalTransactions[0].metadata.rawRecord).toMatchObject({
+      date: '2026-03-30',
+      id: 'DE00123456789012345678:1',
+      amount: '-12.5',
+      description: 'Coffee Shop Seattle',
+      currency: 'EUR',
+      rawBookingDate: '30.03.2026',
+      rawValueDate: '30.03.2026',
+      rawTransactionType: 'Debit',
+      rawBookingText: 'Coffee Shop Seattle',
+      rawAmount: '-12,50',
+      rawCurrency: 'EUR',
+      rawAccountIban: 'DE00123456789012345678',
+      rawCategory: 'Living Expenses',
+    });
+  });
 });
 
 function expectCanonicalTransactionShape(transaction) {
