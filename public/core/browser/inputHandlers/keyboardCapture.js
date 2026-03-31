@@ -157,56 +157,61 @@ function forwardCapturedKey(event, options) {
  * @param {{ dom: KeyboardDOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
  * @returns {HTMLElement} The inserted form element.
  */
+const buildKeyboardCaptureFormContext = ({
+  dom,
+  button,
+  cleanupFns,
+  container,
+  textInput,
+}) => {
+  const state = { capturing: false };
+  const autoSubmitCheckbox = captureLifecycleDeps.getAutoSubmitCheckbox(
+    container,
+    dom
+  );
+  const handleToggle =
+    captureLifecycleDeps.createCaptureLifecycleToggleHandler({
+      dom,
+      button,
+      textInput,
+      autoSubmitCheckbox,
+      state,
+      updateButtonLabel: updateCaptureButton,
+      emitPayload: captureLifecycleDeps.syncToyPayload,
+    });
+  const handleKeyboard = createKeyboardHandler({
+    dom,
+    button,
+    textInput,
+    autoSubmitCheckbox,
+    state,
+  });
+  const buildGlobalListenerOptions = type => ({
+    globalThisArg: globalThis,
+    cleanupFns,
+    type,
+    handler: /** @type {EventListener} */ (handleKeyboard),
+  });
+
+  dom.addEventListener(button, 'click', handleToggle);
+  captureLifecycleDeps.registerGlobalListener(
+    buildGlobalListenerOptions('keydown')
+  );
+  captureLifecycleDeps.registerGlobalListener(
+    buildGlobalListenerOptions('keyup')
+  );
+
+  cleanupFns.push(() => dom.removeEventListener(button, 'click', handleToggle));
+};
+
 const buildKeyboardCaptureForm = captureLifecycleDeps.makeCaptureFormBuilder(
   KEYBOARD_FORM_CLASS,
-  options => {
+  options =>
     captureLifecycleDeps.withCaptureFormContext(
       options,
       updateCaptureButton,
-      ({ dom, button, cleanupFns, container, textInput }) => {
-        const state = { capturing: false };
-        const autoSubmitCheckbox = captureLifecycleDeps.getAutoSubmitCheckbox(
-          container,
-          dom
-        );
-        const handleToggle =
-          captureLifecycleDeps.createCaptureLifecycleToggleHandler({
-            dom,
-            button,
-            textInput,
-            autoSubmitCheckbox,
-            state,
-            updateButtonLabel: updateCaptureButton,
-            emitPayload: captureLifecycleDeps.syncToyPayload,
-          });
-        const handleKeyboard = createKeyboardHandler({
-          dom,
-          button,
-          textInput,
-          autoSubmitCheckbox,
-          state,
-        });
-        const buildGlobalListenerOptions = type => ({
-          globalThisArg: globalThis,
-          cleanupFns,
-          type,
-          handler: /** @type {EventListener} */ (handleKeyboard),
-        });
-
-        dom.addEventListener(button, 'click', handleToggle);
-        captureLifecycleDeps.registerGlobalListener(
-          buildGlobalListenerOptions('keydown')
-        );
-        captureLifecycleDeps.registerGlobalListener(
-          buildGlobalListenerOptions('keyup')
-        );
-
-        cleanupFns.push(() =>
-          dom.removeEventListener(button, 'click', handleToggle)
-        );
-      }
-    );
-  }
+      buildKeyboardCaptureFormContext
+    )
 );
 
 /**
