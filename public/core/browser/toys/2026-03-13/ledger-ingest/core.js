@@ -4,7 +4,6 @@
  * The contract keeps the pure core friendly to JSON-only inputs/outputs and
  * exposes normalization and dedupe policy examples for downstream adapters.
  */
-
 const DEFAULT_FIELD_MAPPING = {
   postedDate: 'date',
   amount: 'amount',

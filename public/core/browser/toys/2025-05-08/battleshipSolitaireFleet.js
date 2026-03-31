@@ -520,16 +520,6 @@ function shouldAbortPlacement(acc) {
 }
 
 /**
- * Check if both acc and placed are valid.
- * @param {Candidate[] | null} acc - Accumulation.
- * @param {Candidate | null} placed - Placed candidate.
- * @returns {boolean} True when both are valid.
- */
-function areShipPlacementArgsValid(acc, placed) {
-  return acc !== null && placed !== null;
-}
-
-/**
  * Attempt to place a ship and add it to the accumulation.
  * @param {Candidate[] | null} acc - Accumulated candidates.
  * @param {Candidate | null} placed - Placed candidate.

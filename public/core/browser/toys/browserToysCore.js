@@ -270,9 +270,6 @@ export function appendPageAndOptions(data, page, opts) {
     data.temporary
   );
   const tran1 = temp.TRAN1;
-  if (!tran1) {
-    return data;
-  }
   tran1.pages.push(page);
   tran1.options.push(...opts);
   return data;
@@ -437,9 +434,6 @@ export function persistDendriteStory(parsed, env) {
         newData.temporary
       );
       const tran1 = temp.TRAN1;
-      if (!tran1) {
-        return;
-      }
       tran1.stories.push(story);
     }
   );
