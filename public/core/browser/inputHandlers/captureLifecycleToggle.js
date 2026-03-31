@@ -17,8 +17,8 @@ import { emitCaptureState } from './captureLifecycleShared.js';
  *     },
  *     payload: Record<string, unknown>
  *   ) => void,
- *   onStart?: () => void,
- *   onStop?: () => void,
+ *   onStart?: (globalThis: typeof globalThis) => void,
+ *   onStop?: (globalThis: typeof globalThis) => void,
  * }} CaptureLifecycleToggleOptions
  */
 
@@ -65,5 +65,5 @@ function notifyCaptureLifecycleToggle(options, capturing) {
   const lifecycleHook = { true: options.onStart, false: options.onStop }[
     capturing
   ];
-  lifecycleHook?.();
+  lifecycleHook?.(globalThis);
 }

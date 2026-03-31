@@ -1314,7 +1314,7 @@ function detectCurrentControlCapture(state, snapshot) {
  *   dom: DOMHelpers,
  *   element: HTMLElement,
  *   handler: (event: Event) => void,
- *   disposers: Array<() => void>
+ *   disposers: Array<(globalThis: typeof globalThis) => void>
  * }} options
  *   Click registration inputs.
  * @returns {void}
@@ -1322,7 +1322,9 @@ function detectCurrentControlCapture(state, snapshot) {
 function registerClick(options) {
   const { dom, element, handler, disposers } = options;
   dom.addEventListener(element, 'click', handler);
-  disposers.push(() => dom.removeEventListener(element, 'click', handler));
+  disposers.push(_globalThisArg =>
+    dom.removeEventListener(element, 'click', handler)
+  );
 }
 
 /**
@@ -1452,7 +1454,7 @@ function appendChildren(dom, parent, children) {
 
 /**
  * Invoke every registered disposer.
- * @param {Array<() => void>} disposers Callbacks to clean up when the mapper is disposed.
+ * @param {Array<(globalThis: typeof globalThis) => void>} disposers Callbacks to clean up when the mapper is disposed.
  * @returns {void}
  */
 function disposeAll(disposers) {
@@ -1477,12 +1479,12 @@ function getSkippedControlKey(control) {
 /**
  * Start the periodic capture loop and register the disposer.
  * @param {MapperState} state Mapper state that tracks the current capture session.
- * @param {Array<() => void>} disposers Cleanup callbacks that should clear the interval.
+ * @param {Array<(globalThis: typeof globalThis) => void>} disposers Cleanup callbacks that should clear the interval.
  * @returns {void} Ensures the capture interval is scheduled and cleared when disposed.
  */
 function startJoyConCaptureLoop(state, disposers) {
   const intervalId = globalThis.setInterval(() => maybeCapture(state), 50);
-  disposers.push(() => globalThis.clearInterval(intervalId));
+  disposers.push(globalThisArg => globalThisArg.clearInterval(intervalId));
 }
 
 /**

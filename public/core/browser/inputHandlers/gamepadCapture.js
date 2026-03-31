@@ -4,7 +4,7 @@ import { updateCaptureButtonLabel } from './captureLifecycleShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
-/** @typedef {() => void} CleanupFn */
+/** @typedef {(globalThis: typeof globalThis) => void} CleanupFn */
 /** @typedef {{ pressed: boolean, value: number }} ButtonSnapshot */
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
 /** @typedef {{ capturing: boolean, animationFrameId: number | null, snapshots: Record<number, GamepadSnapshot> }} CaptureState */
@@ -732,10 +732,10 @@ function registerGamepadListeners(options, cleanupFns) {
       emitPayload: (input, payload) =>
         captureLifecycleDeps.syncToyInput({ ...input, payload }),
       onStart: () => queuePoll(options),
-      onStop: () =>
+      onStop: globalThisArg =>
         stopCaptureSideEffects(
           options.state,
-          globalThis.cancelAnimationFrame
+          globalThisArg.cancelAnimationFrame
         ),
     }
   );
@@ -760,8 +760,8 @@ function registerGamepadListeners(options, cleanupFns) {
     handler: handleDisconnect,
   });
 
-  cleanupFns.push(() => {
-    const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+  cleanupFns.push(globalThisArg => {
+    const cancelAnimationFrame = globalThisArg.cancelAnimationFrame;
     if (typeof cancelAnimationFrame === 'function') {
       cancelPoll(options.state, cancelAnimationFrame);
     } else {
