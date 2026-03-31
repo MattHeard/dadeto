@@ -14,6 +14,9 @@ function makeElement(tag = 'div') {
 function makeDom(autoSubmitCheckbox) {
   return {
     globalThis,
+    requestAnimationFrame: callback => globalThis.requestAnimationFrame(callback),
+    setInterval: (callback, delay) => globalThis.setInterval(callback, delay),
+    clearInterval: handle => globalThis.clearInterval(handle),
     createElement: jest.fn(tag => makeElement(tag)),
     setClassName: jest.fn((el, cls) => {
       el.className = cls;
@@ -74,6 +77,8 @@ describe('joyConMapperHandler', () => {
     const previousNavigator = globalThis.navigator;
     const previousRaf = globalThis.requestAnimationFrame;
     const previousCaf = globalThis.cancelAnimationFrame;
+    const previousSetInterval = globalThis.setInterval;
+    const previousClearInterval = globalThis.clearInterval;
 
     globalThis.navigator = { getGamepads: jest.fn(() => []) };
     globalThis.requestAnimationFrame = jest.fn(callback => {
@@ -81,6 +86,11 @@ describe('joyConMapperHandler', () => {
       return 1;
     });
     globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.setInterval = jest.fn(callback => {
+      callback();
+      return 2;
+    });
+    globalThis.clearInterval = jest.fn();
 
     try {
       joyConMapperHandler(dom, container, textInput);
@@ -99,6 +109,8 @@ describe('joyConMapperHandler', () => {
       globalThis.navigator = previousNavigator;
       globalThis.requestAnimationFrame = previousRaf;
       globalThis.cancelAnimationFrame = previousCaf;
+      globalThis.setInterval = previousSetInterval;
+      globalThis.clearInterval = previousClearInterval;
     }
   });
 });

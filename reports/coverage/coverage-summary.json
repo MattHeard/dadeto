@@ -1,28 +1,28 @@
 {
   "total": {
     "lines": {
-      "total": 7164,
-      "covered": 6988,
+      "total": 7158,
+      "covered": 6987,
       "skipped": 0,
-      "pct": 97.54
+      "pct": 97.61
     },
     "statements": {
-      "total": 7327,
+      "total": 7321,
       "covered": 7147,
       "skipped": 0,
-      "pct": 97.54
+      "pct": 97.62
     },
     "functions": {
       "total": 2901,
-      "covered": 2840,
+      "covered": 2843,
       "skipped": 0,
-      "pct": 97.89
+      "pct": 98
     },
     "branches": {
-      "total": 2752,
+      "total": 2748,
       "covered": 2622,
       "skipped": 0,
-      "pct": 95.27
+      "pct": 95.41
     },
     "branchesTrue": {
       "total": 0,
@@ -735,10 +735,10 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
     "lines": {
-      "total": 172,
-      "covered": 159,
+      "total": 169,
+      "covered": 157,
       "skipped": 0,
-      "pct": 92.44
+      "pct": 92.89
     },
     "functions": {
       "total": 70,
@@ -747,42 +747,42 @@
       "pct": 97.14
     },
     "statements": {
-      "total": 174,
-      "covered": 161,
+      "total": 171,
+      "covered": 159,
       "skipped": 0,
-      "pct": 92.52
+      "pct": 92.98
     },
     "branches": {
-      "total": 56,
-      "covered": 45,
+      "total": 54,
+      "covered": 44,
       "skipped": 0,
-      "pct": 80.35
+      "pct": 81.48
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
     "lines": {
-      "total": 319,
-      "covered": 175,
+      "total": 316,
+      "covered": 176,
       "skipped": 0,
-      "pct": 54.85
+      "pct": 55.69
     },
     "functions": {
       "total": 112,
-      "covered": 55,
+      "covered": 58,
       "skipped": 0,
-      "pct": 49.1
+      "pct": 51.78
     },
     "statements": {
-      "total": 324,
-      "covered": 177,
+      "total": 321,
+      "covered": 179,
       "skipped": 0,
-      "pct": 54.62
+      "pct": 55.76
     },
     "branches": {
-      "total": 140,
-      "covered": 42,
+      "total": 138,
+      "covered": 43,
       "skipped": 0,
-      "pct": 30
+      "pct": 31.15
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {

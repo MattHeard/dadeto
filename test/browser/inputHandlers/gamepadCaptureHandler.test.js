@@ -34,6 +34,7 @@ function createGlobalListenerRegistry() {
 function makeDom(autoSubmitCheckbox) {
   return {
     globalThis,
+    requestAnimationFrame: callback => globalThis.requestAnimationFrame(callback),
     cancelAnimationFrame: frameId => globalThis.cancelAnimationFrame(frameId),
     createElement: jest.fn(tag => ({
       tag,

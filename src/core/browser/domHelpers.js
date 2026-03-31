@@ -67,7 +67,10 @@
  * @property {(event: Event & { target: { value: string } }) => string} getTargetValue - Read target value.
  * @property {(event: Event & { target: { value: string } }, value: string) => void} setTargetValue - Write target value.
  * @property {() => boolean} hasBetaParam - Detect beta query param.
+ * @property {(callback: (time: number) => void) => number} requestAnimationFrame - Schedule a frame callback.
  * @property {(handle: number) => void} cancelAnimationFrame - Cancel a queued animation frame when supported.
+ * @property {(callback: () => void, delay: number) => number} setInterval - Schedule a repeating callback.
+ * @property {(handle: number) => void} clearInterval - Cancel a repeating callback.
  * @property {typeof globalThis} globalThis - Shared browser global reference.
  * @property {(element: HTMLElement) => void} reveal - Reveal a hidden element.
  */
