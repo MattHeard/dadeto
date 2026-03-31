@@ -539,33 +539,6 @@ function releaseCapture(options, cancelAnimationFrame) {
 }
 
 /**
- * Toggle gamepad capture from the button.
- * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {() => void} Click handler for the capture toggle.
- */
-/**
- * Build the global escape-key handler.
- * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {(event: KeyboardEvent) => void} Keyboard event handler.
- */
-function createEscapeHandler(options) {
-  return event => {
-    if (shouldIgnoreEscapeEvent(options.state, event)) {
-      return;
-    }
-
-    preventDefault(event);
-    const cancelAnimationFrame = globalThis.cancelAnimationFrame;
-    if (typeof cancelAnimationFrame === 'function') {
-      releaseCapture(options, cancelAnimationFrame);
-      return;
-    }
-
-    releaseCapture(options, () => {});
-  };
-}
-
-/**
  * Determine whether an escape event should be ignored.
  * @param {CaptureState} state - Mutable handler state.
  * @param {KeyboardEvent} event - Browser keyboard event.
@@ -746,7 +719,20 @@ function registerGamepadListeners(options, cleanupFns) {
       },
     }
   );
-  const handleEscape = createEscapeHandler(options);
+  const handleEscape = event => {
+    if (shouldIgnoreEscapeEvent(options.state, event)) {
+      return;
+    }
+
+    preventDefault(event);
+    const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+    if (typeof cancelAnimationFrame === 'function') {
+      releaseCapture(options, cancelAnimationFrame);
+      return;
+    }
+
+    releaseCapture(options, () => {});
+  };
   const handleConnect = createConnectionHandler(options);
   const handleDisconnect = createDisconnectHandler(options);
 
