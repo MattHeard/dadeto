@@ -303,6 +303,7 @@ export const dom = /** @type {DOMHelpers} */ ({
   getTargetValue,
   setTargetValue,
   hasBetaParam,
+  globalThis,
   reveal,
 });
 
