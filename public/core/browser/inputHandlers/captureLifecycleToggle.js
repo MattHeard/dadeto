@@ -53,30 +53,31 @@ function emitCaptureLifecycleToggle(options, capturing) {
     capturing
   );
 
-  notifyCaptureLifecycleToggle(options, capturing);
+  if (capturing) {
+    notifyCaptureLifecycleToggle(options, capturing, globalThis);
+    return;
+  }
+
+  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+  if (typeof cancelAnimationFrame === 'function') {
+    notifyCaptureLifecycleToggle(options, capturing, globalThis);
+    return;
+  }
+
+  notifyCaptureLifecycleToggle(options, capturing, {
+    cancelAnimationFrame: () => {},
+  });
 }
 
 /**
  * Notify the start/stop hook for the current capture state.
  * @param {CaptureLifecycleToggleOptions} options - UI and lifecycle dependencies.
  * @param {boolean} capturing - Whether capture is active.
+ * @param {typeof globalThis | { cancelAnimationFrame: () => void }} globalThisArg - Global object or fallback canceler.
  */
-function notifyCaptureLifecycleToggle(options, capturing) {
+function notifyCaptureLifecycleToggle(options, capturing, globalThisArg) {
   const lifecycleHook = { true: options.onStart, false: options.onStop }[
     capturing
   ];
-  if (capturing) {
-    lifecycleHook?.(globalThis);
-    return;
-  }
-
-  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
-  if (typeof cancelAnimationFrame === 'function') {
-    lifecycleHook?.(globalThis);
-    return;
-  }
-
-  lifecycleHook?.({
-    cancelAnimationFrame: () => {},
-  });
+  lifecycleHook?.(globalThisArg);
 }
