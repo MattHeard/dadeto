@@ -335,7 +335,7 @@ export function createGenerateStatsCore({
   env,
   urlMap,
   cryptoModule,
-  console = globalThis.console,
+  console,
 }) {
   const envRef = normalizeEnvObject(env);
   const project = getProjectFromEnv(envRef);

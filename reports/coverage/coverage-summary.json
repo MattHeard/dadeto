@@ -19,10 +19,10 @@
       "pct": 97.96
     },
     "branches": {
-      "total": 2770,
+      "total": 2769,
       "covered": 2638,
       "skipped": 0,
-      "pct": 95.23
+      "pct": 95.26
     },
     "branchesTrue": {
       "total": 0,
@@ -2781,10 +2781,10 @@
       "pct": 100
     },
     "branches": {
-      "total": 59,
+      "total": 58,
       "covered": 58,
       "skipped": 0,
-      "pct": 98.3
+      "pct": 100
     }
   },
   "/home/matt/dadeto/src/core/cloud/generate-stats/verifyAdmin.js": {
