@@ -2272,10 +2272,10 @@ function ensureRemoveItemFunction(storage) {
 
 /**
  * Build a handler that wraps sessionStorage access on the given global scope.
- * @param {typeof globalThis} scope - Global scope that should provide `sessionStorage`.
+ * @param {typeof globalThis} scope Global scope that should provide `sessionStorage`.
  * @returns {SessionStorageHandler} Session-storage handler.
  */
-export function createSessionStorageHandler(scope = globalThis) {
+export function createSessionStorageHandler(scope) {
   return {
     removeItem: createRemoveItem(() => scope?.sessionStorage),
   };
