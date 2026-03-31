@@ -18,7 +18,7 @@ export function getSymphonyRuntimeVersion(options = {}) {
 
   const packageJson = readPackageJson(repoRoot) ?? readPackageJson(fallbackRepoRoot);
   const version =
-    typeof packageJson.version === 'string' && packageJson.version
+    typeof packageJson?.version === 'string' && packageJson.version
       ? packageJson.version
       : 'unknown';
   cachedVersions.set(repoRoot, version);

@@ -109,14 +109,11 @@ function pickPrimaryStories(stories, fallback) {
 
 /**
  * Normalize a stored story array candidate.
- * @param {DendriteStoryResult[] | undefined} stories - Story list candidate.
- * @returns {DendriteStoryResult[]} Story array or an empty array.
+ * @param {DendriteStoryResult[]} stories - Story list candidate.
+ * @returns {DendriteStoryResult[]} Story array.
  */
 function readStoryArray(stories) {
-  if (stories) {
-    return /** @type {DendriteStoryResult[]} */ (stories);
-  }
-  return [];
+  return stories;
 }
 
 /**

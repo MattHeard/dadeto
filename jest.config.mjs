@@ -27,11 +27,6 @@ const config = {
   ],
   coveragePathIgnorePatterns: [
     '/node_modules/',
-    // Cloud function bridge shims that only re-export their underlying implementation.
-    '<rootDir>/src/core/cloud/(?:[^/]+/)+(?:cloud|common)-core\\.js$',
-    '<rootDir>/src/core/cloud/(?:[^/]+/)+admin-config\\.js$',
-    // Toy bridge modules that forward to shared object utility and validation helpers.
-    '<rootDir>/src/core/browser/toys/\\d{4}-\\d{2}-\\d{2}/(?:objectUtils|validation)\\.js$',
   ],
   collectCoverageFrom: [
     'src/core/**/*.js',

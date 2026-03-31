@@ -88,6 +88,12 @@ describe('core local symphony helpers', () => {
         queueSummary: [],
       })
     ).toBe('0 ready bead(s)');
+
+    expect(
+      summarizePollResult({
+        readyCount: 1,
+      })
+    ).toBe('1 ready bead(s)');
   });
 
   test('summarizes ready and idle tracker states', () => {
@@ -126,6 +132,19 @@ describe('core local symphony helpers', () => {
         'Create or refresh the next bead before starting another runner loop.',
       queueEvidence: [],
     });
+
+    expect(
+      summarizeTrackerSelection({
+        workflowExists: true,
+        selectedBead: { id: 'dadeto-missing', title: 'Missing', priority: '● P4' },
+        lastCommand: 'bd ready --sort priority',
+        pollResult: { readyCount: 1 },
+      })
+    ).toEqual(
+      expect.objectContaining({
+        queueEvidence: [],
+      })
+    );
   });
 
   test('applies completed and blocked runner outcomes to scheduler-visible state', () => {
@@ -227,6 +246,19 @@ describe('core local symphony helpers', () => {
     expect(launchedStatus.eventLog?.[0]).toBe('bead started: dadeto-639o');
     expect(launchedStatus.eventLog?.[1]).toBe('prior event');
 
+    const launchedFallbackStatus = applyRunnerLaunch(
+      {
+        state: 'ready',
+        eventLog: [],
+      },
+      {
+        startedAt: '2026-03-14T10:00:00Z',
+      }
+    );
+    expect(launchedFallbackStatus.eventLog?.[0]).toBe(
+      'bead started: unknown bead'
+    );
+
     const rejectedStatus = applyRunnerLaunchFailure(
       {
         state: 'ready',
@@ -245,6 +277,16 @@ describe('core local symphony helpers', () => {
       'launch rejected: dadeto-639o: guarded'
     );
 
+    const rejectedFallbackStatus = applyRunnerLaunchFailure(
+      {
+        state: 'ready',
+      },
+      {}
+    );
+    expect(rejectedFallbackStatus.eventLog?.[0]).toBe(
+      'launch rejected: unknown bead: unknown error'
+    );
+
     const completedStatus = applyRunnerOutcome(
       {
         state: 'running',
@@ -258,6 +300,19 @@ describe('core local symphony helpers', () => {
       }
     );
     expect(completedStatus.eventLog?.[0]).toBe('bead closed: dadeto-639o');
+
+    const completedFallbackStatus = applyRunnerOutcome(
+      {
+        state: 'running',
+      },
+      {
+        outcome: 'completed',
+        summary: 'Done.',
+      }
+    );
+    expect(completedFallbackStatus.eventLog?.[0]).toBe(
+      'bead closed: unknown bead'
+    );
 
     const blockedStatus = applyRunnerOutcome(
       {
@@ -273,5 +328,18 @@ describe('core local symphony helpers', () => {
       }
     );
     expect(blockedStatus.eventLog?.[0]).toBe('agent failure: exited 1');
+
+    const fallbackFailureStatus = applyRunnerOutcome(
+      {
+        state: 'running',
+        eventLog: [],
+      },
+      {
+        outcome: 'blocked',
+      }
+    );
+    expect(fallbackFailureStatus.eventLog?.[0]).toBe(
+      'agent failure: unknown bead'
+    );
   });
 });
