@@ -13,6 +13,7 @@ function makeElement(tag = 'div') {
 
 function makeDom(autoSubmitCheckbox) {
   return {
+    globalThis,
     createElement: jest.fn(tag => makeElement(tag)),
     setClassName: jest.fn((el, cls) => {
       el.className = cls;

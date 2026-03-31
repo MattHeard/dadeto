@@ -232,10 +232,11 @@ function shouldQueuePoll(state) {
 
 /**
  * Resolve the current `navigator.getGamepads` function when available.
+ * @param {GamepadDOMHelpers} dom - Shared DOM helper facade.
  * @returns {(() => (Gamepad | null)[]) | null} Bound API getter when supported.
  */
-function getGamepadsReader() {
-  const navigatorObject = globalThis.navigator;
+function getGamepadsReader(dom) {
+  const navigatorObject = dom.globalThis.navigator;
   if (!navigatorObject) {
     return null;
   }
@@ -259,10 +260,11 @@ function bindGamepadsReader(navigatorObject) {
 
 /**
  * Read all currently connected gamepads from the browser.
+ * @param {GamepadDOMHelpers} dom - Shared DOM helper facade.
  * @returns {Gamepad[]} Connected gamepads only.
  */
-function getConnectedGamepads() {
-  const readGamepads = getGamepadsReader();
+function getConnectedGamepads(dom) {
+  const readGamepads = getGamepadsReader(dom);
   if (readGamepads === null) {
     return [];
   }
@@ -306,7 +308,7 @@ function queuePoll(options) {
  * @returns {number | null} Requested animation frame id.
  */
 function requestPollFrame(options) {
-  const requestAnimationFrame = globalThis.requestAnimationFrame;
+  const requestAnimationFrame = options.dom.globalThis.requestAnimationFrame;
   if (typeof requestAnimationFrame !== 'function') {
     return null;
   }
@@ -486,7 +488,7 @@ function pollGamepads(options) {
     return;
   }
 
-  getConnectedGamepads().forEach(gamepad => {
+  getConnectedGamepads(options.dom).forEach(gamepad => {
     const previousSnapshot = options.state.snapshots[gamepad.index];
     const payload = getPollPayload(gamepad, previousSnapshot);
     options.state.snapshots[gamepad.index] = snapshotGamepad(gamepad);
@@ -750,7 +752,7 @@ function createGamepadEscapeHandler(options) {
     }
 
     preventDefault(event);
-    const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const cancelAnimationFrame = options.dom.globalThis.cancelAnimationFrame;
     if (typeof cancelAnimationFrame === 'function') {
       releaseCapture(options, cancelAnimationFrame);
       return;
@@ -776,19 +778,19 @@ function registerGamepadListeners(options, cleanupFns) {
 
   options.dom.addEventListener(options.button, 'click', handleToggle);
   captureLifecycleDeps.registerGlobalListener({
-    globalThisArg: globalThis,
+    globalThisArg: options.dom.globalThis,
     cleanupFns,
     type: 'keydown',
     handler: /** @type {EventListener} */ (handleEscape),
   });
   captureLifecycleDeps.registerGlobalListener({
-    globalThisArg: globalThis,
+    globalThisArg: options.dom.globalThis,
     cleanupFns,
     type: GAMEPAD_CONNECTED_EVENT,
     handler: /** @type {EventListener} */ (handleConnect),
   });
   captureLifecycleDeps.registerGlobalListener({
-    globalThisArg: globalThis,
+    globalThisArg: options.dom.globalThis,
     cleanupFns,
     type: GAMEPAD_DISCONNECTED_EVENT,
     handler: /** @type {EventListener} */ (handleDisconnect),

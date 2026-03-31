@@ -293,21 +293,23 @@ function createFieldRenderer({ dom, form, data, textInput, disposers }) {
 
 /**
  * Invoke a disposer function.
+ * @param {DOMHelpers} dom - Shared DOM helper facade.
  * @param {Disposer} fn - Disposer to invoke.
  * @returns {void}
  */
-function runDisposer(fn) {
-  fn(globalThis);
+function runDisposer(dom, fn) {
+  fn(dom.globalThis);
 }
 
 /**
  * Build a disposer that runs over the registered disposers array.
+ * @param {DOMHelpers} dom - Shared DOM helper facade.
  * @param {Disposer[]} disposers - Disposer functions to invoke.
  * @returns {() => void} Form-level dispose handler.
  */
-function createDisposeForm(disposers) {
+function createDisposeForm(dom, disposers) {
   return () => {
-    disposers.forEach(runDisposer);
+    disposers.forEach(fn => runDisposer(dom, fn));
   };
 }
 
@@ -329,7 +331,7 @@ export function createManagedFormShell({
   dom.setClassName(form, dendriteFormClassName);
   const nextSibling = dom.getNextSibling(textInput);
   dom.insertBefore(container, form, nextSibling);
-  form._dispose = createDisposeForm(disposers);
+  form._dispose = createDisposeForm(dom, disposers);
   return form;
 }
 

@@ -33,6 +33,7 @@ function createGlobalListenerRegistry() {
  */
 function makeDom(autoSubmitCheckbox) {
   return {
+    globalThis,
     createElement: jest.fn(tag => ({
       tag,
       _children: [],

@@ -187,7 +187,7 @@ const buildKeyboardCaptureFormContext = ({
     state,
   });
   const buildGlobalListenerOptions = type => ({
-    globalThisArg: globalThis,
+    globalThisArg: dom.globalThis,
     cleanupFns,
     type,
     handler: /** @type {EventListener} */ (handleKeyboard),
