@@ -125,6 +125,19 @@ export const clearInterval = handle => {
   clearIntervalFn(handle);
 };
 
+/**
+ * Read connected gamepads when the browser supports the API.
+ * @returns {(Gamepad | null)[]} Connected gamepads list.
+ */
+export const getGamepads = () => {
+  const getGamepadsFn = globalThis.navigator?.getGamepads;
+  if (typeof getGamepadsFn !== 'function') {
+    throw new Error('navigator.getGamepads is not a function');
+  }
+
+  return getGamepadsFn.call(globalThis.navigator);
+};
+
 export { createPrefixedLogger, createPrefixedLoggers } from './logging.js';
 
 // Utility functions
@@ -364,6 +377,7 @@ export const dom = /** @type {DOMHelpers} */ ({
   cancelAnimationFrame,
   setInterval,
   clearInterval,
+  getGamepads,
   globalThis,
   reveal,
 });

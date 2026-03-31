@@ -36,6 +36,7 @@ function makeDom(autoSubmitCheckbox) {
     globalThis,
     requestAnimationFrame: callback => globalThis.requestAnimationFrame(callback),
     cancelAnimationFrame: frameId => globalThis.cancelAnimationFrame(frameId),
+    getGamepads: () => globalThis.navigator.getGamepads(),
     createElement: jest.fn(tag => ({
       tag,
       _children: [],
