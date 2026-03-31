@@ -186,20 +186,20 @@ const buildKeyboardCaptureForm = captureLifecycleDeps.makeCaptureFormBuilder(
           autoSubmitCheckbox,
           state,
         });
+        const buildGlobalListenerOptions = type => ({
+          globalThisArg: globalThis,
+          cleanupFns,
+          type,
+          handler: /** @type {EventListener} */ (handleKeyboard),
+        });
 
         dom.addEventListener(button, 'click', handleToggle);
-        captureLifecycleDeps.registerGlobalListener({
-          globalThisArg: globalThis,
-          cleanupFns,
-          type: 'keydown',
-          handler: /** @type {EventListener} */ (handleKeyboard),
-        });
-        captureLifecycleDeps.registerGlobalListener({
-          globalThisArg: globalThis,
-          cleanupFns,
-          type: 'keyup',
-          handler: /** @type {EventListener} */ (handleKeyboard),
-        });
+        captureLifecycleDeps.registerGlobalListener(
+          buildGlobalListenerOptions('keydown')
+        );
+        captureLifecycleDeps.registerGlobalListener(
+          buildGlobalListenerOptions('keyup')
+        );
 
         cleanupFns.push(() =>
           dom.removeEventListener(button, 'click', handleToggle)
