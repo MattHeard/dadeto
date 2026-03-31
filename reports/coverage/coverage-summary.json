@@ -1,14 +1,14 @@
 {
   "total": {
     "lines": {
-      "total": 7179,
-      "covered": 7005,
+      "total": 7178,
+      "covered": 7004,
       "skipped": 0,
       "pct": 97.57
     },
     "statements": {
-      "total": 7339,
-      "covered": 7162,
+      "total": 7338,
+      "covered": 7161,
       "skipped": 0,
       "pct": 97.58
     },
@@ -579,8 +579,8 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/captureFormShared.js": {
     "lines": {
-      "total": 46,
-      "covered": 46,
+      "total": 45,
+      "covered": 45,
       "skipped": 0,
       "pct": 100
     },
@@ -591,8 +591,8 @@
       "pct": 100
     },
     "statements": {
-      "total": 46,
-      "covered": 46,
+      "total": 45,
+      "covered": 45,
       "skipped": 0,
       "pct": 100
     },

@@ -191,12 +191,12 @@ const buildKeyboardCaptureForm = captureLifecycleDeps.makeCaptureFormBuilder(
         captureLifecycleDeps.registerGlobalListener({
           cleanupFns,
           type: 'keydown',
-          handler: handleKeyboard,
+          handler: /** @type {EventListener} */ (handleKeyboard),
         });
         captureLifecycleDeps.registerGlobalListener({
           cleanupFns,
           type: 'keyup',
-          handler: handleKeyboard,
+          handler: /** @type {EventListener} */ (handleKeyboard),
         });
 
         cleanupFns.push(() =>
