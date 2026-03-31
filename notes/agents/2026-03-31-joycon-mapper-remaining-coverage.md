@@ -5,7 +5,7 @@
 ## Setup And Storage
 
 - [x] `getClosestArticle()` guard when `container.closest` is missing
-- [ ] `getAutoSubmitCheckbox()` guard when no article wrapper is found
+- [x] `getAutoSubmitCheckbox()` guard when no article wrapper is found
 - [ ] `enableAutoSubmit()` guard when the checkbox is absent
 - [ ] `readConnectedGamepads()` guard when `navigator.getGamepads` is missing
 - [ ] `snapshotGamepad()` guard when the gamepad is missing

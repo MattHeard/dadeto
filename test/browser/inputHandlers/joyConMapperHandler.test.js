@@ -113,4 +113,55 @@ describe('joyConMapperHandler', () => {
       globalThis.clearInterval = previousClearInterval;
     }
   });
+
+  it('handles missing article wrappers by skipping the auto-submit checkbox lookup', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => null),
+    };
+    const textInput = { value: '' };
+
+    const previousNavigator = globalThis.navigator;
+    const previousRaf = globalThis.requestAnimationFrame;
+    const previousCaf = globalThis.cancelAnimationFrame;
+    const previousSetInterval = globalThis.setInterval;
+    const previousClearInterval = globalThis.clearInterval;
+
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+    globalThis.requestAnimationFrame = jest.fn(callback => {
+      callback();
+      return 1;
+    });
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.setInterval = jest.fn(callback => {
+      callback();
+      return 2;
+    });
+    globalThis.clearInterval = jest.fn();
+
+    try {
+      joyConMapperHandler(dom, container, textInput);
+
+      const form = container._children[0];
+      const startButton = findByText(form, 'Start Mapping');
+      expect(startButton).not.toBeNull();
+      expect(dom.querySelector).not.toHaveBeenCalled();
+      expect(autoSubmitCheckbox.checked).toBe(false);
+
+      startButton._listeners.click();
+
+      const payload = JSON.parse(readStoredOrElementValue(textInput));
+      expect(payload).toBeTruthy();
+      expect(autoSubmitCheckbox.checked).toBe(false);
+      expect(autoSubmitCheckbox.dispatchEvent).not.toHaveBeenCalled();
+    } finally {
+      globalThis.navigator = previousNavigator;
+      globalThis.requestAnimationFrame = previousRaf;
+      globalThis.cancelAnimationFrame = previousCaf;
+      globalThis.setInterval = previousSetInterval;
+      globalThis.clearInterval = previousClearInterval;
+    }
+  });
 });
