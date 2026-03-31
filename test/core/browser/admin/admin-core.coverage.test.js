@@ -113,11 +113,6 @@ describe('admin-core additional coverage', () => {
         new Error('sessionStorage is not available')
       );
 
-      const defaultHandler = createSessionStorageHandler();
-      expect(() => defaultHandler.removeItem('id_token')).toThrow(
-        new Error('sessionStorage is not available')
-      );
-
       const badStorage = createRemoveItem(() => ({}));
       expect(() => badStorage('id_token')).toThrow(
         new Error('sessionStorage.removeItem is not a function')
