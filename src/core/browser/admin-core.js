@@ -2286,7 +2286,7 @@ export function createSessionStorageHandler(scope) {
  * @param {typeof globalThis} scope - Global scope that should hold `window`.
  * @returns {() => GoogleAccountsClient | undefined} Getter for `google.accounts.id`.
  */
-export function createGoogleAccountsId(scope = globalThis) {
+export function createGoogleAccountsId(scope) {
   return () => resolveGoogleAccountsId(scope);
 }
 
@@ -2420,7 +2420,7 @@ function resolveQuerySelectorAllFunction(doc) {
  * @param {typeof globalThis} scope - Global scope exposing `window`.
  * @returns {(query: string) => MediaQueryList} matchMedia wrapper.
  */
-export function createMatchMedia(scope = globalThis) {
+export function createMatchMedia(scope) {
   return query => {
     const win = resolveScopeWindow(scope);
     const matchMedia = resolveMatchMediaFunction(win);
@@ -2433,7 +2433,7 @@ export function createMatchMedia(scope = globalThis) {
  * @param {typeof globalThis} scope - Global scope that should provide `document`.
  * @returns {(selector: string) => NodeList} querySelectorAll wrapper.
  */
-export function createQuerySelectorAll(scope = globalThis) {
+export function createQuerySelectorAll(scope) {
   return selector => {
     const doc = resolveScopeDocument(scope);
     const querySelectorAll = resolveQuerySelectorAllFunction(doc);
@@ -2447,7 +2447,7 @@ export function createQuerySelectorAll(scope = globalThis) {
  * @param {FirebaseAuthInstance} deps.auth Firebase Auth instance that exposes `currentUser`.
  * @param {Storage} deps.storage Storage implementation used to cache ID tokens.
  * @param {Logger} deps.logger Logger used for reporting initialization errors.
- * @param {typeof globalThis} [deps.globalObject] Global scope providing DOM helpers.
+ * @param {typeof globalThis} deps.globalObject Global scope providing DOM helpers.
  * @param {{ credential?: (token: string) => string }} deps.authProvider Google auth provider helper.
  * @param {(auth: object, credential: unknown) => Promise<void> | void} deps.signInWithCredential Credential signer.
  * @returns {GoogleSignInDeps} Normalized dependency bag for `createInitGoogleSignIn`.
@@ -2456,7 +2456,7 @@ export function buildGoogleSignInDeps({
   auth,
   storage,
   logger,
-  globalObject = globalThis,
+  globalObject,
   authProvider,
   signInWithCredential,
 }) {

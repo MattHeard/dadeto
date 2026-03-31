@@ -136,10 +136,6 @@ describe('admin-core additional coverage', () => {
 
   describe('DOM wrappers', () => {
     it('validates matchMedia availability', () => {
-      expect(() => createMatchMedia()('(prefers-color-scheme: dark)')).toThrow(
-        new Error('window is not available')
-      );
-
       const missingWindow = createMatchMedia({});
       expect(() => missingWindow('(prefers-reduced-motion: reduce)')).toThrow(
         new Error('window is not available')
@@ -171,10 +167,6 @@ describe('admin-core additional coverage', () => {
         new Error('document is not available')
       );
 
-      expect(() => createQuerySelectorAll()('.signin')).toThrow(
-        new Error('document is not available')
-      );
-
       const missingSelectorAll = createQuerySelectorAll({ document: {} });
       expect(() => missingSelectorAll('.signin')).toThrow(
         new Error('document.querySelectorAll is not a function')
@@ -195,9 +187,6 @@ describe('admin-core additional coverage', () => {
       };
       const getter = createGoogleAccountsId(scope);
       expect(getter()).toEqual({ ready: true });
-
-      const noGoogleGetter = createGoogleAccountsId();
-      expect(noGoogleGetter()).toBeUndefined();
     });
 
     it('defaults to the global scope when scope is omitted', () => {
