@@ -283,13 +283,14 @@ function describeAxisCapture(mapping) {
 }
 
 /**
+ * @param {DOMHelpers} dom - Shared DOM helper facade.
  * @returns {StoredMapperState}
  *   Persisted mappings and skipped controls from local storage.
  */
-function readStoredMapperState() {
+function readStoredMapperState(dom) {
   try {
     return normalizeStoredMapperState(
-      readMapperStorageEntry(readStoredMapperRoot())
+      readMapperStorageEntry(readStoredMapperRoot(dom))
     );
   } catch {
     return EMPTY_MAPPER_STATE;
@@ -297,12 +298,13 @@ function readStoredMapperState() {
 }
 
 /**
+ * @param {DOMHelpers} dom - Shared DOM helper facade.
  * @returns {unknown}
  *   Parsed local-storage root payload for mapper state.
  */
-function readStoredMapperRoot() {
+function readStoredMapperRoot(dom) {
   return parseStoredMapperRoot(
-    globalThis.localStorage?.getItem(PERMANENT_DATA_KEY)
+    dom.globalThis.localStorage?.getItem(PERMANENT_DATA_KEY)
   );
 }
 
@@ -1120,7 +1122,7 @@ function getGamepadIdText(gamepad) {
  * @returns {void}
  */
 function refreshStoredState(state) {
-  state.stored = readStoredMapperState();
+  state.stored = readStoredMapperState(state.dom);
   state.currentIndex = getRefreshedCurrentIndex(state);
   state.currentControl = CONTROLS[state.currentIndex] ?? null;
 }
@@ -1483,7 +1485,7 @@ function getSkippedControlKey(control) {
  * @returns {void} Ensures the capture interval is scheduled and cleared when disposed.
  */
 function startJoyConCaptureLoop(state, disposers) {
-  const intervalId = globalThis.setInterval(() => maybeCapture(state), 50);
+  const intervalId = state.dom.globalThis.setInterval(() => maybeCapture(state), 50);
   disposers.push(globalThisArg => globalThisArg.clearInterval(intervalId));
 }
 
@@ -1495,11 +1497,12 @@ function startJoyConCaptureLoop(state, disposers) {
  * @returns {void} Schedules the initial sync payload if the browser supports requestAnimationFrame.
  */
 function queueJoyConInitialSync(dom, textInput, state) {
-  if (typeof globalThis.requestAnimationFrame !== 'function') {
+  const { requestAnimationFrame } = dom.globalThis;
+  if (typeof requestAnimationFrame !== 'function') {
     return;
   }
 
-  globalThis.requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
     syncToyInput({
       dom,
       textInput,
@@ -1636,7 +1639,7 @@ export function joyConMapperHandler(dom, container, textInput) {
     currentIndex: 0,
     currentControl: /** @type {MapperControl | null} */ (CONTROLS[0] ?? null),
     previousSnapshot: snapshotGamepad(currentPad()),
-    stored: readStoredMapperState(),
+    stored: readStoredMapperState(dom),
     list,
     prompt,
     subprompt,

@@ -34,7 +34,7 @@ export function createCaptureLifecycleToggleHandler(options) {
     emitCaptureLifecycleToggle(
       options,
       capturing,
-      resolveLifecycleGlobalThisArg(capturing)
+      resolveLifecycleGlobalThisArg(options.dom, capturing)
     );
   };
 }
@@ -76,17 +76,18 @@ function notifyCaptureLifecycleToggle(options, capturing, globalThisArg) {
 
 /**
  * Resolve the global object passed into capture lifecycle hooks.
+ * @param {DOMHelpers} dom - Shared DOM helper facade.
  * @param {boolean} capturing - Whether capture is active.
  * @returns {typeof globalThis | { cancelAnimationFrame: () => void }} Global object or fallback canceler.
  */
-function resolveLifecycleGlobalThisArg(capturing) {
+function resolveLifecycleGlobalThisArg(dom, capturing) {
   if (capturing) {
-    return globalThis;
+    return dom.globalThis;
   }
 
-  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+  const cancelAnimationFrame = dom.globalThis.cancelAnimationFrame;
   if (typeof cancelAnimationFrame === 'function') {
-    return globalThis;
+    return dom.globalThis;
   }
 
   return { cancelAnimationFrame: () => {} };
