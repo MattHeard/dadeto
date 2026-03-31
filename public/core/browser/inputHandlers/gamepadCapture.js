@@ -305,15 +305,10 @@ function queuePoll(options) {
 /**
  * Request the next poll frame when the browser API exists.
  * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {number | null} Requested animation frame id.
+ * @returns {number} Requested animation frame id.
  */
 function requestPollFrame(options) {
-  const requestAnimationFrame = options.dom.globalThis.requestAnimationFrame;
-  if (typeof requestAnimationFrame !== 'function') {
-    return null;
-  }
-
-  return requestAnimationFrame(() => runQueuedPoll(options));
+  return options.dom.requestAnimationFrame(() => runQueuedPoll(options));
 }
 
 /**

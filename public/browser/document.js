@@ -69,6 +69,20 @@ export const warn = (...args) => console.warn(...args);
 export const logError = (...args) => console.error(...args);
 
 /**
+ * Request the next animation frame when the browser supports it.
+ * @param {(time: number) => void} callback - Frame callback.
+ * @returns {number} Animation frame identifier.
+ */
+export const requestAnimationFrame = callback => {
+  const requestFrame = globalThis.requestAnimationFrame;
+  if (typeof requestFrame !== 'function') {
+    throw new Error('globalThis.requestAnimationFrame is not a function');
+  }
+
+  return requestFrame(callback);
+};
+
+/**
  * Cancel a queued animation frame when the browser supports it.
  * @param {number} handle - Animation frame identifier.
  * @returns {void}
@@ -80,6 +94,35 @@ export const cancelAnimationFrame = handle => {
   }
 
   cancelFrame(handle);
+};
+
+/**
+ * Schedule a repeating timer when the browser supports it.
+ * @param {() => void} callback - Interval callback.
+ * @param {number} delay - Delay between callbacks in milliseconds.
+ * @returns {number} Interval identifier.
+ */
+export const setInterval = (callback, delay) => {
+  const setIntervalFn = globalThis.setInterval;
+  if (typeof setIntervalFn !== 'function') {
+    throw new Error('globalThis.setInterval is not a function');
+  }
+
+  return setIntervalFn(callback, delay);
+};
+
+/**
+ * Clear a repeating timer when the browser supports it.
+ * @param {number} handle - Interval identifier.
+ * @returns {void}
+ */
+export const clearInterval = handle => {
+  const clearIntervalFn = globalThis.clearInterval;
+  if (typeof clearIntervalFn !== 'function') {
+    throw new Error('globalThis.clearInterval is not a function');
+  }
+
+  clearIntervalFn(handle);
 };
 
 export { createPrefixedLogger, createPrefixedLoggers } from './logging.js';
@@ -317,7 +360,10 @@ export const dom = /** @type {DOMHelpers} */ ({
   getTargetValue,
   setTargetValue,
   hasBetaParam,
+  requestAnimationFrame,
   cancelAnimationFrame,
+  setInterval,
+  clearInterval,
   globalThis,
   reveal,
 });

@@ -1485,8 +1485,8 @@ function getSkippedControlKey(control) {
  * @returns {void} Ensures the capture interval is scheduled and cleared when disposed.
  */
 function startJoyConCaptureLoop(state, disposers) {
-  const intervalId = state.dom.globalThis.setInterval(() => maybeCapture(state), 50);
-  disposers.push(globalThisArg => globalThisArg.clearInterval(intervalId));
+  const intervalId = state.dom.setInterval(() => maybeCapture(state), 50);
+  disposers.push(() => state.dom.clearInterval(intervalId));
 }
 
 /**
@@ -1497,12 +1497,7 @@ function startJoyConCaptureLoop(state, disposers) {
  * @returns {void} Schedules the initial sync payload if the browser supports requestAnimationFrame.
  */
 function queueJoyConInitialSync(dom, textInput, state) {
-  const { requestAnimationFrame } = dom.globalThis;
-  if (typeof requestAnimationFrame !== 'function') {
-    return;
-  }
-
-  requestAnimationFrame(() => {
+  dom.requestAnimationFrame(() => {
     syncToyInput({
       dom,
       textInput,
