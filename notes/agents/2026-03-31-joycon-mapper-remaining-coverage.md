@@ -6,8 +6,8 @@
 
 - [x] `getClosestArticle()` guard when `container.closest` is missing
 - [x] `getAutoSubmitCheckbox()` guard when no article wrapper is found
-- [ ] `enableAutoSubmit()` guard when the checkbox is absent
-- [ ] `readConnectedGamepads()` guard when `navigator.getGamepads` is missing
+- [x] `enableAutoSubmit()` guard when the checkbox is absent
+- [x] `readConnectedGamepads()` guard when `navigator.getGamepads` is missing
 - [ ] `snapshotGamepad()` guard when the gamepad is missing
 - [ ] `createElement()` default-options path and `applyCreatedElementOptions()` nullish normalization
 - [ ] `readStoredMapperState()` fallback path when stored data cannot be parsed

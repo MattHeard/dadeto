@@ -2,27 +2,27 @@
   "total": {
     "lines": {
       "total": 7143,
-      "covered": 6988,
+      "covered": 6999,
       "skipped": 0,
-      "pct": 97.83
+      "pct": 97.98
     },
     "statements": {
       "total": 7306,
-      "covered": 7148,
+      "covered": 7159,
       "skipped": 0,
-      "pct": 97.83
+      "pct": 97.98
     },
     "functions": {
       "total": 2899,
-      "covered": 2844,
+      "covered": 2848,
       "skipped": 0,
-      "pct": 98.1
+      "pct": 98.24
     },
     "branches": {
       "total": 2736,
-      "covered": 2623,
+      "covered": 2630,
       "skipped": 0,
-      "pct": 95.86
+      "pct": 96.12
     },
     "branchesTrue": {
       "total": 0,
@@ -762,27 +762,27 @@
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
     "lines": {
       "total": 313,
-      "covered": 176,
+      "covered": 187,
       "skipped": 0,
-      "pct": 56.23
+      "pct": 59.74
     },
     "functions": {
       "total": 112,
-      "covered": 58,
+      "covered": 62,
       "skipped": 0,
-      "pct": 51.78
+      "pct": 55.35
     },
     "statements": {
       "total": 318,
-      "covered": 179,
+      "covered": 190,
       "skipped": 0,
-      "pct": 56.28
+      "pct": 59.74
     },
     "branches": {
       "total": 136,
-      "covered": 44,
+      "covered": 51,
       "skipped": 0,
-      "pct": 32.35
+      "pct": 37.5
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {
