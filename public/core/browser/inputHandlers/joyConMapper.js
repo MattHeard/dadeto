@@ -60,12 +60,7 @@ const CONTROLS = /** @type {MapperControl[]} */ ([
  *   Closest article entry, if present.
  */
 function getClosestArticle(container) {
-  const closest = container.closest;
-  if (typeof closest !== 'function') {
-    return null;
-  }
-
-  return closest.call(container, 'article.entry');
+  return container.closest('article.entry');
 }
 
 /**
