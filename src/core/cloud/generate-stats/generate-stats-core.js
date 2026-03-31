@@ -742,28 +742,11 @@ function resolveCdnHost(envRef) {
 
 /**
  * Resolve the fetch implementation required for HTTP requests.
- * @param {unknown} fetchFn Optional fetch override.
+ * @param {typeof fetch} fetchFn Fetch implementation.
  * @returns {typeof fetch} Fetch implementation.
  */
 function resolveFetchImpl(fetchFn) {
-  if (typeof fetchFn === 'function') {
-    return /** @type {typeof fetch} */ (fetchFn);
-  }
-
-  return resolveGlobalFetch(globalThis);
-}
-
-/**
- * Obtain a globally available `fetch` implementation when no override is provided.
- * @param {typeof globalThis} globalThisArg Global runtime scope.
- * @returns {typeof fetch} Bound fetch implementation.
- */
-function resolveGlobalFetch(globalThisArg) {
-  if (typeof globalThisArg.fetch === 'function') {
-    return globalThisArg.fetch.bind(globalThisArg);
-  }
-
-  throw new Error('fetch implementation required');
+  return /** @type {typeof fetch} */ (fetchFn);
 }
 
 /**

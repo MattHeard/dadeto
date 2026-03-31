@@ -8,7 +8,6 @@ import {
   getFirestore as getAdminFirestore,
   getEnvironmentVariables,
   crypto,
-  fetchFn,
 } from './generate-stats-gcf.js';
 import {
   createGenerateStatsCore,
@@ -118,7 +117,7 @@ const generateStatsCore = createGenerateStatsCore({
   db,
   auth,
   storage,
-  fetchFn,
+  fetchFn: globalThis.fetch.bind(globalThis),
   env,
   cryptoModule: crypto,
   console: globalThis.console,

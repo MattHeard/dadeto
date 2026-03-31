@@ -757,56 +757,6 @@ describe('createGenerateStatsCore', () => {
     });
   });
 
-  it('throws when fetch implementation is not provided', () => {
-    const db = { collection: jest.fn(), collectionGroup: jest.fn() };
-    const auth = { verifyIdToken: jest.fn() };
-    const storage = { bucket: jest.fn() };
-    const cryptoModule = { randomUUID: jest.fn() };
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = undefined;
-
-    try {
-      expect(() =>
-        createGenerateStatsCore({
-          db,
-          auth,
-          storage,
-          fetchFn: undefined,
-          cryptoModule,
-          console: noopConsole,
-        })
-      ).toThrow('fetch implementation required');
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
-  });
-
-  it('falls back to the global fetch when no override is provided', () => {
-    const db = { collection: jest.fn(), collectionGroup: jest.fn() };
-    const auth = { verifyIdToken: jest.fn() };
-    const storage = { bucket: jest.fn() };
-    const cryptoModule = { randomUUID: jest.fn() };
-    const originalFetch = globalThis.fetch;
-    const fallbackFetch = jest.fn();
-    globalThis.fetch = fallbackFetch;
-
-    try {
-      const core = createGenerateStatsCore({
-        db,
-        auth,
-        storage,
-        cryptoModule,
-        console: noopConsole,
-      });
-      expect(core.generate).toEqual(expect.any(Function));
-    } finally {
-      if (originalFetch === undefined) {
-        delete globalThis.fetch;
-      } else {
-        globalThis.fetch = originalFetch;
-      }
-    }
-  });
 });
 
 describe('invalidateSinglePath logger behavior', () => {
