@@ -778,17 +778,17 @@ function registerGamepadListeners(options, cleanupFns) {
   captureLifecycleDeps.registerGlobalListener({
     cleanupFns,
     type: 'keydown',
-    handler: handleEscape,
+    handler: /** @type {EventListener} */ (handleEscape),
   });
   captureLifecycleDeps.registerGlobalListener({
     cleanupFns,
     type: GAMEPAD_CONNECTED_EVENT,
-    handler: handleConnect,
+    handler: /** @type {EventListener} */ (handleConnect),
   });
   captureLifecycleDeps.registerGlobalListener({
     cleanupFns,
     type: GAMEPAD_DISCONNECTED_EVENT,
-    handler: handleDisconnect,
+    handler: /** @type {EventListener} */ (handleDisconnect),
   });
 
   cleanupFns.push(createGamepadCleanupHandler(options));
