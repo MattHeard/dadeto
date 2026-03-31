@@ -119,24 +119,23 @@ function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
 }
 
 /**
+ * @param {DOMHelpers} dom
+ *   DOM helper facade that exposes the browser gamepad reader.
  * @returns {Gamepad | null}
  *   First connected gamepad exposed by the browser, if any.
  */
-function currentPad() {
-  return readConnectedGamepads().find(Boolean) ?? null;
+function currentPad(dom) {
+  return readConnectedGamepads(dom).find(Boolean) ?? null;
 }
 
 /**
+ * @param {DOMHelpers} dom
+ *   DOM helper facade that exposes the browser gamepad reader.
  * @returns {Gamepad[]}
  *   Connected gamepads exposed by the browser, or an empty array when unsupported.
  */
-function readConnectedGamepads() {
-  const getGamepads = navigator.getGamepads;
-  if (typeof getGamepads !== 'function') {
-    return [];
-  }
-
-  return Array.from(getGamepads.call(navigator));
+function readConnectedGamepads(dom) {
+  return Array.from(dom.getGamepads());
 }
 
 /**
@@ -1032,7 +1031,7 @@ function getConnectedPromptCopy(state) {
  * @returns {void}
  */
 function renderPrompt(state) {
-  const gamepad = currentPad();
+  const gamepad = currentPad(state.dom);
   let copy = getDisconnectedPromptCopy();
   if (gamepad) {
     copy = getConnectedPromptCopy(state);
@@ -1062,7 +1061,7 @@ function getActivePromptText(control) {
  * @returns {void}
  */
 function renderMeta(state) {
-  const gamepad = currentPad();
+  const gamepad = currentPad(state.dom);
   state.dot.classList.toggle('connected', Boolean(gamepad));
   state.dom.setTextContent(state.statusText, getGamepadStatusText(gamepad));
   state.dom.setTextContent(state.metaIndex, getGamepadIndexText(gamepad));
@@ -1168,7 +1167,7 @@ function startMapping(state) {
   state.started = true;
   state.currentIndex = normalizePendingIndex(firstPendingIndex(state));
   syncCurrentControlFromIndex(state);
-  state.previousSnapshot = snapshotGamepad(currentPad());
+  state.previousSnapshot = snapshotGamepad(currentPad(state.dom));
 }
 
 /**
@@ -1256,7 +1255,7 @@ function maybeCapture(state) {
     return;
   }
 
-  updateCaptureState(state, snapshotGamepad(currentPad()));
+  updateCaptureState(state, snapshotGamepad(currentPad(state.dom)));
 }
 
 /**
@@ -1549,7 +1548,7 @@ function handleJoyConMapperReset(state) {
   state.started = false;
   state.currentIndex = 0;
   state.currentControl = CONTROLS[0] ?? null;
-  state.previousSnapshot = snapshotGamepad(currentPad());
+  state.previousSnapshot = snapshotGamepad(currentPad(dom));
   syncToyInput({
     dom,
     textInput,
@@ -1628,7 +1627,7 @@ export function joyConMapperHandler(dom, container, textInput) {
     started: false,
     currentIndex: 0,
     currentControl: /** @type {MapperControl | null} */ (CONTROLS[0] ?? null),
-    previousSnapshot: snapshotGamepad(currentPad()),
+    previousSnapshot: snapshotGamepad(currentPad(dom)),
     stored: readStoredMapperState(dom),
     list,
     prompt,
