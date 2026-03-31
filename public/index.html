@@ -432,6 +432,93 @@
         </p>
       </div>
       <article
+        class="entry tag-toy tag-ledger tag-finance tag-csv tag-converter tag-json"
+        id="LEDG2"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">LEDG2</div>
+        <div class="value">
+          <h2><a href="#LEDG2">Ledger Ingest CSV Converter</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">30 Mar 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-ledger">ledger</a>,
+          <a class="tag-finance">finance</a>, <a class="tag-csv">csv</a>,
+          <a class="tag-converter">converter</a>, <a class="tag-json">json</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Converts a semicolon-delimited transaction CSV into a copyable
+          ImportTransactionsInput JSON payload.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Paste the CSV here, copy the emitted JSON, and then paste that JSON
+          into the main Ledger Ingest toy to run the core.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The converter preserves the source rows as adapter records and emits
+          the field mapping needed by the import core.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'LEDG2',
+            '/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js',
+            'ledgerIngestCsvConverterToy'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-ledger tag-finance tag-import tag-json"
         id="LEDG1"
       >
@@ -519,93 +606,6 @@
             'LEDG1',
             '/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js',
             'ledgerIngestToy'
-          );
-        </script>
-      </article>
-      <article
-        class="entry tag-toy tag-ledger tag-finance tag-csv tag-converter tag-json"
-        id="LEDG2"
-      >
-        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
-        <div class="value full-width">
-          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-        </div>
-        <div class="key article-title">LEDG2</div>
-        <div class="value">
-          <h2><a href="#LEDG2">Ledger Ingest CSV Converter</a></h2>
-        </div>
-        <div class="key">pubAt</div>
-        <p class="value metadata">30 Mar 2026</p>
-        <div class="key">tags</div>
-        <p class="value metadata">
-          <a class="tag-toy">toy</a>, <a class="tag-ledger">ledger</a>,
-          <a class="tag-finance">finance</a>, <a class="tag-csv">csv</a>,
-          <a class="tag-converter">converter</a>, <a class="tag-json">json</a>
-        </p>
-        <div class="key">text</div>
-        <p class="value">
-          Converts a semicolon-delimited transaction CSV into a copyable
-          ImportTransactionsInput JSON payload.
-        </p>
-        <div class="key"></div>
-        <p class="value">
-          Paste the CSV here, copy the emitted JSON, and then paste that JSON
-          into the main Ledger Ingest toy to run the core.
-        </p>
-        <div class="key"></div>
-        <p class="value">
-          The converter preserves the source rows as adapter records and emits
-          the field mapping needed by the import core.
-        </p>
-        <div class="key">in</div>
-        <div class="value">
-          <select class="input">
-            <option value="text">text</option>
-            <option value="textarea" selected>textarea</option>
-            <option value="number">number</option>
-            <option value="kv">kv</option>
-            <option value="blog-key">blog-key</option>
-            <option value="dendrite-story">dendrite-story</option>
-            <option value="dendrite-page">dendrite-page</option>
-            <option value="moderator-ratings">moderator-ratings</option>
-            <option value="keyboard-capture">keyboard-capture</option>
-            <option value="gamepad-capture">gamepad-capture</option>
-            <option value="gamepad-button-mapper">
-              gamepad-button-mapper
-            </option></select
-          ><input type="text" disabled />
-        </div>
-        <div class="key"></div>
-        <div class="value">
-          <button type="submit" disabled>Submit</button
-          ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
-          >
-        </div>
-        <div class="key">out</div>
-        <div class="value">
-          <select class="output">
-            <option value="text">text</option>
-            <option value="pre">pre</option>
-            <option value="joycon-mapping">joycon-mapping</option>
-            <option value="tic-tac-toe">tic-tac-toe</option>
-            <option value="battleship-solitaire-fleet">
-              battleship-solitaire-fleet
-            </option>
-            <option value="battleship-solitaire-clues-presenter">
-              battleship-solitaire-clues-presenter
-            </option>
-          </select>
-          <div class="output warning">
-            <p>This toy requires Javascript to run.</p>
-          </div>
-        </div>
-        <script type="module">
-          window.addComponent(
-            'LEDG2',
-            '/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js',
-            'ledgerIngestCsvConverterToy'
           );
         </script>
       </article>
