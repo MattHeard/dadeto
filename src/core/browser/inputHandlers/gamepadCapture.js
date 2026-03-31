@@ -513,17 +513,12 @@ function stopCaptureSideEffects(state, cancelAnimationFrame) {
 /**
  * Release capture, clear snapshots, and notify the toy.
  * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {typeof globalThis.cancelAnimationFrame} cancelAnimationFrame - Browser frame canceler.
  * @returns {void}
  */
-function releaseCapture(options) {
+function releaseCapture(options, cancelAnimationFrame) {
   options.state.capturing = false;
-  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
-  if (typeof cancelAnimationFrame === 'function') {
-    stopCaptureSideEffects(options.state, cancelAnimationFrame);
-  } else {
-    options.state.animationFrameId = null;
-    resetSnapshots(options.state);
-  }
+  stopCaptureSideEffects(options.state, cancelAnimationFrame);
   captureLifecycleDeps.emitCaptureState(
     {
       dom: options.dom,
@@ -560,7 +555,13 @@ function createEscapeHandler(options) {
     }
 
     preventDefault(event);
-    releaseCapture(options);
+    const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+    if (typeof cancelAnimationFrame === 'function') {
+      releaseCapture(options, cancelAnimationFrame);
+      return;
+    }
+
+    releaseCapture(options, () => {});
   };
 }
 
