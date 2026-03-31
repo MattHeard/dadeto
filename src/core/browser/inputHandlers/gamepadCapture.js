@@ -522,17 +522,15 @@ function releaseCapture(options, cancelAnimationFrame) {
   options.state.capturing = false;
   stopCaptureSideEffects(options.state, cancelAnimationFrame);
   const emitPayload = createReleaseCaptureEmitPayload();
-  captureLifecycleDeps.emitCaptureState(
-    {
-      dom: options.dom,
-      button: options.button,
-      textInput: options.textInput,
-      autoSubmitCheckbox: options.autoSubmitCheckbox,
-      updateButtonLabel: updateCaptureButton,
-      emitPayload,
-    },
-    false
-  );
+  const emitCaptureStateOptions = {
+    dom: options.dom,
+    button: options.button,
+    textInput: options.textInput,
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    updateButtonLabel: updateCaptureButton,
+    emitPayload,
+  };
+  captureLifecycleDeps.emitCaptureState(emitCaptureStateOptions, false);
 }
 
 /**
