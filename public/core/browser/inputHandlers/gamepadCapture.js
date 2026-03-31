@@ -522,14 +522,10 @@ function releaseCapture(options, cancelAnimationFrame) {
   options.state.capturing = false;
   stopCaptureSideEffects(options.state, cancelAnimationFrame);
   const emitPayload = createReleaseCaptureEmitPayload();
-  const emitCaptureStateOptions = {
-    dom: options.dom,
-    button: options.button,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    updateButtonLabel: updateCaptureButton,
-    emitPayload,
-  };
+  const emitCaptureStateOptions = createReleaseCaptureEmitCaptureStateOptions(
+    options,
+    emitPayload
+  );
   captureLifecycleDeps.emitCaptureState(emitCaptureStateOptions, false);
 }
 
@@ -545,6 +541,23 @@ function createReleaseCaptureEmitPayload() {
       autoSubmitCheckbox,
       payload,
     });
+}
+
+/**
+ * Build the emitCaptureState options for releasing gamepad capture.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {(input: { dom: HandlerOptions['dom'], textInput: HandlerOptions['textInput'], autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'] }, payload: unknown) => void} emitPayload - Payload emitter.
+ * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Emit-capture-state options.
+ */
+function createReleaseCaptureEmitCaptureStateOptions(options, emitPayload) {
+  return {
+    dom: options.dom,
+    button: options.button,
+    textInput: options.textInput,
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    updateButtonLabel: updateCaptureButton,
+    emitPayload,
+  };
 }
 
 /**
