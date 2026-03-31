@@ -121,6 +121,7 @@ const generateStatsCore = createGenerateStatsCore({
   fetchFn,
   env,
   cryptoModule: crypto,
+  console: globalThis.console,
 });
 
 const {

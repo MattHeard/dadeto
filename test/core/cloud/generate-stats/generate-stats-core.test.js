@@ -16,6 +16,8 @@ import {
 } from '../../../../src/core/cloud/cloud-core.js';
 import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 
+const noopConsole = { error: () => {} };
+
 describe('createGenerateStatsCore', () => {
   let mockDb;
   let mockAuth;
@@ -590,6 +592,7 @@ describe('createGenerateStatsCore', () => {
         fetchFn,
         env: {},
         cryptoModule,
+        console: noopConsole,
       });
 
       await testCore.generate();
@@ -770,6 +773,7 @@ describe('createGenerateStatsCore', () => {
           storage,
           fetchFn: undefined,
           cryptoModule,
+          console: noopConsole,
         })
       ).toThrow('fetch implementation required');
     } finally {
@@ -792,6 +796,7 @@ describe('createGenerateStatsCore', () => {
         auth,
         storage,
         cryptoModule,
+        console: noopConsole,
       });
       expect(core.generate).toEqual(expect.any(Function));
     } finally {
@@ -804,11 +809,9 @@ describe('createGenerateStatsCore', () => {
   });
 });
 
-describe('invalidateSinglePath default logger', () => {
-  it('uses the global console when no logger is provided', async () => {
-    const consoleSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+describe('invalidateSinglePath logger behavior', () => {
+  it('uses the injected console logger when invalidation fails', async () => {
+    const consoleSpy = jest.fn();
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce({
@@ -824,11 +827,11 @@ describe('invalidateSinglePath default logger', () => {
       fetchFn,
       cryptoModule: { randomUUID: () => 'uuid' },
       env: {},
+      console: { error: consoleSpy },
     });
 
     await core.invalidatePaths(['/path']);
     expect(consoleSpy).toHaveBeenCalledWith('invalidate /path failed: 500');
-    consoleSpy.mockRestore();
   });
 
   it('handles a logger that does not have an error method', async () => {

@@ -1,6 +1,8 @@
 import { jest } from '@jest/globals';
 import { createGenerateStatsCore } from '../../../src/core/cloud/generate-stats/generate-stats-core.js';
 
+const noopConsole = { error: () => {} };
+
 describe('generate stats helpers', () => {
   const baseDeps = {
     db: {},
@@ -9,6 +11,7 @@ describe('generate stats helpers', () => {
     env: {},
     urlMap: 'map',
     cryptoModule: { randomUUID: () => 'uuid' },
+    console: noopConsole,
   };
 
   test('getAccessTokenFromMetadata throws when metadata token invalid', async () => {
