@@ -500,19 +500,14 @@ function pollGamepads(options) {
 }
 
 /**
- * Release capture, clear snapshots, and notify the toy.
+ * Release capture and clear snapshots.
  * @param {CaptureState} state - Mutable handler state.
  * @param {typeof globalThis.cancelAnimationFrame} cancelAnimationFrame - Browser frame canceler.
  * @returns {void}
  */
 function stopCaptureSideEffects(state, cancelAnimationFrame) {
   resetSnapshots(state);
-  if (typeof cancelAnimationFrame === 'function') {
-    cancelPoll(state, cancelAnimationFrame);
-    return;
-  }
-
-  state.animationFrameId = null;
+  cancelPoll(state, cancelAnimationFrame);
 }
 
 /**
@@ -522,7 +517,13 @@ function stopCaptureSideEffects(state, cancelAnimationFrame) {
  */
 function releaseCapture(options) {
   options.state.capturing = false;
-  stopCaptureSideEffects(options.state, globalThis.cancelAnimationFrame);
+  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+  if (typeof cancelAnimationFrame === 'function') {
+    stopCaptureSideEffects(options.state, cancelAnimationFrame);
+  } else {
+    options.state.animationFrameId = null;
+    resetSnapshots(options.state);
+  }
   captureLifecycleDeps.emitCaptureState(
     {
       dom: options.dom,
@@ -732,11 +733,16 @@ function registerGamepadListeners(options, cleanupFns) {
       emitPayload: (input, payload) =>
         captureLifecycleDeps.syncToyInput({ ...input, payload }),
       onStart: () => queuePoll(options),
-      onStop: globalThisArg =>
-        stopCaptureSideEffects(
-          options.state,
-          globalThisArg.cancelAnimationFrame
-        ),
+      onStop: globalThisArg => {
+        const cancelAnimationFrame = globalThisArg.cancelAnimationFrame;
+        if (typeof cancelAnimationFrame === 'function') {
+          stopCaptureSideEffects(options.state, cancelAnimationFrame);
+          return;
+        }
+
+        options.state.animationFrameId = null;
+        resetSnapshots(options.state);
+      },
     }
   );
   const handleEscape = createEscapeHandler(options);
