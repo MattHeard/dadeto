@@ -776,16 +776,19 @@ function registerGamepadListeners(options, cleanupFns) {
 
   options.dom.addEventListener(options.button, 'click', handleToggle);
   captureLifecycleDeps.registerGlobalListener({
+    globalThisArg: globalThis,
     cleanupFns,
     type: 'keydown',
     handler: /** @type {EventListener} */ (handleEscape),
   });
   captureLifecycleDeps.registerGlobalListener({
+    globalThisArg: globalThis,
     cleanupFns,
     type: GAMEPAD_CONNECTED_EVENT,
     handler: /** @type {EventListener} */ (handleConnect),
   });
   captureLifecycleDeps.registerGlobalListener({
+    globalThisArg: globalThis,
     cleanupFns,
     type: GAMEPAD_DISCONNECTED_EVENT,
     handler: /** @type {EventListener} */ (handleDisconnect),

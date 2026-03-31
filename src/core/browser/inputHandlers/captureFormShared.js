@@ -245,14 +245,20 @@ export function getAutoSubmitCheckbox(container, dom) {
 /**
  * Register a global event listener that automatically records cleanup.
  * @param {{
+ *   globalThisArg: typeof globalThis,
  *   cleanupFns: CleanupFn[],
  *   type: string,
  *   handler: EventListener,
  * }} options - Listener wiring options.
  * @returns {void}
  */
-export function registerGlobalListener({ cleanupFns, type, handler }) {
-  globalThis.addEventListener(type, handler);
+export function registerGlobalListener({
+  cleanupFns,
+  globalThisArg,
+  type,
+  handler,
+}) {
+  globalThisArg.addEventListener(type, handler);
   cleanupFns.push(globalThisArg =>
     globalThisArg.removeEventListener(type, handler)
   );
