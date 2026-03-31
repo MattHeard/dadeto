@@ -1,14 +1,14 @@
 {
   "total": {
     "lines": {
-      "total": 7143,
-      "covered": 6999,
+      "total": 7140,
+      "covered": 6996,
       "skipped": 0,
       "pct": 97.98
     },
     "statements": {
-      "total": 7306,
-      "covered": 7159,
+      "total": 7303,
+      "covered": 7156,
       "skipped": 0,
       "pct": 97.98
     },
@@ -19,8 +19,8 @@
       "pct": 98.24
     },
     "branches": {
-      "total": 2736,
-      "covered": 2630,
+      "total": 2734,
+      "covered": 2628,
       "skipped": 0,
       "pct": 96.12
     },
@@ -761,10 +761,10 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
     "lines": {
-      "total": 313,
-      "covered": 187,
+      "total": 310,
+      "covered": 184,
       "skipped": 0,
-      "pct": 59.74
+      "pct": 59.35
     },
     "functions": {
       "total": 112,
@@ -773,16 +773,16 @@
       "pct": 55.35
     },
     "statements": {
-      "total": 318,
-      "covered": 190,
+      "total": 315,
+      "covered": 187,
       "skipped": 0,
-      "pct": 59.74
+      "pct": 59.36
     },
     "branches": {
-      "total": 136,
-      "covered": 51,
+      "total": 134,
+      "covered": 49,
       "skipped": 0,
-      "pct": 37.5
+      "pct": 36.56
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {

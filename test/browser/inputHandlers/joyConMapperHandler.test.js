@@ -14,6 +14,7 @@ function makeElement(tag = 'div') {
 function makeDom(autoSubmitCheckbox) {
   return {
     globalThis,
+    getGamepads: jest.fn(() => []),
     requestAnimationFrame: callback => globalThis.requestAnimationFrame(callback),
     setInterval: (callback, delay) => globalThis.setInterval(callback, delay),
     clearInterval: handle => globalThis.clearInterval(handle),
@@ -91,13 +92,11 @@ describe('joyConMapperHandler', () => {
     };
     const textInput = { value: '' };
 
-    const previousNavigator = globalThis.navigator;
     const previousRaf = globalThis.requestAnimationFrame;
     const previousCaf = globalThis.cancelAnimationFrame;
     const previousSetInterval = globalThis.setInterval;
     const previousClearInterval = globalThis.clearInterval;
 
-    globalThis.navigator = { getGamepads: jest.fn(() => []) };
     globalThis.requestAnimationFrame = jest.fn(callback => {
       callback();
       return 1;
@@ -123,7 +122,6 @@ describe('joyConMapperHandler', () => {
       expect(autoSubmitCheckbox.checked).toBe(true);
       expect(autoSubmitCheckbox.dispatchEvent).toHaveBeenCalled();
     } finally {
-      globalThis.navigator = previousNavigator;
       globalThis.requestAnimationFrame = previousRaf;
       globalThis.cancelAnimationFrame = previousCaf;
       globalThis.setInterval = previousSetInterval;
@@ -140,13 +138,11 @@ describe('joyConMapperHandler', () => {
     };
     const textInput = { value: '' };
 
-    const previousNavigator = globalThis.navigator;
     const previousRaf = globalThis.requestAnimationFrame;
     const previousCaf = globalThis.cancelAnimationFrame;
     const previousSetInterval = globalThis.setInterval;
     const previousClearInterval = globalThis.clearInterval;
 
-    globalThis.navigator = { getGamepads: jest.fn(() => []) };
     globalThis.requestAnimationFrame = jest.fn(callback => {
       callback();
       return 1;
@@ -174,7 +170,6 @@ describe('joyConMapperHandler', () => {
       expect(autoSubmitCheckbox.checked).toBe(false);
       expect(autoSubmitCheckbox.dispatchEvent).not.toHaveBeenCalled();
     } finally {
-      globalThis.navigator = previousNavigator;
       globalThis.requestAnimationFrame = previousRaf;
       globalThis.cancelAnimationFrame = previousCaf;
       globalThis.setInterval = previousSetInterval;
@@ -182,7 +177,7 @@ describe('joyConMapperHandler', () => {
     }
   });
 
-  it('falls back cleanly when navigator.getGamepads is unavailable', () => {
+  it('renders default state when no gamepads are connected', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
     const container = {
@@ -191,13 +186,11 @@ describe('joyConMapperHandler', () => {
     };
     const textInput = { value: '' };
 
-    const previousNavigator = globalThis.navigator;
     const previousRaf = globalThis.requestAnimationFrame;
     const previousCaf = globalThis.cancelAnimationFrame;
     const previousSetInterval = globalThis.setInterval;
     const previousClearInterval = globalThis.clearInterval;
 
-    globalThis.navigator = {};
     globalThis.requestAnimationFrame = jest.fn(callback => {
       callback();
       return 1;
@@ -217,7 +210,6 @@ describe('joyConMapperHandler', () => {
       expect(findByText(form, 'Index: -')).not.toBeNull();
       expect(findByText(form, 'ID: -')).not.toBeNull();
     } finally {
-      globalThis.navigator = previousNavigator;
       globalThis.requestAnimationFrame = previousRaf;
       globalThis.cancelAnimationFrame = previousCaf;
       globalThis.setInterval = previousSetInterval;
@@ -228,21 +220,18 @@ describe('joyConMapperHandler', () => {
   it('renders connected gamepad details when a gamepad is already present', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
+    dom.getGamepads.mockReturnValue([createGamepad()]);
     const container = {
       _children: [],
       closest: jest.fn(() => ({ id: 'article-1' })),
     };
     const textInput = { value: '' };
 
-    const previousNavigator = globalThis.navigator;
     const previousRaf = globalThis.requestAnimationFrame;
     const previousCaf = globalThis.cancelAnimationFrame;
     const previousSetInterval = globalThis.setInterval;
     const previousClearInterval = globalThis.clearInterval;
 
-    globalThis.navigator = {
-      getGamepads: jest.fn(() => [createGamepad()]),
-    };
     globalThis.requestAnimationFrame = jest.fn(callback => {
       callback();
       return 1;
@@ -263,7 +252,6 @@ describe('joyConMapperHandler', () => {
       expect(findByText(form, 'ID: Nintendo Joy-Con (L)')).not.toBeNull();
       expect(findByText(form, 'Press Start Mapping. Every control is optional and can be skipped.')).not.toBeNull();
     } finally {
-      globalThis.navigator = previousNavigator;
       globalThis.requestAnimationFrame = previousRaf;
       globalThis.cancelAnimationFrame = previousCaf;
       globalThis.setInterval = previousSetInterval;
