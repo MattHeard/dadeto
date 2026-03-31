@@ -240,11 +240,8 @@ export function sendResponderResult(res, status, body) {
  */
 function handleObjectResponderResult(res, status, body) {
   const objectBody = normalizeHeadersRecord(body);
-  if (!objectBody) {
-    responderHandlers.default(res, status, String(body));
-    return;
-  }
-
+  // `sendResponderResult` only reaches this helper after `isObject(body)` passes.
+  // Keep the cast local so the object response path stays explicit.
   responderHandlers.object(res, status, objectBody);
 }
 

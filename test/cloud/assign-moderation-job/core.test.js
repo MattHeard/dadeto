@@ -360,6 +360,15 @@ describe('createCorsOriginHandler', () => {
     const [error] = rejectCallback.mock.calls[0];
     expect(error).toEqual(new Error('CORS'));
   });
+
+  test('allows missing origin when allow-list is omitted', () => {
+    const handler = createCorsOriginHandler();
+    const allowCallback = jest.fn();
+
+    handler(undefined, allowCallback);
+
+    expect(allowCallback).toHaveBeenCalledWith(null, true);
+  });
 });
 
 describe('configureUrlencodedBodyParser', () => {

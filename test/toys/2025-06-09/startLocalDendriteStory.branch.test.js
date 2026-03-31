@@ -34,4 +34,21 @@ describe('startLocalDendriteStory missing temporary', () => {
       temporary: { STAR1: [expected] },
     });
   });
+
+  test('falls back to legacy DEND1 stories when STAR1 is empty', () => {
+    const existing = { id: 'old', title: 'Old', content: 'Old', options: [] };
+    const env = new Map([
+      ['getUuid', () => 'id-3'],
+      ['getData', () => ({ temporary: { STAR1: [], DEND1: [existing] } })],
+      ['setLocalTemporaryData', jest.fn()],
+    ]);
+
+    const output = JSON.parse(
+      startLocalDendriteStory('{"title":"x","content":"y"}', env)
+    );
+
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
+      temporary: { STAR1: [existing, output] },
+    });
+  });
 });

@@ -4,7 +4,6 @@
  * Converts a semicolon-delimited bank transaction CSV into a copyable JSON
  * payload that matches the ledger-ingest import input shape.
  */
-
 const REQUIRED_HEADERS = [
   'Booking date',
   'Value date',
@@ -172,14 +171,14 @@ function parseLedgerCsv(input) {
       continue;
     }
 
-    const bookingDate = row[headerLookup.get('Booking date') ?? -1];
-    const valueDate = row[headerLookup.get('Value date') ?? -1];
-    const transactionType = row[headerLookup.get('Transaction type') ?? -1];
-    const bookingText = row[headerLookup.get('Booking text') ?? -1];
-    const amount = row[headerLookup.get('Amount') ?? -1];
-    const currency = row[headerLookup.get('Currency') ?? -1];
-    const accountIban = row[headerLookup.get('Account IBAN') ?? -1];
-    const category = row[headerLookup.get('Category') ?? -1];
+    const bookingDate = row[headerLookup.get('Booking date')];
+    const valueDate = row[headerLookup.get('Value date')];
+    const transactionType = row[headerLookup.get('Transaction type')];
+    const bookingText = row[headerLookup.get('Booking text')];
+    const amount = row[headerLookup.get('Amount')];
+    const currency = row[headerLookup.get('Currency')];
+    const accountIban = row[headerLookup.get('Account IBAN')];
+    const category = row[headerLookup.get('Category')];
 
     rawRecords.push({
       recordId: buildCsvRecordId(accountIban, index),

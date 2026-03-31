@@ -588,10 +588,6 @@ async function buildIncomingOptionContext({
     getServerTimestamp,
     storyRef,
   });
-  if (!pageContext) {
-    return null;
-  }
-
   return {
     ...pageContext,
     storyRef: storyRefCandidate,

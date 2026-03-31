@@ -636,7 +636,7 @@ function resolveSnapshotDocs(snapshot) {
     return [];
   }
 
-  return snapshot.docs ?? [];
+  return snapshot.docs;
 }
 
 /**

@@ -622,11 +622,7 @@ function buildLaunchRejectedEvent(failure) {
  * @param message
  */
 function addSymphonyEvent(status, message) {
-  const normalizedMessage = typeof message === 'string' ? message.trim() : '';
-  if (!normalizedMessage) {
-    return status;
-  }
-
+  const normalizedMessage = String(message).trim();
   const events = Array.isArray(status.eventLog) ? status.eventLog : [];
   return {
     ...status,

@@ -629,5 +629,44 @@ describe('createCopyCore', () => {
       );
       expect(io.copyFile).not.toHaveBeenCalled();
     });
+
+    it('warns when build directory is missing before blog.json copy', () => {
+      const io = {
+        directoryExists: jest
+          .fn()
+          .mockImplementation(target => target !== posix.join(directories.srcDir, 'build')),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyBlogJson(directories, io, logger);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Warning: build directory not found at src/build'
+      );
+      expect(io.copyFile).not.toHaveBeenCalled();
+    });
+
+    it('copies blog.json when build directory exists', () => {
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(true),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn(),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyBlogJson(directories, io, logger);
+
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcDir, 'build', 'blog.json'),
+        posix.join(directories.publicDir, 'blog.json')
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Blog data copied from src/build/blog.json to public/blog.json'
+      );
+    });
   });
 });
