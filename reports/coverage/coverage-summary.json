@@ -1,20 +1,20 @@
 {
   "total": {
     "lines": {
-      "total": 7177,
-      "covered": 7003,
+      "total": 7176,
+      "covered": 7002,
       "skipped": 0,
       "pct": 97.57
     },
     "statements": {
-      "total": 7337,
-      "covered": 7160,
+      "total": 7336,
+      "covered": 7159,
       "skipped": 0,
       "pct": 97.58
     },
     "functions": {
-      "total": 2897,
-      "covered": 2838,
+      "total": 2898,
+      "covered": 2839,
       "skipped": 0,
       "pct": 97.96
     },
@@ -657,22 +657,22 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/captureLifecycleToggle.js": {
     "lines": {
-      "total": 15,
-      "covered": 14,
+      "total": 14,
+      "covered": 13,
       "skipped": 0,
-      "pct": 93.33
+      "pct": 92.85
     },
     "functions": {
-      "total": 5,
-      "covered": 4,
+      "total": 6,
+      "covered": 5,
       "skipped": 0,
-      "pct": 80
+      "pct": 83.33
     },
     "statements": {
-      "total": 15,
-      "covered": 14,
+      "total": 14,
+      "covered": 13,
       "skipped": 0,
-      "pct": 93.33
+      "pct": 92.85
     },
     "branches": {
       "total": 4,

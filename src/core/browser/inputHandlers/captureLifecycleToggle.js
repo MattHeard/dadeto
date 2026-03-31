@@ -31,7 +31,11 @@ export function createCaptureLifecycleToggleHandler(options) {
   return () => {
     const capturing = !options.state.capturing;
     options.state.capturing = capturing;
-    emitCaptureLifecycleToggle(options, capturing);
+    emitCaptureLifecycleToggle(
+      options,
+      capturing,
+      resolveLifecycleGlobalThisArg(capturing)
+    );
   };
 }
 
@@ -39,8 +43,9 @@ export function createCaptureLifecycleToggleHandler(options) {
  * Emit the capture lifecycle state and notify the matching hook.
  * @param {CaptureLifecycleToggleOptions} options - UI and lifecycle dependencies.
  * @param {boolean} capturing - Whether capture is active.
+ * @param {typeof globalThis | { cancelAnimationFrame: () => void }} globalThisArg - Global object or fallback canceler.
  */
-function emitCaptureLifecycleToggle(options, capturing) {
+function emitCaptureLifecycleToggle(options, capturing, globalThisArg) {
   emitCaptureState(
     {
       dom: options.dom,
@@ -53,20 +58,7 @@ function emitCaptureLifecycleToggle(options, capturing) {
     capturing
   );
 
-  if (capturing) {
-    notifyCaptureLifecycleToggle(options, capturing, globalThis);
-    return;
-  }
-
-  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
-  if (typeof cancelAnimationFrame === 'function') {
-    notifyCaptureLifecycleToggle(options, capturing, globalThis);
-    return;
-  }
-
-  notifyCaptureLifecycleToggle(options, capturing, {
-    cancelAnimationFrame: () => {},
-  });
+  notifyCaptureLifecycleToggle(options, capturing, globalThisArg);
 }
 
 /**
@@ -80,4 +72,22 @@ function notifyCaptureLifecycleToggle(options, capturing, globalThisArg) {
     capturing
   ];
   lifecycleHook?.(globalThisArg);
+}
+
+/**
+ * Resolve the global object passed into capture lifecycle hooks.
+ * @param {boolean} capturing - Whether capture is active.
+ * @returns {typeof globalThis | { cancelAnimationFrame: () => void }} Global object or fallback canceler.
+ */
+function resolveLifecycleGlobalThisArg(capturing) {
+  if (capturing) {
+    return globalThis;
+  }
+
+  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+  if (typeof cancelAnimationFrame === 'function') {
+    return globalThis;
+  }
+
+  return { cancelAnimationFrame: () => {} };
 }
