@@ -212,22 +212,14 @@ function cancelPoll(state) {
     return;
   }
 
-  runCancelAnimationFrame(/** @type {number} */ (frameId));
-  state.animationFrameId = null;
-}
-
-/**
- * Cancel the given animation frame when the browser API exists.
- * @param {number} frameId - Animation frame id to cancel.
- * @returns {void}
- */
-function runCancelAnimationFrame(frameId) {
   const cancelAnimationFrame = globalThis.cancelAnimationFrame;
   if (typeof cancelAnimationFrame !== 'function') {
+    state.animationFrameId = null;
     return;
   }
 
-  cancelAnimationFrame(frameId);
+  cancelAnimationFrame(/** @type {number} */ (frameId));
+  state.animationFrameId = null;
 }
 
 /**
