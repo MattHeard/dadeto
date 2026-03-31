@@ -750,16 +750,17 @@ function resolveFetchImpl(fetchFn) {
     return /** @type {typeof fetch} */ (fetchFn);
   }
 
-  return resolveGlobalFetch();
+  return resolveGlobalFetch(globalThis);
 }
 
 /**
  * Obtain a globally available `fetch` implementation when no override is provided.
+ * @param {typeof globalThis} globalThisArg Global runtime scope.
  * @returns {typeof fetch} Bound fetch implementation.
  */
-function resolveGlobalFetch() {
-  if (typeof globalThis.fetch === 'function') {
-    return globalThis.fetch.bind(globalThis);
+function resolveGlobalFetch(globalThisArg) {
+  if (typeof globalThisArg.fetch === 'function') {
+    return globalThisArg.fetch.bind(globalThisArg);
   }
 
   throw new Error('fetch implementation required');
