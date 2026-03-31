@@ -1,10 +1,10 @@
 {
   "total": {
     "lines": {
-      "total": 7168,
-      "covered": 6996,
+      "total": 7170,
+      "covered": 6997,
       "skipped": 0,
-      "pct": 97.6
+      "pct": 97.58
     },
     "statements": {
       "total": 7329,
@@ -579,8 +579,8 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/captureFormShared.js": {
     "lines": {
-      "total": 45,
-      "covered": 45,
+      "total": 46,
+      "covered": 46,
       "skipped": 0,
       "pct": 100
     },
@@ -761,10 +761,10 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
     "lines": {
-      "total": 317,
+      "total": 318,
       "covered": 174,
       "skipped": 0,
-      "pct": 54.88
+      "pct": 54.71
     },
     "functions": {
       "total": 112,

@@ -2,7 +2,7 @@ import * as browserCore from '../browser-core.js';
 import { createManagedFormShellBundle } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
-/** @typedef {() => void} CleanupFn */
+/** @typedef {(globalThis: typeof globalThis) => void} CleanupFn */
 
 /**
  * @typedef {{
@@ -255,5 +255,7 @@ export function getAutoSubmitCheckbox(container, dom) {
 export function registerGlobalListener({ cleanupFns, type, handler }) {
   const listener = /** @type {EventListener} */ (handler);
   globalThis.addEventListener(type, listener);
-  cleanupFns.push(() => globalThis.removeEventListener(type, listener));
+  cleanupFns.push(globalThisArg =>
+    globalThisArg.removeEventListener(type, listener)
+  );
 }

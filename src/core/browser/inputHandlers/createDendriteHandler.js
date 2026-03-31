@@ -3,7 +3,7 @@ import * as browserCore from '../browser-core.js';
 /** @typedef {import('../browser-core.js').DOMEventListener} DOMEventListener */
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {Record<string, string>} DendriteData */
-/** @typedef {() => void} Disposer */
+/** @typedef {(globalThis: typeof globalThis) => void} Disposer */
 
 /**
  * Call a node's _dispose method when available.
@@ -293,11 +293,11 @@ function createFieldRenderer({ dom, form, data, textInput, disposers }) {
 
 /**
  * Invoke a disposer function.
- * @param {Function} fn - Disposer to invoke.
+ * @param {Disposer} fn - Disposer to invoke.
  * @returns {void}
  */
 function runDisposer(fn) {
-  fn();
+  fn(globalThis);
 }
 
 /**
