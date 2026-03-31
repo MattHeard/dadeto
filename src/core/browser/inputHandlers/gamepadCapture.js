@@ -702,27 +702,49 @@ function createStopCaptureHandler(options) {
 }
 
 /**
- * Register all global listeners used by the handler.
+ * Build the shared capture lifecycle toggle options for gamepad capture.
  * @param {HandlerOptions} options - Shared handler dependencies.
- * @param {CleanupFn[]} cleanupFns - Cleanup callbacks collected for disposal.
- * @returns {void}
+ * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Toggle handler options.
  */
-function registerGamepadListeners(options, cleanupFns) {
-  const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
-    {
-      dom: options.dom,
-      button: options.button,
-      textInput: options.textInput,
-      autoSubmitCheckbox: options.autoSubmitCheckbox,
-      state: options.state,
-      updateButtonLabel: updateCaptureButton,
-      emitPayload: (input, payload) =>
-        captureLifecycleDeps.syncToyInput({ ...input, payload }),
-      onStart: () => queuePoll(options),
-      onStop: createStopCaptureHandler(options),
+function createGamepadToggleOptions(options) {
+  return {
+    dom: options.dom,
+    button: options.button,
+    textInput: options.textInput,
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    state: options.state,
+    updateButtonLabel: updateCaptureButton,
+    emitPayload: (input, payload) =>
+      captureLifecycleDeps.syncToyInput({ ...input, payload }),
+    onStart: () => queuePoll(options),
+    onStop: createStopCaptureHandler(options),
+  };
+}
+
+/**
+ * Build the cleanup handler for gamepad capture disposal.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @returns {(globalThisArg: typeof globalThis) => void} Cleanup handler.
+ */
+function createGamepadCleanupHandler(options) {
+  return globalThisArg => {
+    const cancelAnimationFrame = globalThisArg.cancelAnimationFrame;
+    if (typeof cancelAnimationFrame === 'function') {
+      cancelPoll(options.state, cancelAnimationFrame);
+    } else {
+      options.state.animationFrameId = null;
     }
-  );
-  const handleEscape = event => {
+    resetSnapshots(options.state);
+  };
+}
+
+/**
+ * Build the escape-key handler for gamepad capture.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @returns {(event: KeyboardEvent) => void} Escape handler.
+ */
+function createGamepadEscapeHandler(options) {
+  return event => {
     if (shouldIgnoreEscapeEvent(options.state, event)) {
       return;
     }
@@ -736,6 +758,19 @@ function registerGamepadListeners(options, cleanupFns) {
 
     releaseCapture(options, () => {});
   };
+}
+
+/**
+ * Register all global listeners used by the handler.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {CleanupFn[]} cleanupFns - Cleanup callbacks collected for disposal.
+ * @returns {void}
+ */
+function registerGamepadListeners(options, cleanupFns) {
+  const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
+    createGamepadToggleOptions(options)
+  );
+  const handleEscape = createGamepadEscapeHandler(options);
   const handleConnect = createConnectionHandler(options);
   const handleDisconnect = createDisconnectHandler(options);
 
@@ -756,15 +791,7 @@ function registerGamepadListeners(options, cleanupFns) {
     handler: handleDisconnect,
   });
 
-  cleanupFns.push(globalThisArg => {
-    const cancelAnimationFrame = globalThisArg.cancelAnimationFrame;
-    if (typeof cancelAnimationFrame === 'function') {
-      cancelPoll(options.state, cancelAnimationFrame);
-    } else {
-      options.state.animationFrameId = null;
-    }
-    resetSnapshots(options.state);
-  });
+  cleanupFns.push(createGamepadCleanupHandler(options));
   cleanupFns.push(() =>
     options.dom.removeEventListener(options.button, 'click', handleToggle)
   );
