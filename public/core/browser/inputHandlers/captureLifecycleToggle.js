@@ -17,8 +17,8 @@ import { emitCaptureState } from './captureLifecycleShared.js';
  *     },
  *     payload: Record<string, unknown>
  *   ) => void,
- *   onStart?: (globalThis: typeof globalThis) => void,
- *   onStop?: (globalThis: typeof globalThis) => void,
+ *   onStart?: () => void,
+ *   onStop?: () => void,
  * }} CaptureLifecycleToggleOptions
  */
 
@@ -31,11 +31,7 @@ export function createCaptureLifecycleToggleHandler(options) {
   return () => {
     const capturing = !options.state.capturing;
     options.state.capturing = capturing;
-    emitCaptureLifecycleToggle(
-      options,
-      capturing,
-      resolveLifecycleGlobalThisArg(options.dom, capturing)
-    );
+    emitCaptureLifecycleToggle(options, capturing);
   };
 }
 
@@ -43,9 +39,8 @@ export function createCaptureLifecycleToggleHandler(options) {
  * Emit the capture lifecycle state and notify the matching hook.
  * @param {CaptureLifecycleToggleOptions} options - UI and lifecycle dependencies.
  * @param {boolean} capturing - Whether capture is active.
- * @param {typeof globalThis | { cancelAnimationFrame: () => void }} globalThisArg - Global object or fallback canceler.
  */
-function emitCaptureLifecycleToggle(options, capturing, globalThisArg) {
+function emitCaptureLifecycleToggle(options, capturing) {
   emitCaptureState(
     {
       dom: options.dom,
@@ -58,37 +53,17 @@ function emitCaptureLifecycleToggle(options, capturing, globalThisArg) {
     capturing
   );
 
-  notifyCaptureLifecycleToggle(options, capturing, globalThisArg);
+  notifyCaptureLifecycleToggle(options, capturing);
 }
 
 /**
  * Notify the start/stop hook for the current capture state.
  * @param {CaptureLifecycleToggleOptions} options - UI and lifecycle dependencies.
  * @param {boolean} capturing - Whether capture is active.
- * @param {typeof globalThis | { cancelAnimationFrame: () => void }} globalThisArg - Global object or fallback canceler.
  */
-function notifyCaptureLifecycleToggle(options, capturing, globalThisArg) {
+function notifyCaptureLifecycleToggle(options, capturing) {
   const lifecycleHook = { true: options.onStart, false: options.onStop }[
     capturing
   ];
-  lifecycleHook?.(globalThisArg);
-}
-
-/**
- * Resolve the global object passed into capture lifecycle hooks.
- * @param {DOMHelpers} dom - Shared DOM helper facade.
- * @param {boolean} capturing - Whether capture is active.
- * @returns {typeof globalThis | { cancelAnimationFrame: () => void }} Global object or fallback canceler.
- */
-function resolveLifecycleGlobalThisArg(dom, capturing) {
-  if (capturing) {
-    return dom.globalThis;
-  }
-
-  const cancelAnimationFrame = dom.globalThis.cancelAnimationFrame;
-  if (typeof cancelAnimationFrame === 'function') {
-    return dom.globalThis;
-  }
-
-  return { cancelAnimationFrame: () => {} };
+  lifecycleHook?.();
 }

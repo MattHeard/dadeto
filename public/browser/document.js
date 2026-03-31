@@ -68,6 +68,20 @@ export const log = (...args) => console.log(...args);
 export const warn = (...args) => console.warn(...args);
 export const logError = (...args) => console.error(...args);
 
+/**
+ * Cancel a queued animation frame when the browser supports it.
+ * @param {number} handle - Animation frame identifier.
+ * @returns {void}
+ */
+export const cancelAnimationFrame = handle => {
+  const cancelFrame = globalThis.cancelAnimationFrame;
+  if (typeof cancelFrame !== 'function') {
+    throw new Error('globalThis.cancelAnimationFrame is not a function');
+  }
+
+  cancelFrame(handle);
+};
+
 export { createPrefixedLogger, createPrefixedLoggers } from './logging.js';
 
 // Utility functions
@@ -303,6 +317,7 @@ export const dom = /** @type {DOMHelpers} */ ({
   getTargetValue,
   setTargetValue,
   hasBetaParam,
+  cancelAnimationFrame,
   globalThis,
   reveal,
 });
