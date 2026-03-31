@@ -204,15 +204,16 @@ function isFrameId(value) {
 /**
  * Cancel a queued poll frame when one exists.
  * @param {CaptureState} state - Mutable handler state.
+ * @param {typeof globalThis.cancelAnimationFrame} cancelAnimationFrame - Browser frame canceler.
  * @returns {void}
  */
-function cancelPoll(state) {
+function cancelPoll(state, cancelAnimationFrame) {
   const frameId = state.animationFrameId;
   if (!isFrameId(frameId)) {
     return;
   }
 
-  globalThis.cancelAnimationFrame(/** @type {number} */ (frameId));
+  cancelAnimationFrame(/** @type {number} */ (frameId));
   state.animationFrameId = null;
 }
 
@@ -505,8 +506,9 @@ function pollGamepads(options) {
  */
 function stopCaptureSideEffects(options) {
   resetSnapshots(options.state);
-  if (typeof globalThis.cancelAnimationFrame === 'function') {
-    cancelPoll(options.state);
+  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+  if (typeof cancelAnimationFrame === 'function') {
+    cancelPoll(options.state, cancelAnimationFrame);
     return;
   }
 
@@ -755,8 +757,9 @@ function registerGamepadListeners(options, cleanupFns) {
   });
 
   cleanupFns.push(() => {
-    if (typeof globalThis.cancelAnimationFrame === 'function') {
-      cancelPoll(options.state);
+    const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+    if (typeof cancelAnimationFrame === 'function') {
+      cancelPoll(options.state, cancelAnimationFrame);
     } else {
       options.state.animationFrameId = null;
     }
