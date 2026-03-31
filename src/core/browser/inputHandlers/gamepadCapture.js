@@ -515,18 +515,18 @@ function stopCaptureSideEffects(state, cancelAnimationFrame) {
 /**
  * Release capture, clear snapshots, and notify the toy.
  * @param {HandlerOptions} options - Shared handler dependencies.
- * @param {typeof globalThis.cancelAnimationFrame} cancelAnimationFrame - Browser frame canceler.
  * @returns {void}
  */
-function releaseCapture(options, cancelAnimationFrame) {
+function releaseCapture(options) {
   options.state.capturing = false;
-  stopCaptureSideEffects(options.state, cancelAnimationFrame);
-  const emitPayload = createReleaseCaptureEmitPayload();
-  const emitCaptureStateOptions = createReleaseCaptureEmitCaptureStateOptions(
-    options,
-    emitPayload
+  stopCaptureSideEffects(options.state, options.dom.cancelAnimationFrame);
+  captureLifecycleDeps.emitCaptureState(
+    createReleaseCaptureEmitCaptureStateOptions(
+      options,
+      createReleaseCaptureEmitPayload()
+    ),
+    false
   );
-  captureLifecycleDeps.emitCaptureState(emitCaptureStateOptions, false);
 }
 
 /**
@@ -714,12 +714,12 @@ function getHandledDisconnectionPayload(state, event) {
 /**
  * Build the stop-capture hook used by the capture lifecycle toggle.
  * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {(globalThisArg: typeof globalThis) => void} Stop handler for the lifecycle toggle.
+ * @returns {() => void} Stop handler for the lifecycle toggle.
  */
 function createStopCaptureHandler(options) {
-  return globalThisArg => stopCaptureSideEffects(
+  return () => stopCaptureSideEffects(
     options.state,
-    globalThisArg.cancelAnimationFrame
+    options.dom.cancelAnimationFrame
   );
 }
 
@@ -746,16 +746,11 @@ function createGamepadToggleOptions(options) {
 /**
  * Build the cleanup handler for gamepad capture disposal.
  * @param {HandlerOptions} options - Shared handler dependencies.
- * @returns {(globalThisArg: typeof globalThis) => void} Cleanup handler.
+ * @returns {() => void} Cleanup handler.
  */
 function createGamepadCleanupHandler(options) {
-  return globalThisArg => {
-    const cancelAnimationFrame = globalThisArg.cancelAnimationFrame;
-    if (typeof cancelAnimationFrame === 'function') {
-      cancelPoll(options.state, cancelAnimationFrame);
-    } else {
-      options.state.animationFrameId = null;
-    }
+  return () => {
+    cancelPoll(options.state, options.dom.cancelAnimationFrame);
     resetSnapshots(options.state);
   };
 }
@@ -772,13 +767,7 @@ function createGamepadEscapeHandler(options) {
     }
 
     preventDefault(event);
-    const cancelAnimationFrame = options.dom.globalThis.cancelAnimationFrame;
-    if (typeof cancelAnimationFrame === 'function') {
-      releaseCapture(options, cancelAnimationFrame);
-      return;
-    }
-
-    releaseCapture(options, () => {});
+    releaseCapture(options);
   };
 }
 
