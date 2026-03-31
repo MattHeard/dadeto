@@ -233,20 +233,16 @@ function getGamepadsReader(dom) {
  */
 function getConnectedGamepads(dom) {
   const readGamepads = getGamepadsReader(dom);
-  if (readGamepads === null) {
-    return [];
-  }
-
   return toConnectedGamepads(readGamepads());
 }
 
 /**
  * Convert a raw gamepad list into connected gamepads only.
- * @param {(Gamepad | null)[] | null | undefined} gamepads - Raw browser gamepad list.
+ * @param {(Gamepad | null)[]} gamepads - Raw browser gamepad list.
  * @returns {Gamepad[]} Connected gamepads only.
  */
 function toConnectedGamepads(gamepads) {
-  return Array.from(gamepads ?? []).filter(isPresentGamepad);
+  return Array.from(gamepads).filter(isPresentGamepad);
 }
 
 /**

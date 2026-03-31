@@ -729,6 +729,68 @@ describe('gamepadCaptureHandler', () => {
     }
   });
 
+  it('does not cancel a second time when the form is disposed after release', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(() => 11);
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const form = container._children[0];
+      const button = form._children[0];
+
+      button._listeners.click();
+      globals.listeners.keydown({
+        type: 'keydown',
+        key: 'Escape',
+        preventDefault: jest.fn(),
+      });
+
+      expect(globalThis.cancelAnimationFrame).toHaveBeenCalledTimes(1);
+      expect(globalThis.cancelAnimationFrame).toHaveBeenCalledWith(11);
+
+      form._dispose();
+
+      expect(globalThis.cancelAnimationFrame).toHaveBeenCalledTimes(1);
+      expect(globalThis.removeEventListener).toHaveBeenNthCalledWith(
+        1,
+        'keydown',
+        expect.any(Function)
+      );
+      expect(globalThis.removeEventListener).toHaveBeenNthCalledWith(
+        2,
+        'gamepadconnected',
+        expect.any(Function)
+      );
+      expect(globalThis.removeEventListener).toHaveBeenNthCalledWith(
+        3,
+        'gamepaddisconnected',
+        expect.any(Function)
+      );
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
   it('stops requeueing poll frames once capture ends before the queued frame runs', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
