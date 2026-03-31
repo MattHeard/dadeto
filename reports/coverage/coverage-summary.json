@@ -2,15 +2,15 @@
   "total": {
     "lines": {
       "total": 7151,
-      "covered": 6984,
+      "covered": 6986,
       "skipped": 0,
-      "pct": 97.66
+      "pct": 97.69
     },
     "statements": {
       "total": 7314,
-      "covered": 7144,
+      "covered": 7146,
       "skipped": 0,
-      "pct": 97.67
+      "pct": 97.7
     },
     "functions": {
       "total": 2900,
@@ -20,9 +20,9 @@
     },
     "branches": {
       "total": 2744,
-      "covered": 2622,
+      "covered": 2624,
       "skipped": 0,
-      "pct": 95.55
+      "pct": 95.62
     },
     "branchesTrue": {
       "total": 0,
@@ -736,9 +736,9 @@
   "/home/matt/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
     "lines": {
       "total": 162,
-      "covered": 154,
+      "covered": 156,
       "skipped": 0,
-      "pct": 95.06
+      "pct": 96.29
     },
     "functions": {
       "total": 69,
@@ -748,15 +748,15 @@
     },
     "statements": {
       "total": 164,
-      "covered": 156,
+      "covered": 158,
       "skipped": 0,
-      "pct": 95.12
+      "pct": 96.34
     },
     "branches": {
       "total": 50,
-      "covered": 44,
+      "covered": 46,
       "skipped": 0,
-      "pct": 88
+      "pct": 92
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {

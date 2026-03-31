@@ -8,7 +8,5 @@ Dead branches removed from `src/core/browser/inputHandlers/gamepadCapture.js`:
 
 Remaining uncovered branches to target:
 
-- [ ] `didTrackedAxisChange` first-sample path when `previousAxis === undefined`
-- [ ] `getPreviousAxes` fallback to `[]` when `previousSnapshot` is `undefined`
 - [ ] Cleanup callback that runs `cancelPoll` and `resetSnapshots`
 - [ ] Cleanup callback that removes the button click listener

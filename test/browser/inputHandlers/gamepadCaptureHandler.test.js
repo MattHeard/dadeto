@@ -537,6 +537,64 @@ describe('gamepadCaptureHandler', () => {
     }
   });
 
+  it('emits the first polled axis payload when a gamepad is already present', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const frames = [];
+    const gamepads = [
+      createGamepad({
+        buttons: [],
+        axes: [0.5, 0],
+      }),
+    ];
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(callback => {
+      frames.push(callback);
+      return frames.length;
+    });
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = {
+      getGamepads: jest.fn(() => gamepads),
+    };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+      button._listeners.click();
+
+      frames.shift()();
+
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+        type: 'axis',
+        gamepadIndex: 0,
+        gamepadId: 'Nintendo Joy-Con (R)',
+        mapping: 'standard',
+        connected: true,
+        timestamp: 1,
+        axisIndex: 0,
+        value: 0.5,
+      });
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
   it('ignores escape events when capture is inactive', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);
