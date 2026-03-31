@@ -1,16 +1,16 @@
 {
   "total": {
     "lines": {
-      "total": 7186,
-      "covered": 6758,
+      "total": 7180,
+      "covered": 6755,
       "skipped": 0,
-      "pct": 94.04
+      "pct": 94.08
     },
     "statements": {
-      "total": 7347,
-      "covered": 6910,
+      "total": 7341,
+      "covered": 6907,
       "skipped": 0,
-      "pct": 94.05
+      "pct": 94.08
     },
     "functions": {
       "total": 2897,
@@ -19,10 +19,10 @@
       "pct": 95.06
     },
     "branches": {
-      "total": 2804,
-      "covered": 2546,
+      "total": 2798,
+      "covered": 2543,
       "skipped": 0,
-      "pct": 90.79
+      "pct": 90.88
     },
     "branchesTrue": {
       "total": 0,
@@ -735,10 +735,10 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
     "lines": {
-      "total": 178,
-      "covered": 161,
+      "total": 172,
+      "covered": 158,
       "skipped": 0,
-      "pct": 90.44
+      "pct": 91.86
     },
     "functions": {
       "total": 66,
@@ -747,16 +747,16 @@
       "pct": 96.96
     },
     "statements": {
-      "total": 179,
-      "covered": 162,
+      "total": 173,
+      "covered": 159,
       "skipped": 0,
-      "pct": 90.5
+      "pct": 91.9
     },
     "branches": {
-      "total": 64,
-      "covered": 49,
+      "total": 58,
+      "covered": 46,
       "skipped": 0,
-      "pct": 76.56
+      "pct": 79.31
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {

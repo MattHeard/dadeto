@@ -160,7 +160,7 @@ function syncIfPayload(options) {
 }
 
 /**
- * Send a payload to the toy synchronously, even when null.
+ * Send a payload to the toy synchronously.
  * @param {{
  *   dom: GamepadDOMHelpers,
  *   textInput: HTMLInputElement,
@@ -171,10 +171,6 @@ function syncIfPayload(options) {
  */
 function emitToyPayload(options) {
   const { dom, textInput, autoSubmitCheckbox, payload } = options;
-  if (payload === null) {
-    return;
-  }
-
   captureLifecycleDeps.syncToyInput({
     dom,
     textInput,
@@ -628,10 +624,6 @@ function storeSnapshot(state, gamepad) {
  * @returns {void}
  */
 function removeSnapshot(state, gamepad) {
-  if (gamepad === null) {
-    return;
-  }
-
   delete state.snapshots[gamepad.index];
 }
 
@@ -658,11 +650,7 @@ function handleConnectionEvent(options, event) {
     return;
   }
 
-  const gamepad = getEventGamepad(event);
-  if (gamepad === null) {
-    return;
-  }
-
+  const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
   storeSnapshot(options.state, gamepad);
   emitToyPayload({
     dom: options.dom,
