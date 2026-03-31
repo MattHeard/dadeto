@@ -189,19 +189,6 @@ function resetSnapshots(state) {
 }
 
 /**
- * Determine whether a frame id can be cancelled.
- * @param {number | null} value - Candidate frame id.
- * @returns {boolean} True when the value is a valid animation frame id.
- */
-function isFrameId(value) {
-  if (value === null) {
-    return false;
-  }
-
-  return Number.isInteger(value);
-}
-
-/**
  * Cancel a queued poll frame when one exists.
  * @param {CaptureState} state - Mutable handler state.
  * @param {typeof globalThis.cancelAnimationFrame} cancelAnimationFrame - Browser frame canceler.
@@ -209,7 +196,7 @@ function isFrameId(value) {
  */
 function cancelPoll(state, cancelAnimationFrame) {
   const frameId = state.animationFrameId;
-  if (!isFrameId(frameId)) {
+  if (!Number.isInteger(frameId)) {
     return;
   }
 
@@ -246,20 +233,16 @@ function getGamepadsReader(dom) {
  */
 function getConnectedGamepads(dom) {
   const readGamepads = getGamepadsReader(dom);
-  if (readGamepads === null) {
-    return [];
-  }
-
   return toConnectedGamepads(readGamepads());
 }
 
 /**
  * Convert a raw gamepad list into connected gamepads only.
- * @param {(Gamepad | null)[] | null | undefined} gamepads - Raw browser gamepad list.
+ * @param {(Gamepad | null)[]} gamepads - Raw browser gamepad list.
  * @returns {Gamepad[]} Connected gamepads only.
  */
 function toConnectedGamepads(gamepads) {
-  return Array.from(gamepads ?? []).filter(isPresentGamepad);
+  return Array.from(gamepads).filter(isPresentGamepad);
 }
 
 /**
