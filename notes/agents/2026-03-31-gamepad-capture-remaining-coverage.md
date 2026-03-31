@@ -8,5 +8,9 @@ Dead branches removed from `src/core/browser/inputHandlers/gamepadCapture.js`:
 
 Remaining uncovered branches to target:
 
-- [ ] Cleanup callback that runs `cancelPoll` and `resetSnapshots`
-- [ ] Cleanup callback that removes the button click listener
+- [ ] `cancelPoll()` early return when `state.animationFrameId` is not an integer
+
+Likely dead uncovered branches under the current `dom.getGamepads()` contract:
+
+- `getConnectedGamepads()` fallback when `readGamepads === null`
+- `toConnectedGamepads(gamepads ?? [])` nullish fallback
