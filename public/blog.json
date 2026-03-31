@@ -1,22 +1,6 @@
 {
   "posts": [
     {
-      "key": "LEDG1",
-      "title": "Ledger Ingest",
-      "publicationDate": "2026-03-13",
-      "content": [
-        "Runs a deterministic transaction-import core against either a named fixture or a pasted ImportTransactionsInput JSON payload and returns canonical rows, duplicate reports, structured errors, and summary data.",
-        "Provide JSON like {\"fixture\":\"happyPath\"} for demo runs, or paste the JSON payload emitted by the CSV converter toy to inspect a real personal import path.",
-        "The toy is a thin wrapper over the ledger-ingest core so the import flow can be tried end to end without adding file IO, network calls, or persistence."
-      ],
-      "toy": {
-        "modulePath": "/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js",
-        "functionName": "ledgerIngestToy",
-        "defaultInputMethod": "textarea"
-      },
-      "tags": ["toy", "ledger", "finance", "import", "json"]
-    },
-    {
       "key": "LEDG2",
       "title": "Ledger Ingest CSV Converter",
       "publicationDate": "2026-03-30",
@@ -31,6 +15,22 @@
         "defaultInputMethod": "textarea"
       },
       "tags": ["toy", "ledger", "finance", "csv", "converter", "json"]
+    },
+    {
+      "key": "LEDG1",
+      "title": "Ledger Ingest",
+      "publicationDate": "2026-03-13",
+      "content": [
+        "Runs a deterministic transaction-import core against either a named fixture or a pasted ImportTransactionsInput JSON payload and returns canonical rows, duplicate reports, structured errors, and summary data.",
+        "Provide JSON like {\"fixture\":\"happyPath\"} for demo runs, or paste the JSON payload emitted by the CSV converter toy to inspect a real personal import path.",
+        "The toy is a thin wrapper over the ledger-ingest core so the import flow can be tried end to end without adding file IO, network calls, or persistence."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js",
+        "functionName": "ledgerIngestToy",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "ledger", "finance", "import", "json"]
     },
     {
       "key": "JOYC1",
