@@ -521,13 +521,7 @@ function stopCaptureSideEffects(state, cancelAnimationFrame) {
 function releaseCapture(options, cancelAnimationFrame) {
   options.state.capturing = false;
   stopCaptureSideEffects(options.state, cancelAnimationFrame);
-  const emitPayload = ({ dom, textInput, autoSubmitCheckbox }, payload) =>
-    captureLifecycleDeps.syncToyInput({
-      dom,
-      textInput,
-      autoSubmitCheckbox,
-      payload,
-    });
+  const emitPayload = createReleaseCaptureEmitPayload();
   captureLifecycleDeps.emitCaptureState(
     {
       dom: options.dom,
@@ -539,6 +533,20 @@ function releaseCapture(options, cancelAnimationFrame) {
     },
     false
   );
+}
+
+/**
+ * Build the payload emitter used when releasing gamepad capture.
+ * @returns {(input: { dom: HandlerOptions['dom'], textInput: HandlerOptions['textInput'], autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'] }, payload: unknown) => void} Payload emitter.
+ */
+function createReleaseCaptureEmitPayload() {
+  return ({ dom, textInput, autoSubmitCheckbox }, payload) =>
+    captureLifecycleDeps.syncToyInput({
+      dom,
+      textInput,
+      autoSubmitCheckbox,
+      payload,
+    });
 }
 
 /**
