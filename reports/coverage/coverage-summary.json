@@ -1,16 +1,16 @@
 {
   "total": {
     "lines": {
-      "total": 7146,
-      "covered": 6988,
+      "total": 7143,
+      "covered": 6986,
       "skipped": 0,
-      "pct": 97.78
+      "pct": 97.8
     },
     "statements": {
-      "total": 7309,
-      "covered": 7148,
+      "total": 7306,
+      "covered": 7146,
       "skipped": 0,
-      "pct": 97.79
+      "pct": 97.81
     },
     "functions": {
       "total": 2899,
@@ -19,10 +19,10 @@
       "pct": 98.1
     },
     "branches": {
-      "total": 2738,
-      "covered": 2622,
+      "total": 2736,
+      "covered": 2621,
       "skipped": 0,
-      "pct": 95.76
+      "pct": 95.79
     },
     "branchesTrue": {
       "total": 0,
@@ -761,10 +761,10 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
     "lines": {
-      "total": 316,
-      "covered": 176,
+      "total": 313,
+      "covered": 174,
       "skipped": 0,
-      "pct": 55.69
+      "pct": 55.59
     },
     "functions": {
       "total": 112,
@@ -773,16 +773,16 @@
       "pct": 51.78
     },
     "statements": {
-      "total": 321,
-      "covered": 179,
+      "total": 318,
+      "covered": 177,
       "skipped": 0,
-      "pct": 55.76
+      "pct": 55.66
     },
     "branches": {
-      "total": 138,
-      "covered": 43,
+      "total": 136,
+      "covered": 42,
       "skipped": 0,
-      "pct": 31.15
+      "pct": 30.88
     }
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {

@@ -4,7 +4,7 @@
 
 ## Setup And Storage
 
-- [ ] `getClosestArticle()` guard when `container.closest` is missing
+- [x] `getClosestArticle()` guard when `container.closest` is missing
 - [ ] `getAutoSubmitCheckbox()` guard when no article wrapper is found
 - [ ] `enableAutoSubmit()` guard when the checkbox is absent
 - [ ] `readConnectedGamepads()` guard when `navigator.getGamepads` is missing
@@ -52,4 +52,3 @@
 - [ ] `handleJoyConMapperSkip()` skip-path payload branches
 - [ ] `handleJoyConMapperReset()` reset-path baseline branches
 - [ ] `joyConMapperHandler()` initial state branches for stored state and current control
-
