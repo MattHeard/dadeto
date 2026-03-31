@@ -658,6 +658,47 @@ describe('gamepadCaptureHandler', () => {
     }
   });
 
+  it('disposes cleanup when cancelAnimationFrame is unavailable', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(() => 21);
+    globalThis.cancelAnimationFrame = undefined;
+    globalThis.navigator = { getGamepads: jest.fn(() => []) };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const form = container._children[0];
+      const button = form._children[0];
+      button._listeners.click();
+
+      expect(globals.listeners.keydown).toBeDefined();
+      form._dispose();
+
+      expect(globals.listeners.keydown).toBeUndefined();
+      expect(globals.listeners.gamepadconnected).toBeUndefined();
+      expect(globals.listeners.gamepaddisconnected).toBeUndefined();
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
   it('stops requeueing poll frames once capture ends before the queued frame runs', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);

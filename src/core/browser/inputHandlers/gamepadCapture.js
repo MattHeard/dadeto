@@ -212,13 +212,7 @@ function cancelPoll(state) {
     return;
   }
 
-  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
-  if (typeof cancelAnimationFrame !== 'function') {
-    state.animationFrameId = null;
-    return;
-  }
-
-  cancelAnimationFrame(/** @type {number} */ (frameId));
+  globalThis.cancelAnimationFrame(/** @type {number} */ (frameId));
   state.animationFrameId = null;
 }
 
@@ -511,7 +505,12 @@ function pollGamepads(options) {
  */
 function stopCaptureSideEffects(options) {
   resetSnapshots(options.state);
-  cancelPoll(options.state);
+  if (typeof globalThis.cancelAnimationFrame === 'function') {
+    cancelPoll(options.state);
+    return;
+  }
+
+  options.state.animationFrameId = null;
 }
 
 /**
@@ -756,7 +755,11 @@ function registerGamepadListeners(options, cleanupFns) {
   });
 
   cleanupFns.push(() => {
-    cancelPoll(options.state);
+    if (typeof globalThis.cancelAnimationFrame === 'function') {
+      cancelPoll(options.state);
+    } else {
+      options.state.animationFrameId = null;
+    }
     resetSnapshots(options.state);
   });
   cleanupFns.push(() =>
