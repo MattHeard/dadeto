@@ -231,31 +231,12 @@ function shouldQueuePoll(state) {
 }
 
 /**
- * Resolve the current `navigator.getGamepads` function when available.
+ * Resolve the current `navigator.getGamepads` helper from the DOM facade.
  * @param {GamepadDOMHelpers} dom - Shared DOM helper facade.
- * @returns {(() => (Gamepad | null)[]) | null} Bound API getter when supported.
+ * @returns {() => (Gamepad | null)[]} Gamepad reader helper.
  */
 function getGamepadsReader(dom) {
-  const navigatorObject = dom.globalThis.navigator;
-  if (!navigatorObject) {
-    return null;
-  }
-
-  return bindGamepadsReader(navigatorObject);
-}
-
-/**
- * Bind the `navigator.getGamepads` function when the API exists.
- * @param {{ getGamepads?: () => (Gamepad | null)[] }} navigatorObject - Browser navigator object.
- * @returns {(() => (Gamepad | null)[]) | null} Bound API getter when supported.
- */
-function bindGamepadsReader(navigatorObject) {
-  const { getGamepads } = navigatorObject;
-  if (typeof getGamepads !== 'function') {
-    return null;
-  }
-
-  return getGamepads.bind(navigatorObject);
+  return dom.getGamepads;
 }
 
 /**
