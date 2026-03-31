@@ -65,5 +65,18 @@ function notifyCaptureLifecycleToggle(options, capturing) {
   const lifecycleHook = { true: options.onStart, false: options.onStop }[
     capturing
   ];
-  lifecycleHook?.(globalThis);
+  if (capturing) {
+    lifecycleHook?.(globalThis);
+    return;
+  }
+
+  const cancelAnimationFrame = globalThis.cancelAnimationFrame;
+  if (typeof cancelAnimationFrame === 'function') {
+    lifecycleHook?.(globalThis);
+    return;
+  }
+
+  lifecycleHook?.({
+    cancelAnimationFrame: () => {},
+  });
 }
