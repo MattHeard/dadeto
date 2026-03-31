@@ -690,6 +690,24 @@ function getHandledDisconnectionPayload(state, event) {
 }
 
 /**
+ * Build the stop-capture hook used by the capture lifecycle toggle.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @returns {(globalThisArg: typeof globalThis) => void} Stop handler for the lifecycle toggle.
+ */
+function createStopCaptureHandler(options) {
+  return globalThisArg => {
+    const cancelAnimationFrame = globalThisArg.cancelAnimationFrame;
+    if (typeof cancelAnimationFrame === 'function') {
+      stopCaptureSideEffects(options.state, cancelAnimationFrame);
+      return;
+    }
+
+    options.state.animationFrameId = null;
+    resetSnapshots(options.state);
+  };
+}
+
+/**
  * Register all global listeners used by the handler.
  * @param {HandlerOptions} options - Shared handler dependencies.
  * @param {CleanupFn[]} cleanupFns - Cleanup callbacks collected for disposal.
@@ -707,16 +725,7 @@ function registerGamepadListeners(options, cleanupFns) {
       emitPayload: (input, payload) =>
         captureLifecycleDeps.syncToyInput({ ...input, payload }),
       onStart: () => queuePoll(options),
-      onStop: globalThisArg => {
-        const cancelAnimationFrame = globalThisArg.cancelAnimationFrame;
-        if (typeof cancelAnimationFrame === 'function') {
-          stopCaptureSideEffects(options.state, cancelAnimationFrame);
-          return;
-        }
-
-        options.state.animationFrameId = null;
-        resetSnapshots(options.state);
-      },
+      onStop: createStopCaptureHandler(options),
     }
   );
   const handleEscape = event => {

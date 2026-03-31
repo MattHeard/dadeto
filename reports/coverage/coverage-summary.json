@@ -1,20 +1,20 @@
 {
   "total": {
     "lines": {
-      "total": 7175,
-      "covered": 7000,
+      "total": 7176,
+      "covered": 7001,
       "skipped": 0,
       "pct": 97.56
     },
     "statements": {
-      "total": 7334,
-      "covered": 7156,
+      "total": 7335,
+      "covered": 7157,
       "skipped": 0,
       "pct": 97.57
     },
     "functions": {
-      "total": 2895,
-      "covered": 2837,
+      "total": 2896,
+      "covered": 2838,
       "skipped": 0,
       "pct": 97.99
     },
@@ -735,22 +735,22 @@
   },
   "/home/matt/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
     "lines": {
-      "total": 179,
-      "covered": 166,
-      "skipped": 0,
-      "pct": 92.73
-    },
-    "functions": {
-      "total": 65,
-      "covered": 65,
-      "skipped": 0,
-      "pct": 100
-    },
-    "statements": {
       "total": 180,
       "covered": 167,
       "skipped": 0,
       "pct": 92.77
+    },
+    "functions": {
+      "total": 66,
+      "covered": 66,
+      "skipped": 0,
+      "pct": 100
+    },
+    "statements": {
+      "total": 181,
+      "covered": 168,
+      "skipped": 0,
+      "pct": 92.81
     },
     "branches": {
       "total": 62,
