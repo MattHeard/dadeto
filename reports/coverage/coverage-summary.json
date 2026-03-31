@@ -2,13 +2,13 @@
   "total": {
     "lines": {
       "total": 7179,
-      "covered": 7005,
+      "covered": 7006,
       "skipped": 0,
-      "pct": 97.57
+      "pct": 97.59
     },
     "statements": {
-      "total": 7340,
-      "covered": 7163,
+      "total": 7341,
+      "covered": 7164,
       "skipped": 0,
       "pct": 97.58
     },
@@ -788,9 +788,9 @@
   "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {
     "lines": {
       "total": 36,
-      "covered": 35,
+      "covered": 36,
       "skipped": 0,
-      "pct": 97.22
+      "pct": 100
     },
     "functions": {
       "total": 13,
@@ -799,10 +799,10 @@
       "pct": 92.3
     },
     "statements": {
-      "total": 38,
-      "covered": 37,
+      "total": 39,
+      "covered": 38,
       "skipped": 0,
-      "pct": 97.36
+      "pct": 97.43
     },
     "branches": {
       "total": 6,
