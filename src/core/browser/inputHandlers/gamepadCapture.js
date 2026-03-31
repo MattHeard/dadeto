@@ -521,6 +521,13 @@ function stopCaptureSideEffects(state, cancelAnimationFrame) {
 function releaseCapture(options, cancelAnimationFrame) {
   options.state.capturing = false;
   stopCaptureSideEffects(options.state, cancelAnimationFrame);
+  const emitPayload = ({ dom, textInput, autoSubmitCheckbox }, payload) =>
+    captureLifecycleDeps.syncToyInput({
+      dom,
+      textInput,
+      autoSubmitCheckbox,
+      payload,
+    });
   captureLifecycleDeps.emitCaptureState(
     {
       dom: options.dom,
@@ -528,13 +535,7 @@ function releaseCapture(options, cancelAnimationFrame) {
       textInput: options.textInput,
       autoSubmitCheckbox: options.autoSubmitCheckbox,
       updateButtonLabel: updateCaptureButton,
-      emitPayload: ({ dom, textInput, autoSubmitCheckbox }, payload) =>
-        captureLifecycleDeps.syncToyInput({
-          dom,
-          textInput,
-          autoSubmitCheckbox,
-          payload,
-        }),
+      emitPayload,
     },
     false
   );
