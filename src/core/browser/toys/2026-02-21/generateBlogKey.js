@@ -79,11 +79,9 @@ function buildKeyFromParsed(parsed) {
 /**
  * Generate a unique blog key from a title and list of existing keys.
  * @param {string} input - JSON string with `title` and `existingKeys`.
- * @param {Map<string, Function>} env - Environment (unused).
  * @returns {string} JSON string of the new key, or empty string on error.
  */
-export function generateBlogKey(input, env) {
-  void env;
+export function generateBlogKey(input) {
   try {
     return buildKeyFromParsed(JSON.parse(input));
   } catch {

@@ -2,7 +2,8 @@ import { describe, expect, test } from '@jest/globals';
 import { createJoyConMappingElement } from '../../src/core/browser/presenters/joyConMapping.js';
 
 /**
- *
+ * Build a minimal DOM facade for presenter tests.
+ * @returns {{ createElement: (tag: string) => { tag: string, className: string, textContent: string, children: unknown[] }, setClassName: (node: { className: string }, className: string) => void, setTextContent: (node: { textContent: string }, text: string) => void, appendChild: (parent: { children: unknown[] }, child: unknown) => void }} DOM mock.
  */
 function createMockDom() {
   return {
@@ -92,7 +93,7 @@ describe('createJoyConMappingElement', () => {
       skippedControls: null,
     };
     const element = createJoyConMappingElement(JSON.stringify(payload), dom);
-    const [title, summary, list] = element.children;
+    const [, summary, list] = element.children;
 
     expect(summary.textContent).toBe('0 mapped, 0 skipped');
     expect(list.children[0].children[1].textContent).toBe('optional');

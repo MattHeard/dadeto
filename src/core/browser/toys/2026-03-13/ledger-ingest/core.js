@@ -23,9 +23,10 @@ const REQUIRED_CANONICAL_FIELDS = ['postedDate', 'amount'];
 const INVALID_ROW_REASON_MISSING_FIELDS = 'missing-required-fields';
 
 /**
- *
- * @param source
- * @param rawRecords
+ * Build the standard fixture input used by the sample data bundles.
+ * @param {string} source Source label for the sample input.
+ * @param {Record<string, unknown>[]} rawRecords Raw rows for the fixture.
+ * @returns {ImportTransactionsInput} Fixture input bundle.
  */
 function createStandardFixtureInput(source, rawRecords) {
   return {
@@ -296,7 +297,6 @@ const SOURCE_HANDLERS = {
   string: candidate => candidate,
 };
 
-/* eslint-disable complexity */
 /**
  * Pick a source label from the input while defaulting to the toy identifier.
  * @param {ImportTransactionsInput} input Input bundle that may provide a label.
@@ -307,7 +307,6 @@ function getSourceLabel(input) {
   const handler = SOURCE_HANDLERS[typeof candidate];
   return handler?.(candidate) ?? 'ledger-ingest';
 }
-/* eslint-enable complexity */
 
 /**
  * Normalize the raw-records payload into a guaranteed array.
@@ -328,18 +327,31 @@ function getRawRecords(rawRecords) {
  * @returns {string[]} Canonical fields that were not provided.
  */
 function findMissingRequiredFields(record, mapping) {
-  const missingFields = [];
-  for (const field of REQUIRED_CANONICAL_FIELDS) {
-    const rawKey = mapping[field];
-    if (!rawKey) {
-      continue;
-    }
-    const value = record?.[rawKey];
-    if (isMissingRequiredValue(value)) {
-      missingFields.push(field);
-    }
-  }
-  return missingFields;
+  return REQUIRED_CANONICAL_FIELDS.filter(field =>
+    isMissingRequiredField(record, mapping, field)
+  );
+}
+
+/**
+ * Check whether a canonical field is absent from a raw record.
+ * @param {Record<string, unknown>} record Raw row under review.
+ * @param {Record<string, string>} mapping Field mapping for this run.
+ * @param {string} field Canonical field name under review.
+ * @returns {boolean} True when the field is missing.
+ */
+function isMissingRequiredField(record, mapping, field) {
+  return isMissingRequiredValue(getRequiredRawValue(record, mapping, field));
+}
+
+/**
+ * Read the raw value for a canonical field, if the mapping defines one.
+ * @param {Record<string, unknown>} record Raw row under review.
+ * @param {Record<string, string>} mapping Field mapping for this run.
+ * @param {string} field Canonical field name under review.
+ * @returns {unknown} Raw field value or undefined when the mapping is absent.
+ */
+function getRequiredRawValue(record, mapping, field) {
+  return record?.[mapping[field]];
 }
 
 /**
@@ -349,13 +361,20 @@ function findMissingRequiredFields(record, mapping) {
  * @returns {boolean} True when the value is absent.
  */
 function isMissingRequiredValue(value) {
-  if (MISSING_VALUES.includes(value)) {
-    return true;
+  return MISSING_VALUES.includes(value) || isBlankStringValue(value);
+}
+
+/**
+ * Determine whether a value is a blank string.
+ * @param {unknown} value Candidate input.
+ * @returns {boolean} True when the value is a blank string.
+ */
+function isBlankStringValue(value) {
+  if (typeof value !== 'string') {
+    return false;
   }
-  if (typeof value === 'string' && value.trim().length === 0) {
-    return true;
-  }
-  return false;
+
+  return value.trim().length === 0;
 }
 
 /**

@@ -2,10 +2,11 @@ import { describe, expect, test, jest } from '@jest/globals';
 import { joyConMapperToy } from '../../../src/core/browser/toys/2026-03-01/joyConMapper.js';
 
 /**
- *
- * @param root0
- * @param root0.stored
- * @param root0.setLocalPermanentData
+ * Build a mapper toy environment for the storage-based tests.
+ * @param {{ stored?: unknown, setLocalPermanentData?: jest.Mock }} [root0] Environment overrides.
+ * @param {unknown} [root0.stored] Stored permanent data fixture.
+ * @param {jest.Mock} [root0.setLocalPermanentData] Permanent data writer stub.
+ * @returns {Map<string, unknown>} Toy environment map.
  */
 function createEnv({ stored, setLocalPermanentData } = {}) {
   const getLocalPermanentData = stored ? jest.fn(() => stored) : undefined;

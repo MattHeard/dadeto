@@ -205,16 +205,12 @@ function parseLedgerCsv(input) {
  * Convert a semicolon-delimited CSV string into the JSON payload that the main
  * ledger-ingest toy accepts.
  * @param {string} input CSV text pasted into the converter toy.
- * @param {Map<string, unknown>} env Toy environment helpers (unused).
  * @returns {string} Pretty-printed JSON payload or an error object.
  */
-export function ledgerIngestCsvConverterToy(input, env) {
-  void env;
-
+export function ledgerIngestCsvConverterToy(input) {
   try {
     return JSON.stringify(parseLedgerCsv(input), null, 2);
-  } catch (error) {
-    void error;
+  } catch {
     return JSON.stringify(
       { error: 'Invalid ledger-ingest CSV input' },
       null,

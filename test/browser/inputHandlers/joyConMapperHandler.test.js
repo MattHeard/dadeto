@@ -3,8 +3,9 @@ import { joyConMapperHandler } from '../../../src/core/browser/inputHandlers/joy
 import { readStoredOrElementValue } from '../../../src/core/browser/inputValueStore.js';
 
 /**
- *
- * @param tag
+ * Create a minimal test element stub.
+ * @param {string} tag Element tag name.
+ * @returns {Record<string, unknown>} Element stub used by the DOM mock.
  */
 function makeElement(tag = 'div') {
   return {
@@ -16,8 +17,9 @@ function makeElement(tag = 'div') {
 }
 
 /**
- *
- * @param autoSubmitCheckbox
+ * Build a DOM helper mock for the mapper handler tests.
+ * @param {Record<string, unknown>} autoSubmitCheckbox Auto-submit checkbox stub.
+ * @returns {Record<string, unknown>} DOM helper mock.
  */
 function makeDom(autoSubmitCheckbox) {
   return {
@@ -62,9 +64,10 @@ function makeDom(autoSubmitCheckbox) {
 }
 
 /**
- *
- * @param root
- * @param text
+ * Find a nested stub element by text content.
+ * @param {Record<string, unknown> | null | undefined} root Root node to search.
+ * @param {string} text Text to match.
+ * @returns {Record<string, unknown> | null} Matching stub node, if present.
  */
 function findByText(root, text) {
   if (root?.textContent === text) {
@@ -80,8 +83,9 @@ function findByText(root, text) {
 }
 
 /**
- *
- * @param overrides
+ * Build a gamepad snapshot stub for tests.
+ * @param {{ axes?: number[], buttons?: Array<{ pressed: boolean, value: number }>, connected?: boolean, id?: string, index?: number, mapping?: string, timestamp?: number }} [overrides] Snapshot overrides.
+ * @returns {Gamepad} Gamepad stub.
  */
 function createGamepad(overrides = {}) {
   return /** @type {Gamepad} */ ({

@@ -558,74 +558,211 @@ function buildRunnerOutcomeQueueEvidence(outcome) {
 }
 
 /**
- *
- * @param outcome
+ * Build the runner outcome event message for the tracker event log.
+ * @param {{
+ *   outcome: 'completed' | 'blocked',
+ *   exitCode?: number | null,
+ *   signal?: string | null,
+ *   summary?: string | null,
+ *   beadId?: string | null
+ * }} outcome Runner outcome to render.
+ * @returns {string} Human-readable event log entry.
  */
 function buildRunnerOutcomeEventMessage(outcome) {
-  if (outcome.outcome === 'completed') {
-    return `bead closed: ${outcome.beadId ?? 'unknown bead'}`;
+  if (outcome.outcome !== 'completed') {
+    return formatAgentFailureEventMessage({
+      exitCode: getOutcomeExitCode(outcome),
+      signal: getOutcomeSignal(outcome),
+      summary: getOutcomeSummary(outcome),
+      beadId: outcome.beadId,
+    });
   }
 
-  return formatAgentFailureEventMessage(
-    typeof outcome.exitCode === 'number' ? outcome.exitCode : null,
-    typeof outcome.signal === 'string' ? outcome.signal : null,
-    typeof outcome.summary === 'string' ? outcome.summary : null,
-    outcome.beadId
-  );
+  return `bead closed: ${getBeadIdOrUnknown(outcome.beadId)}`;
 }
 
 /**
- *
- * @param exitCode
- * @param signal
- * @param summary
- * @param beadId
+ * Normalize the exit code from a runner outcome payload.
+ * @param {{ exitCode?: number | null }} outcome Runner outcome payload.
+ * @returns {number | null} Exit code when present.
  */
-function formatAgentFailureEventMessage(exitCode, signal, summary, beadId) {
+function getOutcomeExitCode(outcome) {
+  if (typeof outcome.exitCode === 'number') {
+    return outcome.exitCode;
+  }
+
+  return null;
+}
+
+/**
+ * Normalize the signal from a runner outcome payload.
+ * @param {{ signal?: string | null }} outcome Runner outcome payload.
+ * @returns {string | null} Signal when present.
+ */
+function getOutcomeSignal(outcome) {
+  if (typeof outcome.signal === 'string') {
+    return outcome.signal;
+  }
+
+  return null;
+}
+
+/**
+ * Normalize the summary from a runner outcome payload.
+ * @param {{ summary?: string | null }} outcome Runner outcome payload.
+ * @returns {string | null} Summary when present.
+ */
+function getOutcomeSummary(outcome) {
+  if (typeof outcome.summary === 'string') {
+    return outcome.summary;
+  }
+
+  return null;
+}
+
+/**
+ * Return the first non-empty failure message candidate.
+ * @param {(string | null)[]} messages Candidate messages.
+ * @returns {string | null} First usable message or null.
+ */
+function selectFirstFailureMessage(messages) {
+  return messages.find(Boolean) ?? null;
+}
+
+/**
+ * Build the signal-specific failure message, if any.
+ * @param {string | null} signal Normalized signal.
+ * @returns {string | null} Signal failure message or null.
+ */
+function formatAgentFailureSignalMessage(signal) {
   if (signal) {
     return `agent failure: signal ${signal}`;
   }
 
+  return null;
+}
+
+/**
+ * Build the exit-code-specific failure message, if any.
+ * @param {number | null} exitCode Normalized exit code.
+ * @returns {string | null} Exit-code failure message or null.
+ */
+function formatAgentFailureExitCodeMessage(exitCode) {
   if (typeof exitCode === 'number') {
     return `agent failure: exited ${exitCode}`;
   }
 
-  const normalizedSummary = (summary ?? '').trim().replace(/\s+/g, ' ');
+  return null;
+}
+
+/**
+ * Build the summary-specific failure message, if any.
+ * @param {string | null} summary Normalized summary.
+ * @returns {string | null} Summary failure message or null.
+ */
+function formatAgentFailureSummaryMessage(summary) {
+  const normalizedSummary = normalizeAgentFailureSummary(summary);
   if (normalizedSummary) {
     return `agent failure: ${normalizedSummary}`;
   }
 
-  return `agent failure: ${beadId ?? 'unknown bead'}`;
+  return null;
 }
 
 /**
- *
- * @param launch
+ * Normalize a summary string for failure reporting.
+ * @param {string | null} summary Raw summary value.
+ * @returns {string | null} Normalized summary or null when empty.
+ */
+function normalizeAgentFailureSummary(summary) {
+  return (
+    String(summary ?? '')
+      .trim()
+      .replace(/\s+/g, ' ') || null
+  );
+}
+
+/**
+ * Normalize a bead id, falling back to a safe default when missing.
+ * @param {string | null | undefined} beadId Bead id when known.
+ * @returns {string} Safe bead id value.
+ */
+function getBeadIdOrUnknown(beadId) {
+  if (beadId) {
+    return beadId;
+  }
+
+  return 'unknown bead';
+}
+
+/**
+ * Format a failure message for a non-completed runner outcome.
+ * @param {{
+ *   exitCode: number | null,
+ *   signal: string | null,
+ *   summary: string | null,
+ *   beadId: string | null | undefined
+ * }} input Failure payload.
+ * @returns {string} Human-readable failure message.
+ */
+function formatAgentFailureEventMessage({ exitCode, signal, summary, beadId }) {
+  const message = selectFirstFailureMessage([
+    formatAgentFailureSignalMessage(signal),
+    formatAgentFailureExitCodeMessage(exitCode),
+    formatAgentFailureSummaryMessage(summary),
+  ]);
+
+  if (message) {
+    return message;
+  }
+
+  return `agent failure: ${getBeadIdOrUnknown(beadId)}`;
+}
+
+/**
+ * Build the runner launch event log entry.
+ * @param {{ beadId?: string | null }} launch Runner launch payload.
+ * @returns {string} Human-readable launch event message.
  */
 function buildBeadStartedEvent(launch) {
   return `bead started: ${launch.beadId ?? 'unknown bead'}`;
 }
 
 /**
- *
- * @param failure
+ * Build the launch rejection event log entry.
+ * @param {{ beadId?: string | null, error?: string | null }} failure Launch failure payload.
+ * @returns {string} Human-readable launch rejection message.
  */
 function buildLaunchRejectedEvent(failure) {
-  const beadId = failure.beadId ?? 'unknown bead';
+  const beadId = getBeadIdOrUnknown(failure.beadId);
   const error = failure.error ?? 'unknown error';
   return `launch rejected: ${beadId}: ${error}`;
 }
 
 /**
- *
- * @param status
- * @param message
+ * Append a new tracker event while keeping only the most recent entries.
+ * @param {{ eventLog?: string[], [key: string]: unknown }} status Current tracker status.
+ * @param {string} message Event log message to append.
+ * @returns {Record<string, unknown>} Updated tracker status.
  */
 function addSymphonyEvent(status, message) {
   const normalizedMessage = String(message).trim();
-  const events = Array.isArray(status.eventLog) ? status.eventLog : [];
+  const events = getEventLog(status);
   return {
     ...status,
     eventLog: [normalizedMessage, ...events].slice(0, MAX_EVENT_LOG_ENTRIES),
   };
+}
+
+/**
+ * Read the existing event log from tracker status.
+ * @param {{ eventLog?: string[] }} status Current tracker status.
+ * @returns {string[]} Existing event log entries.
+ */
+function getEventLog(status) {
+  if (Array.isArray(status.eventLog)) {
+    return status.eventLog;
+  }
+
+  return [];
 }

@@ -296,7 +296,6 @@ const SOURCE_HANDLERS = {
   string: candidate => candidate,
 };
 
-/* eslint-disable complexity */
 /**
  * Pick a source label from the input while defaulting to the toy identifier.
  * @param {ImportTransactionsInput} input Input bundle that may provide a label.
@@ -307,7 +306,6 @@ function getSourceLabel(input) {
   const handler = SOURCE_HANDLERS[typeof candidate];
   return handler?.(candidate) ?? 'ledger-ingest';
 }
-/* eslint-enable complexity */
 
 /**
  * Normalize the raw-records payload into a guaranteed array.

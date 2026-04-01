@@ -6,11 +6,9 @@ import { whenString } from '../../../commonCore.js';
  * Convert a multi-row CSV string into a JSON array string.
  * Rows with parsing errors invalidate the entire operation.
  * @param {string} input - CSV text with a header row followed by data rows.
- * @param {Map<string, Function>} [env] - Environment helpers (unused).
  * @returns {string} Stringified JSON array built from the CSV input.
  */
-export function csvToJsonArrayToy(input, env) {
-  void env;
+export function csvToJsonArrayToy(input) {
   const rows = extractCsvRows(input);
   return JSON.stringify(rows ?? []);
 }

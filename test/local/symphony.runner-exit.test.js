@@ -11,7 +11,8 @@ describe('Symphony runner exit handler', () => {
   };
 
   /**
-   *
+   * Build a fresh status store stub for each exit scenario.
+   * @returns {{ readStatus: jest.Mock, writeStatus: jest.Mock }} Status store stub.
    */
   function createStatusStore() {
     return {

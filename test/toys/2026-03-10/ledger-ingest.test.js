@@ -189,8 +189,8 @@ describe('importTransactions', () => {
 });
 
 /**
- *
- * @param transaction
+ * Verify the stable transaction shape exposed by the ledger ingest core.
+ * @param {Record<string, unknown>} transaction Canonical transaction under test.
  */
 function expectCanonicalTransactionShape(transaction) {
   expect(Object.keys(transaction).sort()).toEqual(
