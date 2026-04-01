@@ -149,6 +149,70 @@ describe('joyConMapperHandler', () => {
     }
   });
 
+  it('covers skip, reset, and dispose cleanup', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+
+    const previousRaf = globalThis.requestAnimationFrame;
+    const previousCaf = globalThis.cancelAnimationFrame;
+    const previousSetInterval = globalThis.setInterval;
+    const previousClearInterval = globalThis.clearInterval;
+
+    globalThis.requestAnimationFrame = jest.fn(callback => {
+      callback();
+      return 1;
+    });
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.setInterval = jest.fn(callback => {
+      callback();
+      return 2;
+    });
+    globalThis.clearInterval = jest.fn();
+
+    try {
+      joyConMapperHandler(dom, container, textInput);
+
+      const form = container._children[0];
+      const startButton = findByText(form, 'Start Mapping');
+      const skipButton = findByText(form, 'Skip Current');
+      const resetButton = findByText(form, 'Reset Mapping');
+
+      startButton._listeners.click();
+      skipButton._listeners.click();
+      resetButton._listeners.click();
+
+      expect(typeof form._dispose).toBe('function');
+      form._dispose();
+
+      expect(dom.removeEventListener).toHaveBeenCalledWith(
+        startButton,
+        'click',
+        expect.any(Function)
+      );
+      expect(dom.removeEventListener).toHaveBeenCalledWith(
+        skipButton,
+        'click',
+        expect.any(Function)
+      );
+      expect(dom.removeEventListener).toHaveBeenCalledWith(
+        resetButton,
+        'click',
+        expect.any(Function)
+      );
+      expect(globalThis.clearInterval).toHaveBeenCalled();
+    } finally {
+      globalThis.requestAnimationFrame = previousRaf;
+      globalThis.cancelAnimationFrame = previousCaf;
+      globalThis.setInterval = previousSetInterval;
+      globalThis.clearInterval = previousClearInterval;
+    }
+  });
+
   it('handles missing article wrappers by skipping the auto-submit checkbox lookup', () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
     const dom = makeDom(autoSubmitCheckbox);

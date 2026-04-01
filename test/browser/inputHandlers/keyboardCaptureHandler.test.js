@@ -181,4 +181,38 @@ describe('keyboardCaptureHandler', () => {
       globalThis.removeEventListener = previousRemove;
     }
   });
+
+  it('removes the keyboard click listener when disposed', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+
+    try {
+      keyboardCaptureHandler(dom, container, textInput);
+
+      const form = container._children[0];
+      const button = form._children[0];
+      expect(typeof form._dispose).toBe('function');
+      form._dispose();
+
+      expect(dom.removeEventListener).toHaveBeenCalledWith(
+        button,
+        'click',
+        expect.any(Function)
+      );
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+    }
+  });
 });
