@@ -83,26 +83,12 @@ function withStringFallback(value, fallback, isNormalizedAcceptable) {
  * @returns {string} Input string or empty fallback.
  */
 export function ensureString(value) {
-  const normalized = stringOrNull(value);
-  if (normalized !== null) {
-    return normalized;
+  const normalized = getStringCandidate(value);
+  if (normalized === undefined) {
+    return '';
   }
 
-  return '';
-}
-
-/**
- * Return the provided string when available; otherwise use the fallback.
- * @param {unknown} value Candidate value that may be a string.
- * @param {string} fallback Replacement when the value is not a string.
- * @returns {string} String value or fallback.
- */
-export function stringOrDefault(value, fallback) {
-  return withStringFallback(
-    value,
-    () => fallback,
-    normalized => normalized !== undefined
-  );
+  return normalized;
 }
 
 /**
@@ -116,20 +102,6 @@ export function normalizeNonStringValue(value) {
   }
 
   return String(value);
-}
-
-/**
- * Return the input when it is a string; otherwise `null`.
- * @param {unknown} value Candidate value.
- * @returns {string | null} String when provided, otherwise `null`.
- */
-export function stringOrNull(value) {
-  const normalized = getStringCandidate(value);
-  if (normalized !== undefined) {
-    return normalized;
-  }
-
-  return null;
 }
 
 /**
