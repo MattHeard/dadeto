@@ -218,11 +218,11 @@ export function prepareCaptureHandler({ dom, container, textInput }) {
  * @returns {HTMLElement | null} Closest article element.
  */
 export function getArticle(container) {
-  const article = container.closest?.('article.entry');
-  if (article) {
-    return /** @type {HTMLElement} */ (article);
+  const article = container.closest('article.entry');
+  if (!article) {
+    return null;
   }
-  return null;
+  return /** @type {HTMLElement} */ (article);
 }
 
 /**
@@ -248,7 +248,7 @@ export function getAutoSubmitCheckbox(container, dom) {
  *   globalThisArg: typeof globalThis,
  *   cleanupFns: CleanupFn[],
  *   type: string,
- *   handler: EventListener,
+ *   handler: (event: Event) => void,
  * }} options - Listener wiring options.
  * @returns {void}
  */

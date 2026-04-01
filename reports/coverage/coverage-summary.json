@@ -1,26 +1,26 @@
 {
   "total": {
     "lines": {
-      "total": 7140,
-      "covered": 6996,
+      "total": 7150,
+      "covered": 7007,
       "skipped": 0,
-      "pct": 97.98
+      "pct": 98
     },
     "statements": {
-      "total": 7303,
-      "covered": 7156,
+      "total": 7313,
+      "covered": 7166,
       "skipped": 0,
       "pct": 97.98
     },
     "functions": {
-      "total": 2899,
-      "covered": 2848,
+      "total": 2900,
+      "covered": 2849,
       "skipped": 0,
       "pct": 98.24
     },
     "branches": {
-      "total": 2734,
-      "covered": 2628,
+      "total": 2736,
+      "covered": 2630,
       "skipped": 0,
       "pct": 96.12
     },
@@ -31,7 +31,7 @@
       "pct": "Unknown"
     }
   },
-  "/home/matt/dadeto/src/core/commonCore.js": {
+  "/workspace/dadeto/src/core/commonCore.js": {
     "lines": {
       "total": 60,
       "covered": 60,
@@ -57,7 +57,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/admin-core.js": {
+  "/workspace/dadeto/src/core/browser/admin-core.js": {
     "lines": {
       "total": 474,
       "covered": 474,
@@ -83,7 +83,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/audio-controls.js": {
+  "/workspace/dadeto/src/core/browser/audio-controls.js": {
     "lines": {
       "total": 46,
       "covered": 46,
@@ -109,7 +109,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/beta.js": {
+  "/workspace/dadeto/src/core/browser/beta.js": {
     "lines": {
       "total": 5,
       "covered": 5,
@@ -135,7 +135,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/browser-core.js": {
+  "/workspace/dadeto/src/core/browser/browser-core.js": {
     "lines": {
       "total": 117,
       "covered": 117,
@@ -161,7 +161,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/common-core.js": {
+  "/workspace/dadeto/src/core/browser/common-core.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -187,7 +187,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/common.js": {
+  "/workspace/dadeto/src/core/browser/common.js": {
     "lines": {
       "total": 9,
       "covered": 9,
@@ -213,7 +213,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/createSectionSetter.js": {
+  "/workspace/dadeto/src/core/browser/createSectionSetter.js": {
     "lines": {
       "total": 38,
       "covered": 38,
@@ -239,7 +239,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/data.js": {
+  "/workspace/dadeto/src/core/browser/data.js": {
     "lines": {
       "total": 159,
       "covered": 159,
@@ -265,7 +265,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/domHelpers.js": {
+  "/workspace/dadeto/src/core/browser/domHelpers.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -291,7 +291,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputValueStore.js": {
+  "/workspace/dadeto/src/core/browser/inputValueStore.js": {
     "lines": {
       "total": 11,
       "covered": 11,
@@ -317,7 +317,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/jsonValueHelpers.js": {
+  "/workspace/dadeto/src/core/browser/jsonValueHelpers.js": {
     "lines": {
       "total": 0,
       "covered": 0,
@@ -343,10 +343,10 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/load-static-config-core.js": {
+  "/workspace/dadeto/src/core/browser/load-static-config-core.js": {
     "lines": {
-      "total": 30,
-      "covered": 30,
+      "total": 29,
+      "covered": 29,
       "skipped": 0,
       "pct": 100
     },
@@ -357,8 +357,8 @@
       "pct": 100
     },
     "statements": {
-      "total": 30,
-      "covered": 30,
+      "total": 29,
+      "covered": 29,
       "skipped": 0,
       "pct": 100
     },
@@ -369,7 +369,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/localStorageLens.js": {
+  "/workspace/dadeto/src/core/browser/localStorageLens.js": {
     "lines": {
       "total": 41,
       "covered": 41,
@@ -395,7 +395,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/memoryStorageLens.js": {
+  "/workspace/dadeto/src/core/browser/memoryStorageLens.js": {
     "lines": {
       "total": 3,
       "covered": 3,
@@ -421,7 +421,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/setOutput.js": {
+  "/workspace/dadeto/src/core/browser/setOutput.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -447,7 +447,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/storageLens.js": {
+  "/workspace/dadeto/src/core/browser/storageLens.js": {
     "lines": {
       "total": 11,
       "covered": 11,
@@ -473,7 +473,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/tags.js": {
+  "/workspace/dadeto/src/core/browser/tags.js": {
     "lines": {
       "total": 55,
       "covered": 55,
@@ -499,7 +499,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/token-action.js": {
+  "/workspace/dadeto/src/core/browser/token-action.js": {
     "lines": {
       "total": 14,
       "covered": 14,
@@ -525,7 +525,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/blogKeyHandler.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/blogKeyHandler.js": {
     "lines": {
       "total": 38,
       "covered": 38,
@@ -551,7 +551,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/browserInputHandlersCore.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/browserInputHandlersCore.js": {
     "lines": {
       "total": 27,
       "covered": 27,
@@ -577,7 +577,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/captureFormShared.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/captureFormShared.js": {
     "lines": {
       "total": 45,
       "covered": 45,
@@ -603,7 +603,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/captureLifecycleDeps.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/captureLifecycleDeps.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -629,10 +629,10 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/captureLifecycleShared.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/captureLifecycleShared.js": {
     "lines": {
-      "total": 3,
-      "covered": 3,
+      "total": 6,
+      "covered": 6,
       "skipped": 0,
       "pct": 100
     },
@@ -643,8 +643,8 @@
       "pct": 100
     },
     "statements": {
-      "total": 3,
-      "covered": 3,
+      "total": 6,
+      "covered": 6,
       "skipped": 0,
       "pct": 100
     },
@@ -655,7 +655,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/captureLifecycleToggle.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/captureLifecycleToggle.js": {
     "lines": {
       "total": 8,
       "covered": 8,
@@ -681,7 +681,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/createDendriteHandler.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/createDendriteHandler.js": {
     "lines": {
       "total": 99,
       "covered": 99,
@@ -707,7 +707,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/escapeKey.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/escapeKey.js": {
     "lines": {
       "total": 2,
       "covered": 2,
@@ -733,10 +733,10 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/gamepadCapture.js": {
     "lines": {
-      "total": 157,
-      "covered": 157,
+      "total": 158,
+      "covered": 158,
       "skipped": 0,
       "pct": 100
     },
@@ -759,12 +759,12 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/joyConMapper.js": {
     "lines": {
-      "total": 310,
+      "total": 309,
       "covered": 184,
       "skipped": 0,
-      "pct": 59.35
+      "pct": 59.54
     },
     "functions": {
       "total": 112,
@@ -785,7 +785,7 @@
       "pct": 36.56
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/keyboardCapture.js": {
     "lines": {
       "total": 36,
       "covered": 36,
@@ -811,7 +811,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/moderatorRatings.js": {
     "lines": {
       "total": 128,
       "covered": 128,
@@ -837,7 +837,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/number.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/number.js": {
     "lines": {
       "total": 29,
       "covered": 29,
@@ -863,7 +863,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/sharedSpecialInput.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/sharedSpecialInput.js": {
     "lines": {
       "total": 15,
       "covered": 15,
@@ -889,7 +889,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/text.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/text.js": {
     "lines": {
       "total": 2,
       "covered": 2,
@@ -915,7 +915,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/inputHandlers/textarea.js": {
+  "/workspace/dadeto/src/core/browser/inputHandlers/textarea.js": {
     "lines": {
       "total": 39,
       "covered": 39,
@@ -941,7 +941,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/moderation/authedFetch.js": {
+  "/workspace/dadeto/src/core/browser/moderation/authedFetch.js": {
     "lines": {
       "total": 40,
       "covered": 40,
@@ -967,7 +967,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/moderation/endpoints.js": {
+  "/workspace/dadeto/src/core/browser/moderation/endpoints.js": {
     "lines": {
       "total": 29,
       "covered": 29,
@@ -993,7 +993,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/presenters/battleshipSolitaireClues.js": {
+  "/workspace/dadeto/src/core/browser/presenters/battleshipSolitaireClues.js": {
     "lines": {
       "total": 48,
       "covered": 48,
@@ -1019,7 +1019,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/presenters/battleshipSolitaireFleet.js": {
+  "/workspace/dadeto/src/core/browser/presenters/battleshipSolitaireFleet.js": {
     "lines": {
       "total": 59,
       "covered": 59,
@@ -1045,7 +1045,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/presenters/browserPresentersCore.js": {
+  "/workspace/dadeto/src/core/browser/presenters/browserPresentersCore.js": {
     "lines": {
       "total": 6,
       "covered": 6,
@@ -1071,33 +1071,33 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/presenters/joyConMapping.js": {
+  "/workspace/dadeto/src/core/browser/presenters/joyConMapping.js": {
     "lines": {
-      "total": 49,
-      "covered": 49,
+      "total": 57,
+      "covered": 57,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 19,
-      "covered": 19,
+      "total": 20,
+      "covered": 20,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 50,
-      "covered": 50,
+      "total": 58,
+      "covered": 58,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 16,
-      "covered": 16,
+      "total": 18,
+      "covered": 18,
       "skipped": 0,
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/presenters/paragraph.js": {
+  "/workspace/dadeto/src/core/browser/presenters/paragraph.js": {
     "lines": {
       "total": 0,
       "covered": 0,
@@ -1123,7 +1123,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/presenters/pre.js": {
+  "/workspace/dadeto/src/core/browser/presenters/pre.js": {
     "lines": {
       "total": 13,
       "covered": 13,
@@ -1149,7 +1149,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/presenters/ticTacToeBoard.js": {
+  "/workspace/dadeto/src/core/browser/presenters/ticTacToeBoard.js": {
     "lines": {
       "total": 34,
       "covered": 34,
@@ -1175,7 +1175,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/browserToysCore.js": {
+  "/workspace/dadeto/src/core/browser/toys/browserToysCore.js": {
     "lines": {
       "total": 94,
       "covered": 94,
@@ -1201,7 +1201,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/toys-core.js": {
+  "/workspace/dadeto/src/core/browser/toys/toys-core.js": {
     "lines": {
       "total": 54,
       "covered": 54,
@@ -1227,7 +1227,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2024-10-02/hello.js": {
+  "/workspace/dadeto/src/core/browser/toys/2024-10-02/hello.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -1253,7 +1253,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-19/identity.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-19/identity.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -1279,7 +1279,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-21/booleanCoercer.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-21/booleanCoercer.js": {
     "lines": {
       "total": 11,
       "covered": 11,
@@ -1305,7 +1305,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-21/italics.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-21/italics.js": {
     "lines": {
       "total": 52,
       "covered": 52,
@@ -1331,7 +1331,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-26/prettyFloat.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-26/prettyFloat.js": {
     "lines": {
       "total": 55,
       "covered": 55,
@@ -1357,7 +1357,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-28/rand.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-28/rand.js": {
     "lines": {
       "total": 4,
       "covered": 4,
@@ -1383,7 +1383,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-29/fishingGame.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-29/fishingGame.js": {
     "lines": {
       "total": 73,
       "covered": 73,
@@ -1409,7 +1409,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-29/get.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-29/get.js": {
     "lines": {
       "total": 101,
       "covered": 101,
@@ -1435,7 +1435,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-29/setTemporary.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-29/setTemporary.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -1461,7 +1461,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-03-30/cyberpunkAdventure.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-03-30/cyberpunkAdventure.js": {
     "lines": {
       "total": 96,
       "covered": 96,
@@ -1487,7 +1487,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-04-05/httpRequest.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-04-05/httpRequest.js": {
     "lines": {
       "total": 2,
       "covered": 2,
@@ -1513,7 +1513,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-04-06/ticTacToe.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-04-06/ticTacToe.js": {
     "lines": {
       "total": 172,
       "covered": 172,
@@ -1539,7 +1539,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-04-16/colorPalette.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-04-16/colorPalette.js": {
     "lines": {
       "total": 7,
       "covered": 7,
@@ -1565,7 +1565,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js": {
     "lines": {
       "total": 161,
       "covered": 161,
@@ -1591,7 +1591,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-05-11/battleshipSolitaireClues.js": {
     "lines": {
       "total": 38,
       "covered": 38,
@@ -1617,7 +1617,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-05-13/base64Encoder.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-05-13/base64Encoder.js": {
     "lines": {
       "total": 4,
       "covered": 4,
@@ -1643,7 +1643,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-05-15/stringToJsonArray.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-05-15/stringToJsonArray.js": {
     "lines": {
       "total": 6,
       "covered": 6,
@@ -1669,7 +1669,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-06-09/startLocalDendriteStory.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-06-09/startLocalDendriteStory.js": {
     "lines": {
       "total": 33,
       "covered": 33,
@@ -1695,7 +1695,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-06-09/uuid.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-06-09/uuid.js": {
     "lines": {
       "total": 4,
       "covered": 4,
@@ -1721,7 +1721,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-07-04/transformDendriteStory.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-07-04/transformDendriteStory.js": {
     "lines": {
       "total": 4,
       "covered": 4,
@@ -1747,7 +1747,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-07-05/addDendritePage.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-07-05/addDendritePage.js": {
     "lines": {
       "total": 4,
       "covered": 4,
@@ -1773,7 +1773,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-07-05/getDend2Titles.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-07-05/getDend2Titles.js": {
     "lines": {
       "total": 21,
       "covered": 21,
@@ -1799,7 +1799,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-07-05/objectUtils.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-07-05/objectUtils.js": {
     "lines": {
       "total": 0,
       "covered": 0,
@@ -1825,7 +1825,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-07-05/setPermanentData.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-07-05/setPermanentData.js": {
     "lines": {
       "total": 6,
       "covered": 6,
@@ -1851,7 +1851,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-10-19/csvToJsonArray.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-10-19/csvToJsonArray.js": {
     "lines": {
       "total": 87,
       "covered": 87,
@@ -1877,7 +1877,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-10-19/csvToJsonObject.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-10-19/csvToJsonObject.js": {
     "lines": {
       "total": 31,
       "covered": 31,
@@ -1903,7 +1903,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-10-19/toys-core.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-10-19/toys-core.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -1929,7 +1929,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-11-01/textAppendList.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-11-01/textAppendList.js": {
     "lines": {
       "total": 28,
       "covered": 28,
@@ -1955,7 +1955,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-12-05/calculateVisibility.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-12-05/calculateVisibility.js": {
     "lines": {
       "total": 80,
       "covered": 80,
@@ -1981,7 +1981,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-12-05/dijkstra.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-12-05/dijkstra.js": {
     "lines": {
       "total": 71,
       "covered": 71,
@@ -2007,7 +2007,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-12-05/edgeWeight.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-12-05/edgeWeight.js": {
     "lines": {
       "total": 32,
       "covered": 32,
@@ -2033,7 +2033,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-12-05/index.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-12-05/index.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -2059,7 +2059,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2025-12-14/moderatorRatingCounts.js": {
+  "/workspace/dadeto/src/core/browser/toys/2025-12-14/moderatorRatingCounts.js": {
     "lines": {
       "total": 33,
       "covered": 33,
@@ -2085,7 +2085,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-02-19/germanTokenizer.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-02-19/germanTokenizer.js": {
     "lines": {
       "total": 22,
       "covered": 22,
@@ -2111,7 +2111,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-02-19/plusOneAnnotator.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-02-19/plusOneAnnotator.js": {
     "lines": {
       "total": 39,
       "covered": 39,
@@ -2137,7 +2137,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-02-21/generateBlogKey.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-02-21/generateBlogKey.js": {
     "lines": {
       "total": 19,
       "covered": 19,
@@ -2163,7 +2163,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-02-21/germanSentenceSplitter.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-02-21/germanSentenceSplitter.js": {
     "lines": {
       "total": 17,
       "covered": 17,
@@ -2189,7 +2189,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-03-01/hiLoCardGame.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-03-01/hiLoCardGame.js": {
     "lines": {
       "total": 103,
       "covered": 103,
@@ -2215,7 +2215,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-03-01/joyConMapper.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-03-01/joyConMapper.js": {
     "lines": {
       "total": 62,
       "covered": 62,
@@ -2241,7 +2241,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/core.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/core.js": {
     "lines": {
       "total": 130,
       "covered": 113,
@@ -2267,7 +2267,7 @@
       "pct": 61.53
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js": {
     "lines": {
       "total": 81,
       "covered": 81,
@@ -2293,7 +2293,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js": {
+  "/workspace/dadeto/src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js": {
     "lines": {
       "total": 16,
       "covered": 16,
@@ -2319,7 +2319,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/build/blog.js": {
+  "/workspace/dadeto/src/core/build/blog.js": {
     "lines": {
       "total": 90,
       "covered": 90,
@@ -2345,7 +2345,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/build/buildCore.js": {
+  "/workspace/dadeto/src/core/build/buildCore.js": {
     "lines": {
       "total": 25,
       "covered": 25,
@@ -2371,7 +2371,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/allowed-origins.js": {
+  "/workspace/dadeto/src/core/cloud/allowed-origins.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -2397,7 +2397,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/auth-helpers.js": {
+  "/workspace/dadeto/src/core/cloud/auth-helpers.js": {
     "lines": {
       "total": 11,
       "covered": 11,
@@ -2423,7 +2423,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/cloud-core.js": {
+  "/workspace/dadeto/src/core/cloud/cloud-core.js": {
     "lines": {
       "total": 160,
       "covered": 160,
@@ -2449,7 +2449,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/common-core.js": {
+  "/workspace/dadeto/src/core/cloud/common-core.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -2475,7 +2475,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/copy.js": {
+  "/workspace/dadeto/src/core/cloud/copy.js": {
     "lines": {
       "total": 46,
       "covered": 46,
@@ -2501,7 +2501,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/firestore-helpers.js": {
+  "/workspace/dadeto/src/core/cloud/firestore-helpers.js": {
     "lines": {
       "total": 0,
       "covered": 0,
@@ -2527,7 +2527,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/handler-utils.js": {
+  "/workspace/dadeto/src/core/cloud/handler-utils.js": {
     "lines": {
       "total": 4,
       "covered": 4,
@@ -2553,7 +2553,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/http-method-guard.js": {
+  "/workspace/dadeto/src/core/cloud/http-method-guard.js": {
     "lines": {
       "total": 8,
       "covered": 8,
@@ -2579,7 +2579,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/parallel-utils.js": {
+  "/workspace/dadeto/src/core/cloud/parallel-utils.js": {
     "lines": {
       "total": 3,
       "covered": 3,
@@ -2605,7 +2605,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/request-normalization.js": {
+  "/workspace/dadeto/src/core/cloud/request-normalization.js": {
     "lines": {
       "total": 8,
       "covered": 8,
@@ -2631,7 +2631,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/responder-utils.js": {
+  "/workspace/dadeto/src/core/cloud/responder-utils.js": {
     "lines": {
       "total": 4,
       "covered": 4,
@@ -2657,7 +2657,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/response-utils.js": {
+  "/workspace/dadeto/src/core/cloud/response-utils.js": {
     "lines": {
       "total": 10,
       "covered": 10,
@@ -2683,7 +2683,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/submit-shared.js": {
+  "/workspace/dadeto/src/core/cloud/submit-shared.js": {
     "lines": {
       "total": 49,
       "covered": 49,
@@ -2709,7 +2709,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/assign-moderation-job/assign-moderation-job-core.js": {
+  "/workspace/dadeto/src/core/cloud/assign-moderation-job/assign-moderation-job-core.js": {
     "lines": {
       "total": 226,
       "covered": 226,
@@ -2735,7 +2735,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/generate-stats/admin-config.js": {
+  "/workspace/dadeto/src/core/cloud/generate-stats/admin-config.js": {
     "lines": {
       "total": 0,
       "covered": 0,
@@ -2761,7 +2761,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
+  "/workspace/dadeto/src/core/cloud/generate-stats/generate-stats-core.js": {
     "lines": {
       "total": 153,
       "covered": 152,
@@ -2787,7 +2787,7 @@
       "pct": 98.14
     }
   },
-  "/home/matt/dadeto/src/core/cloud/generate-stats/verifyAdmin.js": {
+  "/workspace/dadeto/src/core/cloud/generate-stats/verifyAdmin.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -2813,7 +2813,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/get-api-key-credit/create-db.js": {
+  "/workspace/dadeto/src/core/cloud/get-api-key-credit/create-db.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -2839,7 +2839,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/get-api-key-credit/get-api-key-credit-core.js": {
+  "/workspace/dadeto/src/core/cloud/get-api-key-credit/get-api-key-credit-core.js": {
     "lines": {
       "total": 43,
       "covered": 43,
@@ -2865,7 +2865,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/get-api-key-credit-v2/create-db.js": {
+  "/workspace/dadeto/src/core/cloud/get-api-key-credit-v2/create-db.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -2891,7 +2891,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-snapshot.js": {
+  "/workspace/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-snapshot.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -2917,7 +2917,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js": {
+  "/workspace/dadeto/src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js": {
     "lines": {
       "total": 74,
       "covered": 74,
@@ -2943,7 +2943,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/get-moderation-variant/cors.js": {
+  "/workspace/dadeto/src/core/cloud/get-moderation-variant/cors.js": {
     "lines": {
       "total": 0,
       "covered": 0,
@@ -2969,7 +2969,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/get-moderation-variant/get-moderation-variant-core.js": {
+  "/workspace/dadeto/src/core/cloud/get-moderation-variant/get-moderation-variant-core.js": {
     "lines": {
       "total": 146,
       "covered": 146,
@@ -2995,7 +2995,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/hide-variant-html/hide-variant-html-core.js": {
+  "/workspace/dadeto/src/core/cloud/hide-variant-html/hide-variant-html-core.js": {
     "lines": {
       "total": 128,
       "covered": 128,
@@ -3021,7 +3021,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
+  "/workspace/dadeto/src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js": {
     "lines": {
       "total": 150,
       "covered": 150,
@@ -3047,7 +3047,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/mark-variant-dirty/verifyAdmin.js": {
+  "/workspace/dadeto/src/core/cloud/mark-variant-dirty/verifyAdmin.js": {
     "lines": {
       "total": 1,
       "covered": 1,
@@ -3073,7 +3073,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/process-new-page/process-new-page-core.js": {
+  "/workspace/dadeto/src/core/cloud/process-new-page/process-new-page-core.js": {
     "lines": {
       "total": 229,
       "covered": 229,
@@ -3099,7 +3099,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/process-new-story/process-new-story-core.js": {
+  "/workspace/dadeto/src/core/cloud/process-new-story/process-new-story-core.js": {
     "lines": {
       "total": 90,
       "covered": 90,
@@ -3125,7 +3125,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/render-contents/render-contents-core.js": {
+  "/workspace/dadeto/src/core/cloud/render-contents/render-contents-core.js": {
     "lines": {
       "total": 309,
       "covered": 309,
@@ -3151,7 +3151,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/render-variant/render-variant-core.js": {
+  "/workspace/dadeto/src/core/cloud/render-variant/render-variant-core.js": {
     "lines": {
       "total": 486,
       "covered": 486,
@@ -3177,7 +3177,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
+  "/workspace/dadeto/src/core/cloud/report-for-moderation/report-for-moderation-core.js": {
     "lines": {
       "total": 42,
       "covered": 42,
@@ -3203,7 +3203,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
+  "/workspace/dadeto/src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js": {
     "lines": {
       "total": 112,
       "covered": 112,
@@ -3229,7 +3229,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/submit-new-page/helpers.js": {
+  "/workspace/dadeto/src/core/cloud/submit-new-page/helpers.js": {
     "lines": {
       "total": 0,
       "covered": 0,
@@ -3255,7 +3255,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js": {
+  "/workspace/dadeto/src/core/cloud/submit-new-page/submit-new-page-core.js": {
     "lines": {
       "total": 117,
       "covered": 117,
@@ -3281,7 +3281,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js": {
+  "/workspace/dadeto/src/core/cloud/submit-new-story/submit-new-story-core.js": {
     "lines": {
       "total": 69,
       "covered": 69,
@@ -3307,7 +3307,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/cloud/update-variant-visibility/update-variant-visibility-core.js": {
+  "/workspace/dadeto/src/core/cloud/update-variant-visibility/update-variant-visibility-core.js": {
     "lines": {
       "total": 74,
       "covered": 74,
@@ -3333,7 +3333,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/local/symphony.js": {
+  "/workspace/dadeto/src/core/local/symphony.js": {
     "lines": {
       "total": 79,
       "covered": 79,
@@ -3359,7 +3359,7 @@
       "pct": 100
     }
   },
-  "/home/matt/dadeto/src/core/local/workflow.js": {
+  "/workspace/dadeto/src/core/local/workflow.js": {
     "lines": {
       "total": 37,
       "covered": 37,
