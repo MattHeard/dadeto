@@ -52,7 +52,7 @@ export default [
       'max-depth': ['warn', 4],
       'max-lines-per-function': [
         'warn',
-        { max: 240, skipBlankLines: true, skipComments: true },
+        { max: 231, skipBlankLines: true, skipComments: true },
       ],
       'max-statements': ['warn', 35],
       'max-params': ['warn', 3],
