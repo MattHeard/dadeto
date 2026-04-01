@@ -375,14 +375,10 @@ function createTransactionRow(transaction, state, dom) {
   TRANSACTION_COLUMNS.forEach((column, index) => {
     dom.appendChild(
       row,
-      createTransactionCell(
-        column,
-        transaction,
-        {
-          collapsed: state.collapsedColumns[index],
-          dom,
-        }
-      )
+      createTransactionCell(column, transaction, {
+        collapsed: state.collapsedColumns[index],
+        dom,
+      })
     );
   });
   return row;
