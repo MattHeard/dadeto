@@ -331,29 +331,18 @@ export function applyRunnerOutcome(status, outcome) {
  * @returns {Record<string, unknown>} Updated status after a completed runner loop.
  */
 function buildCompletedOutcomeStatus(status, outcome) {
-  const updatedStatus = {
-    ...status,
+  return buildRunnerOutcomeStatus(status, outcome, {
+    currentBeadState: {
+      currentBeadId: null,
+      currentBeadTitle: null,
+      currentBeadPriority: null,
+    },
     state: 'idle',
-    currentBeadId: null,
-    currentBeadTitle: null,
-    currentBeadPriority: null,
-    latestEvidence: buildRunnerOutcomeEvidence('completed', outcome),
+    latestEvidenceKind: 'completed',
     operatorRecommendation:
       'Refresh the queue and choose the next ready bead before launching another runner loop.',
     queueEvidence: [],
-    lastOutcome: {
-      beadId: outcome.beadId,
-      beadTitle: outcome.beadTitle ?? null,
-      outcome: outcome.outcome,
-      summary: outcome.summary,
-    },
-    activeRun: null,
-  };
-
-  return addSymphonyEvent(
-    updatedStatus,
-    buildRunnerOutcomeEventMessage(outcome)
-  );
+  });
 }
 
 /**
@@ -363,26 +352,73 @@ function buildCompletedOutcomeStatus(status, outcome) {
  * @returns {Record<string, unknown>} Updated status after a blocked runner handoff.
  */
 function buildBlockedOutcomeStatus(status, outcome) {
-  const updatedStatus = {
-    ...status,
+  return buildRunnerOutcomeStatus(status, outcome, {
+    currentBeadState: null,
     state: 'blocked',
-    latestEvidence: buildRunnerOutcomeEvidence('blocked', outcome),
+    latestEvidenceKind: 'blocked',
     operatorRecommendation:
       'Inspect the blocker, update the bead or workflow guidance, and only then launch another runner loop.',
     queueEvidence: [buildRunnerOutcomeQueueEvidence(outcome)],
-    lastOutcome: {
-      beadId: outcome.beadId,
-      beadTitle: outcome.beadTitle ?? null,
-      outcome: outcome.outcome,
-      summary: outcome.summary,
-    },
+  });
+}
+
+/**
+ * @param {Record<string, unknown>} status Current scheduler-visible status.
+ * @param {{ beadId: string, beadTitle?: string, outcome: 'completed' | 'blocked', summary: string }} outcome
+ *   Runner outcome to apply.
+ * @param {{
+ *   currentBeadState: {
+ *     currentBeadId: string | null,
+ *     currentBeadTitle: string | null,
+ *     currentBeadPriority: string | null
+ *   } | null,
+ *   state: string,
+ *   latestEvidenceKind: 'completed' | 'blocked',
+ *   operatorRecommendation: string,
+ *   queueEvidence: string[]
+ * }} options Runner status assembly options.
+ * @returns {Record<string, unknown>} Updated status after applying the runner outcome.
+ */
+function buildRunnerOutcomeStatus(status, outcome, options) {
+  const updatedStatus = {
+    ...status,
+    state: options.state,
+    latestEvidence: buildRunnerOutcomeEvidence(
+      options.latestEvidenceKind,
+      outcome
+    ),
+    operatorRecommendation: options.operatorRecommendation,
+    queueEvidence: options.queueEvidence,
+    lastOutcome: buildRunnerLastOutcome(outcome),
     activeRun: null,
   };
+
+  if (options.currentBeadState) {
+    updatedStatus.currentBeadId = options.currentBeadState.currentBeadId;
+    updatedStatus.currentBeadTitle = options.currentBeadState.currentBeadTitle;
+    updatedStatus.currentBeadPriority =
+      options.currentBeadState.currentBeadPriority;
+  }
 
   return addSymphonyEvent(
     updatedStatus,
     buildRunnerOutcomeEventMessage(outcome)
   );
+}
+
+/**
+ * @param {{ beadId: string, beadTitle?: string, outcome: 'completed' | 'blocked', summary: string }} outcome
+ *   Runner outcome to normalize.
+ * @returns {{ beadId: string, beadTitle: string | null, outcome: 'completed' | 'blocked', summary: string }}
+ *   Normalized last outcome record.
+ */
+function buildRunnerLastOutcome(outcome) {
+  return {
+    beadId: outcome.beadId,
+    beadTitle: outcome.beadTitle ?? null,
+    outcome: outcome.outcome,
+    summary: outcome.summary,
+  };
 }
 
 /**
@@ -459,19 +495,8 @@ function buildRunnerLaunchRecommendation(launch) {
  */
 function buildSuccessfulLaunchAttempt(launch) {
   return {
-    runId: launch.runId,
-    startedAt: launch.startedAt,
-    beadId: launch.beadId,
-    beadTitle: getLaunchTextField(launch.beadTitle),
-    beadPriority: getLaunchTextField(launch.beadPriority),
-    launchRequest: launch.launchRequest,
+    ...buildLaunchRecord(launch),
     outcome: 'started',
-    launcherKind: getLaunchTextField(launch.launcherKind),
-    command: getLaunchTextField(launch.command),
-    args: getLaunchArgs(launch.args),
-    pid: getLaunchPid(launch.pid),
-    stdoutPath: getLaunchTextField(launch.stdoutPath),
-    stderrPath: getLaunchTextField(launch.stderrPath),
   };
 }
 
@@ -508,6 +533,43 @@ function buildSuccessfulLaunchAttempt(launch) {
  */
 function buildActiveRunStatus(launch) {
   return {
+    ...buildLaunchRecord(launch),
+    state: 'running',
+  };
+}
+
+/**
+ * @param {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle?: string | null,
+ *   beadPriority?: string | null,
+ *   launchRequest: string,
+ *   launcherKind?: string | null,
+ *   command?: string | null,
+ *   args?: unknown,
+ *   pid?: number | null,
+ *   stdoutPath?: string | null,
+ *   stderrPath?: string | null
+ * }} launch Runner launch to normalize.
+ * @returns {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle: string | null,
+ *   beadPriority: string | null,
+ *   launchRequest: string,
+ *   launcherKind: string | null,
+ *   command: string | null,
+ *   args: string[],
+ *   pid: number | null,
+ *   stdoutPath: string | null,
+ *   stderrPath: string | null
+ * }} Shared launch record fields.
+ */
+function buildLaunchRecord(launch) {
+  return {
     runId: launch.runId,
     startedAt: launch.startedAt,
     beadId: launch.beadId,
@@ -520,7 +582,6 @@ function buildActiveRunStatus(launch) {
     pid: getLaunchPid(launch.pid),
     stdoutPath: getLaunchTextField(launch.stdoutPath),
     stderrPath: getLaunchTextField(launch.stderrPath),
-    state: 'running',
   };
 }
 

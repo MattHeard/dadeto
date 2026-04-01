@@ -145,14 +145,7 @@ function getValueText(key, parsed) {
  * @returns {JoyConMappingRecord} Synthetic mapping placeholder for skipped or optional controls.
  */
 function getUnmappedMapping(key, parsed) {
-  let skippedControls = [];
-  if (Array.isArray(parsed.skippedControls)) {
-    skippedControls = parsed.skippedControls;
-  }
-  return [
-    { type: FALLBACK_MAPPING_TYPE, value: 'optional' },
-    { type: FALLBACK_MAPPING_TYPE, value: 'skipped' },
-  ][Number(skippedControls.includes(key))];
+  return createFallbackMapping(isSkippedControl(key, parsed));
 }
 
 /**
@@ -199,11 +192,38 @@ function getMappedCount(parsed) {
  * @returns {number} Number of skipped controls.
  */
 function getSkippedCount(parsed) {
-  let skippedControls = [];
+  return getSkippedControls(parsed).length;
+}
+
+/**
+ * @param {string} key Persisted control key.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
+ * @returns {boolean} True when the key is listed as skipped.
+ */
+function isSkippedControl(key, parsed) {
+  return getSkippedControls(parsed).includes(key);
+}
+
+/**
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
+ * @returns {string[]} Skipped control keys normalized to an array.
+ */
+function getSkippedControls(parsed) {
   if (Array.isArray(parsed.skippedControls)) {
-    skippedControls = parsed.skippedControls;
+    return parsed.skippedControls;
   }
-  return skippedControls.length;
+  return [];
+}
+
+/**
+ * @param {boolean} isSkipped Whether the control should use the skipped placeholder.
+ * @returns {JoyConMappingRecord} Synthetic fallback mapping record.
+ */
+function createFallbackMapping(isSkipped) {
+  if (isSkipped) {
+    return { type: FALLBACK_MAPPING_TYPE, value: 'skipped' };
+  }
+  return { type: FALLBACK_MAPPING_TYPE, value: 'optional' };
 }
 
 /**

@@ -1,3 +1,5 @@
+import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
+
 /**
  * Ledger Ingest CSV Converter Toy
  * ----------------------------------------------------------
@@ -14,13 +16,6 @@ const REQUIRED_HEADERS = [
   'Account IBAN',
   'Category',
 ];
-
-const DEFAULT_DEDUPE_POLICY = {
-  name: 'posted-date-amount-description',
-  strategy: 'first-wins',
-  candidateFields: ['postedDate', 'amount', 'description'],
-  caseInsensitive: true,
-};
 
 const DEFAULT_FIELD_MAPPING = {
   postedDate: 'bookingDate',
@@ -452,7 +447,7 @@ function parseLedgerCsv(input) {
   return {
     source: 'ledger-ingest-csv',
     fieldMapping: { ...DEFAULT_FIELD_MAPPING },
-    dedupePolicy: { ...DEFAULT_DEDUPE_POLICY },
+    dedupePolicy: createDefaultLedgerIngestDedupePolicy(),
     rawRecords: collectLedgerCsvRecords(rows, headerLookup),
   };
 }

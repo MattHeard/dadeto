@@ -1,3 +1,8 @@
+import {
+  DEFAULT_LEDGER_INGEST_DEDUPE_POLICY,
+  createDefaultLedgerIngestDedupePolicy,
+} from './ledgerIngestShared.js';
+
 /**
  * Contracts and fixtures for the ledger-ingest toy.
  *
@@ -10,13 +15,6 @@ const DEFAULT_FIELD_MAPPING = {
   description: 'description',
   currency: 'currency',
   recordId: 'id',
-};
-
-const DEFAULT_DEDUPE_POLICY = {
-  name: 'posted-date-amount-description',
-  strategy: 'first-wins',
-  candidateFields: ['postedDate', 'amount', 'description'],
-  caseInsensitive: true,
 };
 
 const REQUIRED_CANONICAL_FIELDS = ['postedDate', 'amount'];
@@ -32,12 +30,7 @@ function createStandardFixtureInput(source, rawRecords) {
   return {
     source,
     fieldMapping: { ...DEFAULT_FIELD_MAPPING },
-    dedupePolicy: {
-      name: DEFAULT_DEDUPE_POLICY.name,
-      strategy: DEFAULT_DEDUPE_POLICY.strategy,
-      candidateFields: [...DEFAULT_DEDUPE_POLICY.candidateFields],
-      caseInsensitive: true,
-    },
+    dedupePolicy: createDefaultLedgerIngestDedupePolicy(),
     rawRecords,
   };
 }
@@ -526,7 +519,7 @@ function sanitizePolicyName(policy) {
   if (typeof policy.name === 'string') {
     return policy.name;
   }
-  return DEFAULT_DEDUPE_POLICY.name;
+  return DEFAULT_LEDGER_INGEST_DEDUPE_POLICY.name;
 }
 
 /**
@@ -538,7 +531,7 @@ function sanitizePolicyStrategy(policy) {
   if (typeof policy.strategy === 'string') {
     return policy.strategy;
   }
-  return DEFAULT_DEDUPE_POLICY.strategy;
+  return DEFAULT_LEDGER_INGEST_DEDUPE_POLICY.strategy;
 }
 
 /**
@@ -550,7 +543,7 @@ function sanitizePolicyCandidateFields(policy) {
   if (Array.isArray(policy.candidateFields)) {
     return [...policy.candidateFields];
   }
-  return [...DEFAULT_DEDUPE_POLICY.candidateFields];
+  return [...DEFAULT_LEDGER_INGEST_DEDUPE_POLICY.candidateFields];
 }
 
 /**
@@ -562,7 +555,7 @@ function sanitizePolicyCaseInsensitive(policy) {
   if (typeof policy.caseInsensitive === 'boolean') {
     return policy.caseInsensitive;
   }
-  return DEFAULT_DEDUPE_POLICY.caseInsensitive;
+  return DEFAULT_LEDGER_INGEST_DEDUPE_POLICY.caseInsensitive;
 }
 
 /**
@@ -696,11 +689,7 @@ function coerceNumericValue(value) {
  * @returns {string} Normalized string or empty when missing.
  */
 function stringForNormalization(value) {
-  const candidate = ensureString(value);
-  if (candidate === undefined) {
-    return '';
-  }
-  return candidate;
+  return normalizeOptionalString(value, candidate => candidate);
 }
 
 /**
@@ -722,11 +711,21 @@ function normalizeCurrency(value) {
  * @returns {string} Trimmed string or ''.
  */
 function trimOrEmpty(value) {
+  return normalizeOptionalString(value, candidate => candidate.trim());
+}
+
+/**
+ * Normalize an optional string with a caller-supplied transform.
+ * @param {unknown} value Candidate value.
+ * @param {(candidate: string) => string} transform String transform to apply.
+ * @returns {string} Transformed string or empty when the value is missing.
+ */
+function normalizeOptionalString(value, transform) {
   const candidate = ensureString(value);
   if (candidate === undefined) {
     return '';
   }
-  return candidate.trim();
+  return transform(candidate);
 }
 
 /**

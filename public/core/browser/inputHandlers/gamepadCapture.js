@@ -1,6 +1,6 @@
 import * as browserCore from '../browser-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
-import { updateCaptureButtonLabel } from './captureLifecycleShared.js';
+import { createGamepadCaptureButtonUpdater } from './captureLifecycleShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
@@ -12,8 +12,6 @@ import { isEscapeKeydown } from './escapeKey.js';
 /** @typedef {import('./captureFormShared.js').CaptureFormContext} CaptureFormContext */
 /** @typedef {CaptureFormContext & { form: HTMLElement }} GamepadCaptureFormBuilderContext */
 const GAMEPAD_FORM_CLASS = browserCore.GAMEPAD_CAPTURE_FORM_SELECTOR.slice(1);
-const CAPTURE_BUTTON_LABEL = 'Capture gamepad';
-const RELEASE_BUTTON_LABEL = 'Release gamepad';
 const AXIS_EPSILON = 0.01;
 const GAMEPAD_CONNECTED_EVENT = 'gamepadconnected';
 const GAMEPAD_DISCONNECTED_EVENT = 'gamepaddisconnected';
@@ -25,15 +23,7 @@ const GAMEPAD_DISCONNECTED_EVENT = 'gamepaddisconnected';
  * @param {boolean} isCapturing - Whether capture is currently active.
  * @returns {void}
  */
-function updateCaptureButton(dom, button, isCapturing) {
-  updateCaptureButtonLabel({
-    dom,
-    button,
-    isCapturing,
-    captureLabel: CAPTURE_BUTTON_LABEL,
-    releaseLabel: RELEASE_BUTTON_LABEL,
-  });
-}
+const updateCaptureButton = createGamepadCaptureButtonUpdater();
 
 /**
  * Normalize an axis value before comparing or serializing it.
@@ -333,11 +323,7 @@ function findChangedButtonIndex(gamepad, previousSnapshot) {
  * @returns {ButtonSnapshot[]} Previous button states.
  */
 function getPreviousButtons(previousSnapshot) {
-  if (previousSnapshot === undefined) {
-    return [];
-  }
-
-  return previousSnapshot.buttons;
+  return getPreviousSnapshotValues(previousSnapshot, 'buttons');
 }
 
 /**
@@ -395,11 +381,21 @@ function findChangedAxisIndex(gamepad, previousSnapshot) {
  * @returns {number[]} Previous axis values.
  */
 function getPreviousAxes(previousSnapshot) {
+  return getPreviousSnapshotValues(previousSnapshot, 'axes');
+}
+
+/**
+ * Resolve a snapshot array by property name.
+ * @param {GamepadSnapshot | undefined} previousSnapshot - Previous polled snapshot.
+ * @param {'buttons' | 'axes'} key - Snapshot array to return.
+ * @returns {ButtonSnapshot[] | number[]} Previous snapshot values.
+ */
+function getPreviousSnapshotValues(previousSnapshot, key) {
   if (previousSnapshot === undefined) {
     return [];
   }
 
-  return previousSnapshot.axes;
+  return previousSnapshot[key];
 }
 
 /**
@@ -510,11 +506,7 @@ function createReleaseCaptureEmitPayload() {
  */
 function createReleaseCaptureEmitCaptureStateOptions(options, emitPayload) {
   return {
-    dom: options.dom,
-    button: options.button,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    updateButtonLabel: updateCaptureButton,
+    ...createSharedGamepadCaptureLifecycleOptions(options),
     emitPayload,
   };
 }
@@ -601,12 +593,7 @@ function handleConnectionEvent(options, event) {
 
   const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
   storeSnapshot(options.state, gamepad);
-  emitToyPayload({
-    dom: options.dom,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    payload,
-  });
+  emitGamepadPayload(options, payload);
   queuePoll(options);
 }
 
@@ -634,6 +621,16 @@ function handleDisconnectEvent(options, event) {
   }
 
   removeSnapshot(options.state, getEventGamepad(event));
+  emitGamepadPayload(options, payload);
+}
+
+/**
+ * Send a gamepad payload through the shared toy input path.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {Record<string, unknown>} payload - Payload to forward.
+ * @returns {void}
+ */
+function emitGamepadPayload(options, payload) {
   emitToyPayload({
     dom: options.dom,
     textInput: options.textInput,
@@ -649,11 +646,7 @@ function handleDisconnectEvent(options, event) {
  * @returns {Record<string, unknown> | null} Payload ready for syncing.
  */
 function getHandledConnectionPayload(state, event) {
-  if (!shouldHandleConnectionEvent(state)) {
-    return null;
-  }
-
-  return buildConnectionPayload(event, GAMEPAD_CONNECTED_EVENT);
+  return getHandledGamepadPayload(state, event, GAMEPAD_CONNECTED_EVENT);
 }
 
 /**
@@ -663,11 +656,22 @@ function getHandledConnectionPayload(state, event) {
  * @returns {Record<string, unknown> | null} Payload ready for syncing.
  */
 function getHandledDisconnectionPayload(state, event) {
+  return getHandledGamepadPayload(state, event, GAMEPAD_DISCONNECTED_EVENT);
+}
+
+/**
+ * Build a handled gamepad payload only when capture is active.
+ * @param {CaptureState} state - Mutable handler state.
+ * @param {GamepadEvent | { gamepad?: Gamepad }} event - Gamepad event.
+ * @param {string} type - Event type to embed in the payload.
+ * @returns {Record<string, unknown> | null} Payload ready for syncing.
+ */
+function getHandledGamepadPayload(state, event, type) {
   if (!shouldHandleConnectionEvent(state)) {
     return null;
   }
 
-  return buildConnectionPayload(event, GAMEPAD_DISCONNECTED_EVENT);
+  return buildConnectionPayload(event, type);
 }
 
 /**
@@ -687,16 +691,33 @@ function createStopCaptureHandler(options) {
  */
 function createGamepadToggleOptions(options) {
   return {
-    dom: options.dom,
-    button: options.button,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    ...createSharedGamepadCaptureLifecycleOptions(options),
     state: options.state,
-    updateButtonLabel: updateCaptureButton,
     emitPayload: (input, payload) =>
       captureLifecycleDeps.syncToyInput({ ...input, payload }),
     onStart: () => queuePoll(options),
     onStop: createStopCaptureHandler(options),
+  };
+}
+
+/**
+ * Build the shared capture lifecycle options for gamepad handlers.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @returns {{
+ *   dom: HandlerOptions['dom'],
+ *   button: HandlerOptions['button'],
+ *   textInput: HandlerOptions['textInput'],
+ *   autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'],
+ *   updateButtonLabel: (dom: HandlerOptions['dom'], button: HandlerOptions['button'], capturing: boolean) => void,
+ * }} Shared lifecycle options.
+ */
+function createSharedGamepadCaptureLifecycleOptions(options) {
+  return {
+    dom: options.dom,
+    button: options.button,
+    textInput: options.textInput,
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    updateButtonLabel: updateCaptureButton,
   };
 }
 
@@ -710,6 +731,25 @@ function createGamepadCleanupHandler(options) {
     cancelPoll(options.state, options.dom.cancelAnimationFrame);
     resetSnapshots(options.state);
   };
+}
+
+/**
+ * Register a global gamepad event listener.
+ * @param {{
+ *   options: HandlerOptions,
+ *   cleanupFns: Array<(globalThisArg: typeof globalThis) => void>,
+ *   type: string,
+ *   handler: (event: Event) => void,
+ * }} config - Listener registration details.
+ * @returns {void}
+ */
+function registerGamepadGlobalListener(config) {
+  captureLifecycleDeps.registerGlobalListener({
+    globalThisArg: config.options.dom.globalThis,
+    cleanupFns: config.cleanupFns,
+    type: config.type,
+    handler: config.handler,
+  });
 }
 
 /**
@@ -743,20 +783,20 @@ function registerGamepadListeners(options, cleanupFns) {
   const handleDisconnect = createDisconnectHandler(options);
 
   options.dom.addEventListener(options.button, 'click', handleToggle);
-  captureLifecycleDeps.registerGlobalListener({
-    globalThisArg: options.dom.globalThis,
+  registerGamepadGlobalListener({
+    options,
     cleanupFns,
     type: 'keydown',
     handler: /** @type {(event: Event) => void} */ (handleEscape),
   });
-  captureLifecycleDeps.registerGlobalListener({
-    globalThisArg: options.dom.globalThis,
+  registerGamepadGlobalListener({
+    options,
     cleanupFns,
     type: GAMEPAD_CONNECTED_EVENT,
     handler: /** @type {(event: Event) => void} */ (handleConnect),
   });
-  captureLifecycleDeps.registerGlobalListener({
-    globalThisArg: options.dom.globalThis,
+  registerGamepadGlobalListener({
+    options,
     cleanupFns,
     type: GAMEPAD_DISCONNECTED_EVENT,
     handler: /** @type {(event: Event) => void} */ (handleDisconnect),

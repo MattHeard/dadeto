@@ -1,12 +1,10 @@
 import * as browserCore from '../browser-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
-import { updateCaptureButtonLabel } from './captureLifecycleShared.js';
+import { createKeyboardCaptureButtonUpdater } from './captureLifecycleShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} KeyboardDOMHelpers */
 const KEYBOARD_FORM_CLASS = browserCore.KEYBOARD_CAPTURE_FORM_SELECTOR.slice(1);
-const CAPTURE_BUTTON_LABEL = 'Capture keyboard';
-const RELEASE_BUTTON_LABEL = 'Release keyboard';
 
 /**
  * Update the capture button label to reflect the current mode.
@@ -15,15 +13,7 @@ const RELEASE_BUTTON_LABEL = 'Release keyboard';
  * @param {boolean} isCapturing - Whether capture is active.
  * @returns {void}
  */
-function updateCaptureButton(dom, button, isCapturing) {
-  updateCaptureButtonLabel({
-    dom,
-    button,
-    isCapturing,
-    captureLabel: CAPTURE_BUTTON_LABEL,
-    releaseLabel: RELEASE_BUTTON_LABEL,
-  });
-}
+const updateCaptureButton = createKeyboardCaptureButtonUpdater();
 
 /**
  * Build the global keyboard event handler.

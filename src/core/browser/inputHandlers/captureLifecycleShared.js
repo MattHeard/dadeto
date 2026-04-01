@@ -38,6 +38,43 @@ export function updateCaptureButtonLabel(options) {
 }
 
 /**
+ * Build a capture-button updater for a specific label pair.
+ * @param {string} captureLabel - Label to show while capture is inactive.
+ * @param {string} releaseLabel - Label to show while capture is active.
+ * @returns {(dom: DOMHelpers, button: HTMLButtonElement, isCapturing: boolean) => void}
+ *   Capture-button update function.
+ */
+export function createCaptureButtonUpdater(captureLabel, releaseLabel) {
+  return (dom, button, isCapturing) => {
+    updateCaptureButtonLabel({
+      dom,
+      button,
+      isCapturing,
+      captureLabel,
+      releaseLabel,
+    });
+  };
+}
+
+/**
+ * Build the updater used by the gamepad capture UI.
+ * @returns {(dom: DOMHelpers, button: HTMLButtonElement, isCapturing: boolean) => void}
+ *   Capture-button update function.
+ */
+export function createGamepadCaptureButtonUpdater() {
+  return createCaptureButtonUpdater('Capture gamepad', 'Release gamepad');
+}
+
+/**
+ * Build the updater used by the keyboard capture UI.
+ * @returns {(dom: DOMHelpers, button: HTMLButtonElement, isCapturing: boolean) => void}
+ *   Capture-button update function.
+ */
+export function createKeyboardCaptureButtonUpdater() {
+  return createCaptureButtonUpdater('Capture keyboard', 'Release keyboard');
+}
+
+/**
  * Mirror capture state changes to the UI and hidden toy input.
  * @param {CaptureLifecycleOptions} options - Shared UI and syncing dependencies.
  * @param {boolean} capturing - The capture state being broadcast.
