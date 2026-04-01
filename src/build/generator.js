@@ -991,6 +991,7 @@ function generateToyScript(post) {
 const INPUT_METHODS = [
   'text',
   'textarea',
+  'file',
   'number',
   'kv',
   'blog-key',

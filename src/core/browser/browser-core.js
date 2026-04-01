@@ -15,6 +15,7 @@ import { isNonNullObject, isObjectValue } from '../commonCore.js';
 
 // DOM selectors shared across the browser helpers.
 export const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
+export const FILE_INPUT_SELECTOR = 'input[type="file"]';
 export const KV_CONTAINER_SELECTOR = '.kv-container';
 export const TEXTAREA_SELECTOR = '.toy-textarea';
 export const DENDRITE_FORM_SELECTOR = '.dendrite-form';
@@ -201,6 +202,7 @@ export function createElementRemover(selector) {
 }
 
 export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
+export const maybeRemoveFile = createElementRemover(FILE_INPUT_SELECTOR);
 export const maybeRemoveKV = createElementRemover(KV_CONTAINER_SELECTOR);
 export const maybeRemoveTextarea = createElementRemover(TEXTAREA_SELECTOR);
 export const maybeRemoveDendrite = createElementRemover(DENDRITE_FORM_SELECTOR);
@@ -218,6 +220,7 @@ export const BASE_CONTAINER_HANDLERS = [
   maybeRemoveKV,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
+  maybeRemoveFile,
   maybeRemoveModeratorRatings,
   maybeRemoveKeyboardCapture,
   maybeRemoveGamepadCapture,

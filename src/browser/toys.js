@@ -183,6 +183,7 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 
 import { textHandler } from './inputHandlers/text.js';
 import { textareaHandler } from './inputHandlers/textarea.js';
+import { fileHandler } from './inputHandlers/file.js';
 import { numberHandler } from './inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
@@ -258,6 +259,7 @@ export function kvHandler(dom, container, textInput) {
 const inputHandlersMap = {
   text: textHandler,
   textarea: textareaHandler,
+  file: fileHandler,
   number: numberHandler,
   kv: kvHandler,
   'blog-key': blogKeyHandler,

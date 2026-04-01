@@ -12,7 +12,7 @@
       "toy": {
         "modulePath": "/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js",
         "functionName": "ledgerIngestCsvConverterToy",
-        "defaultInputMethod": "textarea"
+        "defaultInputMethod": "file"
       },
       "tags": ["toy", "ledger", "finance", "csv", "converter", "json"]
     },

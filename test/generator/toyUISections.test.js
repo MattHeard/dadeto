@@ -89,6 +89,7 @@ describe('TOY_UI_SECTIONS integration', () => {
     const expectedOptions = [
       'text',
       'textarea',
+      'file',
       'number',
       'kv',
       'dendrite-story',
