@@ -24,8 +24,67 @@ const TABLE_BODY_CLASS = 'ledger-ingest-transactions-body';
 const TABLE_ROW_CLASS = 'ledger-ingest-transactions-row';
 const TABLE_CELL_CLASS = 'ledger-ingest-transactions-cell';
 const TABLE_HEADER_CELL_CLASS = 'ledger-ingest-transactions-header-cell';
+const TABLE_HEADER_EXPANDED_CLASS =
+  'ledger-ingest-transactions-header-cell--expanded';
+const TABLE_HEADER_COLLAPSED_CLASS =
+  'ledger-ingest-transactions-header-cell--collapsed';
+const TABLE_LABEL_CLASS = 'ledger-ingest-transactions-column-label';
+const TABLE_TOGGLE_CLASS = 'ledger-ingest-transactions-column-toggle';
+const TABLE_CELL_COLLAPSED_CLASS = 'ledger-ingest-transactions-cell--collapsed';
+const TABLE_HOST_CLASS = 'ledger-ingest-transactions-table-host';
+const COLLAPSED_BUTTON_TEXT = '(+)';
+const EXPANDED_BUTTON_TEXT = '(-)';
 const FALLBACK_TAG = 'pre';
 const TITLE_TEXT = 'Ledger Ingest';
+
+/**
+ * @typedef {object} LedgerIngestTransactionColumn
+ * @property {string} label Header label.
+ * @property {(transaction: LedgerIngestTransaction) => unknown} getValue Value extractor.
+ */
+
+const TRANSACTION_COLUMNS = /** @type {LedgerIngestTransactionColumn[]} */ ([
+  {
+    label: 'Transaction ID',
+    getValue: transaction => transaction.transactionId,
+  },
+  {
+    label: 'Posted date',
+    getValue: transaction => transaction.postedDate,
+  },
+  {
+    label: 'Amount',
+    getValue: transaction => transaction.amount,
+  },
+  {
+    label: 'Currency',
+    getValue: transaction => transaction.currency,
+  },
+  {
+    label: 'Description',
+    getValue: transaction => transaction.description,
+  },
+  {
+    label: 'Dedupe key',
+    getValue: transaction => transaction.dedupeKey,
+  },
+  {
+    label: 'Source',
+    getValue: transaction => transaction.source,
+  },
+  {
+    label: 'Raw index',
+    getValue: transaction => transaction.rawIndex,
+  },
+  {
+    label: 'Source record id',
+    getValue: transaction => transaction.sourceRecordId,
+  },
+  {
+    label: 'Raw record',
+    getValue: transaction => formatJson(transaction.metadata.rawRecord),
+  },
+]);
 
 /**
  * @typedef {object} LedgerIngestReport
@@ -217,58 +276,65 @@ function createCanonicalTransactionsSection(parsed, dom) {
     return section;
   }
 
-  dom.appendChild(
-    section,
-    createCanonicalTransactionsTable(parsed.canonicalTransactions, dom)
-  );
+  const tableHost = dom.createElement('div');
+  dom.setClassName(tableHost, TABLE_HOST_CLASS);
+
+  const state = createCanonicalTransactionColumnState();
+  const renderTable = () => {
+    dom.removeAllChildren(tableHost);
+    dom.appendChild(
+      tableHost,
+      createCanonicalTransactionsTable(
+        parsed.canonicalTransactions,
+        {
+          state,
+          rerender: renderTable,
+        },
+        dom
+      )
+    );
+  };
+
+  renderTable();
+  dom.appendChild(section, tableHost);
   return section;
 }
 
 /**
  * Build the canonical transactions table.
  * @param {LedgerIngestTransaction[]} transactions Parsed canonical rows.
+ * @param {{ state: { collapsedColumns: boolean[] }, rerender: () => void }} options Table state and rerender callback.
  * @param {DOMHelpers} dom DOM helper facade.
  * @returns {HTMLElement} Transactions table.
  */
-function createCanonicalTransactionsTable(transactions, dom) {
+function createCanonicalTransactionsTable(transactions, options, dom) {
   const table = dom.createElement('table');
   dom.setClassName(table, TABLE_CLASS);
 
-  dom.appendChild(table, createTableHead(dom));
-  dom.appendChild(table, createTableBody(transactions, dom));
+  dom.appendChild(table, createTableHead(options.state, options.rerender, dom));
+  dom.appendChild(table, createTableBody(transactions, options.state, dom));
   return table;
 }
 
 /**
  * Create the table head for canonical transactions.
+ * @param {{ collapsedColumns: boolean[] }} state Column collapse state.
+ * @param {() => void} rerender Callback used after toggling columns.
  * @param {DOMHelpers} dom DOM helper facade.
  * @returns {HTMLElement} Table head element.
  */
-function createTableHead(dom) {
+function createTableHead(state, rerender, dom) {
   const head = dom.createElement('thead');
   dom.setClassName(head, TABLE_HEAD_CLASS);
   const row = dom.createElement('tr');
 
-  const headers = [
-    'Transaction ID',
-    'Posted date',
-    'Amount',
-    'Currency',
-    'Description',
-    'Dedupe key',
-    'Source',
-    'Raw index',
-    'Source record id',
-    'Raw record',
-  ];
-
-  headers.forEach(label => {
+  getColumnGroups(state.collapsedColumns).forEach(group => {
     dom.appendChild(
       row,
-      createTextElement(dom, {
-        tag: 'th',
-        className: TABLE_HEADER_CELL_CLASS,
-        text: label,
+      createTableHeaderCell(group, {
+        collapsedColumns: state.collapsedColumns,
+        rerender,
+        dom,
       })
     );
   });
@@ -280,15 +346,16 @@ function createTableHead(dom) {
 /**
  * Create the table body for canonical transactions.
  * @param {LedgerIngestTransaction[]} transactions Canonical transaction rows.
+ * @param {{ collapsedColumns: boolean[] }} state Column collapse state.
  * @param {DOMHelpers} dom DOM helper facade.
  * @returns {HTMLElement} Table body element.
  */
-function createTableBody(transactions, dom) {
+function createTableBody(transactions, state, dom) {
   const body = dom.createElement('tbody');
   dom.setClassName(body, TABLE_BODY_CLASS);
 
   transactions.forEach(transaction => {
-    dom.appendChild(body, createTransactionRow(transaction, dom));
+    dom.appendChild(body, createTransactionRow(transaction, state, dom));
   });
 
   return body;
@@ -297,37 +364,228 @@ function createTableBody(transactions, dom) {
 /**
  * Render one canonical transaction row.
  * @param {LedgerIngestTransaction} transaction Canonical transaction row.
+ * @param {{ collapsedColumns: boolean[] }} state Column collapse state.
  * @param {DOMHelpers} dom DOM helper facade.
  * @returns {HTMLElement} Table row element.
  */
-function createTransactionRow(transaction, dom) {
+function createTransactionRow(transaction, state, dom) {
   const row = dom.createElement('tr');
   dom.setClassName(row, TABLE_ROW_CLASS);
 
-  const cells = [
-    transaction.transactionId,
-    transaction.postedDate,
-    transaction.amount,
-    transaction.currency,
-    transaction.description,
-    transaction.dedupeKey,
-    transaction.source,
-    transaction.rawIndex,
-    transaction.sourceRecordId,
-    formatJson(transaction.metadata.rawRecord),
-  ];
-
-  cells.forEach(cell => {
+  TRANSACTION_COLUMNS.forEach((column, index) => {
     dom.appendChild(
       row,
-      createTextElement(dom, {
-        tag: 'td',
-        className: TABLE_CELL_CLASS,
-        text: formatDisplayValue(cell),
-      })
+      createTransactionCell(
+        column,
+        transaction,
+        {
+          collapsed: state.collapsedColumns[index],
+          dom,
+        }
+      )
     );
   });
   return row;
+}
+
+/**
+ * Create a canonical transaction header cell.
+ * @param {{ start: number, length: number, collapsed: boolean }} group Column group metadata.
+ * @param {{ collapsedColumns: boolean[], rerender: () => void, dom: DOMHelpers }} options Table state and DOM helpers.
+ * @returns {HTMLElement} Table header cell.
+ */
+function createTableHeaderCell(group, options) {
+  const { collapsedColumns, rerender, dom } = options;
+  const column = TRANSACTION_COLUMNS[group.start];
+  const headerCell = dom.createElement('th');
+  dom.setClassName(headerCell, getTableHeaderCellClassName(group.collapsed));
+  headerCell.colSpan = group.length;
+
+  if (group.collapsed) {
+    dom.appendChild(
+      headerCell,
+      createColumnToggleButton(dom, COLLAPSED_BUTTON_TEXT, () => {
+        expandColumnGroup(collapsedColumns, group.start, group.length);
+        rerender();
+      })
+    );
+    return headerCell;
+  }
+
+  dom.appendChild(
+    headerCell,
+    createTextElement(dom, {
+      tag: 'span',
+      className: TABLE_LABEL_CLASS,
+      text: column.label,
+    })
+  );
+  dom.appendChild(
+    headerCell,
+    createColumnToggleButton(dom, EXPANDED_BUTTON_TEXT, () => {
+      collapseColumn(collapsedColumns, group.start);
+      rerender();
+    })
+  );
+  return headerCell;
+}
+
+/**
+ * Create one canonical transaction body cell.
+ * @param {LedgerIngestTransactionColumn} column Column definition.
+ * @param {LedgerIngestTransaction} transaction Canonical transaction row.
+ * @param {{ collapsed: boolean, dom: DOMHelpers }} options Cell rendering options.
+ * @returns {HTMLElement} Table cell element.
+ */
+function createTransactionCell(column, transaction, options) {
+  const { collapsed, dom } = options;
+  const cell = dom.createElement('td');
+  dom.setClassName(cell, getTableCellClassName(collapsed));
+  if (collapsed) {
+    dom.setTextContent(cell, '');
+    return cell;
+  }
+  dom.setTextContent(cell, formatDisplayValue(column.getValue(transaction)));
+  return cell;
+}
+
+/**
+ * Create a toggle button for a transaction column header.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @param {string} text Toggle label.
+ * @param {() => void} onClick Click handler.
+ * @returns {HTMLElement} Toggle button element.
+ */
+function createColumnToggleButton(dom, text, onClick) {
+  const button = dom.createElement('button');
+  dom.setClassName(button, TABLE_TOGGLE_CLASS);
+  dom.setType(button, 'button');
+  dom.setTextContent(button, text);
+  dom.addEventListener(button, 'click', event => {
+    event.preventDefault();
+    onClick();
+  });
+  return button;
+}
+
+/**
+ * Create the initial collapse state for all canonical transaction columns.
+ * @returns {{ collapsedColumns: boolean[] }} Column collapse state.
+ */
+function createCanonicalTransactionColumnState() {
+  return {
+    collapsedColumns: TRANSACTION_COLUMNS.map(() => false),
+  };
+}
+
+/**
+ * Collapse a single column.
+ * @param {boolean[]} collapsedColumns Column collapse state.
+ * @param {number} columnIndex Column index.
+ * @returns {void}
+ */
+function collapseColumn(collapsedColumns, columnIndex) {
+  collapsedColumns[columnIndex] = true;
+}
+
+/**
+ * Expand a contiguous group of collapsed columns.
+ * @param {boolean[]} collapsedColumns Column collapse state.
+ * @param {number} startIndex First collapsed column index.
+ * @param {number} length Group length.
+ * @returns {void}
+ */
+function expandColumnGroup(collapsedColumns, startIndex, length) {
+  for (let index = startIndex; index < startIndex + length; index += 1) {
+    collapsedColumns[index] = false;
+  }
+}
+
+/**
+ * Collect contiguous groups from the column state.
+ * @param {boolean[]} collapsedColumns Column collapse state.
+ * @returns {Array<{ start: number, length: number, collapsed: boolean }>} Column groups.
+ */
+function getColumnGroups(collapsedColumns) {
+  const groups = [];
+  let index = 0;
+
+  while (index < collapsedColumns.length) {
+    const collapsed = collapsedColumns[index];
+    const length = getColumnGroupLength(collapsedColumns, index);
+
+    groups.push({
+      start: index,
+      length,
+      collapsed,
+    });
+    index += length;
+  }
+
+  return groups;
+}
+
+/**
+ * Determine the length of a contiguous column group.
+ * @param {boolean[]} collapsedColumns Column collapse state.
+ * @param {number} startIndex Group start index.
+ * @returns {number} Group length.
+ */
+function getColumnGroupLength(collapsedColumns, startIndex) {
+  if (!collapsedColumns[startIndex]) {
+    return 1;
+  }
+  return 1 + getCollapsedRunLength(collapsedColumns, startIndex + 1);
+}
+
+/**
+ * Count the remaining items in a collapsed run.
+ * @param {boolean[]} collapsedColumns Column collapse state.
+ * @param {number} index Current index within the run.
+ * @returns {number} Remaining collapsed items.
+ */
+function getCollapsedRunLength(collapsedColumns, index) {
+  if (index >= collapsedColumns.length) {
+    return 0;
+  }
+  return getCollapsedRunLengthFromIndex(collapsedColumns, index);
+}
+
+/**
+ * Count the remaining items in a collapsed run starting from an in-bounds index.
+ * @param {boolean[]} collapsedColumns Column collapse state.
+ * @param {number} index Current index within the run.
+ * @returns {number} Remaining collapsed items.
+ */
+function getCollapsedRunLengthFromIndex(collapsedColumns, index) {
+  if (!collapsedColumns[index]) {
+    return 0;
+  }
+  return 1 + getCollapsedRunLength(collapsedColumns, index + 1);
+}
+
+/**
+ * Compute the table header cell class string.
+ * @param {boolean} collapsed Whether the group is collapsed.
+ * @returns {string} Class string.
+ */
+function getTableHeaderCellClassName(collapsed) {
+  if (collapsed) {
+    return `${TABLE_HEADER_CELL_CLASS} ${TABLE_HEADER_COLLAPSED_CLASS}`;
+  }
+  return `${TABLE_HEADER_CELL_CLASS} ${TABLE_HEADER_EXPANDED_CLASS}`;
+}
+
+/**
+ * Compute the table body cell class string.
+ * @param {boolean} collapsed Whether the column is collapsed.
+ * @returns {string} Class string.
+ */
+function getTableCellClassName(collapsed) {
+  if (collapsed) {
+    return `${TABLE_CELL_CLASS} ${TABLE_CELL_COLLAPSED_CLASS}`;
+  }
+  return TABLE_CELL_CLASS;
 }
 
 /**
@@ -507,4 +765,5 @@ export const ledgerIngestReportTestOnly = {
   renderLedgerIngestReport,
   getSummaryValue,
   getSummaryNumber,
+  getCollapsedRunLength,
 };

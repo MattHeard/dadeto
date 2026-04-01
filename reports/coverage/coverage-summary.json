@@ -1,26 +1,26 @@
 {
   "total": {
     "lines": {
-      "total": 7400,
-      "covered": 7384,
+      "total": 7483,
+      "covered": 7467,
       "skipped": 0,
       "pct": 99.78
     },
     "statements": {
-      "total": 7566,
-      "covered": 7546,
+      "total": 7650,
+      "covered": 7630,
       "skipped": 0,
       "pct": 99.73
     },
     "functions": {
-      "total": 3051,
-      "covered": 3042,
+      "total": 3078,
+      "covered": 3069,
       "skipped": 0,
       "pct": 99.7
     },
     "branches": {
-      "total": 2743,
-      "covered": 2743,
+      "total": 2757,
+      "covered": 2757,
       "skipped": 0,
       "pct": 100
     },
@@ -1125,26 +1125,26 @@
   },
   "/home/matt/dadeto/src/core/browser/presenters/ledgerIngest.js": {
     "lines": {
-      "total": 113,
-      "covered": 113,
+      "total": 196,
+      "covered": 196,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 28,
-      "covered": 28,
+      "total": 55,
+      "covered": 55,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 113,
-      "covered": 113,
+      "total": 197,
+      "covered": 197,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 10,
-      "covered": 10,
+      "total": 24,
+      "covered": 24,
       "skipped": 0,
       "pct": 100
     }
