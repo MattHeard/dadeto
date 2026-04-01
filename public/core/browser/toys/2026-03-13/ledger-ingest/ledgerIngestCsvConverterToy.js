@@ -30,57 +30,280 @@ const DEFAULT_FIELD_MAPPING = {
   recordId: 'recordId',
 };
 
+const CSV_CHARACTER_HANDLERS = [
+  processCsvQuotedCharacter,
+  processCsvSeparatorCharacter,
+  processCsvLineBreakCharacter,
+  processCsvPlainCharacter,
+];
+
 /**
  * Split the CSV into rows and columns while honoring double-quoted fields.
  * @param {string} input Semicolon-delimited CSV text.
  * @returns {string[][]} Parsed rows.
  */
 function splitCsvRows(input) {
-  const rows = [];
-  let row = [];
-  let cell = '';
-  let inQuotes = false;
+  const state = createCsvParseState();
 
   for (let index = 0; index < input.length; index += 1) {
-    const char = input[index];
-    const next = input[index + 1];
-
-    if (char === '"') {
-      if (inQuotes && next === '"') {
-        cell += '"';
-        index += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (!inQuotes && char === ';') {
-      row.push(cell);
-      cell = '';
-      continue;
-    }
-
-    if (!inQuotes && (char === '\n' || char === '\r')) {
-      if (char === '\r' && next === '\n') {
-        index += 1;
-      }
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = '';
-      continue;
-    }
-
-    cell += char;
+    index = processCsvCharacter(state, input, index);
   }
 
-  if (cell.length > 0 || row.length > 0) {
-    row.push(cell);
-    rows.push(row);
-  }
+  finalizeCsvParseState(state);
 
-  return rows;
+  return state.rows;
+}
+
+/**
+ * @returns {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} CSV parse state.
+ */
+function createCsvParseState() {
+  return {
+    rows: [],
+    row: [],
+    cell: '',
+    inQuotes: false,
+  };
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {string} input CSV text.
+ * @param {number} index Current character index.
+ * @returns {number} Index that should be assigned back to the loop.
+ */
+function processCsvCharacter(state, input, index) {
+  const char = input[index];
+  const next = input[index + 1];
+  const chars = { char, next };
+  return CSV_CHARACTER_HANDLERS.reduce(
+    (nextIndex, handler) => nextIndex ?? handler(state, chars, index),
+    null
+  );
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number | null} Updated index when the quoted character was handled.
+ */
+function processCsvQuotedCharacter(state, chars, index) {
+  if (!isCsvQuoteCharacter(chars.char)) {
+    return null;
+  }
+  return processCsvQuotedCharacterState(state, chars, index);
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number} Updated index when the quote was handled.
+ */
+function processCsvQuotedCharacterState(state, chars, index) {
+  if (!state.inQuotes) {
+    toggleCsvQuoteState(state);
+    return index;
+  }
+  return processCsvQuotedCharacterInside(state, chars.next, index);
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {string | undefined} next Next character.
+ * @param {number} index Current character index.
+ * @returns {number} Updated index after quote handling.
+ */
+function processCsvQuotedCharacterInside(state, next, index) {
+  if (isCsvEscapedQuote(next)) {
+    appendCsvCell(state, '"');
+    return index + 1;
+  }
+  toggleCsvQuoteState(state);
+  return index;
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number | null} Updated index when the separator was handled.
+ */
+function processCsvSeparatorCharacter(state, chars, index) {
+  if (!shouldProcessCsvSeparator(state, chars.char)) {
+    return null;
+  }
+  flushCsvCell(state);
+  return index;
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number | null} Updated index when the line break was handled.
+ */
+function processCsvLineBreakCharacter(state, chars, index) {
+  if (!shouldProcessCsvLineBreak(state, chars.char)) {
+    return null;
+  }
+  return processCsvLineBreakContinuation(state, chars, index);
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number} Updated index after the line break is handled.
+ */
+function processCsvLineBreakContinuation(state, chars, index) {
+  flushCsvRow(state);
+  if (shouldSkipCsvLineBreakTail(chars)) {
+    return index + 1;
+  }
+  return index;
+}
+
+/**
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @returns {boolean} True when the line break consumed a CRLF pair.
+ */
+function shouldSkipCsvLineBreakTail(chars) {
+  return isCsvCarriageReturn(chars.char) && chars.next === '\n';
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number} Updated index after appending a plain character.
+ */
+function processCsvPlainCharacter(state, chars, index) {
+  appendCsvCellChar(state, chars.char);
+  return index;
+}
+
+/**
+ * @returns {boolean} True when the separator should terminate the current cell.
+ * @param {{ inQuotes: boolean }} state CSV parse state.
+ * @param {string} char Current character.
+ */
+function shouldProcessCsvSeparator(state, char) {
+  return !state.inQuotes && isCsvSeparatorCharacter(char);
+}
+
+/**
+ * @returns {boolean} True when the line break should terminate the current row.
+ * @param {{ inQuotes: boolean }} state CSV parse state.
+ * @param {string} char Current character.
+ */
+function shouldProcessCsvLineBreak(state, char) {
+  return !state.inQuotes && isCsvLineBreakCharacter(char);
+}
+
+/**
+ * @param {string} char Current character.
+ * @returns {boolean} True when the character is the quote delimiter.
+ */
+function isCsvQuoteCharacter(char) {
+  return char === '"';
+}
+
+/**
+ * @param {string} char Current character.
+ * @returns {boolean} True when the character is the field separator.
+ */
+function isCsvSeparatorCharacter(char) {
+  return char === ';';
+}
+
+/**
+ * @param {string} char Current character.
+ * @returns {boolean} True when the character terminates a row.
+ */
+function isCsvLineBreakCharacter(char) {
+  return char === '\n' || char === '\r';
+}
+
+/**
+ * @param {string} char Current character.
+ * @returns {boolean} True when the character is carriage return.
+ */
+function isCsvCarriageReturn(char) {
+  return char === '\r';
+}
+
+/**
+ * @param {string | undefined} next Next character.
+ * @returns {boolean} True when the quote is escaped by a second quote.
+ */
+function isCsvEscapedQuote(next) {
+  return next === '"';
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @returns {void}
+ */
+function finalizeCsvParseState(state) {
+  if (!hasPendingCsvParseData(state)) {
+    return;
+  }
+  flushCsvRow(state);
+}
+
+/**
+ * @param {{ row: string[], cell: string }} state CSV parse state.
+ * @returns {boolean} True when the state still contains a pending cell or row.
+ */
+function hasPendingCsvParseData(state) {
+  return state.cell.length > 0 || state.row.length > 0;
+}
+
+/**
+ * @param {{ row: string[], cell: string }} state CSV parse state.
+ * @returns {void}
+ */
+function flushCsvCell(state) {
+  state.row.push(state.cell);
+  state.cell = '';
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string }} state CSV parse state.
+ * @returns {void}
+ */
+function flushCsvRow(state) {
+  flushCsvCell(state);
+  state.rows.push(state.row);
+  state.row = [];
+}
+
+/**
+ * @param {{ inQuotes: boolean }} state CSV parse state.
+ * @returns {void}
+ */
+function toggleCsvQuoteState(state) {
+  state.inQuotes = !state.inQuotes;
+}
+
+/**
+ * @param {{ cell: string }} state CSV parse state.
+ * @param {string} char Character to append.
+ * @returns {void}
+ */
+function appendCsvCellChar(state, char) {
+  state.cell += char;
+}
+
+/**
+ * @param {{ cell: string }} state CSV parse state.
+ * @param {string} char Character to append.
+ * @returns {void}
+ */
+function appendCsvCell(state, char) {
+  state.cell += char;
 }
 
 /**
@@ -112,7 +335,7 @@ function normalizeCsvDate(value) {
 
 /**
  * @param {string|undefined} value Date string from the CSV.
- * @returns {RegExpMatchArray | null} Matching date parts or null.
+ * @returns {string[] | null} Matching date parts or null.
  */
 function parseCsvDateMatch(value) {
   return String(value ?? '')
@@ -121,7 +344,7 @@ function parseCsvDateMatch(value) {
 }
 
 /**
- * @param {RegExpMatchArray} match Parsed dd.mm.yyyy components.
+ * @param {string[]} match Parsed dd.mm.yyyy components.
  * @returns {string} ISO date or empty string.
  */
 function formatCsvDateMatch(match) {
@@ -136,16 +359,7 @@ function formatCsvDateMatch(match) {
  */
 function normalizeCsvAmount(value) {
   const candidate = normalizeCsvAmountCandidate(value);
-  if (candidate.length === 0) {
-    return '';
-  }
-
-  const parsed = parseCsvAmount(candidate);
-  if (parsed === null) {
-    return '';
-  }
-
-  return `${parsed}`;
+  return formatCsvAmountCandidate(parseCsvAmountCandidate(candidate));
 }
 
 /**
@@ -174,6 +388,30 @@ function parseCsvAmount(candidate) {
 }
 
 /**
+ * @param {string} candidate Candidate amount string.
+ * @returns {number | null} Parsed numeric amount or null when invalid or empty.
+ */
+function parseCsvAmountCandidate(candidate) {
+  if (candidate.length === 0) {
+    return null;
+  }
+
+  return parseCsvAmount(candidate);
+}
+
+/**
+ * @param {number | null} parsed Parsed amount candidate.
+ * @returns {string} Normalized amount string or empty string.
+ */
+function formatCsvAmountCandidate(parsed) {
+  if (parsed === null) {
+    return '';
+  }
+
+  return `${parsed}`;
+}
+
+/**
  * Build a stable row id for adapter traceability.
  * @param {string} accountIban Source account identifier.
  * @param {number} rowNumber Row index in the CSV payload, 1-based for data rows.
@@ -188,8 +426,15 @@ function buildCsvRecordId(accountIban, rowNumber) {
  * @returns {string} Stable record prefix.
  */
 function getCsvRecordPrefix(accountIban) {
-  const candidate = String(accountIban ?? '').trim();
-  return candidate || 'ledger-ingest';
+  return normalizeCsvRecordPrefixCandidate(accountIban) || 'ledger-ingest';
+}
+
+/**
+ * @param {string} accountIban Source account identifier.
+ * @returns {string} Trimmed record prefix candidate.
+ */
+function normalizeCsvRecordPrefixCandidate(accountIban) {
+  return String(accountIban ?? '').trim();
 }
 
 /**
@@ -204,22 +449,11 @@ function parseLedgerCsv(input) {
   const headerLookup = buildHeaderLookup(rows[0]);
   ensureLedgerCsvHeaders(headerLookup);
 
-  const rawRecords = [];
-
-  for (let index = 1; index < rows.length; index += 1) {
-    const row = rows[index];
-    if (isBlankLedgerCsvRow(row)) {
-      continue;
-    }
-
-    rawRecords.push(buildLedgerCsvRecord(row, headerLookup, index));
-  }
-
   return {
     source: 'ledger-ingest-csv',
     fieldMapping: { ...DEFAULT_FIELD_MAPPING },
     dedupePolicy: { ...DEFAULT_DEDUPE_POLICY },
-    rawRecords,
+    rawRecords: collectLedgerCsvRecords(rows, headerLookup),
   };
 }
 
@@ -238,11 +472,18 @@ function ensureLedgerCsvRows(rows) {
  * @returns {void}
  */
 function ensureLedgerCsvHeaders(headerLookup) {
-  for (const headerName of REQUIRED_HEADERS) {
-    if (!headerLookup.has(headerName)) {
-      throw new Error(`Missing required CSV header: ${headerName}`);
-    }
+  const missingHeader = findMissingLedgerCsvHeader(headerLookup);
+  if (missingHeader) {
+    throw new Error(`Missing required CSV header: ${missingHeader}`);
   }
+}
+
+/**
+ * @param {Map<string, number>} headerLookup Header lookup by exact schema label.
+ * @returns {string | undefined} The first missing required header, if any.
+ */
+function findMissingLedgerCsvHeader(headerLookup) {
+  return REQUIRED_HEADERS.find(headerName => !headerLookup.has(headerName));
 }
 
 /**
@@ -251,6 +492,39 @@ function ensureLedgerCsvHeaders(headerLookup) {
  */
 function isBlankLedgerCsvRow(row) {
   return row.length === 1 && row[0].trim().length === 0;
+}
+
+/**
+ * @param {string[][]} rows Parsed CSV rows.
+ * @param {Map<string, number>} headerLookup Header lookup by exact schema label.
+ * @returns {Record<string, unknown>[]} Raw records converted from CSV.
+ */
+function collectLedgerCsvRecords(rows, headerLookup) {
+  const rawRecords = [];
+
+  for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
+    appendLedgerCsvRecord(rawRecords, rows[rowIndex], {
+      headerLookup,
+      rowIndex,
+    });
+  }
+
+  return rawRecords;
+}
+
+/**
+ * @param {Record<string, unknown>[]} rawRecords Raw records accumulator.
+ * @param {string[]} row CSV row under review.
+ * @param {{ headerLookup: Map<string, number>, rowIndex: number }} context Record assembly context.
+ * @returns {void}
+ */
+function appendLedgerCsvRecord(rawRecords, row, context) {
+  if (isBlankLedgerCsvRow(row)) {
+    return;
+  }
+  rawRecords.push(
+    buildLedgerCsvRecord(row, context.headerLookup, context.rowIndex)
+  );
 }
 
 /**
