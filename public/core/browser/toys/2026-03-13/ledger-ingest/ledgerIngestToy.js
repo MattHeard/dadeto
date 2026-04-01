@@ -10,13 +10,22 @@ const DEFAULT_FIXTURE = 'happyPath';
  */
 function resolveFixture(parsed) {
   const candidate = parsed?.fixture;
-  if (
-    typeof candidate === 'string' &&
-    Object.prototype.hasOwnProperty.call(fixtures, candidate)
-  ) {
+  if (isKnownFixture(candidate)) {
     return candidate;
   }
   return DEFAULT_FIXTURE;
+}
+
+/**
+ * Determine whether a fixture key exists in the local fixture bundle.
+ * @param {unknown} candidate Candidate fixture key.
+ * @returns {candidate is keyof typeof fixtures} True when the fixture exists.
+ */
+function isKnownFixture(candidate) {
+  return (
+    typeof candidate === 'string' &&
+    Object.prototype.hasOwnProperty.call(fixtures, candidate)
+  );
 }
 
 /**
@@ -25,12 +34,12 @@ function resolveFixture(parsed) {
  * @returns {candidate is { source?: string, rawRecords: Record<string, unknown>[] }} True when the payload is import-ready JSON.
  */
 function isImportInput(candidate) {
-  return Boolean(
-    candidate &&
-      typeof candidate === 'object' &&
-      Array.isArray(
-        /** @type {{ rawRecords?: unknown }} */ (candidate).rawRecords
-      )
+  if (!candidate || typeof candidate !== 'object') {
+    return false;
+  }
+
+  return Array.isArray(
+    /** @type {{ rawRecords?: unknown }} */ (candidate).rawRecords
   );
 }
 
@@ -56,12 +65,9 @@ function buildResponsePayload(inputLabel, result, inputMode) {
 /**
  * Ledger ingest toy that runs either a named fixture or a pasted import JSON payload.
  * @param {string} input Toy runner payload (JSON string).
- * @param {Map<string, unknown>} env Toy environment helpers (unused).
  * @returns {string} JSON string containing the input label and key result buckets.
  */
-export function ledgerIngestToy(input, env) {
-  void env;
-
+export function ledgerIngestToy(input) {
   const parsed = parseJsonOrFallback(input, {});
   if (isImportInput(parsed)) {
     const result = importTransactions(

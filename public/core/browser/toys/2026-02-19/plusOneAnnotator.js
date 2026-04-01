@@ -109,12 +109,9 @@ function collectUnknownTokens(tokens, knownWordSet) {
  * Annotate a German sentence with unknown token counts and +1 status.
  * Accepts a kv input with 'sentence' and 'knownWords' fields.
  * @param {string} input - Serialised toy input (JSON from kv form).
- * @param {Map<string, unknown>} env - Toy environment (unused).
  * @returns {string} JSON string describing tokens and annotations.
  */
-export function plusOneAnnotatorToy(input, env) {
-  void env;
-
+export function plusOneAnnotatorToy(input) {
   const payload = parseToyInput(input);
   if (payload === null) {
     return JSON.stringify({ error: 'Invalid input' });

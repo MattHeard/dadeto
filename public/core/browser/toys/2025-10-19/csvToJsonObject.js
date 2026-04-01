@@ -73,16 +73,12 @@ function buildObjectFromCsv(input) {
  * Convert a single-row CSV string into a JSON object string.
  * Columns without a value in the data row are omitted from the result.
  * @param {string} input - CSV text with exactly two logical lines.
- * @param {Map<string, Function>} [env] - Environment helpers (unused).
  * @returns {string} Stringified JSON object built from the CSV input.
  */
-export function csvToJsonObjectToy(input, env) {
-  void env;
-
+export function csvToJsonObjectToy(input) {
   try {
     return JSON.stringify(buildObjectFromCsv(input));
-  } catch (error) {
-    void error;
+  } catch {
     return JSON.stringify({});
   }
 }

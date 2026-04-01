@@ -98,12 +98,9 @@ function splitSentences(text) {
  * Splits a paragraph of German text into individual sentences and returns
  * a JSON array of strings.
  * @param {string} input - Raw German text from the textarea input.
- * @param {Map<string, unknown>} env - Toy environment (unused).
  * @returns {string} JSON array of sentence strings.
  */
-export function germanSentenceSplitterToy(input, env) {
-  void env;
-
+export function germanSentenceSplitterToy(input) {
   const text = whenString(input, s => s) ?? '';
   const sentences = splitSentences(text);
   return JSON.stringify(sentences);

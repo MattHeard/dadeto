@@ -108,12 +108,9 @@ export function normalizeToken(t) {
  * Splits the input text on whitespace, normalizes each token, discards empties,
  * and returns a JSON array string.
  * @param {string} input - Raw input string provided by the toy UI.
- * @param {Map<string, unknown>} env - Toy environment (unused).
  * @returns {string} JSON string of normalized surface tokens.
  */
-export function germanTokenizerToy(input, env) {
-  void env;
-
+export function germanTokenizerToy(input) {
   const tokens = (whenString(input, s => s) ?? '').split(/\s+/);
   const normalizedTokens = tokens.map(normalizeToken).filter(Boolean);
   return JSON.stringify(normalizedTokens);
