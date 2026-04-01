@@ -32,9 +32,6 @@ const config = {
     'src/core/**/*.js',
     '!**/node_modules/**',
     '!**/vendor/**',
-    '!src/browser/main.js',
-    '!src/browser/document.js',
-    '!src/build/copy.js',
   ],
   coverageDirectory: 'reports/coverage',
   // Ensure coverage is collected for all files, including those not tested
