@@ -60,6 +60,16 @@ export default [
     },
   },
   {
+    files: ['src/core/**/*.js'],
+    rules: {
+      'no-restricted-globals': ['warn', 'event', 'fdescribe'],
+      'no-param-reassign': 'warn',
+      'no-return-assign': 'warn',
+      'prefer-const': 'warn',
+      'no-void': 'warn',
+    },
+  },
+  {
     files: lintFiles,
     ...eslintConfigPrettier,
   },
@@ -76,12 +86,6 @@ export default [
       'no-ternary': 'off',
       camelcase: 'off',
       'max-params': 'off',
-    },
-  },
-  {
-    files: ['src/core/cloud/http-method-guard.js'],
-    rules: {
-      complexity: 'off',
     },
   },
 ];
