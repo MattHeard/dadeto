@@ -20,7 +20,7 @@ The main import toy should stay focused on the JSON/import path: it can run name
 
 Recommended next toy:
 
-- A dedicated `ledger-ingest review` toy that accepts `ImportTransactionsInput` or a saved fixture and renders canonical rows, duplicate groups, and structured errors side by side, with copyable JSON for the importer path. This fits the project because it strengthens the existing thin core-wrapper flow without inventing new backend behavior, and it gives a user a clearer inspect/debug surface than the current single output panel.
+- A dedicated `ledger-ingest storage` toy that accepts canonical transactions or `ImportTransactionsInput`, persists them into an explicit local storage adapter, and shows insert, update, skip, and duplicate/merge outcomes side by side. This fits the project because it moves from import-only validation into the next useful behavior: retaining canonical transactions across runs while keeping persistence visible and testable.
 
 - Freshness check: reviewed on 2026-03-30 and updated to reflect the existing thin-wrapper / user-testable flow.
 
@@ -42,7 +42,7 @@ Keep the pure-function core explicit and free of hidden file IO, persistence, or
 - Add a real UI affordance or local command path for pasting or uploading a transaction CSV into the converter toy instead of selecting a fixture.
 - Keep the import toy focused on accepting JSON directly, then make that copy-paste path obvious in the UI.
 - Build or refine the CSV-to-JSON adapter toy that parses the documented semicolon-delimited schema into the existing import core input shape.
-- Build the dedicated ledger-ingest review toy described above so the current importer output is easier to inspect without changing the import core itself.
+- Build the dedicated ledger-ingest storage toy described above so canonical transactions can be saved and merged through an explicit local adapter boundary.
 - Continue adding narrow fixtures for structured error reporting or institution mapping edge cases, but only in support of the user-testable toy flow.
 - Define the first canonical transaction schema and structured error format in code-level tests where that contract is still implicit.
 - Decide which open question most threatens MVP correctness and shape a bead around it only if it blocks the next user-visible slice.
@@ -53,7 +53,7 @@ Keep the pure-function core explicit and free of hidden file IO, persistence, or
 2. Keep the main toy focused on JSON import payloads and the fixture demo path.
 3. Keep the separate CSV converter toy focused on producing copyable JSON for the main toy.
 4. Improve the user-facing toy flow so the canonical rows, duplicates, and structured errors are easier to inspect.
-5. Add a dedicated ledger-ingest review toy once the current importer output needs a clearer inspection surface.
+5. Add a dedicated ledger-ingest storage toy once the project needs a persistent local merge boundary.
 6. Prove normalization, deduplication, and structured errors through the JSON import path plus focused tests.
 7. Add a second source or edge case only after the first CSV conversion path is stable and understandable.
 8. Tighten the schema and duplicate policy gradually as real user feedback accumulates.
