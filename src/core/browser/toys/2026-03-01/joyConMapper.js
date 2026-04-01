@@ -1,4 +1,5 @@
-import { isObjectValue, parseJsonObject } from '../../jsonValueHelpers.js';
+import { isNonNullObject } from '../../../commonCore.js';
+import { parseJsonObject } from '../../jsonValueHelpers.js';
 
 const TOY_STORAGE_KEY = 'JOYMAP1';
 const DEFAULT_STATE = {
@@ -39,7 +40,7 @@ function parseInput(input) {
  * @returns {Record<string, unknown>} Normalized mappings object.
  */
 function normalizeMappings(mappings) {
-  if (!isObjectValue(mappings)) {
+  if (!isNonNullObject(mappings)) {
     return {};
   }
 
@@ -106,7 +107,7 @@ function getStoredValue(env) {
  */
 function readStoredState(env) {
   const stored = getStoredValue(env);
-  if (!isObjectValue(stored)) {
+  if (!isNonNullObject(stored)) {
     return { ...DEFAULT_STATE };
   }
 
@@ -204,7 +205,7 @@ function isCaptureAction(parsed) {
  * @returns {parsed is Record<string, unknown>} Whether the parsed action is object-like.
  */
 function isParsedAction(parsed) {
-  return isObjectValue(parsed);
+  return isNonNullObject(parsed);
 }
 
 /**

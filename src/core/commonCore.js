@@ -46,15 +46,6 @@ export function isNonNullObject(value) {
 }
 
 /**
- * Determines whether a value is object-like.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the value is object-like.
- */
-export function isObjectValue(value) {
-  return isNonNullObject(value);
-}
-
-/**
  * Ensure a dependency is callable.
  * @param {unknown} candidate Candidate value.
  * @param {string} name Name used in the error message.

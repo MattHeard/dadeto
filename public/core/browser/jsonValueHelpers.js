@@ -1,1 +1,1 @@
-export { isObjectValue, parseJsonObject } from './browser-core.js';
+export { parseJsonObject } from './browser-core.js';

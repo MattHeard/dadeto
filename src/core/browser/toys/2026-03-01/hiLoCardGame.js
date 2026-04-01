@@ -1,5 +1,5 @@
-import { getStringCandidate } from '../../../commonCore.js';
-import { isObjectValue, parseJsonObject } from '../../jsonValueHelpers.js';
+import { getStringCandidate, isNonNullObject } from '../../../commonCore.js';
+import { parseJsonObject } from '../../jsonValueHelpers.js';
 
 const GAME_STATE_KEY = 'hiLoCardGame:gameState';
 const KEYBOARD_STATE_KEY = 'hiLoCardGame:keyboardState';
@@ -102,7 +102,7 @@ function hasInputPayload(input) {
  * @returns {HiLoInputEvent | null} Valid input event or null.
  */
 export function normalizeParsedEvent(parsed) {
-  if (!isObjectValue(parsed)) {
+  if (!isNonNullObject(parsed)) {
     return null;
   }
   return buildNormalizedParsedEvent(
@@ -182,7 +182,7 @@ function toScoreNumber(value) {
  * @returns {HiLoGameState} Safe game state.
  */
 export function normalizeGameState(value, getRandomNumber) {
-  if (!isObjectValue(value)) {
+  if (!isNonNullObject(value)) {
     return createInitialGameState(getRandomNumber);
   }
   return buildNormalizedGameState(
@@ -291,7 +291,7 @@ function isCardInRange(card) {
  * @returns {T} Normalized value.
  */
 function normalizeStoredObject(value, fallback, transform) {
-  if (!isObjectValue(value)) {
+  if (!isNonNullObject(value)) {
     return fallback();
   }
 
