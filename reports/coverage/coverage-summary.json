@@ -1,26 +1,26 @@
 {
   "total": {
     "lines": {
-      "total": 7236,
-      "covered": 7220,
+      "total": 7255,
+      "covered": 7239,
       "skipped": 0,
       "pct": 99.77
     },
     "statements": {
-      "total": 7402,
-      "covered": 7382,
+      "total": 7421,
+      "covered": 7401,
       "skipped": 0,
-      "pct": 99.72
+      "pct": 99.73
     },
     "functions": {
-      "total": 2996,
-      "covered": 2987,
+      "total": 3003,
+      "covered": 2994,
       "skipped": 0,
-      "pct": 99.69
+      "pct": 99.7
     },
     "branches": {
-      "total": 2731,
-      "covered": 2731,
+      "total": 2735,
+      "covered": 2735,
       "skipped": 0,
       "pct": 100
     },
@@ -1067,6 +1067,32 @@
     "branches": {
       "total": 0,
       "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "/home/matt/dadeto/src/core/browser/presenters/copyToClipboard.js": {
+    "lines": {
+      "total": 19,
+      "covered": 19,
+      "skipped": 0,
+      "pct": 100
+    },
+    "functions": {
+      "total": 7,
+      "covered": 7,
+      "skipped": 0,
+      "pct": 100
+    },
+    "statements": {
+      "total": 19,
+      "covered": 19,
+      "skipped": 0,
+      "pct": 100
+    },
+    "branches": {
+      "total": 4,
+      "covered": 4,
       "skipped": 0,
       "pct": 100
     }

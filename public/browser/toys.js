@@ -164,6 +164,7 @@ export const createDispose = config => {
 };
 
 import { createPreElement } from './presenters/pre.js';
+import { createCopyToClipboardButtonElement } from './presenters/copyToClipboard.js';
 import { createTicTacToeBoardElement } from './presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from './presenters/battleshipSolitaireFleet.js';
 import { createBattleshipCluesBoardElement } from './presenters/battleshipSolitaireClues.js';
@@ -383,6 +384,7 @@ export const createOutputDropdownHandler =
 const presentersMap = {
   text: createParagraphElement,
   pre: createPreElement,
+  'copy-to-clipboard': createCopyToClipboardButtonElement,
   'tic-tac-toe': createTicTacToeBoardElement,
   'battleship-solitaire-fleet': createBattleshipFleetBoardElement,
   'battleship-solitaire-clues-presenter': createBattleshipCluesBoardElement,

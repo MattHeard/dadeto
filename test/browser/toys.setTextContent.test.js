@@ -49,4 +49,48 @@ describe('setTextContent via handleDropdownChange', () => {
     );
     expect(dom.appendChild).toHaveBeenCalledWith(created, { tagName: 'PRE' });
   });
+
+  it('uses the copy-to-clipboard presenter for clipboard output', () => {
+    const created = {};
+    const dom = {
+      querySelector: jest.fn(() => created),
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(() => ({ tagName: 'BUTTON' })),
+      setTextContent: jest.fn(),
+      setType: jest.fn(),
+      addEventListener: jest.fn(),
+      logError: jest.fn(),
+      globalThis: {
+        navigator: {
+          clipboard: {
+            writeText: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+      },
+    };
+    const dropdown = {
+      value: 'copy-to-clipboard',
+      closest: jest.fn(() => ({ id: 'post-id' })),
+      parentNode: { querySelector: () => created },
+    };
+    const getData = jest.fn(() => ({ output: { 'post-id': 'hello' } }));
+
+    handleDropdownChange(dropdown, getData, dom);
+
+    expect(dom.createElement).toHaveBeenCalledWith('button');
+    expect(dom.setType).toHaveBeenCalledWith({ tagName: 'BUTTON' }, 'button');
+    expect(dom.setTextContent).toHaveBeenCalledWith(
+      { tagName: 'BUTTON' },
+      'Copy to clipboard'
+    );
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      { tagName: 'BUTTON' },
+      'click',
+      expect.any(Function)
+    );
+    expect(dom.appendChild).toHaveBeenCalledWith(created, {
+      tagName: 'BUTTON',
+    });
+  });
 });
