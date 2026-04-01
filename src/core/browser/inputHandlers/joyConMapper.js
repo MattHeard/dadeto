@@ -1500,6 +1500,13 @@ function queueJoyConInitialSync(dom, textInput, state) {
 }
 
 export const joyConMapperTestOnly = {
+  createElement,
+  applyCreatedElementOptions,
+  applyElementClassName,
+  applyElementText,
+  readStoredMapperState,
+  normalizeStoredMappings,
+  normalizeSkippedControls,
   describeCapture,
   normalizeStoredMapperState,
   detectButtonCapture,
@@ -1521,6 +1528,23 @@ export const joyConMapperTestOnly = {
   normalizePendingIndex,
   getRefreshedCurrentIndex,
   getSkippedControlKey,
+  crossedButtonThreshold,
+  hasButtonCaptureTransition,
+  makeButtonCaptureReducer,
+  getButtonCaptureCandidate,
+  pickStrongerButtonCapture,
+  mergeAxisCaptureCandidate,
+  isPromptComplete,
+  getStartedPromptCopy,
+  getConnectedPromptCopy,
+  getActivePromptText,
+  ensureStarted,
+  advanceToNextControl,
+  isPendingControlAfterIndex,
+  captureCurrentControl,
+  shouldSkipCapture,
+  updateCaptureState,
+  detectCurrentControlCapture,
 };
 
 /**
@@ -1569,7 +1593,7 @@ function handleJoyConMapperReset(state) {
 
   state.started = false;
   state.currentIndex = 0;
-  state.currentControl = CONTROLS[0] ?? null;
+  state.currentControl = CONTROLS[0];
   state.previousSnapshot = snapshotGamepad(currentPad(dom));
   syncToyInput({
     dom,
@@ -1648,7 +1672,7 @@ export function joyConMapperHandler(dom, container, textInput) {
     autoSubmitCheckbox: getAutoSubmitCheckbox(container, dom),
     started: false,
     currentIndex: 0,
-    currentControl: /** @type {MapperControl | null} */ (CONTROLS[0] ?? null),
+    currentControl: /** @type {MapperControl} */ (CONTROLS[0]),
     previousSnapshot: snapshotGamepad(currentPad(dom)),
     stored: readStoredMapperState(dom),
     list,

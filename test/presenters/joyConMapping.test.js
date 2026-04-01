@@ -77,7 +77,7 @@ describe('createJoyConMappingElement', () => {
       skippedControls: [],
     };
     const element = createJoyConMappingElement(JSON.stringify(payload), dom);
-    const [title, summary, list] = element.children;
+    const [, summary, list] = element.children;
 
     expect(summary.textContent).toBe('1 mapped, 0 skipped');
 

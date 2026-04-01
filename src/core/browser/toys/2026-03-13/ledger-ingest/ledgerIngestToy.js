@@ -83,3 +83,10 @@ export function ledgerIngestToy(input) {
   const result = importTransactions(fixture.input);
   return JSON.stringify(buildResponsePayload(fixtureName, result, 'fixture'));
 }
+
+export const ledgerIngestToyTestOnly = {
+  resolveFixture,
+  isKnownFixture,
+  isImportInput,
+  buildResponsePayload,
+};

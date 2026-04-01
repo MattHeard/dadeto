@@ -77,6 +77,21 @@ describe('createGenerateStatsCore', () => {
     });
   });
 
+  it('accepts a non-object env reference by normalizing to an empty map', () => {
+    expect(
+      createGenerateStatsCore({
+        db: mockDb,
+        auth: mockAuth,
+        storage: mockStorage,
+        fetchFn: mockFetchFn,
+        env: null,
+        urlMap: mockUrlMap,
+        cryptoModule: mockCryptoModule,
+        console: { error: () => {} },
+      })
+    ).toBeDefined();
+  });
+
   /**
    * Extract the bearer token from the request using the injected helpers.
    * @param {{ getAuthHeader: (req: object) => string }} deps Dependency bundle supplied to helpers.

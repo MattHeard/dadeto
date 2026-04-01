@@ -3,9 +3,13 @@ import {
   importTransactions,
   fixtures,
   normalizationExamples,
+  ledgerIngestCoreTestOnly,
 } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/core.js';
 import { ledgerIngestCsvConverterToy } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js';
-import { ledgerIngestToy } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js';
+import {
+  ledgerIngestToy,
+  ledgerIngestToyTestOnly,
+} from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js';
 
 describe('importTransactions', () => {
   it('normalizes mapped rows, records normalization steps, and exposes summaries', () => {
@@ -184,6 +188,172 @@ describe('importTransactions', () => {
       currency: 'EUR',
       accountIban: 'DE00123456789012345678',
       category: 'Living Expenses',
+    });
+  });
+});
+
+describe('ledger ingest helpers', () => {
+  it('covers the source and record normalization fallbacks', () => {
+    expect(ledgerIngestCoreTestOnly.getSourceLabel({ source: 'bank-1' })).toBe(
+      'bank-1'
+    );
+    expect(ledgerIngestCoreTestOnly.getSourceLabel({})).toBe('ledger-ingest');
+    expect(ledgerIngestCoreTestOnly.getRawRecords(undefined)).toEqual([]);
+    expect(ledgerIngestCoreTestOnly.getRawRecords([{ id: 1 }])).toEqual([
+      { id: 1 },
+    ]);
+    expect(ledgerIngestCoreTestOnly.isMissingRequiredValue(null)).toBe(true);
+    expect(ledgerIngestCoreTestOnly.isMissingRequiredValue('')).toBe(true);
+    expect(ledgerIngestCoreTestOnly.isBlankStringValue('   ')).toBe(true);
+    expect(ledgerIngestCoreTestOnly.isBlankStringValue(1)).toBe(false);
+  });
+
+  it('covers policy and dedupe normalization branches', () => {
+    expect(ledgerIngestCoreTestOnly.sanitizeFieldMapping(3)).toEqual({});
+    expect(ledgerIngestCoreTestOnly.sanitizeFieldMapping(null)).toEqual({});
+    expect(ledgerIngestCoreTestOnly.sanitizePolicy(3)).toEqual({});
+    expect(ledgerIngestCoreTestOnly.sanitizePolicy(null)).toEqual({});
+    expect(ledgerIngestCoreTestOnly.normalizeDedupePolicy(undefined)).toEqual({
+      name: 'posted-date-amount-description',
+      strategy: 'first-wins',
+      candidateFields: ['postedDate', 'amount', 'description'],
+      caseInsensitive: true,
+    });
+
+    expect(
+      ledgerIngestCoreTestOnly.normalizeDedupePolicy({
+        name: 'custom',
+        strategy: 'last-wins',
+        candidateFields: ['amount'],
+        caseInsensitive: false,
+      })
+    ).toEqual({
+      name: 'custom',
+      strategy: 'last-wins',
+      candidateFields: ['amount'],
+      caseInsensitive: false,
+    });
+
+    expect(
+      ledgerIngestCoreTestOnly.buildDedupeKey(
+        {
+          postedDate: '2026-03-30',
+          amount: 12,
+          description: 'Coffee',
+        },
+        {
+          name: 'custom',
+          strategy: 'first-wins',
+          candidateFields: ['postedDate', 'amount', 'description'],
+          caseInsensitive: true,
+        }
+      )
+    ).toBe('2026-03-30|12|coffee');
+
+    expect(
+      ledgerIngestCoreTestOnly.buildDedupeKey(
+        {
+          postedDate: '2026-03-30',
+          amount: 12,
+          description: 'Coffee',
+        },
+        {
+          name: 'custom',
+          strategy: 'first-wins',
+          candidateFields: ['postedDate', 'amount', 'description'],
+          caseInsensitive: false,
+        }
+      )
+    ).toBe('2026-03-30|12|Coffee');
+
+    expect(
+      ledgerIngestCoreTestOnly.serializeDedupeCandidate(undefined, true)
+    ).toBe('');
+    expect(ledgerIngestCoreTestOnly.serializeDedupeCandidate(12, true)).toBe(
+      '12'
+    );
+  });
+
+  it('covers value coercion helpers', () => {
+    expect(ledgerIngestCoreTestOnly.normalizeDate('2026-03-30')).toBe(
+      '2026-03-30'
+    );
+    expect(ledgerIngestCoreTestOnly.normalizeDate('not-a-date')).toBe('');
+    expect(ledgerIngestCoreTestOnly.normalizeAmount(4)).toBe(4);
+    expect(ledgerIngestCoreTestOnly.normalizeAmount('12.5')).toBe(12.5);
+    expect(ledgerIngestCoreTestOnly.normalizeAmount('n/a')).toBe(0);
+    expect(ledgerIngestCoreTestOnly.coerceNumericValue('-')).toBe(0);
+    expect(ledgerIngestCoreTestOnly.normalizeCurrency(' eur ')).toBe('EUR');
+    expect(ledgerIngestCoreTestOnly.normalizeCurrency('   ')).toBe('USD');
+    expect(
+      ledgerIngestCoreTestOnly.normalizeDescription('  Hello   World ')
+    ).toBe('hello world');
+    expect(ledgerIngestCoreTestOnly.normalizeDescription(null)).toBe('');
+    expect(ledgerIngestCoreTestOnly.ensureString(undefined)).toBeUndefined();
+    expect(ledgerIngestCoreTestOnly.ensureString(7)).toBe('7');
+    expect(ledgerIngestCoreTestOnly.stringForNormalization(undefined)).toBe('');
+    expect(ledgerIngestCoreTestOnly.stringForNormalization(7)).toBe('7');
+    expect(ledgerIngestCoreTestOnly.trimOrEmpty(undefined)).toBe('');
+    expect(ledgerIngestCoreTestOnly.trimOrEmpty('  x  ')).toBe('x');
+  });
+
+  it('covers required-field detection branches', () => {
+    const mapping = {
+      postedDate: 'date',
+      amount: 'amount',
+      description: 'description',
+      currency: 'currency',
+      recordId: 'id',
+    };
+
+    expect(
+      ledgerIngestCoreTestOnly.getRequiredRawValue(
+        { date: '2026-03-01' },
+        mapping,
+        'postedDate'
+      )
+    ).toBe('2026-03-01');
+    expect(
+      ledgerIngestCoreTestOnly.getRequiredRawValue({}, mapping, 'postedDate')
+    ).toBeUndefined();
+    expect(
+      ledgerIngestCoreTestOnly.findMissingRequiredFields(
+        { date: '2026-03-01', amount: '', description: 'Coffee' },
+        mapping
+      )
+    ).toEqual(['amount']);
+  });
+
+  it('covers toy fixture selection and import detection branches', () => {
+    expect(ledgerIngestToyTestOnly.isKnownFixture('happyPath')).toBe(true);
+    expect(ledgerIngestToyTestOnly.isKnownFixture('missing')).toBe(false);
+    expect(ledgerIngestToyTestOnly.resolveFixture({ fixture: 'missing' })).toBe(
+      'happyPath'
+    );
+    expect(
+      ledgerIngestToyTestOnly.resolveFixture({
+        fixture: 'duplicateDetection',
+      })
+    ).toBe('duplicateDetection');
+    expect(ledgerIngestToyTestOnly.isImportInput(null)).toBe(false);
+    expect(ledgerIngestToyTestOnly.isImportInput({ rawRecords: [] })).toBe(
+      true
+    );
+    expect(
+      ledgerIngestToyTestOnly.buildResponsePayload(
+        'jsonImport',
+        {
+          canonicalTransactions: [],
+          duplicateReports: [],
+          errorReports: [],
+          summary: {},
+          policy: {},
+        },
+        'json'
+      )
+    ).toMatchObject({
+      inputMode: 'json',
+      fixture: 'jsonImport',
     });
   });
 });

@@ -221,6 +221,36 @@ export const fixtures = {
   },
 };
 
+export const ledgerIngestCoreTestOnly = {
+  getSourceLabel,
+  getRawRecords,
+  findMissingRequiredFields,
+  isMissingRequiredField,
+  getRequiredRawValue,
+  isMissingRequiredValue,
+  isBlankStringValue,
+  normalizeFieldMapping,
+  sanitizeFieldMapping,
+  normalizeDedupePolicy,
+  sanitizePolicy,
+  sanitizePolicyName,
+  sanitizePolicyStrategy,
+  sanitizePolicyCandidateFields,
+  sanitizePolicyCaseInsensitive,
+  buildNormalizedTransaction,
+  buildTransactionId,
+  buildDedupeKey,
+  serializeDedupeCandidate,
+  normalizeDate,
+  normalizeAmount,
+  coerceNumericValue,
+  stringForNormalization,
+  normalizeCurrency,
+  trimOrEmpty,
+  normalizeDescription,
+  ensureString,
+};
+
 /**
  * Import transactions using a deterministic, pure policy-driven core.
  * @param {ImportTransactionsInput} input Input bundle for the import run.
