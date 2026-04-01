@@ -1,5 +1,9 @@
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
+const COPY_BUTTON_LABEL = 'Copy to clipboard';
+const COPIED_BUTTON_LABEL = 'Copied!';
+const COPY_FEEDBACK_DELAY_MS = 1000;
+
 /**
  * Read the browser clipboard object from DOM helpers.
  * @param {DOMHelpers} dom - DOM helper facade.
@@ -29,28 +33,102 @@ function logCopyFailure(dom, error) {
  * @param {string} inputString - Raw output text to copy.
  * @param {Clipboard} clipboard - Clipboard object.
  * @param {DOMHelpers} dom - DOM helper facade.
- * @returns {Promise<void>} Copy completion promise.
+ * @returns {Promise<boolean>} True when the copy operation succeeds.
  */
-function copyUsingClipboard(inputString, clipboard, dom) {
-  return clipboard.writeText(inputString).catch(error => {
+async function copyUsingClipboard(inputString, clipboard, dom) {
+  try {
+    await clipboard.writeText(inputString);
+    return true;
+  } catch (error) {
     logCopyFailure(dom, error);
-  });
+    return false;
+  }
 }
 
 /**
  * Copy text to the browser clipboard.
  * @param {string} inputString - Raw output text to copy.
  * @param {DOMHelpers} dom - DOM helper facade.
- * @returns {Promise<void>} Copy completion promise.
+ * @returns {Promise<boolean>} True when the copy operation succeeds.
  */
 async function copyToClipboard(inputString, dom) {
   const clipboard = getClipboard(dom);
   if (!clipboard) {
     logCopyFailure(dom, new Error('navigator.clipboard is not available'));
+    return false;
+  }
+
+  return copyUsingClipboard(inputString, clipboard, dom);
+}
+
+/**
+ * Clear a pending copy feedback timeout.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   state: { timeoutHandle: number | null },
+ * }} options - Copy feedback state.
+ * @returns {void}
+ */
+function clearCopyFeedbackTimeout(options) {
+  const { dom, state } = options;
+  if (state.timeoutHandle === null) {
     return;
   }
 
-  await copyUsingClipboard(inputString, clipboard, dom);
+  dom.clearTimeout(state.timeoutHandle);
+  state.timeoutHandle = null;
+}
+
+/**
+ * Restore the copy button label.
+ * @param {{
+ *   button: HTMLElement,
+ *   dom: DOMHelpers,
+ *   state: { timeoutHandle: number | null },
+ * }} options - Copy feedback state.
+ * @returns {void}
+ */
+function resetCopyButtonLabel(options) {
+  const { button, dom, state } = options;
+  dom.setTextContent(button, COPY_BUTTON_LABEL);
+  state.timeoutHandle = null;
+}
+
+/**
+ * Show temporary success feedback after a copy.
+ * @param {{
+ *   button: HTMLElement,
+ *   dom: DOMHelpers,
+ *   state: { timeoutHandle: number | null },
+ * }} options - Copy feedback state.
+ * @returns {void}
+ */
+function showCopySuccessFeedback(options) {
+  const { button, dom, state } = options;
+  clearCopyFeedbackTimeout(options);
+  dom.setTextContent(button, COPIED_BUTTON_LABEL);
+  state.timeoutHandle = dom.setTimeout(() => {
+    resetCopyButtonLabel({ button, dom, state });
+  }, COPY_FEEDBACK_DELAY_MS);
+}
+
+/**
+ * Handle a click on the copy button.
+ * @param {{
+ *   button: HTMLElement,
+ *   dom: DOMHelpers,
+ *   inputString: string,
+ *   state: { timeoutHandle: number | null },
+ * }} options - Click handler dependencies.
+ * @returns {Promise<void>} Copy completion promise.
+ */
+async function handleCopyButtonClick(options) {
+  const { dom, inputString } = options;
+  if (!(await copyToClipboard(inputString, dom))) {
+    return;
+  }
+
+  showCopySuccessFeedback(options);
 }
 
 /**
@@ -61,11 +139,19 @@ async function copyToClipboard(inputString, dom) {
  */
 export function createCopyToClipboardButtonElement(inputString, dom) {
   const button = dom.createElement('button');
+  const state = {
+    timeoutHandle: null,
+  };
   dom.setType(button, 'button');
-  dom.setTextContent(button, 'Copy to clipboard');
+  dom.setTextContent(button, COPY_BUTTON_LABEL);
   dom.addEventListener(button, 'click', event => {
     event.preventDefault();
-    copyToClipboard(inputString, dom);
+    return handleCopyButtonClick({
+      button,
+      dom,
+      inputString,
+      state,
+    });
   });
   return button;
 }
