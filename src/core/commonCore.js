@@ -140,11 +140,7 @@ export function normalizeNonStringValue(value) {
  * @returns {T | null} Callback result or `null` when the input is nullish.
  */
 export function whenNotNullish(value, fn) {
-  if (isNullish(value)) {
-    return null;
-  }
-
-  return fn(value);
+  return whenValueMatches(value, isNullish, fn);
 }
 
 /**
@@ -169,11 +165,32 @@ export function stringOrFallback(value, fallback) {
  * @template T
  */
 export function whenString(value, fn) {
-  if (typeof value !== 'string') {
+  return whenValueMatches(value, isNotStringValue, fn);
+}
+
+/**
+ * Run the callback when the supplied predicate says the value is acceptable.
+ * @template T
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown) => boolean} isRejected Predicate that identifies values to skip.
+ * @param {(value: unknown) => T} fn Callback invoked when the value passes the predicate.
+ * @returns {T | null} Callback result or `null` when the predicate rejects the value.
+ */
+function whenValueMatches(value, isRejected, fn) {
+  if (isRejected(value)) {
     return null;
   }
 
   return fn(value);
+}
+
+/**
+ * Check whether the candidate is not a string value.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is not a string.
+ */
+function isNotStringValue(value) {
+  return typeof value !== 'string';
 }
 
 /**

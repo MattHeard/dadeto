@@ -1,3 +1,5 @@
+import { whenString } from '../commonCore.js';
+
 export const DEFAULT_SEQUENCE = [
   { id: 'thesis', title: 'Thesis' },
   { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
@@ -41,12 +43,26 @@ export function getDraftNumber(step) {
  * @returns {string} Heading text without the leading `#`, or an empty string.
  */
 export function extractLevelOneHeading(content) {
-  const match = content.match(/^# (.+)$/m);
-  if (!match) {
+  const heading = getLevelOneHeading(content);
+  if (heading === null) {
     return '';
   }
 
-  return match[1].trim();
+  return heading.trim();
+}
+
+/**
+ * Read the first level-one heading without trimming it.
+ * @param {string} content - Markdown content to inspect.
+ * @returns {string | null} Heading text when present, otherwise null.
+ */
+function getLevelOneHeading(content) {
+  const match = content.match(/^# (.+)$/m);
+  if (!match) {
+    return null;
+  }
+
+  return match[1];
 }
 
 /**
@@ -156,11 +172,7 @@ function isWorkflowIndex(value) {
  */
 function normalizeHeading(workflow) {
   const heading = getWorkflowProperty(workflow, 'heading');
-  if (typeof heading !== 'string') {
-    return '';
-  }
-
-  return heading.trim();
+  return whenString(heading, value => value.trim()) ?? '';
 }
 
 /**

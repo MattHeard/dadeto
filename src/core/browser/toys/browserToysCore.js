@@ -65,18 +65,32 @@ export function parseJsonOrFallback(json, fallback = null) {
 }
 
 /**
+ * Run a toy and return the handler result string, falling back on error.
+ * @param {string} input - Raw toy input string.
+ * @param {(input: string) => string} handler - Handler that runs the toy logic.
+ * @param {string} fallback - Result string to return on failure.
+ * @returns {string} Result string or the fallback on failure.
+ */
+export function runToyWithFallback(input, handler, fallback) {
+  try {
+    return handler(input);
+  } catch {
+    return fallback;
+  }
+}
+
+/**
  * Run a toy with parsed JSON input and return the handler result string.
  * @param {string} input - JSON payload string.
  * @param {(parsed: object) => string} handler - Handler that runs the toy logic.
  * @returns {string} Result string or `'{}'` on parse failure.
  */
 export function runToyWithParsedJson(input, handler) {
-  try {
-    const parsed = JSON.parse(input);
-    return handler(parsed);
-  } catch {
-    return JSON.stringify({});
-  }
+  return runToyWithFallback(
+    input,
+    value => handler(JSON.parse(value)),
+    JSON.stringify({})
+  );
 }
 
 /**

@@ -16,18 +16,23 @@ export function parseReadyBeads(output) {
  * @returns {{ id: string, title: string, priority: string } | null} Parsed bead summary.
  */
 function parseReadyLine(line) {
-  const match = line.match(
-    /^\d+\.\s+\[(.+?)\]\s+\[.+?\]\s+([a-z0-9-]+):\s+(.+)$/i
-  );
-  if (!match) {
+  const groups = getReadyLineGroups(line);
+  if (!groups) {
     return null;
   }
 
-  return {
-    priority: match[1],
-    id: match[2],
-    title: match[3],
-  };
+  return groups;
+}
+
+/**
+ * Extract the structured fields from a ready-list line.
+ * @param {string} line - Bead list line to inspect.
+ * @returns {{ priority: string, id: string, title: string } | null} Parsed ready-line fields or null.
+ */
+function getReadyLineGroups(line) {
+  return line.match(
+    /^\d+\.\s+\[(?<priority>.+?)\]\s+\[.+?\]\s+(?<id>[a-z0-9-]+):\s+(?<title>.+)$/i
+  )?.groups;
 }
 
 /**

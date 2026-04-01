@@ -6,6 +6,7 @@
  */
 
 import { parseCsvLine } from './toys-core.js';
+import { runToyWithFallback } from '../browserToysCore.js';
 
 /**
  * Throw a descriptive error when a CSV precondition fails.
@@ -76,9 +77,9 @@ function buildObjectFromCsv(input) {
  * @returns {string} Stringified JSON object built from the CSV input.
  */
 export function csvToJsonObjectToy(input) {
-  try {
-    return JSON.stringify(buildObjectFromCsv(input));
-  } catch {
-    return JSON.stringify({});
-  }
+  return runToyWithFallback(
+    input,
+    value => JSON.stringify(buildObjectFromCsv(value)),
+    JSON.stringify({})
+  );
 }
