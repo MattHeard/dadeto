@@ -50,33 +50,25 @@ function generateClues(input) {
  */
 function getShipCells(ship) {
   if (ship.direction === 'H') {
-    return getHorizontalCells(ship);
+    return getCellsAlongAxis(ship, 1, 0);
   }
-  return getVerticalCells(ship);
+  return getCellsAlongAxis(ship, 0, 1);
 }
 
 /**
- * Return the horizontal coordinates for the provided ship.
- * @param {BattleshipShip} ship - Ship placed horizontally.
+ * Return the coordinates for the provided ship along the supplied axis.
+ * @param {BattleshipShip} ship - Ship to expand into cell coordinates.
+ * @param {number} stepX - X increment per ship segment.
+ * @param {number} stepY - Y increment per ship segment.
  * @returns {BattleshipCoordinate[]} Coordinates along the row.
  */
-function getHorizontalCells(ship) {
+function getCellsAlongAxis(ship, stepX, stepY) {
   const cells = [];
   for (let i = 0; i < ship.length; i++) {
-    cells.push({ x: ship.start.x + i, y: ship.start.y });
-  }
-  return cells;
-}
-
-/**
- * Return the vertical coordinates for the provided ship.
- * @param {BattleshipShip} ship - Ship placed vertically.
- * @returns {BattleshipCoordinate[]} Coordinates along the column.
- */
-function getVerticalCells(ship) {
-  const cells = [];
-  for (let i = 0; i < ship.length; i++) {
-    cells.push({ x: ship.start.x, y: ship.start.y + i });
+    cells.push({
+      x: ship.start.x + i * stepX,
+      y: ship.start.y + i * stepY,
+    });
   }
   return cells;
 }
