@@ -1,0 +1,4 @@
+- unexpected hurdle: lint noise was spread across many domains (core, toys, tests), so a broad pass risked touching non-core areas against the request constraints.
+- diagnosis path: ran `npm run lint`, then scoped fixes to `src/core/` warnings that were high-signal and low-risk (JSDoc undefined types, no-void no-ops, duplicate imports, no-param-reassign, and small complexity/ternary hotspots).
+- chosen fix: refactored capture button label plumbing to object params, replaced undefined JSDoc types with explicit function signatures, removed param reassignment/duplicate imports, and tightened small helpers to reduce warning count.
+- next-time guidance: when lint limits are strict (complexity=2), prefer extracting one-purpose helpers early and running lint iteratively to avoid large rewrites.

@@ -1318,9 +1318,7 @@ function detectCurrentControlCapture(state, snapshot) {
 function registerClick(options) {
   const { dom, element, handler, disposers } = options;
   dom.addEventListener(element, 'click', handler);
-  disposers.push(_globalThisArg =>
-    dom.removeEventListener(element, 'click', handler)
-  );
+  disposers.push(() => dom.removeEventListener(element, 'click', handler));
 }
 
 /**

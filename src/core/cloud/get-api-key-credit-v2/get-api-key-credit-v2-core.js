@@ -123,9 +123,11 @@ export function extractUuid(request) {
  * }>} Handler producing HTTP response metadata.
  */
 export function createGetApiKeyCreditV2Handler(deps) {
-  deps = deps || {};
+  const resolvedDeps = deps || {};
   const { fetchCredit, resolveUuid, errorLogger } =
-    resolveV2HandlerDependencies(/** @type {HandlerDependencies} */ (deps));
+    resolveV2HandlerDependencies(
+      /** @type {HandlerDependencies} */ (resolvedDeps)
+    );
 
   return async function handleRequest(request = {}) {
     const method = deriveRequestMethod(request.method);

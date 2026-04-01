@@ -20,21 +20,21 @@
 
 /**
  * Update a capture button label based on the current capture state.
- * @param {DOMHelpers} dom - DOM helper utilities.
- * @param {HTMLButtonElement} button - Capture button element.
- * @param {boolean} isCapturing - Whether capture is active.
- * @param {string} captureLabel - Label shown while capture is idle.
- * @param {string} releaseLabel - Label shown while capture is active.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   button: HTMLButtonElement,
+ *   isCapturing: boolean,
+ *   captureLabel: string,
+ *   releaseLabel: string,
+ * }} options - Capture button state and labels.
  * @returns {void}
  */
-export function updateCaptureButtonLabel(
-  dom,
-  button,
-  isCapturing,
-  captureLabel,
-  releaseLabel
-) {
-  dom.setTextContent(button, isCapturing ? releaseLabel : captureLabel);
+export function updateCaptureButtonLabel(options) {
+  let label = options.captureLabel;
+  if (options.isCapturing) {
+    label = options.releaseLabel;
+  }
+  options.dom.setTextContent(options.button, label);
 }
 
 /**

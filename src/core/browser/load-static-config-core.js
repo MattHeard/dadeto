@@ -115,10 +115,10 @@ function resolveLogWarn(warn) {
     /**
      * @param {string} message Warning text describing the issue.
      * @param {unknown} [error] Optional error payload captured during logging.
+     * @returns {[string, unknown]} Tuple used to mark fallback arguments as consumed.
      */
     (message, error) => {
-      void message;
-      void error;
+      return [message, error];
     };
   return /** @type {(message: string, error?: unknown) => void} */ (
     functionOrFallback(warn, fallbackLogger)
