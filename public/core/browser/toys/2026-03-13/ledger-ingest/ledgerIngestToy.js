@@ -28,7 +28,9 @@ function isImportInput(candidate) {
   return Boolean(
     candidate &&
       typeof candidate === 'object' &&
-      Array.isArray(/** @type {{ rawRecords?: unknown }} */ (candidate).rawRecords)
+      Array.isArray(
+        /** @type {{ rawRecords?: unknown }} */ (candidate).rawRecords
+      )
   );
 }
 

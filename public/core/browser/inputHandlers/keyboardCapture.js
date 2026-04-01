@@ -169,8 +169,8 @@ const buildKeyboardCaptureFormContext = ({
     container,
     dom
   );
-  const handleToggle =
-    captureLifecycleDeps.createCaptureLifecycleToggleHandler({
+  const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
+    {
       dom,
       button,
       textInput,
@@ -178,7 +178,8 @@ const buildKeyboardCaptureFormContext = ({
       state,
       updateButtonLabel: updateCaptureButton,
       emitPayload: captureLifecycleDeps.syncToyPayload,
-    });
+    }
+  );
   const handleKeyboard = createKeyboardHandler({
     dom,
     button,
