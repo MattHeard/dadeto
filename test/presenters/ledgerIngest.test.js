@@ -39,7 +39,7 @@ describe('createLedgerIngestReportElement', () => {
     expect(result.textContent).toBe(input);
   });
 
-  test('renders canonical transactions as a table with collapsible details', () => {
+  test('renders canonical transactions as a flat table', () => {
     const dom = createMockDom();
     const payload = {
       fixture: 'jsonImport',
@@ -109,7 +109,11 @@ describe('createLedgerIngestReportElement', () => {
       'Amount',
       'Currency',
       'Description',
-      'Columns',
+      'Dedupe key',
+      'Source',
+      'Raw index',
+      'Source record id',
+      'Raw record',
     ]);
     const row = tbody.children[0];
     expect(row.children[0].textContent).toBe(
@@ -119,21 +123,11 @@ describe('createLedgerIngestReportElement', () => {
     expect(row.children[2].textContent).toBe('12');
     expect(row.children[3].textContent).toBe('USD');
     expect(row.children[4].textContent).toBe('coffee shop');
-    const details = row.children[5].children[0];
-    const detailsTable = details.children[1];
-    const detailsBody = detailsTable.children[0];
-    const detailsFirstRow = detailsBody.children[0];
-
-    expect(details.className).toBe('ledger-ingest-transactions-details');
-    expect(details.children[0].textContent).toBe('Show 5 columns');
-    expect(detailsFirstRow.children[0].textContent).toBe('Dedupe key');
-    expect(detailsFirstRow.children[1].textContent).toBe(
-      '2026-03-01|12|coffee shop'
-    );
-    expect(detailsBody.children[3].children[1].textContent).toBe('—');
-    expect(detailsBody.children[4].children[1].textContent).toContain(
-      '"id": "row-1"'
-    );
+    expect(row.children[5].textContent).toBe('2026-03-01|12|coffee shop');
+    expect(row.children[6].textContent).toBe('ember-bank-us');
+    expect(row.children[7].textContent).toBe('0');
+    expect(row.children[8].textContent).toBe('—');
+    expect(row.children[9].textContent).toContain('"id": "row-1"');
     expect(duplicates.children[0].textContent).toBe('Duplicate reports');
     expect(errors.children[0].textContent).toBe('Error reports');
     expect(summary.children[0].textContent).toBe('Summary');

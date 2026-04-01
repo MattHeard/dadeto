@@ -24,12 +24,6 @@ const TABLE_BODY_CLASS = 'ledger-ingest-transactions-body';
 const TABLE_ROW_CLASS = 'ledger-ingest-transactions-row';
 const TABLE_CELL_CLASS = 'ledger-ingest-transactions-cell';
 const TABLE_HEADER_CELL_CLASS = 'ledger-ingest-transactions-header-cell';
-const DETAILS_CLASS = 'ledger-ingest-transactions-details';
-const DETAILS_SUMMARY_CLASS = 'ledger-ingest-transactions-details-summary';
-const DETAILS_TABLE_CLASS = 'ledger-ingest-transactions-details-table';
-const DETAILS_ROW_CLASS = 'ledger-ingest-transactions-details-row';
-const DETAILS_LABEL_CLASS = 'ledger-ingest-transactions-details-label';
-const DETAILS_VALUE_CLASS = 'ledger-ingest-transactions-details-value';
 const FALLBACK_TAG = 'pre';
 const TITLE_TEXT = 'Ledger Ingest';
 
@@ -261,7 +255,11 @@ function createTableHead(dom) {
     'Amount',
     'Currency',
     'Description',
-    'Columns',
+    'Dedupe key',
+    'Source',
+    'Raw index',
+    'Source record id',
+    'Raw record',
   ];
 
   headers.forEach(label => {
@@ -312,6 +310,11 @@ function createTransactionRow(transaction, dom) {
     transaction.amount,
     transaction.currency,
     transaction.description,
+    transaction.dedupeKey,
+    transaction.source,
+    transaction.rawIndex,
+    transaction.sourceRecordId,
+    formatJson(transaction.metadata.rawRecord),
   ];
 
   cells.forEach(cell => {
@@ -324,83 +327,7 @@ function createTransactionRow(transaction, dom) {
       })
     );
   });
-
-  dom.appendChild(row, createTransactionDetails(transaction, dom));
   return row;
-}
-
-/**
- * Build the collapsible advanced-columns cell for a canonical transaction.
- * @param {LedgerIngestTransaction} transaction Canonical transaction row.
- * @param {DOMHelpers} dom DOM helper facade.
- * @returns {HTMLElement} Table cell containing the disclosure control.
- */
-function createTransactionDetails(transaction, dom) {
-  const cell = dom.createElement('td');
-  dom.setClassName(cell, TABLE_CELL_CLASS);
-
-  const details = dom.createElement('details');
-  dom.setClassName(details, DETAILS_CLASS);
-
-  const summary = createTextElement(dom, {
-    tag: 'summary',
-    className: DETAILS_SUMMARY_CLASS,
-    text: 'Show 5 columns',
-  });
-
-  dom.appendChild(details, summary);
-  dom.appendChild(details, createTransactionDetailsTable(transaction, dom));
-  dom.appendChild(cell, details);
-  return cell;
-}
-
-/**
- * Build the table used inside the collapse control.
- * @param {LedgerIngestTransaction} transaction Canonical transaction row.
- * @param {DOMHelpers} dom DOM helper facade.
- * @returns {HTMLElement} Details table element.
- */
-function createTransactionDetailsTable(transaction, dom) {
-  const table = dom.createElement('table');
-  dom.setClassName(table, DETAILS_TABLE_CLASS);
-
-  const body = dom.createElement('tbody');
-  const rows = [
-    ['Dedupe key', transaction.dedupeKey],
-    ['Source', transaction.source],
-    ['Raw index', transaction.rawIndex],
-    ['Source record id', transaction.sourceRecordId],
-    ['Raw record', transaction.metadata.rawRecord],
-  ];
-
-  rows.forEach(([label, value]) => {
-    const row = dom.createElement('tr');
-    dom.setClassName(row, DETAILS_ROW_CLASS);
-    dom.appendChild(
-      row,
-      createTextElement(dom, {
-        tag: 'th',
-        className: DETAILS_LABEL_CLASS,
-        text: label,
-      })
-    );
-    let cellText = formatDisplayValue(value);
-    if (label === 'Raw record') {
-      cellText = formatJson(value);
-    }
-    dom.appendChild(
-      row,
-      createTextElement(dom, {
-        tag: 'td',
-        className: DETAILS_VALUE_CLASS,
-        text: cellText,
-      })
-    );
-    dom.appendChild(body, row);
-  });
-
-  dom.appendChild(table, body);
-  return table;
 }
 
 /**
@@ -574,8 +501,6 @@ export const ledgerIngestReportTestOnly = {
   createTableHead,
   createTableBody,
   createTransactionRow,
-  createTransactionDetails,
-  createTransactionDetailsTable,
   formatDisplayValue,
   renderLedgerIngestReport,
   getSummaryValue,
