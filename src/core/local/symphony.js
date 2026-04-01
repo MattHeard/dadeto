@@ -444,7 +444,7 @@ function buildRunnerLastOutcome(outcome) {
  * @returns {string} Operator-visible evidence line for the outcome.
  */
 function buildRunnerOutcomeEvidence(outcomeKind, outcome) {
-  return `Runner ${outcomeKind} ${outcome.beadId}: ${outcome.summary}`;
+  return buildRunnerEvidenceLine(`Runner ${outcomeKind} `, outcome);
 }
 
 /**
@@ -639,7 +639,7 @@ function buildRunnerLaunchFailureQueueEvidence(failure) {
  * @returns {string} Queue evidence line for blocked outcomes.
  */
 function buildRunnerOutcomeQueueEvidence(outcome) {
-  return `${outcome.beadId}: ${outcome.summary}`;
+  return buildRunnerEvidenceLine('', outcome);
 }
 
 /**
@@ -664,6 +664,16 @@ function buildRunnerOutcomeEventMessage(outcome) {
   }
 
   return `bead closed: ${getBeadIdOrUnknown(outcome.beadId)}`;
+}
+
+/**
+ * Build a runner evidence line from a prefix and outcome payload.
+ * @param {string} prefix Evidence label prefix.
+ * @param {{ beadId: string, summary: string }} outcome Outcome payload.
+ * @returns {string} Evidence line.
+ */
+function buildRunnerEvidenceLine(prefix, outcome) {
+  return `${prefix}${outcome.beadId}: ${outcome.summary}`;
 }
 
 /**
