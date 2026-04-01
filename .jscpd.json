@@ -3,7 +3,7 @@
     "src/core"
   ],
   "mode": "strict",
-  "minTokens": 33,
+  "minTokens": 32,
   "reporters": [
     "html",
     "json"

@@ -96,6 +96,45 @@ function getEventGamepad(event) {
 }
 
 /**
+ * Build a payload from a gamepad and a payload field object.
+ * @param {Gamepad} gamepad - Browser gamepad object.
+ * @param {{
+ *   type: string,
+ *   fields: Record<string, unknown>,
+ * }} options - Payload builder settings.
+ * @returns {Record<string, unknown>} Serialized payload data.
+ */
+function buildGamepadPayload(gamepad, options) {
+  const { type, fields } = options;
+  return {
+    type,
+    ...buildGamepadMetadata(gamepad),
+    ...fields,
+  };
+}
+
+/**
+ * Build a gamepad payload when a gamepad is available.
+ * @param {{
+ *   gamepad: Gamepad | null,
+ *   type: string,
+ *   buildFields: () => Record<string, unknown>,
+ * }} options - Payload settings.
+ * @returns {Record<string, unknown> | null} Serialized payload data when a gamepad exists.
+ */
+function buildGamepadPayloadFromGamepad(options) {
+  const { gamepad, type, buildFields } = options;
+  if (gamepad === null) {
+    return null;
+  }
+
+  return buildGamepadPayload(gamepad, {
+    type,
+    fields: buildFields(),
+  });
+}
+
+/**
  * Build a connection-style payload from a browser gamepad event.
  * @param {GamepadEvent | { gamepad?: Gamepad }} event - Connection or disconnection event.
  * @param {string} type - Payload type to emit.
@@ -103,16 +142,14 @@ function getEventGamepad(event) {
  */
 function buildConnectionPayload(event, type) {
   const gamepad = getEventGamepad(event);
-  if (gamepad === null) {
-    return null;
-  }
-
-  return {
+  return buildGamepadPayloadFromGamepad({
+    gamepad,
     type,
-    ...buildGamepadMetadata(gamepad),
-    axes: Array.from(gamepad.axes, normalizeAxisValue),
-    buttons: buildConnectionButtons(gamepad),
-  };
+    buildFields: () => ({
+      axes: Array.from(gamepad.axes, normalizeAxisValue),
+      buttons: buildConnectionButtons(gamepad),
+    }),
+  });
 }
 
 /**
@@ -342,11 +379,11 @@ function buildChangedPayload(gamepad, options) {
     return null;
   }
 
-  return {
+  return buildGamepadPayloadFromGamepad({
+    gamepad,
     type,
-    ...buildGamepadMetadata(gamepad),
-    ...buildFields(changedIndex),
-  };
+    buildFields: () => buildFields(changedIndex),
+  });
 }
 
 /**
@@ -599,21 +636,38 @@ function createConnectionHandler(options) {
 }
 
 /**
+ * Run a handler only when a payload exists.
+ * @param {{
+ *   payload: Record<string, unknown> | null,
+ *   onPresent: (payload: Record<string, unknown>) => void,
+ * }} options - Payload handling settings.
+ * @returns {void}
+ */
+function handlePayloadIfPresent(options) {
+  const { payload, onPresent } = options;
+  if (payload === null) {
+    return;
+  }
+
+  onPresent(payload);
+}
+
+/**
  * Handle a browser `gamepadconnected` event.
  * @param {HandlerOptions} options - Shared handler dependencies.
  * @param {GamepadEvent | { gamepad?: Gamepad }} event - Connection event.
  * @returns {void}
  */
 function handleConnectionEvent(options, event) {
-  const payload = getHandledConnectionPayload(options.state, event);
-  if (payload === null) {
-    return;
-  }
-
-  const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
-  storeSnapshot(options.state, gamepad);
-  emitGamepadPayload(options, payload);
-  queuePoll(options);
+  handlePayloadIfPresent({
+    payload: getHandledConnectionPayload(options.state, event),
+    onPresent: payload => {
+      const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
+      storeSnapshot(options.state, gamepad);
+      emitGamepadPayload(options, payload);
+      queuePoll(options);
+    },
+  });
 }
 
 /**
@@ -634,13 +688,13 @@ function createDisconnectHandler(options) {
  * @returns {void}
  */
 function handleDisconnectEvent(options, event) {
-  const payload = getHandledDisconnectionPayload(options.state, event);
-  if (payload === null) {
-    return;
-  }
-
-  removeSnapshot(options.state, getEventGamepad(event));
-  emitGamepadPayload(options, payload);
+  handlePayloadIfPresent({
+    payload: getHandledDisconnectionPayload(options.state, event),
+    onPresent: payload => {
+      removeSnapshot(options.state, getEventGamepad(event));
+      emitGamepadPayload(options, payload);
+    },
+  });
 }
 
 /**
