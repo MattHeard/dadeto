@@ -22,5 +22,37 @@ export function createParagraphElement(inputString, dom) {
   return paragraph;
 }
 
+/**
+ * Create a div element with the supplied class name for presenter roots.
+ * @param {{createElement: Function, setClassName: Function}} dom - DOM helpers.
+ * @param {string} className - Class name to apply to the root element.
+ * @returns {HTMLElement} `<div>` root element for a presenter.
+ */
+export function createPresenterRoot(dom, className) {
+  const root = dom.createElement('div');
+  dom.setClassName(root, className);
+  return root;
+}
+
+/**
+ * Render a parsed presenter payload or return the fallback element.
+ * @param {{
+ *   inputString: string,
+ *   dom: { createElement: Function, setClassName: Function, setTextContent: Function },
+ *   parse: (inputString: string) => unknown,
+ *   render: (parsed: unknown, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
+ *   createFallback: (inputString: string, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
+ * }} options Presenter rendering options.
+ * @returns {HTMLElement} Rendered presenter output.
+ */
+export function renderParsedPresenter(options) {
+  const parsed = options.parse(options.inputString);
+  if (!parsed) {
+    return options.createFallback(options.inputString, options.dom);
+  }
+
+  return options.render(parsed, options.dom);
+}
+
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {Pick<DOMHelpers, 'createElement'|'setTextContent'>} PresenterDOMHelpers */

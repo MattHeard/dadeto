@@ -934,6 +934,7 @@ const TOY_OUTPUT_TYPES = [
   ['text', 'text'],
   ['pre', 'pre'],
   ['copy-to-clipboard', 'copy-to-clipboard'],
+  ['ledger-ingest', 'ledger-ingest'],
   ['joycon-mapping', 'joycon-mapping'],
   ['tic-tac-toe', 'tic-tac-toe'],
   ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],

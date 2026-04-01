@@ -93,4 +93,60 @@ describe('setTextContent via handleDropdownChange', () => {
       tagName: 'BUTTON',
     });
   });
+
+  it('uses the ledger ingest presenter for ledger ingest output', () => {
+    const created = {};
+    const dom = {
+      querySelector: jest.fn(() => created),
+      removeAllChildren: jest.fn(),
+      appendChild: jest.fn(),
+      createElement: jest.fn(tag => ({ tagName: tag.toUpperCase() })),
+      setClassName: jest.fn((node, className) => {
+        node.className = className;
+      }),
+      setTextContent: jest.fn(),
+      setType: jest.fn(),
+      addEventListener: jest.fn(),
+      logError: jest.fn(),
+      globalThis: {
+        navigator: {
+          clipboard: {
+            writeText: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+      },
+    };
+    const dropdown = {
+      value: 'ledger-ingest',
+      closest: jest.fn(() => ({ id: 'post-id' })),
+      parentNode: { querySelector: () => created },
+    };
+    const getData = jest.fn(() => ({
+      output: {
+        'post-id': JSON.stringify({
+          fixture: 'jsonImport',
+          inputMode: 'json',
+          canonicalTransactions: [],
+          duplicateReports: [],
+          errorReports: [],
+          summary: {
+            rawRecords: 0,
+            canonicalTransactions: 0,
+            duplicatesDetected: 0,
+            errorsDetected: 0,
+          },
+          policy: {},
+        }),
+      },
+    }));
+
+    handleDropdownChange(dropdown, getData, dom);
+
+    expect(dom.createElement).toHaveBeenCalledWith('div');
+    expect(dom.setClassName).toHaveBeenCalledWith(
+      expect.objectContaining({ tagName: 'DIV' }),
+      'ledger-ingest-output'
+    );
+    expect(dom.appendChild).toHaveBeenCalledWith(created, expect.any(Object));
+  });
 });

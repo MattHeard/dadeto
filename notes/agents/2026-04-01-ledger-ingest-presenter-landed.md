@@ -1,0 +1,4 @@
+- unexpected hurdle: the presenter refactor left a bad JSDoc block in the Joy-Con mapping mirror, so `npm run lint` surfaced warnings even though the functional tests were green.
+- diagnosis path: reran lint, inspected `src/core/browser/presenters/joyConMapping.js` and the public mirror, and confirmed the new shared presenter wrapper had mismatched parameter docs.
+- chosen fix: corrected the JSDoc for the shared render helper and the exported presenter entrypoint in both source and public copies so lint would stay quiet.
+- next-time guidance: when extracting a shared presenter wrapper, update the paired public mirror and the docs in the same edit so the first lint pass does not turn up avoidable warning noise.

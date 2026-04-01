@@ -1,4 +1,8 @@
 import { parseJsonObject } from '../jsonValueHelpers.js';
+import {
+  createPresenterRoot,
+  renderParsedPresenter,
+} from './browserPresentersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ key: string, label: string }} ControlLabel */
@@ -238,18 +242,13 @@ function createFallbackElement(inputString, dom) {
 }
 
 /**
- * @param {string} inputString Serialized toy output payload.
+ * Render the parsed Joy-Con mapping state into a presenter root.
+ * @param {JoyConMappingState} parsed Parsed presenter payload.
  * @param {DOMHelpers} dom DOM helper facade for presenter output.
  * @returns {HTMLElement} Presenter root element.
  */
-export function createJoyConMappingElement(inputString, dom) {
-  const parsed = parseState(inputString);
-  if (!parsed) {
-    return createFallbackElement(inputString, dom);
-  }
-
-  const root = dom.createElement('div');
-  dom.setClassName(root, 'joycon-mapping-output');
+function renderJoyConMappingState(parsed, dom) {
+  const root = createPresenterRoot(dom, 'joycon-mapping-output');
   const title = createTextNode(dom, 'h3', {
     className: 'joycon-mapping-title',
     text: 'Joy-Con Mapping',
@@ -276,4 +275,20 @@ export function createJoyConMappingElement(inputString, dom) {
 
   [title, summary, list].forEach(node => dom.appendChild(root, node));
   return root;
+}
+
+/**
+ * Render the Joy-Con mapping presenter output.
+ * @param {string} inputString Serialized toy output payload.
+ * @param {DOMHelpers} dom DOM helper facade for presenter output.
+ * @returns {HTMLElement} Presenter root element.
+ */
+export function createJoyConMappingElement(inputString, dom) {
+  return renderParsedPresenter({
+    inputString,
+    dom,
+    parse: parseState,
+    render: renderJoyConMappingState,
+    createFallback: createFallbackElement,
+  });
 }

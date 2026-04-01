@@ -1,5 +1,6 @@
 import { blogKeyHandler } from './inputHandlers/blogKeyHandler.js';
 import { createParagraphElement } from './presenters/paragraph.js';
+import { createLedgerIngestReportElement } from './presenters/ledgerIngest.js';
 import { createPrefixedLoggers } from './document.js';
 import { deepClone } from '../core/browser/browser-core.js';
 import {
@@ -385,6 +386,7 @@ const presentersMap = {
   text: createParagraphElement,
   pre: createPreElement,
   'copy-to-clipboard': createCopyToClipboardButtonElement,
+  'ledger-ingest': createLedgerIngestReportElement,
   'tic-tac-toe': createTicTacToeBoardElement,
   'battleship-solitaire-fleet': createBattleshipFleetBoardElement,
   'battleship-solitaire-clues-presenter': createBattleshipCluesBoardElement,
