@@ -131,14 +131,13 @@ function getReadySelectionSummary(input) {
  * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Blocked tracker selection status summary.
  */
 function getBlockedSelectionSummary() {
-  return {
+  return buildSelectionSummary({
     state: 'blocked',
     latestEvidence:
       'WORKFLOW.md is missing; add it before enabling runner scheduling.',
     operatorRecommendation:
       'Add WORKFLOW.md so Symphony can decide what the runner should do next.',
-    queueEvidence: [],
-  };
+  });
 }
 
 /**
@@ -146,13 +145,12 @@ function getBlockedSelectionSummary() {
  * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Idle tracker selection status summary.
  */
 function getIdleSelectionSummary(input) {
-  return {
+  return buildSelectionSummary({
     state: 'idle',
     latestEvidence: `${input.lastCommand} found no ready beads.`,
     operatorRecommendation:
       'Create or refresh the next bead before starting another runner loop.',
-    queueEvidence: [],
-  };
+  });
 }
 
 /**
@@ -165,6 +163,18 @@ function getActiveSelectionStateKey(selectedBead) {
   }
 
   return 'ready';
+}
+
+/**
+ * Build a standard selection summary payload.
+ * @param {{ state: string, latestEvidence: string, operatorRecommendation: string }} summary Summary details.
+ * @returns {{ state: string, latestEvidence: string, operatorRecommendation: string, queueEvidence: string[] }} Selection summary payload.
+ */
+function buildSelectionSummary(summary) {
+  return {
+    ...summary,
+    queueEvidence: [],
+  };
 }
 
 /**
