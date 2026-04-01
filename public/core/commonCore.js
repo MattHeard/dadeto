@@ -92,7 +92,7 @@ function withStringFallback(value, fallback, isNormalizedAcceptable) {
   return returnFallbackValue(
     isAcceptableNormalizedString(normalized, isNormalizedAcceptable),
     /** @type {string} */ (normalized),
-    fallback,
+    fallback
   );
 }
 
@@ -191,7 +191,11 @@ function isNotStringValue(value) {
  * @returns {Function} Callable derived from the candidate or fallback.
  */
 export function functionOrFallback(candidate, fallback) {
-  return returnFallbackValue(typeof candidate === 'function', candidate, fallback);
+  return returnFallbackValue(
+    typeof candidate === 'function',
+    candidate,
+    fallback
+  );
 }
 
 /**
