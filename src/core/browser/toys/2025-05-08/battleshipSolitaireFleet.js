@@ -341,39 +341,22 @@ function isValidCandidate(boardState, segs, valid) {
 function collectCandidatesForStart({ start, length, cfg, occupied }) {
   const directions = /** @type {Array<'H' | 'V'>} */ (['H', 'V']);
   const candidates = /** @type {Candidate[]} */ ([]);
+  const sharedContext = { start, length, cfg, occupied };
   for (const direction of directions) {
-    collectCandidatesForDirection({
-      direction,
-      start,
-      length,
-      cfg,
-      occupied,
-      candidates,
-    });
+    collectCandidatesForDirection(direction, sharedContext, candidates);
   }
   return candidates;
 }
 
 /**
  * Evaluate a single direction for a starting coordinate.
- * @param {{ direction: 'H' | 'V', start: Coord, length: number, cfg: FleetConfig, occupied: Set<string>, candidates: Candidate[] }} params - Directional context.
+ * @param {'H' | 'V'} direction - Ship orientation.
+ * @param {{ start: Coord, length: number, cfg: FleetConfig, occupied: Set<string> }} context - Shared candidate context.
+ * @param {Candidate[]} candidates - Candidate accumulator.
  * @returns {void}
  */
-function collectCandidatesForDirection({
-  direction,
-  start,
-  length,
-  cfg,
-  occupied,
-  candidates,
-}) {
-  const candidate = getCandidateIfInBounds({
-    direction,
-    start,
-    length,
-    cfg,
-    occupied,
-  });
+function collectCandidatesForDirection(direction, context, candidates) {
+  const candidate = getCandidateIfInBounds(direction, context);
   if (candidate) {
     candidates.push(candidate);
   }
@@ -381,30 +364,41 @@ function collectCandidatesForDirection({
 
 /**
  * Check whether the candidate is within board bounds and valid.
- * @param {{ direction: 'H' | 'V', start: Coord, length: number, cfg: FleetConfig, occupied: Set<string> }} params - Candidate context.
+ * @param {'H' | 'V'} direction - Ship orientation.
+ * @param {{ start: Coord, length: number, cfg: FleetConfig, occupied: Set<string> }} context - Shared candidate context.
  * @returns {Candidate | null} Valid candidate or null when out of bounds.
  */
-function getCandidateIfInBounds({ direction, start, length, cfg, occupied }) {
-  const endCoord = getEndCoord(direction, start, length);
-  if (!inBounds(endCoord, cfg)) {
+function getCandidateIfInBounds(direction, context) {
+  const endCoord = getEndCoord(direction, context.start, context.length);
+  if (!inBounds(endCoord, context.cfg)) {
     return null;
   }
-  return getValidCandidate({ direction, start, length, cfg, occupied });
+  return getValidCandidate(direction, context);
 }
 
 /**
  * Validate candidate segments once in bounds.
- * @param {{ direction: 'H' | 'V', start: Coord, length: number, cfg: FleetConfig, occupied: Set<string> }} params - Candidate context.
+ * @param {'H' | 'V'} direction - Ship orientation.
+ * @param {{ start: Coord, length: number, cfg: FleetConfig, occupied: Set<string> }} context - Shared candidate context.
  * @returns {Candidate | null} Valid candidate or null when blocked.
  */
-function getValidCandidate({ direction, start, length, cfg, occupied }) {
-  const segReducer = makeSegReducer(direction, start, occupied);
-  const { segs, valid } = Array.from({ length }).reduce(segReducer, {
-    segs: [],
-    valid: true,
-  });
-  if (isValidCandidate({ cfg, occupied }, segs, valid)) {
-    return { start, length, direction };
+function getValidCandidate(direction, context) {
+  const segReducer = makeSegReducer(direction, context.start, context.occupied);
+  const { segs, valid } = Array.from({ length: context.length }).reduce(
+    segReducer,
+    {
+      segs: [],
+      valid: true,
+    }
+  );
+  if (
+    isValidCandidate(
+      { cfg: context.cfg, occupied: context.occupied },
+      segs,
+      valid
+    )
+  ) {
+    return { start: context.start, length: context.length, direction };
   }
   return null;
 }
