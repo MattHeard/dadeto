@@ -412,8 +412,57 @@ export function random() {
  * @param {string[]} allowedOrigins Allowed origins.
  * @returns {boolean} True if allowed.
  */
-function isOriginAllowed(origin, allowedOrigins = []) {
-  return !origin || allowedOrigins.includes(origin);
+function isOriginAllowed(origin, allowedOrigins) {
+  return resolveOriginAllowance(origin, allowedOrigins);
+}
+
+/**
+ * @param {string | undefined} origin Origin candidate.
+ * @returns {boolean} True when the origin was not provided.
+ */
+function isMissingOrigin(origin) {
+  return !origin;
+}
+
+/**
+ * @param {string | undefined} origin Origin candidate.
+ * @param {string[] | undefined} allowedOrigins Allowed origin list.
+ * @returns {boolean} True when the origin is listed.
+ */
+function isListedOrigin(origin, allowedOrigins) {
+  return allowedOrigins.includes(origin);
+}
+
+/**
+ * @param {string | undefined} origin Origin candidate.
+ * @param {string[] | undefined} allowedOrigins Allowed origin list.
+ * @returns {boolean} True when the origin should be allowed.
+ */
+function resolveOriginAllowance(origin, allowedOrigins) {
+  return isAllowedOriginCandidate(
+    origin,
+    normalizeAllowedOrigins(allowedOrigins)
+  );
+}
+
+/**
+ * @param {string[] | undefined} allowedOrigins Allowed origin list.
+ * @returns {string[]} Normalized origin list.
+ */
+function normalizeAllowedOrigins(allowedOrigins) {
+  return allowedOrigins ?? [];
+}
+
+/**
+ * @param {string | undefined} origin Origin candidate.
+ * @param {string[]} allowedOrigins Allowed origin list.
+ * @returns {boolean} True when the origin is allowed.
+ */
+function isAllowedOriginCandidate(origin, allowedOrigins) {
+  if (isMissingOrigin(origin)) {
+    return true;
+  }
+  return isListedOrigin(origin, allowedOrigins);
 }
 
 /**

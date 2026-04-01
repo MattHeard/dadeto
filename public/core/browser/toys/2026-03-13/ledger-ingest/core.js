@@ -323,9 +323,23 @@ export function importTransactions(input) {
   };
 }
 
-const SOURCE_HANDLERS = {
-  string: candidate => candidate,
-};
+/**
+ * Read the optional source label from the input bundle.
+ * @param {ImportTransactionsInput} input Input bundle that may provide a label.
+ * @returns {unknown} Raw source candidate.
+ */
+function getSourceCandidate(input) {
+  return input && input.source;
+}
+
+/**
+ * Determine whether a source candidate is a usable string label.
+ * @param {unknown} candidate Raw source candidate.
+ * @returns {candidate is string} True when the candidate is a string label.
+ */
+function isSourceLabel(candidate) {
+  return typeof candidate === 'string';
+}
 
 /**
  * Pick a source label from the input while defaulting to the toy identifier.
@@ -333,9 +347,12 @@ const SOURCE_HANDLERS = {
  * @returns {string} Resolved source label.
  */
 function getSourceLabel(input) {
-  const candidate = input?.source;
-  const handler = SOURCE_HANDLERS[typeof candidate];
-  return handler?.(candidate) ?? 'ledger-ingest';
+  const candidate = getSourceCandidate(input);
+  if (isSourceLabel(candidate)) {
+    return candidate;
+  }
+
+  return 'ledger-ingest';
 }
 
 /**

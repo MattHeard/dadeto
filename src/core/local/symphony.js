@@ -176,6 +176,30 @@ function getSelectionStateKey(input) {
 }
 
 /**
+ * @param {'blocked' | 'idle' | 'ready'} selectionStateKey Tracker selection state key.
+ * @returns {(input: Parameters<typeof summarizeTrackerSelection>[0]) => ReturnType<typeof summarizeTrackerSelection>} Summary handler.
+ */
+function getTrackerSelectionSummaryHandler(selectionStateKey) {
+  return (
+    TRACKER_SELECTION_SUMMARY_HANDLERS[selectionStateKey] ??
+    TRACKER_SELECTION_SUMMARY_HANDLERS.ready
+  );
+}
+
+const TRACKER_SELECTION_SUMMARY_HANDLERS = {
+  blocked: () => getBlockedSelectionSummary(),
+  idle: input => getIdleSelectionSummary(input),
+  ready: input =>
+    getReadySelectionSummary({
+      ...input,
+      selectedBead:
+        /** @type {{ id: string, title: string, priority: string }} */ (
+          input.selectedBead
+        ),
+    }),
+};
+
+/**
  * @param {{
  *   workflowExists: boolean,
  *   selectedBead: { id: string, title: string, priority: string } | null,
@@ -186,21 +210,7 @@ function getSelectionStateKey(input) {
  */
 export function summarizeTrackerSelection(input) {
   const selectionStateKey = getSelectionStateKey(input);
-  if (selectionStateKey === 'blocked') {
-    return getBlockedSelectionSummary();
-  }
-
-  if (selectionStateKey === 'idle') {
-    return getIdleSelectionSummary(input);
-  }
-
-  return getReadySelectionSummary({
-    ...input,
-    selectedBead:
-      /** @type {{ id: string, title: string, priority: string }} */ (
-        input.selectedBead
-      ),
-  });
+  return getTrackerSelectionSummaryHandler(selectionStateKey)(input);
 }
 
 const MAX_EVENT_LOG_ENTRIES = 5;
@@ -675,11 +685,22 @@ function formatAgentFailureSummaryMessage(summary) {
  * @returns {string | null} Normalized summary or null when empty.
  */
 function normalizeAgentFailureSummary(summary) {
-  return (
-    String(summary ?? '')
-      .trim()
-      .replace(/\s+/g, ' ') || null
-  );
+  const normalized = trimAgentFailureSummary(summary);
+  if (!normalized) {
+    return null;
+  }
+
+  return normalized;
+}
+
+/**
+ * @param {string | null} summary Raw summary value.
+ * @returns {string} Trimmed summary text.
+ */
+function trimAgentFailureSummary(summary) {
+  return String(summary ?? '')
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
 /**

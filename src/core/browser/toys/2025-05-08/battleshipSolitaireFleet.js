@@ -526,11 +526,31 @@ function shouldAbortPlacement(acc) {
  * @returns {Candidate[] | null} Updated accumulation or null on failure.
  */
 function addPlacedShip(acc, placed) {
-  if (acc === null || placed === null) {
+  if (shouldAbortPlacedShipAddition(acc, placed)) {
     return null;
   }
   acc.push(placed);
   return acc;
+}
+
+/**
+ * @param {Candidate[] | null} acc - Accumulated candidates.
+ * @param {Candidate | null} placed - Placed candidate.
+ * @returns {boolean} True when the placement cannot be recorded.
+ */
+function shouldAbortPlacedShipAddition(acc, placed) {
+  if (isNullCandidate(acc)) {
+    return true;
+  }
+  return isNullCandidate(placed);
+}
+
+/**
+ * @param {Candidate | Candidate[] | null} candidate - Candidate under review.
+ * @returns {boolean} True when the candidate is null.
+ */
+function isNullCandidate(candidate) {
+  return candidate === null;
 }
 
 /**

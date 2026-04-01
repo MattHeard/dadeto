@@ -9,11 +9,33 @@ const DEFAULT_FIXTURE = 'happyPath';
  * @returns {string} Key for an existing fixture.
  */
 function resolveFixture(parsed) {
-  const candidate = parsed?.fixture;
-  if (isKnownFixture(candidate)) {
+  const candidate = getFixtureCandidate(parsed);
+  if (isKnownFixtureCandidate(candidate)) {
     return candidate;
   }
   return DEFAULT_FIXTURE;
+}
+
+/**
+ * Read the optional fixture key from the parsed payload.
+ * @param {Record<string, unknown>} parsed Toy payload parsed from JSON.
+ * @returns {unknown} Raw fixture candidate.
+ */
+function getFixtureCandidate(parsed) {
+  return parsed && parsed.fixture;
+}
+
+/**
+ * Determine whether the candidate is a known fixture key.
+ * @param {unknown} candidate Raw fixture candidate.
+ * @returns {candidate is keyof typeof fixtures} True when the fixture exists.
+ */
+function isKnownFixtureCandidate(candidate) {
+  if (typeof candidate !== 'string') {
+    return false;
+  }
+
+  return isKnownFixture(candidate);
 }
 
 /**
@@ -34,10 +56,27 @@ function isKnownFixture(candidate) {
  * @returns {candidate is { source?: string, rawRecords: Record<string, unknown>[] }} True when the payload is import-ready JSON.
  */
 function isImportInput(candidate) {
-  if (!candidate || typeof candidate !== 'object') {
+  if (!isImportInputObject(candidate)) {
     return false;
   }
 
+  return hasRawRecordsArray(candidate);
+}
+
+/**
+ * @param {unknown} candidate Parsed toy payload.
+ * @returns {boolean} True when the candidate is an object-like payload.
+ */
+function isImportInputObject(candidate) {
+  return candidate !== null && typeof candidate === 'object';
+}
+
+/**
+ * Check whether the candidate payload has a rawRecords array.
+ * @param {object} candidate Parsed toy payload.
+ * @returns {boolean} True when rawRecords is an array.
+ */
+function hasRawRecordsArray(candidate) {
   return Array.isArray(
     /** @type {{ rawRecords?: unknown }} */ (candidate).rawRecords
   );

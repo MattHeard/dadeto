@@ -441,15 +441,51 @@ function handleKeydownGuess(inputEvent, state, getRandomNumber) {
  */
 function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
   const { gameState, keyboardState } = state;
+  const guessKey = getGuessKey(inputEvent);
+  if (shouldSkipGuessApplication(guessKey, keyboardState)) {
+    return state;
+  }
+  return buildAppliedGuessState(gameState, guessKey, getRandomNumber);
+}
+
+/**
+ * @param {HiLoInputEvent} inputEvent - Incoming keyboard event.
+ * @returns {string | null} Guess key when the event carries one.
+ */
+function getGuessKey(inputEvent) {
+  if (!isStringGuessKey(inputEvent.key)) {
+    return null;
+  }
+  return inputEvent.key;
+}
+
+/**
+ * @param {unknown} guessKey - Candidate key from the event.
+ * @returns {boolean} True when the guess key is a string.
+ */
+function isStringGuessKey(guessKey) {
+  return typeof guessKey === 'string';
+}
+
+/**
+ * @param {string | null} guessKey - Guess key candidate.
+ * @param {HiLoKeyboardState} keyboardState - Current keyboard state.
+ * @returns {boolean} True when the guess should be ignored.
+ */
+function shouldSkipGuessApplication(guessKey, keyboardState) {
   if (hasHeldKey(keyboardState)) {
-    return state;
+    return true;
   }
+  return guessKey === null;
+}
 
-  const guessKey = inputEvent.key;
-  if (typeof guessKey !== 'string') {
-    return state;
-  }
-
+/**
+ * @param {HiLoGameState} gameState - Current game state.
+ * @param {string} guessKey - Guess key to apply.
+ * @param {() => number} getRandomNumber - Random number supplier.
+ * @returns {{ gameState: HiLoGameState, keyboardState: HiLoKeyboardState }} Updated state.
+ */
+function buildAppliedGuessState(gameState, guessKey, getRandomNumber) {
   return {
     gameState: applyGuess(gameState, guessKey, getRandomNumber),
     keyboardState: { activeKey: guessKey },

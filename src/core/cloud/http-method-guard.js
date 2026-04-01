@@ -16,12 +16,28 @@ export const METHOD_NOT_ALLOWED_RESPONSE = {
  * @param {{ treatNonStringAsPost?: boolean }} [options] Configuration toggles that adjust guarding behavior.
  * @returns {{ status: number, body: string } | null} Response when the method is invalid.
  */
-export function validatePostMethod(
-  method,
-  errorResponse = METHOD_NOT_ALLOWED_RESPONSE,
-  options = {}
-) {
-  return methodGuard(normalizeMethod(method), options, errorResponse);
+export function validatePostMethod(method, errorResponse, options) {
+  return methodGuard(
+    normalizeMethod(method),
+    resolveGuardOptions(options),
+    resolveErrorResponse(errorResponse)
+  );
+}
+
+/**
+ * @param {{ status: number, body: string } | undefined} errorResponse Response when validation fails.
+ * @returns {{ status: number, body: string }} Normalized error response.
+ */
+function resolveErrorResponse(errorResponse) {
+  return errorResponse ?? METHOD_NOT_ALLOWED_RESPONSE;
+}
+
+/**
+ * @param {{ treatNonStringAsPost?: boolean } | undefined} options Guard configuration.
+ * @returns {{ treatNonStringAsPost?: boolean }} Normalized guard options.
+ */
+function resolveGuardOptions(options) {
+  return options ?? {};
 }
 
 /**
@@ -32,11 +48,19 @@ export function validatePostMethod(
  * @returns {{ status: number, body: string } | null} Guard outcome.
  */
 function methodGuard(normalized, options, errorResponse) {
-  if (normalized === 'POST') {
+  if (isPostMethod(normalized)) {
     return null;
   }
 
   return handleNonPost(normalized, options, errorResponse);
+}
+
+/**
+ * @param {string} normalized Normalized HTTP verb.
+ * @returns {boolean} True when the verb is POST.
+ */
+function isPostMethod(normalized) {
+  return normalized === 'POST';
 }
 
 /**
@@ -47,9 +71,18 @@ function methodGuard(normalized, options, errorResponse) {
  * @returns {{ status: number, body: string } | null} Guard outcome.
  */
 function handleNonPost(normalized, options, errorResponse) {
-  if (normalized === '' && options.treatNonStringAsPost) {
+  if (shouldTreatNonStringAsPost(normalized, options)) {
     return null;
   }
 
   return errorResponse;
+}
+
+/**
+ * @param {string} normalized Normalized HTTP verb.
+ * @param {{ treatNonStringAsPost?: boolean }} options Guard configuration.
+ * @returns {boolean} True when empty verbs should be treated as POST.
+ */
+function shouldTreatNonStringAsPost(normalized, options) {
+  return normalized === '' && options.treatNonStringAsPost;
 }

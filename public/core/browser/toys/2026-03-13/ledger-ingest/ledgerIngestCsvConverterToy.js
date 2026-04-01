@@ -102,11 +102,29 @@ function buildHeaderLookup(header) {
  * @returns {string} ISO date or empty string.
  */
 function normalizeCsvDate(value) {
-  const candidate = String(value ?? '').trim();
-  const match = candidate.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  const match = parseCsvDateMatch(value);
   if (!match) {
     return '';
   }
+
+  return formatCsvDateMatch(match);
+}
+
+/**
+ * @param {string|undefined} value Date string from the CSV.
+ * @returns {RegExpMatchArray | null} Matching date parts or null.
+ */
+function parseCsvDateMatch(value) {
+  return String(value ?? '')
+    .trim()
+    .match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+}
+
+/**
+ * @param {RegExpMatchArray} match Parsed dd.mm.yyyy components.
+ * @returns {string} ISO date or empty string.
+ */
+function formatCsvDateMatch(match) {
   const [, day, month, year] = match;
   return `${year}-${month}-${day}`;
 }
@@ -117,20 +135,42 @@ function normalizeCsvDate(value) {
  * @returns {string} Dot-decimal amount string or empty string.
  */
 function normalizeCsvAmount(value) {
-  const candidate = String(value ?? '').trim();
+  const candidate = normalizeCsvAmountCandidate(value);
   if (candidate.length === 0) {
     return '';
   }
 
+  const parsed = parseCsvAmount(candidate);
+  if (parsed === null) {
+    return '';
+  }
+
+  return `${parsed}`;
+}
+
+/**
+ * @param {string|undefined} value Raw CSV amount.
+ * @returns {string} Trimmed candidate amount string.
+ */
+function normalizeCsvAmountCandidate(value) {
+  return String(value ?? '').trim();
+}
+
+/**
+ * @param {string} candidate Candidate amount string.
+ * @returns {number | null} Parsed numeric amount or null when invalid.
+ */
+function parseCsvAmount(candidate) {
   const cleaned = candidate
     .replace(/\./g, '')
     .replace(/,/g, '.')
     .replace(/[^\d.-]/g, '');
   const parsed = Number(cleaned);
   if (!Number.isFinite(parsed)) {
-    return '';
+    return null;
   }
-  return `${parsed}`;
+
+  return parsed;
 }
 
 /**
@@ -140,8 +180,16 @@ function normalizeCsvAmount(value) {
  * @returns {string} Stable adapter id.
  */
 function buildCsvRecordId(accountIban, rowNumber) {
+  return `${getCsvRecordPrefix(accountIban)}:${rowNumber}`;
+}
+
+/**
+ * @param {string} accountIban Source account identifier.
+ * @returns {string} Stable record prefix.
+ */
+function getCsvRecordPrefix(accountIban) {
   const candidate = String(accountIban ?? '').trim();
-  return `${candidate || 'ledger-ingest'}:${rowNumber}`;
+  return candidate || 'ledger-ingest';
 }
 
 /**
@@ -151,46 +199,20 @@ function buildCsvRecordId(accountIban, rowNumber) {
  */
 function parseLedgerCsv(input) {
   const rows = splitCsvRows(input);
-  if (rows.length < 2) {
-    throw new Error('Invalid ledger-ingest CSV input');
-  }
+  ensureLedgerCsvRows(rows);
 
-  const header = rows[0];
-  const headerLookup = buildHeaderLookup(header);
-  for (const headerName of REQUIRED_HEADERS) {
-    if (!headerLookup.has(headerName)) {
-      throw new Error(`Missing required CSV header: ${headerName}`);
-    }
-  }
+  const headerLookup = buildHeaderLookup(rows[0]);
+  ensureLedgerCsvHeaders(headerLookup);
 
   const rawRecords = [];
 
   for (let index = 1; index < rows.length; index += 1) {
     const row = rows[index];
-    if (row.length === 1 && row[0].trim().length === 0) {
+    if (isBlankLedgerCsvRow(row)) {
       continue;
     }
 
-    const bookingDate = row[headerLookup.get('Booking date')];
-    const valueDate = row[headerLookup.get('Value date')];
-    const transactionType = row[headerLookup.get('Transaction type')];
-    const bookingText = row[headerLookup.get('Booking text')];
-    const amount = row[headerLookup.get('Amount')];
-    const currency = row[headerLookup.get('Currency')];
-    const accountIban = row[headerLookup.get('Account IBAN')];
-    const category = row[headerLookup.get('Category')];
-
-    rawRecords.push({
-      recordId: buildCsvRecordId(accountIban, index),
-      bookingDate: normalizeCsvDate(bookingDate),
-      valueDate: normalizeCsvDate(valueDate),
-      transactionType: String(transactionType).trim(),
-      bookingText: String(bookingText).trim(),
-      amount: normalizeCsvAmount(amount),
-      currency: String(currency).trim(),
-      accountIban: String(accountIban).trim(),
-      category: String(category).trim(),
-    });
+    rawRecords.push(buildLedgerCsvRecord(row, headerLookup, index));
   }
 
   return {
@@ -198,6 +220,65 @@ function parseLedgerCsv(input) {
     fieldMapping: { ...DEFAULT_FIELD_MAPPING },
     dedupePolicy: { ...DEFAULT_DEDUPE_POLICY },
     rawRecords,
+  };
+}
+
+/**
+ * @param {string[][]} rows Parsed CSV rows.
+ * @returns {void}
+ */
+function ensureLedgerCsvRows(rows) {
+  if (rows.length < 2) {
+    throw new Error('Invalid ledger-ingest CSV input');
+  }
+}
+
+/**
+ * @param {Map<string, number>} headerLookup Header lookup by exact schema label.
+ * @returns {void}
+ */
+function ensureLedgerCsvHeaders(headerLookup) {
+  for (const headerName of REQUIRED_HEADERS) {
+    if (!headerLookup.has(headerName)) {
+      throw new Error(`Missing required CSV header: ${headerName}`);
+    }
+  }
+}
+
+/**
+ * @param {string[]} row CSV row under review.
+ * @returns {boolean} True when the row is empty.
+ */
+function isBlankLedgerCsvRow(row) {
+  return row.length === 1 && row[0].trim().length === 0;
+}
+
+/**
+ * @param {string[]} row CSV row under review.
+ * @param {Map<string, number>} headerLookup Header lookup by exact schema label.
+ * @param {number} index Row index in the CSV payload.
+ * @returns {Record<string, unknown>} Raw record converted from CSV.
+ */
+function buildLedgerCsvRecord(row, headerLookup, index) {
+  const bookingDate = row[headerLookup.get('Booking date')];
+  const valueDate = row[headerLookup.get('Value date')];
+  const transactionType = row[headerLookup.get('Transaction type')];
+  const bookingText = row[headerLookup.get('Booking text')];
+  const amount = row[headerLookup.get('Amount')];
+  const currency = row[headerLookup.get('Currency')];
+  const accountIban = row[headerLookup.get('Account IBAN')];
+  const category = row[headerLookup.get('Category')];
+
+  return {
+    recordId: buildCsvRecordId(accountIban, index),
+    bookingDate: normalizeCsvDate(bookingDate),
+    valueDate: normalizeCsvDate(valueDate),
+    transactionType: String(transactionType).trim(),
+    bookingText: String(bookingText).trim(),
+    amount: normalizeCsvAmount(amount),
+    currency: String(currency).trim(),
+    accountIban: String(accountIban).trim(),
+    category: String(category).trim(),
   };
 }
 
