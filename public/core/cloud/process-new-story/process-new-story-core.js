@@ -1,5 +1,6 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
+import { stringOrFallback } from '../../commonCore.js';
 import { createAsyncDomainHandler } from '../handler-utils.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
@@ -118,12 +119,10 @@ function isNonEmptyString(value) {
  * @returns {string} Story identifier.
  */
 function resolveStoryId(snapshot, context, randomUUID) {
-  const candidate = resolvePreferredStoryIdentifier(snapshot, context);
-  if (candidate) {
-    return candidate;
-  }
-
-  return randomUUID();
+  return stringOrFallback(
+    resolvePreferredStoryIdentifier(snapshot, context),
+    () => randomUUID()
+  );
 }
 
 /**
@@ -133,7 +132,7 @@ function resolveStoryId(snapshot, context, randomUUID) {
  * @returns {string | null} Identifier when available.
  */
 function resolvePreferredStoryIdentifier(snapshot, context) {
-  return selectPreferredIdentifier(
+  return stringOrFallback(
     normalizeIdentifier(resolveContextSubId(context)),
     () => normalizeIdentifier(resolveSnapshotId(snapshot))
   );
@@ -174,20 +173,6 @@ function resolveParamsSubId(params) {
  */
 function resolveSnapshotId(snapshot) {
   return snapshot?.id;
-}
-
-/**
- * Return the preferred identifier from the primary value or the fallback.
- * @param {string | null} primary Primary identifier candidate.
- * @param {() => string | null} fallback Fallback resolver invoked when primary is absent.
- * @returns {string | null} Chosen identifier.
- */
-function selectPreferredIdentifier(primary, fallback) {
-  if (primary) {
-    return primary;
-  }
-
-  return fallback();
 }
 
 /**

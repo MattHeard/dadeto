@@ -641,13 +641,12 @@ export function createGenerateStatsCore({
   function sendForbidden(res) {
     res.status(403).send('Forbidden');
   }
-  const verifyAdminDeps = {
+  const verifyAdmin = createVerifyAdmin({
     verifyToken,
     isAdminUid,
     sendUnauthorized,
     sendForbidden,
-  };
-  const verifyAdmin = createVerifyAdmin(verifyAdminDeps);
+  });
 
   /**
    * Check whether the incoming request used POST.

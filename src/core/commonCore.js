@@ -89,11 +89,11 @@ function isAcceptableNormalizedString(normalized, isAcceptable) {
  */
 function withStringFallback(value, fallback, isNormalizedAcceptable) {
   const normalized = getStringCandidate(value);
-  if (isAcceptableNormalizedString(normalized, isNormalizedAcceptable)) {
-    return /** @type {string} */ (normalized);
-  }
-
-  return fallback();
+  return returnFallbackValue(
+    isAcceptableNormalizedString(normalized, isNormalizedAcceptable),
+    /** @type {string} */ (normalized),
+    fallback
+  );
 }
 
 /**
@@ -191,11 +191,27 @@ function isNotStringValue(value) {
  * @returns {Function} Callable derived from the candidate or fallback.
  */
 export function functionOrFallback(candidate, fallback) {
-  if (typeof candidate === 'function') {
-    return candidate;
+  return returnFallbackValue(
+    typeof candidate === 'function',
+    candidate,
+    fallback
+  );
+}
+
+/**
+ * Return a value when available, otherwise invoke the fallback.
+ * @template T
+ * @param {boolean} available Whether the value can be returned.
+ * @param {T} value The preferred value.
+ * @param {() => T} fallback Fallback resolver.
+ * @returns {T} Preferred value or fallback output.
+ */
+function returnFallbackValue(available, value, fallback) {
+  if (!available) {
+    return fallback();
   }
 
-  return fallback();
+  return value;
 }
 
 /**

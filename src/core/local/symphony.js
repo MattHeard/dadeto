@@ -730,11 +730,11 @@ function selectFirstFailureMessage(messages) {
  * @returns {string | null} Signal failure message or null.
  */
 function formatAgentFailureSignalMessage(signal) {
-  if (signal) {
-    return `agent failure: signal ${signal}`;
+  if (!signal) {
+    return formatAgentFailureDetailMessage(null);
   }
 
-  return null;
+  return formatAgentFailureDetailMessage(`signal ${signal}`);
 }
 
 /**
@@ -743,11 +743,11 @@ function formatAgentFailureSignalMessage(signal) {
  * @returns {string | null} Exit-code failure message or null.
  */
 function formatAgentFailureExitCodeMessage(exitCode) {
-  if (typeof exitCode === 'number') {
-    return `agent failure: exited ${exitCode}`;
+  if (typeof exitCode !== 'number') {
+    return formatAgentFailureDetailMessage(null);
   }
 
-  return null;
+  return formatAgentFailureDetailMessage(`exited ${exitCode}`);
 }
 
 /**
@@ -757,8 +757,17 @@ function formatAgentFailureExitCodeMessage(exitCode) {
  */
 function formatAgentFailureSummaryMessage(summary) {
   const normalizedSummary = normalizeAgentFailureSummary(summary);
-  if (normalizedSummary) {
-    return `agent failure: ${normalizedSummary}`;
+  return formatAgentFailureDetailMessage(normalizedSummary);
+}
+
+/**
+ * Prefix a failure detail when present.
+ * @param {string | null} detail Failure detail.
+ * @returns {string | null} Prefixed message or null.
+ */
+function formatAgentFailureDetailMessage(detail) {
+  if (detail) {
+    return `agent failure: ${detail}`;
   }
 
   return null;

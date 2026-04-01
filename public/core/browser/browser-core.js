@@ -416,27 +416,11 @@ export function isDisposable(element) {
   return hasDisposeHook(element);
 }
 
-/**
- * Call the dispose method on an element and remove it from the DOM.
- * @param {DisposableElement} element - The element to dispose.
- * @param {HTMLElement} container - Parent container element.
- * @param {DOMHelpers} dom - DOM helper utilities.
- * @returns {void}
- */
-export function disposeAndRemove(element, container, dom) {
-  disposeAndRemoveElement(element, container, dom);
-}
+/** Call the dispose method on an element and remove it from the DOM. */
+export const disposeAndRemove = disposeAndRemoveElement;
 
-/**
- * Remove an element if it exposes a dispose method.
- * @param {unknown} element - Value that may be disposable.
- * @param {HTMLElement} container - Parent container element.
- * @param {DOMHelpers} dom - DOM helper utilities.
- * @returns {void}
- */
-export function maybeRemoveElement(element, container, dom) {
-  removeCapturedElement(element, container, dom);
-}
+/** Remove an element if it exposes a dispose method. */
+export const maybeRemoveElement = removeCapturedElement;
 
 /** @type {Array<[string, string]>} */
 const DENDRITE_OPTION_FIELDS = [

@@ -399,12 +399,7 @@ export function buildErrorResult(error) {
  * @returns {{ error: unknown } | T} Error wrapper or fallback result.
  */
 export function returnErrorResultOrValue(error, fallback) {
-  const errorResult = buildErrorResult(error);
-  if (errorResult) {
-    return errorResult;
-  }
-
-  return fallback();
+  return buildErrorResult(error) ?? fallback();
 }
 
 /**
@@ -726,14 +721,13 @@ function getBearerTokenFromMatch(match) {
  * }} deps Dependencies for validating the token and sending HTTP errors.
  * @returns {Promise<boolean>} True when the token is authorized for an admin request.
  */
-async function authorizeAdminToken({
-  token,
-  verifyToken,
-  isAdminUid,
-  sendUnauthorized,
-  sendForbidden,
-  res,
-}) {
+async function authorizeAdminToken(deps) {
+  const token = deps.token;
+  const verifyToken = deps.verifyToken;
+  const isAdminUid = deps.isAdminUid;
+  const sendUnauthorized = deps.sendUnauthorized;
+  const sendForbidden = deps.sendForbidden;
+  const res = deps.res;
   try {
     const decoded = await verifyToken(token);
     return ensureAdminIdentity({
