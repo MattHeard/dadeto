@@ -560,10 +560,7 @@ function createReleaseCaptureEmitPayload() {
  * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Emit-capture-state options.
  */
 function createReleaseCaptureEmitCaptureStateOptions(options, emitPayload) {
-  return {
-    emitPayload,
-    ...createGamepadLifecycleFields(options),
-  };
+  return createGamepadEmitPayloadOptions(options, emitPayload);
 }
 
 /**
@@ -758,12 +755,26 @@ function createStopCaptureHandler(options) {
  * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Toggle handler options.
  */
 function createGamepadToggleOptions(options) {
+  const emitPayload = (input, payload) =>
+    captureLifecycleDeps.syncToyInput({ ...input, payload });
+
   return {
     onStart: () => queuePoll(options),
     onStop: createStopCaptureHandler(options),
     state: options.state,
-    emitPayload: (input, payload) =>
-      captureLifecycleDeps.syncToyInput({ ...input, payload }),
+    ...createGamepadEmitPayloadOptions(options, emitPayload),
+  };
+}
+
+/**
+ * Build the shared emit-payload options for gamepad capture.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {(input: { dom: HandlerOptions['dom'], textInput: HandlerOptions['textInput'], autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'] }, payload: unknown) => void} emitPayload - Payload emitter.
+ * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Emit-capture-state options.
+ */
+function createGamepadEmitPayloadOptions(options, emitPayload) {
+  return {
+    emitPayload,
     ...createGamepadLifecycleFields(options),
   };
 }
