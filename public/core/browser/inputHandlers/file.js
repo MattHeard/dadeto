@@ -4,12 +4,11 @@ import {
   revealAndEnable,
 } from './browserInputHandlersCore.js';
 import { createSpecialInputEnsurer } from './sharedSpecialInput.js';
+import { FILE_INPUT_SETTINGS } from './fileInputSettings.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
 const FILE_INPUT_SELECTOR = 'input[type="file"]';
-const FILE_INPUT_CLASS = 'toy-file-input';
-const FILE_INPUT_ACCEPT = '.csv,text/csv,text/plain';
 
 /**
  * Create a file input element for uploading CSV text.
@@ -20,9 +19,9 @@ function createFileInputElement(dom) {
   const fileInput = /** @type {HTMLInputElement} */ (
     dom.createElement('input')
   );
-  dom.setType(fileInput, 'file');
-  dom.setClassName(fileInput, FILE_INPUT_CLASS);
-  fileInput.accept = FILE_INPUT_ACCEPT;
+  dom.setType(fileInput, FILE_INPUT_SETTINGS.type);
+  dom.setClassName(fileInput, FILE_INPUT_SETTINGS.className);
+  fileInput.accept = FILE_INPUT_SETTINGS.accept;
   return fileInput;
 }
 
@@ -108,8 +107,8 @@ export const ensureFileInput = (container, textInput, dom) => {
     })
   );
 
-  dom.setClassName(fileInput, FILE_INPUT_CLASS);
-  fileInput.accept = FILE_INPUT_ACCEPT;
+  dom.setClassName(fileInput, FILE_INPUT_SETTINGS.className);
+  fileInput.accept = FILE_INPUT_SETTINGS.accept;
   revealAndEnable(fileInput, dom);
   return fileInput;
 };

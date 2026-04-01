@@ -837,6 +837,24 @@ function createGamepadEscapeHandler(options) {
 }
 
 /**
+ * Register multiple global listeners used by the handler.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {CleanupFn[]} cleanupFns - Cleanup callbacks collected for disposal.
+ * @param {{ type: string, handler: (event: Event) => void }[]} listeners - Listener registrations.
+ * @returns {void}
+ */
+function registerGamepadGlobalListeners(options, cleanupFns, listeners) {
+  listeners.forEach(({ type, handler }) => {
+    registerGamepadGlobalListener({
+      options,
+      cleanupFns,
+      type,
+      handler,
+    });
+  });
+}
+
+/**
  * Register all global listeners used by the handler.
  * @param {HandlerOptions} options - Shared handler dependencies.
  * @param {CleanupFn[]} cleanupFns - Cleanup callbacks collected for disposal.
@@ -851,24 +869,20 @@ function registerGamepadListeners(options, cleanupFns) {
   const handleDisconnect = createDisconnectHandler(options);
 
   options.dom.addEventListener(options.button, 'click', handleToggle);
-  registerGamepadGlobalListener({
-    options,
-    cleanupFns,
-    type: 'keydown',
-    handler: /** @type {(event: Event) => void} */ (handleEscape),
-  });
-  registerGamepadGlobalListener({
-    options,
-    cleanupFns,
-    type: GAMEPAD_CONNECTED_EVENT,
-    handler: /** @type {(event: Event) => void} */ (handleConnect),
-  });
-  registerGamepadGlobalListener({
-    options,
-    cleanupFns,
-    type: GAMEPAD_DISCONNECTED_EVENT,
-    handler: /** @type {(event: Event) => void} */ (handleDisconnect),
-  });
+  registerGamepadGlobalListeners(options, cleanupFns, [
+    {
+      type: 'keydown',
+      handler: /** @type {(event: Event) => void} */ (handleEscape),
+    },
+    {
+      type: GAMEPAD_CONNECTED_EVENT,
+      handler: /** @type {(event: Event) => void} */ (handleConnect),
+    },
+    {
+      type: GAMEPAD_DISCONNECTED_EVENT,
+      handler: /** @type {(event: Event) => void} */ (handleDisconnect),
+    },
+  ]);
 
   cleanupFns.push(createGamepadCleanupHandler(options));
   cleanupFns.push(() =>

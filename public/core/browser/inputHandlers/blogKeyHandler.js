@@ -2,7 +2,7 @@ import * as browserCore from '../browser-core.js';
 import {
   appendLabelledField,
   cleanContainer,
-  createManagedFormShellState,
+  createManagedFormShellBundle,
   registerInputListener,
   syncHiddenInput,
 } from './createDendriteHandler.js';
@@ -165,13 +165,23 @@ function createBlogKeyFields({ dom, data }) {
 }
 
 /**
+ * Create the blog-key shell and return the pieces buildForm needs.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form setup dependencies.
+ * @returns {[HTMLElement, Disposer[]]} Shell form and disposer stack.
+ */
+function createBlogKeyFormShell(options) {
+  const { form, cleanupFns } = createManagedFormShellBundle(options);
+  return [form, cleanupFns];
+}
+
+/**
  * Create, insert, and wire the blog-key form.
  * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form construction dependencies.
  * @returns {HTMLElement} The created form element.
  */
 function buildForm({ dom, container, textInput }) {
   const data = parseData(dom, textInput);
-  const { form, disposers } = createManagedFormShellState({
+  const [form, disposers] = createBlogKeyFormShell({
     dom,
     container,
     textInput,
