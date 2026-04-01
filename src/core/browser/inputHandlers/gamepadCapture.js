@@ -676,10 +676,8 @@ function getHandledDisconnectionPayload(state, event) {
  * @returns {() => void} Stop handler for the lifecycle toggle.
  */
 function createStopCaptureHandler(options) {
-  return () => stopCaptureSideEffects(
-    options.state,
-    options.dom.cancelAnimationFrame
-  );
+  return () =>
+    stopCaptureSideEffects(options.state, options.dom.cancelAnimationFrame);
 }
 
 /**

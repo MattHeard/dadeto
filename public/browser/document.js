@@ -126,6 +126,35 @@ export const clearInterval = handle => {
 };
 
 /**
+ * Schedule a one-shot timer when the browser supports it.
+ * @param {() => void} callback - Timeout callback.
+ * @param {number} delay - Delay before the callback runs in milliseconds.
+ * @returns {number} Timeout identifier.
+ */
+export const setTimeout = (callback, delay) => {
+  const setTimeoutFn = globalThis.setTimeout;
+  if (typeof setTimeoutFn !== 'function') {
+    throw new Error('globalThis.setTimeout is not a function');
+  }
+
+  return setTimeoutFn(callback, delay);
+};
+
+/**
+ * Clear a one-shot timer when the browser supports it.
+ * @param {number} handle - Timeout identifier.
+ * @returns {void}
+ */
+export const clearTimeout = handle => {
+  const clearTimeoutFn = globalThis.clearTimeout;
+  if (typeof clearTimeoutFn !== 'function') {
+    throw new Error('globalThis.clearTimeout is not a function');
+  }
+
+  clearTimeoutFn(handle);
+};
+
+/**
  * Read connected gamepads when the browser supports the API.
  * @returns {(Gamepad | null)[]} Connected gamepads list.
  */
@@ -377,6 +406,8 @@ export const dom = /** @type {DOMHelpers} */ ({
   cancelAnimationFrame,
   setInterval,
   clearInterval,
+  setTimeout,
+  clearTimeout,
   getGamepads,
   globalThis,
   reveal,

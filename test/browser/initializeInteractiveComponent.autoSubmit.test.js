@@ -1,11 +1,4 @@
-import {
-  describe,
-  it,
-  expect,
-  jest,
-  beforeEach,
-  afterEach,
-} from '@jest/globals';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { initializeInteractiveComponent } from '../../src/browser/toys.js';
 
 const createAutoSubmitContext = ({ includeAutoSubmit = true } = {}) => {
@@ -83,36 +76,65 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
   const article = { id: 'auto-test' };
   const createProcessingFunction = () => jest.fn(() => 'result');
 
-  let originalRequestAnimationFrame;
-  let originalCancelAnimationFrame;
   let nextFrameId;
   let scheduledFrames;
   let cancelledFrames;
+  let nextTimeoutId;
+  let scheduledTimeouts;
+  let clearedTimeouts;
 
   beforeEach(() => {
-    originalRequestAnimationFrame = globalThis.requestAnimationFrame;
-    originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
     nextFrameId = 1;
     scheduledFrames = [];
     cancelledFrames = [];
-    globalThis.requestAnimationFrame = jest.fn(callback => {
-      const frame = { id: nextFrameId++, callback };
-      scheduledFrames.push(frame);
-      return frame.id;
-    });
-    globalThis.cancelAnimationFrame = jest.fn(frameId => {
-      cancelledFrames.push(frameId);
-    });
+    nextTimeoutId = 1;
+    scheduledTimeouts = [];
+    clearedTimeouts = [];
   });
 
-  afterEach(() => {
-    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
-    globalThis.cancelAnimationFrame = originalCancelAnimationFrame;
-  });
+  const createTimerDom = ({ useAnimationFrame = true } = {}) => {
+    const timerDom = {
+      setTimeout: jest.fn(callback => {
+        const timeout = { id: nextTimeoutId++, callback };
+        scheduledTimeouts.push(timeout);
+        return timeout.id;
+      }),
+      clearTimeout: jest.fn(timeoutId => {
+        clearedTimeouts.push(timeoutId);
+      }),
+    };
+
+    if (useAnimationFrame) {
+      timerDom.requestAnimationFrame = jest.fn(callback => {
+        const frame = { id: nextFrameId++, callback };
+        scheduledFrames.push(frame);
+        return frame.id;
+      });
+      timerDom.cancelAnimationFrame = jest.fn(frameId => {
+        cancelledFrames.push(frameId);
+      });
+    }
+
+    return timerDom;
+  };
+
+  const createTimerContext = (options = {}) => {
+    const timerDom = createTimerDom(options);
+    const context = createAutoSubmitContext({
+      includeAutoSubmit: true,
+    });
+    context.config.dom = { ...context.config.dom, ...timerDom };
+    return { ...context, timerDom };
+  };
 
   it('starts and stops requestAnimationFrame polling for auto submit', () => {
-    const { config, autoSubmitCheckbox, addedListeners, inputElement } =
-      createAutoSubmitContext({ includeAutoSubmit: true });
+    const {
+      config,
+      autoSubmitCheckbox,
+      addedListeners,
+      inputElement,
+      timerDom,
+    } = createTimerContext();
     const processingFunction = createProcessingFunction();
 
     initializeInteractiveComponent(article, processingFunction, config);
@@ -127,12 +149,12 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
       entry => entry.element === inputElement && entry.event === 'input'
     );
     expect(initialInputListeners).toHaveLength(1);
-    expect(globalThis.requestAnimationFrame).not.toHaveBeenCalled();
+    expect(timerDom.requestAnimationFrame).not.toHaveBeenCalled();
 
     autoSubmitCheckbox.checked = true;
     changeListener.handler();
 
-    expect(globalThis.requestAnimationFrame).toHaveBeenCalledTimes(1);
+    expect(timerDom.requestAnimationFrame).toHaveBeenCalledTimes(1);
     expect(cancelledFrames).toHaveLength(0);
 
     autoSubmitCheckbox.checked = false;
@@ -142,8 +164,8 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
   });
 
   it('does not register a second polling loop when already auto submitting', () => {
-    const { config, autoSubmitCheckbox, addedListeners } =
-      createAutoSubmitContext({ includeAutoSubmit: true });
+    const { config, autoSubmitCheckbox, addedListeners, timerDom } =
+      createTimerContext();
     const processingFunction = createProcessingFunction();
 
     initializeInteractiveComponent(article, processingFunction, config);
@@ -159,12 +181,17 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
     changeListener.handler();
 
     expect(scheduledFrames).toHaveLength(framesAfterFirstToggle);
-    expect(globalThis.cancelAnimationFrame).not.toHaveBeenCalled();
+    expect(timerDom.cancelAnimationFrame).not.toHaveBeenCalled();
   });
 
   it('submits when the polled input value changes', () => {
-    const { config, autoSubmitCheckbox, addedListeners, inputElement } =
-      createAutoSubmitContext({ includeAutoSubmit: true });
+    const {
+      config,
+      autoSubmitCheckbox,
+      addedListeners,
+      inputElement,
+      timerDom,
+    } = createTimerContext();
     const processingFunction = createProcessingFunction();
 
     initializeInteractiveComponent(article, processingFunction, config);
@@ -186,12 +213,12 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
         data: {},
       })
     );
-    expect(globalThis.requestAnimationFrame).toHaveBeenCalledTimes(2);
+    expect(timerDom.requestAnimationFrame).toHaveBeenCalledTimes(2);
   });
 
   it('does not submit when the polled input value is unchanged', () => {
-    const { config, autoSubmitCheckbox, addedListeners } =
-      createAutoSubmitContext({ includeAutoSubmit: true });
+    const { config, autoSubmitCheckbox, addedListeners, timerDom } =
+      createTimerContext();
     const processingFunction = createProcessingFunction();
 
     initializeInteractiveComponent(article, processingFunction, config);
@@ -205,7 +232,51 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
     scheduledFrames[0].callback(16);
 
     expect(processingFunction).not.toHaveBeenCalled();
-    expect(globalThis.requestAnimationFrame).toHaveBeenCalledTimes(2);
+    expect(timerDom.requestAnimationFrame).toHaveBeenCalledTimes(2);
+  });
+
+  it('falls back to setTimeout when requestAnimationFrame is unavailable', () => {
+    const {
+      config,
+      autoSubmitCheckbox,
+      addedListeners,
+      inputElement,
+      timerDom,
+    } = createTimerContext({ useAnimationFrame: false });
+    const processingFunction = createProcessingFunction();
+
+    initializeInteractiveComponent(article, processingFunction, config);
+
+    const changeListener = addedListeners.find(
+      entry => entry.element === autoSubmitCheckbox && entry.event === 'change'
+    );
+
+    autoSubmitCheckbox.checked = true;
+    changeListener.handler();
+
+    expect(timerDom.setTimeout).toHaveBeenCalledTimes(1);
+    expect(scheduledTimeouts).toHaveLength(1);
+    expect(scheduledFrames).toHaveLength(0);
+
+    const timeout = scheduledTimeouts[0];
+    inputElement.value = 'fallback-update';
+    timeout.callback();
+
+    expect(processingFunction).toHaveBeenCalledWith(
+      'fallback-update',
+      expect.objectContaining({
+        output: {},
+        data: {},
+      })
+    );
+    expect(timerDom.setTimeout).toHaveBeenCalledTimes(2);
+
+    const activeTimeout = scheduledTimeouts[1];
+    autoSubmitCheckbox.checked = false;
+    changeListener.handler();
+
+    expect(timerDom.clearTimeout).toHaveBeenCalledWith(activeTimeout.id);
+    expect(clearedTimeouts).toEqual([activeTimeout.id]);
   });
 
   it('skips auto submit wiring when no checkbox exists', () => {

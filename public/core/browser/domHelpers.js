@@ -71,6 +71,8 @@
  * @property {(handle: number) => void} cancelAnimationFrame - Cancel a queued animation frame when supported.
  * @property {(callback: () => void, delay: number) => number} setInterval - Schedule a repeating callback.
  * @property {(handle: number) => void} clearInterval - Cancel a repeating callback.
+ * @property {(callback: () => void, delay: number) => number} setTimeout - Schedule a one-shot callback.
+ * @property {(handle: number) => void} clearTimeout - Cancel a one-shot callback.
  * @property {() => (Gamepad | null)[]} getGamepads - Read connected gamepads.
  * @property {typeof globalThis} globalThis - Shared browser global reference.
  * @property {(element: HTMLElement) => void} reveal - Reveal a hidden element.

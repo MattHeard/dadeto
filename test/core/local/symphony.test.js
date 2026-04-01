@@ -136,7 +136,11 @@ describe('core local symphony helpers', () => {
     expect(
       summarizeTrackerSelection({
         workflowExists: true,
-        selectedBead: { id: 'dadeto-missing', title: 'Missing', priority: '● P4' },
+        selectedBead: {
+          id: 'dadeto-missing',
+          title: 'Missing',
+          priority: '● P4',
+        },
         lastCommand: 'bd ready --sort priority',
         pollResult: { readyCount: 1 },
       })

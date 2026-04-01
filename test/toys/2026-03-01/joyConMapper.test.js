@@ -1,10 +1,14 @@
 import { describe, expect, test, jest } from '@jest/globals';
 import { joyConMapperToy } from '../../../src/core/browser/toys/2026-03-01/joyConMapper.js';
 
+/**
+ *
+ * @param root0
+ * @param root0.stored
+ * @param root0.setLocalPermanentData
+ */
 function createEnv({ stored, setLocalPermanentData } = {}) {
-  const getLocalPermanentData = stored
-    ? jest.fn(() => stored)
-    : undefined;
+  const getLocalPermanentData = stored ? jest.fn(() => stored) : undefined;
   return new Map([
     ['getLocalPermanentData', getLocalPermanentData],
     ['setLocalPermanentData', setLocalPermanentData],
@@ -67,10 +71,16 @@ describe('joyConMapperToy', () => {
     });
 
     const first = JSON.parse(
-      joyConMapperToy(JSON.stringify({ action: 'skip', skippedControlKey: 'BTN_Y' }), env)
+      joyConMapperToy(
+        JSON.stringify({ action: 'skip', skippedControlKey: 'BTN_Y' }),
+        env
+      )
     );
     const second = JSON.parse(
-      joyConMapperToy(JSON.stringify({ action: 'skip', skippedControlKey: 'BTN_X' }), env)
+      joyConMapperToy(
+        JSON.stringify({ action: 'skip', skippedControlKey: 'BTN_X' }),
+        env
+      )
     );
 
     expect(first.skippedControls).toEqual(['BTN_X', 'BTN_Y']);
@@ -88,7 +98,9 @@ describe('joyConMapperToy', () => {
       setLocalPermanentData: jest.fn(),
     });
 
-    const output = JSON.parse(joyConMapperToy(JSON.stringify({ action: 'reset' }), env));
+    const output = JSON.parse(
+      joyConMapperToy(JSON.stringify({ action: 'reset' }), env)
+    );
 
     expect(output).toEqual({
       storageKey: 'JOYMAP1',
@@ -125,7 +137,9 @@ describe('joyConMapperToy', () => {
       ['setLocalPermanentData', jest.fn()],
     ]);
 
-    const output = JSON.parse(joyConMapperToy(JSON.stringify({ action: 'noop' }), env));
+    const output = JSON.parse(
+      joyConMapperToy(JSON.stringify({ action: 'noop' }), env)
+    );
 
     expect(output).toEqual({
       storageKey: 'JOYMAP1',
@@ -145,7 +159,9 @@ describe('joyConMapperToy', () => {
       setLocalPermanentData: jest.fn(),
     });
 
-    const output = JSON.parse(joyConMapperToy(JSON.stringify({ action: 'skip' }), env));
+    const output = JSON.parse(
+      joyConMapperToy(JSON.stringify({ action: 'skip' }), env)
+    );
 
     expect(output.skippedControls).toEqual(['BTN_A']);
   });

@@ -1,3 +1,5 @@
+import { dom } from './document.js';
+
 (function () {
   const toggle = document.querySelector('.menu-toggle');
   const overlay = document.getElementById('mobile-menu');
@@ -24,7 +26,7 @@
     overlay.setAttribute('aria-hidden', 'true');
     toggle.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
-    setTimeout(() => (overlay.hidden = true), 180);
+    dom.setTimeout(() => (overlay.hidden = true), 180);
     toggle.focus();
   }
 

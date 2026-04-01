@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-
 const ACCESS_TOKEN_KEY = 'access_token';
 import {
   createGenerateStatsCore,
@@ -756,7 +755,6 @@ describe('createGenerateStatsCore', () => {
       );
     });
   });
-
 });
 
 describe('invalidateSinglePath logger behavior', () => {

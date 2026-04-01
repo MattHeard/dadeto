@@ -1,5 +1,6 @@
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createAuthedFetch } from './authedFetch.js';
+import { dom } from './document.js';
 import {
   createGetModerationEndpointsFromStaticConfig,
   DEFAULT_MODERATION_ENDPOINTS,
@@ -80,12 +81,12 @@ function startAnimation(id, text) {
   let dots = 1;
   el.textContent = `${text}.`;
   el.style.display = 'block';
-  const intervalId = setInterval(() => {
+  const intervalId = dom.setInterval(() => {
     dots = (dots % 3) + 1;
     el.textContent = `${text}${'.'.repeat(dots)}`;
   }, 500);
   return () => {
-    clearInterval(intervalId);
+    dom.clearInterval(intervalId);
     el.style.display = 'none';
   };
 }

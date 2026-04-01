@@ -32,7 +32,7 @@ describe('symphony tui renderer', () => {
     });
 
     expect(compact.length).toBeLessThan(expanded.length);
-    expect(expanded.some((line) => line.length > 40)).toBe(true);
-    expect(compact.every((line) => line.length <= 40)).toBe(true);
+    expect(expanded.some(line => line.length > 40)).toBe(true);
+    expect(compact.every(line => line.length <= 40)).toBe(true);
   });
 });

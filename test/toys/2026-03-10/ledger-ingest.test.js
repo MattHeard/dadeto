@@ -96,7 +96,9 @@ describe('importTransactions', () => {
   });
 
   it('wraps the core in a runnable toy response with fixture selection', () => {
-    const result = JSON.parse(ledgerIngestToy('{"fixture":"duplicateDetection"}'));
+    const result = JSON.parse(
+      ledgerIngestToy('{"fixture":"duplicateDetection"}')
+    );
 
     expect(result.inputMode).toBe('fixture');
     expect(result.fixture).toBe('duplicateDetection');
@@ -186,6 +188,10 @@ describe('importTransactions', () => {
   });
 });
 
+/**
+ *
+ * @param transaction
+ */
 function expectCanonicalTransactionShape(transaction) {
   expect(Object.keys(transaction).sort()).toEqual(
     [

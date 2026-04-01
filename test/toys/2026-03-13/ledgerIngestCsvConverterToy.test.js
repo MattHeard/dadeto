@@ -9,12 +9,16 @@ describe('ledgerIngestCsvConverterToy', () => {
 
   it('returns error payload for invalid inputs', () => {
     const result = ledgerIngestCsvConverterToy('only one line', new Map());
-    expect(JSON.parse(result)).toEqual({ error: 'Invalid ledger-ingest CSV input' });
+    expect(JSON.parse(result)).toEqual({
+      error: 'Invalid ledger-ingest CSV input',
+    });
   });
 
   it('throws for missing required header', () => {
     const csv = `${baseHeader.replace(';Category', '')}\n01.03.2026;01.03.2026;CARD;Coffee;1,00;EUR;DE01;Food`;
-    expect(() => parseLedgerCsv(csv)).toThrow('Missing required CSV header: Category');
+    expect(() => parseLedgerCsv(csv)).toThrow(
+      'Missing required CSV header: Category'
+    );
   });
 
   it('parses rows, normalizes values, skips blank rows, and handles CRLF/quotes', () => {
@@ -63,8 +67,7 @@ describe('ledgerIngestCsvConverterToy', () => {
 
   it('handles LF-only rows, trailing newline, and empty amount values', () => {
     const csv =
-      `${baseHeader}\n` +
-      '06.03.2026;07.03.2026;CARD;Snack;;EUR;DE22;Food\n';
+      `${baseHeader}\n` + '06.03.2026;07.03.2026;CARD;Snack;;EUR;DE22;Food\n';
 
     const parsed = parseLedgerCsv(csv);
     expect(parsed.rawRecords).toHaveLength(1);
@@ -77,9 +80,7 @@ describe('ledgerIngestCsvConverterToy', () => {
   });
 
   it('gracefully normalizes missing columns in sparse rows', () => {
-    const csv =
-      `${baseHeader}\n` +
-      '06.03.2026\n';
+    const csv = `${baseHeader}\n` + '06.03.2026\n';
 
     const parsed = parseLedgerCsv(csv);
     expect(parsed.rawRecords).toHaveLength(1);

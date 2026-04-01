@@ -1268,22 +1268,28 @@ function readLiveInputValue(dom, inputElement) {
   return String(getDomValue(dom, inputElement) ?? inputElement.value ?? '');
 }
 
-function requestAutoSubmitFrame(callback) {
-  if (typeof globalThis.requestAnimationFrame === 'function') {
-    return globalThis.requestAnimationFrame(callback);
+function requestAutoSubmitFrame(dom, callback) {
+  if (typeof dom.requestAnimationFrame === 'function') {
+    return dom.requestAnimationFrame(callback);
   }
-  return globalThis.setTimeout(() => callback(Date.now()), 16);
+  if (typeof dom.setTimeout !== 'function') {
+    throw new Error('dom.setTimeout is not a function');
+  }
+  return dom.setTimeout(() => callback(Date.now()), 16);
 }
 
-function cancelAutoSubmitFrame(frameId) {
+function cancelAutoSubmitFrame(dom, frameId) {
   if (frameId === null) {
     return;
   }
-  if (typeof globalThis.cancelAnimationFrame === 'function') {
-    globalThis.cancelAnimationFrame(frameId);
+  if (typeof dom.cancelAnimationFrame === 'function') {
+    dom.cancelAnimationFrame(frameId);
     return;
   }
-  globalThis.clearTimeout(frameId);
+  if (typeof dom.clearTimeout !== 'function') {
+    throw new Error('dom.clearTimeout is not a function');
+  }
+  dom.clearTimeout(frameId);
 }
 
 function registerAutoSubmitPolling({
@@ -1305,13 +1311,13 @@ function registerAutoSubmitPolling({
       setInputValue(inputElement, nextValue);
       handleInputProcessing(elements, processingFunction, env);
     }
-    autoSubmitState.frameId = requestAutoSubmitFrame(poll);
+    autoSubmitState.frameId = requestAutoSubmitFrame(dom, poll);
   };
-  autoSubmitState.frameId = requestAutoSubmitFrame(poll);
+  autoSubmitState.frameId = requestAutoSubmitFrame(dom, poll);
 }
 
-function unregisterAutoSubmitPolling(autoSubmitState) {
-  cancelAutoSubmitFrame(autoSubmitState.frameId);
+function unregisterAutoSubmitPolling(dom, autoSubmitState) {
+  cancelAutoSubmitFrame(dom, autoSubmitState.frameId);
   autoSubmitState.frameId = null;
   autoSubmitState.lastValue = null;
 }
@@ -1450,7 +1456,7 @@ export function initializeInteractiveComponent(
       });
       return;
     }
-    unregisterAutoSubmitPolling(autoSubmitState);
+    unregisterAutoSubmitPolling(env.dom, autoSubmitState);
   };
   if (autoSubmitCheckbox) {
     dom.addEventListener(autoSubmitCheckbox, 'change', handleAutoCheckboxChange);

@@ -634,7 +634,9 @@ describe('createCopyCore', () => {
       const io = {
         directoryExists: jest
           .fn()
-          .mockImplementation(target => target !== posix.join(directories.srcDir, 'build')),
+          .mockImplementation(
+            target => target !== posix.join(directories.srcDir, 'build')
+          ),
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
         readDirEntries: jest.fn(),

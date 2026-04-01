@@ -2,6 +2,10 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { joyConMapperHandler } from '../../../src/core/browser/inputHandlers/joyConMapper.js';
 import { readStoredOrElementValue } from '../../../src/core/browser/inputValueStore.js';
 
+/**
+ *
+ * @param tag
+ */
 function makeElement(tag = 'div') {
   return {
     tag,
@@ -11,11 +15,16 @@ function makeElement(tag = 'div') {
   };
 }
 
+/**
+ *
+ * @param autoSubmitCheckbox
+ */
 function makeDom(autoSubmitCheckbox) {
   return {
     globalThis,
     getGamepads: jest.fn(() => []),
-    requestAnimationFrame: callback => globalThis.requestAnimationFrame(callback),
+    requestAnimationFrame: callback =>
+      globalThis.requestAnimationFrame(callback),
     setInterval: (callback, delay) => globalThis.setInterval(callback, delay),
     clearInterval: handle => globalThis.clearInterval(handle),
     createElement: jest.fn(tag => makeElement(tag)),
@@ -52,6 +61,11 @@ function makeDom(autoSubmitCheckbox) {
   };
 }
 
+/**
+ *
+ * @param root
+ * @param text
+ */
 function findByText(root, text) {
   if (root?.textContent === text) {
     return root;
@@ -65,15 +79,17 @@ function findByText(root, text) {
   return null;
 }
 
+/**
+ *
+ * @param overrides
+ */
 function createGamepad(overrides = {}) {
   return /** @type {Gamepad} */ ({
     axes: overrides.axes ?? [0, 0],
-    buttons:
-      overrides.buttons ??
-      [
-        { pressed: false, value: 0 },
-        { pressed: false, value: 0 },
-      ],
+    buttons: overrides.buttons ?? [
+      { pressed: false, value: 0 },
+      { pressed: false, value: 0 },
+    ],
     connected: overrides.connected ?? true,
     id: overrides.id ?? 'Nintendo Joy-Con (L)',
     index: overrides.index ?? 0,
@@ -250,7 +266,12 @@ describe('joyConMapperHandler', () => {
       expect(findByText(form, 'Gamepad detected')).not.toBeNull();
       expect(findByText(form, 'Index: 0')).not.toBeNull();
       expect(findByText(form, 'ID: Nintendo Joy-Con (L)')).not.toBeNull();
-      expect(findByText(form, 'Press Start Mapping. Every control is optional and can be skipped.')).not.toBeNull();
+      expect(
+        findByText(
+          form,
+          'Press Start Mapping. Every control is optional and can be skipped.'
+        )
+      ).not.toBeNull();
     } finally {
       globalThis.requestAnimationFrame = previousRaf;
       globalThis.cancelAnimationFrame = previousCaf;
