@@ -158,6 +158,14 @@ describe('moderatorRatingsHandler', () => {
     const textInput = { value: '' };
     const dom = createFakeDom();
     const container = {};
+    const fileInput = { _dispose: jest.fn() };
+
+    dom.querySelector.mockImplementation((_, selector) => {
+      if (selector === 'input[type="file"]') {
+        return fileInput;
+      }
+      return null;
+    });
 
     moderatorRatingsHandler(dom, container, textInput);
 
@@ -165,6 +173,8 @@ describe('moderatorRatingsHandler', () => {
       ([element]) => element === textInput
     );
     expect(setValueCalls.length).toBeGreaterThanOrEqual(1);
+    expect(fileInput._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith(container, fileInput);
 
     const lastValue = setValueCalls[setValueCalls.length - 1][1];
     expect(lastValue).toBe(

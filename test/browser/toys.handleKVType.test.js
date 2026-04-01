@@ -38,11 +38,15 @@ describe('handleKVType', () => {
 
   test('removes number input and ensures key-value container', () => {
     const numberInput = { _dispose: jest.fn() };
+    const fileInput = { _dispose: jest.fn() };
     const container = {};
     const textInput = {};
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input[type="number"]') {
         return numberInput;
+      }
+      if (selector === 'input[type="file"]') {
+        return fileInput;
       }
       return null;
     });
@@ -78,6 +82,9 @@ describe('handleKVType', () => {
       'input[type="number"]'
     );
     expect(removeChild).toHaveBeenCalledWith(container, numberInput);
+    expect(querySelector).toHaveBeenCalledWith(container, 'input[type="file"]');
+    expect(fileInput._dispose).toHaveBeenCalled();
+    expect(removeChild).toHaveBeenCalledWith(container, fileInput);
     expect(querySelector).toHaveBeenCalledWith(container, '.kv-container');
     expect(createElement).toHaveBeenCalledWith('div');
     expect(insertBefore).toHaveBeenCalled();

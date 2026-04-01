@@ -123,6 +123,7 @@ export const ensureTextareaInput = (container, textInput, dom) => {
 const cleanupTextarea = browserCore.createDefaultHandler([
   browserCore.maybeRemoveNumber,
   browserCore.maybeRemoveKV,
+  browserCore.maybeRemoveFile,
   browserCore.maybeRemoveDendrite,
 ]);
 

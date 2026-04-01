@@ -21,6 +21,7 @@ const REJECTED_OPTION_LABEL = 'Rejected';
 const cleanupModeratorRatings = browserCore.createDefaultHandler([
   browserCore.maybeRemoveNumber,
   browserCore.maybeRemoveKV,
+  browserCore.maybeRemoveFile,
   browserCore.maybeRemoveTextarea,
   browserCore.maybeRemoveDendrite,
   browserCore.maybeRemoveModeratorRatings,

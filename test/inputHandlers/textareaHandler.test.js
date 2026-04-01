@@ -15,6 +15,7 @@ describe('textareaHandler', () => {
     const numberInput = { _dispose: jest.fn() };
     const kvContainer = { _dispose: jest.fn() };
     const dendriteForm = { _dispose: jest.fn() };
+    const fileInput = { _dispose: jest.fn() };
     const textareaElement = {};
     const nextSibling = {};
     const removeChild = jest.fn();
@@ -24,6 +25,7 @@ describe('textareaHandler', () => {
       ['input[type="number"]', numberInput],
       ['.kv-container', kvContainer],
       ['.dendrite-form', dendriteForm],
+      ['input[type="file"]', fileInput],
       ['.toy-textarea', null],
     ]);
 
@@ -52,9 +54,11 @@ describe('textareaHandler', () => {
     expect(numberInput._dispose).toHaveBeenCalled();
     expect(kvContainer._dispose).toHaveBeenCalled();
     expect(dendriteForm._dispose).toHaveBeenCalled();
+    expect(fileInput._dispose).toHaveBeenCalled();
     expect(removeChild).toHaveBeenCalledWith(container, numberInput);
     expect(removeChild).toHaveBeenCalledWith(container, kvContainer);
     expect(removeChild).toHaveBeenCalledWith(container, dendriteForm);
+    expect(removeChild).toHaveBeenCalledWith(container, fileInput);
     expect(dom.createElement).toHaveBeenCalledWith('textarea');
     expect(dom.setClassName).toHaveBeenCalledWith(
       textareaElement,
@@ -89,18 +93,19 @@ describe('textareaHandler', () => {
     const container = {};
     const textInput = {};
     const existingTextarea = {};
+    const querySelector = jest.fn((_, selector) => {
+      if (selector === '.toy-textarea') {
+        return existingTextarea;
+      }
+      return null;
+    });
 
     const dom = {
       hide: jest.fn(),
       disable: jest.fn(),
-      querySelector: jest
-        .fn()
-        .mockReturnValueOnce(null)
-        .mockReturnValueOnce(null)
-        .mockReturnValueOnce(null)
-        .mockReturnValueOnce(existingTextarea),
+      querySelector,
       removeChild: jest.fn(),
-      createElement: jest.fn(),
+      createElement: jest.fn(() => existingTextarea),
       setClassName: jest.fn(),
       getNextSibling: jest.fn(),
       insertBefore: jest.fn(),

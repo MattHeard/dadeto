@@ -215,13 +215,17 @@ export const maybeRemoveGamepadCapture = createElementRemover(
   GAMEPAD_CAPTURE_FORM_SELECTOR
 );
 /** @type {ContainerHandler[]} */
-export const BASE_CONTAINER_HANDLERS = [
+const COMMON_CONTAINER_HANDLERS = [
   maybeRemoveKV,
   maybeRemoveDendrite,
   maybeRemoveTextarea,
   maybeRemoveFile,
-  maybeRemoveModeratorRatings,
   maybeRemoveKeyboardCapture,
+];
+/** @type {ContainerHandler[]} */
+export const BASE_CONTAINER_HANDLERS = [
+  ...COMMON_CONTAINER_HANDLERS,
+  maybeRemoveModeratorRatings,
   maybeRemoveGamepadCapture,
 ];
 
@@ -500,10 +504,7 @@ export function createDefaultHandler(cleanupFns) {
  */
 export const defaultHandler = createDefaultHandler([
   maybeRemoveNumber,
-  maybeRemoveKV,
-  maybeRemoveDendrite,
-  maybeRemoveTextarea,
-  maybeRemoveKeyboardCapture,
+  ...COMMON_CONTAINER_HANDLERS,
 ]);
 
 export const dendritePageHandler = createDendriteHandler(

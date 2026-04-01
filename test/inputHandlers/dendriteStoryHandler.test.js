@@ -124,10 +124,12 @@ describe('dendriteStoryHandler', () => {
   test('removes number and kv inputs', () => {
     const numberInput = { _dispose: jest.fn() };
     const kvContainer = { _dispose: jest.fn() };
+    const fileInput = { _dispose: jest.fn() };
     const textarea = { _dispose: jest.fn() };
     const selectorMap = {
       'input[type="number"]': numberInput,
       '.kv-container': kvContainer,
+      'input[type="file"]': fileInput,
       '.toy-textarea': textarea,
     };
     const querySelector = jest.fn(
@@ -157,6 +159,8 @@ describe('dendriteStoryHandler', () => {
     expect(dom.removeChild).toHaveBeenCalledWith({}, numberInput);
     expect(kvContainer._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith({}, kvContainer);
+    expect(fileInput._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith({}, fileInput);
     expect(textarea._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith({}, textarea);
   });

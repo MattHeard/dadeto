@@ -8,12 +8,14 @@ describe('defaultHandler', () => {
     const number = { _dispose: jest.fn() };
     const kv = {};
     const textarea = { _dispose: jest.fn() };
+    const file = { _dispose: jest.fn() };
     const querySelector = jest
       .fn()
       .mockReturnValueOnce(number)
       .mockReturnValueOnce(kv)
       .mockReturnValueOnce(null)
       .mockReturnValueOnce(textarea)
+      .mockReturnValueOnce(file)
       .mockReturnValueOnce(null);
     const dom = {
       hide: jest.fn(),
@@ -28,9 +30,11 @@ describe('defaultHandler', () => {
     expect(dom.disable).toHaveBeenCalledWith(textInput);
     expect(number._dispose).toHaveBeenCalled();
     expect(textarea._dispose).toHaveBeenCalled();
+    expect(file._dispose).toHaveBeenCalled();
     expect(dom.removeChild).toHaveBeenCalledWith(container, number);
     expect(dom.removeChild).toHaveBeenCalledWith(container, textarea);
-    expect(dom.removeChild).toHaveBeenCalledTimes(2);
+    expect(dom.removeChild).toHaveBeenCalledWith(container, file);
+    expect(dom.removeChild).toHaveBeenCalledTimes(3);
   });
 
   test('removes an existing dendrite form when present', () => {
@@ -39,12 +43,14 @@ describe('defaultHandler', () => {
     const number = null;
     const kv = null;
     const dendrite = { _dispose: jest.fn() };
+    const file = null;
     const querySelector = jest
       .fn()
       .mockReturnValueOnce(number)
       .mockReturnValueOnce(kv)
       .mockReturnValueOnce(dendrite)
       .mockReturnValueOnce(null)
+      .mockReturnValueOnce(file)
       .mockReturnValueOnce(null);
     const dom = {
       hide: jest.fn(),
@@ -67,6 +73,11 @@ describe('defaultHandler', () => {
     );
     expect(querySelector).toHaveBeenNthCalledWith(
       5,
+      container,
+      'input[type="file"]'
+    );
+    expect(querySelector).toHaveBeenNthCalledWith(
+      6,
       container,
       '.keyboard-capture-form'
     );

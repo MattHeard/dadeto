@@ -4,11 +4,15 @@ import { handleKVType } from '../../src/browser/toys.js';
 describe('handleKVType effects', () => {
   it('removes number input and sets up key-value container', () => {
     const numberInput = { _dispose: jest.fn() };
+    const fileInput = { _dispose: jest.fn() };
     const container = {};
     const textInput = {};
     const querySelector = jest.fn((el, selector) => {
       if (selector === 'input[type="number"]') {
         return numberInput;
+      }
+      if (selector === 'input[type="file"]') {
+        return fileInput;
       }
       return null;
     });
@@ -44,6 +48,9 @@ describe('handleKVType effects', () => {
       'input[type="number"]'
     );
     expect(removeChild).toHaveBeenCalledWith(container, numberInput);
+    expect(querySelector).toHaveBeenCalledWith(container, 'input[type="file"]');
+    expect(fileInput._dispose).toHaveBeenCalled();
+    expect(removeChild).toHaveBeenCalledWith(container, fileInput);
     expect(querySelector).toHaveBeenCalledWith(container, '.kv-container');
     expect(createElement).toHaveBeenCalledWith('div');
     expect(insertBefore).toHaveBeenCalled();

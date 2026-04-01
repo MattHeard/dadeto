@@ -34,10 +34,14 @@ describe('handleKVType integration with createRemoveValueListener', () => {
     const onChange = jest.fn();
 
     const numberInput = createNumberInput('1', onChange, dom);
+    const fileInput = { _dispose: jest.fn() };
 
     dom.querySelector.mockImplementation((el, selector) => {
       if (selector === 'input[type="number"]') {
         return numberInput;
+      }
+      if (selector === 'input[type="file"]') {
+        return fileInput;
       }
       return null;
     });
@@ -51,5 +55,7 @@ describe('handleKVType integration with createRemoveValueListener', () => {
       handler
     );
     expect(dom.removeChild).toHaveBeenCalledWith(container, numberInput);
+    expect(fileInput._dispose).toHaveBeenCalled();
+    expect(dom.removeChild).toHaveBeenCalledWith(container, fileInput);
   });
 });

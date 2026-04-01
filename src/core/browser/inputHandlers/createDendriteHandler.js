@@ -405,6 +405,7 @@ export function cleanContainer(dom, container) {
   const removers = [
     browserCore.maybeRemoveNumber,
     browserCore.maybeRemoveKV,
+    browserCore.maybeRemoveFile,
     browserCore.maybeRemoveTextarea,
     removeExistingForm,
   ];

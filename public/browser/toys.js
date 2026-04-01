@@ -8,6 +8,7 @@ import {
   defaultHandler,
   getInputValue,
   hideAndDisable,
+  maybeRemoveFile,
   maybeRemoveNumber,
   maybeRemoveTextarea,
   maybeRemoveDendrite,
@@ -241,6 +242,7 @@ export function handleKVType(dom, container, textInput) {
   maybeRemoveNumber(container, dom);
   maybeRemoveDendrite(container, dom);
   maybeRemoveTextarea(container, dom);
+  maybeRemoveFile(container, dom);
   ensureKeyValueInput(container, textInput, dom);
 }
 
