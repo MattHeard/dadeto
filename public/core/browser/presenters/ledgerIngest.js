@@ -214,6 +214,7 @@ function createCanonicalTransactionsSection(parsed, dom) {
     'ledger-ingest-section--canonical-transactions',
     'Canonical transactions'
   );
+
   if (parsed.canonicalTransactions.length === 0) {
     dom.appendChild(
       section,
@@ -348,10 +349,7 @@ function createTransactionDetails(transaction, dom) {
   });
 
   dom.appendChild(details, summary);
-  dom.appendChild(
-    details,
-    createTransactionDetailsTable(transaction, dom)
-  );
+  dom.appendChild(details, createTransactionDetailsTable(transaction, dom));
   dom.appendChild(cell, details);
   return cell;
 }
@@ -486,7 +484,11 @@ function getSummaryNumberValue(value) {
  * @returns {HTMLElement} Section element.
  */
 function createJsonSection(dom, options) {
-  const section = createSectionWithHeading(dom, options.className, options.title);
+  const section = createSectionWithHeading(
+    dom,
+    options.className,
+    options.title
+  );
   const body = dom.createElement('pre');
   dom.setClassName(body, SECTION_BODY_CLASS);
   dom.setTextContent(body, formatJson(options.value));
