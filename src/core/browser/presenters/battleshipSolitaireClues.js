@@ -27,7 +27,7 @@ import { isObject } from '../common.js';
 import { safeParseJson, getFirstErrorMessage } from '../browser-core.js';
 import { createPreFromContent } from './browserPresentersCore.js';
 
-/** @typedef {import('./browserPresentersCore.js').PresenterDOMHelpers} PresenterDOMHelpers */
+/** @typedef {import('./browserPresentersCore.js').PresenterDOMHelpers} BattleshipPresenterDOMHelpers */
 
 /**
  * @typedef {object} BattleshipClueCandidate
@@ -178,7 +178,7 @@ function parseCluesOrDefault(inputString) {
 /**
  * Build a preformatted Battleship-Solitaire clue board.
  * @param {string} inputString - JSON clue configuration.
- * @param {PresenterDOMHelpers} dom - DOM utilities.
+ * @param {BattleshipPresenterDOMHelpers} dom - DOM utilities.
  * @returns {HTMLElement} The generated <pre> element.
  */
 export function createBattleshipCluesBoardElement(inputString, dom) {

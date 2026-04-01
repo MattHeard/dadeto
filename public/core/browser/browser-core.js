@@ -435,9 +435,7 @@ export function disposeAndRemove(element, container, dom) {
  * @returns {void}
  */
 export function maybeRemoveElement(element, container, dom) {
-  if (isDisposable(element)) {
-    disposeAndRemove(element, container, dom);
-  }
+  removeCapturedElement(element, container, dom);
 }
 
 /** @type {Array<[string, string]>} */
