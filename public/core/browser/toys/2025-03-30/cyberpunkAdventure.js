@@ -201,10 +201,8 @@ function handleTransportTrade(context) {
     nextState = 'hub';
   }
 
-  return respondWithInventoryState(output, nextState, {
-    inventory,
-    visited: nextVisited,
-  });
+  const state = createInventoryState(inventory, nextVisited);
+  return respondWithInventoryState(output, nextState, state);
 }
 
 /**
@@ -223,10 +221,11 @@ function handleAlleyStealth(context) {
     output = `> You dodge the shadows and find a hidden stash: a stimpack.`;
   }
 
-  return respondWithInventoryState(output, 'hub', {
-    inventory: nextInventory,
-    visited: nextVisited,
-  });
+  return respondWithInventoryState(
+    output,
+    'hub',
+    createInventoryState(nextInventory, nextVisited)
+  );
 }
 
 /**
@@ -276,6 +275,19 @@ function respondWithContext(context, output, nextState) {
  */
 function respondWithInventoryState(output, nextState, state) {
   return respondWithInventory(output, nextState, state);
+}
+
+/**
+ * Build the inventory/visited bundle passed through inventory-aware responses.
+ * @param {string[]} inventory Current inventory state.
+ * @param {Set<string>} visited Visited-state tracker.
+ * @returns {AdventureInventoryState} Inventory/visited bundle.
+ */
+function createInventoryState(inventory, visited) {
+  return {
+    inventory,
+    visited,
+  };
 }
 
 /**
