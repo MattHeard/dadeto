@@ -98,3 +98,13 @@ export function createSpecialInputEnsurer(options) {
     },
   };
 }
+
+/**
+ * Create or reuse a special input in a single step.
+ * @param {SharedSpecialInputParams} options Shared input configuration.
+ * @param {() => HTMLElement} createSpecialInput Factory for the special input.
+ * @returns {HTMLElement} Reused or newly created special input.
+ */
+export function createOrReuseSpecialInput(options, createSpecialInput) {
+  return createSpecialInputEnsurer(options).ensure(createSpecialInput);
+}

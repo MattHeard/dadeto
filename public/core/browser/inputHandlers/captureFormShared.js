@@ -1,5 +1,5 @@
 import * as browserCore from '../browser-core.js';
-import { createManagedFormShellBundle } from './createDendriteHandler.js';
+import { createManagedFormShellState } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {(globalThis: typeof globalThis) => void} CleanupFn */
@@ -95,11 +95,13 @@ export function syncToyPayload(input, payload) {
  * @returns {{ form: HTMLElement, button: HTMLButtonElement, cleanupFns: CleanupFn[] }} Shared nodes and cleanup stack.
  */
 export function buildCaptureForm({ dom, container, textInput, formClass }) {
-  const { form, cleanupFns } = createManagedFormShellBundle({
+  const shellState = createManagedFormShellState({
     dom,
     container,
     textInput,
   });
+  const { form } = shellState;
+  const cleanupFns = shellState.disposers;
   dom.setClassName(form, formClass);
 
   const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
@@ -218,11 +220,7 @@ export function prepareCaptureHandler({ dom, container, textInput }) {
  * @returns {HTMLElement | null} Closest article element.
  */
 export function getArticle(container) {
-  const article = container.closest('article.entry');
-  if (!article) {
-    return null;
-  }
-  return /** @type {HTMLElement} */ (article);
+  return /** @type {HTMLElement | null} */ (container.closest('article.entry'));
 }
 
 /**

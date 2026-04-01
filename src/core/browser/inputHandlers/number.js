@@ -5,7 +5,7 @@ import {
   hideAndDisable,
 } from '../browser-core.js';
 import { setInputValue } from '../inputValueStore.js';
-import { createSpecialInputEnsurer } from './sharedSpecialInput.js';
+import { createOrReuseSpecialInput } from './sharedSpecialInput.js';
 
 const NUMBER_INPUT_SELECTOR = 'input[type="number"]';
 
@@ -66,26 +66,27 @@ const maybeSetNumberInputValue = (dom, input, value) => {
  * @returns {HTMLInputElement} Number input element.
  */
 export const ensureNumberInput = (container, textInput, dom) => {
-  const { ensure } = createSpecialInputEnsurer({
-    selector: NUMBER_INPUT_SELECTOR,
-    container,
-    textInput,
-    dom,
-  });
+  const ensuredInput = createOrReuseSpecialInput(
+    {
+      selector: NUMBER_INPUT_SELECTOR,
+      container,
+      textInput,
+      dom,
+    },
+    () => {
+      const inputValue = getInputValue(textInput);
+      /** @param {unknown} event - Input event to sync. */
+      const updateTextInputValue = event => {
+        const targetValue = dom.getTargetValue(
+          /** @type {Event & { target: { value: string } }} */ (event)
+        );
+        dom.setValue(textInput, targetValue);
+        setInputValue(textInput, targetValue);
+      };
 
-  const ensuredInput = ensure(() => {
-    const inputValue = getInputValue(textInput);
-    /** @param {unknown} event - Input event to sync. */
-    const updateTextInputValue = event => {
-      const targetValue = dom.getTargetValue(
-        /** @type {Event & { target: { value: string } }} */ (event)
-      );
-      dom.setValue(textInput, targetValue);
-      setInputValue(textInput, targetValue);
-    };
-
-    return createNumberInput(inputValue, updateTextInputValue, dom);
-  });
+      return createNumberInput(inputValue, updateTextInputValue, dom);
+    }
+  );
   return /** @type {HTMLInputElement} */ (ensuredInput);
 };
 

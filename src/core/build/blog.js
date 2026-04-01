@@ -475,24 +475,26 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    */
   function copyBlogJson(dirs, io, messageLogger) {
     const buildDir = join(dirs.srcDir, 'build');
-    if (!io.directoryExists(buildDir)) {
-      messageLogger.warn(
-        `Warning: build directory not found at ${formatPathForLog(buildDir)}`
-      );
+    if (io.directoryExists(buildDir)) {
+      const source = join(buildDir, 'blog.json');
+      const destination = join(dirs.publicDir, 'blog.json');
+      const message = `Blog data copied from ${formatPathForLog(
+        source
+      )} to ${formatPathForLog(destination)}`;
+      const copyOptions = {
+        source,
+        messageLogger,
+        destination,
+        message,
+      };
+
+      copyFileWithDirectories(io, copyOptions);
       return;
     }
 
-    const source = join(buildDir, 'blog.json');
-    const destination = join(dirs.publicDir, 'blog.json');
-
-    copyFileWithDirectories(io, {
-      source,
-      destination,
-      messageLogger,
-      message: `Blog data copied from ${formatPathForLog(
-        source
-      )} to ${formatPathForLog(destination)}`,
-    });
+    messageLogger.warn(
+      `Warning: build directory not found at ${formatPathForLog(buildDir)}`
+    );
   }
 
   /**

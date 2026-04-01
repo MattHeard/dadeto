@@ -3,7 +3,7 @@ import {
   createInputDisposer,
   revealAndEnable,
 } from './browserInputHandlersCore.js';
-import { createSpecialInputEnsurer } from './sharedSpecialInput.js';
+import { createOrReuseSpecialInput } from './sharedSpecialInput.js';
 import { FILE_INPUT_SETTINGS } from './fileInputSettings.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -90,21 +90,22 @@ function createFileChangeHandler({ dom, textInput }) {
  * @returns {HTMLInputElement} File input element.
  */
 export const ensureFileInput = (container, textInput, dom) => {
-  const { ensure } = createSpecialInputEnsurer({
-    selector: FILE_INPUT_SELECTOR,
-    container,
-    textInput,
-    dom,
-  });
-
   const fileInput = /** @type {HTMLInputElement} */ (
-    ensure(() => {
-      const input = createFileInputElement(dom);
-      const handleChange = createFileChangeHandler({ dom, textInput });
-      dom.addEventListener(input, 'change', handleChange);
-      input._dispose = createInputDisposer(dom, input, handleChange);
-      return input;
-    })
+    createOrReuseSpecialInput(
+      {
+        selector: FILE_INPUT_SELECTOR,
+        container,
+        textInput,
+        dom,
+      },
+      () => {
+        const input = createFileInputElement(dom);
+        const handleChange = createFileChangeHandler({ dom, textInput });
+        dom.addEventListener(input, 'change', handleChange);
+        input._dispose = createInputDisposer(dom, input, handleChange);
+        return input;
+      }
+    )
   );
 
   dom.setClassName(fileInput, FILE_INPUT_SETTINGS.className);

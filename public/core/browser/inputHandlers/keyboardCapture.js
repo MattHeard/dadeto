@@ -1,6 +1,9 @@
 import * as browserCore from '../browser-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
-import { createKeyboardCaptureButtonUpdater } from './captureLifecycleShared.js';
+import {
+  createCaptureLifecycleOptions,
+  createKeyboardCaptureButtonUpdater,
+} from './captureLifecycleShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} KeyboardDOMHelpers */
@@ -50,14 +53,14 @@ function releaseCaptureOnEscape(event, options) {
   const { dom, button, textInput, autoSubmitCheckbox, state } = options;
   state.capturing = false;
   captureLifecycleDeps.emitCaptureState(
-    {
+    createCaptureLifecycleOptions({
       dom,
       button,
       textInput,
       autoSubmitCheckbox,
       updateButtonLabel: updateCaptureButton,
       emitPayload: captureLifecycleDeps.syncToyPayload,
-    },
+    }),
     false
   );
   return true;
@@ -150,13 +153,15 @@ const buildKeyboardCaptureFormContext = ({
   );
   const handleToggle = captureLifecycleDeps.createCaptureLifecycleToggleHandler(
     {
-      dom,
-      button,
-      textInput,
-      autoSubmitCheckbox,
+      ...createCaptureLifecycleOptions({
+        dom,
+        button,
+        textInput,
+        autoSubmitCheckbox,
+        updateButtonLabel: updateCaptureButton,
+        emitPayload: captureLifecycleDeps.syncToyPayload,
+      }),
       state,
-      updateButtonLabel: updateCaptureButton,
-      emitPayload: captureLifecycleDeps.syncToyPayload,
     }
   );
   const handleKeyboard = createKeyboardHandler({

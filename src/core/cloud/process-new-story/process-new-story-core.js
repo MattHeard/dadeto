@@ -1,5 +1,9 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
-import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
+import {
+  normalizeHeaderValue,
+  getSnapshotData,
+  stringOrNull,
+} from '../cloud-core.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
 
@@ -107,20 +111,8 @@ function resolveAuthorRef(db, authorId) {
  * @returns {string | null} Identifier when valid.
  */
 function normalizeIdentifier(value) {
-  if (!isNonEmptyString(value)) {
-    return null;
-  }
-
-  return value;
-}
-
-/**
- * Determine whether a value is a non-empty string.
- * @param {unknown} value Candidate value.
- * @returns {value is string} True when the value is a non-empty string.
- */
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value !== '';
+  const normalizedIdentifier = stringOrNull(value);
+  return normalizedIdentifier;
 }
 
 /**

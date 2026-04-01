@@ -36,6 +36,148 @@ function createStandardFixtureInput(source, rawRecords) {
   };
 }
 
+/**
+ * Build the sample rows used by the happy-path fixture.
+ * @returns {Record<string, unknown>[]} Happy-path raw records.
+ */
+function createHappyPathRawRecords() {
+  return [
+    {
+      id: 'HV-001',
+      date: '2026-03-01',
+      amount: '-45.50',
+      description: 'Coffee Shop   - Seattle',
+      currency: 'usd',
+    },
+    {
+      id: 'HV-002',
+      date: '2026-03-02T07:00:00Z',
+      amount: '200.00',
+      description: 'Payroll Deposit ',
+      currency: 'usd',
+    },
+  ];
+}
+
+/**
+ * Build a raw record with a consistent property order.
+ * @param {string} id Record id.
+ * @param {string} date Record date.
+ * @param {string | number | null} amount Record amount.
+ * @param {string} description Record description.
+ * @param {string} currency Record currency.
+ * @returns {Record<string, unknown>} Raw transaction record.
+ */
+// eslint-disable-next-line max-params
+function createRawRecord(id, date, amount, description, currency) {
+  return { id, date, amount, description, currency };
+}
+
+/**
+ * Build a fixture bundle with a shared shape.
+ * @param {string} name Fixture name for humans.
+ * @param {string} description What behavior the fixture proves.
+ * @param {ImportTransactionsInput} input Input that proves the behavior.
+ * @returns {FixtureBundle} Normalized fixture bundle.
+ */
+function createFixtureBundle(name, description, input) {
+  return { name, description, input };
+}
+
+/**
+ * Build the happy-path sample fixture.
+ * @returns {FixtureBundle} Happy-path scenario.
+ */
+function createHappyPathFixture() {
+  return createFixtureBundle(
+    'single-source mapping and normalization',
+    'Shows how field mappings, normalization steps, and summary generation tie together.',
+    createStandardFixtureInput('ember-bank-us', createHappyPathRawRecords())
+  );
+}
+
+/**
+ * Build the duplicate-detection sample fixture.
+ * @returns {FixtureBundle} Duplicate-detection scenario.
+ */
+function createDuplicateDetectionFixture() {
+  return createFixtureBundle(
+    'duplicate detection with first-wins policy',
+    'Ensures that the policy reports a duplicate when successive rows share the same normalized key.',
+    createStandardFixtureInput('local-credit-card', [
+      createRawRecord(
+        'dup-001',
+        '2026-03-05',
+        '120.00',
+        'Electric bill',
+        'usd'
+      ),
+      createRawRecord(
+        'dup-002',
+        '2026-03-05T00:00:00Z',
+        '120.00',
+        'electric bill ',
+        'USD'
+      ),
+      createRawRecord('dup-003', '2026-03-06', '-15.50', 'Lunch spot', 'usd'),
+    ])
+  );
+}
+
+/**
+ * Build the repeat-import sample fixture.
+ * @returns {FixtureBundle} Repeat-import scenario.
+ */
+function createRepeatImportFixture() {
+  return createFixtureBundle(
+    'repeat import rows treated as duplicates',
+    'Verifies that importing the same logical row twice only counts once as canonical.',
+    createStandardFixtureInput('core-processor', [
+      createRawRecord(
+        'repeat-001',
+        '2026-03-07',
+        '55',
+        'Gym membership',
+        'USD'
+      ),
+      createRawRecord(
+        'repeat-002',
+        '2026-03-07T00:00:00Z',
+        '55.00',
+        'Gym Membership ',
+        'usd'
+      ),
+    ])
+  );
+}
+
+/**
+ * Build the invalid-row sample fixture.
+ * @returns {FixtureBundle} Invalid-row scenario.
+ */
+function createInvalidRowFixture() {
+  return createFixtureBundle(
+    'invalid rows report structured errors',
+    'Proves that missing required fields are surfaced as structured errors instead of new transactions.',
+    createStandardFixtureInput('virtual-credit', [
+      {
+        id: 'valid-001',
+        date: '2026-03-08',
+        amount: '120.75',
+        description: 'Valid row',
+        currency: 'usd',
+      },
+      {
+        id: 'invalid-001',
+        date: '',
+        amount: null,
+        description: 'Missing critical fields',
+        currency: 'usd',
+      },
+    ])
+  );
+}
+
 export const normalizationExamples = [
   'Dates are coerced into YYYY-MM-DD (ISO 8601 date portion) to align postings across sources.',
   'Amounts are converted into signed numbers so debit/credit semantics are explicit.',
@@ -122,97 +264,10 @@ export const dedupePolicyExamples = [
  */
 
 export const fixtures = {
-  happyPath: {
-    name: 'single-source mapping and normalization',
-    description:
-      'Shows how field mappings, normalization steps, and summary generation tie together.',
-    input: createStandardFixtureInput('ember-bank-us', [
-      {
-        id: 'HV-001',
-        date: '2026-03-01',
-        amount: '-45.50',
-        description: 'Coffee Shop   - Seattle',
-        currency: 'usd',
-      },
-      {
-        id: 'HV-002',
-        date: '2026-03-02T07:00:00Z',
-        amount: '200.00',
-        description: 'Payroll Deposit ',
-        currency: 'usd',
-      },
-    ]),
-  },
-  duplicateDetection: {
-    name: 'duplicate detection with first-wins policy',
-    description:
-      'Ensures that the policy reports a duplicate when successive rows share the same normalized key.',
-    input: createStandardFixtureInput('local-credit-card', [
-      {
-        id: 'dup-001',
-        date: '2026-03-05',
-        amount: '120.00',
-        description: 'Electric bill',
-        currency: 'usd',
-      },
-      {
-        id: 'dup-002',
-        date: '2026-03-05T00:00:00Z',
-        amount: '120.00',
-        description: 'electric bill ',
-        currency: 'USD',
-      },
-      {
-        id: 'dup-003',
-        date: '2026-03-06',
-        amount: '-15.50',
-        description: 'Lunch spot',
-        currency: 'usd',
-      },
-    ]),
-  },
-  repeatImport: {
-    name: 'repeat import rows treated as duplicates',
-    description:
-      'Verifies that importing the same logical row twice only counts once as canonical.',
-    input: createStandardFixtureInput('core-processor', [
-      {
-        id: 'repeat-001',
-        date: '2026-03-07',
-        amount: '55',
-        description: 'Gym membership',
-        currency: 'USD',
-      },
-      {
-        id: 'repeat-002',
-        date: '2026-03-07T00:00:00Z',
-        amount: '55.00',
-        description: 'Gym Membership ',
-        currency: 'usd',
-      },
-    ]),
-  },
-  invalidRow: {
-    name: 'invalid rows report structured errors',
-    description:
-      'Proves that missing required fields are surfaced as structured errors instead of new transactions.',
-    input: createStandardFixtureInput('virtual-credit', [
-      {
-        id: 'valid-001',
-        date: '2026-03-08',
-        amount: '120.75',
-        description: 'Valid row',
-        currency: 'usd',
-      },
-      {
-        id: 'invalid-001',
-        date: '',
-        amount: null,
-        description: 'Missing critical fields',
-        currency: 'usd',
-      },
-    ]),
-  },
+  happyPath: createHappyPathFixture(),
+  duplicateDetection: createDuplicateDetectionFixture(),
+  repeatImport: createRepeatImportFixture(),
+  invalidRow: createInvalidRowFixture(),
 };
 
 export const ledgerIngestCoreTestOnly = {

@@ -1,5 +1,6 @@
 import { parseJsonObject } from '../jsonValueHelpers.js';
 import {
+  createPreFromContent,
   createPresenterRoot,
   renderParsedPresenter,
 } from './browserPresentersCore.js';
@@ -231,17 +232,6 @@ function createFallbackMapping(isSkipped) {
 }
 
 /**
- * @param {string} inputString Raw presenter payload.
- * @param {DOMHelpers} dom DOM helper facade for presenter output.
- * @returns {HTMLElement} Fallback preformatted output for invalid JSON.
- */
-function createFallbackElement(inputString, dom) {
-  const fallback = dom.createElement('pre');
-  dom.setTextContent(fallback, inputString);
-  return fallback;
-}
-
-/**
  * Render the parsed Joy-Con mapping state into a presenter root.
  * @param {JoyConMappingState} parsed Parsed presenter payload.
  * @param {DOMHelpers} dom DOM helper facade for presenter output.
@@ -289,6 +279,6 @@ export function createJoyConMappingElement(inputString, dom) {
     dom,
     parse: parseState,
     render: renderJoyConMappingState,
-    createFallback: createFallbackElement,
+    createFallback: createPreFromContent,
   });
 }

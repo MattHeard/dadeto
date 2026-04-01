@@ -57,6 +57,50 @@ export function createCaptureButtonUpdater(captureLabel, releaseLabel) {
 }
 
 /**
+ * Build the shared capture lifecycle options for capture-based toys.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   button: HTMLButtonElement,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ *   updateButtonLabel: (dom: DOMHelpers, button: HTMLButtonElement, capturing: boolean) => void,
+ *   emitPayload: (
+ *     input: {
+ *       dom: DOMHelpers,
+ *       textInput: HTMLInputElement,
+ *       autoSubmitCheckbox: HTMLInputElement | null,
+ *     },
+ *     payload: Record<string, unknown>
+ *   ) => void,
+ * }} options Shared capture UI dependencies.
+ * @returns {{
+ *   dom: DOMHelpers,
+ *   button: HTMLButtonElement,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ *   updateButtonLabel: (dom: DOMHelpers, button: HTMLButtonElement, capturing: boolean) => void,
+ *   emitPayload: (
+ *     input: {
+ *       dom: DOMHelpers,
+ *       textInput: HTMLInputElement,
+ *       autoSubmitCheckbox: HTMLInputElement | null,
+ *     },
+ *     payload: Record<string, unknown>
+ *   ) => void,
+ * }} Capture lifecycle options bundle.
+ */
+export function createCaptureLifecycleOptions(options) {
+  return {
+    dom: options.dom,
+    button: options.button,
+    textInput: options.textInput,
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    updateButtonLabel: options.updateButtonLabel,
+    emitPayload: options.emitPayload,
+  };
+}
+
+/**
  * Build the updater used by the gamepad capture UI.
  * @returns {(dom: DOMHelpers, button: HTMLButtonElement, isCapturing: boolean) => void}
  *   Capture-button update function.

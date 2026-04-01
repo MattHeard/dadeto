@@ -112,7 +112,7 @@ function processCsvQuotedCharacterState(state, chars, index) {
  */
 function processCsvQuotedCharacterInside(state, next, index) {
   if (isCsvEscapedQuote(next)) {
-    appendCsvCell(state, '"');
+    appendCsvCellChar(state, '"');
     return index + 1;
   }
   toggleCsvQuoteState(state);
@@ -289,15 +289,6 @@ function toggleCsvQuoteState(state) {
  * @returns {void}
  */
 function appendCsvCellChar(state, char) {
-  state.cell += char;
-}
-
-/**
- * @param {{ cell: string }} state CSV parse state.
- * @param {string} char Character to append.
- * @returns {void}
- */
-function appendCsvCell(state, char) {
   state.cell += char;
 }
 

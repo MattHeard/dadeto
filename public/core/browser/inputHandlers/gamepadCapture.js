@@ -561,8 +561,8 @@ function createReleaseCaptureEmitPayload() {
  */
 function createReleaseCaptureEmitCaptureStateOptions(options, emitPayload) {
   return {
-    ...createSharedGamepadCaptureLifecycleOptions(options),
     emitPayload,
+    ...createGamepadLifecycleFields(options),
   };
 }
 
@@ -759,32 +759,32 @@ function createStopCaptureHandler(options) {
  */
 function createGamepadToggleOptions(options) {
   return {
-    ...createSharedGamepadCaptureLifecycleOptions(options),
+    onStart: () => queuePoll(options),
+    onStop: createStopCaptureHandler(options),
     state: options.state,
     emitPayload: (input, payload) =>
       captureLifecycleDeps.syncToyInput({ ...input, payload }),
-    onStart: () => queuePoll(options),
-    onStop: createStopCaptureHandler(options),
+    ...createGamepadLifecycleFields(options),
   };
 }
 
 /**
- * Build the shared capture lifecycle options for gamepad handlers.
+ * Build the shared lifecycle fields for gamepad capture.
  * @param {HandlerOptions} options - Shared handler dependencies.
  * @returns {{
- *   dom: HandlerOptions['dom'],
  *   button: HandlerOptions['button'],
+ *   dom: HandlerOptions['dom'],
  *   textInput: HandlerOptions['textInput'],
  *   autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'],
  *   updateButtonLabel: (dom: HandlerOptions['dom'], button: HandlerOptions['button'], capturing: boolean) => void,
- * }} Shared lifecycle options.
+ * }} Shared lifecycle fields.
  */
-function createSharedGamepadCaptureLifecycleOptions(options) {
+function createGamepadLifecycleFields(options) {
   return {
+    autoSubmitCheckbox: options.autoSubmitCheckbox,
+    textInput: options.textInput,
     dom: options.dom,
     button: options.button,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
     updateButtonLabel: updateCaptureButton,
   };
 }

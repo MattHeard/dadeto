@@ -65,10 +65,20 @@ function buildRatingsPair(ratings, moderatorA, moderatorB) {
 function buildSecondRatingsPair(firstRatings, ratings, moderatorB) {
   const secondRatings = getModeratorRatings(ratings, moderatorB);
 
-  if (!secondRatings) {
-    return null;
+  if (secondRatings) {
+    return createRatingsPair(firstRatings, secondRatings);
   }
 
+  return null;
+}
+
+/**
+ * Create a pair of moderator ratings once both sides are present.
+ * @param {Record<string, boolean>} firstRatings First moderator ratings.
+ * @param {Record<string, boolean>} secondRatings Second moderator ratings.
+ * @returns {{ firstRatings: Record<string, boolean>, secondRatings: Record<string, boolean> }} Ratings pair.
+ */
+function createRatingsPair(firstRatings, secondRatings) {
   return {
     firstRatings,
     secondRatings,

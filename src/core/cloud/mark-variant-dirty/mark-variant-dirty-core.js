@@ -440,13 +440,14 @@ function enforceAllowedMethod(req, res, allowedMethod) {
  */
 function parseValidRequest(req, res, parseRequestBody) {
   const parsed = parseRequestBody(getRequestBody(req));
-  if (!isValidMarkRequest(parsed)) {
-    res.status(400).json({ error: 'Invalid input' });
-    return null;
+  if (isValidMarkRequest(parsed)) {
+    return parsed;
   }
 
-  return parsed;
+  res.status(400).json({ error: 'Invalid input' });
+  return null;
 }
+
 /**
  * Safely read a request property when the request is defined.
  * @param {NativeHttpRequest | undefined} req Express request.

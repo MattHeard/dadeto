@@ -1,3 +1,5 @@
+import { resolveMessageOrDefault } from '../cloud/cloud-core.js';
+
 /**
  * @param {string} output Raw `bd ready` command output.
  * @returns {Array<{ id: string, title: string, priority: string }>} Parsed ready bead summaries.
@@ -790,17 +792,14 @@ function getBeadIdOrUnknown(beadId) {
  * @returns {string} Human-readable failure message.
  */
 function formatAgentFailureEventMessage({ exitCode, signal, summary, beadId }) {
-  const message = selectFirstFailureMessage([
-    formatAgentFailureSignalMessage(signal),
-    formatAgentFailureExitCodeMessage(exitCode),
-    formatAgentFailureSummaryMessage(summary),
-  ]);
-
-  if (message) {
-    return message;
-  }
-
-  return `agent failure: ${getBeadIdOrUnknown(beadId)}`;
+  return resolveMessageOrDefault(
+    selectFirstFailureMessage([
+      formatAgentFailureSignalMessage(signal),
+      formatAgentFailureExitCodeMessage(exitCode),
+      formatAgentFailureSummaryMessage(summary),
+    ]),
+    `agent failure: ${getBeadIdOrUnknown(beadId)}`
+  );
 }
 
 /**

@@ -1,5 +1,6 @@
 import { parseJsonObject } from '../jsonValueHelpers.js';
 import {
+  createPreFromContent,
   renderParsedPresenter,
   createPresenterRoot,
 } from './browserPresentersCore.js';
@@ -34,7 +35,6 @@ const TABLE_CELL_COLLAPSED_CLASS = 'ledger-ingest-transactions-cell--collapsed';
 const TABLE_HOST_CLASS = 'ledger-ingest-transactions-table-host';
 const COLLAPSED_BUTTON_TEXT = '(+)';
 const EXPANDED_BUTTON_TEXT = '(-)';
-const FALLBACK_TAG = 'pre';
 const TITLE_TEXT = 'Ledger Ingest';
 
 /**
@@ -146,18 +146,6 @@ function formatJson(value) {
     return 'null';
   }
   return text;
-}
-
-/**
- * Create the output fallback when JSON parsing fails.
- * @param {string} inputString Raw output text.
- * @param {DOMHelpers} dom DOM helper facade.
- * @returns {HTMLElement} Preformatted fallback element.
- */
-function createFallbackElement(inputString, dom) {
-  const fallback = dom.createElement(FALLBACK_TAG);
-  dom.setTextContent(fallback, inputString);
-  return fallback;
 }
 
 /**
@@ -329,14 +317,12 @@ function createTableHead(state, rerender, dom) {
   const row = dom.createElement('tr');
 
   getColumnGroups(state.collapsedColumns).forEach(group => {
-    dom.appendChild(
-      row,
-      createTableHeaderCell(group, {
-        collapsedColumns: state.collapsedColumns,
-        rerender,
-        dom,
-      })
-    );
+    appendTableHeaderCell(row, {
+      group,
+      state,
+      rerender,
+      dom,
+    });
   });
 
   dom.appendChild(head, row);
@@ -373,15 +359,33 @@ function createTransactionRow(transaction, state, dom) {
   dom.setClassName(row, TABLE_ROW_CLASS);
 
   TRANSACTION_COLUMNS.forEach((column, index) => {
-    dom.appendChild(
-      row,
-      createTransactionCell(column, transaction, {
-        collapsed: state.collapsedColumns[index],
-        dom,
-      })
-    );
+    const cell = createTransactionCell(column, transaction, {
+      collapsed: state.collapsedColumns[index],
+      dom,
+    });
+    dom.appendChild(row, cell);
   });
   return row;
+}
+
+/**
+ * Append one canonical transaction header cell to the table head.
+ * @param {HTMLElement} row Header row.
+ * @param {{
+ *   group: { start: number, length: number, collapsed: boolean },
+ *   state: { collapsedColumns: boolean[] },
+ *   rerender: () => void,
+ *   dom: DOMHelpers,
+ * }} options Header cell creation inputs.
+ * @returns {void}
+ */
+function appendTableHeaderCell(row, options) {
+  const headerCell = createTableHeaderCell(options.group, {
+    collapsedColumns: options.state.collapsedColumns,
+    rerender: options.rerender,
+    dom: options.dom,
+  });
+  options.dom.appendChild(row, headerCell);
 }
 
 /**
@@ -743,7 +747,7 @@ export function createLedgerIngestReportElement(inputString, dom) {
     dom,
     parse: parseReport,
     render: renderLedgerIngestReport,
-    createFallback: createFallbackElement,
+    createFallback: createPreFromContent,
   });
 }
 
