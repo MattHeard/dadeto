@@ -22,9 +22,8 @@ export function coerceToBoolean(input) {
   const value = tryBooleanCoercion(input);
   if (value !== undefined) {
     return `{ value: ${value} }`;
-  } else {
-    return '{}';
   }
+  return '{}';
 }
 
 /**

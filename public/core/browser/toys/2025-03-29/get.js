@@ -51,9 +51,8 @@ function traversePathSegments(data, pathSegments) {
   const finalState = pathSegments.reduce(reduceTraversal, initialState);
   if (finalState.error) {
     return finalState.error;
-  } else {
-    return finalState.value;
   }
+  return finalState.value;
 }
 
 /**
@@ -85,9 +84,8 @@ function traverseSegment(currentValue, segment, currentPath) {
 function getNextPath(currentPath, segment) {
   if (currentPath) {
     return `${currentPath}.${segment}`;
-  } else {
-    return segment;
   }
+  return segment;
 }
 
 /**
@@ -169,9 +167,8 @@ function getNonObjectSegmentError(currentValue, segment, currentPath) {
       0,
       currentPath.lastIndexOf('.')
     )}'. Value is: ${JSON.stringify(currentValue)}`;
-  } else {
-    return null;
   }
+  return null;
 }
 
 /**

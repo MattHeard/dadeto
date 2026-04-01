@@ -94,13 +94,12 @@ function handleHackerDoor(context) {
     context.nextInventory.push('cracked implant');
     context.nextVisited.add('hacker');
     return respondWithContext(context, output, 'hub');
-  } else {
-    return respondWithContext(
-      context,
-      `> Hint: the password is a number and a name...`,
-      'hacker:door'
-    );
   }
+  return respondWithContext(
+    context,
+    `> Hint: the password is a number and a name...`,
+    'hacker:door'
+  );
 }
 
 /**
@@ -328,9 +327,8 @@ function getAdventureResult(context) {
   const handler = stateHandlers[context.state];
   if (handler) {
     return handler(context);
-  } else {
-    return getDefaultAdventureResult();
   }
+  return getDefaultAdventureResult();
 }
 
 /**

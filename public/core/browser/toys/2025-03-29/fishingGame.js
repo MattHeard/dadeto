@@ -87,9 +87,8 @@ function getUnrecognizedBait() {
 function getEmptyOrUnrecognizedBaitResponse(baitKey, moodDescription) {
   if (isEmptyBait(baitKey)) {
     return getDefaultBaitResponse(moodDescription);
-  } else {
-    return getUnrecognizedBait();
   }
+  return getUnrecognizedBait();
 }
 
 /**

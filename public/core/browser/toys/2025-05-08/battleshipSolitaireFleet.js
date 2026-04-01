@@ -95,10 +95,9 @@ function dxReducerForNeighbour(coord, dy) {
   return (row, dx) => {
     if (isOrigin(dx, dy)) {
       return row;
-    } else {
-      const neighbour = { x: coord.x + dx, y: coord.y + dy };
-      return row.concat(neighbour);
     }
+    const neighbour = { x: coord.x + dx, y: coord.y + dy };
+    return row.concat(neighbour);
   };
 }
 
