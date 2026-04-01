@@ -314,6 +314,8 @@ function createCanonicalTransactionsTable(transactions, options, dom) {
 function createTableHead(state, rerender, dom) {
   const head = dom.createElement('thead');
   dom.setClassName(head, TABLE_HEAD_CLASS);
+  head.style ??= {};
+  head.style.verticalAlign = 'top';
   const row = dom.createElement('tr');
 
   getColumnGroups(state.collapsedColumns).forEach(group => {
@@ -339,6 +341,8 @@ function createTableHead(state, rerender, dom) {
 function createTableBody(transactions, state, dom) {
   const body = dom.createElement('tbody');
   dom.setClassName(body, TABLE_BODY_CLASS);
+  body.style ??= {};
+  body.style.verticalAlign = 'top';
 
   transactions.forEach(transaction => {
     dom.appendChild(body, createTransactionRow(transaction, state, dom));
