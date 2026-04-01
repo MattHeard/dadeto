@@ -358,12 +358,12 @@ export function createManagedFormShellState({ dom, container, textInput }) {
  * @returns {{ form: HTMLElement, cleanupFns: Disposer[] }} Managed form shell and cleanup stack.
  */
 export function createManagedFormShellBundle({ dom, container, textInput }) {
-  const { form, disposers: cleanupFns } = createManagedFormShellState({
+  const shellState = createManagedFormShellState({
     dom,
     container,
     textInput,
   });
-  return { form, cleanupFns };
+  return { form: shellState.form, cleanupFns: shellState.disposers };
 }
 
 /**

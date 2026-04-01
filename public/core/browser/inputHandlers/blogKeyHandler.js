@@ -2,7 +2,7 @@ import * as browserCore from '../browser-core.js';
 import {
   appendLabelledField,
   cleanContainer,
-  createManagedFormShellBundle,
+  createManagedFormShellState,
   registerInputListener,
   syncHiddenInput,
 } from './createDendriteHandler.js';
@@ -171,7 +171,7 @@ function createBlogKeyFields({ dom, data }) {
  */
 function buildForm({ dom, container, textInput }) {
   const data = parseData(dom, textInput);
-  const { form, cleanupFns: disposers } = createManagedFormShellBundle({
+  const { form, disposers } = createManagedFormShellState({
     dom,
     container,
     textInput,
