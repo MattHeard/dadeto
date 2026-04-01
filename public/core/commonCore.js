@@ -136,6 +136,21 @@ export function normalizeNonStringValue(value) {
 }
 
 /**
+ * Return the callback result when the value is not nullish; otherwise `null`.
+ * @template T
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown) => T} fn Callback invoked for present values.
+ * @returns {T | null} Callback result or `null` when the input is nullish.
+ */
+export function whenNotNullish(value, fn) {
+  if (isNullish(value)) {
+    return null;
+  }
+
+  return fn(value);
+}
+
+/**
  * Return the input when it is a string; otherwise `null`.
  * @param {unknown} value Candidate value.
  * @returns {string | null} String when provided, otherwise `null`.
@@ -205,6 +220,28 @@ export function guardThen(condition, effect) {
 
   effect();
   return true;
+}
+
+/**
+ * Normalize a numeric candidate, returning zero when the input is not a number.
+ * @param {unknown} value Candidate numeric value.
+ * @returns {number} Number when provided, otherwise zero.
+ */
+function isFiniteNumericValue(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/**
+ * Normalize a numeric candidate, returning zero when the input is not a number.
+ * @param {unknown} value Candidate numeric value.
+ * @returns {number} Number when provided, otherwise zero.
+ */
+export function numberOrZero(value) {
+  if (!isFiniteNumericValue(value)) {
+    return 0;
+  }
+
+  return value;
 }
 
 /**

@@ -665,9 +665,6 @@ function normalizeDate(value) {
  * @returns {number} Normalized numeric amount.
  */
 function normalizeAmount(value) {
-  if (typeof value === 'number') {
-    return value;
-  }
   return coerceNumericValue(value);
 }
 

@@ -1,4 +1,5 @@
 import * as browserCore from '../browser-core.js';
+import { whenNotNullish } from '../common-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
 import { createGamepadCaptureButtonUpdater } from './captureLifecycleShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
@@ -174,15 +175,13 @@ function didAxisChange(previous, current) {
  */
 function syncIfPayload(options) {
   const { dom, textInput, autoSubmitCheckbox, payload } = options;
-  if (payload === null) {
-    return;
-  }
-
-  emitToyPayload({
-    dom,
-    textInput,
-    autoSubmitCheckbox,
-    payload,
+  whenNotNullish(payload, presentPayload => {
+    emitToyPayload({
+      dom,
+      textInput,
+      autoSubmitCheckbox,
+      payload: presentPayload,
+    });
   });
 }
 
@@ -645,11 +644,7 @@ function createConnectionHandler(options) {
  */
 function handlePayloadIfPresent(options) {
   const { payload, onPresent } = options;
-  if (payload === null) {
-    return;
-  }
-
-  onPresent(payload);
+  whenNotNullish(payload, onPresent);
 }
 
 /**
