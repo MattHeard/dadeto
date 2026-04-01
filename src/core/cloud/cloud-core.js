@@ -3,6 +3,7 @@ import {
   ensureString,
   isNonNullObject,
   normalizeNonStringValue,
+  numberOrZero,
   stringOrNull,
 } from './common-core.js';
 export { DEFAULT_BUCKET_NAME } from './common-core.js';
@@ -402,19 +403,7 @@ export function getNumericValueOrZero(data, selector) {
     return 0;
   }
 
-  return resolveNumericCandidate(selector(data));
-}
-/**
- * Normalize a candidate into a number when possible; otherwise zero.
- * @param {unknown} value Candidate to inspect.
- * @returns {number} Number extracted from the value or zero.
- */
-function resolveNumericCandidate(value) {
-  if (typeof value === 'number') {
-    return value;
-  }
-
-  return 0;
+  return numberOrZero(selector(data));
 }
 
 /**

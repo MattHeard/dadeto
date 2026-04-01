@@ -398,10 +398,12 @@ function getSummaryCandidate(summary, key) {
  * @returns {number} Summary value or zero when absent.
  */
 function getSummaryNumberValue(value) {
-  if (typeof value === 'number') {
-    return value;
+  switch (typeof value) {
+    case 'number':
+      return value;
+    default:
+      return 0;
   }
-  return 0;
 }
 
 /**

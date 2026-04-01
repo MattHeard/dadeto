@@ -3,8 +3,10 @@ import {
   stringOrDefault,
   stringOrFallback,
   whenString,
+  whenNotNullish,
   functionOrFallback,
   guardThen,
+  numberOrZero,
   when,
   tryOr,
 } from '../../src/core/commonCore.js';
@@ -27,6 +29,12 @@ describe('commonCore helpers', () => {
     expect(whenString(123, value => value)).toBeNull();
   });
 
+  test('whenNotNullish executes the callback for present values only', () => {
+    expect(whenNotNullish('hello', value => value)).toBe('hello');
+    expect(whenNotNullish(null, value => value)).toBeNull();
+    expect(whenNotNullish(undefined, value => value)).toBeNull();
+  });
+
   test('functionOrFallback returns a callable candidate or the fallback', () => {
     const fallback = () => () => 'fallback';
     expect(functionOrFallback(() => 'value', fallback)()).toBe('value');
@@ -39,6 +47,12 @@ describe('commonCore helpers', () => {
     expect(effect).not.toHaveBeenCalled();
     expect(guardThen(true, effect)).toBe(true);
     expect(effect).toHaveBeenCalled();
+  });
+
+  test('numberOrZero returns numeric values or zero for other inputs', () => {
+    expect(numberOrZero(42)).toBe(42);
+    expect(numberOrZero('42')).toBe(0);
+    expect(numberOrZero(undefined)).toBe(0);
   });
 
   test('when returns transform when condition passes and fallback when it fails', () => {

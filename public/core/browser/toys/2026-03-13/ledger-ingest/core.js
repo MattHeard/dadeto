@@ -2,6 +2,7 @@ import {
   DEFAULT_LEDGER_INGEST_DEDUPE_POLICY,
   createDefaultLedgerIngestDedupePolicy,
 } from './ledgerIngestShared.js';
+import { numberOrZero } from '../../../../commonCore.js';
 
 /**
  * Contracts and fixtures for the ledger-ingest toy.
@@ -675,13 +676,13 @@ function normalizeAmount(value) {
  * @returns {number} Numeric interpretation of the sanitized value.
  */
 function coerceNumericValue(value) {
+  if (typeof value === 'number') {
+    return value;
+  }
+
   const normalized = stringForNormalization(value);
   const cleaned = normalized.replace(/[^\d.-]/g, '');
-  const parsed = Number(cleaned);
-  if (!Number.isFinite(parsed)) {
-    return 0;
-  }
-  return parsed;
+  return numberOrZero(Number(cleaned));
 }
 
 /**
