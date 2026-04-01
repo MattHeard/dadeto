@@ -4,6 +4,9 @@
   ],
   "mode": "strict",
   "minTokens": 33,
+  "ignore": [
+    "public/**"
+  ],
   "reporters": [
     "html",
     "json"
