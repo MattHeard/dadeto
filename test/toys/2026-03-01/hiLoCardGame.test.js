@@ -6,6 +6,7 @@ import {
   createInitialKeyboardState,
   hiLoCardGameToy,
   normalizeGameState,
+  normalizeKeyboardState,
   normalizeParsedEvent,
   parseHiLoInput,
 } from '../../../src/core/browser/toys/2026-03-01/hiLoCardGame.js';
@@ -220,6 +221,24 @@ describe('normalizeGameState', () => {
     expect(normalized).toEqual({
       currentCard: 1,
       score: { correct: 0, incorrect: 0, total: 0 },
+    });
+  });
+});
+
+describe('normalizeKeyboardState', () => {
+  it('resets invalid stored keyboard state to the initial value', () => {
+    expect(normalizeKeyboardState(null)).toEqual({
+      activeKey: null,
+    });
+  });
+
+  it('keeps a valid stored active key', () => {
+    expect(
+      normalizeKeyboardState({
+        activeKey: 'ArrowUp',
+      })
+    ).toEqual({
+      activeKey: 'ArrowUp',
     });
   });
 });

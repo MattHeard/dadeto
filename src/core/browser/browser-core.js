@@ -1,5 +1,5 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
-import { isNonNullObject } from '../commonCore.js';
+import { isNonNullObject, isObjectValue } from '../commonCore.js';
 
 /** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
 /** @typedef {import('./domHelpers.js').DOMHelpers} DOMHelpers */
@@ -24,6 +24,7 @@ export const GAMEPAD_CAPTURE_FORM_SELECTOR = '.gamepad-capture-form';
 import { createDendriteHandler } from './inputHandlers/createDendriteHandler.js';
 import { tryOr } from './common.js';
 export { assertFunction as ensureFunction } from '../commonCore.js';
+export { isObjectValue } from '../commonCore.js';
 
 /**
  * Creates a logging function that prefixes messages with the given prefix.
@@ -344,15 +345,6 @@ export function safeJsonParse(input) {
       message: formatJsonParseError(parseError),
     };
   }
-}
-
-/**
- * Determine whether a value is an object-like result.
- * @param {unknown} value - Candidate value.
- * @returns {boolean} True when the value is an object.
- */
-export function isObjectValue(value) {
-  return Boolean(value) && typeof value === 'object';
 }
 
 /**

@@ -6,6 +6,7 @@ import {
   whenNotNullish,
   functionOrFallback,
   guardThen,
+  isObjectValue,
   numberOrZero,
   when,
   tryOr,
@@ -47,6 +48,12 @@ describe('commonCore helpers', () => {
     expect(effect).not.toHaveBeenCalled();
     expect(guardThen(true, effect)).toBe(true);
     expect(effect).toHaveBeenCalled();
+  });
+
+  test('isObjectValue returns true only for object-like values', () => {
+    expect(isObjectValue({})).toBe(true);
+    expect(isObjectValue(null)).toBe(false);
+    expect(isObjectValue('value')).toBe(false);
   });
 
   test('numberOrZero returns numeric values or zero for other inputs', () => {

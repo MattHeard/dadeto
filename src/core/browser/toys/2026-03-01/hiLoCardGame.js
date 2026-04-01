@@ -159,16 +159,11 @@ function readEventType(candidate) {
  * @returns {HiLoScore} Safe score value.
  */
 function normalizeScore(value) {
-  if (!isObjectValue(value)) {
-    return createInitialScore();
-  }
-
-  const candidate = /** @type {Record<string, unknown>} */ (value);
-  return {
+  return normalizeStoredObject(value, createInitialScore, candidate => ({
     correct: toScoreNumber(candidate.correct),
     incorrect: toScoreNumber(candidate.incorrect),
     total: toScoreNumber(candidate.total),
-  };
+  }));
 }
 
 /**
@@ -220,14 +215,13 @@ function buildNormalizedGameState(candidate, getRandomNumber) {
  * @returns {HiLoKeyboardState} Safe keyboard state.
  */
 export function normalizeKeyboardState(value) {
-  if (!isObjectValue(value)) {
-    return createInitialKeyboardState();
-  }
-
-  const candidate = /** @type {Record<string, unknown>} */ (value);
-  return {
-    activeKey: readActiveKey(candidate.activeKey),
-  };
+  return normalizeStoredObject(
+    value,
+    createInitialKeyboardState,
+    candidate => ({
+      activeKey: readActiveKey(candidate.activeKey),
+    })
+  );
 }
 
 /**
@@ -286,6 +280,22 @@ function isIntegerCard(card) {
  */
 function isCardInRange(card) {
   return card >= 1 && card <= 13;
+}
+
+/**
+ * Normalize an object-like stored value or fall back to a default state.
+ * @template T
+ * @param {unknown} value - Stored candidate.
+ * @param {() => T} fallback - Fallback value creator.
+ * @param {(candidate: Record<string, unknown>) => T} transform - Mapper for object-like values.
+ * @returns {T} Normalized value.
+ */
+function normalizeStoredObject(value, fallback, transform) {
+  if (!isObjectValue(value)) {
+    return fallback();
+  }
+
+  return transform(/** @type {Record<string, unknown>} */ (value));
 }
 
 /**
