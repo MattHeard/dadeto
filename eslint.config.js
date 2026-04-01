@@ -31,6 +31,10 @@ export default [
     rules: {
       complexity: ['warn', { max: 2 }],
       'no-ternary': 'warn',
+      'no-nested-ternary': 'warn',
+      'no-else-return': 'warn',
+      'no-unneeded-ternary': 'warn',
+      'no-useless-return': 'warn',
       'no-unused-vars': [
         'warn',
         { vars: 'all', args: 'after-used', ignoreRestSiblings: false },
@@ -46,6 +50,11 @@ export default [
       'no-implicit-coercion': 'warn',
       'dot-notation': 'warn',
       'max-depth': ['warn', 4],
+      'max-lines-per-function': [
+        'warn',
+        { max: 240, skipBlankLines: true, skipComments: true },
+      ],
+      'max-statements': ['warn', 35],
       'max-params': ['warn', 3],
       indent: ['warn', 2],
       'jsdoc/require-jsdoc': 'warn',
@@ -84,7 +93,13 @@ export default [
     rules: {
       complexity: 'off',
       'no-ternary': 'off',
+      'no-nested-ternary': 'off',
+      'no-else-return': 'off',
+      'no-unneeded-ternary': 'off',
+      'no-useless-return': 'off',
       camelcase: 'off',
+      'max-lines-per-function': 'off',
+      'max-statements': 'off',
       'max-params': 'off',
     },
   },

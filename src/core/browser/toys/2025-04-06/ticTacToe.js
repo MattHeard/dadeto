@@ -27,9 +27,8 @@ import { parseJsonOrFallback } from '../browserToysCore.js';
 function getOpponent(player) {
   if (player === 'X') {
     return 'O';
-  } else {
-    return 'X';
   }
+  return 'X';
 }
 
 /**
@@ -392,9 +391,8 @@ function getBestScoredMove(scoredMoves) {
     (best, current) => {
       if (current.moveScore > best.moveScore) {
         return current;
-      } else {
-        return best;
       }
+      return best;
     },
     /** @type {ScoredMove} */ ({
       moveScore: -Infinity,
@@ -638,9 +636,8 @@ function minimax(depth, isMax, params) {
 function selectScore(scores, isMax) {
   if (isMax) {
     return Math.max(...scores);
-  } else {
-    return Math.min(...scores);
   }
+  return Math.min(...scores);
 }
 
 /**
