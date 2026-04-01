@@ -6,7 +6,7 @@ import {
 
 /**
  * Build a minimal DOM facade for presenter tests.
- * @returns {{ createElement: (tag: string) => { tag: string, className: string, textContent: string, children: unknown[], colSpan: number, type: string, listeners: Record<string, (event: { preventDefault: () => void }) => void> }, setClassName: (node: { className: string }, className: string) => void, setTextContent: (node: { textContent: string }, text: string) => void, appendChild: (parent: { children: unknown[] }, child: unknown) => void, setType: (node: { type: string }, type: string) => void, addEventListener: (node: { listeners: Record<string, (event: { preventDefault: () => void }) => void> }, event: string, handler: (event: { preventDefault: () => void }) => void) => void, removeAllChildren: (node: { children: unknown[] }) => void }} DOM mock.
+ * @returns {{ createElement: (tag: string) => { tag: string, className: string, textContent: string, children: unknown[], colSpan: number, href: string, listeners: Record<string, (event: { preventDefault: () => void }) => void> }, setClassName: (node: { className: string }, className: string) => void, setTextContent: (node: { textContent: string }, text: string) => void, appendChild: (parent: { children: unknown[] }, child: unknown) => void, addEventListener: (node: { listeners: Record<string, (event: { preventDefault: () => void }) => void> }, event: string, handler: (event: { preventDefault: () => void }) => void) => void, removeAllChildren: (node: { children: unknown[] }) => void }} DOM mock.
  */
 function createMockDom() {
   return {
@@ -16,7 +16,7 @@ function createMockDom() {
       textContent: '',
       children: [],
       colSpan: 1,
-      type: '',
+      href: '',
       listeners: {},
     }),
     setClassName: (node, className) => {
@@ -27,9 +27,6 @@ function createMockDom() {
     },
     appendChild: (parent, child) => {
       parent.children.push(child);
-    },
-    setType: (node, type) => {
-      node.type = type;
     },
     addEventListener: (node, event, handler) => {
       node.listeners[event] = handler;
@@ -142,6 +139,8 @@ describe('createLedgerIngestReportElement', () => {
       'Source record id',
       'Raw record',
     ]);
+    expect(getHeaderRow().children[0].children[1].tag).toBe('a');
+    expect(getHeaderRow().children[0].children[1].href).toBe('#');
     expect(getHeaderRow().children[0].children[1].textContent).toBe('(-)');
     const row = getBodyRow();
     expect(row.children[0].textContent).toBe(

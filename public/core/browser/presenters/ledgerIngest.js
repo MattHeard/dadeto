@@ -400,7 +400,7 @@ function createTableHeaderCell(group, options) {
   if (group.collapsed) {
     dom.appendChild(
       headerCell,
-      createColumnToggleButton(dom, COLLAPSED_BUTTON_TEXT, () => {
+      createColumnToggleLink(dom, COLLAPSED_BUTTON_TEXT, () => {
         expandColumnGroup(collapsedColumns, group.start, group.length);
         rerender();
       })
@@ -418,7 +418,7 @@ function createTableHeaderCell(group, options) {
   );
   dom.appendChild(
     headerCell,
-    createColumnToggleButton(dom, EXPANDED_BUTTON_TEXT, () => {
+    createColumnToggleLink(dom, EXPANDED_BUTTON_TEXT, () => {
       collapseColumn(collapsedColumns, group.start);
       rerender();
     })
@@ -446,22 +446,22 @@ function createTransactionCell(column, transaction, options) {
 }
 
 /**
- * Create a toggle button for a transaction column header.
+ * Create a toggle link for a transaction column header.
  * @param {DOMHelpers} dom DOM helper facade.
  * @param {string} text Toggle label.
  * @param {() => void} onClick Click handler.
- * @returns {HTMLElement} Toggle button element.
+ * @returns {HTMLElement} Toggle link element.
  */
-function createColumnToggleButton(dom, text, onClick) {
-  const button = dom.createElement('button');
-  dom.setClassName(button, TABLE_TOGGLE_CLASS);
-  dom.setType(button, 'button');
-  dom.setTextContent(button, text);
-  dom.addEventListener(button, 'click', event => {
+function createColumnToggleLink(dom, text, onClick) {
+  const link = /** @type {HTMLAnchorElement} */ (dom.createElement('a'));
+  dom.setClassName(link, TABLE_TOGGLE_CLASS);
+  link.href = '#';
+  dom.setTextContent(link, text);
+  dom.addEventListener(link, 'click', event => {
     event.preventDefault();
     onClick();
   });
-  return button;
+  return link;
 }
 
 /**
