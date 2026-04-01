@@ -16,26 +16,15 @@ const RELEASE_BUTTON_LABEL = 'Release keyboard';
  * @returns {void}
  */
 function updateCaptureButton(dom, button, isCapturing) {
-  updateCaptureButtonLabel(
+  updateCaptureButtonLabel({
     dom,
     button,
     isCapturing,
-    CAPTURE_BUTTON_LABEL,
-    RELEASE_BUTTON_LABEL
-  );
+    captureLabel: CAPTURE_BUTTON_LABEL,
+    releaseLabel: RELEASE_BUTTON_LABEL,
+  });
 }
 
-/**
- * Build the capture button click handler.
- * @param {{
- *   dom: KeyboardDOMHelpers,
- *   button: HTMLButtonElement,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   state: { capturing: boolean },
- * }} options - Click-handler dependencies.
- * @returns {() => void} Click handler.
- */
 /**
  * Build the global keyboard event handler.
  * @param {{
@@ -155,7 +144,7 @@ function forwardCapturedKey(event, options) {
 /**
  * Create and wire the keyboard capture form.
  * @param {{ dom: KeyboardDOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
- * @returns {HTMLElement} The inserted form element.
+ * @returns {void}
  */
 const buildKeyboardCaptureFormContext = ({
   dom,
@@ -191,7 +180,7 @@ const buildKeyboardCaptureFormContext = ({
     globalThisArg: dom.globalThis,
     cleanupFns,
     type,
-    handler: /** @type {EventListener} */ (handleKeyboard),
+    handler: /** @type {(event: Event) => void} */ (handleKeyboard),
   });
 
   dom.addEventListener(button, 'click', handleToggle);

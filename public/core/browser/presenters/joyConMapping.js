@@ -5,17 +5,17 @@ import { parseJsonObject } from '../jsonValueHelpers.js';
 /** @typedef {{ className?: string, text?: string }} TextNodeOptions */
 /**
  * @typedef JoyConMappingRecord
- * @property {string} [type]
- * @property {string} [axis]
- * @property {string} [direction]
- * @property {number} [index]
- * @property {string} [value]
+ * @property {string} [type] Mapping mode (`button`, `axis`, or fallback).
+ * @property {string} [axis] Axis identifier for axis mappings.
+ * @property {string} [direction] Direction descriptor for axis mappings.
+ * @property {number} [index] Button index for button mappings.
+ * @property {string} [value] Fallback display value when unmapped.
  */
 /** @typedef {Record<string, JoyConMappingRecord>} JoyConMappingRecords */
 /**
  * @typedef JoyConMappingState
- * @property {JoyConMappingRecords} [mappings]
- * @property {string[]} [skippedControls]
+ * @property {JoyConMappingRecords} [mappings] Control mapping entries keyed by control id.
+ * @property {string[]} [skippedControls] Controls the user explicitly skipped.
  */
 
 const CONTROL_LABELS = /** @type {ControlLabel[]} */ ([
@@ -145,9 +145,10 @@ function getValueText(key, parsed) {
  * @returns {JoyConMappingRecord} Synthetic mapping placeholder for skipped or optional controls.
  */
 function getUnmappedMapping(key, parsed) {
-  const skippedControls = Array.isArray(parsed.skippedControls)
-    ? parsed.skippedControls
-    : [];
+  let skippedControls = [];
+  if (Array.isArray(parsed.skippedControls)) {
+    skippedControls = parsed.skippedControls;
+  }
   return [
     { type: FALLBACK_MAPPING_TYPE, value: 'optional' },
     { type: FALLBACK_MAPPING_TYPE, value: 'skipped' },
@@ -160,8 +161,21 @@ function getUnmappedMapping(key, parsed) {
  * @returns {JoyConMappingRecord} Stored mapping or a synthetic fallback mapping.
  */
 function getStoredOrFallbackMapping(key, parsed) {
-  const mapping = parsed.mappings?.[key];
-  return mapping ?? getUnmappedMapping(key, parsed);
+  const mapping = getStoredMapping(key, parsed);
+  return mapping || getUnmappedMapping(key, parsed);
+}
+
+/**
+ * @param {string} key Persisted control key.
+ * @param {JoyConMappingState} parsed Parsed mapping payload.
+ * @returns {JoyConMappingRecord | undefined} Stored mapping when present.
+ */
+function getStoredMapping(key, parsed) {
+  const mappings = parsed.mappings;
+  if (!mappings) {
+    return undefined;
+  }
+  return mappings[key];
 }
 
 /**
@@ -185,9 +199,10 @@ function getMappedCount(parsed) {
  * @returns {number} Number of skipped controls.
  */
 function getSkippedCount(parsed) {
-  const skippedControls = Array.isArray(parsed.skippedControls)
-    ? parsed.skippedControls
-    : [];
+  let skippedControls = [];
+  if (Array.isArray(parsed.skippedControls)) {
+    skippedControls = parsed.skippedControls;
+  }
   return skippedControls.length;
 }
 

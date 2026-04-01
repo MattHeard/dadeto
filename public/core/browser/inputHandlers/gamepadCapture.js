@@ -26,13 +26,13 @@ const GAMEPAD_DISCONNECTED_EVENT = 'gamepaddisconnected';
  * @returns {void}
  */
 function updateCaptureButton(dom, button, isCapturing) {
-  updateCaptureButtonLabel(
+  updateCaptureButtonLabel({
     dom,
     button,
     isCapturing,
-    CAPTURE_BUTTON_LABEL,
-    RELEASE_BUTTON_LABEL
-  );
+    captureLabel: CAPTURE_BUTTON_LABEL,
+    releaseLabel: RELEASE_BUTTON_LABEL,
+  });
 }
 
 /**
@@ -191,7 +191,7 @@ function resetSnapshots(state) {
 /**
  * Cancel a queued poll frame when one exists.
  * @param {CaptureState} state - Mutable handler state.
- * @param {typeof globalThis.cancelAnimationFrame} cancelAnimationFrame - Browser frame canceler.
+ * @param {(handle: number) => void} cancelAnimationFrame - Browser frame canceler.
  * @returns {void}
  */
 function cancelPoll(state, cancelAnimationFrame) {
@@ -463,7 +463,7 @@ function pollGamepads(options) {
 /**
  * Release capture and clear snapshots.
  * @param {CaptureState} state - Mutable handler state.
- * @param {typeof globalThis.cancelAnimationFrame} cancelAnimationFrame - Browser frame canceler.
+ * @param {(handle: number) => void} cancelAnimationFrame - Browser frame canceler.
  * @returns {void}
  */
 function stopCaptureSideEffects(state, cancelAnimationFrame) {
@@ -747,19 +747,19 @@ function registerGamepadListeners(options, cleanupFns) {
     globalThisArg: options.dom.globalThis,
     cleanupFns,
     type: 'keydown',
-    handler: /** @type {EventListener} */ (handleEscape),
+    handler: /** @type {(event: Event) => void} */ (handleEscape),
   });
   captureLifecycleDeps.registerGlobalListener({
     globalThisArg: options.dom.globalThis,
     cleanupFns,
     type: GAMEPAD_CONNECTED_EVENT,
-    handler: /** @type {EventListener} */ (handleConnect),
+    handler: /** @type {(event: Event) => void} */ (handleConnect),
   });
   captureLifecycleDeps.registerGlobalListener({
     globalThisArg: options.dom.globalThis,
     cleanupFns,
     type: GAMEPAD_DISCONNECTED_EVENT,
-    handler: /** @type {EventListener} */ (handleDisconnect),
+    handler: /** @type {(event: Event) => void} */ (handleDisconnect),
   });
 
   cleanupFns.push(createGamepadCleanupHandler(options));
