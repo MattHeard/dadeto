@@ -1499,6 +1499,30 @@ function queueJoyConInitialSync(dom, textInput, state) {
   });
 }
 
+export const joyConMapperTestOnly = {
+  describeCapture,
+  normalizeStoredMapperState,
+  detectButtonCapture,
+  detectAxisCapture,
+  axisMatchesDirection,
+  directionalDelta,
+  hasAxisCaptureDelta,
+  getAxisCaptureCandidate,
+  selectStrongerButtonCapture,
+  selectStrongerAxisCapture,
+  attachCurrentControlKey,
+  getCurrentControlKey,
+  getPendingRowState,
+  getRowState,
+  getRowValueText,
+  getGamepadStatusText,
+  getGamepadIndexText,
+  getGamepadIdText,
+  normalizePendingIndex,
+  getRefreshedCurrentIndex,
+  getSkippedControlKey,
+};
+
 /**
  * Start mapping, sync the payload, and render the updated state.
  * @param {MapperState} state The mapper state shared between the buttons and capture loop.
