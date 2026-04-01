@@ -33,6 +33,22 @@
       "tags": ["toy", "ledger", "finance", "import", "json"]
     },
     {
+      "key": "LEDG3",
+      "title": "Ledger Ingest Storage",
+      "publicationDate": "2026-04-01",
+      "content": [
+        "Persists canonical Ledger Ingest transactions into Dadeto's permanent local storage and merges repeat imports by a stable merge key.",
+        "Run the toy with JSON from the import path, then inspect the storage merge report to see which transactions were inserted, skipped, or updated.",
+        "This is the next local-first step after import and conversion because it keeps the merge boundary explicit and testable."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestStorageToy.js",
+        "functionName": "ledgerIngestStorageToy",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "ledger", "finance", "storage", "merge"]
+    },
+    {
       "key": "JOYC1",
       "title": "Joy-Con Button Mapper",
       "publicationDate": "2026-03-01",

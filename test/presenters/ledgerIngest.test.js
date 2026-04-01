@@ -198,6 +198,57 @@ describe('createLedgerIngestReportElement', () => {
     );
   });
 
+  test('renders storage details when the report includes storage data', () => {
+    const dom = createMockDom();
+    const payload = {
+      fixture: 'jsonImport',
+      inputMode: 'json',
+      canonicalTransactions: [],
+      duplicateReports: [],
+      errorReports: [],
+      summary: {
+        rawRecords: 0,
+        canonicalTransactions: 0,
+        duplicatesDetected: 0,
+        errorsDetected: 0,
+      },
+      policy: {
+        name: 'posted-date-amount-description',
+      },
+      storage: {
+        storageKey: 'LEDG3',
+        beforeCount: 0,
+        afterCount: 1,
+        actions: [
+          {
+            action: 'insert',
+            mergeKey: 'merge-key',
+            transactionId: 'tx-1',
+          },
+        ],
+        transactions: [
+          {
+            transactionId: 'tx-1',
+          },
+        ],
+      },
+    };
+
+    const element = createLedgerIngestReportElement(
+      JSON.stringify(payload),
+      dom
+    );
+    const storage = element.children[7];
+
+    expect(storage.className).toBe(
+      'ledger-ingest-section ledger-ingest-section--storage'
+    );
+    expect(storage.children[0].textContent).toBe('Storage');
+    expect(storage.children[1].textContent).toContain('"storageKey": "LEDG3"');
+    expect(storage.children[1].textContent).toContain('"beforeCount": 0');
+    expect(storage.children[1].textContent).toContain('"afterCount": 1');
+  });
+
   test('renders an empty canonical transaction state when there are no rows', () => {
     const dom = createMockDom();
     const payload = {

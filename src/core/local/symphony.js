@@ -611,7 +611,7 @@ function getLaunchArgs(value) {
     return [];
   }
 
-  return value;
+  return value.slice();
 }
 
 /**

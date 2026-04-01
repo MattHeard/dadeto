@@ -95,6 +95,7 @@ const TRANSACTION_COLUMNS = /** @type {LedgerIngestTransactionColumn[]} */ ([
  * @property {Array<Record<string, unknown>>} errorReports - Structured row errors reported by the core.
  * @property {Record<string, unknown>} summary - Aggregate counts and summary metadata.
  * @property {Record<string, unknown>} policy - Dedupe policy used for the run.
+ * @property {Record<string, unknown> | undefined} [storage] - Optional persistent storage merge report.
  */
 
 /**
@@ -719,6 +720,14 @@ function appendReportSections(root, dom, parsed) {
       className: 'ledger-ingest-section--policy',
     },
   ];
+
+  if (parsed.storage) {
+    sections.push({
+      title: 'Storage',
+      value: parsed.storage,
+      className: 'ledger-ingest-section--storage',
+    });
+  }
 
   sections.forEach(section => {
     dom.appendChild(root, createJsonSection(dom, section));
