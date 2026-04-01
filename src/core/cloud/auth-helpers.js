@@ -1,5 +1,4 @@
-import { matchBearerToken } from './cloud-core.js';
-import { stringOrNull } from '../commonCore.js';
+import { matchBearerToken, stringOrNull } from './cloud-core.js';
 
 /**
  * Normalize an Authorization header candidate into a string.

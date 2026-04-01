@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals';
 import {
-  stringOrDefault,
   stringOrFallback,
   whenString,
   whenNotNullish,
@@ -13,12 +12,6 @@ import {
 } from '../../src/core/commonCore.js';
 
 describe('commonCore helpers', () => {
-  test('stringOrDefault returns provided string or fallback', () => {
-    expect(stringOrDefault('value', 'fallback')).toBe('value');
-    expect(stringOrDefault(123, 'fallback')).toBe('fallback');
-    expect(stringOrDefault(123, null)).toBeNull();
-  });
-
   test('stringOrFallback defers to the fallback when value is not a string', () => {
     const fallback = jest.fn(() => 'fallback-value');
     expect(stringOrFallback(123, fallback)).toBe('fallback-value');

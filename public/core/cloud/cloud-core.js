@@ -1,10 +1,10 @@
 import {
   assertFunction,
   ensureString,
+  getStringCandidate,
   normalizeNonStringValue,
-  stringOrNull,
-} from './common-core.js';
-export { DEFAULT_BUCKET_NAME } from './common-core.js';
+} from '../commonCore.js';
+export { DEFAULT_BUCKET_NAME } from '../commonCore.js';
 
 export const MISSING_AUTHORIZATION_RESPONSE = {
   status: 401,
@@ -12,6 +12,35 @@ export const MISSING_AUTHORIZATION_RESPONSE = {
 };
 
 export const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
+
+/**
+ * Return the input string when available; otherwise `null`.
+ * @param {unknown} value Candidate value.
+ * @returns {string | null} String when provided, otherwise `null`.
+ */
+export function stringOrNull(value) {
+  const normalized = getStringCandidate(value);
+  if (normalized !== undefined) {
+    return normalized;
+  }
+
+  return null;
+}
+
+/**
+ * Return the provided string when available; otherwise use the fallback.
+ * @param {unknown} value Candidate value that may be a string.
+ * @param {string} fallback Replacement when the value is not a string.
+ * @returns {string} String value or fallback.
+ */
+export function stringOrDefault(value, fallback) {
+  const normalized = stringOrNull(value);
+  if (normalized === null) {
+    return fallback;
+  }
+
+  return normalized;
+}
 
 /**
  * Ensure a candidate dependency is callable before using it.

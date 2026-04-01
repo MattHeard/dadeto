@@ -1,9 +1,12 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
-import { getNumericValueOrZero, productionOrigins } from './cloud-core.js';
+import {
+  getNumericValueOrZero,
+  productionOrigins,
+  stringOrDefault,
+} from '../cloud-core.js';
 import {
   ensureString,
   functionOrFallback,
-  stringOrDefault,
   whenString,
 } from './common-core.js';
 

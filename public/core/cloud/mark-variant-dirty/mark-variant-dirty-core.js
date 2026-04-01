@@ -7,11 +7,11 @@ import {
   hasStringMessage,
   sendOkResponse,
   resolveMessageOrDefault,
+  stringOrDefault,
 } from '../cloud-core.js';
 import {
   assertFunction,
   ensureString,
-  stringOrDefault,
 } from '../common-core.js';
 import { runWithFailure } from '../response-utils.js';
 const POST_METHOD = 'POST';

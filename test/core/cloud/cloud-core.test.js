@@ -10,6 +10,8 @@ import {
   whenBodyPresent,
   getSnapshotData,
   isDuplicateAppError,
+  stringOrDefault,
+  stringOrNull,
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {
@@ -24,6 +26,20 @@ describe('cloud-core', () => {
       expect(() => assertFunction(1, 'test')).toThrow(TypeError);
       expect(() => assertFunction('test', 'test')).toThrow(TypeError);
       expect(() => assertFunction({}, 'test')).toThrow(TypeError);
+    });
+  });
+
+  describe('string helpers', () => {
+    test('stringOrNull returns string values or null', () => {
+      expect(stringOrNull('value')).toBe('value');
+      expect(stringOrNull(123)).toBeNull();
+      expect(stringOrNull(undefined)).toBeNull();
+    });
+
+    test('stringOrDefault returns fallback values when needed', () => {
+      expect(stringOrDefault('value', 'fallback')).toBe('value');
+      expect(stringOrDefault(123, 'fallback')).toBe('fallback');
+      expect(stringOrDefault(123, null)).toBeNull();
     });
   });
 
