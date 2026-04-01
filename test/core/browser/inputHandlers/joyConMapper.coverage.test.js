@@ -24,6 +24,9 @@ const {
   ensureStarted,
   advanceToNextControl,
   isPendingControlAfterIndex,
+  refreshStoredState,
+  syncCurrentControlFromIndex,
+  maybeCapture,
   captureCurrentControl,
   shouldSkipCapture,
   updateCaptureState,
@@ -59,6 +62,7 @@ function createDom() {
     setInterval: jest.fn(() => 1),
     clearInterval: jest.fn(),
     requestAnimationFrame: jest.fn(callback => callback()),
+    getGamepads: jest.fn(() => []),
     querySelector: jest.fn(),
   };
 }
@@ -239,12 +243,53 @@ describe('joyConMapper coverage helpers', () => {
     expect(shouldSkipCapture(activeState)).toBe(false);
     expect(
       captureCurrentControl(
-        { ...activeState, currentControl: null },
+        {
+          ...activeState,
+          dom: createDom(),
+          textInput: { value: '' },
+          autoSubmitCheckbox: null,
+          currentControl: control,
+          prompt: {},
+          subprompt: {},
+          dot: { classList: { toggle: jest.fn() } },
+          statusText: {},
+          metaIndex: {},
+          metaId: {},
+          list: {},
+        },
         { type: 'button', index: 0, value: 1 }
       )
     ).toBeUndefined();
     expect(
       updateCaptureState({ ...activeState, previousSnapshot: null }, null)
+    ).toBeUndefined();
+    expect(
+      maybeCapture({
+        ...activeState,
+        dom: {
+          ...createDom(),
+          getGamepads: jest.fn(() => [
+            {
+              buttons: [],
+              axes: [0.9],
+            },
+          ]),
+        },
+        textInput: { value: '' },
+        autoSubmitCheckbox: null,
+        currentControl: { type: 'axis', direction: 'positive' },
+        previousSnapshot: {
+          buttons: [],
+          axes: [0],
+        },
+        prompt: {},
+        subprompt: {},
+        dot: { classList: { toggle: jest.fn() } },
+        statusText: {},
+        metaIndex: {},
+        metaId: {},
+        list: {},
+      })
     ).toBeUndefined();
   });
 
@@ -290,5 +335,28 @@ describe('joyConMapper coverage helpers', () => {
 
     expect(state.currentIndex).toBe(13);
     expect(state.currentControl).toBeNull();
+  });
+
+  it('covers stored-state and control-sync null fallbacks', () => {
+    const dom = createDom();
+    const storedState = {
+      dom,
+      started: true,
+      currentIndex: 13,
+      currentControl: { key: 'stick_down' },
+      stored: { mappings: {}, skippedControls: [] },
+    };
+
+    refreshStoredState(storedState);
+    expect(storedState.currentIndex).toBe(13);
+    expect(storedState.currentControl).toBeNull();
+
+    const syncedState = {
+      currentIndex: 13,
+      currentControl: { key: 'stick_down' },
+    };
+
+    syncCurrentControlFromIndex(syncedState);
+    expect(syncedState.currentControl).toBeNull();
   });
 });

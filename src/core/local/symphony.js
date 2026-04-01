@@ -180,10 +180,7 @@ function getSelectionStateKey(input) {
  * @returns {(input: Parameters<typeof summarizeTrackerSelection>[0]) => ReturnType<typeof summarizeTrackerSelection>} Summary handler.
  */
 function getTrackerSelectionSummaryHandler(selectionStateKey) {
-  return (
-    TRACKER_SELECTION_SUMMARY_HANDLERS[selectionStateKey] ??
-    TRACKER_SELECTION_SUMMARY_HANDLERS.ready
-  );
+  return TRACKER_SELECTION_SUMMARY_HANDLERS[selectionStateKey];
 }
 
 const TRACKER_SELECTION_SUMMARY_HANDLERS = {

@@ -131,6 +131,19 @@ describe('joyConMapper helper branches', () => {
         { type: 'axis', axis: 1, direction: 'positive', magnitude: 0.8 }
       )
     ).toEqual({ type: 'axis', axis: 1, direction: 'positive', magnitude: 0.8 });
+
+    expect(
+      detectAxisCapture(
+        { buttons: [], axes: [] },
+        { buttons: [], axes: [0.9] },
+        'positive'
+      )
+    ).toEqual({
+      type: 'axis',
+      axis: 0,
+      direction: 'positive',
+      magnitude: 0.9,
+    });
   });
 
   it('builds payload control keys and derives row state text', () => {

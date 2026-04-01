@@ -1231,10 +1231,6 @@ function isPendingControlAfterIndex(state, control, index) {
  * @returns {void}
  */
 function captureCurrentControl(state, capture) {
-  if (!state.currentControl) {
-    return;
-  }
-
   syncToyInput({
     dom: state.dom,
     textInput: state.textInput,
@@ -1527,6 +1523,9 @@ export const joyConMapperTestOnly = {
   getGamepadIdText,
   normalizePendingIndex,
   getRefreshedCurrentIndex,
+  refreshStoredState,
+  syncCurrentControlFromIndex,
+  maybeCapture,
   getSkippedControlKey,
   crossedButtonThreshold,
   hasButtonCaptureTransition,
