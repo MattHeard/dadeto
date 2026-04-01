@@ -327,25 +327,47 @@ function getPreviousButtons(previousSnapshot) {
 }
 
 /**
+ * Build a payload from a changed index.
+ * @param {Gamepad} gamepad - Browser gamepad object.
+ * @param {{
+ *   type: 'button' | 'axis',
+ *   changedIndex: number,
+ *   buildFields: (index: number) => Record<string, unknown>,
+ * }} options - Payload builder settings.
+ * @returns {Record<string, unknown> | null} Payload data when a control changed.
+ */
+function buildChangedPayload(gamepad, options) {
+  const { type, changedIndex, buildFields } = options;
+  if (changedIndex === -1) {
+    return null;
+  }
+
+  return {
+    type,
+    ...buildGamepadMetadata(gamepad),
+    ...buildFields(changedIndex),
+  };
+}
+
+/**
  * Build a button payload when any button changed.
  * @param {Gamepad} gamepad - Browser gamepad object.
  * @param {GamepadSnapshot | undefined} previousSnapshot - Previous polled snapshot.
  * @returns {Record<string, unknown> | null} Button event payload when a button changed.
  */
 function getButtonPayload(gamepad, previousSnapshot) {
-  const changedIndex = findChangedButtonIndex(gamepad, previousSnapshot);
-  if (changedIndex === -1) {
-    return null;
-  }
-
-  const button = gamepad.buttons[changedIndex];
-  return {
+  return buildChangedPayload(gamepad, {
     type: 'button',
-    ...buildGamepadMetadata(gamepad),
-    buttonIndex: changedIndex,
-    pressed: button.pressed,
-    value: button.value,
-  };
+    changedIndex: findChangedButtonIndex(gamepad, previousSnapshot),
+    buildFields: changedIndex => {
+      const button = gamepad.buttons[changedIndex];
+      return {
+        buttonIndex: changedIndex,
+        pressed: button.pressed,
+        value: button.value,
+      };
+    },
+  });
 }
 
 /**
@@ -405,17 +427,14 @@ function getPreviousSnapshotValues(previousSnapshot, key) {
  * @returns {Record<string, unknown> | null} Axis event payload when an axis changed.
  */
 function getAxisPayload(gamepad, previousSnapshot) {
-  const changedIndex = findChangedAxisIndex(gamepad, previousSnapshot);
-  if (changedIndex === -1) {
-    return null;
-  }
-
-  return {
+  return buildChangedPayload(gamepad, {
     type: 'axis',
-    ...buildGamepadMetadata(gamepad),
-    axisIndex: changedIndex,
-    value: normalizeAxisValue(gamepad.axes[changedIndex]),
-  };
+    changedIndex: findChangedAxisIndex(gamepad, previousSnapshot),
+    buildFields: changedIndex => ({
+      axisIndex: changedIndex,
+      value: normalizeAxisValue(gamepad.axes[changedIndex]),
+    }),
+  });
 }
 
 /**
