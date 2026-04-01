@@ -17,6 +17,19 @@ const OVERVIEW_VALUE_CLASS = 'ledger-ingest-overview-value';
 const SECTION_CLASS = 'ledger-ingest-section';
 const SECTION_TITLE_CLASS = 'ledger-ingest-section-title';
 const SECTION_BODY_CLASS = 'ledger-ingest-section-body';
+const TABLE_CLASS = 'ledger-ingest-transactions-table';
+const TABLE_EMPTY_CLASS = 'ledger-ingest-transactions-empty';
+const TABLE_HEAD_CLASS = 'ledger-ingest-transactions-head';
+const TABLE_BODY_CLASS = 'ledger-ingest-transactions-body';
+const TABLE_ROW_CLASS = 'ledger-ingest-transactions-row';
+const TABLE_CELL_CLASS = 'ledger-ingest-transactions-cell';
+const TABLE_HEADER_CELL_CLASS = 'ledger-ingest-transactions-header-cell';
+const DETAILS_CLASS = 'ledger-ingest-transactions-details';
+const DETAILS_SUMMARY_CLASS = 'ledger-ingest-transactions-details-summary';
+const DETAILS_TABLE_CLASS = 'ledger-ingest-transactions-details-table';
+const DETAILS_ROW_CLASS = 'ledger-ingest-transactions-details-row';
+const DETAILS_LABEL_CLASS = 'ledger-ingest-transactions-details-label';
+const DETAILS_VALUE_CLASS = 'ledger-ingest-transactions-details-value';
 const FALLBACK_TAG = 'pre';
 const TITLE_TEXT = 'Ledger Ingest';
 
@@ -24,11 +37,25 @@ const TITLE_TEXT = 'Ledger Ingest';
  * @typedef {object} LedgerIngestReport
  * @property {string} fixture - Source label for the rendered report.
  * @property {string} inputMode - Input mode used to produce the report.
- * @property {Array<Record<string, unknown>>} canonicalTransactions - Normalized transactions kept by the core.
+ * @property {Array<LedgerIngestTransaction>} canonicalTransactions - Normalized transactions kept by the core.
  * @property {Array<Record<string, unknown>>} duplicateReports - Duplicate rows reported by the core.
  * @property {Array<Record<string, unknown>>} errorReports - Structured row errors reported by the core.
  * @property {Record<string, unknown>} summary - Aggregate counts and summary metadata.
  * @property {Record<string, unknown>} policy - Dedupe policy used for the run.
+ */
+
+/**
+ * @typedef {object} LedgerIngestTransaction
+ * @property {string} transactionId Deterministic row identifier.
+ * @property {string} dedupeKey Dedupe key used to detect duplicates.
+ * @property {string} source Source label for the run.
+ * @property {string} postedDate Normalized posting date.
+ * @property {number} amount Signed transaction amount.
+ * @property {string} currency Normalized currency code.
+ * @property {string} description Normalized transaction description.
+ * @property {number} rawIndex Original row index in the imported batch.
+ * @property {string | undefined} sourceRecordId Optional upstream record id.
+ * @property {{ rawRecord: Record<string, unknown> }} metadata Raw record retained for auditing.
  */
 
 /**
@@ -155,6 +182,261 @@ function createOverview(parsed, dom) {
 }
 
 /**
+ * Create a standard section wrapper with a title heading.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @param {string} className Section-specific class name.
+ * @param {string} title Section title.
+ * @returns {HTMLElement} Section wrapper element.
+ */
+function createSectionWithHeading(dom, className, title) {
+  const section = dom.createElement('section');
+  dom.setClassName(section, `${SECTION_CLASS} ${className}`);
+
+  const heading = createTextElement(dom, {
+    tag: 'h4',
+    className: SECTION_TITLE_CLASS,
+    text: title,
+  });
+
+  dom.appendChild(section, heading);
+  return section;
+}
+
+/**
+ * Build the canonical transaction table section.
+ * @param {LedgerIngestReport} parsed Parsed report object.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLElement} Canonical transaction section.
+ */
+function createCanonicalTransactionsSection(parsed, dom) {
+  const section = createSectionWithHeading(
+    dom,
+    'ledger-ingest-section--canonical-transactions',
+    'Canonical transactions'
+  );
+  if (parsed.canonicalTransactions.length === 0) {
+    dom.appendChild(
+      section,
+      createEmptyStateParagraph(dom, 'No canonical transactions.')
+    );
+    return section;
+  }
+
+  dom.appendChild(
+    section,
+    createCanonicalTransactionsTable(parsed.canonicalTransactions, dom)
+  );
+  return section;
+}
+
+/**
+ * Build the canonical transactions table.
+ * @param {LedgerIngestTransaction[]} transactions Parsed canonical rows.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLElement} Transactions table.
+ */
+function createCanonicalTransactionsTable(transactions, dom) {
+  const table = dom.createElement('table');
+  dom.setClassName(table, TABLE_CLASS);
+
+  dom.appendChild(table, createTableHead(dom));
+  dom.appendChild(table, createTableBody(transactions, dom));
+  return table;
+}
+
+/**
+ * Create the table head for canonical transactions.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLElement} Table head element.
+ */
+function createTableHead(dom) {
+  const head = dom.createElement('thead');
+  dom.setClassName(head, TABLE_HEAD_CLASS);
+  const row = dom.createElement('tr');
+
+  const headers = [
+    'Transaction ID',
+    'Posted date',
+    'Amount',
+    'Currency',
+    'Description',
+    'Columns',
+  ];
+
+  headers.forEach(label => {
+    dom.appendChild(
+      row,
+      createTextElement(dom, {
+        tag: 'th',
+        className: TABLE_HEADER_CELL_CLASS,
+        text: label,
+      })
+    );
+  });
+
+  dom.appendChild(head, row);
+  return head;
+}
+
+/**
+ * Create the table body for canonical transactions.
+ * @param {LedgerIngestTransaction[]} transactions Canonical transaction rows.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLElement} Table body element.
+ */
+function createTableBody(transactions, dom) {
+  const body = dom.createElement('tbody');
+  dom.setClassName(body, TABLE_BODY_CLASS);
+
+  transactions.forEach(transaction => {
+    dom.appendChild(body, createTransactionRow(transaction, dom));
+  });
+
+  return body;
+}
+
+/**
+ * Render one canonical transaction row.
+ * @param {LedgerIngestTransaction} transaction Canonical transaction row.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLElement} Table row element.
+ */
+function createTransactionRow(transaction, dom) {
+  const row = dom.createElement('tr');
+  dom.setClassName(row, TABLE_ROW_CLASS);
+
+  const cells = [
+    transaction.transactionId,
+    transaction.postedDate,
+    transaction.amount,
+    transaction.currency,
+    transaction.description,
+  ];
+
+  cells.forEach(cell => {
+    dom.appendChild(
+      row,
+      createTextElement(dom, {
+        tag: 'td',
+        className: TABLE_CELL_CLASS,
+        text: formatDisplayValue(cell),
+      })
+    );
+  });
+
+  dom.appendChild(row, createTransactionDetails(transaction, dom));
+  return row;
+}
+
+/**
+ * Build the collapsible advanced-columns cell for a canonical transaction.
+ * @param {LedgerIngestTransaction} transaction Canonical transaction row.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLElement} Table cell containing the disclosure control.
+ */
+function createTransactionDetails(transaction, dom) {
+  const cell = dom.createElement('td');
+  dom.setClassName(cell, TABLE_CELL_CLASS);
+
+  const details = dom.createElement('details');
+  dom.setClassName(details, DETAILS_CLASS);
+
+  const summary = createTextElement(dom, {
+    tag: 'summary',
+    className: DETAILS_SUMMARY_CLASS,
+    text: 'Show 5 columns',
+  });
+
+  dom.appendChild(details, summary);
+  dom.appendChild(
+    details,
+    createTransactionDetailsTable(transaction, dom)
+  );
+  dom.appendChild(cell, details);
+  return cell;
+}
+
+/**
+ * Build the table used inside the collapse control.
+ * @param {LedgerIngestTransaction} transaction Canonical transaction row.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @returns {HTMLElement} Details table element.
+ */
+function createTransactionDetailsTable(transaction, dom) {
+  const table = dom.createElement('table');
+  dom.setClassName(table, DETAILS_TABLE_CLASS);
+
+  const body = dom.createElement('tbody');
+  const rows = [
+    ['Dedupe key', transaction.dedupeKey],
+    ['Source', transaction.source],
+    ['Raw index', transaction.rawIndex],
+    ['Source record id', transaction.sourceRecordId],
+    ['Raw record', transaction.metadata.rawRecord],
+  ];
+
+  rows.forEach(([label, value]) => {
+    const row = dom.createElement('tr');
+    dom.setClassName(row, DETAILS_ROW_CLASS);
+    dom.appendChild(
+      row,
+      createTextElement(dom, {
+        tag: 'th',
+        className: DETAILS_LABEL_CLASS,
+        text: label,
+      })
+    );
+    let cellText = formatDisplayValue(value);
+    if (label === 'Raw record') {
+      cellText = formatJson(value);
+    }
+    dom.appendChild(
+      row,
+      createTextElement(dom, {
+        tag: 'td',
+        className: DETAILS_VALUE_CLASS,
+        text: cellText,
+      })
+    );
+    dom.appendChild(body, row);
+  });
+
+  dom.appendChild(table, body);
+  return table;
+}
+
+/**
+ * Create the empty state paragraph for an empty canonical table.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @param {string} text Empty-state message.
+ * @returns {HTMLElement} Paragraph element.
+ */
+function createEmptyStateParagraph(dom, text) {
+  return createTextElement(dom, {
+    tag: 'p',
+    className: TABLE_EMPTY_CLASS,
+    text,
+  });
+}
+
+/**
+ * Normalize table cell content into display text.
+ * @param {unknown} value Cell value.
+ * @returns {string} Display string.
+ */
+function formatDisplayValue(value) {
+  const replacements = {
+    undefined: '—',
+    null: '—',
+    '': '—',
+  };
+  if (Object.hasOwn(replacements, value)) {
+    return replacements[value];
+  }
+  return String(value);
+}
+
+/**
  * Read a numeric summary value with a safe fallback.
  * @param {LedgerIngestReport} parsed Parsed report object.
  * @param {'rawRecords' | 'canonicalTransactions' | 'duplicatesDetected' | 'errorsDetected'} key Summary key.
@@ -204,19 +486,10 @@ function getSummaryNumberValue(value) {
  * @returns {HTMLElement} Section element.
  */
 function createJsonSection(dom, options) {
-  const section = dom.createElement('section');
-  dom.setClassName(section, `${SECTION_CLASS} ${options.className}`);
-
-  const heading = createTextElement(dom, {
-    tag: 'h4',
-    className: SECTION_TITLE_CLASS,
-    text: options.title,
-  });
+  const section = createSectionWithHeading(dom, options.className, options.title);
   const body = dom.createElement('pre');
   dom.setClassName(body, SECTION_BODY_CLASS);
   dom.setTextContent(body, formatJson(options.value));
-
-  dom.appendChild(section, heading);
   dom.appendChild(section, body);
   return section;
 }
@@ -229,12 +502,9 @@ function createJsonSection(dom, options) {
  * @returns {void}
  */
 function appendReportSections(root, dom, parsed) {
+  dom.appendChild(root, createCanonicalTransactionsSection(parsed, dom));
+
   const sections = [
-    {
-      title: 'Canonical transactions',
-      value: parsed.canonicalTransactions,
-      className: 'ledger-ingest-section--canonical-transactions',
-    },
     {
       title: 'Duplicate reports',
       value: parsed.duplicateReports,
@@ -297,6 +567,14 @@ export const ledgerIngestReportTestOnly = {
   formatJson,
   createOverview,
   createJsonSection,
+  createCanonicalTransactionsSection,
+  createCanonicalTransactionsTable,
+  createTableHead,
+  createTableBody,
+  createTransactionRow,
+  createTransactionDetails,
+  createTransactionDetailsTable,
+  formatDisplayValue,
   renderLedgerIngestReport,
   getSummaryValue,
   getSummaryNumber,

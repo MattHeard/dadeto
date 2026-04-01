@@ -198,6 +198,41 @@
         height: 2em;
         margin-right: 1em;
       }
+      .ledger-ingest-transactions-table,
+      .ledger-ingest-transactions-details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.75em;
+      }
+      .ledger-ingest-transactions-table th,
+      .ledger-ingest-transactions-table td,
+      .ledger-ingest-transactions-details-table th,
+      .ledger-ingest-transactions-details-table td {
+        border: 1px solid rgba(0, 255, 255, 0.35);
+        padding: 0.35em 0.5em;
+        vertical-align: top;
+      }
+      .ledger-ingest-transactions-table th,
+      .ledger-ingest-transactions-details-table th {
+        color: #00ffff;
+        text-align: left;
+        background-color: #1a1a1a;
+      }
+      .ledger-ingest-transactions-empty {
+        margin-top: 0.75em;
+        color: #33ccff;
+      }
+      .ledger-ingest-transactions-details summary {
+        cursor: pointer;
+        color: #33ccff;
+      }
+      .ledger-ingest-transactions-details summary::-webkit-details-marker {
+        color: #33ccff;
+      }
+      .ledger-ingest-transactions-details-value {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
 
       blockquote {
         font-style: italic;
