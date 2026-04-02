@@ -67,6 +67,15 @@ function isStorageEnvironment(env) {
  */
 function resolveStorageFn(env) {
   const storageFn = env.get('setLocalPermanentData');
+  return normalizeStorageFunction(storageFn);
+}
+
+/**
+ * Normalize a storage accessor into a callable function when possible.
+ * @param {unknown} storageFn Candidate storage accessor.
+ * @returns {((args: object) => unknown) | null} Callable storage accessor or null.
+ */
+function normalizeStorageFunction(storageFn) {
   if (typeof storageFn === 'function') {
     return /** @type {(args: object) => unknown} */ (storageFn);
   }

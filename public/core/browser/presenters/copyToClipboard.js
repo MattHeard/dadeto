@@ -76,7 +76,7 @@ function clearCopyFeedbackTimeout(options) {
   }
 
   dom.clearTimeout(state.timeoutHandle);
-  state.timeoutHandle = null;
+  resetCopyFeedbackState(state);
 }
 
 /**
@@ -90,8 +90,8 @@ function clearCopyFeedbackTimeout(options) {
  */
 function resetCopyButtonLabel(options) {
   const { button, dom, state } = options;
-  dom.setTextContent(button, COPY_BUTTON_LABEL);
-  state.timeoutHandle = null;
+  setCopyButtonLabel(button, dom, COPY_BUTTON_LABEL);
+  resetCopyFeedbackState(state);
 }
 
 /**
@@ -106,10 +106,30 @@ function resetCopyButtonLabel(options) {
 function showCopySuccessFeedback(options) {
   const { button, dom, state } = options;
   clearCopyFeedbackTimeout(options);
-  dom.setTextContent(button, COPIED_BUTTON_LABEL);
+  setCopyButtonLabel(button, dom, COPIED_BUTTON_LABEL);
   state.timeoutHandle = dom.setTimeout(() => {
     resetCopyButtonLabel({ button, dom, state });
   }, COPY_FEEDBACK_DELAY_MS);
+}
+
+/**
+ * Reset the copy-feedback timer state.
+ * @param {{ timeoutHandle: number | null }} state - Copy feedback state.
+ * @returns {void}
+ */
+function resetCopyFeedbackState(state) {
+  state.timeoutHandle = null;
+}
+
+/**
+ * Update the copy button label.
+ * @param {HTMLElement} button - Copy button.
+ * @param {DOMHelpers} dom - DOM helper facade.
+ * @param {string} label - Button label.
+ * @returns {void}
+ */
+function setCopyButtonLabel(button, dom, label) {
+  dom.setTextContent(button, label);
 }
 
 /**

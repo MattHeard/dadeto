@@ -8,6 +8,7 @@ import {
   resolveMessageOrDefault,
 } from './cloud-core.js';
 import { when } from '../../common-core.js';
+import { whenString } from '../../commonCore.js';
 
 export { productionOrigins, isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
@@ -425,11 +426,7 @@ function getInvalidTokenResponseFromResult(uidResult) {
  * @returns {ResponderResult | null} Response to send when an error exists.
  */
 function getErrorResponse(error) {
-  if (error) {
-    return createInvalidTokenResponse(error);
-  }
-
-  return null;
+  return when(Boolean(error), () => createInvalidTokenResponse(error), () => null);
 }
 
 /**
@@ -438,11 +435,7 @@ function getErrorResponse(error) {
  * @returns {ResponderResult | null} Response to send when the UID is absent.
  */
 function getMissingUidResponse(uid) {
-  if (!uid) {
-    return createInvalidTokenResponse(null);
-  }
-
-  return null;
+  return when(!uid, () => createInvalidTokenResponse(null), () => null);
 }
 
 /**
@@ -495,11 +488,7 @@ function isDecodedObject(decoded) {
  * @returns {string | null} UID string when valid.
  */
 function extractStringUid(decoded) {
-  if (typeof decoded.uid === 'string') {
-    return decoded.uid;
-  }
-
-  return null;
+  return whenString(decoded.uid, value => value);
 }
 
 /**

@@ -3,6 +3,8 @@ import {
   ensureString,
   getStringCandidate,
   normalizeNonStringValue,
+  when,
+  whenString,
 } from '../commonCore.js';
 export { DEFAULT_BUCKET_NAME } from '../commonCore.js';
 
@@ -185,11 +187,7 @@ function messageIndicatesDuplicate(error) {
  */
 export function buildTestOrigins(playwrightOrigin) {
   const normalized = ensureString(playwrightOrigin);
-  if (normalized) {
-    return [normalized];
-  }
-
-  return [];
+  return when(Boolean(normalized), () => [normalized], () => []);
 }
 
 /**
@@ -384,11 +382,7 @@ export function resolveMessageOrDefault(message, fallback) {
  * @returns {{ error: unknown } | null} Wrapped error object or null when no error was provided.
  */
 export function buildErrorResult(error) {
-  if (error) {
-    return { error };
-  }
-
-  return null;
+  return when(Boolean(error), () => ({ error }), () => null);
 }
 
 /**
@@ -449,11 +443,11 @@ export function extractStringFromCandidateArray(candidate) {
  * @returns {string | null} Normalized string or null.
  */
 export function normalizeNonStringCandidate(candidate) {
-  if (Array.isArray(candidate)) {
-    return extractStringFromCandidateArray(candidate);
-  }
-
-  return null;
+  return when(
+    Array.isArray(candidate),
+    () => extractStringFromCandidateArray(candidate),
+    () => null
+  );
 }
 
 /**
@@ -462,11 +456,7 @@ export function normalizeNonStringCandidate(candidate) {
  * @returns {string | null} Normalized string or null.
  */
 export function normalizeAuthorizationCandidate(candidate) {
-  if (typeof candidate === 'string') {
-    return candidate;
-  }
-
-  return normalizeNonStringCandidate(candidate);
+  return whenString(candidate, value => value) ?? normalizeNonStringCandidate(candidate);
 }
 
 /**

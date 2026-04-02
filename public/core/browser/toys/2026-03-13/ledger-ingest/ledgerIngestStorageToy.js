@@ -142,31 +142,25 @@ function normalizeLedgerStorageState(stored) {
 }
 
 /**
- * Append a valid string item to the accumulated transaction order.
- * @param {string[]} order Accumulated merge-key order.
- * @param {unknown} item Candidate order item.
- * @returns {string[]} Updated merge-key order.
- */
-function appendValidTransactionOrderItem(order, item) {
-  if (isValidString(item)) {
-    order.push(item);
-  }
-
-  return order;
-}
-
-/**
  * Normalize a stored transaction order array.
  * @param {unknown} value Candidate order array.
  * @returns {string[]} Normalized merge-key order.
  */
 function normalizeTransactionOrder(value) {
-  const order = [];
-  if (Array.isArray(value)) {
-    value.forEach(item => appendValidTransactionOrderItem(order, item));
+  return normalizeValidStringArray(value);
+}
+
+/**
+ * Normalize an array to valid strings only.
+ * @param {unknown} value Candidate string array.
+ * @returns {string[]} Normalized string array.
+ */
+function normalizeValidStringArray(value) {
+  if (!Array.isArray(value)) {
+    return [];
   }
 
-  return order;
+  return value.filter(isValidString);
 }
 
 /**

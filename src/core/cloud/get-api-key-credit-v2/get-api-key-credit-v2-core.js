@@ -5,6 +5,7 @@ import {
   stringOrDefault,
 } from '../cloud-core.js';
 import { ensureString, functionOrFallback, whenString } from './common-core.js';
+import { when } from '../../commonCore.js';
 
 export { createDb } from './create-db.js';
 export { productionOrigins };
@@ -270,11 +271,11 @@ async function resolveRequestResponse(validationError, onSuccess) {
  * @returns {{ status: number, body: string } | null} Missing UUID error when absent.
  */
 function resolveUuidPresence(uuid) {
-  if (!uuid) {
-    return missingUuidResponse();
-  }
-
-  return null;
+  return when(
+    !uuid,
+    () => missingUuidResponse(),
+    () => null
+  );
 }
 
 /**

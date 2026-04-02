@@ -7,6 +7,7 @@ import {
 } from './cloud-core.js';
 import { runInParallel } from '../parallel-utils.js';
 import { runWithFailureAndThen } from '../response-utils.js';
+import { whenString } from '../../commonCore.js';
 export { isDuplicateAppError };
 
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
@@ -282,11 +283,15 @@ export function getCdnHostFromEnv(env) {
  * @returns {string} Resolved CDN host.
  */
 function selectCdnHost(candidate) {
-  if (isNonEmptyString(candidate)) {
-    return /** @type {string} */ (candidate);
-  }
+  return (
+    whenString(candidate, value => {
+      if (value.trim().length > 0) {
+        return value;
+      }
 
-  return DEFAULT_CDN_HOST;
+      return null;
+    }) || DEFAULT_CDN_HOST
+  );
 }
 
 /**
@@ -501,11 +506,15 @@ export function createGenerateStatsCore({
    * @returns {string} Resolved story title.
    */
   function resolveStoryTitle(candidate, fallback) {
-    if (!isNonEmptyString(candidate)) {
-      return fallback;
-    }
+    return (
+      whenString(candidate, value => {
+        if (value.trim().length > 0) {
+          return value;
+        }
 
-    return /** @type {string} */ (candidate);
+        return null;
+      }) || fallback
+    );
   }
 
   /**

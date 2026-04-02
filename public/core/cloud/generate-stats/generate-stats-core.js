@@ -6,6 +6,7 @@ import {
   sendOkResponse,
 } from './cloud-core.js';
 import { runWithFailure } from '../response-utils.js';
+import { whenString } from '../../commonCore.js';
 export { isDuplicateAppError };
 
 const STATS_PAGE_HEAD = `<!doctype html>
@@ -277,11 +278,15 @@ export function getCdnHostFromEnv(env) {
  * @returns {string} Resolved CDN host.
  */
 function selectCdnHost(candidate) {
-  if (isNonEmptyString(candidate)) {
-    return candidate;
-  }
+  return (
+    whenString(candidate, value => {
+      if (value.trim().length > 0) {
+        return value;
+      }
 
-  return DEFAULT_CDN_HOST;
+      return null;
+    }) || DEFAULT_CDN_HOST
+  );
 }
 
 /**
@@ -482,11 +487,15 @@ export function createGenerateStatsCore({
    * @returns {string} Resolved story title.
    */
   function resolveStoryTitle(candidate, fallback) {
-    if (!isNonEmptyString(candidate)) {
-      return fallback;
-    }
+    return (
+      whenString(candidate, value => {
+        if (value.trim().length > 0) {
+          return value;
+        }
 
-    return candidate;
+        return null;
+      }) || fallback
+    );
   }
 
   /**
