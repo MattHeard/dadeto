@@ -1,5 +1,9 @@
 import { resolveMessageOrDefault } from '../cloud/cloud-core.js';
-import { whenArray, whenType } from '../commonCore.js';
+import {
+  trimmedStringOrNull,
+  whenArray,
+  whenTypeValue,
+} from '../commonCore.js';
 
 /**
  * @param {string} output Raw `bd ready` command output.
@@ -616,11 +620,7 @@ function getLaunchArgs(value) {
  * @returns {number | null} Normalized launch pid.
  */
 function getLaunchPid(value) {
-  if (typeof value !== 'number') {
-    return null;
-  }
-
-  return value;
+  return whenTypeValue(value, 'number');
 }
 
 /**
@@ -679,7 +679,7 @@ function buildRunnerEvidenceLine(prefix, outcome) {
  * @returns {number | null} Exit code when present.
  */
 function getOutcomeExitCode(outcome) {
-  return whenType(outcome.exitCode, 'number', value => value);
+  return whenTypeValue(outcome.exitCode, 'number');
 }
 
 /**
@@ -688,7 +688,7 @@ function getOutcomeExitCode(outcome) {
  * @returns {string | null} Signal when present.
  */
 function getOutcomeSignal(outcome) {
-  return whenType(outcome.signal, 'string', value => value);
+  return whenTypeValue(outcome.signal, 'string');
 }
 
 /**
@@ -768,22 +768,7 @@ function formatAgentFailureDetailMessage(detail) {
  * @returns {string | null} Normalized summary or null when empty.
  */
 function normalizeAgentFailureSummary(summary) {
-  const normalized = trimAgentFailureSummary(summary);
-  if (!normalized) {
-    return null;
-  }
-
-  return normalized;
-}
-
-/**
- * @param {string | null} summary Raw summary value.
- * @returns {string} Trimmed summary text.
- */
-function trimAgentFailureSummary(summary) {
-  return String(summary ?? '')
-    .trim()
-    .replace(/\s+/g, ' ');
+  return trimmedStringOrNull(summary);
 }
 
 /**

@@ -1,4 +1,4 @@
-import { whenString } from '../commonCore.js';
+import { trimmedStringOrEmpty } from '../commonCore.js';
 
 export const DEFAULT_SEQUENCE = [
   { id: 'thesis', title: 'Thesis' },
@@ -172,7 +172,7 @@ function isWorkflowIndex(value) {
  */
 function normalizeHeading(workflow) {
   const heading = getWorkflowProperty(workflow, 'heading');
-  return whenString(heading, value => value.trim()) ?? '';
+  return trimmedStringOrEmpty(heading);
 }
 
 /**

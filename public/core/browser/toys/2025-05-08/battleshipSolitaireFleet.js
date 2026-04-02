@@ -12,6 +12,8 @@
  *   • No diagonal placement; honours optional noTouching flag.
  */
 
+import { whenNotNullish } from '../../../commonCore.js';
+
 /**
  * @typedef {{ x: number, y: number }} Coord
  * @typedef {{ width: number | string, height: number | string, ships: Array<number | string> | string, noTouching?: boolean }} RawFleetConfig
@@ -745,10 +747,7 @@ function findValidFleet(cfg, env, maxTries) {
  */
 function tryGenerateFleet(cfg, env, maxTries) {
   const fleet = findValidFleet(cfg, env, maxTries);
-  if (fleet !== null) {
-    return JSON.stringify(fleet);
-  }
-  return null;
+  return whenNotNullish(fleet, value => JSON.stringify(value));
 }
 
 /**

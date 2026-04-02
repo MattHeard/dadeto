@@ -4,7 +4,7 @@ import {
   getSnapshotData,
   stringOrNull,
 } from '../cloud-core.js';
-import { stringOrFallback } from '../../commonCore.js';
+import { arrayOrEmpty, stringOrFallback } from '../../commonCore.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
 
@@ -84,11 +84,7 @@ function resolveServerTimestamp(fieldValue) {
  * @returns {string[]} Normalized options array.
  */
 function normalizeOptions(options) {
-  if (Array.isArray(options)) {
-    return options;
-  }
-
-  return [];
+  return arrayOrEmpty(options);
 }
 
 /**

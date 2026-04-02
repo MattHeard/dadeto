@@ -225,15 +225,11 @@ function deriveRequestMethod(method) {
  * @returns {{ status: number, body: string, headers?: Record<string, string> } | null} Error response when invalid.
  */
 function resolveMethodError(method) {
-  if (method !== 'GET') {
-    return {
-      status: 405,
-      body: 'Method Not Allowed',
-      headers: { Allow: 'GET' },
-    };
-  }
-
-  return null;
+  return whenOrNull(method !== 'GET', () => ({
+    status: 405,
+    body: 'Method Not Allowed',
+    headers: { Allow: 'GET' },
+  }));
 }
 
 /**

@@ -13,7 +13,9 @@ import {
   stringOrFallback,
   whenString,
   whenType,
+  whenTypeValue,
   trimmedStringOrEmpty,
+  trimmedStringOrNull,
   whenArray,
   whenTruthy,
   whenOrNull,
@@ -83,10 +85,22 @@ describe('commonCore helpers', () => {
     ).toEqual(expect.any(Function));
   });
 
+  test('whenTypeValue returns the original value for matching typeof inputs', () => {
+    expect(whenTypeValue('hello', 'string')).toBe('hello');
+    expect(whenTypeValue(123, 'number')).toBe(123);
+    expect(whenTypeValue({}, 'function')).toBeNull();
+  });
+
   test('trimmedStringOrEmpty returns a trimmed string or an empty string', () => {
     expect(trimmedStringOrEmpty('  hello  ')).toBe('hello');
     expect(trimmedStringOrEmpty('')).toBe('');
     expect(trimmedStringOrEmpty(123)).toBe('');
+  });
+
+  test('trimmedStringOrNull returns a trimmed string or null', () => {
+    expect(trimmedStringOrNull('  hello  ')).toBe('hello');
+    expect(trimmedStringOrNull('   ')).toBeNull();
+    expect(trimmedStringOrNull(123)).toBeNull();
   });
 
   test('whenNotNullish executes the callback for present values only', () => {

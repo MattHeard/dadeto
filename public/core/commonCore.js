@@ -128,8 +128,8 @@ function withStringFallback(value, fallback, isNormalizedAcceptable) {
  * @returns {string} Input string or empty fallback.
  */
 export function ensureString(value) {
-  const normalized = getStringCandidate(value);
-  if (normalized === undefined) {
+  const normalized = stringOrFallback(value, () => '');
+  if (normalized === null) {
     return '';
   }
 
@@ -198,6 +198,17 @@ export function whenType(value, typeName, fn) {
 }
 
 /**
+ * Run the provided callback when the value matches the requested typeof and
+ * return the value unchanged.
+ * @param {unknown} value Candidate value.
+ * @param {string} typeName Expected typeof result.
+ * @returns {unknown | null} Original value or `null` when the type does not match.
+ */
+export function whenTypeValue(value, typeName) {
+  return whenType(value, typeName, candidate => candidate);
+}
+
+/**
  * Return the original value when the predicate accepts it; otherwise `null`.
  * @template T
  * @param {T} value Candidate value.
@@ -215,6 +226,20 @@ export function whenPredicateValue(value, predicate) {
  */
 export function trimmedStringOrEmpty(value) {
   return whenString(value, candidate => candidate.trim()) ?? '';
+}
+
+/**
+ * Normalize a string candidate to a trimmed string or `null`.
+ * @param {unknown} value Candidate string value.
+ * @returns {string | null} Trimmed string or `null` when the value is not a string or trims to nothing.
+ */
+export function trimmedStringOrNull(value) {
+  const trimmed = whenString(value, candidate => candidate.trim());
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed;
 }
 
 /**
@@ -348,11 +373,7 @@ function isFiniteNumericValue(value) {
  * @returns {number} Number when provided, otherwise zero.
  */
 export function numberOrZero(value) {
-  if (!isFiniteNumericValue(value)) {
-    return 0;
-  }
-
-  return value;
+  return returnFallbackValue(isFiniteNumericValue(value), value, () => 0);
 }
 
 /**
@@ -412,10 +433,7 @@ function didExecutionFail(result) {
  * @returns {unknown} The result or fallback value.
  */
 function resolveSafeExecutionResult(result, fallback) {
-  if (didExecutionFail(result)) {
-    return fallback();
-  }
-  return result;
+  return returnFallbackValue(!didExecutionFail(result), result, fallback);
 }
 
 /**

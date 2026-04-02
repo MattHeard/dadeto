@@ -1,5 +1,6 @@
 import {
   arrayOrEmpty,
+  getStringCandidate,
   isNonNullObject,
   whenPredicateValue,
   whenString,
@@ -16,7 +17,7 @@ import {
   getAuthorizationHeader,
 } from '../submit-shared.js';
 import { createResponder } from '../responder-utils.js';
-import { validatePostMethod } from '../http-method-guard.js';
+import { whenPostRequest } from '../http-method-guard.js';
 
 const INVALID_BODY_RESPONSE = {
   status: 400,
@@ -225,22 +226,9 @@ function extractErrorMessage(err) {
     return undefined;
   }
 
-  return getMessageFromErrorObject(
-    /** @type {Record<string, unknown>} */ (err)
+  return getStringCandidate(
+    /** @type {Record<string, unknown>} */ (err).message
   );
-}
-
-/**
- * Extract the message when the object has a string field.
- * @param {Record<string, unknown>} object Candidate error-like object.
- * @returns {string | undefined} Message when present.
- */
-function getMessageFromErrorObject(object) {
-  if (typeof object.message === 'string') {
-    return object.message;
-  }
-
-  return undefined;
 }
 
 /**
@@ -449,12 +437,11 @@ export function createSubmitModerationRatingResponder(dependencies) {
  * @returns {SubmitModerationRatingPrerequisiteResult} Result.
  */
 function resolveRequestPrerequisites(request) {
-  const methodError = validatePostMethod(request.method);
-  if (methodError) {
-    return { error: methodError };
-  }
-
-  return resolveBodyAndToken(request);
+  return whenPostRequest({
+    request,
+    onValid: () => resolveBodyAndToken(request),
+    onInvalid: error => ({ error }),
+  });
 }
 
 /**

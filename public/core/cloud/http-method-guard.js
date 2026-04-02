@@ -25,6 +25,46 @@ export function validatePostMethod(method, errorResponse, options) {
 }
 
 /**
+ * Run a callback only when the method is POST.
+ * @template T
+ * @param {{
+ *   method: unknown,
+ *   onValid: () => T,
+ *   onInvalid: (errorResponse: { status: number, body: string }) => T,
+ *   options?: { treatNonStringAsPost?: boolean }
+ * }} params Method gating configuration.
+ * @returns {T} Callback result for the valid or invalid method path.
+ */
+export function whenPostMethod({ method, onValid, onInvalid, options }) {
+  const methodError = validatePostMethod(method, undefined, options);
+  if (methodError) {
+    return onInvalid(methodError);
+  }
+
+  return onValid();
+}
+
+/**
+ * Run a callback only when the request method is POST.
+ * @template T
+ * @param {{
+ *   request: { method?: unknown },
+ *   onValid: () => T,
+ *   onInvalid: (errorResponse: { status: number, body: string }) => T,
+ *   options?: { treatNonStringAsPost?: boolean }
+ * }} params Request gating configuration.
+ * @returns {T} Callback result for the valid or invalid request path.
+ */
+export function whenPostRequest({ request, onValid, onInvalid, options }) {
+  return whenPostMethod({
+    method: request.method,
+    onValid,
+    onInvalid,
+    options,
+  });
+}
+
+/**
  * @param {{ status: number, body: string } | undefined} errorResponse Response when validation fails.
  * @returns {{ status: number, body: string }} Normalized error response.
  */

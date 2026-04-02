@@ -4,7 +4,7 @@ import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
 } from './cloud-core.js';
-import { validatePostMethod } from '../http-method-guard.js';
+import { whenPostRequest } from '../http-method-guard.js';
 
 /**
  * Map the request body variant field to a trimmed display string.
@@ -84,14 +84,16 @@ function processReportSubmission({
   addModerationReport,
   getServerTimestamp,
 }) {
-  return (
-    validatePostMethod(request.method) ??
-    handlePostRequest({
-      body: request.body,
-      addModerationReport,
-      getServerTimestamp,
-    })
-  );
+  return whenPostRequest({
+    request,
+    onValid: () =>
+      handlePostRequest({
+        body: request.body,
+        addModerationReport,
+        getServerTimestamp,
+      }),
+    onInvalid: methodError => Promise.resolve(methodError),
+  });
 }
 
 /**

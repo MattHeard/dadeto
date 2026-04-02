@@ -166,10 +166,11 @@ function isZeroVariant(num) {
  */
 export function formatDecimal(num) {
   const result = num.toPrecision(17);
-  if (result.includes('.')) {
-    return result.replace(/\.?0+$/, '');
-  }
-  return result;
+  return when(
+    result.includes('.'),
+    () => result.replace(/\.?0+$/, ''),
+    () => result
+  );
 }
 
 /**

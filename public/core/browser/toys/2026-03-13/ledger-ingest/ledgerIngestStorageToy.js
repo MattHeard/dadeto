@@ -293,8 +293,7 @@ export const ledgerIngestStorageToyTestOnly = {
     ledgerIngestStorageCore.createEmptyLedgerStorageState,
   normalizeLedgerStorageState:
     ledgerIngestStorageCore.normalizeLedgerStorageState,
-  normalizeTransactionOrder:
-    ledgerIngestStorageCore.normalizeTransactionOrder,
+  normalizeTransactionOrder: ledgerIngestStorageCore.normalizeTransactionOrder,
   normalizeTransactionMap: ledgerIngestStorageCore.normalizeTransactionMap,
   getTransactionMergeKey,
   isUnchangedTransaction,

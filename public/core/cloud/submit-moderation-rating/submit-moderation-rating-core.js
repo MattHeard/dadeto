@@ -1,11 +1,11 @@
 import {
   arrayOrEmpty,
+  getStringCandidate,
   isNonNullObject,
   whenPredicateValue,
 } from './common-core.js';
 import {
   matchBearerToken,
-  normalizeMethod,
   getHeaderFromGetter,
   isAllowedOrigin,
   createResponse,
@@ -16,8 +16,8 @@ import {
 } from './cloud-core.js';
 import { createCloudSubmitHandler } from '../submit-shared.js';
 import { createResponder } from '../responder-utils.js';
+import { whenPostRequest } from '../http-method-guard.js';
 
-const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 const INVALID_BODY_RESPONSE = {
   status: 400,
   body: 'Missing or invalid isApproved',
@@ -294,7 +294,7 @@ function getTokenErrorMessage(err) {
  * @returns {string | undefined} Message.
  */
 function extractErrorMessage(err) {
-  return err?.message;
+  return getStringCandidate(err?.message);
 }
 
 /**
@@ -505,37 +505,28 @@ export function createSubmitModerationRatingResponder(dependencies) {
 }
 
 /**
- * Validate incoming request method.
- * @param {unknown} method Method.
- * @returns {SubmitModerationRatingResponse | null} Error when invalid.
- */
-function validateRequestMethod(method) {
-  if (normalizeMethod(method) === 'POST') {
-    return null;
-  }
-
-  return METHOD_NOT_ALLOWED_RESPONSE;
-}
-
-/**
  * Resolve prerequisites needed for further processing.
  * @param {SubmitModerationRatingRequest} request Request.
  * @returns {{ error?: SubmitModerationRatingResponse, bodyResult?: { isApproved: boolean }, token?: string }} Result.
  */
 function resolveRequestPrerequisites(request) {
-  const methodError = validateRequestMethod(request.method);
-  const bodyResult = validateRatingBody(request.body);
-  const tokenResult = resolveAuthorizationToken(request);
-  const error = findFirstError([
-    methodError,
-    bodyResult.error,
-    tokenResult.error,
-  ]);
+  return whenPostRequest({
+    request,
+    onValid: () => {
+      const bodyResult = validateRatingBody(request.body);
+      const tokenResult = resolveAuthorizationToken(request);
+      const error = findFirstError([
+        bodyResult.error,
+        tokenResult.error,
+      ]);
 
-  return returnErrorResultOrValue(error, () => ({
-    bodyResult,
-    token: tokenResult.token,
-  }));
+      return returnErrorResultOrValue(error, () => ({
+        bodyResult,
+        token: tokenResult.token,
+      }));
+    },
+    onInvalid: error => ({ error }),
+  });
 }
 
 /**

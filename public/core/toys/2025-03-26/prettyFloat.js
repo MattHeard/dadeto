@@ -1,3 +1,5 @@
+import { when } from '../../common.js';
+
 /**
  * Build a formatted decomposition string for a number.
  * @param {number} num - Number to decompose.
@@ -180,11 +182,11 @@ function isZeroVariant(num) {
  */
 export function formatDecimal(num) {
   const result = num.toPrecision(17);
-  if (result.includes('.')) {
-    return result.replace(/\.?0+$/, '');
-  } else {
-    return result;
-  }
+  return when(
+    result.includes('.'),
+    () => result.replace(/\.?0+$/, ''),
+    () => result
+  );
 }
 
 /**

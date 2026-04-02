@@ -1,4 +1,8 @@
-import { getStringCandidate, isNonNullObject } from '../../../commonCore.js';
+import {
+  getStringCandidate,
+  isNonNullObject,
+  whenString,
+} from '../../../commonCore.js';
 import { parseJsonObject } from '../../jsonValueHelpers.js';
 
 const GAME_STATE_KEY = 'hiLoCardGame:gameState';
@@ -128,29 +132,12 @@ function buildNormalizedParsedEvent(candidate) {
 }
 
 /**
- * Check whether a parsed value can be treated as an object record.
- * @param {unknown} value - Parsed input candidate.
- * @returns {boolean} True when the value is an object.
- */
-/**
- * Check whether a parsed record contains an event type.
- * @param {Record<string, unknown>} candidate - Parsed input record.
- * @returns {boolean} True when the record contains a string event type.
- */
-function hasEventType(candidate) {
-  return typeof candidate.type === 'string';
-}
-
-/**
  * Read the event type from a parsed record.
  * @param {Record<string, unknown>} candidate - Parsed input record.
  * @returns {string | null} Event type or null.
  */
 function readEventType(candidate) {
-  if (hasEventType(candidate)) {
-    return /** @type {string} */ (candidate.type);
-  }
-  return null;
+  return whenString(candidate.type, value => value);
 }
 
 /**

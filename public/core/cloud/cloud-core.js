@@ -3,6 +3,7 @@ import {
   ensureString,
   getStringCandidate,
   normalizeNonStringValue,
+  stringOrFallback,
   when,
   whenString,
   whenOrNull,
@@ -38,12 +39,7 @@ export function stringOrNull(value) {
  * @returns {string} String value or fallback.
  */
 export function stringOrDefault(value, fallback) {
-  const normalized = stringOrNull(value);
-  if (normalized === null) {
-    return fallback;
-  }
-
-  return normalized;
+  return stringOrFallback(value, () => fallback) ?? fallback;
 }
 
 /**

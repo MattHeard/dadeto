@@ -8,7 +8,12 @@ import {
   resolveMessageOrDefault,
   isObject,
 } from './cloud-core.js';
-import { whenOrNull, whenString, whenTruthy } from '../../commonCore.js';
+import {
+  whenNotNullish,
+  whenOrNull,
+  whenString,
+  whenTruthy,
+} from '../../commonCore.js';
 export { productionOrigins, isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
 export { getAllowedOrigins } from '../allowed-origins.js';
@@ -362,11 +367,7 @@ function extractVariantReference(moderatorData) {
  * @returns {FirestoreDocumentReference | null} Valid reference or null.
  */
 function resolveVariantFromData(variant) {
-  if (variant !== undefined) {
-    return variant;
-  }
-
-  return null;
+  return whenNotNullish(variant, value => value);
 }
 
 /**
