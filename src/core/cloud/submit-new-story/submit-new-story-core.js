@@ -14,6 +14,7 @@ import {
   getAuthorizationHeader,
   getAuthorizationFromGetter,
 } from '../submit-shared.js';
+import { arrayOrEmpty } from '../common-core.js';
 import { createResponder } from '../responder-utils.js';
 
 /**
@@ -136,10 +137,7 @@ export function resolveAuthorId(request, verifyIdToken) {
  * @returns {string[]} Allowed origins.
  */
 function getAllowedOrigins(options) {
-  if (Array.isArray(options.allowedOrigins)) {
-    return options.allowedOrigins;
-  }
-  return [];
+  return arrayOrEmpty(options.allowedOrigins);
 }
 
 /**

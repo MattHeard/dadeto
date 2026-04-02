@@ -1,4 +1,4 @@
-import { isNonNullObject, whenString } from './common-core.js';
+import { arrayOrEmpty, isNonNullObject, whenString } from './common-core.js';
 import {
   matchBearerToken,
   isAllowedOrigin,
@@ -110,10 +110,7 @@ function extractBearerToken(header) {
  * @returns {string[]} Array of origin strings.
  */
 function normalizeOrigins(allowedOrigins) {
-  if (Array.isArray(allowedOrigins)) {
-    return allowedOrigins;
-  }
-  return [];
+  return arrayOrEmpty(allowedOrigins);
 }
 
 /**
