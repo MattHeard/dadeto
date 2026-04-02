@@ -177,7 +177,7 @@ describe('createCopyCore', () => {
   });
 
   describe('copy entries helper', () => {
-    it('applies the resolver and copies the entries', () => {
+    it('applies the resolver and copies the entries', async () => {
       const entries = [
         {
           source: posix.join(directories.srcToysDir, 'one.js'),
@@ -198,7 +198,10 @@ describe('createCopyCore', () => {
         .fn()
         .mockImplementation(entry => `copied ${entry.source}`);
 
-      core.copyEntries(entries, io, { messageLogger: logger, resolveMessage });
+      await core.copyEntries(entries, io, {
+        messageLogger: logger,
+        resolveMessage,
+      });
 
       expect(resolveMessage).toHaveBeenCalledTimes(entries.length);
       expect(logger.info).toHaveBeenCalledTimes(entries.length);
@@ -332,10 +335,14 @@ describe('createCopyCore', () => {
       const source = posix.join(directories.srcToysDir, 'widget.js');
       const destination = posix.join(directories.publicToysDir, 'widget.js');
 
-      core.copyFileWithDirectories(io, {
+      core.copyFileWithDirectories({
+        io,
         source,
         destination,
         messageLogger: logger,
+        formatPathForLog: core.formatPathForLog,
+        ensureDirectoryExists: core.ensureDirectoryExists,
+        dirname: posix.dirname,
       });
 
       expect(io.createDirectory).toHaveBeenCalledWith(
@@ -352,11 +359,15 @@ describe('createCopyCore', () => {
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
       };
-      core.copyFileWithDirectories(existingIo, {
+      core.copyFileWithDirectories({
+        io: existingIo,
         source,
         destination,
         messageLogger: logger,
         message: customMessage,
+        formatPathForLog: core.formatPathForLog,
+        ensureDirectoryExists: core.ensureDirectoryExists,
+        dirname: posix.dirname,
       });
       expect(logger.info).toHaveBeenCalledWith(customMessage);
       expect(existingIo.createDirectory).not.toHaveBeenCalled();
@@ -380,7 +391,15 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
-      core.copyFilePairs(pairs, io, logger);
+      core.copyFilePairs({
+        copyPairs: pairs,
+        io,
+        messageLogger: logger,
+        copyFileWithDirectories: core.copyFileWithDirectories,
+        formatPathForLog: core.formatPathForLog,
+        ensureDirectoryExists: core.ensureDirectoryExists,
+        dirname: posix.dirname,
+      });
 
       expect(io.copyFile).toHaveBeenNthCalledWith(
         1,
@@ -643,7 +662,16 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
-      core.copyBlogJson(directories, io, logger);
+      core.copyBlogJson({
+        directories,
+        io,
+        messageLogger: logger,
+        join: posix.join,
+        formatPathForLog: core.formatPathForLog,
+        copyFileWithDirectories: core.copyFileWithDirectories,
+        ensureDirectoryExists: core.ensureDirectoryExists,
+        dirname: posix.dirname,
+      });
 
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: build directory not found at src/build'
@@ -660,7 +688,16 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
-      core.copyBlogJson(directories, io, logger);
+      core.copyBlogJson({
+        directories,
+        io,
+        messageLogger: logger,
+        join: posix.join,
+        formatPathForLog: core.formatPathForLog,
+        copyFileWithDirectories: core.copyFileWithDirectories,
+        ensureDirectoryExists: core.ensureDirectoryExists,
+        dirname: posix.dirname,
+      });
 
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(directories.srcDir, 'build', 'blog.json'),

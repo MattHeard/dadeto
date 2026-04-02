@@ -340,13 +340,13 @@ function isValidCandidate(boardState, segs, valid) {
  * @returns {Candidate[]} Valid candidates for both directions.
  */
 function collectCandidatesForStart({ start, length, cfg, occupied }) {
-  const directions = /** @type {Array<'H' | 'V'>} */ (['H', 'V']);
-  const candidates = /** @type {Candidate[]} */ ([]);
   const sharedContext = { start, length, cfg, occupied };
-  for (const direction of directions) {
-    collectCandidatesForDirection(direction, sharedContext, candidates);
-  }
-  return candidates;
+  return collectMappedCandidates(
+    /** @type {Array<'H' | 'V'>} */ (['H', 'V']),
+    (direction, candidates) => {
+      collectCandidatesForDirection(direction, sharedContext, candidates);
+    }
+  );
 }
 
 /**
@@ -361,6 +361,21 @@ function collectCandidatesForDirection(direction, context, candidates) {
   if (candidate) {
     candidates.push(candidate);
   }
+}
+
+/**
+ * Collect candidates from each item using a shared accumulator.
+ * @template T
+ * @param {T[]} items - Items to inspect.
+ * @param {(item: T, candidates: Candidate[]) => void} collectCandidate - Callback that appends matching candidates.
+ * @returns {Candidate[]} Collected candidates.
+ */
+function collectMappedCandidates(items, collectCandidate) {
+  const candidates = /** @type {Candidate[]} */ ([]);
+  for (const item of items) {
+    collectCandidate(item, candidates);
+  }
+  return candidates;
 }
 
 /**
@@ -412,11 +427,12 @@ function getValidCandidate(direction, context) {
  * @returns {Candidate[]} Candidate placements.
  */
 function collectAllCandidates(length, cfg, occupied) {
-  const candidates = /** @type {Candidate[]} */ ([]);
-  for (let y = 0; y < cfg.height; y++) {
-    collectCandidatesForRow({ y, length, cfg, occupied, candidates });
-  }
-  return candidates;
+  return collectMappedCandidates(
+    Array.from({ length: cfg.height }, (_, y) => y),
+    (y, candidates) => {
+      collectCandidatesForRow({ y, length, cfg, occupied, candidates });
+    }
+  );
 }
 
 /**

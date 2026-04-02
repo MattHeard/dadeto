@@ -1,8 +1,9 @@
 import {
   buildCopyExportMap,
+  buildCopyLogMessage,
   formatPathRelativeToProject,
+  runMappedEntries,
 } from '../build/buildCore.js';
-import { runInParallel } from './parallel-utils.js';
 
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 
@@ -137,7 +138,11 @@ export function createCopyToInfraCore({
     const destinationPath = join(targetDir, name);
     await io.copyFile(sourcePath, destinationPath);
     messageLogger.info(
-      `Copied: ${formatPathForLog(sourcePath)} -> ${formatPathForLog(destinationPath)}`
+      buildCopyLogMessage({
+        formatPathForLog,
+        source: sourcePath,
+        destination: destinationPath,
+      })
     );
   }
 
@@ -269,14 +274,10 @@ export function createCopyToInfraCore({
       return;
     }
 
-    await runInParallel(files, name =>
-      copyFileToTarget({
-        io,
-        sourceDir,
-        targetDir,
-        name,
-        messageLogger,
-      })
+    await runMappedEntries(
+      files,
+      name => ({ io, sourceDir, targetDir, name, messageLogger }),
+      copyFileToTarget
     );
   }
 

@@ -5,7 +5,7 @@ import {
   isDuplicateAppError,
   sendOkResponse,
 } from './cloud-core.js';
-import { runInParallel } from '../parallel-utils.js';
+import { runMappedEntries } from '../../build/buildCore.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 import { whenString } from '../../commonCore.js';
 export { isDuplicateAppError };
@@ -560,8 +560,9 @@ export function createGenerateStatsCore({
    */
   async function invalidatePaths(paths, logger = console) {
     const token = await getAccessTokenFromMetadata();
-    await runInParallel(paths, path =>
-      invalidateSinglePath({
+    await runMappedEntries(
+      paths,
+      path => ({
         path,
         fetchImpl,
         project,
@@ -570,7 +571,8 @@ export function createGenerateStatsCore({
         randomUUID: cryptoModule.randomUUID,
         logger,
         token,
-      })
+      }),
+      invalidateSinglePath
     );
   }
 

@@ -40,6 +40,70 @@ export function formatPathRelativeToProject(
 }
 
 /**
+ * Run a callback for each entry in parallel and resolve when all callbacks finish.
+ * @template T
+ * @param {T[]} entries Entries to process.
+ * @param {(entry: T) => Promise<unknown>} iterator Async callback per entry.
+ * @returns {Promise<unknown[]>} Promise resolving once every callback completes.
+ */
+export function runEntriesInParallel(entries, iterator) {
+  if (!entries.length) {
+    return Promise.resolve([]);
+  }
+
+  return Promise.all(entries.map(iterator));
+}
+
+/**
+ * Build an async task wrapper that maps an entry to an invocation payload.
+ * @template TEntry
+ * @template TPayload
+ * @param {(entry: TEntry) => TPayload} mapEntry Entry-to-payload mapper.
+ * @param {(payload: TPayload) => Promise<unknown>} runEntry Payload executor.
+ * @returns {(entry: TEntry) => Promise<void>} Async task wrapper.
+ */
+export function createMappedTask(mapEntry, runEntry) {
+  return async entry => {
+    await runEntry(mapEntry(entry));
+  };
+}
+
+/**
+ * Map entries to payloads and execute them in parallel.
+ * @template TEntry
+ * @template TPayload
+ * @param {TEntry[]} entries Entries to process.
+ * @param {(entry: TEntry) => TPayload} mapEntry Entry-to-payload mapper.
+ * @param {(payload: TPayload) => Promise<unknown>} runEntry Payload executor.
+ * @returns {Promise<unknown[]>} Promise resolving once every mapped entry completes.
+ */
+export function runMappedEntries(entries, mapEntry, runEntry) {
+  return runEntriesInParallel(entries, createMappedTask(mapEntry, runEntry));
+}
+
+/**
+ * Build the standard copy log message.
+ * @param {{
+ *   formatPathForLog: (targetPath: string) => string,
+ *   source: string,
+ *   destination: string,
+ *   message?: string,
+ * }} options Copy metadata.
+ * @returns {string} Copy progress message.
+ */
+export function buildCopyLogMessage({
+  formatPathForLog,
+  source,
+  destination,
+  message,
+}) {
+  return (
+    message ??
+    `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(destination)}`
+  );
+}
+
+/**
  * @typedef {object} WriteFormattedHtmlDeps
  * @property {(blog: unknown) => string} generateHtml Function producing HTML from the provided blog data.
  * @property {(configPath: string) => Promise<object | null>} resolveConfig Function resolving Prettier configuration.

@@ -1,7 +1,9 @@
 import {
   buildCopyExportMap,
+  buildCopyLogMessage,
   selectReadablePath,
   formatPathRelativeToProject,
+  runMappedEntries,
 } from './buildCore.js';
 export { selectReadablePath, formatPathRelativeToProject };
 
@@ -87,15 +89,21 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * }} options Logger and message builder.
    * @returns {void}
    */
-  function copyEntries(entries, io, { messageLogger, resolveMessage }) {
-    entries.forEach(({ source, destination }) => {
-      copyFileWithDirectories(io, {
+  async function copyEntries(entries, io, { messageLogger, resolveMessage }) {
+    await runMappedEntries(
+      entries,
+      ({ source, destination }) => ({
+        io,
         source,
         destination,
         messageLogger,
         message: resolveMessage({ source, destination }),
-      });
-    });
+        formatPathForLog,
+        ensureDirectoryExists,
+        dirname,
+      }),
+      copyFileWithDirectories
+    );
   }
 
   /**
@@ -218,48 +226,6 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
-   * Copy a file and ensure supporting directories exist.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   * }} io - File system adapters.
-   * @param {{
-   *   source: string,
-   *   destination: string,
-   *   messageLogger: { info: (message: string) => void },
-   *   message?: string,
-   * }} options - File copy configuration.
-   * @returns {void}
-   */
-  function copyFileWithDirectories(
-    io,
-    { source, destination, messageLogger, message }
-  ) {
-    ensureDirectoryExists(io, dirname(destination));
-    io.copyFile(source, destination);
-    const relativeSource = formatPathForLog(source);
-    const relativeDestination = formatPathForLog(destination);
-    const logMessage =
-      message ?? `Copied: ${relativeSource} -> ${relativeDestination}`;
-    messageLogger.info(logMessage);
-  }
-
-  /**
-   * Execute a list of copy operations.
-   * @param {Array<{ source: string, destination: string }>} copyPairs - Planned copy operations.
-   * @param {{ copyFile: (source: string, destination: string) => void, directoryExists: (target: string) => boolean, createDirectory: (target: string) => void }} io
-   *   - File system adapters.
-   * @param {{ info: (message: string) => void }} messageLogger - Logger for status updates.
-   * @returns {void}
-   */
-  function copyFilePairs(copyPairs, io, messageLogger) {
-    copyPairs.forEach(({ source, destination }) => {
-      copyFileWithDirectories(io, { source, destination, messageLogger });
-    });
-  }
-
-  /**
    * Copy a directory entry, recursing into subdirectories as needed.
    * @param {import('fs').Dirent} entry - Directory entry to copy.
    * @param {{ src: string, dest: string }} directories - Source and destination directory paths.
@@ -283,10 +249,14 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       copyDirRecursive({ src: srcPath, dest: destPath }, context);
       return;
     }
-    copyFileWithDirectories(io, {
+    copyFileWithDirectories({
+      io,
       source: srcPath,
       destination: destPath,
       messageLogger,
+      formatPathForLog,
+      ensureDirectoryExists,
+      dirname,
     });
   }
 
@@ -427,7 +397,15 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     rootFiles.forEach(entry => {
       const source = join(dirs.srcCoreDir, entry.name);
       const destination = join(dirs.publicCoreDir, entry.name);
-      copyFileWithDirectories(io, { source, destination, messageLogger });
+      copyFileWithDirectories({
+        io,
+        source,
+        destination,
+        messageLogger,
+        formatPathForLog,
+        ensureDirectoryExists,
+        dirname,
+      });
     });
 
     messageLogger.info('Core root scripts copied successfully!');
@@ -462,42 +440,6 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
-   * Copy the generated blog JSON payload from src/build into the public root.
-   * @param {Record<string, string>} dirs - Directory map for the copy workflow.
-   * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for updates.
-   * @returns {void}
-   */
-  function copyBlogJson(dirs, io, messageLogger) {
-    const buildDir = join(dirs.srcDir, 'build');
-    if (io.directoryExists(buildDir)) {
-      const source = join(buildDir, 'blog.json');
-      const destination = join(dirs.publicDir, 'blog.json');
-      const message = `Blog data copied from ${formatPathForLog(
-        source
-      )} to ${formatPathForLog(destination)}`;
-      const copyOptions = {
-        source,
-        messageLogger,
-        destination,
-        message,
-      };
-
-      copyFileWithDirectories(io, copyOptions);
-      return;
-    }
-
-    messageLogger.warn(
-      `Warning: build directory not found at ${formatPathForLog(buildDir)}`
-    );
-  }
-
-  /**
    * Execute the full copy workflow for the static site.
    * @param {{
    *   directories: Record<string, string>,
@@ -516,7 +458,16 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyBrowserTrees(dirs, io, messageLogger);
     copyCoreRootFiles(dirs, io, messageLogger);
     copyCoreConstants(dirs, io, messageLogger);
-    copyBlogJson(dirs, io, messageLogger);
+    copyBlogJson({
+      directories: dirs,
+      io,
+      messageLogger,
+      join,
+      formatPathForLog,
+      copyFileWithDirectories,
+      ensureDirectoryExists,
+      dirname,
+    });
   }
 
   return /** @type {Record<string, Function>} */ (
@@ -546,3 +497,209 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ])
   );
 }
+
+/**
+ * Copy the generated blog JSON payload from src/build into the public root.
+ * @param {{
+ *   directories: Record<string, string>,
+ *   io: {
+ *     directoryExists: (target: string) => boolean,
+ *     createDirectory: (target: string) => void,
+ *     copyFile: (source: string, destination: string) => void,
+ *     readDirEntries: (dir: string) => import('fs').Dirent[],
+ *   },
+ *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+ *   join: typeof import('path').join,
+ *   formatPathForLog: (targetPath: string) => string,
+ *   copyFileWithDirectories: (
+ *     options: {
+ *       io: {
+ *         directoryExists: (target: string) => boolean,
+ *         createDirectory: (target: string) => void,
+ *         copyFile: (source: string, destination: string) => void,
+ *       },
+ *       source: string,
+ *       destination: string,
+ *       messageLogger: { info: (message: string) => void },
+ *       formatPathForLog: (targetPath: string) => string,
+ *       ensureDirectoryExists: (
+ *         io: {
+ *           directoryExists: (target: string) => boolean,
+ *           createDirectory: (target: string) => void,
+ *           copyFile: (source: string, destination: string) => void,
+ *         },
+ *         targetDir: string,
+ *       ) => void,
+ *       dirname: typeof import('path').dirname,
+ *       message?: string,
+ *     }
+ *   ) => void,
+ *   ensureDirectoryExists: (
+ *     io: {
+ *       directoryExists: (target: string) => boolean,
+ *       createDirectory: (target: string) => void,
+ *       copyFile: (source: string, destination: string) => void,
+ *     },
+ *     targetDir: string,
+ *   ) => void,
+ *   dirname: typeof import('path').dirname,
+ * }} options Blog copy context.
+ * @returns {void}
+ */
+function copyBlogJson({
+  directories: dirs,
+  io,
+  messageLogger,
+  join,
+  formatPathForLog,
+  copyFileWithDirectories,
+  ensureDirectoryExists,
+  dirname,
+}) {
+  const buildDir = join(dirs.srcDir, 'build');
+  if (io.directoryExists(buildDir)) {
+    const source = join(buildDir, 'blog.json');
+    const destination = join(dirs.publicDir, 'blog.json');
+    const message = `Blog data copied from ${formatPathForLog(source)} to ${formatPathForLog(
+      destination
+    )}`;
+
+    copyFileWithDirectories({
+      io,
+      source,
+      destination,
+      messageLogger,
+      formatPathForLog,
+      ensureDirectoryExists,
+      dirname,
+      message,
+    });
+    return;
+  }
+
+  messageLogger.warn(
+    `Warning: build directory not found at ${formatPathForLog(buildDir)}`
+  );
+}
+
+/**
+ * Execute a list of copy operations.
+ * @param {{
+ *   copyPairs: Array<{ source: string, destination: string }>,
+ *   io: {
+ *     directoryExists: (target: string) => boolean,
+ *     createDirectory: (target: string) => void,
+ *     copyFile: (source: string, destination: string) => void,
+ *   },
+ *   messageLogger: { info: (message: string) => void },
+ *   copyFileWithDirectories: (
+ *     io: {
+ *       directoryExists: (target: string) => boolean,
+ *       createDirectory: (target: string) => void,
+ *       copyFile: (source: string, destination: string) => void,
+ *     },
+ *     options: {
+ *       source: string,
+ *       destination: string,
+ *       messageLogger: { info: (message: string) => void },
+ *       message?: string,
+ *     }
+ *   ) => void,
+ * }} options Copy operation details.
+ * @returns {void}
+ */
+function copyFilePairs({
+  copyPairs,
+  io,
+  messageLogger,
+  copyFileWithDirectories,
+  formatPathForLog,
+  ensureDirectoryExists,
+  dirname,
+}) {
+  copyPairs.forEach(({ source, destination }) => {
+    copyFileWithDirectories({
+      io,
+      source,
+      destination,
+      messageLogger,
+      formatPathForLog,
+      ensureDirectoryExists,
+      dirname,
+    });
+  });
+}
+
+/**
+ * Copy a file and ensure supporting directories exist.
+ * @param {{
+ *   io: {
+ *     directoryExists: (target: string) => boolean,
+ *     createDirectory: (target: string) => void,
+ *     copyFile: (source: string, destination: string) => void,
+ *   },
+ *   source: string,
+ *   destination: string,
+ *   messageLogger: { info: (message: string) => void },
+ *   formatPathForLog: (targetPath: string) => string,
+ *   ensureDirectoryExists: (
+ *     io: {
+ *       directoryExists: (target: string) => boolean,
+ *       createDirectory: (target: string) => void,
+ *       copyFile: (source: string, destination: string) => void,
+ *     },
+ *     targetDir: string,
+ *   ) => void,
+ *   dirname: typeof import('path').dirname,
+ *   message?: string,
+ * }} options File copy configuration.
+ * @returns {void}
+ */
+function copyFileWithDirectories({
+  io,
+  source,
+  destination,
+  messageLogger,
+  formatPathForLog,
+  ensureDirectoryExists,
+  dirname,
+  message,
+}) {
+  ensureDirectoryExists(io, dirname(destination));
+  io.copyFile(source, destination);
+  messageLogger.info(
+    buildCopyLogMessage({
+      formatPathForLog,
+      source,
+      destination,
+      message,
+    })
+  );
+}
+
+/**
+ * Create a task that copies a single entry.
+ * @param {{
+ *   io: {
+ *     directoryExists: (target: string) => boolean,
+ *     createDirectory: (target: string) => void,
+ *     copyFile: (source: string, destination: string) => void,
+ *   },
+ *   messageLogger: { info: (message: string) => void },
+ *   resolveMessage: (entry: { source: string, destination: string }) => string,
+ *   copyFileWithDirectories: (
+ *     io: {
+ *       directoryExists: (target: string) => boolean,
+ *       createDirectory: (target: string) => void,
+ *       copyFile: (source: string, destination: string) => void,
+ *     },
+ *     options: {
+ *       source: string,
+ *       destination: string,
+ *       messageLogger: { info: (message: string) => void },
+ *       message?: string,
+ *     }
+ *   ) => void,
+ * }} options Task factory dependencies.
+ * @returns {(entry: { source: string, destination: string }) => Promise<void>} Copy task.
+ */
