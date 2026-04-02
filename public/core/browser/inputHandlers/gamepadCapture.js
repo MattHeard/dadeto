@@ -1,7 +1,8 @@
 import * as browserCore from '../browser-core.js';
-import { whenNotNullish } from '../common-core.js';
+import { whenNotNullish, whenNotNullishValue } from '../common-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
 import { createGamepadCaptureButtonUpdater } from './captureLifecycleShared.js';
+import { syncToyPayload } from './captureFormShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
@@ -89,7 +90,7 @@ function buildConnectionButtons(gamepad) {
  * @returns {Gamepad | null} Attached gamepad when present.
  */
 function getEventGamepad(event) {
-  return whenNotNullish(event.gamepad, value => value);
+  return whenNotNullishValue(event.gamepad);
 }
 
 /**
@@ -157,48 +158,6 @@ function buildConnectionPayload(event, type) {
  */
 function didAxisChange(previous, current) {
   return Math.abs(previous - current) >= AXIS_EPSILON;
-}
-
-/**
- * Forward a payload only when one exists.
- * @param {{
- *   dom: GamepadDOMHelpers,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   payload: Record<string, unknown> | null,
- * }} options - DOM and payload dependencies.
- * @returns {void}
- */
-function syncIfPayload(options) {
-  const { dom, textInput, autoSubmitCheckbox, payload } = options;
-  whenNotNullish(payload, presentPayload => {
-    emitToyPayload({
-      dom,
-      textInput,
-      autoSubmitCheckbox,
-      payload: presentPayload,
-    });
-  });
-}
-
-/**
- * Send a payload to the toy synchronously.
- * @param {{
- *   dom: GamepadDOMHelpers,
- *   textInput: HTMLInputElement,
- *   autoSubmitCheckbox: HTMLInputElement | null,
- *   payload: Record<string, unknown> | null,
- * }} options - Payload delivery dependencies.
- * @returns {void}
- */
-function emitToyPayload(options) {
-  const { dom, textInput, autoSubmitCheckbox, payload } = options;
-  captureLifecycleDeps.syncToyInput({
-    dom,
-    textInput,
-    autoSubmitCheckbox,
-    payload,
-  });
 }
 
 /**
@@ -498,11 +457,15 @@ function pollGamepads(options) {
     const previousSnapshot = options.state.snapshots[gamepad.index];
     const payload = getPollPayload(gamepad, previousSnapshot);
     options.state.snapshots[gamepad.index] = snapshotGamepad(gamepad);
-    syncIfPayload({
-      dom: options.dom,
-      textInput: options.textInput,
-      autoSubmitCheckbox: options.autoSubmitCheckbox,
-      payload,
+    whenNotNullish(payload, presentPayload => {
+      syncToyPayload(
+        {
+          dom: options.dom,
+          textInput: options.textInput,
+          autoSubmitCheckbox: options.autoSubmitCheckbox,
+        },
+        presentPayload
+      );
     });
   });
 }
@@ -652,7 +615,14 @@ function handleConnectionEvent(options, event) {
     onPresent: payload => {
       const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
       storeSnapshot(options.state, gamepad);
-      emitGamepadPayload(options, payload);
+      syncToyPayload(
+        {
+          dom: options.dom,
+          textInput: options.textInput,
+          autoSubmitCheckbox: options.autoSubmitCheckbox,
+        },
+        payload
+      );
       queuePoll(options);
     },
   });
@@ -680,23 +650,15 @@ function handleDisconnectEvent(options, event) {
     payload: getHandledDisconnectionPayload(options.state, event),
     onPresent: payload => {
       removeSnapshot(options.state, getEventGamepad(event));
-      emitGamepadPayload(options, payload);
+      syncToyPayload(
+        {
+          dom: options.dom,
+          textInput: options.textInput,
+          autoSubmitCheckbox: options.autoSubmitCheckbox,
+        },
+        payload
+      );
     },
-  });
-}
-
-/**
- * Send a gamepad payload through the shared toy input path.
- * @param {HandlerOptions} options - Shared handler dependencies.
- * @param {Record<string, unknown>} payload - Payload to forward.
- * @returns {void}
- */
-function emitGamepadPayload(options, payload) {
-  emitToyPayload({
-    dom: options.dom,
-    textInput: options.textInput,
-    autoSubmitCheckbox: options.autoSubmitCheckbox,
-    payload,
   });
 }
 

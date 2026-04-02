@@ -20,6 +20,7 @@ import {
   whenTruthy,
   whenOrNull,
   whenNotNullish,
+  whenNotNullishValue,
   functionOrFallback,
   guardThen,
   numberOrZero,
@@ -107,6 +108,13 @@ describe('commonCore helpers', () => {
     expect(whenNotNullish('hello', value => value)).toBe('hello');
     expect(whenNotNullish(null, value => value)).toBeNull();
     expect(whenNotNullish(undefined, value => value)).toBeNull();
+  });
+
+  test('whenNotNullishValue returns the original value when present', () => {
+    expect(whenNotNullishValue('hello')).toBe('hello');
+    expect(whenNotNullishValue(0)).toBe(0);
+    expect(whenNotNullishValue(null)).toBeNull();
+    expect(whenNotNullishValue(undefined)).toBeNull();
   });
 
   test('whenArray executes the callback for arrays only', () => {

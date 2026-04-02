@@ -9,7 +9,7 @@ import {
   isObject,
 } from './cloud-core.js';
 import {
-  whenNotNullish,
+  whenNotNullishValue,
   whenOrNull,
   whenString,
   whenTruthy,
@@ -367,7 +367,7 @@ function extractVariantReference(moderatorData) {
  * @returns {FirestoreDocumentReference | null} Valid reference or null.
  */
 function resolveVariantFromData(variant) {
-  return whenNotNullish(variant, value => value);
+  return whenNotNullishValue(variant);
 }
 
 /**

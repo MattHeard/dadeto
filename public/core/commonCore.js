@@ -161,6 +161,16 @@ export function whenNotNullish(value, fn) {
 }
 
 /**
+ * Return the original value when it is not nullish; otherwise `null`.
+ * @template T
+ * @param {T | null | undefined} value Candidate value.
+ * @returns {T | null} Original value or `null` when the value is nullish.
+ */
+export function whenNotNullishValue(value) {
+  return whenNotNullish(value, candidate => candidate);
+}
+
+/**
  * Return the provided string when available or delegate to a fallback.
  * @param {unknown} value Candidate value.
  * @param {(value: unknown) => string | null} fallback Function invoked when the value is not a string.
