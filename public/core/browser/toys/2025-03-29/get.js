@@ -1,3 +1,5 @@
+import { whenOrNull } from '../../../commonCore.js';
+
 /**
  * Tracks the traversal progress as `get` walks through each path segment.
  * @typedef {object} PathTraversalState
@@ -184,10 +186,9 @@ function createNonObjectErrorResult(currentValue, segment, nextPath) {
     segment,
     nextPath
   );
-  if (nonObjectError !== null) {
-    return createTraversalState(currentValue, nextPath, nonObjectError);
-  }
-  return null;
+  return whenOrNull(nonObjectError !== null, () =>
+    createTraversalState(currentValue, nextPath, nonObjectError)
+  );
 }
 
 /**
