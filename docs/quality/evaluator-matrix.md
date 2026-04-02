@@ -25,8 +25,7 @@ Use this as the canonical checklist before closure.
   2. If tooling/config is broken, create/attach a `bd` bead with failing output.
 
 ### Aggregate shortcuts
-- **`npm run check`:** default fast local aggregate gate (`npm test` + `npm run lint`).
-- **`npm run check:full`:** broader local aggregate gate (`npm run check` + `npm run build` + `npm run duplication`).
+- **`npm run check`:** default local aggregate gate (`npm test` + `npm run lint` + `npm run depcruise` + `npm run duplication`).
 - **What stays out:** `npm run tsdoc:check`, `npm run build:cloud`, and `npm run build:dendritestories-co-nz` remain opt-in / subsystem-specific until their owning beads call for them.
 
 ### 3) Build pipeline smoke — static generation/package build

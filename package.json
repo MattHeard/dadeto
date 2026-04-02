@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "check": "npm test && npm run lint && npm run depcruise",
-    "check:full": "npm run check && npm run build && npm run duplication",
+    "check": "npm test && npm run lint && npm run depcruise && npm run duplication",
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js",
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
     "test:e2e": "playwright test",
