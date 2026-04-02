@@ -1,34 +1,18 @@
 import { assertFunction } from '../common-core.js';
+import { trimmedStringOrEmpty } from '../../commonCore.js';
 import {
-  normalizeMethod,
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
-  whenBodyPresent,
 } from './cloud-core.js';
+import { validatePostMethod } from '../http-method-guard.js';
 
 /**
- * Determine whether the provided request body contains a variant string.
- * @param {{ variant?: unknown } | null | undefined} body Request payload to inspect.
- * @returns {boolean} True when a string variant is present.
- */
-function hasVariantString(body) {
-  return whenBodyPresent(
-    body,
-    candidate => typeof candidate.variant === 'string'
-  );
-}
-
-/**
- * Safely extract the trimmed variant string from a request body.
- * @param {{ variant?: unknown } | null | undefined} body Request payload containing the variant field.
- * @returns {string} Trimmed variant string, or an empty string when not provided.
+ * Map the request body variant field to a trimmed display string.
+ * @param {{ variant?: unknown } | null | undefined} body Incoming request body.
+ * @returns {string} Trimmed variant string or an empty string.
  */
 function resolveVariant(body) {
-  if (!hasVariantString(body)) {
-    return '';
-  }
-
-  return body.variant.trim();
+  return trimmedStringOrEmpty(body?.variant);
 }
 
 /**
@@ -101,7 +85,7 @@ function processReportSubmission({
   getServerTimestamp,
 }) {
   return (
-    validateHttpMethod(request.method) ??
+    validatePostMethod(request.method) ??
     handlePostRequest({
       body: request.body,
       addModerationReport,
@@ -143,21 +127,6 @@ function isCorsOriginAllowed(origin, allowedOrigins) {
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
   const origin = createCorsOriginValidator(allowedOrigins);
   return buildCorsOptions(origin, methods);
-}
-
-const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
-
-/**
- * Validate the request method and emit an error response when unsupported.
- * @param {string | undefined} method - HTTP method supplied by the client.
- * @returns {{ status: number, body: string } | null} Error response when the method is not POST; otherwise null.
- */
-function validateHttpMethod(method) {
-  if (normalizeMethod(method) === 'POST') {
-    return null;
-  }
-
-  return METHOD_NOT_ALLOWED_RESPONSE;
 }
 
 /**

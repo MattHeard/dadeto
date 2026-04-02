@@ -1,4 +1,8 @@
-import { arrayOrEmpty, isNonNullObject } from './common-core.js';
+import {
+  arrayOrEmpty,
+  isNonNullObject,
+  whenPredicateValue,
+} from './common-core.js';
 import {
   matchBearerToken,
   normalizeMethod,
@@ -255,11 +259,7 @@ function isNonEmptyString(value) {
  * @returns {string | null} UID or null.
  */
 function normalizeUid(uid) {
-  if (isNonEmptyString(uid)) {
-    return uid;
-  }
-
-  return null;
+  return whenPredicateValue(uid, isNonEmptyString);
 }
 
 /**

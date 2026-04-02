@@ -198,6 +198,26 @@ export function whenType(value, typeName, fn) {
 }
 
 /**
+ * Return the original value when the predicate accepts it; otherwise `null`.
+ * @template T
+ * @param {T} value Candidate value.
+ * @param {(value: T) => boolean} predicate Predicate that determines whether the value is accepted.
+ * @returns {T | null} Original value or `null` when rejected.
+ */
+export function whenPredicateValue(value, predicate) {
+  return whenOrNull(predicate(value), () => value);
+}
+
+/**
+ * Normalize a string candidate to a trimmed string or an empty string.
+ * @param {unknown} value Candidate string value.
+ * @returns {string} Trimmed string or empty string when the value is not a string.
+ */
+export function trimmedStringOrEmpty(value) {
+  return whenString(value, candidate => candidate.trim()) ?? '';
+}
+
+/**
  * Run the provided callback when the value is an array.
  * @param {unknown} value Candidate value.
  * @param {(value: unknown[]) => T} fn Callback invoked with the array.

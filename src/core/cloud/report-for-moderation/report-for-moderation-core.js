@@ -1,4 +1,5 @@
 import { assertFunction } from '../common-core.js';
+import { trimmedStringOrEmpty } from '../../commonCore.js';
 import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
@@ -6,30 +7,16 @@ import {
 import { validatePostMethod } from '../http-method-guard.js';
 
 /**
- * Determine whether the provided request body contains a variant string.
- * @param {{ variant?: unknown } | null | undefined} body Request payload to inspect.
- * @returns {boolean} True when a string variant is present.
+ *
+ * @param body
  */
 /**
- * Safely extract the trimmed variant string from a request body.
- * @param {{ variant?: unknown } | null | undefined} body Request payload containing the variant field.
- * @returns {string} Trimmed variant string, or an empty string when not provided.
+ * Map the request body variant field to a trimmed display string.
+ * @param {{ variant?: unknown } | null | undefined} body Incoming request body.
+ * @returns {string} Trimmed variant string or an empty string.
  */
 function resolveVariant(body) {
-  if (!hasVariantString(body)) {
-    return '';
-  }
-
-  return body.variant.trim();
-}
-
-/**
- * Determine whether the provided request payload contains a string variant.
- * @param {{ variant?: unknown } | null | undefined} body Request payload to inspect.
- * @returns {body is { variant: string }} True when the payload has a string variant.
- */
-function hasVariantString(body) {
-  return Boolean(body && typeof body.variant === 'string');
+  return trimmedStringOrEmpty(body?.variant);
 }
 
 /**

@@ -13,6 +13,7 @@ import {
   stringOrFallback,
   whenString,
   whenType,
+  trimmedStringOrEmpty,
   whenArray,
   whenTruthy,
   whenOrNull,
@@ -80,6 +81,12 @@ describe('commonCore helpers', () => {
         value => value
       )
     ).toEqual(expect.any(Function));
+  });
+
+  test('trimmedStringOrEmpty returns a trimmed string or an empty string', () => {
+    expect(trimmedStringOrEmpty('  hello  ')).toBe('hello');
+    expect(trimmedStringOrEmpty('')).toBe('');
+    expect(trimmedStringOrEmpty(123)).toBe('');
   });
 
   test('whenNotNullish executes the callback for present values only', () => {
