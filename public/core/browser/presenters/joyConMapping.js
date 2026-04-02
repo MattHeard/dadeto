@@ -259,5 +259,6 @@ function renderJoyConMappingState(parsed, dom) {
  * @param {DOMHelpers} dom DOM helper facade for presenter output.
  * @returns {HTMLElement} Presenter root element.
  */
-export const createJoyConMappingElement =
-  createParsedJsonPresenter(renderJoyConMappingState);
+export const createJoyConMappingElement = createParsedJsonPresenter(
+  renderJoyConMappingState
+);
