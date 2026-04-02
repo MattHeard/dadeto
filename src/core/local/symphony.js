@@ -1,4 +1,5 @@
 import { resolveMessageOrDefault } from '../cloud/cloud-core.js';
+import { whenArray } from '../commonCore.js';
 
 /**
  * @param {string} output Raw `bd ready` command output.
@@ -607,11 +608,7 @@ function buildLaunchRecord(launch) {
  * @returns {string[]} Normalized launch args.
  */
 function getLaunchArgs(value) {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.slice();
+  return whenArray(value, arrayValue => arrayValue.slice()) ?? [];
 }
 
 /**

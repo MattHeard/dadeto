@@ -109,10 +109,10 @@ function handleHackerDoor(context) {
  */
 function handleIntro(context) {
   const { name, time } = context;
-  return {
-    output: `> ${time}\n> ${name}, you're in the Neon Market. Lights hum. Faces blur.\n> You see paths to: Hacker Den, Transport Hub, and Back Alley.\n> Where do you go? (hacker / transport / alley)`,
-    nextState: 'hub',
-  };
+  return buildSimpleAdventureResponse(
+    `> ${time}\n> ${name}, you're in the Neon Market. Lights hum. Faces blur.\n> You see paths to: Hacker Den, Transport Hub, and Back Alley.\n> Where do you go? (hacker / transport / alley)`,
+    'hub'
+  );
 }
 
 /**
@@ -152,10 +152,10 @@ function handleHub(context) {
     const keyword = /** @type {HubKeyword} */ (match);
     return keywordMap[keyword];
   }
-  return {
-    output: `> Unclear direction. Options: hacker / transport / alley`,
-    nextState: 'hub',
-  };
+  return buildSimpleAdventureResponse(
+    `> Unclear direction. Options: hacker / transport / alley`,
+    'hub'
+  );
 }
 
 /**
@@ -163,10 +163,10 @@ function handleHub(context) {
  * @returns {AdventureResult} Narrative response.
  */
 function handleTransportPlatform() {
-  return {
-    output: `> A vendor offers you a neural ticket in exchange for your datapad.`,
-    nextState: 'transport:trade',
-  };
+  return buildSimpleAdventureResponse(
+    `> A vendor offers you a neural ticket in exchange for your datapad.`,
+    'transport:trade'
+  );
 }
 
 /**
@@ -232,7 +232,23 @@ function handleAlleyStealth(context) {
  * @returns {AdventureResult} Default response.
  */
 function getDefaultAdventureResult() {
-  return { output: `> Glitch in the grid. Resetting...`, nextState: 'intro' };
+  return buildSimpleAdventureResponse(
+    `> Glitch in the grid. Resetting...`,
+    'intro'
+  );
+}
+
+/**
+ * Assemble a simple response with only output and state.
+ * @param {string} output Text to show to the player.
+ * @param {AdventureState} nextState Next adventure state.
+ * @returns {AdventureResult} Plain response.
+ */
+function buildSimpleAdventureResponse(output, nextState) {
+  return {
+    output,
+    nextState,
+  };
 }
 
 /**

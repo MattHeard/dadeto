@@ -5,6 +5,8 @@ import {
   normalizeNonStringValue,
   when,
   whenString,
+  whenOrNull,
+  whenTruthy,
 } from '../commonCore.js';
 export { DEFAULT_BUCKET_NAME } from '../commonCore.js';
 
@@ -382,7 +384,7 @@ export function resolveMessageOrDefault(message, fallback) {
  * @returns {{ error: unknown } | null} Wrapped error object or null when no error was provided.
  */
 export function buildErrorResult(error) {
-  return when(Boolean(error), () => ({ error }), () => null);
+  return whenTruthy(error, () => ({ error }));
 }
 
 /**
@@ -443,10 +445,8 @@ export function extractStringFromCandidateArray(candidate) {
  * @returns {string | null} Normalized string or null.
  */
 export function normalizeNonStringCandidate(candidate) {
-  return when(
-    Array.isArray(candidate),
-    () => extractStringFromCandidateArray(candidate),
-    () => null
+  return whenOrNull(Array.isArray(candidate), () =>
+    extractStringFromCandidateArray(candidate)
   );
 }
 

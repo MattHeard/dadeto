@@ -1,4 +1,8 @@
-import { isNonNullObject, isValidString } from '../../../../commonCore.js';
+import {
+  isNonNullObject,
+  isValidString,
+  whenArray,
+} from '../../../../commonCore.js';
 import { parseJsonOrFallback } from '../../browserToysCore.js';
 import { ledgerIngestToy } from './ledgerIngestToy.js';
 
@@ -147,20 +151,7 @@ function normalizeLedgerStorageState(stored) {
  * @returns {string[]} Normalized merge-key order.
  */
 function normalizeTransactionOrder(value) {
-  return normalizeValidStringArray(value);
-}
-
-/**
- * Normalize an array to valid strings only.
- * @param {unknown} value Candidate string array.
- * @returns {string[]} Normalized string array.
- */
-function normalizeValidStringArray(value) {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter(isValidString);
+  return whenArray(value, arrayValue => arrayValue.filter(isValidString)) ?? [];
 }
 
 /**

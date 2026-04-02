@@ -160,6 +160,39 @@ export function whenString(value, fn) {
 }
 
 /**
+ * Run the provided callback when the value is an array.
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown[]) => T} fn Callback invoked with the array.
+ * @returns {T | null} Callback result or `null` when the input is not an array.
+ * @template T
+ */
+export function whenArray(value, fn) {
+  return whenValueMatches(value, isNotArrayValue, fn);
+}
+
+/**
+ * Run the provided callback when the value is truthy.
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown) => T} fn Callback invoked with the value.
+ * @returns {T | null} Callback result or `null` when the input is falsy.
+ * @template T
+ */
+export function whenTruthy(value, fn) {
+  return when(Boolean(value), () => fn(value), () => null);
+}
+
+/**
+ * Run the provided callback when the condition passes.
+ * @template T
+ * @param {boolean} condition Gate determining whether to invoke the callback.
+ * @param {() => T} fn Callback invoked when the condition passes.
+ * @returns {T | null} Callback result or `null` when the condition fails.
+ */
+export function whenOrNull(condition, fn) {
+  return when(condition, fn, () => null);
+}
+
+/**
  * Run the callback when the supplied predicate says the value is acceptable.
  * @template T
  * @param {unknown} value Candidate value.
@@ -182,6 +215,15 @@ function whenValueMatches(value, isRejected, fn) {
  */
 function isNotStringValue(value) {
   return typeof value !== 'string';
+}
+
+/**
+ * Check whether the candidate is not an array value.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is not an array.
+ */
+function isNotArrayValue(value) {
+  return !Array.isArray(value);
 }
 
 /**

@@ -525,16 +525,25 @@ const OBJECT_HANDLERS = {
 };
 
 /**
+ * Normalize a candidate object-like value through the shared handler map.
+ * @param {unknown} value Candidate object-like value.
+ * @returns {Record<string, unknown>} Safe plain object.
+ */
+function normalizeObjectLikeValue(value) {
+  const handler = OBJECT_HANDLERS[typeof value];
+  if (handler) {
+    return handler(value);
+  }
+  return {};
+}
+
+/**
  * Guard that only returns a mapping when the argument is an object.
  * @param {Record<string, string>|null|undefined} mapping Adapter overrides.
  * @returns {Record<string, string>} Valid mapping.
  */
 function sanitizeFieldMapping(mapping) {
-  const handler = OBJECT_HANDLERS[typeof mapping];
-  if (handler) {
-    return handler(mapping);
-  }
-  return {};
+  return /** @type {Record<string, string>} */ (normalizeObjectLikeValue(mapping));
 }
 
 /**
@@ -559,11 +568,7 @@ function normalizeDedupePolicy(policy) {
  * @returns {Record<string, unknown>} Safe policy-like object.
  */
 function sanitizePolicy(policy) {
-  const handler = OBJECT_HANDLERS[typeof policy];
-  if (handler) {
-    return handler(policy);
-  }
-  return {};
+  return normalizeObjectLikeValue(policy);
 }
 
 /**

@@ -8,7 +8,7 @@ import {
   resolveMessageOrDefault,
   isObject,
 } from './cloud-core.js';
-import { when, whenString } from '../../commonCore.js';
+import { whenOrNull, whenString, whenTruthy } from '../../commonCore.js';
 export { productionOrigins, isAllowedOrigin };
 export { createCorsOriginHandler as createHandleCorsOrigin };
 export { getAllowedOrigins } from '../allowed-origins.js';
@@ -592,11 +592,7 @@ function getInvalidTokenResponseFromResult(uidResult) {
  * @returns {ResponderResult | null} Response to send when an error exists.
  */
 function getErrorResponse(error) {
-  return when(
-    Boolean(error),
-    () => createInvalidTokenResponse(error),
-    () => null
-  );
+  return whenTruthy(error, () => createInvalidTokenResponse(error));
 }
 
 /**
@@ -605,11 +601,7 @@ function getErrorResponse(error) {
  * @returns {ResponderResult | null} Response to send when the UID is absent.
  */
 function getMissingUidResponse(uid) {
-  return when(
-    !uid,
-    () => createInvalidTokenResponse(null),
-    () => null
-  );
+  return whenOrNull(!uid, () => createInvalidTokenResponse(null));
 }
 
 /**

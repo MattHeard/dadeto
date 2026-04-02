@@ -6,8 +6,9 @@ import {
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
   resolveMessageOrDefault,
+  whenOrNull,
+  whenTruthy,
 } from './cloud-core.js';
-import { when } from '../../common-core.js';
 import { whenString } from '../../commonCore.js';
 
 export { productionOrigins, isAllowedOrigin };
@@ -426,7 +427,7 @@ function getInvalidTokenResponseFromResult(uidResult) {
  * @returns {ResponderResult | null} Response to send when an error exists.
  */
 function getErrorResponse(error) {
-  return when(Boolean(error), () => createInvalidTokenResponse(error), () => null);
+  return whenTruthy(error, () => createInvalidTokenResponse(error));
 }
 
 /**
@@ -435,7 +436,7 @@ function getErrorResponse(error) {
  * @returns {ResponderResult | null} Response to send when the UID is absent.
  */
 function getMissingUidResponse(uid) {
-  return when(!uid, () => createInvalidTokenResponse(null), () => null);
+  return whenOrNull(!uid, () => createInvalidTokenResponse(null));
 }
 
 /**
