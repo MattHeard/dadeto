@@ -14,7 +14,11 @@ import {
   getAuthorizationHeader,
   getAuthorizationFromGetter,
 } from '../submit-shared.js';
-import { arrayOrEmpty, ensureString, whenNotNullish } from './common-core.js';
+import {
+  arrayOrEmpty,
+  trimmedStringOrNull,
+  whenNotNullish,
+} from './common-core.js';
 import { createResponder } from '../responder-utils.js';
 
 /**
@@ -93,12 +97,7 @@ export const submitNewStoryCoreTestUtils = {
  * @returns {string | null} UID or null.
  */
 function getValidUid(uid) {
-  const normalized = ensureString(uid);
-  if (normalized === '') {
-    return null;
-  }
-
-  return normalized;
+  return trimmedStringOrNull(uid);
 }
 
 /**

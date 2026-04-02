@@ -5,6 +5,10 @@ import {
   normalizationExamples,
   ledgerIngestCoreTestOnly,
 } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/core.js';
+import {
+  ensureString,
+  trimmedStringOrEmpty,
+} from '../../../src/core/commonCore.js';
 import { ledgerIngestCsvConverterToy } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js';
 import {
   ledgerIngestToy,
@@ -289,12 +293,12 @@ describe('ledger ingest helpers', () => {
       ledgerIngestCoreTestOnly.normalizeDescription('  Hello   World ')
     ).toBe('hello world');
     expect(ledgerIngestCoreTestOnly.normalizeDescription(null)).toBe('');
-    expect(ledgerIngestCoreTestOnly.ensureString(undefined)).toBeUndefined();
-    expect(ledgerIngestCoreTestOnly.ensureString(7)).toBe('7');
-    expect(ledgerIngestCoreTestOnly.stringForNormalization(undefined)).toBe('');
-    expect(ledgerIngestCoreTestOnly.stringForNormalization(7)).toBe('7');
-    expect(ledgerIngestCoreTestOnly.trimOrEmpty(undefined)).toBe('');
-    expect(ledgerIngestCoreTestOnly.trimOrEmpty('  x  ')).toBe('x');
+    expect(ledgerIngestCoreTestOnly.ensureString(undefined)).toBe('');
+    expect(ledgerIngestCoreTestOnly.ensureString(7)).toBe('');
+    expect(ensureString(undefined)).toBe('');
+    expect(ensureString(7)).toBe('');
+    expect(trimmedStringOrEmpty(undefined)).toBe('');
+    expect(trimmedStringOrEmpty('  x  ')).toBe('x');
   });
 
   it('covers required-field detection branches', () => {

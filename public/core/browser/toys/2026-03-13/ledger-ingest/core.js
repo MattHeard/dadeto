@@ -6,6 +6,8 @@ import {
   arrayOrEmpty,
   isBlankStringValue,
   numberOrZero,
+  ensureString,
+  trimmedStringOrEmpty,
 } from '../../../../commonCore.js';
 
 /**
@@ -297,9 +299,7 @@ export const ledgerIngestCoreTestOnly = {
   normalizeDate,
   normalizeAmount,
   coerceNumericValue,
-  stringForNormalization,
   normalizeCurrency,
-  trimOrEmpty,
   normalizeDescription,
   ensureString,
 };
@@ -727,17 +727,9 @@ function coerceNumericValue(value) {
     return value;
   }
 
-  const normalized = stringForNormalization(value);
+  const normalized = ensureString(value);
   const cleaned = normalized.replace(/[^\d.-]/g, '');
   return numberOrZero(Number(cleaned));
-}
-
-/**
- * @param {unknown} value Candidate input.
- * @returns {string} Normalized string or empty when missing.
- */
-function stringForNormalization(value) {
-  return normalizeOptionalString(value, candidate => candidate);
 }
 
 /**
@@ -746,34 +738,11 @@ function stringForNormalization(value) {
  * @returns {string} Uppercased ISO currency code.
  */
 function normalizeCurrency(value) {
-  const candidate = trimOrEmpty(value);
+  const candidate = trimmedStringOrEmpty(value);
   if (candidate.length === 0) {
     return 'USD';
   }
   return candidate.toUpperCase();
-}
-
-/**
- * Trim the candidate string or return an empty value when missing.
- * @param {unknown} value Candidate to trim.
- * @returns {string} Trimmed string or ''.
- */
-function trimOrEmpty(value) {
-  return normalizeOptionalString(value, candidate => candidate.trim());
-}
-
-/**
- * Normalize an optional string with a caller-supplied transform.
- * @param {unknown} value Candidate value.
- * @param {(candidate: string) => string} transform String transform to apply.
- * @returns {string} Transformed string or empty when the value is missing.
- */
-function normalizeOptionalString(value, transform) {
-  const candidate = ensureString(value);
-  if (candidate === undefined) {
-    return '';
-  }
-  return transform(candidate);
 }
 
 /**
@@ -786,16 +755,4 @@ function normalizeDescription(value) {
     .trim()
     .replace(/\s+/g, ' ')
     .toLowerCase();
-}
-
-/**
- * Return a string only when the input is defined, otherwise leave undefined.
- * @param {unknown} value Candidate to convert.
- * @returns {string|undefined} String when present, otherwise undefined.
- */
-function ensureString(value) {
-  if (MISSING_VALUES.includes(value)) {
-    return undefined;
-  }
-  return String(value);
 }
