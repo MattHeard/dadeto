@@ -1,7 +1,5 @@
 import {
-  createPreFromContent,
-  createParsedPresenterElement,
-  parsePresenterJsonObject,
+  createParsedJsonPresenter,
   createPresenterRoot,
 } from './browserPresentersCore.js';
 
@@ -743,15 +741,9 @@ function renderLedgerIngestReport(parsed, dom) {
  * @param {DOMHelpers} dom DOM helper facade.
  * @returns {HTMLElement} Presenter root element.
  */
-export function createLedgerIngestReportElement(inputString, dom) {
-  return createParsedPresenterElement({
-    inputString,
-    dom,
-    parse: parsePresenterJsonObject,
-    render: renderLedgerIngestReport,
-    createFallback: createPreFromContent,
-  });
-}
+export const createLedgerIngestReportElement = createParsedJsonPresenter(
+  renderLedgerIngestReport
+);
 
 export const ledgerIngestReportTestOnly = {
   formatJson,

@@ -1,8 +1,6 @@
 import {
-  createPreFromContent,
   createPresenterRoot,
-  createParsedPresenterElement,
-  parsePresenterJsonObject,
+  createParsedJsonPresenter,
 } from './browserPresentersCore.js';
 import { arrayOrEmpty } from '../../commonCore.js';
 
@@ -261,12 +259,6 @@ function renderJoyConMappingState(parsed, dom) {
  * @param {DOMHelpers} dom DOM helper facade for presenter output.
  * @returns {HTMLElement} Presenter root element.
  */
-export function createJoyConMappingElement(inputString, dom) {
-  return createParsedPresenterElement({
-    inputString,
-    dom,
-    parse: parsePresenterJsonObject,
-    render: renderJoyConMappingState,
-    createFallback: createPreFromContent,
-  });
-}
+export const createJoyConMappingElement = createParsedJsonPresenter(
+  renderJoyConMappingState
+);

@@ -73,6 +73,23 @@ export function createParsedPresenterElement(options) {
 }
 
 /**
+ * Create a presenter factory for JSON-backed payloads.
+ * @template TParsed
+ * @param {(parsed: TParsed, dom: PresenterDOMHelpers) => HTMLElement} render Parsed payload renderer.
+ * @returns {(inputString: string, dom: PresenterDOMHelpers) => HTMLElement} Presenter factory.
+ */
+export function createParsedJsonPresenter(render) {
+  return (inputString, dom) =>
+    createParsedPresenterElement({
+      inputString,
+      dom,
+      parse: parsePresenterJsonObject,
+      render,
+      createFallback: createPreFromContent,
+    });
+}
+
+/**
  * Parse presenter JSON input and return a typed object when valid.
  * @template T
  * @param {string} inputString Presenter payload string.
