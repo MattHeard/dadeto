@@ -1,11 +1,13 @@
 import {
   buildCopyExportMap,
   buildCopyLogMessage,
-  selectReadablePath,
   formatPathRelativeToProject,
   runMappedEntries,
-} from './buildCore.js';
-export { selectReadablePath, formatPathRelativeToProject };
+} from '../commonCore.js';
+export {
+  selectReadablePath,
+  formatPathRelativeToProject,
+} from '../commonCore.js';
 
 export const sharedDirectoryPairs = [
   { key: 'Browser', relativePath: 'browser', publicRelativePath: 'browser' },

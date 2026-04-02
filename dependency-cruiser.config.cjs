@@ -101,6 +101,54 @@ module.exports = {
       },
     },
     {
+      name: 'core-browser-no-core-sibling-deps',
+      comment:
+        'Keep src/core/browser isolated from the other src/core subdirectories; shared code belongs at src/core root.',
+      severity: 'error',
+      from: {
+        path: '^src/core/browser/',
+      },
+      to: {
+        path: '^src/core/(build|cloud|local)/',
+      },
+    },
+    {
+      name: 'core-build-no-core-sibling-deps',
+      comment:
+        'Keep src/core/build isolated from the other src/core subdirectories; shared code belongs at src/core root.',
+      severity: 'error',
+      from: {
+        path: '^src/core/build/',
+      },
+      to: {
+        path: '^src/core/(browser|cloud|local)/',
+      },
+    },
+    {
+      name: 'core-cloud-no-core-sibling-deps',
+      comment:
+        'Keep src/core/cloud isolated from the other src/core subdirectories; shared code belongs at src/core root.',
+      severity: 'error',
+      from: {
+        path: '^src/core/cloud/',
+      },
+      to: {
+        path: '^src/core/(browser|build|local)/',
+      },
+    },
+    {
+      name: 'core-local-no-core-sibling-deps',
+      comment:
+        'Keep src/core/local isolated from the other src/core subdirectories; shared code belongs at src/core root.',
+      severity: 'error',
+      from: {
+        path: '^src/core/local/',
+      },
+      to: {
+        path: '^src/core/(browser|build|cloud)/',
+      },
+    },
+    {
       name: 'core-browser-no-node-modules',
       comment:
         'Prevent src/core and src/browser from depending on node_modules until we stabilize them.',

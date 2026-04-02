@@ -5,9 +5,8 @@ import {
   isDuplicateAppError,
   sendOkResponse,
 } from './cloud-core.js';
-import { runMappedEntries } from '../../build/buildCore.js';
 import { runWithFailureAndThen } from '../response-utils.js';
-import { whenString } from '../../commonCore.js';
+import { runMappedEntries, whenString } from '../../commonCore.js';
 export { isDuplicateAppError };
 
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */

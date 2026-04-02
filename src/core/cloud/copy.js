@@ -3,7 +3,7 @@ import {
   buildCopyLogMessage,
   formatPathRelativeToProject,
   runMappedEntries,
-} from '../build/buildCore.js';
+} from '../commonCore.js';
 
 export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
 

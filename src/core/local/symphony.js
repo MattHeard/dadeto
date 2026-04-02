@@ -1,6 +1,7 @@
-import { resolveMessageOrDefault, stringOrNull } from '../cloud/cloud-core.js';
 import {
   trimmedStringOrNull,
+  resolveMessageOrDefault,
+  stringOrNull,
   whenArray,
   whenString,
   whenTypeValue,

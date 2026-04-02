@@ -11,6 +11,9 @@ import {
   isNullish,
   isValidString,
   normalizeNonStringValue,
+  resolveMessageOrDefault,
+  stringOrDefault,
+  stringOrNull,
   stringOrFallback,
   reportAndReturnFalse,
   whenString,
@@ -71,6 +74,15 @@ describe('commonCore helpers', () => {
         ['beta', 2],
       ])
     ).toEqual({ alpha: 1, beta: 2 });
+  });
+
+  test('string normalization helpers return strings or fallbacks predictably', () => {
+    expect(stringOrNull('hello')).toBe('hello');
+    expect(stringOrNull(123)).toBeNull();
+    expect(stringOrDefault('hello', 'fallback')).toBe('hello');
+    expect(stringOrDefault(123, 'fallback')).toBe('fallback');
+    expect(resolveMessageOrDefault('hello', 'fallback')).toBe('hello');
+    expect(resolveMessageOrDefault(123, 'fallback')).toBe('fallback');
   });
 
   test('reportAndReturnFalse invokes the reporter and returns false', () => {

@@ -5,13 +5,19 @@ import {
   normalizeNonStringValue,
   numberOrZero,
   reportAndReturnFalse,
+  stringOrNull,
   whenTypeValue,
   when,
   whenString,
   whenOrNull,
   whenTruthy,
 } from '../commonCore.js';
-export { DEFAULT_BUCKET_NAME } from '../commonCore.js';
+export {
+  DEFAULT_BUCKET_NAME,
+  resolveMessageOrDefault,
+  stringOrDefault,
+  stringOrNull,
+} from '../commonCore.js';
 
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
@@ -25,25 +31,6 @@ export const MISSING_AUTHORIZATION_RESPONSE = {
 };
 
 export const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
-
-/**
- * Return the input string when available; otherwise `null`.
- * @param {unknown} value Candidate value.
- * @returns {string | null} String when provided, otherwise `null`.
- */
-export function stringOrNull(value) {
-  return whenTypeValue(value, 'string');
-}
-
-/**
- * Return the provided string when available; otherwise use the fallback.
- * @param {unknown} value Candidate value that may be a string.
- * @param {string} fallback Replacement when the value is not a string.
- * @returns {string} String value or fallback.
- */
-export function stringOrDefault(value, fallback) {
-  return stringOrNull(value) ?? fallback;
-}
 
 /**
  * Ensure a candidate dependency is callable before using it.
@@ -371,20 +358,6 @@ export function assertRandomUuidAndTimestamp(deps) {
   const { randomUUID, getServerTimestamp } = deps;
   assertFunction(randomUUID, 'randomUUID');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
-}
-
-/**
- * Return a fallback when the provided message is falsy.
- * @param {string | undefined | null} message Candidate message.
- * @param {string} fallback Fallback value when message is falsy.
- * @returns {string} Message to surface to the caller.
- */
-export function resolveMessageOrDefault(message, fallback) {
-  if (message) {
-    return message;
-  }
-
-  return fallback;
 }
 
 /**

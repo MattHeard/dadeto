@@ -73,6 +73,167 @@ export function entriesToObject(entries) {
 }
 
 /**
+ * Normalize a candidate string value.
+ * @param {unknown} value Candidate value.
+ * @returns {string | null} String value when present, otherwise null.
+ */
+export function stringOrNull(value) {
+  return whenTypeValue(value, 'string');
+}
+
+/**
+ * Return the provided message or fallback text when the message is blank.
+ * @param {unknown} message Candidate message value.
+ * @param {string} fallback Fallback text to use when the message is blank.
+ * @returns {string} Non-empty message or fallback text.
+ */
+export function resolveMessageOrDefault(message, fallback) {
+  const candidate = stringOrNull(message);
+  if (candidate) {
+    return candidate;
+  }
+
+  return fallback;
+}
+
+/**
+ * Return the provided string when available; otherwise use the fallback.
+ * @param {unknown} value Candidate value that may be a string.
+ * @param {string} fallback Replacement when the value is not a string.
+ * @returns {string} String value or fallback.
+ */
+export function stringOrDefault(value, fallback) {
+  const candidate = stringOrNull(value);
+  if (candidate) {
+    return candidate;
+  }
+
+  return fallback;
+}
+
+/**
+ * Choose the most readable representation for a relative path.
+ * @param {string} absolutePath Original absolute path provided to the logger.
+ * @param {string} relativePath Path relative to the project root.
+ * @returns {string} Either the relative path or original absolute path when outside the project.
+ */
+export function selectReadablePath(absolutePath, relativePath) {
+  if (relativePath.startsWith('..')) {
+    return absolutePath;
+  }
+
+  return relativePath;
+}
+
+/**
+ * Format a target path relative to the provided project root.
+ * @param {string} projectRoot Root directory to use for relative comparisons.
+ * @param {string} targetPath Path to format for display.
+ * @param {(from: string, to: string) => string} relativeFn Path.relative implementation.
+ * @returns {string} Human-readable representation of the path.
+ */
+export function formatPathRelativeToProject(
+  projectRoot,
+  targetPath,
+  relativeFn
+) {
+  const relativePath = relativeFn(projectRoot, targetPath);
+  if (!relativePath) {
+    return '.';
+  }
+
+  return selectReadablePath(targetPath, relativePath);
+}
+
+/**
+ * Build an async task wrapper that maps an entry to an invocation payload.
+ * @template TEntry
+ * @template TPayload
+ * @param {(entry: TEntry) => TPayload} mapEntry Entry-to-payload mapper.
+ * @param {(payload: TPayload) => Promise<unknown>} runEntry Payload executor.
+ * @returns {(entry: TEntry) => Promise<void>} Async task wrapper.
+ */
+export function createMappedTask(mapEntry, runEntry) {
+  return async entry => {
+    await runEntry(mapEntry(entry));
+  };
+}
+
+/**
+ * Run a callback for each entry in parallel and resolve when all callbacks finish.
+ * @template T
+ * @param {T[]} entries Entries to process.
+ * @param {(entry: T) => Promise<unknown>} iterator Async callback per entry.
+ * @returns {Promise<unknown[]>} Promise resolving once every callback completes.
+ */
+export function runEntriesInParallel(entries, iterator) {
+  if (!entries.length) {
+    return Promise.resolve([]);
+  }
+
+  return Promise.all(entries.map(iterator));
+}
+
+/**
+ * Map entries to payloads and execute them in parallel.
+ * @template TEntry
+ * @template TPayload
+ * @param {TEntry[]} entries Entries to process.
+ * @param {(entry: TEntry) => TPayload} mapEntry Entry-to-payload mapper.
+ * @param {(payload: TPayload) => Promise<unknown>} runEntry Payload executor.
+ * @returns {Promise<unknown[]>} Promise resolving once every mapped entry completes.
+ */
+export function runMappedEntries(entries, mapEntry, runEntry) {
+  return runEntriesInParallel(entries, createMappedTask(mapEntry, runEntry));
+}
+
+/**
+ * Build the standard copy log message.
+ * @param {{
+ *   formatPathForLog: (targetPath: string) => string,
+ *   source: string,
+ *   destination: string,
+ *   message?: string,
+ * }} options Copy metadata.
+ * @returns {string} Copy progress message.
+ */
+export function buildCopyLogMessage({
+  formatPathForLog,
+  source,
+  destination,
+  message,
+}) {
+  return (
+    message ??
+    `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(destination)}`
+  );
+}
+
+/**
+ * Build an exports object from explicit name/value tuples.
+ * @param {Array<[string, unknown]>} entries Name/value pairs to expose.
+ * @returns {Record<string, unknown>} Combined helpers ready for export.
+ */
+export function buildCopyExportMap(entries) {
+  return entriesToObject(entries);
+}
+
+/**
+ * Return either the provided value or the fallback result when an error exists.
+ * @template T
+ * @param {unknown} error Error value to inspect.
+ * @param {() => T} fallback Lazy fallback result producer.
+ * @returns {T | { error: unknown }} Fallback result or wrapped error object.
+ */
+export function returnErrorResultOrValue(error, fallback) {
+  if (error) {
+    return { error };
+  }
+
+  return fallback();
+}
+
+/**
  * Determines whether a value is an object that is not null.
  * @param {unknown} value Candidate value.
  * @returns {boolean} True when the value is an object and not null.

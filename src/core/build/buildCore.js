@@ -1,109 +1,11 @@
-import { entriesToObject } from '../commonCore.js';
-
-/**
- * Build an exports object from explicit name/value tuples.
- * @param {Array<[string, unknown]>} entries - Name/value pairs to expose.
- * @returns {Record<string, unknown>} Combined helpers ready for export.
- */
-export function buildCopyExportMap(entries) {
-  return entriesToObject(entries);
-}
-
-/**
- * Choose the most readable representation for a relative path.
- * @param {string} absolutePath - Original absolute path provided to the logger.
- * @param {string} relativePath - Path relative to the project root.
- * @returns {string} Either the relative path or original absolute path when outside the project.
- */
-export function selectReadablePath(absolutePath, relativePath) {
-  if (relativePath.startsWith('..')) {
-    return absolutePath;
-  }
-  return relativePath;
-}
-
-/**
- * Format a target path relative to the provided project root.
- * @param {string} projectRoot - Root directory to use for relative comparisons.
- * @param {string} targetPath - Path to format for display.
- * @param {(from: string, to: string) => string} relativeFn - Path.relative implementation.
- * @returns {string} Human-readable representation of the path.
- */
-export function formatPathRelativeToProject(
-  projectRoot,
-  targetPath,
-  relativeFn
-) {
-  const relativePath = relativeFn(projectRoot, targetPath);
-  if (!relativePath) {
-    return '.';
-  }
-  return selectReadablePath(targetPath, relativePath);
-}
-
-/**
- * Run a callback for each entry in parallel and resolve when all callbacks finish.
- * @template T
- * @param {T[]} entries Entries to process.
- * @param {(entry: T) => Promise<unknown>} iterator Async callback per entry.
- * @returns {Promise<unknown[]>} Promise resolving once every callback completes.
- */
-export function runEntriesInParallel(entries, iterator) {
-  if (!entries.length) {
-    return Promise.resolve([]);
-  }
-
-  return Promise.all(entries.map(iterator));
-}
-
-/**
- * Build an async task wrapper that maps an entry to an invocation payload.
- * @template TEntry
- * @template TPayload
- * @param {(entry: TEntry) => TPayload} mapEntry Entry-to-payload mapper.
- * @param {(payload: TPayload) => Promise<unknown>} runEntry Payload executor.
- * @returns {(entry: TEntry) => Promise<void>} Async task wrapper.
- */
-export function createMappedTask(mapEntry, runEntry) {
-  return async entry => {
-    await runEntry(mapEntry(entry));
-  };
-}
-
-/**
- * Map entries to payloads and execute them in parallel.
- * @template TEntry
- * @template TPayload
- * @param {TEntry[]} entries Entries to process.
- * @param {(entry: TEntry) => TPayload} mapEntry Entry-to-payload mapper.
- * @param {(payload: TPayload) => Promise<unknown>} runEntry Payload executor.
- * @returns {Promise<unknown[]>} Promise resolving once every mapped entry completes.
- */
-export function runMappedEntries(entries, mapEntry, runEntry) {
-  return runEntriesInParallel(entries, createMappedTask(mapEntry, runEntry));
-}
-
-/**
- * Build the standard copy log message.
- * @param {{
- *   formatPathForLog: (targetPath: string) => string,
- *   source: string,
- *   destination: string,
- *   message?: string,
- * }} options Copy metadata.
- * @returns {string} Copy progress message.
- */
-export function buildCopyLogMessage({
-  formatPathForLog,
-  source,
-  destination,
-  message,
-}) {
-  return (
-    message ??
-    `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(destination)}`
-  );
-}
+export {
+  buildCopyExportMap,
+  buildCopyLogMessage,
+  createMappedTask,
+  formatPathRelativeToProject,
+  runEntriesInParallel,
+  runMappedEntries,
+} from '../commonCore.js';
 
 /**
  * @typedef {object} WriteFormattedHtmlDeps

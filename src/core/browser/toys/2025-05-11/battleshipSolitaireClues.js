@@ -8,7 +8,7 @@
  */
 
 import { safeParseJson, getFirstErrorMessage } from '../../browser-core.js';
-import { returnErrorResultOrValue } from '../../../cloud/cloud-core.js';
+import { returnErrorResultOrValue } from '../../../commonCore.js';
 
 /**
  * @typedef {{ x: number, y: number }} BattleshipCoordinate
