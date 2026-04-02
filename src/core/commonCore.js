@@ -63,6 +63,16 @@ export function arrayOrEmpty(value) {
 }
 
 /**
+ * Convert key/value tuples into a plain object.
+ * @template T
+ * @param {Array<[string, T]>} entries Key/value tuples to convert.
+ * @returns {Record<string, T>} Object built from the provided tuples.
+ */
+export function entriesToObject(entries) {
+  return Object.fromEntries(entries);
+}
+
+/**
  * Determines whether a value is an object that is not null.
  * @param {unknown} value Candidate value.
  * @returns {boolean} True when the value is an object and not null.

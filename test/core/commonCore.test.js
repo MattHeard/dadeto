@@ -4,6 +4,7 @@ import {
   assertFunction,
   ensureString,
   arrayOrEmpty,
+  entriesToObject,
   getStringCandidate,
   isBlankStringValue,
   isNonNullObject,
@@ -15,6 +16,7 @@ import {
   whenString,
   whenType,
   whenTypeValue,
+  whenPredicateValue,
   trimmedStringOrEmpty,
   trimmedStringOrNull,
   whenArray,
@@ -62,6 +64,15 @@ describe('commonCore helpers', () => {
     expect(normalizeNonStringValue(123)).toBe('123');
   });
 
+  test('entriesToObject converts tuple lists into objects', () => {
+    expect(
+      entriesToObject([
+        ['alpha', 1],
+        ['beta', 2],
+      ])
+    ).toEqual({ alpha: 1, beta: 2 });
+  });
+
   test('reportAndReturnFalse invokes the reporter and returns false', () => {
     const reporter = jest.fn();
     expect(reportAndReturnFalse(reporter, 'alpha', 'beta')).toBe(false);
@@ -97,6 +108,13 @@ describe('commonCore helpers', () => {
     expect(whenTypeValue('hello', 'string')).toBe('hello');
     expect(whenTypeValue(123, 'number')).toBe(123);
     expect(whenTypeValue({}, 'function')).toBeNull();
+  });
+
+  test('whenPredicateValue returns the original value when predicate accepts it', () => {
+    expect(whenPredicateValue('hello', value => value.length > 2)).toBe(
+      'hello'
+    );
+    expect(whenPredicateValue('hi', value => value.length > 2)).toBeNull();
   });
 
   test('trimmedStringOrEmpty returns a trimmed string or an empty string', () => {
