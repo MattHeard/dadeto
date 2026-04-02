@@ -168,11 +168,7 @@ export function hideArticlesWithoutClass(className, dom) {
  * @returns {(event: Event) => void} Event handler that hides non-matching articles.
  */
 export function makeHandleOnlyClick(dom, className) {
-  return makeHandleArticleFilterClick(
-    dom,
-    className,
-    hideArticlesWithoutClass
-  );
+  return makeHandleArticleFilterClick(dom, className, hideArticlesWithoutClass);
 }
 
 /**
