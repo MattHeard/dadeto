@@ -1,5 +1,5 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
-import { arrayOrEmpty, whenString } from '../../../commonCore.js';
+import { arrayOrEmpty, numberOrZero, whenString } from '../../../commonCore.js';
 
 /**
  * @typedef {{ isApproved: boolean, moderatorId: string, ratedAt: string, variantId: string }} ModeratorRatingEntry
@@ -64,12 +64,7 @@ function incrementCount(counts, moderatorId) {
  * @returns {number} Existing count or zero.
  */
 function getCountValue(counts, moderatorId) {
-  const existing = counts.get(moderatorId);
-  if (typeof existing === 'number') {
-    return existing;
-  }
-
-  return 0;
+  return numberOrZero(counts.get(moderatorId));
 }
 
 /**

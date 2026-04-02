@@ -4,6 +4,7 @@ import {
   ensureString,
   isNullish,
   normalizeNonStringValue,
+  numberOrZero,
 } from '../common-core.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
@@ -543,21 +544,9 @@ export function getVariantVisibility(snapshot) {
  * @returns {number} The visibility score or zero when unavailable.
  */
 function extractVisibility(data) {
-  if (hasVisibilityValue(data)) {
-    return data.visibility;
-  }
-
-  return 0;
-}
-
-/**
- * Check whether the data contains a numeric visibility value.
- * @param {unknown} data Snapshot payload.
- * @returns {data is { visibility: number }} True when a numeric visibility is available.
- */
-function hasVisibilityValue(data) {
-  return Boolean(
-    data && typeof (/** @type {*} */ (data).visibility) === 'number'
+  return numberOrZero(
+    /** @type {{ visibility?: unknown } | null | undefined} */ (data)
+      ?.visibility
   );
 }
 
