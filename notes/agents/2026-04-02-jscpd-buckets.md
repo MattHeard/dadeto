@@ -5,7 +5,7 @@
 - [x] `NEON-MIRROR` - common normalization and fallback helpers
 - [x] `NEON-CIRCUIT` - `joyConMapping`, `ledgerIngest`
 - [x] `VOID-STATIC` - `cloud-core`, `symphony`, `copyToClipboard`
-- [ ] `RED-GATE` - `gamepadCapture`, `ledgerIngestStorageToy`, `process-new-story`
+- [x] `RED-GATE` - `gamepadCapture`, `ledgerIngestStorageToy`, `process-new-story`
 - [ ] `CORE-PRISM` - `commonCore`, `ledgerIngest` core, `submit-new-story`
 - [ ] `GHOST-PRINT` - `blog`, `copy`, `generate-stats`
 - [ ] `PIXEL-EDGE` - `get`, `ticTacToe`
@@ -21,6 +21,7 @@
 - The `NEON-MIRROR` bucket was the first coherent slice and was resolved by reusing existing common helpers instead of keeping local string and number normalization wrappers.
 - `NEON-CIRCUIT` was resolved by extracting a shared JSON-presenter factory so the Joy-Con and Ledger Ingest presenters no longer duplicated their wrapper setup.
 - `VOID-STATIC` was resolved by tightening the cloud string helpers, using a shared report-and-return-false helper for clipboard/auth failures, and shifting the remaining string checks to existing primitives.
+- `RED-GATE` was resolved by extracting shared capture-input helpers, reusing deep-merge-based payload construction, and keeping the remaining report fields in shared browser/cloud helpers.
 - The remaining work has been regrouped into smaller cyberpunk-named buckets so follow-up refactors can stay narrow and landing-plane sized.
 - The single-file leftovers are bundled into two residual buckets so the list stays close to ten instead of turning back into one giant catch-all.
 - `BLACKWIRE` was broken into smaller, turn-sized buckets after a partial pass landed presenter and tag-helper extractions.

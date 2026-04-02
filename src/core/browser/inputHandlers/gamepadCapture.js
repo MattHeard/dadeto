@@ -2,7 +2,7 @@ import * as browserCore from '../browser-core.js';
 import { whenNotNullish, whenNotNullishValue } from '../common-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
 import { createGamepadCaptureButtonUpdater } from './captureLifecycleShared.js';
-import { syncToyPayload } from './captureFormShared.js';
+import { createCaptureToyInput, syncToyPayload } from './captureFormShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
@@ -104,11 +104,13 @@ function getEventGamepad(event) {
  */
 function buildGamepadPayload(gamepad, options) {
   const { type, fields } = options;
-  return {
-    type,
-    ...buildGamepadMetadata(gamepad),
-    ...fields,
-  };
+  return browserCore.deepMerge(
+    {
+      type,
+      ...buildGamepadMetadata(gamepad),
+    },
+    fields
+  );
 }
 
 /**
@@ -148,6 +150,16 @@ function buildConnectionPayload(event, type) {
       buttons: buildConnectionButtons(gamepad),
     }),
   });
+}
+
+/**
+ * Mirror a gamepad payload into the hidden toy input.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {Record<string, unknown>} payload - Structured gamepad payload.
+ * @returns {void}
+ */
+function syncGamepadToyPayload(options, payload) {
+  syncToyPayload(createCaptureToyInput(options), payload);
 }
 
 /**
@@ -458,14 +470,7 @@ function pollGamepads(options) {
     const payload = getPollPayload(gamepad, previousSnapshot);
     options.state.snapshots[gamepad.index] = snapshotGamepad(gamepad);
     whenNotNullish(payload, presentPayload => {
-      syncToyPayload(
-        {
-          dom: options.dom,
-          textInput: options.textInput,
-          autoSubmitCheckbox: options.autoSubmitCheckbox,
-        },
-        presentPayload
-      );
+      syncGamepadToyPayload(options, presentPayload);
     });
   });
 }
@@ -615,14 +620,7 @@ function handleConnectionEvent(options, event) {
     onPresent: payload => {
       const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
       storeSnapshot(options.state, gamepad);
-      syncToyPayload(
-        {
-          dom: options.dom,
-          textInput: options.textInput,
-          autoSubmitCheckbox: options.autoSubmitCheckbox,
-        },
-        payload
-      );
+      syncGamepadToyPayload(options, payload);
       queuePoll(options);
     },
   });
@@ -650,14 +648,7 @@ function handleDisconnectEvent(options, event) {
     payload: getHandledDisconnectionPayload(options.state, event),
     onPresent: payload => {
       removeSnapshot(options.state, getEventGamepad(event));
-      syncToyPayload(
-        {
-          dom: options.dom,
-          textInput: options.textInput,
-          autoSubmitCheckbox: options.autoSubmitCheckbox,
-        },
-        payload
-      );
+      syncGamepadToyPayload(options, payload);
     },
   });
 }

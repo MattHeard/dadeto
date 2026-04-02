@@ -1,3 +1,4 @@
+import * as browserCore from '../../../browser-core.js';
 import { parseJsonOrFallback } from '../../browserToysCore.js';
 import { ledgerIngestToy } from './ledgerIngestToy.js';
 import * as ledgerIngestStorageCore from './ledgerIngestStorageCore.js';
@@ -236,15 +237,19 @@ function mergeLedgerStorageState(storedState, canonicalTransactions) {
  */
 function buildStorageReport(options) {
   const { storageKey, beforeState, afterState, actions } = options;
-  return {
-    storageKey,
-    beforeCount: beforeState.transactionOrder.length,
-    afterCount: afterState.transactionOrder.length,
-    actions,
-    transactions: afterState.transactionOrder.map(
-      mergeKey => afterState.transactionsByMergeKey[mergeKey]
-    ),
-  };
+  return browserCore.deepMerge(
+    {
+      storageKey,
+      beforeCount: beforeState.transactionOrder.length,
+      afterCount: afterState.transactionOrder.length,
+    },
+    {
+      actions,
+      transactions: afterState.transactionOrder.map(
+        mergeKey => afterState.transactionsByMergeKey[mergeKey]
+      ),
+    }
+  );
 }
 
 /**

@@ -1,3 +1,5 @@
+import { createCaptureToyInput } from './captureFormShared.js';
+
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
 /**
@@ -126,15 +128,8 @@ export function createKeyboardCaptureButtonUpdater() {
  */
 export function emitCaptureState(options, capturing) {
   options.updateButtonLabel(options.dom, options.button, capturing);
-  options.emitPayload(
-    {
-      dom: options.dom,
-      textInput: options.textInput,
-      autoSubmitCheckbox: options.autoSubmitCheckbox,
-    },
-    {
-      type: 'capture',
-      capturing,
-    }
-  );
+  options.emitPayload(createCaptureToyInput(options), {
+    type: 'capture',
+    capturing,
+  });
 }

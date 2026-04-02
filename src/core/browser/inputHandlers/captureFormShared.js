@@ -71,6 +71,27 @@ export function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
 }
 
 /**
+ * Build the shared toy-input wiring used by capture helpers.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ * }} input - Shared toy-input dependencies.
+ * @returns {{
+ *   dom: DOMHelpers,
+ *   textInput: HTMLInputElement,
+ *   autoSubmitCheckbox: HTMLInputElement | null,
+ * }} Normalized toy-input dependencies.
+ */
+export function createCaptureToyInput(input) {
+  return {
+    dom: input.dom,
+    textInput: input.textInput,
+    autoSubmitCheckbox: input.autoSubmitCheckbox,
+  };
+}
+
+/**
  * Mirror a structured payload into the hidden toy input using shared DOM dependencies.
  * @param {{
  *   dom: DOMHelpers,
@@ -82,9 +103,7 @@ export function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
  */
 export function syncToyPayload(input, payload) {
   syncToyInput({
-    dom: input.dom,
-    textInput: input.textInput,
-    autoSubmitCheckbox: input.autoSubmitCheckbox,
+    ...createCaptureToyInput(input),
     payload,
   });
 }
