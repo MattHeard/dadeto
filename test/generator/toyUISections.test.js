@@ -46,6 +46,26 @@ describe('TOY_UI_SECTIONS integration', () => {
     expect(html).toContain('<option value="number" selected>number</option>');
   });
 
+  test('generateBlog selects configured default output method', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'OUTDEF',
+          title: 'Output Default',
+          publicationDate: '2024-01-02',
+          content: ['x'],
+          toy: {
+            modulePath: './toys/2024-01-02/example.js',
+            functionName: 'example',
+            defaultOutputMethod: 'ledger-ingest',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<option value="ledger-ingest" selected>');
+  });
+
   test('generateBlog defaults to text input method', () => {
     const blog = {
       posts: [

@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "key": "LEDG4",
+      "title": "Ledger Ingest Permanent Data View",
+      "publicationDate": "2026-04-02",
+      "content": [
+        "Reads the LEDG3 permanent storage bucket and renders the stored transactions with the same ledger-ingest table presenter.",
+        "Use the ledger-ingest output mode to inspect the stored transactions and compare them with the import report without mutating storage.",
+        "This is the read-only companion toy for checking what LEDG3 has already persisted."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-04-02/ledger-ingest/ledgerIngestStorageViewToy.js",
+        "functionName": "ledgerIngestStorageViewToy",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "ledger-ingest"
+      },
+      "tags": ["toy", "ledger", "finance", "storage", "view"]
+    },
+    {
       "key": "LEDG3",
       "title": "Ledger Ingest Storage",
       "publicationDate": "2026-04-01",

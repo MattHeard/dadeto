@@ -1,17 +1,6 @@
-import {
-  isNonNullObject,
-  isValidString,
-  whenArray,
-} from '../../../../commonCore.js';
 import { parseJsonOrFallback } from '../../browserToysCore.js';
 import { ledgerIngestToy } from './ledgerIngestToy.js';
-
-const DEFAULT_STORAGE_KEY = 'LEDG3';
-const EMPTY_STORAGE_ENV = {
-  get() {
-    return undefined;
-  },
-};
+import * as ledgerIngestStorageCore from './ledgerIngestStorageCore.js';
 
 /**
  * @typedef {object} LedgerStorageState
@@ -32,137 +21,22 @@ const EMPTY_STORAGE_ENV = {
  */
 
 /**
- * Resolve the storage key used for ledger persistence.
- * @param {Record<string, unknown>} parsed Parsed wrapper input.
- * @returns {string} Storage bucket key.
- */
-function resolveStorageKey(parsed) {
-  const candidate = parsed.storageKey;
-  if (isValidString(candidate)) {
-    return candidate;
-  }
-
-  return DEFAULT_STORAGE_KEY;
-}
-
-/**
- * Normalize the toy runtime environment.
- * @param {{ get?: (name: string) => unknown } | null | undefined} env Toy runtime environment.
- * @returns {{ get: (name: string) => unknown }} Environment with a get accessor.
- */
-function normalizeStorageEnv(env) {
-  return env || EMPTY_STORAGE_ENV;
-}
-
-/**
- * Read a permanent storage accessor from the environment.
- * @param {{ get?: (name: string) => unknown } | null | undefined} env Toy runtime environment.
- * @param {string} name Accessor name.
- * @returns {unknown} Accessor value or undefined.
- */
-function getPermanentStorageAccessor(env, name) {
-  return normalizeStorageEnv(env).get(name);
-}
-
-/**
- * Clone an object-like value into a plain record.
- * @param {unknown} value Candidate storage root.
- * @returns {Record<string, unknown>} Plain record copy or empty object.
- */
-function cloneRecord(value) {
-  if (!isNonNullObject(value)) {
-    return {};
-  }
-
-  return Object.fromEntries(Object.entries(value));
-}
-
-/**
- * Normalize a storage root candidate.
- * @param {unknown} value Candidate storage root.
- * @returns {Record<string, unknown>} Normalized storage root.
- */
-function normalizeStorageRoot(value) {
-  return cloneRecord(value);
-}
-
-/**
- * Read the permanent storage root from the environment.
- * @param {{ get?: (name: string) => unknown } | null | undefined} env Toy runtime environment.
- * @returns {Record<string, unknown>} Current permanent storage root or an empty object.
- */
-function readPermanentStorageRoot(env) {
-  const getter = getPermanentStorageAccessor(env, 'getLocalPermanentData');
-  if (typeof getter !== 'function') {
-    return {};
-  }
-
-  return normalizeStorageRoot(getter());
-}
-
-/**
  * Persist the updated permanent storage root when possible.
  * @param {{ get?: (name: string) => unknown } | null | undefined} env Toy runtime environment.
  * @param {Record<string, unknown>} nextRoot Storage root to persist.
  * @returns {boolean} True when the storage helper was invoked.
  */
 function persistPermanentStorageRoot(env, nextRoot) {
-  const setter = getPermanentStorageAccessor(env, 'setLocalPermanentData');
+  const setter = ledgerIngestStorageCore.getPermanentStorageAccessor(
+    env,
+    'setLocalPermanentData'
+  );
   if (typeof setter !== 'function') {
     return false;
   }
 
   setter(nextRoot);
   return true;
-}
-
-/**
- * Create an empty storage state.
- * @returns {LedgerStorageState} Empty storage state.
- */
-function createEmptyLedgerStorageState() {
-  return {
-    transactionOrder: [],
-    transactionsByMergeKey: {},
-  };
-}
-
-/**
- * Normalize a persisted storage state.
- * @param {unknown} stored Candidate persisted state.
- * @returns {LedgerStorageState} Normalized storage state.
- */
-function normalizeLedgerStorageState(stored) {
-  if (!isNonNullObject(stored)) {
-    return createEmptyLedgerStorageState();
-  }
-
-  return {
-    transactionOrder: normalizeTransactionOrder(stored.transactionOrder),
-    transactionsByMergeKey: normalizeTransactionMap(
-      stored.transactionsByMergeKey
-    ),
-  };
-}
-
-/**
- * Normalize a stored transaction order array.
- * @param {unknown} value Candidate order array.
- * @returns {string[]} Normalized merge-key order.
- */
-function normalizeTransactionOrder(value) {
-  return whenArray(value, arrayValue => arrayValue.filter(isValidString)) ?? [];
-}
-
-/**
- * Normalize a stored transaction map.
- * @param {unknown} value Candidate transaction map.
- * @returns {Record<string, LedgerIngestTransaction>} Normalized transaction map.
- */
-function normalizeTransactionMap(value) {
-  return /** @type {Record<string, LedgerIngestTransaction>} */ (
-    cloneRecord(value)
-  );
 }
 
 /**
@@ -382,9 +256,11 @@ function buildStorageReport(options) {
 export function ledgerIngestStorageToy(input, env) {
   const parsedInput = parseJsonOrFallback(input, {});
   const importResult = parseJsonOrFallback(ledgerIngestToy(input), {});
-  const storageKey = resolveStorageKey(parsedInput);
-  const currentRoot = readPermanentStorageRoot(env);
-  const currentState = normalizeLedgerStorageState(currentRoot[storageKey]);
+  const storageKey = ledgerIngestStorageCore.resolveStorageKey(parsedInput);
+  const currentRoot = ledgerIngestStorageCore.readPermanentStorageRoot(env);
+  const currentState = ledgerIngestStorageCore.normalizeLedgerStorageState(
+    currentRoot[storageKey]
+  );
   const mergeResult = mergeLedgerStorageState(
     currentState,
     /** @type {LedgerIngestTransaction[]} */ (
@@ -410,13 +286,16 @@ export function ledgerIngestStorageToy(input, env) {
 }
 
 export const ledgerIngestStorageToyTestOnly = {
-  resolveStorageKey,
-  readPermanentStorageRoot,
+  resolveStorageKey: ledgerIngestStorageCore.resolveStorageKey,
+  readPermanentStorageRoot: ledgerIngestStorageCore.readPermanentStorageRoot,
   persistPermanentStorageRoot,
-  createEmptyLedgerStorageState,
-  normalizeLedgerStorageState,
-  normalizeTransactionOrder,
-  normalizeTransactionMap,
+  createEmptyLedgerStorageState:
+    ledgerIngestStorageCore.createEmptyLedgerStorageState,
+  normalizeLedgerStorageState:
+    ledgerIngestStorageCore.normalizeLedgerStorageState,
+  normalizeTransactionOrder:
+    ledgerIngestStorageCore.normalizeTransactionOrder,
+  normalizeTransactionMap: ledgerIngestStorageCore.normalizeTransactionMap,
   getTransactionMergeKey,
   isUnchangedTransaction,
   mergeLedgerStorageState,

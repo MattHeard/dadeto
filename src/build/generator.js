@@ -949,29 +949,35 @@ const TOY_OUTPUT_TYPES = [
  * Build a `<select>` element from entries.
  * @param {string} selectClass - CSS class for the select element.
  * @param {Array<[string,string]>} entries - Value/label pairs.
+ * @param {string|undefined} selectedValue - Selected option value.
  * @returns {string} HTML select element.
  */
-function buildSelect(selectClass, entries) {
+function buildSelect(selectClass, entries, selectedValue) {
   const options = entries
-    .map(([value, label]) => `<option value="${value}">${label}</option>`)
+    .map(([value, label]) => {
+      const selected = value === selectedValue ? ' selected' : '';
+      return `<option value="${value}"${selected}>${label}</option>`;
+    })
     .join('');
   return `<select class="${selectClass}">${options}</select>`;
 }
 
 /**
  * Build the toy output selection dropdown.
+ * @param {string|undefined} selectedMethod - Default presenter key.
  * @returns {string} HTML select element.
  */
-function getToyOutputSelectDropdown() {
-  return buildSelect('output', TOY_OUTPUT_TYPES);
+function getToyOutputSelectDropdown(selectedMethod) {
+  return buildSelect('output', TOY_OUTPUT_TYPES, selectedMethod);
 }
 
 /**
  * Build the default toy output container markup.
+ * @param {string|undefined} selectedMethod - Default presenter key.
  * @returns {string} HTML for the output container.
  */
-function getToyOutputValueContent() {
-  const selectDropdown = getToyOutputSelectDropdown();
+function getToyOutputValueContent(selectedMethod) {
+  const selectDropdown = getToyOutputSelectDropdown(selectedMethod);
   const warningParagraph = '<p>This toy requires Javascript to run.</p>';
   const outputDiv = createDiv('output warning', warningParagraph);
   return selectDropdown + outputDiv;
@@ -1045,7 +1051,7 @@ function buildToyInputDropdown(defaultMethod) {
 const TOY_UI_SECTIONS_CONFIG = [
   {
     label: 'in',
-    content: defaultMethod => buildToyInputDropdown(defaultMethod),
+    content: defaultMethods => buildToyInputDropdown(defaultMethods.input),
   },
   {
     label: '',
@@ -1057,7 +1063,7 @@ const TOY_UI_SECTIONS_CONFIG = [
   },
   {
     label: 'out',
-    content: () => getToyOutputValueContent(),
+    content: defaultMethods => getToyOutputValueContent(defaultMethods.output),
   },
 ];
 
@@ -1081,6 +1087,16 @@ export function getDefaultInputMethod(post) {
 }
 
 /**
+ * Retrieve the configured default output method for a post.
+ * @param {object} post - The blog post.
+ * @returns {string | undefined} Presenter key.
+ */
+export function getDefaultOutputMethod(post) {
+  const toy = post.toy ?? {};
+  return toy.defaultOutputMethod;
+}
+
+/**
  * Generate the toy UI components for a blog post.
  * @param {object} post - The blog post.
  * @returns {string} HTML for the toy UI components.
@@ -1089,9 +1105,12 @@ function generateToyUISection(post) {
   if (shouldSkipToy(post)) {
     return '';
   }
-  const defaultMethod = getDefaultInputMethod(post);
+  const defaultMethods = {
+    input: getDefaultInputMethod(post),
+    output: getDefaultOutputMethod(post),
+  };
   const sections = TOY_UI_SECTIONS_CONFIG.map(section => {
-    const valueHTML = section.content(defaultMethod);
+    const valueHTML = section.content(defaultMethods);
     return createLabeledSection({ label: section.label, valueHTML });
   });
   return join(sections);

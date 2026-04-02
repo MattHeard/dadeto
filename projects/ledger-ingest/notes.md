@@ -12,7 +12,7 @@ Build a Dadeto toy that imports raw bank and card transaction exports into one c
 
 ## Current state
 
-This project now has a first real implementation slice rather than only a PRD, and the thin toy wrapper already exists. The core is exposed through `src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js`, the focused toy test already exercises the wrapper path, there is now a separate CSV converter toy that emits copyable JSON for the main import toy, and LEDG2 can accept CSV through the file input path. The remaining work is not to invent the first wrapper, but to make the user-facing surfaces more useful and more obviously inspectable in small increments.
+This project now has a first real implementation slice rather than only a PRD, and the thin toy wrapper already exists. The core is exposed through `src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestToy.js`, the focused toy test already exercises the wrapper path, there is now a separate CSV converter toy that emits copyable JSON for the main import toy, LEDG2 can accept CSV through the file input path, and LEDG4 now reads the permanent LEDG3 storage bucket through the existing ledger-ingest table presenter. The remaining work is not to invent the first wrapper, but to make the user-facing surfaces more useful and more obviously inspectable in small increments.
 
 The intended core remains a deterministic JSON-in / JSON-out import function that performs mapping, normalization, validation, deduplication, and summary generation without direct filesystem, database, network, or implicit clock dependencies. That core is already living inside the toy structure like the repo's other toys, so each meaningful iteration should now move the toy toward a better user-testable end-to-end flow rather than stopping at inaccessible internal seams.
 
@@ -20,7 +20,7 @@ The main import toy should stay focused on the JSON/import path: it can run name
 
 Recommended next toy:
 
-- A dedicated `ledger-ingest storage` toy that accepts canonical transactions or `ImportTransactionsInput`, persists them into an explicit local storage adapter, and shows insert, update, skip, and duplicate/merge outcomes side by side. This fits the project because it moves from import-only validation into the next useful behavior: retaining canonical transactions across runs while keeping persistence visible and testable.
+- A dedicated `ledger-ingest storage` toy now exists as LEDG4. It accepts canonical transactions or `ImportTransactionsInput`, persists them into an explicit local storage adapter, and shows insert, update, skip, and duplicate/merge outcomes side by side. This fits the project because it moves from import-only validation into the next useful behavior: retaining canonical transactions across runs while keeping persistence visible and testable.
 
 - Freshness check: reviewed on 2026-03-30 and updated to reflect the existing thin-wrapper / user-testable flow.
 
@@ -53,7 +53,7 @@ Keep the pure-function core explicit and free of hidden file IO, persistence, or
 2. Keep the main toy focused on JSON import payloads and the fixture demo path.
 3. Keep the separate CSV converter toy focused on producing copyable JSON for the main toy.
 4. Improve the user-facing toy flow so the canonical rows, duplicates, and structured errors are easier to inspect.
-5. Add a dedicated ledger-ingest storage toy once the project needs a persistent local merge boundary.
+5. Keep the dedicated ledger-ingest storage toy as the persistent local merge boundary and refine its ergonomics as needed.
 6. Prove normalization, deduplication, and structured errors through the JSON import path plus focused tests.
 7. Add a second source or edge case only after the first CSV conversion path is stable and understandable.
 8. Tighten the schema and duplicate policy gradually as real user feedback accumulates.
