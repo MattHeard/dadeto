@@ -128,8 +128,8 @@ function withStringFallback(value, fallback, isNormalizedAcceptable) {
  * @returns {string} Input string or empty fallback.
  */
 export function ensureString(value) {
-  const normalized = stringOrFallback(value, () => '');
-  if (normalized === null) {
+  const normalized = getStringCandidate(value);
+  if (normalized === undefined) {
     return '';
   }
 
