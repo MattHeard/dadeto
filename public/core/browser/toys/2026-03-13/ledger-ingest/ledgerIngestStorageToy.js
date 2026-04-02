@@ -1,4 +1,8 @@
-import { isNonNullObject, isValidString, whenArray } from '../../../../commonCore.js';
+import {
+  isNonNullObject,
+  isValidString,
+  whenArray,
+} from '../../../../commonCore.js';
 import { parseJsonOrFallback } from '../../browserToysCore.js';
 import { ledgerIngestToy } from './ledgerIngestToy.js';
 

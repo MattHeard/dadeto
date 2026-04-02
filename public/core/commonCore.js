@@ -178,7 +178,11 @@ export function whenArray(value, fn) {
  * @template T
  */
 export function whenTruthy(value, fn) {
-  return when(Boolean(value), () => fn(value), () => null);
+  return when(
+    Boolean(value),
+    () => fn(value),
+    () => null
+  );
 }
 
 /**

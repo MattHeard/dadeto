@@ -543,7 +543,9 @@ function normalizeObjectLikeValue(value) {
  * @returns {Record<string, string>} Valid mapping.
  */
 function sanitizeFieldMapping(mapping) {
-  return /** @type {Record<string, string>} */ (normalizeObjectLikeValue(mapping));
+  return /** @type {Record<string, string>} */ (
+    normalizeObjectLikeValue(mapping)
+  );
 }
 
 /**
