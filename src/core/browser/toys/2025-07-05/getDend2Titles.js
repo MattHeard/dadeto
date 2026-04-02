@@ -1,16 +1,8 @@
 // Toy: Get DEND2 Story Titles
 // (input, env) -> string
 
+import { arrayOrEmpty } from '../../../commonCore.js';
 import { tryOr } from '../../common.js';
-
-/**
- * Determine if the provided value is an array of stories.
- * @param {*} value - Potential stories array.
- * @returns {value is object[]} True when value is an array.
- */
-function isStoryArray(value) {
-  return Array.isArray(value);
-}
 
 /**
  * Resolve TRAN1 stories from temporary storage.
@@ -56,10 +48,7 @@ function extractDend2Stories(data) {
  */
 function getStories(data) {
   const stories = extractDend2Stories(data);
-  if (isStoryArray(stories)) {
-    return stories;
-  }
-  return [];
+  return arrayOrEmpty(stories);
 }
 
 /**

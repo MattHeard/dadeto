@@ -3,6 +3,7 @@ import {
   areValidStrings,
   assertFunction,
   ensureString,
+  arrayOrEmpty,
   getStringCandidate,
   isBlankStringValue,
   isNonNullObject,
@@ -34,6 +35,8 @@ describe('commonCore helpers', () => {
     expect(isBlankStringValue('   ')).toBe(true);
     expect(isBlankStringValue('hello')).toBe(false);
     expect(isBlankStringValue(123)).toBe(false);
+    expect(arrayOrEmpty(['hello'])).toEqual(['hello']);
+    expect(arrayOrEmpty('hello')).toEqual([]);
     expect(isNonNullObject({ hello: 'world' })).toBe(true);
     expect(isNonNullObject(null)).toBe(false);
   });

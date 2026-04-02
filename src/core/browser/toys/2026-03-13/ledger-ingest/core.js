@@ -2,7 +2,11 @@ import {
   DEFAULT_LEDGER_INGEST_DEDUPE_POLICY,
   createDefaultLedgerIngestDedupePolicy,
 } from './ledgerIngestShared.js';
-import { isBlankStringValue, numberOrZero } from '../../../../commonCore.js';
+import {
+  arrayOrEmpty,
+  isBlankStringValue,
+  numberOrZero,
+} from '../../../../commonCore.js';
 
 /**
  * Contracts and fixtures for the ledger-ingest toy.
@@ -410,10 +414,7 @@ function getSourceLabel(input) {
  * @returns {Record<string, unknown>[]} Safe raw record list.
  */
 function getRawRecords(rawRecords) {
-  if (Array.isArray(rawRecords)) {
-    return rawRecords;
-  }
-  return [];
+  return arrayOrEmpty(rawRecords);
 }
 
 /**

@@ -50,6 +50,19 @@ export function isBlankStringValue(value) {
 }
 
 /**
+ * Return the array candidate when available; otherwise return an empty array.
+ * @param {unknown} value Candidate value.
+ * @returns {unknown[]} Array candidate or empty array.
+ */
+export function arrayOrEmpty(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  return [];
+}
+
+/**
  * Determines whether a value is an object that is not null.
  * @param {unknown} value Candidate value.
  * @returns {boolean} True when the value is an object and not null.

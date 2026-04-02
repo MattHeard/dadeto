@@ -1,6 +1,6 @@
 import { parseCsvLine } from './toys-core.js';
 import { buildWhen } from '../../common.js';
-import { whenString } from '../../../commonCore.js';
+import { isBlankStringValue, whenString } from '../../../commonCore.js';
 
 /**
  * Convert a multi-row CSV string into a JSON array string.
@@ -108,7 +108,7 @@ function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
  * @returns {boolean} True if empty.
  */
 function isLineEmpty(line) {
-  return line.trim().length === 0;
+  return isBlankStringValue(line);
 }
 
 /**
