@@ -567,14 +567,7 @@ export function parseMarkVariantRequestBody(body) {
  * @returns {string} Variant name or empty string.
  */
 function resolveVariantName(candidate) {
-  const candidateStr = /** @type {string | undefined} */ (
-    commonCore.ensureString(candidate)
-  );
-  if (candidateStr) {
-    return candidateStr;
-  }
-
-  return '';
+  return commonCore.ensureString(candidate);
 }
 
 /**
