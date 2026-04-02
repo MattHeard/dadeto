@@ -1,3 +1,5 @@
+import { whenNotNullish } from '../../commonCore.js';
+
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
 const COPY_BUTTON_LABEL = 'Copy to clipboard';
@@ -71,12 +73,10 @@ async function copyToClipboard(inputString, dom) {
  */
 function clearCopyFeedbackTimeout(options) {
   const { dom, state } = options;
-  if (state.timeoutHandle === null) {
-    return;
-  }
-
-  dom.clearTimeout(state.timeoutHandle);
-  resetCopyFeedbackState(state);
+  whenNotNullish(state.timeoutHandle, timeoutHandle => {
+    dom.clearTimeout(timeoutHandle);
+    resetCopyFeedbackState(state);
+  });
 }
 
 /**

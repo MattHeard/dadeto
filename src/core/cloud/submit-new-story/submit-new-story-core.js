@@ -14,7 +14,7 @@ import {
   getAuthorizationHeader,
   getAuthorizationFromGetter,
 } from '../submit-shared.js';
-import { arrayOrEmpty } from '../common-core.js';
+import { arrayOrEmpty, whenNotNullish, whenString } from './common-core.js';
 import { createResponder } from '../responder-utils.js';
 
 /**
@@ -88,24 +88,17 @@ export const submitNewStoryCoreTestUtils = {
 };
 
 /**
- * Check if UID is valid string.
- * @param {unknown} uid UID.
- * @returns {boolean} True if valid.
- */
-function isValidUid(uid) {
-  return typeof uid === 'string' && uid !== '';
-}
-
-/**
  * Get valid UID.
  * @param {unknown} uid UID.
  * @returns {string | null} UID or null.
  */
 function getValidUid(uid) {
-  if (isValidUid(uid)) {
-    return /** @type {string} */ (uid);
+  const normalized = whenString(uid, value => value);
+  if (normalized === '') {
+    return null;
   }
-  return null;
+
+  return normalized;
 }
 
 /**
@@ -114,10 +107,7 @@ function getValidUid(uid) {
  * @returns {string | null} UID or null.
  */
 function validateDecodedToken(decoded) {
-  if (!decoded) {
-    return null;
-  }
-  return getValidUid(decoded.uid);
+  return whenNotNullish(decoded, value => getValidUid(value.uid));
 }
 
 /**

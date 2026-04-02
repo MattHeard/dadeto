@@ -1,4 +1,5 @@
 import { matchBearerToken, stringOrNull } from './cloud-core.js';
+import { whenString } from '../commonCore.js';
 
 /**
  * Normalize an Authorization header candidate into a string.
@@ -6,11 +7,7 @@ import { matchBearerToken, stringOrNull } from './cloud-core.js';
  * @returns {string} String representation of the header or empty string.
  */
 function normalizeHeaderString(header) {
-  if (typeof header === 'string') {
-    return header;
-  }
-
-  return '';
+  return whenString(header, value => value) ?? '';
 }
 
 /**

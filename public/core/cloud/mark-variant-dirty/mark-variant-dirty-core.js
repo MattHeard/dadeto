@@ -198,11 +198,7 @@ function resolveVariantHelpers(firebase) {
  * @returns {Function} Helper.
  */
 function chooseHelper(override, fallback) {
-  if (typeof override === 'function') {
-    return override;
-  }
-
-  return fallback;
+  return commonCore.whenTypeValue(override, 'function') ?? fallback;
 }
 
 /**

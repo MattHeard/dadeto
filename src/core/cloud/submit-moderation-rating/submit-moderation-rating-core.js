@@ -3,6 +3,7 @@ import {
   getStringCandidate,
   isNonNullObject,
   whenPredicateValue,
+  whenTypeValue,
   whenString,
 } from './common-core.js';
 import {
@@ -291,10 +292,9 @@ function isValidVariantId(variantId) {
  * @returns {(() => Promise<void> | void) | null} Normalized callback.
  */
 function normalizeClearAssignment(clearAssignment) {
-  if (typeof clearAssignment === 'function') {
-    return /** @type {() => Promise<void> | void} */ (clearAssignment);
-  }
-  return null;
+  return /** @type {(() => Promise<void> | void) | null} */ (
+    whenTypeValue(clearAssignment, 'function')
+  );
 }
 
 /**

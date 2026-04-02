@@ -4,7 +4,7 @@ import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
 } from './cloud-core.js';
-import { whenPostRequest } from '../http-method-guard.js';
+import { whenPostRequestAsync } from '../http-method-guard.js';
 
 /**
  *
@@ -88,7 +88,7 @@ function processReportSubmission({
   addModerationReport,
   getServerTimestamp,
 }) {
-  return whenPostRequest({
+  return whenPostRequestAsync({
     request,
     onValid: () =>
       handlePostRequest({
@@ -96,7 +96,6 @@ function processReportSubmission({
         addModerationReport,
         getServerTimestamp,
       }),
-    onInvalid: methodError => Promise.resolve(methodError),
   });
 }
 

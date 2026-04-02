@@ -65,6 +65,25 @@ export function whenPostRequest({ request, onValid, onInvalid, options }) {
 }
 
 /**
+ * Run a callback only when the request method is POST, normalizing invalid responses into resolved promises.
+ * @template T
+ * @param {{
+ *   request: { method?: unknown },
+ *   onValid: () => Promise<T> | T,
+ *   options?: { treatNonStringAsPost?: boolean }
+ * }} params Request gating configuration.
+ * @returns {Promise<T | { status: number, body: string }>} Callback result for the valid or invalid request path.
+ */
+export function whenPostRequestAsync({ request, onValid, options }) {
+  return whenPostRequest({
+    request,
+    onValid,
+    onInvalid: methodError => Promise.resolve(methodError),
+    options,
+  });
+}
+
+/**
  * @param {{ status: number, body: string } | undefined} errorResponse Response when validation fails.
  * @returns {{ status: number, body: string }} Normalized error response.
  */

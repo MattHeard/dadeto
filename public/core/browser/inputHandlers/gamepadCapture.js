@@ -89,11 +89,7 @@ function buildConnectionButtons(gamepad) {
  * @returns {Gamepad | null} Attached gamepad when present.
  */
 function getEventGamepad(event) {
-  if (event.gamepad) {
-    return event.gamepad;
-  }
-
-  return null;
+  return whenNotNullish(event.gamepad, value => value);
 }
 
 /**

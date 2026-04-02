@@ -160,6 +160,16 @@ describe('submit-new-story core', () => {
       await expect(resolveAuthorId(request, verifyIdToken)).resolves.toBeNull();
       expect(verifyIdToken).toHaveBeenCalledWith('secret');
     });
+
+    it('returns null when verification resolves with an empty uid', async () => {
+      const verifyIdToken = jest.fn().mockResolvedValue({ uid: '' });
+      const request = {
+        get: () => 'Bearer secret',
+      };
+
+      await expect(resolveAuthorId(request, verifyIdToken)).resolves.toBeNull();
+      expect(verifyIdToken).toHaveBeenCalledWith('secret');
+    });
   });
 
   describe('createHandleSubmitNewStory', () => {

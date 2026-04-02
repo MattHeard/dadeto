@@ -722,11 +722,7 @@ export function createGenerateStatsCore({
  * @returns {Record<string, string | undefined>} Env object.
  */
 function normalizeEnvObject(env) {
-  if (!isEnvLike(env)) {
-    return {};
-  }
-
-  return env;
+  return resolveEnv(env) ?? {};
 }
 
 /**

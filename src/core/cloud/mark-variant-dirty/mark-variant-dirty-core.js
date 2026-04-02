@@ -280,11 +280,7 @@ function resolveVariantHelpers(firebase) {
  * @returns {T} Helper.
  */
 function chooseHelper(override, fallback) {
-  if (typeof override === 'function') {
-    return /** @type {any} */ (override);
-  }
-
-  return fallback;
+  return commonCore.whenTypeValue(override, 'function') ?? fallback;
 }
 
 /**
@@ -848,9 +844,7 @@ function pickMarkFn(markVariantDirty, deps) {
  * @returns {void}
  */
 function enforceMethodOrThrow(req, res, allowedMethod) {
-  if (!enforceAllowedMethod(req, res, allowedMethod)) {
-    throw REQUEST_HANDLED;
-  }
+  throwRequestHandledIfFalsy(enforceAllowedMethod(req, res, allowedMethod));
 }
 
 /**
@@ -861,10 +855,7 @@ function enforceMethodOrThrow(req, res, allowedMethod) {
  * @returns {Promise<void>} Promise.
  */
 async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
-  const authorized = await verifyAdminFn(req, res);
-  if (!authorized) {
-    throw REQUEST_HANDLED;
-  }
+  throwRequestHandledIfFalsy(await verifyAdminFn(req, res));
 }
 
 /**
@@ -875,10 +866,20 @@ async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
  * @returns {{ pageNumber: number, variantName: string }} Parsed.
  */
 function parseRequestOrThrow(req, res, parseRequestBody) {
-  const parsed = parseValidRequest(req, res, parseRequestBody);
-  if (!parsed) {
+  return throwRequestHandledIfFalsy(
+    parseValidRequest(req, res, parseRequestBody)
+  );
+}
+
+/**
+ * Return the value when truthy or throw the request-handled sentinel.
+ * @param {*} value Candidate value.
+ * @returns {*} The input value when truthy.
+ */
+function throwRequestHandledIfFalsy(value) {
+  if (!value) {
     throw REQUEST_HANDLED;
   }
 
-  return parsed;
+  return value;
 }

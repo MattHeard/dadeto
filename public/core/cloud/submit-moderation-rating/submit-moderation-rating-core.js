@@ -3,6 +3,7 @@ import {
   getStringCandidate,
   isNonNullObject,
   whenPredicateValue,
+  whenTypeValue,
 } from './common-core.js';
 import {
   matchBearerToken,
@@ -356,10 +357,9 @@ function isValidVariantId(variantId) {
  * @returns {Function | null} Normalized.
  */
 function normalizeClearAssignment(clearAssignment) {
-  if (typeof clearAssignment === 'function') {
-    return clearAssignment;
-  }
-  return null;
+  return /** @type {(() => Promise<void> | void) | null} */ (
+    whenTypeValue(clearAssignment, 'function')
+  );
 }
 
 /**
