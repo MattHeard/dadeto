@@ -443,11 +443,13 @@ describe('createGenerateStatsCore', () => {
       const statsDocs = [
         { id: 'story1', data: () => ({ variantCount: 5 }) },
         { id: 'story2', data: () => ({}) },
+        { id: 'story3', data: () => ({ variantCount: 1 }) },
       ];
 
       const storiesDocs = {
         story1: { data: () => ({ title: 'Story One' }) },
         story2: { data: () => ({}) },
+        story3: { data: () => ({ title: '   ' }) },
       };
 
       const collectionMock = name => {
@@ -489,6 +491,7 @@ describe('createGenerateStatsCore', () => {
       expect(topStories).toEqual([
         { title: 'Story One', variantCount: 5 },
         { title: 'story2', variantCount: 0 },
+        { title: 'story3', variantCount: 1 },
       ]);
       expect(recordedLimit.value).toBe(10);
     });
