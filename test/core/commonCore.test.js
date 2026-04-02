@@ -11,6 +11,7 @@ import {
   isValidString,
   normalizeNonStringValue,
   stringOrFallback,
+  reportAndReturnFalse,
   whenString,
   whenType,
   whenTypeValue,
@@ -59,6 +60,12 @@ describe('commonCore helpers', () => {
     expect(normalizeNonStringValue('hello')).toBe('hello');
     expect(normalizeNonStringValue(null)).toBe('');
     expect(normalizeNonStringValue(123)).toBe('123');
+  });
+
+  test('reportAndReturnFalse invokes the reporter and returns false', () => {
+    const reporter = jest.fn();
+    expect(reportAndReturnFalse(reporter, 'alpha', 'beta')).toBe(false);
+    expect(reporter).toHaveBeenCalledWith('alpha', 'beta');
   });
 
   test('stringOrFallback defers to the fallback when value is not a string', () => {

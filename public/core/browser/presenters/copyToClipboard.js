@@ -1,4 +1,4 @@
-import { whenNotNullish } from '../../commonCore.js';
+import { reportAndReturnFalse, whenNotNullish } from '../../commonCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
@@ -42,8 +42,7 @@ async function copyUsingClipboard(inputString, clipboard, dom) {
     await clipboard.writeText(inputString);
     return true;
   } catch (error) {
-    logCopyFailure(dom, error);
-    return false;
+    return reportAndReturnFalse(logCopyFailure, dom, error);
   }
 }
 

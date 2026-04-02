@@ -2,6 +2,7 @@ import { resolveMessageOrDefault, stringOrNull } from '../cloud/cloud-core.js';
 import {
   trimmedStringOrNull,
   whenArray,
+  whenString,
   whenTypeValue,
 } from '../commonCore.js';
 
@@ -751,11 +752,7 @@ function formatAgentFailureSummaryMessage(summary) {
  * @returns {string | null} Prefixed message or null.
  */
 function formatAgentFailureDetailMessage(detail) {
-  if (detail) {
-    return `agent failure: ${detail}`;
-  }
-
-  return null;
+  return whenString(detail, value => `agent failure: ${value}`);
 }
 
 /**

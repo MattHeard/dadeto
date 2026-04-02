@@ -1,11 +1,11 @@
 import {
   assertFunction,
   ensureString,
-  getStringCandidate,
   isNonNullObject,
   normalizeNonStringValue,
   numberOrZero,
-  stringOrFallback,
+  reportAndReturnFalse,
+  whenTypeValue,
   when,
   whenString,
   whenOrNull,
@@ -32,12 +32,7 @@ export const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
  * @returns {string | null} String when provided, otherwise `null`.
  */
 export function stringOrNull(value) {
-  const normalized = getStringCandidate(value);
-  if (normalized !== undefined) {
-    return normalized;
-  }
-
-  return null;
+  return whenTypeValue(value, 'string');
 }
 
 /**
@@ -47,7 +42,7 @@ export function stringOrNull(value) {
  * @returns {string} String value or fallback.
  */
 export function stringOrDefault(value, fallback) {
-  return stringOrFallback(value, () => fallback) ?? fallback;
+  return stringOrNull(value) ?? fallback;
 }
 
 /**
@@ -432,13 +427,7 @@ export function getNumericValueOrZero(data, selector) {
  * @returns {string | null} String value or null.
  */
 export function extractStringFromCandidateArray(candidate) {
-  const [first] = candidate;
-
-  if (typeof first === 'string') {
-    return first;
-  }
-
-  return null;
+  return whenTypeValue(candidate[0], 'string');
 }
 
 /**
@@ -761,8 +750,7 @@ async function authorizeAdminToken(deps) {
     });
   } catch (error) {
     const message = defaultInvalidTokenMessage(error);
-    sendUnauthorized(res, message);
-    return false;
+    return reportAndReturnFalse(sendUnauthorized, res, message);
   }
 }
 

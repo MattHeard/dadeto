@@ -219,6 +219,17 @@ export function whenTypeValue(value, typeName) {
 }
 
 /**
+ * Report an error through the provided callback and then return `false`.
+ * @param {(...args: unknown[]) => void} reportFn Reporting callback.
+ * @param {...unknown} args Arguments forwarded to the reporting callback.
+ * @returns {false} Always returns `false`.
+ */
+export function reportAndReturnFalse(reportFn, ...args) {
+  reportFn(...args);
+  return false;
+}
+
+/**
  * Return the original value when the predicate accepts it; otherwise `null`.
  * @template T
  * @param {T} value Candidate value.
