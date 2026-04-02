@@ -2,7 +2,7 @@ import {
   DEFAULT_LEDGER_INGEST_DEDUPE_POLICY,
   createDefaultLedgerIngestDedupePolicy,
 } from './ledgerIngestShared.js';
-import { numberOrZero } from '../../../../commonCore.js';
+import { isBlankStringValue, numberOrZero } from '../../../../commonCore.js';
 
 /**
  * Contracts and fixtures for the ledger-ingest toy.
@@ -458,19 +458,6 @@ function getRequiredRawValue(record, mapping, field) {
  */
 function isMissingRequiredValue(value) {
   return MISSING_VALUES.includes(value) || isBlankStringValue(value);
-}
-
-/**
- * Determine whether a value is a blank string.
- * @param {unknown} value Candidate input.
- * @returns {boolean} True when the value is a blank string.
- */
-function isBlankStringValue(value) {
-  if (typeof value !== 'string') {
-    return false;
-  }
-
-  return value.trim().length === 0;
 }
 
 /**

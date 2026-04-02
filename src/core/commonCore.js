@@ -37,6 +37,19 @@ export function isNullish(value) {
 }
 
 /**
+ * Determines whether a value is a string that trims to nothing.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is a blank string.
+ */
+export function isBlankStringValue(value) {
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  return value.trim().length === 0;
+}
+
+/**
  * Determines whether a value is an object that is not null.
  * @param {unknown} value Candidate value.
  * @returns {boolean} True when the value is an object and not null.

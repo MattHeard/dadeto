@@ -1,3 +1,4 @@
+import { isBlankStringValue } from '../../../../commonCore.js';
 import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
 
 /**
@@ -353,7 +354,7 @@ function normalizeCsvAmount(value) {
  * @returns {string} Trimmed candidate amount string.
  */
 function normalizeCsvAmountCandidate(value) {
-  return String(value ?? '').trim();
+  return normalizeCsvTextCandidate(value);
 }
 
 /**
@@ -420,7 +421,16 @@ function getCsvRecordPrefix(accountIban) {
  * @returns {string} Trimmed record prefix candidate.
  */
 function normalizeCsvRecordPrefixCandidate(accountIban) {
-  return String(accountIban ?? '').trim();
+  return normalizeCsvTextCandidate(accountIban);
+}
+
+/**
+ * Normalize a CSV text candidate into a trimmed string.
+ * @param {unknown} value Candidate value.
+ * @returns {string} Trimmed string candidate.
+ */
+function normalizeCsvTextCandidate(value) {
+  return String(value ?? '').trim();
 }
 
 /**
@@ -477,7 +487,7 @@ function findMissingLedgerCsvHeader(headerLookup) {
  * @returns {boolean} True when the row is empty.
  */
 function isBlankLedgerCsvRow(row) {
-  return row.length === 1 && row[0].trim().length === 0;
+  return row.length === 1 && isBlankStringValue(row[0]);
 }
 
 /**

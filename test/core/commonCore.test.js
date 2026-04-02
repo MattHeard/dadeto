@@ -4,6 +4,7 @@ import {
   assertFunction,
   ensureString,
   getStringCandidate,
+  isBlankStringValue,
   isNonNullObject,
   isNullish,
   isValidString,
@@ -30,6 +31,9 @@ describe('commonCore helpers', () => {
     expect(isNullish(null)).toBe(true);
     expect(isNullish(undefined)).toBe(true);
     expect(isNullish('hello')).toBe(false);
+    expect(isBlankStringValue('   ')).toBe(true);
+    expect(isBlankStringValue('hello')).toBe(false);
+    expect(isBlankStringValue(123)).toBe(false);
     expect(isNonNullObject({ hello: 'world' })).toBe(true);
     expect(isNonNullObject(null)).toBe(false);
   });
