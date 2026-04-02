@@ -11,7 +11,7 @@
 - [x] `PIXEL-EDGE` - `get`, `ticTacToe`
 - [x] `STATIC-CHROME` - `buildCore`, `csvToJsonObject`
 - [x] `VANTA-HIDE` - `hide-variant-html`, `moderatorRatingCounts`
-- [ ] `SINGULARITY-SHELL` - `battleshipSolitaireFleet`, `data`
+- [x] `SINGULARITY-SHELL` - `battleshipSolitaireFleet`, `data`
 - [ ] `SINGULARITY-TRAIL` - `tags`
 - [ ] `BLACKWIRE-ARC` - `cloud-core`, `copy`, `generate-stats`
 - [ ] `BLACKWIRE-STATIC` - `gamepadCapture`, `data`, `battleshipSolitaireFleet`
@@ -26,6 +26,7 @@
 - `PIXEL-EDGE` is already resolved in the live duplication report; both toy helpers now use the shared `whenOrNull` primitive, so the bucket is marked complete here as well.
 - `STATIC-CHROME` is also resolved in the live duplication report; the current report still shows `buildCore` and `csvToJsonObject` as the paired areas in the checklist, but that pair no longer appears as an active clone, so the bucket is marked complete here too.
 - `VANTA-HIDE` is resolved in the live duplication report after reusing `numberOrZero` for the visibility and moderator-count defaults, so that bucket is marked complete here as well.
+- `SINGULARITY-SHELL` does not appear in the current live duplication report, so the checklist is updated to match the present frontier.
 - The remaining work has been regrouped into smaller cyberpunk-named buckets so follow-up refactors can stay narrow and landing-plane sized.
 - The single-file leftovers are bundled into two residual buckets so the list stays close to ten instead of turning back into one giant catch-all.
 - `BLACKWIRE` was broken into smaller, turn-sized buckets after a partial pass landed presenter and tag-helper extractions.
