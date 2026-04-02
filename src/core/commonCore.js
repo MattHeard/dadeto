@@ -186,6 +186,18 @@ export function whenString(value, fn) {
 }
 
 /**
+ * Run the provided callback when the value matches the requested typeof.
+ * @template T
+ * @param {unknown} value Candidate value.
+ * @param {string} typeName Expected typeof result.
+ * @param {(value: unknown) => T} fn Callback invoked when the type matches.
+ * @returns {T | null} Callback result or `null` when the type does not match.
+ */
+export function whenType(value, typeName, fn) {
+  return whenOrNull(typeof value === typeName, () => fn(value));
+}
+
+/**
  * Run the provided callback when the value is an array.
  * @param {unknown} value Candidate value.
  * @param {(value: unknown[]) => T} fn Callback invoked with the array.

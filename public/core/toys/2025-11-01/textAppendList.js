@@ -1,3 +1,5 @@
+import { whenType } from '../../commonCore.js';
+
 // Toy: Text Append List
 // (string input, env) -> string
 
@@ -37,7 +39,7 @@ function getStorageFunction(env) {
     return null;
   }
   const storageFn = env.get('setLocalPermanentData');
-  return typeof storageFn === 'function' ? storageFn : null;
+  return whenType(storageFn, 'function', value => value);
 }
 
 function readExistingList(storageFn) {

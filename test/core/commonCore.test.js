@@ -12,6 +12,7 @@ import {
   normalizeNonStringValue,
   stringOrFallback,
   whenString,
+  whenType,
   whenArray,
   whenTruthy,
   whenOrNull,
@@ -65,6 +66,20 @@ describe('commonCore helpers', () => {
   test('whenString executes the callback for strings only', () => {
     expect(whenString('hello', value => value.toUpperCase())).toBe('HELLO');
     expect(whenString(123, value => value)).toBeNull();
+  });
+
+  test('whenType executes the callback for the requested typeof only', () => {
+    expect(whenType('hello', 'string', value => value.toUpperCase())).toBe(
+      'HELLO'
+    );
+    expect(whenType(123, 'string', value => value)).toBeNull();
+    expect(
+      whenType(
+        () => {},
+        'function',
+        value => value
+      )
+    ).toEqual(expect.any(Function));
   });
 
   test('whenNotNullish executes the callback for present values only', () => {

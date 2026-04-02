@@ -2,6 +2,7 @@ import {
   ensureString,
   normalizeNonStringValue,
   stringOrFallback,
+  whenType,
 } from '../../../commonCore.js';
 
 // Toy: Text Append List
@@ -76,11 +77,11 @@ function resolveStorageFn(env) {
  * @returns {((args: object) => unknown) | null} Callable storage accessor or null.
  */
 function normalizeStorageFunction(storageFn) {
-  if (typeof storageFn === 'function') {
-    return /** @type {(args: object) => unknown} */ (storageFn);
-  }
-
-  return null;
+  return whenType(
+    storageFn,
+    'function',
+    value => /** @type {(args: object) => unknown} */ (value)
+  );
 }
 
 /**

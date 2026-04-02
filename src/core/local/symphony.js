@@ -1,5 +1,5 @@
 import { resolveMessageOrDefault } from '../cloud/cloud-core.js';
-import { whenArray } from '../commonCore.js';
+import { whenArray, whenType } from '../commonCore.js';
 
 /**
  * @param {string} output Raw `bd ready` command output.
@@ -679,11 +679,7 @@ function buildRunnerEvidenceLine(prefix, outcome) {
  * @returns {number | null} Exit code when present.
  */
 function getOutcomeExitCode(outcome) {
-  if (typeof outcome.exitCode === 'number') {
-    return outcome.exitCode;
-  }
-
-  return null;
+  return whenType(outcome.exitCode, 'number', value => value);
 }
 
 /**
@@ -692,11 +688,7 @@ function getOutcomeExitCode(outcome) {
  * @returns {string | null} Signal when present.
  */
 function getOutcomeSignal(outcome) {
-  if (typeof outcome.signal === 'string') {
-    return outcome.signal;
-  }
-
-  return null;
+  return whenType(outcome.signal, 'string', value => value);
 }
 
 /**
