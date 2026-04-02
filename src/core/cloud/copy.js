@@ -158,7 +158,7 @@ export function createCopyToInfraCore({
     const fileNames = sourceEntries
       .filter(isCopyableFile)
       .map(entry => entry.name);
-    await performCopy({
+    await copyFiles({
       files: fileNames,
       sourceDir: source,
       targetDir: target,
@@ -230,7 +230,7 @@ export function createCopyToInfraCore({
       io,
       messageLogger,
     };
-    await performCopy(copyParams);
+    await copyFiles(copyParams);
   }
 
   /**
@@ -278,21 +278,6 @@ export function createCopyToInfraCore({
         messageLogger,
       })
     );
-  }
-
-  /**
-   * Proxy copy calls through a shared helper to reduce duplication.
-   * @param {{
-   *   files: string[],
-   *   sourceDir: string,
-   *   targetDir: string,
-   *   io: EnsureAndCopyIo,
-   *   messageLogger: CopyMessageLogger,
-   * }} details Prepared copy parameters.
-   * @returns {Promise<void>}
-   */
-  async function performCopy(details) {
-    await copyFiles(details);
   }
 
   /**

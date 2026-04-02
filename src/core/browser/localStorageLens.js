@@ -140,13 +140,9 @@ function writeStorageValue(storage, key, value) {
  * @returns {(value: string | null) => unknown} Deserializer function.
  */
 function deserializeJson(logError) {
-  return value => {
-    if (isMissingStoredValue(value)) {
-      return null;
-    }
-
-    return parseStoredJson(value, logError);
-  };
+  return createJsonValueHandler(isMissingStoredValue, value =>
+    parseStoredJson(value, logError)
+  );
 }
 
 /**
@@ -178,12 +174,24 @@ function parseStoredJson(value, logError) {
  * @returns {(value: unknown) => string | null} Serializer function.
  */
 function serializeJson(logError) {
+  return createJsonValueHandler(isNullish, value =>
+    stringifyStoredJson(value, logError)
+  );
+}
+
+/**
+ * Create a value handler that preserves missing values and transforms present ones.
+ * @param {(value: unknown) => boolean} isMissingValue Predicate that identifies missing values.
+ * @param {(value: unknown) => unknown} transformValue Transformer for present values.
+ * @returns {(value: unknown) => unknown | null} Handler that returns null for missing inputs.
+ */
+function createJsonValueHandler(isMissingValue, transformValue) {
   return value => {
-    if (isNullish(value)) {
+    if (isMissingValue(value)) {
       return null;
     }
 
-    return stringifyStoredJson(value, logError);
+    return transformValue(value);
   };
 }
 

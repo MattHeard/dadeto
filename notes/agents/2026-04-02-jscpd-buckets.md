@@ -12,10 +12,10 @@
 - [ ] `STATIC-CHROME` - `buildCore`, `csvToJsonObject`
 - [ ] `VANTA-HIDE` - `hide-variant-html`, `moderatorRatingCounts`
 - [ ] `SINGULARITY-SHELL` - `battleshipSolitaireFleet`, `data`
-- [ ] `SINGULARITY-TRAIL` - `localStorageLens`, `tags`
+- [ ] `SINGULARITY-TRAIL` - `tags`
 - [ ] `BLACKWIRE-ARC` - `cloud-core`, `copy`, `generate-stats`
 - [ ] `BLACKWIRE-FLOOD` - `browser/storageLens`, `mark-variant-dirty`, `browser-core`
-- [ ] `BLACKWIRE-STATIC` - `gamepadCapture`, `localStorageLens`, `data`, `battleshipSolitaireFleet`
+- [ ] `BLACKWIRE-STATIC` - `gamepadCapture`, `data`, `battleshipSolitaireFleet`
 
 ## Notes
 
