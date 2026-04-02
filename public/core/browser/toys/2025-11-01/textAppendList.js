@@ -77,8 +77,10 @@ function resolveStorageFn(env) {
  * @returns {((args: object) => unknown) | null} Callable storage accessor or null.
  */
 function normalizeStorageFunction(storageFn) {
-  return whenType(storageFn, 'function', value =>
-    /** @type {(args: object) => unknown} */ (value)
+  return whenType(
+    storageFn,
+    'function',
+    value => /** @type {(args: object) => unknown} */ (value)
   );
 }
 
