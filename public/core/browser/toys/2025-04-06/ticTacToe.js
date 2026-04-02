@@ -570,9 +570,8 @@ function shouldEvaluateTerminal(isWinPlayer, isWinOpponent) {
  * @returns {number | null} Minimax score when the state is terminal, otherwise null so higher recursion can continue.
  */
 function evaluateTerminalState(isWinPlayer, isWinOpponent, depth) {
-  return whenOrNull(
-    shouldEvaluateTerminal(isWinPlayer, isWinOpponent),
-    () => getTerminalScore(isWinPlayer, depth)
+  return whenOrNull(shouldEvaluateTerminal(isWinPlayer, isWinOpponent), () =>
+    getTerminalScore(isWinPlayer, depth)
   );
 }
 
