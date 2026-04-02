@@ -1,5 +1,5 @@
 import { parseJsonOrFallback } from '../browserToysCore.js';
-import { whenString } from '../../../commonCore.js';
+import { arrayOrEmpty, whenString } from '../../../commonCore.js';
 
 /**
  * @typedef {{ isApproved: boolean, moderatorId: string, ratedAt: string, variantId: string }} ModeratorRatingEntry
@@ -82,20 +82,7 @@ function parseRatings(value) {
     return [];
   }
 
-  return ensureArray(parseJsonOrFallback(value, []));
-}
-
-/**
- * Guarantee the parsed value is an array before returning it.
- * @param {*} parsed - Result of the JSON parser.
- * @returns {Array<unknown>} Valid array or empty array.
- */
-function ensureArray(parsed) {
-  if (Array.isArray(parsed)) {
-    return parsed;
-  }
-
-  return [];
+  return arrayOrEmpty(parseJsonOrFallback(value, []));
 }
 
 /**
