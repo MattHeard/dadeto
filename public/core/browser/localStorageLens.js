@@ -140,9 +140,8 @@ function writeStorageValue(storage, key, value) {
  * @returns {(value: string | null) => unknown} Deserializer function.
  */
 function deserializeJson(logError) {
-  return createJsonValueHandler(
-    isMissingStoredValue,
-    value => parseStoredJson(value, logError)
+  return createJsonValueHandler(isMissingStoredValue, value =>
+    parseStoredJson(value, logError)
   );
 }
 
@@ -175,9 +174,8 @@ function parseStoredJson(value, logError) {
  * @returns {(value: unknown) => string | null} Serializer function.
  */
 function serializeJson(logError) {
-  return createJsonValueHandler(
-    isNullish,
-    value => stringifyStoredJson(value, logError)
+  return createJsonValueHandler(isNullish, value =>
+    stringifyStoredJson(value, logError)
   );
 }
 
