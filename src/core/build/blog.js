@@ -52,6 +52,49 @@ export function createSharedDirectoryEntries({
 }
 
 /**
+ * Build a file copier that reuses the copy-core defaults.
+ * @param {{
+ *   io: {
+ *     directoryExists: (target: string) => boolean,
+ *     createDirectory: (target: string) => void,
+ *     copyFile: (source: string, destination: string) => void,
+ *   },
+ *   messageLogger: { info: (message: string) => void },
+ *   formatPathForLog: (targetPath: string) => string,
+ *   ensureDirectoryExists: (
+ *     io: {
+ *       directoryExists: (target: string) => boolean,
+ *       createDirectory: (target: string) => void,
+ *       copyFile: (source: string, destination: string) => void,
+ *     },
+ *     targetDir: string,
+ *   ) => void,
+ *   dirname: typeof import('path').dirname,
+ * }} options Copier dependencies.
+ * @returns {(source: string, destination: string, message?: string) => void} Bound file copier.
+ */
+function createCopyFileWithCoreDefaults({
+  io,
+  messageLogger,
+  formatPathForLog,
+  ensureDirectoryExists,
+  dirname,
+}) {
+  return (source, destination, message) => {
+    copyFileWithDirectories({
+      io,
+      source,
+      destination,
+      messageLogger,
+      formatPathForLog,
+      ensureDirectoryExists,
+      dirname,
+      message,
+    });
+  };
+}
+
+/**
  * Create helpers that orchestrate copying source assets into the public tree.
  * @param {object} options - File system dependencies.
  * @param {Record<string, string>} options.directories - Directory configuration.
@@ -89,20 +132,16 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * }} options Logger and message builder.
    * @returns {void}
    */
-  async function copyEntries(entries, io, { messageLogger, resolveMessage }) {
+  async function copyEntries(entries, io, { resolveMessage, copyFile }) {
     await runMappedEntries(
       entries,
       ({ source, destination }) => ({
-        io,
         source,
         destination,
-        messageLogger,
         message: resolveMessage({ source, destination }),
-        formatPathForLog,
-        ensureDirectoryExists,
-        dirname,
       }),
-      copyFileWithDirectories
+      ({ source, destination, message }) =>
+        copyFile(source, destination, message)
     );
   }
 
@@ -242,22 +281,13 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    */
   function handleDirectoryEntry(entry, directories, context) {
     const { src, dest } = directories;
-    const { io, messageLogger } = context;
     const srcPath = join(src, entry.name);
     const destPath = join(dest, entry.name);
     if (entry.isDirectory()) {
       copyDirRecursive({ src: srcPath, dest: destPath }, context);
       return;
     }
-    copyFileWithDirectories({
-      io,
-      source: srcPath,
-      destination: destPath,
-      messageLogger,
-      formatPathForLog,
-      ensureDirectoryExists,
-      dirname,
-    });
+    context.copyFile(srcPath, destPath);
   }
 
   /**
@@ -312,21 +342,25 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    *   missingMessage: string,
    * }} plan - Copy plan describing the directory tree.
    * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters, logger, and bound copier.
    * @returns {void}
    */
-  function copyDirectoryTreeIfExists(plan, io, messageLogger) {
+  function copyDirectoryTreeIfExists(plan, context) {
+    const { io, messageLogger, copyFile } = context;
     const { src, dest, successMessage, missingMessage } = plan;
     if (!io.directoryExists(src)) {
       messageLogger.warn(missingMessage);
       return;
     }
-    copyDirRecursive({ src, dest }, { io, messageLogger });
+    copyDirRecursive({ src, dest }, { io, messageLogger, copyFile });
     messageLogger.info(successMessage);
   }
 
@@ -334,15 +368,18 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * Copy one or more browser-related directory trees into the public browser directory.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters, logger, and bound copier.
    * @returns {void}
    */
-  function copyBrowserTrees(dirs, io, messageLogger) {
+  function copyBrowserTrees(dirs, context) {
     const plans = [
       {
         src: dirs.srcBrowserDir,
@@ -363,7 +400,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     ];
 
     plans.forEach(plan => {
-      copyDirectoryTreeIfExists(plan, io, messageLogger);
+      copyDirectoryTreeIfExists(plan, context);
     });
   }
 
@@ -371,15 +408,19 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * Copy root-level JavaScript modules from src/core into public/core.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters, logger, and bound copier.
    * @returns {void}
    */
-  function copyCoreRootFiles(dirs, io, messageLogger) {
+  function copyCoreRootFiles(dirs, context) {
+    const { io, messageLogger, copyFile } = context;
     if (!io.directoryExists(dirs.srcCoreDir)) {
       messageLogger.warn(
         `Warning: core directory not found at ${formatPathForLog(
@@ -397,15 +438,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     rootFiles.forEach(entry => {
       const source = join(dirs.srcCoreDir, entry.name);
       const destination = join(dirs.publicCoreDir, entry.name);
-      copyFileWithDirectories({
-        io,
-        source,
-        destination,
-        messageLogger,
-        formatPathForLog,
-        ensureDirectoryExists,
-        dirname,
-      });
+      copyFile(source, destination);
     });
 
     messageLogger.info('Core root scripts copied successfully!');
@@ -415,15 +448,18 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * Copy the shared core constants directory into the public tree.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
-   *   directoryExists: (target: string) => boolean,
-   *   createDirectory: (target: string) => void,
-   *   copyFile: (source: string, destination: string) => void,
-   *   readDirEntries: (dir: string) => import('fs').Dirent[],
-   * }} io - File system adapters.
-   * @param {{ info: (message: string) => void, warn: (message: string) => void }} messageLogger - Logger for status updates.
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters, logger, and bound copier.
    * @returns {void}
    */
-  function copyCoreConstants(dirs, io, messageLogger) {
+  function copyCoreConstants(dirs, context) {
     const constantsDir = join(dirs.srcCoreDir, 'constants');
     copyDirectoryTreeIfExists(
       {
@@ -434,8 +470,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
           constantsDir
         )}`,
       },
-      io,
-      messageLogger
+      context
     );
   }
 
@@ -454,17 +489,25 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * @returns {void}
    */
   function runCopyWorkflow({ directories: dirs, io, messageLogger }) {
+    const copyFile = createCopyFileWithCoreDefaults({
+      io,
+      messageLogger,
+      formatPathForLog,
+      ensureDirectoryExists,
+      dirname,
+    });
     ensureDirectoryExists(io, dirs.publicDir);
-    copyBrowserTrees(dirs, io, messageLogger);
-    copyCoreRootFiles(dirs, io, messageLogger);
-    copyCoreConstants(dirs, io, messageLogger);
+    const copyContext = { io, messageLogger, copyFile };
+    copyBrowserTrees(dirs, copyContext);
+    copyCoreRootFiles(dirs, copyContext);
+    copyCoreConstants(dirs, { io, messageLogger, copyFile });
     copyBlogJson({
       directories: dirs,
+      copyFile,
       io,
       messageLogger,
       join,
       formatPathForLog,
-      copyFileWithDirectories,
       ensureDirectoryExists,
       dirname,
     });
@@ -511,29 +554,6 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
  *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
  *   join: typeof import('path').join,
  *   formatPathForLog: (targetPath: string) => string,
- *   copyFileWithDirectories: (
- *     options: {
- *       io: {
- *         directoryExists: (target: string) => boolean,
- *         createDirectory: (target: string) => void,
- *         copyFile: (source: string, destination: string) => void,
- *       },
- *       source: string,
- *       destination: string,
- *       messageLogger: { info: (message: string) => void },
- *       formatPathForLog: (targetPath: string) => string,
- *       ensureDirectoryExists: (
- *         io: {
- *           directoryExists: (target: string) => boolean,
- *           createDirectory: (target: string) => void,
- *           copyFile: (source: string, destination: string) => void,
- *         },
- *         targetDir: string,
- *       ) => void,
- *       dirname: typeof import('path').dirname,
- *       message?: string,
- *     }
- *   ) => void,
  *   ensureDirectoryExists: (
  *     io: {
  *       directoryExists: (target: string) => boolean,
@@ -548,13 +568,11 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
  */
 function copyBlogJson({
   directories: dirs,
+  copyFile,
   io,
   messageLogger,
   join,
   formatPathForLog,
-  copyFileWithDirectories,
-  ensureDirectoryExists,
-  dirname,
 }) {
   const buildDir = join(dirs.srcDir, 'build');
   if (io.directoryExists(buildDir)) {
@@ -564,16 +582,7 @@ function copyBlogJson({
       destination
     )}`;
 
-    copyFileWithDirectories({
-      io,
-      source,
-      destination,
-      messageLogger,
-      formatPathForLog,
-      ensureDirectoryExists,
-      dirname,
-      message,
-    });
+    copyFile(source, destination, message);
     return;
   }
 
@@ -608,25 +617,9 @@ function copyBlogJson({
  * }} options Copy operation details.
  * @returns {void}
  */
-function copyFilePairs({
-  copyPairs,
-  io,
-  messageLogger,
-  copyFileWithDirectories,
-  formatPathForLog,
-  ensureDirectoryExists,
-  dirname,
-}) {
+function copyFilePairs({ copyPairs, copyFile }) {
   copyPairs.forEach(({ source, destination }) => {
-    copyFileWithDirectories({
-      io,
-      source,
-      destination,
-      messageLogger,
-      formatPathForLog,
-      ensureDirectoryExists,
-      dirname,
-    });
+    copyFile(source, destination);
   });
 }
 

@@ -197,10 +197,22 @@ describe('createCopyCore', () => {
       const resolveMessage = jest
         .fn()
         .mockImplementation(entry => `copied ${entry.source}`);
+      const copyFile = (source, destination, message) =>
+        core.copyFileWithDirectories({
+          io,
+          source,
+          destination,
+          messageLogger: logger,
+          formatPathForLog: core.formatPathForLog,
+          ensureDirectoryExists: core.ensureDirectoryExists,
+          dirname: posix.dirname,
+          message,
+        });
 
       await core.copyEntries(entries, io, {
         messageLogger: logger,
         resolveMessage,
+        copyFile,
       });
 
       expect(resolveMessage).toHaveBeenCalledTimes(entries.length);
@@ -389,16 +401,9 @@ describe('createCopyCore', () => {
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
       };
-      const logger = { info: jest.fn(), warn: jest.fn() };
-
       core.copyFilePairs({
         copyPairs: pairs,
-        io,
-        messageLogger: logger,
-        copyFileWithDirectories: core.copyFileWithDirectories,
-        formatPathForLog: core.formatPathForLog,
-        ensureDirectoryExists: core.ensureDirectoryExists,
-        dirname: posix.dirname,
+        copyFile: io.copyFile,
       });
 
       expect(io.copyFile).toHaveBeenNthCalledWith(
@@ -460,7 +465,7 @@ describe('createCopyCore', () => {
         src: directories.srcToysDir,
         dest: directories.publicToysDir,
       };
-      const copyContext = { io, messageLogger: logger };
+      const copyContext = { io, messageLogger: logger, copyFile: io.copyFile };
 
       core.handleDirectoryEntry(
         directoryEntry,
@@ -494,7 +499,7 @@ describe('createCopyCore', () => {
         src: directories.srcToysDir,
         dest: directories.publicToysDir,
       };
-      const copyContext = { io, messageLogger: logger };
+      const copyContext = { io, messageLogger: logger, copyFile: io.copyFile };
 
       core.processDirectoryEntries(entries, directoriesContext, copyContext);
 
@@ -520,7 +525,7 @@ describe('createCopyCore', () => {
           src: directories.srcBrowserDir,
           dest: directories.publicBrowserDir,
         },
-        { io, messageLogger: logger }
+        { io, messageLogger: logger, copyFile: io.copyFile }
       );
 
       expect(io.createDirectory).toHaveBeenCalledWith(
@@ -552,8 +557,7 @@ describe('createCopyCore', () => {
           successMessage: 'Browser files copied successfully!',
           missingMessage: 'missing',
         },
-        io,
-        logger
+        { io, messageLogger: logger, copyFile: io.copyFile }
       );
 
       expect(logger.info).toHaveBeenCalledWith(
@@ -567,8 +571,7 @@ describe('createCopyCore', () => {
           successMessage: "won't happen",
           missingMessage: 'missing message',
         },
-        io,
-        logger
+        { io, messageLogger: logger, copyFile: io.copyFile }
       );
 
       expect(logger.warn).toHaveBeenCalledWith('missing message');
@@ -583,7 +586,11 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
-      core.copyBrowserTrees(directories, io, logger);
+      core.copyBrowserTrees(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
 
       expect(logger.info).toHaveBeenCalledWith(
         'Browser files copied successfully!'
@@ -615,7 +622,11 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
-      core.copyCoreRootFiles(directories, io, logger);
+      core.copyCoreRootFiles(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
 
       expect(io.copyFile).toHaveBeenNthCalledWith(
         1,
@@ -641,7 +652,11 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
-      core.copyCoreRootFiles(directories, io, logger);
+      core.copyCoreRootFiles(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
 
       expect(logger.warn).toHaveBeenCalledWith(
         'Warning: core directory not found at src/core'
@@ -661,16 +676,25 @@ describe('createCopyCore', () => {
         readDirEntries: jest.fn(),
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
+      const copyFile = (source, destination, message) =>
+        core.copyFileWithDirectories({
+          io,
+          source,
+          destination,
+          messageLogger: logger,
+          formatPathForLog: core.formatPathForLog,
+          ensureDirectoryExists: core.ensureDirectoryExists,
+          dirname: posix.dirname,
+          message,
+        });
 
       core.copyBlogJson({
         directories,
+        copyFile,
         io,
         messageLogger: logger,
         join: posix.join,
         formatPathForLog: core.formatPathForLog,
-        copyFileWithDirectories: core.copyFileWithDirectories,
-        ensureDirectoryExists: core.ensureDirectoryExists,
-        dirname: posix.dirname,
       });
 
       expect(logger.warn).toHaveBeenCalledWith(
@@ -687,16 +711,25 @@ describe('createCopyCore', () => {
         readDirEntries: jest.fn(),
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
+      const copyFile = (source, destination, message) =>
+        core.copyFileWithDirectories({
+          io,
+          source,
+          destination,
+          messageLogger: logger,
+          formatPathForLog: core.formatPathForLog,
+          ensureDirectoryExists: core.ensureDirectoryExists,
+          dirname: posix.dirname,
+          message,
+        });
 
       core.copyBlogJson({
         directories,
+        copyFile,
         io,
         messageLogger: logger,
         join: posix.join,
         formatPathForLog: core.formatPathForLog,
-        copyFileWithDirectories: core.copyFileWithDirectories,
-        ensureDirectoryExists: core.ensureDirectoryExists,
-        dirname: posix.dirname,
       });
 
       expect(io.copyFile).toHaveBeenCalledWith(
