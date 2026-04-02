@@ -1,6 +1,6 @@
 import {
   createPreFromContent,
-  renderParsedPresenter,
+  createParsedPresenterElement,
   parsePresenterJsonObject,
   createPresenterRoot,
 } from './browserPresentersCore.js';
@@ -744,7 +744,7 @@ function renderLedgerIngestReport(parsed, dom) {
  * @returns {HTMLElement} Presenter root element.
  */
 export function createLedgerIngestReportElement(inputString, dom) {
-  return renderParsedPresenter({
+  return createParsedPresenterElement({
     inputString,
     dom,
     parse: parsePresenterJsonObject,

@@ -57,6 +57,22 @@ export function renderParsedPresenter(options) {
 }
 
 /**
+ * Create a presenter element by parsing JSON-like text and rendering it with a fallback.
+ * @template TParsed
+ * @param {{
+ *   inputString: string,
+ *   dom: { createElement: Function, setClassName: Function, setTextContent: Function },
+ *   parse: (inputString: string) => TParsed | null,
+ *   render: (parsed: TParsed, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
+ *   createFallback: (inputString: string, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
+ * }} options Presenter rendering options.
+ * @returns {HTMLElement} Rendered presenter output.
+ */
+export function createParsedPresenterElement(options) {
+  return renderParsedPresenter(options);
+}
+
+/**
  * Parse presenter JSON input and return a typed object when valid.
  * @template T
  * @param {string} inputString Presenter payload string.

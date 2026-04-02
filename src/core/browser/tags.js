@@ -84,10 +84,7 @@ export const handleTagLinks = dom => {
  * @returns {(event: Event) => void} Event handler that hides matching articles.
  */
 export function makeHandleHideClick(dom, className) {
-  return function (event) {
-    dom.stopDefault(event);
-    hideArticlesByClass(className, dom);
-  };
+  return makeHandleArticleFilterClick(dom, className, hideArticlesByClass);
 }
 
 /**
@@ -171,9 +168,20 @@ export function hideArticlesWithoutClass(className, dom) {
  * @returns {(event: Event) => void} Event handler that hides non-matching articles.
  */
 export function makeHandleOnlyClick(dom, className) {
-  return function handleOnlyClick(event) {
+  return makeHandleArticleFilterClick(dom, className, hideArticlesWithoutClass);
+}
+
+/**
+ * Build a click handler for tag article filters.
+ * @param {TagsDOMHelpers} dom - DOM helpers.
+ * @param {string} className - CSS class to filter by.
+ * @param {(className: string, dom: TagsDOMHelpers) => void} filterArticles - Article filter to apply.
+ * @returns {(event: Event) => void} Event handler that applies the provided filter.
+ */
+function makeHandleArticleFilterClick(dom, className, filterArticles) {
+  return function handleArticleFilterClick(event) {
     dom.stopDefault(event);
-    hideArticlesWithoutClass(className, dom);
+    filterArticles(className, dom);
   };
 }
 

@@ -14,7 +14,7 @@ import {
   getAuthorizationHeader,
   getAuthorizationFromGetter,
 } from '../submit-shared.js';
-import { arrayOrEmpty, whenNotNullish, whenString } from './common-core.js';
+import { arrayOrEmpty, ensureString, whenNotNullish } from './common-core.js';
 import { createResponder } from '../responder-utils.js';
 
 /**
@@ -93,7 +93,7 @@ export const submitNewStoryCoreTestUtils = {
  * @returns {string | null} UID or null.
  */
 function getValidUid(uid) {
-  const normalized = whenString(uid, value => value);
+  const normalized = ensureString(uid);
   if (normalized === '') {
     return null;
   }

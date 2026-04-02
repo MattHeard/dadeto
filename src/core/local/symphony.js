@@ -1,4 +1,4 @@
-import { resolveMessageOrDefault } from '../cloud/cloud-core.js';
+import { resolveMessageOrDefault, stringOrNull } from '../cloud/cloud-core.js';
 import {
   trimmedStringOrNull,
   whenArray,
@@ -697,11 +697,7 @@ function getOutcomeSignal(outcome) {
  * @returns {string | null} Summary when present.
  */
 function getOutcomeSummary(outcome) {
-  if (typeof outcome.summary === 'string') {
-    return outcome.summary;
-  }
-
-  return null;
+  return stringOrNull(outcome.summary);
 }
 
 /**

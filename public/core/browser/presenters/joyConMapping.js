@@ -1,9 +1,10 @@
 import {
   createPreFromContent,
   createPresenterRoot,
-  renderParsedPresenter,
+  createParsedPresenterElement,
   parsePresenterJsonObject,
 } from './browserPresentersCore.js';
+import { arrayOrEmpty } from '../../commonCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ key: string, label: string }} ControlLabel */
@@ -204,10 +205,7 @@ function isSkippedControl(key, parsed) {
  * @returns {string[]} Skipped control keys normalized to an array.
  */
 function getSkippedControls(parsed) {
-  if (Array.isArray(parsed.skippedControls)) {
-    return parsed.skippedControls;
-  }
-  return [];
+  return arrayOrEmpty(parsed.skippedControls);
 }
 
 /**
@@ -264,7 +262,7 @@ function renderJoyConMappingState(parsed, dom) {
  * @returns {HTMLElement} Presenter root element.
  */
 export function createJoyConMappingElement(inputString, dom) {
-  return renderParsedPresenter({
+  return createParsedPresenterElement({
     inputString,
     dom,
     parse: parsePresenterJsonObject,
