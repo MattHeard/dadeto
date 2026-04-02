@@ -1,3 +1,5 @@
+import { parseJsonObject } from '../jsonValueHelpers.js';
+
 /**
  * Create a preformatted element for provided text content.
  * @param {string} content - Text that should appear inside the <pre>.
@@ -52,6 +54,16 @@ export function renderParsedPresenter(options) {
   }
 
   return options.render(parsed, options.dom);
+}
+
+/**
+ * Parse presenter JSON input and return a typed object when valid.
+ * @template T
+ * @param {string} inputString Presenter payload string.
+ * @returns {T | null} Parsed JSON object or null on invalid input.
+ */
+export function parsePresenterJsonObject(inputString) {
+  return /** @type {T | null} */ (parseJsonObject(inputString));
 }
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */

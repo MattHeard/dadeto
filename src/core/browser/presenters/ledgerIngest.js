@@ -1,7 +1,7 @@
-import { parseJsonObject } from '../jsonValueHelpers.js';
 import {
   createPreFromContent,
   renderParsedPresenter,
+  parsePresenterJsonObject,
   createPresenterRoot,
 } from './browserPresentersCore.js';
 
@@ -111,17 +111,6 @@ const TRANSACTION_COLUMNS = /** @type {LedgerIngestTransactionColumn[]} */ ([
  * @property {string | undefined} sourceRecordId Optional upstream record id.
  * @property {{ rawRecord: Record<string, unknown> }} metadata Raw record retained for auditing.
  */
-
-/**
- * Parse the LEDG1 report payload.
- * @param {string} inputString Serialized toy output payload.
- * @returns {LedgerIngestReport | null} Parsed report object or null on invalid JSON.
- */
-function parseReport(inputString) {
-  return /** @type {LedgerIngestReport | null} */ (
-    parseJsonObject(inputString)
-  );
-}
 
 /**
  * Create a text node element with optional class name.
@@ -758,14 +747,13 @@ export function createLedgerIngestReportElement(inputString, dom) {
   return renderParsedPresenter({
     inputString,
     dom,
-    parse: parseReport,
+    parse: parsePresenterJsonObject,
     render: renderLedgerIngestReport,
     createFallback: createPreFromContent,
   });
 }
 
 export const ledgerIngestReportTestOnly = {
-  parseReport,
   formatJson,
   createOverview,
   createJsonSection,

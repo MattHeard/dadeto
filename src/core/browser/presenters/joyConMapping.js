@@ -1,8 +1,8 @@
-import { parseJsonObject } from '../jsonValueHelpers.js';
 import {
   createPreFromContent,
   createPresenterRoot,
   renderParsedPresenter,
+  parsePresenterJsonObject,
 } from './browserPresentersCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -47,16 +47,6 @@ const MAPPING_DESCRIBERS = Object.freeze({
   button: describeButtonMapping,
   [FALLBACK_MAPPING_TYPE]: describeOptionalMapping,
 });
-
-/**
- * @param {string} inputString Parsed presenter payload string.
- * @returns {JoyConMappingState | null} Parsed state object or null on invalid JSON.
- */
-function parseState(inputString) {
-  return /** @type {JoyConMappingState | null} */ (
-    parseJsonObject(inputString)
-  );
-}
 
 /**
  * @param {JoyConMappingRecord} mapping Synthetic fallback mapping.
@@ -277,7 +267,7 @@ export function createJoyConMappingElement(inputString, dom) {
   return renderParsedPresenter({
     inputString,
     dom,
-    parse: parseState,
+    parse: parsePresenterJsonObject,
     render: renderJoyConMappingState,
     createFallback: createPreFromContent,
   });
