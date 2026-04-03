@@ -296,8 +296,10 @@ export function createCopyToInfraCore({
     messageLogger.info(
       buildCopyLogMessage({
         formatPathForLog,
-        source,
-        destination: target,
+        sourceDestination: {
+          source,
+          destination: target,
+        },
       })
     );
   }

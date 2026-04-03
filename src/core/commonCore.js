@@ -199,10 +199,10 @@ export function forEachMappedEntries(entries, mapEntry, runEntry) {
  */
 export function buildCopyLogMessage({
   formatPathForLog,
-  source,
-  destination,
+  sourceDestination,
   message,
 }) {
+  const { source, destination } = sourceDestination;
   return (
     message ??
     `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(destination)}`

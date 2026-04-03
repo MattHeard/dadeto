@@ -631,8 +631,10 @@ function copyFileWithDirectories({
   messageLogger.info(
     buildCopyLogMessage({
       formatPathForLog,
-      source,
-      destination,
+      sourceDestination: {
+        source,
+        destination,
+      },
       message,
     })
   );
