@@ -432,6 +432,96 @@
         </p>
       </div>
       <article
+        class="entry tag-toy tag-finance tag-calculation tag-budget tag-json"
+        id="RHW1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">RHW1</div>
+        <div class="value">
+          <h2><a href="#RHW1">Real Hourly Wage</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">3 Apr 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-finance">finance</a>,
+          <a class="tag-calculation">calculation</a>,
+          <a class="tag-budget">budget</a>, <a class="tag-json">json</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Calculates a real hourly wage by subtracting work-related expenses and
+          adding unpaid overhead hours to a job's paid work period.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Keep the calculation pure by passing a normalized JSON payload with
+          period totals and overhead buckets.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The toy returns a JSON wage report with nominal wage, real wage,
+          totals, and a breakdown that downstream toys can reuse.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'RHW1',
+            '/core/browser/toys/2026-04-03/realHourlyWage.js',
+            'realHourlyWageToy'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-ledger tag-finance tag-storage tag-view"
         id="LEDG4"
       >

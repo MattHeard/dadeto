@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "RHW1",
+      "title": "Real Hourly Wage",
+      "publicationDate": "2026-04-03",
+      "content": [
+        "Calculates a real hourly wage by subtracting work-related expenses and adding unpaid overhead hours to a job's paid work period.",
+        "Keep the calculation pure by passing a normalized JSON payload with period totals and overhead buckets.",
+        "The toy returns a JSON wage report with nominal wage, real wage, totals, and a breakdown that downstream toys can reuse."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-04-03/realHourlyWage.js",
+        "functionName": "realHourlyWageToy",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "finance", "calculation", "budget", "json"]
+    },
+    {
       "key": "LEDG4",
       "title": "Ledger Ingest Permanent Data View",
       "publicationDate": "2026-04-02",
