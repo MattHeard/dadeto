@@ -1,6 +1,8 @@
 import { blogKeyHandler } from './inputHandlers/blogKeyHandler.js';
+import { realHourlyWageHandler } from './inputHandlers/realHourlyWage.js';
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createLedgerIngestReportElement } from './presenters/ledgerIngest.js';
+import { createRealHourlyWageReportElement } from './presenters/realHourlyWage.js';
 import { createPrefixedLoggers } from './document.js';
 import { deepClone } from '../core/browser/browser-core.js';
 import {
@@ -265,6 +267,7 @@ const inputHandlersMap = {
   number: numberHandler,
   kv: kvHandler,
   'blog-key': blogKeyHandler,
+  'real-hourly-wage': realHourlyWageHandler,
   'dendrite-story': dendriteStoryHandler,
   'dendrite-page': dendritePageHandler,
   'moderator-ratings': moderatorRatingsHandler,
@@ -391,6 +394,7 @@ const presentersMap = {
   pre: createPreElement,
   'copy-to-clipboard': createCopyToClipboardButtonElement,
   'ledger-ingest': createLedgerIngestReportElement,
+  'real-hourly-wage': createRealHourlyWageReportElement,
   'tic-tac-toe': createTicTacToeBoardElement,
   'battleship-solitaire-fleet': createBattleshipFleetBoardElement,
   'battleship-solitaire-clues-presenter': createBattleshipCluesBoardElement,

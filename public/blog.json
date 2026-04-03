@@ -1,7 +1,7 @@
 {
   "posts": [
     {
-      "key": "RHW1",
+      "key": "REAL1",
       "title": "Real Hourly Wage",
       "publicationDate": "2026-04-03",
       "content": [
@@ -12,7 +12,8 @@
       "toy": {
         "modulePath": "/core/browser/toys/2026-04-03/realHourlyWage.js",
         "functionName": "realHourlyWageToy",
-        "defaultInputMethod": "textarea"
+        "defaultInputMethod": "real-hourly-wage",
+        "defaultOutputMethod": "real-hourly-wage"
       },
       "tags": ["toy", "finance", "calculation", "budget", "json"]
     },
