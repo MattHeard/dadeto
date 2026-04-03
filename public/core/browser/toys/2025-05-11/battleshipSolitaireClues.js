@@ -7,8 +7,11 @@
  * @returns {*} - description
  */
 
-import { safeParseJson, getFirstErrorMessage } from '../../browser-core.js';
-import { returnErrorResultOrValue } from '../../browser-core.js';
+import {
+  safeParseJson,
+  getFirstErrorMessage,
+  returnErrorResultOrValue,
+} from '../../browser-core.js';
 
 /**
  * @typedef {{ x: number, y: number }} BattleshipCoordinate

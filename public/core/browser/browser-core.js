@@ -1,17 +1,27 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
-import { isNonNullObject, isValidString } from '../commonCore.js';
+import {
+  isNonNullObject,
+  isNullish,
+  isValidString,
+  whenOrDefault,
+} from '../commonCore.js';
 export {
   arrayOrEmpty,
   ensureString,
+  functionOrFallback,
   getStringCandidate,
+  isNonNullObject,
+  isValidString,
+  numberOrZero,
   reportAndReturnFalse,
+  whenOrDefault,
   whenNotNullish,
   whenNotNullishValue,
   whenOrNull,
   whenTruthy,
   whenString,
+  trimmedStringOrEmpty,
 } from '../commonCore.js';
-export { isValidString };
 
 /** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
 /** @typedef {import('./domHelpers.js').DOMHelpers} DOMHelpers */
@@ -100,29 +110,18 @@ export function valueOr(value, fallback) {
 }
 
 /**
- * Evaluate a transform when a condition holds, otherwise return the fallback default.
- * @param {boolean} condition - Determines whether the transform should run.
- * @param {() => T} transform - Resolver invoked if the condition is true.
- * @param {T} fallback - Value returned when the condition is falsy.
- * @returns {T} Result of the transform when applied, or the fallback otherwise.
- * @template T
+ * Run a side effect when a condition is truthy and indicate whether it ran.
+ * @param {boolean} condition - Determines whether to execute the effect.
+ * @param {() => void} effect - Side effect invoked when the condition holds.
+ * @returns {boolean} True when the effect executed, false otherwise.
  */
-export function whenOrDefault(condition, transform, fallback) {
-  return condition ? transform() : fallback;
-}
-
-/**
- * Return the provided function candidate when available, otherwise use the fallback.
- * @param {unknown} candidate Candidate value.
- * @param {() => Function} fallback Factory returning the fallback function.
- * @returns {Function} Callable derived from the candidate or fallback.
- */
-export function functionOrFallback(candidate, fallback) {
-  if (typeof candidate === 'function') {
-    return candidate;
+export function guardThen(condition, effect) {
+  if (!condition) {
+    return false;
   }
 
-  return fallback();
+  effect();
+  return true;
 }
 
 /**
@@ -275,6 +274,8 @@ export function returnErrorResultOrValue(error, fallback) {
 /**
  * Normalize a candidate value to a plain object or an empty object.
  * @param {unknown} value Candidate object-like value.
+ * @param {() => Record<string, unknown>} fallback Fallback object factory.
+ * @param {(value: Record<string, unknown>) => Record<string, unknown>} transform Value mapper.
  * @returns {Record<string, unknown>} Plain object or empty object.
  */
 export function normalizeObjectOrFallback(value, fallback, transform) {
@@ -291,7 +292,7 @@ export function normalizeObjectOrFallback(value, fallback, transform) {
  * @returns {boolean} True when the value should be treated as missing.
  */
 export function isNullishOrEmptyString(value) {
-  return value === undefined || value === null || value === '';
+  return isNullish(value) || value === '';
 }
 
 export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);

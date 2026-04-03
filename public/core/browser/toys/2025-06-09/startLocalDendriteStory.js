@@ -1,10 +1,9 @@
-import { deepClone } from '../../browser-core.js';
+import { deepClone, whenOrDefault } from '../../browser-core.js';
 import {
   runToyWithParsedJson,
   createOptions,
   getEnvHelpers,
 } from '../browserToysCore.js';
-import { whenOrDefault } from '../../browser-core.js';
 
 /** @typedef {import('../browserToysCore.js').EnvHelperFunc} EnvHelperFunc */
 /** @typedef {Map<string, EnvHelperFunc>} ToyEnv */
