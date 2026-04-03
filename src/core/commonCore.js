@@ -63,6 +63,36 @@ export function stringOrNull(value) {
 }
 
 /**
+ * Return a fallback when the provided message is falsy.
+ * @param {string | undefined | null} message Candidate message.
+ * @param {string} fallback Fallback value when message is falsy.
+ * @returns {string} Message to surface to the caller.
+ */
+export function resolveMessageOrDefault(message, fallback) {
+  const candidate = getStringCandidate(message);
+  if (!candidate) {
+    return fallback;
+  }
+
+  return candidate;
+}
+
+/**
+ * Return the provided string when available or delegate to a fallback.
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown) => string | null} fallback Function invoked when the value is not a string.
+ * @returns {string | null} String from the value or fallback.
+ */
+export function stringOrFallback(value, fallback) {
+  const normalized = getStringCandidate(value);
+  if (!normalized) {
+    return fallback(value);
+  }
+
+  return normalized;
+}
+
+/**
  * Evaluate a transform when a condition holds, otherwise return the fallback default.
  * @param {boolean} condition - Determines whether the transform should run.
  * @param {() => T} transform - Resolver invoked if the condition is true.
@@ -90,21 +120,6 @@ export function functionOrFallback(candidate, fallback) {
   }
 
   return fallback();
-}
-
-/**
- * Return a fallback when the provided message is falsy.
- * @param {string | undefined | null} message Candidate message.
- * @param {string} fallback Fallback value when message is falsy.
- * @returns {string} Message to surface to the caller.
- */
-export function resolveMessageOrDefault(message, fallback) {
-  const candidate = getStringCandidate(message);
-  if (!candidate) {
-    return fallback;
-  }
-
-  return candidate;
 }
 
 /**
@@ -254,32 +269,6 @@ export function assertFunction(candidate, name) {
 }
 
 /**
- * Check if a normalized string is acceptable.
- * @param {string | undefined} normalized Candidate normalized string.
- * @param {(normalized: string | undefined) => boolean} isAcceptable Acceptance predicate.
- * @returns {boolean} True if normalized is defined and acceptable.
- */
-function isAcceptableNormalizedString(normalized, isAcceptable) {
-  return normalized !== undefined && isAcceptable(normalized);
-}
-
-/**
- * Apply a fallback when the string candidate doesn't meet the acceptance predicate.
- * @param {unknown} value Candidate value.
- * @param {() => string | null} fallback Fallback result supplier.
- * @param {(normalized: string | undefined) => boolean} isNormalizedAcceptable Predicate indicating when the normalized string should be returned.
- * @returns {string | null} Normalized string or fallback.
- */
-function withStringFallback(value, fallback, isNormalizedAcceptable) {
-  const normalized = getStringCandidate(value);
-  return returnFallbackValue(
-    isAcceptableNormalizedString(normalized, isNormalizedAcceptable),
-    /** @type {string} */ (normalized),
-    fallback
-  );
-}
-
-/**
  * Returns the input string when available; otherwise returns an empty string.
  * @param {unknown} value Candidate value.
  * @returns {string} Input string or empty fallback.
@@ -328,20 +317,6 @@ export function whenNotNullishValue(value) {
 }
 
 /**
- * Return the provided string when available or delegate to a fallback.
- * @param {unknown} value Candidate value.
- * @param {(value: unknown) => string | null} fallback Function invoked when the value is not a string.
- * @returns {string | null} String from the value or fallback.
- */
-export function stringOrFallback(value, fallback) {
-  return withStringFallback(
-    value,
-    () => fallback(value),
-    normalized => Boolean(normalized)
-  );
-}
-
-/**
  * Run the provided callback when the value is a string.
  * @param {unknown} value Candidate value.
  * @param {(value: string) => T} fn Callback invoked with the string.
@@ -363,6 +338,20 @@ export function trimmedStringOrEmpty(value) {
   }
 
   return value.trim();
+}
+
+/**
+ * Normalize a string candidate to a trimmed string or `null`.
+ * @param {unknown} value Candidate string value.
+ * @returns {string | null} Trimmed string or `null` when the value is not a string or trims to nothing.
+ */
+export function trimmedStringOrNull(value) {
+  const trimmed = whenString(value, candidate => candidate.trim());
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed;
 }
 
 /**
@@ -397,53 +386,6 @@ export function whenTypeValue(value, typeName) {
 export function reportAndReturnFalse(reportFn, ...args) {
   reportFn(...args);
   return false;
-}
-
-/**
- * Return the original value when the predicate accepts it; otherwise `null`.
- * @template T
- * @param {T} value Candidate value.
- * @param {(value: T) => boolean} predicate Predicate that determines whether the value is accepted.
- * @returns {T | null} Original value or `null` when rejected.
- */
-export function whenPredicateValue(value, predicate) {
-  return whenOrNull(predicate(value), () => value);
-}
-
-/**
- * Normalize a string candidate to a trimmed string or `null`.
- * @param {unknown} value Candidate string value.
- * @returns {string | null} Trimmed string or `null` when the value is not a string or trims to nothing.
- */
-export function trimmedStringOrNull(value) {
-  const trimmed = whenString(value, candidate => candidate.trim());
-  if (!trimmed) {
-    return null;
-  }
-
-  return trimmed;
-}
-
-/**
- * Normalize a value, then truncate it to the requested maximum length.
- * @template T
- * @param {unknown} value Candidate value.
- * @param {number} maxLength Maximum length of the normalized result.
- * @param {(value: unknown) => T} normalize Callback that produces the normalized value.
- * @returns {T} Normalized and truncated value.
- */
-export function normalizeValueWithLimit(value, maxLength, normalize) {
-  return normalize(value).slice(0, maxLength);
-}
-
-/**
- * Build a CORS options object from an origin handler and method list.
- * @param {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} origin Origin handler.
- * @param {string[]} methods Allowed HTTP methods.
- * @returns {{ origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS options object.
- */
-export function createCorsOptionsValue(origin, methods = ['POST']) {
-  return { origin, methods };
 }
 
 /**

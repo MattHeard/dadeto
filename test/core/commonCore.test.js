@@ -7,16 +7,13 @@ import {
   isNullish,
   isValidString,
   normalizeNonStringValue,
-  normalizeValueWithLimit,
   resolveMessageOrDefault,
   stringOrNull,
   stringOrFallback,
   whenString,
   whenType,
   whenTypeValue,
-  whenPredicateValue,
   trimmedStringOrEmpty,
-  trimmedStringOrNull,
   whenArray,
   whenTruthy,
   whenOrNull,
@@ -25,6 +22,7 @@ import {
   numberOrZero,
   when,
   tryOr,
+  trimmedStringOrNull,
 } from '../../src/core/commonCore.js';
 import {
   areValidStrings,
@@ -78,30 +76,33 @@ describe('commonCore helpers', () => {
     expect(resolveMessageOrDefault(123, 'fallback')).toBe('fallback');
   });
 
-  test('reportAndReturnFalse invokes the reporter and returns false', () => {
-    const reporter = jest.fn();
-    expect(reportAndReturnFalse(reporter, 'alpha', 'beta')).toBe(false);
-    expect(reporter).toHaveBeenCalledWith('alpha', 'beta');
-  });
-
   test('stringOrFallback defers to the fallback when value is not a string', () => {
     const fallback = jest.fn(() => 'fallback-value');
     expect(stringOrFallback(123, fallback)).toBe('fallback-value');
     expect(fallback).toHaveBeenCalledWith(123);
   });
 
+  test('trimmedStringOrEmpty returns a trimmed string or an empty string', () => {
+    expect(trimmedStringOrEmpty('  hello  ')).toBe('hello');
+    expect(trimmedStringOrEmpty('')).toBe('');
+    expect(trimmedStringOrEmpty(123)).toBe('');
+  });
+
+  test('trimmedStringOrNull returns a trimmed string or null', () => {
+    expect(trimmedStringOrNull('  hello  ')).toBe('hello');
+    expect(trimmedStringOrNull('   ')).toBeNull();
+    expect(trimmedStringOrNull(123)).toBeNull();
+  });
+
+  test('reportAndReturnFalse invokes the reporter and returns false', () => {
+    const reporter = jest.fn();
+    expect(reportAndReturnFalse(reporter, 'alpha', 'beta')).toBe(false);
+    expect(reporter).toHaveBeenCalledWith('alpha', 'beta');
+  });
+
   test('whenString executes the callback for strings only', () => {
     expect(whenString('hello', value => value.toUpperCase())).toBe('HELLO');
     expect(whenString(123, value => value)).toBeNull();
-  });
-
-  test('normalizeValueWithLimit normalizes first and truncates second', () => {
-    expect(
-      normalizeValueWithLimit('  hello  ', 3, value => String(value).trim())
-    ).toBe('hel');
-    expect(
-      normalizeValueWithLimit(null, 10, value => String(value ?? '').trim())
-    ).toBe('');
   });
 
   test('normalizeObjectOrFallback uses fallback for non-objects and maps objects', () => {
@@ -145,25 +146,6 @@ describe('commonCore helpers', () => {
     expect(whenTypeValue('hello', 'string')).toBe('hello');
     expect(whenTypeValue(123, 'number')).toBe(123);
     expect(whenTypeValue({}, 'function')).toBeNull();
-  });
-
-  test('whenPredicateValue returns the original value when predicate accepts it', () => {
-    expect(whenPredicateValue('hello', value => value.length > 2)).toBe(
-      'hello'
-    );
-    expect(whenPredicateValue('hi', value => value.length > 2)).toBeNull();
-  });
-
-  test('trimmedStringOrEmpty returns a trimmed string or an empty string', () => {
-    expect(trimmedStringOrEmpty('  hello  ')).toBe('hello');
-    expect(trimmedStringOrEmpty('')).toBe('');
-    expect(trimmedStringOrEmpty(123)).toBe('');
-  });
-
-  test('trimmedStringOrNull returns a trimmed string or null', () => {
-    expect(trimmedStringOrNull('  hello  ')).toBe('hello');
-    expect(trimmedStringOrNull('   ')).toBeNull();
-    expect(trimmedStringOrNull(123)).toBeNull();
   });
 
   test('whenNotNullish executes the callback for present values only', () => {

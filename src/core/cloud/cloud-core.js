@@ -3,11 +3,9 @@ import {
   ensureString,
   isNonNullObject,
   normalizeNonStringValue,
-  normalizeValueWithLimit,
   numberOrZero,
   reportAndReturnFalse,
   stringOrNull,
-  createCorsOptionsValue,
   whenTypeValue,
   when,
   whenString,
@@ -18,6 +16,7 @@ export {
   DEFAULT_BUCKET_NAME,
   resolveMessageOrDefault,
   stringOrNull,
+  trimmedStringOrNull,
 } from '../commonCore.js';
 
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
@@ -455,6 +454,29 @@ export function normalizeString(value, maxLength) {
 }
 
 /**
+ * Normalize a value, then truncate it to the requested maximum length.
+ * @template T
+ * @param {unknown} value Candidate value.
+ * @param {number} maxLength Maximum length of the normalized result.
+ * @param {(value: unknown) => T} normalize Callback that produces the normalized value.
+ * @returns {T} Normalized and truncated value.
+ */
+export function normalizeValueWithLimit(value, maxLength, normalize) {
+  return normalize(value).slice(0, maxLength);
+}
+
+/**
+ * Return the original value when the predicate accepts it; otherwise `null`.
+ * @template T
+ * @param {T} value Candidate value.
+ * @param {(value: T) => boolean} predicate Predicate that determines whether the value is accepted.
+ * @returns {T | null} Original value or `null` when rejected.
+ */
+export function whenPredicateValue(value, predicate) {
+  return whenOrNull(predicate(value), () => value);
+}
+
+/**
  * Normalize content input by coercing to string, harmonizing newlines, and enforcing a max length.
  * @param {unknown} value Candidate content value.
  * @param {number} maxLength Maximum number of characters to keep.
@@ -503,6 +525,16 @@ export const productionOrigins = [
   'https://dendritestories.co.nz',
   'https://www.dendritestories.co.nz',
 ];
+
+/**
+ * Build a CORS options object from an origin handler and method list.
+ * @param {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} origin Origin handler.
+ * @param {string[]} methods Allowed HTTP methods.
+ * @returns {{ origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS options object.
+ */
+export function createCorsOptionsValue(origin, methods = ['POST']) {
+  return { origin, methods };
+}
 
 /**
  * Respond to an origin lookup using the supplied predicate.

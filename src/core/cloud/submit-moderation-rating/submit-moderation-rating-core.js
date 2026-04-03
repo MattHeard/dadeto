@@ -2,7 +2,6 @@ import {
   arrayOrEmpty,
   getStringCandidate,
   isNonNullObject,
-  whenPredicateValue,
   whenTypeValue,
   whenString,
 } from './common-core.js';
@@ -10,6 +9,7 @@ import {
   matchBearerToken,
   isAllowedOrigin,
   createResponse,
+  whenPredicateValue,
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
 } from './cloud-core.js';

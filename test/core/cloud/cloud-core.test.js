@@ -10,8 +10,11 @@ import {
   whenBodyPresent,
   getSnapshotData,
   isDuplicateAppError,
-  resolveMessageOrDefault,
   stringOrNull,
+  createCorsOptionsValue,
+  normalizeValueWithLimit,
+  trimmedStringOrNull,
+  whenPredicateValue,
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {
@@ -36,10 +39,10 @@ describe('cloud-core', () => {
       expect(stringOrNull(undefined)).toBeNull();
     });
 
-    test('resolveMessageOrDefault returns fallback values when needed', () => {
-      expect(resolveMessageOrDefault('value', 'fallback')).toBe('value');
-      expect(resolveMessageOrDefault(123, 'fallback')).toBe('fallback');
-      expect(resolveMessageOrDefault(123, null)).toBeNull();
+    test('trimmedStringOrNull returns a trimmed string or null', () => {
+      expect(trimmedStringOrNull('  hello  ')).toBe('hello');
+      expect(trimmedStringOrNull('   ')).toBeNull();
+      expect(trimmedStringOrNull(123)).toBeNull();
     });
   });
 
@@ -104,6 +107,17 @@ describe('cloud-core', () => {
     });
   });
 
+  describe('normalizeValueWithLimit', () => {
+    test('normalizes first and truncates second', () => {
+      expect(
+        normalizeValueWithLimit('  hello  ', 3, value => String(value).trim())
+      ).toBe('hel');
+      expect(
+        normalizeValueWithLimit(null, 10, value => String(value ?? '').trim())
+      ).toBe('');
+    });
+  });
+
   describe('normalizeAuthor', () => {
     test('trims and enforces maximum length', () => {
       expect(normalizeAuthor('  author  ')).toBe('author');
@@ -156,6 +170,20 @@ describe('cloud-core', () => {
     });
   });
 
+  describe('createCorsOptionsValue', () => {
+    test('returns a simple origin and methods object', () => {
+      const origin = () => {};
+      expect(createCorsOptionsValue(origin)).toEqual({
+        origin,
+        methods: ['POST'],
+      });
+      expect(createCorsOptionsValue(origin, ['GET'])).toEqual({
+        origin,
+        methods: ['GET'],
+      });
+    });
+  });
+
   describe('isDuplicateAppError', () => {
     test('requires a duplicate message to return true even when code matches', () => {
       expect(
@@ -176,6 +204,15 @@ describe('cloud-core', () => {
     test('returns false for other errors', () => {
       expect(isDuplicateAppError({ code: 'something/else' })).toBe(false);
       expect(isDuplicateAppError(null)).toBe(false);
+    });
+  });
+
+  describe('whenPredicateValue', () => {
+    test('returns the original value when predicate accepts it', () => {
+      expect(whenPredicateValue('hello', value => value.length > 2)).toBe(
+        'hello'
+      );
+      expect(whenPredicateValue('hi', value => value.length > 2)).toBeNull();
     });
   });
 });
