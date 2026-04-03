@@ -1,5 +1,4 @@
 export {
-  entriesToObject,
   buildCopyLogMessage,
   createMappedTask,
   formatPathRelativeToProject,

@@ -4,7 +4,6 @@ import {
   assertFunction,
   ensureString,
   arrayOrEmpty,
-  entriesToObject,
   getStringCandidate,
   isBlankStringValue,
   isNonNullObject,
@@ -68,15 +67,6 @@ describe('commonCore helpers', () => {
     expect(normalizeNonStringValue('hello')).toBe('hello');
     expect(normalizeNonStringValue(null)).toBe('');
     expect(normalizeNonStringValue(123)).toBe('123');
-  });
-
-  test('entriesToObject converts tuple lists into objects', () => {
-    expect(
-      entriesToObject([
-        ['alpha', 1],
-        ['beta', 2],
-      ])
-    ).toEqual({ alpha: 1, beta: 2 });
   });
 
   test('string normalization helpers return strings or fallbacks predictably', () => {

@@ -7,7 +7,6 @@
 
 import { parseCsvLine } from './toys-core.js';
 import { runToyWithFallback } from '../browserToysCore.js';
-import { entriesToObject } from '../../../commonCore.js';
 
 /**
  * Throw a descriptive error when a CSV precondition fails.
@@ -68,7 +67,7 @@ function buildObjectFromCsv(input) {
 
   const entries = zipHeadersWithValues(headers, values);
 
-  return entriesToObject(entries);
+  return Object.fromEntries(entries);
 }
 
 /**

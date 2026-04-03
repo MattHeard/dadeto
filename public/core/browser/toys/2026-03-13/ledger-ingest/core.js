@@ -4,7 +4,6 @@ import {
 } from './ledgerIngestShared.js';
 import {
   arrayOrEmpty,
-  entriesToObject,
   isBlankStringValue,
   numberOrZero,
   ensureString,
@@ -89,7 +88,7 @@ function createHappyPathRawRecords() {
  */
 // eslint-disable-next-line max-params
 function createRawRecord(id, date, amount, description, currency) {
-  return entriesToObject([
+  return Object.fromEntries([
     ['id', id],
     ['date', date],
     ['amount', amount],
