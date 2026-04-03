@@ -4,12 +4,12 @@ import {
   isNonNullObject,
   whenTypeValue,
   whenString,
-} from './common-core.js';
+  whenPredicateValue,
+} from '../../commonCore.js';
 import {
   matchBearerToken,
   isAllowedOrigin,
   createResponse,
-  whenPredicateValue,
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
 } from './cloud-core.js';

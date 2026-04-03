@@ -5,7 +5,7 @@ import {
   normalizeNonStringValue,
   numberOrZero,
   whenNotNullishValue,
-} from '../common-core.js';
+} from '../../commonCore.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
 

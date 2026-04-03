@@ -1,12 +1,16 @@
 import { createVerifyAdmin } from './verifyAdmin.js';
-import { ADMIN_UID, isNonNullObject } from './common-core.js';
+import {
+  ADMIN_UID,
+  isNonNullObject,
+  runMappedEntries,
+  whenString,
+} from '../../commonCore.js';
 import {
   DEFAULT_BUCKET_NAME,
   isDuplicateAppError,
   sendOkResponse,
 } from './cloud-core.js';
 import { runWithFailureAndThen } from '../response-utils.js';
-import { runMappedEntries, whenString } from '../../commonCore.js';
 export { isDuplicateAppError };
 
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */

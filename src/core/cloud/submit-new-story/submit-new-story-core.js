@@ -6,8 +6,6 @@ import {
   createCorsOriginHandler,
   createResponse,
   normalizeShortString,
-  createCorsOptionsValue,
-  trimmedStringOrNull,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 import {
@@ -16,7 +14,13 @@ import {
   getAuthorizationHeader,
   getAuthorizationFromGetter,
 } from '../submit-shared.js';
-import { arrayOrEmpty, whenNotNullish, whenOrDefault } from './common-core.js';
+import {
+  arrayOrEmpty,
+  createCorsOptionsValue,
+  trimmedStringOrNull,
+  whenNotNullish,
+  whenOrDefault,
+} from '../../commonCore.js';
 import { createResponder } from '../responder-utils.js';
 
 /**

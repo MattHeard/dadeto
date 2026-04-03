@@ -1,15 +1,12 @@
 import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
-import {
-  getNumericValueOrZero,
-  productionOrigins,
-  resolveMessageOrDefault,
-} from '../cloud-core.js';
+import { getNumericValueOrZero, productionOrigins } from '../cloud-core.js';
 import {
   ensureString,
   functionOrFallback,
+  resolveMessageOrDefault,
   whenOrNull,
   whenString,
-} from './common-core.js';
+} from '../../commonCore.js';
 
 export { createDb } from './create-db.js';
 export { productionOrigins };

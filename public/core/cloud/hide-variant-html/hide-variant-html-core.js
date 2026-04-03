@@ -4,7 +4,7 @@ import {
   ensureString,
   isNullish,
   normalizeNonStringValue,
-} from '../common-core.js';
+} from '../../commonCore.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
 

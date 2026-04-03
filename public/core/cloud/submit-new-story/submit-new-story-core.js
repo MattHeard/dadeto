@@ -13,7 +13,7 @@ import {
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 import { createCloudSubmitHandler } from '../submit-shared.js';
 import { createResponder } from '../responder-utils.js';
-import { whenNotNullish, whenString } from './common-core.js';
+import { whenNotNullish, whenString } from '../../commonCore.js';
 
 /**
  * @typedef {object} SubmitNewStoryRequest

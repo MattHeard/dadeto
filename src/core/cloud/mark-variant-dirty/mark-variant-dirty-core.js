@@ -8,7 +8,7 @@ import {
   sendOkResponse,
   resolveMessageOrDefault,
 } from '../cloud-core.js';
-import * as commonCore from '../common-core.js';
+import * as commonCore from '../../commonCore.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';

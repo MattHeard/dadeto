@@ -1,5 +1,5 @@
 import { createDb } from './create-db.js';
-import { assertFunction, isValidString } from './common-core.js';
+import { assertFunction, isValidString } from '../../commonCore.js';
 import { validatePostMethod } from '../http-method-guard.js';
 
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'Method Not Allowed' };

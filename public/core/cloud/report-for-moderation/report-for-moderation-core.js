@@ -1,5 +1,5 @@
-import { assertFunction } from '../common-core.js';
 import { trimmedStringOrEmpty } from '../../commonCore.js';
+import { assertFunction } from '../../commonCore.js';
 import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,

@@ -7,10 +7,7 @@ import {
   calculateVisibility,
   TOYS_2025_12_05_INDEX_MARKER,
 } from '../../src/core/browser/toys/2025-12-05/index.js';
-import {
-  isNonNullObject,
-  CLOUD_COMMON_CORE_MARKER,
-} from '../../src/core/cloud/common-core.js';
+import { isNonNullObject } from '../../src/core/commonCore.js';
 import {
   createVerifyAdmin as createStatsVerifyAdmin,
   GENERATE_STATS_VERIFY_ADMIN_MARKER,
@@ -37,7 +34,6 @@ describe('re-export coverage', () => {
 
   it('exposes common core helpers', () => {
     expect(isNonNullObject({})).toBe(true);
-    expect(CLOUD_COMMON_CORE_MARKER).toBe(true);
   });
 
   it('exposes verify admin helpers', () => {

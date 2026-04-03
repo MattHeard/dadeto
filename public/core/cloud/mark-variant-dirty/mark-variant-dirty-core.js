@@ -12,7 +12,7 @@ import {
 import {
   assertFunction,
   ensureString,
-} from '../common-core.js';
+} from '../../commonCore.js';
 import { runWithFailure } from '../response-utils.js';
 const POST_METHOD = 'POST';
 export { getAllowedOrigins } from '../allowed-origins.js';

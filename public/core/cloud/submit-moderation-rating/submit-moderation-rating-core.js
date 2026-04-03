@@ -2,9 +2,9 @@ import {
   arrayOrEmpty,
   getStringCandidate,
   isNonNullObject,
-  whenPredicateValue,
   whenTypeValue,
-} from './common-core.js';
+  whenPredicateValue,
+} from '../../commonCore.js';
 import {
   matchBearerToken,
   getHeaderFromGetter,

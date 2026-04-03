@@ -1,5 +1,5 @@
 import { DEFAULT_BUCKET_NAME } from './cloud-core.js';
-import { assertFunction } from './common-core.js';
+import { assertFunction } from '../../commonCore.js';
 
 export { DEFAULT_BUCKET_NAME } from './cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;

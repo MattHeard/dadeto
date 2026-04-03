@@ -5,7 +5,7 @@ import {
   tryGetHeader,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from './auth-helpers.js';
-import { assertFunction, normalizeValueWithLimit } from './common-core.js';
+import { assertFunction, normalizeValueWithLimit } from '../commonCore.js';
 import { normalizeExpressRequest } from './request-normalization.js';
 
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */

@@ -1,6 +1,6 @@
 import { normalizeShortString } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from './auth-helpers.js';
-import { assertFunction } from './common-core.js';
+import { assertFunction } from '../commonCore.js';
 import { normalizeExpressRequest } from './request-normalization.js';
 
 /**

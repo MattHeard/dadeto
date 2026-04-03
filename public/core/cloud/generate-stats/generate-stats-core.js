@@ -1,5 +1,5 @@
 import { createVerifyAdmin } from './verifyAdmin.js';
-import { ADMIN_UID, isNonNullObject } from './common-core.js';
+import { ADMIN_UID, isNonNullObject } from '../../commonCore.js';
 import {
   DEFAULT_BUCKET_NAME,
   isDuplicateAppError,
