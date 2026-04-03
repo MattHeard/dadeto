@@ -430,6 +430,22 @@ export function cleanContainer(dom, container) {
 }
 
 /**
+ * Hide the text input, clean the container, and then build a form.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   buildForm: (options: { dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }) => HTMLElement,
+ * }} options - Form handler dependencies.
+ * @returns {HTMLElement} The created form element.
+ */
+export function runFormHandler({ dom, container, textInput, buildForm }) {
+  browserCore.hideAndDisable(textInput, dom);
+  cleanContainer(dom, container);
+  return buildForm({ dom, container, textInput });
+}
+
+/**
  * Create the buildForm implementation bound to a set of fields.
  * @param {Array<[string, string]>} fields - Field definitions to render.
  * @returns {(dom: DOMHelpers, options: {container: HTMLElement, textInput: HTMLInputElement, data: DendriteData, disposers: Disposer[]}) => HTMLElement} Form builder bound to `fields`.

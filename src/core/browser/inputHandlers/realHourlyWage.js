@@ -1,7 +1,7 @@
 import * as browserCore from '../browser-core.js';
 import {
-  cleanContainer,
   createManagedFormShellState,
+  runFormHandler,
   syncHiddenInput,
   wireLabelledField,
 } from './createDendriteHandler.js';
@@ -393,9 +393,7 @@ function buildForm({ dom, container, textInput }) {
  * @returns {void}
  */
 export function realHourlyWageHandler(dom, container, textInput) {
-  browserCore.hideAndDisable(textInput, dom);
-  cleanContainer(dom, container);
-  buildForm({ dom, container, textInput });
+  runFormHandler({ dom, container, textInput, buildForm });
 }
 
 export const realHourlyWageHandlerTestOnly = {

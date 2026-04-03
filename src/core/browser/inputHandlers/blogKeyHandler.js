@@ -1,9 +1,9 @@
 import * as browserCore from '../browser-core.js';
 import {
-  cleanContainer,
   createManagedFormShellState,
   syncHiddenInput,
   wireLabelledField,
+  runFormHandler,
 } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -186,7 +186,5 @@ function buildForm({ dom, container, textInput }) {
  * @returns {void}
  */
 export function blogKeyHandler(dom, container, textInput) {
-  browserCore.hideAndDisable(textInput, dom);
-  cleanContainer(dom, container);
-  buildForm({ dom, container, textInput });
+  runFormHandler({ dom, container, textInput, buildForm });
 }
