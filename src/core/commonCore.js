@@ -210,15 +210,6 @@ export function buildCopyLogMessage({
 }
 
 /**
- * Build an exports object from explicit name/value tuples.
- * @param {Array<[string, unknown]>} entries Name/value pairs to expose.
- * @returns {Record<string, unknown>} Combined helpers ready for export.
- */
-export function buildCopyExportMap(entries) {
-  return entriesToObject(entries);
-}
-
-/**
  * Return either the provided value or the fallback result when an error exists.
  * @template T
  * @param {unknown} error Error value to inspect.

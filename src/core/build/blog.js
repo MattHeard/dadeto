@@ -1,6 +1,6 @@
 import {
-  buildCopyExportMap,
   buildCopyLogMessage,
+  entriesToObject,
   formatPathRelativeToProject,
   forEachMappedEntries,
   runMappedEntries,
@@ -482,7 +482,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   return /** @type {Record<string, Function>} */ (
-    buildCopyExportMap([
+    entriesToObject([
       ['runCopyWorkflow', runCopyWorkflow],
       ['copyBrowserTrees', copyBrowserTrees],
       ['copyCoreRootFiles', copyCoreRootFiles],

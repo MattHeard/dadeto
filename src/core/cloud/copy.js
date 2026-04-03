@@ -1,6 +1,6 @@
 import {
-  buildCopyExportMap,
   buildCopyLogMessage,
+  entriesToObject,
   formatPathRelativeToProject,
   runMappedEntries,
 } from '../commonCore.js';
@@ -342,7 +342,7 @@ export function createCopyToInfraCore({
   };
 
   return /** @type {CopyToInfraHelpers} */ (
-    buildCopyExportMap([
+    entriesToObject([
       ['runCopyToInfra', runCopyToInfra],
       ['copyIndividualFiles', copyIndividualFiles],
       ['copyDeclaredFiles', copyDeclaredFiles],
