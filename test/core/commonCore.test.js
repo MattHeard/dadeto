@@ -15,7 +15,6 @@ import {
   normalizeValueWithLimit,
   normalizeObjectOrFallback,
   resolveMessageOrDefault,
-  stringOrDefault,
   stringOrNull,
   stringOrFallback,
   reportAndReturnFalse,
@@ -83,8 +82,6 @@ describe('commonCore helpers', () => {
   test('string normalization helpers return strings or fallbacks predictably', () => {
     expect(stringOrNull('hello')).toBe('hello');
     expect(stringOrNull(123)).toBeNull();
-    expect(stringOrDefault('hello', 'fallback')).toBe('hello');
-    expect(stringOrDefault(123, 'fallback')).toBe('fallback');
     expect(resolveMessageOrDefault('hello', 'fallback')).toBe('hello');
     expect(resolveMessageOrDefault(123, 'fallback')).toBe('fallback');
   });

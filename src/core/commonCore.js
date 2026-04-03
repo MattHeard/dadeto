@@ -97,16 +97,6 @@ export function resolveMessageOrDefault(message, fallback) {
 }
 
 /**
- * Return the provided string when available; otherwise use the fallback.
- * @param {unknown} value Candidate value that may be a string.
- * @param {string} fallback Replacement when the value is not a string.
- * @returns {string} String value or fallback.
- */
-export function stringOrDefault(value, fallback) {
-  return resolveMessageOrDefault(value, fallback);
-}
-
-/**
  * Choose the most readable representation for a relative path.
  * @param {string} absolutePath Original absolute path provided to the logger.
  * @param {string} relativePath Path relative to the project root.

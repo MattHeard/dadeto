@@ -7,7 +7,6 @@ import {
   hasStringMessage,
   sendOkResponse,
   resolveMessageOrDefault,
-  stringOrDefault,
 } from '../cloud-core.js';
 import * as commonCore from '../common-core.js';
 import { runWithFailureAndThen } from '../response-utils.js';
@@ -723,7 +722,7 @@ function resolveParseRequestBody(parser) {
  * @returns {string} HTTP method.
  */
 function resolveAllowedMethod(method) {
-  return stringOrDefault(method, POST_METHOD);
+  return resolveMessageOrDefault(method, POST_METHOD);
 }
 
 /**

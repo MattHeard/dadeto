@@ -2,7 +2,7 @@ import { getApiKeyCreditSnapshot } from './get-api-key-credit-snapshot.js';
 import {
   getNumericValueOrZero,
   productionOrigins,
-  stringOrDefault,
+  resolveMessageOrDefault,
 } from '../cloud-core.js';
 import {
   ensureString,
@@ -216,7 +216,7 @@ function resolveErrorLogger(logError) {
  * @returns {string} Method string when valid, otherwise an empty string.
  */
 function deriveRequestMethod(method) {
-  return stringOrDefault(method, '');
+  return resolveMessageOrDefault(method, '');
 }
 
 /**

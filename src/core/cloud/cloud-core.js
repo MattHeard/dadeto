@@ -17,7 +17,6 @@ import {
 export {
   DEFAULT_BUCKET_NAME,
   resolveMessageOrDefault,
-  stringOrDefault,
   stringOrNull,
 } from '../commonCore.js';
 
