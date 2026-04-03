@@ -253,6 +253,19 @@ function buildStorageReport(options) {
 }
 
 /**
+ * Serialize the storage toy response.
+ * @param {Record<string, unknown>} importResult Import result payload.
+ * @param {Record<string, unknown>} storage Storage report payload.
+ * @returns {string} JSON response body.
+ */
+function buildStorageToyResponse(importResult, storage) {
+  return JSON.stringify({
+    ...importResult,
+    storage,
+  });
+}
+
+/**
  * Run the ledger-ingest import and persist the canonical transactions into permanent storage.
  * @param {string} input Serialized toy input.
  * @param {{ get?: (name: string) => unknown } | null | undefined} env Toy runtime environment.
@@ -279,15 +292,15 @@ export function ledgerIngestStorageToy(input, env) {
 
   persistPermanentStorageRoot(env, nextRoot);
 
-  return JSON.stringify({
-    ...importResult,
-    storage: buildStorageReport({
+  return buildStorageToyResponse(
+    importResult,
+    buildStorageReport({
       storageKey,
       beforeState: currentState,
       afterState: mergeResult.nextState,
       actions: mergeResult.actions,
-    }),
-  });
+    })
+  );
 }
 
 export const ledgerIngestStorageToyTestOnly = {

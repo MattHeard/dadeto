@@ -119,27 +119,6 @@ function buildGamepadPayload(gamepad, options) {
 }
 
 /**
- * Build a gamepad payload when a gamepad is available.
- * @param {{
- *   gamepad: Gamepad | null,
- *   type: string,
- *   buildFields: () => Record<string, unknown>,
- * }} options - Payload settings.
- * @returns {Record<string, unknown> | null} Serialized payload data when a gamepad exists.
- */
-function buildGamepadPayloadFromGamepad(options) {
-  const { gamepad, type, buildFields } = options;
-  if (gamepad === null) {
-    return null;
-  }
-
-  return buildGamepadPayload(gamepad, {
-    type,
-    fields: buildFields(),
-  });
-}
-
-/**
  * Build a connection-style payload from a browser gamepad event.
  * @param {GamepadEvent | { gamepad?: Gamepad }} event - Connection or disconnection event.
  * @param {string} type - Payload type to emit.
@@ -147,14 +126,26 @@ function buildGamepadPayloadFromGamepad(options) {
  */
 function buildConnectionPayload(event, type) {
   const gamepad = getEventGamepad(event);
-  return buildGamepadPayloadFromGamepad({
-    gamepad,
+  if (gamepad === null) {
+    return null;
+  }
+
+  return buildGamepadPayload(gamepad, {
     type,
-    buildFields: () => ({
-      axes: Array.from(gamepad.axes, normalizeAxisValue),
-      buttons: buildConnectionButtons(gamepad),
-    }),
+    fields: buildConnectionFields(gamepad),
   });
+}
+
+/**
+ * Build the standard connection payload fields for a gamepad.
+ * @param {Gamepad} gamepad - Browser gamepad object.
+ * @returns {{ axes: number[], buttons: ButtonSnapshot[] }} Serializable connection fields.
+ */
+function buildConnectionFields(gamepad) {
+  return {
+    axes: Array.from(gamepad.axes, normalizeAxisValue),
+    buttons: buildConnectionButtons(gamepad),
+  };
 }
 
 /**
@@ -325,38 +316,17 @@ function getPreviousButtons(previousSnapshot) {
 }
 
 /**
- * Build a payload from a changed index.
- * @param {Gamepad} gamepad - Browser gamepad object.
- * @param {{
- *   type: 'button' | 'axis',
- *   changedIndex: number,
- *   buildFields: (index: number) => Record<string, unknown>,
- * }} options - Payload builder settings.
- * @returns {Record<string, unknown> | null} Payload data when a control changed.
- */
-function buildChangedPayload(gamepad, options) {
-  const { type, changedIndex, buildFields } = options;
-  if (changedIndex === -1) {
-    return null;
-  }
-
-  return buildGamepadPayloadFromGamepad({
-    gamepad,
-    type,
-    buildFields: () => buildFields(changedIndex),
-  });
-}
-
-/**
  * Build a button payload when any button changed.
  * @param {Gamepad} gamepad - Browser gamepad object.
  * @param {GamepadSnapshot | undefined} previousSnapshot - Previous polled snapshot.
  * @returns {Record<string, unknown> | null} Button event payload when a button changed.
  */
 function getButtonPayload(gamepad, previousSnapshot) {
-  return buildChangedPayload(gamepad, {
+  return buildChangedPayload({
+    gamepad,
+    previousSnapshot,
     type: 'button',
-    changedIndex: findChangedButtonIndex(gamepad, previousSnapshot),
+    findChangedIndex: findChangedButtonIndex,
     buildFields: changedIndex => {
       const button = gamepad.buttons[changedIndex];
       return {
@@ -425,9 +395,11 @@ function getPreviousSnapshotValues(previousSnapshot, key) {
  * @returns {Record<string, unknown> | null} Axis event payload when an axis changed.
  */
 function getAxisPayload(gamepad, previousSnapshot) {
-  return buildChangedPayload(gamepad, {
+  return buildChangedPayload({
+    gamepad,
+    previousSnapshot,
     type: 'axis',
-    changedIndex: findChangedAxisIndex(gamepad, previousSnapshot),
+    findChangedIndex: findChangedAxisIndex,
     buildFields: changedIndex => ({
       axisIndex: changedIndex,
       value: normalizeAxisValue(gamepad.axes[changedIndex]),
@@ -436,14 +408,26 @@ function getAxisPayload(gamepad, previousSnapshot) {
 }
 
 /**
- * Pick the highest-priority payload for a polled gamepad change.
- * @param {Gamepad} gamepad - Browser gamepad object.
- * @param {GamepadSnapshot | undefined} previousSnapshot - Previous polled snapshot.
- * @returns {Record<string, unknown> | null} Button payload first, axis payload second.
+ * Build a changed payload for buttons or axes.
+ * @param {{
+ *   gamepad: Gamepad,
+ *   previousSnapshot: GamepadSnapshot | undefined,
+ *   type: string,
+ *   findChangedIndex: (gamepad: Gamepad, previousSnapshot: GamepadSnapshot | undefined) => number,
+ *   buildFields: (changedIndex: number) => Record<string, unknown>,
+ * }} options Payload builder settings.
+ * @returns {Record<string, unknown> | null} Payload when a change was detected.
  */
-function getPollPayload(gamepad, previousSnapshot) {
-  const buttonPayload = getButtonPayload(gamepad, previousSnapshot);
-  return buttonPayload ?? getAxisPayload(gamepad, previousSnapshot);
+function buildChangedPayload(options) {
+  const { gamepad, previousSnapshot, type, findChangedIndex, buildFields } =
+    options;
+  const changedIndex = findChangedIndex(gamepad, previousSnapshot);
+  return whenOrNull(changedIndex !== -1, () =>
+    buildGamepadPayload(gamepad, {
+      type,
+      fields: buildFields(changedIndex),
+    })
+  );
 }
 
 /**
@@ -458,7 +442,9 @@ function pollGamepads(options) {
 
   getConnectedGamepads(options.dom).forEach(gamepad => {
     const previousSnapshot = options.state.snapshots[gamepad.index];
-    const payload = getPollPayload(gamepad, previousSnapshot);
+    const payload =
+      getButtonPayload(gamepad, previousSnapshot) ??
+      getAxisPayload(gamepad, previousSnapshot);
     options.state.snapshots[gamepad.index] = snapshotGamepad(gamepad);
     whenNotNullish(payload, presentPayload => {
       syncToyPayload(createCaptureToyInput(options), presentPayload);

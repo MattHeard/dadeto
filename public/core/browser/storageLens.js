@@ -27,6 +27,19 @@ export function createStorageLens(getter, setter) {
 }
 
 /**
+ * Resolve the value argument from a storage-lens setter call.
+ * @param {unknown[]} args Setter arguments.
+ * @returns {unknown} Value argument from the call.
+ */
+function getSetterValue(args) {
+  if (args.length >= 2) {
+    return args[1];
+  }
+
+  return args[0];
+}
+
+/**
  * Creates a lens that operates on a subset of data within a parent lens.
  * @template TValue
  * @param {StorageLens<TValue>} parentLens - The parent lens to compose with.
@@ -36,16 +49,8 @@ export function createStorageLens(getter, setter) {
 export function focusLens(parentLens, key) {
   return createStorageLens(
     () => parentLens.get(key),
-    (...args) => {
-      let candidateValue;
-      if (args.length >= 2) {
-        candidateValue = args[1];
-      } else {
-        candidateValue = args[0];
-      }
-      const value = /** @type {TValue} */ (candidateValue);
-      parentLens.set(key, value);
-    }
+    (...args) =>
+      parentLens.set(key, /** @type {TValue} */ (getSetterValue(args)))
   );
 }
 

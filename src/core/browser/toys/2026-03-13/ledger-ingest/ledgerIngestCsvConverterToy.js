@@ -1,4 +1,4 @@
-import { isBlankStringValue } from '../../../../commonCore.js';
+import { isBlankStringValue, whenOrNull } from '../../../../commonCore.js';
 import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
 
 /**
@@ -379,11 +379,7 @@ function parseCsvAmount(candidate) {
  * @returns {number | null} Parsed numeric amount or null when invalid or empty.
  */
 function parseCsvAmountCandidate(candidate) {
-  if (candidate.length === 0) {
-    return null;
-  }
-
-  return parseCsvAmount(candidate);
+  return whenOrNull(candidate.length !== 0, () => parseCsvAmount(candidate));
 }
 
 /**
