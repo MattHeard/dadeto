@@ -3,7 +3,6 @@ import {
   assertFunction,
   ensureString,
   arrayOrEmpty,
-  getStringCandidate,
   isNonNullObject,
   isNullish,
   isValidString,
@@ -23,18 +22,19 @@ import {
   whenOrNull,
   whenNotNullish,
   whenNotNullishValue,
-  guardThen,
   numberOrZero,
   when,
   tryOr,
 } from '../../src/core/commonCore.js';
 import {
   areValidStrings,
+  getStringCandidate,
   functionOrFallback,
   isBlankStringValue,
   isNullishOrEmptyString,
   normalizeObjectOrFallback,
   reportAndReturnFalse,
+  guardThen,
   whenOrDefault,
 } from '../../src/core/browser/browser-core.js';
 

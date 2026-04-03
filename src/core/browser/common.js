@@ -46,4 +46,5 @@ export function buildWhen(condition, builder) {
   return builder();
 }
 
-export { guardThen, tryOr, when } from '../commonCore.js';
+export { guardThen } from './browser-core.js';
+export { tryOr, when } from '../commonCore.js';

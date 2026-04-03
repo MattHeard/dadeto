@@ -41,6 +41,19 @@ export function arrayOrEmpty(value) {
 }
 
 /**
+ * Return the string candidate when available.
+ * @param {unknown} value Candidate value.
+ * @returns {string | undefined} String when provided, otherwise undefined.
+ */
+export function getStringCandidate(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return undefined;
+}
+
+/**
  * Normalize a candidate string value.
  * @param {unknown} value Candidate value.
  * @returns {string | null} String value when present, otherwise null.
@@ -50,17 +63,48 @@ export function stringOrNull(value) {
 }
 
 /**
+ * Evaluate a transform when a condition holds, otherwise return the fallback default.
+ * @param {boolean} condition - Determines whether the transform should run.
+ * @param {() => T} transform - Resolver invoked if the condition is true.
+ * @param {T} fallback - Value returned when the condition is falsy.
+ * @returns {T} Result of the transform when applied, or the fallback otherwise.
+ * @template T
+ */
+export function whenOrDefault(condition, transform, fallback) {
+  if (condition) {
+    return transform();
+  }
+
+  return fallback;
+}
+
+/**
+ * Return the provided function candidate when available, otherwise use the fallback.
+ * @param {unknown} candidate Candidate value.
+ * @param {() => Function} fallback Factory returning the fallback function.
+ * @returns {Function} Callable derived from the candidate or fallback.
+ */
+export function functionOrFallback(candidate, fallback) {
+  if (typeof candidate === 'function') {
+    return candidate;
+  }
+
+  return fallback();
+}
+
+/**
  * Return a fallback when the provided message is falsy.
  * @param {string | undefined | null} message Candidate message.
  * @param {string} fallback Fallback value when message is falsy.
  * @returns {string} Message to surface to the caller.
  */
 export function resolveMessageOrDefault(message, fallback) {
-  if (typeof message === 'string' && message.length > 0) {
-    return message;
+  const candidate = getStringCandidate(message);
+  if (!candidate) {
+    return fallback;
   }
 
-  return fallback;
+  return candidate;
 }
 
 /**
@@ -207,19 +251,6 @@ export function assertFunction(candidate, name) {
   if (typeof candidate !== 'function') {
     throw new TypeError(`${name} must be a function`);
   }
-}
-
-/**
- * Return the string candidate when available.
- * @param {unknown} value Candidate value.
- * @returns {string | undefined} String when provided, otherwise undefined.
- */
-export function getStringCandidate(value) {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  return undefined;
 }
 
 /**
@@ -402,20 +433,6 @@ export function normalizeValueWithLimit(value, maxLength, normalize) {
 }
 
 /**
- * Return the provided function candidate when available, otherwise use the fallback.
- * @param {unknown} candidate Candidate value.
- * @param {() => Function} fallback Factory returning the fallback function.
- * @returns {Function} Callable derived from the candidate or fallback.
- */
-export function functionOrFallback(candidate, fallback) {
-  if (typeof candidate === 'function') {
-    return candidate;
-  }
-
-  return fallback();
-}
-
-/**
  * Build a CORS options object from an origin handler and method list.
  * @param {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} origin Origin handler.
  * @param {string[]} methods Allowed HTTP methods.
@@ -449,18 +466,6 @@ export function whenTruthy(value, fn) {
     () => fn(value),
     () => null
   );
-}
-
-/**
- * Evaluate a transform when a condition holds, otherwise return the fallback default.
- * @param {boolean} condition - Determines whether the transform should run.
- * @param {() => T} transform - Resolver invoked if the condition is true.
- * @param {T} fallback - Value returned when the condition is falsy.
- * @returns {T} Result of the transform when applied, or the fallback otherwise.
- * @template T
- */
-export function whenOrDefault(condition, transform, fallback) {
-  return condition ? transform() : fallback;
 }
 
 /**
@@ -531,21 +536,6 @@ function returnFallbackValue(available, value, fallback) {
  */
 function isFiniteNumericValue(value) {
   return typeof value === 'number' && Number.isFinite(value);
-}
-
-/**
- * Run a side effect when a condition is truthy and indicate whether it ran.
- * @param {boolean} condition - Determines whether to execute the effect.
- * @param {() => void} effect - Side effect invoked when the condition holds.
- * @returns {boolean} True when the effect executed, false otherwise.
- */
-export function guardThen(condition, effect) {
-  if (!condition) {
-    return false;
-  }
-
-  effect();
-  return true;
 }
 
 /**
