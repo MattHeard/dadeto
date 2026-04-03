@@ -4,7 +4,11 @@ import {
   getSnapshotData,
   stringOrNull,
 } from '../cloud-core.js';
-import { arrayOrEmpty, stringOrFallback } from '../../commonCore.js';
+import {
+  arrayOrEmpty,
+  forEachMappedEntries,
+  stringOrFallback,
+} from '../../commonCore.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
 
@@ -224,15 +228,19 @@ function queueVariantOptions({
   randomUUID,
   getServerTimestamp,
 }) {
-  normalizeOptions(submission.options).forEach((text, position) => {
-    const optionRef = variantRef.collection('options').doc(randomUUID());
+  forEachMappedEntries(
+    normalizeOptions(submission.options),
+    text => text,
+    (text, position) => {
+      const optionRef = variantRef.collection('options').doc(randomUUID());
 
-    batch.set(optionRef, {
-      content: text,
-      createdAt: getServerTimestamp(),
-      position,
-    });
-  });
+      batch.set(optionRef, {
+        content: text,
+        createdAt: getServerTimestamp(),
+        position,
+      });
+    }
+  );
 }
 
 /**

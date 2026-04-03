@@ -2,6 +2,7 @@ import {
   buildCopyExportMap,
   buildCopyLogMessage,
   formatPathRelativeToProject,
+  forEachMappedEntries,
   runMappedEntries,
 } from '../commonCore.js';
 export {
@@ -51,49 +52,6 @@ export function createSharedDirectoryEntries({
       [destKey, destPath],
     ];
   });
-}
-
-/**
- * Build a file copier that reuses the copy-core defaults.
- * @param {{
- *   io: {
- *     directoryExists: (target: string) => boolean,
- *     createDirectory: (target: string) => void,
- *     copyFile: (source: string, destination: string) => void,
- *   },
- *   messageLogger: { info: (message: string) => void },
- *   formatPathForLog: (targetPath: string) => string,
- *   ensureDirectoryExists: (
- *     io: {
- *       directoryExists: (target: string) => boolean,
- *       createDirectory: (target: string) => void,
- *       copyFile: (source: string, destination: string) => void,
- *     },
- *     targetDir: string,
- *   ) => void,
- *   dirname: typeof import('path').dirname,
- * }} options Copier dependencies.
- * @returns {(source: string, destination: string, message?: string) => void} Bound file copier.
- */
-function createCopyFileWithCoreDefaults({
-  io,
-  messageLogger,
-  formatPathForLog,
-  ensureDirectoryExists,
-  dirname,
-}) {
-  return (source, destination, message) => {
-    copyFileWithDirectories({
-      io,
-      source,
-      destination,
-      messageLogger,
-      formatPathForLog,
-      ensureDirectoryExists,
-      dirname,
-      message,
-    });
-  };
 }
 
 /**
@@ -401,9 +359,13 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       },
     ];
 
-    plans.forEach(plan => {
-      copyDirectoryTreeIfExists(plan, context);
-    });
+    forEachMappedEntries(
+      plans,
+      plan => plan,
+      plan => {
+        copyDirectoryTreeIfExists(plan, context);
+      }
+    );
   }
 
   /**
@@ -491,13 +453,17 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * @returns {void}
    */
   function runCopyWorkflow({ directories: dirs, io, messageLogger }) {
-    const copyFile = createCopyFileWithCoreDefaults({
-      io,
-      messageLogger,
-      formatPathForLog,
-      ensureDirectoryExists,
-      dirname,
-    });
+    const copyFile = (source, destination, message) =>
+      copyFileWithDirectories({
+        io,
+        source,
+        destination,
+        messageLogger,
+        formatPathForLog,
+        ensureDirectoryExists,
+        dirname,
+        message,
+      });
     ensureDirectoryExists(io, dirs.publicDir);
     const copyContext = { io, messageLogger, copyFile };
     copyBrowserTrees(dirs, copyContext);

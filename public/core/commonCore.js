@@ -103,12 +103,7 @@ export function resolveMessageOrDefault(message, fallback) {
  * @returns {string} String value or fallback.
  */
 export function stringOrDefault(value, fallback) {
-  const candidate = stringOrNull(value);
-  if (candidate) {
-    return candidate;
-  }
-
-  return fallback;
+  return resolveMessageOrDefault(value, fallback);
 }
 
 /**
@@ -185,6 +180,21 @@ export function runEntriesInParallel(entries, iterator) {
  */
 export function runMappedEntries(entries, mapEntry, runEntry) {
   return runEntriesInParallel(entries, createMappedTask(mapEntry, runEntry));
+}
+
+/**
+ * Map entries and run the mapped side effects synchronously.
+ * @template TEntry
+ * @template TPayload
+ * @param {TEntry[]} entries Entries to process.
+ * @param {(entry: TEntry) => TPayload} mapEntry Entry-to-payload mapper.
+ * @param {(payload: TPayload, index: number) => void} runEntry Payload executor.
+ * @returns {void}
+ */
+export function forEachMappedEntries(entries, mapEntry, runEntry) {
+  for (const [index, entry] of entries.entries()) {
+    runEntry(mapEntry(entry), index);
+  }
 }
 
 /**

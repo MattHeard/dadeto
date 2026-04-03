@@ -683,6 +683,18 @@ function createDependencyAccessor(createDependencies) {
 }
 
 /**
+ * Invoke a controller method with lazily resolved dependencies.
+ * @template T
+ * @param {() => NormalizedBlogDataDependencies} getDependencies Dependency accessor.
+ * @param {(dependencies: NormalizedBlogDataDependencies, ...args: any[]) => T} invoke Method body.
+ * @param {...any} args Additional method arguments.
+ * @returns {T} Method return value.
+ */
+function callWithDependencies(getDependencies, invoke, ...args) {
+  return invoke(...args, getDependencies());
+}
+
+/**
  * Build a blog data controller that wires helpers to the provided dependencies.
  * @param {BlogDependencyFactory} createDependencies - Dependency factory invoked on first use.
  * @returns {BlogDataController} Controller API used by the entry layer.
@@ -696,34 +708,50 @@ export function createBlogDataController(createDependencies) {
      * @returns {Promise<unknown>} Resolves once the fetch and cache operations complete.
      */
     fetchAndCacheBlogData(state) {
-      return fetchAndCacheBlogData(state, getDependencies());
+      return callWithDependencies(
+        getDependencies,
+        fetchAndCacheBlogData,
+        state
+      );
     },
     /**
      * @param {BlogStateRecord} state - Application state used to build the data view.
      * @returns {Record<string, unknown>} Sanitized copy of the current state.
      */
     getData(state) {
-      return getData(state, getDependencies());
+      return callWithDependencies(getDependencies, getData, state);
     },
     /**
      * @param {TemporaryStateBundle} state - Incoming temporary payload and the target state.
      * @returns {void} No value is returned; the state is modified in place.
      */
     setLocalTemporaryData(state) {
-      const { loggers } = getDependencies();
-      return setLocalTemporaryData(state, loggers);
+      return callWithDependencies(
+        getDependencies,
+        setLocalTemporaryData,
+        state
+      );
     },
     /**
      * @param {Record<string, unknown>} desired - Desired permanent values to persist.
      * @returns {object} Merged permanent state after persistence.
      */
     setLocalPermanentData(desired) {
-      const { loggers, permanentLens } = getDependencies();
-      return setLocalPermanentDataCore(desired, loggers, permanentLens);
+      return callWithDependencies(
+        getDependencies,
+        (nextDesired, dependencies) =>
+          setLocalPermanentDataCore(
+            nextDesired,
+            dependencies.loggers,
+            dependencies.permanentLens
+          ),
+        desired
+      );
     },
     getLocalPermanentData() {
-      const { permanentLens } = getDependencies();
-      return readLocalPermanentData(permanentLens);
+      return callWithDependencies(getDependencies, dependencies =>
+        readLocalPermanentData(dependencies.permanentLens)
+      );
     },
   };
 }

@@ -25,12 +25,7 @@ export function parseReadyBeads(output) {
  * @returns {{ id: string, title: string, priority: string } | null} Parsed bead summary.
  */
 function parseReadyLine(line) {
-  const groups = getReadyLineGroups(line);
-  if (!groups) {
-    return null;
-  }
-
-  return groups;
+  return getReadyLineGroups(line) ?? null;
 }
 
 /**

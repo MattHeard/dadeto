@@ -1,5 +1,10 @@
 import * as browserCore from '../browser-core.js';
-import { whenNotNullish, whenNotNullishValue } from '../common-core.js';
+import {
+  forEachMappedEntries,
+  whenOrNull,
+  whenNotNullish,
+  whenNotNullishValue,
+} from '../common-core.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
 import { createGamepadCaptureButtonUpdater } from './captureLifecycleShared.js';
 import { createCaptureToyInput, syncToyPayload } from './captureFormShared.js';
@@ -150,16 +155,6 @@ function buildConnectionPayload(event, type) {
       buttons: buildConnectionButtons(gamepad),
     }),
   });
-}
-
-/**
- * Mirror a gamepad payload into the hidden toy input.
- * @param {HandlerOptions} options - Shared handler dependencies.
- * @param {Record<string, unknown>} payload - Structured gamepad payload.
- * @returns {void}
- */
-function syncGamepadToyPayload(options, payload) {
-  syncToyPayload(createCaptureToyInput(options), payload);
 }
 
 /**
@@ -448,11 +443,7 @@ function getAxisPayload(gamepad, previousSnapshot) {
  */
 function getPollPayload(gamepad, previousSnapshot) {
   const buttonPayload = getButtonPayload(gamepad, previousSnapshot);
-  if (buttonPayload) {
-    return buttonPayload;
-  }
-
-  return getAxisPayload(gamepad, previousSnapshot);
+  return buttonPayload ?? getAxisPayload(gamepad, previousSnapshot);
 }
 
 /**
@@ -470,7 +461,7 @@ function pollGamepads(options) {
     const payload = getPollPayload(gamepad, previousSnapshot);
     options.state.snapshots[gamepad.index] = snapshotGamepad(gamepad);
     whenNotNullish(payload, presentPayload => {
-      syncGamepadToyPayload(options, presentPayload);
+      syncToyPayload(createCaptureToyInput(options), presentPayload);
     });
   });
 }
@@ -590,22 +581,7 @@ function removeSnapshot(state, gamepad) {
  * @returns {(event: GamepadEvent | { gamepad?: Gamepad }) => void} Connection handler.
  */
 function createConnectionHandler(options) {
-  return event => {
-    handleConnectionEvent(options, event);
-  };
-}
-
-/**
- * Run a handler only when a payload exists.
- * @param {{
- *   payload: Record<string, unknown> | null,
- *   onPresent: (payload: Record<string, unknown>) => void,
- * }} options - Payload handling settings.
- * @returns {void}
- */
-function handlePayloadIfPresent(options) {
-  const { payload, onPresent } = options;
-  whenNotNullish(payload, onPresent);
+  return event => handleConnectionEvent(options, event);
 }
 
 /**
@@ -615,14 +591,11 @@ function handlePayloadIfPresent(options) {
  * @returns {void}
  */
 function handleConnectionEvent(options, event) {
-  handlePayloadIfPresent({
-    payload: getHandledConnectionPayload(options.state, event),
-    onPresent: payload => {
-      const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
-      storeSnapshot(options.state, gamepad);
-      syncGamepadToyPayload(options, payload);
-      queuePoll(options);
-    },
+  whenNotNullish(getHandledConnectionPayload(options.state, event), payload => {
+    const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
+    storeSnapshot(options.state, gamepad);
+    syncToyPayload(createCaptureToyInput(options), payload);
+    queuePoll(options);
   });
 }
 
@@ -632,9 +605,7 @@ function handleConnectionEvent(options, event) {
  * @returns {(event: GamepadEvent | { gamepad?: Gamepad }) => void} Disconnection handler.
  */
 function createDisconnectHandler(options) {
-  return event => {
-    handleDisconnectEvent(options, event);
-  };
+  return event => handleDisconnectEvent(options, event);
 }
 
 /**
@@ -644,13 +615,13 @@ function createDisconnectHandler(options) {
  * @returns {void}
  */
 function handleDisconnectEvent(options, event) {
-  handlePayloadIfPresent({
-    payload: getHandledDisconnectionPayload(options.state, event),
-    onPresent: payload => {
+  whenNotNullish(
+    getHandledDisconnectionPayload(options.state, event),
+    payload => {
       removeSnapshot(options.state, getEventGamepad(event));
-      syncGamepadToyPayload(options, payload);
-    },
-  });
+      syncToyPayload(createCaptureToyInput(options), payload);
+    }
+  );
 }
 
 /**
@@ -681,11 +652,9 @@ function getHandledDisconnectionPayload(state, event) {
  * @returns {Record<string, unknown> | null} Payload ready for syncing.
  */
 function getHandledGamepadPayload(state, event, type) {
-  if (!shouldHandleConnectionEvent(state)) {
-    return null;
-  }
-
-  return buildConnectionPayload(event, type);
+  return whenOrNull(shouldHandleConnectionEvent(state), () =>
+    buildConnectionPayload(event, type)
+  );
 }
 
 /**
@@ -804,14 +773,18 @@ function createGamepadEscapeHandler(options) {
  * @returns {void}
  */
 function registerGamepadGlobalListeners(options, cleanupFns, listeners) {
-  listeners.forEach(({ type, handler }) => {
-    registerGamepadGlobalListener({
+  forEachMappedEntries(
+    listeners,
+    ({ type, handler }) => ({
       options,
       cleanupFns,
       type,
       handler,
-    });
-  });
+    }),
+    listener => {
+      registerGamepadGlobalListener(listener);
+    }
+  );
 }
 
 /**
