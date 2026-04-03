@@ -2,7 +2,7 @@ import {
   isBlankStringValue,
   whenOrDefault,
   whenOrNull,
-} from '../../../../commonCore.js';
+} from '../../../browser-core.js';
 import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
 
 /**

@@ -4,11 +4,11 @@ import {
   createPresenterRoot,
 } from './browserPresentersCore.js';
 import {
-  isNullishOrEmptyString,
   objectOrEmpty,
   normalizeNonStringValue,
   whenOrNull,
 } from '../../commonCore.js';
+import { isNullishOrEmptyString } from '../browser-core.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 

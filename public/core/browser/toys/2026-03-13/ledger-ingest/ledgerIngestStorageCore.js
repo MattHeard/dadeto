@@ -1,10 +1,10 @@
 import {
   isNonNullObject,
   isValidString,
-  normalizeObjectOrFallback,
   whenArray,
   objectOrEmpty,
 } from '../../../../commonCore.js';
+import { normalizeObjectOrFallback } from '../../../browser-core.js';
 
 export const DEFAULT_STORAGE_KEY = 'LEDG3';
 const EMPTY_STORAGE_ENV = {

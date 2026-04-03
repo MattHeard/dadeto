@@ -13,11 +13,18 @@ beforeAll(async () => {
   const commonCorePath = pathToFileURL(
     path.join(process.cwd(), 'src/core/commonCore.js')
   );
+  const browserCorePath = pathToFileURL(
+    path.join(process.cwd(), 'src/core/browser/browser-core.js')
+  );
   let src = fs.readFileSync(gamePath, 'utf8');
   src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {
     const abs = pathToFileURL(path.join(path.dirname(gamePath), p));
     return `from '${abs.href}'`;
   });
+  src = src.replace(
+    /from '\.\.\/\.\.\/browser-core\.js'/g,
+    `from '${browserCorePath.href}'`
+  );
   src = src.replace(
     /from '\.\.\/\.\.\/\.\.\/commonCore\.js'/g,
     `from '${commonCorePath.href}'`

@@ -4,7 +4,7 @@ import {
   whenOrNull,
   whenNotNullish,
   whenNotNullishValue,
-} from '../common-core.js';
+} from '../../commonCore.js';
 import captureLifecycleDeps from './captureLifecycleDeps.js';
 import { createGamepadCaptureButtonUpdater } from './captureLifecycleShared.js';
 import { createCaptureToyInput, syncToyPayload } from './captureFormShared.js';

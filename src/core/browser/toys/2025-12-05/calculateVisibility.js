@@ -2,7 +2,7 @@ import {
   areValidStrings,
   whenOrNull,
   whenString,
-} from '../../../commonCore.js';
+} from '../../browser-core.js';
 import { when } from '../../common.js';
 import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';

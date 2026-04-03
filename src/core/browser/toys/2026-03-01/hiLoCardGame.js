@@ -4,7 +4,7 @@ import {
   normalizeObjectOrFallback,
   whenTruthy,
   whenString,
-} from '../../../commonCore.js';
+} from '../../browser-core.js';
 import { parseJsonObject } from '../../jsonValueHelpers.js';
 import { toRecordOrNull } from '../browserToysCore.js';
 

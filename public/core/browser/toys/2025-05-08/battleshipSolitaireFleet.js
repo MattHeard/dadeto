@@ -16,7 +16,7 @@ import {
   whenNotNullish,
   whenOrDefault,
   whenOrNull,
-} from '../../../commonCore.js';
+} from '../../browser-core.js';
 
 /**
  * @typedef {{ x: number, y: number }} Coord

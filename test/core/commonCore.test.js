@@ -1,22 +1,17 @@
 import { jest } from '@jest/globals';
 import {
-  areValidStrings,
   assertFunction,
   ensureString,
   arrayOrEmpty,
   getStringCandidate,
-  isBlankStringValue,
   isNonNullObject,
   isNullish,
-  isNullishOrEmptyString,
   isValidString,
   normalizeNonStringValue,
   normalizeValueWithLimit,
-  normalizeObjectOrFallback,
   resolveMessageOrDefault,
   stringOrNull,
   stringOrFallback,
-  reportAndReturnFalse,
   whenString,
   whenType,
   whenTypeValue,
@@ -26,15 +21,22 @@ import {
   whenArray,
   whenTruthy,
   whenOrNull,
-  whenOrDefault,
   whenNotNullish,
   whenNotNullishValue,
-  functionOrFallback,
   guardThen,
   numberOrZero,
   when,
   tryOr,
 } from '../../src/core/commonCore.js';
+import {
+  areValidStrings,
+  functionOrFallback,
+  isBlankStringValue,
+  isNullishOrEmptyString,
+  normalizeObjectOrFallback,
+  reportAndReturnFalse,
+  whenOrDefault,
+} from '../../src/core/browser/browser-core.js';
 
 describe('commonCore helpers', () => {
   test('base validators and normalizers behave as expected', () => {

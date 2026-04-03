@@ -1,4 +1,4 @@
-import { whenOrDefault } from '../../../commonCore.js';
+import { whenOrDefault } from '../../browser-core.js';
 
 /**
  * @typedef {'winter'|'spring'|'summer'|'fall'} SeasonLabel

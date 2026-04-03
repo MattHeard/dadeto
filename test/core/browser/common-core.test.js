@@ -1,4 +1,4 @@
-import { DEFAULT_BUCKET_NAME } from '../../../src/core/browser/common-core.js';
+import { DEFAULT_BUCKET_NAME } from '../../../src/core/commonCore.js';
 
 describe('browser/common-core', () => {
   it('should export DEFAULT_BUCKET_NAME', () => {

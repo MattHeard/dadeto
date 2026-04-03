@@ -4,7 +4,7 @@ import {
   createOptions,
   getEnvHelpers,
 } from '../browserToysCore.js';
-import { whenOrDefault } from '../../../commonCore.js';
+import { whenOrDefault } from '../../browser-core.js';
 
 /** @typedef {import('../browserToysCore.js').EnvHelperFunc} EnvHelperFunc */
 /** @typedef {Map<string, EnvHelperFunc>} ToyEnv */

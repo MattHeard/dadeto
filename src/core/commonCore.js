@@ -19,34 +19,12 @@ export function isValidString(str) {
 }
 
 /**
- * Checks whether every candidate is a non-empty string.
- * @param {...unknown} values Candidate values to validate.
- * @returns {boolean} True when all inputs are non-empty strings.
- */
-export function areValidStrings(...values) {
-  return values.every(isValidString);
-}
-
-/**
  * Detects whether a value is `null` or `undefined`.
  * @param {unknown} value Candidate value.
  * @returns {boolean} True when the input is nullish.
  */
 export function isNullish(value) {
   return value === undefined || value === null;
-}
-
-/**
- * Determines whether a value is a string that trims to nothing.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the value is a blank string.
- */
-export function isBlankStringValue(value) {
-  if (typeof value !== 'string') {
-    return false;
-  }
-
-  return value.trim().length === 0;
 }
 
 /**
@@ -72,15 +50,14 @@ export function stringOrNull(value) {
 }
 
 /**
- * Return the provided message or fallback text when the message is blank.
- * @param {unknown} message Candidate message value.
- * @param {string} fallback Fallback text to use when the message is blank.
- * @returns {string} Non-empty message or fallback text.
+ * Return a fallback when the provided message is falsy.
+ * @param {string | undefined | null} message Candidate message.
+ * @param {string} fallback Fallback value when message is falsy.
+ * @returns {string} Message to surface to the caller.
  */
 export function resolveMessageOrDefault(message, fallback) {
-  const candidate = stringOrNull(message);
-  if (candidate) {
-    return candidate;
+  if (typeof message === 'string' && message.length > 0) {
+    return message;
   }
 
   return fallback;
@@ -181,8 +158,7 @@ export function forEachMappedEntries(entries, mapEntry, runEntry) {
  * Build the standard copy log message.
  * @param {{
  *   formatPathForLog: (targetPath: string) => string,
- *   source: string,
- *   destination: string,
+ *   sourceDestination: { source: string, destination: string },
  *   message?: string,
  * }} options Copy metadata.
  * @returns {string} Copy progress message.
@@ -197,21 +173,6 @@ export function buildCopyLogMessage({
     message ??
     `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(destination)}`
   );
-}
-
-/**
- * Return either the provided value or the fallback result when an error exists.
- * @template T
- * @param {unknown} error Error value to inspect.
- * @param {() => T} fallback Lazy fallback result producer.
- * @returns {T | { error: unknown }} Fallback result or wrapped error object.
- */
-export function returnErrorResultOrValue(error, fallback) {
-  if (error) {
-    return { error };
-  }
-
-  return fallback();
 }
 
 /**
@@ -234,22 +195,6 @@ export function objectOrEmpty(value) {
   }
 
   return {};
-}
-
-/**
- * Normalize an object-like value with a caller-supplied fallback and transform.
- * @template T
- * @param {unknown} value Candidate object-like value.
- * @param {() => T} fallback Fallback value creator.
- * @param {(value: Record<string, unknown>) => T} transform Object mapper.
- * @returns {T} Normalized result.
- */
-export function normalizeObjectOrFallback(value, fallback, transform) {
-  if (!isNonNullObject(value)) {
-    return fallback();
-  }
-
-  return transform(/** @type {Record<string, unknown>} */ (value));
 }
 
 /**
@@ -445,15 +390,6 @@ export function trimmedStringOrNull(value) {
 }
 
 /**
- * Determine whether a value is nullish or an empty string.
- * @param {unknown} value Candidate value.
- * @returns {boolean} True when the value should be treated as missing.
- */
-export function isNullishOrEmptyString(value) {
-  return isNullish(value) || value === '';
-}
-
-/**
  * Normalize a value, then truncate it to the requested maximum length.
  * @template T
  * @param {unknown} value Candidate value.
@@ -463,6 +399,20 @@ export function isNullishOrEmptyString(value) {
  */
 export function normalizeValueWithLimit(value, maxLength, normalize) {
   return normalize(value).slice(0, maxLength);
+}
+
+/**
+ * Return the provided function candidate when available, otherwise use the fallback.
+ * @param {unknown} candidate Candidate value.
+ * @param {() => Function} fallback Factory returning the fallback function.
+ * @returns {Function} Callable derived from the candidate or fallback.
+ */
+export function functionOrFallback(candidate, fallback) {
+  if (typeof candidate === 'function') {
+    return candidate;
+  }
+
+  return fallback();
 }
 
 /**
@@ -502,6 +452,18 @@ export function whenTruthy(value, fn) {
 }
 
 /**
+ * Evaluate a transform when a condition holds, otherwise return the fallback default.
+ * @param {boolean} condition - Determines whether the transform should run.
+ * @param {() => T} transform - Resolver invoked if the condition is true.
+ * @param {T} fallback - Value returned when the condition is falsy.
+ * @returns {T} Result of the transform when applied, or the fallback otherwise.
+ * @template T
+ */
+export function whenOrDefault(condition, transform, fallback) {
+  return condition ? transform() : fallback;
+}
+
+/**
  * Run the provided callback when the condition passes.
  * @template T
  * @param {boolean} condition Gate determining whether to invoke the callback.
@@ -510,18 +472,6 @@ export function whenTruthy(value, fn) {
  */
 export function whenOrNull(condition, fn) {
   return when(condition, fn, () => null);
-}
-
-/**
- * Run the callback when the condition passes; otherwise return the fallback value.
- * @template T
- * @param {boolean} condition Gate determining whether to invoke the callback.
- * @param {() => T} fn Callback invoked when the condition passes.
- * @param {T} fallback Value returned when the condition fails.
- * @returns {T} Callback result or fallback value.
- */
-export function whenOrDefault(condition, fn, fallback) {
-  return when(condition, fn, () => fallback);
 }
 
 /**
@@ -559,20 +509,6 @@ function isNotArrayValue(value) {
 }
 
 /**
- * Return the provided function candidate when available, otherwise use the fallback.
- * @param {unknown} candidate Candidate value.
- * @param {() => Function} fallback Factory returning the fallback function.
- * @returns {Function} Callable derived from the candidate or fallback.
- */
-export function functionOrFallback(candidate, fallback) {
-  return returnFallbackValue(
-    typeof candidate === 'function',
-    candidate,
-    fallback
-  );
-}
-
-/**
  * Return a value when available, otherwise invoke the fallback.
  * @template T
  * @param {boolean} available Whether the value can be returned.
@@ -589,6 +525,15 @@ function returnFallbackValue(available, value, fallback) {
 }
 
 /**
+ * Determine whether a numeric candidate is finite.
+ * @param {unknown} value Candidate numeric value.
+ * @returns {boolean} True when the value is a finite number.
+ */
+function isFiniteNumericValue(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/**
  * Run a side effect when a condition is truthy and indicate whether it ran.
  * @param {boolean} condition - Determines whether to execute the effect.
  * @param {() => void} effect - Side effect invoked when the condition holds.
@@ -601,15 +546,6 @@ export function guardThen(condition, effect) {
 
   effect();
   return true;
-}
-
-/**
- * Normalize a numeric candidate, returning zero when the input is not a number.
- * @param {unknown} value Candidate numeric value.
- * @returns {number} Number when provided, otherwise zero.
- */
-function isFiniteNumericValue(value) {
-  return typeof value === 'number' && Number.isFinite(value);
 }
 
 /**

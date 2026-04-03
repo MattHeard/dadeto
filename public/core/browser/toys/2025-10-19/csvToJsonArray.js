@@ -4,7 +4,7 @@ import {
   isBlankStringValue,
   isValidString,
   whenString,
-} from '../../../commonCore.js';
+} from '../../browser-core.js';
 
 /**
  * Convert a multi-row CSV string into a JSON array string.

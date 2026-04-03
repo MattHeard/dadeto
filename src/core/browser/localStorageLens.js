@@ -1,5 +1,5 @@
 import { createStorageLens, mapLens } from './storageLens.js';
-import { isNullishOrEmptyString, whenOrNull } from '../commonCore.js';
+import { isNullishOrEmptyString, whenOrNull } from './browser-core.js';
 
 /**
  * @module localStorageLens

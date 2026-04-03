@@ -9,7 +9,7 @@ import {
   ensureString,
   trimmedStringOrEmpty,
   whenOrDefault,
-} from '../../../../commonCore.js';
+} from '../../../browser-core.js';
 
 /**
  * Contracts and fixtures for the ledger-ingest toy.

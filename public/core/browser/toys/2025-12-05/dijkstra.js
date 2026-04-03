@@ -1,4 +1,4 @@
-import { areValidStrings, whenTruthy } from '../../../commonCore.js';
+import { areValidStrings, whenTruthy } from '../../browser-core.js';
 import { calculateEdgeWeight } from './edgeWeight.js';
 import { isPlainObject } from '../browserToysCore.js';
 import { guardThen } from '../../common.js';

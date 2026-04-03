@@ -1,6 +1,6 @@
 // Shared utility functions for browser code.
 
-import { whenOrDefault } from '../commonCore.js';
+import { whenOrDefault } from './browser-core.js';
 
 /**
  * Check that the value is an object, excluding `null` and arrays.

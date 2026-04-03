@@ -1,5 +1,5 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
-import { isNonNullObject, whenOrDefault } from '../commonCore.js';
+import { isNonNullObject, isValidString } from '../commonCore.js';
 
 /** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
 /** @typedef {import('./domHelpers.js').DOMHelpers} DOMHelpers */
@@ -56,6 +56,28 @@ export const createPrefixedLoggers = (loggers, prefix) => ({
 });
 
 /**
+ * Check whether every candidate is a non-empty string.
+ * @param {...unknown} values Candidate values to validate.
+ * @returns {boolean} True when all inputs are non-empty strings.
+ */
+export function areValidStrings(...values) {
+  return values.every(isValidString);
+}
+
+/**
+ * Determine whether a value is a string that trims to nothing.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value is a blank string.
+ */
+export function isBlankStringValue(value) {
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  return value.trim().length === 0;
+}
+
+/**
  * Returns `value` unless it is `undefined`, otherwise returns `fallback`.
  * @param {*} value - Value to check.
  * @param {*} fallback - Value to return when `value` is undefined.
@@ -63,6 +85,32 @@ export const createPrefixedLoggers = (loggers, prefix) => ({
  */
 export function valueOr(value, fallback) {
   return whenOrDefault(value === undefined, () => fallback, value);
+}
+
+/**
+ * Evaluate a transform when a condition holds, otherwise return the fallback default.
+ * @param {boolean} condition - Determines whether the transform should run.
+ * @param {() => T} transform - Resolver invoked if the condition is true.
+ * @param {T} fallback - Value returned when the condition is falsy.
+ * @returns {T} Result of the transform when applied, or the fallback otherwise.
+ * @template T
+ */
+export function whenOrDefault(condition, transform, fallback) {
+  return condition ? transform() : fallback;
+}
+
+/**
+ * Return the provided function candidate when available, otherwise use the fallback.
+ * @param {unknown} candidate Candidate value.
+ * @param {() => Function} fallback Factory returning the fallback function.
+ * @returns {Function} Callable derived from the candidate or fallback.
+ */
+export function functionOrFallback(candidate, fallback) {
+  if (typeof candidate === 'function') {
+    return candidate;
+  }
+
+  return fallback();
 }
 
 /**
@@ -195,6 +243,43 @@ export function createElementRemover(selector) {
     const element = dom.querySelector(container, selector);
     removeCapturedElement(element, container, dom);
   };
+}
+
+/**
+ * Return either the provided value or the fallback result when an error exists.
+ * @template T
+ * @param {unknown} error Error value to inspect.
+ * @param {() => T} fallback Lazy fallback result producer.
+ * @returns {T | { error: unknown }} Fallback result or wrapped error object.
+ */
+export function returnErrorResultOrValue(error, fallback) {
+  if (error) {
+    return { error };
+  }
+
+  return fallback();
+}
+
+/**
+ * Normalize a candidate value to a plain object or an empty object.
+ * @param {unknown} value Candidate object-like value.
+ * @returns {Record<string, unknown>} Plain object or empty object.
+ */
+export function normalizeObjectOrFallback(value, fallback, transform) {
+  if (!isNonNullObject(value)) {
+    return fallback();
+  }
+
+  return transform(/** @type {Record<string, unknown>} */ (value));
+}
+
+/**
+ * Determine whether a value is nullish or an empty string.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value should be treated as missing.
+ */
+export function isNullishOrEmptyString(value) {
+  return value === undefined || value === null || value === '';
 }
 
 export const maybeRemoveNumber = createElementRemover(NUMBER_INPUT_SELECTOR);
