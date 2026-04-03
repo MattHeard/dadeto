@@ -50,6 +50,20 @@ export function stringOrNull(value) {
 }
 
 /**
+ * Return a fallback when the provided message is falsy.
+ * @param {string | undefined | null} message Candidate message.
+ * @param {string} fallback Fallback value when message is falsy.
+ * @returns {string} Message to surface to the caller.
+ */
+export function resolveMessageOrDefault(message, fallback) {
+  if (typeof message === 'string' && message.length > 0) {
+    return message;
+  }
+
+  return fallback;
+}
+
+/**
  * Choose the most readable representation for a relative path.
  * @param {string} absolutePath Original absolute path provided to the logger.
  * @param {string} relativePath Path relative to the project root.
@@ -388,6 +402,20 @@ export function normalizeValueWithLimit(value, maxLength, normalize) {
 }
 
 /**
+ * Return the provided function candidate when available, otherwise use the fallback.
+ * @param {unknown} candidate Candidate value.
+ * @param {() => Function} fallback Factory returning the fallback function.
+ * @returns {Function} Callable derived from the candidate or fallback.
+ */
+export function functionOrFallback(candidate, fallback) {
+  if (typeof candidate === 'function') {
+    return candidate;
+  }
+
+  return fallback();
+}
+
+/**
  * Build a CORS options object from an origin handler and method list.
  * @param {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} origin Origin handler.
  * @param {string[]} methods Allowed HTTP methods.
@@ -421,6 +449,18 @@ export function whenTruthy(value, fn) {
     () => fn(value),
     () => null
   );
+}
+
+/**
+ * Evaluate a transform when a condition holds, otherwise return the fallback default.
+ * @param {boolean} condition - Determines whether the transform should run.
+ * @param {() => T} transform - Resolver invoked if the condition is true.
+ * @param {T} fallback - Value returned when the condition is falsy.
+ * @returns {T} Result of the transform when applied, or the fallback otherwise.
+ * @template T
+ */
+export function whenOrDefault(condition, transform, fallback) {
+  return condition ? transform() : fallback;
 }
 
 /**
@@ -482,6 +522,15 @@ function returnFallbackValue(available, value, fallback) {
   }
 
   return value;
+}
+
+/**
+ * Determine whether a numeric candidate is finite.
+ * @param {unknown} value Candidate numeric value.
+ * @returns {boolean} True when the value is a finite number.
+ */
+function isFiniteNumericValue(value) {
+  return typeof value === 'number' && Number.isFinite(value);
 }
 
 /**

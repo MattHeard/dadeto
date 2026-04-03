@@ -1,5 +1,17 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
 import { isNonNullObject, isValidString } from '../commonCore.js';
+export {
+  arrayOrEmpty,
+  ensureString,
+  getStringCandidate,
+  reportAndReturnFalse,
+  whenNotNullish,
+  whenNotNullishValue,
+  whenOrNull,
+  whenTruthy,
+  whenString,
+} from '../commonCore.js';
+export { isValidString };
 
 /** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
 /** @typedef {import('./domHelpers.js').DOMHelpers} DOMHelpers */
