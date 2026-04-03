@@ -1,6 +1,6 @@
 // Shared utility functions for browser code.
 
-import { when as coreWhen } from '../commonCore.js';
+import { whenOrDefault } from '../commonCore.js';
 
 /**
  * Check that the value is an object, excluding `null` and arrays.
@@ -28,7 +28,7 @@ export function isObject(val) {
  * @returns {string} Result of the transform when applied, or the fallback otherwise.
  */
 export function withFallback(condition, transform, fallback = '') {
-  return coreWhen(condition, transform, () => fallback);
+  return whenOrDefault(condition, transform, fallback);
 }
 
 /**

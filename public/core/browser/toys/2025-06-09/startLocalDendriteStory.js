@@ -4,6 +4,7 @@ import {
   createOptions,
   getEnvHelpers,
 } from '../browserToysCore.js';
+import { whenOrDefault } from '../../../commonCore.js';
 
 /** @typedef {import('../browserToysCore.js').EnvHelperFunc} EnvHelperFunc */
 /** @typedef {Map<string, EnvHelperFunc>} ToyEnv */
@@ -101,10 +102,7 @@ function getStar1Stories(temporary, fallback) {
  * @returns {DendriteStoryResult[]} Primary stories when populated, otherwise the fallback.
  */
 function pickPrimaryStories(stories, fallback) {
-  if (stories.length > 0) {
-    return stories;
-  }
-  return fallback;
+  return whenOrDefault(stories.length > 0, () => stories, fallback);
 }
 
 /**

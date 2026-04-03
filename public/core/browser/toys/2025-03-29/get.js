@@ -266,10 +266,7 @@ function handleEmptyInputInGet(
   input,
   /** @type {object | unknown[] | null} */ data
 ) {
-  if (input.trim() === '') {
-    return JSON.stringify(data);
-  }
-  return null;
+  return whenOrNull(input.trim() === '', () => JSON.stringify(data));
 }
 
 /**
@@ -279,10 +276,10 @@ function handleEmptyInputInGet(
  * @returns {string} JSON stringified value or error message.
  */
 function handleValueOrErrorResult(valueOrError, input) {
-  if (isErrorString(valueOrError)) {
-    return valueOrError;
-  }
-  return safeStringifyValueAtPath(valueOrError, input);
+  return (
+    whenOrNull(isErrorString(valueOrError), () => valueOrError) ??
+    safeStringifyValueAtPath(valueOrError, input)
+  );
 }
 
 /**
@@ -321,10 +318,10 @@ function formatStringifyError(stringifyError, input) {
  * @returns {string|null} Error message when invalid, otherwise null.
  */
 function checkDataValidityInGet(data) {
-  if (isInvalidGetDataResult(data)) {
-    return "Error: 'getData' did not return a valid object or array.";
-  }
-  return null;
+  return whenOrNull(
+    isInvalidGetDataResult(data),
+    () => "Error: 'getData' did not return a valid object or array."
+  );
 }
 
 /**
@@ -362,10 +359,7 @@ function getFinalResultInGet(data, input) {
  * @returns {string|null} The same error message or null.
  */
 function handleDataRetrievalErrorInGet(error) {
-  if (error) {
-    return error;
-  }
-  return null;
+  return whenOrNull(Boolean(error), () => error);
 }
 
 /**

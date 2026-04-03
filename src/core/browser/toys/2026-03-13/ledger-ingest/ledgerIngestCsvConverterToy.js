@@ -1,4 +1,8 @@
-import { isBlankStringValue, whenOrNull } from '../../../../commonCore.js';
+import {
+  isBlankStringValue,
+  whenOrDefault,
+  whenOrNull,
+} from '../../../../commonCore.js';
 import { createDefaultLedgerIngestDedupePolicy } from './ledgerIngestShared.js';
 
 /**
@@ -28,8 +32,7 @@ const DEFAULT_FIELD_MAPPING = {
 
 const CSV_CHARACTER_HANDLERS = [
   processCsvQuotedCharacter,
-  processCsvSeparatorCharacter,
-  processCsvLineBreakCharacter,
+  processCsvDelimiterCharacter,
   processCsvPlainCharacter,
 ];
 
@@ -79,6 +82,21 @@ function processCsvCharacter(state, input, index) {
 }
 
 /**
+ * Run one CSV branch and fall back to the alternate branch.
+ * @template T
+ * @param {boolean} condition Whether the primary branch should run.
+ * @param {() => T} onMatch Primary branch.
+ * @param {() => T} onFallback Fallback branch.
+ * @returns {T} Branch result.
+ */
+function whenCsvBranch(condition, onMatch, onFallback) {
+  if (condition) {
+    return onMatch();
+  }
+  return onFallback();
+}
+
+/**
  * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
  * @param {{ char: string, next: string | undefined }} chars Current and next character.
  * @param {number} index Current character index.
@@ -98,11 +116,14 @@ function processCsvQuotedCharacter(state, chars, index) {
  * @returns {number} Updated index when the quote was handled.
  */
 function processCsvQuotedCharacterState(state, chars, index) {
-  if (!state.inQuotes) {
-    toggleCsvQuoteState(state);
-    return index;
-  }
-  return processCsvQuotedCharacterInside(state, chars.next, index);
+  return whenCsvBranch(
+    !state.inQuotes,
+    () => {
+      toggleCsvQuoteState(state);
+      return index;
+    },
+    () => processCsvQuotedCharacterInside(state, chars.next, index)
+  );
 }
 
 /**
@@ -124,14 +145,26 @@ function processCsvQuotedCharacterInside(state, next, index) {
  * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
  * @param {{ char: string, next: string | undefined }} chars Current and next character.
  * @param {number} index Current character index.
+ * @returns {number | null} Updated index when a delimiter was handled.
+ */
+function processCsvDelimiterCharacter(state, chars, index) {
+  return (
+    processCsvSeparatorCharacter(state, chars, index) ??
+    processCsvLineBreakCharacter(state, chars, index)
+  );
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
  * @returns {number | null} Updated index when the separator was handled.
  */
 function processCsvSeparatorCharacter(state, chars, index) {
-  if (!shouldProcessCsvSeparator(state, chars.char)) {
-    return null;
-  }
-  flushCsvCell(state);
-  return index;
+  return whenOrNull(shouldProcessCsvSeparator(state, chars.char), () => {
+    flushCsvCell(state);
+    return index;
+  });
 }
 
 /**
@@ -141,10 +174,9 @@ function processCsvSeparatorCharacter(state, chars, index) {
  * @returns {number | null} Updated index when the line break was handled.
  */
 function processCsvLineBreakCharacter(state, chars, index) {
-  if (!shouldProcessCsvLineBreak(state, chars.char)) {
-    return null;
-  }
-  return processCsvLineBreakContinuation(state, chars, index);
+  return whenOrNull(shouldProcessCsvLineBreak(state, chars.char), () =>
+    processCsvLineBreakContinuation(state, chars, index)
+  );
 }
 
 /**
@@ -155,10 +187,11 @@ function processCsvLineBreakCharacter(state, chars, index) {
  */
 function processCsvLineBreakContinuation(state, chars, index) {
   flushCsvRow(state);
-  if (shouldSkipCsvLineBreakTail(chars)) {
-    return index + 1;
-  }
-  return index;
+  return whenOrDefault(
+    shouldSkipCsvLineBreakTail(chars),
+    () => index + 1,
+    index
+  );
 }
 
 /**

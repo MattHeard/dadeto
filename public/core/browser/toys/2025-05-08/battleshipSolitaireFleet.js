@@ -12,7 +12,7 @@
  *   • No diagonal placement; honours optional noTouching flag.
  */
 
-import { whenNotNullish } from '../../../commonCore.js';
+import { whenNotNullish, whenOrNull } from '../../../commonCore.js';
 
 /**
  * @typedef {{ x: number, y: number }} Coord
@@ -407,16 +407,18 @@ function getValidCandidate(direction, context) {
       valid: true,
     }
   );
-  if (
+  return whenOrNull(
     isValidCandidate(
       { cfg: context.cfg, occupied: context.occupied },
       segs,
       valid
-    )
-  ) {
-    return { start: context.start, length: context.length, direction };
-  }
-  return null;
+    ),
+    () => ({
+      start: context.start,
+      length: context.length,
+      direction,
+    })
+  );
 }
 
 /**
@@ -571,10 +573,7 @@ function placeAllShips(cfg, env) {
   const placeShipWithArgs = makePlaceShip(cfg, env);
   const placeShipReducer = makePlaceShipReducer(placeShipWithArgs);
   const result = lengths.reduce(placeShipReducer, []);
-  if (result !== null) {
-    return result;
-  }
-  return null;
+  return whenOrNull(result !== null, () => result);
 }
 
 /**
@@ -694,18 +693,6 @@ function fleetRetryError() {
 }
 
 /**
- * Normalize the fleet result into explicit null when nothing found.
- * @param {GeneratedFleet | null} fleet - Candidate fleet.
- * @returns {GeneratedFleet | null} Fleet result or null.
- */
-function maybeReturnFleet(fleet) {
-  if (fleet !== null) {
-    return fleet;
-  }
-  return null;
-}
-
-/**
  * Invoke an iteration of the fleet generation loop.
  * @param {number} i - Loop index (unused).
  * @param {FleetConfig} cfg - Board configuration.
@@ -713,9 +700,7 @@ function maybeReturnFleet(fleet) {
  * @returns {GeneratedFleet | null} Generated fleet or null when this iteration failed.
  */
 function processFleetLoopIteration(i, cfg, env) {
-  const fleet = attemptPlacement(cfg, env);
-  const result = maybeReturnFleet(fleet);
-  return result;
+  return attemptPlacement(cfg, env);
 }
 
 /**

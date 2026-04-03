@@ -1,3 +1,5 @@
+import { whenOrDefault } from '../../../commonCore.js';
+
 /**
  * @typedef {'winter'|'spring'|'summer'|'fall'} SeasonLabel
  */
@@ -194,10 +196,7 @@ function normalizeMonth(month) {
  */
 function resolvePeriodLabel(period, fallback) {
   const label = getPeriodLabel(period);
-  if (label) {
-    return label;
-  }
-  return fallback;
+  return whenOrDefault(Boolean(label), () => label, fallback);
 }
 
 /**

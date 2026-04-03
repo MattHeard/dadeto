@@ -56,10 +56,7 @@ function isObject(val) {
  * @returns {TicTacToeMove[] | null} Moves when valid, otherwise null.
  */
 function getValidParsedMoves(parsed) {
-  if (isValidParsedMoves(parsed)) {
-    return parsed.moves;
-  }
-  return null;
+  return whenOrNull(isValidParsedMoves(parsed), () => parsed.moves);
 }
 
 /**

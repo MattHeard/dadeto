@@ -1,4 +1,5 @@
 import {
+  arrayOrEmpty,
   trimmedStringOrNull,
   resolveMessageOrDefault,
   stringOrNull,
@@ -835,9 +836,5 @@ function addSymphonyEvent(status, message) {
  * @returns {string[]} Existing event log entries.
  */
 function getEventLog(status) {
-  if (Array.isArray(status.eventLog)) {
-    return status.eventLog;
-  }
-
-  return [];
+  return arrayOrEmpty(status.eventLog);
 }

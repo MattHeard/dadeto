@@ -18,6 +18,7 @@ import {
   arrayOrEmpty,
   trimmedStringOrNull,
   whenNotNullish,
+  whenOrDefault,
 } from './common-core.js';
 import { createResponder } from '../responder-utils.js';
 
@@ -355,10 +356,7 @@ function handleSubmitNewStoryRequest(deps, request) {
  * @returns {string} Method value or empty string.
  */
 function getRequestMethod(method) {
-  if (typeof method === 'string') {
-    return method;
-  }
-  return '';
+  return whenOrDefault(typeof method === 'string', () => method, '');
 }
 
 /**

@@ -1,4 +1,8 @@
-import { isValidString, whenNotNullish } from '../../../commonCore.js';
+import {
+  isValidString,
+  whenNotNullish,
+  whenTruthy,
+} from '../../../commonCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
 
@@ -15,14 +19,16 @@ export function calculateEdgeWeight({
   ignoredPageId,
 }) {
   const ratingPair = extractRatingsPair({ moderatorA, moderatorB, ratings });
-  if (!ratingPair) {
-    return NO_CONNECTION_WEIGHT;
-  }
-
-  return deriveWeight({
-    ...ratingPair,
-    ignoredPageId,
-  });
+  return (
+    whenTruthy(ratingPair, () =>
+      deriveWeight({
+        .../** @type {{ firstRatings: Record<string, boolean>, secondRatings: Record<string, boolean> }} */ (
+          ratingPair
+        ),
+        ignoredPageId,
+      })
+    ) ?? NO_CONNECTION_WEIGHT
+  );
 }
 
 /**

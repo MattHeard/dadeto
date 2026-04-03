@@ -1,5 +1,5 @@
 import { getNumericValueOrZero } from '../cloud-core.js';
-import { when } from '../../commonCore.js';
+import { objectOrEmpty, when } from '../../commonCore.js';
 
 /**
  * @typedef {object} VariantUpdatePayload
@@ -212,12 +212,7 @@ function getValidVariantSnapshotData(snapshot) {
  * @returns {Record<string, unknown>} Snapshot data or empty object.
  */
 function getSnapshotDataOrFallback(snapshot) {
-  const snapshotData = snapshot.data();
-  if (snapshotData) {
-    return snapshotData;
-  }
-
-  return {};
+  return objectOrEmpty(snapshot.data());
 }
 
 /**

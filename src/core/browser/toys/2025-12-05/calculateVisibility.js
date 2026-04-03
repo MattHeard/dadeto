@@ -1,4 +1,8 @@
-import { areValidStrings, whenString } from '../../../commonCore.js';
+import {
+  areValidStrings,
+  whenOrNull,
+  whenString,
+} from '../../../commonCore.js';
 import { when } from '../../common.js';
 import { parseJsonOrFallback, isPlainObject } from '../browserToysCore.js';
 import { shortestDistanceToAdmin } from './dijkstra.js';
@@ -85,10 +89,7 @@ function resolveFromModerators({ pageId, adminId, ratings }) {
  * @returns {string|null} Default score when applicable.
  */
 function resolveEmptyRatings(pageRatings) {
-  if (pageRatings.length === 0) {
-    return DEFAULT_VISIBILITY;
-  }
-  return null;
+  return whenOrNull(pageRatings.length === 0, () => DEFAULT_VISIBILITY);
 }
 
 /**

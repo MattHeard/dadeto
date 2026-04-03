@@ -4,10 +4,12 @@ import {
 } from './ledgerIngestShared.js';
 import {
   arrayOrEmpty,
+  entriesToObject,
   isBlankStringValue,
   numberOrZero,
   ensureString,
   trimmedStringOrEmpty,
+  whenOrDefault,
 } from '../../../../commonCore.js';
 
 /**
@@ -26,6 +28,17 @@ const DEFAULT_FIELD_MAPPING = {
 
 const REQUIRED_CANONICAL_FIELDS = ['postedDate', 'amount'];
 const INVALID_ROW_REASON_MISSING_FIELDS = 'missing-required-fields';
+
+export const normalizationExamples = [
+  'Dates are coerced into YYYY-MM-DD (ISO 8601 date portion) to align postings across sources.',
+  'Amounts are converted into signed numbers so debit/credit semantics are explicit.',
+  'Descriptions are trimmed, multiple spaces collapse, and strings are lower-cased to reduce noise.',
+];
+
+export const dedupePolicyExamples = [
+  'Candidate key = postedDate + amount + description (case-insensitive) so matching rows become duplicates.',
+  'Strategy "first-wins" keeps the earliest normalized record while reporting any later duplicates.',
+];
 
 /**
  * Build the standard fixture input used by the sample data bundles.
@@ -76,7 +89,35 @@ function createHappyPathRawRecords() {
  */
 // eslint-disable-next-line max-params
 function createRawRecord(id, date, amount, description, currency) {
-  return { id, date, amount, description, currency };
+  return entriesToObject([
+    ['id', id],
+    ['date', date],
+    ['amount', amount],
+    ['description', description],
+    ['currency', currency],
+  ]);
+}
+
+/**
+ * Build a grouped set of raw records for a fixture.
+ * @param {...Record<string, unknown>} records Raw records to include.
+ * @returns {Record<string, unknown>[]} Raw record batch.
+ */
+function createRawRecordGroup(...records) {
+  return records;
+}
+
+/**
+ * Build raw records from a list of tuple specs.
+ * @param {...[string, string, string | number | null, string, string]} specs Raw record tuples.
+ * @returns {Record<string, unknown>[]} Raw record batch.
+ */
+function createRawRecordSpecGroup(...specs) {
+  return createRawRecordGroup(
+    ...specs.map(([id, date, amount, description, currency]) =>
+      createRawRecord(id, date, amount, description, currency)
+    )
+  );
 }
 
 /**
@@ -110,23 +151,10 @@ function createDuplicateDetectionFixture() {
   return createFixtureBundle(
     'duplicate detection with first-wins policy',
     'Ensures that the policy reports a duplicate when successive rows share the same normalized key.',
-    createStandardFixtureInput('local-credit-card', [
-      createRawRecord(
-        'dup-001',
-        '2026-03-05',
-        '120.00',
-        'Electric bill',
-        'usd'
-      ),
-      createRawRecord(
-        'dup-002',
-        '2026-03-05T00:00:00Z',
-        '120.00',
-        'electric bill ',
-        'USD'
-      ),
-      createRawRecord('dup-003', '2026-03-06', '-15.50', 'Lunch spot', 'usd'),
-    ])
+    createStandardFixtureInput(
+      'local-credit-card',
+      createDuplicateDetectionRawRecords()
+    )
   );
 }
 
@@ -138,22 +166,7 @@ function createRepeatImportFixture() {
   return createFixtureBundle(
     'repeat import rows treated as duplicates',
     'Verifies that importing the same logical row twice only counts once as canonical.',
-    createStandardFixtureInput('core-processor', [
-      createRawRecord(
-        'repeat-001',
-        '2026-03-07',
-        '55',
-        'Gym membership',
-        'USD'
-      ),
-      createRawRecord(
-        'repeat-002',
-        '2026-03-07T00:00:00Z',
-        '55.00',
-        'Gym Membership ',
-        'usd'
-      ),
-    ])
+    createStandardFixtureInput('core-processor', createRepeatImportRawRecords())
   );
 }
 
@@ -165,35 +178,60 @@ function createInvalidRowFixture() {
   return createFixtureBundle(
     'invalid rows report structured errors',
     'Proves that missing required fields are surfaced as structured errors instead of new transactions.',
-    createStandardFixtureInput('virtual-credit', [
-      {
-        id: 'valid-001',
-        date: '2026-03-08',
-        amount: '120.75',
-        description: 'Valid row',
-        currency: 'usd',
-      },
-      {
-        id: 'invalid-001',
-        date: '',
-        amount: null,
-        description: 'Missing critical fields',
-        currency: 'usd',
-      },
-    ])
+    createStandardFixtureInput('virtual-credit', createInvalidRowRawRecords())
   );
 }
 
-export const normalizationExamples = [
-  'Dates are coerced into YYYY-MM-DD (ISO 8601 date portion) to align postings across sources.',
-  'Amounts are converted into signed numbers so debit/credit semantics are explicit.',
-  'Descriptions are trimmed, multiple spaces collapse, and strings are lower-cased to reduce noise.',
-];
+/**
+ * Build the raw records used by the duplicate-detection fixture.
+ * @returns {Record<string, unknown>[]} Duplicate-detection raw records.
+ */
+function createDuplicateDetectionRawRecords() {
+  return [
+    createRawRecord('dup-001', '2026-03-05', '120.00', 'Electric bill', 'usd'),
+    createRawRecord(
+      'dup-002',
+      '2026-03-05T00:00:00Z',
+      '120.00',
+      'electric bill ',
+      'USD'
+    ),
+    createRawRecord('dup-003', '2026-03-06', '-15.50', 'Lunch spot', 'usd'),
+  ];
+}
 
-export const dedupePolicyExamples = [
-  'Candidate key = postedDate + amount + description (case-insensitive) so matching rows become duplicates.',
-  'Strategy "first-wins" keeps the earliest normalized record while reporting any later duplicates.',
-];
+/**
+ * Build the raw records used by the repeat-import fixture.
+ * @returns {Record<string, unknown>[]} Repeat-import raw records.
+ */
+function createRepeatImportRawRecords() {
+  return createRawRecordSpecGroup(
+    ['repeat-001', '2026-03-07', '55', 'Gym membership', 'USD'],
+    ['repeat-002', '2026-03-07T00:00:00Z', '55.00', 'Gym Membership ', 'usd']
+  );
+}
+
+/**
+ * Build the raw records used by the invalid-row fixture.
+ * @returns {Record<string, unknown>[]} Invalid-row raw records.
+ */
+function createInvalidRowRawRecords() {
+  const validRow = createRawRecord(
+    'valid-001',
+    '2026-03-08',
+    '120.75',
+    'Valid row',
+    'usd'
+  );
+  const invalidRow = createRawRecord(
+    'invalid-001',
+    '',
+    null,
+    'Missing critical fields',
+    'usd'
+  );
+  return [validRow, invalidRow];
+}
 
 /**
  * @typedef {object} ImportTransactionsInput
@@ -687,10 +725,11 @@ const dedupeCandidateHandlers = {
  */
 function serializeDedupeCandidate(value, caseInsensitive) {
   const handler = dedupeCandidateHandlers[typeof value];
-  if (handler) {
-    return handler(value, caseInsensitive);
-  }
-  return '';
+  return whenOrDefault(
+    Boolean(handler),
+    () => handler(value, caseInsensitive),
+    ''
+  );
 }
 
 const MISSING_VALUES = [undefined, null];

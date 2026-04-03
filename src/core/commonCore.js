@@ -253,6 +253,19 @@ export function isNonNullObject(value) {
 }
 
 /**
+ * Normalize a candidate value to a plain object or an empty object.
+ * @param {unknown} value Candidate object-like value.
+ * @returns {Record<string, unknown>} Plain object or empty object.
+ */
+export function objectOrEmpty(value) {
+  if (isNonNullObject(value)) {
+    return value;
+  }
+
+  return {};
+}
+
+/**
  * Ensure a dependency is callable.
  * @param {unknown} candidate Candidate value.
  * @param {string} name Name used in the error message.
@@ -479,6 +492,18 @@ export function whenTruthy(value, fn) {
  */
 export function whenOrNull(condition, fn) {
   return when(condition, fn, () => null);
+}
+
+/**
+ * Run the callback when the condition passes; otherwise return the fallback value.
+ * @template T
+ * @param {boolean} condition Gate determining whether to invoke the callback.
+ * @param {() => T} fn Callback invoked when the condition passes.
+ * @param {T} fallback Value returned when the condition fails.
+ * @returns {T} Callback result or fallback value.
+ */
+export function whenOrDefault(condition, fn, fallback) {
+  return when(condition, fn, () => fallback);
 }
 
 /**

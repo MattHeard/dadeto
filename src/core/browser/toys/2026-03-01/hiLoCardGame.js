@@ -1,6 +1,7 @@
 import {
   getStringCandidate,
   isNonNullObject,
+  whenTruthy,
   whenString,
 } from '../../../commonCore.js';
 import { parseJsonObject } from '../../jsonValueHelpers.js';
@@ -363,11 +364,11 @@ export function applyHiLoEvent(inputEvent, state, getRandomNumber) {
  * @returns {{ gameState: HiLoGameState, keyboardState: HiLoKeyboardState }} Updated state pair.
  */
 function resolveHiLoEvent(inputEvent, state, getRandomNumber) {
-  if (shouldReleaseHeldKey(inputEvent)) {
-    return releaseHeldKey(inputEvent, state);
-  }
-
-  return handleKeydownGuess(inputEvent, state, getRandomNumber);
+  return (
+    whenTruthy(shouldReleaseHeldKey(inputEvent), () =>
+      releaseHeldKey(inputEvent, state)
+    ) ?? handleKeydownGuess(inputEvent, state, getRandomNumber)
+  );
 }
 
 /**
@@ -423,10 +424,11 @@ function releaseHeldKey(inputEvent, state) {
  * @returns {{ gameState: HiLoGameState, keyboardState: HiLoKeyboardState }} Updated state.
  */
 function handleKeydownGuess(inputEvent, state, getRandomNumber) {
-  if (!isGuessEvent(inputEvent)) {
-    return state;
-  }
-  return applyGuessWhenReady(inputEvent, state, getRandomNumber);
+  return (
+    whenTruthy(isGuessEvent(inputEvent), () =>
+      applyGuessWhenReady(inputEvent, state, getRandomNumber)
+    ) ?? state
+  );
 }
 
 /**

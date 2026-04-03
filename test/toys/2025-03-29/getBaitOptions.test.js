@@ -10,11 +10,18 @@ beforeAll(async () => {
     process.cwd(),
     'src/core/browser/toys/2025-03-29/fishingGame.js'
   );
+  const commonCorePath = pathToFileURL(
+    path.join(process.cwd(), 'src/core/commonCore.js')
+  );
   let src = fs.readFileSync(gamePath, 'utf8');
   src = src.replace(/from '\.\/(.*?)'/g, (_, p) => {
     const abs = pathToFileURL(path.join(path.dirname(gamePath), p));
     return `from '${abs.href}'`;
   });
+  src = src.replace(
+    /from '\.\.\/\.\.\/\.\.\/commonCore\.js'/g,
+    `from '${commonCorePath.href}'`
+  );
   src += '\nexport { getBaitOptions };';
   ({ getBaitOptions } = await import(
     `data:text/javascript,${encodeURIComponent(src)}`

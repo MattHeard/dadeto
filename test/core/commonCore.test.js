@@ -25,6 +25,7 @@ import {
   whenArray,
   whenTruthy,
   whenOrNull,
+  whenOrDefault,
   whenNotNullish,
   whenNotNullishValue,
   functionOrFallback,
@@ -167,6 +168,11 @@ describe('commonCore helpers', () => {
   test('whenOrNull executes the callback when the condition passes', () => {
     expect(whenOrNull(true, () => 'ok')).toBe('ok');
     expect(whenOrNull(false, () => 'nope')).toBeNull();
+  });
+
+  test('whenOrDefault returns the fallback when the condition fails', () => {
+    expect(whenOrDefault(true, () => 'ok', 'nope')).toBe('ok');
+    expect(whenOrDefault(false, () => 'ok', 'nope')).toBe('nope');
   });
 
   test('functionOrFallback returns a callable candidate or the fallback', () => {

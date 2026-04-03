@@ -1,4 +1,4 @@
-import { areValidStrings } from '../../../commonCore.js';
+import { areValidStrings, whenTruthy } from '../../../commonCore.js';
 import { calculateEdgeWeight } from './edgeWeight.js';
 import { isPlainObject } from '../browserToysCore.js';
 import { guardThen } from '../../common.js';
@@ -16,16 +16,16 @@ export function shortestDistanceToAdmin({
   ratings,
   ignoredPageId,
 }) {
-  if (!areIdsValid(moderatorId, adminId)) {
-    return NO_PATH_DISTANCE;
-  }
-
-  return resolveDistance({
-    moderatorId,
-    adminId,
-    ratings,
-    ignoredPageId,
-  });
+  return (
+    whenTruthy(areIdsValid(moderatorId, adminId), () =>
+      resolveDistance({
+        moderatorId,
+        adminId,
+        ratings,
+        ignoredPageId,
+      })
+    ) ?? NO_PATH_DISTANCE
+  );
 }
 
 /**

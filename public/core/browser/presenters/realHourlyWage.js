@@ -2,7 +2,7 @@ import {
   createParsedJsonPresenter,
   createPresenterRoot,
 } from './browserPresentersCore.js';
-import { isNullish, whenOrNull } from '../../commonCore.js';
+import { isNullish, objectOrEmpty, whenOrNull } from '../../commonCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
@@ -161,7 +161,7 @@ function formatNumberBody(value) {
  * @returns {string | null} Missing-value marker or null.
  */
 function formatEmptyDisplayValue(value) {
-  return whenOrNull(isEmptyDisplayValue(value), () => '—');
+  return returnDashIf(isEmptyDisplayValue(value));
 }
 
 /**
@@ -188,7 +188,7 @@ function formatNumericDisplayValue(value) {
  * @returns {string | null} Missing marker or null.
  */
 function formatInvalidNumber(value) {
-  return whenOrNull(!Number.isFinite(value), () => '—');
+  return returnDashIf(!Number.isFinite(value));
 }
 
 /**
@@ -227,25 +227,12 @@ function getSummaryRows(parsed) {
 }
 
 /**
- * Determine whether a value is a plain record.
- * @param {unknown} value Candidate value.
- * @returns {value is Record<string, unknown>} Whether the value is an object record.
- */
-function isRecord(value) {
-  return typeof value === 'object' && value !== null;
-}
-
-/**
  * Normalize an arbitrary candidate to a record.
  * @param {unknown} candidate Candidate value.
  * @returns {Record<string, unknown>} Record or empty object.
  */
 function getRecordOrEmpty(candidate) {
-  if (isRecord(candidate)) {
-    return candidate;
-  }
-
-  return {};
+  return objectOrEmpty(candidate);
 }
 
 /**
@@ -307,9 +294,7 @@ function getExpenseRows(parsed) {
  * @returns {HTMLElement} Summary section.
  */
 function createSummarySection(parsed, dom) {
-  const section = createSection(dom, 'Summary');
-  dom.appendChild(section, createTable(dom, getSummaryRows(parsed)));
-  return section;
+  return createSectionWithRows(dom, 'Summary', getSummaryRows(parsed));
 }
 
 /**
@@ -319,9 +304,7 @@ function createSummarySection(parsed, dom) {
  * @returns {HTMLElement} Hour breakdown section.
  */
 function createHourSection(parsed, dom) {
-  const section = createSection(dom, 'Hours breakdown');
-  dom.appendChild(section, createTable(dom, getHourRows(parsed)));
-  return section;
+  return createSectionWithRows(dom, 'Hours breakdown', getHourRows(parsed));
 }
 
 /**
@@ -331,9 +314,11 @@ function createHourSection(parsed, dom) {
  * @returns {HTMLElement} Expense breakdown section.
  */
 function createExpenseSection(parsed, dom) {
-  const section = createSection(dom, 'Expense breakdown');
-  dom.appendChild(section, createTable(dom, getExpenseRows(parsed)));
-  return section;
+  return createSectionWithRows(
+    dom,
+    'Expense breakdown',
+    getExpenseRows(parsed)
+  );
 }
 
 /**
@@ -368,6 +353,28 @@ function renderRealHourlyWageResult(parsed, dom) {
   dom.appendChild(root, createHourSection(parsed, dom));
   dom.appendChild(root, createExpenseSection(parsed, dom));
   return root;
+}
+
+/**
+ * Return a dash when the supplied condition passes.
+ * @param {boolean} condition Condition gate.
+ * @returns {string | null} Dash marker or null.
+ */
+function returnDashIf(condition) {
+  return whenOrNull(condition, () => '—');
+}
+
+/**
+ * Create a section containing a table.
+ * @param {DOMHelpers} dom DOM helper facade.
+ * @param {string} title Section title.
+ * @param {Array<[string, unknown]>} rows Table rows.
+ * @returns {HTMLElement} Section element.
+ */
+function createSectionWithRows(dom, title, rows) {
+  const section = createSection(dom, title);
+  dom.appendChild(section, createTable(dom, rows));
+  return section;
 }
 
 export const createRealHourlyWageReportElement = createParsedJsonPresenter(
