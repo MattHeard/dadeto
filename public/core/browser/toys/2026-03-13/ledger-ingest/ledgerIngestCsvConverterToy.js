@@ -148,16 +148,35 @@ function processCsvQuotedCharacterInside(state, next, index) {
  * @returns {number | null} Updated index when a delimiter was handled.
  */
 function processCsvDelimiterCharacter(state, chars, index) {
-  if (shouldProcessCsvSeparator(state, chars.char)) {
+  return (
+    processCsvSeparatorCharacter(state, chars, index) ??
+    processCsvLineBreakCharacter(state, chars, index)
+  );
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number | null} Updated index when the separator was handled.
+ */
+function processCsvSeparatorCharacter(state, chars, index) {
+  return whenOrNull(shouldProcessCsvSeparator(state, chars.char), () => {
     flushCsvCell(state);
     return index;
-  }
+  });
+}
 
-  if (shouldProcessCsvLineBreak(state, chars.char)) {
-    return processCsvLineBreakContinuation(state, chars, index);
-  }
-
-  return null;
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {{ char: string, next: string | undefined }} chars Current and next character.
+ * @param {number} index Current character index.
+ * @returns {number | null} Updated index when the line break was handled.
+ */
+function processCsvLineBreakCharacter(state, chars, index) {
+  return whenOrNull(shouldProcessCsvLineBreak(state, chars.char), () =>
+    processCsvLineBreakContinuation(state, chars, index)
+  );
 }
 
 /**
@@ -168,7 +187,11 @@ function processCsvDelimiterCharacter(state, chars, index) {
  */
 function processCsvLineBreakContinuation(state, chars, index) {
   flushCsvRow(state);
-  return whenOrDefault(shouldSkipCsvLineBreakTail(chars), () => index + 1, index);
+  return whenOrDefault(
+    shouldSkipCsvLineBreakTail(chars),
+    () => index + 1,
+    index
+  );
 }
 
 /**
