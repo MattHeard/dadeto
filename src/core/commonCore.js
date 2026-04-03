@@ -353,6 +353,19 @@ export function whenString(value, fn) {
 }
 
 /**
+ * Normalize a string candidate to a trimmed string or an empty string.
+ * @param {unknown} value Candidate string value.
+ * @returns {string} Trimmed string or empty string when the value is not a string.
+ */
+export function trimmedStringOrEmpty(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim();
+}
+
+/**
  * Run the provided callback when the value matches the requested typeof.
  * @template T
  * @param {unknown} value Candidate value.
@@ -395,15 +408,6 @@ export function reportAndReturnFalse(reportFn, ...args) {
  */
 export function whenPredicateValue(value, predicate) {
   return whenOrNull(predicate(value), () => value);
-}
-
-/**
- * Normalize a string candidate to a trimmed string or an empty string.
- * @param {unknown} value Candidate string value.
- * @returns {string} Trimmed string or empty string when the value is not a string.
- */
-export function trimmedStringOrEmpty(value) {
-  return whenString(value, candidate => candidate.trim()) ?? '';
 }
 
 /**
