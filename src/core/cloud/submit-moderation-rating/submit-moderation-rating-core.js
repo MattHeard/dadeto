@@ -4,7 +4,6 @@ import {
   isNonNullObject,
   whenTypeValue,
   whenString,
-  whenPredicateValue,
 } from '../../commonCore.js';
 import {
   matchBearerToken,
@@ -12,6 +11,7 @@ import {
   createResponse,
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
+  whenPredicateValue,
 } from './cloud-core.js';
 import {
   createCloudSubmitHandler,

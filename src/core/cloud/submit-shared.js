@@ -2,10 +2,11 @@ import {
   normalizeShortString,
   isObject,
   normalizeAuthorizationCandidate,
+  normalizeValueWithLimit,
   tryGetHeader,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from './auth-helpers.js';
-import { assertFunction, normalizeValueWithLimit } from '../commonCore.js';
+import { assertFunction } from '../commonCore.js';
 import { normalizeExpressRequest } from './request-normalization.js';
 
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */

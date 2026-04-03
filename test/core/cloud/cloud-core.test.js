@@ -1,11 +1,8 @@
 import { describe, test, expect, jest } from '@jest/globals';
+import { assertFunction } from '../../../src/core/commonCore.js';
 import {
-  assertFunction,
   createCorsOptionsValue,
   normalizeValueWithLimit,
-  whenPredicateValue,
-} from '../../../src/core/commonCore.js';
-import {
   getHeaderFromGetter,
   normalizeString,
   normalizeContent,
@@ -17,6 +14,7 @@ import {
   isDuplicateAppError,
   stringOrNull,
   trimmedStringOrNull,
+  whenPredicateValue,
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {

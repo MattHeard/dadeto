@@ -6,6 +6,7 @@ import {
   createCorsOriginHandler,
   createResponse,
   normalizeShortString,
+  createCorsOptionsValue,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 import {
@@ -16,7 +17,6 @@ import {
 } from '../submit-shared.js';
 import {
   arrayOrEmpty,
-  createCorsOptionsValue,
   trimmedStringOrNull,
   whenNotNullish,
   whenOrDefault,
