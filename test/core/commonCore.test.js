@@ -9,8 +9,11 @@ import {
   isBlankStringValue,
   isNonNullObject,
   isNullish,
+  isNullishOrEmptyString,
   isValidString,
   normalizeNonStringValue,
+  normalizeValueWithLimit,
+  normalizeObjectOrFallback,
   resolveMessageOrDefault,
   stringOrDefault,
   stringOrNull,
@@ -101,6 +104,38 @@ describe('commonCore helpers', () => {
   test('whenString executes the callback for strings only', () => {
     expect(whenString('hello', value => value.toUpperCase())).toBe('HELLO');
     expect(whenString(123, value => value)).toBeNull();
+  });
+
+  test('normalizeValueWithLimit normalizes first and truncates second', () => {
+    expect(
+      normalizeValueWithLimit('  hello  ', 3, value => String(value).trim())
+    ).toBe('hel');
+    expect(
+      normalizeValueWithLimit(null, 10, value => String(value ?? '').trim())
+    ).toBe('');
+  });
+
+  test('normalizeObjectOrFallback uses fallback for non-objects and maps objects', () => {
+    const fallback = jest.fn(() => ({ fallback: true }));
+    const transform = jest.fn(value => ({ ...value, mapped: true }));
+    expect(normalizeObjectOrFallback(null, fallback, transform)).toEqual({
+      fallback: true,
+    });
+    expect(
+      normalizeObjectOrFallback({ hello: 'world' }, fallback, transform)
+    ).toEqual({
+      hello: 'world',
+      mapped: true,
+    });
+    expect(fallback).toHaveBeenCalledTimes(1);
+    expect(transform).toHaveBeenCalledTimes(1);
+  });
+
+  test('isNullishOrEmptyString detects missing string-like values', () => {
+    expect(isNullishOrEmptyString(null)).toBe(true);
+    expect(isNullishOrEmptyString(undefined)).toBe(true);
+    expect(isNullishOrEmptyString('')).toBe(true);
+    expect(isNullishOrEmptyString('value')).toBe(false);
   });
 
   test('whenType executes the callback for the requested typeof only', () => {

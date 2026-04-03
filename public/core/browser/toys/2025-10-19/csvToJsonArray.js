@@ -1,6 +1,10 @@
 import { parseCsvLine } from './toys-core.js';
 import { buildWhen } from '../../common.js';
-import { isBlankStringValue, whenString } from '../../../commonCore.js';
+import {
+  isBlankStringValue,
+  isValidString,
+  whenString,
+} from '../../../commonCore.js';
 
 /**
  * Convert a multi-row CSV string into a JSON array string.
@@ -335,15 +339,6 @@ function buildRecordFromLine(line, headerEntries) {
 }
 
 /**
- * Check if value is non-empty.
- * @param {string} value Value.
- * @returns {boolean} True if non-empty.
- */
-function isValueNonEmpty(value) {
-  return value.length > 0;
-}
-
-/**
  * Assign a cell value to the record when the parsed value is not empty.
  * @param {Record<string, string>} record - Target record collecting field values.
  * @param {{ name: string, index: number }} column - Header metadata describing the column.
@@ -369,7 +364,7 @@ function assignRecordValue(record, { name, index }, values) {
  */
 function assignParsedValue(record, name, rawValue) {
   const value = normalizeCsvValue(rawValue);
-  if (!isValueNonEmpty(value)) {
+  if (!isValidString(value)) {
     return;
   }
 

@@ -3,9 +3,11 @@ import {
   ensureString,
   isNonNullObject,
   normalizeNonStringValue,
+  normalizeValueWithLimit,
   numberOrZero,
   reportAndReturnFalse,
   stringOrNull,
+  createCorsOptionsValue,
   whenTypeValue,
   when,
   whenString,
@@ -460,8 +462,9 @@ export function normalizeString(value, maxLength) {
  * @returns {string} Normalized content string.
  */
 export function normalizeContent(value, maxLength) {
-  const normalized = String(value ?? '');
-  return normalized.replace(/\r\n?/g, '\n').slice(0, maxLength);
+  return normalizeValueWithLimit(value, maxLength, raw =>
+    String(raw ?? '').replace(/\r\n?/g, '\n')
+  );
 }
 
 /**
@@ -564,10 +567,7 @@ export function isAllowedOrigin(origin, allowedOrigins) {
 export function createCorsOptions(handleCorsOrigin, methods = ['POST']) {
   assertFunction(handleCorsOrigin, 'handleCorsOrigin');
 
-  return {
-    origin: handleCorsOrigin,
-    methods,
-  };
+  return createCorsOptionsValue(handleCorsOrigin, methods);
 }
 
 /**

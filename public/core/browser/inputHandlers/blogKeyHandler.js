@@ -1,10 +1,9 @@
 import * as browserCore from '../browser-core.js';
 import {
-  appendLabelledField,
   cleanContainer,
   createManagedFormShellState,
-  registerInputListener,
   syncHiddenInput,
+  wireLabelledField,
 } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -53,16 +52,6 @@ function parseLines(value) {
 }
 
 /**
- * Wire input events for a field and append it as a labelled row.
- * @param {{ dom: DOMHelpers, form: HTMLElement, element: HTMLInputElement | HTMLTextAreaElement, labelText: string, onInput: () => void, disposers: Disposer[] }} options - Wiring dependencies.
- * @returns {void}
- */
-function wireField({ dom, form, element, labelText, onInput, disposers }) {
-  registerInputListener({ dom, input: element, handler: onInput, disposers });
-  appendLabelledField({ dom, form, labelText, input: element });
-}
-
-/**
  * Run a blog-key data mutation and resync the hidden payload.
  * @param {{ dom: DOMHelpers, textInput: HTMLInputElement, data: BlogKeyData, applyMutation: () => void }} options Update inputs.
  * @returns {void}
@@ -105,12 +94,12 @@ function buildBlogKeyField(options) {
   dom.setValue(element, initialValue);
   const onInput = () =>
     updateBlogKeyData({ dom, textInput, data, applyMutation: updateData });
-  wireField({
+  wireLabelledField({
     dom,
     form,
-    element,
+    input: element,
     labelText,
-    onInput,
+    handler: onInput,
     disposers,
   });
 }

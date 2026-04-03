@@ -241,7 +241,7 @@ export function calculateRealHourlyWage(input) {
   const adjustedNetIncome =
     numberOrZero(input.period.netIncome) - totalWorkRelatedExpenses;
 
-  return {
+  return buildRealHourlyWageOutput({
     nominalHourlyWage: divideOrNull(
       numberOrZero(input.period.grossIncome),
       paidWorkHours
@@ -256,6 +256,28 @@ export function calculateRealHourlyWage(input) {
       totalHours: totalWorkRelatedHours,
       directHoursByType,
       expensesByType,
+    },
+  });
+}
+
+/**
+ * Build the derived wage output object.
+ * @param {RealHourlyWageOutput} output Derived wage report.
+ * @returns {RealHourlyWageOutput} Output payload.
+ */
+function buildRealHourlyWageOutput(output) {
+  return {
+    nominalHourlyWage: output.nominalHourlyWage,
+    realHourlyWage: output.realHourlyWage,
+    totalWorkRelatedHours: output.totalWorkRelatedHours,
+    totalWorkRelatedExpenses: output.totalWorkRelatedExpenses,
+    adjustedNetIncome: output.adjustedNetIncome,
+    breakdown: {
+      paidWorkHours: output.breakdown.paidWorkHours,
+      overheadHours: output.breakdown.overheadHours,
+      totalHours: output.breakdown.totalHours,
+      directHoursByType: output.breakdown.directHoursByType,
+      expensesByType: output.breakdown.expensesByType,
     },
   };
 }

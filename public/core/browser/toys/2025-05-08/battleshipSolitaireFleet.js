@@ -12,7 +12,11 @@
  *   • No diagonal placement; honours optional noTouching flag.
  */
 
-import { whenNotNullish, whenOrNull } from '../../../commonCore.js';
+import {
+  whenNotNullish,
+  whenOrDefault,
+  whenOrNull,
+} from '../../../commonCore.js';
 
 /**
  * @typedef {{ x: number, y: number }} Coord
@@ -343,9 +347,7 @@ function collectCandidatesForStart({ start, length, cfg, occupied }) {
   const sharedContext = { start, length, cfg, occupied };
   return collectMappedCandidates(
     /** @type {Array<'H' | 'V'>} */ (['H', 'V']),
-    (direction, candidates) => {
-      collectCandidatesForDirection(direction, sharedContext, candidates);
-    }
+    direction => collectCandidatesForDirection(direction, sharedContext)
   );
 }
 
@@ -353,29 +355,40 @@ function collectCandidatesForStart({ start, length, cfg, occupied }) {
  * Evaluate a single direction for a starting coordinate.
  * @param {'H' | 'V'} direction - Ship orientation.
  * @param {{ start: Coord, length: number, cfg: FleetConfig, occupied: Set<string> }} context - Shared candidate context.
- * @param {Candidate[]} candidates - Candidate accumulator.
- * @returns {void}
+ * @returns {Candidate[]} Candidate list for the requested direction.
  */
-function collectCandidatesForDirection(direction, context, candidates) {
+function collectCandidatesForDirection(direction, context) {
   const candidate = getCandidateIfInBounds(direction, context);
-  if (candidate) {
-    candidates.push(candidate);
+  if (!candidate) {
+    return [];
   }
+
+  return [candidate];
 }
 
 /**
  * Collect candidates from each item using a shared accumulator.
  * @template T
  * @param {T[]} items - Items to inspect.
- * @param {(item: T, candidates: Candidate[]) => void} collectCandidate - Callback that appends matching candidates.
+ * @param {(item: T) => Candidate[]} collectCandidate - Callback that returns matching candidates.
  * @returns {Candidate[]} Collected candidates.
  */
 function collectMappedCandidates(items, collectCandidate) {
   const candidates = /** @type {Candidate[]} */ ([]);
   for (const item of items) {
-    collectCandidate(item, candidates);
+    appendCandidates(candidates, collectCandidate(item));
   }
   return candidates;
+}
+
+/**
+ * Append a candidate batch into the shared accumulator.
+ * @param {Candidate[]} candidates - Candidate accumulator.
+ * @param {Candidate[]} nextCandidates - Candidates to append.
+ * @returns {void}
+ */
+function appendCandidates(candidates, nextCandidates) {
+  candidates.push(...nextCandidates);
 }
 
 /**
@@ -431,28 +444,30 @@ function getValidCandidate(direction, context) {
 function collectAllCandidates(length, cfg, occupied) {
   return collectMappedCandidates(
     Array.from({ length: cfg.height }, (_, y) => y),
-    (y, candidates) => {
-      collectCandidatesForRow({ y, length, cfg, occupied, candidates });
-    }
+    y => collectCandidatesForRow({ y, length, cfg, occupied })
   );
 }
 
 /**
  * Collect candidates for a row at a given y coordinate.
- * @param {{ y: number, length: number, cfg: FleetConfig, occupied: Set<string>, candidates: Candidate[] }} params - Row context.
- * @returns {void}
+ * @param {{ y: number, length: number, cfg: FleetConfig, occupied: Set<string> }} params - Row context.
+ * @returns {Candidate[]} Candidates for the row.
  */
-function collectCandidatesForRow({ y, length, cfg, occupied, candidates }) {
+function collectCandidatesForRow({ y, length, cfg, occupied }) {
+  const candidates = [];
   for (let x = 0; x < cfg.width; x++) {
     const start = { x, y };
-    const localCandidates = collectCandidatesForStart({
-      start,
-      length,
-      cfg,
-      occupied,
-    });
-    candidates.push(...localCandidates);
+    appendCandidates(
+      candidates,
+      collectCandidatesForStart({
+        start,
+        length,
+        cfg,
+        occupied,
+      })
+    );
   }
+  return candidates;
 }
 
 /**
@@ -646,11 +661,11 @@ function convertShipsToArray(cfg) {
  * @returns {number} Parsed number.
  */
 function parseDimension(value) {
-  if (typeof value !== 'string') {
-    return value;
-  }
-
-  return Number.parseInt(value, 10);
+  return whenOrDefault(
+    typeof value === 'string',
+    () => Number.parseInt(value, 10),
+    value
+  );
 }
 
 /**

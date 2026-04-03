@@ -1,4 +1,5 @@
 import { createStorageLens, mapLens } from './storageLens.js';
+import { isNullishOrEmptyString, whenOrNull } from '../commonCore.js';
 
 /**
  * @module localStorageLens
@@ -19,7 +20,8 @@ import { createStorageLens, mapLens } from './storageLens.js';
  */
 export function createLocalStorageLens({ storage, logError = () => {} }) {
   const baseLens = createRawLocalStorageLens(storage, logError);
-  return mapLens(baseLens, deserializeJson(logError), serializeJson(logError));
+  const jsonHandlers = createJsonHandlers(logError);
+  return mapLens(baseLens, jsonHandlers.deserialize, jsonHandlers.serialize);
 }
 
 /**
@@ -135,26 +137,6 @@ function writeStorageValue(storage, key, value) {
 }
 
 /**
- * Creates a function that deserializes JSON strings.
- * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
- * @returns {(value: string | null) => unknown} Deserializer function.
- */
-function deserializeJson(logError) {
-  return createJsonValueHandler(isMissingStoredValue, value =>
-    parseStoredJson(value, logError)
-  );
-}
-
-/**
- * Determine if a stored value should be treated as missing.
- * @param {string | null | undefined} value - Stored value.
- * @returns {value is null | undefined | ''} True when no value should be parsed.
- */
-function isMissingStoredValue(value) {
-  return isNullish(value) || value === '';
-}
-
-/**
  * Parse stored JSON with error handling.
  * @param {string} value - JSON string.
  * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
@@ -169,14 +151,19 @@ function parseStoredJson(value, logError) {
 }
 
 /**
- * Creates a function that serializes values to JSON.
+ * Create the JSON serializer and deserializer used by the localStorage lens.
  * @param {(message: string, ...args: unknown[]) => void} logError - Error logger.
- * @returns {(value: unknown) => string | null} Serializer function.
+ * @returns {{ deserialize: (value: string | null) => unknown, serialize: (value: unknown) => string | null }} JSON handlers.
  */
-function serializeJson(logError) {
-  return createJsonValueHandler(isNullish, value =>
-    stringifyStoredJson(value, logError)
-  );
+function createJsonHandlers(logError) {
+  return {
+    deserialize: createJsonValueHandler(isNullishOrEmptyString, value =>
+      parseStoredJson(value, logError)
+    ),
+    serialize: createJsonValueHandler(isNullish, value =>
+      stringifyStoredJson(value, logError)
+    ),
+  };
 }
 
 /**
@@ -186,13 +173,8 @@ function serializeJson(logError) {
  * @returns {(value: unknown) => unknown | null} Handler that returns null for missing inputs.
  */
 function createJsonValueHandler(isMissingValue, transformValue) {
-  return value => {
-    if (isMissingValue(value)) {
-      return null;
-    }
-
-    return transformValue(value);
-  };
+  return value =>
+    whenOrNull(!isMissingValue(value), () => transformValue(value));
 }
 
 /**

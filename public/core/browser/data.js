@@ -695,6 +695,17 @@ function callWithDependencies(getDependencies, invoke, ...args) {
 }
 
 /**
+ * Create a method wrapper that always resolves dependencies before invoking.
+ * @template {(...args: any[]) => any} T
+ * @param {() => any} getDependencies Dependency accessor.
+ * @param {T} invoke Method implementation that expects dependencies as the last argument.
+ * @returns {(...args: Parameters<T>) => ReturnType<T>} Wrapped method.
+ */
+function createDependencyMethod(getDependencies, invoke) {
+  return (...args) => callWithDependencies(getDependencies, invoke, ...args);
+}
+
+/**
  * Build a blog data controller that wires helpers to the provided dependencies.
  * @param {BlogDependencyFactory} createDependencies - Dependency factory invoked on first use.
  * @returns {BlogDataController} Controller API used by the entry layer.
@@ -708,50 +719,47 @@ export function createBlogDataController(createDependencies) {
      * @returns {Promise<unknown>} Resolves once the fetch and cache operations complete.
      */
     fetchAndCacheBlogData(state) {
-      return callWithDependencies(
+      return createDependencyMethod(
         getDependencies,
-        fetchAndCacheBlogData,
-        state
-      );
+        fetchAndCacheBlogData
+      )(state);
     },
     /**
      * @param {BlogStateRecord} state - Application state used to build the data view.
      * @returns {Record<string, unknown>} Sanitized copy of the current state.
      */
     getData(state) {
-      return callWithDependencies(getDependencies, getData, state);
+      return createDependencyMethod(getDependencies, getData)(state);
     },
     /**
      * @param {TemporaryStateBundle} state - Incoming temporary payload and the target state.
      * @returns {void} No value is returned; the state is modified in place.
      */
     setLocalTemporaryData(state) {
-      return callWithDependencies(
+      return createDependencyMethod(
         getDependencies,
-        setLocalTemporaryData,
-        state
-      );
+        setLocalTemporaryData
+      )(state);
     },
     /**
      * @param {Record<string, unknown>} desired - Desired permanent values to persist.
      * @returns {object} Merged permanent state after persistence.
      */
     setLocalPermanentData(desired) {
-      return callWithDependencies(
+      return createDependencyMethod(
         getDependencies,
         (nextDesired, dependencies) =>
           setLocalPermanentDataCore(
             nextDesired,
             dependencies.loggers,
             dependencies.permanentLens
-          ),
-        desired
-      );
+          )
+      )(desired);
     },
     getLocalPermanentData() {
-      return callWithDependencies(getDependencies, dependencies =>
+      return createDependencyMethod(getDependencies, dependencies =>
         readLocalPermanentData(dependencies.permanentLens)
-      );
+      )();
     },
   };
 }

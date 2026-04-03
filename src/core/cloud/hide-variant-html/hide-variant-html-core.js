@@ -2,9 +2,9 @@ import { DEFAULT_BUCKET_NAME, getSnapshotData } from './cloud-core.js';
 import {
   assertFunction,
   ensureString,
-  isNullish,
   normalizeNonStringValue,
   numberOrZero,
+  whenNotNullishValue,
 } from '../common-core.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
@@ -70,10 +70,7 @@ function hasPageOrVariant(value) {
  * @returns {*} Null when the value is undefined; otherwise returns the value.
  */
 function normalizeNullableField(value) {
-  if (isNullish(value)) {
-    return null;
-  }
-  return value;
+  return whenNotNullishValue(value);
 }
 
 /**

@@ -1,10 +1,9 @@
 import * as browserCore from '../browser-core.js';
 import {
-  appendLabelledField,
   cleanContainer,
   createManagedFormShellState,
-  registerInputListener,
   syncHiddenInput,
+  wireLabelledField,
 } from './createDendriteHandler.js';
 import { isNonNullObject, numberOrZero } from '../../commonCore.js';
 
@@ -312,13 +311,14 @@ function buildNumericField(options) {
     syncHiddenInput(dom, textInput, data);
   };
 
-  registerInputListener({
+  wireLabelledField({
     dom,
+    form: section,
     input,
+    labelText,
     handler: handleInput,
     disposers,
   });
-  appendLabelledField({ dom, form: section, labelText, input });
 }
 
 /**

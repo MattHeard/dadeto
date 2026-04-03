@@ -1,4 +1,4 @@
-import { isNonNullObject } from '../../../commonCore.js';
+import { isNonNullObject, isValidString } from '../../../commonCore.js';
 import { parseJsonObject } from '../../jsonValueHelpers.js';
 
 const TOY_STORAGE_KEY = 'JOYMAP1';
@@ -6,14 +6,6 @@ const DEFAULT_STATE = {
   mappings: {},
   skippedControls: [],
 };
-
-/**
- * @param {unknown} value Candidate serialized payload.
- * @returns {value is string} Whether the value is a non-empty string.
- */
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.length > 0;
-}
 
 /**
  * @param {string} input Serialized Joy-Con mapper action payload.
@@ -28,7 +20,7 @@ function parseJsonInput(input) {
  * @returns {Record<string, unknown> | null} Parsed action object or null for invalid input.
  */
 function parseInput(input) {
-  if (!isNonEmptyString(input)) {
+  if (!isValidString(input)) {
     return null;
   }
 

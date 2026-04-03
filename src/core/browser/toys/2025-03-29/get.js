@@ -122,6 +122,16 @@ function createTraversalState(value, path, error) {
 }
 
 /**
+ * Build a successful traversal state for a resolved value.
+ * @param {*} value Resolved traversal value.
+ * @param {string} path Fully qualified traversal path.
+ * @returns {PathTraversalState} Structured traversal state with no error.
+ */
+function createTraversalStateForValue(value, path) {
+  return createTraversalState(value, path, null);
+}
+
+/**
  * Attempt to resolve the array entry for the active segment.
  * @param {object|unknown[]} currentValue - Current value being inspected.
  * @param {string} segment - Segment text interpreted as an index.
@@ -136,7 +146,7 @@ function getArraySegmentValue(currentValue, segment, nextPath) {
   if (arrayIndex === null || arrayIndex >= currentValue.length) {
     return null;
   }
-  return createTraversalState(currentValue[arrayIndex], nextPath, null);
+  return createTraversalStateForValue(currentValue[arrayIndex], nextPath);
 }
 
 /**
@@ -151,7 +161,7 @@ function getSegmentObjectValue(currentValue, segment, nextPath) {
     return null;
   }
   const objectValue = /** @type {Record<string, unknown>} */ (currentValue);
-  return createTraversalState(objectValue[segment], nextPath, null);
+  return createTraversalStateForValue(objectValue[segment], nextPath);
 }
 
 /**

@@ -5,7 +5,7 @@ import {
   tryGetHeader,
 } from './cloud-core.js';
 import { resolveAuthorIdFromHeader } from './auth-helpers.js';
-import { assertFunction } from './common-core.js';
+import { assertFunction, normalizeValueWithLimit } from './common-core.js';
 import { normalizeExpressRequest } from './request-normalization.js';
 
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
@@ -42,7 +42,7 @@ function normalizeSubmissionOption(body, index, maxLength) {
     return null;
   }
 
-  return normalizeShortString(raw).slice(0, maxLength);
+  return normalizeValueWithLimit(raw, maxLength, normalizeShortString);
 }
 
 /**

@@ -16,6 +16,7 @@ import {
 } from '../submit-shared.js';
 import {
   arrayOrEmpty,
+  createCorsOptionsValue,
   trimmedStringOrNull,
   whenNotNullish,
   whenOrDefault,
@@ -160,10 +161,10 @@ export function normalizeCorsOptions(options) {
 export function createCorsOptions(config) {
   const { allowedOrigins, methods } = normalizeCorsOptions(config);
 
-  return {
-    origin: createCorsOriginHandler(isAllowedOrigin, allowedOrigins),
-    methods,
-  };
+  return createCorsOptionsValue(
+    createCorsOriginHandler(isAllowedOrigin, allowedOrigins),
+    methods
+  );
 }
 
 /**

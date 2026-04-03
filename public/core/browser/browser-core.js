@@ -1,5 +1,5 @@
 import { readStoredOrElementValue, setInputValue } from './inputValueStore.js';
-import { isNonNullObject } from '../commonCore.js';
+import { isNonNullObject, whenOrDefault } from '../commonCore.js';
 
 /** @typedef {import('./inputValueStore.js').ElementWithValue} ElementWithValue */
 /** @typedef {import('./domHelpers.js').DOMHelpers} DOMHelpers */
@@ -62,10 +62,7 @@ export const createPrefixedLoggers = (loggers, prefix) => ({
  * @returns {*} Either `value` or `fallback`.
  */
 export function valueOr(value, fallback) {
-  if (value === undefined) {
-    return fallback;
-  }
-  return value;
+  return whenOrDefault(value === undefined, () => fallback, value);
 }
 
 /**

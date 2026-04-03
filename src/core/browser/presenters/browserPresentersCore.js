@@ -37,6 +37,39 @@ export function createPresenterRoot(dom, className) {
 }
 
 /**
+ * Create a section element with a title heading.
+ * @param {{ createElement: Function, setClassName: Function, appendChild: Function, setTextContent: Function }} dom DOM helpers.
+ * @param {string} className Section class name.
+ * @param {string} title Section title text.
+ * @returns {HTMLElement} Section root element.
+ */
+export function createSectionWithHeading(dom, className, title) {
+  const section = dom.createElement('section');
+  dom.setClassName(section, className);
+
+  const heading = dom.createElement('h4');
+  dom.setTextContent(heading, title);
+  dom.appendChild(section, heading);
+  return section;
+}
+
+/**
+ * Create a section element with a heading and appended content.
+ * @param {{
+ *   dom: { createElement: Function, setClassName: Function, appendChild: Function, setTextContent: Function },
+ *   className: string,
+ *   title: string,
+ *   content: HTMLElement,
+ * }} options Section configuration.
+ * @returns {HTMLElement} Section root element.
+ */
+export function createSectionWithRows({ dom, className, title, content }) {
+  const section = createSectionWithHeading(dom, className, title);
+  dom.appendChild(section, content);
+  return section;
+}
+
+/**
  * Render a parsed presenter payload or return the fallback element.
  * @param {{
  *   inputString: string,

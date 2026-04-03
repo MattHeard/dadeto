@@ -136,14 +136,12 @@ export function createCopyToInfraCore({
   }) {
     const sourcePath = join(sourceDir, name);
     const destinationPath = join(targetDir, name);
-    await io.copyFile(sourcePath, destinationPath);
-    messageLogger.info(
-      buildCopyLogMessage({
-        formatPathForLog,
-        source: sourcePath,
-        destination: destinationPath,
-      })
-    );
+    await copyAndLogFile({
+      copyFile: io.copyFile,
+      source: sourcePath,
+      target: destinationPath,
+      messageLogger,
+    });
   }
 
   /**
@@ -249,10 +247,12 @@ export function createCopyToInfraCore({
     await Promise.all(
       copies.map(async ({ source, target }) => {
         await io.ensureDirectory(dirname(target));
-        await io.copyFile(source, target);
-        messageLogger.info(
-          `Copied: ${formatPathForLog(source)} -> ${formatPathForLog(target)}`
-        );
+        await copyAndLogFile({
+          copyFile: io.copyFile,
+          source,
+          target,
+          messageLogger,
+        });
       })
     );
   }
@@ -278,6 +278,27 @@ export function createCopyToInfraCore({
       files,
       name => ({ io, sourceDir, targetDir, name, messageLogger }),
       copyFileToTarget
+    );
+  }
+
+  /**
+   * Copy a file to the target location and report the action.
+   * @param {{
+   *   copyFile: (source: string, destination: string) => Promise<void>,
+   *   source: string,
+   *   target: string,
+   *   messageLogger: CopyMessageLogger,
+   * }} options Copy operation details.
+   * @returns {Promise<void>} Resolves when the file copy is complete.
+   */
+  async function copyAndLogFile({ copyFile, source, target, messageLogger }) {
+    await copyFile(source, target);
+    messageLogger.info(
+      buildCopyLogMessage({
+        formatPathForLog,
+        source,
+        destination: target,
+      })
     );
   }
 

@@ -102,6 +102,21 @@ export function isPlainObject(value) {
   return Boolean(value) && value.constructor === Object;
 }
 
+/**
+ * Return the candidate as a record when the predicate accepts it.
+ * @template T
+ * @param {unknown} value Candidate value.
+ * @param {(value: unknown) => value is T} predicate Type guard.
+ * @returns {T | null} Candidate record or null.
+ */
+export function toRecordOrNull(value, predicate) {
+  if (!predicate(value)) {
+    return null;
+  }
+
+  return /** @type {T} */ (value);
+}
+
 const DENDRITE_TEMP_KEYS = ['stories', 'pages', 'options'];
 export const DENDRITE_OPTION_KEYS = [
   'firstOption',

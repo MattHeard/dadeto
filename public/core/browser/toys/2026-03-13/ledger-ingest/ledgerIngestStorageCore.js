@@ -1,7 +1,9 @@
 import {
   isNonNullObject,
   isValidString,
+  normalizeObjectOrFallback,
   whenArray,
+  objectOrEmpty,
 } from '../../../../commonCore.js';
 
 export const DEFAULT_STORAGE_KEY = 'LEDG3';
@@ -60,11 +62,7 @@ export function getPermanentStorageAccessor(env, name) {
  * @returns {Record<string, unknown>} Plain record copy or empty object.
  */
 export function cloneRecord(value) {
-  if (!isNonNullObject(value)) {
-    return {};
-  }
-
-  return Object.fromEntries(Object.entries(value));
+  return normalizeObjectOrFallback(value, () => ({}), objectOrEmpty);
 }
 
 /**

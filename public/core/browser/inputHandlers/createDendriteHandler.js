@@ -204,6 +204,23 @@ export function appendLabelledField({ dom, form, labelText, input }) {
 }
 
 /**
+ * Register an input listener and append the input as a labelled field.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, input: HTMLElement, labelText: string, handler: DOMEventListener, disposers: Disposer[] }} options Field wiring dependencies.
+ * @returns {void}
+ */
+export function wireLabelledField({
+  dom,
+  form,
+  input,
+  labelText,
+  handler,
+  disposers,
+}) {
+  registerInputListener({ dom, input, handler, disposers });
+  appendLabelledField({ dom, form, labelText, input });
+}
+
+/**
  * Build and wire up an input element for a field.
  * @param {{dom: DOMHelpers, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Input setup parameters.
  * @returns {HTMLInputElement | HTMLTextAreaElement} Initialized input element.

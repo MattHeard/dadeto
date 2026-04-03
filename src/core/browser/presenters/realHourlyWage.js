@@ -1,8 +1,14 @@
 import {
   createParsedJsonPresenter,
+  createSectionWithRows,
   createPresenterRoot,
 } from './browserPresentersCore.js';
-import { isNullish, objectOrEmpty, whenOrNull } from '../../commonCore.js';
+import {
+  isNullishOrEmptyString,
+  objectOrEmpty,
+  normalizeNonStringValue,
+  whenOrNull,
+} from '../../commonCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
@@ -11,7 +17,6 @@ const HEADER_CLASS = 'real-hourly-wage-header';
 const TITLE_CLASS = 'real-hourly-wage-title';
 const INTRO_CLASS = 'real-hourly-wage-intro';
 const SECTION_CLASS = 'real-hourly-wage-section';
-const SECTION_TITLE_CLASS = 'real-hourly-wage-section-title';
 const TABLE_CLASS = 'real-hourly-wage-table';
 const ROW_CLASS = 'real-hourly-wage-row';
 const LABEL_CLASS = 'real-hourly-wage-label';
@@ -30,24 +35,6 @@ function createTextElement(dom, options) {
   dom.setClassName(element, options.className);
   dom.setTextContent(element, options.text);
   return element;
-}
-
-/**
- * Create a section wrapper with a title.
- * @param {DOMHelpers} dom DOM helper facade.
- * @param {string} title Section title.
- * @returns {HTMLElement} Section wrapper.
- */
-function createSection(dom, title) {
-  const section = dom.createElement('section');
-  dom.setClassName(section, SECTION_CLASS);
-  const heading = createTextElement(dom, {
-    tag: 'h4',
-    className: SECTION_TITLE_CLASS,
-    text: title,
-  });
-  dom.appendChild(section, heading);
-  return section;
 }
 
 /**
@@ -124,7 +111,7 @@ function formatDisplayValueBody(value) {
     return numericDisplayValue;
   }
 
-  return String(value);
+  return normalizeNonStringValue(value);
 }
 
 /**
@@ -161,16 +148,7 @@ function formatNumberBody(value) {
  * @returns {string | null} Missing-value marker or null.
  */
 function formatEmptyDisplayValue(value) {
-  return returnDashIf(isEmptyDisplayValue(value));
-}
-
-/**
- * Determine whether a value should render as empty.
- * @param {unknown} value Raw value.
- * @returns {boolean} Whether the value is empty.
- */
-function isEmptyDisplayValue(value) {
-  return isNullish(value) || value === '';
+  return returnDashIf(isNullishOrEmptyString(value));
 }
 
 /**
@@ -294,7 +272,12 @@ function getExpenseRows(parsed) {
  * @returns {HTMLElement} Summary section.
  */
 function createSummarySection(parsed, dom) {
-  return createSectionWithRows(dom, 'Summary', getSummaryRows(parsed));
+  return createWageSection({
+    parsed,
+    dom,
+    title: 'Summary',
+    getRows: getSummaryRows,
+  });
 }
 
 /**
@@ -304,7 +287,12 @@ function createSummarySection(parsed, dom) {
  * @returns {HTMLElement} Hour breakdown section.
  */
 function createHourSection(parsed, dom) {
-  return createSectionWithRows(dom, 'Hours breakdown', getHourRows(parsed));
+  return createWageSection({
+    parsed,
+    dom,
+    title: 'Hours breakdown',
+    getRows: getHourRows,
+  });
 }
 
 /**
@@ -314,11 +302,32 @@ function createHourSection(parsed, dom) {
  * @returns {HTMLElement} Expense breakdown section.
  */
 function createExpenseSection(parsed, dom) {
-  return createSectionWithRows(
+  return createWageSection({
+    parsed,
     dom,
-    'Expense breakdown',
-    getExpenseRows(parsed)
-  );
+    title: 'Expense breakdown',
+    getRows: getExpenseRows,
+  });
+}
+
+/**
+ * Build a wage-report section.
+ * @param {{
+ *   parsed: Record<string, unknown>,
+ *   dom: DOMHelpers,
+ *   title: string,
+ *   getRows: (parsed: Record<string, unknown>) => Array<[string, unknown]>,
+ * }} options Section options.
+ * @returns {HTMLElement} Wage-report section element.
+ */
+function createWageSection(options) {
+  const { parsed, dom, title, getRows } = options;
+  return createSectionWithRows({
+    dom,
+    className: SECTION_CLASS,
+    title,
+    content: createTable(dom, getRows(parsed)),
+  });
 }
 
 /**
@@ -362,19 +371,6 @@ function renderRealHourlyWageResult(parsed, dom) {
  */
 function returnDashIf(condition) {
   return whenOrNull(condition, () => '—');
-}
-
-/**
- * Create a section containing a table.
- * @param {DOMHelpers} dom DOM helper facade.
- * @param {string} title Section title.
- * @param {Array<[string, unknown]>} rows Table rows.
- * @returns {HTMLElement} Section element.
- */
-function createSectionWithRows(dom, title, rows) {
-  const section = createSection(dom, title);
-  dom.appendChild(section, createTable(dom, rows));
-  return section;
 }
 
 export const createRealHourlyWageReportElement = createParsedJsonPresenter(

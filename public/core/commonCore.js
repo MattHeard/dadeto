@@ -266,6 +266,22 @@ export function objectOrEmpty(value) {
 }
 
 /**
+ * Normalize an object-like value with a caller-supplied fallback and transform.
+ * @template T
+ * @param {unknown} value Candidate object-like value.
+ * @param {() => T} fallback Fallback value creator.
+ * @param {(value: Record<string, unknown>) => T} transform Object mapper.
+ * @returns {T} Normalized result.
+ */
+export function normalizeObjectOrFallback(value, fallback, transform) {
+  if (!isNonNullObject(value)) {
+    return fallback();
+  }
+
+  return transform(/** @type {Record<string, unknown>} */ (value));
+}
+
+/**
  * Ensure a dependency is callable.
  * @param {unknown} candidate Candidate value.
  * @param {string} name Name used in the error message.
@@ -455,6 +471,37 @@ export function trimmedStringOrNull(value) {
   }
 
   return trimmed;
+}
+
+/**
+ * Determine whether a value is nullish or an empty string.
+ * @param {unknown} value Candidate value.
+ * @returns {boolean} True when the value should be treated as missing.
+ */
+export function isNullishOrEmptyString(value) {
+  return isNullish(value) || value === '';
+}
+
+/**
+ * Normalize a value, then truncate it to the requested maximum length.
+ * @template T
+ * @param {unknown} value Candidate value.
+ * @param {number} maxLength Maximum length of the normalized result.
+ * @param {(value: unknown) => T} normalize Callback that produces the normalized value.
+ * @returns {T} Normalized and truncated value.
+ */
+export function normalizeValueWithLimit(value, maxLength, normalize) {
+  return normalize(value).slice(0, maxLength);
+}
+
+/**
+ * Build a CORS options object from an origin handler and method list.
+ * @param {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} origin Origin handler.
+ * @param {string[]} methods Allowed HTTP methods.
+ * @returns {{ origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS options object.
+ */
+export function createCorsOptionsValue(origin, methods = ['POST']) {
+  return { origin, methods };
 }
 
 /**

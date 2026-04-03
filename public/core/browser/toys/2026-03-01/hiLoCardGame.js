@@ -1,10 +1,12 @@
 import {
   getStringCandidate,
   isNonNullObject,
+  normalizeObjectOrFallback,
   whenTruthy,
   whenString,
 } from '../../../commonCore.js';
 import { parseJsonObject } from '../../jsonValueHelpers.js';
+import { toRecordOrNull } from '../browserToysCore.js';
 
 const GAME_STATE_KEY = 'hiLoCardGame:gameState';
 const KEYBOARD_STATE_KEY = 'hiLoCardGame:keyboardState';
@@ -107,12 +109,12 @@ function hasInputPayload(input) {
  * @returns {HiLoInputEvent | null} Valid input event or null.
  */
 export function normalizeParsedEvent(parsed) {
-  if (!isNonNullObject(parsed)) {
+  const candidate = toRecordOrNull(parsed, isNonNullObject);
+  if (!candidate) {
     return null;
   }
-  return buildNormalizedParsedEvent(
-    /** @type {Record<string, unknown>} */ (parsed)
-  );
+
+  return buildNormalizedParsedEvent(candidate);
 }
 
 /**
@@ -187,7 +189,7 @@ export function normalizeGameState(value, getRandomNumber) {
  */
 function buildNormalizedGameState(candidate, getRandomNumber) {
   const currentCard = getValidCard(candidate.currentCard);
-  if (!hasCurrentCard(currentCard)) {
+  if (currentCard === null) {
     return createInitialGameState(getRandomNumber);
   }
 
@@ -210,15 +212,6 @@ export function normalizeKeyboardState(value) {
       activeKey: readActiveKey(candidate.activeKey),
     })
   );
-}
-
-/**
- * Check whether a normalized current card exists.
- * @param {number | null} currentCard - Normalized card rank.
- * @returns {currentCard is number} True when the card exists.
- */
-function hasCurrentCard(currentCard) {
-  return currentCard !== null;
 }
 
 /**
@@ -279,11 +272,7 @@ function isCardInRange(card) {
  * @returns {T} Normalized value.
  */
 function normalizeStoredObject(value, fallback, transform) {
-  if (!isNonNullObject(value)) {
-    return fallback();
-  }
-
-  return transform(/** @type {Record<string, unknown>} */ (value));
+  return normalizeObjectOrFallback(value, fallback, transform);
 }
 
 /**
@@ -328,6 +317,17 @@ export function isCorrectGuess(guessKey, currentCard, nextCard) {
 function applyGuess(gameState, guessKey, getRandomNumber) {
   const nextCard = drawCard(getRandomNumber);
   const correct = isCorrectGuess(guessKey, gameState.currentCard, nextCard);
+  return buildGuessedGameState(gameState, nextCard, correct);
+}
+
+/**
+ * Build the next game state after a guess is scored.
+ * @param {HiLoGameState} gameState - Current game state.
+ * @param {number} nextCard - Drawn next card.
+ * @param {boolean} correct - Whether the guess was correct.
+ * @returns {HiLoGameState} Updated game state.
+ */
+function buildGuessedGameState(gameState, nextCard, correct) {
   return {
     currentCard: nextCard,
     score: {

@@ -1,5 +1,6 @@
 import {
   createParsedJsonPresenter,
+  createSectionWithHeading,
   createPresenterRoot,
 } from './browserPresentersCore.js';
 
@@ -14,7 +15,6 @@ const OVERVIEW_ROW_CLASS = 'ledger-ingest-overview-row';
 const OVERVIEW_LABEL_CLASS = 'ledger-ingest-overview-label';
 const OVERVIEW_VALUE_CLASS = 'ledger-ingest-overview-value';
 const SECTION_CLASS = 'ledger-ingest-section';
-const SECTION_TITLE_CLASS = 'ledger-ingest-section-title';
 const SECTION_BODY_CLASS = 'ledger-ingest-section-body';
 const TABLE_CLASS = 'ledger-ingest-transactions-table';
 const TABLE_EMPTY_CLASS = 'ledger-ingest-transactions-empty';
@@ -211,27 +211,6 @@ function createOverview(parsed, dom) {
 }
 
 /**
- * Create a standard section wrapper with a title heading.
- * @param {DOMHelpers} dom DOM helper facade.
- * @param {string} className Section-specific class name.
- * @param {string} title Section title.
- * @returns {HTMLElement} Section wrapper element.
- */
-function createSectionWithHeading(dom, className, title) {
-  const section = dom.createElement('section');
-  dom.setClassName(section, `${SECTION_CLASS} ${className}`);
-
-  const heading = createTextElement(dom, {
-    tag: 'h4',
-    className: SECTION_TITLE_CLASS,
-    text: title,
-  });
-
-  dom.appendChild(section, heading);
-  return section;
-}
-
-/**
  * Build the canonical transaction table section.
  * @param {LedgerIngestReport} parsed Parsed report object.
  * @param {DOMHelpers} dom DOM helper facade.
@@ -240,7 +219,7 @@ function createSectionWithHeading(dom, className, title) {
 function createCanonicalTransactionsSection(parsed, dom) {
   const section = createSectionWithHeading(
     dom,
-    'ledger-ingest-section--canonical-transactions',
+    `${SECTION_CLASS} ledger-ingest-section--canonical-transactions`,
     'Canonical transactions'
   );
 
@@ -665,7 +644,7 @@ function getSummaryNumberValue(value) {
 function createJsonSection(dom, options) {
   const section = createSectionWithHeading(
     dom,
-    options.className,
+    `${SECTION_CLASS} ${options.className}`,
     options.title
   );
   const body = dom.createElement('pre');
