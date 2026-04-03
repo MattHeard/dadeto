@@ -93,9 +93,11 @@ export function readPermanentStorageRoot(env) {
  * @returns {LedgerStorageState} Empty storage state.
  */
 export function createEmptyLedgerStorageState() {
+  const transactionOrder = [];
+  const transactionsByMergeKey = {};
   return {
-    transactionOrder: [],
-    transactionsByMergeKey: {},
+    transactionOrder,
+    transactionsByMergeKey,
   };
 }
 
@@ -159,22 +161,24 @@ export function getStoredTransactions(storageState) {
 export function buildLedgerIngestStorageViewReport(options) {
   const { storageKey, storageState } = options;
   const transactions = getStoredTransactions(storageState);
+  const summary = {
+    rawRecords: transactions.length,
+    canonicalTransactions: transactions.length,
+    duplicatesDetected: 0,
+    errorsDetected: 0,
+  };
+  const policy = {
+    storageKey,
+    mode: 'read-only',
+  };
   return {
     fixture: storageKey,
     inputMode: 'storage',
     canonicalTransactions: transactions,
     duplicateReports: [],
     errorReports: [],
-    summary: {
-      rawRecords: transactions.length,
-      canonicalTransactions: transactions.length,
-      duplicatesDetected: 0,
-      errorsDetected: 0,
-    },
-    policy: {
-      storageKey,
-      mode: 'read-only',
-    },
+    summary,
+    policy,
   };
 }
 

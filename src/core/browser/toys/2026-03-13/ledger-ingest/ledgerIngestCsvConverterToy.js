@@ -148,14 +148,29 @@ function processCsvQuotedCharacterInside(state, next, index) {
  * @returns {number | null} Updated index when a delimiter was handled.
  */
 function processCsvDelimiterCharacter(state, chars, index) {
-  if (shouldProcessCsvSeparator(state, chars.char)) {
-    flushCsvCell(state);
-    return index;
-  }
-  if (shouldProcessCsvLineBreak(state, chars.char)) {
-    return processCsvLineBreakContinuation(state, chars, index);
-  }
-  return null;
+  return (
+    processCsvDelimitedBranch(
+      shouldProcessCsvSeparator(state, chars.char),
+      () => {
+        flushCsvCell(state);
+        return index;
+      }
+    ) ??
+    processCsvDelimitedBranch(
+      shouldProcessCsvLineBreak(state, chars.char),
+      () => processCsvLineBreakContinuation(state, chars, index)
+    )
+  );
+}
+
+/**
+ * @template T
+ * @param {boolean} condition Whether the CSV branch should run.
+ * @param {() => T} onMatch Handler for the matching branch.
+ * @returns {T | null} Branch result or null when the condition does not match.
+ */
+function processCsvDelimitedBranch(condition, onMatch) {
+  return whenOrNull(condition, onMatch);
 }
 
 /**

@@ -240,6 +240,13 @@ export function calculateRealHourlyWage(input) {
   );
   const adjustedNetIncome =
     numberOrZero(input.period.netIncome) - totalWorkRelatedExpenses;
+  const breakdown = {
+    paidWorkHours,
+    overheadHours,
+    totalHours: totalWorkRelatedHours,
+    directHoursByType,
+    expensesByType,
+  };
 
   return buildRealHourlyWageOutput({
     nominalHourlyWage: divideOrNull(
@@ -250,14 +257,19 @@ export function calculateRealHourlyWage(input) {
     totalWorkRelatedHours,
     totalWorkRelatedExpenses,
     adjustedNetIncome,
-    breakdown: {
-      paidWorkHours,
-      overheadHours,
-      totalHours: totalWorkRelatedHours,
-      directHoursByType,
-      expensesByType,
-    },
+    breakdown,
   });
+}
+
+/**
+ * Render the calculation result or a readable validation error.
+ * @param {string} input Toy input string.
+ * @returns {string} JSON string representing the wage report or an error payload.
+ */
+export function realHourlyWageToy(input) {
+  const parsed = parseJsonOrFallback(input);
+  const normalized = normalizeRealHourlyWageInput(parsed);
+  return formatRealHourlyWageResult(normalized);
 }
 
 /**
@@ -272,25 +284,8 @@ function buildRealHourlyWageOutput(output) {
     totalWorkRelatedHours: output.totalWorkRelatedHours,
     totalWorkRelatedExpenses: output.totalWorkRelatedExpenses,
     adjustedNetIncome: output.adjustedNetIncome,
-    breakdown: {
-      paidWorkHours: output.breakdown.paidWorkHours,
-      overheadHours: output.breakdown.overheadHours,
-      totalHours: output.breakdown.totalHours,
-      directHoursByType: output.breakdown.directHoursByType,
-      expensesByType: output.breakdown.expensesByType,
-    },
+    breakdown: output.breakdown,
   };
-}
-
-/**
- * Render the calculation result or a readable validation error.
- * @param {string} input Toy input string.
- * @returns {string} JSON string representing the wage report or an error payload.
- */
-export function realHourlyWageToy(input) {
-  const parsed = parseJsonOrFallback(input);
-  const normalized = normalizeRealHourlyWageInput(parsed);
-  return formatRealHourlyWageResult(normalized);
 }
 
 /**

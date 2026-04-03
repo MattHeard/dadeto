@@ -46,9 +46,10 @@ async function handlePostRequest({
     createdAt: getServerTimestamp(),
   });
 
+  const responseBody = {};
   return {
     status: 201,
-    body: {},
+    body: responseBody,
   };
 }
 
