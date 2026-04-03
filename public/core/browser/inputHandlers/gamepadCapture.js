@@ -419,13 +419,8 @@ function getAxisPayload(gamepad, previousSnapshot) {
  * @returns {Record<string, unknown> | null} Payload when a change was detected.
  */
 function buildChangedPayload(options) {
-  const {
-    gamepad,
-    previousSnapshot,
-    type,
-    findChangedIndex,
-    buildFields,
-  } = options;
+  const { gamepad, previousSnapshot, type, findChangedIndex, buildFields } =
+    options;
   const changedIndex = findChangedIndex(gamepad, previousSnapshot);
   return whenOrNull(changedIndex !== -1, () =>
     buildGamepadPayload(gamepad, {
