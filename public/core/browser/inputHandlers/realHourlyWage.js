@@ -40,17 +40,17 @@ const FIELD_GROUPS = [
     fields: [
       {
         path: ['period', 'paidWorkHours'],
-        label: 'Paid work hours',
+        labelText: 'Paid work hours',
         placeholder: '160',
       },
       {
         path: ['period', 'grossIncome'],
-        label: 'Gross income',
+        labelText: 'Gross income',
         placeholder: '5000',
       },
       {
         path: ['period', 'netIncome'],
-        label: 'Net income',
+        labelText: 'Net income',
         placeholder: '3200',
       },
     ],
@@ -60,32 +60,32 @@ const FIELD_GROUPS = [
     fields: [
       {
         path: ['overhead', 'commuteHours'],
-        label: 'Commute hours',
+        labelText: 'Commute hours',
         placeholder: '20',
       },
       {
         path: ['overhead', 'prepHours'],
-        label: 'Prep hours',
+        labelText: 'Prep hours',
         placeholder: '5',
       },
       {
         path: ['overhead', 'recoveryHours'],
-        label: 'Recovery hours',
+        labelText: 'Recovery hours',
         placeholder: '10',
       },
       {
         path: ['overhead', 'adminHours'],
-        label: 'Admin hours',
+        labelText: 'Admin hours',
         placeholder: '4',
       },
       {
         path: ['overhead', 'overtimeHours'],
-        label: 'Overtime hours',
+        labelText: 'Overtime hours',
         placeholder: '2',
       },
       {
         path: ['overhead', 'otherWorkHours'],
-        label: 'Other work hours',
+        labelText: 'Other work hours',
         placeholder: '1',
       },
     ],
@@ -95,27 +95,27 @@ const FIELD_GROUPS = [
     fields: [
       {
         path: ['overhead', 'directWorkExpenses'],
-        label: 'Direct work expenses',
+        labelText: 'Direct work expenses',
         placeholder: '120',
       },
       {
         path: ['overhead', 'commuteExpenses'],
-        label: 'Commute expenses',
+        labelText: 'Commute expenses',
         placeholder: '40',
       },
       {
         path: ['overhead', 'foodExpenses'],
-        label: 'Food expenses',
+        labelText: 'Food expenses',
         placeholder: '15',
       },
       {
         path: ['overhead', 'clothingExpenses'],
-        label: 'Clothing expenses',
+        labelText: 'Clothing expenses',
         placeholder: '25',
       },
       {
         path: ['overhead', 'otherWorkExpenses'],
-        label: 'Other work expenses',
+        labelText: 'Other work expenses',
         placeholder: '10',
       },
     ],
@@ -332,7 +332,7 @@ function buildNumericField(options) {
  *   title: string,
  *   fields: Array<{
  *     path: [keyof RealHourlyWageFormData, string],
- *     label: string,
+ *     labelText: string,
  *     placeholder: string,
  *   }>,
  * }} options Group rendering dependencies.
