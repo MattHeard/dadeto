@@ -4,6 +4,7 @@ import {
   validatePostMethod,
   whenPostMethod,
   whenPostRequest,
+  whenPostRequestAsync,
 } from '../../../src/core/cloud/http-method-guard.js';
 
 describe('http method guard', () => {
@@ -25,6 +26,12 @@ describe('http method guard', () => {
     expect(
       validatePostMethod(undefined, undefined, { treatNonStringAsPost: true })
     ).toBeNull();
+  });
+
+  test('still rejects POST-only string methods when asked to treat non-strings as POST', () => {
+    expect(
+      validatePostMethod('GET', undefined, { treatNonStringAsPost: true })
+    ).toBe(METHOD_NOT_ALLOWED_RESPONSE);
   });
 
   test('runs the valid callback for POST methods', () => {
@@ -89,5 +96,31 @@ describe('http method guard', () => {
 
     expect(onValid).not.toHaveBeenCalled();
     expect(onInvalid).toHaveBeenCalledWith(METHOD_NOT_ALLOWED_RESPONSE);
+  });
+
+  test('resolves the valid async callback for POST requests', async () => {
+    const onValid = jest.fn().mockResolvedValue('ok');
+
+    await expect(
+      whenPostRequestAsync({
+        request: { method: 'POST' },
+        onValid,
+      })
+    ).resolves.toBe('ok');
+
+    expect(onValid).toHaveBeenCalledTimes(1);
+  });
+
+  test('resolves the invalid async callback for non-POST requests', async () => {
+    const onValid = jest.fn().mockResolvedValue('ok');
+
+    await expect(
+      whenPostRequestAsync({
+        request: { method: 'GET' },
+        onValid,
+      })
+    ).resolves.toBe(METHOD_NOT_ALLOWED_RESPONSE);
+
+    expect(onValid).not.toHaveBeenCalled();
   });
 });
