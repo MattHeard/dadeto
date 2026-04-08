@@ -15,7 +15,10 @@ export default {
     ...jestExcludes,
   ],
   testRunner: 'jest',
-  testRunnerNodeArgs: ['--experimental-vm-modules'],
+  testRunnerNodeArgs: [
+    '--experimental-vm-modules',
+    '--max-old-space-size=3072',
+  ],
   coverageAnalysis: 'perTest',
   reporters: ['json', 'progress'],
   jest: {
