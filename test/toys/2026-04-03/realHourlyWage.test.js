@@ -96,9 +96,92 @@ describe('realHourlyWage', () => {
     });
   });
 
+  it('accepts zero values through the toy parser and renderer', () => {
+    expect(
+      JSON.parse(
+        realHourlyWageToy(
+          JSON.stringify({
+            period: {
+              paidWorkHours: 0,
+              grossIncome: 0,
+              netIncome: 0,
+            },
+            overhead: {
+              commuteHours: 0,
+              prepHours: 0,
+              recoveryHours: 0,
+              adminHours: 0,
+              overtimeHours: 0,
+              otherWorkHours: 0,
+              directWorkExpenses: 0,
+              commuteExpenses: 0,
+              foodExpenses: 0,
+              clothingExpenses: 0,
+              otherWorkExpenses: 0,
+            },
+          })
+        )
+      )
+    ).toEqual({
+      nominalHourlyWage: null,
+      realHourlyWage: null,
+      totalWorkRelatedHours: 0,
+      totalWorkRelatedExpenses: 0,
+      adjustedNetIncome: 0,
+      breakdown: {
+        paidWorkHours: 0,
+        overheadHours: 0,
+        totalHours: 0,
+        directHoursByType: {
+          commuteHours: 0,
+          prepHours: 0,
+          recoveryHours: 0,
+          adminHours: 0,
+          overtimeHours: 0,
+          otherWorkHours: 0,
+        },
+        expensesByType: {
+          directWorkExpenses: 0,
+          commuteExpenses: 0,
+          foodExpenses: 0,
+          clothingExpenses: 0,
+          otherWorkExpenses: 0,
+        },
+      },
+    });
+  });
+
   it('returns a readable validation error for malformed input', () => {
     expect(JSON.parse(realHourlyWageToy('not json'))).toEqual({
       error: 'Invalid real hourly wage input: root payload must be an object',
+    });
+    expect(
+      JSON.parse(
+        realHourlyWageToy(
+          JSON.stringify({
+            period: 'not an object',
+            overhead: {},
+          })
+        )
+      )
+    ).toEqual({
+      error: 'Invalid real hourly wage input: period must be an object',
+    });
+    expect(
+      JSON.parse(
+        realHourlyWageToy(
+          JSON.stringify({
+            period: {
+              paidWorkHours: 160,
+              grossIncome: 5000,
+              netIncome: 3200,
+            },
+            overhead: 'not an object',
+          })
+        )
+      )
+    ).toEqual({
+      error: 'Invalid real hourly wage input: overhead must be an object',
     });
     expect(
       JSON.parse(
@@ -153,5 +236,11 @@ describe('realHourlyWage', () => {
         otherWorkExpenses: 0,
       },
     });
+  });
+
+  it('returns empty section errors for a non-object section payload', () => {
+    expect(
+      realHourlyWageToyTestOnly.getInputSectionValidationErrors('not an object')
+    ).toEqual([null, null]);
   });
 });
