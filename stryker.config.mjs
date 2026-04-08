@@ -5,6 +5,7 @@ const jestExcludes = (jestConfig.collectCoverageFrom || [])
   .map(p => p.slice(1));
 
 export default {
+  concurrency: 1,
   mutate: [
     'src/core/**/*.js',
     '!**/*.html',
