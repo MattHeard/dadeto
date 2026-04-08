@@ -1,6 +1,7 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { assertFunction } from '../../../src/core/commonCore.js';
 import {
+  DEFAULT_BUCKET_NAME,
+  assertFunction,
   createCorsOptionsValue,
   normalizeValueWithLimit,
   getHeaderFromGetter,
@@ -18,6 +19,10 @@ import {
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {
+  test('should export DEFAULT_BUCKET_NAME', () => {
+    expect(DEFAULT_BUCKET_NAME).toBe('www.dendritestories.co.nz');
+  });
+
   describe('assertFunction', () => {
     test('should not throw an error if the candidate is a function', () => {
       expect(() => assertFunction(() => {}, 'test')).not.toThrow();

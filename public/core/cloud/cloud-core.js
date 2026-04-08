@@ -1,15 +1,30 @@
 import {
   assertFunction,
   ensureString,
-  getStringCandidate,
+  isNonNullObject,
   normalizeNonStringValue,
-  stringOrFallback,
+  numberOrZero,
+  reportAndReturnFalse,
+  stringOrNull,
+  whenTypeValue,
   when,
   whenString,
   whenOrNull,
   whenTruthy,
 } from '../commonCore.js';
-export { DEFAULT_BUCKET_NAME } from '../commonCore.js';
+export const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
+export {
+  assertFunction,
+  resolveMessageOrDefault,
+  stringOrNull,
+  trimmedStringOrNull,
+} from '../commonCore.js';
+
+/** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
+/** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+
+/** @typedef {{ code?: string, message?: unknown }} FirebaseError */
+/** @typedef {(value: unknown) => boolean} BooleanPredicate */
 
 export const MISSING_AUTHORIZATION_RESPONSE = {
   status: 401,
@@ -17,30 +32,6 @@ export const MISSING_AUTHORIZATION_RESPONSE = {
 };
 
 export const NO_JOB_RESPONSE = { status: 404, body: 'No moderation job' };
-
-/**
- * Return the input string when available; otherwise `null`.
- * @param {unknown} value Candidate value.
- * @returns {string | null} String when provided, otherwise `null`.
- */
-export function stringOrNull(value) {
-  const normalized = getStringCandidate(value);
-  if (normalized !== undefined) {
-    return normalized;
-  }
-
-  return null;
-}
-
-/**
- * Return the provided string when available; otherwise use the fallback.
- * @param {unknown} value Candidate value that may be a string.
- * @param {string} fallback Replacement when the value is not a string.
- * @returns {string} String value or fallback.
- */
-export function stringOrDefault(value, fallback) {
-  return stringOrFallback(value, () => fallback) ?? fallback;
-}
 
 /**
  * Ensure a candidate dependency is callable before using it.
@@ -116,7 +107,10 @@ export function buildVariantByNameQuery(pageRef, variantName) {
  * @returns {boolean} True when the error represents a duplicate app instance.
  */
 export function isDuplicateAppError(error) {
-  return Boolean(error) && hasDuplicateAppIdentifierMessage(error);
+  if (!error) {
+    return false;
+  }
+  return hasDuplicateAppIdentifierMessage(/** @type {FirebaseError} */ (error));
 }
 
 /**
@@ -138,7 +132,10 @@ export function extractErrorMessage(error) {
  * @returns {error is { message: string }} True when a message string is present.
  */
 export function hasStringMessage(error) {
-  return Boolean(error) && typeof error.message === 'string';
+  if (!error) {
+    return false;
+  }
+  return typeof (/** @type {FirebaseError} */ (error).message) === 'string';
 }
 
 /**
@@ -185,7 +182,11 @@ function messageIndicatesDuplicate(error) {
  */
 export function buildTestOrigins(playwrightOrigin) {
   const normalized = ensureString(playwrightOrigin);
-  return when(Boolean(normalized), () => [normalized], () => []);
+  return when(
+    Boolean(normalized),
+    () => [normalized],
+    () => []
+  );
 }
 
 /**
@@ -243,7 +244,7 @@ export function classifyDeploymentEnvironment(environment) {
   );
 
   if (classifier) {
-    return classifier.value;
+    return /** @type {'prod' | 'test'} */ (classifier.value);
   }
 
   throw new Error(
@@ -331,7 +332,7 @@ export function getHeaderFromGetter(getter, name) {
 
 /**
  * Send a generic success payload for HTTP responders.
- * @param {import('express').Response} res Express response object.
+ * @param {NativeHttpResponse} res Express response object.
  * @returns {void}
  */
 export function sendOkResponse(res) {
@@ -358,20 +359,6 @@ export function assertRandomUuidAndTimestamp(deps) {
   const { randomUUID, getServerTimestamp } = deps;
   assertFunction(randomUUID, 'randomUUID');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
-}
-
-/**
- * Return a fallback when the provided message is falsy.
- * @param {string | undefined | null} message Candidate message.
- * @param {string} fallback Fallback value when message is falsy.
- * @returns {string} Message to surface to the caller.
- */
-export function resolveMessageOrDefault(message, fallback) {
-  if (message) {
-    return message;
-  }
-
-  return fallback;
 }
 
 /**
@@ -405,19 +392,7 @@ export function getNumericValueOrZero(data, selector) {
     return 0;
   }
 
-  return resolveNumericCandidate(selector(data));
-}
-/**
- * Normalize a candidate into a number when possible; otherwise zero.
- * @param {unknown} value Candidate to inspect.
- * @returns {number} Number extracted from the value or zero.
- */
-function resolveNumericCandidate(value) {
-  if (typeof value === 'number') {
-    return value;
-  }
-
-  return 0;
+  return numberOrZero(selector(data));
 }
 
 /**
@@ -426,13 +401,7 @@ function resolveNumericCandidate(value) {
  * @returns {string | null} String value or null.
  */
 export function extractStringFromCandidateArray(candidate) {
-  const [first] = candidate;
-
-  if (typeof first === 'string') {
-    return first;
-  }
-
-  return null;
+  return whenTypeValue(candidate[0], 'string');
 }
 
 /**
@@ -452,7 +421,10 @@ export function normalizeNonStringCandidate(candidate) {
  * @returns {string | null} Normalized string or null.
  */
 export function normalizeAuthorizationCandidate(candidate) {
-  return whenString(candidate, value => value) ?? normalizeNonStringCandidate(candidate);
+  return (
+    whenString(candidate, value => value) ??
+    normalizeNonStringCandidate(candidate)
+  );
 }
 
 /**
@@ -472,11 +444,14 @@ export function tryGetHeader(getter, name) {
  * @returns {string} Normalized string respecting the requested length.
  */
 export function normalizeString(value, maxLength) {
+  let stringValue;
   if (typeof value !== 'string') {
-    value = normalizeNonStringValue(value);
+    stringValue = normalizeNonStringValue(value);
+  } else {
+    stringValue = value;
   }
 
-  return value.trim().slice(0, maxLength);
+  return stringValue.trim().slice(0, maxLength);
 }
 
 /**
@@ -486,8 +461,9 @@ export function normalizeString(value, maxLength) {
  * @returns {string} Normalized content string.
  */
 export function normalizeContent(value, maxLength) {
-  const normalized = String(value ?? '');
-  return normalized.replace(/\r\n?/g, '\n').slice(0, maxLength);
+  return normalizeValueWithLimit(value, maxLength, raw =>
+    String(raw ?? '').replace(/\r\n?/g, '\n')
+  );
 }
 
 /**
@@ -515,6 +491,39 @@ export function normalizeAuthor(author) {
  */
 export function normalizeShortString(value) {
   return normalizeString(value, 120);
+}
+
+/**
+ * Normalize a value, then truncate it to the requested maximum length.
+ * @template T
+ * @param {unknown} value Candidate value.
+ * @param {number} maxLength Maximum length of the normalized result.
+ * @param {(value: unknown) => T} normalize Callback that produces the normalized value.
+ * @returns {T} Normalized and truncated value.
+ */
+export function normalizeValueWithLimit(value, maxLength, normalize) {
+  return normalize(value).slice(0, maxLength);
+}
+
+/**
+ * Build a CORS options object from an origin handler and method list.
+ * @param {(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void} origin Origin handler.
+ * @param {string[]} methods Allowed HTTP methods.
+ * @returns {{ origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => void, methods: string[] }} CORS options object.
+ */
+export function createCorsOptionsValue(origin, methods = ['POST']) {
+  return { origin, methods };
+}
+
+/**
+ * Return the original value when the predicate accepts it; otherwise `null`.
+ * @template T
+ * @param {T} value Candidate value.
+ * @param {(value: T) => boolean} predicate Predicate that determines whether the value is accepted.
+ * @returns {T | null} Original value or `null` when rejected.
+ */
+export function whenPredicateValue(value, predicate) {
+  return whenOrNull(predicate(value), () => value);
 }
 
 /**
@@ -590,10 +599,7 @@ export function isAllowedOrigin(origin, allowedOrigins) {
 export function createCorsOptions(handleCorsOrigin, methods = ['POST']) {
   assertFunction(handleCorsOrigin, 'handleCorsOrigin');
 
-  return {
-    origin: handleCorsOrigin,
-    methods,
-  };
+  return createCorsOptionsValue(handleCorsOrigin, methods);
 }
 
 /**
@@ -608,7 +614,7 @@ export function createResponse(status, body) {
 
 /**
  * Extract the Authorization header from a request.
- * @param {import('express').Request} req Incoming HTTP request.
+ * @param {NativeHttpRequest} req Incoming HTTP request.
  * @returns {string} Authorization header or an empty string.
  */
 export function getAuthHeader(req) {
@@ -617,7 +623,7 @@ export function getAuthHeader(req) {
 
 /**
  * Safely resolve the Authorization header from the request getter.
- * @param {import('express').Request} req HTTP request object.
+ * @param {NativeHttpRequest} req HTTP request object.
  * @returns {unknown} Resolved header value or undefined when unavailable.
  */
 function resolveAuthorizationHeader(req) {
@@ -663,19 +669,44 @@ export function matchBearerToken(header) {
 
 const defaultMissingTokenMessage = 'Missing token';
 
+export const isObject = isNonNullObject;
+
+/**
+ * Check if an object has a message property.
+ * @param {unknown} obj - Object to check.
+ * @returns {boolean} True when message property exists.
+ */
+function hasMessageProperty(obj) {
+  if (!isObject(obj)) {
+    return false;
+  }
+  return 'message' in /** @type {object} */ (obj);
+}
+
+/**
+ * Resolve message string with invalid token fallback.
+ * @param {unknown} messageStr Candidate message string.
+ * @returns {string} Message or 'Invalid token'.
+ */
+function resolveErrorMessageWithDefault(messageStr) {
+  const message = normalizeHeaderValue(messageStr);
+  return message || 'Invalid token';
+}
+
 /**
  * Build a human-friendly invalid token message.
  * @param {unknown} error Validation error.
  * @returns {string} Message sent to clients when token validation fails.
  */
 function defaultInvalidTokenMessage(error) {
-  const candidate = error?.message;
-  return ['Invalid token', candidate][Number(typeof candidate === 'string')];
+  if (!hasMessageProperty(error)) return 'Invalid token';
+  const messageStr = extractErrorMessage(error);
+  return resolveErrorMessageWithDefault(messageStr);
 }
 
 /**
  * Extract the bearer token string from the request.
- * @param {import('express').Request} req Incoming HTTP request.
+ * @param {NativeHttpRequest} req Incoming HTTP request.
  * @returns {string} Bearer token string or an empty string when missing.
  */
 function extractTokenFromRequest(req) {
@@ -701,9 +732,9 @@ function getBearerTokenFromMatch(match) {
  *   token: string,
  *   verifyToken: (token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>,
  *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
- *   sendUnauthorized: (res: import('express').Response, message: string) => void,
- *   sendForbidden: (res: import('express').Response) => void,
- *   res: import('express').Response,
+ *   sendUnauthorized: (res: NativeHttpResponse, message: string) => void,
+ *   sendForbidden: (res: NativeHttpResponse) => void,
+ *   res: NativeHttpResponse,
  * }} deps Dependencies for validating the token and sending HTTP errors.
  * @returns {Promise<boolean>} True when the token is authorized for an admin request.
  */
@@ -724,8 +755,7 @@ async function authorizeAdminToken(deps) {
     });
   } catch (error) {
     const message = defaultInvalidTokenMessage(error);
-    sendUnauthorized(res, message);
-    return false;
+    return reportAndReturnFalse(sendUnauthorized, res, message);
   }
 }
 
@@ -734,8 +764,8 @@ async function authorizeAdminToken(deps) {
  * @param {{
  *   decoded: import('firebase-admin/auth').DecodedIdToken,
  *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
- *   sendForbidden: (res: import('express').Response) => void,
- *   res: import('express').Response,
+ *   sendForbidden: (res: NativeHttpResponse) => void,
+ *   res: NativeHttpResponse,
  * }} deps Authorization helpers.
  * @returns {boolean} True when the decoded token matches the admin UID.
  */
@@ -753,9 +783,9 @@ function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
  * @param {object} deps Authorization collaborators.
  * @param {(token: string) => Promise<import('firebase-admin/auth').DecodedIdToken>} deps.verifyToken Token validator.
  * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
- * @param {(res: import('express').Response, message: string) => void} deps.sendUnauthorized Sends 401 responses.
- * @param {(res: import('express').Response) => void} deps.sendForbidden Sends 403 responses.
- * @returns {(req: import('express').Request, res: import('express').Response) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
+ * @param {(res: NativeHttpResponse, message: string) => void} deps.sendUnauthorized Sends 401 responses.
+ * @param {(res: NativeHttpResponse) => void} deps.sendForbidden Sends 403 responses.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
  */
 export function createVerifyAdmin({
   verifyToken,
@@ -780,3 +810,7 @@ export function createVerifyAdmin({
     });
   };
 }
+
+export const cloudCoreTestUtils = {
+  resolveErrorMessageWithDefault,
+};

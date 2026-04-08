@@ -12,8 +12,9 @@ import {
   whenOrNull,
   whenTruthy,
 } from '../commonCore.js';
+export const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
 export {
-  DEFAULT_BUCKET_NAME,
+  assertFunction,
   resolveMessageOrDefault,
   stringOrNull,
   trimmedStringOrNull,
