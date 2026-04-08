@@ -121,6 +121,16 @@ describe('createCorsOriginValidator', () => {
     expect(cb.mock.calls[0][0]).toBeInstanceOf(Error);
     expect(cb.mock.calls[0][0].message).toBe('CORS');
   });
+
+  it('does not accidentally whitelist the fallback sentinel origin', () => {
+    const validator = createCorsOriginValidator(undefined);
+    const cb = jest.fn();
+
+    validator('Stryker was here', cb);
+
+    expect(cb.mock.calls[0][0]).toBeInstanceOf(Error);
+    expect(cb.mock.calls[0][0].message).toBe('CORS');
+  });
 });
 
 describe('createCorsOptions', () => {
@@ -264,5 +274,24 @@ describe('createHandleReportForModeration', () => {
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  it('forwards the request body to the domain handler', async () => {
+    const body = { variant: ' slug ' };
+    const handler = jest.fn().mockResolvedValue({
+      status: 201,
+      body: { ok: true },
+    });
+    const respond = createHandleReportForModeration(handler);
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+      json: jest.fn(),
+      sendStatus: jest.fn(),
+    };
+
+    await respond({ method: 'POST', body }, res);
+
+    expect(handler).toHaveBeenCalledWith({ body });
   });
 });
