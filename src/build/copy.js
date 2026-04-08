@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { rmSync } from 'fs';
 import { createCopyCore, createSharedDirectoryEntries } from '../core/build/blog.js';
 import {
   createCopyDirectories,
@@ -13,6 +14,8 @@ import { createFsAdapters } from './fs.js';
 const __dirname = getCurrentDirectory(import.meta.url);
 const { projectRoot, srcDir, publicDir } = resolveProjectDirectories(__dirname);
 
+rmSync(publicDir, { recursive: true, force: true });
+
 const pathAdapters = createPathAdapters();
 
 const sharedDirectoryEntries = createSharedDirectoryEntries({
@@ -21,10 +24,15 @@ const sharedDirectoryEntries = createSharedDirectoryEntries({
   publicDir,
 });
 
-const directories = createCopyDirectories(
-  { projectRoot, srcDir, publicDir },
-  sharedDirectoryEntries
-);
+const directories = {
+  ...createCopyDirectories(
+    { projectRoot, srcDir, publicDir },
+    sharedDirectoryEntries
+  ),
+  srcBrowserAssetsDir: pathAdapters.join(srcDir, 'browser', 'assets'),
+  srcContentBlogMediaDir: pathAdapters.join(srcDir, 'content', 'blog-media'),
+  srcContentPagesDir: pathAdapters.join(srcDir, 'content', 'pages'),
+};
 
 const thirdParty = createFsAdapters();
 

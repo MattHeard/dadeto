@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+/* General styling for the .date-2024-10-02 div */
+.date-2024-10-02 > h1,
+.date-2024-10-02 > h2 {
+    font-family: 'Lobster', cursive;
+    color: #264653; /* Deep navy blue for text */
+    background-color: #F4A261; /* Muted orange for background */
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Styling when inside an article (e.g., main page card) */
+article.date-2024-10-02 > h2 {
+    font-size: 2.5rem; /* Slightly smaller for card version */
+}
+
+/* Styling when not inside an article (e.g., full-screen page) */
+.date-2024-10-02 > h1 {
+    font-size: 6rem; /* Larger size for full-screen */
+}
+
+/* Paragraph for fullscreen link styling */
+.date-2024-10-02 > p {
+    text-align: right;
+}
+
+/* Styling for the fullscreen icon link */
+.date-2024-10-02 > p > a {
+    text-decoration: none;
+    font-size: 1.5rem;
+    color: #264653; /* Same deep navy blue */
+    position: relative;
+    right: 10px;
+    bottom: 5px;
+    transition: color 0.3s ease;
+}
+
+.date-2024-10-02 > p > a:hover {
+    color: #2A9D8F; /* Lighter blue-green on hover */
+}

@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dadeto Writer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f3efe3;
+        --bg-accent: #e2d5bb;
+        --panel: rgba(255, 252, 245, 0.92);
+        --panel-muted: rgba(244, 236, 220, 0.88);
+        --ink: #1d261f;
+        --muted: #5d665f;
+        --line: rgba(29, 38, 31, 0.14);
+        --strong-line: rgba(29, 38, 31, 0.28);
+        --accent: #a03c2f;
+        --accent-soft: rgba(160, 60, 47, 0.14);
+        --pin: #2f6c8f;
+        --pin-soft: rgba(47, 108, 143, 0.12);
+        --success: #2d6a4f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        color: var(--ink);
+        font-family: 'IBM Plex Mono', monospace;
+        background:
+          radial-gradient(circle at top left, rgba(160, 60, 47, 0.16), transparent 28rem),
+          linear-gradient(135deg, var(--bg), #efe6d2 56%, var(--bg-accent));
+      }
+
+      html {
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .shell {
+        width: min(1400px, calc(100vw - 2rem));
+        margin: 1rem auto;
+        height: calc(100vh - 2rem);
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 1rem;
+      }
+
+      .masthead,
+      .workflow-panel {
+        border: 1px solid var(--strong-line);
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 18px 48px rgba(29, 38, 31, 0.08);
+      }
+
+      .masthead {
+        padding: 1.25rem 1.25rem 1rem;
+        overflow: hidden;
+        transition: padding 180ms ease;
+      }
+
+      .masthead.condensed {
+        padding: 0.8rem 1.25rem 0.75rem;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        font-family: 'Instrument Serif', serif;
+        font-weight: 400;
+        letter-spacing: 0.02em;
+      }
+
+      h1 {
+        font-size: clamp(2.3rem, 6vw, 4.7rem);
+        line-height: 0.92;
+      }
+
+      h2 {
+        font-size: clamp(1.45rem, 3vw, 2.2rem);
+        line-height: 1;
+      }
+
+      .subhead {
+        margin: 0.75rem 0 0;
+        max-width: 52rem;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .status-row {
+        margin-top: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .masthead.condensed .subhead,
+      .masthead.condensed .status-row,
+      .masthead.condensed .pin-controls,
+      .masthead.condensed .button-row,
+      .masthead.condensed .sequence {
+        display: none;
+      }
+
+      .masthead-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .masthead-tools {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+      }
+
+      .icon-button {
+        min-width: 4.8rem;
+        height: 2.5rem;
+        padding: 0 0.45rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        font-size: 1.2rem;
+        line-height: 1;
+      }
+
+      .icon-button .button-shortcut {
+        font-size: 0.72rem;
+        line-height: 1;
+        padding: 0.12rem 0.28rem;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .pill {
+        padding: 0.35rem 0.6rem;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .pin-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        align-items: center;
+      }
+
+      button {
+        border: 1px solid var(--strong-line);
+        background: rgba(255, 255, 255, 0.66);
+        color: var(--ink);
+        padding: 0.55rem 0.85rem;
+        font: 500 0.95rem/1 'IBM Plex Mono', monospace;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: rgba(255, 255, 255, 0.92);
+      }
+
+      .save-state.saving {
+        color: var(--accent);
+      }
+
+      .save-state.saved {
+        color: var(--success);
+      }
+
+      .sequence {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .sequence-step {
+        border: 1px solid var(--line);
+        padding: 0.4rem 0.65rem;
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--muted);
+        cursor: pointer;
+      }
+
+      .sequence-step.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(160, 60, 47, 0.08);
+      }
+
+      .sequence-step.visible-secondary {
+        border-color: rgba(160, 60, 47, 0.4);
+        color: var(--ink);
+        background: rgba(160, 60, 47, 0.04);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        min-height: 0;
+        gap: 1rem;
+      }
+
+      .workflow-panel {
+        overflow: hidden;
+        min-height: 0;
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: baseline;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-header.previous {
+        background: var(--panel-muted);
+      }
+
+      .panel-meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .panel-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: baseline;
+      }
+
+      .mini-button {
+        padding: 0.32rem 0.55rem;
+        font-size: 0.76rem;
+      }
+
+      .panel-lines {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+      }
+
+      .panel-text-line {
+        min-height: 1.7rem;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .panel-text-line.is-target {
+        background: var(--pin-soft);
+      }
+
+      .panel-text-line.is-selected {
+        box-shadow: inset 0 0 0 1px rgba(160, 60, 47, 0.4);
+        background: rgba(160, 60, 47, 0.12);
+      }
+
+      .panel-body {
+        display: block;
+        width: 100%;
+        min-height: 0;
+        height: 100%;
+        border: 0;
+        padding: 1.25rem;
+        background:
+          linear-gradient(transparent 0, transparent calc(1.7rem - 1px), rgba(29, 38, 31, 0.06) calc(1.7rem - 1px), rgba(29, 38, 31, 0.06) 1.7rem);
+        background-size: 100% 1.7rem;
+        color: var(--ink);
+        font: 500 1rem/1.7 'IBM Plex Mono', monospace;
+        white-space: pre-wrap;
+        overflow: auto;
+      }
+
+      .editor-panel {
+        position: relative;
+        min-height: 0;
+        height: 100%;
+      }
+
+      .editor-highlight-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .editor-highlight {
+        position: absolute;
+        left: 1.25rem;
+        right: 1.25rem;
+        border-radius: 2px;
+      }
+
+      .editor-highlight.is-target {
+        background: var(--pin-soft);
+      }
+
+      .editor-highlight.is-selected {
+        box-shadow: inset 0 0 0 1px rgba(160, 60, 47, 0.4);
+        background: rgba(160, 60, 47, 0.12);
+      }
+
+      .panel-body.readonly {
+        border: 0;
+      }
+
+      .panel-body.readonly:focus {
+        outline: none;
+      }
+
+      .intro-emoji {
+        display: block;
+        font-size: 4.4rem;
+        margin-bottom: 0.5rem;
+      }
+
+      textarea.panel-body {
+        position: relative;
+        z-index: 1;
+        resize: none;
+        caret-color: var(--accent);
+        white-space: pre-wrap;
+      }
+
+      textarea.panel-body:focus {
+        outline: none;
+        box-shadow: inset 0 0 0 2px var(--accent-soft);
+      }
+
+      @media (max-width: 900px) {
+        .workspace {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .shell {
+          width: min(100vw, calc(100vw - 1rem));
+          margin: 0.5rem auto;
+        }
+
+        .masthead,
+        .panel-header,
+        .panel-body {
+          padding: 1rem;
+        }
+
+        .masthead-top {
+          flex-direction: column;
+        }
+
+        .masthead-tools {
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="masthead">
+        <div class="masthead-top">
+          <h1 id="masthead-title">Untitled Post</h1>
+          <div class="masthead-tools">
+            <button
+              id="toggle-masthead"
+              class="icon-button"
+              type="button"
+              title="Condense Header (Alt+M)"
+              aria-label="Condense Header (Alt+M)"
+            >
+              <span aria-hidden="true">▴</span>
+              <span class="button-shortcut" aria-hidden="true">Alt+M</span>
+            </button>
+          </div>
+        </div>
+        <p class="subhead">
+          Write forward through a sequence: thesis, syllogistic argument,
+          outline, then numbered drafts. Use <strong>Alt+Left</strong> and
+          <strong>Alt+Right</strong> to page through adjacent documents.
+        </p>
+        <div class="status-row">
+          <span class="pill" id="storage-mode">Storage: server</span>
+          <span class="pill" id="document-path">Loading document…</span>
+          <span class="save-state" id="save-state">Loading…</span>
+        </div>
+        <div class="button-row">
+          <button id="pick-directory" type="button">Pick Blog Directory</button>
+          <button id="use-server-storage" type="button">Use Server Storage</button>
+        </div>
+        <div class="pin-controls">
+          <button
+            id="line-pin-action"
+            class="mini-button"
+            type="button"
+            title="Add or change a line pin (Alt+P)"
+          >
+            Add Pin
+          </button>
+          <button
+            id="clear-line-pin"
+            class="mini-button"
+            type="button"
+            title="Clear the selected line pin"
+          >
+            Clear Pin
+          </button>
+          <button
+            id="toggle-pin-visibility"
+            class="mini-button"
+            type="button"
+            title="Show pin highlights"
+          >
+            Show Pins
+          </button>
+          <span class="pill" id="line-pin-status">No line pins</span>
+        </div>
+        <div class="sequence" id="sequence"></div>
+      </section>
+      <section class="workspace">
+        <article class="workflow-panel">
+          <header class="panel-header previous">
+            <div>
+              <div class="panel-meta-row">
+                <div class="panel-meta">Earlier document</div>
+                <div class="panel-meta" id="previous-stats">(0 lines, 0 words)</div>
+              </div>
+              <h2 id="previous-title">Loading…</h2>
+            </div>
+          </header>
+          <div
+            class="panel-body readonly"
+            id="previous-content"
+            aria-label="Earlier markdown document"
+          ></div>
+        </article>
+        <article class="workflow-panel">
+          <header class="panel-header">
+            <div>
+              <div class="panel-meta-row">
+                <div class="panel-meta">Current document</div>
+                <div class="panel-meta" id="current-stats">(0 lines, 0 words)</div>
+              </div>
+              <h2 id="current-title">Loading…</h2>
+            </div>
+          </header>
+          <div class="editor-panel">
+            <div class="editor-highlight-layer" id="current-highlight-layer"></div>
+            <textarea
+              class="panel-body"
+              id="current-content"
+              spellcheck="false"
+              placeholder="# Start writing"
+              aria-label="Current markdown document"
+            ></textarea>
+          </div>
+        </article>
+      </section>
+    </main>
+    <script type="module">
+      const documentPath = document.getElementById('document-path');
+      const storageMode = document.getElementById('storage-mode');
+      const saveState = document.getElementById('save-state');
+      const sequence = document.getElementById('sequence');
+      const pickDirectoryButton = document.getElementById('pick-directory');
+      const useServerStorageButton = document.getElementById('use-server-storage');
+      const previousTitle = document.getElementById('previous-title');
+      const previousStats = document.getElementById('previous-stats');
+      const linePinActionButton = document.getElementById('line-pin-action');
+      const linePinStatus = document.getElementById('line-pin-status');
+      const clearLinePinButton = document.getElementById('clear-line-pin');
+      const togglePinVisibilityButton = document.getElementById('toggle-pin-visibility');
+      const previousContent = document.getElementById('previous-content');
+      const currentTitle = document.getElementById('current-title');
+      const currentStats = document.getElementById('current-stats');
+      const currentHighlightLayer = document.getElementById('current-highlight-layer');
+      const currentContent = document.getElementById('current-content');
+      const mastheadTitle = document.getElementById('masthead-title');
+      const masthead = document.querySelector('.masthead');
+      const toggleMastheadButton = document.getElementById('toggle-masthead');
+
+      const DEFAULT_SEQUENCE = [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-1', title: 'Draft 1' },
+      ];
+
+      const INTRO_EMOJIS = [
+        '🌞', '🪴', '⚔️', '🧭', '🔥', '🌊', '🌱', '🛶', '🛰️', '🧠',
+        '🕯️', '📚', '🛠️', '🪶', '🌤️', '🎯', '🗺️', '🧱', '🪵', '🌾',
+      ];
+      const INTRO_OPENINGS = [
+        'Good morning.',
+        'Steady now.',
+        'Clear the table.',
+        'One sharp sentence.',
+        'Start with the center.',
+        'Take the line seriously.',
+        'No drift today.',
+        'Make this simple first.',
+        'Begin where the pressure is.',
+        'You already know the point.',
+      ];
+      const INTRO_ACTIONS = [
+        'Name the claim plainly',
+        'Write the dangerous sentence',
+        'State the premise without apology',
+        'Find the hinge of the argument',
+        'Cut to the real contention',
+        'Draft the paragraph that unlocks the rest',
+        'Make the next move inevitable',
+        'Sharpen the thesis before the outline sprawls',
+        'Set the rhythm with one clean paragraph',
+        'Put the core conflict on the page',
+      ];
+      const INTRO_CLOSERS = [
+        'and let the rest follow.',
+        'before the draft gets noisy.',
+        'while the thought is still hot.',
+        'and trust revision after that.',
+        'before the world interrupts.',
+      ];
+      const INTRO_MESSAGES = INTRO_EMOJIS.flatMap(emoji =>
+        INTRO_OPENINGS.flatMap(opening =>
+          INTRO_ACTIONS.flatMap(action =>
+            INTRO_CLOSERS.map(closer => ({
+              emoji,
+              greeting: `${opening} ${action} ${closer}`,
+            }))
+          )
+        )
+      ).slice(0, 500);
+
+      const state = {
+        workflow: null,
+        lastSavedValues: {},
+        isLoaded: false,
+        storage: null,
+        introMessage: INTRO_MESSAGES[0],
+        introVisible: false,
+        isMastheadCondensed: false,
+        selectedPreviousLine: 1,
+        selectedCurrentLine: 1,
+        selectedLineSource: 'current',
+        linePins: {},
+        pendingPinSelection: null,
+        arePinsVisible: false,
+      };
+
+      const STORAGE_PREFERENCE_KEY = 'dadeto.writer.storage-preference';
+      const DIRECTORY_HANDLE_DB_NAME = 'dadeto-writer-storage';
+      const DIRECTORY_HANDLE_STORE_NAME = 'handles';
+      const DIRECTORY_HANDLE_KEY = 'last-directory';
+      const LINE_PINS_KEY = 'dadeto.writer.line-pins';
+
+      const setSaveState = (message, className = '') => {
+        saveState.textContent = message;
+        saveState.className = `save-state ${className}`.trim();
+      };
+
+      const readStoredLinePins = () => {
+        try {
+          return JSON.parse(localStorage.getItem(LINE_PINS_KEY) ?? '{}');
+        } catch {
+          return {};
+        }
+      };
+
+      const persistLinePins = () => {
+        localStorage.setItem(LINE_PINS_KEY, JSON.stringify(state.linePins));
+      };
+
+      const renderMastheadState = () => {
+        masthead.classList.toggle('condensed', state.isMastheadCondensed);
+        const label = state.isMastheadCondensed
+          ? 'Expand Header (Alt+M)'
+          : 'Condense Header (Alt+M)';
+        toggleMastheadButton.title = label;
+        toggleMastheadButton.setAttribute('aria-label', label);
+        toggleMastheadButton.innerHTML = state.isMastheadCondensed
+          ? '<span aria-hidden="true">▾</span><span class="button-shortcut" aria-hidden="true">Alt+M</span>'
+          : '<span aria-hidden="true">▴</span><span class="button-shortcut" aria-hidden="true">Alt+M</span>';
+      };
+
+      const setMastheadCondensed = nextValue => {
+        state.isMastheadCondensed = nextValue;
+        renderMastheadState();
+      };
+
+      const cloneStep = step => ({
+        id: step.id,
+        title: step.title,
+      });
+
+      const isDraftId = id => /^draft-\d+$/.test(id);
+
+      const extractLevelOneHeading = content => {
+        const match = content.match(/^# (.+)$/m);
+        return match ? match[1].trim() : '';
+      };
+
+      const hasOnlyLevelOneHeading = content => {
+        const trimmedContent = content.trim();
+        if (!trimmedContent) {
+          return false;
+        }
+
+        return /^# .+$/.test(trimmedContent) && !trimmedContent.includes('\n');
+      };
+
+      const getDocumentCounts = content => {
+        const normalizedContent = content.replace(/\r\n/g, '\n');
+        const lines = normalizedContent ? normalizedContent.split('\n').length : 0;
+        const trimmedContent = normalizedContent.trim();
+        const words = trimmedContent ? trimmedContent.split(/\s+/).length : 0;
+        return `(${lines} lines, ${words} words)`;
+      };
+
+      const getLogicalLineCount = content => {
+        const normalizedContent = content.replace(/\r\n/g, '\n');
+        return normalizedContent ? normalizedContent.split('\n').length : 1;
+      };
+
+      const getWorkflowHeading = workflow =>
+        workflow?.heading?.trim() || 'Untitled Post';
+
+      const getPrefilledDocumentContent = workflowDocument => {
+        if (!workflowDocument) {
+          return '';
+        }
+
+        if (workflowDocument.content.trim()) {
+          return workflowDocument.content;
+        }
+
+        const heading = state.workflow?.heading?.trim();
+        return heading ? `# ${heading}\n\n` : '';
+      };
+
+      const createServerStorage = () => ({
+        type: 'server',
+        label: 'server',
+        async loadWorkflow() {
+          const response = await fetch('/api/writer/workflow');
+          if (!response.ok) {
+            throw new Error('Failed to load workflow');
+          }
+          return response.json();
+        },
+        async saveDocument(documentId, content) {
+          const response = await fetch(`/api/writer/document/${documentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to save document');
+          }
+
+          return response.json();
+        },
+        async moveWorkflow(direction) {
+          const response = await fetch('/api/writer/workflow/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ direction }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to move workflow');
+          }
+
+          return response.json();
+        },
+        async setActiveIndex(activeIndex) {
+          const response = await fetch('/api/writer/workflow/select', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activeIndex }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to select document');
+          }
+
+          return response.json();
+        },
+      });
+
+      const openDirectoryHandleDatabase = () =>
+        new Promise((resolve, reject) => {
+          const request = window.indexedDB.open(DIRECTORY_HANDLE_DB_NAME, 1);
+          request.addEventListener('upgradeneeded', () => {
+            request.result.createObjectStore(DIRECTORY_HANDLE_STORE_NAME);
+          });
+          request.addEventListener('success', () => resolve(request.result));
+          request.addEventListener('error', () => reject(request.error));
+        });
+
+      const readStoredDirectoryHandle = async () => {
+        if (!window.indexedDB) {
+          return null;
+        }
+
+        const database = await openDirectoryHandleDatabase();
+        return new Promise((resolve, reject) => {
+          const transaction = database.transaction(DIRECTORY_HANDLE_STORE_NAME, 'readonly');
+          const store = transaction.objectStore(DIRECTORY_HANDLE_STORE_NAME);
+          const request = store.get(DIRECTORY_HANDLE_KEY);
+          request.addEventListener('success', () => resolve(request.result ?? null));
+          request.addEventListener('error', () => reject(request.error));
+        }).finally(() => {
+          database.close();
+        });
+      };
+
+      const writeStoredDirectoryHandle = async directoryHandle => {
+        if (!window.indexedDB) {
+          return;
+        }
+
+        const database = await openDirectoryHandleDatabase();
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction(DIRECTORY_HANDLE_STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(DIRECTORY_HANDLE_STORE_NAME);
+          const request = store.put(directoryHandle, DIRECTORY_HANDLE_KEY);
+          request.addEventListener('success', () => resolve());
+          request.addEventListener('error', () => reject(request.error));
+        }).finally(() => {
+          database.close();
+        });
+      };
+
+      const clearStoredDirectoryHandle = async () => {
+        if (!window.indexedDB) {
+          return;
+        }
+
+        const database = await openDirectoryHandleDatabase();
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction(DIRECTORY_HANDLE_STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(DIRECTORY_HANDLE_STORE_NAME);
+          const request = store.delete(DIRECTORY_HANDLE_KEY);
+          request.addEventListener('success', () => resolve());
+          request.addEventListener('error', () => reject(request.error));
+        }).finally(() => {
+          database.close();
+        });
+      };
+
+      const readFileText = async handle => {
+        const file = await handle.getFile();
+        return file.text();
+      };
+
+      const writeFileText = async (handle, content) => {
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+      };
+
+      const createDirectoryStorage = async directoryHandle => {
+        const workflowFileHandle = await directoryHandle.getFileHandle('workflow.json', {
+          create: true,
+        });
+        const documentsDirHandle = await directoryHandle.getDirectoryHandle('documents', {
+          create: true,
+        });
+
+        const ensureDocumentFile = step =>
+          documentsDirHandle.getFileHandle(`${step.id}.md`, { create: true });
+        const getDocumentFileName = step => `${step.id}.md`;
+
+        const readWorkflowDefinition = async () => {
+          const rawWorkflow = await readFileText(workflowFileHandle);
+          if (!rawWorkflow.trim()) {
+            return null;
+          }
+
+          const parsedWorkflow = JSON.parse(rawWorkflow);
+          const steps = Array.isArray(parsedWorkflow?.steps) && parsedWorkflow.steps.length > 0
+            ? parsedWorkflow.steps.map(cloneStep)
+            : DEFAULT_SEQUENCE.map(cloneStep);
+          const maxIndex = Math.max(0, steps.length - 1);
+          const activeIndex = Number.isInteger(parsedWorkflow?.activeIndex)
+            ? Math.min(Math.max(parsedWorkflow.activeIndex, 0), maxIndex)
+            : Math.min(1, maxIndex);
+
+          return {
+            steps,
+            activeIndex,
+            heading:
+              typeof parsedWorkflow?.heading === 'string'
+                ? parsedWorkflow.heading.trim()
+                : '',
+          };
+        };
+
+        const writeWorkflowDefinition = workflow =>
+          writeFileText(workflowFileHandle, JSON.stringify(workflow, null, 2));
+
+        const deleteDocumentFile = async step => {
+          await documentsDirHandle.removeEntry(getDocumentFileName(step));
+        };
+
+        const pruneEmptyTrailingDrafts = async workflow => {
+          while (
+            workflow.steps.length > DEFAULT_SEQUENCE.length &&
+            workflow.steps.length - 1 > workflow.activeIndex
+          ) {
+            const lastStep = workflow.steps.at(-1);
+            if (!lastStep || !isDraftId(lastStep.id)) {
+              break;
+            }
+
+            const handle = await ensureDocumentFile(lastStep);
+            const content = await readFileText(handle);
+            if (content.trim() && !hasOnlyLevelOneHeading(content)) {
+              break;
+            }
+
+            await deleteDocumentFile(lastStep);
+            workflow.steps.pop();
+          }
+
+          const draftSteps = workflow.steps.filter(step => isDraftId(step.id));
+          draftSteps.forEach((step, index) => {
+            const nextNumber = index + 1;
+            step.id = `draft-${nextNumber}`;
+            step.title = `Draft ${nextNumber}`;
+          });
+
+          workflow.activeIndex = Math.min(
+            workflow.activeIndex,
+            Math.max(0, workflow.steps.length - 1)
+          );
+        };
+
+        const ensureWorkflowDefinition = async () => {
+          const existingWorkflow = await readWorkflowDefinition();
+          if (existingWorkflow) {
+            await pruneEmptyTrailingDrafts(existingWorkflow);
+            await writeWorkflowDefinition(existingWorkflow);
+            return existingWorkflow;
+          }
+
+          const workflow = {
+            steps: DEFAULT_SEQUENCE.map(cloneStep),
+            activeIndex: 1,
+            heading: '',
+          };
+
+          await Promise.all(
+            workflow.steps.map(async step => {
+              const handle = await ensureDocumentFile(step);
+              const existingContent = await readFileText(handle);
+              if (!existingContent) {
+                await writeFileText(handle, '');
+              }
+            })
+          );
+          await writeWorkflowDefinition(workflow);
+
+          return workflow;
+        };
+
+        const serializeWorkflow = async workflow => {
+          const documents = await Promise.all(
+            workflow.steps.map(async step => {
+              const handle = await ensureDocumentFile(step);
+              return {
+                id: step.id,
+                title: step.title,
+                path: `${directoryHandle.name}/documents/${step.id}.md`,
+                content: await readFileText(handle),
+              };
+            })
+          );
+
+        return {
+          workflowPath: `${directoryHandle.name}/workflow.json`,
+            activeIndex: workflow.activeIndex,
+            heading: workflow.heading ?? '',
+            documents,
+          };
+        };
+
+        return {
+          type: 'directory',
+          label: `directory:${directoryHandle.name}`,
+          directoryHandle,
+          async loadWorkflow() {
+            return serializeWorkflow(await ensureWorkflowDefinition());
+          },
+          async saveDocument(documentId, content) {
+            const workflow = await ensureWorkflowDefinition();
+            const step = workflow.steps.find(candidate => candidate.id === documentId);
+
+            if (!step) {
+              throw new Error(`Unknown document id: ${documentId}`);
+            }
+
+            const nextHeading = extractLevelOneHeading(content);
+            if (nextHeading) {
+              workflow.heading = nextHeading;
+            }
+
+            const handle = await ensureDocumentFile(step);
+            if (content.trim()) {
+              await writeFileText(handle, content);
+            } else {
+              await deleteDocumentFile(step).catch(error => {
+                if (error?.name !== 'NotFoundError') {
+                  throw error;
+                }
+              });
+            }
+            await pruneEmptyTrailingDrafts(workflow);
+            await writeWorkflowDefinition(workflow);
+
+            return {
+              documentId,
+              path: `${directoryHandle.name}/documents/${documentId}.md`,
+              savedAt: new Date().toISOString(),
+            };
+          },
+          async moveWorkflow(direction) {
+            const workflow = await ensureWorkflowDefinition();
+            let nextIndex = workflow.activeIndex + (direction === 'left' ? -1 : 1);
+
+            if (direction === 'right' && workflow.activeIndex === workflow.steps.length - 1) {
+              const lastStep = workflow.steps.at(-1);
+              if (lastStep && isDraftId(lastStep.id)) {
+                const nextDraftNumber =
+                  workflow.steps.filter(step => isDraftId(step.id)).length + 1;
+                const nextStep = {
+                  id: `draft-${nextDraftNumber}`,
+                  title: `Draft ${nextDraftNumber}`,
+                };
+                workflow.steps.push(nextStep);
+                const nextHandle = await ensureDocumentFile(nextStep);
+                const existingContent = await readFileText(nextHandle);
+                if (!existingContent) {
+                  await writeFileText(nextHandle, '');
+                }
+              }
+            }
+
+            nextIndex = Math.min(
+              Math.max(nextIndex, 0),
+              Math.max(0, workflow.steps.length - 1)
+            );
+            workflow.activeIndex = nextIndex;
+            await pruneEmptyTrailingDrafts(workflow);
+            await writeWorkflowDefinition(workflow);
+            return serializeWorkflow(workflow);
+          },
+          async setActiveIndex(activeIndex) {
+            const workflow = await ensureWorkflowDefinition();
+            workflow.activeIndex = Math.min(
+              Math.max(activeIndex, 0),
+              Math.max(0, workflow.steps.length - 1)
+            );
+            await pruneEmptyTrailingDrafts(workflow);
+            await writeWorkflowDefinition(workflow);
+            return serializeWorkflow(workflow);
+          },
+        };
+      };
+
+      const persistStoragePreference = async storage => {
+        localStorage.setItem(STORAGE_PREFERENCE_KEY, storage?.type ?? 'server');
+
+        if (storage?.type === 'directory' && storage.directoryHandle) {
+          await writeStoredDirectoryHandle(storage.directoryHandle);
+          return;
+        }
+
+        await clearStoredDirectoryHandle();
+      };
+
+      const restorePreferredStorage = async () => {
+        const preferredStorage = localStorage.getItem(STORAGE_PREFERENCE_KEY);
+        if (preferredStorage !== 'directory') {
+          return createServerStorage();
+        }
+
+        if (typeof window.showDirectoryPicker !== 'function') {
+          localStorage.setItem(STORAGE_PREFERENCE_KEY, 'server');
+          return createServerStorage();
+        }
+
+        try {
+          const directoryHandle = await readStoredDirectoryHandle();
+          if (!directoryHandle) {
+            throw new Error('Missing directory handle');
+          }
+
+          const permission = await directoryHandle.queryPermission({ mode: 'readwrite' });
+          if (permission !== 'granted') {
+            throw new Error('Directory handle permission unavailable');
+          }
+
+          return createDirectoryStorage(directoryHandle);
+        } catch {
+          localStorage.setItem(STORAGE_PREFERENCE_KEY, 'server');
+          await clearStoredDirectoryHandle().catch(() => {});
+          return createServerStorage();
+        }
+      };
+
+      const getCurrentDocument = () =>
+        state.workflow?.documents?.[state.workflow.activeIndex] ?? null;
+
+      const getPreviousDocument = () =>
+        state.workflow?.documents?.[state.workflow.activeIndex - 1] ?? null;
+
+      const clampLineNumber = (lineNumber, content) =>
+        Math.min(Math.max(lineNumber, 1), getLogicalLineCount(content));
+
+      const getCurrentCursorLine = () => {
+        const beforeCursor = currentContent.value.slice(0, currentContent.selectionStart);
+        return beforeCursor.split('\n').length;
+      };
+
+      const getStorageKey = () => state.storage?.label ?? 'server';
+
+      const getVisiblePairKey = () => {
+        const previousDocument = getPreviousDocument();
+        const currentDocument = getCurrentDocument();
+        if (!previousDocument || !currentDocument) {
+          return '';
+        }
+
+        return [getStorageKey(), previousDocument.id, currentDocument.id].join('::');
+      };
+
+      const getPinsForVisiblePair = () => {
+        const pairKey = getVisiblePairKey();
+        return pairKey ? state.linePins[pairKey] ?? [] : [];
+      };
+
+      const setPinsForVisiblePair = pins => {
+        const pairKey = getVisiblePairKey();
+        if (!pairKey) {
+          return;
+        }
+
+        if (pins.length > 0) {
+          state.linePins[pairKey] = pins;
+        } else {
+          delete state.linePins[pairKey];
+        }
+        persistLinePins();
+      };
+
+      const getLinePinForSelection = (side, lineNumber) =>
+        getPinsForVisiblePair().find(pin =>
+          side === 'previous'
+            ? pin.previousLine === lineNumber
+            : pin.currentLine === lineNumber
+        ) ?? null;
+
+      const getPinnedCurrentLine = previousLine => {
+        const pin = getLinePinForSelection('previous', previousLine);
+        const currentDocument = getCurrentDocument();
+        if (!pin || !currentDocument) {
+          return null;
+        }
+
+        return clampLineNumber(pin.currentLine, getPrefilledDocumentContent(currentDocument));
+      };
+
+      const getPinnedPreviousLine = currentLine => {
+        const pin = getLinePinForSelection('current', currentLine);
+        const previousDocument = getPreviousDocument();
+        if (!pin || !previousDocument) {
+          return null;
+        }
+
+        return clampLineNumber(pin.previousLine, previousDocument.content ?? '');
+      };
+
+      const scrollPreviousToLine = lineNumber => {
+        const target = previousContent.querySelector(`[data-line-number="${lineNumber}"]`);
+        if (!target) {
+          return;
+        }
+
+        previousContent
+          .querySelectorAll('.panel-text-line.is-target')
+          .forEach(line => line.classList.remove('is-target'));
+        target.classList.add('is-target');
+
+        const top = Math.max(
+          0,
+          target.offsetTop - (previousContent.clientHeight / 2) + (target.offsetHeight / 2)
+        );
+        previousContent.scrollTo({ top, behavior: 'smooth' });
+      };
+
+      const measureTextareaLineMetrics = lineNumber => {
+        const mirror = document.createElement('div');
+        const computedStyle = window.getComputedStyle(currentContent);
+        mirror.style.position = 'absolute';
+        mirror.style.visibility = 'hidden';
+        mirror.style.pointerEvents = 'none';
+        mirror.style.inset = '0 auto auto -99999px';
+        mirror.style.width = `${currentContent.clientWidth}px`;
+        mirror.style.padding = computedStyle.padding;
+        mirror.style.font = computedStyle.font;
+        mirror.style.lineHeight = computedStyle.lineHeight;
+        mirror.style.letterSpacing = computedStyle.letterSpacing;
+        mirror.style.whiteSpace = 'pre-wrap';
+        mirror.style.overflowWrap = 'anywhere';
+        const lines = currentContent.value.replace(/\r\n/g, '\n').split('\n');
+        const lineWrapper = document.createElement('div');
+        lines.forEach(line => {
+          const lineElement = document.createElement('div');
+          lineElement.style.minHeight = computedStyle.lineHeight;
+          lineElement.style.whiteSpace = 'pre-wrap';
+          lineElement.style.overflowWrap = 'anywhere';
+          lineElement.textContent = line || ' ';
+          lineWrapper.appendChild(lineElement);
+        });
+        mirror.appendChild(lineWrapper);
+        document.body.appendChild(mirror);
+
+        const targetIndex = Math.min(Math.max(lineNumber - 1, 0), Math.max(lines.length - 1, 0));
+        const targetLine = lineWrapper.children[targetIndex];
+        const top = targetLine?.offsetTop ?? 0;
+        const height = targetLine?.offsetHeight ?? Number.parseFloat(computedStyle.lineHeight);
+        mirror.remove();
+        return {
+          top,
+          height: Math.max(27.2, height),
+        };
+      };
+
+      const scrollCurrentToLine = lineNumber => {
+        const { top: lineTop } = measureTextareaLineMetrics(lineNumber);
+        const top = Math.max(
+          0,
+          lineTop - (currentContent.clientHeight / 2)
+        );
+        currentContent.scrollTo({ top, behavior: 'smooth' });
+      };
+
+      const getSelectedLine = () => (
+        state.selectedLineSource === 'previous'
+          ? state.selectedPreviousLine
+          : state.selectedCurrentLine
+      );
+
+      const getSelectedLinePin = () =>
+        getLinePinForSelection(state.selectedLineSource, getSelectedLine());
+
+      const clearPreviousLineClasses = className => {
+        previousContent
+          .querySelectorAll(`.panel-text-line.${className}`)
+          .forEach(line => line.classList.remove(className));
+      };
+
+      const clearPreviousPinHighlights = () => {
+        clearPreviousLineClasses('is-target');
+      };
+
+      const highlightPreviousSelection = lineNumber => {
+        clearPreviousLineClasses('is-selected');
+        if (!state.arePinsVisible) {
+          return;
+        }
+        const target = previousContent.querySelector(`[data-line-number="${lineNumber}"]`);
+        if (target) {
+          target.classList.add('is-selected');
+        }
+      };
+
+      const refreshPreviousPinHighlight = () => {
+        clearPreviousPinHighlights();
+        if (!state.arePinsVisible) {
+          return;
+        }
+
+        const targetLine = getPinnedPreviousLine(state.selectedCurrentLine);
+        if (!targetLine) {
+          return;
+        }
+
+        const target = previousContent.querySelector(`[data-line-number="${targetLine}"]`);
+        if (target) {
+          target.classList.add('is-target');
+        }
+      };
+
+      const renderCurrentHighlights = () => {
+        currentHighlightLayer.replaceChildren();
+        if (!state.arePinsVisible) {
+          return;
+        }
+
+        const selections = [];
+        if (state.selectedLineSource === 'current') {
+          selections.push({
+            lineNumber: state.selectedCurrentLine,
+            className: 'is-selected',
+          });
+        }
+
+        const pinnedLine = getPinnedCurrentLine(state.selectedPreviousLine);
+        if (state.arePinsVisible && pinnedLine) {
+          selections.push({
+            lineNumber: pinnedLine,
+            className:
+              state.selectedLineSource === 'current' && pinnedLine === state.selectedCurrentLine
+                ? 'is-selected'
+                : 'is-target',
+          });
+        }
+
+        const seen = new Set();
+        selections.forEach(({ lineNumber, className }) => {
+          const key = `${lineNumber}:${className}`;
+          if (seen.has(key)) {
+            return;
+          }
+          seen.add(key);
+
+          const { top, height } = measureTextareaLineMetrics(lineNumber);
+          const highlight = document.createElement('div');
+          highlight.className = `editor-highlight ${className}`;
+          highlight.style.top = `${top - currentContent.scrollTop}px`;
+          highlight.style.height = `${height}px`;
+          currentHighlightLayer.appendChild(highlight);
+        });
+      };
+
+      const completePendingPin = (targetSide, targetLine) => {
+        const pendingPin = state.pendingPinSelection;
+        if (!pendingPin || pendingPin.side === targetSide) {
+          return false;
+        }
+
+        const nextPin = pendingPin.side === 'previous'
+          ? { previousLine: pendingPin.line, currentLine: targetLine }
+          : { previousLine: targetLine, currentLine: pendingPin.line };
+        const nextPins = getPinsForVisiblePair().filter(pin =>
+          pin.previousLine !== nextPin.previousLine && pin.currentLine !== nextPin.currentLine
+        );
+        nextPins.push(nextPin);
+        nextPins.sort((left, right) => left.previousLine - right.previousLine);
+        setPinsForVisiblePair(nextPins);
+        state.pendingPinSelection = null;
+        updateLinePinStatus();
+        setSaveState(
+          `Pinned L${nextPin.previousLine} ↔ L${nextPin.currentLine}`,
+          'saved'
+        );
+        return true;
+      };
+
+      const updateLinePinStatus = () => {
+        const hasPreviousDocument = Boolean(getPreviousDocument());
+        const pins = getPinsForVisiblePair();
+        const selectedPin = getSelectedLinePin();
+        if (!hasPreviousDocument) {
+          linePinStatus.textContent = 'No line pins';
+          linePinActionButton.textContent = 'Add Pin';
+          linePinActionButton.disabled = true;
+          clearLinePinButton.disabled = true;
+          togglePinVisibilityButton.disabled = true;
+          togglePinVisibilityButton.textContent = 'Show Pins';
+          togglePinVisibilityButton.title = 'Show pin highlights';
+          return;
+        }
+
+        if (state.pendingPinSelection) {
+          const targetSide = state.pendingPinSelection.side === 'previous'
+            ? 'current'
+            : 'previous';
+          linePinStatus.textContent = `Select ${targetSide} line to finish pin`;
+        } else if (selectedPin) {
+          linePinStatus.textContent = `Pinned L${selectedPin.previousLine} ↔ L${selectedPin.currentLine}`;
+        } else if (pins.length > 0) {
+          linePinStatus.textContent = `${pins.length} pin${pins.length === 1 ? '' : 's'} in view`;
+        } else {
+          linePinStatus.textContent = 'No line pins';
+        }
+
+        linePinActionButton.textContent = selectedPin ? 'Change Pin' : 'Add Pin';
+        linePinActionButton.disabled = !hasPreviousDocument;
+        clearLinePinButton.disabled = !selectedPin;
+        togglePinVisibilityButton.disabled = pins.length === 0;
+        togglePinVisibilityButton.textContent = state.arePinsVisible ? 'Hide Pins' : 'Show Pins';
+        togglePinVisibilityButton.title = state.arePinsVisible
+          ? 'Hide pin highlights'
+          : 'Show pin highlights';
+      };
+
+      const syncFromPreviousLine = lineNumber => {
+        state.selectedPreviousLine = lineNumber;
+        state.selectedLineSource = 'previous';
+        highlightPreviousSelection(lineNumber);
+        if (completePendingPin('previous', lineNumber)) {
+          return;
+        }
+        const targetLine = getPinnedCurrentLine(lineNumber);
+        if (targetLine) {
+          scrollCurrentToLine(targetLine);
+          state.selectedCurrentLine = targetLine;
+        }
+        renderCurrentHighlights();
+        refreshPreviousPinHighlight();
+        updateLinePinStatus();
+      };
+
+      const syncFromCurrentLine = lineNumber => {
+        state.selectedCurrentLine = lineNumber;
+        state.selectedLineSource = 'current';
+        if (completePendingPin('current', lineNumber)) {
+          return;
+        }
+        const targetLine = getPinnedPreviousLine(lineNumber);
+        if (targetLine) {
+          scrollPreviousToLine(targetLine);
+          state.selectedPreviousLine = targetLine;
+        }
+        renderCurrentHighlights();
+        refreshPreviousPinHighlight();
+        updateLinePinStatus();
+      };
+
+      const renderPreviousPanelContent = () => {
+        const previousDocument = getPreviousDocument();
+        previousContent.replaceChildren();
+
+        if (previousDocument) {
+          const lines = previousDocument.content.replace(/\r\n/g, '\n').split('\n');
+          const lineWrapper = document.createElement('div');
+          lineWrapper.className = 'panel-lines';
+          lines.forEach((line, index) => {
+            const lineElement = document.createElement('div');
+            lineElement.className = 'panel-text-line';
+            lineElement.dataset.lineNumber = String(index + 1);
+            lineElement.textContent = line || ' ';
+            lineWrapper.appendChild(lineElement);
+          });
+          previousContent.appendChild(lineWrapper);
+          highlightPreviousSelection(
+            clampLineNumber(state.selectedPreviousLine, previousDocument.content ?? '')
+          );
+          return;
+        }
+
+        const emoji = document.createElement('span');
+        emoji.className = 'intro-emoji';
+        emoji.textContent = state.introMessage.emoji;
+        previousContent.append(emoji, state.introMessage.greeting);
+      };
+
+      const getRandomIntroMessage = () => {
+        if (INTRO_MESSAGES.length === 1) {
+          return INTRO_MESSAGES[0];
+        }
+
+        let nextMessage = INTRO_MESSAGES[
+          Math.floor(Math.random() * INTRO_MESSAGES.length)
+        ];
+        while (nextMessage === state.introMessage) {
+          nextMessage = INTRO_MESSAGES[
+            Math.floor(Math.random() * INTRO_MESSAGES.length)
+          ];
+        }
+
+        return nextMessage;
+      };
+
+      const renderSequence = () => {
+        sequence.replaceChildren();
+        state.workflow.documents.forEach((workflowDocument, index) => {
+          const isFutureDocument = index > state.workflow.activeIndex;
+          const isEmptyFutureDocument =
+            isFutureDocument && !(workflowDocument.content ?? '').trim();
+
+          if (isEmptyFutureDocument) {
+            return;
+          }
+
+          const step = document.createElement('span');
+          step.textContent = `${index + 1}. ${workflowDocument.title}`;
+          const isCurrent = index === state.workflow.activeIndex;
+          const isPrevious = index === state.workflow.activeIndex - 1;
+
+          step.className = 'sequence-step';
+          if (isCurrent) {
+            step.classList.add('active');
+          } else if (isPrevious) {
+            step.classList.add('visible-secondary');
+          }
+          step.addEventListener('click', () => {
+            selectWorkflowIndex(index).catch(error => {
+              setSaveState(error.message, 'saving');
+            });
+          });
+          sequence.appendChild(step);
+        });
+      };
+
+      const renderWorkflow = () => {
+        const previousDocument = getPreviousDocument();
+        const currentDocument = getCurrentDocument();
+        const currentValue = getPrefilledDocumentContent(currentDocument);
+        const isIntroVisible = !previousDocument;
+
+        if (isIntroVisible && !state.introVisible) {
+          state.introMessage = getRandomIntroMessage();
+        }
+        state.introVisible = isIntroVisible;
+
+        storageMode.textContent = `Storage: ${state.storage?.label ?? 'server'}`;
+        documentPath.textContent = currentDocument?.path ?? 'No document';
+        mastheadTitle.textContent = getWorkflowHeading(state.workflow);
+        document.title = getWorkflowHeading(state.workflow);
+        previousTitle.textContent =
+          previousDocument?.title ?? 'Warm-up';
+        previousStats.textContent = getDocumentCounts(previousDocument?.content ?? '');
+        renderPreviousPanelContent();
+        currentTitle.textContent = currentDocument?.title ?? 'No current document';
+        currentContent.value = currentValue;
+        currentStats.textContent = getDocumentCounts(currentValue);
+        state.selectedPreviousLine = Math.min(
+          state.selectedPreviousLine,
+          getLogicalLineCount(previousDocument?.content ?? '')
+        );
+        state.selectedCurrentLine = Math.min(
+          state.selectedCurrentLine,
+          getLogicalLineCount(currentValue)
+        );
+        state.pendingPinSelection = null;
+        renderCurrentHighlights();
+        refreshPreviousPinHighlight();
+        updateLinePinStatus();
+        state.lastSavedValues = Object.fromEntries(
+          state.workflow.documents.map(document => [document.id, document.content])
+        );
+        renderSequence();
+        renderMastheadState();
+      };
+
+      const loadWorkflow = async () => {
+        state.workflow = await state.storage.loadWorkflow();
+        state.isLoaded = true;
+        renderWorkflow();
+        setSaveState('Loaded', 'saved');
+      };
+
+      const saveVisibleDocument = async (documentRecord, nextValue) => {
+        if (
+          !state.isLoaded ||
+          !documentRecord ||
+          nextValue === state.lastSavedValues[documentRecord.id]
+        ) {
+          return;
+        }
+
+        setSaveState('Saving…', 'saving');
+
+        const payload = await state.storage.saveDocument(documentRecord.id, nextValue);
+        documentRecord.content = nextValue;
+        state.lastSavedValues[documentRecord.id] = nextValue;
+        const nextHeading = extractLevelOneHeading(nextValue);
+        if (nextHeading) {
+          state.workflow.heading = nextHeading;
+          mastheadTitle.textContent = nextHeading;
+          document.title = nextHeading;
+        }
+        if (getCurrentDocument()?.id === documentRecord.id) {
+          documentPath.textContent = payload.path;
+        }
+        setSaveState(
+          `Saved ${new Date(payload.savedAt).toLocaleTimeString()}`,
+          'saved'
+        );
+      };
+
+      const saveDocument = async () => {
+        await saveVisibleDocument(getCurrentDocument(), currentContent.value);
+      };
+
+      const moveWorkflow = async direction => {
+        await saveDocument();
+
+        state.workflow = await state.storage.moveWorkflow(direction);
+        renderWorkflow();
+        setSaveState(`Moved ${direction}`, 'saved');
+      };
+
+      const selectWorkflowIndex = async nextIndex => {
+        await saveDocument();
+        state.workflow = await state.storage.setActiveIndex(nextIndex);
+        renderWorkflow();
+        setSaveState(`Selected ${state.workflow.documents[nextIndex]?.title ?? 'document'}`, 'saved');
+      };
+
+      const switchStorage = async nextStorage => {
+        await saveDocument();
+        state.storage = nextStorage;
+        state.workflow = null;
+        state.isLoaded = false;
+        mastheadTitle.textContent = 'Loading…';
+        document.title = 'Loading…';
+        documentPath.textContent = 'Loading document…';
+        storageMode.textContent = `Storage: ${state.storage?.label ?? 'server'}`;
+        await loadWorkflow();
+        await persistStoragePreference(state.storage);
+      };
+
+      pickDirectoryButton.addEventListener('click', () => {
+        if (typeof window.showDirectoryPicker !== 'function') {
+          setSaveState('Directory picker is not supported in this browser', 'saving');
+          return;
+        }
+
+        window
+          .showDirectoryPicker({ mode: 'readwrite' })
+          .then(createDirectoryStorage)
+          .then(switchStorage)
+          .then(() => {
+            setSaveState('Directory connected', 'saved');
+          })
+          .catch(error => {
+            if (error?.name === 'AbortError') {
+              return;
+            }
+            setSaveState(error.message, 'saving');
+          });
+      });
+
+      useServerStorageButton.addEventListener('click', () => {
+        switchStorage(createServerStorage()).catch(error => {
+          setSaveState(error.message, 'saving');
+        });
+      });
+
+      toggleMastheadButton.addEventListener('click', () => {
+        setMastheadCondensed(!state.isMastheadCondensed);
+      });
+
+      linePinActionButton.addEventListener('click', () => {
+        const previousDocument = getPreviousDocument();
+        if (!previousDocument || !getCurrentDocument()) {
+          return;
+        }
+
+        state.pendingPinSelection = {
+          side: state.selectedLineSource,
+          line: getSelectedLine(),
+        };
+        updateLinePinStatus();
+        setSaveState('Select a line in the other panel to finish pinning', 'saved');
+      });
+
+      clearLinePinButton.addEventListener('click', () => {
+        const selectedPin = getSelectedLinePin();
+        if (!selectedPin) {
+          return;
+        }
+
+        const nextPins = getPinsForVisiblePair().filter(pin =>
+          pin.previousLine !== selectedPin.previousLine ||
+          pin.currentLine !== selectedPin.currentLine
+        );
+        setPinsForVisiblePair(nextPins);
+        state.pendingPinSelection = null;
+        clearPreviousPinHighlights();
+        renderCurrentHighlights();
+        refreshPreviousPinHighlight();
+        updateLinePinStatus();
+        setSaveState('Cleared line pin', 'saved');
+      });
+
+      togglePinVisibilityButton.addEventListener('click', () => {
+        state.arePinsVisible = !state.arePinsVisible;
+        if (!state.arePinsVisible) {
+          clearPreviousPinHighlights();
+          clearPreviousLineClasses('is-selected');
+        }
+        renderCurrentHighlights();
+        refreshPreviousPinHighlight();
+        updateLinePinStatus();
+        setSaveState(
+          state.arePinsVisible ? 'Pin highlights shown' : 'Pin highlights hidden',
+          'saved'
+        );
+      });
+
+      currentContent.addEventListener('input', () => {
+        if (!state.isMastheadCondensed && currentContent.value.trim()) {
+          setMastheadCondensed(true);
+        }
+        currentStats.textContent = getDocumentCounts(currentContent.value);
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('click', () => {
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('keyup', () => {
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('select', () => {
+        syncFromCurrentLine(getCurrentCursorLine());
+      });
+
+      currentContent.addEventListener('scroll', () => {
+        renderCurrentHighlights();
+      });
+
+      previousContent.addEventListener('click', event => {
+        const targetLine = event.target.closest('[data-line-number]');
+        if (!targetLine) {
+          return;
+        }
+
+        const lineNumber = Number(targetLine.dataset.lineNumber);
+        if (!Number.isInteger(lineNumber)) {
+          return;
+        }
+
+        scrollPreviousToLine(lineNumber);
+        syncFromPreviousLine(lineNumber);
+      });
+
+      window.addEventListener('keydown', event => {
+        if (!event.altKey) {
+          return;
+        }
+
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          moveWorkflow('left').catch(error => {
+            setSaveState(error.message, 'saving');
+          });
+        }
+
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          moveWorkflow('right').catch(error => {
+            setSaveState(error.message, 'saving');
+          });
+        }
+
+        if (event.key.toLowerCase() === 'm') {
+          event.preventDefault();
+          setMastheadCondensed(!state.isMastheadCondensed);
+        }
+
+        if (event.key.toLowerCase() === 'p') {
+          event.preventDefault();
+          linePinActionButton.click();
+        }
+      });
+
+      state.linePins = readStoredLinePins();
+
+      restorePreferredStorage()
+        .then(storage => {
+          state.storage = storage;
+          return loadWorkflow();
+        })
+        .catch(error => {
+          setSaveState(error.message, 'saving');
+        });
+
+      window.setInterval(() => {
+        saveDocument().catch(error => {
+          setSaveState(error.message, 'saving');
+        });
+      }, 1000);
+    </script>
+  </body>
+</html>

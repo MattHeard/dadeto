@@ -19,6 +19,7 @@ yarn-error.log*
 # Build output
 dist/
 build/
+public/
 !src/build/
 !src/core/build/
 

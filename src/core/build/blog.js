@@ -438,6 +438,58 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy generated static content trees into the public root.
+   * @param {Record<string, string>} dirs - Directory map.
+   * @param {{
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters, logger, and bound copier.
+   * @returns {void}
+   */
+  function copyStaticContentTrees(dirs, context) {
+    const plans = [
+      {
+        src: dirs.srcBrowserAssetsDir,
+        dest: dirs.publicDir,
+        successMessage: 'Browser assets copied successfully!',
+        missingMessage: `Warning: browser/assets directory not found at ${formatPathForLog(
+          dirs.srcBrowserAssetsDir
+        )}`,
+      },
+      {
+        src: dirs.srcContentBlogMediaDir,
+        dest: dirs.publicDir,
+        successMessage: 'Blog media copied successfully!',
+        missingMessage: `Warning: content/blog-media directory not found at ${formatPathForLog(
+          dirs.srcContentBlogMediaDir
+        )}`,
+      },
+      {
+        src: dirs.srcContentPagesDir,
+        dest: dirs.publicDir,
+        successMessage: 'Content pages copied successfully!',
+        missingMessage: `Warning: content/pages directory not found at ${formatPathForLog(
+          dirs.srcContentPagesDir
+        )}`,
+      },
+    ];
+
+    forEachMappedEntries(
+      plans,
+      plan => plan,
+      plan => {
+        copyDirectoryTreeIfExists(plan, context);
+      }
+    );
+  }
+
+  /**
    * Execute the full copy workflow for the static site.
    * @param {{
    *   directories: Record<string, string>,
@@ -468,6 +520,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
     copyBrowserTrees(dirs, copyContext);
     copyCoreRootFiles(dirs, copyContext);
     copyCoreConstants(dirs, { io, messageLogger, copyFile });
+    copyStaticContentTrees(dirs, copyContext);
     copyBlogJson({
       directories: dirs,
       copyFile,
