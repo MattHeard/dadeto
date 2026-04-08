@@ -17,7 +17,7 @@ export default {
   testRunner: 'jest',
   testRunnerNodeArgs: ['--experimental-vm-modules'],
   coverageAnalysis: 'perTest',
-  reporters: ['clear-text'],
+  reporters: ['json', 'progress'],
   jest: {
     configFile: 'jest.config.mjs',
   },
