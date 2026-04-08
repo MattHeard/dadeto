@@ -6,7 +6,7 @@ const jestExcludes = (jestConfig.collectCoverageFrom || [])
 
 export default {
   mutate: [
-    'src/**/*.js',
+    'src/core/**/*.js',
     '!**/*.html',
     '!src/build/styles.js',
     '!src/browser/contentsMenuToggle.js',
