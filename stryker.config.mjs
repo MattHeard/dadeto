@@ -9,9 +9,12 @@ export default {
     'src/**/*.js',
     '!**/*.html',
     '!src/build/styles.js',
+    '!src/browser/contentsMenuToggle.js',
+    '!src/browser/variantMenuToggle.js',
     ...jestExcludes,
   ],
   testRunner: 'jest',
+  testRunnerNodeArgs: ['--experimental-vm-modules'],
   coverageAnalysis: 'perTest',
   reporters: ['clear-text'],
   jest: {
