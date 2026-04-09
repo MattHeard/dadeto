@@ -172,6 +172,23 @@ describe('mark-variant-dirty core helpers', () => {
       expect(where).toHaveBeenCalledWith('number', '==', 7);
       expect(limit).toHaveBeenCalledWith(1);
     });
+
+    it('falls back to the built-in helpers when overrides are not functions', async () => {
+      const pagesSnap = { docs: [{ ref: 'defaultRef' }] };
+      const get = jest.fn().mockResolvedValue(pagesSnap);
+      const limit = jest.fn(() => ({ get }));
+      const where = jest.fn(() => ({ limit }));
+      const collectionGroup = jest.fn(() => ({ where }));
+      const db = { collectionGroup };
+
+      await expect(
+        findPageRef(db, 7, { findPagesSnap: 'nope', refFromSnap: 123 })
+      ).resolves.toBe('defaultRef');
+
+      expect(collectionGroup).toHaveBeenCalledWith('pages');
+      expect(where).toHaveBeenCalledWith('number', '==', 7);
+      expect(limit).toHaveBeenCalledWith(1);
+    });
   });
 
   describe('findPagesSnap and findVariantsSnap', () => {
@@ -292,12 +309,49 @@ describe('mark-variant-dirty core helpers', () => {
       expect(collectionGroup).toHaveBeenCalledWith('pages');
       expect(variantsWhere).toHaveBeenCalledWith('name', '==', 'variant-b');
     });
+
+    it('falls back to built-in helpers when firebase overrides are not functions', async () => {
+      const variantRef = { id: 'variantRef' };
+      const variantsSnap = { docs: [{ ref: variantRef }] };
+      const variantsGet = jest.fn().mockResolvedValue(variantsSnap);
+      const variantsLimit = jest.fn(() => ({ get: variantsGet }));
+      const variantsWhere = jest.fn(() => ({ limit: variantsLimit }));
+      const pageRef = {
+        collection: jest.fn(() => ({
+          where: variantsWhere,
+        })),
+      };
+
+      const pagesSnap = { docs: [{ ref: pageRef }] };
+      const pagesGet = jest.fn().mockResolvedValue(pagesSnap);
+      const pagesLimit = jest.fn(() => ({ get: pagesGet }));
+      const pagesWhere = jest.fn(() => ({ limit: pagesLimit }));
+      const collectionGroup = jest.fn(() => ({ where: pagesWhere }));
+      const db = { collectionGroup };
+
+      await expect(
+        findVariantRef({
+          database: db,
+          pageNumber: 8,
+          variantName: 'variant-c',
+          firebase: {
+            findPageRef: null,
+            findVariantsSnap: 'nope',
+            findPagesSnap: 123,
+            refFromSnap: false,
+          },
+        })
+      ).resolves.toBe(variantRef);
+
+      expect(collectionGroup).toHaveBeenCalledWith('pages');
+      expect(variantsWhere).toHaveBeenCalledWith('name', '==', 'variant-c');
+    });
   });
 
   describe('markVariantDirtyImpl', () => {
     it('throws when database is not provided', async () => {
       await expect(markVariantDirtyImpl(1, 'a')).rejects.toThrow(
-        new TypeError('db must be provided')
+        /Cannot destructure property 'db'/
       );
     });
 

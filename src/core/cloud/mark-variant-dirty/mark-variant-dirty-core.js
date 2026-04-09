@@ -305,20 +305,18 @@ export function updateVariantDirty(variantRef) {
  * Mark a variant document as dirty so the render-variant function re-renders it.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
- * @param {MarkVariantDirtyDeps} [deps] Dependencies required to locate and update the variant.
+ * @param {MarkVariantDirtyDeps} deps Dependencies required to locate and update the variant.
  * @returns {Promise<boolean>} True if the variant was updated.
  */
 export async function markVariantDirtyImpl(pageNumber, variantName, deps) {
   // Ensure we have deps with db - will throw in resolveVariantReference if missing
-  const depsTyped = /** @type {MarkVariantDirtyDeps | undefined} */ (deps);
-
   const variantRef = await resolveVariantReference(
-    depsTyped,
+    deps,
     pageNumber,
     variantName
   );
 
-  return updateVariantIfPresent(depsTyped?.updateVariantDirty, variantRef);
+  return updateVariantIfPresent(deps.updateVariantDirty, variantRef);
 }
 
 /**
@@ -337,40 +335,21 @@ async function updateVariantIfPresent(updateVariantDirtyFn, variantRef) {
 }
 
 /**
- * Resolve deps or empty object.
- * @param {MarkVariantDirtyDeps | undefined} deps Dependencies.
- * @returns {MarkVariantDirtyDeps} Deps or empty object.
- */
-function resolveDepsOrEmpty(deps) {
-  return deps ?? /** @type {MarkVariantDirtyDeps} */ ({});
-}
-
-/**
  * Gather the variant reference needed for marking dirty.
- * @param {MarkVariantDirtyDeps | undefined} deps Dependencies required to resolve the variant.
+ * @param {MarkVariantDirtyDeps} deps Dependencies required to resolve the variant.
  * @param {number} pageNumber Target page number.
  * @param {string} variantName Variant name to look up.
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Resolved variant reference.
  */
 async function resolveVariantReference(deps, pageNumber, variantName) {
-  const { db, firebase = {} } = resolveDepsOrEmpty(deps);
-  enforceDatabase(db);
+  const { db, firebase } = deps;
 
-  const database = /** @type {import('firebase-admin/firestore').Firestore} */ (
-    db
-  );
-  return findVariantRef({ database, pageNumber, variantName, firebase });
-}
-
-/**
- * Ensure db is provided.
- * @param {unknown} db Db.
- * @returns {void}
- */
-function enforceDatabase(db) {
-  if (!db) {
-    throw new TypeError('db must be provided');
-  }
+  return findVariantRef({
+    database: db,
+    pageNumber,
+    variantName,
+    firebase,
+  });
 }
 
 /**

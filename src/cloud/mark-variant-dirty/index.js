@@ -27,6 +27,16 @@ import {
 } from './mark-variant-dirty-core.js';
 import { createVerifyAdmin, isAllowedOrigin } from './cloud-core.js';
 
+/**
+ * @typedef {object} MarkVariantDirtyDeps
+ * @property {import('firebase-admin/firestore').Firestore} db Firestore instance.
+ * @property {object} firebase Firebase helper overrides.
+ * @property {typeof findPageRef} firebase.findPageRef Helper to find the page reference.
+ * @property {typeof findPagesSnap} firebase.findPagesSnap Helper to read the page snapshot.
+ * @property {typeof findVariantsSnap} firebase.findVariantsSnap Helper to read the variant snapshot.
+ * @property {typeof refFromSnap} firebase.refFromSnap Helper to extract a document ref from a snapshot.
+ */
+
 const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 
 ensureFirebaseApp();
@@ -46,16 +56,19 @@ const corsOptions = createCorsOptions(handleCorsOrigin, ['POST']);
 app.use(cors(corsOptions));
 app.use(express.json());
 
+/** @type {MarkVariantDirtyDeps} */
+const markVariantDirtyDeps = {
+  db,
+  firebase: {
+    findPageRef,
+    findPagesSnap,
+    findVariantsSnap,
+    refFromSnap,
+  },
+};
+
 const markVariantDirtyAction = (pageNumber, variantName) =>
-  markVariantDirtyImpl(pageNumber, variantName, {
-    db,
-    firebase: {
-      findPageRef,
-      findPagesSnap,
-      findVariantsSnap,
-      refFromSnap,
-    },
-  });
+  markVariantDirtyImpl(pageNumber, variantName, markVariantDirtyDeps);
 
 const verifyAdmin = createVerifyAdmin({
   verifyToken: token => auth.verifyIdToken(token),
