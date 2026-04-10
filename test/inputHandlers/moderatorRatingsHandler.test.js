@@ -301,4 +301,31 @@ describe('moderatorRatingsHandler', () => {
 
     clearInputValue(textInput);
   });
+
+  test('removes the row click handler during row cleanup', () => {
+    const textInput = { value: '' };
+    const dom = createFakeDom();
+    const container = {};
+
+    moderatorRatingsHandler(dom, container, textInput);
+
+    const removeButton = dom.createdElements.find(
+      element =>
+        element.tag === 'button' && element.textContent === 'Remove rating'
+    );
+
+    expect(removeButton).toBeDefined();
+    expect(removeButton.listeners.click).toHaveLength(1);
+
+    const clickHandler = removeButton.listeners.click[0];
+    clickHandler();
+
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      removeButton,
+      'click',
+      clickHandler
+    );
+
+    clearInputValue(textInput);
+  });
 });
