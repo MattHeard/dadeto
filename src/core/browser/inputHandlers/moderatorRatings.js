@@ -259,26 +259,25 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
 
     const fieldInputConfigs = [
       {
+        key: 'moderatorId',
         placeholder: 'Moderator ID',
-        value: rowModel.moderatorId,
-        onChange: handleRowChange('moderatorId'),
       },
       {
+        key: 'variantId',
         placeholder: 'Variant ID',
-        value: rowModel.variantId,
-        onChange: handleRowChange('variantId'),
       },
       {
+        key: 'ratedAt',
         placeholder: 'ratedAt (ISO 8601)',
-        value: rowModel.ratedAt,
-        onChange: handleRowChange('ratedAt'),
       },
     ];
 
     const fieldInputs = fieldInputConfigs.map(config => ({
-      ...config,
       dom,
       cleanupFns,
+      placeholder: config.placeholder,
+      value: rowModel[config.key],
+      onChange: handleRowChange(config.key),
     }));
 
     const [authorInput, variantInput, ratedAtInput] = fieldInputs.map(
