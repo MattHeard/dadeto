@@ -257,29 +257,29 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       rowModel,
     });
 
-    const fieldInputs = [
+    const fieldInputConfigs = [
       {
-        dom,
         placeholder: 'Moderator ID',
         value: rowModel.moderatorId,
         onChange: handleRowChange('moderatorId'),
-        cleanupFns,
       },
       {
-        dom,
         placeholder: 'Variant ID',
         value: rowModel.variantId,
         onChange: handleRowChange('variantId'),
-        cleanupFns,
       },
       {
-        dom,
         placeholder: 'ratedAt (ISO 8601)',
         value: rowModel.ratedAt,
         onChange: handleRowChange('ratedAt'),
-        cleanupFns,
       },
     ];
+
+    const fieldInputs = fieldInputConfigs.map(config => ({
+      ...config,
+      dom,
+      cleanupFns,
+    }));
 
     const [authorInput, variantInput, ratedAtInput] = fieldInputs.map(
       buildFieldInput
