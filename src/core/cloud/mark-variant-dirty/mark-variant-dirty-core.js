@@ -513,12 +513,16 @@ function resolveUpdateErrorMessage(error) {
 }
 
 /**
+ * @typedef {string} AdminUid
+ */
+
+/**
  * Create a predicate that checks whether a decoded token matches the admin UID.
- * @param {string} adminUid Authorized admin UID.
+ * @param {AdminUid} adminUid Authorized admin UID.
  * @returns {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} Admin check predicate.
  */
 export function createIsAdminUid(adminUid) {
-  return decoded => decoded?.uid === adminUid;
+  return decoded => decoded.uid === adminUid;
 }
 
 /**
