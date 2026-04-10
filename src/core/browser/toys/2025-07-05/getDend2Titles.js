@@ -14,21 +14,12 @@ function resolveTran1Stories(data) {
 }
 
 /**
- * Resolve DEND2 stories as fallback.
- * @param {*} data - Application state data.
- * @returns {object[] | undefined} Stories from DEND2 temporary storage.
- */
-function resolveDend2Stories(data) {
-  return data.temporary.DEND2?.stories;
-}
-
-/**
  * Resolve TRAN1 stories with DEND2 fallback.
  * @param {*} data - Application state data.
  * @returns {object[] | undefined} Resolved stories array or undefined.
  */
 function resolveTran1StoriesWithFallback(data) {
-  return resolveTran1Stories(data) ?? resolveDend2Stories(data);
+  return resolveTran1Stories(data) ?? data.temporary.DEND2.stories;
 }
 
 /**

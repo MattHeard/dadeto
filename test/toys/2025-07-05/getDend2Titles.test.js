@@ -47,6 +47,11 @@ describe('getDend2Titles', () => {
     expect(JSON.parse(getDend2Titles('x', env))).toEqual([]);
   });
 
+  test('returns empty array when temporary exists but TRAN1 and DEND2 are missing', () => {
+    const env = new Map([['getData', () => ({ temporary: { OTHER: {} } })]]);
+    expect(JSON.parse(getDend2Titles('x', env))).toEqual([]);
+  });
+
   test('returns empty array on error', () => {
     const env = new Map([
       [
