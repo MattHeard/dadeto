@@ -90,19 +90,6 @@ function getAxisDirectionLabel(direction) {
 }
 
 /**
- * @param {HTMLElement} node Node to decorate.
- * @param {string} className Optional class name.
- * @returns {void}
- */
-function applyClassName(node, className) {
-  if (!className) {
-    return;
-  }
-
-  node.className = className;
-}
-
-/**
  * @param {HTMLElement} node Node to populate.
  * @param {string} text Text content to assign.
  * @returns {void}
@@ -119,7 +106,7 @@ function applyText(node, text) {
  */
 function createTextNode(dom, tag, options) {
   const node = dom.createElement(tag);
-  applyClassName(node, String(options.className));
+  node.className = String(options.className);
   applyText(node, String(options.text));
   return node;
 }
