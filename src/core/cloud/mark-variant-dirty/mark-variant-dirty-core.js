@@ -61,16 +61,9 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  */
 
 /**
- * @typedef {object} HandleRequestDeps
- * @property {typeof markVariantDirtyImpl} [markFn] Override for marking variant dirty.
- * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} [verifyAdmin] Override for admin verification.
- */
-
-/**
  * @typedef {object} ProcessRequestData
  * @property {NativeHttpRequest} req Express request.
  * @property {NativeHttpResponse} res Express response.
- * @property {HandleRequestDeps} [deps] Optional overrides.
  */
 
 /**
@@ -670,7 +663,7 @@ function extractHandlerConfig(optionsTyped) {
 /**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
  * @param {HandleRequestOptions} options Configuration for the handler.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Express request handler.
  */
 export function createHandleRequest(options) {
   const optionsTyped = /** @type {HandleRequestOptions} */ (options);
@@ -705,12 +698,11 @@ function resolveAllowedMethod(method) {
 /**
  * Build the HTTP handler once the inputs are normalized.
  * @param {HandlerDependencies} handlerDeps Normalized handler dependencies.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
+ * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Express request handler.
  */
 function buildHandleRequest(handlerDeps) {
-  return async function handleRequest(req, res, deps = {}) {
-    const depsTyped = /** @type {HandleRequestDeps} */ (deps);
-    return processHandleRequest({ req, res, deps: depsTyped }, handlerDeps);
+  return async function handleRequest(req, res) {
+    return processHandleRequest({ req, res }, handlerDeps);
   };
 }
 
@@ -725,15 +717,13 @@ const REQUEST_HANDLED = Symbol('request-handled');
  * @returns {Promise<void>} Promise resolved once handling completes.
  */
 async function processHandleRequest(requestData, handlerDeps) {
-  const { req, res, deps } = requestData;
+  const { req, res } = requestData;
   const { verifyAdmin, markVariantDirty, parseRequestBody, allowedMethod } =
     handlerDeps;
-  const verifyAdminFn = pickVerifyAdminFn(verifyAdmin, deps);
-  const markFn = pickMarkFn(markVariantDirty, deps);
 
   try {
     enforceMethodOrThrow(req, res, allowedMethod);
-    await ensureAuthorizedOrThrow(verifyAdminFn, req, res);
+    await ensureAuthorizedOrThrow(verifyAdmin, req, res);
     const { pageNumber, variantName } = parseRequestOrThrow(
       req,
       res,
@@ -742,7 +732,7 @@ async function processHandleRequest(requestData, handlerDeps) {
 
     await markVariantAndRespond({
       res,
-      markFn,
+      markFn: markVariantDirty,
       pageNumber,
       variantName,
     });
@@ -762,45 +752,6 @@ function handleProcessError(err) {
   }
 
   throw err;
-}
-
-/**
- * Extract function from deps if available.
- * @param {unknown} fn - Function candidate from deps.
- * @param {unknown} defaultFn - Default function.
- * @returns {unknown} Override or default.
- */
-function pickOverride(fn, defaultFn) {
-  if (typeof fn === 'function') {
-    return fn;
-  }
-  return defaultFn;
-}
-
-/**
- * Pick verifyAdmin override.
- * @param {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Default verify.
- * @param {HandleRequestDeps | undefined} deps Deps.
- * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Verify fn.
- */
-function pickVerifyAdminFn(verifyAdmin, deps) {
-  const depsVerifyAdmin = deps?.verifyAdmin;
-  return /** @type {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} */ (
-    pickOverride(depsVerifyAdmin, verifyAdmin)
-  );
-}
-
-/**
- * Pick markFn override.
- * @param {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Default mark.
- * @param {HandleRequestDeps | undefined} deps Deps.
- * @returns {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} Mark fn.
- */
-function pickMarkFn(markVariantDirty, deps) {
-  const depsMarkFn = deps?.markFn;
-  return /** @type {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps | undefined) => Promise<boolean>} */ (
-    pickOverride(depsMarkFn, markVariantDirty)
-  );
 }
 
 /**

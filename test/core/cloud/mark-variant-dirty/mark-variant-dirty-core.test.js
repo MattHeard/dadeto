@@ -586,25 +586,6 @@ describe('mark-variant-dirty core helpers', () => {
       expect(res.json).toHaveBeenCalledWith({ error: 'update failed' });
     });
 
-    it('honors dependency overrides for admin verification and marking', async () => {
-      const verifyAdmin = jest.fn().mockResolvedValue(true);
-      const markVariantDirty = jest.fn();
-      const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
-      const res = createResponse();
-      const overrideVerify = jest.fn().mockResolvedValue(true);
-      const overrideMark = jest.fn().mockResolvedValue(true);
-
-      await handle(
-        { method: 'POST', body: { page: 11, variant: 'override' } },
-        res,
-        { verifyAdmin: overrideVerify, markFn: overrideMark }
-      );
-
-      expect(verifyAdmin).not.toHaveBeenCalled();
-      expect(overrideVerify).toHaveBeenCalled();
-      expect(overrideMark).toHaveBeenCalledWith(11, 'override');
-    });
-
     it('supports custom body parsers for request validation', async () => {
       const verifyAdmin = jest.fn().mockResolvedValue(true);
       const markVariantDirty = jest.fn().mockResolvedValue(true);
