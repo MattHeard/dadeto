@@ -18,6 +18,12 @@ describe('createFirestore', () => {
     expect(instance).toBe(Constructor.mock.instances[0]);
     expect(instance.created).toBe(true);
   });
+
+  it('throws a named error when the constructor is missing', () => {
+    expect(() => createFirestore(null)).toThrow(
+      'FirestoreConstructor must be a function'
+    );
+  });
 });
 
 describe('fetchApiKeyCreditDocument', () => {

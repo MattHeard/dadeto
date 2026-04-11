@@ -5,5 +5,5 @@
 - [x] `Ghost Bracket` - mutant `87` at `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js:465` (applied, not re-verified)
 - [x] `Zero Wire` - mutant `124` at `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js:619` (applied, not re-verified)
 - [x] `Byte Halo` - mutant `126` at `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js:628` (applied, not re-verified)
-- [ ] `Night Circuit` - mutant `159` at `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js:793`
-- [ ] `Pulse Knife` - mutant `161` at `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js:806`
+- [x] `Night Circuit` - mutant `159` at `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js:793` (applied, not re-verified)
+- [x] `Pulse Knife` - mutant `161` at `src/core/cloud/mark-variant-dirty/mark-variant-dirty-core.js:806` (applied, not re-verified)

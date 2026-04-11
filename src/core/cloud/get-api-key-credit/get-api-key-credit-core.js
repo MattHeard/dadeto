@@ -48,7 +48,7 @@ export function createFirestore(FirestoreConstructor) {
  * @returns {boolean} True if UUID is valid string.
  */
 function isValidUuid(uuid) {
-  return typeof uuid === 'string' && isValidString(uuid);
+  return isValidString(uuid);
 }
 
 /**
@@ -71,9 +71,6 @@ function resolveUuid(request, getUuid) {
  * @returns {{ status: number, body: unknown } | undefined} Special response or undefined.
  */
 function resolveSpecialCreditMapping(credit) {
-  if (typeof credit === 'number') {
-    return undefined;
-  }
   return CREDIT_RESPONSE_BY_VALUE.get(/** @type {null | undefined} */ (credit));
 }
 
