@@ -555,6 +555,24 @@ async function saveNewPage(deps, id, data) {
 }
 
 /**
+ * Build the submission payload.
+ * @param {SubmitNewPageContext} context Context.
+ * @param {string | null} authorId Author id.
+ * @returns {SubmitNewPageInput} Submission payload.
+ */
+function createSubmissionData(context, authorId) {
+  const { target, content, author, options } = context;
+  return {
+    incomingOptionFullName: target.incomingOptionFullName,
+    pageNumber: target.pageNumber,
+    content,
+    author,
+    authorId,
+    options,
+  };
+}
+
+/**
  * Process valid submission.
  * @param {SubmitNewPageHandlerDeps} deps Dependencies.
  * @param {SubmitNewPageContext} context Context.
@@ -566,14 +584,10 @@ async function processValidSubmission(deps, context) {
 
   const authorId = await resolveAuthorIdFromHeader(authHeader, verifyIdToken);
   const id = randomUUID();
-  const submissionData = {
-    incomingOptionFullName: target.incomingOptionFullName,
-    pageNumber: target.pageNumber,
-    content,
-    author,
-    authorId,
-    options,
-  };
+  const submissionData = createSubmissionData(
+    { target, content, author, options },
+    authorId
+  );
 
   await saveNewPage({ saveSubmission, serverTimestamp }, id, submissionData);
 
