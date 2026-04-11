@@ -125,6 +125,51 @@ describe('createHandleSubmit', () => {
     });
   });
 
+  it('accepts incoming options with repeated separators after normalization', async () => {
+    const deps = baseDeps();
+    const handler = createHandleSubmit(deps);
+
+    const result = await handler(
+      createRequest({ [INCOMING_OPTION_KEY]: '12--Alpha-34' })
+    );
+
+    expect(deps.parseIncomingOption).toHaveBeenCalledWith('12--Alpha-34');
+    expect(deps.findExistingOption).toHaveBeenCalled();
+    expect(result).toEqual({
+      status: 201,
+      body: {
+        id: 'uuid-1',
+        incomingOptionFullName: 'Option :: 1',
+        pageNumber: null,
+        content: '',
+        author: '???',
+        authorId: null,
+        options: [],
+      },
+    });
+  });
+
+  it('parses incoming options with mixed separators consistently', async () => {
+    const deps = baseDeps();
+    const handler = createHandleSubmit(deps);
+
+    const result = await handler(
+      createRequest({ [INCOMING_OPTION_KEY]: '12___Alpha--34' })
+    );
+
+    expect(deps.parseIncomingOption).toHaveBeenCalledWith('12___Alpha--34');
+    expect(deps.findExistingOption).toHaveBeenCalled();
+    expect(result.status).toBe(201);
+    expect(result.body).toMatchObject({
+      incomingOptionFullName: 'Option :: 1',
+      pageNumber: null,
+      content: '',
+      author: '???',
+      authorId: null,
+      options: [],
+    });
+  });
+
   it('validates page submissions', async () => {
     const deps = baseDeps();
     const handler = createHandleSubmit(deps);

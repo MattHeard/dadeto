@@ -114,9 +114,6 @@ function parseParts(parts) {
  *   Parsed info or null when invalid.
  */
 export function parseIncomingOption(str) {
-  if (!str) {
-    return null;
-  }
   const parts = splitOptionString(str);
   return parseParts(parts);
 }
