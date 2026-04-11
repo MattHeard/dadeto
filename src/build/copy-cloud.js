@@ -58,6 +58,25 @@ const directoryCopies = functionDirectories.map(name => ({
   target: join(infraFunctionsDir, name),
 }));
 
+const preservedCloudTreeCopies = functionDirectories.flatMap(name => [
+  {
+    source: join(srcCloudDir, name),
+    target: join(infraFunctionsDir, name, 'cloud', name),
+  },
+  {
+    source: join(srcCoreCloudDir, name),
+    target: join(infraFunctionsDir, name, 'core', 'cloud', name),
+  },
+  {
+    source: srcCloudDir,
+    target: join(infraFunctionsDir, name, 'cloud'),
+  },
+  {
+    source: srcCoreCloudDir,
+    target: join(infraFunctionsDir, name, 'core', 'cloud'),
+  },
+]);
+
 const sharedBrowserFiles = [
   'authedFetch.js',
   'googleAuth.js',
@@ -114,6 +133,11 @@ const commonCoreSource = join(srcCoreDir, 'commonCore.js');
 const commonCoreCopies = functionDirectories.map(name => ({
   source: commonCoreSource,
   target: join(infraFunctionsDir, name, 'commonCore.js'),
+}));
+
+const preservedCommonCoreCopies = functionDirectories.map(name => ({
+  source: commonCoreSource,
+  target: join(infraFunctionsDir, name, 'core', 'commonCore.js'),
 }));
 
 const generateStatsCoreSource = join(
@@ -345,6 +369,19 @@ const sharedUtilityCopies = functionDirectories.flatMap(functionName =>
   sharedUtilityFiles.map(file => ({
     source: join(srcCoreCloudDir, file),
     target: join(infraFunctionsDir, functionName, file === 'firestore-helpers.js' ? 'firestore.js' : file),
+  }))
+);
+
+const preservedSharedUtilityCopies = functionDirectories.flatMap(functionName =>
+  sharedUtilityFiles.map(file => ({
+    source: join(srcCoreCloudDir, file),
+    target: join(
+      infraFunctionsDir,
+      functionName,
+      'core',
+      'cloud',
+      file === 'firestore-helpers.js' ? 'firestore.js' : file
+    ),
   }))
 );
 
@@ -1058,8 +1095,11 @@ const individualFileCopies = [
   ...firestoreCopies,
   ...corsConfigCopies,
   ...commonCoreCopies,
+  ...preservedCommonCoreCopies,
   ...functionSpecificCommonCoreCopies,
   ...sharedUtilityCopies,
+  ...preservedSharedUtilityCopies,
+  ...preservedCloudTreeCopies,
   ...packageFileCopies,
 ];
 
@@ -1122,6 +1162,15 @@ await runCopyToInfra({
   io,
   messageLogger: logger,
 });
+
+await Promise.all(
+  functionDirectories.map(async functionDir => {
+    const entryPoint = join(infraFunctionsDir, functionDir, 'index.js');
+    const nestedEntryPoint = `./cloud/${functionDir}/index.js`;
+    const wrapper = `export * from '${nestedEntryPoint}';\n`;
+    await fs.writeFile(entryPoint, wrapper);
+  })
+);
 
 await Promise.all([
   // Rewrite relative imports for all cloud functions
