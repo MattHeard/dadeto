@@ -1572,7 +1572,7 @@ function hasNonEmptyString(input) {
 /**
  * Build a render-request handler bound to the shared authorization extractor.
  * @param {object} root0 Handler dependencies.
- * @param {(req: { method?: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
+ * @param {(req: { method: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.

@@ -117,7 +117,7 @@ export function extractUuid(request) {
 /**
  * Factory for the HTTPS handler serving API key credit data.
  * @param {HandlerDependencies} [deps] Runtime dependencies for the handler.
- * @returns {(request: { method?: string } & Record<string, unknown>) => Promise<{
+ * @returns {(request: { method: string } & Record<string, unknown>) => Promise<{
  *   status: number,
  *   body: string | { credit: number },
  *   headers?: Record<string, string>,

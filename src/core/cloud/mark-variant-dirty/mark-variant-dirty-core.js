@@ -444,16 +444,12 @@ function getRequestBody(req) {
 }
 
 /**
- * Access the HTTP method from the request, if present.
+ * Access the HTTP method from the request when present.
  * @param {NativeHttpRequest | undefined} req Express request.
  * @returns {string | undefined} HTTP method or `undefined`.
  */
 function getRequestMethod(req) {
-  const method = getRequestProperty(req, 'method');
-  if (typeof method === 'string') {
-    return method;
-  }
-  return undefined;
+  return /** @type {string | undefined} */ (getRequestProperty(req, 'method'));
 }
 
 /**

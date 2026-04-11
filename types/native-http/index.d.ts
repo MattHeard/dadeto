@@ -1,7 +1,7 @@
 export type HttpRequestHeaders = Record<string, string | string[] | undefined>;
 
 export interface NativeHttpRequest {
-  method?: string;
+  method: string;
   body?: unknown;
   headers?: HttpRequestHeaders;
   get?(name: string): string | undefined;
