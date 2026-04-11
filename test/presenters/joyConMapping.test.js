@@ -53,6 +53,8 @@ describe('createJoyConMappingElement', () => {
     expect(element.className).toBe('joycon-mapping-output');
     expect(title.tag).toBe('h3');
     expect(title.textContent).toBe('Joy-Con Mapping');
+    expect(title.className).toBe('joycon-mapping-title');
+    expect(summary.className).toBe('joycon-mapping-summary');
     expect(summary.textContent).toBe('3 mapped, 1 skipped');
     expect(list.tag).toBe('div');
     expect(list.className).toBe('joycon-mapping-list');
@@ -66,6 +68,8 @@ describe('createJoyConMappingElement', () => {
     expect(findRow('Stick Down').children[1].textContent).toBe('axis 5 +');
     expect(findRow('D-Pad Left').children[1].textContent).toBe('skipped');
     expect(findRow('Stick Right').children[1].textContent).toBe('optional');
+    expect(findRow('L').children[0].className).toBe('');
+    expect(findRow('L').children[1].className).toBe('');
   });
 
   test('falls back to optional text for unknown mapping types without value', () => {
