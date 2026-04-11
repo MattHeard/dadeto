@@ -522,6 +522,19 @@ describe('mark-variant-dirty core helpers', () => {
       expect(markVariantDirty).not.toHaveBeenCalled();
     });
 
+    it('returns 400 when the variant is empty', async () => {
+      const verifyAdmin = jest.fn().mockResolvedValue(true);
+      const markVariantDirty = jest.fn();
+      const handle = createHandleRequest({ verifyAdmin, markVariantDirty });
+      const res = createResponse();
+
+      await handle({ method: 'POST', body: { page: 1, variant: '' } }, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Invalid input' });
+      expect(markVariantDirty).not.toHaveBeenCalled();
+    });
+
     it('responds with 404 when markVariantDirty reports missing variant', async () => {
       const verifyAdmin = jest.fn().mockResolvedValue(true);
       const markVariantDirty = jest.fn().mockResolvedValue(false);

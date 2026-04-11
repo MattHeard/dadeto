@@ -56,8 +56,8 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @typedef {object} HandleRequestOptions
  * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification helper.
  * @property {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Core mutation helper.
- * @property {(body: unknown) => MarkVariantRequestParams} [parseRequestBody] Body parser.
- * @property {string} [allowedMethod] Allowed HTTP method.
+ * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Body parser.
+ * @property {string} allowedMethod Allowed HTTP method.
  */
 
 /**
@@ -612,7 +612,7 @@ function castCoreFunctions(verifyAdmin, markVariantDirty) {
  * @returns {Function} The request parser.
  */
 function resolveRequestParser(optionsTyped) {
-  return resolveParseRequestBody(optionsTyped?.parseRequestBody);
+  return resolveParseRequestBody(optionsTyped.parseRequestBody);
 }
 
 /**
@@ -621,7 +621,7 @@ function resolveRequestParser(optionsTyped) {
  * @returns {string} The allowed method.
  */
 function resolveHttpMethod(optionsTyped) {
-  return resolveAllowedMethod(optionsTyped?.allowedMethod);
+  return resolveAllowedMethod(optionsTyped.allowedMethod);
 }
 
 /**
@@ -669,13 +669,11 @@ function extractHandlerConfig(optionsTyped) {
 
 /**
  * Factory for the HTTP handler wrapping the mark-variant-dirty implementation.
- * @param {HandleRequestOptions} [options] Configuration for the handler.
+ * @param {HandleRequestOptions} options Configuration for the handler.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse, deps?: HandleRequestDeps) => Promise<void>} Express request handler.
  */
 export function createHandleRequest(options) {
-  const optionsTyped = /** @type {HandleRequestOptions | undefined} */ (
-    options
-  );
+  const optionsTyped = /** @type {HandleRequestOptions} */ (options);
   const config = /** @type {HandlerDependencies} */ (
     extractHandlerConfig(optionsTyped)
   );
