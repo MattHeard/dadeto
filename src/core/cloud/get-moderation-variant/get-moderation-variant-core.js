@@ -7,7 +7,7 @@ import {
   NO_JOB_RESPONSE,
   resolveMessageOrDefault,
   isObject,
-} from './cloud-core.js';
+} from '../cloud-core.js';
 import {
   whenNotNullishValue,
   whenOrNull,

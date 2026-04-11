@@ -1,4 +1,4 @@
-import { DEFAULT_BUCKET_NAME, getSnapshotData } from './cloud-core.js';
+import { DEFAULT_BUCKET_NAME, getSnapshotData } from '../cloud-core.js';
 import {
   assertFunction,
   ensureString,

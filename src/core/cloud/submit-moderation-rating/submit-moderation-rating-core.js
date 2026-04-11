@@ -12,7 +12,7 @@ import {
   MISSING_AUTHORIZATION_RESPONSE,
   NO_JOB_RESPONSE,
   whenPredicateValue,
-} from './cloud-core.js';
+} from '../cloud-core.js';
 import {
   createCloudSubmitHandler,
   getAuthorizationHeader,

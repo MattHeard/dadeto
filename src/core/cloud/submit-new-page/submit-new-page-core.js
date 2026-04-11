@@ -1,7 +1,7 @@
 import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,
-} from './cloud-core.js';
+} from '../cloud-core.js';
 import { when } from '../../commonCore.js';
 import {
   normalizeShortString,

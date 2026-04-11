@@ -2,7 +2,7 @@ import { assertFunction, trimmedStringOrEmpty } from '../../commonCore.js';
 import {
   createCorsOriginHandler,
   createCorsOptions as buildCorsOptions,
-} from './cloud-core.js';
+} from '../cloud-core.js';
 import { whenPostRequestAsync } from '../http-method-guard.js';
 
 /**

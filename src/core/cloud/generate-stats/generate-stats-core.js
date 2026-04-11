@@ -9,7 +9,7 @@ import {
   DEFAULT_BUCKET_NAME,
   isDuplicateAppError,
   sendOkResponse,
-} from './cloud-core.js';
+} from '../cloud-core.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 export { isDuplicateAppError };
 
@@ -111,7 +111,7 @@ const MENU_SCRIPT = `    <script type="module" src="/statsMenu.js"></script>
   </body>
 </html>`;
 
-export { productionOrigins } from './cloud-core.js';
+export { productionOrigins } from '../cloud-core.js';
 
 /**
  * Build stats HTML page.

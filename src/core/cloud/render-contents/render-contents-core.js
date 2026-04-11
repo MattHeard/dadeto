@@ -2,7 +2,7 @@ import {
   DEFAULT_BUCKET_NAME,
   productionOrigins,
   sendOkResponse,
-} from './cloud-core.js';
+} from '../cloud-core.js';
 import { assertFunction } from '../../commonCore.js';
 export { DEFAULT_BUCKET_NAME, productionOrigins };
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */

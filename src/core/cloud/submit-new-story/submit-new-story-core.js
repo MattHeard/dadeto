@@ -7,7 +7,7 @@ import {
   createResponse,
   normalizeShortString,
   createCorsOptionsValue,
-} from './cloud-core.js';
+} from '../cloud-core.js';
 import { resolveAuthorIdFromHeader } from '../auth-helpers.js';
 import {
   createCloudSubmitHandler,
