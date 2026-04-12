@@ -2,62 +2,62 @@
 
 Checklist for the surviving mutants in `src/core/browser/inputHandlers/realHourlyWage.js`.
 
-- [ ] `Vanta Relay` - mutant `110` at line `191`
-- [ ] `Quartz Neon` - mutant `116` at line `202`
-- [ ] `Morrow Byte` - mutant `118` at line `205`
-- [ ] `Kestrel Flux` - mutant `120` at line `207`
-- [ ] `Halo Drip` - mutant `122` at line `209`
-- [ ] `Vector Bloom` - mutant `124` at line `214`
-- [ ] `Orchid Signal` - mutant `126` at line `218`
-- [ ] `Cipher Wisp` - mutant `132` at line `234`
-- [ ] `Nova Rook` - mutant `140` at line `305`
-- [ ] `Zinc Pulse` - mutant `148` at line `372`
-- [ ] `Drift Ember` - mutant `0` at line `33`
-- [ ] `Raven Coil` - mutant `2` at line `35`
-- [ ] `Mica Crown` - mutant `4` at line `38`
-- [ ] `Lumen Grid` - mutant `6` at line `40`
-- [ ] `Static Vale` - mutant `8` at line `42`
-- [ ] `Astra Knot` - mutant `10` at line `42`
-- [ ] `Iron Sable` - mutant `12` at line `44`
-- [ ] `Yarrow Prism` - mutant `15` at line `47`
-- [ ] `Onyx Dune` - mutant `17` at line `48`
-- [ ] `Quill Arcade` - mutant `19` at line `51`
-- [ ] `Plex Halo` - mutant `21` at line `52`
-- [ ] `Talon Drift` - mutant `23` at line `53`
-- [ ] `Beryl Static` - mutant `25` at line `58`
-- [ ] `Nexus Thread` - mutant `27` at line `60`
-- [ ] `Sable Orbit` - mutant `29` at line `62`
-- [ ] `Kite Violet` - mutant `31` at line `62`
-- [ ] `Flux Monolith` - mutant `33` at line `64`
-- [ ] `Rift Quartz` - mutant `35` at line `67`
-- [ ] `Echo Matrix` - mutant `37` at line `67`
-- [ ] `Warden Silk` - mutant `39` at line `69`
-- [ ] `Chrome Lattice` - mutant `41` at line `72`
-- [ ] `Morrow Prism` - mutant `43` at line `72`
-- [ ] `Glint Harbor` - mutant `45` at line `74`
-- [ ] `Vex Aurora` - mutant `47` at line `77`
-- [ ] `Lattice Rune` - mutant `49` at line `77`
-- [ ] `Fable Circuit` - mutant `51` at line `79`
-- [ ] `Pyre Vector` - mutant `53` at line `82`
-- [ ] `Quartz Hollow` - mutant `55` at line `82`
-- [ ] `Brass Comet` - mutant `57` at line `84`
-- [ ] `Nyx Harbor` - mutant `59` at line `87`
-- [ ] `Orbit Loom` - mutant `61` at line `87`
-- [ ] `Velvet Node` - mutant `63` at line `89`
-- [ ] `Cinder Relay` - mutant `65` at line `94`
-- [ ] `Axiom Shade` - mutant `67` at line `96`
-- [ ] `Tundra Pulse` - mutant `69` at line `97`
-- [ ] `Mica Signal` - mutant `71` at line `98`
-- [ ] `Razor Bloom` - mutant `73` at line `101`
-- [ ] `Jade Kernel` - mutant `75` at line `102`
-- [ ] `Sphinx Drift` - mutant `77` at line `103`
-- [ ] `Kappa Volt` - mutant `79` at line `106`
-- [ ] `Lunar Stitch` - mutant `81` at line `107`
-- [ ] `Pylon Ash` - mutant `83` at line `108`
-- [ ] `Vanta Glow` - mutant `85` at line `111`
-- [ ] `Cipher Wavelength` - mutant `87` at line `112`
-- [ ] `Rook Lantern` - mutant `89` at line `113`
-- [ ] `Aster Relay` - mutant `91` at line `116`
-- [ ] `Drift Alloy` - mutant `93` at line `117`
-- [ ] `Neon Quartz` - mutant `95` at line `118`
-- [ ] `Pulse Marble` - mutant `154` at line `399`
+- [x] `Vanta Relay` - mutant `110` at line `191`
+- [x] `Quartz Neon` - mutant `116` at line `202`
+- [x] `Morrow Byte` - mutant `118` at line `205`
+- [x] `Kestrel Flux` - mutant `120` at line `207`
+- [x] `Halo Drip` - mutant `122` at line `209`
+- [x] `Vector Bloom` - mutant `124` at line `214`
+- [x] `Orchid Signal` - mutant `126` at line `218`
+- [x] `Cipher Wisp` - mutant `132` at line `234`
+- [x] `Nova Rook` - mutant `140` at line `305`
+- [x] `Zinc Pulse` - mutant `148` at line `372`
+- [x] `Drift Ember` - mutant `0` at line `33`
+- [x] `Raven Coil` - mutant `2` at line `35`
+- [x] `Mica Crown` - mutant `4` at line `38`
+- [x] `Lumen Grid` - mutant `6` at line `40`
+- [x] `Static Vale` - mutant `8` at line `42`
+- [x] `Astra Knot` - mutant `10` at line `42`
+- [x] `Iron Sable` - mutant `12` at line `44`
+- [x] `Yarrow Prism` - mutant `15` at line `47`
+- [x] `Onyx Dune` - mutant `17` at line `48`
+- [x] `Quill Arcade` - mutant `19` at line `51`
+- [x] `Plex Halo` - mutant `21` at line `52`
+- [x] `Talon Drift` - mutant `23` at line `53`
+- [x] `Beryl Static` - mutant `25` at line `58`
+- [x] `Nexus Thread` - mutant `27` at line `60`
+- [x] `Sable Orbit` - mutant `29` at line `62`
+- [x] `Kite Violet` - mutant `31` at line `62`
+- [x] `Flux Monolith` - mutant `33` at line `64`
+- [x] `Rift Quartz` - mutant `35` at line `67`
+- [x] `Echo Matrix` - mutant `37` at line `67`
+- [x] `Warden Silk` - mutant `39` at line `69`
+- [x] `Chrome Lattice` - mutant `41` at line `72`
+- [x] `Morrow Prism` - mutant `43` at line `72`
+- [x] `Glint Harbor` - mutant `45` at line `74`
+- [x] `Vex Aurora` - mutant `47` at line `77`
+- [x] `Lattice Rune` - mutant `49` at line `77`
+- [x] `Fable Circuit` - mutant `51` at line `79`
+- [x] `Pyre Vector` - mutant `53` at line `82`
+- [x] `Quartz Hollow` - mutant `55` at line `82`
+- [x] `Brass Comet` - mutant `57` at line `84`
+- [x] `Nyx Harbor` - mutant `59` at line `87`
+- [x] `Orbit Loom` - mutant `61` at line `87`
+- [x] `Velvet Node` - mutant `63` at line `89`
+- [x] `Cinder Relay` - mutant `65` at line `94`
+- [x] `Axiom Shade` - mutant `67` at line `96`
+- [x] `Tundra Pulse` - mutant `69` at line `97`
+- [x] `Mica Signal` - mutant `71` at line `98`
+- [x] `Razor Bloom` - mutant `73` at line `101`
+- [x] `Jade Kernel` - mutant `75` at line `102`
+- [x] `Sphinx Drift` - mutant `77` at line `103`
+- [x] `Kappa Volt` - mutant `79` at line `106`
+- [x] `Lunar Stitch` - mutant `81` at line `107`
+- [x] `Pylon Ash` - mutant `83` at line `108`
+- [x] `Vanta Glow` - mutant `85` at line `111`
+- [x] `Cipher Wavelength` - mutant `87` at line `112`
+- [x] `Rook Lantern` - mutant `89` at line `113`
+- [x] `Aster Relay` - mutant `91` at line `116`
+- [x] `Drift Alloy` - mutant `93` at line `117`
+- [x] `Neon Quartz` - mutant `95` at line `118`
+- [x] `Pulse Marble` - mutant `154` at line `399`
