@@ -36,6 +36,9 @@ describe('captureFormShared helpers', () => {
 
       captureFormShared.dispatchCheckboxChange(checkbox);
 
+      expect(dispatchEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'change' })
+      );
       expect(dispatchEvent).toHaveBeenCalledWith(expect.any(Event));
     });
   });
@@ -76,6 +79,53 @@ describe('captureFormShared helpers', () => {
     });
   });
 
+  describe('buildCaptureForm', () => {
+    it('creates the shared capture button and wires the form shell', () => {
+      const createdElements = [];
+      const dom = {
+        createElement: jest.fn(tag => {
+          const element = {
+            tag,
+            children: [],
+            className: '',
+            type: '',
+          };
+          createdElements.push(element);
+          return element;
+        }),
+        setClassName: jest.fn((element, className) => {
+          element.className = className;
+        }),
+        setType: jest.fn((element, type) => {
+          element.type = type;
+        }),
+        appendChild: jest.fn((parent, child) => {
+          parent.children.push(child);
+        }),
+        getNextSibling: jest.fn(() => null),
+        insertBefore: jest.fn((parent, child) => {
+          parent.children.push(child);
+        }),
+        removeAllChildren: jest.fn(),
+      };
+      const container = { children: [] };
+      const textInput = { value: '' };
+
+      const result = captureFormShared.buildCaptureForm({
+        dom,
+        container,
+        textInput,
+        formClass: 'capture-shell',
+      });
+
+      expect(result.form.className).toBe('capture-shell');
+      expect(result.button.tag).toBe('button');
+      expect(result.button.type).toBe('button');
+      expect(dom.createElement).toHaveBeenCalledWith('button');
+      expect(result.form.children).toContain(result.button);
+    });
+  });
+
   describe('syncToyPayload', () => {
     it('persists the payload using the shared helpers', () => {
       const dom = { setValue: jest.fn() };
@@ -93,6 +143,54 @@ describe('captureFormShared helpers', () => {
       expect(readStoredOrElementValue(textInput)).toBe(serialised);
       expect(checkbox.checked).toBe(true);
       expect(checkbox.dispatchEvent).toHaveBeenCalled();
+    });
+  });
+
+  describe('makeCaptureFormBuilder', () => {
+    it('returns a builder that renders the configured form', () => {
+      const onFormReady = jest.fn();
+      const builder = captureFormShared.makeCaptureFormBuilder(
+        'capture-shell',
+        onFormReady
+      );
+      const dom = {
+        createElement: jest.fn(tag => ({
+          tag,
+          children: [],
+          className: '',
+          type: '',
+        })),
+        setClassName: jest.fn((element, className) => {
+          element.className = className;
+        }),
+        setType: jest.fn((element, type) => {
+          element.type = type;
+        }),
+        appendChild: jest.fn((parent, child) => {
+          parent.children.push(child);
+        }),
+        getNextSibling: jest.fn(() => null),
+        insertBefore: jest.fn((parent, child) => {
+          parent.children.push(child);
+        }),
+        removeAllChildren: jest.fn(),
+      };
+      const container = { children: [] };
+      const textInput = { value: '' };
+
+      const form = builder({ dom, container, textInput });
+
+      expect(form.className).toBe('capture-shell');
+      expect(form.children[0].tag).toBe('button');
+      expect(onFormReady).toHaveBeenCalledTimes(1);
+      expect(onFormReady.mock.calls[0][0]).toEqual(
+        expect.objectContaining({
+          dom,
+          container,
+          textInput,
+          form,
+        })
+      );
     });
   });
 
