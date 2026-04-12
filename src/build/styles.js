@@ -265,7 +265,9 @@ export function styles() {
     margin-bottom: 0.25em;
   }
 
-  input {
+  input:not([type="file"]):not([type="checkbox"]),
+  textarea,
+  select {
     display: block;
     width: 100%;
     background-color: #bbb;

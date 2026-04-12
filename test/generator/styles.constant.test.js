@@ -5,8 +5,12 @@ describe('styles constant', () => {
   test('includes global input background color rule', () => {
     const css = styles();
     expect(typeof css).toBe('string');
-    expect(css).toContain('input {');
+    expect(css).toContain('input:not([type="file"]):not([type="checkbox"])');
+    expect(css).toContain('textarea');
+    expect(css).toContain('select');
     expect(css).toContain('background-color: #bbb');
+    expect(css).not.toContain('input[type="file"]');
+    expect(css).not.toContain('input[type="checkbox"]');
   });
 
   test('contains multiple CSS rules', () => {
