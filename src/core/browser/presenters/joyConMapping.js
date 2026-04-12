@@ -199,9 +199,18 @@ function getSkippedControls(parsed) {
  */
 function createFallbackMapping(isSkipped) {
   if (isSkipped) {
-    return { type: FALLBACK_MAPPING_TYPE, value: 'skipped' };
+    return createFallbackMappingRecord('skipped');
   }
-  return { type: FALLBACK_MAPPING_TYPE, value: 'optional' };
+  return createFallbackMappingRecord('optional');
+}
+
+/**
+ * Build a fallback mapping record.
+ * @param {string} value Fallback label.
+ * @returns {JoyConMappingRecord} Synthetic fallback mapping record.
+ */
+function createFallbackMappingRecord(value) {
+  return { type: FALLBACK_MAPPING_TYPE, value };
 }
 
 /**
