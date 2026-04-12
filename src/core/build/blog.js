@@ -325,6 +325,36 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   }
 
   /**
+   * Copy a collection of directory tree plans.
+   * @param {Array<{
+   *   src: string,
+   *   dest: string,
+   *   successMessage: string,
+   *   missingMessage: string,
+   * }>} plans Directory tree copy plans.
+   * @param {{
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters, logger, and bound copier.
+   * @returns {void}
+   */
+  function copyPlannedDirectoryTrees(plans, context) {
+    forEachMappedEntries(
+      plans,
+      plan => plan,
+      plan => {
+        copyDirectoryTreeIfExists(plan, context);
+      }
+    );
+  }
+
+  /**
    * Copy one or more browser-related directory trees into the public browser directory.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
@@ -359,13 +389,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       },
     ];
 
-    forEachMappedEntries(
-      plans,
-      plan => plan,
-      plan => {
-        copyDirectoryTreeIfExists(plan, context);
-      }
-    );
+    copyPlannedDirectoryTrees(plans, context);
   }
 
   /**
@@ -481,13 +505,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       },
     ];
 
-    forEachMappedEntries(
-      plans,
-      plan => plan,
-      plan => {
-        copyDirectoryTreeIfExists(plan, context);
-      }
-    );
+    copyPlannedDirectoryTrees(plans, context);
   }
 
   /**
@@ -541,6 +559,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
       ['copyCoreRootFiles', copyCoreRootFiles],
       ['copyCoreConstants', copyCoreConstants],
       ['copyBlogJson', copyBlogJson],
+      ['copyPlannedDirectoryTrees', copyPlannedDirectoryTrees],
       ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
       ['copyDirRecursive', copyDirRecursive],
       ['processDirectoryEntries', processDirectoryEntries],
