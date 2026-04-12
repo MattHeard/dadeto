@@ -122,6 +122,72 @@ describe('realHourlyWageHandler', () => {
     expect(createdElements.some(element => element.tag === 'input')).toBe(true);
   });
 
+  test('renders the expected REAL1 labels and placeholders', () => {
+    const { dom, createdElements } = createMockDom();
+    const container = { children: [] };
+    const textInput = createTextInput();
+
+    realHourlyWageHandler(dom, container, textInput);
+
+    expect(createdElements.find(element => element.tag === 'div').className).toBe(
+      'dendrite-form real-hourly-wage-form'
+    );
+    expect(
+      createdElements
+        .filter(element => element.tag === 'section')
+        .map(element => element.className)
+    ).toEqual([
+      'real-hourly-wage-form-group',
+      'real-hourly-wage-form-group',
+      'real-hourly-wage-form-group',
+    ]);
+    expect(
+      createdElements
+        .filter(element => element.tag === 'h4')
+        .map(element => element.textContent)
+    ).toEqual(['Period', 'Overhead hours', 'Overhead expenses']);
+    expect(
+      createdElements
+        .filter(element => element.tag === 'label')
+        .map(element => element.textContent)
+    ).toEqual([
+      'Paid work hours',
+      'Gross income',
+      'Net income',
+      'Commute hours',
+      'Prep hours',
+      'Recovery hours',
+      'Admin hours',
+      'Overtime hours',
+      'Other work hours',
+      'Direct work expenses',
+      'Commute expenses',
+      'Food expenses',
+      'Clothing expenses',
+      'Other work expenses',
+    ]);
+    expect(
+      createdElements
+        .filter(element => element.tag === 'input')
+        .map(element => element.placeholder)
+    ).toEqual([
+      '160',
+      '5000',
+      '3200',
+      '20',
+      '5',
+      '10',
+      '4',
+      '2',
+      '1',
+      '120',
+      '40',
+      '15',
+      '25',
+      '10',
+    ]);
+  });
+
   test('restores stored values into the generated fields', () => {
     const { dom } = createMockDom();
     const container = { children: [] };
