@@ -5,7 +5,7 @@ describe('styles constant', () => {
   test('includes body background color rule', () => {
     const css = styles();
     expect(typeof css).toBe('string');
-    expect(css).toContain('background-color: #121212');
+    expect(css).toContain('background-color: #bbb');
   });
 
   test('contains multiple CSS rules', () => {

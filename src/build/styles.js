@@ -5,9 +5,7 @@
 export function styles() {
   return `
   body {
-    background-color: #121212;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 100% 3px;
+    background-color: #bbb;
     color: #CCCCCC;
     font-family: "Sono", Consolas, monospace;
     font-size: 16px;
@@ -16,8 +14,8 @@ export function styles() {
     padding: 0;
   }
   #container {
-    max-width: 85rch;
-    padding: 1.5em 0.5em;
+    max-width: 86ch;
+    padding: 1lh 1ch;
   }
   .entry {
     display: grid;
@@ -268,7 +266,11 @@ export function styles() {
   .dendrite-form input {
     display: block;
     width: 100%;
+    border: 0;
+    padding: 0;
     margin: 0;
+    font-family: inherit;
+    font-size: inherit;
   }
 
   .filter-button {
