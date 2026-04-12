@@ -2,9 +2,10 @@ import { describe, test, expect } from '@jest/globals';
 import { styles } from '../../src/build/styles.js';
 
 describe('styles constant', () => {
-  test('includes body background color rule', () => {
+  test('includes global input background color rule', () => {
     const css = styles();
     expect(typeof css).toBe('string');
+    expect(css).toContain('input {');
     expect(css).toContain('background-color: #bbb');
   });
 
