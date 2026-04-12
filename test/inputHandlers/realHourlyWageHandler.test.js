@@ -205,4 +205,27 @@ describe('realHourlyWageHandler', () => {
       },
     });
   });
+
+  test('normalizes nullish payloads to the default form shape', () => {
+    expect(realHourlyWageHandlerTestOnly.normalizeFormData(null)).toEqual({
+      period: {
+        paidWorkHours: 0,
+        grossIncome: 0,
+        netIncome: 0,
+      },
+      overhead: {
+        commuteHours: 0,
+        prepHours: 0,
+        recoveryHours: 0,
+        adminHours: 0,
+        overtimeHours: 0,
+        otherWorkHours: 0,
+        directWorkExpenses: 0,
+        commuteExpenses: 0,
+        foodExpenses: 0,
+        clothingExpenses: 0,
+        otherWorkExpenses: 0,
+      },
+    });
+  });
 });
