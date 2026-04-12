@@ -1,6 +1,8 @@
 import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,
+  buildVariantByNameQuery,
+  buildPageByNumberQuery,
 } from '../cloud-core.js';
 import { when } from '../../commonCore.js';
 import {
@@ -9,10 +11,6 @@ import {
   collectSubmissionOptions,
   getAuthorizationHeader,
 } from '../submit-shared.js';
-import {
-  buildVariantByNameQuery,
-  buildPageByNumberQuery,
-} from '../cloud-core.js';
 
 /**
  * @typedef {import('firebase-admin/firestore').Firestore} Firestore

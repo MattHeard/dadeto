@@ -60,6 +60,7 @@ export function createSharedDirectoryEntries({
  * @param {Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.path - Node path helpers.
  * @returns {Record<string, Function>} Copy helper functions.
  */
+// eslint-disable-next-line max-lines-per-function
 export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   const { join, dirname, relative } = pathDeps;
 

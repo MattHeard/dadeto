@@ -78,6 +78,10 @@
  * @property {(element: HTMLElement) => void} reveal - Reveal a hidden element.
  */
 
+/**
+ * Check whether the DOM helper module is available.
+ * @returns {boolean} True when the module is present.
+ */
 export function hasDomHelpersModule() {
   return true;
 }

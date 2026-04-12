@@ -280,9 +280,8 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       onChange: handleRowChange(config.key),
     }));
 
-    const [authorInput, variantInput, ratedAtInput] = fieldInputs.map(
-      buildFieldInput
-    );
+    const [authorInput, variantInput, ratedAtInput] =
+      fieldInputs.map(buildFieldInput);
 
     const approveSelect = buildApproveToggle({
       dom,
