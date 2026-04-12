@@ -9,6 +9,8 @@ describe('styles constant', () => {
     expect(css).toContain('textarea');
     expect(css).toContain('select');
     expect(css).toContain('background-color: #bbb');
+    expect(css).toContain('line-height: inherit');
+    expect(css).toContain('line-height: 1.5');
     expect(css).not.toContain('input[type="file"]');
     expect(css).not.toContain('input[type="checkbox"]');
   });

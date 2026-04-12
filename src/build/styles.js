@@ -11,7 +11,7 @@ export function styles() {
     color: #CCCCCC;
     font-family: "Sono", Consolas, monospace;
     font-size: 16px;
-    line-height: 1;
+    line-height: 1.5;
     margin: 0;
     padding: 0;
   }
@@ -276,6 +276,7 @@ export function styles() {
     margin: 0;
     font-family: inherit;
     font-size: inherit;
+    line-height: inherit;
   }
 
   .filter-button {
