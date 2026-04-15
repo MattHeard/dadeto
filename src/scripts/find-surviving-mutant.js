@@ -24,7 +24,7 @@ const result = {
   skippedFiles: [],
   filesWithoutSurvivingMutant: [],
   fileWithSurvivingMutant: null,
-  survivingMutant: null,
+  survivingMutants: [],
 };
 
 for (const [index, filePath] of files.entries()) {
@@ -56,19 +56,19 @@ for (const [index, filePath] of files.entries()) {
     throw new Error(`Mutation report did not include ${filePath}`);
   }
 
-  const survivingMutant = fileReport.mutants.find((mutant) => mutant.status === 'Survived');
+  const survivingMutants = fileReport.mutants.filter((mutant) => mutant.status === 'Survived');
 
-  if (survivingMutant) {
+  if (survivingMutants.length > 0) {
     result.fileWithSurvivingMutant = filePath;
-    result.survivingMutant = {
+    result.survivingMutants = survivingMutants.map((mutant) => ({
       filePath,
-      id: survivingMutant.id,
-      mutatorName: survivingMutant.mutatorName,
-      replacement: survivingMutant.replacement,
-      location: survivingMutant.location,
-    };
+      id: mutant.id,
+      mutatorName: mutant.mutatorName,
+      replacement: mutant.replacement,
+      location: mutant.location,
+    }));
     process.stdout.write(
-      `Found surviving mutant in ${filePath}; stopping scan.\n`
+      `Found ${survivingMutants.length} surviving mutant(s) in ${filePath}; stopping scan.\n`
     );
     break;
   }
