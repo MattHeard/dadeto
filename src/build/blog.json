@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "COZY1",
+      "title": "Cozy House Adventure",
+      "publicationDate": "2026-04-19",
+      "content": [
+        "A stateful text adventure where you build a tiny cozy home by completing foundation, materials, roof, and garden milestones.",
+        "The toy saves progress in temporary local storage so each command continues from your current construction step.",
+        "Play by entering simple commands like build, foundation, and level soil; the response returns narrative output plus completion updates."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-04-19/cozyHouseAdventure.js",
+        "functionName": "cozyHouseAdventure",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "game", "text-adventure", "stateful", "storage"]
+    },
+    {
       "key": "REAL1",
       "title": "Real Hourly Wage",
       "publicationDate": "2026-04-03",
