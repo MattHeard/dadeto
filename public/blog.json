@@ -1,6 +1,26 @@
 {
   "posts": [
     {
+      "key": "COZY1",
+      "title": "Cozy House Adventure",
+      "publicationDate": "2026-04-19",
+      "content": [
+        "A cozy text adventure where you build a tiny house one warm task at a time.",
+        "Start with `build`, then rotate through foundation, materials, roof, and garden commands to complete your home.",
+        "Progress is stored in temporary toy state so each command continues the same construction run."
+      ],
+      "illustration": {
+        "fileType": "png",
+        "fileName": "2025-03-30",
+        "altText": "a warm illustrated tiny house build site at dusk with stacked timber, herb planters, soft lantern light, and a calm cottagecore atmosphere"
+      },
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-04-19/cozyHouseAdventure.js",
+        "functionName": "cozyHouseAdventure"
+      },
+      "tags": ["toy", "game", "text-adventure", "cozy", "construction"]
+    },
+    {
       "key": "REAL1",
       "title": "Real Hourly Wage",
       "publicationDate": "2026-04-03",
