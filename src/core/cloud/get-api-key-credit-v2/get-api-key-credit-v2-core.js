@@ -65,13 +65,7 @@ function extractUuidFromMatch(match) {
  * @returns {string} First non-empty string returned by a resolver.
  */
 function resolveFirstValue(resolvers) {
-  let value = '';
-  resolvers.find(resolve => {
-    value = resolve();
-    return Boolean(value);
-  });
-
-  return value;
+  return resolvers.map(resolve => resolve()).find(Boolean) || '';
 }
 
 /**

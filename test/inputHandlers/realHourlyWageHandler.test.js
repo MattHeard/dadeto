@@ -129,9 +129,9 @@ describe('realHourlyWageHandler', () => {
 
     realHourlyWageHandler(dom, container, textInput);
 
-    expect(createdElements.find(element => element.tag === 'div').className).toBe(
-      'dendrite-form real-hourly-wage-form'
-    );
+    expect(
+      createdElements.find(element => element.tag === 'div').className
+    ).toBe('dendrite-form real-hourly-wage-form');
     expect(
       createdElements
         .filter(element => element.tag === 'section')
