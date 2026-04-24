@@ -144,7 +144,7 @@ export function createCopyToInfraCore({
   }
 
   /**
-   * Copy every supported file from a directory into the target path.
+   * Copy every supported file from a directory tree into the target path.
    * @param {{ source: string, target: string }} copyPlan - Absolute source and target paths.
    * @param {{
    *   ensureDirectory: (target: string) => Promise<void>,
@@ -152,7 +152,7 @@ export function createCopyToInfraCore({
    *   copyFile: (source: string, destination: string) => Promise<void>,
    * }} io - Filesystem adapters.
    * @param {{ info: (message: string) => void }} messageLogger - Logger to report progress.
-   * @returns {Promise<void>} Resolves when the directory has been processed.
+   * @returns {Promise<void>} Resolves when the directory tree has been processed.
    */
   async function copyDirectory(copyPlan, io, messageLogger) {
     const { source, target } = copyPlan;
@@ -160,6 +160,7 @@ export function createCopyToInfraCore({
     const fileNames = sourceEntries
       .filter(isCopyableFile)
       .map(entry => entry.name);
+
     await copyFiles({
       files: fileNames,
       sourceDir: source,
@@ -167,6 +168,20 @@ export function createCopyToInfraCore({
       io,
       messageLogger,
     });
+
+    const directoryEntries = sourceEntries.filter(entry => entry.isDirectory());
+    await Promise.all(
+      directoryEntries.map(entry =>
+        copyDirectory(
+          {
+            source: join(source, entry.name),
+            target: join(target, entry.name),
+          },
+          io,
+          messageLogger
+        )
+      )
+    );
   }
 
   /**

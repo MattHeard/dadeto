@@ -56,23 +56,6 @@ resource "google_firestore_index" "variants_moderation_rand" {
   depends_on = [google_firestore_database.database]
 }
 
-resource "google_firestore_field" "pages_all" {
-  provider   = google-beta
-  project    = var.project_id
-  database   = var.database_id
-  collection = "pages"
-  field      = "__name__"
-
-  index_config {
-    indexes {
-      order       = "ASCENDING"
-      query_scope = "COLLECTION_GROUP"
-    }
-  }
-
-  depends_on = [google_firestore_database.database]
-}
-
 # Supports: querying variants by moderatorReputationSum alone
 resource "google_firestore_field" "variants_moderation" {
   provider   = google-beta

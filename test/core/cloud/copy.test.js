@@ -73,7 +73,13 @@ describe('createCopyToInfraCore', () => {
       ];
       const io = {
         ensureDirectory: jest.fn().mockResolvedValue(undefined),
-        readDirEntries: jest.fn().mockResolvedValue(entries),
+        readDirEntries: jest.fn(dir =>
+          Promise.resolve(
+            dir.endsWith('/nested')
+              ? [createDirent('child.js'), createDirent('skip.txt')]
+              : entries
+          )
+        ),
         copyFile: jest.fn().mockResolvedValue(undefined),
       };
       const logger = { info: jest.fn() };
@@ -93,12 +99,15 @@ describe('createCopyToInfraCore', () => {
       expect(io.readDirEntries).toHaveBeenCalledWith(
         posix.join(projectRoot, 'functions')
       );
-      expect(io.copyFile).toHaveBeenCalledTimes(2);
+      expect(io.copyFile).toHaveBeenCalledTimes(3);
       expect(logger.info).toHaveBeenCalledWith(
         'Copied: functions/index.js -> infra/functions/index.js'
       );
       expect(logger.info).toHaveBeenCalledWith(
         'Copied: functions/config.json -> infra/functions/config.json'
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Copied: functions/nested/child.js -> infra/functions/nested/child.js'
       );
     });
 
