@@ -1099,7 +1099,6 @@ const individualFileCopies = [
   ...functionSpecificCommonCoreCopies,
   ...sharedUtilityCopies,
   ...preservedSharedUtilityCopies,
-  ...preservedCloudTreeCopies,
   ...packageFileCopies,
 ];
 
@@ -1157,7 +1156,7 @@ async function rewriteImport(filePath, from, to) {
 }
 
 await runCopyToInfra({
-  directoryCopies,
+  directoryCopies: [...directoryCopies, ...preservedCloudTreeCopies],
   individualFileCopies,
   io,
   messageLogger: logger,
