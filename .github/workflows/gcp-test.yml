@@ -84,6 +84,24 @@ jobs:
       - name: Configure gcloud auth for Docker
         run: gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
+      - name: Ensure shared test static bucket
+        run: |
+          set -euo pipefail
+          TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
+          echo "TF_VAR_test_static_site_bucket_name=$TEST_STATIC_BUCKET" >> "$GITHUB_ENV"
+
+          if ! gcloud storage buckets describe "gs://${TEST_STATIC_BUCKET}" >/dev/null 2>&1; then
+            gcloud storage buckets create "gs://${TEST_STATIC_BUCKET}" \
+              --project="${GOOGLE_PROJECT}" \
+              --location="${REGION}" \
+              --uniform-bucket-level-access
+          fi
+
+          gcloud storage buckets update "gs://${TEST_STATIC_BUCKET}" \
+            --web-main-page-suffix=index.html \
+            --web-error-page=404.html \
+            --uniform-bucket-level-access
+
       - name: Build and push Playwright image
         working-directory: .
         env:
