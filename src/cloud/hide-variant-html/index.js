@@ -11,7 +11,10 @@ import {
   createHandleVariantVisibilityChange,
   createRemoveVariantHtml,
   createRemoveVariantHtmlForSnapshot,
+  DEFAULT_BUCKET_NAME,
   getVariantVisibility,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
 } from './hide-variant-html-core.js';
 
 const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
@@ -19,8 +22,18 @@ const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 ensureFirebaseApp();
 
 const storage = new Storage();
+const environmentVariables = process.env;
+const bucketName = resolveStaticBucketName(
+  environmentVariables,
+  DEFAULT_BUCKET_NAME
+);
+const objectPrefix = resolveStaticObjectPrefix(environmentVariables);
 
-const deleteRenderedFile = createBucketFileRemover({ storage });
+const deleteRenderedFile = createBucketFileRemover({
+  storage,
+  bucketName,
+  objectPrefix,
+});
 
 const removeVariantHtml = createRemoveVariantHtml({
   async loadPageForVariant({ pageRef }) {

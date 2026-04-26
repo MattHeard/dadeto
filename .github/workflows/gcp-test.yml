@@ -276,3 +276,10 @@ jobs:
 
           terraform refresh -lock-timeout=5m -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}"
           terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}"
+
+      - name: Cleanup test static prefix
+        if: always() && steps.terraform_init.outcome == 'success'
+        run: |
+          set -euo pipefail
+          TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
+          gcloud storage rm --recursive "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/**" || true

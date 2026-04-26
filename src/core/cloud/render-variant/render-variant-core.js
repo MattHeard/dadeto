@@ -1,7 +1,15 @@
-import { DEFAULT_BUCKET_NAME } from '../cloud-core.js';
+import {
+  DEFAULT_BUCKET_NAME,
+  normalizeStaticObjectPrefix,
+  prefixStaticObjectPath,
+} from '../cloud-core.js';
 import { assertFunction } from '../../commonCore.js';
 
-export { DEFAULT_BUCKET_NAME } from '../cloud-core.js';
+export {
+  DEFAULT_BUCKET_NAME,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
+} from '../cloud-core.js';
 export const VISIBILITY_THRESHOLD = 0.5;
 
 /**
@@ -2262,6 +2270,7 @@ function resolveParentLookupPromise({ incomingOption, db, consoleError }) {
  * @property {string} [cdnHost] - Hostname whose cache entries should be purged.
  * @property {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] - Logger for recoverable failures.
  * @property {string} [bucketName] - Name of the bucket where rendered HTML is written.
+ * @property {string} [objectPrefix] - Optional object prefix for tenant-scoped static output.
  * @property {number} [visibilityThreshold] - Minimum visibility used when publishing variants.
  */
 
@@ -2294,6 +2303,7 @@ function buildRenderVariantOptions(dependencies) {
     cdnHost,
     consoleError: resolveRenderVariantConsoleError(dependencies.consoleError),
     bucketName: resolveRenderVariantBucketName(dependencies.bucketName),
+    objectPrefix: normalizeStaticObjectPrefix(dependencies.objectPrefix),
     visibilityThreshold: resolveRenderVariantVisibilityThreshold(
       dependencies.visibilityThreshold
     ),
@@ -2369,9 +2379,13 @@ function createRenderVariantHandler({
   cdnHost,
   consoleError,
   bucketName,
+  objectPrefix,
   visibilityThreshold,
 }) {
-  const bucket = storage.bucket(bucketName || DEFAULT_BUCKET_NAME);
+  const bucket = createPrefixedBucket(
+    storage.bucket(bucketName || DEFAULT_BUCKET_NAME),
+    objectPrefix
+  );
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     projectId: /** @type {string} */ (projectId),
@@ -2422,6 +2436,22 @@ function createRenderVariantHandler({
       snap,
       context
     );
+  };
+}
+
+/**
+ * Prefix bucket file paths for tenant-scoped static output.
+ * @param {{ file: (path: string) => unknown }} bucket Bucket-like object.
+ * @param {string} objectPrefix Normalized object prefix.
+ * @returns {{ file: (path: string) => unknown }} Bucket-like object.
+ */
+function createPrefixedBucket(bucket, objectPrefix) {
+  if (!objectPrefix) {
+    return bucket;
+  }
+
+  return {
+    file: path => bucket.file(prefixStaticObjectPath(objectPrefix, path)),
   };
 }
 

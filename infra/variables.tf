@@ -56,6 +56,12 @@ variable "static_site_bucket_name" {
   default     = "www.dendritestories.co.nz"
 }
 
+variable "test_static_site_bucket_name" {
+  description = "Shared long-lived static website bucket for t-* test environments; when unset, a deterministic project/region name is used"
+  type        = string
+  default     = null
+}
+
 variable "cloud_functions_runtime" {
   description = "Runtime to use for all Cloud Functions"
   type        = string

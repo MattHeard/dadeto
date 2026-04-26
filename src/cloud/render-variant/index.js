@@ -16,6 +16,8 @@ import {
   createRenderVariant,
   getVisibleVariants,
   DEFAULT_BUCKET_NAME,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
   VISIBILITY_THRESHOLD,
 } from './render-variant-core.js';
 
@@ -31,7 +33,11 @@ ensureFirebaseApp();
 const db = getFirestoreInstance();
 const storage = new Storage();
 const environmentVariables = getEnvironmentVariables();
-const bucketName = DEFAULT_BUCKET_NAME;
+const bucketName = resolveStaticBucketName(
+  environmentVariables,
+  DEFAULT_BUCKET_NAME
+);
+const objectPrefix = resolveStaticObjectPrefix(environmentVariables);
 const projectId =
   environmentVariables.GOOGLE_CLOUD_PROJECT ||
   environmentVariables.GCLOUD_PROJECT;
@@ -60,6 +66,7 @@ function resolveRenderVariant() {
       urlMapName,
       cdnHost,
       bucketName,
+      objectPrefix,
       consoleError: (...args) => console.error(...args),
     });
   }

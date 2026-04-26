@@ -257,6 +257,24 @@ describe('createBucketFileRemover', () => {
     expect(file).toHaveBeenCalledWith('p/12variant.html');
     expect(deleteFn).toHaveBeenCalledWith({ ignoreNotFound: true });
   });
+
+  it('prefixes deleted rendered files when configured', async () => {
+    const deleteFn = jest.fn(() => Promise.resolve('ignored'));
+    const file = jest.fn(() => ({ delete: deleteFn }));
+    const bucket = jest.fn(() => ({ file }));
+    const storage = { bucket };
+    const deleteRenderedFile = createBucketFileRemover({
+      storage,
+      bucketName: 'variants',
+      objectPrefix: 't-example/',
+    });
+
+    await expect(
+      deleteRenderedFile('p/12variant.html')
+    ).resolves.toBeUndefined();
+
+    expect(file).toHaveBeenCalledWith('t-example/p/12variant.html');
+  });
 });
 
 describe('buildVariantPath', () => {

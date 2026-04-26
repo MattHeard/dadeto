@@ -8,8 +8,12 @@ import {
   normalizeString,
   normalizeContent,
   normalizeAuthor,
+  normalizeStaticObjectPrefix,
+  prefixStaticObjectPath,
   productionOrigins,
   resolveAllowedOrigins,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
   whenBodyPresent,
   getSnapshotData,
   isDuplicateAppError,
@@ -21,6 +25,33 @@ import {
 describe('cloud-core', () => {
   test('should export DEFAULT_BUCKET_NAME', () => {
     expect(DEFAULT_BUCKET_NAME).toBe('www.dendritestories.co.nz');
+  });
+
+  describe('static storage helpers', () => {
+    test('resolveStaticBucketName uses env override or fallback', () => {
+      expect(
+        resolveStaticBucketName({ STATIC_BUCKET_NAME: 'test-bucket' })
+      ).toBe('test-bucket');
+      expect(resolveStaticBucketName({}, 'fallback-bucket')).toBe(
+        'fallback-bucket'
+      );
+    });
+
+    test('normalizes object prefixes', () => {
+      expect(normalizeStaticObjectPrefix('/t-example//')).toBe('t-example/');
+      expect(normalizeStaticObjectPrefix('')).toBe('');
+      expect(normalizeStaticObjectPrefix(null)).toBe('');
+    });
+
+    test('prefixes static object paths without changing root production paths', () => {
+      expect(prefixStaticObjectPath('', 'stats.html')).toBe('stats.html');
+      expect(prefixStaticObjectPath('t-example', '/p/1.html')).toBe(
+        't-example/p/1.html'
+      );
+      expect(
+        resolveStaticObjectPrefix({ STATIC_OBJECT_PREFIX: '/t-example/' })
+      ).toBe('t-example/');
+    });
   });
 
   describe('assertFunction', () => {

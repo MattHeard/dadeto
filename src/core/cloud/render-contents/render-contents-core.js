@@ -1,10 +1,19 @@
 import {
   DEFAULT_BUCKET_NAME,
+  normalizeStaticObjectPrefix,
+  prefixStaticObjectPath,
   productionOrigins,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
   sendOkResponse,
 } from '../cloud-core.js';
 import { assertFunction } from '../../commonCore.js';
-export { DEFAULT_BUCKET_NAME, productionOrigins };
+export {
+  DEFAULT_BUCKET_NAME,
+  productionOrigins,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
+};
 /** @typedef {import('../../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 const DEFAULT_PAGE_SIZE = 100;
@@ -49,6 +58,7 @@ const DEFAULT_PAGE_SIZE = 100;
  * @property {string} [cdnHost] CDN host name used for invalidation requests.
  * @property {(message: string, error?: unknown) => void} [consoleError] Logger for invalidate failures.
  * @property {string} [bucketName] Target bucket name for rendered files.
+ * @property {string} [objectPrefix] Optional object prefix for tenant-scoped static output.
  * @property {number} [pageSize] Number of items per generated page.
  */
 
@@ -768,6 +778,7 @@ function normalizeRenderContentsOptions(
     cdnHost,
     consoleError,
     bucketName,
+    objectPrefix,
     pageSize,
   } = params;
 
@@ -788,6 +799,7 @@ function normalizeRenderContentsOptions(
     cdnHost,
     consoleError: resolveRenderContentsConsoleError(consoleError),
     bucketName: resolveRenderContentsBucketName(bucketName),
+    objectPrefix: normalizeStaticObjectPrefix(objectPrefix),
     pageSize: resolveRenderContentsPageSize(pageSize),
   };
 }
@@ -853,10 +865,14 @@ function instantiateRenderContents(deps) {
     cdnHost,
     consoleError,
     bucketName,
+    objectPrefix,
     pageSize,
   } = deps;
 
-  const bucket = /** @type {StorageInstance} */ (storage).bucket(bucketName);
+  const bucket = createPrefixedBucket(
+    /** @type {StorageInstance} */ (storage).bucket(bucketName),
+    objectPrefix
+  );
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
     projectId,
@@ -872,6 +888,22 @@ function instantiateRenderContents(deps) {
     invalidatePaths,
     pageSize: /** @type {number} */ (pageSize),
   });
+}
+
+/**
+ * Prefix bucket file paths for tenant-scoped static output.
+ * @param {BucketFileAccessor} bucket Bucket-like object.
+ * @param {string} objectPrefix Normalized object prefix.
+ * @returns {BucketFileAccessor} Bucket-like object.
+ */
+function createPrefixedBucket(bucket, objectPrefix) {
+  if (!objectPrefix) {
+    return bucket;
+  }
+
+  return {
+    file: path => bucket.file(prefixStaticObjectPath(objectPrefix, path)),
+  };
 }
 
 /**

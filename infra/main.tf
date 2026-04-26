@@ -27,8 +27,11 @@ data "google_project" "project" {
 
 locals {
   environment_suffix             = var.environment == "prod" ? "" : "-${var.environment}"
+  playwright_enabled             = startswith(var.environment, "t-")
+  test_static_site_bucket_name   = coalesce(var.test_static_site_bucket_name, "${var.project_id}-${var.region}-dendrite-test-static")
   static_site_bucket_name        = var.environment == "prod" ? var.static_site_bucket_name : "${var.environment}-${var.static_site_bucket_name}"
-  enable_lb                      = var.enable_lb
+  static_object_prefix           = local.playwright_enabled ? "${var.environment}/" : ""
+  enable_lb                      = var.enable_lb && !local.playwright_enabled
   manage_project_level_resources = var.environment == var.project_level_environment
   firestore_database_path        = "projects/${var.project_id}/databases/${var.database_id}"
   firestore_documents_path       = "${local.firestore_database_path}/documents"
@@ -39,6 +42,9 @@ locals {
       GOOGLE_CLOUD_PROJECT = var.project_id
       FIREBASE_CONFIG      = local.firebase_config_json
       DENDRITE_ENVIRONMENT = var.environment
+      STATIC_BUCKET_NAME   = local.dendrite_static_bucket_name
+      STATIC_OBJECT_PREFIX = local.static_object_prefix
+      PUBLIC_BASE_PATH     = ""
     },
     local.playwright_enabled ? { PLAYWRIGHT_ORIGIN = local.gcs_proxy_uri } : {},
   )
@@ -200,6 +206,7 @@ locals {
   dendrite_static_bucket_name = element(
     concat(
       google_storage_bucket.dendrite_static_prod[*].name,
+      data.google_storage_bucket.dendrite_static_test[*].name,
       google_storage_bucket.dendrite_static_nonprod[*].name,
     ),
     0,
@@ -223,7 +230,7 @@ resource "google_storage_bucket" "dendrite_static_prod" {
 }
 
 resource "google_storage_bucket" "dendrite_static_nonprod" {
-  count = var.environment != "prod" ? 1 : 0
+  count = var.environment != "prod" && !local.playwright_enabled ? 1 : 0
 
   name     = local.static_site_bucket_name
   location = var.region
@@ -234,11 +241,33 @@ resource "google_storage_bucket" "dendrite_static_nonprod" {
   }
 }
 
+resource "google_storage_bucket" "dendrite_static_test" {
+  count = local.manage_project_level_resources ? 1 : 0
+
+  name                        = local.test_static_site_bucket_name
+  location                    = var.region
+  uniform_bucket_level_access = true
+
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+data "google_storage_bucket" "dendrite_static_test" {
+  count = local.playwright_enabled ? 1 : 0
+
+  name = local.test_static_site_bucket_name
+}
 
 resource "google_storage_bucket_object" "dendrite_static_files" {
   for_each = local.static_site_objects
 
-  name          = each.value.name
+  name          = "${local.static_object_prefix}${each.value.name}"
   bucket        = local.dendrite_static_bucket_name
   source        = each.value.source
   content_type  = each.value.content_type
@@ -249,7 +278,7 @@ resource "google_storage_bucket_object" "dendrite_static_files" {
 resource "google_storage_bucket_object" "dendrite_browser_files" {
   for_each = fileset("${path.module}/browser", "**")
 
-  name   = "browser/${each.value}"
+  name   = "${local.static_object_prefix}browser/${each.value}"
   bucket = local.dendrite_static_bucket_name
   source = "${path.module}/browser/${each.value}"
 
@@ -260,7 +289,7 @@ resource "google_storage_bucket_object" "dendrite_browser_files" {
 resource "google_storage_bucket_object" "dendrite_core_files" {
   for_each = fileset("${path.module}/core", "**")
 
-  name   = "core/${each.value}"
+  name   = "${local.static_object_prefix}core/${each.value}"
   bucket = local.dendrite_static_bucket_name
   source = "${path.module}/core/${each.value}"
 
@@ -268,7 +297,7 @@ resource "google_storage_bucket_object" "dendrite_core_files" {
 }
 
 resource "google_storage_bucket_object" "dendrite_mod" {
-  name   = "mod.html"
+  name   = "${local.static_object_prefix}mod.html"
   bucket = local.dendrite_static_bucket_name
   content = templatefile("${path.module}/mod.html", {
     firebase_web_app_config = local.firebase_config_json
@@ -277,7 +306,7 @@ resource "google_storage_bucket_object" "dendrite_mod" {
 }
 
 resource "google_storage_bucket_object" "dendrite_static_config" {
-  name   = "config.json"
+  name   = "${local.static_object_prefix}config.json"
   bucket = local.dendrite_static_bucket_name
   content = templatefile("${path.module}/config.json.tftpl", {
     environment = var.environment
@@ -296,6 +325,8 @@ resource "google_storage_bucket_iam_member" "dendrite_public_read_access" {
 }
 
 resource "google_storage_bucket_iam_member" "dendrite_runtime_writer" {
+  # GCS IAM cannot practically scope this role to a name prefix; t-* isolation
+  # is enforced by STATIC_OBJECT_PREFIX and the matching proxy OBJECT_PREFIX.
   bucket = local.dendrite_static_bucket_name
   role   = "roles/storage.objectAdmin"
   member = local.cloud_function_runtime_service_account_member

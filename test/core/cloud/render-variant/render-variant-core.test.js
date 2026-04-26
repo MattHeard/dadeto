@@ -1062,13 +1062,13 @@ describe('createRenderVariant', () => {
 
     const bucketFile = jest.fn(path => {
       switch (path) {
-        case 'p/5a.html':
+        case 't-example/p/5a.html':
           return variantFile;
-        case 'p/5-alts.html':
+        case 't-example/p/5-alts.html':
           return altsFile;
-        case 'pending/variant-xyz.json':
+        case 't-example/pending/variant-xyz.json':
           return pendingFile;
-        case 'a/auth-uuid.html':
+        case 't-example/a/auth-uuid.html':
           return authorFile;
         default:
           return {
@@ -1278,14 +1278,17 @@ describe('createRenderVariant', () => {
       fetchFn,
       randomUUID,
       consoleError,
+      objectPrefix: 't-example/',
     });
 
     await renderVariant(variantSnap, { params: { variantId: 'variant-xyz' } });
 
     expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
-    expect(bucketFile).toHaveBeenCalledWith('p/5a.html');
-    expect(bucketFile).toHaveBeenCalledWith('p/5-alts.html');
-    expect(bucketFile).toHaveBeenCalledWith('pending/variant-xyz.json');
+    expect(bucketFile).toHaveBeenCalledWith('t-example/p/5a.html');
+    expect(bucketFile).toHaveBeenCalledWith('t-example/p/5-alts.html');
+    expect(bucketFile).toHaveBeenCalledWith(
+      't-example/pending/variant-xyz.json'
+    );
     expect(authorFile.save).toHaveBeenCalled();
     expect(variantFile.save).toHaveBeenCalledWith(
       expect.any(String),

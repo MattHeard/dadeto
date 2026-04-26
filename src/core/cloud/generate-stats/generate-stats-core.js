@@ -8,6 +8,9 @@ import {
 import {
   DEFAULT_BUCKET_NAME,
   isDuplicateAppError,
+  prefixStaticObjectPath,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
   sendOkResponse,
 } from '../cloud-core.js';
 import { runWithFailureAndThen } from '../response-utils.js';
@@ -599,7 +602,9 @@ export function createGenerateStatsCore({
    * @returns {import('@google-cloud/storage').Bucket} Bucket reference.
    */
   function getStatsBucketRef(storageInstance) {
-    return storageInstance.bucket(DEFAULT_BUCKET_NAME);
+    return storageInstance.bucket(
+      resolveStaticBucketName(envRef, DEFAULT_BUCKET_NAME)
+    );
   }
 
   /**
@@ -609,10 +614,14 @@ export function createGenerateStatsCore({
    * @returns {Promise<void>} Resolves when upload completes.
    */
   function uploadStatsHtml(bucketRef, html) {
-    return bucketRef.file('stats.html').save(html, {
-      contentType: 'text/html',
-      metadata: { cacheControl: 'no-cache' },
-    });
+    return bucketRef
+      .file(
+        prefixStaticObjectPath(resolveStaticObjectPrefix(envRef), 'stats.html')
+      )
+      .save(html, {
+        contentType: 'text/html',
+        metadata: { cacheControl: 'no-cache' },
+      });
   }
 
   /**

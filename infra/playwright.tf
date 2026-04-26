@@ -1,5 +1,4 @@
 locals {
-  playwright_enabled          = startswith(var.environment, "t-")
   playwright_job_name         = "pw-e2e-${var.environment}"
   reports_bucket_name         = "${var.project_id}-${var.region}-e2e-reports"
   report_prefix               = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
@@ -110,6 +109,11 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
       env {
         name  = "BUCKET"
         value = local.dendrite_static_bucket_name
+      }
+
+      env {
+        name  = "OBJECT_PREFIX"
+        value = local.static_object_prefix
       }
     }
 

@@ -226,6 +226,68 @@ export function getEnvironmentVariable(environmentVariables, key) {
   return environmentVariables[key];
 }
 
+/**
+ * Resolve the static GCS bucket name for generated HTML.
+ * @param {Record<string, string | undefined> | undefined} environmentVariables Environment map.
+ * @param {string} [fallbackBucketName] Bucket used when no override is configured.
+ * @returns {string} Bucket name.
+ */
+export function resolveStaticBucketName(
+  environmentVariables,
+  fallbackBucketName = DEFAULT_BUCKET_NAME
+) {
+  const configuredBucketName = getEnvironmentVariable(
+    environmentVariables,
+    'STATIC_BUCKET_NAME'
+  );
+  if (configuredBucketName) {
+    return configuredBucketName;
+  }
+
+  return fallbackBucketName;
+}
+
+/**
+ * Normalize a configured object prefix for generated static files.
+ * @param {unknown} value Candidate prefix.
+ * @returns {string} Empty string or a slash-terminated prefix without a leading slash.
+ */
+export function normalizeStaticObjectPrefix(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const trimmed = value.replace(/^\/+|\/+$/g, '');
+  if (!trimmed) {
+    return '';
+  }
+
+  return `${trimmed}/`;
+}
+
+/**
+ * Resolve the static object prefix from environment variables.
+ * @param {Record<string, string | undefined> | undefined} environmentVariables Environment map.
+ * @returns {string} Empty string or a normalized object prefix.
+ */
+export function resolveStaticObjectPrefix(environmentVariables) {
+  return normalizeStaticObjectPrefix(
+    getEnvironmentVariable(environmentVariables, 'STATIC_OBJECT_PREFIX')
+  );
+}
+
+/**
+ * Prefix a GCS object path while keeping production root-based paths unchanged.
+ * @param {unknown} prefix Configured object prefix.
+ * @param {string} path Root-relative object path.
+ * @returns {string} Object path with the normalized prefix prepended.
+ */
+export function prefixStaticObjectPath(prefix, path) {
+  const normalizedPrefix = normalizeStaticObjectPrefix(prefix);
+  const normalizedPath = path.replace(/^\/+/, '');
+  return `${normalizedPrefix}${normalizedPath}`;
+}
+
 const TEST_ENV_PREFIX = 't-';
 
 const ENVIRONMENT_CLASSIFIERS = [

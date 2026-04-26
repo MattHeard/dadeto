@@ -260,6 +260,7 @@ describe('createRenderContents', () => {
       storage,
       fetchFn,
       randomUUID,
+      objectPrefix: 't-example/',
       pageSize: 2,
     });
 
@@ -275,8 +276,8 @@ describe('createRenderContents', () => {
     });
 
     await expect(render).resolves.toBeNull();
-    expect(bucketFile).toHaveBeenCalledWith('index.html');
-    expect(bucketFile).toHaveBeenCalledWith('contents/2.html');
+    expect(bucketFile).toHaveBeenCalledWith('t-example/index.html');
+    expect(bucketFile).toHaveBeenCalledWith('t-example/contents/2.html');
     expect(fetchFn).toHaveBeenCalled();
   });
 

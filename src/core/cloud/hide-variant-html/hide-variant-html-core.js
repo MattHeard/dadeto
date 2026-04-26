@@ -1,4 +1,8 @@
-import { DEFAULT_BUCKET_NAME, getSnapshotData } from '../cloud-core.js';
+import {
+  DEFAULT_BUCKET_NAME,
+  getSnapshotData,
+  prefixStaticObjectPath,
+} from '../cloud-core.js';
 import {
   assertFunction,
   ensureString,
@@ -8,6 +12,12 @@ import {
 } from '../../commonCore.js';
 
 const DEFAULT_VISIBILITY_THRESHOLD = 0.5;
+
+export {
+  DEFAULT_BUCKET_NAME,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
+} from '../cloud-core.js';
 
 /**
  * Normalize the result returned by the loader so downstream logic can rely on
@@ -233,11 +243,13 @@ async function removeVariantPayload({
  *   bucket: (name: string) => { file: (path: string) => { delete: (config: { ignoreNotFound: boolean }) => Promise<*> } },
  * }} options.storage Cloud Storage instance.
  * @param {string} [options.bucketName] Bucket that stores rendered HTML.
+ * @param {string} [options.objectPrefix] Optional object prefix for tenant-scoped static output.
  * @returns {(path: string) => Promise<void>} Helper that deletes the rendered file.
  */
 export function createBucketFileRemover({
   storage,
   bucketName = DEFAULT_BUCKET_NAME,
+  objectPrefix = '',
 }) {
   const validatedBucketName = validateBucketName(bucketName);
   validateStorage(storage);
@@ -250,7 +262,7 @@ export function createBucketFileRemover({
         );
       return validatedStorage
         .bucket(validatedBucketName)
-        .file(path)
+        .file(prefixStaticObjectPath(objectPrefix, path))
         .delete({ ignoreNotFound: true })
         .then(() => undefined);
     });

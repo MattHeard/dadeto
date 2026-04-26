@@ -639,6 +639,60 @@ describe('createGenerateStatsCore', () => {
         requestId: 'uuid-123',
       });
     });
+
+    it('uses configured static bucket and object prefix', async () => {
+      const countSnap = count => Promise.resolve({ data: () => ({ count }) });
+      const db = {
+        collection: jest.fn(name => {
+          if (name === 'stories') {
+            return { count: () => ({ get: () => countSnap(0) }) };
+          }
+          if (name === 'storyStats') {
+            return {
+              orderBy: () => ({
+                limit: () => ({
+                  get: () => Promise.resolve({ docs: [] }),
+                }),
+              }),
+            };
+          }
+          throw new Error(`Unexpected collection ${name}`);
+        }),
+        collectionGroup: jest.fn(() => ({
+          where: () => ({ count: () => ({ get: () => countSnap(0) }) }),
+          count: () => ({ get: () => countSnap(0) }),
+        })),
+      };
+      const saveMock = jest.fn(() => Promise.resolve());
+      const fileMock = jest.fn(() => ({ save: saveMock }));
+      const bucketMock = jest.fn(() => ({ file: fileMock }));
+      const storage = { bucket: bucketMock };
+      const fetchFn = jest
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ [ACCESS_TOKEN_KEY]: 'token-123' }),
+        })
+        .mockResolvedValueOnce({ ok: true });
+
+      const testCore = createGenerateStatsCore({
+        db,
+        auth: { verifyIdToken: jest.fn() },
+        storage,
+        fetchFn,
+        env: {
+          STATIC_BUCKET_NAME: 'shared-test-bucket',
+          STATIC_OBJECT_PREFIX: 't-example/',
+        },
+        cryptoModule: { randomUUID: jest.fn(() => 'uuid-123') },
+        console: noopConsole,
+      });
+
+      await testCore.generate();
+
+      expect(bucketMock).toHaveBeenCalledWith('shared-test-bucket');
+      expect(fileMock).toHaveBeenCalledWith('t-example/stats.html');
+    });
   });
 
   describe('getAccessTokenFromMetadata', () => {

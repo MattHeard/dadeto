@@ -20,6 +20,8 @@ import {
   createValidateRequest,
   DEFAULT_BUCKET_NAME,
   getAllowedOrigins,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
 } from './render-contents-core.js';
 
 /**
@@ -35,7 +37,11 @@ const db = getFirestoreInstance();
 const storage = new Storage();
 const auth = getAuth();
 const environmentVariables = getEnvironmentVariables();
-const bucketName = DEFAULT_BUCKET_NAME;
+const bucketName = resolveStaticBucketName(
+  environmentVariables,
+  DEFAULT_BUCKET_NAME
+);
+const objectPrefix = resolveStaticObjectPrefix(environmentVariables);
 const projectId =
   environmentVariables.GOOGLE_CLOUD_PROJECT ||
   environmentVariables.GCLOUD_PROJECT;
@@ -67,6 +73,7 @@ function resolveRender() {
       urlMapName,
       cdnHost,
       bucketName,
+      objectPrefix,
       consoleError: (...args) => console.error(...args),
     });
   }
