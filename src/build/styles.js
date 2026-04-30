@@ -10,6 +10,7 @@ export function styles() {
     --terminal-bg: #121212;
     --terminal-fg: #cccccc;
     --terminal-key: #33ccff;
+    --terminal-key-muted: color-mix(in srgb, var(--terminal-key) 46%, var(--bg));
     --terminal-heading: #ffffff;
     --terminal-accent: #00ffff;
     --terminal-hover: #33ffff;
@@ -78,14 +79,14 @@ export function styles() {
 
   .key {
     font-weight: 700;
-    color: var(--terminal-key);
+    color: var(--terminal-key-muted);
     text-align: right;
     padding: 0;
     transition: color 120ms ease;
   }
 
-  .entry:hover > .key {
-    color: var(--terminal-hover);
+  .key:not(.article-title):hover {
+    color: var(--terminal-key);
   }
 
   .value {

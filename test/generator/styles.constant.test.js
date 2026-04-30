@@ -38,6 +38,14 @@ describe('styles constant', () => {
     expect(css).not.toContain('background: var(--terminal-bg)');
   });
 
+  test('mutes key labels until the row is hovered', () => {
+    const css = styles();
+    expect(css).toContain('--terminal-key-muted: color-mix');
+    expect(css).toContain('color: var(--terminal-key-muted)');
+    expect(css).toContain('.key:not(.article-title):hover');
+    expect(css).toContain('color: var(--terminal-key)');
+  });
+
   test('contains multiple CSS rules', () => {
     const css = styles();
     const ruleCount = (css.match(/\{/g) || []).length;
