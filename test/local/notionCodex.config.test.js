@@ -19,6 +19,11 @@ describe('local notion codex config', () => {
     expect(config.notion.inboxPageIds).toEqual([
       '352700afc30180feb33cc5065a91c0ef',
     ]);
+    expect(config.notion.apiTokenEnvNames).toEqual([
+      'NOTION_API_KEY',
+      'NOTION_TOKEN',
+    ]);
+    expect(config.notion.apiVersion).toBe('2026-03-11');
     expect(config.launcher).toEqual({
       command: 'codex',
       args: DEFAULT_NOTION_CODEX_CONFIG.launcher.args,
@@ -51,6 +56,8 @@ describe('local notion codex config', () => {
         notion: {
           taskContext: 'Remote',
           inboxPageIds: [' a ', '', 12, 'b'],
+          apiTokenEnvNames: ['CUSTOM_NOTION_TOKEN'],
+          apiVersion: '2026-03-11',
         },
         launcher: {
           command: 'codex-nightly',
@@ -66,6 +73,8 @@ describe('local notion codex config', () => {
 
     expect(config.notion.taskContext).toBe('Remote');
     expect(config.notion.inboxPageIds).toEqual(['a', 'b']);
+    expect(config.notion.apiTokenEnvNames).toEqual(['CUSTOM_NOTION_TOKEN']);
+    expect(config.notion.apiVersion).toBe('2026-03-11');
     expect(config.launcher).toEqual({
       command: 'codex-nightly',
       args: ['exec', '--foo'],

@@ -19,6 +19,8 @@ export const DEFAULT_NOTION_CODEX_CONFIG = {
     taskStatus: 'Not Started',
     messageSearchQuery: 'codex',
     inboxPageIds: ['352700afc30180feb33cc5065a91c0ef'],
+    apiTokenEnvNames: ['NOTION_API_KEY', 'NOTION_TOKEN'],
+    apiVersion: '2026-03-11',
   },
   launcher: {
     command: 'codex',
@@ -126,6 +128,11 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
         defaultNotion.messageSearchQuery
       ),
       inboxPageIds: normalizeStringArray(notion.inboxPageIds, defaultNotion.inboxPageIds),
+      apiTokenEnvNames: normalizeStringArray(
+        notion.apiTokenEnvNames,
+        defaultNotion.apiTokenEnvNames
+      ),
+      apiVersion: normalizeString(notion.apiVersion, defaultNotion.apiVersion),
     },
     launcher: {
       command: normalizeString(

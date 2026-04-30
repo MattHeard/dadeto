@@ -8,7 +8,8 @@
  *       taskContext: string,
  *       taskStatus: string,
  *       messageSearchQuery: string,
- *       inboxPageIds: string[]
+ *       inboxPageIds: string[],
+ *       apiTokenEnvNames?: string[]
  *     }
  *   },
  *   repoRoot: string,
@@ -40,6 +41,14 @@ export function buildNotionCodexPrompt(options) {
     `4. If the selected task requires repo work, work in ${options.repoRoot} and follow AGENTS.md, including Beads, tests, commit, and push.`,
     '5. Update the Notion task or page with the outcome, evidence, and any blocker before stopping.',
     '',
+    'Reply write path:',
+    '- Use Notion connector tools for reads/searches only.',
+    '- Do not use Notion connector write/update tools in this background run.',
+    '- To reply, write the reply text to a local temp file, then run:',
+    '  node scripts/notion-codex-append-reply.js --page-id <page-id> --run-id <run-id> --message-file <file>',
+    `- The append helper reads the Notion API token from ${formatTokenEnvNames(notion.apiTokenEnvNames)}.`,
+    '- The helper appends a divider, a "Codex reply <run-id>" heading, and the reply paragraphs.',
+    '',
     'Safety rules:',
     '- Do not delete or overwrite existing Notion content.',
     '- Do not handle more than one item in this run.',
@@ -49,4 +58,12 @@ export function buildNotionCodexPrompt(options) {
     `Run ID: ${options.runId}`,
     `Poll time: ${options.nowIso}`,
   ].join('\n');
+}
+
+function formatTokenEnvNames(tokenEnvNames) {
+  if (!Array.isArray(tokenEnvNames) || tokenEnvNames.length === 0) {
+    return 'NOTION_API_KEY or NOTION_TOKEN';
+  }
+
+  return tokenEnvNames.join(' or ');
 }

@@ -9,6 +9,7 @@ const config = {
     taskStatus: 'Not Started',
     messageSearchQuery: 'codex',
     inboxPageIds: ['inbox-page'],
+    apiTokenEnvNames: ['NOTION_API_KEY', 'NOTION_TOKEN'],
   },
 };
 
@@ -45,6 +46,10 @@ describe('local notion codex poll runner', () => {
     expect(result.prompt).toContain('Handle at most one unread Notion message');
     expect(result.prompt).toContain('collection://tasks');
     expect(result.prompt).toContain('Context includes "At lorandil"');
+    expect(result.prompt).toContain(
+      'Do not use Notion connector write/update tools'
+    );
+    expect(result.prompt).toContain('scripts/notion-codex-append-reply.js');
     expect(writes).toEqual([]);
     expect(launches).toEqual([]);
   });
