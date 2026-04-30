@@ -29,6 +29,15 @@ describe('styles constant', () => {
     expect(css).toContain('max-width: min(100%, calc(48 * var(--cell-w)))');
   });
 
+  test('left-aligns the terminal surface over the textured page background', () => {
+    const css = styles();
+    expect(css).toContain('margin-inline: 0 auto');
+    expect(css).toContain('background: transparent');
+    expect(css).toContain('background-image: linear-gradient');
+    expect(css).not.toContain('margin-inline: auto');
+    expect(css).not.toContain('background: var(--terminal-bg)');
+  });
+
   test('contains multiple CSS rules', () => {
     const css = styles();
     const ruleCount = (css.match(/\{/g) || []).length;

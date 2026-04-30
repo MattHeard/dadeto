@@ -51,9 +51,9 @@ export function styles() {
   #container {
     width: min(100%, calc(var(--cols) * var(--cell-w)));
     min-height: calc(var(--rows) * var(--cell-h));
-    margin-inline: auto;
+    margin-inline: 0 auto;
     padding: 0 0 32px;
-    background: var(--terminal-bg);
+    background: transparent;
     overflow: hidden;
   }
 
