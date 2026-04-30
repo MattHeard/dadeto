@@ -35,85 +35,179 @@
     <!-- Web App Manifest (optional but recommended for PWA or better platform integration) -->
     <link rel="manifest" href="/site.webmanifest" />
     <style>
+      :root {
+        color-scheme: dark;
+        --bg: #121212;
+        --terminal-bg: #121212;
+        --terminal-fg: #cccccc;
+        --terminal-key: #33ccff;
+        --terminal-heading: #ffffff;
+        --terminal-accent: #00ffff;
+        --terminal-hover: #33ffff;
+        --terminal-panel: #1a1a1a;
+        --terminal-warning: #ffa500;
+        --terminal-border: #33ccff;
+        --terminal-success: #00ff00;
+        --terminal-error: #ff0000;
+        --cell-w: 9.64px;
+        --cell-h: 18px;
+        --cols: 80;
+        --rows: 24;
+        --font-stack:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', 'Courier New', monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
       body {
-        background-color: #121212;
+        min-height: 100%;
+      }
+
+      body {
+        background-color: var(--bg);
         background-image: linear-gradient(
           rgba(255, 255, 255, 0.05) 1px,
           transparent 1px
         );
         background-size: 100% 3px;
-        color: #cccccc;
-        font-family: 'Sono', Consolas, monospace;
+        color: var(--terminal-fg);
+        font-family: var(--font-stack);
         font-size: 16px;
-        line-height: 1;
+        line-height: var(--cell-h);
         margin: 0;
         padding: 0;
+        overflow-y: auto;
+        text-rendering: geometricPrecision;
       }
+
       #container {
-        max-width: 85rch;
-        padding: 1.5em 0.5em;
+        width: min(100%, calc(var(--cols) * var(--cell-w)));
+        min-height: calc(var(--rows) * var(--cell-h));
+        margin-inline: auto;
+        padding: 0 0 32px;
+        background: var(--terminal-bg);
+        overflow: hidden;
       }
+
       .entry {
         display: grid;
-        grid-template-columns: 5ch auto;
+        grid-template-columns: 5ch minmax(0, 1fr);
         padding-bottom: 0;
-        gap: 0em 1rch;
+        gap: 0 1ch;
         align-items: start;
+        font: 16px / var(--cell-h) var(--font-stack);
+        letter-spacing: 0;
+        tab-size: 1;
       }
+
       .entry:first-of-type {
-        gap: 0em 1rch;
+        gap: 0 1ch;
       }
+
       .entry.nav-entry {
-        gap: 0em 1rch;
+        gap: 0 1ch;
       }
+
       .key {
-        font-weight: bold;
-        color: #33ccff;
+        font-weight: 700;
+        color: var(--terminal-key);
         text-align: right;
-        padding: 0em 0em;
+        padding: 0;
+        transition: color 120ms ease;
       }
+
+      .entry:hover > .key {
+        color: var(--terminal-hover);
+      }
+
       .value {
         text-align: left;
-        color: #cccccc;
+        color: var(--terminal-fg);
+        min-width: 0;
       }
+
       .article-title {
-        color: #121212;
-        background-color: #00ffff;
+        color: var(--terminal-bg);
+        background-color: var(--terminal-accent);
       }
+
       .media {
-        color: #00ff00;
+        color: var(--terminal-success);
       }
+
       .footer {
         font-style: italic;
       }
+
       .full-width {
         white-space: nowrap;
-        font-family: monospace;
+        font-family: var(--font-stack);
         display: block;
         width: 100%;
         overflow: hidden;
         text-overflow: clip;
-        line-height: 1;
-        color: #00ffff;
+        line-height: var(--cell-h);
+        color: var(--terminal-accent);
       }
 
       h1,
       h2,
       h3 {
-        color: #ffffff;
+        color: var(--terminal-heading);
         font-size: 16px;
+        line-height: var(--cell-h);
         margin: 0;
         text-transform: uppercase;
       }
+
       img {
-        max-width: min(20em, 60vw);
+        width: auto;
+        max-width: min(100%, calc(48 * var(--cell-w)));
+        max-height: calc(18 * var(--cell-h));
         height: auto;
         display: block;
         filter: sepia(0.8) hue-rotate(151deg) saturate(2);
+        object-fit: contain;
+        object-position: top left;
       }
+
+      .value:has(> img),
+      .value:has(> audio),
+      p.value:has(> iframe) {
+        display: block;
+        width: min(100%, calc(56 * var(--cell-w)));
+        min-height: var(--cell-h);
+        padding: var(--cell-h) 1ch;
+        background: var(--terminal-panel);
+        border: 1px solid var(--terminal-border);
+        overflow: hidden;
+      }
+
+      p.value:has(> iframe) {
+        height: calc(18 * var(--cell-h));
+        padding: 0;
+      }
+
+      iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      audio {
+        width: min(100%, calc(48 * var(--cell-w)));
+        height: calc(2 * var(--cell-h));
+        display: block;
+      }
+
       p {
         margin: 0;
       }
+
       ul,
       .related-links {
         margin: 0;
@@ -124,39 +218,48 @@
       ul li::before,
       .related-links li::before {
         content: '- ';
-        color: #33ccff;
+        color: var(--terminal-key);
       }
+
       a {
-        color: #00ffff;
+        color: var(--terminal-accent);
         text-decoration: none;
       }
-      a:hover {
-        color: #33ffff;
+
+      a:hover,
+      a:focus {
+        color: var(--terminal-hover);
         text-decoration: underline;
+        outline: 0;
       }
+
       h1 > a,
       h2 > a,
       h3 > a {
-        color: #ffffff;
+        color: var(--terminal-heading);
       }
 
       .warning {
-        color: #ffa500;
+        color: var(--terminal-warning);
       }
+
       .error {
-        color: #ff0000;
+        color: var(--terminal-error);
       }
+
       .success {
-        color: #00ff00;
+        color: var(--terminal-success);
       }
+
       .metadata {
-        color: #33ccff;
+        color: var(--terminal-key);
       }
 
       code {
-        background-color: #1a1a1a;
-        color: #00ffff;
+        background-color: var(--terminal-panel);
+        color: var(--terminal-accent);
       }
+
       pre:not(.header-banner) {
         background: linear-gradient(0deg, #00ffff, #ff00ff);
         -webkit-background-clip: text;
@@ -164,6 +267,7 @@
         overflow-x: auto;
         margin: 1.5em 0px;
       }
+
       .header-banner {
         background: linear-gradient(0deg, #00ffff, #ff00ff);
         -webkit-background-clip: text;
@@ -172,28 +276,34 @@
         margin-bottom: 1em;
         overflow: visible;
       }
+
       #audio-controls {
-        background-color: #1a1a1a;
-        color: #00ffff;
+        background-color: var(--terminal-panel);
+        color: var(--terminal-accent);
         display: inline-block;
       }
+
       button {
-        border: 1px solid #33ccff;
+        border: 1px solid var(--terminal-border);
         border-radius: 0;
-        padding: 0.3em 0.6em;
-        background: #1a1a1a;
-        color: #00ffff;
+        padding: 0 1ch;
+        min-height: var(--cell-h);
+        background: var(--terminal-panel);
+        color: var(--terminal-accent);
         cursor: pointer;
         font: inherit;
-        line-height: 1;
+        line-height: var(--cell-h);
       }
+
       button:hover {
         text-decoration: underline;
       }
+
       button:disabled {
         opacity: 0.65;
         cursor: not-allowed;
       }
+
       .audio-btn {
         height: 2em;
         margin-right: 1em;
@@ -204,12 +314,12 @@
         padding: 1.5em 2ch;
         margin: 0;
         background-color: #1a1a1a;
-        position: relative; /* Add this to make absolute positioning of corners work */
+        position: relative;
       }
 
       .corner {
         position: absolute;
-        display: block; /* Ensure the corners are displayed */
+        display: block;
         width: 2ch;
         height: 1.5em;
       }
@@ -217,8 +327,8 @@
       .corner .h-line,
       .corner .v-line {
         position: absolute;
-        background: #cccccc;
-        display: block; /* Ensure the lines are displayed */
+        background: var(--terminal-fg);
+        display: block;
       }
 
       .h-line {
@@ -305,15 +415,58 @@
         margin-bottom: 0.25em;
       }
 
-      .dendrite-form input {
+      input:not([type='file']):not([type='checkbox']),
+      textarea,
+      select {
         display: block;
         width: 100%;
+        min-height: var(--cell-h);
+        background-color: var(--terminal-panel);
+        color: var(--terminal-accent);
+        border: 1px solid var(--terminal-border);
+        border-radius: 0;
+        padding: 0 1ch;
         margin: 0;
+        font: inherit;
+        line-height: var(--cell-h);
+        letter-spacing: 0;
+        accent-color: var(--terminal-accent);
+      }
+
+      input:not([type='file']):not([type='checkbox']):focus,
+      textarea:focus,
+      select:focus {
+        outline: 1px solid var(--terminal-hover);
+        outline-offset: 0;
+      }
+
+      select.input,
+      select.output {
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        margin-right: 1ch;
+      }
+
+      input[type='checkbox'] {
+        inline-size: 1ch;
+        block-size: var(--cell-h);
+        margin: 0 1ch 0 0;
+        vertical-align: top;
+        accent-color: var(--terminal-accent);
+      }
+
+      .auto-submit-label {
+        display: inline-flex;
+        align-items: flex-start;
+        min-height: var(--cell-h);
+        margin-left: 1ch;
+        color: var(--terminal-fg);
       }
 
       .filter-button {
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: color 120ms ease;
       }
 
       .filter-button:hover {
@@ -327,12 +480,12 @@
       .toy-textarea {
         display: block;
         width: 100%;
+        min-height: calc(6 * var(--cell-h));
         box-sizing: border-box;
       }
 
-      /* Style nav key in green for visibility */
       .nav-entry > .key {
-        color: #00ff00;
+        color: var(--terminal-success);
       }
     </style>
     <!-- Define the component management system in the head -->
@@ -431,6 +584,99 @@
           <a class="filter-button" data-filter="toys">toys</a>
         </p>
       </div>
+      <article
+        class="entry tag-toy tag-game tag-text-adventure tag-stateful tag-storage"
+        id="COZY1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">COZY1</div>
+        <div class="value">
+          <h2><a href="#COZY1">Cozy House Adventure</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">19 Apr 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-game">game</a>,
+          <a class="tag-text-adventure">text-adventure</a>,
+          <a class="tag-stateful">stateful</a>,
+          <a class="tag-storage">storage</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          A stateful text adventure where you build a tiny cozy home by
+          completing foundation, materials, roof, and garden milestones.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The toy saves progress in temporary local storage so each command
+          continues from your current construction step.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Play by entering simple commands like build, foundation, and level
+          soil; the response returns narrative output plus completion updates.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'COZY1',
+            '/core/browser/toys/2026-04-19/cozyHouseAdventure.js',
+            'cozyHouseAdventure'
+          );
+        </script>
+      </article>
       <article
         class="entry tag-toy tag-finance tag-calculation tag-budget tag-json"
         id="REAL1"
