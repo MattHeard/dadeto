@@ -1,6 +1,6 @@
-# Notion poll blocked
+## Notion poll blocked on stale backlog item
 
-- Unexpected hurdle: the first Symphony Backlog item was not ready; it was already `Done`.
-- Diagnosis: fetched the Symphony page, then fetched the first Backlog mention and confirmed `Project = Dadeto`, `Status = Done`, `Tags = symphony`.
-- Chosen fix: left a concise blocker comment on the Symphony page and wrote the outcome artifact.
-- Next-time guidance: if this page still has no ready task, treat the first Backlog item as a gate and report the blocked state immediately.
+- Unexpected hurdle: the first Symphony backlog entry was already `Done`, so there was no eligible Dadeto task to take.
+- Diagnosis path: fetched the Symphony page, then fetched the first backlog page and confirmed `Project=Dadeto`, `Tags=symphony`, `Status=Done`.
+- Chosen fix: added a concise blocker comment to the Symphony page and wrote the required outcome artifact.
+- Next time guidance: keep checking the first backlog mention, but treat `Done` as a stop condition unless the page shows a new unread Codex message.
