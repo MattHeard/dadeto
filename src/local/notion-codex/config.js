@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 const DEFAULT_CODEX_ARGS = [
   'exec',
   '--skip-git-repo-check',
+  '--ephemeral',
   '--model',
   'gpt-5.4-mini',
   '--sandbox',

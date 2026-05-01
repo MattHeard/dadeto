@@ -46,6 +46,8 @@ async function runOnce() {
     console.log('\n--- prompt ---\n');
     console.log(result.prompt);
   }
+
+  return result;
 }
 
 if (args.watch) {
