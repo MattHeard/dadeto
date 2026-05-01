@@ -40,7 +40,7 @@ export function buildNotionCodexPrompt(options) {
     '',
     'Selection order:',
     '1. Fetch the Symphony page and inspect the first page mention under the "# Backlog" heading.',
-    `2. If a Backlog task exists, fetch it and handle it only when Project is Dadeto, Status is "${notion.taskStatus}", and it is tagged "symphony".`,
+    '2. If a Backlog task exists, fetch it and handle it only when Project is Dadeto, it is tagged "symphony", and its Status is not Done.',
     '3. If the Backlog is empty, create a child page under the Symphony page titled "Symphony idle poll <run-id>" with the poll time and evidence that no task was found.',
     '4. If a page contains an unhandled message for Codex, add a concise Notion comment reply with the run ID and stop.',
     `5. If the selected task requires repo work, work in ${options.repoRoot} and follow AGENTS.md, including Beads, tests, commit, and push.`,

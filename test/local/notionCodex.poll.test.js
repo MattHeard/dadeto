@@ -53,7 +53,7 @@ describe('local notion codex poll runner', () => {
     expect(result.prompt).toContain('Symphony page ID: symphony-page-id');
     expect(result.prompt).toContain('first page mention under the "# Backlog"');
     expect(result.prompt).toContain('collection://tasks');
-    expect(result.prompt).toContain('Status is "Not Started"');
+    expect(result.prompt).toContain('its Status is not Done');
     expect(result.prompt).toContain(
       'move its page under Symphony Completed before stopping'
     );
