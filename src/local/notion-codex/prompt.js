@@ -45,6 +45,7 @@ export function buildNotionCodexPrompt(options) {
     '4. If a page contains an unhandled message for Codex, add a concise Notion comment reply with the run ID and stop.',
     `5. If the selected task requires repo work, work in ${options.repoRoot} and follow AGENTS.md, including Beads, tests, commit, and push.`,
     '6. Update the Notion task or page with the outcome, evidence, and any blocker before stopping.',
+    '   If the selected task is complete, set its Status to Done before stopping.',
     '',
     'Notion write path:',
     '- Use Notion connector tools for reads, task updates, task comments, Symphony page updates, and idle child-page creation.',
