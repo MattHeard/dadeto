@@ -25,6 +25,12 @@ export function normalizeNotionCodexState(value) {
     lastPollAt: typeof source.lastPollAt === 'string' ? source.lastPollAt : null,
     lastOutcome: typeof source.lastOutcome === 'string' ? source.lastOutcome : 'idle',
     lastSummary: typeof source.lastSummary === 'string' ? source.lastSummary : '',
+    idleBackoffExponent: Number.isInteger(source.idleBackoffExponent)
+      ? source.idleBackoffExponent
+      : null,
+    nextPollAfter: typeof source.nextPollAfter === 'string'
+      ? source.nextPollAfter
+      : null,
     activeRun: normalizeActiveRun(source.activeRun),
     eventLog: Array.isArray(source.eventLog) ? source.eventLog.slice(-20) : [],
   };

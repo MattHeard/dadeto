@@ -14,6 +14,8 @@ export const DEFAULT_NOTION_CODEX_CONFIG = {
   notion: {
     dadetoPageId: '1f2700afc30180a3abedd568190132c3',
     dadetoPageUrl: 'https://app.notion.com/p/1f2700afc30180a3abedd568190132c3',
+    symphonyPageId: '352700afc30180feb33cc5065a91c0ef',
+    symphonyPageUrl: 'https://app.notion.com/p/352700afc30180feb33cc5065a91c0ef',
     taskDataSourceUrl: 'collection://9f6bfea5-08d7-4897-b438-0d7dcb8f494a',
     taskContext: 'At lorandil',
     taskStatus: 'Not Started',
@@ -27,8 +29,14 @@ export const DEFAULT_NOTION_CODEX_CONFIG = {
     args: DEFAULT_CODEX_ARGS,
   },
   pollIntervalMs: 60000,
+  idleBackoff: {
+    baseDelayMs: 60000,
+    initialExponent: 0,
+    maxExponent: 9,
+  },
   maxConcurrentRuns: 1,
   logDir: 'tracking/notion-codex',
+  outcomeDir: 'tracking/notion-codex/outcomes',
   statePath: 'tracking/notion-codex/status.json',
 };
 
@@ -117,6 +125,14 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
     notion: {
       dadetoPageId: normalizeString(notion.dadetoPageId, defaultNotion.dadetoPageId),
       dadetoPageUrl: normalizeString(notion.dadetoPageUrl, defaultNotion.dadetoPageUrl),
+      symphonyPageId: normalizeString(
+        notion.symphonyPageId,
+        defaultNotion.symphonyPageId
+      ),
+      symphonyPageUrl: normalizeString(
+        notion.symphonyPageUrl,
+        defaultNotion.symphonyPageUrl
+      ),
       taskDataSourceUrl: normalizeString(
         notion.taskDataSourceUrl,
         defaultNotion.taskDataSourceUrl
@@ -145,6 +161,7 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
       source.pollIntervalMs,
       DEFAULT_NOTION_CODEX_CONFIG.pollIntervalMs
     ),
+    idleBackoff: normalizeIdleBackoff(source.idleBackoff),
     maxConcurrentRuns: normalizePositiveNumber(
       source.maxConcurrentRuns,
       DEFAULT_NOTION_CODEX_CONFIG.maxConcurrentRuns
@@ -153,11 +170,37 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
       repoRoot,
       normalizeString(source.logDir, DEFAULT_NOTION_CODEX_CONFIG.logDir)
     ),
+    outcomeDir: path.resolve(
+      repoRoot,
+      normalizeString(source.outcomeDir, DEFAULT_NOTION_CODEX_CONFIG.outcomeDir)
+    ),
     statePath: path.resolve(
       repoRoot,
       normalizeString(source.statePath, DEFAULT_NOTION_CODEX_CONFIG.statePath)
     ),
   };
+}
+
+function normalizeIdleBackoff(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const fallback = DEFAULT_NOTION_CODEX_CONFIG.idleBackoff;
+
+  return {
+    baseDelayMs: normalizePositiveNumber(source.baseDelayMs, fallback.baseDelayMs),
+    initialExponent: normalizeNonNegativeInteger(
+      source.initialExponent,
+      fallback.initialExponent
+    ),
+    maxExponent: normalizeNonNegativeInteger(source.maxExponent, fallback.maxExponent),
+  };
+}
+
+function normalizeNonNegativeInteger(value, fallback) {
+  if (!Number.isInteger(value) || value < 0) {
+    return fallback;
+  }
+
+  return value;
 }
 
 /**

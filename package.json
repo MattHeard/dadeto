@@ -29,6 +29,7 @@
     "symphony:tui": "node scripts/symphony-tui.js",
     "notion:codex:poll": "node scripts/notion-codex-poll.js",
     "notion:codex:poll:dry": "node scripts/notion-codex-poll.js --dry-run",
+    "start:notion-symphony": "node scripts/notion-codex-poll.js --watch",
     "notion:codex:append-reply": "node scripts/notion-codex-append-reply.js",
     "start:writer:playwright": "node src/local/server.js",
     "start:writer": "node src/local/server.js",

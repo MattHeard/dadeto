@@ -1,0 +1,13 @@
+[Unit]
+Description=Dadeto Notion Symphony poller
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/matt/dadeto
+ExecStart=/bin/bash -lc 'source /home/matt/.bashrc && npm run start:notion-symphony'
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target

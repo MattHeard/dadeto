@@ -2,6 +2,7 @@
 import process from 'node:process';
 import { loadNotionCodexConfig } from '../src/local/notion-codex/config.js';
 import { createNotionCodexLauncher } from '../src/local/notion-codex/launcher.js';
+import { createNotionCodexOutcomeStore } from '../src/local/notion-codex/outcomeStore.js';
 import { runNotionCodexPoll } from '../src/local/notion-codex/poll.js';
 import { createNotionCodexStateStore } from '../src/local/notion-codex/stateStore.js';
 
@@ -20,6 +21,9 @@ const config = await loadNotionCodexConfig({
 const stateStore = createNotionCodexStateStore({
   statePath: config.statePath,
 });
+const outcomeStore = createNotionCodexOutcomeStore({
+  outcomeDir: config.outcomeDir,
+});
 const launcher = createNotionCodexLauncher({
   command: config.launcher.command,
   args: config.launcher.args,
@@ -32,6 +36,7 @@ async function runOnce() {
     config,
     repoRoot,
     stateStore,
+    outcomeStore,
     launcher,
     dryRun: args.dryRun,
   });
@@ -45,8 +50,8 @@ async function runOnce() {
 
 if (args.watch) {
   while (true) {
-    await runOnce();
-    await wait(config.pollIntervalMs);
+    const result = await runOnce();
+    await wait(getNextWatchDelayMs(result));
   }
 } else {
   await runOnce();
@@ -91,7 +96,19 @@ function summarizeResult(result) {
     pid: result.launchResult?.pid ?? result.state?.activeRun?.pid ?? null,
     statePath: config.statePath,
     logDir: config.logDir,
+    outcomeDir: config.outcomeDir,
+    idleBackoffExponent: result.state?.idleBackoffExponent ?? null,
+    nextPollAfter: result.state?.nextPollAfter ?? null,
+    nextDelayMs: result.nextDelayMs ?? null,
   };
+}
+
+function getNextWatchDelayMs(result) {
+  if (typeof result.nextDelayMs === 'number' && Number.isFinite(result.nextDelayMs)) {
+    return Math.max(0, result.nextDelayMs);
+  }
+
+  return config.pollIntervalMs;
 }
 
 function wait(delayMs) {

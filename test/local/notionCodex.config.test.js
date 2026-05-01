@@ -13,6 +13,9 @@ describe('local notion codex config', () => {
     );
 
     expect(config.notion.dadetoPageId).toBe('1f2700afc30180a3abedd568190132c3');
+    expect(config.notion.symphonyPageId).toBe(
+      '352700afc30180feb33cc5065a91c0ef'
+    );
     expect(config.notion.taskDataSourceUrl).toBe(
       'collection://9f6bfea5-08d7-4897-b438-0d7dcb8f494a'
     );
@@ -48,12 +51,19 @@ describe('local notion codex config', () => {
       '/tmp/repo/tracking/notion-codex.local.json'
     );
     expect(config.pollIntervalMs).toBe(60000);
+    expect(config.idleBackoff).toEqual({
+      baseDelayMs: 60000,
+      initialExponent: 0,
+      maxExponent: 9,
+    });
   });
 
   test('applies explicit config overrides', () => {
     const config = normalizeNotionCodexConfig(
       {
         notion: {
+          symphonyPageId: 'symphony-page',
+          symphonyPageUrl: 'https://notion.example/symphony',
           taskContext: 'Remote',
           inboxPageIds: [' a ', '', 12, 'b'],
           apiTokenEnvNames: ['CUSTOM_NOTION_TOKEN'],
@@ -65,12 +75,22 @@ describe('local notion codex config', () => {
         },
         logDir: 'tmp/notion',
         statePath: 'tmp/notion/status.json',
+        outcomeDir: 'tmp/notion/outcomes',
         pollIntervalMs: 5000,
+        idleBackoff: {
+          baseDelayMs: 120000,
+          initialExponent: 1,
+          maxExponent: 4,
+        },
       },
       '/tmp/repo',
       '/tmp/config.json'
     );
 
+    expect(config.notion.symphonyPageId).toBe('symphony-page');
+    expect(config.notion.symphonyPageUrl).toBe(
+      'https://notion.example/symphony'
+    );
     expect(config.notion.taskContext).toBe('Remote');
     expect(config.notion.inboxPageIds).toEqual(['a', 'b']);
     expect(config.notion.apiTokenEnvNames).toEqual(['CUSTOM_NOTION_TOKEN']);
@@ -80,7 +100,13 @@ describe('local notion codex config', () => {
       args: ['exec', '--foo'],
     });
     expect(config.logDir).toBe('/tmp/repo/tmp/notion');
+    expect(config.outcomeDir).toBe('/tmp/repo/tmp/notion/outcomes');
     expect(config.statePath).toBe('/tmp/repo/tmp/notion/status.json');
     expect(config.pollIntervalMs).toBe(5000);
+    expect(config.idleBackoff).toEqual({
+      baseDelayMs: 120000,
+      initialExponent: 1,
+      maxExponent: 4,
+    });
   });
 });

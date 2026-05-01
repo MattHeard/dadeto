@@ -1,4 +1,9 @@
 import { buildNotionCodexPrompt } from './prompt.js';
+import {
+  getBinaryBackoffDelayMs,
+  getNextIdleBackoffExponent,
+  getNextPollAfterIso,
+} from './backoff.js';
 
 /**
  * @param {{
@@ -7,6 +12,9 @@ import { buildNotionCodexPrompt } from './prompt.js';
  *   stateStore: {
  *     readState: () => Promise<Record<string, unknown>>,
  *     writeState: (state: Record<string, unknown>) => Promise<void>
+ *   },
+ *   outcomeStore?: {
+ *     readOutcome: (runId: string) => Promise<{ outcome: string, summary: string } | null>
  *   },
  *   launcher: {
  *     launch: (payload: {
@@ -25,10 +33,12 @@ export async function runNotionCodexPoll(options) {
   const now = options.now ?? new Date();
   const nowIso = now.toISOString();
   const previousState = await options.stateStore.readState();
-  const state = reconcileActiveRun(
+  const state = await reconcileActiveRun(
     previousState,
     options.isProcessAliveImpl,
-    nowIso
+    now,
+    options.config.idleBackoff,
+    options.outcomeStore
   );
 
   if (state.activeRun) {
@@ -38,6 +48,17 @@ export async function runNotionCodexPoll(options) {
       skipped: true,
       reason: 'active-run',
       runId,
+      state,
+    };
+  }
+
+  if (shouldDelayForBackoff(state, now)) {
+    await options.stateStore.writeState(state);
+    return {
+      launched: false,
+      skipped: true,
+      reason: 'idle-backoff',
+      nextDelayMs: getRemainingDelayMs(state.nextPollAfter, now),
       state,
     };
   }
@@ -94,7 +115,13 @@ export async function runNotionCodexPoll(options) {
   };
 }
 
-function reconcileActiveRun(state, isProcessAliveImpl = isProcessAlive, nowIso) {
+async function reconcileActiveRun(
+  state,
+  isProcessAliveImpl = isProcessAlive,
+  now,
+  idleBackoff,
+  outcomeStore
+) {
   if (!state.activeRun || typeof state.activeRun !== 'object') {
     return state;
   }
@@ -104,17 +131,96 @@ function reconcileActiveRun(state, isProcessAliveImpl = isProcessAlive, nowIso) 
     return state;
   }
 
+  const runId = getActiveRunId(state.activeRun);
+  const outcome = await readRunOutcome(outcomeStore, runId);
+  if (outcome?.outcome === 'idle') {
+    return appendIdleOutcome(state, {
+      now,
+      pid,
+      runId,
+      summary: outcome.summary,
+      idleBackoff,
+    });
+  }
+
   return appendEvent({
     ...state,
-    lastOutcome: 'completed',
-    lastSummary: `Observed completed Notion Codex run ${getActiveRunId(state.activeRun)}.`,
+    lastOutcome: outcome?.outcome === 'handled' ? 'handled' : 'completed',
+    lastSummary: outcome?.summary || `Observed completed Notion Codex run ${runId}.`,
+    idleBackoffExponent: null,
+    nextPollAfter: null,
     activeRun: null,
   }, {
-    at: nowIso,
-    type: 'completed',
-    runId: getActiveRunId(state.activeRun),
+    at: now.toISOString(),
+    type: outcome?.outcome === 'handled' ? 'handled' : 'completed',
+    runId,
     pid,
   });
+}
+
+async function readRunOutcome(outcomeStore, runId) {
+  if (!outcomeStore || typeof outcomeStore.readOutcome !== 'function' || !runId) {
+    return null;
+  }
+
+  return outcomeStore.readOutcome(runId);
+}
+
+function appendIdleOutcome(state, options) {
+  const idleBackoff = options.idleBackoff ?? {
+    baseDelayMs: 60000,
+    initialExponent: 0,
+    maxExponent: 9,
+  };
+  const idleBackoffExponent = getNextIdleBackoffExponent({
+    previousExponent: state.idleBackoffExponent,
+    initialExponent: idleBackoff.initialExponent,
+    maxExponent: idleBackoff.maxExponent,
+  });
+  const delayMs = getBinaryBackoffDelayMs({
+    exponent: idleBackoffExponent,
+    baseDelayMs: idleBackoff.baseDelayMs,
+    initialExponent: idleBackoff.initialExponent,
+    maxExponent: idleBackoff.maxExponent,
+  });
+  const nextPollAfter = getNextPollAfterIso({
+    now: options.now,
+    delayMs,
+  });
+
+  return appendEvent({
+    ...state,
+    lastOutcome: 'idle',
+    lastSummary:
+      options.summary ||
+      `Observed idle Notion Codex run ${options.runId}; next poll after ${nextPollAfter}.`,
+    idleBackoffExponent,
+    nextPollAfter,
+    activeRun: null,
+  }, {
+    at: options.now.toISOString(),
+    type: 'idle',
+    runId: options.runId,
+    pid: options.pid,
+    nextPollAfter,
+  });
+}
+
+function shouldDelayForBackoff(state, now) {
+  return getRemainingDelayMs(state.nextPollAfter, now) > 0;
+}
+
+function getRemainingDelayMs(nextPollAfter, now) {
+  if (typeof nextPollAfter !== 'string') {
+    return 0;
+  }
+
+  const nextPollAt = Date.parse(nextPollAfter);
+  if (!Number.isFinite(nextPollAt)) {
+    return 0;
+  }
+
+  return Math.max(0, nextPollAt - now.getTime());
 }
 
 function isProcessAlive(pid) {
