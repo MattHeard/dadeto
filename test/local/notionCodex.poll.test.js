@@ -317,4 +317,56 @@ describe('local notion codex poll runner', () => {
       runId: 'handled-run',
     });
   });
+
+  test('resets idle backoff when actionable work is found and launched', async () => {
+    const writes = [];
+    const launchPayloads = [];
+    const result = await runNotionCodexPoll({
+      config,
+      repoRoot: '/tmp/repo',
+      now: new Date('2026-04-30T07:47:30.000Z'),
+      isProcessAliveImpl: () => false,
+      stateStore: {
+        async readState() {
+          return {
+            activeRun: null,
+            idleBackoffExponent: 4,
+            nextPollAfter: '2026-04-30T07:40:00.000Z',
+            lastOutcome: 'idle',
+            eventLog: [],
+          };
+        },
+        async writeState(state) {
+          writes.push(state);
+        },
+      },
+      launcher: {
+        async launch(payload) {
+          launchPayloads.push(payload);
+          return { pid: 784 };
+        },
+      },
+    });
+
+    expect(result.launched).toBe(true);
+    expect(launchPayloads).toHaveLength(1);
+    expect(writes[0]).toMatchObject({
+      lastOutcome: 'launched',
+      idleBackoffExponent: null,
+      nextPollAfter: null,
+      activeRun: {
+        runId: '2026-04-30T07:47:30.000Z--notion-codex',
+        startedAt: '2026-04-30T07:47:30.000Z',
+        pid: 784,
+      },
+    });
+    expect(writes[0].eventLog).toEqual([
+      {
+        at: '2026-04-30T07:47:30.000Z',
+        type: 'launched',
+        runId: '2026-04-30T07:47:30.000Z--notion-codex',
+        pid: 784,
+      },
+    ]);
+  });
 });

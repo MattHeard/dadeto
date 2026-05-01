@@ -96,6 +96,8 @@ export async function runNotionCodexPoll(options) {
     lastPollAt: nowIso,
     lastOutcome: 'launched',
     lastSummary: `Launched Notion Codex run ${runId}.`,
+    idleBackoffExponent: null,
+    nextPollAfter: null,
     activeRun,
   }, {
     at: nowIso,
