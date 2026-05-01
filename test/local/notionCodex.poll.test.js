@@ -49,6 +49,8 @@ describe('local notion codex poll runner', () => {
     expect(result.prompt).toContain(
       'Do not use Notion connector write/update tools'
     );
+    expect(result.prompt).toContain('Notion comment reply');
+    expect(result.prompt).toContain('page-level Notion comment');
     expect(result.prompt).toContain('scripts/notion-codex-append-reply.js');
     expect(writes).toEqual([]);
     expect(launches).toEqual([]);

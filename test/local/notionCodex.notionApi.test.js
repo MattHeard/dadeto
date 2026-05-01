@@ -1,41 +1,20 @@
 import {
   appendNotionCodexReply,
-  buildReplyBlocks,
+  buildReplyRichText,
   resolveNotionApiToken,
 } from '../../src/local/notion-codex/notionApi.js';
 
 describe('local notion codex api helper', () => {
-  test('builds append-only reply blocks with a handled marker', () => {
+  test('builds comment rich text with a handled marker', () => {
     expect(
-      buildReplyBlocks({
+      buildReplyRichText({
         runId: 'run-123',
         message: 'hello world',
       })
     ).toEqual([
-      { object: 'block', type: 'divider', divider: {} },
       {
-        object: 'block',
-        type: 'heading_3',
-        heading_3: {
-          rich_text: [
-            {
-              type: 'text',
-              text: { content: 'Codex reply run-123' },
-            },
-          ],
-        },
-      },
-      {
-        object: 'block',
-        type: 'paragraph',
-        paragraph: {
-          rich_text: [
-            {
-              type: 'text',
-              text: { content: 'hello world' },
-            },
-          ],
-        },
+        type: 'text',
+        text: { content: 'Codex reply run-123\n\nhello world' },
       },
     ]);
   });
@@ -55,7 +34,7 @@ describe('local notion codex api helper', () => {
     });
   });
 
-  test('appends reply blocks to the Notion block children endpoint', async () => {
+  test('creates a page-level Notion comment', async () => {
     const calls = [];
     const result = await appendNotionCodexReply({
       pageId: 'page 123',
@@ -68,29 +47,28 @@ describe('local notion codex api helper', () => {
         return {
           ok: true,
           async text() {
-            return JSON.stringify({ results: [{ id: 'block-1' }] });
+            return JSON.stringify({ id: 'comment-1' });
           },
         };
       },
     });
 
-    expect(result).toEqual({ results: [{ id: 'block-1' }] });
+    expect(result).toEqual({ id: 'comment-1' });
     expect(calls).toHaveLength(1);
-    expect(calls[0].url).toBe(
-      'https://api.notion.com/v1/blocks/page%20123/children'
-    );
-    expect(calls[0].init.method).toBe('PATCH');
+    expect(calls[0].url).toBe('https://api.notion.com/v1/comments');
+    expect(calls[0].init.method).toBe('POST');
     expect(calls[0].init.headers).toMatchObject({
       Authorization: 'Bearer token-123',
       'Content-Type': 'application/json',
       'Notion-Version': '2025-09-03',
     });
-    expect(JSON.parse(calls[0].init.body)).toMatchObject({
-      position: { type: 'end' },
-      children: [
-        { type: 'divider' },
-        { type: 'heading_3' },
-        { type: 'paragraph' },
+    expect(JSON.parse(calls[0].init.body)).toEqual({
+      parent: { page_id: 'page 123' },
+      rich_text: [
+        {
+          type: 'text',
+          text: { content: 'Codex reply run-123\n\nhello' },
+        },
       ],
     });
   });

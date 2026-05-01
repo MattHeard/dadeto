@@ -11,7 +11,7 @@ const RICH_TEXT_CHUNK_SIZE = 1800;
  *   token: string,
  *   notionVersion?: string,
  *   fetchImpl?: typeof fetch
- * }} options Append options.
+ * }} options Comment options.
  * @returns {Promise<unknown>} Notion API response payload.
  */
 export async function appendNotionCodexReply(options) {
@@ -26,17 +26,17 @@ export async function appendNotionCodexReply(options) {
   }
 
   const response = await fetchImpl(
-    `${NOTION_API_BASE_URL}/blocks/${encodeURIComponent(pageId)}/children`,
+    `${NOTION_API_BASE_URL}/comments`,
     {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
         'Notion-Version': options.notionVersion ?? DEFAULT_NOTION_VERSION,
       },
       body: JSON.stringify({
-        children: buildReplyBlocks({ runId, message }),
-        position: { type: 'end' },
+        parent: { page_id: pageId },
+        rich_text: buildReplyRichText({ runId, message }),
       }),
     }
   );
@@ -77,36 +77,14 @@ export function resolveNotionApiToken(options = {}) {
 
 /**
  * @param {{ runId: string, message: string }} options Reply content.
- * @returns {Array<Record<string, unknown>>} Notion blocks.
+ * @returns {Array<Record<string, unknown>>} Notion rich text objects.
  */
-export function buildReplyBlocks(options) {
-  return [
-    { object: 'block', type: 'divider', divider: {} },
-    {
-      object: 'block',
-      type: 'heading_3',
-      heading_3: {
-        rich_text: [
-          {
-            type: 'text',
-            text: { content: `Codex reply ${options.runId}` },
-          },
-        ],
-      },
-    },
-    ...splitRichText(options.message).map(richText => ({
-      object: 'block',
-      type: 'paragraph',
-      paragraph: {
-        rich_text: [
-          {
-            type: 'text',
-            text: { content: richText },
-          },
-        ],
-      },
-    })),
-  ];
+export function buildReplyRichText(options) {
+  const comment = `Codex reply ${options.runId}\n\n${options.message}`;
+  return splitRichText(comment).map(richText => ({
+    type: 'text',
+    text: { content: richText },
+  }));
 }
 
 function normalizeRequiredString(value, name) {

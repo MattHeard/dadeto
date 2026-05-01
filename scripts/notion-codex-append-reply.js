@@ -30,7 +30,7 @@ console.log(JSON.stringify({
   pageId: args.pageId,
   runId: args.runId,
   tokenEnv: tokenResult.envName,
-  appendedBlocks: Array.isArray(response?.results) ? response.results.length : null,
+  commentId: typeof response?.id === 'string' ? response.id : null,
 }, null, 2));
 
 function parseArgs(argv) {
@@ -90,9 +90,9 @@ function printHelp() {
   console.log(`Usage: node scripts/notion-codex-append-reply.js [options]
 
 Options:
-  --page-id <id>           Notion page/block ID to append to
+  --page-id <id>           Notion page ID to comment on
   --run-id <id>            Codex poll run ID for the handled marker
-  --message <text>         Reply text to append
+  --message <text>         Reply text to comment
   --message-file <path>    Read reply text from a file
   --token-env <name>       Environment variable containing the Notion token
   --notion-version <date>  Notion API version
