@@ -234,14 +234,25 @@ export function getEnvironmentVariable(environmentVariables, key) {
  */
 export function resolveStaticBucketName(
   environmentVariables,
-  fallbackBucketName = DEFAULT_BUCKET_NAME
+  fallbackBucketName
 ) {
   const configuredBucketName = getEnvironmentVariable(
     environmentVariables,
     'STATIC_BUCKET_NAME'
   );
-  if (configuredBucketName) {
-    return configuredBucketName;
+  return (
+    configuredBucketName || getStaticBucketNameFallback(fallbackBucketName)
+  );
+}
+
+/**
+ * Resolve the caller-supplied bucket fallback.
+ * @param {string | undefined} fallbackBucketName Bucket used when no override is configured.
+ * @returns {string} Caller fallback or the repository default bucket.
+ */
+function getStaticBucketNameFallback(fallbackBucketName) {
+  if (fallbackBucketName === undefined) {
+    return DEFAULT_BUCKET_NAME;
   }
 
   return fallbackBucketName;
@@ -253,16 +264,25 @@ export function resolveStaticBucketName(
  * @returns {string} Empty string or a slash-terminated prefix without a leading slash.
  */
 export function normalizeStaticObjectPrefix(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  const trimmed = value.replace(/^\/+|\/+$/g, '');
+  const trimmed = trimStaticObjectPrefix(value);
   if (!trimmed) {
     return '';
   }
 
   return `${trimmed}/`;
+}
+
+/**
+ * Trim leading and trailing slashes from a string prefix candidate.
+ * @param {unknown} value Candidate prefix.
+ * @returns {string} Trimmed prefix or an empty string for non-string values.
+ */
+function trimStaticObjectPrefix(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.replace(/^\/+|\/+$/g, '');
 }
 
 /**

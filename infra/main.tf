@@ -602,6 +602,55 @@ resource "google_cloudfunctions_function_iam_member" "submit_new_page_invoker" {
   ]
 }
 
+
+data "archive_file" "realtime_call_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/realtime-call"
+  output_path = "${path.module}/build/realtime-call.zip"
+}
+
+resource "google_storage_bucket_object" "realtime_call" {
+  name   = "${var.environment}-realtime-call-${data.archive_file.realtime_call_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.realtime_call_src.output_path
+}
+
+resource "google_cloudfunctions_function" "realtime_call" {
+  name                         = "${var.environment}-realtime-call"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "realtimeCall"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.realtime_call.name
+  trigger_http                 = true
+  https_trigger_security_level = var.https_security_level
+  service_account_email        = local.cloud_function_runtime_service_account_email
+  region                       = var.region
+
+  environment_variables = merge(
+    local.cloud_function_environment,
+    { OPENAI_API_KEY = var.openai_api_key },
+  )
+
+  depends_on = [
+    google_project_service.project_level,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "realtime_call_invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.realtime_call.name
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
+  depends_on = [
+    google_cloudfunctions_function.realtime_call,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
+  ]
+}
+
 data "archive_file" "assign_moderation_job_src" {
   type        = "zip"
   source_dir  = "${path.module}/cloud-functions/assign-moderation-job"

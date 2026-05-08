@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "key": "REAL2",
+      "title": "Realtime Voice Prototype",
+      "publicationDate": "2026-05-07",
+      "content": [
+        "Mounts a phone-friendly OpenAI Realtime WebRTC voice toy inside the normal Dadeto toy UI.",
+        "Paste JSON config to choose a local or cloud SDP relay; for example {\"server\":\"local\"} or {\"server\":\"cloud\",\"cloudEndpoint\":\"https://example.com/api/realtime/call\"}.",
+        "The browser sends only its SDP offer to the selected /api/realtime/call-compatible server; the OpenAI API key stays in that server environment."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-05-07/realtimeVoicePrototype.js",
+        "functionName": "realtimeVoicePrototype",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "realtime-voice"
+      },
+      "tags": ["toy", "voice", "webrtc", "realtime", "openai", "prototype"]
+    },
+    {
       "key": "COZY1",
       "title": "Cozy House Adventure",
       "publicationDate": "2026-04-19",

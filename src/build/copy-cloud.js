@@ -19,6 +19,7 @@ const srcCloudDir = resolve(srcDir, 'cloud');
 const infraFunctionsDir = resolve(infraDir, 'cloud-functions');
 const srcCoreDir = resolve(srcDir, 'core');
 const srcCoreCloudDir = resolve(srcCoreDir, 'cloud');
+const srcCoreRealtimeDir = resolve(srcCoreDir, 'realtime');
 const srcCoreBrowserDir = resolve(srcCoreDir, 'browser');
 const srcCoreBrowserModerationDir = resolve(srcCoreBrowserDir, 'moderation');
 const browserDir = resolve(srcDir, 'browser');
@@ -46,6 +47,7 @@ const functionDirectories = [
   'process-new-story',
   'update-variant-visibility',
   'render-contents',
+  'realtime-call',
   'render-variant',
   'report-for-moderation',
   'submit-moderation-rating',
@@ -58,24 +60,30 @@ const directoryCopies = functionDirectories.map(name => ({
   target: join(infraFunctionsDir, name),
 }));
 
-const preservedCloudTreeCopies = functionDirectories.flatMap(name => [
-  {
-    source: join(srcCloudDir, name),
-    target: join(infraFunctionsDir, name, 'cloud', name),
-  },
-  {
+const functionSpecificCoreCloudDirectories = functionDirectories.filter(
+  name => name !== 'realtime-call'
+);
+
+const preservedCloudTreeCopies = [
+  ...functionDirectories.flatMap(name => [
+    {
+      source: join(srcCloudDir, name),
+      target: join(infraFunctionsDir, name, 'cloud', name),
+    },
+    {
+      source: srcCloudDir,
+      target: join(infraFunctionsDir, name, 'cloud'),
+    },
+    {
+      source: srcCoreCloudDir,
+      target: join(infraFunctionsDir, name, 'core', 'cloud'),
+    },
+  ]),
+  ...functionSpecificCoreCloudDirectories.map(name => ({
     source: join(srcCoreCloudDir, name),
     target: join(infraFunctionsDir, name, 'core', 'cloud', name),
-  },
-  {
-    source: srcCloudDir,
-    target: join(infraFunctionsDir, name, 'cloud'),
-  },
-  {
-    source: srcCoreCloudDir,
-    target: join(infraFunctionsDir, name, 'core', 'cloud'),
-  },
-]);
+  })),
+];
 
 const sharedBrowserFiles = [
   'authedFetch.js',
@@ -90,6 +98,13 @@ const sharedBrowserFiles = [
   'statsGoogleAuthModule.js',
   'statsTopStories.js',
   'statsMenu.js',
+];
+
+const coreRealtimeCopies = [
+  {
+    source: srcCoreRealtimeDir,
+    target: join(infraFunctionsDir, 'realtime-call', 'cloud', 'core', 'realtime'),
+  },
 ];
 
 const browserFileCopies = sharedBrowserFiles.map(name => ({
@@ -1155,8 +1170,40 @@ async function rewriteImport(filePath, from, to) {
   }
 }
 
+/**
+ * Rewrite a batch of import specifiers within a file with one read/write cycle.
+ * @param {string} filePath - Absolute path to the file whose contents may change.
+ * @param {Array<[string, string]>} rewrites - Import specifier replacements.
+ * @returns {Promise<void>} Promise that resolves once the file has been updated or skipped.
+ */
+async function rewriteImports(filePath, rewrites) {
+  try {
+    const original = await fs.readFile(filePath, 'utf8');
+    const updated = rewrites.reduce(
+      (content, [from, to]) => content.replaceAll(from, to),
+      original
+    );
+
+    if (updated === original) {
+      return;
+    }
+
+    await fs.writeFile(filePath, updated);
+    logger.info(`Rewrote ${formatForLog(filePath)} imports`);
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+    // File doesn't exist, skip silently
+  }
+}
+
 await runCopyToInfra({
-  directoryCopies: [...directoryCopies, ...preservedCloudTreeCopies],
+  directoryCopies: [
+    ...directoryCopies,
+    ...preservedCloudTreeCopies,
+    ...coreRealtimeCopies,
+  ],
   individualFileCopies,
   io,
   messageLogger: logger,
@@ -1171,76 +1218,78 @@ await Promise.all(
   })
 );
 
-await Promise.all([
-  // Rewrite relative imports for all cloud functions
-  ...functionDirectories.flatMap(functionDir => {
+const cloudFunctionImportRewrites = [
+  // Core and common module rewrites
+  ['../../core/commonCore.js', './commonCore.js'],
+  ['../common-core.js', './commonCore.js'],
+  ['../commonCore.js', './commonCore.js'],
+  ['../../commonCore.js', './commonCore.js'],
+  ['.././commonCore.js', './commonCore.js'],
+
+  // Cloud core rewrites
+  ['../core/cloud/cloud-core.js', './cloud-core.js'],
+  ['../cloud-core.js', './cloud-core.js'],
+
+  // Firestore and database rewrites
+  ['../firestore-helpers.js', './firestore.js'],
+  ['../firestore.js', './firestore.js'],
+
+  // Auth rewrites
+  ['../auth-helpers.js', './auth-helpers.js'],
+
+  // HTTP and utility rewrites
+  ['../http-method-guard.js', './http-method-guard.js'],
+  ['../response-utils.js', './response-utils.js'],
+  ['../responder-utils.js', './responder-utils.js'],
+  ['../allowed-origins.js', './allowed-origins.js'],
+  ['../handler-utils.js', './handler-utils.js'],
+  ['../submit-shared.js', './submit-shared.js'],
+
+  // Cross-function rewrites
+  ['../process-new-page/process-new-page-core.js', './process-new-page-core.js'],
+  ['../generate-stats/generate-stats-core.js', './generate-stats-core.js'],
+  ['../submit-new-page/submit-new-page-core.js', './submit-new-page-core.js'],
+  ['../submit-new-story/submit-new-story-core.js', './submit-new-story-core.js'],
+  [
+    '../assign-moderation-job/assign-moderation-job-core.js',
+    './assign-moderation-job-core.js',
+  ],
+
+  // Verification admin rewrites
+  ['../mark-variant-dirty/verifyAdmin.js', './mark-variant-dirty-verifyAdmin.js'],
+  ['../generate-stats/verifyAdmin.js', './verifyAdmin.js'],
+
+  // Firebase and cors rewrites
+  ['../firebase-functions.js', './firebase-functions.js'],
+  ['../cors-config.js', './cors-config.js'],
+];
+
+const cloudFunctionRewriteFilePatterns = [
+  functionDir => `${functionDir}-core.js`,
+  functionDir => `${functionDir}-gcf.js`,
+  () => 'common-gcf.js',
+  () => 'common-core.js',
+  () => 'helpers.js',
+  () => 'cloud-core.js',
+  () => 'firebase-functions.js',
+  () => 'cors-config.js',
+  () => 'verifyAdmin.js',
+  () => 'firestore.js',
+];
+
+await Promise.all(
+  functionDirectories.flatMap(functionDir => {
     const functionDirPath = join(infraFunctionsDir, functionDir);
+    return cloudFunctionRewriteFilePatterns.map(pattern =>
+      rewriteImports(
+        join(functionDirPath, pattern(functionDir)),
+        cloudFunctionImportRewrites
+      )
+    );
+  })
+);
 
-    // All JS files in the function directory that might need rewrites
-    const filePatterns = [
-      `${functionDir}-core.js`,
-      `${functionDir}-gcf.js`,
-      'common-gcf.js',
-      'common-core.js',
-      'helpers.js',
-      'cloud-core.js',
-      'firebase-functions.js',
-      'cors-config.js',
-      'verifyAdmin.js',
-      'firestore.js',
-    ];
-
-    const importRewrites = [
-      // Core and common module rewrites
-      ['../../core/commonCore.js', './commonCore.js'],
-      ['../common-core.js', './commonCore.js'],
-      ['../commonCore.js', './commonCore.js'],
-      ['../../commonCore.js', './commonCore.js'],
-      ['.././commonCore.js', './commonCore.js'],
-
-      // Cloud core rewrites
-      ['../core/cloud/cloud-core.js', './cloud-core.js'],
-      ['../cloud-core.js', './cloud-core.js'],
-
-      // Firestore and database rewrites
-      ['../firestore-helpers.js', './firestore.js'],
-      ['../firestore.js', './firestore.js'],
-
-      // Auth rewrites
-      ['../auth-helpers.js', './auth-helpers.js'],
-
-      // HTTP and utility rewrites
-      ['../http-method-guard.js', './http-method-guard.js'],
-      ['../response-utils.js', './response-utils.js'],
-      ['../responder-utils.js', './responder-utils.js'],
-      ['../allowed-origins.js', './allowed-origins.js'],
-      ['../handler-utils.js', './handler-utils.js'],
-      ['../submit-shared.js', './submit-shared.js'],
-
-      // Cross-function rewrites
-      ['../process-new-page/process-new-page-core.js', './process-new-page-core.js'],
-      ['../generate-stats/generate-stats-core.js', './generate-stats-core.js'],
-      ['../submit-new-page/submit-new-page-core.js', './submit-new-page-core.js'],
-      ['../submit-new-story/submit-new-story-core.js', './submit-new-story-core.js'],
-      ['../assign-moderation-job/assign-moderation-job-core.js', './assign-moderation-job-core.js'],
-
-      // Verification admin rewrites
-      ['../mark-variant-dirty/verifyAdmin.js', './mark-variant-dirty-verifyAdmin.js'],
-      ['../generate-stats/verifyAdmin.js', './verifyAdmin.js'],
-
-      // Firebase and cors rewrites
-      ['../firebase-functions.js', './firebase-functions.js'],
-      ['../cors-config.js', './cors-config.js'],
-    ];
-
-    return filePatterns.flatMap(filename => {
-      const filePath = join(functionDirPath, filename);
-      return importRewrites.map(([from, to]) =>
-        rewriteImport(filePath, from, to)
-      );
-    });
-  }),
-
+await Promise.all([
   // Specific rewrites for cross-function imports
   rewriteImport(
     processNewStoryCoreFile,
