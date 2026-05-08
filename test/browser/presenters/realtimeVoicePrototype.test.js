@@ -1,4 +1,7 @@
-import { createRealtimeVoicePrototypeElement } from '../../../src/browser/presenters/realtimeVoicePrototype.js';
+import {
+  createRealtimeVoicePrototypeElement,
+  realtimeVoicePrototypePresenterTestOnly,
+} from '../../../src/browser/presenters/realtimeVoicePrototype.js';
 
 /**
  *
@@ -55,5 +58,27 @@ describe('createRealtimeVoicePrototypeElement', () => {
     expect(text).toContain('Toy controls mounted');
     expect(text).not.toContain('OPENAI_API_KEY');
     expect(text).not.toContain('sk-');
+  });
+});
+
+describe('realtimeVoicePrototypePresenterTestOnly', () => {
+  test('includes relay JSON error details in failed session messages', () => {
+    expect(
+      realtimeVoicePrototypePresenterTestOnly.formatRealtimeAnswerError(
+        { status: 500 },
+        '{"error":"OPENAI_API_KEY is required for Realtime calls."}'
+      )
+    ).toBe(
+      'Realtime session server failed with status 500: OPENAI_API_KEY is required for Realtime calls.'
+    );
+  });
+
+  test('falls back to status when the failed session body is empty', () => {
+    expect(
+      realtimeVoicePrototypePresenterTestOnly.formatRealtimeAnswerError(
+        { status: 503 },
+        ''
+      )
+    ).toBe('Realtime session server failed with status 503.');
   });
 });

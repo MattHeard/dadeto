@@ -321,9 +321,56 @@ async function requestRealtimeAnswer(offerSdp, endpoint) {
 
   const answerSdp = await response.text();
   if (!response.ok) {
-    throw new Error(`Realtime session server failed with status ${response.status}.`);
+    throw new Error(formatRealtimeAnswerError(response, answerSdp));
   }
   return answerSdp;
+}
+
+/**
+ * Format a failed Realtime relay response for users.
+ * @param {Response} response Failed relay response.
+ * @param {string} responseText Response body text.
+ * @returns {string} User-facing error message.
+ */
+function formatRealtimeAnswerError(response, responseText) {
+  const detail = getRealtimeAnswerErrorDetail(responseText);
+  const prefix = `Realtime session server failed with status ${response.status}`;
+  if (!detail) {
+    return `${prefix}.`;
+  }
+
+  return `${prefix}: ${detail}`;
+}
+
+/**
+ * Extract a relay error detail from JSON or plain text.
+ * @param {string} responseText Response body text.
+ * @returns {string} Error detail or empty string.
+ */
+function getRealtimeAnswerErrorDetail(responseText) {
+  if (!responseText.trim()) {
+    return '';
+  }
+
+  return getJsonErrorDetail(responseText) || responseText.trim();
+}
+
+/**
+ * Extract an `error` string from a JSON relay response.
+ * @param {string} responseText Response body text.
+ * @returns {string} JSON error detail or empty string.
+ */
+function getJsonErrorDetail(responseText) {
+  try {
+    const parsed = JSON.parse(responseText);
+    if (typeof parsed.error === 'string' && parsed.error.trim()) {
+      return parsed.error.trim();
+    }
+  } catch {
+    return '';
+  }
+
+  return '';
 }
 
 /**
@@ -448,3 +495,8 @@ function formatErrorMessage(error) {
   }
   return 'Error: unknown connection failure.';
 }
+
+export const realtimeVoicePrototypePresenterTestOnly = {
+  formatRealtimeAnswerError,
+  getRealtimeAnswerErrorDetail,
+};

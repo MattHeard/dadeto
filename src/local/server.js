@@ -8,7 +8,7 @@ import { createDocumentStore } from './documentStore.js';
 import { exchangeRealtimeCallSdp } from './openaiRealtimeCalls.js';
 import { formatListenErrorMessage } from './serverMessages.js';
 
-const WRITER_HTTPS_ENABLED_VALUES = new Set(['1', 'true', 'yes', 'on']);
+const ENABLED_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.resolve(__dirname, '../../public');
@@ -21,12 +21,16 @@ const store = createDocumentStore({
 
 /**
  * Create the local Dadeto Express app.
- * @param {{store: ReturnType<typeof createDocumentStore>, publicDir: string, writerDir: string, exchangeRealtimeCallSdp: typeof exchangeRealtimeCallSdp}} deps
+ * @param {{store: ReturnType<typeof createDocumentStore>, publicDir: string, writerDir: string, exchangeRealtimeCallSdp: typeof exchangeRealtimeCallSdp, requestLogger?: (message: string) => void}} deps
  *   Local server dependencies.
  * @returns {express.Express} Configured Express app.
  */
 export function createLocalApp(deps) {
   const app = express();
+
+  if (deps.requestLogger) {
+    app.use(createRequestLogger(deps.requestLogger));
+  }
 
   app.use(express.text({ type: ['application/sdp', 'text/plain'], limit: '256kb' }));
   app.use(express.json({ limit: '2mb' }));
@@ -105,9 +109,58 @@ export function createLocalApp(deps) {
  * @returns {boolean} True when the writer server should use HTTPS.
  */
 export function isWriterHttpsEnabled(env = process.env) {
-  return WRITER_HTTPS_ENABLED_VALUES.has(
-    (env.WRITER_HTTPS ?? '').trim().toLowerCase()
-  );
+  return isEnabledEnvValue(env.WRITER_HTTPS);
+}
+
+/**
+ * Check whether local writer request logging is enabled.
+ * @param {Record<string, string | undefined>} [env] Environment variables.
+ * @returns {boolean} True when request logging should be enabled.
+ */
+export function isWriterRequestLogEnabled(env = process.env) {
+  return isEnabledEnvValue(env.WRITER_REQUEST_LOG);
+}
+
+/**
+ * Check whether an environment value enables a local feature.
+ * @param {string | undefined} value Environment value.
+ * @returns {boolean} True when the value is an enabled flag.
+ */
+function isEnabledEnvValue(value) {
+  return ENABLED_ENV_VALUES.has((value ?? '').trim().toLowerCase());
+}
+
+/**
+ * Create local writer request logging middleware.
+ * @param {(message: string) => void} requestLogger Request log sink.
+ * @returns {express.RequestHandler} Express middleware.
+ */
+export function createRequestLogger(requestLogger) {
+  return (req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      requestLogger(formatRequestLog(req, res, Date.now() - start));
+    });
+    next();
+  };
+}
+
+/**
+ * Format a local writer request log line.
+ * @param {express.Request} req Express request.
+ * @param {express.Response} res Express response.
+ * @param {number} durationMs Request duration in milliseconds.
+ * @returns {string} Request log line.
+ */
+function formatRequestLog(req, res, durationMs) {
+  return [
+    'writer request',
+    req.method,
+    req.originalUrl ?? req.url,
+    res.statusCode,
+    `${durationMs}ms`,
+    req.ip ?? req.socket?.remoteAddress ?? 'unknown-remote',
+  ].join(' ');
 }
 
 /**
@@ -186,6 +239,7 @@ export const app = createLocalApp({
   publicDir,
   writerDir,
   exchangeRealtimeCallSdp,
+  requestLogger: isWriterRequestLogEnabled() ? console.log : undefined,
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

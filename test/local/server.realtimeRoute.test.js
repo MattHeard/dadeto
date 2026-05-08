@@ -2,9 +2,11 @@ import { jest } from '@jest/globals';
 import http from 'node:http';
 import {
   createLocalApp,
+  createRequestLogger,
   createWriterServer,
   getWriterUrl,
   isWriterHttpsEnabled,
+  isWriterRequestLogEnabled,
   readWriterTlsOptions,
 } from '../../src/local/server.js';
 
@@ -125,5 +127,42 @@ describe('local writer server transport', () => {
     expect(() =>
       readWriterTlsOptions({ WRITER_HTTPS: '1', WRITER_TLS_KEY: 'key.pem' })
     ).toThrow('WRITER_TLS_CERT is required when WRITER_HTTPS is enabled.');
+  });
+});
+
+describe('local writer request logging', () => {
+  test('detects request logging flag values', () => {
+    expect(isWriterRequestLogEnabled({ WRITER_REQUEST_LOG: '1' })).toBe(true);
+    expect(isWriterRequestLogEnabled({ WRITER_REQUEST_LOG: 'off' })).toBe(
+      false
+    );
+  });
+
+  test('logs completed requests when a request logger is configured', () => {
+    const requestLogger = jest.fn();
+    const middleware = createRequestLogger(requestLogger);
+    const finishHandlers = {};
+    const req = {
+      method: 'POST',
+      originalUrl: '/api/realtime/call',
+      ip: '192.168.178.134',
+    };
+    const res = {
+      statusCode: 200,
+      on: (event, handler) => {
+        finishHandlers[event] = handler;
+      },
+    };
+    const next = jest.fn();
+
+    middleware(req, res, next);
+    finishHandlers.finish();
+
+    expect(next).toHaveBeenCalledWith();
+    expect(requestLogger).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^writer request POST \/api\/realtime\/call 200 \d+ms 192\.168\.178\.134$/
+      )
+    );
   });
 });
