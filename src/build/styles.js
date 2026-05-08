@@ -443,6 +443,38 @@ export function styles() {
     box-sizing: border-box;
   }
 
+  .realtime-voice-toy {
+    border: 1px solid var(--terminal-border);
+    padding: var(--cell-h) 1ch;
+    background: var(--terminal-panel);
+  }
+
+  .realtime-voice-toy h3 {
+    margin-top: 0;
+  }
+
+  .realtime-voice-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1ch;
+    margin: var(--cell-h) 0;
+  }
+
+  .realtime-voice-controls button {
+    min-width: 12ch;
+  }
+
+  .realtime-voice-status {
+    color: var(--terminal-success);
+    font-weight: bold;
+  }
+
+  .realtime-voice-log {
+    max-height: calc(8 * var(--cell-h));
+    overflow: auto;
+    padding-left: 3ch;
+  }
+
   .nav-entry > .key {
     color: var(--terminal-success);
   }

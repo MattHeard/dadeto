@@ -110,6 +110,14 @@ variable "create_default_firestore_database" {
   default     = true
 }
 
+
+variable "openai_api_key" {
+  description = "OpenAI API key used by the Realtime voice cloud relay"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "google_oauth_client_id" {
   description = "OAuth client ID for Google sign-in"
   type        = string

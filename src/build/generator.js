@@ -937,6 +937,7 @@ const TOY_OUTPUT_TYPES = [
   ['ledger-ingest', 'ledger-ingest'],
   ['real-hourly-wage', 'real-hourly-wage'],
   ['joycon-mapping', 'joycon-mapping'],
+  ['realtime-voice', 'realtime-voice'],
   ['tic-tac-toe', 'tic-tac-toe'],
   ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
   [

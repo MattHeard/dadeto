@@ -246,11 +246,9 @@ async function removeVariantPayload({
  * @param {string} [options.objectPrefix] Optional object prefix for tenant-scoped static output.
  * @returns {(path: string) => Promise<void>} Helper that deletes the rendered file.
  */
-export function createBucketFileRemover({
-  storage,
-  bucketName = DEFAULT_BUCKET_NAME,
-  objectPrefix = '',
-}) {
+export function createBucketFileRemover(options) {
+  const { storage, bucketName, objectPrefix } =
+    normalizeBucketFileRemoverOptions(options);
   const validatedBucketName = validateBucketName(bucketName);
   validateStorage(storage);
 
@@ -267,6 +265,48 @@ export function createBucketFileRemover({
         .then(() => undefined);
     });
   };
+}
+
+/**
+ * Normalize optional bucket file remover arguments without adding branching to the factory.
+ * @param {object} options Storage configuration.
+ * @param {unknown} options.storage Cloud Storage instance.
+ * @param {string} [options.bucketName] Bucket that stores rendered HTML.
+ * @param {string} [options.objectPrefix] Optional object prefix for tenant-scoped static output.
+ * @returns {{ storage: unknown, bucketName: string, objectPrefix: string }} Normalized remover options.
+ */
+function normalizeBucketFileRemoverOptions(options) {
+  return {
+    storage: options.storage,
+    bucketName: getBucketFileRemoverBucketName(options.bucketName),
+    objectPrefix: getBucketFileRemoverObjectPrefix(options.objectPrefix),
+  };
+}
+
+/**
+ * Resolve the bucket name default for file removal.
+ * @param {string | undefined} bucketName Candidate bucket name.
+ * @returns {string} Candidate bucket name or default bucket name.
+ */
+function getBucketFileRemoverBucketName(bucketName) {
+  if (bucketName === undefined) {
+    return DEFAULT_BUCKET_NAME;
+  }
+
+  return bucketName;
+}
+
+/**
+ * Resolve the object prefix default for file removal.
+ * @param {string | undefined} objectPrefix Candidate object prefix.
+ * @returns {string} Candidate object prefix or an empty prefix.
+ */
+function getBucketFileRemoverObjectPrefix(objectPrefix) {
+  if (objectPrefix === undefined) {
+    return '';
+  }
+
+  return objectPrefix;
 }
 
 /**

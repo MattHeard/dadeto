@@ -173,6 +173,7 @@ import { createTicTacToeBoardElement } from './presenters/ticTacToeBoard.js';
 import { createBattleshipFleetBoardElement } from './presenters/battleshipSolitaireFleet.js';
 import { createBattleshipCluesBoardElement } from './presenters/battleshipSolitaireClues.js';
 import { createJoyConMappingElement } from './presenters/joyConMapping.js';
+import { createRealtimeVoicePrototypeElement } from './presenters/realtimeVoicePrototype.js';
 
 /**
  * Creates a handler for input dropdown changes
@@ -399,6 +400,7 @@ const presentersMap = {
   'battleship-solitaire-fleet': createBattleshipFleetBoardElement,
   'battleship-solitaire-clues-presenter': createBattleshipCluesBoardElement,
   'joycon-mapping': createJoyConMappingElement,
+  'realtime-voice': createRealtimeVoicePrototypeElement,
 };
 
 /**

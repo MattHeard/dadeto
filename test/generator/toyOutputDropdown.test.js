@@ -26,6 +26,7 @@ const OPTIONS = [
   '<option value="ledger-ingest">ledger-ingest</option>',
   '<option value="real-hourly-wage">real-hourly-wage</option>',
   '<option value="joycon-mapping">joycon-mapping</option>',
+  '<option value="realtime-voice">realtime-voice</option>',
   '<option value="tic-tac-toe">tic-tac-toe</option>',
   '<option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option>',
   '<option value="battleship-solitaire-clues-presenter">battleship-solitaire-clues-presenter</option>',
@@ -78,6 +79,7 @@ describe('toy output dropdown', () => {
       ['ledger-ingest', 'ledger-ingest'],
       ['real-hourly-wage', 'real-hourly-wage'],
       ['joycon-mapping', 'joycon-mapping'],
+      ['realtime-voice', 'realtime-voice'],
       ['tic-tac-toe', 'tic-tac-toe'],
       ['battleship-solitaire-fleet', 'battleship-solitaire-fleet'],
       [
