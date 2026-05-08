@@ -12,6 +12,7 @@
 - Pressing Connect requests microphone permission, creates a WebRTC offer, and sends the SDP offer to the selected endpoint.
 - The browser applies the SDP answer returned by the selected server and plays incoming remote audio.
 - Disconnect stops media tracks, closes the data channel, closes the peer connection, and resets status.
+- The phone local harness serves the writer app over HTTPS with a trusted local certificate so microphone permission is available on a LAN URL.
 
 ## Security behavior
 - The browser toy payload contains only browser-safe display/config fields.

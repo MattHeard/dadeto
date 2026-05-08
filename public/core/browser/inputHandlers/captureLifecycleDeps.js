@@ -2,7 +2,7 @@ import * as captureFormShared from './captureFormShared.js';
 import { emitCaptureState } from './captureLifecycleShared.js';
 import { createCaptureLifecycleToggleHandler } from './captureLifecycleToggle.js';
 
-const captureLifecycleDeps = {
+export const captureLifecycleDeps = {
   getAutoSubmitCheckbox: captureFormShared.getAutoSubmitCheckbox,
   makeCaptureFormBuilder: captureFormShared.makeCaptureFormBuilder,
   prepareCaptureHandler: captureFormShared.prepareCaptureHandler,
@@ -14,4 +14,5 @@ const captureLifecycleDeps = {
   createCaptureLifecycleToggleHandler,
 };
 
+export const createCaptureLifecycleDeps = () => captureLifecycleDeps;
 export default captureLifecycleDeps;

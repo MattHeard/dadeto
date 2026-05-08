@@ -489,6 +489,38 @@
         box-sizing: border-box;
       }
 
+      .realtime-voice-toy {
+        border: 1px solid var(--terminal-border);
+        padding: var(--cell-h) 1ch;
+        background: var(--terminal-panel);
+      }
+
+      .realtime-voice-toy h3 {
+        margin-top: 0;
+      }
+
+      .realtime-voice-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1ch;
+        margin: var(--cell-h) 0;
+      }
+
+      .realtime-voice-controls button {
+        min-width: 12ch;
+      }
+
+      .realtime-voice-status {
+        color: var(--terminal-success);
+        font-weight: bold;
+      }
+
+      .realtime-voice-log {
+        max-height: calc(8 * var(--cell-h));
+        overflow: auto;
+        padding-left: 3ch;
+      }
+
       .nav-entry > .key {
         color: var(--terminal-success);
       }
@@ -590,6 +622,103 @@
         </p>
       </div>
       <article
+        class="entry tag-toy tag-voice tag-webrtc tag-realtime tag-openai tag-prototype"
+        id="REAL2"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">REAL2</div>
+        <div class="value">
+          <h2><a href="#REAL2">Realtime Voice Prototype</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">7 May 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-voice">voice</a>,
+          <a class="tag-webrtc">webrtc</a>,
+          <a class="tag-realtime">realtime</a>,
+          <a class="tag-openai">openai</a>,
+          <a class="tag-prototype">prototype</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Mounts a phone-friendly OpenAI Realtime WebRTC voice toy inside the
+          normal Dadeto toy UI.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Paste JSON config to choose a local or cloud SDP relay; for example
+          {"server":"local"} or
+          {"server":"cloud","cloudEndpoint":"https://example.com/api/realtime/call"}.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The browser sends only its SDP offer to the selected
+          /api/realtime/call-compatible server; the OpenAI API key stays in that
+          server environment.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice" selected>realtime-voice</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'REAL2',
+            '/core/browser/toys/2026-05-07/realtimeVoicePrototype.js',
+            'realtimeVoicePrototype'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-game tag-text-adventure tag-stateful tag-storage"
         id="COZY1"
       >
@@ -662,6 +791,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -754,6 +884,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage" selected>real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -846,6 +977,7 @@
             <option value="ledger-ingest" selected>ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -939,6 +1071,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1031,6 +1164,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1127,6 +1261,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1219,6 +1354,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1307,6 +1443,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1398,6 +1535,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1486,6 +1624,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1575,6 +1714,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1666,6 +1806,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1873,6 +2014,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -1960,6 +2102,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2043,6 +2186,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2121,6 +2265,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2207,6 +2352,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2290,6 +2436,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2375,6 +2522,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2458,6 +2606,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2541,6 +2690,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2893,6 +3043,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -2976,6 +3127,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3154,6 +3306,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3243,6 +3396,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3335,6 +3489,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3427,6 +3582,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3510,6 +3666,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3629,6 +3786,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3712,6 +3870,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3836,6 +3995,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -3922,6 +4082,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4005,6 +4166,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4088,6 +4250,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4171,6 +4334,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4265,6 +4429,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4350,6 +4515,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4444,6 +4610,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4535,6 +4702,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet
@@ -4861,6 +5029,7 @@
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
             <option value="tic-tac-toe">tic-tac-toe</option>
             <option value="battleship-solitaire-fleet">
               battleship-solitaire-fleet

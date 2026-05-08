@@ -1,24 +1,37 @@
 {
   "posts": [
     {
+      "key": "REAL2",
+      "title": "Realtime Voice Prototype",
+      "publicationDate": "2026-05-07",
+      "content": [
+        "Mounts a phone-friendly OpenAI Realtime WebRTC voice toy inside the normal Dadeto toy UI.",
+        "Paste JSON config to choose a local or cloud SDP relay; for example {\"server\":\"local\"} or {\"server\":\"cloud\",\"cloudEndpoint\":\"https://example.com/api/realtime/call\"}.",
+        "The browser sends only its SDP offer to the selected /api/realtime/call-compatible server; the OpenAI API key stays in that server environment."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-05-07/realtimeVoicePrototype.js",
+        "functionName": "realtimeVoicePrototype",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "realtime-voice"
+      },
+      "tags": ["toy", "voice", "webrtc", "realtime", "openai", "prototype"]
+    },
+    {
       "key": "COZY1",
       "title": "Cozy House Adventure",
       "publicationDate": "2026-04-19",
       "content": [
-        "A cozy text adventure where you build a tiny house one warm task at a time.",
-        "Start with `build`, then rotate through foundation, materials, roof, and garden commands to complete your home.",
-        "Progress is stored in temporary toy state so each command continues the same construction run."
+        "A stateful text adventure where you build a tiny cozy home by completing foundation, materials, roof, and garden milestones.",
+        "The toy saves progress in temporary local storage so each command continues from your current construction step.",
+        "Play by entering simple commands like build, foundation, and level soil; the response returns narrative output plus completion updates."
       ],
-      "illustration": {
-        "fileType": "png",
-        "fileName": "2025-03-30",
-        "altText": "a warm illustrated tiny house build site at dusk with stacked timber, herb planters, soft lantern light, and a calm cottagecore atmosphere"
-      },
       "toy": {
         "modulePath": "/core/browser/toys/2026-04-19/cozyHouseAdventure.js",
-        "functionName": "cozyHouseAdventure"
+        "functionName": "cozyHouseAdventure",
+        "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "game", "text-adventure", "cozy", "construction"]
+      "tags": ["toy", "game", "text-adventure", "stateful", "storage"]
     },
     {
       "key": "REAL1",

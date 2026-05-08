@@ -1,10 +1,14 @@
 import express from 'express';
+import fs from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDocumentStore } from './documentStore.js';
 import { exchangeRealtimeCallSdp } from './openaiRealtimeCalls.js';
 import { formatListenErrorMessage } from './serverMessages.js';
 
+const WRITER_HTTPS_ENABLED_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.resolve(__dirname, '../../public');
@@ -95,6 +99,88 @@ export function createLocalApp(deps) {
   return app;
 }
 
+/**
+ * Check whether local writer HTTPS mode is enabled.
+ * @param {Record<string, string | undefined>} [env] Environment variables.
+ * @returns {boolean} True when the writer server should use HTTPS.
+ */
+export function isWriterHttpsEnabled(env = process.env) {
+  return WRITER_HTTPS_ENABLED_VALUES.has(
+    (env.WRITER_HTTPS ?? '').trim().toLowerCase()
+  );
+}
+
+/**
+ * Require a TLS path when HTTPS mode is active.
+ * @param {string | undefined} value Candidate path.
+ * @param {string} name Environment variable name.
+ * @returns {string} Non-empty path.
+ */
+function requireTlsPath(value, name) {
+  if (typeof value === 'string' && value.trim()) {
+    return value;
+  }
+
+  throw new Error(`${name} is required when WRITER_HTTPS is enabled.`);
+}
+
+/**
+ * Read TLS key and certificate files for local HTTPS.
+ * @param {Record<string, string | undefined>} [env] Environment variables.
+ * @param {(path: string, encoding: BufferEncoding) => string | Buffer} [readFile]
+ *   File reader.
+ * @returns {{key: string | Buffer, cert: string | Buffer}} HTTPS TLS options.
+ */
+export function readWriterTlsOptions(
+  env = process.env,
+  readFile = fs.readFileSync
+) {
+  const keyPath = requireTlsPath(env.WRITER_TLS_KEY, 'WRITER_TLS_KEY');
+  const certPath = requireTlsPath(env.WRITER_TLS_CERT, 'WRITER_TLS_CERT');
+
+  return {
+    key: readFile(keyPath, 'utf8'),
+    cert: readFile(certPath, 'utf8'),
+  };
+}
+
+/**
+ * Create the local writer HTTP or HTTPS server.
+ * @param {express.Express} localApp Configured Express app.
+ * @param {{
+ *   env?: Record<string, string | undefined>,
+ *   readFile?: (path: string, encoding: BufferEncoding) => string | Buffer,
+ *   httpCreateServer?: typeof http.createServer,
+ *   httpsCreateServer?: typeof https.createServer,
+ * }} [options] Injectable dependencies for tests.
+ * @returns {http.Server | https.Server} Node server.
+ */
+export function createWriterServer(localApp, options = {}) {
+  const {
+    env = process.env,
+    readFile = fs.readFileSync,
+    httpCreateServer = http.createServer,
+    httpsCreateServer = https.createServer,
+  } = options;
+
+  if (isWriterHttpsEnabled(env)) {
+    return httpsCreateServer(readWriterTlsOptions(env, readFile), localApp);
+  }
+
+  return httpCreateServer(localApp);
+}
+
+/**
+ * Build the startup URL shown in local server logs.
+ * @param {number} serverPort Port number.
+ * @param {Record<string, string | undefined>} [env] Environment variables.
+ * @returns {string} Writer app URL.
+ */
+export function getWriterUrl(serverPort, env = process.env) {
+  const protocol = isWriterHttpsEnabled(env) ? 'https' : 'http';
+  return `${protocol}://localhost:${serverPort}/writer/`;
+}
+
 export const app = createLocalApp({
   store,
   publicDir,
@@ -103,8 +189,10 @@ export const app = createLocalApp({
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const server = app.listen(port, () => {
-    console.log(`writer server listening on http://localhost:${port}/writer/`);
+  const server = createWriterServer(app);
+
+  server.listen(port, () => {
+    console.log(`writer server listening on ${getWriterUrl(port)}`);
   });
 
   server.on('error', error => {

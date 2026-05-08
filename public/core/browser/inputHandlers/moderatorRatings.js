@@ -99,9 +99,12 @@ const buildFieldInput = ({ dom, placeholder, value, onChange, cleanupFns }) => {
   const handleInput = () => {
     onChange(String(dom.getValue(input)));
   };
+  const removeInputListener = () => {
+    dom.removeEventListener(input, 'input', handleInput);
+  };
 
   dom.addEventListener(input, 'input', handleInput);
-  cleanupFns.push(() => dom.removeEventListener(input, 'input', handleInput));
+  cleanupFns.push(removeInputListener);
   return input;
 };
 
@@ -254,29 +257,31 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       rowModel,
     });
 
-    const authorInput = buildFieldInput({
-      dom,
-      placeholder: 'Moderator ID',
-      value: rowModel.moderatorId,
-      onChange: handleRowChange('moderatorId'),
-      cleanupFns,
-    });
+    const fieldInputConfigs = [
+      {
+        key: 'moderatorId',
+        placeholder: 'Moderator ID',
+      },
+      {
+        key: 'variantId',
+        placeholder: 'Variant ID',
+      },
+      {
+        key: 'ratedAt',
+        placeholder: 'ratedAt (ISO 8601)',
+      },
+    ];
 
-    const variantInput = buildFieldInput({
+    const fieldInputs = fieldInputConfigs.map(config => ({
       dom,
-      placeholder: 'Variant ID',
-      value: rowModel.variantId,
-      onChange: handleRowChange('variantId'),
       cleanupFns,
-    });
+      placeholder: config.placeholder,
+      value: rowModel[config.key],
+      onChange: handleRowChange(config.key),
+    }));
 
-    const ratedAtInput = buildFieldInput({
-      dom,
-      placeholder: 'ratedAt (ISO 8601)',
-      value: rowModel.ratedAt,
-      onChange: handleRowChange('ratedAt'),
-      cleanupFns,
-    });
+    const [authorInput, variantInput, ratedAtInput] =
+      fieldInputs.map(buildFieldInput);
 
     const approveSelect = buildApproveToggle({
       dom,

@@ -30,9 +30,7 @@ const VALIDATION_ERROR = 'Invalid real hourly wage input';
  * @returns {boolean} True when the value is valid.
  */
 function isValidRealHourlyWageNumber(value) {
-  return [typeof value === 'number', Number.isFinite(value), value >= 0].every(
-    Boolean
-  );
+  return [Number.isFinite(value), value >= 0].every(Boolean);
 }
 
 /**
@@ -105,11 +103,6 @@ function getInputSectionValidationErrors(candidate) {
       ]),
       firstNonNullError([
         getObjectValidationError(candidate.overhead, 'overhead'),
-        getRequiredFieldValidationError(
-          /** @type {Record<string, unknown>} */ (candidate.overhead),
-          'overhead',
-          []
-        ),
       ]),
     ]) ?? [null, null]
   );
@@ -328,6 +321,7 @@ function buildRealHourlyWageOutput(output) {
 
 export const realHourlyWageToyTestOnly = {
   normalizeRealHourlyWageInput,
+  getInputSectionValidationErrors,
   pickKnownNumbers,
   sumKnownNumbers,
   divideOrNull,

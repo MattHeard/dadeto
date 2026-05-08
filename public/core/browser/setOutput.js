@@ -1,3 +1,5 @@
 import { createSectionSetter } from './createSectionSetter.js';
 
-export const setOutput = createSectionSetter('output');
+const outputSetter = createSectionSetter('output');
+
+export const setOutput = (input, env) => outputSetter(input, env);

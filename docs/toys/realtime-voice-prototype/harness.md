@@ -14,11 +14,18 @@ npm test
 
 ```bash
 export OPENAI_API_KEY=sk-...
+mkdir -p local-data/certs
+mkcert -install
+mkcert -key-file local-data/certs/dadeto-local-key.pem -cert-file local-data/certs/dadeto-local.pem localhost 127.0.0.1 <computer-lan-ip>
 npm run build
-WRITER_PORT=4321 npm run start:writer
+WRITER_HTTPS=1 \
+WRITER_TLS_KEY=local-data/certs/dadeto-local-key.pem \
+WRITER_TLS_CERT=local-data/certs/dadeto-local.pem \
+WRITER_PORT=4321 \
+npm run start:writer
 ```
 
-Open `http://<computer-lan-ip>:4321/index.html#REAL2` on the phone, paste `{"server":"local","localEndpoint":"/api/realtime/call"}`, press Submit, then press Connect.
+Install or trust the mkcert root CA on the phone before opening the toy. Open `https://<computer-lan-ip>:4321/index.html#REAL2` on the phone, paste `{"server":"local","localEndpoint":"/api/realtime/call"}`, press Submit, then press Connect.
 
 ## Manual cloud relay check
 
