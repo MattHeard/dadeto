@@ -33,10 +33,9 @@ const logger = {
 
 const { runCopyWorkflow } = createCopyCore({
   directories,
+  io: thirdParty,
+  messageLogger: logger,
   path: pathAdapters,
 });
 
-runCopyWorkflow({
-  io: thirdParty,
-  messageLogger: logger,
-});
+runCopyWorkflow();

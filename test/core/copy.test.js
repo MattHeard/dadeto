@@ -490,7 +490,14 @@ describe('createCopyCore', () => {
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 
-      core.runCopyWorkflow({ io, messageLogger: logger });
+      core = createCopyCore({
+        directories,
+        io,
+        messageLogger: logger,
+        path: posix,
+      });
+
+      core.runCopyWorkflow();
 
       expect(io.removeDirectory).toHaveBeenCalledWith(directories.publicDir);
       expect(io.directoryExists).toHaveBeenCalledWith(directories.publicDir);

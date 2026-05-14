@@ -109,11 +109,25 @@ export function createStaticSiteCopyDirectories({
  * Create helpers that orchestrate copying source assets into the public tree.
  * @param {object} options - File system dependencies.
  * @param {Record<string, string>} options.directories - Directory configuration.
+ * @param {{
+ *   directoryExists: (target: string) => boolean,
+ *   createDirectory: (target: string) => void,
+ *   removeDirectory: (target: string) => void,
+ *   copyFile: (source: string, destination: string) => void,
+ *   readDirEntries: (dir: string) => import('fs').Dirent[],
+ * }} [options.io] - Optional default filesystem adapters.
+ * @param {{ info: (message: string) => void, warn: (message: string) => void }} [options.messageLogger]
+ *   - Optional default logger.
  * @param {Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.path - Node path helpers.
  * @returns {Record<string, Function>} Copy helper functions.
  */
 // eslint-disable-next-line max-lines-per-function
-export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
+export function createCopyCore({
+  directories: dirConfig,
+  io: defaultIo,
+  messageLogger: defaultMessageLogger,
+  path: pathDeps,
+}) {
   const { join, dirname, relative } = pathDeps;
 
   /**
@@ -563,24 +577,12 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
 
   /**
    * Execute the full copy workflow for the static site.
-   * @param {{
-   *   directories?: Record<string, string>,
-   *   io: {
-   *     directoryExists: (target: string) => boolean,
-   *     createDirectory: (target: string) => void,
-   *     removeDirectory: (target: string) => void,
-   *     copyFile: (source: string, destination: string) => void,
-   *     readDirEntries: (dir: string) => import('fs').Dirent[],
-   *   },
-   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
-   * }} context - Copy execution context.
    * @returns {void}
    */
-  function runCopyWorkflow({
-    directories: dirs = dirConfig,
-    io,
-    messageLogger,
-  }) {
+  function runCopyWorkflow() {
+    const dirs = dirConfig;
+    const io = defaultIo;
+    const messageLogger = defaultMessageLogger;
     const copyFile = (source, destination, message) =>
       copyFileWithDirectories({
         io,
