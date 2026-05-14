@@ -42,21 +42,3 @@ export function createPathAdapters() {
     extname: path.extname,
   };
 }
-
-/**
- * Build the directory map used by the copy generator.
- * @param {{ projectRoot: string, srcDir: string, publicDir: string }} baseDirectories - Base project directories.
- * @param {Array<[string, string]>} sharedDirectoryEntries - Shared directories derived from core helpers.
- * @returns {Record<string, string>} Comprehensive directory map for copy routines.
- */
-export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
-  const { projectRoot, srcDir, publicDir } = baseDirectories;
-  const sharedEntries = Object.fromEntries(sharedDirectoryEntries);
-
-  return {
-    projectRoot,
-    srcDir,
-    publicDir,
-    ...sharedEntries,
-  };
-}

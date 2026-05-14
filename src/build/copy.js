@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import { createCopyCore, createSharedDirectoryEntries } from '../core/build/blog.js';
 import {
-  createCopyDirectories,
+  createCopyCore,
+  createStaticSiteCopyDirectories,
+} from '../core/build/blog.js';
+import {
   createPathAdapters,
   getCurrentDirectory,
   resolveProjectDirectories,
@@ -15,21 +17,12 @@ const { projectRoot, srcDir, publicDir } = resolveProjectDirectories(__dirname);
 
 const pathAdapters = createPathAdapters();
 
-const sharedDirectoryEntries = createSharedDirectoryEntries({
-  path: { join: pathAdapters.join },
+const directories = createStaticSiteCopyDirectories({
+  path: pathAdapters,
+  projectRoot,
   srcDir,
   publicDir,
 });
-
-const directories = {
-  ...createCopyDirectories(
-    { projectRoot, srcDir, publicDir },
-    sharedDirectoryEntries
-  ),
-  srcBrowserAssetsDir: pathAdapters.join(srcDir, 'browser', 'assets'),
-  srcContentBlogMediaDir: pathAdapters.join(srcDir, 'content', 'blog-media'),
-  srcContentPagesDir: pathAdapters.join(srcDir, 'content', 'pages'),
-};
 
 const thirdParty = createFsAdapters();
 

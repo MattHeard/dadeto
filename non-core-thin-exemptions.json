@@ -52,7 +52,6 @@
     "src/local/notion-codex/outcomeStore.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/analyzePost.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/submit-new-story/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/build/copy-dendrite.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/build/copy.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally."
+    "src/build/copy-dendrite.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally."
   }
 }

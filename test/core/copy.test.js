@@ -2,7 +2,9 @@ import { jest } from '@jest/globals';
 import path from 'path';
 import {
   createCopyCore,
+  createCopyDirectories,
   createSharedDirectoryEntries,
+  createStaticSiteCopyDirectories,
 } from '../../src/core/build/blog.js';
 
 const posix = path.posix;
@@ -120,6 +122,59 @@ describe('createSharedDirectoryEntries', () => {
       ['srcWidgetsDir', posix.join(srcDir, 'core/widgets')],
       ['publicWidgetsDir', posix.join(publicDir, 'widgets')],
     ]);
+  });
+});
+
+describe('copy directory map helpers', () => {
+  it('creates copy directories from base and shared entries', () => {
+    const directories = createDirectories();
+    const sharedDirectoryEntries = [
+      ['srcBrowserDir', directories.srcBrowserDir],
+      ['publicBrowserDir', directories.publicBrowserDir],
+    ];
+
+    expect(
+      createCopyDirectories(
+        {
+          projectRoot: directories.projectRoot,
+          srcDir: directories.srcDir,
+          publicDir: directories.publicDir,
+        },
+        sharedDirectoryEntries
+      )
+    ).toEqual({
+      projectRoot: directories.projectRoot,
+      srcDir: directories.srcDir,
+      publicDir: directories.publicDir,
+      srcBrowserDir: directories.srcBrowserDir,
+      publicBrowserDir: directories.publicBrowserDir,
+    });
+  });
+
+  it('creates the full static-site copy directory map', () => {
+    const directories = createDirectories();
+
+    expect(
+      createStaticSiteCopyDirectories({
+        path: posix,
+        projectRoot: directories.projectRoot,
+        srcDir: directories.srcDir,
+        publicDir: directories.publicDir,
+      })
+    ).toMatchObject({
+      projectRoot: directories.projectRoot,
+      srcDir: directories.srcDir,
+      publicDir: directories.publicDir,
+      srcBrowserDir: directories.srcBrowserDir,
+      publicBrowserDir: directories.publicBrowserDir,
+      srcCoreBrowserDir: directories.srcCoreBrowserDir,
+      publicCoreBrowserDir: directories.publicCoreBrowserDir,
+      srcCoreDir: directories.srcCoreDir,
+      publicCoreDir: directories.publicCoreDir,
+      srcBrowserAssetsDir: directories.srcBrowserAssetsDir,
+      srcContentBlogMediaDir: directories.srcContentBlogMediaDir,
+      srcContentPagesDir: directories.srcContentPagesDir,
+    });
   });
 });
 

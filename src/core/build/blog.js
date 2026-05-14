@@ -54,6 +54,58 @@ export function createSharedDirectoryEntries({
 }
 
 /**
+ * Build the base directory map used by the copy generator.
+ * @param {{ projectRoot: string, srcDir: string, publicDir: string }} baseDirectories
+ *   - Base project directories.
+ * @param {Array<[string, string]>} sharedDirectoryEntries - Shared directory entries.
+ * @returns {Record<string, string>} Directory map with shared source and destination paths.
+ */
+export function createCopyDirectories(baseDirectories, sharedDirectoryEntries) {
+  const { projectRoot, srcDir, publicDir } = baseDirectories;
+  const sharedEntries = Object.fromEntries(sharedDirectoryEntries);
+
+  return {
+    projectRoot,
+    srcDir,
+    publicDir,
+    ...sharedEntries,
+  };
+}
+
+/**
+ * Build the complete directory map for the static-site copy workflow.
+ * @param {{
+ *   path: { join: typeof import('path').join },
+ *   projectRoot: string,
+ *   srcDir: string,
+ *   publicDir: string,
+ * }} options - Path helpers and base project directories.
+ * @returns {Record<string, string>} Complete static-site copy directory map.
+ */
+export function createStaticSiteCopyDirectories({
+  path: pathDeps,
+  projectRoot,
+  srcDir,
+  publicDir,
+}) {
+  const sharedDirectoryEntries = createSharedDirectoryEntries({
+    path: { join: pathDeps.join },
+    srcDir,
+    publicDir,
+  });
+
+  return {
+    ...createCopyDirectories(
+      { projectRoot, srcDir, publicDir },
+      sharedDirectoryEntries
+    ),
+    srcBrowserAssetsDir: pathDeps.join(srcDir, 'browser', 'assets'),
+    srcContentBlogMediaDir: pathDeps.join(srcDir, 'content', 'blog-media'),
+    srcContentPagesDir: pathDeps.join(srcDir, 'content', 'pages'),
+  };
+}
+
+/**
  * Create helpers that orchestrate copying source assets into the public tree.
  * @param {object} options - File system dependencies.
  * @param {Record<string, string>} options.directories - Directory configuration.
