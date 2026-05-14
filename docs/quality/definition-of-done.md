@@ -18,14 +18,14 @@ Every change (code, docs, config, or infra) is done only when all of the followi
 
 Run fast local checks first, then expensive/cloud checks:
 
-Use `npm run check` when you want the default local aggregate gate for most changes. It runs `npm test`, `npm run lint`, `npm run depcruise`, and `npm run duplication` without replacing any underlying subsystem-specific commands.
+Use `npm run check` when you want the default local aggregate gate for most changes. It runs `npm test`, `npm run lint`, `npm run depcruise`, `npm run duplication`, `npm run non-core-thin`, and `npm audit --audit-level=low` without replacing any underlying subsystem-specific commands.
 
 Keep subsystem-specific packaging commands such as `npm run build:cloud` and `npm run build:dendritestories-co-nz` separate, and keep `npm run tsdoc:check` out of the default aggregate path until the known typing backlog is intentionally being worked.
 
 1. `npm test`
 2. `npm run lint`
 3. `npm run build` (when build-relevant paths changed)
-4. subsystem checks (for example `npm run build:cloud`, `npm run build:dendritestories-co-nz`, `npm run duplication`)
+4. subsystem checks (for example `npm run build:cloud`, `npm run build:dendritestories-co-nz`, `npm run duplication`, `npm run non-core-thin`)
 5. cloud-gated E2E workflow checks
 
 Rationale: fail early on fast feedback, reserve cloud and long-running jobs for changes that pass local gates.
@@ -40,7 +40,18 @@ Use the evaluator matrix as source of truth. At minimum:
 - **Cloud runtime/deploy packaging changes:** `npm run build:cloud`
 - **Dendrite package/public path changes:** `npm run build:dendritestories-co-nz`
 - **Shared-module refactors with architecture risk:** `npm run duplication`
+- **Non-core JS changes:** `npm run non-core-thin`
 - **E2E-covered release surfaces:** cloud E2E workflow execution
+
+## Core-first architecture gates
+
+Business logic should live under `src/core`. Code outside `src/core` should stay thin: environment integration, dependency wiring, and generated-entry shims. The aggregate check enforces this direction in three ways:
+
+- `npm run lint` treats warnings as failures for the linted surface, so core quality rules are strict.
+- `npm run duplication` keeps zero-duplication detection scoped to `src/core`.
+- `npm run non-core-thin` fails any non-core JavaScript file over 50 lines unless it is explicitly listed in `non-core-thin-exemptions.json`.
+
+The current exemption file is a baseline backlog, not permission for new non-core logic. Remove entries as logic moves into `src/core`.
 
 ## E2E cloud-only constraint
 
