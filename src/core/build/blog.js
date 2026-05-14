@@ -106,6 +106,21 @@ export function createStaticSiteCopyDirectories({
 }
 
 /**
+ * Build a copy workflow logger from a console-like object.
+ * @param {{
+ *   log: (message: string) => void,
+ *   warn: (message: string) => void,
+ * }} consoleLike - Console-compatible logging dependency.
+ * @returns {{ info: (message: string) => void, warn: (message: string) => void }} Copy workflow logger.
+ */
+export function createConsoleMessageLogger(consoleLike) {
+  return {
+    info: message => consoleLike.log(message),
+    warn: message => consoleLike.warn(message),
+  };
+}
+
+/**
  * Create helpers that orchestrate copying source assets into the public tree.
  * @param {object} options - File system dependencies.
  * @param {Record<string, string>} options.directories - Directory configuration.

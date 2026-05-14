@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import path from 'path';
 import {
+  createConsoleMessageLogger,
   createCopyCore,
   createCopyDirectories,
   createSharedDirectoryEntries,
@@ -122,6 +123,22 @@ describe('createSharedDirectoryEntries', () => {
       ['srcWidgetsDir', posix.join(srcDir, 'core/widgets')],
       ['publicWidgetsDir', posix.join(publicDir, 'widgets')],
     ]);
+  });
+});
+
+describe('createConsoleMessageLogger', () => {
+  it('maps info and warn messages to a console-like dependency', () => {
+    const consoleLike = {
+      log: jest.fn(),
+      warn: jest.fn(),
+    };
+    const logger = createConsoleMessageLogger(consoleLike);
+
+    logger.info('copied');
+    logger.warn('missing');
+
+    expect(consoleLike.log).toHaveBeenCalledWith('copied');
+    expect(consoleLike.warn).toHaveBeenCalledWith('missing');
   });
 });
 
