@@ -170,7 +170,7 @@ function formatRealHourlyWageResult(normalized) {
  */
 function renderInvalidRealHourlyWageResult(normalized) {
   return JSON.stringify({
-    error: normalized.error || VALIDATION_ERROR,
+    error: normalized.error,
   });
 }
 

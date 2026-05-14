@@ -34,6 +34,13 @@ const config = {
     '!**/vendor/**',
   ],
   coverageDirectory: 'reports/coverage',
+  coverageThreshold: {
+    global: {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+    },
+  },
   // Ensure coverage is collected for all files, including those not tested
   collectCoverage: Boolean(process.env.STRYKER_TEST_ENV),
   // Ensure all files are included in coverage, even if not required

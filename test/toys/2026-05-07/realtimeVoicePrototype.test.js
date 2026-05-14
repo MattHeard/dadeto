@@ -5,7 +5,7 @@ const DEFAULT_DESCRIPTION =
 
 describe('realtimeVoicePrototype toy', () => {
   test('returns local server config by default', () => {
-    expect(JSON.parse(realtimeVoicePrototype(''))).toEqual({
+    expect(JSON.parse(realtimeVoicePrototype())).toEqual({
       title: 'Realtime Voice Prototype',
       description: DEFAULT_DESCRIPTION,
       server: 'local',
@@ -83,5 +83,34 @@ describe('realtimeVoicePrototype toy', () => {
 
     expect(payload).not.toContain('OPENAI_API_KEY');
     expect(payload).not.toContain('sk-test');
+  });
+
+  test('ignores non-object parsed config values', () => {
+    expect(JSON.parse(realtimeVoicePrototype('null'))).toMatchObject({
+      server: 'local',
+      endpoint: '/api/realtime/call',
+    });
+    expect(JSON.parse(realtimeVoicePrototype('[]'))).toMatchObject({
+      server: 'local',
+      endpoint: '/api/realtime/call',
+    });
+  });
+
+  test('falls back when optional strings are blank or non-string values', () => {
+    const payload = realtimeVoicePrototype(
+      JSON.stringify({
+        title: '',
+        description: 123,
+        localEndpoint: '',
+        server: 'other',
+      })
+    );
+
+    expect(JSON.parse(payload)).toMatchObject({
+      title: 'Realtime Voice Prototype',
+      description: DEFAULT_DESCRIPTION,
+      server: 'local',
+      endpoint: '/api/realtime/call',
+    });
   });
 });

@@ -3,14 +3,18 @@ import {
   DEFAULT_BUCKET_NAME,
   assertFunction,
   createCorsOptionsValue,
+  buildErrorResult,
   normalizeValueWithLimit,
   getHeaderFromGetter,
+  getNumericValueOrZero,
   normalizeString,
   normalizeContent,
   normalizeAuthor,
+  normalizeNonStringCandidate,
   normalizeStaticObjectPrefix,
   prefixStaticObjectPath,
   productionOrigins,
+  returnErrorResultOrValue,
   resolveAllowedOrigins,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
@@ -35,6 +39,7 @@ describe('cloud-core', () => {
       expect(resolveStaticBucketName({}, 'fallback-bucket')).toBe(
         'fallback-bucket'
       );
+      expect(resolveStaticBucketName({})).toBe(DEFAULT_BUCKET_NAME);
     });
 
     test('normalizes object prefixes', () => {
@@ -249,6 +254,33 @@ describe('cloud-core', () => {
         'hello'
       );
       expect(whenPredicateValue('hi', value => value.length > 2)).toBeNull();
+    });
+  });
+
+  describe('error and numeric helpers', () => {
+    test('wraps truthy errors and falls back when no error is present', () => {
+      expect(buildErrorResult('boom')).toEqual({ error: 'boom' });
+      expect(buildErrorResult('')).toBeNull();
+      expect(returnErrorResultOrValue('boom', () => 'ok')).toEqual({
+        error: 'boom',
+      });
+      expect(returnErrorResultOrValue(null, () => 'ok')).toBe('ok');
+    });
+
+    test('normalizes optional numeric selector values', () => {
+      expect(getNumericValueOrZero(null, value => value.count)).toBe(0);
+      expect(getNumericValueOrZero({ count: 7 }, value => value.count)).toBe(7);
+      expect(getNumericValueOrZero({ count: 'x' }, value => value.count)).toBe(
+        0
+      );
+    });
+
+    test('normalizes non-string authorization candidates', () => {
+      expect(normalizeNonStringCandidate(['Bearer token'])).toBe(
+        'Bearer token'
+      );
+      expect(normalizeNonStringCandidate([123])).toBeNull();
+      expect(normalizeNonStringCandidate(123)).toBeNull();
     });
   });
 });

@@ -88,4 +88,60 @@ describe('cozyHouseAdventure', () => {
 
     expect(result).toMatch(/SYSTEM ERROR: fireplace smoke in the command line/);
   });
+
+  test('starts from empty temporary data shapes', () => {
+    env.set('getData', () => ({}));
+
+    const noTemporary = cozyHouseAdventure('  ', env);
+
+    expect(noTemporary).toMatch(/Welcome home, Builder/);
+
+    env.set('getData', () => ({ temporary: {} }));
+
+    const noScopedState = cozyHouseAdventure('Alex', env);
+
+    expect(noScopedState).toMatch(/Welcome home, Alex/);
+  });
+
+  test('re-prompts for yard, intro, and stage commands that do not match', () => {
+    cozyHouseAdventure('Rowan', env);
+
+    expect(cozyHouseAdventure('wait', env)).toMatch(/type 'build'/);
+
+    cozyHouseAdventure('build', env);
+
+    expect(cozyHouseAdventure('look around', env)).toMatch(/plan is simple/);
+
+    cozyHouseAdventure('foundation', env);
+
+    expect(cozyHouseAdventure('hammer nails', env)).toMatch(/Not quite/);
+    expect(tempData.state).toBe('foundation');
+  });
+
+  test('falls back to yard for unknown saved state without stored lists', () => {
+    tempData = {
+      name: 'Rowan',
+      state: 'mystery',
+    };
+
+    const result = cozyHouseAdventure('foundation', env);
+
+    expect(result).toMatch(/Type `level soil`/);
+    expect(tempData.inventory).toEqual([]);
+    expect(tempData.progress).toEqual([]);
+  });
+
+  test('does not duplicate already completed stage entries', () => {
+    tempData = {
+      name: 'Rowan',
+      state: 'foundation',
+      inventory: ['foundation'],
+      progress: ['foundation'],
+    };
+
+    cozyHouseAdventure('level soil', env);
+
+    expect(tempData.inventory).toEqual(['foundation']);
+    expect(tempData.progress).toEqual(['foundation']);
+  });
 });
