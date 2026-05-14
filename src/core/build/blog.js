@@ -131,16 +131,16 @@ export function createConsoleMessageLogger(consoleLike) {
  *   copyFile: (source: string, destination: string) => void,
  *   readDirEntries: (dir: string) => import('fs').Dirent[],
  * }} [options.io] - Optional default filesystem adapters.
- * @param {{ info: (message: string) => void, warn: (message: string) => void }} [options.messageLogger]
- *   - Optional default logger.
+ * @param {{ log: (message: string) => void, warn: (message: string) => void }} [options.console]
+ *   - Optional default console-compatible logger.
  * @param {Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.path - Node path helpers.
  * @returns {Record<string, Function>} Copy helper functions.
  */
 // eslint-disable-next-line max-lines-per-function
 export function createCopyCore({
+  console: defaultConsole,
   directories: dirConfig,
   io: defaultIo,
-  messageLogger: defaultMessageLogger,
   path: pathDeps,
 }) {
   const { join, dirname, relative } = pathDeps;
@@ -597,7 +597,7 @@ export function createCopyCore({
   function runCopyWorkflow() {
     const dirs = dirConfig;
     const io = defaultIo;
-    const messageLogger = defaultMessageLogger;
+    const messageLogger = createConsoleMessageLogger(defaultConsole);
     const copyFile = (source, destination, message) =>
       copyFileWithDirectories({
         io,

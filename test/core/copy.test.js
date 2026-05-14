@@ -505,12 +505,12 @@ describe('createCopyCore', () => {
         copyFile: jest.fn(),
         readDirEntries: jest.fn().mockReturnValue([]),
       };
-      const logger = { info: jest.fn(), warn: jest.fn() };
+      const consoleLike = { log: jest.fn(), warn: jest.fn() };
 
       core = createCopyCore({
+        console: consoleLike,
         directories,
         io,
-        messageLogger: logger,
         path: posix,
       });
 
@@ -521,13 +521,13 @@ describe('createCopyCore', () => {
       expect(io.removeDirectory.mock.invocationCallOrder[0]).toBeLessThan(
         io.createDirectory.mock.invocationCallOrder[0]
       );
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(consoleLike.log).toHaveBeenCalledWith(
         'Browser files copied successfully!'
       );
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(consoleLike.log).toHaveBeenCalledWith(
         'Core browser files copied successfully!'
       );
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(consoleLike.log).toHaveBeenCalledWith(
         'Core root scripts copied successfully!'
       );
       expect(io.readDirEntries).toHaveBeenCalledWith(directories.srcCoreDir);

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import {
-  createConsoleMessageLogger,
   createCopyCore,
   createStaticSiteCopyDirectories,
 } from '../core/build/blog.js';
@@ -27,12 +26,10 @@ const directories = createStaticSiteCopyDirectories({
 
 const thirdParty = createFsAdapters();
 
-const logger = createConsoleMessageLogger(console);
-
 const { runCopyWorkflow } = createCopyCore({
+  console,
   directories,
   io: thirdParty,
-  messageLogger: logger,
   path: pathAdapters,
 });
 
