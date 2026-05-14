@@ -123,14 +123,14 @@ export function createConsoleMessageLogger(consoleLike) {
 /**
  * Create helpers that orchestrate copying source assets into the public tree.
  * @param {object} options - File system dependencies.
- * @param {Record<string, string>} options.directories - Directory configuration.
- * @param {{
+ * @param {() => {
  *   directoryExists: (target: string) => boolean,
  *   createDirectory: (target: string) => void,
  *   removeDirectory: (target: string) => void,
  *   copyFile: (source: string, destination: string) => void,
  *   readDirEntries: (dir: string) => import('fs').Dirent[],
- * }} [options.io] - Optional default filesystem adapters.
+ * }} [options.createFsAdapters] - Optional factory for filesystem adapters.
+ * @param {Record<string, string>} options.directories - Directory configuration.
  * @param {{ log: (message: string) => void, warn: (message: string) => void }} [options.console]
  *   - Optional default console-compatible logger.
  * @param {Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.path - Node path helpers.
@@ -139,8 +139,8 @@ export function createConsoleMessageLogger(consoleLike) {
 // eslint-disable-next-line max-lines-per-function
 export function createCopyCore({
   console: defaultConsole,
+  createFsAdapters,
   directories: dirConfig,
-  io: defaultIo,
   path: pathDeps,
 }) {
   const { join, dirname, relative } = pathDeps;
@@ -596,7 +596,7 @@ export function createCopyCore({
    */
   function runCopyWorkflow() {
     const dirs = dirConfig;
-    const io = defaultIo;
+    const io = createFsAdapters();
     const messageLogger = createConsoleMessageLogger(defaultConsole);
     const copyFile = (source, destination, message) =>
       copyFileWithDirectories({

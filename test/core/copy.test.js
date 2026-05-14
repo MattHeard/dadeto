@@ -506,16 +506,18 @@ describe('createCopyCore', () => {
         readDirEntries: jest.fn().mockReturnValue([]),
       };
       const consoleLike = { log: jest.fn(), warn: jest.fn() };
+      const createFsAdapters = jest.fn(() => io);
 
       core = createCopyCore({
         console: consoleLike,
+        createFsAdapters,
         directories,
-        io,
         path: posix,
       });
 
       core.runCopyWorkflow();
 
+      expect(createFsAdapters).toHaveBeenCalledTimes(1);
       expect(io.removeDirectory).toHaveBeenCalledWith(directories.publicDir);
       expect(io.directoryExists).toHaveBeenCalledWith(directories.publicDir);
       expect(io.removeDirectory.mock.invocationCallOrder[0]).toBeLessThan(

@@ -24,12 +24,10 @@ const directories = createStaticSiteCopyDirectories({
   publicDir,
 });
 
-const thirdParty = createFsAdapters();
-
 const { runCopyWorkflow } = createCopyCore({
   console,
+  createFsAdapters,
   directories,
-  io: thirdParty,
   path: pathAdapters,
 });
 
