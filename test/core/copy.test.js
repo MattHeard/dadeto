@@ -201,7 +201,12 @@ describe('createCopyCore', () => {
 
   beforeEach(() => {
     directories = createDirectories();
-    core = createCopyCore({ directories, path: posix });
+    core = createCopyCore({
+      path: posix,
+      projectRoot: directories.projectRoot,
+      publicDir: directories.publicDir,
+      srcDir: directories.srcDir,
+    });
   });
 
   describe('formatPathForLog', () => {
@@ -511,8 +516,10 @@ describe('createCopyCore', () => {
       core = createCopyCore({
         console: consoleLike,
         createFsAdapters,
-        directories,
         path: posix,
+        projectRoot: directories.projectRoot,
+        publicDir: directories.publicDir,
+        srcDir: directories.srcDir,
       });
 
       core.runCopyWorkflow();

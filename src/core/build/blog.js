@@ -130,20 +130,30 @@ export function createConsoleMessageLogger(consoleLike) {
  *   copyFile: (source: string, destination: string) => void,
  *   readDirEntries: (dir: string) => import('fs').Dirent[],
  * }} [options.createFsAdapters] - Optional factory for filesystem adapters.
- * @param {Record<string, string>} options.directories - Directory configuration.
  * @param {{ log: (message: string) => void, warn: (message: string) => void }} [options.console]
  *   - Optional default console-compatible logger.
  * @param {Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.path - Node path helpers.
+ * @param {string} options.projectRoot - Project root directory.
+ * @param {string} options.publicDir - Public output directory.
+ * @param {string} options.srcDir - Source directory.
  * @returns {Record<string, Function>} Copy helper functions.
  */
 // eslint-disable-next-line max-lines-per-function
 export function createCopyCore({
   console: defaultConsole,
   createFsAdapters,
-  directories: dirConfig,
   path: pathDeps,
+  projectRoot,
+  publicDir,
+  srcDir,
 }) {
   const { join, dirname, relative } = pathDeps;
+  const dirConfig = createStaticSiteCopyDirectories({
+    path: pathDeps,
+    projectRoot,
+    srcDir,
+    publicDir,
+  });
 
   /**
    * Format a path for display relative to the project root.

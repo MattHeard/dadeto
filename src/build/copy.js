@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 
-import {
-  createCopyCore,
-  createStaticSiteCopyDirectories,
-} from '../core/build/blog.js';
+import { createCopyCore } from '../core/build/blog.js';
 import {
   createPathAdapters,
   getCurrentDirectory,
@@ -17,18 +14,13 @@ const { projectRoot, srcDir, publicDir } = resolveProjectDirectories(__dirname);
 
 const pathAdapters = createPathAdapters();
 
-const directories = createStaticSiteCopyDirectories({
-  path: pathAdapters,
-  projectRoot,
-  srcDir,
-  publicDir,
-});
-
 const { runCopyWorkflow } = createCopyCore({
   console,
   createFsAdapters,
-  directories,
   path: pathAdapters,
+  projectRoot,
+  publicDir,
+  srcDir,
 });
 
 runCopyWorkflow();
