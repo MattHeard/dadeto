@@ -564,10 +564,11 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
   /**
    * Execute the full copy workflow for the static site.
    * @param {{
-   *   directories: Record<string, string>,
+   *   directories?: Record<string, string>,
    *   io: {
    *     directoryExists: (target: string) => boolean,
    *     createDirectory: (target: string) => void,
+   *     removeDirectory: (target: string) => void,
    *     copyFile: (source: string, destination: string) => void,
    *     readDirEntries: (dir: string) => import('fs').Dirent[],
    *   },
@@ -575,7 +576,11 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    * }} context - Copy execution context.
    * @returns {void}
    */
-  function runCopyWorkflow({ directories: dirs, io, messageLogger }) {
+  function runCopyWorkflow({
+    directories: dirs = dirConfig,
+    io,
+    messageLogger,
+  }) {
     const copyFile = (source, destination, message) =>
       copyFileWithDirectories({
         io,

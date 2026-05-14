@@ -37,7 +37,6 @@ const { runCopyWorkflow } = createCopyCore({
 });
 
 runCopyWorkflow({
-  directories,
   io: thirdParty,
   messageLogger: logger,
 });
