@@ -232,6 +232,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
    *   io: {
    *     directoryExists: (target: string) => boolean,
    *     createDirectory: (target: string) => void,
+   *     removeDirectory: (target: string) => void,
    *     copyFile: (source: string, destination: string) => void,
    *     readDirEntries: (dir: string) => import('fs').Dirent[],
    *   },
@@ -534,6 +535,7 @@ export function createCopyCore({ directories: dirConfig, path: pathDeps }) {
         dirname,
         message,
       });
+    io.removeDirectory(dirs.publicDir);
     ensureDirectoryExists(io, dirs.publicDir);
     const copyContext = { io, messageLogger, copyFile };
     copyBrowserTrees(dirs, copyContext);

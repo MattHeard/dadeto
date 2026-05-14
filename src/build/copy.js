@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { rmSync } from 'fs';
 import { createCopyCore, createSharedDirectoryEntries } from '../core/build/blog.js';
 import {
   createCopyDirectories,
@@ -13,8 +12,6 @@ import { createFsAdapters } from './fs.js';
 // Determine base directories using Node-specific helpers
 const __dirname = getCurrentDirectory(import.meta.url);
 const { projectRoot, srcDir, publicDir } = resolveProjectDirectories(__dirname);
-
-rmSync(publicDir, { recursive: true, force: true });
 
 const pathAdapters = createPathAdapters();
 

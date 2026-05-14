@@ -7,6 +7,7 @@ const { promises: fsPromises } = fs;
  * @returns {{
  *   directoryExists: (target: string) => boolean,
  *   createDirectory: (target: string) => void,
+ *   removeDirectory: (target: string) => void,
  *   copyFile: (source: string, destination: string) => void,
  *   readDirEntries: (dir: string) => fs.Dirent[],
  * }} Collection of synchronous filesystem helpers.
@@ -15,6 +16,8 @@ export function createFsAdapters() {
   return {
     directoryExists: target => fs.existsSync(target),
     createDirectory: target => fs.mkdirSync(target, { recursive: true }),
+    removeDirectory: target =>
+      fs.rmSync(target, { recursive: true, force: true }),
     copyFile: (source, destination) => fs.copyFileSync(source, destination),
     readDirEntries: dir => fs.readdirSync(dir, { withFileTypes: true }),
   };

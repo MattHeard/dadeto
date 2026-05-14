@@ -425,8 +425,11 @@ describe('createCopyCore', () => {
   describe('runCopyWorkflow', () => {
     it('delegates browser trees and core root files to the copy helpers', () => {
       const io = {
-        directoryExists: jest.fn().mockReturnValue(true),
+        directoryExists: jest
+          .fn()
+          .mockImplementation(target => target !== directories.publicDir),
         createDirectory: jest.fn(),
+        removeDirectory: jest.fn(),
         copyFile: jest.fn(),
         readDirEntries: jest.fn().mockReturnValue([]),
       };
@@ -434,7 +437,11 @@ describe('createCopyCore', () => {
 
       core.runCopyWorkflow({ directories, io, messageLogger: logger });
 
+      expect(io.removeDirectory).toHaveBeenCalledWith(directories.publicDir);
       expect(io.directoryExists).toHaveBeenCalledWith(directories.publicDir);
+      expect(io.removeDirectory.mock.invocationCallOrder[0]).toBeLessThan(
+        io.createDirectory.mock.invocationCallOrder[0]
+      );
       expect(logger.info).toHaveBeenCalledWith(
         'Browser files copied successfully!'
       );
