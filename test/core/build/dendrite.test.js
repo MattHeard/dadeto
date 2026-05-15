@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
 import path from 'path';
-import { createCopyDendriteCore } from '../../../src/core/build/dendrite.js';
+import { executeCopyDendriteWorkflow } from '../../../src/core/build/dendrite.js';
 
-describe('createCopyDendriteCore', () => {
+describe('executeCopyDendriteWorkflow', () => {
   it('copies browser and core trees into infra using injected dependencies', () => {
     const console = {
       log: jest.fn(),
@@ -51,15 +51,13 @@ describe('createCopyDendriteCore', () => {
     };
     const fileURLToPath = jest.fn(() => '/project/src/build/dendrite.js');
 
-    const runCopyDendriteWorkflow = createCopyDendriteCore({
+    executeCopyDendriteWorkflow({
       console,
       fs,
       path: helpers,
       fileURLToPath,
       importMetaUrl: 'file:///project/src/build/dendrite.js',
     });
-
-    runCopyDendriteWorkflow();
 
     expect(fileURLToPath).toHaveBeenCalledWith(
       'file:///project/src/build/dendrite.js'
@@ -121,15 +119,13 @@ describe('createCopyDendriteCore', () => {
       join: posix.join,
     };
 
-    const runCopyDendriteWorkflow = createCopyDendriteCore({
+    executeCopyDendriteWorkflow({
       console,
       fs,
       path: helpers,
       fileURLToPath: jest.fn(() => '/project/src/build/dendrite.js'),
       importMetaUrl: 'file:///project/src/build/dendrite.js',
     });
-
-    runCopyDendriteWorkflow();
 
     expect(fs.copyFileSync).toHaveBeenCalledWith(
       '/project/src/core/core.js',
