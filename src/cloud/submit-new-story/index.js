@@ -11,45 +11,24 @@ import {
   getEnvironmentVariables,
 } from './submit-new-story-gcf.js';
 import { getAllowedOrigins } from './cors-config.js';
-import {
-  createCorsOptions,
-  createCorsErrorHandler,
-  createHandleSubmitNewStory,
-  createSubmitNewStoryResponder,
-} from './submit-new-story-core.js';
+import { runSubmitNewStory } from '../../core/cloud/submit-new-story/run.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
+const environmentDependencies = {
+  initializeApp,
+  createFirebaseAppManager,
+  getFirestoreInstance,
+  getAuth,
+  express,
+  cors,
+  crypto,
+  FieldValue,
+  functions,
+  getEnvironmentVariables,
+  getAllowedOrigins,
+};
 
-ensureFirebaseApp();
-const db = getFirestoreInstance();
-const auth = getAuth();
-const app = express();
-
-const environmentVariables = getEnvironmentVariables();
-const allowedOrigins = getAllowedOrigins(environmentVariables);
-const corsOptions = createCorsOptions({ allowedOrigins });
-
-app.use(cors(corsOptions));
-app.use(createCorsErrorHandler());
-app.use(express.json({ limit: '20kb' }));
-app.use(express.urlencoded({ extended: false, limit: '20kb' }));
-
-const submitNewStoryResponder = createSubmitNewStoryResponder({
-  verifyIdToken: token => auth.verifyIdToken(token),
-  saveSubmission: (id, data) =>
-    db.collection('storyFormSubmissions').doc(id).set(data),
-  randomUUID: () => crypto.randomUUID(),
-  getServerTimestamp: () => FieldValue.serverTimestamp(),
-});
-
-const handleSubmitNewStory = createHandleSubmitNewStory(
-  submitNewStoryResponder
+const { submitNewStory, handleSubmitNewStory, app } = runSubmitNewStory(
+  environmentDependencies
 );
 
-app.post('/', handleSubmitNewStory);
-
-export const submitNewStory = functions
-  .region('europe-west1')
-  .https.onRequest(app);
-
-export { handleSubmitNewStory, app };
+export { submitNewStory, handleSubmitNewStory, app };
