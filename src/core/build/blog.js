@@ -130,9 +130,10 @@ export function createConsoleMessageLogger(consoleLike) {
  *   copyFile: (source: string, destination: string) => void,
  *   readDirEntries: (dir: string) => import('fs').Dirent[],
  * }} [options.createFsAdapters] - Optional factory for filesystem adapters.
+ * @param {() => Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.createPathAdapters
+ *   - Path helper factory.
  * @param {{ log: (message: string) => void, warn: (message: string) => void }} [options.console]
  *   - Optional default console-compatible logger.
- * @param {Pick<typeof import('path'), 'join' | 'dirname' | 'relative'>} options.path - Node path helpers.
  * @param {string} options.projectRoot - Project root directory.
  * @param {string} options.publicDir - Public output directory.
  * @param {string} options.srcDir - Source directory.
@@ -142,11 +143,12 @@ export function createConsoleMessageLogger(consoleLike) {
 export function createCopyCore({
   console: defaultConsole,
   createFsAdapters,
-  path: pathDeps,
+  createPathAdapters,
   projectRoot,
   publicDir,
   srcDir,
 }) {
+  const pathDeps = createPathAdapters();
   const { join, dirname, relative } = pathDeps;
   const dirConfig = createStaticSiteCopyDirectories({
     path: pathDeps,

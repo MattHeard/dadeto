@@ -12,12 +12,10 @@ import { createFsAdapters } from './fs.js';
 const __dirname = getCurrentDirectory(import.meta.url);
 const { projectRoot, srcDir, publicDir } = resolveProjectDirectories(__dirname);
 
-const pathAdapters = createPathAdapters();
-
 const { runCopyWorkflow } = createCopyCore({
   console,
   createFsAdapters,
-  path: pathAdapters,
+  createPathAdapters,
   projectRoot,
   publicDir,
   srcDir,

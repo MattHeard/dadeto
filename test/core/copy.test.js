@@ -198,11 +198,13 @@ describe('copy directory map helpers', () => {
 describe('createCopyCore', () => {
   let directories;
   let core;
+  let createPathAdapters;
 
   beforeEach(() => {
     directories = createDirectories();
+    createPathAdapters = jest.fn(() => posix);
     core = createCopyCore({
-      path: posix,
+      createPathAdapters,
       projectRoot: directories.projectRoot,
       publicDir: directories.publicDir,
       srcDir: directories.srcDir,
@@ -516,12 +518,13 @@ describe('createCopyCore', () => {
       core = createCopyCore({
         console: consoleLike,
         createFsAdapters,
-        path: posix,
+        createPathAdapters,
         projectRoot: directories.projectRoot,
         publicDir: directories.publicDir,
         srcDir: directories.srcDir,
       });
 
+      expect(createPathAdapters).toHaveBeenCalledTimes(2);
       core.runCopyWorkflow();
 
       expect(createFsAdapters).toHaveBeenCalledTimes(1);
