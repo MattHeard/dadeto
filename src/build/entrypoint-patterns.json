@@ -1,0 +1,6 @@
+{
+  "entrypoints": [
+    "src/build/copy.js",
+    "src/build/copy-dendrite.js"
+  ]
+}
