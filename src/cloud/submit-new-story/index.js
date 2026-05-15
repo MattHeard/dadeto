@@ -27,8 +27,6 @@ const environmentDependencies = {
   getAllowedOrigins,
 };
 
-const { submitNewStory, handleSubmitNewStory, app } = runSubmitNewStory(
-  environmentDependencies
-);
+const { submitNewStory } = runSubmitNewStory(environmentDependencies);
 
-export { submitNewStory, handleSubmitNewStory, app };
+export { submitNewStory };
