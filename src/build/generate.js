@@ -4,7 +4,7 @@
 // Make sure your package.json has "type": "module" if you're using ES modules.
 
 import { createRequire } from 'module';
-import fs from 'fs';
+import fs from 'node:fs';
 import prettier from 'prettier';
 
 import { generateBlogOuter } from './generator.js';

@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs } from 'node:fs';
 
 import { createCopyToInfraCore } from '../core/cloud/copy.js';
 import { createAsyncFsAdapters } from './fs.js';
