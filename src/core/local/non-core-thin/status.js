@@ -47,10 +47,18 @@ export function getNonCoreThinStatus() {
  * @returns {string[]} repo-relative JavaScript paths outside `src/core`
  */
 function listJsFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const fullPath = path.join(dir, entry.name);
-    return collectJsFiles(entry, fullPath);
-  });
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const directories = entries.filter(entry =>
+    shouldIncludeDirectory(dir, entry)
+  );
+  const files = entries
+    .filter(entry => entry.isFile() && entry.name.endsWith('.js'))
+    .map(entry => toRepoPath(path.join(dir, entry.name)));
+
+  return [
+    ...directories.flatMap(entry => listJsFiles(path.join(dir, entry.name))),
+    ...files,
+  ];
 }
 
 /**
@@ -72,19 +80,6 @@ function toRepoPath(filePath) {
 }
 
 /**
- * Handle a directory entry during the scan.
- * @param {import('node:fs').Dirent} entry directory entry
- * @param {string} fullPath absolute path for the entry
- * @returns {string[]} discovered repo-relative JavaScript files
- */
-function collectJsFiles(entry, fullPath) {
-  if (entry.isDirectory()) {
-    return shouldSkipDirectory(fullPath) ? [] : listJsFiles(fullPath);
-  }
-  return collectJsFile(entry, fullPath);
-}
-
-/**
  * Tell whether a directory should be skipped during the scan.
  * @param {string} fullPath absolute path for the entry
  * @returns {boolean} true when the directory is `src/core`
@@ -94,14 +89,13 @@ function shouldSkipDirectory(fullPath) {
 }
 
 /**
- * Collect a non-directory file if it is a JavaScript file.
+ * Tell whether a directory entry should be scanned.
+ * @param {string} dir directory being scanned
  * @param {import('node:fs').Dirent} entry directory entry
- * @param {string} fullPath absolute path for the entry
- * @returns {string[]} discovered repo-relative JavaScript files
+ * @returns {boolean} true when the entry is a non-core directory
  */
-function collectJsFile(entry, fullPath) {
-  if (!entry.isFile() || !entry.name.endsWith('.js')) {
-    return [];
-  }
-  return [toRepoPath(fullPath)];
+function shouldIncludeDirectory(dir, entry) {
+  return (
+    entry.isDirectory() && !shouldSkipDirectory(path.join(dir, entry.name))
+  );
 }

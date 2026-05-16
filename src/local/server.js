@@ -7,10 +7,15 @@ import { fileURLToPath } from 'node:url';
 import { createDocumentStore } from './documentStore.js';
 import { exchangeRealtimeCallSdp } from './openaiRealtimeCalls.js';
 import { formatListenErrorMessage } from './serverMessages.js';
+import {
+  getWriterUrl as coreGetWriterUrl,
+  isWriterHttpsEnabled as coreIsWriterHttpsEnabled,
+  isWriterRequestLogEnabled as coreIsWriterRequestLogEnabled,
+  shouldSetResponseLocation as coreShouldSetResponseLocation,
+} from '../core/local/server.js';
 import { getNonCoreThinStatus } from '../core/local/non-core-thin/status.js';
 import { renderNonCoreThinDashboard } from './non-core-thin/dashboard.js';
 
-const ENABLED_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.resolve(__dirname, '../../public');
@@ -21,12 +26,6 @@ const store = createDocumentStore({
   legacyDocumentPath: process.env.WRITER_LEGACY_DOCUMENT_PATH,
 });
 
-/**
- * Create the local Dadeto Express app.
- * @param {{store: ReturnType<typeof createDocumentStore>, publicDir: string, writerDir: string, exchangeRealtimeCallSdp: typeof exchangeRealtimeCallSdp, requestLogger?: (message: string) => void}} deps
- *   Local server dependencies.
- * @returns {express.Express} Configured Express app.
- */
 export function createLocalApp(deps) {
   const app = express();
 
@@ -34,7 +33,9 @@ export function createLocalApp(deps) {
     app.use(createRequestLogger(deps.requestLogger));
   }
 
-  app.use(express.text({ type: ['application/sdp', 'text/plain'], limit: '256kb' }));
+  app.use(
+    express.text({ type: ['application/sdp', 'text/plain'], limit: '256kb' })
+  );
   app.use(express.json({ limit: '2mb' }));
   app.use('/writer', express.static(deps.writerDir));
 
@@ -48,8 +49,7 @@ export function createLocalApp(deps) {
 
   app.post('/api/writer/workflow/move', async (req, res, next) => {
     try {
-      const direction = req.body?.direction === 'left' ? -1 : 1;
-      res.json(await deps.store.moveActiveIndex(direction));
+      res.json(await deps.store.moveActiveIndex(getMoveDirection(req.body)));
     } catch (error) {
       next(error);
     }
@@ -57,10 +57,7 @@ export function createLocalApp(deps) {
 
   app.post('/api/writer/workflow/select', async (req, res, next) => {
     try {
-      const nextIndex = Number.isInteger(req.body?.activeIndex)
-        ? req.body.activeIndex
-        : 1;
-      res.json(await deps.store.setActiveIndex(nextIndex));
+      res.json(await deps.store.setActiveIndex(getNextIndex(req.body)));
     } catch (error) {
       next(error);
     }
@@ -68,9 +65,12 @@ export function createLocalApp(deps) {
 
   app.put('/api/writer/document/:documentId', async (req, res, next) => {
     try {
-      const content =
-        typeof req.body?.content === 'string' ? req.body.content : '';
-      res.json(await deps.store.saveDocument(req.params.documentId, content));
+      res.json(
+        await deps.store.saveDocument(
+          req.params.documentId,
+          getDocumentContent(req.body)
+        )
+      );
     } catch (error) {
       next(error);
     }
@@ -81,7 +81,7 @@ export function createLocalApp(deps) {
       const { sdpAnswer, location } = await deps.exchangeRealtimeCallSdp(
         req.body ?? ''
       );
-      if (location) {
+      if (coreShouldSetResponseLocation(location)) {
         res.set('Location', location);
       }
       res.type('application/sdp').send(sdpAnswer);
@@ -91,11 +91,13 @@ export function createLocalApp(deps) {
   });
 
   app.get('/non-core-thin', (_req, res) => {
-    res.type('html').send(renderNonCoreThinDashboard(getNonCoreThinStatus()));
+    res.type('html').send(
+      deps.renderNonCoreThinDashboard(deps.getNonCoreThinStatus())
+    );
   });
 
   app.get('/api/non-core-thin', (_req, res) => {
-    res.json(getNonCoreThinStatus());
+    res.json(deps.getNonCoreThinStatus());
   });
 
   app.get('/', (_req, res) => {
@@ -113,38 +115,10 @@ export function createLocalApp(deps) {
   return app;
 }
 
-/**
- * Check whether local writer HTTPS mode is enabled.
- * @param {Record<string, string | undefined>} [env] Environment variables.
- * @returns {boolean} True when the writer server should use HTTPS.
- */
-export function isWriterHttpsEnabled(env = process.env) {
-  return isEnabledEnvValue(env.WRITER_HTTPS);
-}
-
-/**
- * Check whether local writer request logging is enabled.
- * @param {Record<string, string | undefined>} [env] Environment variables.
- * @returns {boolean} True when request logging should be enabled.
- */
-export function isWriterRequestLogEnabled(env = process.env) {
-  return isEnabledEnvValue(env.WRITER_REQUEST_LOG);
-}
-
-/**
- * Check whether an environment value enables a local feature.
- * @param {string | undefined} value Environment value.
- * @returns {boolean} True when the value is an enabled flag.
- */
 function isEnabledEnvValue(value) {
-  return ENABLED_ENV_VALUES.has((value ?? '').trim().toLowerCase());
+  return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
 }
 
-/**
- * Create local writer request logging middleware.
- * @param {(message: string) => void} requestLogger Request log sink.
- * @returns {express.RequestHandler} Express middleware.
- */
 export function createRequestLogger(requestLogger) {
   return (req, res, next) => {
     const start = Date.now();
@@ -155,13 +129,6 @@ export function createRequestLogger(requestLogger) {
   };
 }
 
-/**
- * Format a local writer request log line.
- * @param {express.Request} req Express request.
- * @param {express.Response} res Express response.
- * @param {number} durationMs Request duration in milliseconds.
- * @returns {string} Request log line.
- */
 function formatRequestLog(req, res, durationMs) {
   return [
     'writer request',
@@ -173,12 +140,18 @@ function formatRequestLog(req, res, durationMs) {
   ].join(' ');
 }
 
-/**
- * Require a TLS path when HTTPS mode is active.
- * @param {string | undefined} value Candidate path.
- * @param {string} name Environment variable name.
- * @returns {string} Non-empty path.
- */
+export function getMoveDirection(body) {
+  return body?.direction === 'left' ? -1 : 1;
+}
+
+export function getNextIndex(body) {
+  return Number.isInteger(body?.activeIndex) ? body.activeIndex : 1;
+}
+
+export function getDocumentContent(body) {
+  return typeof body?.content === 'string' ? body.content : '';
+}
+
 function requireTlsPath(value, name) {
   if (typeof value === 'string' && value.trim()) {
     return value;
@@ -187,15 +160,8 @@ function requireTlsPath(value, name) {
   throw new Error(`${name} is required when WRITER_HTTPS is enabled.`);
 }
 
-/**
- * Read TLS key and certificate files for local HTTPS.
- * @param {Record<string, string | undefined>} [env] Environment variables.
- * @param {(path: string, encoding: BufferEncoding) => string | Buffer} [readFile]
- *   File reader.
- * @returns {{key: string | Buffer, cert: string | Buffer}} HTTPS TLS options.
- */
 export function readWriterTlsOptions(
-  env = process.env,
+  env,
   readFile = fs.readFileSync
 ) {
   const keyPath = requireTlsPath(env.WRITER_TLS_KEY, 'WRITER_TLS_KEY');
@@ -207,20 +173,9 @@ export function readWriterTlsOptions(
   };
 }
 
-/**
- * Create the local writer HTTP or HTTPS server.
- * @param {express.Express} localApp Configured Express app.
- * @param {{
- *   env?: Record<string, string | undefined>,
- *   readFile?: (path: string, encoding: BufferEncoding) => string | Buffer,
- *   httpCreateServer?: typeof http.createServer,
- *   httpsCreateServer?: typeof https.createServer,
- * }} [options] Injectable dependencies for tests.
- * @returns {http.Server | https.Server} Node server.
- */
 export function createWriterServer(localApp, options = {}) {
   const {
-    env = process.env,
+    env,
     readFile = fs.readFileSync,
     httpCreateServer = http.createServer,
     httpsCreateServer = https.createServer,
@@ -233,27 +188,30 @@ export function createWriterServer(localApp, options = {}) {
   return httpCreateServer(localApp);
 }
 
-/**
- * Build the startup URL shown in local server logs.
- * @param {number} serverPort Port number.
- * @param {Record<string, string | undefined>} [env] Environment variables.
- * @returns {string} Writer app URL.
- */
-export function getWriterUrl(serverPort, env = process.env) {
-  const protocol = isWriterHttpsEnabled(env) ? 'https' : 'http';
-  return `${protocol}://localhost:${serverPort}/writer/`;
+export function isWriterHttpsEnabled(env) {
+  return coreIsWriterHttpsEnabled(env);
 }
 
-export const app = createLocalApp({
-  store,
-  publicDir,
-  writerDir,
-  exchangeRealtimeCallSdp,
-  requestLogger: isWriterRequestLogEnabled() ? console.log : undefined,
-});
+export function isWriterRequestLogEnabled(env) {
+  return coreIsWriterRequestLogEnabled(env);
+}
+
+export function getWriterUrl(serverPort, env) {
+  return coreGetWriterUrl(serverPort, env);
+}
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const server = createWriterServer(app);
+  const server = createWriterServer(
+    createLocalApp({
+      store,
+      publicDir,
+      writerDir,
+      exchangeRealtimeCallSdp,
+      getNonCoreThinStatus,
+      renderNonCoreThinDashboard,
+      requestLogger: isWriterRequestLogEnabled(process.env) ? console.log : undefined,
+    })
+  );
   const host = process.env.WRITER_HOST;
 
   if (host && host.trim()) {
@@ -263,7 +221,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     });
   } else {
     server.listen(port, () => {
-      console.log(`writer server listening on ${getWriterUrl(port)}`);
+      console.log(`writer server listening on ${getWriterUrl(port, process.env)}`);
       console.log('non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN');
     });
   }

@@ -1,7 +1,10 @@
 import { jest } from '@jest/globals';
 import {
+  getDocumentContent,
   createRequestLogger,
   createWriterServer,
+  getMoveDirection,
+  getNextIndex,
   getWriterUrl,
   isWriterHttpsEnabled,
   isWriterRequestLogEnabled,
@@ -103,5 +106,23 @@ describe('local writer request logging', () => {
         /^writer request POST \/api\/realtime\/call 200 \d+ms 192\.168\.178\.134$/
       )
     );
+  });
+});
+
+describe('local writer request body helpers', () => {
+  test('extracts workflow move direction and index values', () => {
+    expect(getMoveDirection({ direction: 'left' })).toBe(-1);
+    expect(getMoveDirection({ direction: 'right' })).toBe(1);
+    expect(getMoveDirection({})).toBe(1);
+
+    expect(getNextIndex({ activeIndex: 3 })).toBe(3);
+    expect(getNextIndex({ activeIndex: 3.5 })).toBe(1);
+    expect(getNextIndex({})).toBe(1);
+  });
+
+  test('extracts document content as a string', () => {
+    expect(getDocumentContent({ content: 'hello' })).toBe('hello');
+    expect(getDocumentContent({ content: 123 })).toBe('');
+    expect(getDocumentContent({})).toBe('');
   });
 });
