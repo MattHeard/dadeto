@@ -35,7 +35,8 @@
     "notion:codex:append-reply": "node scripts/notion-codex-append-reply.js",
     "start:writer:playwright": "node src/local/server.js",
     "start:writer": "node src/local/server.js",
-    "start:writer:watch": "node --watch src/local/server.js"
+    "start:writer:watch": "node --watch src/local/server.js",
+    "start:local": "WRITER_HOST=0.0.0.0 node src/local/server.js"
   },
   "devDependencies": {
     "@babel/preset-env": "7.26.9",

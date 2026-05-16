@@ -1,0 +1,13 @@
+[Unit]
+Description=Dadeto local server
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/matt/dadeto
+ExecStart=/bin/bash -lc 'source /home/matt/.bashrc && npm run start:local'
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target

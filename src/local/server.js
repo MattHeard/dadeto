@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { createDocumentStore } from './documentStore.js';
 import { exchangeRealtimeCallSdp } from './openaiRealtimeCalls.js';
 import { formatListenErrorMessage } from './serverMessages.js';
+import { getNonCoreThinStatus } from '../core/local/non-core-thin/status.js';
+import { renderNonCoreThinDashboard } from './non-core-thin/dashboard.js';
 
 const ENABLED_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const __filename = fileURLToPath(import.meta.url);
@@ -86,6 +88,14 @@ export function createLocalApp(deps) {
     } catch (error) {
       next(error);
     }
+  });
+
+  app.get('/non-core-thin', (_req, res) => {
+    res.type('html').send(renderNonCoreThinDashboard(getNonCoreThinStatus()));
+  });
+
+  app.get('/api/non-core-thin', (_req, res) => {
+    res.json(getNonCoreThinStatus());
   });
 
   app.get('/', (_req, res) => {
@@ -244,10 +254,19 @@ export const app = createLocalApp({
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const server = createWriterServer(app);
+  const host = process.env.WRITER_HOST;
 
-  server.listen(port, () => {
-    console.log(`writer server listening on ${getWriterUrl(port)}`);
-  });
+  if (host && host.trim()) {
+    server.listen(port, host.trim(), () => {
+      console.log(`writer server listening on ${getWriterUrl(port, process.env)}`);
+      console.log(`non-core-thin dashboard: http://${host.trim()}:${port}/non-core-thin`);
+    });
+  } else {
+    server.listen(port, () => {
+      console.log(`writer server listening on ${getWriterUrl(port)}`);
+      console.log('non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN');
+    });
+  }
 
   server.on('error', error => {
     if (error.code === 'EPERM' || error.code === 'EACCES') {
