@@ -1,6 +1,16 @@
-import { createNotionCodexOutcomeStore } from '../../src/local/notion-codex/outcomeStore.js';
+import {
+  createNotionCodexOutcomeStore,
+  normalizeNotionCodexOutcome,
+} from '../../../src/core/local/notion-codex/outcomeStore.js';
 
-describe('local notion codex outcome store', () => {
+describe('core local notion codex outcome store', () => {
+  test('normalizes missing fields from non-object input', () => {
+    expect(normalizeNotionCodexOutcome(null)).toEqual({
+      outcome: 'unknown',
+      summary: '',
+    });
+  });
+
   test('reads a missing outcome as null', async () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
@@ -12,6 +22,33 @@ describe('local notion codex outcome store', () => {
     });
 
     await expect(store.readOutcome('run-123')).resolves.toBeNull();
+  });
+
+  test('reads a stored outcome file', async () => {
+    const store = createNotionCodexOutcomeStore({
+      outcomeDir: '/tmp/outcomes',
+      async readFileImpl(pathValue, encoding) {
+        expect(pathValue).toBe('/tmp/outcomes/run-123.json');
+        expect(encoding).toBe('utf8');
+        return JSON.stringify({ outcome: 'handled', summary: 'Done.' });
+      },
+    });
+
+    await expect(store.readOutcome('run-123')).resolves.toEqual({
+      outcome: 'handled',
+      summary: 'Done.',
+    });
+  });
+
+  test('rethrows unexpected read errors', async () => {
+    const store = createNotionCodexOutcomeStore({
+      outcomeDir: '/tmp/outcomes',
+      async readFileImpl() {
+        throw new Error('boom');
+      },
+    });
+
+    await expect(store.readOutcome('run-123')).rejects.toThrow('boom');
   });
 
   test('writes normalized outcome files with sanitized run ids', async () => {
