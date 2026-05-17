@@ -1,5 +1,8 @@
 import {
   DEFAULT_BUCKET_NAME,
+  isDuplicateAppError,
+  resolveStaticBucketName,
+  resolveStaticObjectPrefix,
   getSnapshotData,
   prefixStaticObjectPath,
 } from '../cloud-core.js';
@@ -614,6 +617,189 @@ export function createHandleVariantVisibilityChange(options) {
     dependencies.removeVariantHtmlForSnapshot,
     dependencies.visibilityTransition
   );
+}
+
+/**
+ * Create the cloud function wiring for hiding variant HTML.
+ * @param {{
+ *   initializeApp: () => unknown,
+ *   functions: {
+ *     region: (region: string) => {
+ *       firestore: {
+ *         document: (path: string) => {
+ *           onWrite: (handler: (change: { before: *, after: * }) => Promise<null>) => unknown,
+ *         },
+ *       },
+ *     },
+ *   },
+ *   Storage: new () => {
+ *     bucket: (name: string) => {
+ *       file: (path: string) => {
+ *         delete: (options: { ignoreNotFound: boolean }) => Promise<unknown>,
+ *       },
+ *     },
+ *   },
+ *   environmentVariables: Record<string, string | undefined>,
+ *   defaultBucketName?: string,
+ *   visibilityThreshold?: number,
+ * }} deps Cloud function dependencies.
+ * @returns {{ hideVariantHtml: unknown, handleVariantVisibilityChange: (change: { before: *, after: * }) => Promise<null> }} Cloud function wiring.
+ */
+export function createHideVariantHtmlCore(deps) {
+  ensureFirebaseApp(deps.initializeApp);
+
+  const storage = new deps.Storage();
+  const bucketName = resolveHideVariantBucketName(deps);
+  const objectPrefix = resolveStaticObjectPrefix(deps.environmentVariables);
+
+  const deleteRenderedFile = createBucketFileRemover({
+    storage,
+    bucketName,
+    objectPrefix,
+  });
+
+  const removeVariantHtml = createRemoveVariantHtml({
+    loadPageForVariant: createLoadPageForVariant,
+    buildVariantPath,
+    deleteRenderedFile,
+  });
+
+  const removeVariantHtmlForSnapshot =
+    createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+
+  const handleVariantVisibilityChange = createHandleVariantVisibilityChange({
+    removeVariantHtmlForSnapshot,
+    getVisibility: getVariantVisibility,
+    visibilityThreshold: resolveHideVariantVisibilityThreshold(deps),
+  });
+
+  return {
+    hideVariantHtml: deps.functions
+      .region('europe-west1')
+      .firestore.document(
+        'stories/{storyId}/pages/{pageId}/variants/{variantId}'
+      )
+      .onWrite(change => handleVariantVisibilityChange(change)),
+    handleVariantVisibilityChange,
+  };
+}
+
+/**
+ * Build a page loader for the hide-variant-html workflow.
+ * @param {{ pageRef?: { get?: () => Promise<{ exists?: boolean, data?: () => unknown }> } }} payload Loader payload.
+ * @returns {Promise<{ page: unknown } | null>} Loaded page payload or null.
+ */
+async function createLoadPageForVariant({ pageRef }) {
+  if (!hasLoadablePageRef(pageRef)) {
+    return null;
+  }
+
+  return loadExistingPageSnapshot(pageRef);
+}
+
+/**
+ * Determine whether a page reference can be loaded.
+ * @param {{ get?: () => Promise<unknown> } | null | undefined} pageRef Reference candidate.
+ * @returns {boolean} True when the reference can be loaded.
+ */
+function hasLoadablePageRef(pageRef) {
+  return Boolean(pageRef && typeof pageRef.get === 'function');
+}
+
+/**
+ * Resolve the bucket name for the hide-variant-html workflow.
+ * @param {{
+ *   environmentVariables: Record<string, string | undefined>,
+ *   defaultBucketName?: string,
+ * }} deps Cloud function dependencies.
+ * @returns {string} Bucket name used for static HTML.
+ */
+function resolveHideVariantBucketName(deps) {
+  return resolveStaticBucketName(
+    deps.environmentVariables,
+    resolveDefaultHideVariantBucketName(deps)
+  );
+}
+
+/**
+ * Resolve the default bucket name for hide-variant-html.
+ * @param {{ defaultBucketName?: string }} deps Cloud function dependencies.
+ * @returns {string} Default bucket name.
+ */
+function resolveDefaultHideVariantBucketName(deps) {
+  if (deps.defaultBucketName !== undefined) {
+    return deps.defaultBucketName;
+  }
+
+  return DEFAULT_BUCKET_NAME;
+}
+
+/**
+ * Resolve the visibility threshold for the hide-variant-html workflow.
+ * @param {{ visibilityThreshold?: number }} deps Cloud function dependencies.
+ * @returns {number} Visibility threshold.
+ */
+function resolveHideVariantVisibilityThreshold(deps) {
+  if (deps.visibilityThreshold !== undefined) {
+    return deps.visibilityThreshold;
+  }
+
+  return VISIBILITY_THRESHOLD;
+}
+
+/**
+ * Load an existing page snapshot and normalize it into the loader shape.
+ * @param {{ get: () => Promise<{ exists?: boolean, data?: () => unknown }> }} pageRef Page reference.
+ * @returns {Promise<{ page: unknown } | null>} Loaded page payload or null.
+ */
+async function loadExistingPageSnapshot(pageRef) {
+  return toPagePayload(await pageRef.get());
+}
+
+/**
+ * Convert a page snapshot to the loader payload when it exists.
+ * @param {{ exists?: boolean, data?: () => unknown } | null | undefined} pageSnap Snapshot candidate.
+ * @returns {{ page: unknown } | null} Loader payload.
+ */
+function toPagePayload(pageSnap) {
+  if (!isExistingPageSnapshot(pageSnap)) {
+    return null;
+  }
+
+  return { page: pageSnap.data() };
+}
+
+/**
+ * Determine whether a snapshot exposes page data.
+ * @param {{ exists?: boolean } | null | undefined} pageSnap Snapshot candidate.
+ * @returns {boolean} True when the snapshot exists.
+ */
+function isExistingPageSnapshot(pageSnap) {
+  return Boolean(pageSnap && pageSnap.exists);
+}
+
+/**
+ * Ensure the Firebase app is initialized once for this factory.
+ * @param {() => unknown} initializeApp Firebase initializer.
+ * @returns {void}
+ */
+function ensureFirebaseApp(initializeApp) {
+  try {
+    initializeApp();
+  } catch (error) {
+    rethrowIfNotDuplicateAppError(error);
+  }
+}
+
+/**
+ * Rethrow Firebase init errors unless they are duplicate-app noise.
+ * @param {unknown} error Firebase initialization error.
+ * @returns {void}
+ */
+function rethrowIfNotDuplicateAppError(error) {
+  if (!isDuplicateAppError(error)) {
+    throw error;
+  }
 }
 
 /**
