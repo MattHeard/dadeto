@@ -297,16 +297,12 @@ async function pruneWorkflow(state, workflow) {
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to mutate.
  * @returns {Promise<{ steps: Array<{ id: string, title: string }>, activeIndex: number }>} Updated workflow.
  */
-async function pruneTrailingDrafts(state, workflow) {
+export async function pruneTrailingDrafts(state, workflow) {
   while (canPruneTrailingDraft(state, workflow)) {
     const lastStep = workflow.steps.at(-1);
-    if (!lastStep) {
-      break;
-    }
-
     const content = await loadStepContent(state, lastStep);
     if (shouldKeepStepContent(state, content)) {
-      break;
+      return workflow;
     }
 
     await state.deps.rm(getDocumentPath(state, lastStep), { force: true });
@@ -322,7 +318,7 @@ async function pruneTrailingDrafts(state, workflow) {
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to inspect.
  * @returns {boolean} True when another trailing draft may be removed.
  */
-function canPruneTrailingDraft(state, workflow) {
+export function canPruneTrailingDraft(state, workflow) {
   if (workflow.steps.length <= DEFAULT_SEQUENCE.length) {
     return false;
   }
@@ -341,7 +337,7 @@ function canPruneTrailingDraft(state, workflow) {
  * @param {string} content Step content.
  * @returns {boolean} True when the content should not be removed.
  */
-function shouldKeepStepContent(state, content) {
+export function shouldKeepStepContent(state, content) {
   return content.trim() && !hasOnlyLevelOneHeading(content);
 }
 
@@ -351,7 +347,7 @@ function shouldKeepStepContent(state, content) {
  * @param {{ steps: Array<{ id: string, title: string }> }} workflow Workflow to mutate.
  * @returns {void} Nothing.
  */
-function renumberDraftSteps(state, workflow) {
+export function renumberDraftSteps(state, workflow) {
   const draftSteps = workflow.steps.filter(step => isDraftId(step.id));
 
   draftSteps.forEach((step, index) => {

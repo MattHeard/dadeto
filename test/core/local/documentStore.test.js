@@ -1,7 +1,13 @@
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { createDocumentStoreCore } from '../../../src/core/local/documentStore.js';
+import {
+  canPruneTrailingDraft,
+  createDocumentStoreCore,
+  pruneTrailingDrafts,
+  renumberDraftSteps,
+  shouldKeepStepContent,
+} from '../../../src/core/local/documentStore.js';
 import {
   DEFAULT_SEQUENCE,
   extractLevelOneHeading,
@@ -75,6 +81,14 @@ describe('createDocumentStoreCore', () => {
       content: '# Thesis\n\n## Notes\n\nStarter content',
     });
     await expect(readFile(workflowPath, 'utf8')).resolves.toContain('Thesis');
+  });
+
+  test('uses default local paths when no store options are provided', () => {
+    const store = createDocumentStoreCore(createDeps());
+
+    expect(store.workflowPath).toContain(
+      path.join('local-data', 'writer-workflow', 'workflow.json')
+    );
   });
 
   test('rethrows unexpected read errors', async () => {
@@ -320,5 +334,73 @@ describe('createDocumentStoreCore', () => {
       { id: 'outline', title: 'Outline', content: '' },
       { id: 'draft-1', title: 'Draft 1', content: 'Body text' },
     ]);
+  });
+
+  test('prune helpers keep content when the trailing draft has real text', async () => {
+    expect(shouldKeepStepContent(createDeps(), 'Body text')).toBe(true);
+    expect(shouldKeepStepContent(createDeps(), '# Heading only')).toBe(false);
+    expect(
+      canPruneTrailingDraft(createDeps(), {
+        activeIndex: 0,
+        steps: [
+          { id: 'thesis', title: 'Thesis' },
+          { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+          { id: 'outline', title: 'Outline' },
+          { id: 'draft-1', title: 'Draft 1' },
+          { id: 'draft-2', title: 'Draft 2' },
+        ],
+      })
+    ).toBe(true);
+  });
+
+  test('pruneTrailingDrafts stops when the trailing draft has body text', async () => {
+    const state = {
+      deps: {
+        readFile: async () => 'Body text',
+        rm: async () => {
+          throw new Error('should not remove');
+        },
+        path,
+      },
+      documentDir: path.join(tempDir, 'workflow', 'documents'),
+      workflowDir: path.join(tempDir, 'workflow'),
+      workflowPath,
+    };
+
+    const workflow = {
+      activeIndex: 0,
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-1', title: 'Draft 1' },
+        { id: 'draft-2', title: 'Draft 2' },
+      ],
+    };
+
+    await expect(pruneTrailingDrafts(state, workflow)).resolves.toBe(workflow);
+  });
+
+  test('renumbers mismatched draft identifiers in sequence', () => {
+    const workflow = {
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-2', title: 'Draft 2' },
+        { id: 'draft-4', title: 'Draft 4' },
+      ],
+    };
+
+    renumberDraftSteps(createDeps(), workflow);
+
+    expect(workflow.steps.at(-2)).toMatchObject({
+      id: 'draft-1',
+      title: 'Draft 1',
+    });
+    expect(workflow.steps.at(-1)).toMatchObject({
+      id: 'draft-2',
+      title: 'Draft 2',
+    });
   });
 });
