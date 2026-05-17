@@ -8,6 +8,7 @@ import { createDocumentStore } from './documentStore.js';
 import { exchangeRealtimeCallSdp } from './openaiRealtimeCalls.js';
 import { formatListenErrorMessage } from './serverMessages.js';
 import {
+  createLocalAppCore,
   getWriterUrl as coreGetWriterUrl,
   isWriterHttpsEnabled as coreIsWriterHttpsEnabled,
   isWriterRequestLogEnabled as coreIsWriterRequestLogEnabled,
@@ -28,91 +29,26 @@ const store = createDocumentStore({
 
 export function createLocalApp(deps) {
   const app = express();
-
-  if (deps.requestLogger) {
-    app.use(createRequestLogger(deps.requestLogger));
-  }
-
-  app.use(
-    express.text({ type: ['application/sdp', 'text/plain'], limit: '256kb' })
-  );
-  app.use(express.json({ limit: '2mb' }));
-  app.use('/writer', express.static(deps.writerDir));
-
-  app.get('/api/writer/workflow', async (_req, res, next) => {
-    try {
-      res.json(await deps.store.loadWorkflow());
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.post('/api/writer/workflow/move', async (req, res, next) => {
-    try {
-      res.json(await deps.store.moveActiveIndex(getMoveDirection(req.body)));
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.post('/api/writer/workflow/select', async (req, res, next) => {
-    try {
-      res.json(await deps.store.setActiveIndex(getNextIndex(req.body)));
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.put('/api/writer/document/:documentId', async (req, res, next) => {
-    try {
-      res.json(
-        await deps.store.saveDocument(
-          req.params.documentId,
-          getDocumentContent(req.body)
-        )
-      );
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.post('/api/realtime/call', async (req, res, next) => {
-    try {
-      const { sdpAnswer, location } = await deps.exchangeRealtimeCallSdp(
-        req.body ?? ''
-      );
-      if (coreShouldSetResponseLocation(location)) {
-        res.set('Location', location);
-      }
-      res.type('application/sdp').send(sdpAnswer);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.get('/non-core-thin', (_req, res) => {
-    res.type('html').send(
-      deps.renderNonCoreThinDashboard(deps.getNonCoreThinStatus())
-    );
-  });
-
-  app.get('/api/non-core-thin', (_req, res) => {
-    res.json(deps.getNonCoreThinStatus());
-  });
-
-  app.get('/', (_req, res) => {
-    res.redirect('/writer/');
-  });
-
-  app.use(express.static(deps.publicDir));
-
-  app.use((error, _req, res, _next) => {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'Unknown server error',
-    });
-  });
-
-  return app;
+  return createLocalAppCore({
+    app,
+    requestLoggerMiddleware: deps.requestLogger
+      ? createRequestLogger(deps.requestLogger)
+      : undefined,
+    static: express.static,
+    text: express.text,
+    json: express.json,
+    store: deps.store,
+    publicDir: deps.publicDir,
+    writerDir: deps.writerDir,
+    exchangeRealtimeCallSdp: deps.exchangeRealtimeCallSdp,
+    getNonCoreThinStatus: deps.getNonCoreThinStatus,
+    renderNonCoreThinDashboard: deps.renderNonCoreThinDashboard,
+    requestLogger: deps.requestLogger,
+    getMoveDirection,
+    getNextIndex,
+    getDocumentContent,
+    shouldSetResponseLocation: coreShouldSetResponseLocation,
+  }).app;
 }
 
 function isEnabledEnvValue(value) {
