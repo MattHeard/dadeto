@@ -1,23 +1,26 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { createDocumentStoreCore } from '../core/local/documentStore.js';
+import {
+  createDocumentStoreCore,
+  getDefaultLegacyDocumentPath,
+  getDefaultWorkflowDir,
+  getDefaultWorkflowPath,
+} from '../core/local/documentStore.js';
 
-export const DEFAULT_WORKFLOW_DIR = path.resolve(
-  process.cwd(),
-  'local-data',
-  'writer-workflow'
-);
+export const DEFAULT_WORKFLOW_DIR = getDefaultWorkflowDir({
+  path,
+  cwd: () => process.cwd(),
+});
 
-export const DEFAULT_WORKFLOW_PATH = path.join(
-  DEFAULT_WORKFLOW_DIR,
-  'workflow.json'
-);
+export const DEFAULT_WORKFLOW_PATH = getDefaultWorkflowPath({
+  path,
+  cwd: () => process.cwd(),
+});
 
-export const LEGACY_DOCUMENT_PATH = path.resolve(
-  process.cwd(),
-  'local-data',
-  'writer.md'
-);
+export const LEGACY_DOCUMENT_PATH = getDefaultLegacyDocumentPath({
+  path,
+  cwd: () => process.cwd(),
+});
 
 /**
  * @param {{ workflowPath?: string, workflowDir?: string, legacyDocumentPath?: string }} [options]

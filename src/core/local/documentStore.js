@@ -69,6 +69,48 @@ export function createDocumentStoreCore(deps, options = {}) {
 }
 
 /**
+ * Resolve the default workflow directory for the local document store.
+ * @param {{
+ *   path: {
+ *     join: (...parts: string[]) => string,
+ *   },
+ *   cwd: () => string,
+ * }} deps Path and cwd dependencies.
+ * @returns {string} Default workflow directory.
+ */
+export function getDefaultWorkflowDir(deps) {
+  return deps.path.join(deps.cwd(), 'local-data', 'writer-workflow');
+}
+
+/**
+ * Resolve the default workflow JSON path for the local document store.
+ * @param {{
+ *   path: {
+ *     join: (...parts: string[]) => string,
+ *   },
+ *   cwd: () => string,
+ * }} deps Path and cwd dependencies.
+ * @returns {string} Default workflow JSON path.
+ */
+export function getDefaultWorkflowPath(deps) {
+  return deps.path.join(getDefaultWorkflowDir(deps), 'workflow.json');
+}
+
+/**
+ * Resolve the default legacy markdown path for the local document store.
+ * @param {{
+ *   path: {
+ *     join: (...parts: string[]) => string,
+ *   },
+ *   cwd: () => string,
+ * }} deps Path and cwd dependencies.
+ * @returns {string} Default legacy markdown path.
+ */
+export function getDefaultLegacyDocumentPath(deps) {
+  return deps.path.join(deps.cwd(), 'local-data', 'writer.md');
+}
+
+/**
  * Build the store state from injected dependencies and options.
  * @param {{
  *   mkdir: (path: string, options: { recursive: boolean }) => Promise<void>,
@@ -117,10 +159,7 @@ function createDocumentStoreState(deps, options) {
  * @returns {string} Workflow JSON path.
  */
 function resolveWorkflowPath(deps, options) {
-  return (
-    options.workflowPath ??
-    deps.path.join(deps.cwd(), 'local-data', 'writer-workflow', 'workflow.json')
-  );
+  return options.workflowPath ?? getDefaultWorkflowPath(deps);
 }
 
 /**
@@ -141,10 +180,7 @@ function resolveWorkflowDir(deps, options, workflowPath) {
  * @returns {string} Legacy markdown path.
  */
 function resolveLegacyDocumentPath(deps, options) {
-  return (
-    options.legacyDocumentPath ??
-    deps.path.join(deps.cwd(), 'local-data', 'writer.md')
-  );
+  return options.legacyDocumentPath ?? getDefaultLegacyDocumentPath(deps);
 }
 
 /**

@@ -4,6 +4,9 @@ import path from 'node:path';
 import {
   canPruneTrailingDraft,
   createDocumentStoreCore,
+  getDefaultLegacyDocumentPath,
+  getDefaultWorkflowDir,
+  getDefaultWorkflowPath,
   pruneTrailingDrafts,
   renumberDraftSteps,
   shouldKeepStepContent,
@@ -88,6 +91,20 @@ describe('createDocumentStoreCore', () => {
 
     expect(store.workflowPath).toContain(
       path.join('local-data', 'writer-workflow', 'workflow.json')
+    );
+  });
+
+  test('resolves the default local document store paths from injected deps', () => {
+    const deps = createDeps();
+
+    expect(getDefaultWorkflowDir(deps)).toBe(
+      path.join(process.cwd(), 'local-data', 'writer-workflow')
+    );
+    expect(getDefaultWorkflowPath(deps)).toBe(
+      path.join(process.cwd(), 'local-data', 'writer-workflow', 'workflow.json')
+    );
+    expect(getDefaultLegacyDocumentPath(deps)).toBe(
+      path.join(process.cwd(), 'local-data', 'writer.md')
     );
   });
 
