@@ -34,7 +34,6 @@
     "src/local/notion-codex/config.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/local/notion-codex/launcher.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/local/notion-codex/notionApi.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/local/notion-codex/outcomeStore.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/local/notion-codex/poll.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/local/notion-codex/prompt.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/local/notion-codex/stateStore.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
