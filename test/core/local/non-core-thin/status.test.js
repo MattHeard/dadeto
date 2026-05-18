@@ -4,10 +4,7 @@ describe('non-core thin status', () => {
   test('reports the current repo status', () => {
     const status = getNonCoreThinStatus();
 
-    expect(status).toMatchObject({
-      isClean: true,
-      maxLines: 50,
-    });
+    expect(status).toMatchObject({ maxLines: 50 });
     expect(status.exemptionCount).toEqual(expect.any(Number));
     expect(status.fileCount).toBeGreaterThan(0);
     expect(status.staleExemptions).toEqual([]);

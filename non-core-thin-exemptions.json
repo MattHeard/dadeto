@@ -4,7 +4,6 @@
     "src/browser/main.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/browser/moderate.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/browser/presenters/realtimeVoicePrototype.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/browser/statsTopStories.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/browser/toys.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/browser/variantRedirect.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/complexity-profile.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
