@@ -21,7 +21,6 @@
     "src/cloud/generate-stats/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/get-api-key-credit/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/get-moderation-variant/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/cloud/hide-variant-html/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/mark-variant-dirty/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/realtime-call/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/render-contents/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",

@@ -7,6 +7,7 @@ import {
   getDefaultLegacyDocumentPath,
   getDefaultWorkflowDir,
   getDefaultWorkflowPath,
+  getTrailingDraftStep,
   pruneTrailingDrafts,
   renumberDraftSteps,
   shouldKeepStepContent,
@@ -368,6 +369,39 @@ describe('createDocumentStoreCore', () => {
         ],
       })
     ).toBe(true);
+  });
+
+  test('prune helpers ignore non-draft trailing steps', () => {
+    expect(
+      canPruneTrailingDraft(createDeps(), {
+        activeIndex: 0,
+        steps: [
+          { id: 'thesis', title: 'Thesis' },
+          { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+          { id: 'outline', title: 'Outline' },
+          { id: 'appendix', title: 'Appendix' },
+        ],
+      })
+    ).toBe(false);
+  });
+
+  test('finds a trailing draft step only when the last step is a draft', () => {
+    expect(
+      getTrailingDraftStep({
+        steps: [
+          { id: 'thesis', title: 'Thesis' },
+          { id: 'outline', title: 'Outline' },
+        ],
+      })
+    ).toBeNull();
+    expect(
+      getTrailingDraftStep({
+        steps: [
+          { id: 'thesis', title: 'Thesis' },
+          { id: 'draft-1', title: 'Draft 1' },
+        ],
+      })
+    ).toMatchObject({ id: 'draft-1', title: 'Draft 1' });
   });
 
   test('pruneTrailingDrafts stops when the trailing draft has body text', async () => {

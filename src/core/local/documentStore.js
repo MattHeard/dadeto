@@ -363,8 +363,7 @@ export function canPruneTrailingDraft(state, workflow) {
     return false;
   }
 
-  const lastStep = workflow.steps.at(-1);
-  return Boolean(lastStep && isDraftId(lastStep.id));
+  return Boolean(getTrailingDraftStep(workflow));
 }
 
 /**
@@ -448,8 +447,7 @@ async function serializeWorkflow(state, workflow) {
  */
 async function loadWorkflow(state) {
   const workflow = await ensureWorkflow(state);
-  await pruneWorkflow(state, workflow);
-  await writeWorkflow(state, workflow);
+  await persistWorkflow(state, workflow);
   return serializeWorkflow(state, workflow);
 }
 
@@ -479,8 +477,7 @@ async function saveDocument(state, documentId, content) {
   } else {
     await state.deps.rm(getDocumentPath(state, step), { force: true });
   }
-  await pruneWorkflow(state, workflow);
-  await writeWorkflow(state, workflow);
+  await persistWorkflow(state, workflow);
 
   return {
     bytes: Buffer.byteLength(content, 'utf8'),
@@ -507,14 +504,11 @@ async function moveActiveIndex(state, direction) {
     appendDraftStep(state, workflow);
   }
 
-  workflow.activeIndex = clampIndex(
-    workflow.activeIndex + direction,
-    workflow.steps.length
+  return setWorkflowActiveIndex(
+    state,
+    workflow,
+    workflow.activeIndex + direction
   );
-  await pruneWorkflow(state, workflow);
-  await writeWorkflow(state, workflow);
-
-  return serializeWorkflow(state, workflow);
 }
 
 /**
@@ -530,11 +524,36 @@ async function moveActiveIndex(state, direction) {
  */
 async function setActiveIndex(state, nextIndex) {
   const workflow = await ensureWorkflow(state);
+  return setWorkflowActiveIndex(state, workflow, nextIndex);
+}
+
+/**
+ * Set and persist a workflow's active index.
+ * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }} workflow Workflow to persist.
+ * @param {number} nextIndex Desired active index.
+ * @returns {Promise<{
+ *   workflowPath: string,
+ *   activeIndex: number,
+ *   heading: string,
+ *   documents: Array<{ id: string, title: string, path: string, content: string }>,
+ * }>} Updated workflow response.
+ */
+async function setWorkflowActiveIndex(state, workflow, nextIndex) {
   workflow.activeIndex = clampIndex(nextIndex, workflow.steps.length);
+  await persistWorkflow(state, workflow);
+  return serializeWorkflow(state, workflow);
+}
+
+/**
+ * Persist a workflow after pruning trailing drafts.
+ * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }} workflow Workflow to persist.
+ * @returns {Promise<void>} Nothing.
+ */
+async function persistWorkflow(state, workflow) {
   await pruneWorkflow(state, workflow);
   await writeWorkflow(state, workflow);
-
-  return serializeWorkflow(state, workflow);
 }
 
 /**
@@ -553,8 +572,21 @@ function shouldAppendDraft(state, workflow, direction) {
     return false;
   }
 
+  return Boolean(getTrailingDraftStep(workflow));
+}
+
+/**
+ * Get the trailing draft step, if present.
+ * @param {{ steps: Array<{ id: string, title: string }> }} workflow Workflow to inspect.
+ * @returns {{ id: string, title: string } | null} Trailing draft step.
+ */
+export function getTrailingDraftStep(workflow) {
   const lastStep = workflow.steps.at(-1);
-  return Boolean(lastStep && isDraftId(lastStep.id));
+  if (!lastStep || !isDraftId(lastStep.id)) {
+    return null;
+  }
+
+  return lastStep;
 }
 
 /**
