@@ -16,7 +16,6 @@
     "src/build/styles.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/textUtils.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/assign-moderation-job/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/cloud/common-gcf.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/firestore.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/generate-stats/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/get-api-key-credit/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
