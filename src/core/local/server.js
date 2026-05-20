@@ -165,7 +165,7 @@ function createRootRedirectHandler() {
  * @returns {boolean} True when the writer server should use HTTPS.
  */
 export function isWriterHttpsEnabled(env) {
-  return isEnabledEnvValue(env.WRITER_HTTPS);
+  return isEnabledEnvValue(env?.WRITER_HTTPS);
 }
 
 /**
@@ -174,7 +174,7 @@ export function isWriterHttpsEnabled(env) {
  * @returns {boolean} True when request logging should be enabled.
  */
 export function isWriterRequestLogEnabled(env) {
-  return isEnabledEnvValue(env.WRITER_REQUEST_LOG);
+  return isEnabledEnvValue(env?.WRITER_REQUEST_LOG);
 }
 
 /**

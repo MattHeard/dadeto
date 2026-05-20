@@ -185,6 +185,12 @@ describe('core local server helpers', () => {
     );
   });
 
+  test('treats missing env as disabled flags and http startup', () => {
+    expect(isWriterHttpsEnabled()).toBe(false);
+    expect(isWriterRequestLogEnabled()).toBe(false);
+    expect(getWriterUrl(4321)).toBe('http://localhost:4321/writer/');
+  });
+
   test('decides whether response locations should be set', () => {
     expect(shouldSetResponseLocation('/foo')).toBe(true);
     expect(shouldSetResponseLocation('')).toBe(false);
