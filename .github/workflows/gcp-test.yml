@@ -246,6 +246,57 @@ jobs:
             infra/.terraform
           if-no-files-found: warn
 
+      - name: Seed GCP fixture for Playwright
+        if: success()
+        run: |
+          set -euo pipefail
+          TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
+          WEB_APP_CONFIG_JSON="$(terraform output -json firebase_web_app_config | jq -c '.value')"
+          MARK_VARIANT_DIRTY_URL="https://${REGION}-${GOOGLE_PROJECT}.cloudfunctions.net/${ENVIRONMENT}-mark-variant-dirty"
+          TRIGGER_RENDER_CONTENTS_URL="https://${REGION}-${GOOGLE_PROJECT}.cloudfunctions.net/${ENVIRONMENT}-trigger-render-contents"
+
+          npm --prefix ../src/cloud/runtime-deps ci
+
+          SEED_JSON="$(
+            PROJECT_ID="$GOOGLE_PROJECT" \
+            DATABASE_ID="$TF_VAR_database_id" \
+            ENVIRONMENT="$ENVIRONMENT" \
+            TEST_STATIC_BUCKET="$TEST_STATIC_BUCKET" \
+            STATIC_OBJECT_PREFIX="${ENVIRONMENT}/" \
+            FIREBASE_WEB_APP_CONFIG_JSON="$WEB_APP_CONFIG_JSON" \
+            MARK_VARIANT_DIRTY_URL="$MARK_VARIANT_DIRTY_URL" \
+            TRIGGER_RENDER_CONTENTS_URL="$TRIGGER_RENDER_CONTENTS_URL" \
+            node ../scripts/gcp-test-fixture.js
+          )"
+
+          printf '%s\n' "$SEED_JSON" > /tmp/e2e-seed.json
+          gcloud storage cp /tmp/e2e-seed.json "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/seed.json"
+
+      - name: Wait for seeded pages
+        if: success()
+        run: |
+          set -euo pipefail
+          TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
+
+          wait_for_object() {
+            local object_path="$1"
+            local attempt
+            for attempt in $(seq 1 30); do
+              if gcloud storage ls "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/${object_path}" >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 5
+            done
+
+            echo "Timed out waiting for ${object_path}"
+            exit 1
+          }
+
+          wait_for_object seed.json
+          wait_for_object index.html
+          wait_for_object p/1a.html
+          wait_for_object p/2a.html
+
       - name: Print Terraform state addresses
         if: always()
         run: terraform state list || true
