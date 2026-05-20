@@ -41,6 +41,7 @@ resource "google_compute_subnetwork" "playwright_proxy_only" {
   role          = "ACTIVE"
 
   depends_on = [
+    google_project_service.compute,
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
     google_project_iam_member.terraform_service_account_vpcaccess_admin,
