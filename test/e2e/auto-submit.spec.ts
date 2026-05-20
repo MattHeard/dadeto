@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test('Auto-submit checkbox works correctly on IDEN1 toy', async ({ page }) => {
   // Navigate to the page with hash
-  await page.goto('https://mattheard.net/#IDEN1', { waitUntil: 'networkidle' });
+  await page.goto('https://mattheard.net/#IDEN1', {
+    waitUntil: 'domcontentloaded',
+  });
 
   // Wait for the IDEN1 article to be visible
   const article = page.locator('#IDEN1');
