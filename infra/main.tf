@@ -95,6 +95,11 @@ locals {
       source       = "${path.module}/new-story.html"
       content_type = "text/html"
     }
+    dendrite_writer_index = {
+      name         = "writer/index.html"
+      source       = "${path.module}/../public/writer/index.html"
+      content_type = "text/html"
+    }
     dendrite_new_page = {
       name         = "new-page.html"
       source       = "${path.module}/new-page.html"

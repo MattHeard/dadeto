@@ -3,6 +3,7 @@ import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import process from 'node:process';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 const args = parseArgs(process.argv.slice(2));
 const logPath = resolve(args.logPath);
@@ -17,6 +18,8 @@ const child = spawn(
   stdio: ['ignore', 'pipe', 'pipe'],
   }
 );
+
+const poller = watchForFailures(args.runId, args.intervalSeconds);
 
 const failurePatterns = [
   /(^|\s)(error|failed|failure)(\s|$)/i,
@@ -37,6 +40,9 @@ child.stderr.on('data', chunk => {
 const exitCode = await new Promise(resolve => {
   child.on('close', code => resolve(code ?? 1));
 });
+
+poller.stop = true;
+await poller.done.catch(() => {});
 
 process.exitCode = exitCode;
 
@@ -86,4 +92,83 @@ function forwardChunk(chunk, stream) {
   if (failurePatterns.some(pattern => pattern.test(text))) {
     stream.write('\n[gh:watch] possible failure detected in live output\n');
   }
+}
+
+function watchForFailures(runId, intervalSeconds) {
+  const seen = new Map();
+  const result = { stop: false };
+
+  result.done = (async () => {
+    while (!result.stop) {
+      try {
+        const output = await runGhJson([
+          'run',
+          'view',
+          runId,
+          '--json',
+          'status,conclusion,jobs',
+          '--jq',
+          '.jobs[] | {name:.name, conclusion:.conclusion, steps:[.steps[] | {name:.name, conclusion:.conclusion}]}',
+        ]);
+
+        const jobs = output
+          .split('\n')
+          .map(line => line.trim())
+          .filter(Boolean)
+          .map(line => JSON.parse(line));
+
+        for (const job of jobs) {
+          const jobKey = job.name;
+          const previous = seen.get(jobKey);
+          seen.set(jobKey, job);
+
+          if (!previous) {
+            continue;
+          }
+
+          const failedStep = job.steps.find((step, index) => {
+            const prior = previous.steps[index];
+            return step.conclusion === 'failure' && prior?.conclusion !== 'failure';
+          });
+
+          if (failedStep) {
+            process.stdout.write(
+              `\n[gh:watch] failure: ${jobKey} -> ${failedStep.name}\n`
+            );
+          } else if (job.conclusion === 'failure' && previous.conclusion !== 'failure') {
+            process.stdout.write(`\n[gh:watch] failure: ${jobKey} failed\n`);
+          } else if (job.conclusion === 'success' && previous.conclusion !== 'success') {
+            process.stdout.write(`\n[gh:watch] success: ${jobKey} completed\n`);
+          }
+        }
+      } catch {
+        // Keep watching; transient API failures shouldn't hide the run.
+      }
+
+      await sleep(intervalSeconds * 1000);
+    }
+  })();
+
+  return result;
+}
+
+async function runGhJson(args) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('gh', args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', chunk => {
+      stdout += chunk.toString('utf8');
+    });
+    proc.stderr.on('data', chunk => {
+      stderr += chunk.toString('utf8');
+    });
+    proc.on('close', code => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(stderr || stdout || `gh exited with ${code}`));
+      }
+    });
+  });
 }
