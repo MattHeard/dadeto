@@ -103,7 +103,14 @@ const sharedBrowserFiles = [
 const coreRealtimeCopies = [
   {
     source: srcCoreRealtimeDir,
-    target: join(infraFunctionsDir, 'realtime-call', 'cloud', 'core', 'realtime'),
+    target: join(
+      infraFunctionsDir,
+      'realtime-call',
+      'cloud',
+      'realtime-call',
+      'core',
+      'realtime'
+    ),
   },
 ];
 
