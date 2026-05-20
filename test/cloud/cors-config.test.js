@@ -1,4 +1,4 @@
-import { getAllowedOrigins } from '../../src/cloud/cors-config.js';
+import { getAllowedOrigins } from '../../src/core/cloud/cors-config.js';
 
 const productionOrigins = [
   'https://mattheard.net',
@@ -36,5 +36,9 @@ describe('getAllowedOrigins', () => {
     process.env.DENDRITE_ENVIRONMENT = 't-example';
 
     expect(getAllowedOrigins(process.env)).toEqual([]);
+  });
+
+  it('returns production origins when environment is unset', () => {
+    expect(getAllowedOrigins(process.env)).toEqual(productionOrigins);
   });
 });
