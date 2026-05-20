@@ -8,6 +8,7 @@
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
     "test:e2e": "playwright test",
     "generate": "node src/build/generate.js",
+    "gh:watch": "node scripts/watch-gh-run.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
     "tcr": "./tcr.sh",
     "build-and-tcr": "npm run build:browser && npm run tcr",
