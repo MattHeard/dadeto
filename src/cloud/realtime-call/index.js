@@ -5,7 +5,7 @@ import {
   getEnvironmentVariables,
 } from './realtime-call-gcf.js';
 import { getAllowedOrigins } from '../cors-config.js';
-import { exchangeRealtimeCallSdp } from '../../core/realtime/openaiRealtimeCalls.js';
+import { exchangeRealtimeCallSdp } from './core/realtime/openaiRealtimeCalls.js';
 
 /**
  * Create the cloud Realtime SDP relay app.

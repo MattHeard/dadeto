@@ -1,1 +1,1 @@
-export { createVerifyAdmin } from '../../core/cloud/cloud-core.js';
+export { createVerifyAdmin, isAllowedOrigin } from '../../core/cloud/cloud-core.js';
