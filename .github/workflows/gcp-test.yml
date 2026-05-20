@@ -251,7 +251,11 @@ jobs:
         run: |
           set -euo pipefail
           TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
-          WEB_APP_CONFIG_JSON="$(terraform output -json firebase_web_app_config | jq -c '.value')"
+          RAW_WEB_APP_CONFIG_JSON="$(terraform output -json firebase_web_app_config)"
+          WEB_APP_CONFIG_JSON="$(
+            printf '%s' "$RAW_WEB_APP_CONFIG_JSON" |
+              jq -c 'if type == "object" and has("value") then .value else . end'
+          )"
           MARK_VARIANT_DIRTY_URL="https://${REGION}-${GOOGLE_PROJECT}.cloudfunctions.net/${ENVIRONMENT}-mark-variant-dirty"
           TRIGGER_RENDER_CONTENTS_URL="https://${REGION}-${GOOGLE_PROJECT}.cloudfunctions.net/${ENVIRONMENT}-trigger-render-contents"
 
