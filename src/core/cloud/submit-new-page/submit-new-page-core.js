@@ -1,6 +1,7 @@
 import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,
+  createCorsOriginHandler,
   buildVariantByNameQuery,
   buildPageByNumberQuery,
 } from '../cloud-core.js';
@@ -680,4 +681,46 @@ export function createHandleSubmit(deps) {
       author,
     });
   };
+}
+
+/**
+ * Create the Express handler that bridges the core submission result to HTTP.
+ * @param {(request: SubmitNewPageRequest) => Promise<{ status: number, body: object }>} handleSubmitCore Core submit handler.
+ * @returns {(req: import('express').Request, res: import('express').Response) => Promise<void>} Express handler.
+ */
+export function createSubmitNewPageRequestHandler(handleSubmitCore) {
+  return async function handleSubmit(req, res) {
+    const { status, body } = await handleSubmitCore(req);
+    res.status(status).json(body);
+  };
+}
+
+/**
+ * Build the submit-new-page Express app.
+ * @param {{
+ *   express: Function,
+ *   cors: Function,
+ *   allowedOrigins: string[],
+ *   handleSubmit: Function,
+ * }} deps Dependencies for app wiring.
+ * @returns {{ use: Function, post: Function }} Wired Express app.
+ */
+export function createSubmitNewPageApp(deps) {
+  const app = deps.express();
+
+  app.use(
+    deps.cors({
+      origin: createCorsOriginHandler(
+        (origin, allowedOrigins) => !origin || allowedOrigins.includes(origin),
+        deps.allowedOrigins
+      ),
+      methods: ['POST'],
+    })
+  );
+
+  app.use(deps.express.json({ limit: '20kb' }));
+  app.use(deps.express.urlencoded({ extended: false, limit: '20kb' }));
+  app.post('/', deps.handleSubmit);
+
+  return app;
 }

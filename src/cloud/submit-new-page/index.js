@@ -11,7 +11,11 @@ import {
   getEnvironmentVariables,
 } from './submit-new-page-gcf.js';
 import { getAllowedOrigins } from './cors-config.js';
-import { createHandleSubmit } from './submit-new-page-core.js';
+import {
+  createHandleSubmit,
+  createSubmitNewPageApp,
+  createSubmitNewPageRequestHandler,
+} from './submit-new-page-core.js';
 import {
   parseIncomingOption,
   findExistingOption,
@@ -23,27 +27,6 @@ const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
 ensureFirebaseApp();
 const db = getFirestoreInstance();
 const auth = getAuth();
-const app = express();
-
-const environmentVariables = getEnvironmentVariables();
-const allowedOrigins = getAllowedOrigins(environmentVariables);
-
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('CORS'));
-      }
-    },
-    methods: ['POST'],
-  })
-);
-
-app.use(express.json({ limit: '20kb' }));
-app.use(express.urlencoded({ extended: false, limit: '20kb' }));
-
 const handleSubmitCore = createHandleSubmit({
   verifyIdToken: token => auth.verifyIdToken(token),
   saveSubmission: (id, data) =>
@@ -54,21 +37,13 @@ const handleSubmitCore = createHandleSubmit({
   findExistingOption: parsed => findExistingOption(db, parsed),
   findExistingPage: pageNumber => findExistingPage(db, pageNumber),
 });
-
-/**
- * Handle POST submissions for the submit new page endpoint.
- * @param {import('express').Request} req Incoming Express request containing the submission payload.
- * @param {import('express').Response} res Express response instance used to return the status and body.
- */
-async function handleSubmit(req, res) {
-  const { status, body } = await handleSubmitCore(req);
-  res.status(status).json(body);
-}
-
-app.post('/', handleSubmit);
+const app = createSubmitNewPageApp({
+  express,
+  cors,
+  allowedOrigins: getAllowedOrigins(getEnvironmentVariables()),
+  handleSubmit: createSubmitNewPageRequestHandler(handleSubmitCore),
+});
 
 export const submitNewPage = functions
   .region('europe-west1')
   .https.onRequest(app);
-
-export { handleSubmit };

@@ -25,7 +25,6 @@
     "src/cloud/render-contents/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/render-variant/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/cloud/submit-moderation-rating/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/cloud/submit-new-page/index.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/content/pages/2024-10-03/script.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/local/notion-codex/config.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/local/notion-codex/launcher.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",

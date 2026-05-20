@@ -1,5 +1,9 @@
 import { jest } from '@jest/globals';
-import { createHandleSubmit } from '../../../../src/core/cloud/submit-new-page/submit-new-page-core.js';
+import {
+  createHandleSubmit,
+  createSubmitNewPageApp,
+  createSubmitNewPageRequestHandler,
+} from '../../../../src/core/cloud/submit-new-page/submit-new-page-core.js';
 
 const INCOMING_OPTION_KEY = 'incoming_option';
 
@@ -319,5 +323,54 @@ describe('createHandleSubmit', () => {
       options: [],
       createdAt: 'ts',
     });
+  });
+
+  it('bridges submit results to the HTTP response', async () => {
+    const handleSubmitCore = jest.fn().mockResolvedValue({
+      status: 202,
+      body: { ok: true },
+    });
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    await createSubmitNewPageRequestHandler(handleSubmitCore)({}, res);
+
+    expect(handleSubmitCore).toHaveBeenCalledWith({});
+    expect(res.status).toHaveBeenCalledWith(202);
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  it('builds an app that wires cors and request handlers', () => {
+    const use = jest.fn();
+    const post = jest.fn();
+    const express = jest.fn(() => ({ use, post }));
+    express.json = jest.fn(() => 'json-middleware');
+    express.urlencoded = jest.fn(() => 'urlencoded-middleware');
+    const cors = jest.fn(options => ({ options }));
+    const handleSubmit = jest.fn();
+
+    const app = createSubmitNewPageApp({
+      express,
+      cors,
+      allowedOrigins: ['https://example.test'],
+      handleSubmit,
+    });
+
+    expect(app).toEqual({ use, post });
+    expect(express).toHaveBeenCalledTimes(1);
+    expect(cors).toHaveBeenCalledTimes(1);
+    expect(use).toHaveBeenCalledTimes(3);
+    expect(post).toHaveBeenCalledWith('/', handleSubmit);
+
+    const [corsOptions] = cors.mock.calls[0];
+    const allowOrigin = jest.fn();
+    const denyOrigin = jest.fn();
+    corsOptions.origin('https://example.test', allowOrigin);
+    corsOptions.origin('https://denied.test', denyOrigin);
+
+    expect(allowOrigin).toHaveBeenCalledWith(null, true);
+    expect(denyOrigin).toHaveBeenCalledWith(expect.any(Error));
   });
 });
