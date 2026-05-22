@@ -63,6 +63,9 @@ async function loadFixture(page, request: APIRequestContext) {
   expect(response.status(), 'seed response').toBe(200);
 
   const seed = await response.json();
+  await page.context().addInitScript(token => {
+    sessionStorage.setItem('id_token', token);
+  }, seed.idToken);
   await page.addInitScript(token => {
     sessionStorage.setItem('id_token', token);
   }, seed.idToken);
@@ -70,18 +73,77 @@ async function loadFixture(page, request: APIRequestContext) {
   return seed;
 }
 
+/**
+ * Navigate to a same-origin page, verify the seeded token is present there, and
+ * then load the authenticated surface under test.
+ * @param {import('@playwright/test').Page} page Playwright page.
+ * @param {string} path Authenticated path to visit.
+ * @param {string} token Seeded admin ID token.
+ * @returns {Promise<import('@playwright/test').Response | null>} Final navigation response.
+ */
+async function gotoAuthenticated(page, path, token) {
+  const seedResponse = await page.goto('/seed.json', {
+    waitUntil: 'domcontentloaded',
+  });
+
+  expect(seedResponse, 'seed navigation response').not.toBeNull();
+  expect(seedResponse!.status(), 'seed navigation status').toBe(200);
+
+  await page.evaluate(idToken => {
+    sessionStorage.setItem('id_token', idToken);
+  }, token);
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => sessionStorage.getItem('id_token')?.length ?? 0),
+      { message: 'seeded id token is available on the browser origin' }
+    )
+    .toBeGreaterThan(0);
+
+  return page.goto(path, { waitUntil: 'domcontentloaded' });
+}
+
+/**
+ * Capture a compact page/auth snapshot for cloud-only failures.
+ * @param {import('@playwright/test').Page} page Playwright page.
+ * @returns {Promise<{
+ *   bodyClass: string,
+ *   hasApproveButton: boolean,
+ *   hasToken: boolean,
+ *   href: string,
+ *   title: string,
+ * }>} Debug state.
+ */
+async function readAuthDebugState(page) {
+  return page.evaluate(() => ({
+    bodyClass: document.body.className,
+    hasApproveButton: Boolean(document.querySelector('#approveBtn')),
+    hasToken: Boolean(sessionStorage.getItem('id_token')),
+    href: location.href,
+    title: document.title,
+  }));
+}
+
 /** @type {Awaited<ReturnType<typeof loadFixture>> | undefined} */
 let fixture;
 
 test.describe.serial('seeded dendrite fixture', () => {
   test.beforeEach(async ({ page, request }) => {
+    page.on('pageerror', error => {
+      console.log(`[dendrite-fixture pageerror] ${error.message}`);
+    });
+    page.on('console', message => {
+      if (message.type() === 'error') {
+        console.log(`[dendrite-fixture console.error] ${message.text()}`);
+      }
+    });
     fixture = await loadFixture(page, request);
   });
 
   test('moderation can approve the seeded story and move to the next page', async ({
     page,
   }) => {
-    const response = await page.goto('/mod.html', { waitUntil: 'domcontentloaded' });
+    const response = await gotoAuthenticated(page, '/mod.html', fixture.idToken);
 
     expect(response, 'navigation response').not.toBeNull();
     expect(response!.status()).toBe(200);
@@ -90,7 +152,11 @@ test.describe.serial('seeded dendrite fixture', () => {
     await expect(page).toHaveTitle('Dendrite - Moderate a story page');
 
     const pageContent = page.locator('#pageContent');
-    await expect(page.locator('body')).toHaveClass(/authed/);
+    await expect
+      .poll(() => readAuthDebugState(page), {
+        message: 'moderation page reaches authenticated state',
+      })
+      .toMatchObject({ bodyClass: expect.stringMatching(/authed/) });
     await expect(page.locator('#approveBtn')).toBeEnabled();
     await expect(page.locator('#rejectBtn')).toBeEnabled();
     await expect(pageContent).toContainText(fixture.moderation.firstContent);
@@ -103,9 +169,7 @@ test.describe.serial('seeded dendrite fixture', () => {
   test('admin can generate fresh stats from the seeded datastore', async ({
     page,
   }) => {
-    const response = await page.goto('/admin.html', {
-      waitUntil: 'domcontentloaded',
-    });
+    const response = await gotoAuthenticated(page, '/admin.html', fixture.idToken);
 
     expect(response, 'navigation response').not.toBeNull();
     expect(response!.status()).toBe(200);
