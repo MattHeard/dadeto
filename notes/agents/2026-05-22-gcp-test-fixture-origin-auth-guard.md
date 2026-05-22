@@ -217,3 +217,16 @@ it as the next moderation job. A small source-level Jest guard now protects
 that fixture contract. Next-time guidance: when an E2E expects ordered progress
 through a randomized selector, encode the ordering in the fixture data rather
 than depending on RNG.
+
+Run `26303709236` on `55d12209b` still failed only the moderation Playwright
+case after fixture seed, seeded page readiness, and cleanup all succeeded. The
+artifact logs showed the post-approval `assign-moderation-job` request as
+`net::ERR_ABORTED` when the test ended, while the assertion used the default
+5 second timeout. That points at cloud cold-start/assignment latency rather
+than a completed assignment returning the first page again.
+
+The chosen fix gives the post-approval second-content assertion a 30 second
+timeout in the cloud E2E. Next-time guidance: assertions that depend on a
+freshly invoked Cloud Function and a follow-up render/load cycle should use a
+cloud-realistic timeout, while still keeping the individual expected UI state
+specific.

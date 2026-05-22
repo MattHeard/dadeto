@@ -190,7 +190,9 @@ test.describe.serial('seeded dendrite fixture', () => {
 
     await page.getByRole('button', { name: 'Approve' }).click();
 
-    await expect(pageContent).toContainText(fixture.moderation.secondContent);
+    await expect(pageContent).toContainText(fixture.moderation.secondContent, {
+      timeout: 30000,
+    });
   });
 
   test('admin can generate fresh stats from the seeded datastore', async ({
