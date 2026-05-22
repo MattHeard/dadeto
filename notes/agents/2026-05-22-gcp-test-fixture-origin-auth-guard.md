@@ -59,3 +59,11 @@ to `infra/main.tf`, copies `logging.js` during `npm run build:cloud`, and points
 the logging wrapper at the uploaded `/core/browser/browser-core.js` tree. The
 cloud browser entrypoint guard now checks both the Terraform upload list and the
 generated root wrapper.
+
+Run `26287834508` still failed at the same authenticated-state assertion after
+the root upload fix, but the logs only showed generic browser 404 console
+messages. The next loop adds targeted Playwright diagnostics for failed
+requests, HTTP responses with status `>= 400`, and a compact auth snapshot
+right after `/mod.html` navigation. This should identify the exact URL or state
+transition still blocking `body.authed` in the cloud-only browser environment
+without granting local tooling direct GCP delete capability.

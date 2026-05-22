@@ -132,6 +132,22 @@ test.describe.serial('seeded dendrite fixture', () => {
     page.on('pageerror', error => {
       console.log(`[dendrite-fixture pageerror] ${error.message}`);
     });
+    page.on('requestfailed', failedRequest => {
+      const failure = failedRequest.failure();
+      console.log(
+        `[dendrite-fixture requestfailed] ${failedRequest.method()} ${failedRequest.url()} ${
+          failure?.errorText ?? 'unknown failure'
+        }`
+      );
+    });
+    page.on('response', response => {
+      const status = response.status();
+      if (status >= 400) {
+        console.log(
+          `[dendrite-fixture response.${status}] ${response.request().method()} ${response.url()}`
+        );
+      }
+    });
     page.on('console', message => {
       if (message.type() === 'error') {
         console.log(`[dendrite-fixture console.error] ${message.text()}`);
@@ -150,6 +166,11 @@ test.describe.serial('seeded dendrite fixture', () => {
 
     await expectSharedChrome(page);
     await expect(page).toHaveTitle('Dendrite - Moderate a story page');
+    console.log(
+      `[dendrite-fixture auth-debug-after-navigation] ${JSON.stringify(
+        await readAuthDebugState(page)
+      )}`
+    );
 
     const pageContent = page.locator('#pageContent');
     await expect
