@@ -2,6 +2,7 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 let initGoogleSignIn;
 let signOut;
+let getIdToken;
 
 describe('googleAuth', () => {
   beforeEach(async () => {
@@ -29,7 +30,7 @@ describe('googleAuth', () => {
       querySelectorAll: jest.fn().mockReturnValue([el]),
     };
     global.atob = str => Buffer.from(str, 'base64').toString('binary');
-    ({ initGoogleSignIn, signOut } = await import(
+    ({ initGoogleSignIn, signOut, getIdToken } = await import(
       '../../src/browser/googleAuth.js'
     ));
   });
@@ -50,6 +51,12 @@ describe('googleAuth', () => {
     await signOut();
     expect(sessionStorage.getItem('id_token')).toBeNull();
     expect(disableAutoSelect).toHaveBeenCalled();
+  });
+
+  it('exports the cached ID token helper used by static pages', () => {
+    sessionStorage.setItem('id_token', 'tok');
+
+    expect(getIdToken()).toBe('tok');
   });
 
   it('renders the correct theme and updates on scheme change', () => {

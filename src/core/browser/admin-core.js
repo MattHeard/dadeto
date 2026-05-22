@@ -2437,7 +2437,7 @@ export function createQuerySelectorAll(scope) {
   return selector => {
     const doc = resolveScopeDocument(scope);
     const querySelectorAll = resolveQuerySelectorAllFunction(doc);
-    return querySelectorAll(selector);
+    return querySelectorAll.call(doc, selector);
   };
 }
 

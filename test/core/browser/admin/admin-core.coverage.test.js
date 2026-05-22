@@ -172,9 +172,16 @@ describe('admin-core additional coverage', () => {
         new Error('document.querySelectorAll is not a function')
       );
 
-      const querySelectorAllMock = jest.fn().mockReturnValue(['node']);
+      const documentObj = {};
+      const querySelectorAllMock = jest.fn(function querySelectorAll() {
+        if (this !== documentObj) {
+          throw new TypeError('Illegal invocation');
+        }
+        return ['node'];
+      });
+      documentObj.querySelectorAll = querySelectorAllMock;
       const runQuery = createQuerySelectorAll({
-        document: { querySelectorAll: querySelectorAllMock },
+        document: documentObj,
       });
       expect(runQuery('.signin')).toEqual(['node']);
     });

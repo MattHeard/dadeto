@@ -113,3 +113,16 @@ The fix now copies `src/core/commonCore.js` to both root locations:
 deep `/core/browser/*` modules. The cloud browser entrypoint guard records this
 explicitly so future browser module packaging work keeps the shared core module
 on the same uploaded path that native ESM resolution requests in GCP.
+
+Run `26292999041` moved past the missing `/core/commonCore.js` 404 and exposed
+browser-runtime issues instead of packaging 404s. Static pages imported
+`getIdToken` from `/googleAuth.js`, but the module only exported
+`initGoogleSignIn` and `signOut`. The moderation page also threw
+`Illegal invocation` from `/core/browser/admin-core.js` because
+`document.querySelectorAll` was called after being detached from its `document`
+receiver.
+
+The fix exports `getIdToken` from `src/browser/googleAuth.js` and calls
+`querySelectorAll` with `document` as its receiver in `createQuerySelectorAll`.
+Regression tests now cover the static-page token export and a browser-like
+`querySelectorAll` method that throws if invoked without its document context.

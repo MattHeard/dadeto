@@ -4,6 +4,7 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { createGoogleAuthModule } from './admin-core.js';
+import { getIdToken } from '../core/browser/browser-core.js';
 
 export const { initGoogleSignIn, signOut } = createGoogleAuthModule({
   getAuthFn: getAuth,
@@ -13,3 +14,5 @@ export const { initGoogleSignIn, signOut } = createGoogleAuthModule({
   Provider: GoogleAuthProvider,
   credentialFactory: signInWithCredential,
 });
+
+export { getIdToken };
