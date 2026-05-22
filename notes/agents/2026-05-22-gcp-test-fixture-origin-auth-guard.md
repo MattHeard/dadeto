@@ -39,3 +39,12 @@ generated from the deep core implementation, whose relative imports point at
 root files that are not shipped as browser modules. The cloud package now copies
 the browser wrapper from `src/browser/admin-core.js` so root browser entrypoints
 resolve `../core/browser/admin-core.js` consistently.
+
+Run `26285207606` exposed the same class of packaging issue one module deeper:
+the root `load-static-config-core.js` was also generated from the deep core
+implementation. That file imported `./browser-core.js`, but the root static
+bundle only ships browser wrapper entrypoints and the `/core/browser/...` tree,
+so the module graph failed before `moderate.js` reached its synchronous
+`getIdToken()` check. The cloud package now copies the browser wrapper from
+`src/browser/load-static-config-core.js`, and
+`test/infra/cloudBrowserEntrypoints.test.js` guards both root wrappers.

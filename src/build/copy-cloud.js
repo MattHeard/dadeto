@@ -425,7 +425,7 @@ const individualFileCopies = [
     target: join(infraDir, 'core', 'browser', 'browser-core.js'),
   },
   {
-    source: join(srcCoreBrowserDir, 'load-static-config-core.js'),
+    source: join(browserDir, 'load-static-config-core.js'),
     target: join(infraDir, 'load-static-config-core.js'),
   },
   {
