@@ -1,20 +1,9 @@
-import express from 'express';
 import { Storage } from '@google-cloud/storage';
-import { normalizeObjectPrefix, objectKeyForPath } from './path.js';
+import { createApp } from './app.js';
 
-const app = express();
 const storage = new Storage();
 const bucket = process.env.BUCKET;
-const objectPrefix = normalizeObjectPrefix(process.env.OBJECT_PREFIX);
-
-app.get('/*', (req, res) => {
-  const key = objectKeyForPath(req.path, objectPrefix);
-  storage
-    .bucket(bucket)
-    .file(key)
-    .createReadStream()
-    .on('error', err => res.status(404).send(err.message))
-    .pipe(res);
-});
+const objectPrefix = process.env.OBJECT_PREFIX;
+const app = createApp({ storage, bucket, objectPrefix });
 
 app.listen(8080, () => console.log('gcs-proxy listening on 8080'));

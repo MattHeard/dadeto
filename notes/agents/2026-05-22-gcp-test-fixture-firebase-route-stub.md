@@ -16,3 +16,10 @@ Next-time guidance: when a cloud E2E uses an already-minted admin token, avoid m
 the test depend on third-party browser SDK fetches unless the test is explicitly about
 sign-in. Route or inject the minimum auth surface so failures stay attributable to
 Dendrite's own end-to-end path.
+
+Follow-up finding: the next GCP run proved the route stubs were not enough because
+same-origin module scripts such as `/moderate.js` were also served with `text/html`.
+That pointed to the GCS proxy stream path, which was not forwarding object metadata
+headers. The proxy now fetches object metadata first and forwards `Content-Type` and
+`Cache-Control` before streaming the object body, with a Jest harness covering the
+`/moderate.js` JavaScript MIME case.
