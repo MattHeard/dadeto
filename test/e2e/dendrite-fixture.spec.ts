@@ -22,6 +22,9 @@ async function loadFixture(page) {
   expect(response!.status()).toBe(200);
 
   const seed = JSON.parse(await page.locator('body').innerText());
+  await page.evaluate(token => {
+    sessionStorage.setItem('id_token', token);
+  }, seed.idToken);
   await page.addInitScript(token => {
     sessionStorage.setItem('id_token', token);
   }, seed.idToken);
