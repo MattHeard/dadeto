@@ -51,17 +51,60 @@ const getModerationVariantResponse = createGetModerationVariantResponder({
  * @returns {Promise<void>} Promise that resolves once the response has been sent.
  */
 async function handleGetModerationVariant(req, res) {
-  const { status, body } = await getModerationVariantResponse(req);
+  try {
+    const { status, body } = await getModerationVariantResponse(req);
 
-  if (body && typeof body === 'object' && !Array.isArray(body)) {
-    res.status(status).json(body);
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      res.status(status).json(body);
+      return;
+    }
+
+    res.status(status).send(body);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send(`get-moderation-variant failed: ${formatErrorMessage(error)}`);
+  }
+}
+
+/**
+ * Handle middleware failures with a useful diagnostic body.
+ * @param {unknown} error Middleware error.
+ * @param {import('express').Request} _req Incoming HTTP request.
+ * @param {import('express').Response} res HTTP response.
+ * @param {import('express').NextFunction} _next Express next callback.
+ * @returns {void}
+ */
+function handleGetModerationVariantMiddlewareError(error, _req, res, _next) {
+  console.error(error);
+  if (res.headersSent) {
     return;
   }
 
-  res.status(status).send(body);
+  res
+    .status(500)
+    .send(`get-moderation-variant middleware failed: ${formatErrorMessage(error)}`);
 }
 
 app.get('/', handleGetModerationVariant);
+app.use(handleGetModerationVariantMiddlewareError);
+
+/**
+ * Safely format an error message for cloud diagnostics.
+ * @param {unknown} error Error-like value.
+ * @returns {string} Sanitized error message.
+ */
+function formatErrorMessage(error) {
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(/** @type {{ message: unknown }} */ (error).message).slice(
+      0,
+      300
+    );
+  }
+
+  return String(error).slice(0, 300);
+}
 
 export const getModerationVariant = functions
   .region('europe-west1')

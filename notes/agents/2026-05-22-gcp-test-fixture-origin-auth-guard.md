@@ -170,3 +170,16 @@ short failed-response body snippet in its thrown HTTP errors, and the
 cloud-backed fixture logs 500 response bodies directly from Playwright. Next
 time guidance: when a cloud endpoint returns a generic 500 through a browser
 test, capture the response body before changing endpoint behavior again.
+
+Run `26299469862` confirmed the browser-side response capture but still only
+returned Express' generic `Internal Server Error` body from
+`get-moderation-variant`. That means the endpoint was failing before our
+responder could return a structured body, or inside middleware such as CORS.
+
+The chosen fix wraps the cloud function handler and Express middleware error
+path with a short diagnostic 500 body. This is deliberately small and
+cloud-only: it should not change successful moderation behavior, but the next
+gcp-test run should expose whether the failure is CORS, Firestore data shape,
+or another runtime exception. Next-time guidance: for short-lived gcp-test
+functions, prefer safe diagnostic bodies over opaque Express defaults so cloud
+E2E failures produce an actionable loop artifact in the Playwright logs.
