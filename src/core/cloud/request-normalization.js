@@ -28,7 +28,7 @@ function buildNormalizedRequest(request) {
   return {
     method: resolveRequestMethod(request),
     body: resolveRequestBody(request),
-    get: resolveRequestGetter(request?.get),
+    get: resolveRequestGetter(request),
     headers: resolveRequestHeaders(request),
   };
 }
@@ -58,14 +58,24 @@ function resolveRequestHeaders(request) {
 }
 
 /**
+ * Read the Express getter candidate from the request.
+ * @param {NativeHttpRequest | undefined} request Incoming Express request.
+ * @returns {((name: string) => string | undefined) | undefined} Getter candidate.
+ */
+function resolveGetterCandidate(request) {
+  return request?.get;
+}
+
+/**
  * Normalize a header getter into the shape expected by consumers.
- * @param {((name: string) => string | undefined) | undefined} candidate Potential getter.
+ * @param {NativeHttpRequest | undefined} request Incoming Express request.
  * @returns {((name: string) => string | undefined) | undefined} Wrapped getter or undefined when there is no getter.
  */
-function resolveRequestGetter(candidate) {
+function resolveRequestGetter(request) {
+  const candidate = resolveGetterCandidate(request);
   if (typeof candidate !== 'function') {
     return undefined;
   }
 
-  return name => candidate(name);
+  return name => candidate.call(request, name);
 }

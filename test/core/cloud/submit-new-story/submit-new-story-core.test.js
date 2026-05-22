@@ -281,6 +281,30 @@ describe('submit-new-story core', () => {
       expect(status).toHaveBeenCalledWith(200);
       expect(json).toHaveBeenCalledWith({ ok: true });
     });
+
+    it('keeps normalized Express getters bound to their request object', async () => {
+      const responder = jest.fn().mockResolvedValue({
+        status: 200,
+        body: { ok: true },
+      });
+      const handle = createHandleSubmitNewStory(responder);
+      const json = jest.fn();
+      const status = jest.fn().mockReturnValue({ json });
+      const req = {
+        method: 'POST',
+        body: {},
+        headers: { authorization: 'Bearer token' },
+        get(name) {
+          return this.headers[name.toLowerCase()];
+        },
+      };
+
+      await handle(req, { status });
+
+      expect(responder.mock.calls[0][0].get('Authorization')).toBe(
+        'Bearer token'
+      );
+    });
   });
 
   describe('getRequestBody', () => {

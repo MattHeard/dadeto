@@ -144,6 +144,11 @@ test('submits the new story form', async ({ page }) => {
     await page.getByLabel(label).fill(value);
   }
 
+  await expect(page.locator('form')).toHaveAttribute(
+    'data-submit-handler-ready',
+    'true',
+  );
+
   await page.route(submitHref, async (route) => {
     const request = route.request();
     expect(request.method()).toBe('POST');

@@ -183,3 +183,21 @@ gcp-test run should expose whether the failure is CORS, Firestore data shape,
 or another runtime exception. Next-time guidance: for short-lived gcp-test
 functions, prefer safe diagnostic bodies over opaque Express defaults so cloud
 E2E failures produce an actionable loop artifact in the Playwright logs.
+
+Run `26300898291` on `f727120aa` used that diagnostic path and exposed the
+next concrete backend failure: `get-moderation-variant failed: Cannot read
+properties of undefined (reading 'headers')`. The endpoint was detaching the
+Express `req.get` method before calling it, so Express tried to read
+`this.headers` from an undefined receiver. The same run also showed a
+`new-story` browser race where the test clicked submit before the page's
+enhanced submit listener was installed, allowing native form navigation to the
+submit Cloud Function instead of the mocked fetch path.
+
+The chosen fix keeps Express-style request getters bound to their original
+request object in both the moderation responder and the shared cloud submit
+request normalizer. The new-story page now marks the form with
+`data-submit-handler-ready="true"` after installing the submit listener, and
+the E2E waits for that readiness marker before clicking. Next-time guidance:
+when a browser page upgrades native forms with JavaScript, expose a tiny
+readiness contract for cloud E2E rather than relying on incidental timing after
+`domcontentloaded` or `/config.json`.

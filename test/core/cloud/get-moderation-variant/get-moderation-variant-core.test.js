@@ -238,6 +238,27 @@ describe('createGetModerationVariantResponder', () => {
     expect(db.collection).not.toHaveBeenCalled();
   });
 
+  it('keeps Express-style getters bound to the request object', async () => {
+    const db = { collection: jest.fn() };
+    const auth = { verifyIdToken: jest.fn().mockResolvedValue({}) };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    const request = {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      get(name) {
+        return this.headers[name.toLowerCase()];
+      },
+    };
+
+    await expect(responder(request)).resolves.toEqual({
+      status: 401,
+      body: 'Invalid or expired token',
+    });
+    expect(auth.verifyIdToken).toHaveBeenCalledWith(token);
+  });
+
   it('falls back to the default message when verification errors are opaque', async () => {
     const db = { collection: jest.fn() };
     const auth = {
