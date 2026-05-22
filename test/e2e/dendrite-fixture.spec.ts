@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type APIRequestContext } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
 const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
@@ -43,6 +43,7 @@ async function stubFirebaseBrowserModules(page) {
 /**
  * Load the seeded fixture manifest and make the admin token available to the browser.
  * @param {import('@playwright/test').Page} page Playwright page.
+ * @param {APIRequestContext} request Playwright request context.
  * @returns {Promise<{
  *   idToken: string,
  *   storyTitle: string,
@@ -55,17 +56,13 @@ async function stubFirebaseBrowserModules(page) {
  *   },
  * }>} Seeded fixture manifest.
  */
-async function loadFixture(page) {
+async function loadFixture(page, request: APIRequestContext) {
   await stubFirebaseBrowserModules(page);
 
-  const response = await page.goto('/seed.json', { waitUntil: 'domcontentloaded' });
-  expect(response, 'seed response').not.toBeNull();
-  expect(response!.status()).toBe(200);
+  const response = await request.get('/seed.json');
+  expect(response.status(), 'seed response').toBe(200);
 
-  const seed = JSON.parse(await page.locator('body').innerText());
-  await page.evaluate(token => {
-    sessionStorage.setItem('id_token', token);
-  }, seed.idToken);
+  const seed = await response.json();
   await page.addInitScript(token => {
     sessionStorage.setItem('id_token', token);
   }, seed.idToken);
@@ -77,8 +74,8 @@ async function loadFixture(page) {
 let fixture;
 
 test.describe.serial('seeded dendrite fixture', () => {
-  test.beforeEach(async ({ page }) => {
-    fixture = await loadFixture(page);
+  test.beforeEach(async ({ page, request }) => {
+    fixture = await loadFixture(page, request);
   });
 
   test('moderation can approve the seeded story and move to the next page', async ({
