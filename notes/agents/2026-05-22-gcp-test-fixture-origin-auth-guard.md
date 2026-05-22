@@ -160,3 +160,13 @@ existing reference shape or a string path. The E2E for `new-page.html` now reads
 `submitNewPageUrl`. Next-time guidance: seeded fixture contracts should prefer
 portable primitives at process boundaries unless the production behavior being
 tested is specifically Firestore reference serialization.
+
+Run `26298049887` proved the `new-page` config fix and kept new-story green:
+9 Playwright tests passed, with only the moderation fixture still failing. The
+remaining failure is still `get-moderation-variant` returning `HTTP 500`, but
+the current browser diagnostics only logged the status code. The next loop adds
+response-body diagnostics in two places: `src/browser/moderate.js` includes a
+short failed-response body snippet in its thrown HTTP errors, and the
+cloud-backed fixture logs 500 response bodies directly from Playwright. Next
+time guidance: when a cloud endpoint returns a generic 500 through a browser
+test, capture the response body before changing endpoint behavior again.

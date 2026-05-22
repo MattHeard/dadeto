@@ -67,7 +67,13 @@ describe('authedFetch', () => {
 
   it('throws on HTTP errors', async () => {
     sessionStorage.setItem('id_token', 'abc');
-    global.fetch.mockResolvedValue({ ok: false, status: 500 });
-    await expect(authedFetch('/api')).rejects.toThrow('HTTP 500');
+    global.fetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.resolve('backend exploded'),
+    });
+    await expect(authedFetch('/api')).rejects.toThrow(
+      'HTTP 500: backend exploded'
+    );
   });
 });

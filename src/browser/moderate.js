@@ -284,7 +284,8 @@ async function submitRating(isApproved) {
 const fetchJson = async (url, init) => {
   const resp = await fetch(url, init);
   if (!resp.ok) {
-    const error = new Error(`HTTP ${resp.status}`);
+    const body = await readErrorResponseBody(resp);
+    const error = new Error(formatHttpErrorMessage(resp.status, body));
     error.status = resp.status;
     throw error;
   }
@@ -295,6 +296,34 @@ const fetchJson = async (url, init) => {
     json: () => data,
   };
 };
+
+/**
+ * Read the response body for failed moderation requests when available.
+ * @param {{ text?: () => Promise<string> }} response Fetch response.
+ * @returns {Promise<string>} Response text or an empty string.
+ */
+async function readErrorResponseBody(response) {
+  if (typeof response.text !== 'function') {
+    return '';
+  }
+
+  return response.text().catch(() => '');
+}
+
+/**
+ * Format an HTTP error with a compact body snippet for cloud diagnostics.
+ * @param {number} status HTTP response status.
+ * @param {string} body Response body text.
+ * @returns {string} Error message.
+ */
+function formatHttpErrorMessage(status, body) {
+  const snippet = body.trim().slice(0, 300);
+  if (!snippet) {
+    return `HTTP ${status}`;
+  }
+
+  return `HTTP ${status}: ${snippet}`;
+}
 
 export const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
 

@@ -140,12 +140,18 @@ test.describe.serial('seeded dendrite fixture', () => {
         }`
       );
     });
-    page.on('response', response => {
+    page.on('response', async response => {
       const status = response.status();
       if (status >= 400) {
         console.log(
           `[dendrite-fixture response.${status}] ${response.request().method()} ${response.url()}`
         );
+        if (status >= 500) {
+          const body = await response.text().catch(() => '');
+          console.log(
+            `[dendrite-fixture response.${status}.body] ${body.slice(0, 500)}`
+          );
+        }
       }
     });
     page.on('console', message => {
