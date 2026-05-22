@@ -1,6 +1,45 @@
 import { test, expect } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
+const ADMIN_UID = 'qcYSrXTaj1MZUoFsAloBwT86GNM2';
+const FIREBASE_AUTH_MODULE =
+  'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+const FIREBASE_APP_MODULE =
+  'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+
+/**
+ * Keep cloud E2E focused on Dendrite by replacing Firebase browser SDK imports
+ * with the smallest auth surface the admin/moderation pages need.
+ * @param {import('@playwright/test').Page} page Playwright page.
+ * @returns {Promise<void>} Resolves after route stubs are installed.
+ */
+async function stubFirebaseBrowserModules(page) {
+  await page.route(FIREBASE_APP_MODULE, route =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: 'export function initializeApp(config) { return { config }; }',
+    })
+  );
+  await page.route(FIREBASE_AUTH_MODULE, route =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: `
+        const currentUser = {
+          uid: ${JSON.stringify(ADMIN_UID)},
+          getIdToken: async () => sessionStorage.getItem('id_token'),
+        };
+        export function getAuth() { return { currentUser }; }
+        export const GoogleAuthProvider = { credential: token => token };
+        export function onAuthStateChanged(auth, callback) {
+          callback(auth?.currentUser || currentUser);
+          return () => {};
+        }
+        export async function signInWithCredential() {}
+      `,
+    })
+  );
+}
+
 /**
  * Load the seeded fixture manifest and make the admin token available to the browser.
  * @param {import('@playwright/test').Page} page Playwright page.
@@ -17,6 +56,8 @@ import { expectSharedChrome } from './static-pages.helpers';
  * }>} Seeded fixture manifest.
  */
 async function loadFixture(page) {
+  await stubFirebaseBrowserModules(page);
+
   const response = await page.goto('/seed.json', { waitUntil: 'domcontentloaded' });
   expect(response, 'seed response').not.toBeNull();
   expect(response!.status()).toBe(200);
