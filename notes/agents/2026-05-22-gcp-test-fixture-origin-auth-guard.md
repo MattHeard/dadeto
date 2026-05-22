@@ -67,3 +67,22 @@ requests, HTTP responses with status `>= 400`, and a compact auth snapshot
 right after `/mod.html` navigation. This should identify the exact URL or state
 transition still blocking `body.authed` in the cloud-only browser environment
 without granting local tooling direct GCP delete capability.
+
+Run `26289173042` did not reach Playwright. Terraform failed while creating
+`google_vpc_access_connector.playwright` with a GCP internal error:
+`Failed to create a VPC Access connector. Please delete the connector manually.`
+The run's cleanup phase still destroyed tracked resources successfully, but the
+failure mode was in the brittle Serverless VPC Access connector path rather than
+the application E2E logic.
+
+The chosen fix removes the Playwright VPC Access connector resource, the
+`vpcaccess.googleapis.com` service binding, the connector CIDR variable, and the
+extra `roles/vpcaccess.admin` permission. The Playwright Cloud Run job now uses
+a direct VPC network interface on the selected network/subnet with
+`PRIVATE_RANGES_ONLY` egress, which keeps private access to the internal GCS
+proxy without allocating a separate connector `/28`.
+
+Next-time guidance: prefer Cloud Run direct VPC interfaces for new GCP test jobs
+unless there is a concrete platform limitation. If a connector comes back, guard
+it with a very explicit reason and cleanup playbook because failed connector
+creation can require manual console cleanup.

@@ -423,14 +423,6 @@ resource "google_project_iam_member" "terraform_service_account_network_roles" {
   member  = local.terraform_service_account_member
 }
 
-resource "google_project_iam_member" "terraform_service_account_vpcaccess_admin" {
-  count = local.manage_project_level_resources ? 1 : 0
-
-  project = var.project_id
-  role    = "roles/vpcaccess.admin"
-  member  = local.terraform_service_account_member
-}
-
 resource "google_project_iam_member" "build_loadbalancer_admin" {
   count   = local.manage_project_level_resources ? 1 : 0
   project = var.project_id

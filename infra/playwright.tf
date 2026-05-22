@@ -1,18 +1,9 @@
 locals {
-  playwright_job_name         = "pw-e2e-${var.environment}"
-  reports_bucket_name         = "${var.project_id}-${var.region}-e2e-reports"
-  report_prefix               = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
-  gcs_proxy_name              = "${var.environment}-gcs-proxy"
-  gcs_proxy_uri               = local.playwright_enabled ? format("http://%s", google_compute_address.gcs_proxy_ilb_ip[0].address) : null
-  playwright_vpc_connector_id = try(google_vpc_access_connector.playwright[0].id, null)
-}
-
-resource "google_project_service" "playwright_vpc_access" {
-  count = local.playwright_enabled ? 1 : 0
-
-  project            = var.project_id
-  service            = "vpcaccess.googleapis.com"
-  disable_on_destroy = false
+  playwright_job_name = "pw-e2e-${var.environment}"
+  reports_bucket_name = "${var.project_id}-${var.region}-e2e-reports"
+  report_prefix       = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
+  gcs_proxy_name      = "${var.environment}-gcs-proxy"
+  gcs_proxy_uri       = local.playwright_enabled ? format("http://%s", google_compute_address.gcs_proxy_ilb_ip[0].address) : null
 }
 
 data "google_compute_network" "playwright" {
@@ -44,22 +35,6 @@ resource "google_compute_subnetwork" "playwright_proxy_only" {
     google_project_service.compute,
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-    google_project_iam_member.terraform_service_account_vpcaccess_admin,
-  ]
-}
-
-resource "google_vpc_access_connector" "playwright" {
-  count = local.playwright_enabled ? 1 : 0
-
-  name           = "pw-${var.environment}"
-  region         = var.region
-  network        = data.google_compute_network.playwright[0].name
-  ip_cidr_range  = var.playwright_vpc_connector_cidr
-  min_throughput = 200
-  max_throughput = 400
-  depends_on = [
-    google_project_service.playwright_vpc_access,
-    google_project_iam_member.terraform_service_account_vpcaccess_admin,
   ]
 }
 
@@ -136,7 +111,6 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
   depends_on = [
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-    google_project_iam_member.terraform_service_account_vpcaccess_admin,
     google_compute_subnetwork.playwright_proxy_only,
   ]
 }
@@ -203,7 +177,6 @@ resource "google_compute_address" "gcs_proxy_ilb_ip" {
   depends_on = [
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-    google_project_iam_member.terraform_service_account_vpcaccess_admin,
     google_compute_subnetwork.playwright_proxy_only,
   ]
 }
@@ -224,7 +197,6 @@ resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
   depends_on = [
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-    google_project_iam_member.terraform_service_account_vpcaccess_admin,
     google_compute_subnetwork.playwright_proxy_only,
   ]
 }
@@ -331,8 +303,12 @@ resource "google_cloud_run_v2_job" "playwright" {
       }
 
       vpc_access {
-        connector = local.playwright_vpc_connector_id
-        egress    = "PRIVATE_RANGES_ONLY"
+        network_interfaces {
+          network    = data.google_compute_network.playwright[0].id
+          subnetwork = data.google_compute_subnetwork.playwright[0].id
+        }
+
+        egress = "PRIVATE_RANGES_ONLY"
       }
 
       timeout     = "600s"
