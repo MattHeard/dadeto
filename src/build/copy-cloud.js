@@ -429,6 +429,10 @@ const individualFileCopies = [
     target: join(infraDir, 'commonCore.js'),
   },
   {
+    source: commonCoreSource,
+    target: join(infraDir, 'core', 'commonCore.js'),
+  },
+  {
     source: join(srcCoreBrowserDir, 'browser-core.js'),
     target: join(infraDir, 'core', 'browser', 'browser-core.js'),
   },

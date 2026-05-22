@@ -101,3 +101,15 @@ full `src/core/browser` to `infra/core/browser` copy step so Terraform's
 existing `dendrite_core_files` upload can publish every deep browser module
 imported by the root wrappers. The infra guard now checks that the copy step and
 the Terraform upload resource stay connected.
+
+Run `26291663155` confirmed the full browser subtree copy but exposed one more
+shared-module edge: `/core/browser/admin-core.js` imports `../commonCore.js`,
+which resolves to `/core/commonCore.js` in the static site. The generated cloud
+bundle already shipped `/commonCore.js`, but not `/core/commonCore.js`, so the
+moderation page still stopped before adding `body.authed`.
+
+The fix now copies `src/core/commonCore.js` to both root locations:
+`infra/commonCore.js` for root wrappers and `infra/core/commonCore.js` for
+deep `/core/browser/*` modules. The cloud browser entrypoint guard records this
+explicitly so future browser module packaging work keeps the shared core module
+on the same uploaded path that native ESM resolution requests in GCP.

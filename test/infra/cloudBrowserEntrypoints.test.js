@@ -39,6 +39,9 @@ describe('cloud browser entrypoints', () => {
     ]);
 
     expect(copyCloudJs).toContain("target: join(infraDir, 'core', 'browser')");
+    expect(copyCloudJs).toContain(
+      "target: join(infraDir, 'core', 'commonCore.js')"
+    );
     expect(mainTf).toContain(
       'resource "google_storage_bucket_object" "dendrite_core_files"'
     );
