@@ -117,6 +117,13 @@ const coreRealtimeCopies = [
   },
 ];
 
+const coreBrowserCopies = [
+  {
+    source: srcCoreBrowserDir,
+    target: join(infraDir, 'core', 'browser'),
+  },
+];
+
 const browserFileCopies = sharedBrowserFiles.map(name => ({
   source: join(browserDir, name),
   target: join(infraDir, name),
@@ -1211,6 +1218,7 @@ await runCopyToInfra({
     ...directoryCopies,
     ...preservedCloudTreeCopies,
     ...coreRealtimeCopies,
+    ...coreBrowserCopies,
   ],
   individualFileCopies,
   io,
