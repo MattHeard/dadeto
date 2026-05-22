@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { createRequire } from 'node:module';
+import { randomUUID } from 'node:crypto';
 import { ADMIN_UID } from '../src/core/commonCore.js';
+import { createRenderContents } from '../src/core/cloud/render-contents/render-contents-core.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -9,6 +11,7 @@ const runtimeDepsRequire = createRequire(
 const { cert, initializeApp } = runtimeDepsRequire('firebase-admin/app');
 const { getAuth } = runtimeDepsRequire('firebase-admin/auth');
 const { getFirestore } = runtimeDepsRequire('firebase-admin/firestore');
+const { Storage } = runtimeDepsRequire('@google-cloud/storage');
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT = 'The first seeded page invites the reader forward.';
@@ -101,23 +104,6 @@ async function exchangeCustomToken(apiKey, customToken) {
   return payload.idToken;
 }
 
-async function postJson(url, idToken, body) {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${idToken}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(body ?? {}),
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Request to ${url} failed: ${response.status} ${await response.text()}`
-    );
-  }
-}
-
 async function seedFirestore(db) {
   const {
     storyRef,
@@ -173,6 +159,28 @@ async function seedFirestore(db) {
   await batch.commit();
 }
 
+async function renderSeededContents({
+  db,
+  projectId,
+  staticBucket,
+  staticObjectPrefix,
+}) {
+  const renderContents = createRenderContents({
+    db,
+    storage: new Storage({ projectId }),
+    bucketName: staticBucket,
+    objectPrefix: staticObjectPrefix,
+    fetchFn: async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ access_token: 'gcp-test-fixture-token' }),
+    }),
+    randomUUID,
+  });
+
+  await renderContents();
+}
+
 async function main() {
   const projectId = requireEnv('PROJECT_ID');
   const databaseId = requireEnv('DATABASE_ID');
@@ -180,7 +188,6 @@ async function main() {
   const staticBucket = requireEnv('TEST_STATIC_BUCKET');
   const staticObjectPrefix = requireEnv('STATIC_OBJECT_PREFIX');
   const webAppConfig = parseJsonEnv('FIREBASE_WEB_APP_CONFIG_JSON');
-  const triggerRenderContentsUrl = requireEnv('TRIGGER_RENDER_CONTENTS_URL');
   const apiKey = webAppConfig.apiKey;
 
   if (typeof apiKey !== 'string' || apiKey.length === 0) {
@@ -196,7 +203,12 @@ async function main() {
 
   await seedFirestore(db);
 
-  await postJson(triggerRenderContentsUrl, idToken, {});
+  await renderSeededContents({
+    db,
+    projectId,
+    staticBucket,
+    staticObjectPrefix,
+  });
 
   const fixture = {
     idToken,

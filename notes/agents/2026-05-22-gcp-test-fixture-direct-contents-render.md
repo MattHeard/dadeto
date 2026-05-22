@@ -1,0 +1,6 @@
+# GCP test fixture direct contents render
+
+- Unexpected hurdle: after removing the mark-variant-dirty setup call, the GCP seed step still failed before Playwright because the `trigger-render-contents` HTTP function returned `500 Internal Server Error`.
+- Diagnosis path: the seed log showed Firestore writes and token minting had progressed, leaving the render-contents trigger as the remaining setup-time dependency. The run cleaned up successfully, and local inspection showed the E2E fixture only needs seeded `index.html` plus the variant pages before the Cloud Run Playwright job starts.
+- Chosen fix: render the fixture contents page directly from `scripts/gcp-test-fixture.js` using the shared `createRenderContents` core against the real GCP Firestore database and static bucket. The browser E2E tests still exercise deployed moderation and stats endpoints against the real datastore.
+- Next-time guidance: keep setup-only fixture publishing out of fragile HTTP admin wrappers unless the wrapper itself is the behavior under test. If the trigger-render-contents endpoint needs coverage, add a separate focused smoke test with response-body logging rather than making all fixture setup depend on it.
