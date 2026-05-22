@@ -479,6 +479,113 @@ describe('createGetModerationVariantResponder', () => {
     });
   });
 
+  it('resolves string variant paths from seeded moderator assignments', async () => {
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story Title' }),
+    };
+    const storyRef = {
+      async get() {
+        return storySnap;
+      },
+    };
+    const pageRef = {
+      parent: {
+        parent: storyRef,
+      },
+    };
+    const variantSnap = {
+      exists: true,
+      data: () => ({ content: 'Seeded narrative', author: 'Fixture Author' }),
+    };
+    const variantRef = {
+      async get() {
+        return variantSnap;
+      },
+      collection(name) {
+        expect(name).toBe('options');
+        return {
+          async get() {
+            return { docs: [] };
+          },
+        };
+      },
+      parent: {
+        parent: pageRef,
+      },
+    };
+    const moderatorSnap = {
+      exists: true,
+      data: () => ({ variant: 'stories/story-1/pages/1/variants/a' }),
+    };
+    const db = {
+      ...createDb(moderatorSnap),
+      doc: jest.fn(path => {
+        expect(path).toBe('stories/story-1/pages/1/variants/a');
+        return variantRef;
+      }),
+    };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        title: 'Story Title',
+        content: 'Seeded narrative',
+        author: 'Fixture Author',
+        options: [],
+      },
+    });
+    expect(db.doc).toHaveBeenCalledWith('stories/story-1/pages/1/variants/a');
+  });
+
+  it('returns no job when a string variant path is blank', async () => {
+    const moderatorSnap = {
+      exists: true,
+      data: () => ({ variant: '   ' }),
+    };
+    const db = {
+      ...createDb(moderatorSnap),
+      doc: jest.fn(),
+    };
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({
+      status: 404,
+      body: 'No moderation job',
+    });
+    expect(db.doc).not.toHaveBeenCalled();
+  });
+
+  it('returns no job when a string variant path cannot be resolved', async () => {
+    const moderatorSnap = {
+      exists: true,
+      data: () => ({ variant: 'stories/story-1/pages/1/variants/a' }),
+    };
+    const db = createDb(moderatorSnap);
+    const auth = {
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'moderator-uid' }),
+    };
+    const responder = createGetModerationVariantResponder({ db, auth });
+
+    await expect(
+      responder(createRequestWithHeaders({ authorization: `Bearer ${token}` }))
+    ).resolves.toEqual({
+      status: 404,
+      body: 'No moderation job',
+    });
+  });
+
   it('falls back to defaults when variant data is missing', async () => {
     const storySnap = {
       exists: true,

@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
 test('serves new-page.html with submission form', async ({ page }) => {
+  const configResponse = await page.request.get('/config.json');
+  expect(configResponse.status()).toBe(200);
+  const config = await configResponse.json();
+  expect(typeof config.submitNewPageUrl).toBe('string');
+
   const response = await page.goto('/new-page.html', { waitUntil: 'domcontentloaded' });
 
   expect(response, 'navigation response').not.toBeNull();
@@ -12,8 +17,9 @@ test('serves new-page.html with submission form', async ({ page }) => {
   await expect(page).toHaveTitle('New Page');
   await expect(page.getByRole('heading', { level: 1, name: 'New page' })).toBeVisible();
 
-  const form = page.locator('form[action="https://europe-west1-irien-465710.cloudfunctions.net/prod-submit-new-page"]');
+  const form = page.locator('form');
   await expect(form).toBeVisible();
+  await expect(form).toHaveAttribute('action', config.submitNewPageUrl);
   await expect(form.locator('input[name="incoming_option"]')).toHaveAttribute('type', 'hidden');
   await expect(form.locator('input[name="page"]')).toHaveAttribute('type', 'hidden');
   await expect(form.locator('#option0')).toHaveAttribute('placeholder', 'Option 1');

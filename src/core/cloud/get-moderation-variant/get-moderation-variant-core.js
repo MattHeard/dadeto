@@ -70,6 +70,7 @@ function isAllowedOrigin(origin, origins) {
 /**
  * @typedef {object} FirestoreLike
  * @property {(name: string) => FirestoreCollectionReference} collection Provides access to Firestore collections.
+ * @property {(path: string) => FirestoreDocumentReference} [doc] Resolves a document reference by path.
  */
 
 /**
@@ -307,7 +308,7 @@ function resolveTokenFromRequest(request) {
  */
 async function fetchVariantSnapshot(db, uid) {
   const moderatorSnap = await db.collection('moderators').doc(uid).get();
-  const variantRef = resolveModeratorVariantRef(moderatorSnap);
+  const variantRef = resolveModeratorVariantRef(moderatorSnap, db);
   const hasVariant = Boolean(variantRef);
   if (!hasVariant) {
     return null;
@@ -321,14 +322,15 @@ async function fetchVariantSnapshot(db, uid) {
 /**
  * Determine the variant reference linked to a moderator document.
  * @param {FirestoreDocumentSnapshot} moderatorSnap Moderator document snapshot.
+ * @param {FirestoreLike} db Firestore dependency used to resolve path assignments.
  * @returns {FirestoreDocumentReference | null} Variant reference or null when not assigned.
  */
-function resolveModeratorVariantRef(moderatorSnap) {
+function resolveModeratorVariantRef(moderatorSnap, db) {
   if (isModeratorSnapMissing(moderatorSnap)) {
     return null;
   }
 
-  return extractVariantReference(moderatorSnap.data());
+  return extractVariantReference(moderatorSnap.data(), db);
 }
 
 /**
@@ -347,27 +349,79 @@ function isModeratorSnapMissing(moderatorSnap) {
 /**
  * Extract the variant reference stored on the moderator document.
  * @param {Record<string, unknown> | null | undefined} moderatorData Moderator document data.
+ * @param {FirestoreLike} db Firestore dependency used to resolve path assignments.
  * @returns {FirestoreDocumentReference | null} Assigned variant reference or null.
  */
-function extractVariantReference(moderatorData) {
+function extractVariantReference(moderatorData, db) {
   if (!moderatorData) {
     return null;
   }
 
-  return resolveVariantFromData(
-    /** @type {FirestoreDocumentReference | null | undefined} */ (
-      moderatorData.variant
-    )
-  );
+  return resolveVariantFromData(moderatorData.variant, db);
 }
 
 /**
  * Derive the stored variant reference from a raw field value.
- * @param {FirestoreDocumentReference | null | undefined} variant Raw variant field.
+ * @param {unknown} variant Raw variant field.
+ * @param {FirestoreLike} [db] Optional Firestore dependency for path assignments.
  * @returns {FirestoreDocumentReference | null} Valid reference or null.
  */
-function resolveVariantFromData(variant) {
-  return whenNotNullishValue(variant);
+function resolveVariantFromData(variant, db) {
+  if (typeof variant === 'string') {
+    return resolveVariantPath(variant, db);
+  }
+
+  return whenNotNullishValue(
+    /** @type {FirestoreDocumentReference | null | undefined} */ (variant)
+  );
+}
+
+/**
+ * Resolve a stored variant path to a Firestore document reference.
+ * @param {string} path Stored variant document path.
+ * @param {FirestoreLike | undefined} db Firestore dependency for resolving paths.
+ * @returns {FirestoreDocumentReference | null} Resolved reference or null.
+ */
+function resolveVariantPath(path, db) {
+  const trimmedPath = path.trim();
+  return resolveTrimmedVariantPath(trimmedPath, db);
+}
+
+/**
+ * Resolve a non-empty stored variant path when possible.
+ * @param {string} path Trimmed variant document path.
+ * @param {FirestoreLike | undefined} db Firestore dependency for resolving paths.
+ * @returns {FirestoreDocumentReference | null} Resolved reference or null.
+ */
+function resolveTrimmedVariantPath(path, db) {
+  if (!path) {
+    return null;
+  }
+
+  return resolveVariantPathFromDb(path, db);
+}
+
+/**
+ * Resolve a variant path through the Firestore doc API.
+ * @param {string} path Trimmed variant document path.
+ * @param {FirestoreLike | undefined} db Firestore dependency for resolving paths.
+ * @returns {FirestoreDocumentReference | null} Resolved reference or null.
+ */
+function resolveVariantPathFromDb(path, db) {
+  if (!hasDocumentPathResolver(db)) {
+    return null;
+  }
+
+  return db.doc(path);
+}
+
+/**
+ * Determine whether a Firestore dependency can resolve document paths.
+ * @param {FirestoreLike | undefined} db Firestore dependency to inspect.
+ * @returns {db is FirestoreLike & { doc: (path: string) => FirestoreDocumentReference }} True when document path resolution is available.
+ */
+function hasDocumentPathResolver(db) {
+  return Boolean(db) && typeof db.doc === 'function';
 }
 
 /**

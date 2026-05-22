@@ -40,7 +40,8 @@ const fetchModeratorAssignment = async uid => {
   }
 
   const data = moderatorSnap.data() ?? {};
-  const variantRef = data.variant;
+  const variantRef =
+    typeof data.variant === 'string' ? db.doc(data.variant) : data.variant;
 
   if (!variantRef) {
     return null;

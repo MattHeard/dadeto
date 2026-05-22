@@ -154,7 +154,7 @@ async function seedFirestore(db) {
     variantCount: 2,
   });
   batch.set(db.collection('moderators').doc(ADMIN_UID), {
-    variant: firstVariantRef,
+    variant: firstVariantRef.path,
     createdAt: new Date(),
   });
 

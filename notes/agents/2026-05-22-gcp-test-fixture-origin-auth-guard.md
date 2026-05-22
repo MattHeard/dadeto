@@ -144,3 +144,19 @@ the likely cause of the `get-moderation-variant` 500 against the seeded named
 database. Next-time guidance: every cloud function that reads fixture data must
 have a unit guard for the exact named-database call shape, because the cloud E2E
 database is intentionally not the production default database.
+
+Run `26296507133` fixed the new-story path and proved authentication was no
+longer the blocker: both new-story tests passed, while moderation still failed
+because `get-moderation-variant` returned `HTTP 500`, and `new-page` failed
+because its E2E expected the production submit URL instead of the per-run
+`config.json` endpoint. The moderation fixture had been seeding the moderator
+assignment as a Firestore `DocumentReference`, which is unnecessarily fragile
+across the seed script and Cloud Function runtime boundary.
+
+The chosen fix stores the seeded assignment as a plain document path and teaches
+`get-moderation-variant` and `submit-moderation-rating` to accept either the
+existing reference shape or a string path. The E2E for `new-page.html` now reads
+`/config.json` and asserts the form action matches the deployed environment's
+`submitNewPageUrl`. Next-time guidance: seeded fixture contracts should prefer
+portable primitives at process boundaries unless the production behavior being
+tested is specifically Firestore reference serialization.
