@@ -29,3 +29,13 @@ When a cloud-only Playwright failure depends on browser storage, validate the
 storage on the same browser origin immediately before loading the page under
 test. Context/request setup is useful, but it should not be the only evidence
 for auth-sensitive E2E flows.
+
+## Follow-up finding
+
+Run `26284020304` proved the origin token guard was not the last blocker: the
+moderation page still stayed unauthenticated while logging root 404s. The
+diagnosis moved from storage to cloud packaging. `infra/admin-core.js` had been
+generated from the deep core implementation, whose relative imports point at
+root files that are not shipped as browser modules. The cloud package now copies
+the browser wrapper from `src/browser/admin-core.js` so root browser entrypoints
+resolve `../core/browser/admin-core.js` consistently.

@@ -143,8 +143,6 @@ const packageFileCopies = functionDirectories.flatMap(name =>
   }))
 );
 
-const adminCoreSource = join(srcCoreBrowserDir, 'admin-core.js');
-
 const assignModerationCoreSource = join(
   srcCoreCloudDir,
   'assign-moderation-job',
@@ -415,7 +413,7 @@ const individualFileCopies = [
     target: join(infraDir, 'admin.js'),
   },
   {
-    source: adminCoreSource,
+    source: join(browserDir, 'admin-core.js'),
     target: join(infraDir, 'admin-core.js'),
   },
   {
