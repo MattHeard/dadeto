@@ -37,8 +37,11 @@ test('serves new-story.html through the proxy', async ({ page }) => {
   await expect(primaryNav.locator('#signinButton')).toHaveCount(1);
   await expect(primaryNav.locator('#signoutWrap')).toBeHidden();
 
+  await page.setViewportSize({ width: 390, height: 844 });
+
   const menuToggle = page.getByRole('button', { name: 'Open menu' });
   const mobileMenu = page.locator('#mobile-menu');
+  await expect(menuToggle).toBeVisible();
   await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
   await expect(mobileMenu).toBeHidden();
 

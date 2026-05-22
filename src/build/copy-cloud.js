@@ -87,9 +87,11 @@ const preservedCloudTreeCopies = [
 
 const sharedBrowserFiles = [
   'authedFetch.js',
+  'document.js',
   'googleAuth.js',
   'moderate.js',
   'loadStaticConfig.js',
+  'moderation/endpoints.js',
   'contentsGoogleAuthModule.js',
   'contentsMenuToggle.js',
   'variantGoogleSignIn.js',
