@@ -139,17 +139,21 @@ async function seedFirestore(db) {
     number: SECOND_PAGE_NUMBER,
   });
   batch.set(firstVariantRef, {
+    name: FIRST_VARIANT_NAME,
     content: DEFAULT_FIRST_CONTENT,
     authorName: 'Fixture Author',
     visibility: 1,
+    dirty: true,
     rand: 0.2,
     moderatorReputationSum: 0,
     moderationRatingCount: 0,
   });
   batch.set(secondVariantRef, {
+    name: SECOND_VARIANT_NAME,
     content: DEFAULT_SECOND_CONTENT,
     authorName: 'Fixture Author',
     visibility: 1,
+    dirty: true,
     rand: 0.8,
     moderatorReputationSum: 0,
     moderationRatingCount: 0,
@@ -176,7 +180,6 @@ async function main() {
   const staticBucket = requireEnv('TEST_STATIC_BUCKET');
   const staticObjectPrefix = requireEnv('STATIC_OBJECT_PREFIX');
   const webAppConfig = parseJsonEnv('FIREBASE_WEB_APP_CONFIG_JSON');
-  const markVariantDirtyUrl = requireEnv('MARK_VARIANT_DIRTY_URL');
   const triggerRenderContentsUrl = requireEnv('TRIGGER_RENDER_CONTENTS_URL');
   const apiKey = webAppConfig.apiKey;
 
@@ -193,14 +196,6 @@ async function main() {
 
   await seedFirestore(db);
 
-  await postJson(markVariantDirtyUrl, idToken, {
-    page: FIRST_PAGE_NUMBER,
-    variant: FIRST_VARIANT_NAME,
-  });
-  await postJson(markVariantDirtyUrl, idToken, {
-    page: SECOND_PAGE_NUMBER,
-    variant: SECOND_VARIANT_NAME,
-  });
   await postJson(triggerRenderContentsUrl, idToken, {});
 
   const fixture = {

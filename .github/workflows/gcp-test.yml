@@ -256,7 +256,6 @@ jobs:
             printf '%s' "$RAW_WEB_APP_CONFIG_JSON" |
               jq -c 'if type == "object" and has("value") then .value else . end'
           )"
-          MARK_VARIANT_DIRTY_URL="https://${REGION}-${GOOGLE_PROJECT}.cloudfunctions.net/${ENVIRONMENT}-mark-variant-dirty"
           TRIGGER_RENDER_CONTENTS_URL="https://${REGION}-${GOOGLE_PROJECT}.cloudfunctions.net/${ENVIRONMENT}-trigger-render-contents"
 
           npm --prefix ../src/cloud/runtime-deps ci
@@ -269,7 +268,6 @@ jobs:
             STATIC_OBJECT_PREFIX="${ENVIRONMENT}/" \
             FIREBASE_WEB_APP_CONFIG_JSON="$WEB_APP_CONFIG_JSON" \
             GOOGLE_CREDENTIALS_JSON='${{ secrets.GOOGLE_CREDENTIALS }}' \
-            MARK_VARIANT_DIRTY_URL="$MARK_VARIANT_DIRTY_URL" \
             TRIGGER_RENDER_CONTENTS_URL="$TRIGGER_RENDER_CONTENTS_URL" \
             node ../scripts/gcp-test-fixture.js
           )"
