@@ -132,8 +132,10 @@ async function seedFirestore(db) {
     visibility: 1,
     dirty: true,
     rand: 0.2,
-    moderatorReputationSum: 0,
-    moderationRatingCount: 0,
+    // This page is assigned directly below; keep the next assignment focused on
+    // the second zero-rated page instead of letting random selection repeat it.
+    moderatorReputationSum: 1,
+    moderationRatingCount: 1,
   });
   batch.set(secondVariantRef, {
     name: SECOND_VARIANT_NAME,

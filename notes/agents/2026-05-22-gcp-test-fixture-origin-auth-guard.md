@@ -201,3 +201,19 @@ the E2E waits for that readiness marker before clicking. Next-time guidance:
 when a browser page upgrades native forms with JavaScript, expose a tiny
 readiness contract for cloud E2E rather than relying on incidental timing after
 `domcontentloaded` or `/config.json`.
+
+Run `26302334020` on `ffa355370` proved the request getter and new-story
+fixes: new-story passed, `get-moderation-variant` no longer returned 500, and
+the moderation buttons became usable. The remaining failure was deterministic
+test data, not a browser or endpoint crash: after approving the manually
+assigned first page, the assignment function could randomly select that same
+zero-rated page again, so the E2E still saw the first page content instead of
+the second seeded page.
+
+The chosen fix makes the fixture contract explicit. The first variant is
+pre-rated because the seed script assigns it directly to the moderator; the
+second variant remains zero-rated so the deployed assignment function selects
+it as the next moderation job. A small source-level Jest guard now protects
+that fixture contract. Next-time guidance: when an E2E expects ordered progress
+through a randomized selector, encode the ordering in the fixture data rather
+than depending on RNG.
