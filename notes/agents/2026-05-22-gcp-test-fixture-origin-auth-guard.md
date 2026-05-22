@@ -48,3 +48,14 @@ so the module graph failed before `moderate.js` reached its synchronous
 `getIdToken()` check. The cloud package now copies the browser wrapper from
 `src/browser/load-static-config-core.js`, and
 `test/infra/cloudBrowserEntrypoints.test.js` guards both root wrappers.
+
+Run `26286495223` showed the remaining root module upload gap. The moderation
+entrypoint imported `./authedFetch.js`, `./document.js`, and
+`./moderation/endpoints.js`; `document.js` also imported `./logging.js`. Those
+files were generated into `infra/`, but the Terraform `static_site_objects` map
+did not upload them at the root, so the browser module graph failed before the
+auth bootstrap could add `body.authed`. The fix adds those root module objects
+to `infra/main.tf`, copies `logging.js` during `npm run build:cloud`, and points
+the logging wrapper at the uploaded `/core/browser/browser-core.js` tree. The
+cloud browser entrypoint guard now checks both the Terraform upload list and the
+generated root wrapper.

@@ -89,6 +89,7 @@ const sharedBrowserFiles = [
   'authedFetch.js',
   'document.js',
   'googleAuth.js',
+  'logging.js',
   'moderate.js',
   'loadStaticConfig.js',
   'moderation/endpoints.js',

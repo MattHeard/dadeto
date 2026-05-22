@@ -120,6 +120,26 @@ locals {
       source       = "${path.module}/googleAuth.js"
       content_type = "application/javascript"
     }
+    dendrite_authed_fetch_js = {
+      name         = "authedFetch.js"
+      source       = "${path.module}/authedFetch.js"
+      content_type = "application/javascript"
+    }
+    dendrite_document_js = {
+      name         = "document.js"
+      source       = "${path.module}/document.js"
+      content_type = "application/javascript"
+    }
+    dendrite_logging_js = {
+      name         = "logging.js"
+      source       = "${path.module}/logging.js"
+      content_type = "application/javascript"
+    }
+    dendrite_moderation_endpoints_js = {
+      name         = "moderation/endpoints.js"
+      source       = "${path.module}/moderation/endpoints.js"
+      content_type = "application/javascript"
+    }
     dendrite_contents_google_auth_module_js = {
       name         = "contentsGoogleAuthModule.js"
       source       = "${path.module}/contentsGoogleAuthModule.js"

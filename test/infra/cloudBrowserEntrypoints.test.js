@@ -13,4 +13,28 @@ describe('cloud browser entrypoints', () => {
       "export * from '../core/browser/load-static-config-core.js';\n"
     );
   });
+
+  it('uploads the root browser modules imported by cloud HTML entrypoints', async () => {
+    const mainTf = await readFile('infra/main.tf', 'utf8');
+
+    for (const name of [
+      'admin-core.js',
+      'authedFetch.js',
+      'document.js',
+      'googleAuth.js',
+      'load-static-config-core.js',
+      'loadStaticConfig.js',
+      'logging.js',
+      'moderate.js',
+      'moderation/endpoints.js',
+    ]) {
+      expect(mainTf).toMatch(new RegExp(`name\\s+= "${name}"`));
+    }
+  });
+
+  it('keeps the root logging wrapper pointed at the uploaded core tree', async () => {
+    await expect(readFile('infra/logging.js', 'utf8')).resolves.toBe(
+      "export * from '../core/browser/browser-core.js';\n"
+    );
+  });
 });
