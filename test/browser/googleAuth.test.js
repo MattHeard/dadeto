@@ -3,6 +3,7 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 let initGoogleSignIn;
 let signOut;
 let getIdToken;
+let isAdmin;
 
 describe('googleAuth', () => {
   beforeEach(async () => {
@@ -30,7 +31,7 @@ describe('googleAuth', () => {
       querySelectorAll: jest.fn().mockReturnValue([el]),
     };
     global.atob = str => Buffer.from(str, 'base64').toString('binary');
-    ({ initGoogleSignIn, signOut, getIdToken } = await import(
+    ({ initGoogleSignIn, signOut, getIdToken, isAdmin } = await import(
       '../../src/browser/googleAuth.js'
     ));
   });
@@ -57,6 +58,19 @@ describe('googleAuth', () => {
     sessionStorage.setItem('id_token', 'tok');
 
     expect(getIdToken()).toBe('tok');
+  });
+
+  it('exports the admin token helper used by static pages', () => {
+    const payload = Buffer.from(
+      JSON.stringify({ sub: 'qcYSrXTaj1MZUoFsAloBwT86GNM2' })
+    )
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    sessionStorage.setItem('id_token', `header.${payload}.signature`);
+
+    expect(isAdmin()).toBe(true);
   });
 
   it('renders the correct theme and updates on scheme change', () => {

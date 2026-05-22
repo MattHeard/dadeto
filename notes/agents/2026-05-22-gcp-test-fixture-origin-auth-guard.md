@@ -126,3 +126,21 @@ The fix exports `getIdToken` from `src/browser/googleAuth.js` and calls
 `querySelectorAll` with `document` as its receiver in `createQuerySelectorAll`.
 Regression tests now cover the static-page token export and a browser-like
 `querySelectorAll` method that throws if invoked without its document context.
+
+Run `26294548169` moved moderation past authentication: `body.authed` was
+present and the buttons existed, but the moderation variant fetch returned
+`HTTP 500`, leaving the buttons disabled. The same run showed the new-story
+submit test falling back to native form navigation because the shared
+`googleAuth.js` module called Firebase Auth before initializing a Firebase app,
+and several static pages imported an `isAdmin` export that the shared module did
+not provide.
+
+The chosen fix initializes Firebase in `src/browser/googleAuth.js`, exports the
+shared `isAdmin` helper alongside `getIdToken`, and corrects named Firestore
+database selection for Cloud Functions. The Firestore Admin SDK accepts
+`getFirestore(databaseId)` when no app object is supplied; passing
+`undefined, databaseId` is not a safe way to select the gcp-test database and is
+the likely cause of the `get-moderation-variant` 500 against the seeded named
+database. Next-time guidance: every cloud function that reads fixture data must
+have a unit guard for the exact named-database call shape, because the cloud E2E
+database is intentionally not the production default database.

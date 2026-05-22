@@ -46,7 +46,7 @@ describe('getFirestoreInstance', () => {
     });
 
     expect(ensureAppFn).toHaveBeenCalledTimes(1);
-    expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
+    expect(getFirestoreFn).toHaveBeenCalledWith('custom-db');
     expect(db).toBe(expectedDb);
   });
 

@@ -75,6 +75,10 @@ let cachedDb = null;
 
 const selectFirestoreDatabase = (getFirestoreFn, firebaseApp, databaseId) => {
   if (databaseId && databaseId !== PRODUCTION_DATABASE_ID) {
+    if (!firebaseApp) {
+      return getFirestoreFn(databaseId);
+    }
+
     return getFirestoreFn(firebaseApp, databaseId);
   }
 

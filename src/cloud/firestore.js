@@ -91,6 +91,10 @@ export function clearFirestoreInstanceCache() {
  */
 function getFirestoreForDatabase(getFirestoreFn, firebaseApp, databaseId) {
   if (databaseId && databaseId !== '(default)') {
+    if (!firebaseApp) {
+      return getFirestoreFn(databaseId);
+    }
+
     return getFirestoreFn(firebaseApp, databaseId);
   }
 
