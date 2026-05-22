@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
 import { ADMIN_UID } from '../src/core/commonCore.js';
 import { createRenderContents } from '../src/core/cloud/render-contents/render-contents-core.js';
+import { createRenderVariant } from '../src/core/cloud/render-variant/render-variant-core.js';
 
 const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
@@ -146,6 +147,7 @@ async function seedFirestore(db) {
   });
   batch.set(firstVariantRef.collection('options').doc('continue'), {
     content: DEFAULT_OPTION_TEXT,
+    position: 0,
     targetPage: secondPageRef,
   });
   batch.set(db.collection('storyStats').doc(STORY_ID), {
@@ -181,6 +183,38 @@ async function renderSeededContents({
   await renderContents();
 }
 
+function createFixtureFetchResponse() {
+  return {
+    ok: true,
+    status: 200,
+    json: async () => ({ access_token: 'gcp-test-fixture-token' }),
+  };
+}
+
+async function renderSeededStoryPages({
+  db,
+  projectId,
+  staticBucket,
+  staticObjectPrefix,
+}) {
+  const { firstVariantRef, secondVariantRef } = createFirestoreDocumentRefs(db);
+  const renderVariant = createRenderVariant({
+    db,
+    storage: new Storage({ projectId }),
+    bucketName: staticBucket,
+    objectPrefix: staticObjectPrefix,
+    fetchFn: async () => createFixtureFetchResponse(),
+    randomUUID,
+  });
+
+  await renderVariant(await secondVariantRef.get(), {
+    params: { storyId: STORY_ID },
+  });
+  await renderVariant(await firstVariantRef.get(), {
+    params: { storyId: STORY_ID },
+  });
+}
+
 async function main() {
   const projectId = requireEnv('PROJECT_ID');
   const databaseId = requireEnv('DATABASE_ID');
@@ -204,6 +238,12 @@ async function main() {
   await seedFirestore(db);
 
   await renderSeededContents({
+    db,
+    projectId,
+    staticBucket,
+    staticObjectPrefix,
+  });
+  await renderSeededStoryPages({
     db,
     projectId,
     staticBucket,
