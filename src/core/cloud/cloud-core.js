@@ -709,20 +709,21 @@ export function getAuthHeader(req) {
  * @returns {unknown} Resolved header value or undefined when unavailable.
  */
 function resolveAuthorizationHeader(req) {
-  return callAuthorizationGetter(req?.get);
+  return callAuthorizationGetter(req?.get, req);
 }
 
 /**
  * Invoke the optional getter when available.
  * @param {unknown} getter Candidate `get` helper from Express.
+ * @param {NativeHttpRequest | undefined} req HTTP request used as the getter receiver.
  * @returns {unknown} Authorization header or undefined.
  */
-function callAuthorizationGetter(getter) {
+function callAuthorizationGetter(getter, req) {
   if (typeof getter !== 'function') {
     return undefined;
   }
 
-  return getter('Authorization');
+  return getter.call(req, 'Authorization');
 }
 
 /**

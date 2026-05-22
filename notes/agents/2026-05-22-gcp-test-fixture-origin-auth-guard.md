@@ -230,3 +230,19 @@ timeout in the cloud E2E. Next-time guidance: assertions that depend on a
 freshly invoked Cloud Function and a follow-up render/load cycle should use a
 cloud-realistic timeout, while still keeping the individual expected UI state
 specific.
+
+Run `26304899845` on `f65efa7aa` proved the moderation latency fix: the
+moderation fixture passed and 10 Playwright tests were green. The remaining
+failure moved to stats generation: the admin UI reported `Stats generated`, but
+`/stats.html` returned 404, and the logs showed the underlying
+`generate-stats` POST returned 500.
+
+The diagnosis matched the earlier Express receiver issue in a shared path:
+`cloud-core` detached `req.get` while extracting the Authorization header for
+`createVerifyAdmin`, so Express could throw before `generate-stats` reached its
+structured handler. The chosen fix keeps the request receiver bound when reading
+Authorization, adds a unit regression with an Express-like getter, makes the
+admin UI treat non-2xx stats responses as failure, and has the E2E wait until
+the generated stats page is readable before navigating. Next-time guidance:
+shared request helpers that touch Express methods should always preserve the
+receiver and should have at least one receiver-sensitive regression test.

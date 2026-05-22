@@ -11,6 +11,7 @@ import {
   normalizeContent,
   normalizeAuthor,
   normalizeNonStringCandidate,
+  getAuthHeader,
   normalizeStaticObjectPrefix,
   prefixStaticObjectPath,
   productionOrigins,
@@ -183,6 +184,19 @@ describe('cloud-core', () => {
           'Authorization'
         )
       ).toBe('Bearer token');
+    });
+  });
+
+  describe('getAuthHeader', () => {
+    test('preserves the request receiver for Express header getters', () => {
+      const req = {
+        headers: { authorization: 'Bearer bound-token' },
+        get(name) {
+          return this.headers[name.toLowerCase()];
+        },
+      };
+
+      expect(getAuthHeader(req)).toBe('Bearer bound-token');
     });
   });
 

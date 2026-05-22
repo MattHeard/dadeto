@@ -218,7 +218,7 @@ describe('createTriggerStats', () => {
     const getAdminEndpoints = jest
       .fn()
       .mockResolvedValue({ generateStatsUrl: statsUrl });
-    const fetch = jest.fn().mockResolvedValue({});
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
     const showMessage = jest.fn();
 
     const triggerStats = createTriggerStats({
@@ -784,7 +784,7 @@ describe('createAdminTokenAction', () => {
 });
 
 describe('createTriggerStats additional branches', () => {
-  it('handles fetch failures by reporting an error', async () => {
+  it('handles non-OK responses by reporting an error', async () => {
     const getIdToken = jest.fn().mockReturnValue('token');
     const googleAuth = { getIdToken };
     const getAdminEndpoints = jest
@@ -802,7 +802,7 @@ describe('createTriggerStats additional branches', () => {
 
     await triggerStats();
 
-    expect(showMessage).toHaveBeenCalledWith('Stats generated');
+    expect(showMessage).toHaveBeenCalledWith('Stats generation failed');
   });
 
   it('throws when getAdminEndpointsFn is not a function', () => {

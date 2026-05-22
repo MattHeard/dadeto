@@ -197,6 +197,7 @@ test.describe.serial('seeded dendrite fixture', () => {
 
   test('admin can generate fresh stats from the seeded datastore', async ({
     page,
+    request,
   }) => {
     const response = await gotoAuthenticated(page, '/admin.html', fixture.idToken);
 
@@ -209,6 +210,12 @@ test.describe.serial('seeded dendrite fixture', () => {
     await expect(adminContent).toBeVisible();
     await page.getByRole('button', { name: 'Generate stats' }).click();
     await expect(page.locator('#renderStatus')).toContainText('Stats generated');
+    await expect
+      .poll(async () => (await request.get('/stats.html')).status(), {
+        message: 'generated stats page is readable through the static proxy',
+        timeout: 30000,
+      })
+      .toBe(200);
 
     const statsResponse = await page.goto('/stats.html', {
       waitUntil: 'domcontentloaded',

@@ -1507,16 +1507,28 @@ export function createTriggerStats({
         const endpoints = /** @type {{ generateStatsUrl: string }} */ (
           await getAdminEndpoints()
         );
-        await fetch(endpoints.generateStatsUrl, {
+        const response = await fetch(endpoints.generateStatsUrl, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         });
+        assertStatsResponseOk(response);
         report('Stats generated');
       } catch {
         report('Stats generation failed');
       }
     },
   });
+}
+
+/**
+ * Fail the admin stats action when the endpoint returns a non-2xx response.
+ * @param {{ ok: boolean, status?: number }} response Fetch response.
+ * @returns {void}
+ */
+function assertStatsResponseOk(response) {
+  if (!response.ok) {
+    throw new Error(`Stats generation failed: HTTP ${response.status}`);
+  }
 }
 
 /**
