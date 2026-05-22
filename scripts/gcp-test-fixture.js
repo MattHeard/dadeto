@@ -6,7 +6,7 @@ const runtimeDepsRequire = createRequire(
   new URL('../src/cloud/runtime-deps/package.json', import.meta.url)
 );
 
-const { initializeApp } = runtimeDepsRequire('firebase-admin/app');
+const { cert, initializeApp } = runtimeDepsRequire('firebase-admin/app');
 const { getAuth } = runtimeDepsRequire('firebase-admin/auth');
 const { getFirestore } = runtimeDepsRequire('firebase-admin/firestore');
 
@@ -31,6 +31,27 @@ function requireEnv(name) {
 
 function parseJsonEnv(name) {
   return JSON.parse(requireEnv(name));
+}
+
+function parseOptionalJsonEnv(name) {
+  const value = process.env[name];
+  if (!value) {
+    return null;
+  }
+
+  return JSON.parse(value);
+}
+
+function createFirebaseAppOptions(projectId) {
+  const credentials = parseOptionalJsonEnv('GOOGLE_CREDENTIALS_JSON');
+  if (!credentials?.client_email || !credentials?.private_key) {
+    return { projectId };
+  }
+
+  return {
+    credential: cert(credentials),
+    projectId,
+  };
 }
 
 function createFirestoreDocumentRefs(db) {
@@ -163,7 +184,7 @@ async function main() {
     throw new Error('FIREBASE_WEB_APP_CONFIG_JSON must include apiKey');
   }
 
-  const app = initializeApp({ projectId });
+  const app = initializeApp(createFirebaseAppOptions(projectId));
 
   const auth = getAuth(app);
   const db = getFirestore(app, databaseId);
