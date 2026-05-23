@@ -1,0 +1,4 @@
+- unexpected hurdle: `npm test` failed on `test/infra/cloudBrowserEntrypoints.test.js` because `infra/load-static-config-core.js` was missing while Terraform/test expectations still referenced it.
+- diagnosis path: ran full `npm test`, isolated the failure to ENOENT in the entrypoint wrapper assertion, then validated expected wrapper contents in the test file.
+- chosen fix: added `infra/load-static-config-core.js` as a root wrapper exporting `../core/browser/load-static-config-core.js` to match the existing root-wrapper upload pattern.
+- next-time guidance or open questions: when adding or renaming cloud browser entrypoints, update wrappers and infra upload manifests together and keep a small infra-focused Jest run in the loop before full suite.
