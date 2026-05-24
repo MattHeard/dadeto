@@ -23,6 +23,8 @@ import {
   when,
   tryOr,
   trimmedStringOrNull,
+  runEntriesInParallel,
+  runMappedEntries,
 } from '../../src/core/commonCore.js';
 import {
   areValidStrings,
@@ -216,5 +218,23 @@ describe('commonCore helpers', () => {
         throw new Error('boom');
       }, fallback)
     ).toBe('safe');
+  });
+
+  test('runEntriesInParallel returns empty array for empty input', async () => {
+    await expect(
+      runEntriesInParallel([], async () => 'unused')
+    ).resolves.toEqual([]);
+  });
+
+  test('runMappedEntries maps payloads before invoking runner', async () => {
+    const seen = [];
+    await runMappedEntries(
+      [1, 2],
+      value => value * 10,
+      async payload => {
+        seen.push(payload);
+      }
+    );
+    expect(seen).toEqual([10, 20]);
   });
 });
