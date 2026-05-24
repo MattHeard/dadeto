@@ -10,7 +10,6 @@
     "src/build/copy-cloud.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/cyclomatic-factors.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/generator.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
-    "src/build/head.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/html.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/insertPost.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
     "src/build/styles.js": "Baseline non-core file over 50 lines; move logic into src/core incrementally.",
