@@ -156,6 +156,26 @@ const moderationSubmitHandler = createCloudSubmitHandler;
 export { moderationSubmitHandler as createHandleSubmitModerationRating };
 
 /**
+ * Build the submit-moderation-rating Express app.
+ * @param {{
+ *   express: Function,
+ *   cors: Function,
+ *   allowedOrigins: string[],
+ *   handleSubmit: Function,
+ * }} deps Dependencies for app wiring.
+ * @returns {{ use: Function, post: Function }} Wired Express app.
+ */
+export function createSubmitModerationRatingApp(deps) {
+  const app = deps.express();
+  app.use(
+    deps.cors(createCorsOptions({ allowedOrigins: deps.allowedOrigins }))
+  );
+  app.use(deps.express.json());
+  app.post('/', deps.handleSubmit);
+  return app;
+}
+
+/**
  * Determine whether a value is a boolean literal.
  * @param {unknown} value Candidate value to evaluate.
  * @returns {value is boolean} True when the value is a boolean.

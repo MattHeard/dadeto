@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import {
   createCorsOptions,
   createHandleSubmitModerationRating,
+  createSubmitModerationRatingApp,
   createSubmitModerationRatingResponder,
 } from '../../../../src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js';
 
@@ -39,6 +40,33 @@ describe('createCorsOptions', () => {
     cors.origin('https://allowed', cb);
     expect(cb.mock.calls[0][0]).toBeInstanceOf(Error);
     expect(cb.mock.calls[0][0].message).toBe('CORS');
+  });
+});
+
+describe('createSubmitModerationRatingApp', () => {
+  it('wires cors/json middleware and POST handler', () => {
+    const use = jest.fn();
+    const post = jest.fn();
+    const app = { use, post };
+    const express = jest.fn(() => app);
+    express.json = jest.fn(() => 'json-mw');
+    const cors = jest.fn(() => 'cors-mw');
+    const handleSubmit = jest.fn();
+
+    const result = createSubmitModerationRatingApp({
+      express,
+      cors,
+      allowedOrigins: ['https://allowed'],
+      handleSubmit,
+    });
+
+    expect(result).toBe(app);
+    expect(cors).toHaveBeenCalledWith(
+      expect.objectContaining({ methods: ['POST'] })
+    );
+    expect(use).toHaveBeenCalledWith('cors-mw');
+    expect(use).toHaveBeenCalledWith('json-mw');
+    expect(post).toHaveBeenCalledWith('/', handleSubmit);
   });
 });
 
