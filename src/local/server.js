@@ -16,6 +16,7 @@ import {
 } from '../core/local/server.js';
 import { getNonCoreThinStatus } from '../core/local/non-core-thin/status.js';
 import { renderNonCoreThinDashboard } from './non-core-thin/dashboard.js';
+import { createLocalServerRuntime } from '../core/local/run.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -136,40 +137,24 @@ export function getWriterUrl(serverPort, env) {
   return coreGetWriterUrl(serverPort, env);
 }
 
+
+export const { runLocalServer } = createLocalServerRuntime({
+  createLocalApp,
+  createWriterServer,
+  formatListenErrorMessage,
+  getWriterUrl,
+  isWriterRequestLogEnabled,
+});
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const server = createWriterServer(
-    createLocalApp({
-      store,
-      publicDir,
-      writerDir,
-      exchangeRealtimeCallSdp,
-      getNonCoreThinStatus,
-      renderNonCoreThinDashboard,
-      requestLogger: isWriterRequestLogEnabled(process.env) ? console.log : undefined,
-    })
-  );
-  const host = process.env.WRITER_HOST;
-
-  if (host && host.trim()) {
-    server.listen(port, host.trim(), () => {
-      console.log(`writer server listening on ${getWriterUrl(port, process.env)}`);
-      console.log(`non-core-thin dashboard: http://${host.trim()}:${port}/non-core-thin`);
-    });
-  } else {
-    server.listen(port, () => {
-      console.log(`writer server listening on ${getWriterUrl(port, process.env)}`);
-      console.log('non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN');
-    });
-  }
-
-  server.on('error', error => {
-    if (error.code === 'EPERM' || error.code === 'EACCES') {
-      console.error(formatListenErrorMessage(port));
-
-      process.exitCode = 1;
-      return;
-    }
-
-    throw error;
+  runLocalServer({
+    env: process.env,
+    port,
+    store,
+    publicDir,
+    writerDir,
+    exchangeRealtimeCallSdp,
+    getNonCoreThinStatus,
+    renderNonCoreThinDashboard,
   });
 }
