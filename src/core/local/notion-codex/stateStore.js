@@ -6,11 +6,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
  * @returns {Record<string, unknown> | null} Active run object or null.
  */
 export function normalizeActiveRun(value) {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value !== 'object') {
+  if (typeof value !== 'object' || !value) {
     return null;
   }
 
@@ -22,11 +18,7 @@ export function normalizeActiveRun(value) {
  * @returns {Record<string, unknown>} Source object or empty object.
  */
 function toSourceObject(value) {
-  if (!value) {
-    return {};
-  }
-
-  if (typeof value !== 'object') {
+  if (typeof value !== 'object' || !value) {
     return {};
   }
 
@@ -102,11 +94,23 @@ export function normalizeNotionCodexState(value) {
 }
 
 /**
+ * @param {unknown} error Candidate filesystem error.
+ * @returns {boolean} True when the error is a missing-file read.
+ */
+function isMissingStateError(error) {
+  return readErrorCode(error) === 'ENOENT';
+}
+
+/**
  *
  * @param error
  */
-function isMissingStateError(error) {
-  return Boolean(error && typeof error === 'object' && error.code === 'ENOENT');
+function readErrorCode(error) {
+  if (typeof error !== 'object' || !error) {
+    return null;
+  }
+
+  return error.code;
 }
 
 /**
@@ -122,31 +126,71 @@ function isMissingStateError(error) {
  * }} JSON state store.
  */
 export function createNotionCodexStateStore(options) {
-  const mkdirImpl = options.mkdirImpl ?? mkdir;
-  const readFileImpl = options.readFileImpl ?? readFile;
-  const writeFileImpl = options.writeFileImpl ?? writeFile;
+  const { mkdirImpl, readFileImpl, writeFileImpl, readStatePath } =
+    resolveStoreDeps(options);
+
+  /**
+   * @returns {Promise<Record<string, unknown>>} Parsed state or defaults.
+   */
+  const readState = createReadState({ readFileImpl, readStatePath });
+  const writeState = createWriteState({
+    mkdirImpl,
+    writeFileImpl,
+    readStatePath,
+  });
 
   return {
-    async readState() {
-      try {
-        const rawState = await readFileImpl(options.statePath, 'utf8');
-        return normalizeNotionCodexState(JSON.parse(rawState));
-      } catch (error) {
-        if (isMissingStateError(error)) {
-          return normalizeNotionCodexState(null);
-        }
+    readState,
+    writeState,
+  };
+}
 
+/**
+ *
+ * @param options
+ */
+function resolveStoreDeps(options) {
+  return {
+    mkdirImpl: options.mkdirImpl ?? mkdir,
+    readFileImpl: options.readFileImpl ?? readFile,
+    writeFileImpl: options.writeFileImpl ?? writeFile,
+    readStatePath: options.statePath,
+  };
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.readFileImpl
+ * @param root0.readStatePath
+ */
+function createReadState({ readFileImpl, readStatePath }) {
+  return async () => {
+    try {
+      const rawState = await readFileImpl(readStatePath, 'utf8');
+      return normalizeNotionCodexState(JSON.parse(rawState));
+    } catch (error) {
+      if (!isMissingStateError(error)) {
         throw error;
       }
-    },
 
-    async writeState(state) {
-      await mkdirImpl(path.dirname(options.statePath), { recursive: true });
-      await writeFileImpl(
-        options.statePath,
-        JSON.stringify(normalizeNotionCodexState(state), null, 2),
-        'utf8'
-      );
-    },
+      return normalizeNotionCodexState(null);
+    }
+  };
+}
+
+/**
+ *
+ * @param root0
+ * @param root0.mkdirImpl
+ * @param root0.writeFileImpl
+ * @param root0.readStatePath
+ */
+function createWriteState({ mkdirImpl, writeFileImpl, readStatePath }) {
+  return async state => {
+    await mkdirImpl(path.dirname(readStatePath), { recursive: true });
+    const normalizedState = normalizeNotionCodexState(state);
+    const serializedState = JSON.stringify(normalizedState, null, 2);
+    await writeFileImpl(readStatePath, serializedState, 'utf8');
   };
 }
