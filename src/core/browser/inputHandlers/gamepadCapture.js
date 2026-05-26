@@ -658,10 +658,8 @@ function createStopCaptureHandler(options) {
  * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Toggle handler options.
  */
 function createGamepadToggleOptions(options) {
-  const emitPayload = (
-    input,
-    payload
-  ) =>
+  /** @type {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions['emitPayload']} */
+  const emitPayload = (input, payload) =>
     captureLifecycleDeps.syncToyInput({ ...input, payload });
 
   return {
@@ -674,7 +672,7 @@ function createGamepadToggleOptions(options) {
 /**
  * Build the shared emit-payload options for gamepad capture.
  * @param {HandlerOptions} options - Shared handler dependencies.
- * @param {(input: { dom: HandlerOptions['dom'], textInput: HandlerOptions['textInput'], autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'] }, payload: unknown) => void} emitPayload - Payload emitter.
+ * @param {(input: { dom: HandlerOptions['dom'], textInput: HandlerOptions['textInput'], autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'] }, payload: Record<string, unknown>) => void} emitPayload - Payload emitter.
  * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Emit-capture-state options.
  */
 function createGamepadEmitPayloadOptions(options, emitPayload) {

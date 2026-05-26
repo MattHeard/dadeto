@@ -276,7 +276,7 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       dom,
       cleanupFns,
       placeholder: config.placeholder,
-      value: rowModel[config.key],
+      value: String(rowModel[config.key] ?? ''),
       onChange: handleRowChange(config.key),
     }));
 

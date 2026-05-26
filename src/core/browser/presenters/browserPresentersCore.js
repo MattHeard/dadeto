@@ -71,12 +71,13 @@ export function createSectionWithRows({ dom, className, title, content }) {
 
 /**
  * Render a parsed presenter payload or return the fallback element.
+ * @template TParsed
  * @param {{
  *   inputString: string,
- *   dom: { createElement: Function, setClassName: Function, setTextContent: Function },
- *   parse: (inputString: string) => unknown,
- *   render: (parsed: unknown, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
- *   createFallback: (inputString: string, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
+ *   dom: PresenterDOMHelpers,
+ *   parse: (inputString: string) => TParsed | null,
+ *   render: (parsed: TParsed, dom: PresenterDOMHelpers) => HTMLElement,
+ *   createFallback: (inputString: string, dom: PresenterDOMHelpers) => HTMLElement,
  * }} options Presenter rendering options.
  * @returns {HTMLElement} Rendered presenter output.
  */
@@ -94,10 +95,10 @@ export function renderParsedPresenter(options) {
  * @template TParsed
  * @param {{
  *   inputString: string,
- *   dom: { createElement: Function, setClassName: Function, setTextContent: Function },
+ *   dom: PresenterDOMHelpers,
  *   parse: (inputString: string) => TParsed | null,
- *   render: (parsed: TParsed, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
- *   createFallback: (inputString: string, dom: { createElement: Function, setClassName: Function, setTextContent: Function }) => HTMLElement,
+ *   render: (parsed: TParsed, dom: PresenterDOMHelpers) => HTMLElement,
+ *   createFallback: (inputString: string, dom: PresenterDOMHelpers) => HTMLElement,
  * }} options Presenter rendering options.
  * @returns {HTMLElement} Rendered presenter output.
  */
@@ -133,4 +134,4 @@ export function parsePresenterJsonObject(inputString) {
 }
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
-/** @typedef {Pick<DOMHelpers, 'createElement'|'setTextContent'>} PresenterDOMHelpers */
+/** @typedef {DOMHelpers} PresenterDOMHelpers */

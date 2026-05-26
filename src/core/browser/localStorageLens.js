@@ -158,7 +158,7 @@ function parseStoredJson(value, logError) {
 function createJsonHandlers(logError) {
   return {
     deserialize: createJsonValueHandler(isNullishOrEmptyString, value =>
-      parseStoredJson(value, logError)
+      parseStoredJson(/** @type {string} */ (value), logError)
     ),
     serialize: createJsonValueHandler(isNullish, value =>
       stringifyStoredJson(value, logError)
@@ -168,9 +168,11 @@ function createJsonHandlers(logError) {
 
 /**
  * Create a value handler that preserves missing values and transforms present ones.
- * @param {(value: unknown) => boolean} isMissingValue Predicate that identifies missing values.
- * @param {(value: unknown) => unknown} transformValue Transformer for present values.
- * @returns {(value: unknown) => unknown | null} Handler that returns null for missing inputs.
+ * @template TValue
+ * @template TResult
+ * @param {(value: TValue) => boolean} isMissingValue Predicate that identifies missing values.
+ * @param {(value: TValue) => TResult} transformValue Transformer for present values.
+ * @returns {(value: TValue) => TResult | null} Handler that returns null for missing inputs.
  */
 function createJsonValueHandler(isMissingValue, transformValue) {
   return value =>

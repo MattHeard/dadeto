@@ -192,7 +192,7 @@ function createOverview(parsed, dom) {
   const overview = dom.createElement('div');
   dom.setClassName(overview, OVERVIEW_CLASS);
 
-  const rows = [
+  const rows = /** @type {Array<[string, unknown]>} */ ([
     ['Fixture', parsed.fixture],
     ['Input mode', parsed.inputMode],
     ['Raw records', getSummaryNumber(parsed, 'rawRecords')],
@@ -202,7 +202,7 @@ function createOverview(parsed, dom) {
     ],
     ['Duplicates detected', getSummaryNumber(parsed, 'duplicatesDetected')],
     ['Errors detected', getSummaryNumber(parsed, 'errorsDetected')],
-  ];
+  ]);
 
   rows.forEach(([label, value]) => {
     dom.appendChild(overview, createOverviewRow(dom, label, value));
@@ -279,9 +279,8 @@ function createCanonicalTransactionsTable(transactions, options, dom) {
  * @returns {HTMLElement} Table head element.
  */
 function createTableHead(state, rerender, dom) {
-  const head = dom.createElement('thead');
+  const head = /** @type {HTMLTableSectionElement} */ (dom.createElement('thead'));
   dom.setClassName(head, TABLE_HEAD_CLASS);
-  head.style ??= {};
   head.style.verticalAlign = 'top';
   const row = dom.createElement('tr');
 
@@ -306,9 +305,8 @@ function createTableHead(state, rerender, dom) {
  * @returns {HTMLElement} Table body element.
  */
 function createTableBody(transactions, state, dom) {
-  const body = dom.createElement('tbody');
+  const body = /** @type {HTMLTableSectionElement} */ (dom.createElement('tbody'));
   dom.setClassName(body, TABLE_BODY_CLASS);
-  body.style ??= {};
   body.style.verticalAlign = 'top';
 
   transactions.forEach(transaction => {
@@ -368,7 +366,7 @@ function appendTableHeaderCell(row, options) {
 function createTableHeaderCell(group, options) {
   const { collapsedColumns, rerender, dom } = options;
   const column = TRANSACTION_COLUMNS[group.start];
-  const headerCell = dom.createElement('th');
+  const headerCell = /** @type {HTMLTableCellElement} */ (dom.createElement('th'));
   dom.setClassName(headerCell, getTableHeaderCellClassName(group.collapsed));
   headerCell.colSpan = group.length;
 
@@ -579,13 +577,8 @@ function createEmptyStateParagraph(dom, text) {
  * @returns {string} Display string.
  */
 function formatDisplayValue(value) {
-  const replacements = {
-    undefined: '—',
-    null: '—',
-    '': '—',
-  };
-  if (Object.hasOwn(replacements, value)) {
-    return replacements[value];
+  if (value === undefined || value === null || value === '') {
+    return '—';
   }
   return String(value);
 }

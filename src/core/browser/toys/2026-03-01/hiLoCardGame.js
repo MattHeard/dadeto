@@ -1,7 +1,6 @@
 import {
   getStringCandidate,
   isNonNullObject,
-  normalizeObjectOrFallback,
   whenTruthy,
   whenString,
 } from '../../browser-core.js';
@@ -109,7 +108,7 @@ function hasInputPayload(input) {
  * @returns {HiLoInputEvent | null} Valid input event or null.
  */
 export function normalizeParsedEvent(parsed) {
-  const candidate = toRecordOrNull(parsed, isNonNullObject);
+  const candidate = toRecordOrNull(parsed, isRecordCandidate);
   if (!candidate) {
     return null;
   }
@@ -272,9 +271,19 @@ function isCardInRange(card) {
  * @returns {T} Normalized value.
  */
 function normalizeStoredObject(value, fallback, transform) {
-  return /** @type {T} */ (
-    normalizeObjectOrFallback(value, fallback, transform)
-  );
+  if (!isRecordCandidate(value)) {
+    return fallback();
+  }
+
+  return /** @type {T} */ (transform(value));
+}
+
+/**
+ * @param {unknown} value - Candidate object-like value.
+ * @returns {value is Record<string, unknown>} True when the value is a record.
+ */
+function isRecordCandidate(value) {
+  return isNonNullObject(value);
 }
 
 /**
@@ -443,7 +452,7 @@ function handleKeydownGuess(inputEvent, state, getRandomNumber) {
 function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
   const { gameState, keyboardState } = state;
   const guessKey = getGuessKey(inputEvent);
-  if (shouldSkipGuessApplication(guessKey, keyboardState)) {
+  if (guessKey === null || hasHeldKey(keyboardState)) {
     return state;
   }
   return buildAppliedGuessState(gameState, guessKey, getRandomNumber);
@@ -454,30 +463,7 @@ function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
  * @returns {string | null} Guess key when the event carries one.
  */
 function getGuessKey(inputEvent) {
-  if (!isStringGuessKey(inputEvent.key)) {
-    return null;
-  }
-  return inputEvent.key;
-}
-
-/**
- * @param {unknown} guessKey - Candidate key from the event.
- * @returns {boolean} True when the guess key is a string.
- */
-function isStringGuessKey(guessKey) {
-  return typeof guessKey === 'string';
-}
-
-/**
- * @param {string | null} guessKey - Guess key candidate.
- * @param {HiLoKeyboardState} keyboardState - Current keyboard state.
- * @returns {boolean} True when the guess should be ignored.
- */
-function shouldSkipGuessApplication(guessKey, keyboardState) {
-  if (hasHeldKey(keyboardState)) {
-    return true;
-  }
-  return guessKey === null;
+  return typeof inputEvent.key === 'string' ? inputEvent.key : null;
 }
 
 /**
