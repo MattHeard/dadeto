@@ -6,14 +6,14 @@ const DEFAULT_FIXTURE = 'happyPath';
 /**
  * Resolve which fixture to run based on the parsed input.
  * @param {Record<string, unknown>} parsed Toy payload parsed from JSON.
- * @returns {string} Key for an existing fixture.
+ * @returns {keyof typeof fixtures} Key for an existing fixture.
  */
 function resolveFixture(parsed) {
   const candidate = getFixtureCandidate(parsed);
   if (isKnownFixtureCandidate(candidate)) {
     return candidate;
   }
-  return DEFAULT_FIXTURE;
+  return /** @type {keyof typeof fixtures} */ (DEFAULT_FIXTURE);
 }
 
 /**
@@ -65,7 +65,7 @@ function isImportInput(candidate) {
 
 /**
  * @param {unknown} candidate Parsed toy payload.
- * @returns {boolean} True when the candidate is an object-like payload.
+ * @returns {candidate is Record<string, unknown>} True when the candidate is an object-like payload.
  */
 function isImportInputObject(candidate) {
   return candidate !== null && typeof candidate === 'object';
@@ -73,13 +73,22 @@ function isImportInputObject(candidate) {
 
 /**
  * Check whether the candidate payload has a rawRecords array.
- * @param {object} candidate Parsed toy payload.
+ * @param {Record<string, unknown>} candidate Parsed toy payload.
  * @returns {boolean} True when rawRecords is an array.
  */
 function hasRawRecordsArray(candidate) {
   return Array.isArray(
     /** @type {{ rawRecords?: unknown }} */ (candidate).rawRecords
   );
+}
+
+/**
+ * Read the source label from an import-ready payload.
+ * @param {{ source?: unknown }} parsed Import-ready payload.
+ * @returns {string} Source label or the import default.
+ */
+function getImportSource(parsed) {
+  return typeof parsed.source === 'string' ? parsed.source : 'jsonImport';
 }
 
 /**
@@ -107,12 +116,16 @@ function buildResponsePayload(inputLabel, result, inputMode) {
  * @returns {string} JSON string containing the input label and key result buckets.
  */
 export function ledgerIngestToy(input) {
-  const parsed = parseJsonOrFallback(input, {});
+  const parsed = /** @type {Record<string, unknown>} */ (
+    parseJsonOrFallback(input, {})
+  );
   if (isImportInput(parsed)) {
+    const source = getImportSource(parsed);
     const result = importTransactions(
-      /** @type {{ source?: string, rawRecords: Record<string, unknown>[] }} */ (
-        parsed
-      )
+      /** @type {{ source: string, rawRecords: Record<string, unknown>[] }} */ ({
+        source,
+        rawRecords: /** @type {Record<string, unknown>[]} */ (parsed.rawRecords),
+      })
     );
     return JSON.stringify(buildResponsePayload('jsonImport', result, 'json'));
   }

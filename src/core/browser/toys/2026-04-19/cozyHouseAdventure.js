@@ -140,7 +140,7 @@ function yardMessage(time) {
 /**
  * Determine the stage command selected while in the yard.
  * @param {string} lowerInput Normalized command text.
- * @returns {CozyState|'yard'} Selected stage name or `yard` when no match exists.
+ * @returns {'foundation'|'materials'|'roof'|'garden'|'yard'} Selected stage name or `yard` when no match exists.
  */
 function resolveYardSelection(lowerInput) {
   const stages = Object.keys(BUILD_REQUIREMENTS);
@@ -149,7 +149,7 @@ function resolveYardSelection(lowerInput) {
     return 'yard';
   }
 
-  return /** @type {CozyState} */ (match);
+  return /** @type {'foundation'|'materials'|'roof'|'garden'} */ (match);
 }
 
 /**
@@ -393,16 +393,20 @@ function handleIntroState(context) {
  * @returns {(context: CozyRuntimeContext) => {output: string, state: CozyState, inventory: string[], progress: string[]}} Handler function.
  */
 function getStateHandler(state) {
-  const handlers = {
-    yard: handleYard,
-    foundation: context => handleBuildStage(context, 'foundation'),
-    materials: context => handleBuildStage(context, 'materials'),
-    roof: context => handleBuildStage(context, 'roof'),
-    garden: context => handleBuildStage(context, 'garden'),
-    intro: handleYard,
-  };
-
-  return handlers[state] || handleYard;
+  switch (state) {
+    case 'foundation':
+      return context => handleBuildStage(context, 'foundation');
+    case 'materials':
+      return context => handleBuildStage(context, 'materials');
+    case 'roof':
+      return context => handleBuildStage(context, 'roof');
+    case 'garden':
+      return context => handleBuildStage(context, 'garden');
+    case 'yard':
+    case 'intro':
+    default:
+      return handleYard;
+  }
 }
 
 /**

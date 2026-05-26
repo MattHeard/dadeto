@@ -75,10 +75,13 @@ function processCsvCharacter(state, input, index) {
   const char = input[index];
   const next = input[index + 1];
   const chars = { char, next };
-  return CSV_CHARACTER_HANDLERS.reduce(
-    (nextIndex, handler) => nextIndex ?? handler(state, chars, index),
-    null
-  );
+  for (const handler of CSV_CHARACTER_HANDLERS) {
+    const nextIndex = handler(state, chars, index);
+    if (nextIndex !== null) {
+      return nextIndex;
+    }
+  }
+  return index;
 }
 
 /**
@@ -519,6 +522,7 @@ function isBlankLedgerCsvRow(row) {
  * @returns {Record<string, unknown>[]} Raw records converted from CSV.
  */
 function collectLedgerCsvRecords(rows, headerLookup) {
+  /** @type {Record<string, unknown>[]} */
   const rawRecords = [];
 
   for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
@@ -553,14 +557,18 @@ function appendLedgerCsvRecord(rawRecords, row, context) {
  * @returns {Record<string, unknown>} Raw record converted from CSV.
  */
 function buildLedgerCsvRecord(row, headerLookup, index) {
-  const bookingDate = row[headerLookup.get('Booking date')];
-  const valueDate = row[headerLookup.get('Value date')];
-  const transactionType = row[headerLookup.get('Transaction type')];
-  const bookingText = row[headerLookup.get('Booking text')];
-  const amount = row[headerLookup.get('Amount')];
-  const currency = row[headerLookup.get('Currency')];
-  const accountIban = row[headerLookup.get('Account IBAN')];
-  const category = row[headerLookup.get('Category')];
+  const bookingDate = getLedgerCsvCell(row, headerLookup, 'Booking date');
+  const valueDate = getLedgerCsvCell(row, headerLookup, 'Value date');
+  const transactionType = getLedgerCsvCell(
+    row,
+    headerLookup,
+    'Transaction type'
+  );
+  const bookingText = getLedgerCsvCell(row, headerLookup, 'Booking text');
+  const amount = getLedgerCsvCell(row, headerLookup, 'Amount');
+  const currency = getLedgerCsvCell(row, headerLookup, 'Currency');
+  const accountIban = getLedgerCsvCell(row, headerLookup, 'Account IBAN');
+  const category = getLedgerCsvCell(row, headerLookup, 'Category');
 
   return {
     recordId: buildCsvRecordId(accountIban, index),
@@ -573,6 +581,18 @@ function buildLedgerCsvRecord(row, headerLookup, index) {
     accountIban: String(accountIban).trim(),
     category: String(category).trim(),
   };
+}
+
+/**
+ * Read a CSV cell by header name.
+ * @param {string[]} row CSV row under review.
+ * @param {Map<string, number>} headerLookup Header lookup by exact schema label.
+ * @param {string} headerName Required column name.
+ * @returns {string} Cell value or an empty string when the header is missing.
+ */
+function getLedgerCsvCell(row, headerLookup, headerName) {
+  const index = headerLookup.get(headerName);
+  return index === undefined ? '' : row[index];
 }
 
 /**

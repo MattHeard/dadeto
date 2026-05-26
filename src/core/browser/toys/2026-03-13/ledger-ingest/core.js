@@ -352,8 +352,11 @@ export function importTransactions(input) {
   const fieldMapping = normalizeFieldMapping(input.fieldMapping);
   const dedupePolicy = normalizeDedupePolicy(input.dedupePolicy);
 
+  /** @type {NormalizedTransaction[]} */
   const canonicalTransactions = [];
+  /** @type {DuplicateReport[]} */
   const duplicateReports = [];
+  /** @type {InvalidRowReport[]} */
   const errorReports = [];
   const seenKeys = new Map();
 
@@ -451,7 +454,7 @@ function getSourceLabel(input) {
  * @returns {Record<string, unknown>[]} Safe raw record list.
  */
 function getRawRecords(rawRecords) {
-  return arrayOrEmpty(rawRecords);
+  return /** @type {Record<string, unknown>[]} */ (arrayOrEmpty(rawRecords));
 }
 
 /**
@@ -495,7 +498,7 @@ function getRequiredRawValue(record, mapping, field) {
  * @returns {boolean} True when the value is absent.
  */
 function isMissingRequiredValue(value) {
-  return MISSING_VALUES.includes(value) || isBlankStringValue(value);
+  return value === undefined || value === null || isBlankStringValue(value);
 }
 
 /**
@@ -545,19 +548,14 @@ function normalizeFieldMapping(mapping) {
   };
 }
 
-const OBJECT_HANDLERS = {
-  object: value => value || {},
-};
-
 /**
  * Normalize a candidate object-like value through the shared handler map.
  * @param {unknown} value Candidate object-like value.
  * @returns {Record<string, unknown>} Safe plain object.
  */
 function normalizeObjectLikeValue(value) {
-  const handler = OBJECT_HANDLERS[typeof value];
-  if (handler) {
-    return handler(value);
+  if (value && typeof value === 'object') {
+    return /** @type {Record<string, unknown>} */ (value);
   }
   return {};
 }
@@ -656,20 +654,17 @@ function sanitizePolicyCaseInsensitive(policy) {
  * @returns {NormalizedTransaction} Normalized transaction record.
  */
 function buildNormalizedTransaction({ record, mapping, index, source }) {
-  const postedDate = normalizeDate(record[mapping.postedDate]);
-  const amount = normalizeAmount(record[mapping.amount]);
-  const currency = normalizeCurrency(record[mapping.currency]);
-  const description = normalizeDescription(record[mapping.description]);
-
   return {
     source,
     rawIndex: index,
-    postedDate,
-    amount,
-    currency,
-    description,
+    postedDate: normalizeDate(record[mapping.postedDate]),
+    amount: normalizeAmount(record[mapping.amount]),
+    currency: normalizeCurrency(record[mapping.currency]),
+    description: normalizeDescription(record[mapping.description]),
     sourceRecordId: ensureString(record[mapping.recordId]),
     metadata: { rawRecord: record },
+    transactionId: '',
+    dedupeKey: '',
   };
 }
 
@@ -697,50 +692,49 @@ function buildTransactionId(source, dedupeKey, index) {
  * @returns {string} Joined dedupe key.
  */
 function buildDedupeKey(transaction, policy) {
+  /** @type {string[]} */
   const values = [];
+  const transactionRecord = /** @type {Record<string, unknown>} */ (transaction);
   for (const field of policy.candidateFields) {
     values.push(
-      serializeDedupeCandidate(transaction[field], policy.caseInsensitive)
+      serializeDedupeCandidate(
+        transactionRecord[field],
+        policy.caseInsensitive
+      )
     );
   }
   return values.join('|');
 }
 
-const dedupeCandidateHandlers = {
-  string: (value, caseInsensitive) => {
-    if (caseInsensitive) {
-      return value.toLowerCase();
-    }
-    return value;
-  },
-  number: value => `${value}`,
-};
-
 /**
  * Serialize each candidate so comparisons can replay the policy.
- * @param {string|number|undefined} value Candidate field to normalize.
+ * @param {unknown} value Candidate field to normalize.
  * @param {boolean} caseInsensitive Flag that forces lowercase strings.
  * @returns {string} String-ready candidate fragment.
  */
 function serializeDedupeCandidate(value, caseInsensitive) {
-  const handler = dedupeCandidateHandlers[typeof value];
-  return whenOrDefault(
-    Boolean(handler),
-    () => handler(value, caseInsensitive),
-    ''
-  );
-}
+  if (typeof value === 'string') {
+    return caseInsensitive ? value.toLowerCase() : value;
+  }
 
-const MISSING_VALUES = [undefined, null];
+  if (typeof value === 'number') {
+    return `${value}`;
+  }
+
+  return '';
+}
 
 /**
  * Convert loose inputs into an ISO date snippet or empty string when parsing
  * fails.
- * @param {string|number|Date|undefined} value Input that may represent a date.
+ * @param {unknown} value Input that may represent a date.
  * @returns {string} ISO date (YYYY-MM-DD) or empty string on failure.
  */
 function normalizeDate(value) {
-  const candidate = new Date(value);
+  const candidate =
+    value instanceof Date
+      ? value
+      : new Date(/** @type {string | number} */ (value ?? ''));
   if (Number.isNaN(candidate.getTime())) {
     return '';
   }

@@ -210,21 +210,16 @@ function isParsedAction(parsed) {
  * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] } | null} State update for non-capture actions.
  */
 function getActionResult(storedState, parsed) {
-  const actionHandlers = {
-    reset: () => ({ ...DEFAULT_STATE }),
-    skip: () => handleSkipAction(storedState, parsed),
-  };
   const action = /** @type {string | undefined} */ (parsed.action);
-  if (action !== 'reset' && action !== 'skip') {
-    return null;
+  if (action === 'reset') {
+    return { ...DEFAULT_STATE };
   }
 
-  const handler = actionHandlers[action];
-  if (typeof handler !== 'function') {
-    return null;
+  if (action === 'skip') {
+    return handleSkipAction(storedState, parsed);
   }
 
-  return handler();
+  return null;
 }
 
 /**
