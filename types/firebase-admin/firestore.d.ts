@@ -57,6 +57,17 @@ declare module 'firebase-admin/firestore' {
     increment(delta: number): FieldValue;
   }
 
+  export const FieldValue: {
+    delete(): FieldValue;
+    increment(delta: number): FieldValue;
+    serverTimestamp(): FieldValue;
+  };
+
+  export function getFirestore(
+    app?: unknown,
+    databaseId?: string
+  ): Firestore;
+
   export interface Firestore {
     collection(path: string): CollectionReference;
     doc(path: string): DocumentReference;

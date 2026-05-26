@@ -31,15 +31,16 @@ export function resolveFirestoreDatabaseId(environment) {
   return null;
 }
 
+/** @type {import('firebase-admin/firestore').Firestore | null} */
 let cachedDb = null;
 
 /**
+ * @typedef {(app?: unknown, databaseId?: string) => import('firebase-admin/firestore').Firestore} FirestoreFactoryFn
+ *
  * Create or return the cached Firestore instance for the active environment.
  * @param {{
- *   getFirestoreFn?: (
- *     app?: import('firebase-admin/app').App,
- *     databaseId?: string,
- *   ) => import('firebase-admin/firestore').Firestore,
+ *   ensureAppFn?: () => void,
+ *   getFirestoreFn?: FirestoreFactoryFn,
  *   environment?: Record<string, unknown>,
  * }} [options] Optional dependency overrides for testing.
  * @returns {import('firebase-admin/firestore').Firestore} Firestore client instance.
@@ -47,7 +48,7 @@ let cachedDb = null;
 export function getFirestoreInstance(options = {}) {
   const {
     ensureAppFn = ensureFirebaseApp,
-    getFirestoreFn = getAdminFirestore,
+    getFirestoreFn = /** @type {FirestoreFactoryFn} */ (getAdminFirestore),
     environment = process.env,
   } = options;
 
@@ -81,18 +82,15 @@ export function clearFirestoreInstanceCache() {
 
 /**
  * Select the correct Firestore database given the parsed configuration.
- * @param {(
- *   app?: import('firebase-admin/app').App,
- *   databaseId?: string,
- * ) => import('firebase-admin/firestore').Firestore} getFirestoreFn Firestore factory.
- * @param {import('firebase-admin/app').App} firebaseApp Firebase Admin app instance.
+ * @param {FirestoreFactoryFn} getFirestoreFn Firestore factory.
+ * @param {unknown} firebaseApp Firebase Admin app instance.
  * @param {string | null} databaseId Desired Firestore database identifier.
  * @returns {import('firebase-admin/firestore').Firestore} Configured Firestore client.
  */
 function getFirestoreForDatabase(getFirestoreFn, firebaseApp, databaseId) {
   if (databaseId && databaseId !== '(default)') {
     if (!firebaseApp) {
-      return getFirestoreFn(databaseId);
+      return getFirestoreFn(undefined, databaseId);
     }
 
     return getFirestoreFn(firebaseApp, databaseId);

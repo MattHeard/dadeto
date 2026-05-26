@@ -30,7 +30,7 @@ export {
  * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} LogCallback
  * @typedef {{ logInfo: LogCallback; logError: LogCallback; logWarning: LogCallback }} BrowserLoggers
  * @typedef {HTMLElement & { _dispose: () => void }} DisposableElement
- * @typedef {(event: unknown) => void} DOMEventListener
+ * @typedef {(event: Event) => void} DOMEventListener
  * @typedef {{ removeItem: (key: string) => void }} StorageLike
  * @typedef {(container: HTMLElement, dom: DOMHelpers) => void} ContainerHandler
  */

@@ -2,7 +2,7 @@ import * as browserCore from '../browser-core.js';
 import { createManagedFormShellState } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
-/** @typedef {(globalThis: typeof globalThis) => void} CleanupFn */
+/** @typedef {() => void} CleanupFn */
 
 /**
  * @typedef {{
@@ -276,7 +276,5 @@ export function registerGlobalListener({
   handler,
 }) {
   globalThisArg.addEventListener(type, handler);
-  cleanupFns.push(globalThisArg =>
-    globalThisArg.removeEventListener(type, handler)
-  );
+  cleanupFns.push(() => globalThisArg.removeEventListener(type, handler));
 }

@@ -19,16 +19,14 @@ export function calculateEdgeWeight({
   ignoredPageId,
 }) {
   const ratingPair = extractRatingsPair({ moderatorA, moderatorB, ratings });
-  return (
-    whenTruthy(ratingPair, () =>
-      deriveWeight({
-        .../** @type {{ firstRatings: Record<string, boolean>, secondRatings: Record<string, boolean> }} */ (
-          ratingPair
-        ),
-        ignoredPageId,
-      })
-    ) ?? NO_CONNECTION_WEIGHT
-  );
+  if (!ratingPair) {
+    return NO_CONNECTION_WEIGHT;
+  }
+
+  return deriveWeight({
+    ...ratingPair,
+    ignoredPageId,
+  });
 }
 
 /**
@@ -70,6 +68,10 @@ function buildRatingsPair(ratings, moderatorA, moderatorB) {
  */
 function buildSecondRatingsPair(firstRatings, ratings, moderatorB) {
   const secondRatings = getModeratorRatings(ratings, moderatorB);
+  if (!secondRatings) {
+    return null;
+  }
+
   return whenNotNullish(secondRatings, () =>
     createRatingsPair(firstRatings, secondRatings)
   );

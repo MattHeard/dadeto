@@ -684,11 +684,10 @@ function createDependencyAccessor(createDependencies) {
 
 /**
  * Invoke a controller method with lazily resolved dependencies.
- * @template T
  * @param {() => NormalizedBlogDataDependencies} getDependencies Dependency accessor.
- * @param {(dependencies: NormalizedBlogDataDependencies, ...args: any[]) => T} invoke Method body.
- * @param {...any} args Additional method arguments.
- * @returns {T} Method return value.
+ * @param {(...args: any[]) => any} invoke Method body.
+ * @param {...any[]} args Additional method arguments.
+ * @returns {any} Method return value.
  */
 function callWithDependencies(getDependencies, invoke, ...args) {
   return invoke(...args, getDependencies());
@@ -696,10 +695,9 @@ function callWithDependencies(getDependencies, invoke, ...args) {
 
 /**
  * Create a method wrapper that always resolves dependencies before invoking.
- * @template {(...args: any[]) => any} T
- * @param {() => any} getDependencies Dependency accessor.
- * @param {T} invoke Method implementation that expects dependencies as the last argument.
- * @returns {(...args: Parameters<T>) => ReturnType<T>} Wrapped method.
+ * @param {() => NormalizedBlogDataDependencies} getDependencies Dependency accessor.
+ * @param {(...args: any[]) => any} invoke Method implementation that expects dependencies as the last argument.
+ * @returns {(...args: any[]) => any} Wrapped method.
  */
 function createDependencyMethod(getDependencies, invoke) {
   return (...args) => callWithDependencies(getDependencies, invoke, ...args);

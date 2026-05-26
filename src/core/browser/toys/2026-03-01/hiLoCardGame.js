@@ -272,7 +272,9 @@ function isCardInRange(card) {
  * @returns {T} Normalized value.
  */
 function normalizeStoredObject(value, fallback, transform) {
-  return normalizeObjectOrFallback(value, fallback, transform);
+  return /** @type {T} */ (
+    normalizeObjectOrFallback(value, fallback, transform)
+  );
 }
 
 /**

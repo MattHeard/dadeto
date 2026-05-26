@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { createFirebaseAppManager } from '../core/cloud/firebase-app-manager.js';
 
 /**
- * @typedef {import('node:process').ProcessEnv} ProcessEnv
+ * @typedef {NodeJS.ProcessEnv} ProcessEnv
  */
 
 export { default as crypto } from 'crypto';

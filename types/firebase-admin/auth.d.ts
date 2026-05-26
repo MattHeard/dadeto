@@ -19,4 +19,6 @@ declare module 'firebase-admin/auth' {
   export interface AuthBuilder {
     auth(): Auth;
   }
+
+  export function getAuth(app?: unknown): Auth;
 }
