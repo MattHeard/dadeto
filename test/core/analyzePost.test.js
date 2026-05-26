@@ -12,7 +12,7 @@ describe('analyzePost', () => {
 
   test('getInput reads from stdin when argv is empty', async () => {
     /**
-     *
+     * @yields {Buffer} Stdin chunks for test input.
      */
     async function* makeChunks() {
       yield Buffer.from('hello ');

@@ -22,9 +22,10 @@
  */
 export function buildNotionCodexPrompt(options) {
   const { notion } = options.config;
-  const inboxPageList = notion.inboxPageIds.length
-    ? notion.inboxPageIds.map(pageId => `- ${pageId}`).join('\n')
-    : '- none configured';
+  let inboxPageList = '- none configured';
+  if (notion.inboxPageIds.length > 0) {
+    inboxPageList = notion.inboxPageIds.map(pageId => `- ${pageId}`).join('\n');
+  }
 
   return [
     'You are Codex running as the Dadeto Notion polling worker on lorandil.',
@@ -72,11 +73,19 @@ export function buildNotionCodexPrompt(options) {
 }
 
 /**
- *
- * @param tokenEnvNames
+ * @param {unknown} tokenEnvNames Environment variable names that may store a Notion API token.
+ * @returns {string} Token environment names joined by "or", or default names when none are configured.
+ */
+function hasTokenEnvNames(tokenEnvNames) {
+  return Array.isArray(tokenEnvNames) && tokenEnvNames.length > 0;
+}
+
+/**
+ * @param {unknown} tokenEnvNames Environment variable names that may store a Notion API token.
+ * @returns {string} Token environment names joined by "or", or default names when none are configured.
  */
 function formatTokenEnvNames(tokenEnvNames) {
-  if (!Array.isArray(tokenEnvNames) || tokenEnvNames.length === 0) {
+  if (!hasTokenEnvNames(tokenEnvNames)) {
     return 'NOTION_API_KEY or NOTION_TOKEN';
   }
 
