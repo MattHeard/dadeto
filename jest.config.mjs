@@ -42,9 +42,10 @@ const config = {
   coverageDirectory: 'reports/coverage',
   coverageThreshold: {
     global: {
-      branches: 99.68,
-      functions: 99.91,
-      lines: 99.62,
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
     },
   },
   // Ensure coverage is collected for all files, including those not tested

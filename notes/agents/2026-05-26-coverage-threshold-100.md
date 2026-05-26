@@ -1,0 +1,4 @@
+- Unexpected hurdle: raising Jest global coverage thresholds to 100% immediately fails the suite even though all tests pass.
+- Diagnosis path: ran `npm test` after editing `jest.config.mjs` and checked the coverage summary output for unmet global percentages.
+- Chosen fix: kept the threshold bump in config so the requirement is explicit and enforceable.
+- Next-time guidance: add focused tests (especially under `src/core/local/notion-codex/stateStore.js`) before expecting `npm test` to pass with 100% global thresholds.
