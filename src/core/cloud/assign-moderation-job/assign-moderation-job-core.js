@@ -409,7 +409,7 @@ export function random() {
 /**
  * Check if origin is allowed.
  * @param {string | undefined} origin Origin.
- * @param {string[]} allowedOrigins Allowed origins.
+ * @param {string[] | undefined} allowedOrigins Allowed origins.
  * @returns {boolean} True if allowed.
  */
 function isOriginAllowed(origin, allowedOrigins) {
@@ -430,7 +430,11 @@ function isMissingOrigin(origin) {
  * @returns {boolean} True when the origin is listed.
  */
 function isListedOrigin(origin, allowedOrigins) {
-  return allowedOrigins.includes(origin);
+  if (origin === undefined) {
+    return false;
+  }
+
+  return normalizeAllowedOrigins(allowedOrigins).includes(origin);
 }
 
 /**

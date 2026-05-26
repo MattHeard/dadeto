@@ -8,7 +8,7 @@ const TARGET_WORD_COUNT = 100;
 
 /**
  *
- * @param text
+ * @param {unknown} text
  */
 export function countWords(text) {
   if (!text || typeof text !== 'string') {
@@ -23,7 +23,7 @@ export function countWords(text) {
 
 /**
  *
- * @param text
+ * @param {unknown} text
  */
 export function countSentences(text) {
   if (!text || typeof text !== 'string') {
@@ -35,7 +35,7 @@ export function countSentences(text) {
 
 /**
  *
- * @param text
+ * @param {unknown} text
  */
 export function averageWordsPerSentence(text) {
   const sentences = countSentences(text);
@@ -47,7 +47,7 @@ export function averageWordsPerSentence(text) {
 
 /**
  *
- * @param text
+ * @param {unknown} text
  */
 export function findLongestSentence(text) {
   if (!text || typeof text !== 'string') {
@@ -69,7 +69,7 @@ export function findLongestSentence(text) {
 
 /**
  *
- * @param text
+ * @param {unknown} text
  */
 export function analyzeText(text) {
   const wordCount = countWords(text);
@@ -91,7 +91,13 @@ export function analyzeText(text) {
 
 /**
  *
- * @param analysis
+ * @param {{
+ *   isExactly100: boolean,
+ *   delta: number,
+ *   avgWordsPerSentence: number,
+ *   sentenceCount: number,
+ *   longestSentence: { wordCount: number },
+ * }} analysis
  */
 export function generateFeedback(analysis) {
   const feedback = [];
@@ -139,7 +145,7 @@ export function generateFeedback(analysis) {
 
 /**
  *
- * @param title
+ * @param {unknown} title
  */
 export function analyzeTitle(title) {
   const wordCount = countWords(title);

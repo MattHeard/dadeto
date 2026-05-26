@@ -2,7 +2,11 @@ import { analyzeText, generateFeedback } from './textUtils.js';
 
 /**
  * Create the post analysis CLI workflow.
- * @param {object} deps Environment-specific dependencies.
+ * @param {{
+ *   process: { argv: string[], stdin: AsyncIterable<unknown>, exit: (code: number) => void },
+ *   Buffer: { concat: (chunks: unknown[]) => { toString: (encoding: string) => string } },
+ *   console: { log: (message?: unknown, ...optionalParams: unknown[]) => void },
+ * }} deps Environment-specific dependencies.
  * @returns {Promise<void>} Resolves when analysis output completes.
  */
 // eslint-disable-next-line complexity
@@ -42,8 +46,11 @@ export async function runAnalyzePost(deps) {
 
 /**
  * Read input from argv or stdin.
- * @param {object} processObject Process-like object.
- * @param {Function} BufferObject Buffer constructor.
+ * @param {{
+ *   argv: string[],
+ *   stdin: AsyncIterable<unknown>,
+ * }} processObject Process-like object.
+ * @param {{ concat: (chunks: unknown[]) => { toString: (encoding: string) => string } }} BufferObject Buffer constructor.
  * @returns {Promise<string>} Combined text input.
  */
 // eslint-disable-next-line complexity
