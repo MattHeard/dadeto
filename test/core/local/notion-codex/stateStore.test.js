@@ -137,4 +137,20 @@ describe('notion codex state store core', () => {
     });
     await expect(badStore.readState()).rejects.toThrow('fatal');
   });
+
+  test('normalizes non-object state input to defaults', () => {
+    const normalized = normalizeNotionCodexState('invalid');
+
+    expect(normalized).toEqual(
+      expect.objectContaining({
+        lastPollAt: null,
+        lastOutcome: 'idle',
+        lastSummary: '',
+        idleBackoffExponent: null,
+        nextPollAfter: null,
+        eventLog: [],
+        activeRun: null,
+      })
+    );
+  });
 });

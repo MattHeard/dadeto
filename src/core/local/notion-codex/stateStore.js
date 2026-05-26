@@ -6,7 +6,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
  * @returns {Record<string, unknown> | null} Active run object or null.
  */
 export function normalizeActiveRun(value) {
-  if (!value || typeof value !== 'object') {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value !== 'object') {
     return null;
   }
 
@@ -14,28 +18,95 @@ export function normalizeActiveRun(value) {
 }
 
 /**
+ * @param {unknown} value Candidate source.
+ * @returns {Record<string, unknown>} Source object or empty object.
+ */
+function toSourceObject(value) {
+  if (!value) {
+    return {};
+  }
+
+  if (typeof value !== 'object') {
+    return {};
+  }
+
+  return value;
+}
+
+/**
+ * @param {unknown} value Candidate string.
+ * @returns {string | null} String or null.
+ */
+function asNullableString(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  return value;
+}
+
+/**
+ * @param {unknown} value Candidate string.
+ * @param {string} fallback Fallback value.
+ * @returns {string} String or fallback.
+ */
+function asStringWithFallback(value, fallback) {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  return value;
+}
+
+/**
+ * @param {unknown} value Candidate integer.
+ * @returns {number | null} Integer or null.
+ */
+function asNullableInteger(value) {
+  if (!Number.isInteger(value)) {
+    return null;
+  }
+
+  return value;
+}
+
+/**
+ * @param {unknown} value Candidate list.
+ * @returns {Array<unknown>} Latest event entries.
+ */
+function asEventLog(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.slice(-20);
+}
+
+/**
  * @param {unknown} value Candidate state.
  * @returns {Record<string, unknown>} Normalized poller state.
  */
 export function normalizeNotionCodexState(value) {
-  const source = value && typeof value === 'object' ? value : {};
+  const source = toSourceObject(value);
 
   return {
     version: 1,
-    lastPollAt:
-      typeof source.lastPollAt === 'string' ? source.lastPollAt : null,
-    lastOutcome:
-      typeof source.lastOutcome === 'string' ? source.lastOutcome : 'idle',
-    lastSummary:
-      typeof source.lastSummary === 'string' ? source.lastSummary : '',
-    idleBackoffExponent: Number.isInteger(source.idleBackoffExponent)
-      ? source.idleBackoffExponent
-      : null,
-    nextPollAfter:
-      typeof source.nextPollAfter === 'string' ? source.nextPollAfter : null,
+    lastPollAt: asNullableString(source.lastPollAt),
+    lastOutcome: asStringWithFallback(source.lastOutcome, 'idle'),
+    lastSummary: asStringWithFallback(source.lastSummary, ''),
+    idleBackoffExponent: asNullableInteger(source.idleBackoffExponent),
+    nextPollAfter: asNullableString(source.nextPollAfter),
     activeRun: normalizeActiveRun(source.activeRun),
-    eventLog: Array.isArray(source.eventLog) ? source.eventLog.slice(-20) : [],
+    eventLog: asEventLog(source.eventLog),
   };
+}
+
+/**
+ *
+ * @param error
+ */
+function isMissingStateError(error) {
+  return Boolean(error && typeof error === 'object' && error.code === 'ENOENT');
 }
 
 /**
@@ -61,7 +132,7 @@ export function createNotionCodexStateStore(options) {
         const rawState = await readFileImpl(options.statePath, 'utf8');
         return normalizeNotionCodexState(JSON.parse(rawState));
       } catch (error) {
-        if (error && typeof error === 'object' && error.code === 'ENOENT') {
+        if (isMissingStateError(error)) {
           return normalizeNotionCodexState(null);
         }
 
