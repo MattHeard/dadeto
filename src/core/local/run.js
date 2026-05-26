@@ -12,8 +12,7 @@
  * @returns {{ runLocalServer: (config: { env: Record<string, string | undefined>, port: number, store: unknown, publicDir: string, writerDir: string, exchangeRealtimeCallSdp: (body: unknown) => Promise<unknown>, getNonCoreThinStatus: () => unknown, renderNonCoreThinDashboard: (status: unknown) => string }) => void }} Local server runner.
  */
 export function createLocalServerRuntime(deps) {
-  const log = deps.consoleLog ?? console.log;
-  const errorLog = deps.consoleError ?? console.error;
+  const { log, errorLog } = createLoggers(deps);
 
   /**
    * @param {{ env: Record<string, string | undefined>, port: number, store: unknown, publicDir: string, writerDir: string, exchangeRealtimeCallSdp: (body: unknown) => Promise<unknown>, getNonCoreThinStatus: () => unknown, renderNonCoreThinDashboard: (status: unknown) => string }} config Runtime config.
@@ -32,8 +31,25 @@ export function createLocalServerRuntime(deps) {
 }
 
 /**
- *
- * @param host
+ * @param {{
+ *   consoleLog?: (message: string) => void,
+ *   consoleError?: (message: string) => void
+ * }} deps Runtime dependencies.
+ * @returns {{ log: (message: string) => void, errorLog: (message: string) => void }} Normalized loggers.
+ */
+function createLoggers(deps) {
+  const log = deps.consoleLog || console.log;
+  const errorLog = deps.consoleError || console.error;
+
+  return {
+    log,
+    errorLog,
+  };
+}
+
+/**
+ * @param {string | undefined} host Raw host value.
+ * @returns {string} Trimmed host or empty string.
  */
 function normalizeHost(host) {
   if (!host) {
@@ -44,10 +60,10 @@ function normalizeHost(host) {
 }
 
 /**
- *
- * @param config
- * @param deps
- * @param log
+ * @param {{ env: Record<string, string | undefined>, store: unknown, publicDir: string, writerDir: string, exchangeRealtimeCallSdp: (body: unknown) => Promise<unknown>, getNonCoreThinStatus: () => unknown, renderNonCoreThinDashboard: (status: unknown) => string }} config Runtime config.
+ * @param {{ isWriterRequestLogEnabled: (env: Record<string, string | undefined>) => boolean }} deps Runtime dependencies.
+ * @param {(message: string) => void} log Request logger destination.
+ * @returns {{ store: unknown, publicDir: string, writerDir: string, exchangeRealtimeCallSdp: (body: unknown) => Promise<unknown>, getNonCoreThinStatus: () => unknown, renderNonCoreThinDashboard: (status: unknown) => string, requestLogger?: (message: string) => void }} Local app config.
  */
 function buildLocalAppConfig(config, deps, log) {
   return {
@@ -62,10 +78,10 @@ function buildLocalAppConfig(config, deps, log) {
 }
 
 /**
- *
- * @param env
- * @param deps
- * @param log
+ * @param {Record<string, string | undefined>} env Runtime environment variables.
+ * @param {{ isWriterRequestLogEnabled: (env: Record<string, string | undefined>) => boolean }} deps Runtime dependencies.
+ * @param {(message: string) => void} log Request logger destination.
+ * @returns {((message: string) => void) | undefined} Request logger when enabled.
  */
 function getRequestLogger(env, deps, log) {
   if (!deps.isWriterRequestLogEnabled(env)) {
@@ -76,14 +92,15 @@ function getRequestLogger(env, deps, log) {
 }
 
 /**
- *
- * @param root0
- * @param root0.server
- * @param root0.host
- * @param root0.port
- * @param root0.env
- * @param root0.deps
- * @param root0.log
+ * @param {{
+ *   server: { listen: (...args: Array<unknown>) => void },
+ *   host: string,
+ *   port: number,
+ *   env: Record<string, string | undefined>,
+ *   deps: { getWriterUrl: (port: number, env: Record<string, string | undefined>) => string },
+ *   log: (message: string) => void
+ * }} options Server startup options.
+ * @returns {void} Nothing.
  */
 function startServer({ server, host, port, env, deps, log }) {
   const writerUrl = deps.getWriterUrl(port, env);
@@ -104,11 +121,12 @@ function startServer({ server, host, port, env, deps, log }) {
 }
 
 /**
- *
- * @param root0
- * @param root0.port
- * @param root0.deps
- * @param root0.errorLog
+ * @param {{
+ *   port: number,
+ *   deps: { formatListenErrorMessage: (port: number) => string },
+ *   errorLog: (message: string) => void
+ * }} options Error handler dependencies.
+ * @returns {(error: unknown) => void} Server error callback.
  */
 function createServerErrorHandler({ port, deps, errorLog }) {
   return error => {
@@ -122,13 +140,26 @@ function createServerErrorHandler({ port, deps, errorLog }) {
 }
 
 /**
+ * @param {unknown} error Candidate server listen error.
+ * @returns {boolean} True when the error is a permission issue.
+ */
+function isPermissionError(error) {
+  const errorCode = getErrorCode(error);
+  return errorCode === 'EPERM' || errorCode === 'EACCES';
+}
+
+/**
  *
  * @param error
  */
-function isPermissionError(error) {
-  if (!error?.code) {
-    return false;
+function getErrorCode(error) {
+  if (typeof error !== 'object' || !error) {
+    return null;
   }
 
-  return error.code === 'EPERM' || error.code === 'EACCES';
+  if (!('code' in error)) {
+    return null;
+  }
+
+  return error.code;
 }
