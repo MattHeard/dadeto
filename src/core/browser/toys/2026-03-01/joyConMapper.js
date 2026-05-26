@@ -61,7 +61,9 @@ function getLocalPermanentDataGetter(env) {
     return null;
   }
 
-  return getLocalPermanentData;
+  return /** @type {() => Record<string, unknown> | null | undefined} */ (
+    getLocalPermanentData
+  );
 }
 
 /**
@@ -103,9 +105,10 @@ function readStoredState(env) {
     return { ...DEFAULT_STATE };
   }
 
+  const storedRecord = /** @type {Record<string, unknown>} */ (stored);
   return {
-    mappings: normalizeMappings(stored.mappings),
-    skippedControls: normalizeSkippedControls(stored.skippedControls),
+    mappings: normalizeMappings(storedRecord.mappings),
+    skippedControls: normalizeSkippedControls(storedRecord.skippedControls),
   };
 }
 
@@ -185,7 +188,8 @@ function handleCaptureAction(storedState, parsed) {
  * @returns {boolean} Whether the parsed action is a valid capture payload.
  */
 function isCaptureAction(parsed) {
-  if (parsed.action !== 'capture') {
+  const action = /** @type {string | undefined} */ (parsed.action);
+  if (action !== 'capture') {
     return false;
   }
 
@@ -210,7 +214,12 @@ function getActionResult(storedState, parsed) {
     reset: () => ({ ...DEFAULT_STATE }),
     skip: () => handleSkipAction(storedState, parsed),
   };
-  const handler = actionHandlers[parsed.action];
+  const action = /** @type {string | undefined} */ (parsed.action);
+  if (action !== 'reset' && action !== 'skip') {
+    return null;
+  }
+
+  const handler = actionHandlers[action];
   if (typeof handler !== 'function') {
     return null;
   }
