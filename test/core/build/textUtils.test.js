@@ -125,6 +125,17 @@ describe('textUtils', () => {
           longestSentence: { sentence: 'x', wordCount: 1 },
         })
       ).toEqual(['1 words under. Add 1 word.']);
+
+
+      expect(
+        generateFeedback({
+          isExactly100: false,
+          delta: -2,
+          avgWordsPerSentence: 10,
+          sentenceCount: 2,
+          longestSentence: { sentence: 'x', wordCount: 1 },
+        })
+      ).toEqual(['2 words under. Add 2 words.']);
     });
   });
 

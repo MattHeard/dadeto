@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
  * @param {unknown} value Candidate run object.
  * @returns {Record<string, unknown> | null} Active run object or null.
  */
-function normalizeActiveRun(value) {
+export function normalizeActiveRun(value) {
   if (!value || typeof value !== 'object') {
     return null;
   }
