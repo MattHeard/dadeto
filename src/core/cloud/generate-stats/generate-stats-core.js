@@ -181,7 +181,7 @@ function isNonEmptyString(value) {
 
 /**
  * Ensure the environment object is usable for lookups.
- * @param {EnvironmentMap | Record<string, string | undefined>} [env] - Environment variables object.
+ * @param {unknown} [env] - Environment variables object.
  * @returns {EnvironmentMap | Record<string, string | undefined> | null} Normalized env map.
  */
 function resolveEnv(env) {
@@ -566,6 +566,7 @@ export function createGenerateStatsCore({
    */
   async function invalidatePaths(paths, logger = console) {
     const token = await getAccessTokenFromMetadata();
+    const resolvedLogger = /** @type {StatsLogger} */ (logger ?? console);
     await runMappedEntries(
       paths,
       path => ({
@@ -575,7 +576,7 @@ export function createGenerateStatsCore({
         resolvedUrlMap,
         resolvedCdnHost,
         randomUUID: cryptoModule.randomUUID,
-        logger,
+        logger: resolvedLogger,
         token,
       }),
       invalidateSinglePath

@@ -88,7 +88,7 @@ function resolveServerTimestamp(fieldValue) {
  * @returns {string[]} Normalized options array.
  */
 function normalizeOptions(options) {
-  return arrayOrEmpty(options);
+  return arrayOrEmpty(options).filter(option => typeof option === 'string');
 }
 
 /**
@@ -124,10 +124,7 @@ function normalizeIdentifier(value) {
  * @returns {string} Story identifier.
  */
 function resolveStoryId(snapshot, context, randomUUID) {
-  return stringOrFallback(
-    resolvePreferredStoryIdentifier(snapshot, context),
-    () => randomUUID()
-  );
+  return resolvePreferredStoryIdentifier(snapshot, context) ?? randomUUID();
 }
 
 /**

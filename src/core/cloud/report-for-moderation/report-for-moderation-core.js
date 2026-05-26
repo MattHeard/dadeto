@@ -45,7 +45,7 @@ async function handlePostRequest({
     createdAt: getServerTimestamp(),
   });
 
-  const responseBody = {};
+  const responseBody = /** @type {Record<string, unknown>} */ ({});
   return {
     status: 201,
     body: responseBody,
@@ -57,7 +57,7 @@ async function handlePostRequest({
  * @param {object} root0 Dependencies required to process requests.
  * @param {(report: { variant: string, createdAt: unknown }) => Promise<void> | void} root0.addModerationReport Function used to persist new reports.
  * @param {() => unknown} root0.getServerTimestamp Retrieve the timestamp for stored reports.
- * @returns {(request: { method: string, body?: { variant?: unknown } | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} Request handler that returns status and body details.
+ * @returns {(request?: { method?: string, body?: { variant?: unknown } | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} Request handler that returns status and body details.
  */
 export function createReportForModerationHandler({
   addModerationReport,
@@ -78,7 +78,7 @@ export function createReportForModerationHandler({
 /**
  * Process the moderation report request when the HTTP method is validated.
  * @param {object} root0 Dependencies required for processing.
- * @param {{ method: string, body?: { variant?: unknown } | null }} root0.request Incoming request details.
+ * @param {{ method?: string, body?: { variant?: unknown } | null }} root0.request Incoming request details.
  * @param {(report: { variant: string, createdAt: unknown }) => Promise<void> | void} root0.addModerationReport Storage helper.
  * @param {() => unknown} root0.getServerTimestamp Timestamp generator.
  * @returns {Promise<{ status: number, body: string | Record<string, unknown> }>} Promise resolved with the HTTP response.
@@ -171,6 +171,7 @@ export function createHandleReportForModeration(reportForModerationHandler) {
     }
 
     const { status, body } = await reportForModerationHandler({
+      method: req.method,
       body: req.body,
     });
 

@@ -284,10 +284,11 @@ function getAuthorizationHeader(request) {
     return null;
   }
 
-  const headerGetter = name =>
+  const headerGetter =
+    /** @type {(name: string) => string | null | undefined} */ (name =>
     /** @type {(name: string) => string | null | undefined} */ (
       /** @type {any} */ (request).get
-    ).call(request, name);
+    ).call(request, name));
   return findAuthHeader(headerGetter);
 }
 
@@ -421,7 +422,7 @@ function resolveVariantPathFromDb(path, db) {
  * @returns {db is FirestoreLike & { doc: (path: string) => FirestoreDocumentReference }} True when document path resolution is available.
  */
 function hasDocumentPathResolver(db) {
-  return Boolean(db) && typeof db.doc === 'function';
+  return db != null && typeof db.doc === 'function';
 }
 
 /**

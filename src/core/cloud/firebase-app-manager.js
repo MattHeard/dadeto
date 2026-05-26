@@ -13,7 +13,7 @@ export function createFirebaseAppManager(initializer) {
 
   /**
    * Initialize the Firebase app once, tolerating duplicate-app errors.
-   * @param {() => void} initFn Initialization function invoked if the app is not yet ready.
+   * @param {(() => void) | undefined} [initFn] Initialization function invoked if the app is not yet ready.
    * @returns {void}
    */
   function ensureFirebaseApp(initFn) {

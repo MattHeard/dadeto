@@ -699,8 +699,8 @@ async function createLoadPageForVariant({ pageRef }) {
 
 /**
  * Determine whether a page reference can be loaded.
- * @param {{ get?: () => Promise<unknown> } | null | undefined} pageRef Reference candidate.
- * @returns {boolean} True when the reference can be loaded.
+ * @param {{ get?: () => Promise<{ exists?: boolean, data?: () => unknown }> } | null | undefined} pageRef Reference candidate.
+ * @returns {pageRef is { get: () => Promise<{ exists?: boolean, data?: () => unknown }> }} True when the reference can be loaded.
  */
 function hasLoadablePageRef(pageRef) {
   return Boolean(pageRef && typeof pageRef.get === 'function');
@@ -771,11 +771,11 @@ function toPagePayload(pageSnap) {
 
 /**
  * Determine whether a snapshot exposes page data.
- * @param {{ exists?: boolean } | null | undefined} pageSnap Snapshot candidate.
- * @returns {boolean} True when the snapshot exists.
+ * @param {{ exists?: boolean, data?: () => unknown } | null | undefined} pageSnap Snapshot candidate.
+ * @returns {pageSnap is { exists?: boolean, data: () => unknown }} True when the snapshot exists.
  */
 function isExistingPageSnapshot(pageSnap) {
-  return Boolean(pageSnap && pageSnap.exists);
+  return Boolean(pageSnap && pageSnap.exists && typeof pageSnap.data === 'function');
 }
 
 /**

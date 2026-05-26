@@ -75,12 +75,12 @@ export function whenPostRequest({ request, onValid, onInvalid, options }) {
  * @returns {Promise<T | { status: number, body: string }>} Callback result for the valid or invalid request path.
  */
 export function whenPostRequestAsync({ request, onValid, options }) {
-  return whenPostRequest({
-    request,
-    onValid,
-    onInvalid: methodError => Promise.resolve(methodError),
-    options,
-  });
+  const methodError = validatePostMethod(request.method, undefined, options);
+  if (methodError) {
+    return Promise.resolve(methodError);
+  }
+
+  return Promise.resolve(onValid());
 }
 
 /**
@@ -143,5 +143,5 @@ function handleNonPost(normalized, options, errorResponse) {
  * @returns {boolean} True when empty verbs should be treated as POST.
  */
 function shouldTreatNonStringAsPost(normalized, options) {
-  return normalized === '' && options.treatNonStringAsPost;
+  return normalized === '' && options.treatNonStringAsPost === true;
 }

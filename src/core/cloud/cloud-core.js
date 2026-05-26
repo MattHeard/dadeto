@@ -6,7 +6,6 @@ import {
   numberOrZero,
   reportAndReturnFalse,
   stringOrNull,
-  whenTypeValue,
   when,
   whenString,
   whenOrNull,
@@ -182,11 +181,7 @@ function messageIndicatesDuplicate(error) {
  */
 export function buildTestOrigins(playwrightOrigin) {
   const normalized = ensureString(playwrightOrigin);
-  return when(
-    Boolean(normalized),
-    () => [normalized],
-    () => []
-  );
+  return normalized ? [normalized] : [];
 }
 
 /**
@@ -236,10 +231,10 @@ export function resolveStaticBucketName(
   environmentVariables,
   fallbackBucketName
 ) {
-  const configuredBucketName = getEnvironmentVariable(
+  const configuredBucketName = ensureString(getEnvironmentVariable(
     environmentVariables,
     'STATIC_BUCKET_NAME'
-  );
+  ));
   return (
     configuredBucketName || getStaticBucketNameFallback(fallbackBucketName)
   );
@@ -483,7 +478,8 @@ export function getNumericValueOrZero(data, selector) {
  * @returns {string | null} String value or null.
  */
 export function extractStringFromCandidateArray(candidate) {
-  return whenTypeValue(candidate[0], 'string');
+  const first = candidate[0];
+  return typeof first === 'string' ? first : null;
 }
 
 /**
@@ -492,9 +488,11 @@ export function extractStringFromCandidateArray(candidate) {
  * @returns {string | null} Normalized string or null.
  */
 export function normalizeNonStringCandidate(candidate) {
-  return whenOrNull(Array.isArray(candidate), () =>
-    extractStringFromCandidateArray(candidate)
-  );
+  if (!Array.isArray(candidate)) {
+    return null;
+  }
+
+  return extractStringFromCandidateArray(candidate);
 }
 
 /**
@@ -577,11 +575,10 @@ export function normalizeShortString(value) {
 
 /**
  * Normalize a value, then truncate it to the requested maximum length.
- * @template T
  * @param {unknown} value Candidate value.
  * @param {number} maxLength Maximum length of the normalized result.
- * @param {(value: unknown) => T} normalize Callback that produces the normalized value.
- * @returns {T} Normalized and truncated value.
+ * @param {(value: unknown) => string} normalize Callback that produces the normalized value.
+ * @returns {string} Normalized and truncated value.
  */
 export function normalizeValueWithLimit(value, maxLength, normalize) {
   return normalize(value).slice(0, maxLength);
@@ -838,7 +835,8 @@ async function authorizeAdminToken(deps) {
     });
   } catch (error) {
     const message = defaultInvalidTokenMessage(error);
-    return reportAndReturnFalse(sendUnauthorized, res, message);
+    sendUnauthorized(res, message);
+    return false;
   }
 }
 
