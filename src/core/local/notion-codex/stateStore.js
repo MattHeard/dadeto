@@ -6,11 +6,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
  * @returns {Record<string, unknown> | null} Active run object or null.
  */
 export function normalizeActiveRun(value) {
-  if (typeof value !== 'object' || !value) {
-    return null;
+  if (isObjectLike(value)) {
+    return value;
   }
 
-  return value;
+  return null;
 }
 
 /**
@@ -18,11 +18,11 @@ export function normalizeActiveRun(value) {
  * @returns {Record<string, unknown>} Source object or empty object.
  */
 function toSourceObject(value) {
-  if (typeof value !== 'object' || !value) {
-    return {};
+  if (isObjectLike(value)) {
+    return value;
   }
 
-  return value;
+  return {};
 }
 
 /**
@@ -59,7 +59,7 @@ function asNullableInteger(value) {
     return null;
   }
 
-  return value;
+  return /** @type {number} */ (value);
 }
 
 /**
@@ -102,15 +102,15 @@ function isMissingStateError(error) {
 }
 
 /**
- *
- * @param error
+ * @param {unknown} error Candidate filesystem error.
+ * @returns {string | null} Error code or null.
  */
 function readErrorCode(error) {
-  if (typeof error !== 'object' || !error) {
-    return null;
+  if (isObjectLike(error)) {
+    return asNullableString(error.code);
   }
 
-  return error.code;
+  return null;
 }
 
 /**
@@ -146,45 +146,74 @@ export function createNotionCodexStateStore(options) {
 }
 
 /**
- *
- * @param options
+ * @param {{
+ *   statePath: string,
+ *   mkdirImpl?: typeof mkdir,
+ *   readFileImpl?: typeof readFile,
+ *   writeFileImpl?: typeof writeFile
+ * }} options Store dependencies.
+ * @returns {{
+ *   mkdirImpl: typeof mkdir,
+ *   readFileImpl: typeof readFile,
+ *   writeFileImpl: typeof writeFile,
+ *   readStatePath: string
+ * }} Resolved store dependencies.
  */
 function resolveStoreDeps(options) {
   return {
-    mkdirImpl: options.mkdirImpl ?? mkdir,
-    readFileImpl: options.readFileImpl ?? readFile,
-    writeFileImpl: options.writeFileImpl ?? writeFile,
+    mkdirImpl: resolveDependency(options.mkdirImpl, mkdir),
+    readFileImpl: resolveDependency(options.readFileImpl, readFile),
+    writeFileImpl: resolveDependency(options.writeFileImpl, writeFile),
     readStatePath: options.statePath,
   };
 }
 
 /**
- *
- * @param root0
- * @param root0.readFileImpl
- * @param root0.readStatePath
+ * @param {{
+ *   readFileImpl: typeof readFile,
+ *   readStatePath: string
+ * }} options Read state dependencies.
+ * @returns {() => Promise<Record<string, unknown>>} Reader for persisted state.
  */
 function createReadState({ readFileImpl, readStatePath }) {
-  return async () => {
-    try {
-      const rawState = await readFileImpl(readStatePath, 'utf8');
-      return normalizeNotionCodexState(JSON.parse(rawState));
-    } catch (error) {
-      if (!isMissingStateError(error)) {
-        throw error;
-      }
-
-      return normalizeNotionCodexState(null);
-    }
-  };
+  return async () => readStateFromFile({ readFileImpl, readStatePath });
 }
 
 /**
- *
- * @param root0
- * @param root0.mkdirImpl
- * @param root0.writeFileImpl
- * @param root0.readStatePath
+ * @param {{
+ *   readFileImpl: typeof readFile,
+ *   readStatePath: string
+ * }} options Read state dependencies.
+ * @returns {Promise<Record<string, unknown>>} Parsed state or defaults.
+ */
+async function readStateFromFile({ readFileImpl, readStatePath }) {
+  try {
+    const rawState = await readFileImpl(readStatePath, 'utf8');
+    return normalizeNotionCodexState(JSON.parse(rawState));
+  } catch (error) {
+    return readStateErrorFallback(error);
+  }
+}
+
+/**
+ * @param {unknown} error Candidate read failure.
+ * @returns {Record<string, unknown>} Normalized fallback state.
+ */
+function readStateErrorFallback(error) {
+  if (!isMissingStateError(error)) {
+    throw error;
+  }
+
+  return normalizeNotionCodexState(null);
+}
+
+/**
+ * @param {{
+ *   mkdirImpl: typeof mkdir,
+ *   writeFileImpl: typeof writeFile,
+ *   readStatePath: string
+ * }} options Write state dependencies.
+ * @returns {(state: Record<string, unknown>) => Promise<void>} Writer for persisted state.
  */
 function createWriteState({ mkdirImpl, writeFileImpl, readStatePath }) {
   return async state => {
@@ -193,4 +222,22 @@ function createWriteState({ mkdirImpl, writeFileImpl, readStatePath }) {
     const serializedState = JSON.stringify(normalizedState, null, 2);
     await writeFileImpl(readStatePath, serializedState, 'utf8');
   };
+}
+
+/**
+ * @param {unknown} value Candidate object.
+ * @returns {value is Record<string, unknown>} True when the value is an object record.
+ */
+function isObjectLike(value) {
+  return typeof value === 'object' && Boolean(value);
+}
+
+/**
+ * @template T
+ * @param {T | undefined} value Candidate dependency.
+ * @param {T} fallback Default dependency.
+ * @returns {T} Resolved dependency.
+ */
+function resolveDependency(value, fallback) {
+  return value ?? fallback;
 }

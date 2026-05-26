@@ -38,12 +38,9 @@ export function createLocalServerRuntime(deps) {
  * @returns {{ log: (message: string) => void, errorLog: (message: string) => void }} Normalized loggers.
  */
 function createLoggers(deps) {
-  const log = deps.consoleLog || console.log;
-  const errorLog = deps.consoleError || console.error;
-
   return {
-    log,
-    errorLog,
+    log: resolveLogger(deps.consoleLog, console.log),
+    errorLog: resolveLogger(deps.consoleError, console.error),
   };
 }
 
@@ -149,17 +146,54 @@ function isPermissionError(error) {
 }
 
 /**
- *
- * @param error
+ * @param {unknown} error Candidate server listen error.
+ * @returns {string | null} Error code or null.
  */
 function getErrorCode(error) {
-  if (typeof error !== 'object' || !error) {
+  if (!isObjectLike(error)) {
     return null;
   }
 
+  return getObjectErrorCode(error);
+}
+
+/**
+ * @param {Record<string, unknown>} error Candidate server listen error object.
+ * @returns {string | null} Error code or null.
+ */
+function getObjectErrorCode(error) {
   if (!('code' in error)) {
     return null;
   }
 
-  return error.code;
+  return asNullableString(error.code);
+}
+
+/**
+ * @param {((message: string) => void) | undefined} candidate Logger candidate.
+ * @param {(message: string) => void} fallback Logger fallback.
+ * @returns {(message: string) => void} Resolved logger.
+ */
+function resolveLogger(candidate, fallback) {
+  return candidate || fallback;
+}
+
+/**
+ * @param {unknown} value Candidate object.
+ * @returns {value is Record<string, unknown>} True when the value is an object record.
+ */
+function isObjectLike(value) {
+  return typeof value === 'object' && Boolean(value);
+}
+
+/**
+ * @param {unknown} value Candidate string.
+ * @returns {string | null} String or null.
+ */
+function asNullableString(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  return value;
 }

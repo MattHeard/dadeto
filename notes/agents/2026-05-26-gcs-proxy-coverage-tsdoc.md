@@ -1,0 +1,5 @@
+# GCS proxy coverage + tsdoc loop (2026-05-26)
+- unexpected hurdle: the Docker GCS proxy test tried to open `127.0.0.1` in this sandbox and hit `EPERM`, and the aggregate `npm run check` later stopped at a broad `tsdoc:check` backlog instead of the local fixes.
+- diagnosis path: ran `npm run check`, isolated the failing proxy spec, then converted it to an in-process handler test; reran coverage and lint to confirm the local fixes were sound before looking at the remaining `tsdoc` output.
+- chosen fix: exposed a direct object-request handler for the proxy, rewrote the proxy spec to use a fake response/stream, added focused branch tests for the local runtime and notion-codex state store, and split a couple of helper branches so Jest coverage and ESLint both returned to green.
+- next-time guidance / open questions: keep `tsdoc` loops narrower than the full aggregate check when possible, and treat the repo-wide type backlog as a separate follow-up unless the changed slice is directly responsible for the failing lines.

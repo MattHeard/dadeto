@@ -138,6 +138,28 @@ describe('notion codex state store core', () => {
     await expect(badStore.readState()).rejects.toThrow('fatal');
   });
 
+  test('rethrows non-object read errors without treating them as missing state', async () => {
+    const store = createNotionCodexStateStore({
+      statePath: '/tmp/state.json',
+      readFileImpl: jest.fn(async () => {
+        throw null;
+      }),
+    });
+
+    await expect(store.readState()).rejects.toBeNull();
+  });
+
+  test('rethrows read errors when the code is not a string', async () => {
+    const store = createNotionCodexStateStore({
+      statePath: '/tmp/state.json',
+      readFileImpl: jest.fn(async () => {
+        throw { code: 123 };
+      }),
+    });
+
+    await expect(store.readState()).rejects.toEqual({ code: 123 });
+  });
+
   test('normalizes non-object state input to defaults', () => {
     const normalized = normalizeNotionCodexState('invalid');
 
