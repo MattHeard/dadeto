@@ -15,6 +15,10 @@ export function createLocalServerRuntime(deps) {
   const log = deps.consoleLog ?? console.log;
   const errorLog = deps.consoleError ?? console.error;
 
+  /**
+   *
+   * @param config
+   */
   function runLocalServer(config) {
     const { env, port } = config;
     const host = env.WRITER_HOST;
@@ -33,12 +37,16 @@ export function createLocalServerRuntime(deps) {
     if (host && host.trim()) {
       server.listen(port, host.trim(), () => {
         log(`writer server listening on ${deps.getWriterUrl(port, env)}`);
-        log(`non-core-thin dashboard: http://${host.trim()}:${port}/non-core-thin`);
+        log(
+          `non-core-thin dashboard: http://${host.trim()}:${port}/non-core-thin`
+        );
       });
     } else {
       server.listen(port, () => {
         log(`writer server listening on ${deps.getWriterUrl(port, env)}`);
-        log('non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN');
+        log(
+          'non-core-thin dashboard: set WRITER_HOST=0.0.0.0 to reach /non-core-thin from the LAN'
+        );
       });
     }
 

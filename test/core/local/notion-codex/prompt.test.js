@@ -5,8 +5,15 @@ describe('notion codex prompt core', () => {
     const text = buildNotionCodexPrompt({
       config: {
         notion: {
-          dadetoPageId: 'a', dadetoPageUrl: 'u1', symphonyPageId: 'b', symphonyPageUrl: 'u2',
-          taskDataSourceUrl: 'u3', taskContext: '', taskStatus: '', messageSearchQuery: '', inboxPageIds: [],
+          dadetoPageId: 'a',
+          dadetoPageUrl: 'u1',
+          symphonyPageId: 'b',
+          symphonyPageUrl: 'u2',
+          taskDataSourceUrl: 'u3',
+          taskContext: '',
+          taskStatus: '',
+          messageSearchQuery: '',
+          inboxPageIds: [],
         },
       },
       repoRoot: '/repo',

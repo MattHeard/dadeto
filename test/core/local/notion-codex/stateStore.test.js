@@ -16,7 +16,9 @@ describe('notion codex state store core', () => {
       writeFileImpl,
     });
 
-    await store.writeState({ eventLog: Array.from({ length: 30 }, (_, i) => i) });
+    await store.writeState({
+      eventLog: Array.from({ length: 30 }, (_, i) => i),
+    });
 
     expect(mkdirImpl).toHaveBeenCalled();
     expect(writeFileImpl).toHaveBeenCalledWith(
@@ -35,7 +37,6 @@ describe('notion codex state store core', () => {
     expect(normalized.activeRun).toBeNull();
     expect(normalized.eventLog).toHaveLength(20);
   });
-
 
   test('exports normalizeActiveRun for direct branch testing', () => {
     expect(normalizeActiveRun(null)).toBeNull();
@@ -71,10 +72,12 @@ describe('notion codex state store core', () => {
   test('keeps object activeRun values and normalizes parsed read state', async () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
-      readFileImpl: jest.fn(async () => JSON.stringify({
-        activeRun: { id: 'run-1' },
-        eventLog: [{ ok: true }],
-      })),
+      readFileImpl: jest.fn(async () =>
+        JSON.stringify({
+          activeRun: { id: 'run-1' },
+          eventLog: [{ ok: true }],
+        })
+      ),
     });
 
     await expect(store.readState()).resolves.toEqual(

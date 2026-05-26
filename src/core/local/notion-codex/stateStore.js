@@ -22,15 +22,17 @@ export function normalizeNotionCodexState(value) {
 
   return {
     version: 1,
-    lastPollAt: typeof source.lastPollAt === 'string' ? source.lastPollAt : null,
-    lastOutcome: typeof source.lastOutcome === 'string' ? source.lastOutcome : 'idle',
-    lastSummary: typeof source.lastSummary === 'string' ? source.lastSummary : '',
+    lastPollAt:
+      typeof source.lastPollAt === 'string' ? source.lastPollAt : null,
+    lastOutcome:
+      typeof source.lastOutcome === 'string' ? source.lastOutcome : 'idle',
+    lastSummary:
+      typeof source.lastSummary === 'string' ? source.lastSummary : '',
     idleBackoffExponent: Number.isInteger(source.idleBackoffExponent)
       ? source.idleBackoffExponent
       : null,
-    nextPollAfter: typeof source.nextPollAfter === 'string'
-      ? source.nextPollAfter
-      : null,
+    nextPollAfter:
+      typeof source.nextPollAfter === 'string' ? source.nextPollAfter : null,
     activeRun: normalizeActiveRun(source.activeRun),
     eventLog: Array.isArray(source.eventLog) ? source.eventLog.slice(-20) : [],
   };
