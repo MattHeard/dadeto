@@ -71,6 +71,10 @@ export function buildNotionCodexPrompt(options) {
   ].join('\n');
 }
 
+/**
+ *
+ * @param tokenEnvNames
+ */
 function formatTokenEnvNames(tokenEnvNames) {
   if (!Array.isArray(tokenEnvNames) || tokenEnvNames.length === 0) {
     return 'NOTION_API_KEY or NOTION_TOKEN';

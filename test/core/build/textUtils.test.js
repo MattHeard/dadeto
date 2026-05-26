@@ -126,7 +126,6 @@ describe('textUtils', () => {
         })
       ).toEqual(['1 words under. Add 1 word.']);
 
-
       expect(
         generateFeedback({
           isExactly100: false,

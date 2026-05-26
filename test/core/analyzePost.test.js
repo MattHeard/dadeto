@@ -11,6 +11,9 @@ describe('analyzePost', () => {
   });
 
   test('getInput reads from stdin when argv is empty', async () => {
+    /**
+     *
+     */
     async function* makeChunks() {
       yield Buffer.from('hello ');
       yield Buffer.from('stdin');
@@ -41,7 +44,11 @@ describe('analyzePost', () => {
     const log = jest.fn();
 
     await runAnalyzePost({
-      process: { argv: ['node', 'script', 'One two three.'], stdin: [], exit: jest.fn() },
+      process: {
+        argv: ['node', 'script', 'One two three.'],
+        stdin: [],
+        exit: jest.fn(),
+      },
       Buffer,
       console: { log },
     });
@@ -54,7 +61,9 @@ describe('analyzePost', () => {
   });
 
   test('runAnalyzePost prints ready message for exactly 100 words', async () => {
-    const words = Array.from({ length: 100 }, (_, i) => `w${String(i)}`).join(' ');
+    const words = Array.from({ length: 100 }, (_, i) => `w${String(i)}`).join(
+      ' '
+    );
     const log = jest.fn();
 
     await runAnalyzePost({
