@@ -1450,4 +1450,5 @@ export const assignModerationJobTestUtils = {
   resolveContextFromResult,
   ensureVariantDocAvailability,
   isResponse,
+  isListedOrigin,
 };

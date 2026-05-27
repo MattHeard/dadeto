@@ -869,3 +869,7 @@ export function gamepadCaptureHandler(dom, container, textInput) {
   captureLifecycleDeps.prepareCaptureHandler({ dom, container, textInput });
   buildGamepadCaptureForm({ dom, container, textInput });
 }
+
+export const gamepadCaptureTestOnly = {
+  removeSnapshot,
+};

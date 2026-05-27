@@ -1,4 +1,5 @@
 import { generateFleet } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
+import { battleshipSolitaireFleetTestOnly } from '../../../src/core/browser/toys/2025-05-08/battleshipSolitaireFleet.js';
 import { describe, test, expect } from '@jest/globals';
 
 describe('generateFleet', () => {
@@ -220,6 +221,30 @@ describe('generateFleet', () => {
     const cfgCopy = { ...cfg, ships: [...cfg.ships] };
     generateFleet(JSON.stringify(cfgCopy), env);
     expect(cfgCopy.ships).toEqual([1, 2, 3]);
+  });
+
+  test('covers placement helper fallbacks when no candidate or accumulator is available', () => {
+    const candidate = { direction: 'horizontal', start: { x: 0, y: 0 } };
+    expect(
+      battleshipSolitaireFleetTestOnly.chooseAndMarkCandidate(
+        { candidates: [candidate], length: 1 },
+        new Map([['getRandomNumber', () => 1]]),
+        new Set()
+      )
+    ).toBeNull();
+    expect(
+      battleshipSolitaireFleetTestOnly.chooseAndMarkCandidate(
+        { candidates: [], length: 1 },
+        new Map(),
+        new Set()
+      )
+    ).toBeNull();
+    expect(
+      battleshipSolitaireFleetTestOnly.shouldAbortPlacement(null)
+    ).toBe(true);
+    expect(
+      battleshipSolitaireFleetTestOnly.addPlacedShip(null, candidate)
+    ).toBeNull();
   });
 
   test('noTouching prevents adjacency for mixed ship lengths', () => {

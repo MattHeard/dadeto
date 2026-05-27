@@ -816,3 +816,11 @@ export {
   isCoordWithinBoard,
   neighbours,
 };
+
+export const battleshipSolitaireFleetTestOnly = {
+  chooseAndMarkCandidate,
+  placeShip,
+  shouldAbortPlacement,
+  addPlacedShip,
+  shouldAbortPlaceShip,
+};

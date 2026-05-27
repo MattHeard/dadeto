@@ -72,10 +72,21 @@ function createCsvParseState() {
  * @returns {number} Index that should be assigned back to the loop.
  */
 function processCsvCharacter(state, input, index) {
+  return processCsvCharacterWithHandlers(state, input, index, CSV_CHARACTER_HANDLERS);
+}
+
+/**
+ * @param {{ rows: string[][], row: string[], cell: string, inQuotes: boolean }} state CSV parse state.
+ * @param {string} input CSV text.
+ * @param {number} index Current character index.
+ * @param {Array<(state: { rows: string[][], row: string[], cell: string, inQuotes: boolean }, chars: { char: string, next: string | undefined }, index: number) => number | null>} handlers Character handlers to evaluate.
+ * @returns {number} Index that should be assigned back to the loop.
+ */
+function processCsvCharacterWithHandlers(state, input, index, handlers) {
   const char = input[index];
   const next = input[index + 1];
   const chars = { char, next };
-  for (const handler of CSV_CHARACTER_HANDLERS) {
+  for (const handler of handlers) {
     const nextIndex = handler(state, chars, index);
     if (nextIndex !== null) {
       return nextIndex;
@@ -614,3 +625,10 @@ export function ledgerIngestCsvConverterToy(input) {
 }
 
 export { parseLedgerCsv };
+
+export const ledgerIngestCsvConverterToyTestOnly = {
+  getLedgerCsvCell,
+  processCsvCharacterWithHandlers,
+  processCsvCharacter,
+  whenCsvBranch,
+};

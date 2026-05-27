@@ -88,7 +88,30 @@ function hasRawRecordsArray(candidate) {
  * @returns {string} Source label or the import default.
  */
 function getImportSource(parsed) {
-  return typeof parsed.source === 'string' ? parsed.source : 'jsonImport';
+  if (typeof parsed.source === 'string') {
+    return parsed.source;
+  }
+
+  return 'jsonImport';
+}
+
+/**
+ * Build the ledger-ingest input shape from an import-ready payload.
+ * @param {Record<string, unknown>} parsed Parsed payload from the JSON import path.
+ * @param {string} source Source label to pass into the core importer.
+ * @returns {{ source: string, rawRecords: Record<string, unknown>[], fieldMapping?: Record<string, string>, dedupePolicy?: Record<string, unknown> }} Normalized core input.
+ */
+function buildImportedLedgerIngestInput(parsed, source) {
+  return {
+    source,
+    rawRecords: /** @type {Record<string, unknown>[]} */ (parsed.rawRecords),
+    fieldMapping: /** @type {Record<string, string> | undefined} */ (
+      parsed.fieldMapping
+    ),
+    dedupePolicy: /** @type {Record<string, unknown> | undefined} */ (
+      parsed.dedupePolicy
+    ),
+  };
 }
 
 /**
@@ -122,12 +145,7 @@ export function ledgerIngestToy(input) {
   if (isImportInput(parsed)) {
     const source = getImportSource(parsed);
     const result = importTransactions(
-      /** @type {{ source: string, rawRecords: Record<string, unknown>[] }} */ ({
-        source,
-        rawRecords: /** @type {Record<string, unknown>[]} */ (
-          parsed.rawRecords
-        ),
-      })
+      buildImportedLedgerIngestInput(parsed, source)
     );
     return JSON.stringify(buildResponsePayload('jsonImport', result, 'json'));
   }
@@ -143,4 +161,6 @@ export const ledgerIngestToyTestOnly = {
   isKnownFixture,
   isImportInput,
   buildResponsePayload,
+  getImportSource,
+  buildImportedLedgerIngestInput,
 };

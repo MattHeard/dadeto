@@ -282,6 +282,10 @@ describe('ledger ingest helpers', () => {
     expect(ledgerIngestCoreTestOnly.normalizeDate('2026-03-30')).toBe(
       '2026-03-30'
     );
+    expect(
+      ledgerIngestCoreTestOnly.normalizeDate(new Date('2026-03-30T12:00:00Z'))
+    ).toBe('2026-03-30');
+    expect(ledgerIngestCoreTestOnly.normalizeDate(undefined)).toBe('');
     expect(ledgerIngestCoreTestOnly.normalizeDate('not-a-date')).toBe('');
     expect(ledgerIngestCoreTestOnly.normalizeAmount(4)).toBe(4);
     expect(ledgerIngestCoreTestOnly.normalizeAmount('12.5')).toBe(12.5);
@@ -331,6 +335,22 @@ describe('ledger ingest helpers', () => {
   it('covers toy fixture selection and import detection branches', () => {
     expect(ledgerIngestToyTestOnly.isKnownFixture('happyPath')).toBe(true);
     expect(ledgerIngestToyTestOnly.isKnownFixture('missing')).toBe(false);
+    expect(ledgerIngestToyTestOnly.getImportSource({})).toBe('jsonImport');
+    expect(
+      ledgerIngestToyTestOnly.buildImportedLedgerIngestInput(
+        {
+          rawRecords: [{ id: 'row-1' }],
+          fieldMapping: { id: 'recordId' },
+          dedupePolicy: { mode: 'skip' },
+        },
+        'fixture-source'
+      )
+    ).toEqual({
+      source: 'fixture-source',
+      rawRecords: [{ id: 'row-1' }],
+      fieldMapping: { id: 'recordId' },
+      dedupePolicy: { mode: 'skip' },
+    });
     expect(ledgerIngestToyTestOnly.resolveFixture({ fixture: 'missing' })).toBe(
       'happyPath'
     );

@@ -874,7 +874,7 @@ describe('invalidateSinglePath logger behavior', () => {
     });
 
     // Should not throw
-    await expect(core.invalidatePaths(['/path'])).resolves.toBeUndefined();
+    await expect(core.invalidatePaths(['/path'], null)).resolves.toBeUndefined();
   });
 });
 

@@ -183,6 +183,38 @@ const createRowChangeHandler =
   };
 
 /**
+ * Build the input descriptors for one rating row.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   cleanupFns: CleanupFn[],
+ *   rowModel: RatingRow,
+ *   handleRowChange: ReturnType<typeof createRowChangeHandler>,
+ * }} options Descriptor inputs.
+ * @returns {Array<{ dom: DOMHelpers, cleanupFns: CleanupFn[], placeholder: string, value: string, onChange: (value: unknown) => void }>} Field descriptors.
+ */
+const buildRowFieldInputs = ({ dom, cleanupFns, rowModel, handleRowChange }) =>
+  [
+    {
+      key: 'moderatorId',
+      placeholder: 'Moderator ID',
+    },
+    {
+      key: 'variantId',
+      placeholder: 'Variant ID',
+    },
+    {
+      key: 'ratedAt',
+      placeholder: 'ratedAt (ISO 8601)',
+    },
+  ].map(config => ({
+    dom,
+    cleanupFns,
+    placeholder: config.placeholder,
+    value: String(rowModel[config.key] ?? ''),
+    onChange: handleRowChange(config.key),
+  }));
+
+/**
  * Ensure the form and rows are mounted in the container.
  * @param {DOMHelpers} dom - DOM utilities.
  * @param {HTMLElement} container - Container element.
@@ -257,28 +289,12 @@ const ensureModeratorRatingsForm = (dom, container, textInput) => {
       rowModel,
     });
 
-    const fieldInputConfigs = [
-      {
-        key: 'moderatorId',
-        placeholder: 'Moderator ID',
-      },
-      {
-        key: 'variantId',
-        placeholder: 'Variant ID',
-      },
-      {
-        key: 'ratedAt',
-        placeholder: 'ratedAt (ISO 8601)',
-      },
-    ];
-
-    const fieldInputs = fieldInputConfigs.map(config => ({
+    const fieldInputs = buildRowFieldInputs({
       dom,
       cleanupFns,
-      placeholder: config.placeholder,
-      value: String(rowModel[config.key] ?? ''),
-      onChange: handleRowChange(config.key),
-    }));
+      rowModel,
+      handleRowChange,
+    });
 
     const [authorInput, variantInput, ratedAtInput] =
       fieldInputs.map(buildFieldInput);
@@ -357,3 +373,7 @@ export function moderatorRatingsHandler(dom, container, textInput) {
   cleanupModeratorRatings(dom, container, textInput);
   ensureModeratorRatingsForm(dom, container, textInput);
 }
+
+export const moderatorRatingsTestOnly = {
+  buildRowFieldInputs,
+};

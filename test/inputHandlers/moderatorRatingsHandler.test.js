@@ -2,6 +2,7 @@ import {
   normalizeRatingEntry,
   serializeRatingRows,
   moderatorRatingsHandler,
+  moderatorRatingsTestOnly,
 } from '../../src/core/browser/inputHandlers/moderatorRatings.js';
 import { clearInputValue } from '../../src/core/browser/inputValueStore.js';
 import { describe, test, expect, jest } from '@jest/globals';
@@ -74,6 +75,20 @@ describe('serializeRatingRows', () => {
         isApproved: false,
       },
     ]);
+  });
+});
+
+describe('moderatorRatingsTestOnly', () => {
+  test('builds row field inputs with nullish fallbacks', () => {
+    const fieldInputs = moderatorRatingsTestOnly.buildRowFieldInputs({
+      dom: createFakeDom(),
+      cleanupFns: [],
+      rowModel: {},
+      handleRowChange: () => () => {},
+    });
+
+    expect(fieldInputs).toHaveLength(3);
+    expect(fieldInputs.map(field => field.value)).toEqual(['', '', '']);
   });
 });
 

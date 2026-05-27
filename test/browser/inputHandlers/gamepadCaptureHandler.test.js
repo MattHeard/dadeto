@@ -1,5 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { gamepadCaptureHandler } from '../../../src/core/browser/inputHandlers/gamepadCapture.js';
+import {
+  gamepadCaptureHandler,
+  gamepadCaptureTestOnly,
+} from '../../../src/core/browser/inputHandlers/gamepadCapture.js';
 import { readStoredOrElementValue } from '../../../src/core/browser/inputValueStore.js';
 
 /**
@@ -257,6 +260,9 @@ describe('gamepadCaptureHandler', () => {
           { pressed: false, value: 0 },
         ],
       });
+      const state = { snapshots: { 0: { connected: true } } };
+      gamepadCaptureTestOnly.removeSnapshot(state, null);
+      expect(state.snapshots).toEqual({ 0: { connected: true } });
     } finally {
       globalThis.addEventListener = previousAdd;
       globalThis.removeEventListener = previousRemove;

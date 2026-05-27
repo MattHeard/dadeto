@@ -211,6 +211,40 @@ describe('createCopyCore', () => {
     });
   });
 
+  it('throws when the copy workflow is run without filesystem adapters', () => {
+    const copyCoreWithoutFs = createCopyCore({
+      createPathAdapters,
+      projectRoot: directories.projectRoot,
+      publicDir: directories.publicDir,
+      srcDir: directories.srcDir,
+    });
+
+    expect(() => copyCoreWithoutFs.runCopyWorkflow()).toThrow(
+      new Error('Missing createFsAdapters dependency for copy workflow.')
+    );
+  });
+
+  it('runs the copy workflow when filesystem adapters are available', () => {
+    const io = {
+      directoryExists: jest.fn(() => false),
+      createDirectory: jest.fn(),
+      removeDirectory: jest.fn(),
+      copyFile: jest.fn(),
+      readDirEntries: jest.fn(() => []),
+    };
+    const createFsAdapters = jest.fn(() => io);
+    const copyCoreWithFs = createCopyCore({
+      createFsAdapters,
+      createPathAdapters,
+      projectRoot: directories.projectRoot,
+      publicDir: directories.publicDir,
+      srcDir: directories.srcDir,
+    });
+
+    expect(() => copyCoreWithFs.runCopyWorkflow()).not.toThrow();
+    expect(createFsAdapters).toHaveBeenCalledTimes(1);
+  });
+
   describe('formatPathForLog', () => {
     it("returns '.' when the target is the project root", () => {
       expect(core.formatPathForLog(directories.projectRoot)).toBe('.');

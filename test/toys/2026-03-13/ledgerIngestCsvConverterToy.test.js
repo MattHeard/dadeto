@@ -1,6 +1,7 @@
 import {
   ledgerIngestCsvConverterToy,
   parseLedgerCsv,
+  ledgerIngestCsvConverterToyTestOnly,
 } from '../../../src/core/browser/toys/2026-03-13/ledger-ingest/ledgerIngestCsvConverterToy.js';
 
 describe('ledgerIngestCsvConverterToy', () => {
@@ -77,6 +78,44 @@ describe('ledgerIngestCsvConverterToy', () => {
       valueDate: '2026-03-07',
       amount: '',
     });
+  });
+
+  it('covers the CSV branch fallback helper', () => {
+    const state = {
+      mode: 'plain',
+      row: [],
+      fieldIndex: 0,
+      currentCell: '',
+    };
+
+    expect(
+      ledgerIngestCsvConverterToyTestOnly.processCsvCharacterWithHandlers(
+        state,
+        'x',
+        0,
+        []
+      )
+    ).toBe(0);
+  });
+
+  it('covers the missing-header fallback helper', () => {
+    const row = ['2026-03-06', '2026-03-07'];
+    const headerLookup = new Map([['Booking date', 0]]);
+
+    expect(
+      ledgerIngestCsvConverterToyTestOnly.getLedgerCsvCell(
+        row,
+        headerLookup,
+        'Value date'
+      )
+    ).toBe('');
+    expect(
+      ledgerIngestCsvConverterToyTestOnly.getLedgerCsvCell(
+        row,
+        headerLookup,
+        'Booking date'
+      )
+    ).toBe('2026-03-06');
   });
 
   it('gracefully normalizes missing columns in sparse rows', () => {

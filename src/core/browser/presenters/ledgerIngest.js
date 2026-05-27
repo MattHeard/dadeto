@@ -283,7 +283,7 @@ function createTableHead(state, rerender, dom) {
     dom.createElement('thead')
   );
   dom.setClassName(head, TABLE_HEAD_CLASS);
-  head.style.verticalAlign = 'top';
+  setTableSectionVerticalAlign(head);
   const row = dom.createElement('tr');
 
   getColumnGroups(state.collapsedColumns).forEach(group => {
@@ -311,7 +311,7 @@ function createTableBody(transactions, state, dom) {
     dom.createElement('tbody')
   );
   dom.setClassName(body, TABLE_BODY_CLASS);
-  body.style.verticalAlign = 'top';
+  setTableSectionVerticalAlign(body);
 
   transactions.forEach(transaction => {
     dom.appendChild(body, createTransactionRow(transaction, state, dom));
@@ -583,10 +583,33 @@ function createEmptyStateParagraph(dom, text) {
  * @returns {string} Display string.
  */
 function formatDisplayValue(value) {
-  if (value === undefined || value === null || value === '') {
-    return '—';
-  }
-  return String(value);
+  return getDisplayText(value);
+}
+
+/**
+ * Convert an arbitrary value into the text used by the ledger-ingest table.
+ * @param {unknown} value Cell value.
+ * @returns {string} Display text.
+ */
+function getDisplayText(value) {
+  const text = String(value);
+  const replacements = {
+    undefined: '—',
+    null: '—',
+    '': '—',
+  };
+  return replacements[text] ?? text;
+}
+
+/**
+ * Apply the table-section vertical alignment when a style object is available.
+ * @param {HTMLTableSectionElement} section Table section element.
+ * @returns {void}
+ */
+function setTableSectionVerticalAlign(section) {
+  const style = section.style ?? {};
+  style.verticalAlign = 'top';
+  section.style = style;
 }
 
 /**
@@ -737,4 +760,5 @@ export const ledgerIngestReportTestOnly = {
   getSummaryValue,
   getSummaryNumber,
   getCollapsedRunLength,
+  setTableSectionVerticalAlign,
 };

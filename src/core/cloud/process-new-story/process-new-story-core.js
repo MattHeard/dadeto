@@ -1,13 +1,10 @@
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
-import {
-  normalizeHeaderValue,
-  getSnapshotData,
-  stringOrNull,
-} from '../cloud-core.js';
+import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
 import {
   arrayOrEmpty,
   forEachMappedEntries,
   stringOrFallback,
+  trimmedStringOrEmpty,
 } from '../../commonCore.js';
 
 let findAvailablePageNumberResolver = defaultFindAvailablePageNumber;
@@ -112,8 +109,12 @@ function resolveAuthorRef(db, authorId) {
  * @returns {string | null} Identifier when valid.
  */
 function normalizeIdentifier(value) {
-  const normalizedIdentifier = stringOrNull(value);
-  return normalizedIdentifier;
+  const normalizedIdentifier = trimmedStringOrEmpty(value);
+  if (normalizedIdentifier.length > 0) {
+    return normalizedIdentifier;
+  }
+
+  return null;
 }
 
 /**

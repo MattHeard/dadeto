@@ -188,3 +188,14 @@ export function startLocalDendriteStory(input, env) {
     }
   );
 }
+
+export const startLocalDendriteStoryTestOnly = {
+  getLegacyDend1,
+  getStar1Stories,
+  pickPrimaryStories,
+  readStoryArray,
+  resolveLegacyStructure,
+  resolveStar1Structure,
+  shouldSkipDend1,
+  shouldSkipStar1,
+};

@@ -1,4 +1,7 @@
-import { startLocalDendriteStory } from '../../../src/core/browser/toys/2025-06-09/startLocalDendriteStory.js';
+import {
+  startLocalDendriteStory,
+  startLocalDendriteStoryTestOnly,
+} from '../../../src/core/browser/toys/2025-06-09/startLocalDendriteStory.js';
 import { describe, test, expect, jest } from '@jest/globals';
 
 describe('startLocalDendriteStory missing temporary', () => {
@@ -50,5 +53,43 @@ describe('startLocalDendriteStory missing temporary', () => {
     expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
       temporary: { STAR1: [existing, output] },
     });
+  });
+
+  test('treats a non-array STAR1 value like an empty list', () => {
+    const existing = { id: 'old', title: 'Old', content: 'Old', options: [] };
+    const env = new Map([
+      ['getUuid', () => 'id-4'],
+      ['getData', () => ({ temporary: { STAR1: null, DEND1: [existing] } })],
+      ['setLocalTemporaryData', jest.fn()],
+    ]);
+
+    const output = JSON.parse(
+      startLocalDendriteStory('{"title":"x","content":"y"}', env)
+    );
+
+    expect(output).toEqual({
+      id: 'id-4',
+      title: 'x',
+      content: 'y',
+      options: [],
+    });
+    expect(env.get('setLocalTemporaryData')).toHaveBeenCalledWith({
+      temporary: { STAR1: [existing, output] },
+    });
+  });
+
+  test('covers the story-array normalization helper directly', () => {
+    const existing = { id: 'old', title: 'Old', content: 'Old', options: [] };
+
+    expect(startLocalDendriteStoryTestOnly.readStoryArray([existing])).toEqual([
+      existing,
+    ]);
+    expect(startLocalDendriteStoryTestOnly.readStoryArray('nope')).toEqual([]);
+    expect(
+      startLocalDendriteStoryTestOnly.pickPrimaryStories([], [existing])
+    ).toEqual([existing]);
+    expect(
+      startLocalDendriteStoryTestOnly.pickPrimaryStories([existing], [])
+    ).toEqual([existing]);
   });
 });

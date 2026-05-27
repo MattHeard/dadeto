@@ -17,6 +17,7 @@ function createMockDom() {
       children: [],
       colSpan: 1,
       href: '',
+      style: {},
       listeners: {},
     }),
     setClassName: (node, className) => {
@@ -304,5 +305,8 @@ describe('createLedgerIngestReportElement', () => {
       )
     ).toBe(7);
     expect(ledgerIngestReportTestOnly.getCollapsedRunLength([], 0)).toBe(0);
+    const section = {};
+    ledgerIngestReportTestOnly.setTableSectionVerticalAlign(section);
+    expect(section.style.verticalAlign).toBe('top');
   });
 });

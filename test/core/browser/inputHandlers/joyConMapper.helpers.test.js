@@ -23,6 +23,9 @@ const {
   normalizePendingIndex,
   getRefreshedCurrentIndex,
   getSkippedControlKey,
+  isMissingButtonSnapshots,
+  hasAxisSnapshots,
+  detectCurrentControlCapture,
 } = joyConMapperTestOnly;
 
 describe('joyConMapper helper branches', () => {
@@ -220,5 +223,15 @@ describe('joyConMapper helper branches', () => {
 
     expect(getSkippedControlKey(null)).toBeNull();
     expect(getSkippedControlKey({ key: 'zl' })).toBe('zl');
+    expect(isMissingButtonSnapshots(null, null)).toBe(true);
+    expect(isMissingButtonSnapshots({ buttons: [] }, null)).toBe(true);
+    expect(hasAxisSnapshots(null, null)).toBe(false);
+    expect(hasAxisSnapshots({ buttons: [] }, { buttons: [] })).toBe(true);
+    expect(
+      detectCurrentControlCapture(
+        { currentControl: null, previousSnapshot: null },
+        null
+      )
+    ).toBeNull();
   });
 });

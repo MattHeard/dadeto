@@ -150,9 +150,6 @@ export function createCopyCore({
 }) {
   const pathDeps = createPathAdapters();
   const { join, dirname, relative } = pathDeps;
-  if (typeof createFsAdapters !== 'function') {
-    throw new Error('Missing createFsAdapters dependency for copy workflow.');
-  }
   const dirConfig = createStaticSiteCopyDirectories({
     path: pathDeps,
     projectRoot,
@@ -619,15 +616,24 @@ export function createCopyCore({
   }
 
   /**
+   * Resolve the filesystem adapter bundle used by the copy workflow.
+   * @returns {{ directoryExists: (target: string) => boolean, createDirectory: (target: string) => void, removeDirectory: (target: string) => void, copyFile: (source: string, destination: string) => void, readDirEntries: (dir: string) => import('fs').Dirent[] }} Filesystem adapter bundle.
+   */
+  function resolveCopyWorkflowFsAdapters() {
+    if (typeof createFsAdapters !== 'function') {
+      throw new Error('Missing createFsAdapters dependency for copy workflow.');
+    }
+
+    return createFsAdapters();
+  }
+
+  /**
    * Execute the full copy workflow for the static site.
    * @returns {void}
    */
   function runCopyWorkflow() {
     const dirs = dirConfig;
-    if (typeof createFsAdapters !== 'function') {
-      throw new Error('Missing createFsAdapters dependency for copy workflow.');
-    }
-    const io = createFsAdapters();
+    const io = resolveCopyWorkflowFsAdapters();
     const messageLogger = createConsoleMessageLogger(defaultConsole || console);
     const copyFile =
       /** @type {(source: string, destination: string, message?: string) => void} */ (

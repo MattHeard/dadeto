@@ -225,6 +225,23 @@ describe('createCorsOriginFactory', () => {
   });
 });
 
+describe('assignModerationJobTestUtils', () => {
+  test('covers origin-list lookup branches', () => {
+    expect(
+      assignModerationCore.assignModerationJobTestUtils.isListedOrigin(
+        undefined,
+        ['https://allowed.example']
+      )
+    ).toBe(false);
+    expect(
+      assignModerationCore.assignModerationJobTestUtils.isListedOrigin(
+        'https://allowed.example',
+        ['https://allowed.example']
+      )
+    ).toBe(true);
+  });
+});
+
 describe('createCreateCorsOrigin', () => {
   test('wraps the cors origin factory with the provided dependencies', () => {
     const getAllowedOrigins = jest.fn(() => ['https://allowed.example']);
