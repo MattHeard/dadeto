@@ -247,7 +247,8 @@ function getHourRows(parsed) {
     ['Overhead hours', breakdown.overheadHours],
     ['Total hours', breakdown.totalHours],
     ...Object.entries(directHoursByType).map(
-      ([key, value]) => /** @type {[string, unknown]} */ ([humanizeKey(key), value])
+      ([key, value]) =>
+        /** @type {[string, unknown]} */ ([humanizeKey(key), value])
     ),
   ];
 }
@@ -261,7 +262,8 @@ function getExpenseRows(parsed) {
   const breakdown = getBreakdown(parsed);
   const expensesByType = getNestedRecord(breakdown, 'expensesByType');
   return Object.entries(expensesByType).map(
-    ([key, value]) => /** @type {[string, unknown]} */ ([humanizeKey(key), value])
+    ([key, value]) =>
+      /** @type {[string, unknown]} */ ([humanizeKey(key), value])
   );
 }
 

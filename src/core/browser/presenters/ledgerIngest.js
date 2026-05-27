@@ -279,7 +279,9 @@ function createCanonicalTransactionsTable(transactions, options, dom) {
  * @returns {HTMLElement} Table head element.
  */
 function createTableHead(state, rerender, dom) {
-  const head = /** @type {HTMLTableSectionElement} */ (dom.createElement('thead'));
+  const head = /** @type {HTMLTableSectionElement} */ (
+    dom.createElement('thead')
+  );
   dom.setClassName(head, TABLE_HEAD_CLASS);
   head.style.verticalAlign = 'top';
   const row = dom.createElement('tr');
@@ -305,7 +307,9 @@ function createTableHead(state, rerender, dom) {
  * @returns {HTMLElement} Table body element.
  */
 function createTableBody(transactions, state, dom) {
-  const body = /** @type {HTMLTableSectionElement} */ (dom.createElement('tbody'));
+  const body = /** @type {HTMLTableSectionElement} */ (
+    dom.createElement('tbody')
+  );
   dom.setClassName(body, TABLE_BODY_CLASS);
   body.style.verticalAlign = 'top';
 
@@ -366,7 +370,9 @@ function appendTableHeaderCell(row, options) {
 function createTableHeaderCell(group, options) {
   const { collapsedColumns, rerender, dom } = options;
   const column = TRANSACTION_COLUMNS[group.start];
-  const headerCell = /** @type {HTMLTableCellElement} */ (dom.createElement('th'));
+  const headerCell = /** @type {HTMLTableCellElement} */ (
+    dom.createElement('th')
+  );
   dom.setClassName(headerCell, getTableHeaderCellClassName(group.collapsed));
   headerCell.colSpan = group.length;
 

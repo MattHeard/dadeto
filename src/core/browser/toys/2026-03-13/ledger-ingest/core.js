@@ -694,13 +694,12 @@ function buildTransactionId(source, dedupeKey, index) {
 function buildDedupeKey(transaction, policy) {
   /** @type {string[]} */
   const values = [];
-  const transactionRecord = /** @type {Record<string, unknown>} */ (transaction);
+  const transactionRecord = /** @type {Record<string, unknown>} */ (
+    transaction
+  );
   for (const field of policy.candidateFields) {
     values.push(
-      serializeDedupeCandidate(
-        transactionRecord[field],
-        policy.caseInsensitive
-      )
+      serializeDedupeCandidate(transactionRecord[field], policy.caseInsensitive)
     );
   }
   return values.join('|');

@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type, complexity, no-ternary */
+/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, complexity, no-ternary */
 /**
  * Text analysis utilities for constrained writing.
  * Supports the 100-word blog post format.

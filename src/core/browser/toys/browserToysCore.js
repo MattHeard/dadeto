@@ -462,9 +462,7 @@ export function persistDendriteStory(parsed, env) {
       const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
         newData.temporary
       );
-      const tran1 = /** @type {NonNullable<typeof temp.TRAN1>} */ (
-        temp.TRAN1
-      );
+      const tran1 = /** @type {NonNullable<typeof temp.TRAN1>} */ (temp.TRAN1);
       tran1.stories.push(story);
     }
   );

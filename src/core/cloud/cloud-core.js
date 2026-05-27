@@ -231,10 +231,9 @@ export function resolveStaticBucketName(
   environmentVariables,
   fallbackBucketName
 ) {
-  const configuredBucketName = ensureString(getEnvironmentVariable(
-    environmentVariables,
-    'STATIC_BUCKET_NAME'
-  ));
+  const configuredBucketName = ensureString(
+    getEnvironmentVariable(environmentVariables, 'STATIC_BUCKET_NAME')
+  );
   return (
     configuredBucketName || getStaticBucketNameFallback(fallbackBucketName)
   );

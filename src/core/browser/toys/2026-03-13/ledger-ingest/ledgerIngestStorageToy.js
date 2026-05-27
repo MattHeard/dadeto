@@ -132,7 +132,8 @@ function createUpdateMergeActionReport(transaction, existing) {
   };
 }
 
-const CREATE_MERGE_ACTION_REPORTS = /** @type {{
+const CREATE_MERGE_ACTION_REPORTS = /**
+   @type {{
   insert: (transaction: LedgerIngestTransaction, existing?: LedgerIngestTransaction) => LedgerStorageAction,
   skip: (transaction: LedgerIngestTransaction, existing?: LedgerIngestTransaction) => LedgerStorageAction,
   update: (transaction: LedgerIngestTransaction, existing: LedgerIngestTransaction) => LedgerStorageAction,
@@ -248,7 +249,8 @@ function mergeLedgerStorageState(storedState, canonicalTransactions) {
  */
 function buildStorageReport(options) {
   const { storageKey, beforeState, afterState, actions } = options;
-  const transactions = ledgerIngestStorageCore.getStoredTransactions(afterState);
+  const transactions =
+    ledgerIngestStorageCore.getStoredTransactions(afterState);
   return browserCore.deepMerge(
     {
       storageKey,
@@ -285,9 +287,10 @@ export function ledgerIngestStorageToy(input, env) {
   const parsedInput = /** @type {Record<string, unknown>} */ (
     parseJsonOrFallback(input, {})
   );
-  const importResult = /** @type {{ canonicalTransactions: LedgerIngestTransaction[] }} */ (
-    parseJsonOrFallback(ledgerIngestToy(input), {})
-  );
+  const importResult =
+    /** @type {{ canonicalTransactions: LedgerIngestTransaction[] }} */ (
+      parseJsonOrFallback(ledgerIngestToy(input), {})
+    );
   const storageKey = ledgerIngestStorageCore.resolveStorageKey(parsedInput);
   const currentRoot = ledgerIngestStorageCore.readPermanentStorageRoot(env);
   const currentState = ledgerIngestStorageCore.normalizeLedgerStorageState(

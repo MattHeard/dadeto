@@ -182,13 +182,13 @@ export function createCopyCore({
    *   copyFile: (source: string, destination: string) => void,
    *   readDirEntries: (dir: string) => import('fs').Dirent[],
    * }} io FS adapters.
-  * @param {{
-  *   messageLogger: { info: (message: string) => void },
-  *   resolveMessage: (entry: { source: string, destination: string }) => string,
- *   copyFile: (source: string, destination: string, message?: string) => void,
-  * }} options Logger and message builder.
- * @returns {Promise<void>}
-  */
+   * @param {{
+   *   messageLogger: { info: (message: string) => void },
+   *   resolveMessage: (entry: { source: string, destination: string }) => string,
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} options Logger and message builder.
+   * @returns {Promise<void>}
+   */
   async function copyEntries(entries, io, { resolveMessage, copyFile }) {
     await runMappedEntries(
       entries,
@@ -376,7 +376,7 @@ export function createCopyCore({
   /**
    * Recursively copy the contents of a directory.
    * @param {{ src: string, dest: string }} directories - Source and destination directory paths.
-  * @param {{
+   * @param {{
    *   io: {
    *     directoryExists: (target: string) => boolean,
    *     createDirectory: (target: string) => void,
@@ -629,20 +629,21 @@ export function createCopyCore({
     }
     const io = createFsAdapters();
     const messageLogger = createConsoleMessageLogger(defaultConsole || console);
-    const copyFile = /** @type {(source: string, destination: string, message?: string) => void} */ (
-      function copyFile(source, destination, message) {
-        copyFileWithDirectories({
-          io,
-          source,
-          destination,
-          messageLogger,
-          formatPathForLog,
-          ensureDirectoryExists,
-          dirname,
-          message,
-        });
-      }
-    );
+    const copyFile =
+      /** @type {(source: string, destination: string, message?: string) => void} */ (
+        function copyFile(source, destination, message) {
+          copyFileWithDirectories({
+            io,
+            source,
+            destination,
+            messageLogger,
+            formatPathForLog,
+            ensureDirectoryExists,
+            dirname,
+            message,
+          });
+        }
+      );
     io.removeDirectory(dirs.publicDir);
     ensureDirectoryExists(io, dirs.publicDir);
     const copyContext = { io, messageLogger, copyFile };
@@ -695,13 +696,13 @@ export function createCopyCore({
  * Copy the generated blog JSON payload from src/build into the public root.
  * @param {{
  *   directories: Record<string, string>,
-   *   io: {
-   *     directoryExists: (target: string) => boolean,
-   *     createDirectory: (target: string) => void,
-   *     removeDirectory: (target: string) => void,
-   *     copyFile: (source: string, destination: string) => void,
-   *     readDirEntries: (dir: string) => import('fs').Dirent[],
-   *   },
+ *   io: {
+ *     directoryExists: (target: string) => boolean,
+ *     createDirectory: (target: string) => void,
+ *     removeDirectory: (target: string) => void,
+ *     copyFile: (source: string, destination: string) => void,
+ *     readDirEntries: (dir: string) => import('fs').Dirent[],
+ *   },
  *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
  *   join: typeof import('path').join,
  *   copyFile: (source: string, destination: string, message?: string) => void,

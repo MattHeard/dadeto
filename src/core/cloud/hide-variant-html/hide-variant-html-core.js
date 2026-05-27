@@ -775,7 +775,9 @@ function toPagePayload(pageSnap) {
  * @returns {pageSnap is { exists?: boolean, data: () => unknown }} True when the snapshot exists.
  */
 function isExistingPageSnapshot(pageSnap) {
-  return Boolean(pageSnap && pageSnap.exists && typeof pageSnap.data === 'function');
+  return Boolean(
+    pageSnap && pageSnap.exists && typeof pageSnap.data === 'function'
+  );
 }
 
 /**

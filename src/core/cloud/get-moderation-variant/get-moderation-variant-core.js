@@ -285,10 +285,12 @@ function getAuthorizationHeader(request) {
   }
 
   const headerGetter =
-    /** @type {(name: string) => string | null | undefined} */ (name =>
     /** @type {(name: string) => string | null | undefined} */ (
-      /** @type {any} */ (request).get
-    ).call(request, name));
+      name =>
+        /** @type {(name: string) => string | null | undefined} */ (
+          /** @type {any} */ (request).get
+        ).call(request, name)
+    );
   return findAuthHeader(headerGetter);
 }
 

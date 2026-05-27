@@ -64,9 +64,7 @@ const CONTROLS = /** @type {MapperControl[]} */ ([
  *   Closest article entry, if present.
  */
 function getClosestArticle(container) {
-  return /** @type {HTMLElement | null} */ (
-    container.closest('article.entry')
-  );
+  return /** @type {HTMLElement | null} */ (container.closest('article.entry'));
 }
 
 /**
@@ -325,7 +323,9 @@ function readStoredMapperRoot(dom) {
  *   Parsed local-storage root payload for mapper state.
  */
 function parseStoredMapperRoot(serializedRoot) {
-  return /** @type {Record<string, unknown>} */ (JSON.parse(serializedRoot ?? '{}'));
+  return /** @type {Record<string, unknown>} */ (
+    JSON.parse(serializedRoot ?? '{}')
+  );
 }
 
 /**
@@ -711,17 +711,14 @@ function getAxisCaptureCandidate(value, axis, context) {
  *   Strongest qualifying axis capture, if any.
  */
 function findStrongestAxisCapture(axes, previous, expectedDirection) {
-  return axes.reduce(
-    (best, value, axis) => {
-      const oldValue = previous.axes[axis] ?? 0;
-      const candidate = getAxisCaptureCandidate(value, axis, {
-        oldValue,
-        expectedDirection,
-      });
-      return mergeAxisCaptureCandidate(best, candidate);
-    },
-    /** @type {AxisCapture | null} */ (null)
-  );
+  return axes.reduce((best, value, axis) => {
+    const oldValue = previous.axes[axis] ?? 0;
+    const candidate = getAxisCaptureCandidate(value, axis, {
+      oldValue,
+      expectedDirection,
+    });
+    return mergeAxisCaptureCandidate(best, candidate);
+  }, /** @type {AxisCapture | null} */ (null));
 }
 
 /**

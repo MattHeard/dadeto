@@ -124,7 +124,9 @@ export function ledgerIngestToy(input) {
     const result = importTransactions(
       /** @type {{ source: string, rawRecords: Record<string, unknown>[] }} */ ({
         source,
-        rawRecords: /** @type {Record<string, unknown>[]} */ (parsed.rawRecords),
+        rawRecords: /** @type {Record<string, unknown>[]} */ (
+          parsed.rawRecords
+        ),
       })
     );
     return JSON.stringify(buildResponsePayload('jsonImport', result, 'json'));

@@ -168,9 +168,9 @@ export function formatDecimal(num) {
   const result = num.toPrecision(17);
   return /** @type {string} */ (
     when(
-    result.includes('.'),
-    () => result.replace(/\.?0+$/, ''),
-    () => result
+      result.includes('.'),
+      () => result.replace(/\.?0+$/, ''),
+      () => result
     )
   );
 }
