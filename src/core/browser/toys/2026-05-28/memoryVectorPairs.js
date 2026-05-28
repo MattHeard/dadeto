@@ -182,11 +182,7 @@ function buildMemoryVectorResponse(request, env) {
 function buildResolvedMemoryVectorResponse(request, root) {
   const resolvedValue = resolveMemoryPath(root, request.path);
   if (resolvedValue.error) {
-    return buildMemoryVectorError(
-      request,
-      resolvedValue.error,
-      request.memoryLocation
-    );
+    return buildResolvedMemoryVectorError(request, resolvedValue.error);
   }
 
   return {
@@ -195,6 +191,25 @@ function buildResolvedMemoryVectorResponse(request, root) {
     found: true,
     vector: projectToVector(resolvedValue.value),
   };
+}
+
+/**
+ * Convert a resolved path error into either an empty-vector response or a hard error.
+ * @param {{ memoryLocation: string, path: string }} request Normalized request.
+ * @param {string} error Resolved path error.
+ * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ */
+function buildResolvedMemoryVectorError(request, error) {
+  if (isMissingMemoryPathError(error)) {
+    return {
+      memoryLocation: request.memoryLocation,
+      path: request.path,
+      found: false,
+      vector: [],
+    };
+  }
+
+  return buildMemoryVectorError(request, error, request.memoryLocation);
 }
 
 /**
@@ -460,6 +475,15 @@ function isMemoryPathError(value) {
 }
 
 /**
+ * Determine whether a resolved path error represents a missing value.
+ * @param {string} value Resolved lookup error.
+ * @returns {boolean} True when the lookup failed because the segment was missing.
+ */
+function isMissingMemoryPathError(value) {
+  return value.startsWith("Error: Path segment '");
+}
+
+/**
  * Return the temporary root bucket when available.
  * @param {object | unknown[] | undefined} temporary Temporary bucket candidate.
  * @returns {object | unknown[]} Valid temporary root or an empty object.
@@ -505,6 +529,7 @@ export const memoryVectorPairsTestOnly = {
   parseMemoryVectorRequest,
   projectToVector,
   projectObjectToVector,
+  projectObjectOrScalarToVector,
   readEnvelopeMemoryRoot,
   readMemoryPath: resolveMemoryPath,
   readMemoryRoot,

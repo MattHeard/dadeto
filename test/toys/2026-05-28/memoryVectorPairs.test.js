@@ -195,7 +195,7 @@ describe('memoryVectorPairs', () => {
     });
   });
 
-  test('returns a structured error when the requested path is missing', () => {
+  test('returns an empty vector when the requested path is missing', () => {
     const env = new Map([
       [
         'getData',
@@ -214,8 +214,36 @@ describe('memoryVectorPairs', () => {
       path: 'profile.missing',
       found: false,
       vector: [],
+    });
+  });
+
+  test('returns a structured error for non-missing path traversal errors', () => {
+    const env = new Map([
+      [
+        'getData',
+        () => ({
+          temporary: 'nope',
+        }),
+      ],
+    ]);
+
+    expect(
+      JSON.parse(
+        memoryVectorPairs(
+          JSON.stringify({
+            memoryLocation: 'envelope',
+            path: 'temporary.profile',
+          }),
+          env
+        )
+      )
+    ).toEqual({
+      memoryLocation: 'envelope',
+      path: 'temporary.profile',
+      found: false,
+      vector: [],
       error:
-        "Error: Path segment 'missing' not found at 'profile.missing'. Available keys/indices: name",
+        "Error: Cannot access property 'profile' on non-object value at path 'temporary'. Value is: \"nope\"",
     });
   });
 
