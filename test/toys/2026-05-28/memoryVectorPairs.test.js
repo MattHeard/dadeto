@@ -317,6 +317,34 @@ describe('memoryVectorPairs helpers', () => {
     });
   });
 
+  test('returns root and path lookup errors for undefined helper results', () => {
+    expect(
+      memoryVectorPairsTestOnly.buildMemoryVectorResponseFromRoot(
+        { memoryLocation: 'temporary', path: 'profile' },
+        undefined
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'Error: Memory root lookup returned no value.',
+    });
+
+    expect(
+      memoryVectorPairsTestOnly.buildResolvedMemoryVectorResponseFromValue(
+        { memoryLocation: 'temporary', path: 'profile' },
+        undefined
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'Error: Memory path resolution returned no value.',
+    });
+  });
+
   test('projects scalars, arrays, and objects as vectors', () => {
     expect(memoryVectorPairsTestOnly.projectToVector('tea')).toEqual(['tea']);
     expect(memoryVectorPairsTestOnly.projectToVector([1, 2])).toEqual([1, 2]);

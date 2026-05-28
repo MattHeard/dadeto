@@ -258,6 +258,34 @@ describe('memoryVector helpers', () => {
     });
   });
 
+  test('returns root and path lookup errors for undefined helper results', () => {
+    expect(
+      memoryVectorTestOnly.buildMemoryVectorResponseFromRoot(
+        { memoryLocation: 'temporary', path: 'profile' },
+        undefined
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'Error: Memory root lookup returned no value.',
+    });
+
+    expect(
+      memoryVectorTestOnly.buildResolvedMemoryVectorResponseFromValue(
+        { memoryLocation: 'temporary', path: 'profile' },
+        undefined
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'Error: Memory path resolution returned no value.',
+    });
+  });
+
   test('projects scalars and arrays as vectors', () => {
     expect(memoryVectorTestOnly.projectToVector('tea')).toEqual(['tea']);
     expect(memoryVectorTestOnly.projectToVector([1, 2])).toEqual([1, 2]);

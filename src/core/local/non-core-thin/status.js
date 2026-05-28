@@ -18,9 +18,25 @@ const REPO_ROOT = path.resolve('.');
  */
 export function getNonCoreThinStatus() {
   const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+  return buildNonCoreThinStatus(config, listJsFiles(SRC_DIR));
+}
+
+/**
+ * Build the non-core thin status from a config snapshot and file list.
+ * @param {{ maxLines: number, exemptions: Record<string, string> }} config Status config.
+ * @param {string[]} files Repo-relative JavaScript files outside `src/core`.
+ * @returns {{
+ *   isClean: boolean,
+ *   maxLines: number,
+ *   fileCount: number,
+ *   exemptionCount: number,
+ *   staleExemptions: string[],
+ *   violations: Array<{ filePath: string, lines: number }>,
+ * }} non-core thin status for the current repo snapshot
+ */
+function buildNonCoreThinStatus(config, files) {
   const maxLines = config.maxLines;
   const exemptions = new Set(Object.keys(config.exemptions));
-  const files = listJsFiles(SRC_DIR);
   const fileSet = new Set(files);
   const staleExemptions = [...exemptions].filter(
     filePath => !fileSet.has(filePath)
@@ -99,3 +115,7 @@ function shouldIncludeDirectory(dir, entry) {
     entry.isDirectory() && !shouldSkipDirectory(path.join(dir, entry.name))
   );
 }
+
+export const nonCoreThinStatusTestOnly = {
+  buildNonCoreThinStatus,
+};

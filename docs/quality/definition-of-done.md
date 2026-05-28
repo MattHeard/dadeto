@@ -53,7 +53,7 @@ Business logic should live under `src/core`. Code outside `src/core` should stay
 - `npm run duplication` keeps zero-duplication detection scoped to `src/core`.
 - `npm run non-core-thin` fails any non-core JavaScript file over 50 lines unless it is explicitly listed in `non-core-thin-exemptions.json`.
 
-The current exemption file is a baseline backlog, not permission for new non-core logic. Remove entries as logic moves into `src/core`.
+The exemption file should normally stay empty; if a temporary exception is added, remove it as soon as the logic moves into `src/core`.
 
 ## E2E cloud-only constraint
 
