@@ -298,7 +298,7 @@ export function appendPageAndOptions(data, page, opts) {
   const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
     data.temporary
   );
-  const tran1 = temp.TRAN1;
+  const tran1 = /** @type {NonNullable<typeof temp.TRAN1>} */ (temp.TRAN1);
   tran1.pages.push(page);
   tran1.options.push(...opts);
   return data;
@@ -462,7 +462,7 @@ export function persistDendriteStory(parsed, env) {
       const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
         newData.temporary
       );
-      const tran1 = temp.TRAN1;
+      const tran1 = /** @type {NonNullable<typeof temp.TRAN1>} */ (temp.TRAN1);
       tran1.stories.push(story);
     }
   );

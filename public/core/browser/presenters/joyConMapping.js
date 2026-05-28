@@ -190,7 +190,9 @@ function isSkippedControl(key, parsed) {
  * @returns {string[]} Skipped control keys normalized to an array.
  */
 function getSkippedControls(parsed) {
-  return arrayOrEmpty(parsed.skippedControls);
+  return arrayOrEmpty(parsed.skippedControls).filter(
+    value => typeof value === 'string'
+  );
 }
 
 /**

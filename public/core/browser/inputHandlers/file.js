@@ -43,7 +43,7 @@ function syncTextInput(textInput, dom, content) {
  * @returns {Promise<string | null>} Uploaded contents or null when no file is selected.
  */
 function readSelectedFileText(fileInput) {
-  const file = fileInput.files[0];
+  const file = fileInput.files?.[0];
   if (!file) {
     return Promise.resolve(null);
   }
@@ -102,7 +102,9 @@ export const ensureFileInput = (container, textInput, dom) => {
         const input = createFileInputElement(dom);
         const handleChange = createFileChangeHandler({ dom, textInput });
         dom.addEventListener(input, 'change', handleChange);
-        input._dispose = createInputDisposer(dom, input, handleChange);
+        /** @type {HTMLInputElement & { _dispose?: () => void }} */ (
+          input
+        )._dispose = createInputDisposer(dom, input, handleChange);
         return input;
       }
     )

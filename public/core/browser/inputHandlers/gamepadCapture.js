@@ -11,7 +11,7 @@ import { createCaptureToyInput, syncToyPayload } from './captureFormShared.js';
 import { isEscapeKeydown } from './escapeKey.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} GamepadDOMHelpers */
-/** @typedef {(globalThis: typeof globalThis) => void} CleanupFn */
+/** @typedef {() => void} CleanupFn */
 /** @typedef {{ pressed: boolean, value: number }} ButtonSnapshot */
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
 /** @typedef {{ capturing: boolean, animationFrameId: number | null, snapshots: Record<number, GamepadSnapshot> }} CaptureState */
@@ -312,7 +312,7 @@ function findChangedButtonIndex(gamepad, previousSnapshot) {
  * @returns {ButtonSnapshot[]} Previous button states.
  */
 function getPreviousButtons(previousSnapshot) {
-  return getPreviousSnapshotValues(previousSnapshot, 'buttons');
+  return previousSnapshot?.buttons ?? [];
 }
 
 /**
@@ -371,21 +371,7 @@ function findChangedAxisIndex(gamepad, previousSnapshot) {
  * @returns {number[]} Previous axis values.
  */
 function getPreviousAxes(previousSnapshot) {
-  return getPreviousSnapshotValues(previousSnapshot, 'axes');
-}
-
-/**
- * Resolve a snapshot array by property name.
- * @param {GamepadSnapshot | undefined} previousSnapshot - Previous polled snapshot.
- * @param {'buttons' | 'axes'} key - Snapshot array to return.
- * @returns {ButtonSnapshot[] | number[]} Previous snapshot values.
- */
-function getPreviousSnapshotValues(previousSnapshot, key) {
-  if (previousSnapshot === undefined) {
-    return [];
-  }
-
-  return previousSnapshot[key];
+  return previousSnapshot?.axes ?? [];
 }
 
 /**
@@ -447,7 +433,10 @@ function pollGamepads(options) {
       getAxisPayload(gamepad, previousSnapshot);
     options.state.snapshots[gamepad.index] = snapshotGamepad(gamepad);
     whenNotNullish(payload, presentPayload => {
-      syncToyPayload(createCaptureToyInput(options), presentPayload);
+      syncToyPayload(
+        createCaptureToyInput(options),
+        /** @type {Record<string, unknown>} */ (presentPayload)
+      );
     });
   });
 }
@@ -490,7 +479,7 @@ function createReleaseCaptureEmitPayload() {
       dom,
       textInput,
       autoSubmitCheckbox,
-      payload,
+      payload: /** @type {Record<string, unknown>} */ (payload),
     });
 }
 
@@ -558,6 +547,10 @@ function storeSnapshot(state, gamepad) {
  * @returns {void}
  */
 function removeSnapshot(state, gamepad) {
+  if (!gamepad) {
+    return;
+  }
+
   delete state.snapshots[gamepad.index];
 }
 
@@ -580,7 +573,10 @@ function handleConnectionEvent(options, event) {
   whenNotNullish(getHandledConnectionPayload(options.state, event), payload => {
     const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
     storeSnapshot(options.state, gamepad);
-    syncToyPayload(createCaptureToyInput(options), payload);
+    syncToyPayload(
+      createCaptureToyInput(options),
+      /** @type {Record<string, unknown>} */ (payload)
+    );
     queuePoll(options);
   });
 }
@@ -605,7 +601,10 @@ function handleDisconnectEvent(options, event) {
     getHandledDisconnectionPayload(options.state, event),
     payload => {
       removeSnapshot(options.state, getEventGamepad(event));
-      syncToyPayload(createCaptureToyInput(options), payload);
+      syncToyPayload(
+        createCaptureToyInput(options),
+        /** @type {Record<string, unknown>} */ (payload)
+      );
     }
   );
 }
@@ -659,13 +658,13 @@ function createStopCaptureHandler(options) {
  * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Toggle handler options.
  */
 function createGamepadToggleOptions(options) {
+  /** @type {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions['emitPayload']} */
   const emitPayload = (input, payload) =>
     captureLifecycleDeps.syncToyInput({ ...input, payload });
 
   return {
     onStart: () => queuePoll(options),
     onStop: createStopCaptureHandler(options),
-    state: options.state,
     ...createGamepadEmitPayloadOptions(options, emitPayload),
   };
 }
@@ -673,11 +672,12 @@ function createGamepadToggleOptions(options) {
 /**
  * Build the shared emit-payload options for gamepad capture.
  * @param {HandlerOptions} options - Shared handler dependencies.
- * @param {(input: { dom: HandlerOptions['dom'], textInput: HandlerOptions['textInput'], autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'] }, payload: unknown) => void} emitPayload - Payload emitter.
+ * @param {(input: { dom: HandlerOptions['dom'], textInput: HandlerOptions['textInput'], autoSubmitCheckbox: HandlerOptions['autoSubmitCheckbox'] }, payload: Record<string, unknown>) => void} emitPayload - Payload emitter.
  * @returns {import('./captureLifecycleToggle.js').CaptureLifecycleToggleOptions} Emit-capture-state options.
  */
 function createGamepadEmitPayloadOptions(options, emitPayload) {
   return {
+    state: options.state,
     emitPayload,
     ...createGamepadLifecycleFields(options),
   };
@@ -720,7 +720,7 @@ function createGamepadCleanupHandler(options) {
  * Register a global gamepad event listener.
  * @param {{
  *   options: HandlerOptions,
- *   cleanupFns: Array<(globalThisArg: typeof globalThis) => void>,
+ *   cleanupFns: CleanupFn[],
  *   type: string,
  *   handler: (event: Event) => void,
  * }} config - Listener registration details.
@@ -869,3 +869,7 @@ export function gamepadCaptureHandler(dom, container, textInput) {
   captureLifecycleDeps.prepareCaptureHandler({ dom, container, textInput });
   buildGamepadCaptureForm({ dom, container, textInput });
 }
+
+export const gamepadCaptureTestOnly = {
+  removeSnapshot,
+};

@@ -454,7 +454,7 @@ function collectAllCandidates(length, cfg, occupied) {
  * @returns {Candidate[]} Candidates for the row.
  */
 function collectCandidatesForRow({ y, length, cfg, occupied }) {
-  const candidates = [];
+  const candidates = /** @type {Candidate[]} */ ([]);
   for (let x = 0; x < cfg.width; x++) {
     const start = { x, y };
     appendCandidates(
@@ -495,12 +495,15 @@ function markOccupiedSquares(chosen, occupied, length) {
 function chooseAndMarkCandidate({ candidates, length }, env, occupied) {
   if (candidates.length === 0) {
     return null;
-  } // dead end
+  }
   const getRandomNumber = /** @type {() => number} */ (
     env.get('getRandomNumber')
   );
-  const chosen = candidates[Math.floor(getRandomNumber() * candidates.length)];
-  // Mark occupied squares
+  const chosen =
+    candidates[Math.floor(getRandomNumber() * candidates.length)] ?? null;
+  if (!chosen) {
+    return null;
+  }
   markOccupiedSquares(chosen, occupied, length);
   return chosen;
 }
@@ -555,6 +558,9 @@ function shouldAbortPlacement(acc) {
  */
 function addPlacedShip(acc, placed) {
   if (placed === null) {
+    return null;
+  }
+  if (acc === null) {
     return null;
   }
   acc.push(placed);
@@ -661,11 +667,11 @@ function convertShipsToArray(cfg) {
  * @returns {number} Parsed number.
  */
 function parseDimension(value) {
-  return whenOrDefault(
-    typeof value === 'string',
-    () => Number.parseInt(value, 10),
-    value
-  );
+  if (typeof value === 'string') {
+    return Number.parseInt(value, 10);
+  }
+
+  return value;
 }
 
 /**
@@ -809,4 +815,12 @@ export {
   isCoordNonNegative,
   isCoordWithinBoard,
   neighbours,
+};
+
+export const battleshipSolitaireFleetTestOnly = {
+  chooseAndMarkCandidate,
+  placeShip,
+  shouldAbortPlacement,
+  addPlacedShip,
+  shouldAbortPlaceShip,
 };

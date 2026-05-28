@@ -4,14 +4,13 @@ import {
   whenArray,
   objectOrEmpty,
 } from '../../../../commonCore.js';
-import { normalizeObjectOrFallback } from '../../../browser-core.js';
 
 export const DEFAULT_STORAGE_KEY = 'LEDG3';
-const EMPTY_STORAGE_ENV = {
+const EMPTY_STORAGE_ENV = /** @type {{ get: (name: string) => unknown }} */ ({
   get() {
     return undefined;
   },
-};
+});
 
 /**
  * @typedef {object} LedgerStorageState
@@ -20,7 +19,7 @@ const EMPTY_STORAGE_ENV = {
  */
 
 /**
- * @typedef {import('../../presenters/ledgerIngest.js').LedgerIngestTransaction} LedgerIngestTransaction
+ * @typedef {import('../../../presenters/ledgerIngest.js').LedgerIngestTransaction} LedgerIngestTransaction
  */
 
 /**
@@ -30,7 +29,7 @@ const EMPTY_STORAGE_ENV = {
  */
 export function resolveStorageKey(parsed) {
   const candidate = parsed.storageKey;
-  if (isValidString(candidate)) {
+  if (typeof candidate === 'string') {
     return candidate;
   }
 
@@ -43,7 +42,9 @@ export function resolveStorageKey(parsed) {
  * @returns {{ get: (name: string) => unknown }} Environment with a get accessor.
  */
 export function normalizeStorageEnv(env) {
-  return env || EMPTY_STORAGE_ENV;
+  return /** @type {{ get: (name: string) => unknown }} */ (
+    env ?? EMPTY_STORAGE_ENV
+  );
 }
 
 /**
@@ -62,7 +63,11 @@ export function getPermanentStorageAccessor(env, name) {
  * @returns {Record<string, unknown>} Plain record copy or empty object.
  */
 export function cloneRecord(value) {
-  return normalizeObjectOrFallback(value, () => ({}), objectOrEmpty);
+  if (!isNonNullObject(value)) {
+    return {};
+  }
+
+  return objectOrEmpty(value);
 }
 
 /**
@@ -93,7 +98,9 @@ export function readPermanentStorageRoot(env) {
  * @returns {LedgerStorageState} Empty storage state.
  */
 export function createEmptyLedgerStorageState() {
+  /** @type {string[]} */
   const transactionOrder = [];
+  /** @type {Record<string, LedgerIngestTransaction>} */
   const transactionsByMergeKey = {};
   return {
     transactionOrder,
@@ -107,7 +114,9 @@ export function createEmptyLedgerStorageState() {
  * @returns {string[]} Normalized merge-key order.
  */
 export function normalizeTransactionOrder(value) {
-  return whenArray(value, arrayValue => arrayValue.filter(isValidString)) ?? [];
+  return /** @type {string[]} */ (
+    whenArray(value, arrayValue => arrayValue.filter(isValidString)) ?? []
+  );
 }
 
 /**
@@ -131,10 +140,11 @@ export function normalizeLedgerStorageState(stored) {
     return createEmptyLedgerStorageState();
   }
 
+  const storedRecord = /** @type {Record<string, unknown>} */ (stored);
   return {
-    transactionOrder: normalizeTransactionOrder(stored.transactionOrder),
+    transactionOrder: normalizeTransactionOrder(storedRecord.transactionOrder),
     transactionsByMergeKey: normalizeTransactionMap(
-      stored.transactionsByMergeKey
+      storedRecord.transactionsByMergeKey
     ),
   };
 }
@@ -145,8 +155,10 @@ export function normalizeLedgerStorageState(stored) {
  * @returns {LedgerIngestTransaction[]} Stored transactions in order.
  */
 export function getStoredTransactions(storageState) {
-  return storageState.transactionOrder.map(
-    mergeKey => storageState.transactionsByMergeKey[mergeKey]
+  return /** @type {LedgerIngestTransaction[]} */ (
+    storageState.transactionOrder
+      .map(mergeKey => storageState.transactionsByMergeKey[mergeKey])
+      .filter(transaction => transaction !== undefined)
   );
 }
 

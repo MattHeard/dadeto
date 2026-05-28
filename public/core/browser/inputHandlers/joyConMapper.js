@@ -4,13 +4,17 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ pressed: boolean, value: number }} ButtonSnapshot */
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
+/** @typedef {{ type: 'button', index: number, value: number }} ButtonCapture */
+/** @typedef {{ type: 'axis', axis: number, direction: 'negative' | 'positive', magnitude: number }} AxisCapture */
 /** @typedef {{ key: string, label: string, type: 'button' | 'axis', direction?: 'negative' | 'positive' }} MapperControl */
 /** @typedef {{ mappings: Record<string, unknown>, skippedControls: string[] }} StoredMapperState */
-/** @typedef {{ type: 'button', index: number, value: number } | { type: 'axis', axis: number, direction: 'negative' | 'positive', magnitude: number }} CaptureResult */
+/** @typedef {ButtonCapture | AxisCapture} CaptureResult */
 /** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
 /** @typedef {{ className?: string, text?: string }} ElementOptions */
 
-const EMPTY_ELEMENT_OPTIONS = Object.freeze({ className: '' });
+const EMPTY_ELEMENT_OPTIONS = /** @type {ElementOptions} */ (
+  Object.freeze({ className: '' })
+);
 
 const MAPPER_STORAGE_KEY = 'JOYMAP1';
 const PERMANENT_DATA_KEY = 'permanentData';
@@ -56,11 +60,11 @@ const CONTROLS = /** @type {MapperControl[]} */ ([
  * Finds the article wrapper that owns the mapper UI.
  * @param {Element} container
  *   Mapper root container.
- * @returns {Element | null}
+ * @returns {HTMLElement | null}
  *   Closest article entry, if present.
  */
 function getClosestArticle(container) {
-  return container.closest('article.entry');
+  return /** @type {HTMLElement | null} */ (container.closest('article.entry'));
 }
 
 /**
@@ -125,7 +129,7 @@ function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
  *   First connected gamepad exposed by the browser, if any.
  */
 function currentPad(dom) {
-  return readConnectedGamepads(dom).find(Boolean) ?? null;
+  return readConnectedGamepads(dom)[0] ?? null;
 }
 
 /**
@@ -135,7 +139,17 @@ function currentPad(dom) {
  *   Connected gamepads exposed by the browser, or an empty array when unsupported.
  */
 function readConnectedGamepads(dom) {
-  return Array.from(dom.getGamepads());
+  return dom.getGamepads().filter(isConnectedGamepad);
+}
+
+/**
+ * @param {Gamepad | null} gamepad
+ *   Candidate gamepad from the browser API.
+ * @returns {gamepad is Gamepad}
+ *   Whether the candidate is a connected gamepad.
+ */
+function isConnectedGamepad(gamepad) {
+  return Boolean(gamepad);
 }
 
 /**
@@ -205,7 +219,7 @@ function applyCreatedElementOptions(dom, element, options) {
  *   DOM helper facade for element construction.
  * @param {HTMLElement} element
  *   Element being configured.
- * @param {string} className
+ * @param {string | undefined} className
  *   Optional class name to assign.
  * @returns {void}
  */
@@ -293,7 +307,7 @@ function readStoredMapperState(dom) {
 
 /**
  * @param {DOMHelpers} dom - Shared DOM helper facade.
- * @returns {unknown}
+ * @returns {Record<string, unknown>}
  *   Parsed local-storage root payload for mapper state.
  */
 function readStoredMapperRoot(dom) {
@@ -305,25 +319,29 @@ function readStoredMapperRoot(dom) {
 /**
  * @param {string | null | undefined} serializedRoot
  *   Serialized local-storage root payload.
- * @returns {unknown}
+ * @returns {Record<string, unknown>}
  *   Parsed local-storage root payload for mapper state.
  */
 function parseStoredMapperRoot(serializedRoot) {
-  return JSON.parse(serializedRoot ?? '{}');
+  return /** @type {Record<string, unknown>} */ (
+    JSON.parse(serializedRoot ?? '{}')
+  );
 }
 
 /**
- * @param {unknown} root
+ * @param {Record<string, unknown> | null | undefined} root
  *   Parsed local-storage root payload.
- * @returns {unknown}
+ * @returns {Record<string, unknown> | null | undefined}
  *   Mapper-specific storage payload, if present.
  */
 function readMapperStorageEntry(root) {
-  return root?.[MAPPER_STORAGE_KEY];
+  return /** @type {Record<string, unknown> | null | undefined} */ (
+    root?.[MAPPER_STORAGE_KEY]
+  );
 }
 
 /**
- * @param {unknown} stored
+ * @param {Record<string, unknown> | null | undefined} stored
  *   Candidate mapper-specific storage payload.
  * @returns {StoredMapperState}
  *   Normalized mapper storage state.
@@ -342,7 +360,7 @@ function normalizeStoredMapperState(stored) {
 /**
  * @param {unknown} value
  *   Candidate value that might be object-like.
- * @returns {value is object}
+ * @returns {value is Record<string, unknown>}
  *   Whether the value is an object.
  */
 function isObjectLike(value) {
@@ -407,11 +425,11 @@ function firstPendingIndex(state) {
  *   Previous gamepad snapshot.
  * @param {GamepadSnapshot | null} current
  *   Current gamepad snapshot.
- * @returns {CaptureResult | null}
+ * @returns {ButtonCapture | null}
  *   Strongest newly pressed button capture, if detected.
  */
 function detectButtonCapture(previous, current) {
-  if (isMissingButtonSnapshots(previous, current)) {
+  if (!previous || !current) {
     return null;
   }
 
@@ -433,7 +451,7 @@ function isMissingButtonSnapshots(previous, current) {
 /**
  * @param {GamepadSnapshot} previous
  *   Previous gamepad snapshot.
- * @returns {(best: CaptureResult | null, button: ButtonSnapshot, index: number) => CaptureResult | null}
+ * @returns {(best: ButtonCapture | null, button: ButtonSnapshot, index: number) => ButtonCapture | null}
  *   Reducer for selecting the strongest button capture across all buttons.
  */
 function makeButtonCaptureReducer(previous) {
@@ -494,7 +512,7 @@ function hasButtonCaptureTransition(button, oldButton) {
  *   Previous button snapshot.
  * @param {number} index
  *   Current button index.
- * @returns {CaptureResult | null}
+ * @returns {ButtonCapture | null}
  *   Capture candidate for this button, if it qualifies.
  */
 function getButtonCaptureCandidate(button, oldButton, index) {
@@ -506,11 +524,11 @@ function getButtonCaptureCandidate(button, oldButton, index) {
 }
 
 /**
- * @param {CaptureResult | null} best
+ * @param {ButtonCapture | null} best
  *   Current strongest capture.
- * @param {CaptureResult | null} candidate
+ * @param {ButtonCapture | null} candidate
  *   Candidate capture to compare.
- * @returns {CaptureResult | null}
+ * @returns {ButtonCapture | null}
  *   Stronger button capture.
  */
 function selectStrongerButtonCapture(best, candidate) {
@@ -522,11 +540,11 @@ function selectStrongerButtonCapture(best, candidate) {
 }
 
 /**
- * @param {CaptureResult | null} best
+ * @param {ButtonCapture | null} best
  *   Current strongest capture.
- * @param {CaptureResult} candidate
+ * @param {ButtonCapture} candidate
  *   Candidate capture to compare.
- * @returns {CaptureResult}
+ * @returns {ButtonCapture}
  *   Stronger candidate capture.
  */
 function selectCapturedButton(best, candidate) {
@@ -538,9 +556,9 @@ function selectCapturedButton(best, candidate) {
 }
 
 /**
- * @param {CaptureResult} candidate
+ * @param {ButtonCapture} candidate
  *   Candidate capture to compare.
- * @param {CaptureResult} best
+ * @param {ButtonCapture} best
  *   Current strongest capture.
  * @returns {boolean}
  *   Whether the candidate should replace the current best capture.
@@ -550,11 +568,11 @@ function isStrongerButtonCapture(candidate, best) {
 }
 
 /**
- * @param {CaptureResult} candidate
+ * @param {ButtonCapture} candidate
  *   Candidate capture to compare.
- * @param {CaptureResult} best
+ * @param {ButtonCapture} best
  *   Current strongest capture.
- * @returns {CaptureResult}
+ * @returns {ButtonCapture}
  *   Stronger of the two button captures.
  */
 function pickStrongerButtonCapture(candidate, best) {
@@ -616,11 +634,11 @@ function hasAxisSnapshots(previous, current) {
  *   Current gamepad snapshot.
  * @param {'negative' | 'positive'} expectedDirection
  *   Direction the active control expects.
- * @returns {CaptureResult | null}
+ * @returns {AxisCapture | null}
  *   Strongest axis movement capture, if detected.
  */
 function detectAxisCapture(previous, current, expectedDirection) {
-  if (!hasAxisSnapshots(previous, current)) {
+  if (!previous || !current) {
     return null;
   }
 
@@ -665,7 +683,7 @@ function isAxisCaptureCandidate(value, context) {
  *   Current axis index.
  * @param {{ oldValue: number, expectedDirection: 'negative' | 'positive' }} context
  *   Previous axis value and direction context.
- * @returns {CaptureResult | null}
+ * @returns {AxisCapture | null}
  *   Capture candidate for this axis, if it qualifies.
  */
 function getAxisCaptureCandidate(value, axis, context) {
@@ -689,7 +707,7 @@ function getAxisCaptureCandidate(value, axis, context) {
  *   Previous gamepad snapshot.
  * @param {'negative' | 'positive'} expectedDirection
  *   Direction the active control expects.
- * @returns {CaptureResult | null}
+ * @returns {AxisCapture | null}
  *   Strongest qualifying axis capture, if any.
  */
 function findStrongestAxisCapture(axes, previous, expectedDirection) {
@@ -700,15 +718,15 @@ function findStrongestAxisCapture(axes, previous, expectedDirection) {
       expectedDirection,
     });
     return mergeAxisCaptureCandidate(best, candidate);
-  }, null);
+  }, /** @type {AxisCapture | null} */ (null));
 }
 
 /**
- * @param {CaptureResult | null} best
+ * @param {AxisCapture | null} best
  *   Current strongest capture.
- * @param {CaptureResult | null} candidate
+ * @param {AxisCapture | null} candidate
  *   Candidate capture to compare.
- * @returns {CaptureResult | null}
+ * @returns {AxisCapture | null}
  *   Stronger capture after considering the candidate.
  */
 function mergeAxisCaptureCandidate(best, candidate) {
@@ -720,17 +738,23 @@ function mergeAxisCaptureCandidate(best, candidate) {
 }
 
 /**
- * @param {CaptureResult | null} best
+ * @param {AxisCapture | null} best
  *   Current strongest capture.
- * @param {CaptureResult} candidate
+ * @param {AxisCapture} candidate
  *   Candidate capture to compare.
- * @returns {CaptureResult}
+ * @returns {AxisCapture}
  *   Stronger axis capture.
  */
 function selectStrongerAxisCapture(best, candidate) {
-  return [best, candidate]
-    .filter(Boolean)
-    .sort((left, right) => right.magnitude - left.magnitude)[0];
+  if (!best) {
+    return candidate;
+  }
+
+  if (candidate.magnitude > best.magnitude) {
+    return candidate;
+  }
+
+  return best;
 }
 
 /**
@@ -799,6 +823,7 @@ function getStoredControlCapture(control, state) {
 
 const ROW_STATE_VALUE_TEXT = {
   active: 'listening...',
+  done: 'mapped',
   optional: 'optional',
   skipped: 'skipped',
 };
@@ -925,7 +950,7 @@ function renderMapperList(state) {
 /**
  * @param {DOMHelpers} dom
  *   DOM helper facade for element mutation.
- * @param {Element} node
+ * @param {HTMLElement} node
  *   Parent node whose children should be removed.
  * @returns {void}
  */
@@ -1290,14 +1315,19 @@ function updateCaptureState(state, snapshot) {
  *   Capture for the active control, if one is present.
  */
 function detectCurrentControlCapture(state, snapshot) {
-  if (state.currentControl.type === 'button') {
+  const currentControl = state.currentControl;
+  if (!currentControl) {
+    return null;
+  }
+
+  if (currentControl.type === 'button') {
     return detectButtonCapture(state.previousSnapshot, snapshot);
   }
 
   return detectAxisCapture(
     state.previousSnapshot,
     snapshot,
-    /** @type {'negative' | 'positive'} */ (state.currentControl.direction)
+    /** @type {'negative' | 'positive'} */ (currentControl.direction)
   );
 }
 
@@ -1306,7 +1336,7 @@ function detectCurrentControlCapture(state, snapshot) {
  *   dom: DOMHelpers,
  *   element: HTMLElement,
  *   handler: (event: Event) => void,
- *   disposers: Array<(globalThis: typeof globalThis) => void>
+ *   disposers: Array<() => void>
  * }} options
  *   Click registration inputs.
  * @returns {void}
@@ -1444,7 +1474,7 @@ function appendChildren(dom, parent, children) {
 
 /**
  * Invoke every registered disposer.
- * @param {Array<(globalThis: typeof globalThis) => void>} disposers Callbacks to clean up when the mapper is disposed.
+ * @param {Array<() => void>} disposers Callbacks to clean up when the mapper is disposed.
  * @returns {void}
  */
 function disposeAll(disposers) {
@@ -1469,7 +1499,7 @@ function getSkippedControlKey(control) {
 /**
  * Start the periodic capture loop and register the disposer.
  * @param {MapperState} state Mapper state that tracks the current capture session.
- * @param {Array<(globalThis: typeof globalThis) => void>} disposers Cleanup callbacks that should clear the interval.
+ * @param {Array<() => void>} disposers Cleanup callbacks that should clear the interval.
  * @returns {void} Ensures the capture interval is scheduled and cleared when disposed.
  */
 function startJoyConCaptureLoop(state, disposers) {
@@ -1529,9 +1559,11 @@ export const joyConMapperTestOnly = {
   getSkippedControlKey,
   crossedButtonThreshold,
   hasButtonCaptureTransition,
+  isMissingButtonSnapshots,
   makeButtonCaptureReducer,
   getButtonCaptureCandidate,
   pickStrongerButtonCapture,
+  hasAxisSnapshots,
   mergeAxisCaptureCandidate,
   isPromptComplete,
   getStartedPromptCopy,
@@ -1606,7 +1638,7 @@ function handleJoyConMapperReset(state) {
 /**
  * @param {DOMHelpers} dom
  *   DOM helper facade for UI creation and updates.
- * @param {Element} container
+ * @param {HTMLElement} container
  *   Host element for the mapper control.
  * @param {HTMLInputElement} textInput
  *   Hidden toy input synchronized with mapper actions.
@@ -1614,7 +1646,7 @@ function handleJoyConMapperReset(state) {
  */
 export function joyConMapperHandler(dom, container, textInput) {
   browserCore.hideAndDisable(textInput, dom);
-  const disposers = [];
+  const disposers = /** @type {Array<() => void>} */ ([]);
   const form = createManagedFormShell({ dom, container, textInput, disposers });
   form.classList.add('joycon-mapper-form');
   injectStyles(dom, form);

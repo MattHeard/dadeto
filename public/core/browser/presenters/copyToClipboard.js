@@ -1,4 +1,4 @@
-import { reportAndReturnFalse, whenNotNullish } from '../../commonCore.js';
+import { reportAndReturnFalse } from '../../commonCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
@@ -42,7 +42,7 @@ async function copyUsingClipboard(inputString, clipboard, dom) {
     await clipboard.writeText(inputString);
     return true;
   } catch (error) {
-    return reportAndReturnFalse(logCopyFailure, dom, error);
+    return reportAndReturnFalse(() => logCopyFailure(dom, error));
   }
 }
 
@@ -72,16 +72,18 @@ async function copyToClipboard(inputString, dom) {
  */
 function clearCopyFeedbackTimeout(options) {
   const { dom, state } = options;
-  whenNotNullish(state.timeoutHandle, timeoutHandle => {
-    dom.clearTimeout(timeoutHandle);
-    resetCopyFeedbackState(state);
-  });
+  if (state.timeoutHandle === null) {
+    return;
+  }
+
+  dom.clearTimeout(state.timeoutHandle);
+  resetCopyFeedbackState(state);
 }
 
 /**
  * Restore the copy button label.
  * @param {{
- *   button: HTMLElement,
+ *   button: HTMLButtonElement,
  *   dom: DOMHelpers,
  *   state: { timeoutHandle: number | null },
  * }} options - Copy feedback state.
@@ -96,7 +98,7 @@ function resetCopyButtonLabel(options) {
 /**
  * Show temporary success feedback after a copy.
  * @param {{
- *   button: HTMLElement,
+ *   button: HTMLButtonElement,
  *   dom: DOMHelpers,
  *   state: { timeoutHandle: number | null },
  * }} options - Copy feedback state.
@@ -122,7 +124,7 @@ function resetCopyFeedbackState(state) {
 
 /**
  * Update the copy button label.
- * @param {HTMLElement} button - Copy button.
+ * @param {HTMLButtonElement} button - Copy button.
  * @param {DOMHelpers} dom - DOM helper facade.
  * @param {string} label - Button label.
  * @returns {void}
@@ -134,7 +136,7 @@ function setCopyButtonLabel(button, dom, label) {
 /**
  * Handle a click on the copy button.
  * @param {{
- *   button: HTMLElement,
+ *   button: HTMLButtonElement,
  *   dom: DOMHelpers,
  *   inputString: string,
  *   state: { timeoutHandle: number | null },
@@ -157,10 +159,10 @@ async function handleCopyButtonClick(options) {
  * @returns {HTMLElement} Button element.
  */
 export function createCopyToClipboardButtonElement(inputString, dom) {
-  const button = dom.createElement('button');
-  const state = {
+  const button = /** @type {HTMLButtonElement} */ (dom.createElement('button'));
+  const state = /** @type {{ timeoutHandle: number | null }} */ ({
     timeoutHandle: null,
-  };
+  });
   dom.setType(button, 'button');
   dom.setTextContent(button, COPY_BUTTON_LABEL);
   dom.addEventListener(button, 'click', event => {

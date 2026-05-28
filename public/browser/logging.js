@@ -1,1 +1,1 @@
-export * from './browser-core.js';
+export * from '../core/browser/browser-core.js';

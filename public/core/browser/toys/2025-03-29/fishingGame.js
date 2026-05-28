@@ -196,7 +196,9 @@ function normalizeMonth(month) {
  */
 function resolvePeriodLabel(period, fallback) {
   const label = getPeriodLabel(period);
-  return whenOrDefault(Boolean(label), () => label, fallback);
+  return /** @type {TimeOfDayLabel | SeasonLabel} */ (
+    whenOrDefault(Boolean(label), () => label, fallback)
+  );
 }
 
 /**

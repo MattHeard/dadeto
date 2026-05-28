@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "MEMV1",
+      "title": "Memory Vector",
+      "publicationDate": "2026-05-28",
+      "content": [
+        "Reads a selected memory location and path, then returns the matching value as a vector-shaped JSON payload.",
+        "Start with the existing temporary, permanent, or full-envelope memory buckets that Dadeto already exposes through toy helpers.",
+        "Use it as a tiny inspection tool when you want to see one memory value in a consistent vector wrapper without mutating any state."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-05-28/memoryVector.js",
+        "functionName": "memoryVector",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "memory", "vector", "json", "inspection"]
+    },
+    {
       "key": "REAL2",
       "title": "Realtime Voice Prototype",
       "publicationDate": "2026-05-07",

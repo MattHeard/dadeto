@@ -30,7 +30,7 @@ const VALIDATION_ERROR = 'Invalid real hourly wage input';
  * @returns {boolean} True when the value is valid.
  */
 function isValidRealHourlyWageNumber(value) {
-  return [Number.isFinite(value), value >= 0].every(Boolean);
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
 /**
@@ -91,21 +91,24 @@ function firstNonNullError(errors) {
  * @returns {Array<string | null>} Section validation errors.
  */
 function getInputSectionValidationErrors(candidate) {
-  return (
-    whenOrNull(isNonNullObject(candidate), () => [
-      firstNonNullError([
-        getObjectValidationError(candidate.period, 'period'),
-        getRequiredFieldValidationError(
-          /** @type {Record<string, unknown>} */ (candidate.period),
-          'period',
-          ['paidWorkHours', 'grossIncome', 'netIncome']
-        ),
-      ]),
-      firstNonNullError([
-        getObjectValidationError(candidate.overhead, 'overhead'),
-      ]),
-    ]) ?? [null, null]
-  );
+  if (!isNonNullObject(candidate)) {
+    return [null, null];
+  }
+
+  const typedCandidate = /** @type {Record<string, unknown>} */ (candidate);
+  return [
+    firstNonNullError([
+      getObjectValidationError(typedCandidate.period, 'period'),
+      getRequiredFieldValidationError(
+        /** @type {Record<string, unknown>} */ (typedCandidate.period),
+        'period',
+        ['paidWorkHours', 'grossIncome', 'netIncome']
+      ),
+    ]),
+    firstNonNullError([
+      getObjectValidationError(typedCandidate.overhead, 'overhead'),
+    ]),
+  ];
 }
 
 /**
@@ -131,18 +134,20 @@ function normalizeRealHourlyWageInput(candidate) {
     return { error: `${VALIDATION_ERROR}: ${validationError}` };
   }
 
+  const typedCandidate = /** @type {Record<string, unknown>} */ (candidate);
+  const typedPeriod = /** @type {Record<string, unknown>} */ (
+    typedCandidate.period
+  );
+
   /** @type {RealHourlyWageInput} */
   const value = {
     period: {
-      paidWorkHours: /** @type {Record<string, number>} */ (candidate.period)
-        .paidWorkHours,
-      grossIncome: /** @type {Record<string, number>} */ (candidate.period)
-        .grossIncome,
-      netIncome: /** @type {Record<string, number>} */ (candidate.period)
-        .netIncome,
+      paidWorkHours: numberOrZero(typedPeriod.paidWorkHours),
+      grossIncome: numberOrZero(typedPeriod.grossIncome),
+      netIncome: numberOrZero(typedPeriod.netIncome),
     },
     overhead: pickKnownNumbers(
-      /** @type {Record<string, unknown>} */ (candidate.overhead),
+      /** @type {Record<string, unknown>} */ (typedCandidate.overhead),
       [...HOUR_FIELDS, ...EXPENSE_FIELDS]
     ),
   };
@@ -156,11 +161,13 @@ function normalizeRealHourlyWageInput(candidate) {
  * @returns {string} JSON string representing the final toy output.
  */
 function formatRealHourlyWageResult(normalized) {
-  const renderers = [
-    renderInvalidRealHourlyWageResult,
-    renderValidRealHourlyWageResult,
-  ];
-  return renderers[Number(Boolean(normalized.value))](normalized);
+  if (normalized.value) {
+    return renderValidRealHourlyWageResult(
+      /** @type {{ value: RealHourlyWageInput }} */ (normalized)
+    );
+  }
+
+  return renderInvalidRealHourlyWageResult(normalized);
 }
 
 /**
@@ -170,7 +177,7 @@ function formatRealHourlyWageResult(normalized) {
  */
 function renderInvalidRealHourlyWageResult(normalized) {
   return JSON.stringify({
-    error: normalized.error || VALIDATION_ERROR,
+    error: normalized.error,
   });
 }
 

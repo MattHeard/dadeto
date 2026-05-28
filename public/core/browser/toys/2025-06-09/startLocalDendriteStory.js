@@ -106,11 +106,11 @@ function pickPrimaryStories(stories, fallback) {
 
 /**
  * Normalize a stored story array candidate.
- * @param {DendriteStoryResult[]} stories - Story list candidate.
+ * @param {DendriteStoryResult[] | undefined} stories - Story list candidate.
  * @returns {DendriteStoryResult[]} Story array.
  */
 function readStoryArray(stories) {
-  return stories;
+  return Array.isArray(stories) ? stories : [];
 }
 
 /**
@@ -188,3 +188,14 @@ export function startLocalDendriteStory(input, env) {
     }
   );
 }
+
+export const startLocalDendriteStoryTestOnly = {
+  getLegacyDend1,
+  getStar1Stories,
+  pickPrimaryStories,
+  readStoryArray,
+  resolveLegacyStructure,
+  resolveStar1Structure,
+  shouldSkipDend1,
+  shouldSkipStar1,
+};

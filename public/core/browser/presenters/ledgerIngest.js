@@ -192,7 +192,7 @@ function createOverview(parsed, dom) {
   const overview = dom.createElement('div');
   dom.setClassName(overview, OVERVIEW_CLASS);
 
-  const rows = [
+  const rows = /** @type {Array<[string, unknown]>} */ ([
     ['Fixture', parsed.fixture],
     ['Input mode', parsed.inputMode],
     ['Raw records', getSummaryNumber(parsed, 'rawRecords')],
@@ -202,7 +202,7 @@ function createOverview(parsed, dom) {
     ],
     ['Duplicates detected', getSummaryNumber(parsed, 'duplicatesDetected')],
     ['Errors detected', getSummaryNumber(parsed, 'errorsDetected')],
-  ];
+  ]);
 
   rows.forEach(([label, value]) => {
     dom.appendChild(overview, createOverviewRow(dom, label, value));
@@ -279,10 +279,11 @@ function createCanonicalTransactionsTable(transactions, options, dom) {
  * @returns {HTMLElement} Table head element.
  */
 function createTableHead(state, rerender, dom) {
-  const head = dom.createElement('thead');
+  const head = /** @type {HTMLTableSectionElement} */ (
+    dom.createElement('thead')
+  );
   dom.setClassName(head, TABLE_HEAD_CLASS);
-  head.style ??= {};
-  head.style.verticalAlign = 'top';
+  setTableSectionVerticalAlign(head);
   const row = dom.createElement('tr');
 
   getColumnGroups(state.collapsedColumns).forEach(group => {
@@ -306,10 +307,11 @@ function createTableHead(state, rerender, dom) {
  * @returns {HTMLElement} Table body element.
  */
 function createTableBody(transactions, state, dom) {
-  const body = dom.createElement('tbody');
+  const body = /** @type {HTMLTableSectionElement} */ (
+    dom.createElement('tbody')
+  );
   dom.setClassName(body, TABLE_BODY_CLASS);
-  body.style ??= {};
-  body.style.verticalAlign = 'top';
+  setTableSectionVerticalAlign(body);
 
   transactions.forEach(transaction => {
     dom.appendChild(body, createTransactionRow(transaction, state, dom));
@@ -368,7 +370,9 @@ function appendTableHeaderCell(row, options) {
 function createTableHeaderCell(group, options) {
   const { collapsedColumns, rerender, dom } = options;
   const column = TRANSACTION_COLUMNS[group.start];
-  const headerCell = dom.createElement('th');
+  const headerCell = /** @type {HTMLTableCellElement} */ (
+    dom.createElement('th')
+  );
   dom.setClassName(headerCell, getTableHeaderCellClassName(group.collapsed));
   headerCell.colSpan = group.length;
 
@@ -579,15 +583,33 @@ function createEmptyStateParagraph(dom, text) {
  * @returns {string} Display string.
  */
 function formatDisplayValue(value) {
+  return getDisplayText(value);
+}
+
+/**
+ * Convert an arbitrary value into the text used by the ledger-ingest table.
+ * @param {unknown} value Cell value.
+ * @returns {string} Display text.
+ */
+function getDisplayText(value) {
+  const text = String(value);
   const replacements = {
     undefined: '—',
     null: '—',
     '': '—',
   };
-  if (Object.hasOwn(replacements, value)) {
-    return replacements[value];
-  }
-  return String(value);
+  return replacements[text] ?? text;
+}
+
+/**
+ * Apply the table-section vertical alignment when a style object is available.
+ * @param {HTMLTableSectionElement} section Table section element.
+ * @returns {void}
+ */
+function setTableSectionVerticalAlign(section) {
+  const style = section.style ?? {};
+  style.verticalAlign = 'top';
+  section.style = style;
 }
 
 /**
@@ -738,4 +760,5 @@ export const ledgerIngestReportTestOnly = {
   getSummaryValue,
   getSummaryNumber,
   getCollapsedRunLength,
+  setTableSectionVerticalAlign,
 };

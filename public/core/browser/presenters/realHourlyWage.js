@@ -157,7 +157,9 @@ function formatEmptyDisplayValue(value) {
  * @returns {string | null} Numeric display string or null.
  */
 function formatNumericDisplayValue(value) {
-  return whenOrNull(typeof value === 'number', () => formatNumber(value));
+  return whenOrNull(typeof value === 'number', () =>
+    formatNumber(/** @type {number} */ (value))
+  );
 }
 
 /**
@@ -244,10 +246,10 @@ function getHourRows(parsed) {
     ['Paid work hours', breakdown.paidWorkHours],
     ['Overhead hours', breakdown.overheadHours],
     ['Total hours', breakdown.totalHours],
-    ...Object.entries(directHoursByType).map(([key, value]) => [
-      humanizeKey(key),
-      value,
-    ]),
+    ...Object.entries(directHoursByType).map(
+      ([key, value]) =>
+        /** @type {[string, unknown]} */ ([humanizeKey(key), value])
+    ),
   ];
 }
 
@@ -259,10 +261,10 @@ function getHourRows(parsed) {
 function getExpenseRows(parsed) {
   const breakdown = getBreakdown(parsed);
   const expensesByType = getNestedRecord(breakdown, 'expensesByType');
-  return Object.entries(expensesByType).map(([key, value]) => [
-    humanizeKey(key),
-    value,
-  ]);
+  return Object.entries(expensesByType).map(
+    ([key, value]) =>
+      /** @type {[string, unknown]} */ ([humanizeKey(key), value])
+  );
 }
 
 /**

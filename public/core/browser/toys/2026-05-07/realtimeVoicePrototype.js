@@ -142,7 +142,7 @@ function stringOr(candidate, fallback) {
 /**
  * Check whether a candidate is a non-empty string.
  * @param {unknown} candidate Candidate value.
- * @returns {boolean} True when candidate is a non-empty string.
+ * @returns {candidate is string} True when candidate is a non-empty string.
  */
 function isNonEmptyString(candidate) {
   return typeof candidate === 'string' && Boolean(candidate.trim());

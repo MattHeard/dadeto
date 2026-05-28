@@ -39,7 +39,7 @@ function extractDend2Stories(data) {
  */
 function getStories(data) {
   const stories = extractDend2Stories(data);
-  return arrayOrEmpty(stories);
+  return /** @type {object[]} */ (arrayOrEmpty(stories));
 }
 
 /**

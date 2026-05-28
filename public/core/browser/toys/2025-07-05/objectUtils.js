@@ -1,4 +1,12 @@
 /**
  * Re-export object utility helpers for the add dendrite page toy.
  */
-export { pick, mapValues, deepClone } from '../../browser-core.js';
+import {
+  deepClone as deepCloneFromCore,
+  mapValues as mapValuesFromCore,
+  pick as pickFromCore,
+} from '../../browser-core.js';
+
+export const pick = pickFromCore;
+export const mapValues = mapValuesFromCore;
+export const deepClone = deepCloneFromCore;

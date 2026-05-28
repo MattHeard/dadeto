@@ -3,7 +3,7 @@ import * as browserCore from '../browser-core.js';
 /** @typedef {import('../browser-core.js').DOMEventListener} DOMEventListener */
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {Record<string, string>} DendriteData */
-/** @typedef {(globalThis: typeof globalThis) => void} Disposer */
+/** @typedef {() => void} Disposer */
 
 /**
  * Call a node's _dispose method when available.
@@ -194,7 +194,7 @@ function appendWrappedField({ dom, form, fieldWrapper, label, input }) {
 
 /**
  * Build a labelled wrapper div and append it to the form.
- * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLElement }} options - Label and field to append.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, labelText: string, input: HTMLInputElement | HTMLTextAreaElement }} options - Label and field to append.
  * @returns {void}
  */
 export function appendLabelledField({ dom, form, labelText, input }) {
@@ -205,7 +205,7 @@ export function appendLabelledField({ dom, form, labelText, input }) {
 
 /**
  * Register an input listener and append the input as a labelled field.
- * @param {{ dom: DOMHelpers, form: HTMLElement, input: HTMLElement, labelText: string, handler: DOMEventListener, disposers: Disposer[] }} options Field wiring dependencies.
+ * @param {{ dom: DOMHelpers, form: HTMLElement, input: HTMLInputElement | HTMLTextAreaElement, labelText: string, handler: DOMEventListener, disposers: Disposer[] }} options Field wiring dependencies.
  * @returns {void}
  */
 export function wireLabelledField({
@@ -244,7 +244,7 @@ function createFieldInput(options) {
 /**
  * Create the wrapper, label, and input elements for a field and append them.
  * @param {{dom: DOMHelpers, form: HTMLElement, key: string, placeholder: string, data: DendriteData, textInput: HTMLInputElement, disposers: Disposer[]}} options - Field render inputs.
- * @returns {{fieldWrapper: HTMLElement}} Wrapped elements ready for insertion.
+ * @returns {{fieldWrapper: HTMLElement, input: HTMLInputElement | HTMLTextAreaElement}} Wrapped elements ready for insertion.
  */
 function createFieldElements(options) {
   const { dom, placeholder, form } = options;
@@ -254,7 +254,7 @@ function createFieldElements(options) {
   const input = createFieldInput(options);
   appendWrappedField({ dom, form, fieldWrapper, label, input });
 
-  return { fieldWrapper };
+  return { fieldWrapper, input };
 }
 
 /**
@@ -315,7 +315,7 @@ function createFieldRenderer({ dom, form, data, textInput, disposers }) {
  * @returns {void}
  */
 function runDisposer(dom, fn) {
-  fn(dom.globalThis);
+  fn();
 }
 
 /**

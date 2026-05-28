@@ -16,7 +16,9 @@ import {
  * @returns {string} JSON string of the current permanent storage view.
  */
 export function ledgerIngestStorageViewToy(input, env) {
-  const parsedInput = parseJsonOrFallback(input, {});
+  const parsedInput = /** @type {Record<string, unknown>} */ (
+    parseJsonOrFallback(input, {})
+  );
   const storageKey = resolveStorageKey(parsedInput);
   const permanentRoot = readPermanentStorageRoot(env);
   const storageState = normalizeLedgerStorageState(permanentRoot[storageKey]);

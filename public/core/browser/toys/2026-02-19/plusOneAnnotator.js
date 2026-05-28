@@ -1,7 +1,7 @@
 import { normalizeToken } from './germanTokenizer.js';
 import { whenString } from '../../../commonCore.js';
 import { buildWhen } from '../../common.js';
-import { isPlainObject, toRecordOrNull } from '../browserToysCore.js';
+import { isPlainObject } from '../browserToysCore.js';
 
 /**
  * Convert a value into a string when available.
@@ -47,7 +47,11 @@ function parseToyInput(input) {
   }
 
   const parsed = tryParse(raw);
-  return toRecordOrNull(parsed, isPlainObject);
+  if (!isPlainObject(parsed)) {
+    return null;
+  }
+
+  return /** @type {Record<string, unknown>} */ (parsed);
 }
 
 /**

@@ -34,6 +34,16 @@ const FORM_CLASS = 'real-hourly-wage-form';
 const GROUP_CLASS = 'real-hourly-wage-form-group';
 const GROUP_TITLE_CLASS = 'real-hourly-wage-form-group-title';
 
+/**
+ * @type {Array<{
+ *   title: string,
+ *   fields: Array<{
+ *     path: [keyof RealHourlyWageFormData, string],
+ *     labelText: string,
+ *     placeholder: string,
+ *   }>,
+ * }>}
+ */
 const FIELD_GROUPS = [
   {
     title: 'Period',
@@ -243,7 +253,7 @@ function parseFormData(textInput) {
  * @returns {number} Stored number.
  */
 function getFieldValue(data, path) {
-  const section = data[path[0]];
+  const section = /** @type {Record<string, unknown>} */ (data[path[0]]);
   return numberOrZero(Number(section[path[1]]));
 }
 
@@ -255,7 +265,7 @@ function getFieldValue(data, path) {
  * @returns {void}
  */
 function setFieldValue(data, path, rawValue) {
-  const section = data[path[0]];
+  const section = /** @type {Record<string, unknown>} */ (data[path[0]]);
   section[path[1]] = numberOrZero(Number(rawValue));
 }
 
@@ -301,7 +311,7 @@ function buildNumericField(options) {
     textInput,
     disposers,
   } = options;
-  const input = dom.createElement('input');
+  const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(input, 'number');
   dom.setPlaceholder(input, placeholder);
   dom.setValue(input, String(getFieldValue(data, path)));

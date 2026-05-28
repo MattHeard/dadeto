@@ -139,6 +139,17 @@ function forwardCapturedKey(event, options) {
  * @param {{ dom: KeyboardDOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Form dependencies.
  * @returns {void}
  */
+/**
+ * Build and wire the keyboard capture form.
+ * @param {{
+ *   dom: KeyboardDOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   button: HTMLButtonElement,
+ *   cleanupFns: Array<() => void>,
+ * }} options - Form dependencies.
+ * @returns {void}
+ */
 const buildKeyboardCaptureFormContext = ({
   dom,
   button,
@@ -171,7 +182,7 @@ const buildKeyboardCaptureFormContext = ({
     autoSubmitCheckbox,
     state,
   });
-  const buildGlobalListenerOptions = type => ({
+  const buildGlobalListenerOptions = /** @param {string} type */ type => ({
     globalThisArg: dom.globalThis,
     cleanupFns,
     type,
