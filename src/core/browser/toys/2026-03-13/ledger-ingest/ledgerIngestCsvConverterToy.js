@@ -608,7 +608,11 @@ function buildLedgerCsvRecord(row, headerLookup, index) {
  */
 function getLedgerCsvCell(row, headerLookup, headerName) {
   const index = headerLookup.get(headerName);
-  return index === undefined ? '' : row[index];
+  if (index === undefined) {
+    return '';
+  }
+
+  return row[index];
 }
 
 /**

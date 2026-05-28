@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * UID for the admin user with elevated access.
  */

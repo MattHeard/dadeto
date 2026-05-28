@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 /**
  * Copy the browser and core trees into infra for deployment.
  * @param {{

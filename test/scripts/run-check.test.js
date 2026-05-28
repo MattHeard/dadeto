@@ -253,7 +253,7 @@ describe('runCheckSuite', () => {
   it('records spawn failures and keeps running the remaining checks', async () => {
     const children = [createChild()];
     const betaChild = children[0];
-    const spawnImpl = jest.fn((command, args) => {
+    const spawnImpl = jest.fn(command => {
       if (command === 'alpha') {
         throw 'spawn failed';
       }
@@ -314,7 +314,7 @@ describe('runCheckSuite', () => {
 
   it('stops spawning later checks when a fail-fast spawn exception occurs', async () => {
     const child = createChild();
-    const spawnImpl = jest.fn((command, args) => {
+    const spawnImpl = jest.fn(command => {
       if (command === 'alpha') {
         throw new Error('spawn failed');
       }

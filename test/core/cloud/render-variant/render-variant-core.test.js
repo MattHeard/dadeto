@@ -1334,6 +1334,19 @@ describe('createRenderVariant', () => {
     expect(storage.bucket).toHaveBeenCalled();
   });
 
+  it('defaults the object prefix when one is not provided', async () => {
+    const storage = { bucket: jest.fn(() => ({ file: jest.fn() })) };
+    const renderVariant = createRenderVariant({
+      db: { doc: jest.fn() },
+      storage,
+      fetchFn: jest.fn(),
+      randomUUID: jest.fn(),
+    });
+
+    await expect(renderVariant({ exists: false })).resolves.toBeNull();
+    expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
+  });
+
   it('logs when the root page lookup fails', async () => {
     const consoleError = jest.fn();
 

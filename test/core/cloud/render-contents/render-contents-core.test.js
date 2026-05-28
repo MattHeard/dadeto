@@ -339,6 +339,38 @@ describe('createRenderContents', () => {
     expect(rootRef.get).toHaveBeenCalledTimes(2);
   });
 
+  it('defaults the object prefix when one is not provided', async () => {
+    const bucketFile = jest.fn(() => ({
+      save: jest.fn(),
+    }));
+    const bucket = { file: bucketFile };
+    const storage = {
+      bucket: jest.fn(() => bucket),
+    };
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ [ACCESS_TOKEN_KEY]: 'token' }),
+      })
+      .mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+    const renderContents = createRenderContents({
+      storage,
+      fetchFn,
+      randomUUID: jest.fn().mockReturnValue('uuid'),
+      pageSize: 2,
+    });
+
+    const render = renderContents({
+      fetchTopStoryIds: async () => ['a'],
+      fetchStoryInfo: async () => ({ title: 'One', pageNumber: 1 }),
+    });
+
+    await expect(render).resolves.toBeNull();
+    expect(bucketFile).toHaveBeenCalledWith('index.html');
+  });
+
   it('logs invalidation failures without throwing', async () => {
     const bucket = { file: jest.fn(() => ({ save: jest.fn() })) };
     const storage = { bucket: jest.fn(() => bucket) };

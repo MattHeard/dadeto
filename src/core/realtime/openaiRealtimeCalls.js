@@ -101,7 +101,7 @@ function resolveSessionConfigJson(options) {
  */
 function resolveApiKeyOption(options) {
   if (options.apiKey === undefined) {
-    return resolveOpenAiApiKey();
+    return resolveOpenAiApiKey(process.env);
   }
 
   return options.apiKey;

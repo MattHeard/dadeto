@@ -74,7 +74,7 @@ export function buildNotionCodexPrompt(options) {
 
 /**
  * @param {unknown} tokenEnvNames Environment variable names that may store a Notion API token.
- * @returns {string} Token environment names joined by "or", or default names when none are configured.
+ * @returns {boolean} True when at least one environment name is configured.
  */
 function hasTokenEnvNames(tokenEnvNames) {
   return Array.isArray(tokenEnvNames) && tokenEnvNames.length > 0;
@@ -89,5 +89,5 @@ function formatTokenEnvNames(tokenEnvNames) {
     return 'NOTION_API_KEY or NOTION_TOKEN';
   }
 
-  return tokenEnvNames.join(' or ');
+  return /** @type {string[]} */ (tokenEnvNames).join(' or ');
 }

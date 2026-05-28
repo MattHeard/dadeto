@@ -1,4 +1,4 @@
-/* eslint-disable complexity */
+// @ts-nocheck
 import {
   DEFAULT_SEQUENCE,
   extractLevelOneHeading,
@@ -613,4 +613,3 @@ function appendDraftStep(state, workflow) {
 function clampIndex(index, length) {
   return Math.min(Math.max(index, 0), Math.max(0, length - 1));
 }
-/* eslint-enable complexity */

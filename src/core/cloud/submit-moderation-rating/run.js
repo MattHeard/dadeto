@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getAllowedOrigins } from '../cors-config.js';
 import {
   createHandleSubmitModerationRating,

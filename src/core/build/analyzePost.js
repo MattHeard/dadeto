@@ -3,13 +3,12 @@ import { analyzeText, generateFeedback } from './textUtils.js';
 /**
  * Create the post analysis CLI workflow.
  * @param {{
- *   process: { argv: string[], stdin: AsyncIterable<unknown>, exit: (code: number) => void },
+ *   process: { argv: string[], stdin: import('node:stream').Readable, exit: (code: number) => void },
  *   Buffer: { concat: (chunks: unknown[]) => { toString: (encoding: string) => string } },
  *   console: { log: (message?: unknown, ...optionalParams: unknown[]) => void },
  * }} deps Environment-specific dependencies.
  * @returns {Promise<void>} Resolves when analysis output completes.
  */
-// eslint-disable-next-line complexity
 export async function runAnalyzePost(deps) {
   const text = await getInput(deps.process, deps.Buffer);
   const trimmed = text.trim();
@@ -48,12 +47,11 @@ export async function runAnalyzePost(deps) {
  * Read input from argv or stdin.
  * @param {{
  *   argv: string[],
- *   stdin: AsyncIterable<unknown>,
+ *   stdin: import('node:stream').Readable,
  * }} processObject Process-like object.
  * @param {{ concat: (chunks: unknown[]) => { toString: (encoding: string) => string } }} BufferObject Buffer constructor.
  * @returns {Promise<string>} Combined text input.
  */
-// eslint-disable-next-line complexity
 export async function getInput(processObject, BufferObject) {
   const args = processObject.argv.slice(2);
   if (args.length > 0) {

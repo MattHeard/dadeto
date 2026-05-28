@@ -292,6 +292,6 @@ describe('createHandleReportForModeration', () => {
 
     await respond({ method: 'POST', body }, res);
 
-    expect(handler).toHaveBeenCalledWith({ body });
+    expect(handler).toHaveBeenCalledWith({ method: 'POST', body });
   });
 });

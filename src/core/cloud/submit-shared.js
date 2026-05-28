@@ -240,7 +240,7 @@ export function sendResponderResult(res, status, body) {
  * @returns {void} Response is written directly.
  */
 function handleObjectResponderResult(res, status, body) {
-  const objectBody = normalizeHeadersRecord(body);
+  const objectBody = /** @type {Record<string, unknown>} */ (body);
   // `sendResponderResult` only reaches this helper after `isObject(body)` passes.
   // Keep the cast local so the object response path stays explicit.
   responderHandlers.object(res, status, objectBody);

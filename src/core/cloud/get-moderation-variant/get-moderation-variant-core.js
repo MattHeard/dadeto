@@ -424,7 +424,7 @@ function resolveVariantPathFromDb(path, db) {
  * @returns {db is FirestoreLike & { doc: (path: string) => FirestoreDocumentReference }} True when document path resolution is available.
  */
 function hasDocumentPathResolver(db) {
-  return db != null && typeof db.doc === 'function';
+  return db !== null && db !== undefined && typeof db.doc === 'function';
 }
 
 /**

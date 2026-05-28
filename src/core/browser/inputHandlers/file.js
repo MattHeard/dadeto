@@ -43,12 +43,7 @@ function syncTextInput(textInput, dom, content) {
  * @returns {Promise<string | null>} Uploaded contents or null when no file is selected.
  */
 function readSelectedFileText(fileInput) {
-  const file = fileInput.files?.[0];
-  if (!file) {
-    return Promise.resolve(null);
-  }
-
-  return file.text();
+  return fileInput.files?.[0]?.text?.() ?? Promise.resolve(null);
 }
 
 /**

@@ -171,6 +171,7 @@ export function createHandleReportForModeration(reportForModerationHandler) {
     }
 
     const { status, body } = await reportForModerationHandler({
+      method: req.method,
       body: req.body,
     });
 

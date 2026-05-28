@@ -4,9 +4,7 @@ import {
   isNonNullObject,
   normalizeNonStringValue,
   numberOrZero,
-  reportAndReturnFalse,
   stringOrNull,
-  when,
   whenString,
   whenOrNull,
   whenTruthy,
@@ -181,7 +179,11 @@ function messageIndicatesDuplicate(error) {
  */
 export function buildTestOrigins(playwrightOrigin) {
   const normalized = ensureString(playwrightOrigin);
-  return normalized ? [normalized] : [];
+  if (normalized) {
+    return [normalized];
+  }
+
+  return [];
 }
 
 /**
@@ -478,7 +480,11 @@ export function getNumericValueOrZero(data, selector) {
  */
 export function extractStringFromCandidateArray(candidate) {
   const first = candidate[0];
-  return typeof first === 'string' ? first : null;
+  if (typeof first === 'string') {
+    return first;
+  }
+
+  return null;
 }
 
 /**

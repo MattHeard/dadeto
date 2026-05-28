@@ -62,6 +62,9 @@ function emitCaptureLifecycleToggle(options, capturing) {
  * @param {boolean} capturing - Whether capture is active.
  */
 function notifyCaptureLifecycleToggle(options, capturing) {
-  const lifecycleHook = capturing ? options.onStart : options.onStop;
+  let lifecycleHook = options.onStop;
+  if (capturing) {
+    lifecycleHook = options.onStart;
+  }
   lifecycleHook?.();
 }

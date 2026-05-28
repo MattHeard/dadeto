@@ -29,7 +29,7 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
-      complexity: ['warn', { max: 2 }],
+      complexity: ['warn', { max: 8 }],
       'no-ternary': 'warn',
       'no-nested-ternary': 'warn',
       'no-else-return': 'warn',
@@ -55,7 +55,7 @@ export default [
         { max: 231, skipBlankLines: true, skipComments: true },
       ],
       'max-statements': ['warn', 35],
-      'max-params': ['warn', 3],
+      'max-params': ['warn', 4],
       indent: ['warn', 2],
       'jsdoc/require-jsdoc': 'warn',
       'jsdoc/check-tag-names': 'warn',

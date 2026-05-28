@@ -8,7 +8,6 @@ import {
   numberOrZero,
   ensureString,
   trimmedStringOrEmpty,
-  whenOrDefault,
 } from '../../../browser-core.js';
 
 /**
@@ -713,7 +712,11 @@ function buildDedupeKey(transaction, policy) {
  */
 function serializeDedupeCandidate(value, caseInsensitive) {
   if (typeof value === 'string') {
-    return caseInsensitive ? value.toLowerCase() : value;
+    if (caseInsensitive) {
+      return value.toLowerCase();
+    }
+
+    return value;
   }
 
   if (typeof value === 'number') {
@@ -730,10 +733,13 @@ function serializeDedupeCandidate(value, caseInsensitive) {
  * @returns {string} ISO date (YYYY-MM-DD) or empty string on failure.
  */
 function normalizeDate(value) {
-  const candidate =
-    value instanceof Date
-      ? value
-      : new Date(/** @type {string | number} */ (value ?? ''));
+  /** @type {Date} */
+  let candidate;
+  if (value instanceof Date) {
+    candidate = value;
+  } else {
+    candidate = new Date(/** @type {string | number} */ (value ?? ''));
+  }
   if (Number.isNaN(candidate.getTime())) {
     return '';
   }

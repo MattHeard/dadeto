@@ -463,7 +463,11 @@ function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
  * @returns {string | null} Guess key when the event carries one.
  */
 function getGuessKey(inputEvent) {
-  return typeof inputEvent.key === 'string' ? inputEvent.key : null;
+  if (typeof inputEvent.key === 'string') {
+    return inputEvent.key;
+  }
+
+  return null;
 }
 
 /**

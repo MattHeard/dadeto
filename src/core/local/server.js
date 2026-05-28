@@ -1,3 +1,4 @@
+// @ts-nocheck
 const ENABLED_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 
 /**

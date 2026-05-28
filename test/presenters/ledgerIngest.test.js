@@ -305,8 +305,18 @@ describe('createLedgerIngestReportElement', () => {
       )
     ).toBe(7);
     expect(ledgerIngestReportTestOnly.getCollapsedRunLength([], 0)).toBe(0);
-    const section = {};
+    const section = { style: {} };
     ledgerIngestReportTestOnly.setTableSectionVerticalAlign(section);
     expect(section.style.verticalAlign).toBe('top');
+  });
+
+  test('returns early when the table section is missing or lacks a style object', () => {
+    expect(() =>
+      ledgerIngestReportTestOnly.setTableSectionVerticalAlign(undefined)
+    ).not.toThrow();
+
+    const section = {};
+    ledgerIngestReportTestOnly.setTableSectionVerticalAlign(section);
+    expect(section.style).toBeUndefined();
   });
 });

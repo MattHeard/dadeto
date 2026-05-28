@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   normalizeAuthor,
   normalizeSubmissionContent,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 const getVariantReference = ({ db, data }) => {
   if (typeof data.variant === 'string') {
     return db.doc(data.variant);

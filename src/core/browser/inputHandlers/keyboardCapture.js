@@ -182,12 +182,19 @@ const buildKeyboardCaptureFormContext = ({
     autoSubmitCheckbox,
     state,
   });
-  const buildGlobalListenerOptions = /** @param {string} type */ type => ({
-    globalThisArg: dom.globalThis,
-    cleanupFns,
-    type,
-    handler: /** @type {(event: Event) => void} */ (handleKeyboard),
-  });
+  /**
+   * Build the listener registration payload for a keyboard event type.
+   * @param {string} type Form event type to register.
+   * @returns {{ globalThisArg: typeof globalThis, cleanupFns: Array<() => void>, type: string, handler: (event: Event) => void }} Listener registration payload.
+   */
+  function buildGlobalListenerOptions(type) {
+    return {
+      globalThisArg: dom.globalThis,
+      cleanupFns,
+      type,
+      handler: /** @type {(event: Event) => void} */ (handleKeyboard),
+    };
+  }
 
   dom.addEventListener(button, 'click', handleToggle);
   captureLifecycleDeps.registerGlobalListener(

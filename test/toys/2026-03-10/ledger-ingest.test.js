@@ -349,7 +349,12 @@ describe('ledger ingest helpers', () => {
       source: 'fixture-source',
       rawRecords: [{ id: 'row-1' }],
       fieldMapping: { id: 'recordId' },
-      dedupePolicy: { mode: 'skip' },
+      dedupePolicy: {
+        name: 'posted-date-amount-description',
+        strategy: 'first-wins',
+        candidateFields: ['postedDate', 'amount', 'description'],
+        caseInsensitive: true,
+      },
     });
     expect(ledgerIngestToyTestOnly.resolveFixture({ fixture: 'missing' })).toBe(
       'happyPath'
