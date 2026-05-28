@@ -1,4 +1,5 @@
 import { get } from '../2025-03-29/get.js';
+import { requireEnvHelper } from '../browserToysCore.js';
 
 const DEFAULT_MEMORY_LOCATION = 'temporary';
 const SUPPORTED_MEMORY_LOCATIONS = ['temporary', 'permanent', 'envelope'];
@@ -86,7 +87,7 @@ function parseObjectMemoryVectorRequest(parsed) {
  * @returns {string} Supported memory location label.
  */
 function normalizeMemoryLocation(value) {
-  return fallbackIfEmpty(trimString(value), DEFAULT_MEMORY_LOCATION);
+  return fallbackIfEmpty(trimInput(value), DEFAULT_MEMORY_LOCATION);
 }
 
 /**
@@ -95,7 +96,7 @@ function normalizeMemoryLocation(value) {
  * @returns {string} Dot-separated path.
  */
 function normalizeMemoryPath(value) {
-  return trimString(value);
+  return trimInput(value);
 }
 
 /**
@@ -326,11 +327,7 @@ function buildMemoryVectorError(
  * @returns {Function} Helper function.
  */
 function getRequiredEnvHelper(env, key) {
-  const helper = env.get(key);
-  if (typeof helper !== 'function') {
-    throw new Error(`Missing toy helper "${key}"`);
-  }
-  return helper;
+  return requireEnvHelper(env, key);
 }
 
 /**
@@ -357,19 +354,6 @@ function isPlainObject(value) {
  * @returns {string} Trimmed input text.
  */
 function trimInput(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  return value.trim();
-}
-
-/**
- * Trim a string input or return the empty string for non-string values.
- * @param {unknown} value Input candidate.
- * @returns {string} Trimmed string or empty string.
- */
-function trimString(value) {
   if (typeof value !== 'string') {
     return '';
   }

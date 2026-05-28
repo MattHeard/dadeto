@@ -8,7 +8,7 @@
 ## Expected Observable Outputs
 - Terminal output should include:
   - `PASS test/toys/2026-05-28/memoryVector.test.js`
-  - `MEMV1` in the generated blog data after build
+  - `MEMO1` in the generated blog data after build
 - Artifacts written to:
   - `public/blog.json`
   - `coverage/` when the full test suite runs

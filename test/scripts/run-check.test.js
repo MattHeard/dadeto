@@ -130,8 +130,12 @@ describe('runCheckSuite', () => {
   });
 
   it('uses the default writers and clock when no overrides are supplied', async () => {
-    const stdoutWrite = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    const stdoutWrite = jest
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    const stderrWrite = jest
+      .spyOn(process.stderr, 'write')
+      .mockImplementation(() => true);
 
     try {
       const result = await runCheckSuite({ commands: [] });
@@ -402,9 +406,9 @@ describe('runCheckSuite', () => {
       expect.stringContaining('"type":"check-summary","name":"check-suite"'),
     ]);
     expect(
-      parseEvents(stderr.chunks.filter(chunk => chunk.trim().startsWith('{'))).filter(
-        event => event.type === 'check-failure' && event.name === 'beta'
-      )
+      parseEvents(
+        stderr.chunks.filter(chunk => chunk.trim().startsWith('{'))
+      ).filter(event => event.type === 'check-failure' && event.name === 'beta')
     ).toHaveLength(1);
   });
 
@@ -540,7 +544,9 @@ describe('runCheckSuite', () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.failures).toHaveLength(1);
-    expect(parseEvents(stderr.chunks).filter(event => event.type === 'check-failure')).toHaveLength(1);
+    expect(
+      parseEvents(stderr.chunks).filter(event => event.type === 'check-failure')
+    ).toHaveLength(1);
   });
 
   it('writes plain text lines only when they contain content', async () => {

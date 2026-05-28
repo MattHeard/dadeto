@@ -1,7 +1,7 @@
 # Toy Spec: Memory Vector
 
 ## Summary
-- Toy name: Memory Vector (`MEMV1`)
+- Toy name: Memory Vector (`MEMO1`)
 - Owner: Dadeto browser toys
 - Last updated: 2026-05-28
 

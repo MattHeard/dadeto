@@ -239,9 +239,9 @@ describe('generateFleet', () => {
         new Set()
       )
     ).toBeNull();
-    expect(
-      battleshipSolitaireFleetTestOnly.shouldAbortPlacement(null)
-    ).toBe(true);
+    expect(battleshipSolitaireFleetTestOnly.shouldAbortPlacement(null)).toBe(
+      true
+    );
     expect(
       battleshipSolitaireFleetTestOnly.addPlacedShip(null, candidate)
     ).toBeNull();
