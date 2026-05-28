@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "MEMO2",
+      "title": "Memory Vector",
+      "publicationDate": "2026-05-28",
+      "content": [
+        "Reads a selected memory location and path, then returns the matching value as a vector-shaped JSON payload.",
+        "Object values are projected into vectors of { key, value } pairs, while arrays and scalars keep the existing vector behavior.",
+        "Start with the existing temporary, permanent, or full-envelope memory buckets that Dadeto already exposes through toy helpers."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-05-28/memoryVectorPairs.js",
+        "functionName": "memoryVectorPairs",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "memory", "vector", "pairs", "json", "inspection"]
+    },
+    {
       "key": "MEMO1",
       "title": "Memory Vector",
       "publicationDate": "2026-05-28",

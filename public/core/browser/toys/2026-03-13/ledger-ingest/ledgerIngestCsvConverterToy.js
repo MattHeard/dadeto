@@ -72,7 +72,12 @@ function createCsvParseState() {
  * @returns {number} Index that should be assigned back to the loop.
  */
 function processCsvCharacter(state, input, index) {
-  return processCsvCharacterWithHandlers(state, input, index, CSV_CHARACTER_HANDLERS);
+  return processCsvCharacterWithHandlers(
+    state,
+    input,
+    index,
+    CSV_CHARACTER_HANDLERS
+  );
 }
 
 /**

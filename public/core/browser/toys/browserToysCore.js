@@ -22,7 +22,7 @@ import { isNonNullObject, isValidString } from '../../commonCore.js';
  * @param {string} key - Helper name that should exist in the env map.
  * @returns {EnvHelperFunc} - Registered helper for the given key.
  */
-function requireEnvHelper(env, key) {
+export function requireEnvHelper(env, key) {
   const helper = env.get(key);
   if (typeof helper !== 'function') {
     throw new Error(`Missing toy helper "${key}"`);
@@ -298,7 +298,7 @@ export function appendPageAndOptions(data, page, opts) {
   const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
     data.temporary
   );
-  const tran1 = /** @type {NonNullable<typeof temp.TRAN1>} */ (temp.TRAN1);
+  const tran1 = /** @type {Dend2Data} */ (temp.TRAN1);
   tran1.pages.push(page);
   tran1.options.push(...opts);
   return data;
@@ -462,7 +462,7 @@ export function persistDendriteStory(parsed, env) {
       const temp = /** @type {NonNullable<ToyStorage['temporary']>} */ (
         newData.temporary
       );
-      const tran1 = /** @type {NonNullable<typeof temp.TRAN1>} */ (temp.TRAN1);
+      const tran1 = /** @type {Dend2Data} */ (temp.TRAN1);
       tran1.stories.push(story);
     }
   );
