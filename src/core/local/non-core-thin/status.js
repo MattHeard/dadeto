@@ -22,6 +22,43 @@ export function getNonCoreThinStatus() {
 }
 
 /**
+ * Format the failure output for the non-core thin gate.
+ * @param {{
+ *   fileCount: number,
+ *   staleExemptions: string[],
+ *   violations: Array<{ filePath: string, lines: number }>,
+ *   maxLines: number,
+ * }} status Non-core thin status snapshot.
+ * @returns {string[]} stderr lines for a failing run
+ */
+export function formatNonCoreThinFailure(status) {
+  const lines = [];
+
+  status.staleExemptions.forEach(filePath => {
+    lines.push(`Stale non-core thin exemption: ${filePath}`);
+  });
+
+  status.violations.forEach(({ filePath, lines: lineCount }) => {
+    lines.push(
+      `${filePath} has ${lineCount} lines; max non-core size is ${status.maxLines}.`
+    );
+  });
+
+  const violationWord = pluralize(status.violations.length, 'violation');
+  const exemptionWord = pluralize(
+    status.staleExemptions.length,
+    'stale exemption'
+  );
+  const fileWord = pluralize(status.fileCount, 'file');
+
+  lines.push(
+    `Non-core thin check found ${status.violations.length} ${violationWord} and ${status.staleExemptions.length} ${exemptionWord} across ${status.fileCount} ${fileWord}.`
+  );
+
+  return lines;
+}
+
+/**
  * Build the non-core thin status from a config snapshot and file list.
  * @param {{ maxLines: number, exemptions: Record<string, string> }} config Status config.
  * @param {string[]} files Repo-relative JavaScript files outside `src/core`.
@@ -118,4 +155,19 @@ function shouldIncludeDirectory(dir, entry) {
 
 export const nonCoreThinStatusTestOnly = {
   buildNonCoreThinStatus,
+  formatNonCoreThinFailure,
 };
+
+/**
+ * Select the singular or plural form for a noun based on a count.
+ * @param {number} count Count of items.
+ * @param {string} singular Singular noun phrase.
+ * @returns {string} Singular phrase when count is one, otherwise pluralized phrase.
+ */
+function pluralize(count, singular) {
+  if (count === 1) {
+    return singular;
+  }
+
+  return `${singular}s`;
+}

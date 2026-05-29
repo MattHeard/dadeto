@@ -55,4 +55,24 @@ describe('non-core thin status', () => {
       ],
     });
   });
+
+  test('formats failure output with a final summary count', () => {
+    expect(
+      nonCoreThinStatusTestOnly.formatNonCoreThinFailure({
+        fileCount: 2,
+        maxLines: 50,
+        staleExemptions: ['src/browser/missing.js'],
+        violations: [
+          {
+            filePath: 'src/browser/document.js',
+            lines: 51,
+          },
+        ],
+      })
+    ).toEqual([
+      'Stale non-core thin exemption: src/browser/missing.js',
+      'src/browser/document.js has 51 lines; max non-core size is 50.',
+      'Non-core thin check found 1 violation and 1 stale exemption across 2 files.',
+    ]);
+  });
 });
