@@ -82,7 +82,8 @@ Use this as the canonical checklist before closure.
 - **Artifact location:** Reports under `reports/duplication` (or configured output) and terminal logs.
 - **Failure escalation path:**
   1. Reduce duplication/coupling or document accepted exception.
-  2. Track unresolved exceptions via `bd` before closure.
+  2. Treat any reported clone as a hard failure even if the underlying scanner exits 0.
+  3. Track unresolved exceptions via `bd` before closure.
 
 ### 9) Mutation confidence (scheduled/deep quality)
 - **Purpose:** Measure robustness of tests against behavioral mutations.

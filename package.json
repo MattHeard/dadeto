@@ -25,7 +25,7 @@
     "build:browser": "npm run build:mattheard-net",
     "build": "npm run build:mattheard-net",
     "depcruise": "depcruise --config dependency-cruiser.config.cjs src",
-    "duplication": "jscpd",
+    "duplication": "node src/scripts/check-duplication.js",
     "entrypoint-pattern": "node src/scripts/check-build-entrypoint-pattern.js",
     "non-core-thin": "node src/scripts/check-non-core-thin-files.js",
     "start": "npx serve public",

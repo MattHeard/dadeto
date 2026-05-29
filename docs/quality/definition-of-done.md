@@ -50,7 +50,7 @@ Use the evaluator matrix as source of truth. At minimum:
 Business logic should live under `src/core`. Code outside `src/core` should stay thin: environment integration, dependency wiring, and generated-entry shims. The aggregate check enforces this direction in three ways:
 
 - `npm run lint` treats warnings as failures for the linted surface, so core quality rules are strict.
-- `npm run duplication` keeps zero-duplication detection scoped to `src/core`.
+- `npm run duplication` keeps zero-duplication detection scoped to `src/core` and fails the gate on any reported clone, even if the underlying scanner exits 0.
 - `npm run non-core-thin` fails any non-core JavaScript file over 50 lines unless it is explicitly listed in `non-core-thin-exemptions.json`.
 
 The exemption file should normally stay empty; if a temporary exception is added, remove it as soon as the logic moves into `src/core`.
