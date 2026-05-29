@@ -1,5 +1,11 @@
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import {
+  asNullableString,
+  asStringWithFallback,
+  isObjectLike,
+  toSourceObject,
+} from './valueHelpers.js';
 
 /**
  * @param {unknown} value Candidate run object.
@@ -11,43 +17,6 @@ export function normalizeActiveRun(value) {
   }
 
   return null;
-}
-
-/**
- * @param {unknown} value Candidate source.
- * @returns {Record<string, unknown>} Source object or empty object.
- */
-function toSourceObject(value) {
-  if (isObjectLike(value)) {
-    return value;
-  }
-
-  return {};
-}
-
-/**
- * @param {unknown} value Candidate string.
- * @returns {string | null} String or null.
- */
-function asNullableString(value) {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  return value;
-}
-
-/**
- * @param {unknown} value Candidate string.
- * @param {string} fallback Fallback value.
- * @returns {string} String or fallback.
- */
-function asStringWithFallback(value, fallback) {
-  if (typeof value !== 'string') {
-    return fallback;
-  }
-
-  return value;
 }
 
 /**
@@ -222,14 +191,6 @@ function createWriteState({ mkdirImpl, writeFileImpl, readStatePath }) {
     const serializedState = JSON.stringify(normalizedState, null, 2);
     await writeFileImpl(readStatePath, serializedState, 'utf8');
   };
-}
-
-/**
- * @param {unknown} value Candidate object.
- * @returns {value is Record<string, unknown>} True when the value is an object record.
- */
-function isObjectLike(value) {
-  return typeof value === 'object' && Boolean(value);
 }
 
 /**

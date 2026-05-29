@@ -1,5 +1,6 @@
 import { get } from '../2025-03-29/get.js';
 import { requireEnvHelper } from '../browserToysCore.js';
+import { trimmedStringOrEmpty } from '../../../commonCore.js';
 /** @typedef {import('../browserToysCore.js').ToyEnv} ToyEnv */
 
 const DEFAULT_MEMORY_LOCATION = 'temporary';
@@ -27,8 +28,8 @@ export function memoryVector(input, env) {
  * @returns {{ memoryLocation: string, path: string, error?: string }} Normalized request.
  */
 function parseMemoryVectorRequest(input) {
-  const trimmed = trimInput(input);
-  if (isEmptyInput(trimmed)) {
+  const trimmed = trimmedStringOrEmpty(input);
+  if (trimmed.length === 0) {
     return createMemoryVectorRequest(DEFAULT_MEMORY_LOCATION, '');
   }
 
@@ -88,7 +89,7 @@ function parseObjectMemoryVectorRequest(parsed) {
  * @returns {string} Supported memory location label.
  */
 function normalizeMemoryLocation(value) {
-  return fallbackIfEmpty(trimInput(value), DEFAULT_MEMORY_LOCATION);
+  return fallbackIfEmpty(trimmedStringOrEmpty(value), DEFAULT_MEMORY_LOCATION);
 }
 
 /**
@@ -97,7 +98,7 @@ function normalizeMemoryLocation(value) {
  * @returns {string} Dot-separated path.
  */
 function normalizeMemoryPath(value) {
-  return trimInput(value);
+  return trimmedStringOrEmpty(value);
 }
 
 /**
@@ -140,11 +141,21 @@ function buildUnsupportedMemoryLocationResult(memoryLocation) {
  * Try to build a vector response and fall back to an error payload when the runtime throws.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {ToyEnv} env Environment helpers.
+ * @param {{
+ *   projectToVector?: (value: unknown) => unknown[],
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
+ *     memoryLocation: string,
+ *     path: string,
+ *     found: boolean,
+ *     vector: unknown[],
+ *     error?: string,
+ *   }
+ * }} [options] Projection and error-handling overrides.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
-function buildMemoryVectorResponseWithFallback(request, env) {
+function buildMemoryVectorResponseWithFallback(request, env, options = {}) {
   try {
-    return buildMemoryVectorResponse(request, env);
+    return buildMemoryVectorResponse(request, env, options);
   } catch (error) {
     return buildMemoryVectorError(
       request,
@@ -158,12 +169,23 @@ function buildMemoryVectorResponseWithFallback(request, env) {
  * Build the structured vector payload after the input has been validated.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {ToyEnv} env Environment helpers.
+ * @param {{
+ *   projectToVector?: (value: unknown) => unknown[],
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
+ *     memoryLocation: string,
+ *     path: string,
+ *     found: boolean,
+ *     vector: unknown[],
+ *     error?: string,
+ *   }
+ * }} [options] Projection and error-handling overrides.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
-function buildMemoryVectorResponse(request, env) {
+function buildMemoryVectorResponse(request, env, options = {}) {
   return buildMemoryVectorResponseFromRootResult(
     request,
-    readMemoryRoot(request.memoryLocation, env)
+    readMemoryRoot(request.memoryLocation, env),
+    options
   );
 }
 
@@ -171,27 +193,47 @@ function buildMemoryVectorResponse(request, env) {
  * Resolve the root lookup result into either an error response or a path lookup.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {{ root?: object | unknown[], error?: string }} rootResult Root lookup result.
+ * @param {{
+ *   projectToVector?: (value: unknown) => unknown[],
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
+ *     memoryLocation: string,
+ *     path: string,
+ *     found: boolean,
+ *     vector: unknown[],
+ *     error?: string,
+ *   }
+ * }} [options] Projection and error-handling overrides.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
-function buildMemoryVectorResponseFromRootResult(request, rootResult) {
+function buildMemoryVectorResponseFromRootResult(
+  request,
+  rootResult,
+  options = {}
+) {
   if (rootResult.error) {
-    return buildMemoryVectorError(
-      request,
-      rootResult.error,
-      request.memoryLocation
-    );
+    return buildResolvedMemoryVectorError(request, rootResult.error, options);
   }
 
-  return buildMemoryVectorResponseFromRoot(request, rootResult.root);
+  return buildMemoryVectorResponseFromRoot(request, rootResult.root, options);
 }
 
 /**
  * Resolve the selected root into a path lookup or a root-missing error.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {object | unknown[] | undefined} root Memory root to inspect.
+ * @param {{
+ *   projectToVector?: (value: unknown) => unknown[],
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
+ *     memoryLocation: string,
+ *     path: string,
+ *     found: boolean,
+ *     vector: unknown[],
+ *     error?: string,
+ *   }
+ * }} [options] Projection and error-handling overrides.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
-function buildMemoryVectorResponseFromRoot(request, root) {
+function buildMemoryVectorResponseFromRoot(request, root, options = {}) {
   if (root === undefined) {
     return buildMemoryVectorError(
       request,
@@ -200,19 +242,30 @@ function buildMemoryVectorResponseFromRoot(request, root) {
     );
   }
 
-  return buildResolvedMemoryVectorResponse(request, root);
+  return buildResolvedMemoryVectorResponse(request, root, options);
 }
 
 /**
  * Build the structured vector payload once the memory root is available.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {object | unknown[]} root Memory root to inspect.
+ * @param {{
+ *   projectToVector?: (value: unknown) => unknown[],
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
+ *     memoryLocation: string,
+ *     path: string,
+ *     found: boolean,
+ *     vector: unknown[],
+ *     error?: string,
+ *   }
+ * }} [options] Projection and error-handling overrides.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
-function buildResolvedMemoryVectorResponse(request, root) {
+function buildResolvedMemoryVectorResponse(request, root, options = {}) {
   return buildResolvedMemoryVectorResponseFromPath(
     request,
-    resolveMemoryPath(root, request.path)
+    resolveMemoryPath(root, request.path),
+    options
   );
 }
 
@@ -220,20 +273,35 @@ function buildResolvedMemoryVectorResponse(request, root) {
  * Resolve the path lookup into either an error or a projected vector.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {{ value?: unknown, error?: string }} resolvedValue Lookup result.
+ * @param {{
+ *   projectToVector?: (value: unknown) => unknown[],
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
+ *     memoryLocation: string,
+ *     path: string,
+ *     found: boolean,
+ *     vector: unknown[],
+ *     error?: string,
+ *   }
+ * }} [options] Projection and error-handling overrides.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
-function buildResolvedMemoryVectorResponseFromPath(request, resolvedValue) {
+function buildResolvedMemoryVectorResponseFromPath(
+  request,
+  resolvedValue,
+  options = {}
+) {
   if (resolvedValue.error) {
-    return buildMemoryVectorError(
+    return buildResolvedMemoryVectorError(
       request,
       resolvedValue.error,
-      request.memoryLocation
+      options
     );
   }
 
   return buildResolvedMemoryVectorResponseFromValue(
     request,
-    resolvedValue.value
+    resolvedValue.value,
+    options
   );
 }
 
@@ -241,9 +309,16 @@ function buildResolvedMemoryVectorResponseFromPath(request, resolvedValue) {
  * Project a resolved path value into the final response payload.
  * @param {{ memoryLocation: string, path: string }} request Normalized request.
  * @param {unknown} value Resolved path value.
+ * @param {{
+ *   projectToVector?: (value: unknown) => unknown[]
+ * }} [options] Projection override.
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
-function buildResolvedMemoryVectorResponseFromValue(request, value) {
+function buildResolvedMemoryVectorResponseFromValue(
+  request,
+  value,
+  options = {}
+) {
   if (value === undefined) {
     return buildMemoryVectorError(
       request,
@@ -256,8 +331,38 @@ function buildResolvedMemoryVectorResponseFromValue(request, value) {
     memoryLocation: request.memoryLocation,
     path: request.path,
     found: true,
-    vector: projectToVector(value),
+    vector: (options.projectToVector ?? projectToVector)(value),
   };
+}
+
+/**
+ * Resolve a lookup error into a structured response, allowing callers to
+ * override the missing-path behavior while keeping the default hard error.
+ * @param {{ memoryLocation: string, path: string }} request Normalized request.
+ * @param {string} error Lookup error.
+ * @param {{
+ *   resolvePathError?: (request: { memoryLocation: string, path: string }, error: string) => {
+ *     memoryLocation: string,
+ *     path: string,
+ *     found: boolean,
+ *     vector: unknown[],
+ *     error?: string,
+ *   }
+ * }} [options] Error-handling overrides.
+ * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
+ */
+function buildResolvedMemoryVectorError(request, error, options = {}) {
+  return (options.resolvePathError ?? defaultResolvePathError)(request, error);
+}
+
+/**
+ * Turn a lookup error into the standard hard-error payload.
+ * @param {{ memoryLocation: string, path: string }} request Normalized request.
+ * @param {string} error Lookup error.
+ * @returns {{ memoryLocation: string, path: string, found: boolean, vector: never[], error: string }} Hard error payload.
+ */
+function defaultResolvePathError(request, error) {
+  return buildMemoryVectorError(request, error, request.memoryLocation);
 }
 
 /**
@@ -266,19 +371,12 @@ function buildResolvedMemoryVectorResponseFromValue(request, value) {
  * @returns {{ root?: object | unknown[], error?: string }} Temporary state or error.
  */
 function readTemporaryMemoryRoot(env) {
-  const getData = getRequiredEnvHelper(env, 'getData');
-  const envelope = getData();
-  if (!isObjectLike(envelope)) {
-    return {
-      error: "Error: 'getData' did not return a valid object or array.",
-    };
-  }
-
-  const temporary = /** @type {{ temporary?: object | unknown[] }} */ (envelope)
-    .temporary;
-  return {
-    root: getTemporaryRoot(temporary),
-  };
+  return readValidatedEnvelopeRoot(env, envelope => {
+    const temporary = /** @type {{ temporary?: object | unknown[] }} */ (
+      envelope
+    ).temporary;
+    return getTemporaryRoot(temporary);
+  });
 }
 
 /**
@@ -287,17 +385,7 @@ function readTemporaryMemoryRoot(env) {
  * @returns {{ root?: object | unknown[], error?: string }} Envelope state or error.
  */
 function readEnvelopeMemoryRoot(env) {
-  const getData = getRequiredEnvHelper(env, 'getData');
-  const envelope = getData();
-  if (!isObjectLike(envelope)) {
-    return {
-      error: "Error: 'getData' did not return a valid object or array.",
-    };
-  }
-
-  return {
-    root: envelope,
-  };
+  return readValidatedEnvelopeRoot(env, envelope => envelope);
 }
 
 /**
@@ -306,20 +394,43 @@ function readEnvelopeMemoryRoot(env) {
  * @returns {{ root?: object | unknown[], error?: string }} Permanent state or error.
  */
 function readPermanentMemoryRoot(env) {
-  const getLocalPermanentData = getRequiredEnvHelper(
+  return readValidatedSourceRoot(
     env,
-    'getLocalPermanentData'
+    'getLocalPermanentData',
+    permanent => permanent
   );
-  const permanent = getLocalPermanentData();
-  if (!isObjectLike(permanent)) {
+}
+
+/**
+ * Resolve a `getData` envelope and project a root from it after validating the
+ * returned payload shape.
+ * @param {ToyEnv} env Environment helpers.
+ * @param {(envelope: object | unknown[]) => object | unknown[]} selectRoot Root selector.
+ * @returns {{ root?: object | unknown[], error?: string }} Root lookup result.
+ */
+function readValidatedEnvelopeRoot(env, selectRoot) {
+  return readValidatedSourceRoot(env, 'getData', selectRoot);
+}
+
+/**
+ * Resolve a runtime helper and project a root from its returned payload after
+ * validating the payload shape.
+ * @param {ToyEnv} env Environment helpers.
+ * @param {string} helperName Runtime helper name.
+ * @param {(source: object | unknown[]) => object | unknown[]} selectRoot Root selector.
+ * @returns {{ root?: object | unknown[], error?: string }} Root lookup result.
+ */
+function readValidatedSourceRoot(env, helperName, selectRoot) {
+  const getter = getRequiredEnvHelper(env, helperName);
+  const source = getter();
+  if (!isObjectLike(source)) {
     return {
-      error:
-        "Error: 'getLocalPermanentData' did not return a valid object or array.",
+      error: `Error: '${helperName}' did not return a valid object or array.`,
     };
   }
 
   return {
-    root: permanent,
+    root: selectRoot(source),
   };
 }
 
@@ -413,28 +524,6 @@ function isObjectLike(value) {
  */
 function isPlainObject(value) {
   return Boolean(value) && Object.getPrototypeOf(value) === Object.prototype;
-}
-
-/**
- * Trim a full input payload or return an empty string for non-string values.
- * @param {unknown} value Input candidate.
- * @returns {string} Trimmed input text.
- */
-function trimInput(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  return value.trim();
-}
-
-/**
- * Determine whether the provided input is empty after trimming.
- * @param {string} value Input text.
- * @returns {boolean} True when the input has no visible characters.
- */
-function isEmptyInput(value) {
-  return value.length === 0;
 }
 
 /**
@@ -539,10 +628,32 @@ function formatThrownError(error) {
   return String(error);
 }
 
+export {
+  buildMemoryVectorError,
+  buildMemoryVectorResponse,
+  buildMemoryVectorResponseFromRoot,
+  buildMemoryVectorResponseFromRootResult,
+  buildMemoryVectorResponseWithFallback,
+  buildResolvedMemoryVectorResponse,
+  buildResolvedMemoryVectorResponseFromPath,
+  buildResolvedMemoryVectorResponseFromValue,
+  normalizeMemoryLocation,
+  normalizeMemoryPath,
+  parseMemoryVectorRequest,
+  projectToVector,
+  readEnvelopeMemoryRoot,
+  resolveMemoryPath as readMemoryPath,
+  readMemoryRoot,
+  readPermanentMemoryRoot,
+  readTemporaryMemoryRoot,
+};
+
 export const memoryVectorTestOnly = {
   buildMemoryVectorError,
+  buildMemoryVectorResponse,
   buildMemoryVectorResponseFromRoot,
   buildResolvedMemoryVectorResponseFromValue,
+  buildResolvedMemoryVectorError,
   normalizeMemoryLocation,
   normalizeMemoryPath,
   parseMemoryVectorRequest,

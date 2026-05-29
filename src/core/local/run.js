@@ -1,3 +1,5 @@
+import { asNullableString, isObjectLike } from './notion-codex/valueHelpers.js';
+
 /**
  * Build the local writer runtime and startup handlers.
  * @param {{
@@ -176,24 +178,4 @@ function getObjectErrorCode(error) {
  */
 function resolveLogger(candidate, fallback) {
   return candidate || fallback;
-}
-
-/**
- * @param {unknown} value Candidate object.
- * @returns {value is Record<string, unknown>} True when the value is an object record.
- */
-function isObjectLike(value) {
-  return typeof value === 'object' && Boolean(value);
-}
-
-/**
- * @param {unknown} value Candidate string.
- * @returns {string | null} String or null.
- */
-function asNullableString(value) {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  return value;
 }

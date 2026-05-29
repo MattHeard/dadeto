@@ -1,5 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
 import {
+  buildMemoryVectorResponse,
+  buildMemoryVectorResponseFromRootResult,
+  buildResolvedMemoryVectorResponse,
+  buildResolvedMemoryVectorResponseFromPath,
+  buildResolvedMemoryVectorResponseFromValue,
   memoryVector,
   memoryVectorTestOnly,
 } from '../../../src/core/browser/toys/2026-05-28/memoryVector.js';
@@ -283,6 +288,129 @@ describe('memoryVector helpers', () => {
       found: false,
       vector: [],
       error: 'Error: Memory path resolution returned no value.',
+    });
+  });
+
+  test('supports custom projection and path-error handlers in the shared helpers', () => {
+    const request = { memoryLocation: 'temporary', path: 'profile' };
+    const options = {
+      projectToVector: value => ['projected', value],
+      resolvePathError: (currentRequest, error) => ({
+        memoryLocation: currentRequest.memoryLocation,
+        path: currentRequest.path,
+        found: false,
+        vector: [],
+        error: `custom:${error}`,
+      }),
+    };
+
+    expect(
+      buildMemoryVectorResponseFromRootResult(
+        request,
+        { error: 'root lookup failed' },
+        options
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'custom:root lookup failed',
+    });
+
+    expect(
+      buildResolvedMemoryVectorResponseFromPath(
+        request,
+        { error: "Error: Path segment 'missing' not found at 'profile'." },
+        options
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: "custom:Error: Path segment 'missing' not found at 'profile'.",
+    });
+
+    expect(
+      buildResolvedMemoryVectorResponseFromValue(
+        request,
+        { bucket: 'sky' },
+        options
+      )
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: true,
+      vector: ['projected', { bucket: 'sky' }],
+    });
+  });
+
+  test('uses default helper fallbacks when no overrides are provided', () => {
+    const request = { memoryLocation: 'temporary', path: 'profile' };
+    const env = new Map([
+      [
+        'getData',
+        () => ({
+          temporary: {
+            profile: {
+              bucket: 'sky',
+            },
+          },
+        }),
+      ],
+    ]);
+
+    expect(buildMemoryVectorResponse(request, env)).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: true,
+      vector: [{ bucket: 'sky' }],
+    });
+
+    expect(
+      buildMemoryVectorResponseFromRootResult(request, { error: 'boom' })
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'boom',
+    });
+
+    expect(
+      buildResolvedMemoryVectorResponse(request, {
+        profile: {
+          bucket: 'sky',
+        },
+      })
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: true,
+      vector: [{ bucket: 'sky' }],
+    });
+
+    expect(
+      buildResolvedMemoryVectorResponseFromPath(request, {
+        error: 'missing profile',
+      })
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'missing profile',
+    });
+
+    expect(
+      memoryVectorTestOnly.buildResolvedMemoryVectorError(request, 'missing')
+    ).toEqual({
+      memoryLocation: 'temporary',
+      path: 'profile',
+      found: false,
+      vector: [],
+      error: 'missing',
     });
   });
 
