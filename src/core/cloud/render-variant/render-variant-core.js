@@ -2384,7 +2384,7 @@ function createRenderVariantHandler({
 }) {
   const bucket = createPrefixedBucket(
     storage.bucket(bucketName || DEFAULT_BUCKET_NAME),
-    objectPrefix ?? ''
+    /** @type {string} */ (objectPrefix)
   );
   const invalidatePaths = createInvalidatePaths({
     fetchFn,

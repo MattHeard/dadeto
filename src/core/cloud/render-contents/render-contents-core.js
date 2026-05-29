@@ -871,7 +871,7 @@ function instantiateRenderContents(deps) {
 
   const bucket = createPrefixedBucket(
     /** @type {StorageInstance} */ (storage).bucket(bucketName),
-    objectPrefix ?? ''
+    /** @type {string} */ (objectPrefix)
   );
   const invalidatePaths = createInvalidatePaths({
     fetchFn,
