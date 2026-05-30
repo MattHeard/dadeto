@@ -11,6 +11,7 @@ const handle = createCheckDuplicationHandle({
   stdout: process.stdout,
   stderr: process.stderr,
   rootDir: ROOT_DIR,
+  relativePath: path.relative,
 });
 
 const isDirectExecution =

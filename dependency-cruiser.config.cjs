@@ -101,6 +101,18 @@ module.exports = {
       },
     },
     {
+      name: 'src-core-scripts-no-node-builtins',
+      comment:
+        'Keep src/core/scripts free of direct Node built-in imports so executable wiring stays at the outer wrapper layer.',
+      severity: 'error',
+      from: {
+        path: '^src/core/scripts/',
+      },
+      to: {
+        dependencyTypes: ['core'],
+      },
+    },
+    {
       name: 'core-browser-no-core-sibling-deps',
       comment:
         'Keep src/core/browser isolated from the other src/core subdirectories; shared code belongs at src/core root.',

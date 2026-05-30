@@ -1,26 +1,22 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { spawnSync as defaultSpawnSync } from 'node:child_process';
-
-const ROOT_DIR = path.resolve('.');
-const CONFIG_PATH = path.join(ROOT_DIR, '.jscpd.json');
-const REPORT_PATH = path.join(
-  ROOT_DIR,
-  'reports',
-  'duplication',
-  'jscpd-report.json'
-);
+const DEFAULT_ROOT_DIR = '.';
+const DEFAULT_CONFIG_PATH = '.jscpd.json';
+const DEFAULT_REPORT_PATH = 'reports/duplication/jscpd-report.json';
+const DEFAULT_RELATIVE_PATH = (_, target) => target;
+const DEFAULT_SPAWN_RESULT = { status: 0, signal: null };
+const DEFAULT_STDOUT = { write() {} };
+const DEFAULT_STDERR = { write() {} };
 
 /**
  * Create the command handler that runs the duplication gate.
  * @param {{
- *   spawnImpl?: typeof defaultSpawnSync,
- *   readFileSync?: typeof fs.readFileSync,
+ *   spawnImpl?: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
+ *   readFileSync?: (filePath: string, encoding: 'utf8') => string,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
  *   rootDir?: string,
  *   configPath?: string,
  *   reportPath?: string,
+ *   relativePath?: (from: string, to: string) => string,
  * }} [options] Gate dependencies.
  * @returns {() => { exitCode: number, clones: number }} Duplication gate handler.
  */
@@ -31,46 +27,50 @@ export function createCheckDuplicationHandle(options) {
 /**
  * Normalize the gate dependencies with default repository paths.
  * @param {{
- *   spawnImpl?: typeof defaultSpawnSync,
- *   readFileSync?: typeof fs.readFileSync,
+ *   spawnImpl?: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
+ *   readFileSync?: (filePath: string, encoding: 'utf8') => string,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
  *   rootDir?: string,
  *   configPath?: string,
  *   reportPath?: string,
+ *   relativePath?: (from: string, to: string) => string,
  * }} [options] Optional dependencies.
  * @returns {{
- *   spawnImpl: typeof defaultSpawnSync,
- *   readFileSync: typeof fs.readFileSync,
+ *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
  *   stdout: { write: (text: string) => void },
  *   stderr: { write: (text: string) => void },
  *   rootDir: string,
  *   configPath: string,
  *   reportPath: string,
+ *   relativePath: (from: string, to: string) => string,
  * }} Normalized dependencies.
  */
 function normalizeDuplicationGateOptions(options = {}) {
   return {
-    spawnImpl: useDefault(options.spawnImpl, defaultSpawnSync),
-    readFileSync: useDefault(options.readFileSync, fs.readFileSync),
-    stdout: useDefault(options.stdout, process.stdout),
-    stderr: useDefault(options.stderr, process.stderr),
-    rootDir: useDefault(options.rootDir, ROOT_DIR),
-    configPath: useDefault(options.configPath, CONFIG_PATH),
-    reportPath: useDefault(options.reportPath, REPORT_PATH),
+    spawnImpl: useDefault(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
+    readFileSync: useDefault(options.readFileSync, () => '{}'),
+    stdout: useDefault(options.stdout, DEFAULT_STDOUT),
+    stderr: useDefault(options.stderr, DEFAULT_STDERR),
+    rootDir: useDefault(options.rootDir, DEFAULT_ROOT_DIR),
+    configPath: useDefault(options.configPath, DEFAULT_CONFIG_PATH),
+    reportPath: useDefault(options.reportPath, DEFAULT_REPORT_PATH),
+    relativePath: useDefault(options.relativePath, DEFAULT_RELATIVE_PATH),
   };
 }
 
 /**
  * Build the gate handler from normalized dependencies.
  * @param {{
- *   spawnImpl: typeof defaultSpawnSync,
- *   readFileSync: typeof fs.readFileSync,
+ *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
  *   stdout: { write: (text: string) => void },
  *   stderr: { write: (text: string) => void },
  *   rootDir: string,
  *   configPath: string,
  *   reportPath: string,
+ *   relativePath: (from: string, to: string) => string,
  * }} deps Normalized dependencies.
  * @returns {() => { exitCode: number, clones: number }} Gate handler.
  */
@@ -83,13 +83,14 @@ function createDuplicationGateHandle(deps) {
 /**
  * Execute the duplication gate and return the exit summary.
  * @param {{
- *   spawnImpl: typeof defaultSpawnSync,
- *   readFileSync: typeof fs.readFileSync,
+ *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
  *   stdout: { write: (text: string) => void },
  *   stderr: { write: (text: string) => void },
  *   rootDir: string,
  *   configPath: string,
  *   reportPath: string,
+ *   relativePath: (from: string, to: string) => string,
  * }} deps Gate dependencies.
  * @returns {{ exitCode: number, clones: number }} Gate outcome.
  */
@@ -101,6 +102,7 @@ function executeDuplicationGate({
   rootDir,
   configPath,
   reportPath,
+  relativePath,
 }) {
   const runResult = spawnImpl('jscpd', ['--config', configPath], {
     cwd: rootDir,
@@ -115,12 +117,20 @@ function executeDuplicationGate({
   const report = readDuplicationReport(readFileSync, reportPath);
   if (!report) {
     stderr.write(
-      `Duplication gate could not read report at ${path.relative(rootDir, reportPath)}\n`
+      `Duplication gate could not read report at ${relativePath(rootDir, reportPath)}\n`
     );
     return { exitCode: 1, clones: 0 };
   }
 
-  const cloneFailure = handleCloneFailure(report, rootDir, reportPath, stderr);
+  const cloneFailure = handleCloneFailure(
+    report,
+    {
+      rootDir,
+      reportPath,
+      relativePath,
+    },
+    stderr
+  );
   if (cloneFailure) {
     return cloneFailure;
   }
@@ -160,12 +170,16 @@ function handleLaunchFailure(runResult, stderr) {
 /**
  * Convert a clone report into a failure when clones are present.
  * @param {Record<string, unknown>} report Parsed report payload.
- * @param {string} rootDir Repository root directory.
- * @param {string} reportPath Clone report path.
+ * @param {{
+ *   rootDir: string,
+ *   reportPath: string,
+ *   relativePath: (from: string, to: string) => string,
+ * }} reportInfo Report path details.
  * @param {{ write: (text: string) => void }} stderr Error writer.
  * @returns {{ exitCode: number, clones: number } | null} Failure result or null.
  */
-function handleCloneFailure(report, rootDir, reportPath, stderr) {
+function handleCloneFailure(report, reportInfo, stderr) {
+  const { rootDir, reportPath, relativePath } = reportInfo;
   const clones = countClones(report);
   if (clones <= 0) {
     return null;
@@ -181,14 +195,14 @@ function handleCloneFailure(report, rootDir, reportPath, stderr) {
   }
 
   stderr.write(
-    `See ${path.relative(rootDir, reportPath)} for the detailed clone report.\n`
+    `See ${relativePath(rootDir, reportPath)} for the detailed clone report.\n`
   );
   return { exitCode: 1, clones };
 }
 
 /**
  * Read and parse the jscpd report.
- * @param {typeof fs.readFileSync} readFileSync File reader.
+ * @param {(filePath: string, encoding: 'utf8') => string} readFileSync File reader.
  * @param {string} reportPath Report path.
  * @returns {Record<string, unknown> | null} Parsed report or null.
  */

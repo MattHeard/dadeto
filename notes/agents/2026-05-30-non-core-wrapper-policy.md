@@ -32,3 +32,10 @@
 - Diagnosis path: split the gate into small core helpers, reran focused lint/Jest, and confirmed the wrapper count moved from 107 to 106 once the script became a thin invoked-handle adapter.
 - Chosen fix: added `createCheckDuplicationHandle` in `src/core/scripts/check-duplication.js`, injected `jscpd`, filesystem, and output dependencies from the script, and kept the non-core file as a direct `handle()` launcher.
 - Next-time guidance: when a gate needs both launch wiring and result interpretation, split the interpretation helpers first so the outer factory stays trivially thin and lint-friendly.
+
+## Core scripts builtin policy
+
+- Unexpected hurdle: tightening the core-scripts dependency rule exposed a coverage regression instead of a dependency violation, because the default stderr fallback in `src/core/scripts/check-duplication.js` was not exercised.
+- Diagnosis path: added a `dependency-cruiser` rule for `src/core/scripts/**` against Node built-ins, then used the focused duplication test coverage output to trace the remaining 94.44% function coverage back to the default no-op writer.
+- Chosen fix: keep Node built-ins in the outer script wrapper, inject `fs`/`path`/`url`/`child_process` into core, and add an error-path test that leaves the default writers in place so the fallback branch is covered.
+- Next-time guidance: when moving policy enforcement into `depcruise`, always pair it with a focused coverage check on the target file so a missing default branch does not hide behind a seemingly successful refactor.

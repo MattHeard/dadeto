@@ -19,7 +19,7 @@ describe('createCheckDuplicationHandle', () => {
   test('creates a handle with default dependencies', () => {
     const handle = createCheckDuplicationHandle();
 
-    expect(typeof handle).toBe('function');
+    expect(handle()).toEqual({ exitCode: 0, clones: 0 });
   });
 
   test('passes when the report has no clones', () => {
@@ -195,6 +195,21 @@ describe('createCheckDuplicationHandle', () => {
     expect(stderr.chunks.join('')).toContain(
       'Duplication gate could not read report at reports/duplication/jscpd-report.json'
     );
+  });
+
+  test('uses the default relative path fallback when reporting a missing report', () => {
+    const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
+    const readFileSync = jest.fn(() => {
+      throw new Error('missing');
+    });
+    const handle = createCheckDuplicationHandle({
+      spawnImpl,
+      readFileSync,
+    });
+
+    const result = handle();
+
+    expect(result).toEqual({ exitCode: 1, clones: 0 });
   });
 
   test('uses total clone statistics when duplicates are omitted', () => {
