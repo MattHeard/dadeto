@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "MEMO3",
+      "title": "Memory Scalar/Vector Write",
+      "publicationDate": "2026-05-30",
+      "content": [
+        "Writes a scalar or vector value into temporary, permanent, or full-envelope memory at a chosen dot path.",
+        "Missing intermediate containers are constructed automatically, including arrays when numeric path segments imply indexed storage.",
+        "Use MEMO2 after a write to inspect the target path and confirm the stored value is visible as a vector or key-value pair projection."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-05-28/memoryScalarVectorWrite.js",
+        "functionName": "memoryScalarVectorWrite",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "memory", "vector", "write", "json", "storage"]
+    },
+    {
       "key": "MEMO2",
       "title": "Memory Vector",
       "publicationDate": "2026-05-28",
