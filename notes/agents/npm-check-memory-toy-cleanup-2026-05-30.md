@@ -1,0 +1,6 @@
+# npm check memory toy cleanup — 2026-05-30
+
+- **Unexpected hurdle:** `npm run check` failed in three different gates, but only two failures shared a small local cause: `tsdoc:check` type errors in `memoryScalarVectorWrite.js` and duplication clones between `memoryScalarVectorWrite.js` and `memoryVector.js`. The remaining `non-core-thin` failure spans 35 non-core entry files and is too broad for the same loop.
+- **Diagnosis path:** Ran the aggregate check first, then targeted `npm run tsdoc:check` and `npm run duplication` after isolating the memory toy errors. `bd` was initially absent; installing v1.0.4 attempted an incompatible embedded migration against the existing JSONL issue store, so the `.beads/issues.jsonl` change was restored and this loop was recorded directly in JSONL.
+- **Chosen fix:** Tightened MEMO3 write request typedefs, made array/object container indexing explicit for JSDoc strictness, and reused the existing memory-vector path/error helper functions instead of keeping duplicated copies in the writer module.
+- **Next-time guidance:** If `npm run check` still fails only on `non-core-thin`, split that into dedicated extraction beads by subsystem rather than adding blanket exemptions; the current violation list is intentionally left as tracked follow-up debt.
