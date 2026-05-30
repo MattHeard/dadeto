@@ -88,3 +88,10 @@
 - Diagnosis path: listed each presenter file, searched caller paths, and separated shim-only presenters from `realtimeVoicePrototype`, which still needs a real extraction.
 - Chosen fix: removed the nine shim presenters and imported those presenter helpers directly from `src/core/browser/presenters` in `src/browser/toys.js`.
 - Next-time guidance: for mixed directories, prune obvious shims first and leave real implementation files for a separate extraction loop with dedicated behavior tests.
+
+## Google auth status entrypoints
+
+- Unexpected hurdle: three cloud-served browser modules duplicated the same sign-in/sign-out display logic, and the snippet tests asserted old implementation details instead of the wrapper contract.
+- Diagnosis path: compared the contents, stats, and variant auth modules, extracted the shared DOM behavior into a core handle, then updated snippet tests to assert the new handle wrapper shape.
+- Chosen fix: `createGoogleAuthStatusHandle` owns auth-status display wiring, while the three browser modules only inject `document`, auth helpers, token lookup, and admin detection before invoking `handle()`.
+- Next-time guidance: when snippet tests read source files directly, update them to assert stable contract markers rather than duplicated internal function names.

@@ -240,9 +240,8 @@ describe('buildHtml', () => {
     );
     expect(html).toContain('<script src="/variantRedirect.js"></script>');
     expect(variantGoogleSignIn).toContain('import {');
-    expect(variantGoogleSignIn).toContain('initGoogleSignIn');
-    expect(variantGoogleSignIn).toContain('getIdToken');
-    expect(variantGoogleSignIn).toContain('isAdmin');
+    expect(variantGoogleSignIn).toContain('createGoogleAuthStatusHandle');
+    expect(variantGoogleSignIn).toContain('handle();');
     expect(variantGoogleSignIn).toContain("from './googleAuth.js'");
     expect(variantMenuToggle).toContain('createMobileMenuToggleHandle');
     expect(variantMenuToggle).toContain('handle();');

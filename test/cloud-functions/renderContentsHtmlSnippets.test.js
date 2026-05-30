@@ -47,10 +47,8 @@ describe('PAGE_HTML', () => {
     );
     expect(html).toContain('<script src="./contentsMenuToggle.js"></script>');
     expect(contentsGoogleAuthModule).toContain('import {');
-    expect(contentsGoogleAuthModule).toContain('initGoogleSignIn');
-    expect(contentsGoogleAuthModule).toContain('signOut');
-    expect(contentsGoogleAuthModule).toContain('getIdToken');
-    expect(contentsGoogleAuthModule).toContain('isAdmin');
+    expect(contentsGoogleAuthModule).toContain('createGoogleAuthStatusHandle');
+    expect(contentsGoogleAuthModule).toContain('handle();');
     expect(contentsGoogleAuthModule).toContain("from './googleAuth.js'");
     expect(contentsMenuToggleModule).toContain('createMobileMenuToggleHandle');
     expect(contentsMenuToggleModule).toContain('handle();');
