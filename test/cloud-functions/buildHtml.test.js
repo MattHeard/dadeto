@@ -245,8 +245,8 @@ describe('buildHtml', () => {
     expect(variantGoogleSignIn).toContain("from './googleAuth.js'");
     expect(variantMenuToggle).toContain('createMobileMenuToggleHandle');
     expect(variantMenuToggle).toContain('handle();');
-    expect(variantRedirect).toContain('function pickWeighted');
-    expect(variantRedirect).toContain('crypto.getRandomValues');
+    expect(variantRedirect).toContain('createVariantRedirectHandle');
+    expect(variantRedirect).toContain('handle();');
   });
 
   test('includes favicon link', () => {
