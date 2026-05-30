@@ -53,3 +53,10 @@
 - Diagnosis path: checked the wrapper validator and confirmed it accepts an exported `handle`; then verified callers only need the existing named `loadStaticConfig` export.
 - Chosen fix: create `const handle = createLoadStaticConfig(...)`, export `handle`, and keep `export const loadStaticConfig = handle` as the public compatibility name.
 - Next-time guidance: for value-export wrappers, use `handle` as the validator-facing name and alias it back to the domain-specific export rather than renaming downstream callers.
+
+## Browser Google auth wrapper
+
+- Unexpected hurdle: `src/browser/googleAuth.js` exported destructured helpers from `createGoogleAuthModule`, which hid the fact that the file is already just browser dependency wiring.
+- Diagnosis path: checked the existing browser Google auth tests and confirmed callers use the named helpers, while the wrapper validator only needs the constructed module to be named `handle`.
+- Chosen fix: construct `const handle = createGoogleAuthModule(...)`, export that handle, and keep `initGoogleSignIn`, `signOut`, `isAdmin`, and `getIdToken` available under their existing names.
+- Next-time guidance: object-returning factories are good low-risk wrapper candidates when the public exports can be destructured from `handle` without changing callers.
