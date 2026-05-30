@@ -1,10 +1,17 @@
 import { deepClone } from '../../browser-core.js';
 import {
+  formatThrownError,
+  getPathCandidate,
   normalizeMemoryLocation,
   normalizeMemoryPath,
 } from './memoryVector.js';
 
 const SUPPORTED_WRITE_LOCATIONS = ['temporary', 'permanent', 'envelope'];
+
+/** @typedef {{ memoryLocation: string, path: string, value: unknown }} MemoryWriteRequest */
+/** @typedef {MemoryWriteRequest & { error?: string }} ParsedMemoryWriteRequest */
+/** @typedef {{ path: string, value: unknown }} PathWriteRequest */
+/** @typedef {(request: PathWriteRequest, env: import('../browserToysCore.js').ToyEnv) => void} MemoryWriter */
 
 /**
  * Insert or update a scalar or vector value at a nested memory key.
@@ -25,7 +32,7 @@ export function memoryScalarVectorWrite(input, env) {
 /**
  * Parse and normalize a MEMO3 write request.
  * @param {string} input JSON write request.
- * @returns {{ memoryLocation: string, path: string, value?: unknown, error?: string }} Normalized write request.
+ * @returns {ParsedMemoryWriteRequest} Normalized write request.
  */
 function parseMemoryWriteRequest(input) {
   const parsed = parseJsonObject(input);
@@ -39,7 +46,7 @@ function parseMemoryWriteRequest(input) {
 /**
  * Normalize parsed JSON into the write request shape.
  * @param {Record<string, unknown>} parsed Parsed request object.
- * @returns {{ memoryLocation: string, path: string, value?: unknown, error?: string }} Normalized write request.
+ * @returns {ParsedMemoryWriteRequest} Normalized write request.
  */
 function normalizeMemoryWriteRequest(parsed) {
   const request = createMemoryWriteRequest(
@@ -53,7 +60,7 @@ function normalizeMemoryWriteRequest(parsed) {
 
 /**
  * Write the requested value into the selected memory location.
- * @param {{ memoryLocation: string, path: string, value: unknown }} request Normalized write request.
+ * @param {MemoryWriteRequest} request Normalized write request.
  * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
  * @returns {{ memoryLocation: string, path: string, written: boolean, value?: unknown, error?: string }} Write result.
  */
@@ -68,7 +75,7 @@ function writeMemoryValue(request, env) {
 
 /**
  * Execute a memory write and convert thrown errors into structured output.
- * @param {{ memoryLocation: string, path: string, value: unknown }} request Normalized write request.
+ * @param {MemoryWriteRequest} request Normalized write request.
  * @param {() => unknown} action Write action.
  * @returns {{ memoryLocation: string, path: string, written: boolean, value?: unknown, error?: string }} Write result.
  */
@@ -83,7 +90,7 @@ function runWriteAction(request, action) {
 
 /**
  * Write into temporary memory.
- * @param {{ path: string, value: unknown }} request Normalized write request.
+ * @param {PathWriteRequest} request Normalized write request.
  * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
  */
 function writeTemporaryMemory(request, env) {
@@ -97,7 +104,7 @@ function writeTemporaryMemory(request, env) {
 
 /**
  * Write into permanent memory.
- * @param {{ path: string, value: unknown }} request Normalized write request.
+ * @param {PathWriteRequest} request Normalized write request.
  * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
  */
 function writePermanentMemory(request, env) {
@@ -108,7 +115,7 @@ function writePermanentMemory(request, env) {
 
 /**
  * Write into the full memory envelope.
- * @param {{ path: string, value: unknown }} request Normalized write request.
+ * @param {PathWriteRequest} request Normalized write request.
  * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
  */
 function writeEnvelopeMemory(request, env) {
@@ -121,9 +128,10 @@ function writeEnvelopeMemory(request, env) {
 /**
  * Return the writer for a supported memory location.
  * @param {string} memoryLocation Memory location name.
- * @returns {((request: { path: string, value: unknown }, env: import('../browserToysCore.js').ToyEnv) => void) | null} Writer function.
+ * @returns {MemoryWriter | null} Writer function.
  */
 function getMemoryWriter(memoryLocation) {
+  /** @type {Record<string, MemoryWriter>} */
   const writers = {
     temporary: writeTemporaryMemory,
     permanent: writePermanentMemory,
@@ -136,7 +144,7 @@ function getMemoryWriter(memoryLocation) {
 /**
  * Insert a value into a cloned root at the requested path.
  * @param {unknown} root Current memory root.
- * @param {{ path: string, value: unknown }} request Write request.
+ * @param {PathWriteRequest} request Write request.
  * @returns {Record<string, unknown> | unknown[]} Updated root.
  */
 function writePathValue(root, request) {
@@ -200,6 +208,10 @@ function createNextContainer(current, segment, nextSegment) {
  */
 function getContainerValue(container, segment) {
   assertWritableContainerSegment(container, segment);
+  if (Array.isArray(container)) {
+    return container[Number(segment)];
+  }
+
   return container[segment];
 }
 
@@ -211,6 +223,11 @@ function getContainerValue(container, segment) {
  */
 function assignContainerValue(container, segment, value) {
   assertWritableContainerSegment(container, segment);
+  if (Array.isArray(container)) {
+    container[Number(segment)] = value;
+    return;
+  }
+
   container[segment] = value;
 }
 
@@ -309,9 +326,9 @@ function createContainerForSegment(segment) {
 
 /**
  * Validate a normalized write request.
- * @param {{ memoryLocation: string, path: string, value?: unknown, error?: string }} request Request candidate.
+ * @param {ParsedMemoryWriteRequest} request Request candidate.
  * @param {boolean} hasValue Whether the input declared a value field.
- * @returns {{ memoryLocation: string, path: string, value?: unknown, error?: string }} Validated request.
+ * @returns {ParsedMemoryWriteRequest} Validated request.
  */
 function validateMemoryWriteRequest(request, hasValue) {
   if (request.path.length === 0) {
@@ -368,9 +385,10 @@ function requireParsedObject(value) {
  * @param {string} path Target path.
  * @param {unknown} value Value to write.
  * @param {string} [error] Optional validation error.
- * @returns {{ memoryLocation: string, path: string, value?: unknown, error?: string }} Request record.
+ * @returns {ParsedMemoryWriteRequest} Request record.
  */
 function createMemoryWriteRequest(memoryLocation, path, value, error) {
+  /** @type {ParsedMemoryWriteRequest} */
   const request = {
     memoryLocation,
     path,
@@ -385,9 +403,9 @@ function createMemoryWriteRequest(memoryLocation, path, value, error) {
 
 /**
  * Add an error message to a request.
- * @param {{ memoryLocation: string, path: string, value?: unknown }} request Request record.
+ * @param {ParsedMemoryWriteRequest} request Request record.
  * @param {string} error Error message.
- * @returns {{ memoryLocation: string, path: string, value?: unknown, error: string }} Error request.
+ * @returns {ParsedMemoryWriteRequest & { error: string }} Error request.
  */
 function addRequestError(request, error) {
   return { ...request, error };
@@ -395,7 +413,7 @@ function addRequestError(request, error) {
 
 /**
  * Build a successful write response.
- * @param {{ memoryLocation: string, path: string, value: unknown }} request Request record.
+ * @param {MemoryWriteRequest} request Request record.
  * @returns {{ memoryLocation: string, path: string, written: true, value: unknown }} Success response.
  */
 function buildMemoryWriteSuccess(request) {
@@ -409,7 +427,7 @@ function buildMemoryWriteSuccess(request) {
 
 /**
  * Build an error response.
- * @param {{ memoryLocation: string, path: string, value?: unknown }} request Request record.
+ * @param {{ memoryLocation: string, path: string }} request Request record.
  * @param {string} error Error message.
  * @returns {{ memoryLocation: string, path: string, written: false, error: string }} Error response.
  */
@@ -432,19 +450,6 @@ function buildUnsupportedLocationError(request) {
     request,
     `Unsupported memoryLocation "${request.memoryLocation}". Supported locations: ${SUPPORTED_WRITE_LOCATIONS.join(', ')}.`
   );
-}
-
-/**
- * Pick the best path candidate from a parsed object.
- * @param {Record<string, unknown>} parsed Parsed request object.
- * @returns {unknown} Path candidate.
- */
-function getPathCandidate(parsed) {
-  if (parsed.path !== undefined) {
-    return parsed.path;
-  }
-
-  return parsed.key;
 }
 
 /**
@@ -556,19 +561,6 @@ function isObjectRecord(value) {
 function isArrayIndexSegment(segment) {
   const index = Number(segment);
   return Number.isInteger(index) && index >= 0 && String(index) === segment;
-}
-
-/**
- * Format a thrown value as a string.
- * @param {unknown} error Thrown value.
- * @returns {string} Error message.
- */
-function formatThrownError(error) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error);
 }
 
 export const memoryScalarVectorWriteTestOnly = {

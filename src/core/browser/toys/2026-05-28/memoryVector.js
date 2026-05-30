@@ -637,6 +637,8 @@ export {
   buildResolvedMemoryVectorResponse,
   buildResolvedMemoryVectorResponseFromPath,
   buildResolvedMemoryVectorResponseFromValue,
+  formatThrownError,
+  getPathCandidate,
   normalizeMemoryLocation,
   normalizeMemoryPath,
   parseMemoryVectorRequest,
