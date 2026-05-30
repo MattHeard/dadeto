@@ -102,3 +102,10 @@
 - Diagnosis path: moved parsing, selection, and link rewriting into core, ran focused coverage, then added tests for JSON data, comma data, missing attributes, invalid weights, and DOMContentLoaded timing.
 - Chosen fix: `createVariantRedirectHandle` now owns variant-link rewriting, while `src/browser/variantRedirect.js` only injects browser globals and invokes `handle()`.
 - Next-time guidance: tiny inline scripts can hide enough branches to deserve focused coverage before the full suite; use `istanbul ignore next` only for documented unreachable defensive fallbacks.
+
+## Generate-stats cloud wrapper
+
+- Unexpected hurdle: `src/cloud/generate-stats/index.js` already exported `handle`, but the wrapper still assembled Firebase, Firestore, auth, storage, and environment dependencies itself.
+- Diagnosis path: moved that composition into `src/core/cloud/generate-stats/run.js`, updated the cloud entrypoint test to assert dependency injection into the new core factory, and added a focused core test for the assembled handle.
+- Chosen fix: `createGenerateStatsHandle` now builds the Cloud Function handle from runtime dependencies, while the cloud index only imports GCF dependencies and calls the core factory.
+- Next-time guidance: for cloud wrappers, the validator-facing `const handle = coreFactory(...)` shape should include the composition step, not just alias a value returned from a larger non-core setup block.

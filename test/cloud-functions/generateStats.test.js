@@ -3,7 +3,7 @@ import { jest } from '@jest/globals';
 describe('cloud generate-stats entrypoint', () => {
   it('passes cloud dependencies into the core runner', async () => {
     const handle = { label: 'generate-stats' };
-    const runGenerateStats = jest.fn(() => ({ generateStats: handle }));
+    const createGenerateStatsHandle = jest.fn(() => handle);
     const Storage = jest.fn(function Storage() {});
     const functions = {
       region: jest.fn(() => ({
@@ -41,28 +41,25 @@ describe('cloud generate-stats entrypoint', () => {
     await jest.unstable_mockModule(
       '../../src/core/cloud/generate-stats/run.js',
       () => ({
-        createEnsureFirebaseApp: jest.fn(() => jest.fn()),
-        getFirestoreInstance: jest.fn(() => ({ kind: 'db' })),
-        runGenerateStats,
+        createGenerateStatsHandle,
       })
     );
 
     const module = await import('../../src/cloud/generate-stats/index.js');
 
-    expect(runGenerateStats).toHaveBeenCalledTimes(1);
-    expect(runGenerateStats).toHaveBeenCalledWith(
+    expect(createGenerateStatsHandle).toHaveBeenCalledTimes(1);
+    expect(createGenerateStatsHandle).toHaveBeenCalledWith(
       expect.objectContaining({
-        db: { kind: 'db' },
-        auth: { kind: 'auth' },
-        storage: expect.any(Storage),
-        fetchFn,
-        env: {
-          DENDRITE_ENVIRONMENT: 'dev',
-        },
-        cryptoModule: crypto,
-        functions,
-        express,
+        Storage,
         cors,
+        express,
+        functions,
+        getAuth,
+        getFirestore,
+        getEnvironmentVariables,
+        initializeApp: expect.any(Function),
+        fetchFn,
+        crypto,
       })
     );
     expect(module.handle).toBe(handle);

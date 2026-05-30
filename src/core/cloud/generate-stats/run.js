@@ -225,3 +225,52 @@ export function runGenerateStats(deps) {
     handleRequest,
   };
 }
+
+/**
+ * Build the generate-stats Cloud Function handle from runtime dependencies.
+ * @param {{
+ *   Storage: new () => unknown,
+ *   cors: (options: unknown) => unknown,
+ *   express: () => { use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void },
+ *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
+ *   getAuth: () => unknown,
+ *   getFirestore: Function,
+ *   getEnvironmentVariables: () => Record<string, string | undefined>,
+ *   initializeApp: () => void,
+ *   fetchFn: typeof fetch,
+ *   crypto: { randomUUID: () => string },
+ * }} deps Runtime dependencies supplied by the cloud wrapper.
+ * @returns {unknown} Generate-stats Cloud Function handle.
+ */
+export function createGenerateStatsHandle({
+  Storage,
+  cors,
+  express,
+  functions,
+  getAuth,
+  getFirestore,
+  getEnvironmentVariables,
+  initializeApp,
+  fetchFn,
+  crypto,
+}) {
+  const ensureFirebaseApp = createEnsureFirebaseApp(initializeApp);
+  const environment = getEnvironmentVariables();
+  const db = getFirestoreInstance({
+    ensureAppFn: ensureFirebaseApp,
+    getFirestoreFn: getFirestore,
+    environment,
+  });
+
+  return runGenerateStats({
+    db,
+    auth: getAuth(),
+    storage: new Storage(),
+    fetchFn,
+    env: environment,
+    cryptoModule: crypto,
+    functions,
+    express,
+    cors,
+  }).generateStats;
+}

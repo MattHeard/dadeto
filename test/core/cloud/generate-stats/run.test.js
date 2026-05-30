@@ -291,6 +291,68 @@ describe('generate-stats run', () => {
     expect(result.handleRequest).toBe(coreResult.handleRequest);
   });
 
+  it('builds the cloud handle from runtime dependencies', async () => {
+    const {
+      mod,
+      initializeFirebaseApp,
+      createGenerateStatsCore,
+      functions,
+      express,
+      cors,
+      onRequest,
+      getFirestore,
+      firestoreResult,
+    } = await loadModule({
+      environment: {
+        DENDRITE_ENVIRONMENT: 'dev',
+      },
+    });
+    const Storage = jest.fn(function Storage() {
+      return { kind: 'storage-instance' };
+    });
+    const getAuth = jest.fn(() => ({ kind: 'auth-instance' }));
+    const getEnvironmentVariables = jest.fn(() => ({
+      DENDRITE_ENVIRONMENT: 't-456',
+      PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+    }));
+    const initializeApp = jest.fn();
+    const fetchFn = jest.fn();
+    const crypto = { randomUUID: jest.fn(() => 'uuid') };
+
+    const handle = mod.createGenerateStatsHandle({
+      Storage,
+      cors,
+      express,
+      functions,
+      getAuth,
+      getFirestore,
+      getEnvironmentVariables,
+      initializeApp,
+      fetchFn,
+      crypto,
+    });
+
+    expect(initializeFirebaseApp).toHaveBeenCalledWith(initializeApp);
+    expect(getFirestore).toHaveBeenCalledTimes(1);
+    expect(getAuth).toHaveBeenCalledTimes(1);
+    expect(Storage).toHaveBeenCalledTimes(1);
+    expect(createGenerateStatsCore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        db: firestoreResult,
+        auth: { kind: 'auth-instance' },
+        storage: { kind: 'storage-instance' },
+        fetchFn,
+        env: {
+          DENDRITE_ENVIRONMENT: 't-456',
+          PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+        },
+        cryptoModule: crypto,
+      })
+    );
+    expect(onRequest).toHaveBeenCalledTimes(1);
+    expect(handle).toBe('generateStats-export');
+  });
+
   it('uses the global console when none is provided', async () => {
     const { mod, createGenerateStatsCore, deps } = await loadModule();
 
