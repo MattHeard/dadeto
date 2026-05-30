@@ -1,5 +1,9 @@
 import { jest } from '@jest/globals';
-import { createGetApiKeyCreditHandler } from '../../../../src/core/cloud/get-api-key-credit/get-api-key-credit-core.js';
+import {
+  createGetApiKeyCreditExpressHandle,
+  createGetApiKeyCreditHandler,
+  findUuidFromRequest,
+} from '../../../../src/core/cloud/get-api-key-credit/get-api-key-credit-core.js';
 
 describe('createGetApiKeyCreditHandler', () => {
   const createDependencies = ({
@@ -144,5 +148,107 @@ describe('createGetApiKeyCreditHandler', () => {
     expect(getUuid).toHaveBeenCalledWith({});
     expect(fetchCredit).toHaveBeenCalledWith('helper-uuid');
     expect(response).toEqual({ status: 200, body: { credit: 3 } });
+  });
+});
+
+describe('findUuidFromRequest', () => {
+  it('reads uuid values from params, query, then body', () => {
+    expect(
+      findUuidFromRequest({
+        params: { uuid: ' params-uuid ' },
+        query: { uuid: 'query-uuid' },
+        body: { uuid: 'body-uuid' },
+      })
+    ).toBe('params-uuid');
+    expect(
+      findUuidFromRequest({
+        params: { uuid: ' ' },
+        query: { uuid: ' query-uuid ' },
+        body: { uuid: 'body-uuid' },
+      })
+    ).toBe('query-uuid');
+    expect(
+      findUuidFromRequest({
+        params: { uuid: 123 },
+        query: {},
+        body: { uuid: ' body-uuid ' },
+      })
+    ).toBe('body-uuid');
+    expect(findUuidFromRequest()).toBeUndefined();
+  });
+});
+
+describe('createGetApiKeyCreditExpressHandle', () => {
+  it('memoizes Firestore and sends JSON success responses', async () => {
+    const data = jest.fn(() => ({ credit: 7 }));
+    const get = jest.fn().mockResolvedValue({ exists: true, data });
+    const doc = jest.fn(() => ({ get }));
+    const collection = jest.fn(() => ({ doc }));
+    const Firestore = jest.fn(function Firestore() {
+      return { collection };
+    });
+    const handle = createGetApiKeyCreditExpressHandle({ Firestore });
+    const res = {
+      set: jest.fn(),
+      status: jest.fn(() => res),
+      json: jest.fn(),
+      send: jest.fn(),
+    };
+
+    await handle({ method: 'POST', body: { uuid: 'abc' } }, res);
+    await handle({ method: 'POST', body: { uuid: 'def' } }, res);
+
+    expect(Firestore).toHaveBeenCalledTimes(1);
+    expect(collection).toHaveBeenCalledWith('api-key-credit');
+    expect(doc).toHaveBeenNthCalledWith(1, 'abc');
+    expect(doc).toHaveBeenNthCalledWith(2, 'def');
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ credit: 7 });
+  });
+
+  it('sets Allow for method failures and sends string bodies', async () => {
+    const Firestore = jest.fn();
+    const handle = createGetApiKeyCreditExpressHandle({ Firestore });
+    const res = {
+      set: jest.fn(),
+      status: jest.fn(() => res),
+      json: jest.fn(),
+      send: jest.fn(),
+    };
+
+    await handle({ method: 'GET' }, res);
+
+    expect(Firestore).not.toHaveBeenCalled();
+    expect(res.set).toHaveBeenCalledWith('Allow', 'POST');
+    expect(res.status).toHaveBeenCalledWith(405);
+    expect(res.send).toHaveBeenCalledWith('Method Not Allowed');
+  });
+
+  it('maps missing documents and missing data through the Express bridge', async () => {
+    const snapshots = [{ exists: false }, { exists: true, data: jest.fn() }];
+    const get = jest
+      .fn()
+      .mockResolvedValueOnce(snapshots[0])
+      .mockResolvedValueOnce(snapshots[1]);
+    const doc = jest.fn(() => ({ get }));
+    const collection = jest.fn(() => ({ doc }));
+    const Firestore = jest.fn(function Firestore() {
+      return { collection };
+    });
+    const handle = createGetApiKeyCreditExpressHandle({ Firestore });
+    const res = {
+      set: jest.fn(),
+      status: jest.fn(() => res),
+      json: jest.fn(),
+      send: jest.fn(),
+    };
+
+    await handle({ method: 'POST', body: { uuid: 'missing' } }, res);
+    await handle({ method: 'POST', body: { uuid: 'empty-data' } }, res);
+
+    expect(res.status).toHaveBeenNthCalledWith(1, 404);
+    expect(res.send).toHaveBeenNthCalledWith(1, 'Not found');
+    expect(res.status).toHaveBeenNthCalledWith(2, 500);
+    expect(res.send).toHaveBeenNthCalledWith(2, 'Internal error');
   });
 });

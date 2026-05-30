@@ -183,3 +183,126 @@ export function createGetApiKeyCreditHandler({ fetchCredit, getUuid }) {
     return executeRequest(fetchCredit, getUuid, request);
   };
 }
+
+/**
+ * Create a memoized async getter for a Firestore instance.
+ * @param {typeof import('@google-cloud/firestore').Firestore} FirestoreConstructor Firestore constructor.
+ * @returns {() => Promise<import('@google-cloud/firestore').Firestore>} Memoized Firestore accessor.
+ */
+function createGetFirestoreInstance(FirestoreConstructor) {
+  let firestoreInstance;
+
+  return async function getFirestoreInstance() {
+    if (!firestoreInstance) {
+      firestoreInstance = createFirestore(FirestoreConstructor);
+    }
+
+    return firestoreInstance;
+  };
+}
+
+/**
+ * Normalize a potential UUID candidate sourced from an HTTP request.
+ * @param {unknown} candidate Value read from the request payload.
+ * @returns {string | undefined} Sanitized UUID value when present.
+ */
+function readUuidCandidate(candidate) {
+  if (typeof candidate !== 'string') {
+    return undefined;
+  }
+
+  const trimmedCandidate = candidate.trim();
+
+  if (trimmedCandidate.length === 0) {
+    return undefined;
+  }
+
+  return trimmedCandidate;
+}
+
+/**
+ * Resolve the first UUID-like value from an Express request.
+ * @param {{params?: {uuid?: unknown}, query?: {uuid?: unknown}, body?: {uuid?: unknown}} | undefined} request Incoming request object.
+ * @returns {string | undefined} UUID extracted from params, query, or body.
+ */
+export function findUuidFromRequest(request) {
+  if (!request) {
+    return undefined;
+  }
+
+  const paramsUuid = readUuidCandidate(request.params?.uuid);
+  if (paramsUuid) {
+    return paramsUuid;
+  }
+
+  const queryUuid = readUuidCandidate(request.query?.uuid);
+  if (queryUuid) {
+    return queryUuid;
+  }
+
+  return readUuidCandidate(request.body?.uuid);
+}
+
+/**
+ * Send a mapped handler response to an Express response object.
+ * @param {{status: number, body: unknown}} result Handler result.
+ * @param {{set: (name: string, value: string) => void, status: (status: number) => {json: (body: unknown) => void, send: (body: unknown) => void}}} res Express response.
+ * @returns {void}
+ */
+function sendApiKeyCreditResponse({ status, body }, res) {
+  if (status === 405) {
+    res.set('Allow', 'POST');
+  }
+
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    res.status(status).json(body);
+    return;
+  }
+
+  res.status(status).send(body);
+}
+
+/**
+ * Create the Express handler for the API key credit endpoint.
+ * @param {{Firestore: typeof import('@google-cloud/firestore').Firestore}} deps Runtime dependencies.
+ * @returns {(req: unknown, res: unknown) => Promise<void>} Express handler.
+ */
+export function createGetApiKeyCreditExpressHandle({ Firestore }) {
+  const getFirestoreInstance = createGetFirestoreInstance(Firestore);
+  const getApiKeyCredit = createGetApiKeyCreditHandler({
+    async fetchCredit(uuid) {
+      const firestore = await getFirestoreInstance();
+      const doc = await fetchApiKeyCreditDocument(firestore, uuid);
+
+      if (isMissingDocument(doc)) {
+        return null;
+      }
+
+      const data = doc.data();
+      if (!data) {
+        return undefined;
+      }
+
+      return data.credit;
+    },
+    getUuid(request) {
+      return findUuidFromRequest(
+        /** @type {{params?: {uuid?: unknown}, query?: {uuid?: unknown}, body?: {uuid?: unknown}} | undefined} */ (
+          request
+        )
+      );
+    },
+  });
+
+  return async function handleGetApiKeyCredit(req, res) {
+    const result = await getApiKeyCredit(
+      /** @type {Record<string, unknown>} */ (req)
+    );
+    sendApiKeyCreditResponse(
+      result,
+      /** @type {{set: (name: string, value: string) => void, status: (status: number) => {json: (body: unknown) => void, send: (body: unknown) => void}}} */ (
+        res
+      )
+    );
+  };
+}

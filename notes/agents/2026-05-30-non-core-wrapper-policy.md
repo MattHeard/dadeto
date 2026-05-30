@@ -109,3 +109,10 @@
 - Diagnosis path: moved that composition into `src/core/cloud/generate-stats/run.js`, updated the cloud entrypoint test to assert dependency injection into the new core factory, and added a focused core test for the assembled handle.
 - Chosen fix: `createGenerateStatsHandle` now builds the Cloud Function handle from runtime dependencies, while the cloud index only imports GCF dependencies and calls the core factory.
 - Next-time guidance: for cloud wrappers, the validator-facing `const handle = coreFactory(...)` shape should include the composition step, not just alias a value returned from a larger non-core setup block.
+
+## API key credit cloud wrapper
+
+- Unexpected hurdle: the API key credit file still looked like a wrapper-policy candidate, but the validator improvement showed up as one fewer size violation while the wrapper count stayed flat.
+- Diagnosis path: moved Firestore memoization, UUID extraction, and Express response bridging into the core API key credit module, then used focused coverage to cover success, method failure, missing-document, and missing-data paths.
+- Chosen fix: `createGetApiKeyCreditExpressHandle` now owns the Express bridge and data lookup wiring, while the cloud entrypoint exports `handle` plus the existing `handler` alias for compatibility.
+- Next-time guidance: when a file is both oversized and wrapper-shaped, record which bucket actually changed; not every thin-wrapper refactor decrements the wrapper counter.
