@@ -18,3 +18,10 @@
 - Diagnosis path: extracted pure validation into `src/core/build/entrypoint-pattern.js`, added focused branch tests, and confirmed `npm run non-core-thin` dropped from 111 to 110 wrapper violations.
 - Chosen fix: moved pattern rules and command handling into core, then left `src/scripts/check-build-entrypoint-pattern.js` as injected file-read/output wiring plus `handle()`.
 - Next-time guidance: script checks that already have small custom rule engines are good wrapper-policy candidates, but keep `fs`/`path` in the script and inject reads into core so core stays environment-agnostic.
+
+## Aggregate check script wrapper
+
+- Unexpected hurdle: `src/scripts/check-runner.js` was only a re-export shim, so making it match the wrapper pattern would preserve an unnecessary non-core file.
+- Diagnosis path: inspected all imports and found only `src/scripts/run-check.js` and the Jest suite used the shim; both could import `src/core/check-runner.js` directly.
+- Chosen fix: added `createRunCheckHandle` to core, converted `src/scripts/run-check.js` to an invoked handle, deleted the shim, and updated tests to import the core runner directly.
+- Next-time guidance: when a non-core violation is only a re-export bridge, prefer deleting it and updating imports over manufacturing a wrapper around a wrapper.

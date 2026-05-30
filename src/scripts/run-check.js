@@ -1,6 +1,11 @@
-import { runCheckSuite } from './check-runner.js';
+import { createRunCheckHandle, runCheckSuite } from '../core/check-runner.js';
 
-const failFast = process.argv.includes('--fail-fast');
+const handle = createRunCheckHandle({
+  argv: process.argv,
+  runSuite: runCheckSuite,
+  setExitCode: exitCode => {
+    process.exitCode = exitCode;
+  },
+});
 
-const result = await runCheckSuite({ failFast });
-process.exitCode = result.exitCode;
+await handle();

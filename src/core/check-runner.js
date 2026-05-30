@@ -20,6 +20,23 @@ export const CHECK_COMMANDS = [
 ];
 
 /**
+ * Create the command handler for the aggregate check script.
+ * @param {{
+ *   argv: string[],
+ *   runSuite: (options: { failFast: boolean }) => Promise<{ exitCode: number }>,
+ *   setExitCode: (exitCode: number) => void,
+ * }} deps Command dependencies.
+ * @returns {() => Promise<void>} Handler that runs the aggregate check.
+ */
+export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
+  return async () => {
+    const failFast = argv.includes('--fail-fast');
+    const result = await runSuite({ failFast });
+    setExitCode(result.exitCode);
+  };
+}
+
+/**
  * @typedef {object} CheckCommand
  * @property {string} name Check label.
  * @property {string} command Command to execute.

@@ -1,9 +1,10 @@
 import { jest } from '@jest/globals';
 import { PassThrough } from 'node:stream';
 import {
+  createRunCheckHandle,
   runCheckSuite,
   runCheckSuiteTestOnly,
-} from '../../src/scripts/check-runner.js';
+} from '../../src/core/check-runner.js';
 
 /**
  * Create a writer stub that records everything written to it.
@@ -103,6 +104,26 @@ function parseEvents(chunks) {
 }
 
 describe('runCheckSuite', () => {
+  it('creates a run-check command handle', async () => {
+    const exitCodes = [];
+    const suiteCalls = [];
+    const handle = createRunCheckHandle({
+      argv: ['node', 'src/scripts/run-check.js', '--fail-fast'],
+      runSuite: async options => {
+        suiteCalls.push(options);
+        return { exitCode: 7 };
+      },
+      setExitCode: exitCode => {
+        exitCodes.push(exitCode);
+      },
+    });
+
+    await handle();
+
+    expect(suiteCalls).toEqual([{ failFast: true }]);
+    expect(exitCodes).toEqual([7]);
+  });
+
   it('returns a passed summary when there are no commands', async () => {
     const stdout = createWriter();
     const stderr = createWriter();
