@@ -52,6 +52,7 @@ Business logic should live under `src/core`. Code outside `src/core` should stay
 - `npm run lint` treats warnings as failures for the linted surface, so core quality rules are strict.
 - `npm run duplication` keeps zero-duplication detection scoped to `src/core` and fails the gate on any reported clone, even if the underlying scanner exits 0.
 - `npm run non-core-thin` fails any non-core JavaScript file over 50 lines unless it is explicitly listed in `non-core-thin-exemptions.json`.
+- `npm run non-core-thin` also fails wrapper-shape violations for `src/cloud/**/index.js`, `src/browser/**`, `src/build/**`, `src/local/**`, and `src/scripts/**`: each checked wrapper should declare `const handle = coreFactory(...)` and either export or invoke `handle`.
 
 The exemption file should normally stay empty; if a temporary exception is added, remove it as soon as the logic moves into `src/core`.
 

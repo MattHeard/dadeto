@@ -14,6 +14,7 @@ const REPO_ROOT = path.resolve('.');
  *   exemptionCount: number,
  *   staleExemptions: string[],
  *   violations: Array<{ filePath: string, lines: number }>,
+ *   patternViolations: Array<{ filePath: string, reason: string }>,
  * }} non-core thin status for the current repo snapshot
  */
 export function getNonCoreThinStatus() {
@@ -27,6 +28,7 @@ export function getNonCoreThinStatus() {
  *   fileCount: number,
  *   staleExemptions: string[],
  *   violations: Array<{ filePath: string, lines: number }>,
+ *   patternViolations: Array<{ filePath: string, reason: string }>,
  *   maxLines: number,
  * }} status Non-core thin status snapshot.
  * @returns {string[]} stderr lines for a failing run
@@ -44,7 +46,15 @@ export function formatNonCoreThinFailure(status) {
     );
   });
 
+  status.patternViolations.forEach(({ filePath, reason }) => {
+    lines.push(`${filePath} does not match non-core wrapper shape: ${reason}`);
+  });
+
   const violationWord = pluralize(status.violations.length, 'violation');
+  const patternViolationWord = pluralize(
+    status.patternViolations.length,
+    'wrapper violation'
+  );
   const exemptionWord = pluralize(
     status.staleExemptions.length,
     'stale exemption'
@@ -52,7 +62,7 @@ export function formatNonCoreThinFailure(status) {
   const fileWord = pluralize(status.fileCount, 'file');
 
   lines.push(
-    `Non-core thin check found ${status.violations.length} ${violationWord} and ${status.staleExemptions.length} ${exemptionWord} across ${status.fileCount} ${fileWord}.`
+    `Non-core thin check found ${status.violations.length} ${violationWord}, ${status.patternViolations.length} ${patternViolationWord}, and ${status.staleExemptions.length} ${exemptionWord} across ${status.fileCount} ${fileWord}.`
   );
 
   return lines;
@@ -69,6 +79,7 @@ export function formatNonCoreThinFailure(status) {
  *   exemptionCount: number,
  *   staleExemptions: string[],
  *   violations: Array<{ filePath: string, lines: number }>,
+ *   patternViolations: Array<{ filePath: string, reason: string }>,
  * }} non-core thin status for the current repo snapshot
  */
 function buildNonCoreThinStatus(config, files) {
@@ -83,14 +94,21 @@ function buildNonCoreThinStatus(config, files) {
     .filter(
       ({ filePath, lines }) => lines > maxLines && !exemptions.has(filePath)
     );
+  const patternViolations = files.flatMap(filePath =>
+    getWrapperPatternViolations(filePath, exemptions)
+  );
 
   return {
-    isClean: staleExemptions.length === 0 && violations.length === 0,
+    isClean:
+      staleExemptions.length === 0 &&
+      violations.length === 0 &&
+      patternViolations.length === 0,
     maxLines,
     fileCount: files.length,
     exemptionCount: exemptions.size,
     staleExemptions,
     violations,
+    patternViolations,
   };
 }
 
@@ -156,6 +174,8 @@ function shouldIncludeDirectory(dir, entry) {
 export const nonCoreThinStatusTestOnly = {
   buildNonCoreThinStatus,
   formatNonCoreThinFailure,
+  getWrapperPatternViolations,
+  getWrapperPatternViolationsForSource,
 };
 
 /**
@@ -170,4 +190,69 @@ function pluralize(count, singular) {
   }
 
   return `${singular}s`;
+}
+
+/**
+ * Check whether a non-core file follows the dependency-only wrapper shape.
+ * @param {string} filePath Repo-relative file path.
+ * @param {Set<string>} exemptions Explicitly exempted file paths.
+ * @returns {Array<{ filePath: string, reason: string }>} Wrapper shape violations.
+ */
+function getWrapperPatternViolations(filePath, exemptions) {
+  if (exemptions.has(filePath) || !shouldEnforceWrapperPattern(filePath)) {
+    return [];
+  }
+
+  const source = fs.readFileSync(path.resolve(filePath), 'utf8');
+  return getWrapperPatternViolationsForSource(filePath, source);
+}
+
+/**
+ * Check whether source follows the dependency-only wrapper shape.
+ * @param {string} filePath Repo-relative file path.
+ * @param {string} source JavaScript source text.
+ * @returns {Array<{ filePath: string, reason: string }>} Wrapper shape violations.
+ */
+function getWrapperPatternViolationsForSource(filePath, source) {
+  const hasHandleDeclaration =
+    /\bconst\s+handle\s*=\s*[A-Za-z_$][\w$]*\s*\(/u.test(source);
+  if (!hasHandleDeclaration) {
+    return [
+      {
+        filePath,
+        reason:
+          'expected `const handle = coreFactory(...)` in this non-core wrapper',
+      },
+    ];
+  }
+
+  const exportsHandle =
+    /\bexport\s*\{\s*handle\s*\}/u.test(source) ||
+    /\bexport\s+const\s+handle\s*=/u.test(source);
+  const invokesHandle = /(?:^|[^\w$])(?:await\s+)?handle\s*\(/u.test(source);
+  if (!exportsHandle && !invokesHandle) {
+    return [
+      {
+        filePath,
+        reason: 'expected the declared `handle` to be exported or invoked',
+      },
+    ];
+  }
+
+  return [];
+}
+
+/**
+ * Tell whether the wrapper-shape policy applies to a file.
+ * @param {string} filePath Repo-relative file path.
+ * @returns {boolean} True when the file must declare/export-or-run handle.
+ */
+function shouldEnforceWrapperPattern(filePath) {
+  if (filePath.startsWith('src/cloud/')) {
+    return filePath.endsWith('/index.js');
+  }
+
+  return ['src/browser/', 'src/build/', 'src/local/', 'src/scripts/'].some(
+    prefix => filePath.startsWith(prefix)
+  );
 }

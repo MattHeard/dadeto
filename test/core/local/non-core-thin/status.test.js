@@ -14,6 +14,7 @@ describe('non-core thin status', () => {
     expect(status.isClean).toBe(false);
     expect(status.exemptionCount).toBe(0);
     expect(status.violations.length).toBeGreaterThan(0);
+    expect(status.patternViolations.length).toBeGreaterThan(0);
   });
 
   test('builds a clean status and reports stale exemptions when data says so', () => {
@@ -29,6 +30,7 @@ describe('non-core thin status', () => {
       exemptionCount: 0,
       staleExemptions: [],
       violations: [],
+      patternViolations: [],
     });
 
     expect(
@@ -53,7 +55,36 @@ describe('non-core thin status', () => {
           lines: expect.any(Number),
         },
       ],
+      patternViolations: [
+        {
+          filePath: 'src/browser/document.js',
+          reason:
+            'expected `const handle = coreFactory(...)` in this non-core wrapper',
+        },
+      ],
     });
+  });
+
+  test('reports wrapper shape violations separately from size violations', () => {
+    expect(
+      nonCoreThinStatusTestOnly.getWrapperPatternViolations(
+        'src/browser/document.js',
+        new Set()
+      )
+    ).toEqual([
+      {
+        filePath: 'src/browser/document.js',
+        reason:
+          'expected `const handle = coreFactory(...)` in this non-core wrapper',
+      },
+    ]);
+
+    expect(
+      nonCoreThinStatusTestOnly.getWrapperPatternViolations(
+        'src/core/local/non-core-thin/status.js',
+        new Set()
+      )
+    ).toEqual([]);
   });
 
   test('formats failure output with a final summary count', () => {
@@ -68,11 +99,60 @@ describe('non-core thin status', () => {
             lines: 51,
           },
         ],
+        patternViolations: [
+          {
+            filePath: 'src/browser/document.js',
+            reason:
+              'expected `const handle = coreFactory(...)` in this non-core wrapper',
+          },
+        ],
       })
     ).toEqual([
       'Stale non-core thin exemption: src/browser/missing.js',
       'src/browser/document.js has 51 lines; max non-core size is 50.',
-      'Non-core thin check found 1 violation and 1 stale exemption across 2 files.',
+      'src/browser/document.js does not match non-core wrapper shape: expected `const handle = coreFactory(...)` in this non-core wrapper',
+      'Non-core thin check found 1 violation, 1 wrapper violation, and 1 stale exemption across 2 files.',
+    ]);
+  });
+
+  test('accepts wrapper files that export or invoke handle', () => {
+    expect(
+      nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
+        'src/cloud/example/index.js',
+        [
+          "import { createExampleHandle } from './example-core.js';",
+          'const handle = createExampleHandle(functions, getFirestoreInstance);',
+          'export { handle };',
+        ].join('\n')
+      )
+    ).toEqual([]);
+
+    expect(
+      nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
+        'src/scripts/example.js',
+        [
+          "import { createScriptHandle } from '../core/scripts/example.js';",
+          'const handle = createScriptHandle(process);',
+          'await handle();',
+        ].join('\n')
+      )
+    ).toEqual([]);
+  });
+
+  test('rejects wrapper files that leave handle unused', () => {
+    expect(
+      nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
+        'src/scripts/example.js',
+        [
+          "import { createScriptHandle } from '../core/scripts/example.js';",
+          'const handle = createScriptHandle(process);',
+        ].join('\n')
+      )
+    ).toEqual([
+      {
+        filePath: 'src/scripts/example.js',
+        reason: 'expected the declared `handle` to be exported or invoked',
+      },
     ]);
   });
 });
