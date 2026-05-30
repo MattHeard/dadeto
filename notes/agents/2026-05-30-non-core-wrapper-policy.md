@@ -25,3 +25,10 @@
 - Diagnosis path: inspected all imports and found only `src/scripts/run-check.js` and the Jest suite used the shim; both could import `src/core/check-runner.js` directly.
 - Chosen fix: added `createRunCheckHandle` to core, converted `src/scripts/run-check.js` to an invoked handle, deleted the shim, and updated tests to import the core runner directly.
 - Next-time guidance: when a non-core violation is only a re-export bridge, prefer deleting it and updating imports over manufacturing a wrapper around a wrapper.
+
+## Duplication gate wrapper
+
+- Unexpected hurdle: `src/scripts/check-duplication.js` still bundled launch wiring, report parsing, and clone-summary formatting, and the first extraction tripped lint complexity warnings.
+- Diagnosis path: split the gate into small core helpers, reran focused lint/Jest, and confirmed the wrapper count moved from 107 to 106 once the script became a thin invoked-handle adapter.
+- Chosen fix: added `createCheckDuplicationHandle` in `src/core/scripts/check-duplication.js`, injected `jscpd`, filesystem, and output dependencies from the script, and kept the non-core file as a direct `handle()` launcher.
+- Next-time guidance: when a gate needs both launch wiring and result interpretation, split the interpretation helpers first so the outer factory stays trivially thin and lint-friendly.
