@@ -46,3 +46,10 @@
 - Diagnosis path: confirmed `src/core/browser/admin-core.js` already owned the bootstrap logic, then added a tiny `createInitAdminAppHandle` factory and a focused coverage test to exercise the wrapper entrypoint.
 - Chosen fix: let the browser module build `const handle = createInitAdminAppHandle(...); handle();` and keep the actual admin bootstrap wiring in core.
 - Next-time guidance: for tiny browser entrypoints, prefer a handle factory in core plus a one-line invoker in the browser file so the wrapper rule can be satisfied without moving unrelated logic.
+
+## Browser static config wrapper
+
+- Unexpected hurdle: `src/browser/loadStaticConfig.js` needed to keep exporting `loadStaticConfig` for callers while the non-core rule only recognizes the literal `handle` wrapper shape.
+- Diagnosis path: checked the wrapper validator and confirmed it accepts an exported `handle`; then verified callers only need the existing named `loadStaticConfig` export.
+- Chosen fix: create `const handle = createLoadStaticConfig(...)`, export `handle`, and keep `export const loadStaticConfig = handle` as the public compatibility name.
+- Next-time guidance: for value-export wrappers, use `handle` as the validator-facing name and alias it back to the domain-specific export rather than renaming downstream callers.

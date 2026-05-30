@@ -1,9 +1,12 @@
-import { createLoadStaticConfig } from './load-static-config-core.js';
+import { createLoadStaticConfig } from '../core/browser/load-static-config-core.js';
 
 /**
  * Memoized static config loader wired with browser dependencies.
  */
-export const loadStaticConfig = createLoadStaticConfig({
+const handle = createLoadStaticConfig({
   fetchFn: (input, init) => fetch(input, init),
   warn: (message, error) => console.warn(message, error),
 });
+
+export { handle };
+export const loadStaticConfig = handle;
