@@ -67,3 +67,10 @@
 - Diagnosis path: extracted a shared core handle, ran focused menu coverage, then used the full coverage failure to find the missing toggle-close branch.
 - Chosen fix: `createMobileMenuToggleHandle` now owns open, close, overlay, and keyboard behavior, while the contents, variant, and stats wrappers only inject `document`, keydown listener, and timeout dependencies.
 - Next-time guidance: when consolidating browser inline scripts, cover both missing-element no-op behavior and every event path before trusting the full suite.
+
+## Basic input handler re-export shims
+
+- Unexpected hurdle: the text, textarea, and number browser input-handler files were only re-export shims, so forcing them into the handle pattern would add ceremony instead of making the non-core surface thinner.
+- Diagnosis path: searched for all imports of the three shims and found only `src/browser/toys.js` still depended on them; tests already import the core handlers directly.
+- Chosen fix: deleted the three shims and pointed `src/browser/toys.js` at the core input-handler modules.
+- Next-time guidance: if a wrapper violation is a pure re-export with one caller, prefer deleting the file and moving the caller to core over adding a synthetic handle.

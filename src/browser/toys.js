@@ -185,10 +185,10 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dom.addEventListener(dropdown, 'change', onChange);
 };
 
-import { textHandler } from './inputHandlers/text.js';
-import { textareaHandler } from './inputHandlers/textarea.js';
+import { textHandler } from '../core/browser/inputHandlers/text.js';
+import { textareaHandler } from '../core/browser/inputHandlers/textarea.js';
 import { fileHandler } from './inputHandlers/file.js';
-import { numberHandler } from './inputHandlers/number.js';
+import { numberHandler } from '../core/browser/inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
 import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
