@@ -10,7 +10,8 @@ import {
 
 const handle = createGetApiKeyCreditExpressHandle({ Firestore });
 
-export { handle, handle as handler };
+export { handle };
+export { handle as handler };
 
 export {
   createGetApiKeyCreditExpressHandle,
