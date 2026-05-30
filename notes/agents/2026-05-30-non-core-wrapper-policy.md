@@ -74,3 +74,10 @@
 - Diagnosis path: searched for all imports of the three shims and found only `src/browser/toys.js` still depended on them; tests already import the core handlers directly.
 - Chosen fix: deleted the three shims and pointed `src/browser/toys.js` at the core input-handler modules.
 - Next-time guidance: if a wrapper violation is a pure re-export with one caller, prefer deleting the file and moving the caller to core over adding a synthetic handle.
+
+## Remaining input handler re-export shims
+
+- Unexpected hurdle: the rest of `src/browser/inputHandlers` was also adapter-only, but it included both named re-exports and wildcard re-exports, so it was worth verifying there were no hidden production imports before deleting the directory contents.
+- Diagnosis path: listed the remaining files, searched all source and tests for browser-shim imports, and confirmed `src/browser/toys.js` was the only production caller.
+- Chosen fix: deleted the seven remaining browser input-handler shims and imported every handler directly from `src/core/browser/inputHandlers`.
+- Next-time guidance: after deleting a non-core re-export cluster, run a broad search for the old directory path; tests that already import core are useful evidence that the shims were accidental compatibility layers.

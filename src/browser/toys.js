@@ -1,5 +1,5 @@
-import { blogKeyHandler } from './inputHandlers/blogKeyHandler.js';
-import { realHourlyWageHandler } from './inputHandlers/realHourlyWage.js';
+import { blogKeyHandler } from '../core/browser/inputHandlers/blogKeyHandler.js';
+import { realHourlyWageHandler } from '../core/browser/inputHandlers/realHourlyWage.js';
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createLedgerIngestReportElement } from './presenters/ledgerIngest.js';
 import { createRealHourlyWageReportElement } from './presenters/realHourlyWage.js';
@@ -187,12 +187,12 @@ export const createAddDropdownListener = (onChange, dom) => dropdown => {
 
 import { textHandler } from '../core/browser/inputHandlers/text.js';
 import { textareaHandler } from '../core/browser/inputHandlers/textarea.js';
-import { fileHandler } from './inputHandlers/file.js';
+import { fileHandler } from '../core/browser/inputHandlers/file.js';
 import { numberHandler } from '../core/browser/inputHandlers/number.js';
-import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
-import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
-import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
-import { joyConMapperHandler } from './inputHandlers/joyConMapper.js';
+import { moderatorRatingsHandler } from '../core/browser/inputHandlers/moderatorRatings.js';
+import { keyboardCaptureHandler } from '../core/browser/inputHandlers/keyboardCapture.js';
+import { gamepadCaptureHandler } from '../core/browser/inputHandlers/gamepadCapture.js';
+import { joyConMapperHandler } from '../core/browser/inputHandlers/joyConMapper.js';
 import { KV_CONTAINER_SELECTOR } from '../core/browser/browser-core.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
