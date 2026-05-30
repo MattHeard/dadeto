@@ -11,3 +11,10 @@
 - Diagnosis path: converted `src/scripts/check-non-core-thin-files.js`, reran the focused status tests, and confirmed `npm run non-core-thin` dropped from 112 to 111 wrapper violations.
 - Chosen fix: added `createCheckNonCoreThinHandle` in the core non-core-thin module, injected `console` and `process.exitCode` from the script, and left the script as a `const handle = ...; handle();` adapter.
 - Next-time guidance: for script wrappers, move the command side effects behind an injected core handle first; then keep the executable file as the thinnest possible invocation shell.
+
+## Build entrypoint pattern script wrapper
+
+- Unexpected hurdle: the existing build entrypoint checker mixed validation, filesystem reads, and CLI reporting in one script, so a direct wrapper rename would not really make the non-core surface thinner.
+- Diagnosis path: extracted pure validation into `src/core/build/entrypoint-pattern.js`, added focused branch tests, and confirmed `npm run non-core-thin` dropped from 111 to 110 wrapper violations.
+- Chosen fix: moved pattern rules and command handling into core, then left `src/scripts/check-build-entrypoint-pattern.js` as injected file-read/output wiring plus `handle()`.
+- Next-time guidance: script checks that already have small custom rule engines are good wrapper-policy candidates, but keep `fs`/`path` in the script and inject reads into core so core stays environment-agnostic.
