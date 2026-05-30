@@ -12,7 +12,7 @@ import {
 } from './submit-moderation-rating-gcf.js';
 import { runSubmitModerationRating } from '../../core/cloud/submit-moderation-rating/run.js';
 
-const { submitModerationRating } = runSubmitModerationRating({
+const { submitModerationRating: handle } = runSubmitModerationRating({
   functions,
   express,
   cors,
@@ -25,4 +25,4 @@ const { submitModerationRating } = runSubmitModerationRating({
   initializeApp,
 });
 
-export { submitModerationRating };
+export { handle };

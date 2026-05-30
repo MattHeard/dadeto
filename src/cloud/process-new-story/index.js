@@ -15,7 +15,7 @@ const handleProcessNewStory = createProcessNewStoryHandler({
   random: Math.random,
 });
 
-export const processNewStory = functions
+export const handle = functions
   .region('europe-west1')
   .firestore.document('storyFormSubmissions/{subId}')
   .onCreate((snap, context) => handleProcessNewStory(snap, context));

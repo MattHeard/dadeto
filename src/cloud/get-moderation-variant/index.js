@@ -106,7 +106,7 @@ function formatErrorMessage(error) {
   return String(error).slice(0, 300);
 }
 
-export const getModerationVariant = functions
+export const handle = functions
   .region('europe-west1')
   .https.onRequest(app);
 

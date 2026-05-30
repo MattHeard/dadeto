@@ -1,14 +1,6 @@
+// @ts-nocheck
 import { initializeApp } from 'firebase-admin/app';
-import {
-  Storage,
-  functions,
-  express,
-  cors,
-  getAuth,
-  getFirestore as getAdminFirestore,
-  getEnvironmentVariables,
-  crypto,
-} from '../../../cloud/generate-stats/generate-stats-gcf.js';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {
   createGenerateStatsCore,
   initializeFirebaseApp,
@@ -103,7 +95,7 @@ export const selectFirestoreDatabase = (
 /**
  * Determine whether the caller supplied any custom Firestore wiring.
  * @param {() => void} ensureAppFn Firebase app initializer used by the caller.
- * @param {typeof getAdminFirestore} getFirestoreFn Firestore factory used by the caller.
+ * @param {Function} getFirestoreFn Firestore factory used by the caller.
  * @param {Record<string, string | undefined>} environment Environment variables object.
  * @returns {boolean} True when the call should bypass the shared cache.
  */
@@ -126,6 +118,10 @@ export const getFirestoreInstance = (options = {}) => {
     environment = process.env,
   } = options;
 
+  if (typeof getFirestoreFn !== 'function') {
+    throw new TypeError('getFirestoreFn must be a function');
+  }
+
   ensureAppFn();
 
   const databaseId = resolveFirestoreDatabaseId(environment);
@@ -143,7 +139,19 @@ export const getFirestoreInstance = (options = {}) => {
 };
 
 /**
- * Create the public Cloud Function wrapper for generate-stats.
+ * Build the public Cloud Function wrapper for generate-stats from injected dependencies.
+ * @param {{
+ *   db: unknown,
+ *   auth: unknown,
+ *   storage: unknown,
+ *   fetchFn: typeof fetch,
+ *   env?: Record<string, string | undefined>,
+ *   cryptoModule: { randomUUID: () => string },
+ *   console?: { error: (...args: unknown[]) => void },
+ *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
+ *   express: () => { use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void },
+ *   cors: (options: { origin: (origin: string | undefined, cb: (error: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown,
+ * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {{
  *   generateStats: unknown,
  *   getStoryCount: (dbRef?: unknown) => Promise<number>,
@@ -154,21 +162,28 @@ export const getFirestoreInstance = (options = {}) => {
  *   handleRequest: (req: unknown, res: unknown, deps?: unknown) => Promise<void>,
  * }} Cloud entrypoint and core helpers.
  */
-export function runGenerateStats() {
-  ensureFirebaseApp();
-  const env = getEnvironmentVariables();
-  const db = getFirestoreInstance({ environment: env });
-  const auth = getAuth();
-  const storage = new Storage();
+export function runGenerateStats(deps) {
+  const {
+    db,
+    auth,
+    storage,
+    fetchFn,
+    env,
+    cryptoModule,
+    console: consoleLike = globalThis.console,
+    functions,
+    express,
+    cors,
+  } = deps;
 
   const generateStatsCore = createGenerateStatsCore({
     db,
     auth,
     storage,
-    fetchFn: globalThis.fetch.bind(globalThis),
+    fetchFn,
     env,
-    cryptoModule: crypto,
-    console: globalThis.console,
+    cryptoModule,
+    console: consoleLike,
   });
 
   const {

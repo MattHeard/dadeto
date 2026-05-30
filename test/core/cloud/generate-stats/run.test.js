@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
 /**
- * Load the run helper with mocked cloud dependencies.
+ * Load the run helper with mocked core dependencies.
  * @param {{environment?: Record<string, string | undefined>, firestoreResult?: {label: string}}} [options] Runtime fixtures.
  * @returns {Promise<{
  *   mod: typeof import('../../../../src/core/cloud/generate-stats/run.js'),
@@ -9,16 +9,18 @@ import { jest } from '@jest/globals';
  *   initializeFirebaseApp: jest.Mock,
  *   createGenerateStatsCore: jest.Mock,
  *   coreResult: Record<string, jest.Mock>,
- *   app: { use: jest.Mock, post: jest.Mock },
- *   cors: jest.Mock,
- *   express: jest.Mock,
- *   functions: { region: jest.Mock },
- *   onRequest: jest.Mock,
- *   getAuth: jest.Mock,
- *   getFirestore: jest.Mock,
- *   getEnvironmentVariables: jest.Mock,
- *   Storage: jest.Mock,
- *   crypto: { randomUUID: jest.Mock },
+ *   deps: {
+ *     db: { label: string },
+ *     auth: { kind: string },
+ *     storage: object,
+ *     fetchFn: jest.Mock,
+ *     env: Record<string, string | undefined>,
+ *     cryptoModule: { randomUUID: jest.Mock },
+ *     console: typeof console,
+ *     functions: { region: jest.Mock },
+ *     express: jest.Mock,
+ *     cors: jest.Mock,
+ *   },
  * }>} Mocked module bundle.
  */
 async function loadModule({
@@ -55,28 +57,30 @@ async function loadModule({
       https: { onRequest },
     })),
   };
-  const getAuth = jest.fn(() => ({ kind: 'auth' }));
+  const auth = { kind: 'auth' };
+  const storage = { kind: 'storage' };
+  const fetchFn = jest.fn();
   const getFirestore = jest.fn(() => firestoreResult);
-  const getEnvironmentVariables = jest.fn(() => environment);
-  const Storage = jest.fn(function Storage() {});
   const crypto = { randomUUID: jest.fn(() => 'uuid') };
+  const deps = {
+    db: firestoreResult,
+    auth,
+    storage,
+    fetchFn,
+    env: environment,
+    cryptoModule: crypto,
+    console: globalThis.console,
+    functions,
+    express,
+    cors,
+  };
 
   await jest.unstable_mockModule('firebase-admin/app', () => ({
     initializeApp,
   }));
-  await jest.unstable_mockModule(
-    '../../../../src/cloud/generate-stats/generate-stats-gcf.js',
-    () => ({
-      Storage,
-      functions,
-      express,
-      cors,
-      getAuth,
-      getFirestore,
-      getEnvironmentVariables,
-      crypto,
-    })
-  );
+  await jest.unstable_mockModule('firebase-admin/firestore', () => ({
+    getFirestore,
+  }));
   await jest.unstable_mockModule(
     '../../../../src/core/cloud/generate-stats/generate-stats-core.js',
     () => ({
@@ -99,11 +103,8 @@ async function loadModule({
     express,
     functions,
     onRequest,
-    getAuth,
+    deps,
     getFirestore,
-    getEnvironmentVariables,
-    Storage,
-    crypto,
     firestoreResult,
   };
 }
@@ -220,6 +221,16 @@ describe('generate-stats run', () => {
     expect(result).toEqual(['custom-db']);
   });
 
+  it('rejects a non-function firestore factory', async () => {
+    const { mod } = await loadModule();
+
+    expect(() =>
+      mod.getFirestoreInstance({
+        getFirestoreFn: null,
+      })
+    ).toThrow(new TypeError('getFirestoreFn must be a function'));
+  });
+
   it('wires the cloud handler and returns the function export', async () => {
     const {
       mod,
@@ -230,11 +241,7 @@ describe('generate-stats run', () => {
       express,
       functions,
       onRequest,
-      getAuth,
-      getFirestore,
-      getEnvironmentVariables,
-      Storage,
-      crypto,
+      deps,
     } = await loadModule({
       environment: {
         DENDRITE_ENVIRONMENT: 't-123',
@@ -243,26 +250,18 @@ describe('generate-stats run', () => {
       },
     });
 
-    const result = mod.runGenerateStats();
+    const result = mod.runGenerateStats(deps);
 
-    expect(getEnvironmentVariables).toHaveBeenCalledTimes(1);
-    expect(getAuth).toHaveBeenCalledTimes(1);
-    expect(Storage).toHaveBeenCalledTimes(1);
-    expect(getFirestore).toHaveBeenCalledWith('custom-db');
     expect(createGenerateStatsCore).toHaveBeenCalledTimes(1);
     expect(createGenerateStatsCore).toHaveBeenCalledWith(
       expect.objectContaining({
-        db: expect.any(Object),
-        auth: { kind: 'auth' },
-        storage: expect.any(Storage),
-        fetchFn: expect.any(Function),
-        env: {
-          DENDRITE_ENVIRONMENT: 't-123',
-          PLAYWRIGHT_ORIGIN: 'https://playwright.example',
-          FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
-        },
-        cryptoModule: crypto,
-        console: globalThis.console,
+        db: deps.db,
+        auth: deps.auth,
+        storage: deps.storage,
+        fetchFn: deps.fetchFn,
+        env: deps.env,
+        cryptoModule: deps.cryptoModule,
+        console: deps.console,
       })
     );
     expect(express).toHaveBeenCalledTimes(1);
@@ -290,5 +289,17 @@ describe('generate-stats run', () => {
     expect(result.getTopStories).toBe(coreResult.getTopStories);
     expect(result.generate).toBe(coreResult.generate);
     expect(result.handleRequest).toBe(coreResult.handleRequest);
+  });
+
+  it('uses the global console when none is provided', async () => {
+    const { mod, createGenerateStatsCore, deps } = await loadModule();
+
+    mod.runGenerateStats({ ...deps, console: undefined });
+
+    expect(createGenerateStatsCore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        console: globalThis.console,
+      })
+    );
   });
 });

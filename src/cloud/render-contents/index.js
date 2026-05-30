@@ -124,12 +124,12 @@ const handleRenderRequest = buildHandleRenderRequest({
   render: () => render(),
 });
 
-export const renderContents = functions
+export const handle = functions
   .region('europe-west1')
   .firestore.document('stories/{storyId}')
   .onCreate((snap, context) => render(snap, context));
 
-export const triggerRenderContents = functions
+export const handleTrigger = functions
   .region('europe-west1')
   .https.onRequest(handleRenderRequest);
 

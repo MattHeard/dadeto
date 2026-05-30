@@ -18,28 +18,6 @@ const region = jest.fn(() => ({
   },
 }));
 
-jest.unstable_mockModule('firebase-admin/app', () => ({
-  initializeApp: jest.fn(),
-}));
-
-jest.unstable_mockModule(
-  '../../../../src/cloud/render-variant/render-variant-gcf.js',
-  () => ({
-    functions: { region },
-    FieldValue: { delete: jest.fn(() => 'delete-sentinel') },
-    Storage: jest.fn(() => ({ storage: true })),
-    createFirebaseAppManager: jest.fn(() => ({ ensureFirebaseApp })),
-    getFirestoreInstance: jest.fn(() => ({ firestore: true })),
-    fetchFn: importedFetchFn,
-    crypto: { randomUUID: jest.fn(() => 'uuid') },
-    getEnvironmentVariables: jest.fn(() => ({
-      GOOGLE_CLOUD_PROJECT: 'proj',
-      URL_MAP: 'map',
-      CDN_HOST: 'cdn.example.com',
-    })),
-  })
-);
-
 jest.unstable_mockModule(
   '../../../../src/core/cloud/render-variant/render-variant-core.js',
   () => ({
@@ -68,7 +46,30 @@ describe('runRenderVariant', () => {
     const globalFetch = jest.fn(() => Promise.resolve({ ok: true }));
     globalThis.fetch = globalFetch;
 
-    const { renderVariant, render } = runRenderVariant();
+    const initializeApp = jest.fn();
+    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
+    const getFirestoreInstance = jest.fn(() => ({ firestore: true }));
+    const getEnvironmentVariables = jest.fn(() => ({
+      GOOGLE_CLOUD_PROJECT: 'proj',
+      URL_MAP: 'map',
+      CDN_HOST: 'cdn.example.com',
+    }));
+    const Storage = jest.fn(() => ({ storage: true }));
+    const FieldValue = { delete: jest.fn(() => 'delete-sentinel') };
+    const crypto = { randomUUID: jest.fn(() => 'uuid') };
+    const functions = { region };
+
+    const { renderVariant, render } = runRenderVariant({
+      initializeApp,
+      createFirebaseAppManager,
+      getFirestoreInstance,
+      getEnvironmentVariables,
+      functions,
+      FieldValue,
+      Storage,
+      fetchFn: importedFetchFn,
+      crypto,
+    });
 
     expect(ensureFirebaseApp).toHaveBeenCalledTimes(1);
     expect(region).toHaveBeenCalledWith('europe-west1');
@@ -96,7 +97,30 @@ describe('runRenderVariant', () => {
     const previousFetch = globalThis.fetch;
     delete globalThis.fetch;
 
-    const { render } = runRenderVariant();
+    const initializeApp = jest.fn();
+    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
+    const getFirestoreInstance = jest.fn(() => ({ firestore: true }));
+    const getEnvironmentVariables = jest.fn(() => ({
+      GOOGLE_CLOUD_PROJECT: 'proj',
+      URL_MAP: 'map',
+      CDN_HOST: 'cdn.example.com',
+    }));
+    const Storage = jest.fn(() => ({ storage: true }));
+    const FieldValue = { delete: jest.fn(() => 'delete-sentinel') };
+    const crypto = { randomUUID: jest.fn(() => 'uuid') };
+    const functions = { region };
+
+    const { render } = runRenderVariant({
+      initializeApp,
+      createFirebaseAppManager,
+      getFirestoreInstance,
+      getEnvironmentVariables,
+      functions,
+      FieldValue,
+      Storage,
+      fetchFn: importedFetchFn,
+      crypto,
+    });
     await render('snap', 'context');
 
     expect(createRenderVariant).toHaveBeenCalledWith(

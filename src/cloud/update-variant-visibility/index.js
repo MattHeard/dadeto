@@ -10,7 +10,7 @@ const handleUpdateVariantVisibility = createUpdateVariantVisibilityHandler({
   db,
 });
 
-export const updateVariantVisibility = functions
+export const handle = functions
   .region('europe-west1')
   .firestore.document('moderationRatings/{ratingId}')
   .onCreate(handleUpdateVariantVisibility);

@@ -118,6 +118,6 @@ export const realtimeCallApp = createRealtimeCallApp({
   allowedOrigins,
 });
 
-export const realtimeCall = functions
+export const handle = functions
   .region('europe-west1')
   .https.onRequest(realtimeCallApp);

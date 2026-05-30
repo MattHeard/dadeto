@@ -11,7 +11,7 @@ import {
 } from './mark-variant-dirty-gcf.js';
 import { runMarkVariantDirty } from '../../core/cloud/mark-variant-dirty/run.js';
 
-const { markVariantDirty, handleRequest } = runMarkVariantDirty({
+const { markVariantDirty: handle, handleRequest } = runMarkVariantDirty({
   initializeApp,
   createFirebaseAppManager,
   getFirestoreInstance,
@@ -23,7 +23,7 @@ const { markVariantDirty, handleRequest } = runMarkVariantDirty({
   ADMIN_UID,
 });
 
-export { markVariantDirty, handleRequest };
+export { handle, handleRequest };
 export {
   findVariantRef,
   markVariantDirtyImpl,

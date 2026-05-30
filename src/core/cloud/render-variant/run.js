@@ -1,15 +1,4 @@
 // @ts-nocheck
-import { initializeApp } from 'firebase-admin/app';
-import {
-  functions,
-  FieldValue,
-  Storage,
-  createFirebaseAppManager,
-  getFirestoreInstance,
-  fetchFn,
-  crypto,
-  getEnvironmentVariables,
-} from '../../../cloud/render-variant/render-variant-gcf.js';
 import {
   buildAltsHtml,
   buildHtml,
@@ -22,13 +11,37 @@ import {
   VISIBILITY_THRESHOLD,
 } from './render-variant-core.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
-
 /**
  * Wire and return the render-variant cloud exports.
+ * @param {{
+ *   initializeApp: typeof import('firebase-admin/app').initializeApp,
+ *   createFirebaseAppManager: typeof import('../../../cloud/render-variant/render-variant-gcf.js').createFirebaseAppManager,
+ *   getFirestoreInstance: typeof import('../../../cloud/render-variant/render-variant-gcf.js').getFirestoreInstance,
+ *   getEnvironmentVariables: typeof import('../../../cloud/render-variant/render-variant-gcf.js').getEnvironmentVariables,
+ *   functions: typeof import('../../../cloud/render-variant/render-variant-gcf.js').functions,
+ *   FieldValue: typeof import('../../../cloud/render-variant/render-variant-gcf.js').FieldValue,
+ *   Storage: typeof import('../../../cloud/render-variant/render-variant-gcf.js').Storage,
+ *   fetchFn: typeof import('../../../cloud/render-variant/render-variant-gcf.js').fetchFn,
+ *   crypto: typeof import('../../../cloud/render-variant/render-variant-gcf.js').crypto,
+ *   console?: { error: (...args: unknown[]) => void },
+ * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {{ renderVariant: unknown, render: (...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
  */
-export function runRenderVariant() {
+export function runRenderVariant(deps) {
+  const {
+    initializeApp,
+    createFirebaseAppManager,
+    getFirestoreInstance,
+    getEnvironmentVariables,
+    functions,
+    FieldValue,
+    Storage,
+    fetchFn,
+    crypto,
+    console: consoleLike = globalThis.console,
+  } = deps;
+
+  const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
   ensureFirebaseApp();
 
   const db = getFirestoreInstance();
@@ -69,7 +82,7 @@ export function runRenderVariant() {
         cdnHost,
         bucketName,
         objectPrefix,
-        consoleError: (...args) => console.error(...args),
+        consoleError: (...args) => consoleLike.error(...args),
       });
     }
 

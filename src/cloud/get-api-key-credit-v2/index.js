@@ -16,7 +16,7 @@ const handleRequest = createGetApiKeyCreditV2Handler({
   logError: error => console.error(error),
 });
 
-export const getApiKeyCreditV2 = onRequest(async (req, res) => {
+export const handle = onRequest(async (req, res) => {
   const { status, body, headers } = await handleRequest(req);
 
   if (headers) {

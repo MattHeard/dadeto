@@ -199,7 +199,7 @@ const firebaseResources = { db, auth, app };
 
 setupAssignModerationJobRoute(firebaseResources, createRunVariantQuery, now);
 
-export const assignModerationJob = createAssignModerationJob(
+export const handle = createAssignModerationJob(
   functions,
   firebaseResources
 );

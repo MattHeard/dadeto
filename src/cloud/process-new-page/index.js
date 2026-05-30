@@ -13,7 +13,7 @@ const handleProcessNewPage = createProcessNewPageHandler({
   random: Math.random,
 });
 
-export const processNewPage = functions
+export const handle = functions
   .region('europe-west1')
   .firestore.document('pageFormSubmissions/{subId}')
   .onCreate((snap, context) => handleProcessNewPage(snap, context));

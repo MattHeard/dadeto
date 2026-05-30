@@ -42,7 +42,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.all('/', handleReportForModeration);
 
-export const reportForModeration = functions
+export const handle = functions
   .region('europe-west1')
   .https.onRequest(app);
 

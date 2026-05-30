@@ -44,6 +44,6 @@ const app = createSubmitNewPageApp({
   handleSubmit: createSubmitNewPageRequestHandler(handleSubmitCore),
 });
 
-export const submitNewPage = functions
+export const handle = functions
   .region('europe-west1')
   .https.onRequest(app);
