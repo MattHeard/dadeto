@@ -1,8 +1,8 @@
 import { blogKeyHandler } from '../core/browser/inputHandlers/blogKeyHandler.js';
 import { realHourlyWageHandler } from '../core/browser/inputHandlers/realHourlyWage.js';
-import { createParagraphElement } from './presenters/paragraph.js';
-import { createLedgerIngestReportElement } from './presenters/ledgerIngest.js';
-import { createRealHourlyWageReportElement } from './presenters/realHourlyWage.js';
+import { createParagraphElement } from '../core/browser/presenters/paragraph.js';
+import { createLedgerIngestReportElement } from '../core/browser/presenters/ledgerIngest.js';
+import { createRealHourlyWageReportElement } from '../core/browser/presenters/realHourlyWage.js';
 import { createPrefixedLoggers } from './document.js';
 import { deepClone } from '../core/browser/browser-core.js';
 import {
@@ -167,12 +167,12 @@ export const createDispose = config => {
   };
 };
 
-import { createPreElement } from './presenters/pre.js';
-import { createCopyToClipboardButtonElement } from './presenters/copyToClipboard.js';
-import { createTicTacToeBoardElement } from './presenters/ticTacToeBoard.js';
-import { createBattleshipFleetBoardElement } from './presenters/battleshipSolitaireFleet.js';
-import { createBattleshipCluesBoardElement } from './presenters/battleshipSolitaireClues.js';
-import { createJoyConMappingElement } from './presenters/joyConMapping.js';
+import { createPreElement } from '../core/browser/presenters/pre.js';
+import { createCopyToClipboardButtonElement } from '../core/browser/presenters/copyToClipboard.js';
+import { createTicTacToeBoardElement } from '../core/browser/presenters/ticTacToeBoard.js';
+import { createBattleshipFleetBoardElement } from '../core/browser/presenters/battleshipSolitaireFleet.js';
+import { createBattleshipCluesBoardElement } from '../core/browser/presenters/battleshipSolitaireClues.js';
+import { createJoyConMappingElement } from '../core/browser/presenters/joyConMapping.js';
 import { createRealtimeVoicePrototypeElement } from './presenters/realtimeVoicePrototype.js';
 
 /**

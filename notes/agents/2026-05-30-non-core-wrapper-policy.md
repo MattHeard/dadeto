@@ -81,3 +81,10 @@
 - Diagnosis path: listed the remaining files, searched all source and tests for browser-shim imports, and confirmed `src/browser/toys.js` was the only production caller.
 - Chosen fix: deleted the seven remaining browser input-handler shims and imported every handler directly from `src/core/browser/inputHandlers`.
 - Next-time guidance: after deleting a non-core re-export cluster, run a broad search for the old directory path; tests that already import core are useful evidence that the shims were accidental compatibility layers.
+
+## Browser presenter re-export shims
+
+- Unexpected hurdle: `src/browser/presenters` mixed nine pure re-export shims with one real browser presenter implementation, so deleting the whole directory would have been too blunt.
+- Diagnosis path: listed each presenter file, searched caller paths, and separated shim-only presenters from `realtimeVoicePrototype`, which still needs a real extraction.
+- Chosen fix: removed the nine shim presenters and imported those presenter helpers directly from `src/core/browser/presenters` in `src/browser/toys.js`.
+- Next-time guidance: for mixed directories, prune obvious shims first and leave real implementation files for a separate extraction loop with dedicated behavior tests.
