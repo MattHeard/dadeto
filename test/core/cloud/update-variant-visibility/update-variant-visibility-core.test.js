@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import {
   normalizeVariantPath,
   calculateUpdatedVisibility,
+  createUpdateVariantVisibilityHandle,
   createUpdateVariantVisibilityHandler,
 } from '../../../../src/core/cloud/update-variant-visibility/update-variant-visibility-core.js';
 
@@ -231,5 +232,29 @@ describe('createUpdateVariantVisibilityHandler', () => {
       moderatorRatingCount: 1,
       moderatorReputationSum: 1,
     });
+  });
+});
+
+describe('createUpdateVariantVisibilityHandle', () => {
+  it('registers the moderation rating create trigger from runtime deps', () => {
+    const handle = Symbol('handle');
+    const db = { doc: jest.fn() };
+    const onCreate = jest.fn(() => handle);
+    const document = jest.fn(() => ({ onCreate }));
+    const functions = {
+      region: jest.fn(() => ({
+        firestore: { document },
+      })),
+    };
+    const getFirestoreInstance = jest.fn(() => db);
+
+    expect(
+      createUpdateVariantVisibilityHandle(functions, getFirestoreInstance)
+    ).toBe(handle);
+
+    expect(getFirestoreInstance).toHaveBeenCalledTimes(1);
+    expect(functions.region).toHaveBeenCalledWith('europe-west1');
+    expect(document).toHaveBeenCalledWith('moderationRatings/{ratingId}');
+    expect(onCreate).toHaveBeenCalledWith(expect.any(Function));
   });
 });

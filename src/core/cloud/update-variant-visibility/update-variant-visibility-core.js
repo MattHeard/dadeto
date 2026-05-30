@@ -1,5 +1,6 @@
 import { getNumericValueOrZero } from '../cloud-core.js';
 import { objectOrEmpty, when } from '../../commonCore.js';
+import { createFirestoreHandle } from '../firestore-handle.js';
 
 /**
  * @typedef {object} VariantUpdatePayload
@@ -296,6 +297,24 @@ export function createUpdateVariantVisibilityHandler({ db }) {
   return async function handleUpdateVariantVisibility(snapshot) {
     return executeVariantUpdate(db, snapshot);
   };
+}
+
+/**
+ * Compose the public update-variant-visibility Cloud Function handle.
+ * @param {{ region: (region: string) => { firestore: { document: (path: string) => { onCreate: Function } } } }} functions Firebase Functions runtime.
+ * @param {() => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore instance factory.
+ * @returns {unknown} Registered Cloud Function handle.
+ */
+export function createUpdateVariantVisibilityHandle(
+  functions,
+  getFirestoreInstance
+) {
+  return createFirestoreHandle({
+    functions,
+    getFirestoreInstance,
+    documentPath: 'moderationRatings/{ratingId}',
+    createHandler: createUpdateVariantVisibilityHandler,
+  });
 }
 
 /**
