@@ -9,6 +9,7 @@ import {
   createQuerySelectorAll,
   createRemoveItem,
   createSessionStorageHandler,
+  createInitAdminAppHandle,
   createInitGoogleSignInHandlerFactory,
   createSignOutHandlerFactory,
   initAdminApp,
@@ -396,5 +397,67 @@ describe('admin-core additional coverage', () => {
     await googleAuthModule.signOut();
     await googleAuthModule.signOut();
     consoleErrorSpy.mockRestore();
+  });
+
+  it('creates an init admin app handle that invokes the bootstrap wiring', async () => {
+    const initializeApp = jest.fn();
+    const loadStaticConfig = jest.fn().mockResolvedValue({});
+    const auth = {
+      signOut: jest.fn().mockResolvedValue(),
+      currentUser: {
+        uid: ADMIN_UID,
+        getIdToken: jest.fn().mockResolvedValue('token'),
+      },
+    };
+    const getAuth = jest.fn().mockReturnValue(auth);
+    const onAuthStateChanged = jest.fn((authInstance, callback) => callback());
+    const signInWithCredential = jest.fn().mockResolvedValue();
+    const GoogleAuthProvider = {
+      credential: jest.fn().mockReturnValue('cred'),
+    };
+    const sessionStorage = {
+      getItem: jest.fn().mockReturnValue('token'),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+    };
+    const globalScope = {
+      window: {
+        matchMedia: jest.fn().mockReturnValue({
+          matches: false,
+          addEventListener: jest.fn(),
+        }),
+      },
+      google: {},
+      sessionStorage,
+    };
+    const doc = {
+      getElementById: jest.fn().mockReturnValue(null),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+    };
+    const fetchFn = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: jest.fn().mockResolvedValue(''),
+    });
+
+    const handle = createInitAdminAppHandle({
+      loadStaticConfigFn: loadStaticConfig,
+      getAuthFn: getAuth,
+      GoogleAuthProviderFn: GoogleAuthProvider,
+      onAuthStateChangedFn: onAuthStateChanged,
+      signInWithCredentialFn: signInWithCredential,
+      initializeAppFn: initializeApp,
+      sessionStorageObj: sessionStorage,
+      consoleObj: console,
+      globalThisObj: globalScope,
+      documentObj: doc,
+      fetchObj: fetchFn,
+    });
+
+    await handle();
+
+    expect(initializeApp).toHaveBeenCalledTimes(1);
+    expect(onAuthStateChanged).toHaveBeenCalledTimes(1);
   });
 });

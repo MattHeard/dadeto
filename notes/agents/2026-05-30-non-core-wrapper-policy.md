@@ -39,3 +39,10 @@
 - Diagnosis path: added a `dependency-cruiser` rule for `src/core/scripts/**` against Node built-ins, then used the focused duplication test coverage output to trace the remaining 94.44% function coverage back to the default no-op writer.
 - Chosen fix: keep Node built-ins in the outer script wrapper, inject `fs`/`path`/`url`/`child_process` into core, and add an error-path test that leaves the default writers in place so the fallback branch is covered.
 - Next-time guidance: when moving policy enforcement into `depcruise`, always pair it with a focused coverage check on the target file so a missing default branch does not hide behind a seemingly successful refactor.
+
+## Browser admin wrapper
+
+- Unexpected hurdle: `src/browser/admin.js` was a single-shot bootstrap file, but it still counted as a wrapper-shape violation because it invoked `initAdminApp` directly instead of going through a handle factory.
+- Diagnosis path: confirmed `src/core/browser/admin-core.js` already owned the bootstrap logic, then added a tiny `createInitAdminAppHandle` factory and a focused coverage test to exercise the wrapper entrypoint.
+- Chosen fix: let the browser module build `const handle = createInitAdminAppHandle(...); handle();` and keep the actual admin bootstrap wiring in core.
+- Next-time guidance: for tiny browser entrypoints, prefer a handle factory in core plus a one-line invoker in the browser file so the wrapper rule can be satisfied without moving unrelated logic.

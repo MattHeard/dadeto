@@ -1,5 +1,5 @@
 import { loadStaticConfig } from './loadStaticConfig.js';
-import { initAdminApp } from '../core/browser/admin-core.js';
+import { createInitAdminAppHandle } from '../core/browser/admin-core.js';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -8,7 +8,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 
-initAdminApp({
+const handle = createInitAdminAppHandle({
   loadStaticConfigFn: loadStaticConfig,
   getAuthFn: getAuth,
   GoogleAuthProviderFn: GoogleAuthProvider,
@@ -21,3 +21,5 @@ initAdminApp({
   documentObj: document,
   fetchObj: fetch,
 });
+
+handle();
