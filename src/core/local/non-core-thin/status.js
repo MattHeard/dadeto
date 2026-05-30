@@ -23,6 +23,49 @@ export function getNonCoreThinStatus() {
 }
 
 /**
+ * Create the command handler for the non-core thin check.
+ * @param {{
+ *   getStatus: () => {
+ *     isClean: boolean,
+ *     fileCount: number,
+ *     exemptionCount: number,
+ *     maxLines: number,
+ *   },
+ *   formatFailure: (status: {
+ *     isClean: boolean,
+ *     fileCount: number,
+ *     exemptionCount: number,
+ *     maxLines: number,
+ *   }) => string[],
+ *   output: { error: (line: string) => void, log: (line: string) => void },
+ *   setExitCode: (exitCode: number) => void,
+ * }} deps Command dependencies.
+ * @returns {() => void} Handler that runs the check and reports the outcome.
+ */
+export function createCheckNonCoreThinHandle({
+  getStatus,
+  formatFailure,
+  output,
+  setExitCode,
+}) {
+  return () => {
+    const status = getStatus();
+
+    if (!status.isClean) {
+      formatFailure(status).forEach(line => {
+        output.error(line);
+      });
+      setExitCode(1);
+      return;
+    }
+
+    output.log(
+      `Checked ${status.fileCount} non-core JS files; ${status.exemptionCount} baseline exemptions; max ${status.maxLines} lines.`
+    );
+  };
+}
+
+/**
  * Format the failure output for the non-core thin gate.
  * @param {{
  *   fileCount: number,
@@ -173,6 +216,7 @@ function shouldIncludeDirectory(dir, entry) {
 
 export const nonCoreThinStatusTestOnly = {
   buildNonCoreThinStatus,
+  createCheckNonCoreThinHandle,
   formatNonCoreThinFailure,
   getWrapperPatternViolations,
   getWrapperPatternViolationsForSource,

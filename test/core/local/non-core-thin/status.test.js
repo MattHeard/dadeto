@@ -4,6 +4,55 @@ import {
 } from '../../../../src/core/local/non-core-thin/status.js';
 
 describe('non-core thin status', () => {
+  test('creates a clean check command handle', () => {
+    const logs = [];
+    const errors = [];
+    const exitCodes = [];
+    const handle = createTestCheckHandle({
+      status: {
+        isClean: true,
+        fileCount: 2,
+        exemptionCount: 0,
+        maxLines: 50,
+      },
+      logs,
+      errors,
+      exitCodes,
+    });
+
+    handle();
+
+    expect(logs).toEqual([
+      'Checked 2 non-core JS files; 0 baseline exemptions; max 50 lines.',
+    ]);
+    expect(errors).toEqual([]);
+    expect(exitCodes).toEqual([]);
+  });
+
+  test('creates a failing check command handle', () => {
+    const logs = [];
+    const errors = [];
+    const exitCodes = [];
+    const status = {
+      isClean: false,
+      fileCount: 2,
+      exemptionCount: 0,
+      maxLines: 50,
+    };
+    const handle = createTestCheckHandle({
+      status,
+      logs,
+      errors,
+      exitCodes,
+    });
+
+    handle();
+
+    expect(logs).toEqual([]);
+    expect(errors).toEqual(['failure line']);
+    expect(exitCodes).toEqual([1]);
+  });
+
   test('reports the current repo status', () => {
     const status = getNonCoreThinStatus();
 
@@ -156,3 +205,27 @@ describe('non-core thin status', () => {
     ]);
   });
 });
+
+/**
+ * Create a check command handle with captured output.
+ * @param {{
+ *   status: { isClean: boolean, fileCount: number, exemptionCount: number, maxLines: number },
+ *   logs: string[],
+ *   errors: string[],
+ *   exitCodes: number[],
+ * }} options Test handle options.
+ * @returns {() => void} Check command handle.
+ */
+function createTestCheckHandle({ status, logs, errors, exitCodes }) {
+  return nonCoreThinStatusTestOnly.createCheckNonCoreThinHandle({
+    getStatus: () => status,
+    formatFailure: () => ['failure line'],
+    output: {
+      error: line => errors.push(line),
+      log: line => logs.push(line),
+    },
+    setExitCode: exitCode => {
+      exitCodes.push(exitCode);
+    },
+  });
+}
