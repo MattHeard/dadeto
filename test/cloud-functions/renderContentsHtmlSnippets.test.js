@@ -52,8 +52,8 @@ describe('PAGE_HTML', () => {
     expect(contentsGoogleAuthModule).toContain('getIdToken');
     expect(contentsGoogleAuthModule).toContain('isAdmin');
     expect(contentsGoogleAuthModule).toContain("from './googleAuth.js'");
-    expect(contentsMenuToggleModule).toContain('const toggle');
-    expect(contentsMenuToggleModule).toContain("addEventListener('keydown'");
+    expect(contentsMenuToggleModule).toContain('createMobileMenuToggleHandle');
+    expect(contentsMenuToggleModule).toContain('handle();');
   });
 
   test('references Pico CSS before the local stylesheet', () => {

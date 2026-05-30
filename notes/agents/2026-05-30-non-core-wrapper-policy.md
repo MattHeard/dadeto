@@ -60,3 +60,10 @@
 - Diagnosis path: checked the existing browser Google auth tests and confirmed callers use the named helpers, while the wrapper validator only needs the constructed module to be named `handle`.
 - Chosen fix: construct `const handle = createGoogleAuthModule(...)`, export that handle, and keep `initGoogleSignIn`, `signOut`, `isAdmin`, and `getIdToken` available under their existing names.
 - Next-time guidance: object-returning factories are good low-risk wrapper candidates when the public exports can be destructured from `handle` without changing callers.
+
+## Browser mobile menu wrappers
+
+- Unexpected hurdle: the three menu scripts had duplicated inline behavior, and the first extraction missed one close-path branch under the 100% coverage gate.
+- Diagnosis path: extracted a shared core handle, ran focused menu coverage, then used the full coverage failure to find the missing toggle-close branch.
+- Chosen fix: `createMobileMenuToggleHandle` now owns open, close, overlay, and keyboard behavior, while the contents, variant, and stats wrappers only inject `document`, keydown listener, and timeout dependencies.
+- Next-time guidance: when consolidating browser inline scripts, cover both missing-element no-op behavior and every event path before trusting the full suite.
