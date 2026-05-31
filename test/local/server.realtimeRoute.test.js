@@ -9,7 +9,7 @@ import {
   isWriterHttpsEnabled,
   isWriterRequestLogEnabled,
   readWriterTlsOptions,
-} from '../../src/local/server.js';
+} from '../../src/core/local/server.js';
 
 describe('local writer server transport', () => {
   test('uses HTTP by default', () => {
@@ -62,6 +62,20 @@ describe('local writer server transport', () => {
     expect(getWriterUrl(4321, env)).toBe('https://localhost:4321/writer/');
   });
 
+  test('uses built-in server defaults when custom constructors are omitted', () => {
+    const app = {};
+    const server = createWriterServer(app, { env: {} });
+
+    expect(server).toEqual(expect.objectContaining({ listen: expect.any(Function) }));
+  });
+
+  test('uses built-in server defaults when no options object is provided', () => {
+    const app = {};
+    const server = createWriterServer(app);
+
+    expect(server).toEqual(expect.objectContaining({ listen: expect.any(Function) }));
+  });
+
   test('requires key and certificate paths for HTTPS mode', () => {
     expect(() =>
       readWriterTlsOptions({ WRITER_HTTPS: '1', WRITER_TLS_CERT: 'cert.pem' })
@@ -104,6 +118,55 @@ describe('local writer request logging', () => {
     expect(requestLogger).toHaveBeenCalledWith(
       expect.stringMatching(
         /^writer request POST \/api\/realtime\/call 200 \d+ms 192\.168\.178\.134$/
+      )
+    );
+  });
+
+  test('falls back to req.url and socket remoteAddress when available', () => {
+    const requestLogger = jest.fn();
+    const middleware = createRequestLogger(requestLogger);
+    const finishHandlers = {};
+    const req = {
+      method: 'GET',
+      url: '/api/non-core-thin',
+      socket: { remoteAddress: '127.0.0.1' },
+    };
+    const res = {
+      statusCode: 200,
+      on: (event, handler) => {
+        finishHandlers[event] = handler;
+      },
+    };
+
+    middleware(req, res, () => {});
+    finishHandlers.finish();
+
+    expect(requestLogger).toHaveBeenCalledWith(
+      expect.stringMatching(/^writer request GET \/api\/non-core-thin 200 \d+ms 127\.0\.0\.1$/)
+    );
+  });
+
+  test('falls back to unknown-remote when no address is present', () => {
+    const requestLogger = jest.fn();
+    const middleware = createRequestLogger(requestLogger);
+    const finishHandlers = {};
+    const req = {
+      method: 'GET',
+      url: '/api/non-core-thin',
+    };
+    const res = {
+      statusCode: 200,
+      on: (event, handler) => {
+        finishHandlers[event] = handler;
+      },
+    };
+
+    middleware(req, res, () => {});
+    finishHandlers.finish();
+
+    expect(requestLogger).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^writer request GET \/api\/non-core-thin 200 \d+ms unknown-remote$/
       )
     );
   });

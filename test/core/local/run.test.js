@@ -66,6 +66,35 @@ describe('core local run', () => {
     expect(listen).toHaveBeenCalledWith(4321, expect.any(Function));
   });
 
+  test('falls back to the built-in console logger when one is not injected', () => {
+    const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const listen = jest.fn((_port, cb) => cb());
+    const on = jest.fn();
+    const runtime = createLocalServerRuntime({
+      createLocalApp: jest.fn(() => 'app'),
+      createWriterServer: jest.fn(() => ({ listen, on })),
+      formatListenErrorMessage: jest.fn(),
+      getWriterUrl: jest.fn(() => 'http://example/writer/'),
+      isWriterRequestLogEnabled: jest.fn(() => false),
+    });
+
+    runtime.runLocalServer({
+      env: {},
+      port: 4321,
+      store: {},
+      publicDir: '/public',
+      writerDir: '/writer',
+      exchangeRealtimeCallSdp: jest.fn(),
+      getNonCoreThinStatus: jest.fn(),
+      renderNonCoreThinDashboard: jest.fn(),
+    });
+
+    expect(consoleLog).toHaveBeenCalledWith(
+      'writer server listening on http://example/writer/'
+    );
+    consoleLog.mockRestore();
+  });
+
   test('rethrows non-object listen errors without treating them as permission failures', () => {
     const listen = jest.fn((_port, cb) => cb());
     const on = jest.fn((event, handler) => {
