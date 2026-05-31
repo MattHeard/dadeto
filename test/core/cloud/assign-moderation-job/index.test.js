@@ -70,6 +70,14 @@ describe('createAssignModerationJobEntrypoint', () => {
     expect(firestore).toBeDefined();
     expect(getFirestore).toHaveBeenCalledTimes(2);
 
+    const nullEnvironmentFirestore = entrypoint.testing.getFirestoreInstance({
+      ensureAppFn: jest.fn(),
+      getFirestoreFn: getFirestore,
+      environment: null,
+    });
+
+    expect(nullEnvironmentFirestore).toBeDefined();
+
     const defaultFirestore = entrypoint.testing.getFirestoreInstance();
     const cachedDefaultFirestore = entrypoint.testing.getFirestoreInstance();
 

@@ -31,6 +31,7 @@ import {
  * }} Cloud entrypoint exports and test hooks.
  */
 export function createRenderContentsEntrypoint(deps) {
+  const typedDeps = /** @type {any} */ (deps);
   const {
     initializeApp,
     functions,
@@ -42,12 +43,12 @@ export function createRenderContentsEntrypoint(deps) {
     fetchFn,
     crypto,
     getEnvironmentVariables,
-  } = deps;
+  } = typedDeps;
   const {
     db,
     environmentVariables,
     render: resolveRender,
-  } = createRenderContentsEntrypointState();
+  } = /** @type {any} */ (createRenderContentsEntrypointState());
   const auth = getAuth();
 
   const resolveFetchTopStoryIds = createMemoizedLoader(() =>
@@ -61,21 +62,27 @@ export function createRenderContentsEntrypoint(deps) {
   const applyCorsHeaders = createApplyCorsHeaders({ allowedOrigins });
   const validateRequest = createValidateRequest({ applyCorsHeaders });
 
-  const handleRenderRequest = buildHandleRenderRequest({
+  const handleRenderRequest = /** @type {any} */ (buildHandleRenderRequest)({
     validateRequest,
-    verifyIdToken: token => auth.verifyIdToken(token),
+    verifyIdToken: /** @type {(token: any) => any} */ (token =>
+      auth.verifyIdToken(token)
+    ),
     adminUid: ADMIN_UID,
     render: () => render(),
   });
 
-  const handle = functions
+  const handle = /** @type {any} */ (functions
     .region('europe-west1')
     .firestore.document('stories/{storyId}')
-    .onCreate((snap, context) => render(snap, context));
+    .onCreate(
+      /** @type {(snap: any, context: any) => any} */ ((snap, context) =>
+        render(snap, context)
+      )
+    ));
 
-  const handleTrigger = functions
+  const handleTrigger = /** @type {any} */ (functions
     .region('europe-west1')
-    .https.onRequest(handleRenderRequest);
+    .https.onRequest(handleRenderRequest));
 
   /**
    * Forward render calls to the memoized render implementation.
@@ -83,7 +90,9 @@ export function createRenderContentsEntrypoint(deps) {
    * @returns {unknown} Render result from the shared core helper.
    */
   function render(...args) {
-    return resolveRender()(...args);
+    return /** @type {(...args: unknown[]) => unknown} */ (resolveRender())(
+      ...args
+    );
   }
 
   /**
@@ -92,7 +101,9 @@ export function createRenderContentsEntrypoint(deps) {
    * @returns {unknown} Top-story identifiers from the shared loader.
    */
   function fetchTopStoryIds(...args) {
-    return resolveFetchTopStoryIds()(...args);
+    return /** @type {(...args: unknown[]) => unknown} */ (
+      resolveFetchTopStoryIds()
+    )(...args);
   }
 
   /**
@@ -101,7 +112,9 @@ export function createRenderContentsEntrypoint(deps) {
    * @returns {unknown} Story details from the shared loader.
    */
   function fetchStoryInfo(...args) {
-    return resolveFetchStoryInfo()(...args);
+    return /** @type {(...args: unknown[]) => unknown} */ (
+      resolveFetchStoryInfo()
+    )(...args);
   }
 
   return {
@@ -119,7 +132,7 @@ export function createRenderContentsEntrypoint(deps) {
    * @returns {unknown} Shared render state consumed by the cloud wrapper.
    */
   function createRenderContentsEntrypointState() {
-    const renderStateOptions = {
+    const renderStateOptions = /** @type {any} */ ({
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,
@@ -130,13 +143,19 @@ export function createRenderContentsEntrypoint(deps) {
       resolveObjectPrefix: resolveStaticObjectPrefix,
       entrypointKind: 'contents',
       defaultBucketName: DEFAULT_BUCKET_NAME,
-    };
-    renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
-      createRenderer: createRenderContents,
-      crypto,
-      consoleError: (...args) => console.error(...args),
     });
+    renderStateOptions.buildRender = /** @type {any} */ (
+      /** @type {any} */ (createCloudRenderInstanceBuilder)({
+        createRenderer: createRenderContents,
+        crypto,
+        consoleError: /** @type {(...args: any[]) => void} */ ((...args) =>
+          console.error(...args)
+        ),
+      })
+    );
     renderStateOptions.entrypointKind = 'contents';
-    return createCloudRenderEntrypointState(renderStateOptions);
+    return /** @type {any} */ (
+      /** @type {any} */ (createCloudRenderEntrypointState)(renderStateOptions)
+    );
   }
 }

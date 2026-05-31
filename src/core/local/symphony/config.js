@@ -36,10 +36,11 @@ function normalizeTracker(tracker) {
     return { ...DEFAULT_SYMPHONY_CONFIG.tracker };
   }
 
+  const typedTracker = /** @type {any} */ (tracker);
   return {
-    kind: normalizeString(tracker.kind, DEFAULT_SYMPHONY_CONFIG.tracker.kind),
+    kind: normalizeString(typedTracker.kind, DEFAULT_SYMPHONY_CONFIG.tracker.kind),
     readyCommand: normalizeString(
-      tracker.readyCommand,
+      typedTracker.readyCommand,
       DEFAULT_SYMPHONY_CONFIG.tracker.readyCommand
     ),
   };
@@ -55,17 +56,18 @@ function normalizeLauncher(launcher) {
     return { ...DEFAULT_SYMPHONY_CONFIG.launcher };
   }
 
+  const typedLauncher = /** @type {any} */ (launcher);
   return {
-    kind: normalizeString(launcher.kind, DEFAULT_SYMPHONY_CONFIG.launcher.kind),
+    kind: normalizeString(typedLauncher.kind, DEFAULT_SYMPHONY_CONFIG.launcher.kind),
     command: normalizeString(
-      launcher.command,
+      typedLauncher.command,
       DEFAULT_SYMPHONY_CONFIG.launcher.command
     ),
     args: normalizeStringArray(
-      launcher.args,
+      typedLauncher.args,
       DEFAULT_SYMPHONY_CONFIG.launcher.args
     ),
-    mcpServers: normalizeLauncherMcpServers(launcher.mcpServers),
+    mcpServers: normalizeLauncherMcpServers(typedLauncher.mcpServers),
   };
 }
 
@@ -87,8 +89,9 @@ function normalizeLauncherMcpServers(mcpServers) {
  * @returns {string} Normalized workspace root path relative to the repo.
  */
 function resolveWorkspaceRoot(config) {
+  const typedConfig = /** @type {any} */ (config);
   return normalizePathValue(
-    config?.workspaceRoot,
+    typedConfig?.workspaceRoot,
     DEFAULT_SYMPHONY_CONFIG.workspaceRoot
   );
 }
@@ -99,7 +102,8 @@ function resolveWorkspaceRoot(config) {
  * @returns {string} Normalized log directory path relative to the repo.
  */
 function resolveLogDir(config) {
-  return normalizePathValue(config?.logDir, DEFAULT_SYMPHONY_CONFIG.logDir);
+  const typedConfig = /** @type {any} */ (config);
+  return normalizePathValue(typedConfig?.logDir, DEFAULT_SYMPHONY_CONFIG.logDir);
 }
 
 /**
@@ -135,25 +139,26 @@ function resolveDefaultBranch(defaultBranch) {
  * }} Normalized local Symphony config.
  */
 export function normalizeSymphonyConfig(config, repoRoot, configPath) {
+  const typedConfig = /** @type {any} */ (config);
   const workspaceRoot = resolveWorkspaceRoot(config);
   const logDir = resolveLogDir(config);
 
   return {
     configPath,
-    tracker: normalizeTracker(config?.tracker),
-    launcher: normalizeLauncher(config?.launcher),
+    tracker: normalizeTracker(typedConfig?.tracker),
+    launcher: normalizeLauncher(typedConfig?.launcher),
     workspaceRoot: path.resolve(repoRoot, workspaceRoot),
     logDir: path.resolve(repoRoot, logDir),
     statusPath: path.resolve(repoRoot, logDir, 'status.json'),
     pollIntervalMs: normalizePositiveNumber(
-      config?.pollIntervalMs,
+      typedConfig?.pollIntervalMs,
       DEFAULT_SYMPHONY_CONFIG.pollIntervalMs
     ),
     maxConcurrentRuns: normalizePositiveNumber(
-      config?.maxConcurrentRuns,
+      typedConfig?.maxConcurrentRuns,
       DEFAULT_SYMPHONY_CONFIG.maxConcurrentRuns
     ),
-    defaultBranch: resolveDefaultBranch(config?.defaultBranch),
+    defaultBranch: resolveDefaultBranch(typedConfig?.defaultBranch),
   };
 }
 

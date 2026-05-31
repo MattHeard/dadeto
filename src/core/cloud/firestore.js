@@ -24,9 +24,11 @@ import {
  * }} Firestore helpers for the cloud wrappers.
  */
 export function createFirestoreModule(deps) {
+  const typedDeps = /** @type {any} */ (deps);
   const { ensureFirebaseApp, resetFirebaseInitializationState } =
-    deps.createFirebaseAppManager(deps.initializeApp);
+    typedDeps.createFirebaseAppManager(typedDeps.initializeApp);
 
+  /** @type {import('firebase-admin/firestore').Firestore | null} */
   let cachedDb = null;
 
   /**
@@ -62,7 +64,7 @@ export function createFirestoreModule(deps) {
   function getFirestoreInstance(options = {}) {
     const {
       ensureAppFn = ensureFirebaseApp,
-      getFirestoreFn = deps.getFirestore,
+      getFirestoreFn = typedDeps.getFirestore,
       environment = process.env,
     } = options;
 
@@ -72,11 +74,19 @@ export function createFirestoreModule(deps) {
     if (
       shouldBypassFirestoreCache({ ensureAppFn, getFirestoreFn, environment })
     ) {
-      return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+      return getFirestoreForDatabase(
+        getFirestoreFn,
+        /** @type {any} */ (undefined),
+        databaseId
+      );
     }
 
     if (!cachedDb) {
-      cachedDb = getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+      cachedDb = getFirestoreForDatabase(
+        getFirestoreFn,
+        /** @type {any} */ (undefined),
+        databaseId
+      );
     }
 
     return cachedDb;

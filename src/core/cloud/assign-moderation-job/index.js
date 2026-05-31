@@ -16,11 +16,29 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
 /**
  * Build the assign-moderation-job entrypoint from injected dependencies.
- * @param {Record<string, unknown>} deps Runtime dependencies supplied by the cloud wrapper.
+ * @param {{
+ *   functions: {
+ *     region: (region: string) => {
+ *       firestore: {
+ *         document: (path: string) => { onCreate: (handler: Function) => unknown },
+ *       },
+ *       https: { onRequest: (handler: Function) => unknown },
+ *     },
+ *   },
+ *   express: Function & { urlencoded: (options: { extended: boolean }) => unknown },
+ *   cors: (options: unknown) => unknown,
+ *   initializeApp: () => unknown,
+ *   getAuth: () => unknown,
+ *   getFirestore: Function,
+ *   getEnvironmentVariables: () => Record<string, unknown>,
+ *   now: () => number,
+ *   random: () => number,
+ * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {{
  *   handle: unknown,
  *   testing: {
  *     firebaseInitialization: unknown,
+ *     ensureFirebaseApp: (initFn?: () => unknown) => void,
  *     resolveFirestoreDatabaseId: typeof resolveFirestoreDatabaseId,
  *     resolveFirestoreEnvironment: typeof resolveFirestoreEnvironment,
  *     shouldUseCustomFirestoreDependencies: typeof shouldUseCustomFirestoreDependencies,
@@ -30,6 +48,7 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  * }} Cloud entrypoint exports and test hooks.
  */
 export function createAssignModerationJobEntrypoint(deps) {
+  const typedDeps = /** @type {any} */ (deps);
   const firebaseInitialization = createFirebaseInitialization();
   const firebaseInitializationHandlers = {
     reset: () => {
@@ -52,6 +71,7 @@ export function createAssignModerationJobEntrypoint(deps) {
    * }} Shared Firestore helpers.
    */
   function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
+    /** @type {import('firebase-admin/firestore').Firestore | null} */
     let cachedDb = null;
 
     /**
@@ -66,33 +86,39 @@ export function createAssignModerationJobEntrypoint(deps) {
     function getFirestoreInstance(options = {}) {
       const {
         ensureAppFn = defaultEnsureFirebaseApp,
-        getFirestoreFn = deps.getFirestore,
+        getFirestoreFn = typedDeps.getFirestore,
         environment: providedEnvironment,
       } = options;
 
       const environment = resolveFirestoreEnvironment(
-        providedEnvironment,
-        deps.getEnvironmentVariables
+        /** @type {Record<string, unknown> | undefined} */ (providedEnvironment),
+        typedDeps.getEnvironmentVariables
       );
 
       ensureAppFn();
 
-      const databaseId = resolveFirestoreDatabaseId(environment);
+      const databaseId = resolveFirestoreDatabaseId(
+        /** @type {Record<string, unknown>} */ (environment ?? {})
+      );
       const useCustomDependencies = shouldUseCustomFirestoreDependencies({
         options,
         defaultEnsureFn: defaultEnsureFirebaseApp,
-        defaultGetFirestoreFn: deps.getFirestore,
+        defaultGetFirestoreFn: typedDeps.getFirestore,
         providedEnvironment,
       });
 
       if (useCustomDependencies) {
-        return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+        return getFirestoreForDatabase(
+          getFirestoreFn,
+          /** @type {any} */ (undefined),
+          databaseId
+        );
       }
 
       if (!cachedDb) {
         cachedDb = getFirestoreForDatabase(
           getFirestoreFn,
-          undefined,
+          /** @type {any} */ (undefined),
           databaseId
         );
       }
@@ -138,27 +164,27 @@ export function createAssignModerationJobEntrypoint(deps) {
 
   ensureFirebaseApp();
   const db = getFirestoreInstance();
-  const auth = deps.getAuth();
-  const app = deps.express();
+  const auth = typedDeps.getAuth();
+  const app = typedDeps.express();
 
   const corsOptions = createCorsOptions(
     resolveAllowedOrigins,
-    deps.getEnvironmentVariables
+    typedDeps.getEnvironmentVariables
   );
 
-  app.use(deps.cors(corsOptions));
-  configureUrlencodedBodyParser(app, deps.express);
+  app.use(typedDeps.cors(corsOptions));
+  configureUrlencodedBodyParser(app, typedDeps.express);
 
-  const firebaseResources = { db, auth, app };
+  const firebaseResources = /** @type {any} */ ({ db, auth, app });
 
   setupAssignModerationJobRoute(
     firebaseResources,
     createRunVariantQuery,
-    deps.now,
-    deps.random
+    typedDeps.now,
+    typedDeps.random
   );
 
-  const handle = createAssignModerationJob(deps.functions, firebaseResources);
+  const handle = createAssignModerationJob(typedDeps.functions, firebaseResources);
 
   return {
     handle,

@@ -31,6 +31,7 @@ import {
  * @returns {{ renderVariant: unknown, render: (...args: unknown[]) => Promise<null> }} Wired cloud export objects for index.js.
  */
 export function runRenderVariant(deps) {
+  const typedDeps = /** @type {any} */ (deps);
   const {
     initializeApp,
     createFirebaseAppManager,
@@ -42,32 +43,43 @@ export function runRenderVariant(deps) {
     fetchFn,
     crypto,
     console: consoleLike = globalThis.console,
-  } = deps;
+  } = typedDeps;
 
-  const { render: resolveRenderVariant } = createRenderVariantEntrypointState();
+  const { render: resolveRenderVariant } = /** @type {any} */ (
+    createRenderVariantEntrypointState()
+  );
 
   /* istanbul ignore next */
-  const handleVariantWrite = createHandleVariantWrite({
-    renderVariant: (snap, context) => resolveRenderVariant()(snap, context),
+  const handleVariantWrite = /** @type {any} */ (createHandleVariantWrite)({
+    renderVariant: /** @type {(snap: any, context: any) => any} */ (
+      (snap, context) => resolveRenderVariant()(snap, context)
+    ),
     getDeleteSentinel: () => FieldValue.delete(),
   });
 
   /* istanbul ignore next */
-  const renderVariant = functions
+  const renderVariant = /** @type {any} */ (functions
     .region('europe-west1')
     .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
-    .onWrite((change, context) => handleVariantWrite(change, context));
+    .onWrite(
+      /** @type {(change: any, context: any) => any} */ ((change, context) =>
+        handleVariantWrite(change, context)
+      )
+    ));
 
-  const render = (...args) => resolveRenderVariant()(...args);
+  const render = /** @type {(...args: any[]) => any} */ ((...args) =>
+    /** @type {(...args: unknown[]) => unknown} */ (resolveRenderVariant())(
+      ...args
+    ));
 
-  return { renderVariant, render };
+  return /** @type {any} */ ({ renderVariant, render });
 
   /**
    * Assemble the shared render state for the variant entrypoint.
    * @returns {unknown} Shared render state consumed by the cloud wrapper.
    */
   function createRenderVariantEntrypointState() {
-    const renderStateOptions = {};
+    const renderStateOptions = /** @type {any} */ ({});
     renderStateOptions.initializeApp = initializeApp;
     renderStateOptions.createFirebaseAppManager = createFirebaseAppManager;
     renderStateOptions.getFirestoreInstance = getFirestoreInstance;
@@ -78,13 +90,19 @@ export function runRenderVariant(deps) {
     renderStateOptions.resolveObjectPrefix = resolveStaticObjectPrefix;
     renderStateOptions.entrypointKind = 'variant';
     renderStateOptions.defaultBucketName = DEFAULT_BUCKET_NAME;
-    renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
-      createRenderer: createRenderVariant,
-      crypto,
-      consoleError: (...args) => consoleLike.error(...args),
-    });
+    renderStateOptions.buildRender = /** @type {any} */ (
+      /** @type {any} */ (createCloudRenderInstanceBuilder)({
+        createRenderer: createRenderVariant,
+        crypto,
+        consoleError: /** @type {(...args: any[]) => void} */ ((...args) =>
+          consoleLike.error(...args)
+        ),
+      })
+    );
 
-    return createCloudRenderEntrypointState(renderStateOptions);
+    return /** @type {any} */ (
+      /** @type {any} */ (createCloudRenderEntrypointState)(renderStateOptions)
+    );
   }
 }
 

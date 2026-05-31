@@ -47,17 +47,18 @@ export const DEFAULT_CODEX_RALPH_ARGS = [
  * }} Local Codex-backed Ralph launcher.
  */
 export function createCodexRalphLauncher(options) {
+  const typedOptions = /** @type {any} */ (options);
   return {
     async launchRunner(payload) {
       return createDetachedProcessLauncher({
-        ...options,
+        ...typedOptions,
         logDirSuffix: 'symphony',
         closeErrorLabel: 'Failed to close run log handle:',
         exitErrorLabel: payload =>
           `Failed to handle Symphony runner exit for ${payload.runId}:`,
         resolveArgs: payload => [
-          ...(options.args ?? []),
-          buildRalphPrompt(payload),
+          ...(typedOptions.args ?? []),
+          buildRalphPrompt(/** @type {any} */ (payload)),
         ],
         buildExitPayload: (payload, { runId, exitCode, signal }) => ({
           runId,
@@ -66,7 +67,7 @@ export function createCodexRalphLauncher(options) {
           exitCode,
           signal,
         }),
-      }).launch(payload);
+      }).launch(/** @type {any} */ (payload));
     },
   };
 }

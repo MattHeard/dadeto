@@ -38,6 +38,11 @@ export const createEnsureFirebaseApp = (
 
 export const ensureFirebaseApp = createEnsureFirebaseApp();
 
+/**
+ * Resolve the allowlist of Origins for the generate-stats endpoint.
+ * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment variables.
+ * @returns {string[]} Allowed origins for the current environment.
+ */
 export const getAllowedOrigins = environmentVariables => {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
   const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
@@ -57,13 +62,14 @@ export const getAllowedOrigins = environmentVariables => {
   return productionOrigins;
 };
 
+/** @type {import('firebase-admin/firestore').Firestore | null} */
 let cachedDb = null;
 
 /**
  * Determine whether the generate-stats Firestore call can reuse the cached instance.
  * @param {{
  *   ensureAppFn: () => void,
- *   getFirestoreFn: typeof getAdminFirestore,
+ *   getFirestoreFn: Function,
  *   environment: Record<string, unknown>,
  * }} options Firestore resolution inputs.
  * @returns {boolean} True when the cached instance is safe to reuse.
@@ -104,11 +110,19 @@ export const getFirestoreInstance = (options = {}) => {
 
   const databaseId = resolveFirestoreDatabaseId(environment);
   if (!shouldUseCachedFirestore({ ensureAppFn, getFirestoreFn, environment })) {
-    return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+    return getFirestoreForDatabase(
+      getFirestoreFn,
+      /** @type {any} */ (undefined),
+      databaseId
+    );
   }
 
   if (!cachedDb) {
-    cachedDb = getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+    cachedDb = getFirestoreForDatabase(
+      getFirestoreFn,
+      /** @type {any} */ (undefined),
+      databaseId
+    );
   }
 
   return cachedDb;
@@ -139,6 +153,7 @@ export const getFirestoreInstance = (options = {}) => {
  * }} Cloud entrypoint and core helpers.
  */
 export function runGenerateStats(deps) {
+  const typedDeps = /** @type {any} */ (deps);
   const {
     db,
     auth,
@@ -150,9 +165,10 @@ export function runGenerateStats(deps) {
     functions,
     express,
     cors,
-  } = deps;
+  } = typedDeps;
 
-  const generateStatsCore = createGenerateStatsCore({
+  const generateStatsCore = /** @type {any} */ (
+    createGenerateStatsCore({
     db,
     auth,
     storage,
@@ -160,7 +176,8 @@ export function runGenerateStats(deps) {
     env,
     cryptoModule,
     console: consoleLike,
-  });
+    })
+  );
 
   const {
     getStoryCount,
@@ -175,23 +192,27 @@ export function runGenerateStats(deps) {
   const app = express();
 
   app.use(
-    cors({
-      origin: (origin, cb) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-          cb(null, true);
-        } else {
-          cb(new Error('CORS'));
-        }
-      },
-      methods: ['POST'],
-    })
+    /** @type {any} */ (
+      cors({
+        origin: /** @type {(origin: any, cb: any) => void} */ (
+          (origin, cb) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+              cb(null, true);
+            } else {
+              cb(new Error('CORS'));
+            }
+          }
+        ),
+        methods: ['POST'],
+      })
+    )
   );
 
   app.post('/', handleRequest);
 
   const generateStats = functions.region('europe-west1').https.onRequest(app);
 
-  return {
+  return /** @type {any} */ ({
     generateStats,
     getStoryCount,
     getPageCount,
@@ -199,7 +220,7 @@ export function runGenerateStats(deps) {
     getTopStories,
     generate,
     handleRequest,
-  };
+  });
 }
 
 /**
@@ -210,7 +231,7 @@ export function runGenerateStats(deps) {
  *   express: () => { use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void },
  *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
  *   getAuth: () => unknown,
- *   getFirestore: Function,
+ *   getFirestore: any,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   initializeApp: () => void,
  *   fetchFn: typeof fetch,
@@ -234,7 +255,7 @@ export function createGenerateStatsHandle({
   const environment = getEnvironmentVariables();
   const db = getFirestoreInstance({
     ensureAppFn: ensureFirebaseApp,
-    getFirestoreFn: getFirestore,
+    getFirestoreFn: /** @type {any} */ (getFirestore),
     environment,
   });
 

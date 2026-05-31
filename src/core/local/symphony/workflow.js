@@ -114,7 +114,7 @@ function parseFrontMatter(content) {
   }
 
   const frontMatterBlock = content.slice(4, frontMatterEndIndex);
-  const config = {};
+  const config = /** @type {{ [key: string]: string | number | boolean }} */ ({});
   for (const line of frontMatterBlock.split('\n')) {
     const trimmedLine = line.trim();
     if (trimmedLine.length === 0 || trimmedLine.startsWith('#')) {
@@ -173,7 +173,11 @@ export function summarizeWorkflow(content) {
  * @returns {boolean} True when the workflow file is missing.
  */
 function isMissingWorkflowError(error) {
-  return Boolean(error && typeof error === 'object' && error.code === 'ENOENT');
+  return Boolean(
+    error &&
+      typeof error === 'object' &&
+      /** @type {{ code?: unknown }} */ (error).code === 'ENOENT'
+  );
 }
 
 /**
