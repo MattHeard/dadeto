@@ -10,8 +10,16 @@ import {
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
+import {
+  getFirestoreForDatabase,
+  resolveFirestoreDatabaseId,
+} from '../firestore-helpers.js';
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
+/**
+ *
+ * @param deps
+ */
 export function createAssignModerationJobEntrypoint(deps) {
   const firebaseInitialization = createFirebaseInitialization();
   const firebaseInitializationHandlers = {
@@ -22,9 +30,17 @@ export function createAssignModerationJobEntrypoint(deps) {
 
   const defaultEnsureFirebaseApp = () => {};
 
+  /**
+   *
+   * @param firebaseInitializationHandlers
+   */
   function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
     let cachedDb = null;
 
+    /**
+     *
+     * @param options
+     */
     function getFirestoreInstance(options = {}) {
       const {
         ensureAppFn = defaultEnsureFirebaseApp,
@@ -52,12 +68,19 @@ export function createAssignModerationJobEntrypoint(deps) {
       }
 
       if (!cachedDb) {
-        cachedDb = getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
+        cachedDb = getFirestoreForDatabase(
+          getFirestoreFn,
+          undefined,
+          databaseId
+        );
       }
 
       return cachedDb;
     }
 
+    /**
+     *
+     */
     function clearFirestoreInstanceCache() {
       cachedDb = null;
       firebaseInitializationHandlers.reset();
@@ -66,42 +89,13 @@ export function createAssignModerationJobEntrypoint(deps) {
     return { getFirestoreInstance, clearFirestoreInstanceCache };
   }
 
-  function resolveFirestoreDatabaseId(environment) {
-    const rawConfig = environment.FIREBASE_CONFIG;
-
-    if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
-      return null;
-    }
-
-    try {
-      const parsed = JSON.parse(rawConfig);
-      const { databaseId } = parsed;
-
-      if (typeof databaseId === 'string' && databaseId.trim() !== '') {
-        return databaseId;
-      }
-    } catch {
-      // Ignore malformed configuration strings and fall back to the default DB.
-    }
-
-    return null;
-  }
-
-  function getFirestoreForDatabase(getFirestoreFn, firebaseApp, databaseId) {
-    if (databaseId && databaseId !== '(default)') {
-      if (!firebaseApp) {
-        return getFirestoreFn(databaseId);
-      }
-
-      return getFirestoreFn(firebaseApp, databaseId);
-    }
-
-    return getFirestoreFn(firebaseApp);
-  }
-
   const { getFirestoreInstance, clearFirestoreInstanceCache } =
     createFirestoreInstanceHandlers(firebaseInitializationHandlers);
 
+  /**
+   *
+   * @param initFn
+   */
   function ensureFirebaseApp(initFn = deps.initializeApp) {
     if (firebaseInitialization.hasBeenInitialized()) {
       return;
@@ -137,13 +131,10 @@ export function createAssignModerationJobEntrypoint(deps) {
     firebaseResources,
     createRunVariantQuery,
     deps.now,
-    Math.random
+    deps.random
   );
 
-  const handle = createAssignModerationJob(
-    deps.functions,
-    firebaseResources
-  );
+  const handle = createAssignModerationJob(deps.functions, firebaseResources);
 
   return {
     handle,

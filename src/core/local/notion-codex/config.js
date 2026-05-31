@@ -1,6 +1,11 @@
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
-import { normalizeStringArray } from './valueHelpers.js';
+import {
+  normalizeNonNegativeInteger,
+  normalizePositiveNumber,
+  normalizeString,
+  normalizeStringArray,
+} from '../config-utils.js';
 
 const DEFAULT_CODEX_ARGS = [
   'exec',
@@ -64,32 +69,6 @@ export const DEFAULT_NOTION_CODEX_CONFIG = {
  * @property {number} initialExponent Initial exponent value.
  * @property {number} maxExponent Maximum exponent value.
  */
-
-/**
- * @param {unknown} value Candidate string.
- * @param {string} fallback Fallback string.
- * @returns {string} Normalized string.
- */
-function normalizeString(value, fallback) {
-  if (typeof value !== 'string' || !value.trim()) {
-    return fallback;
-  }
-
-  return value.trim();
-}
-
-/**
- * @param {unknown} value Candidate number.
- * @param {number} fallback Fallback number.
- * @returns {number} Positive finite number or fallback.
- */
-function normalizePositiveNumber(value, fallback) {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
-    return fallback;
-  }
-
-  return value;
-}
 
 /**
  * @param {unknown} value Candidate launcher args.
@@ -217,20 +196,6 @@ function normalizeIdleBackoff(value) {
       fallback.maxExponent
     ),
   };
-}
-
-/**
- * Normalize a non-negative integer with a fallback.
- * @param {unknown} value Candidate integer.
- * @param {number} fallback Fallback integer.
- * @returns {number} Normalized integer.
- */
-function normalizeNonNegativeInteger(value, fallback) {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
-    return fallback;
-  }
-
-  return value;
 }
 
 /**

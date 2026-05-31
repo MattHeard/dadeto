@@ -6,6 +6,13 @@ import {
   initializeFirebaseApp,
   productionOrigins,
 } from './generate-stats-core.js';
+import {
+  getFirestoreForDatabase,
+  resolveFirestoreDatabaseId,
+} from '../firestore-helpers.js';
+
+export { resolveFirestoreDatabaseId };
+export const selectFirestoreDatabase = getFirestoreForDatabase;
 
 /**
  * Build a one-time Firebase initializer for the stats workflow.
@@ -51,65 +58,7 @@ export const getAllowedOrigins = environmentVariables => {
   return productionOrigins;
 };
 
-const PRODUCTION_DATABASE_ID = '(default)';
-
-export const resolveFirestoreDatabaseId = environment => {
-  const rawConfig = environment.FIREBASE_CONFIG;
-
-  if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(rawConfig);
-    const { databaseId } = parsed || {};
-
-    if (typeof databaseId === 'string' && databaseId.trim() !== '') {
-      return databaseId;
-    }
-  } catch {
-    // Ignore malformed configuration strings and fall back to the default DB.
-  }
-
-  return null;
-};
-
 let cachedDb = null;
-
-export const selectFirestoreDatabase = (
-  getFirestoreFn,
-  firebaseApp,
-  databaseId
-) => {
-  if (databaseId && databaseId !== PRODUCTION_DATABASE_ID) {
-    if (!firebaseApp) {
-      return getFirestoreFn(databaseId);
-    }
-
-    return getFirestoreFn(firebaseApp, databaseId);
-  }
-
-  return getFirestoreFn(firebaseApp);
-};
-
-/**
- * Determine whether the caller supplied any custom Firestore wiring.
- * @param {() => void} ensureAppFn Firebase app initializer used by the caller.
- * @param {Function} getFirestoreFn Firestore factory used by the caller.
- * @param {Record<string, string | undefined>} environment Environment variables object.
- * @returns {boolean} True when the call should bypass the shared cache.
- */
-function hasCustomFirestoreDependencies(
-  ensureAppFn,
-  getFirestoreFn,
-  environment
-) {
-  return (
-    ensureAppFn !== ensureFirebaseApp ||
-    getFirestoreFn !== getAdminFirestore ||
-    environment !== process.env
-  );
-}
 
 export const getFirestoreInstance = (options = {}) => {
   const {
@@ -126,13 +75,15 @@ export const getFirestoreInstance = (options = {}) => {
 
   const databaseId = resolveFirestoreDatabaseId(environment);
   if (
-    hasCustomFirestoreDependencies(ensureAppFn, getFirestoreFn, environment)
+    ensureAppFn !== ensureFirebaseApp ||
+    getFirestoreFn !== getAdminFirestore ||
+    environment !== process.env
   ) {
-    return selectFirestoreDatabase(getFirestoreFn, undefined, databaseId);
+    return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
   }
 
   if (!cachedDb) {
-    cachedDb = selectFirestoreDatabase(getFirestoreFn, undefined, databaseId);
+    cachedDb = getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
   }
 
   return cachedDb;

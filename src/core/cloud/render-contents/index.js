@@ -13,71 +13,48 @@ import {
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
 } from './render-contents-core.js';
+import {
+  createCloudRenderInstanceBuilder,
+  createMemoizedLoader,
+  createCloudRenderEntrypointState,
+} from '../render-support.js';
 
+/**
+ *
+ * @param deps
+ */
 export function createRenderContentsEntrypoint(deps) {
-  const { initializeApp, functions, Storage, getAuth, createFirebaseAppManager, getFirestoreInstance, ADMIN_UID, fetchFn, crypto, getEnvironmentVariables } = deps;
-  const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
-  ensureFirebaseApp();
-
-  const db = getFirestoreInstance();
-  const storage = new Storage();
+  const {
+    initializeApp,
+    functions,
+    Storage,
+    getAuth,
+    createFirebaseAppManager,
+    getFirestoreInstance,
+    ADMIN_UID,
+    fetchFn,
+    crypto,
+    getEnvironmentVariables,
+  } = deps;
+  const {
+    db,
+    storage,
+    environmentVariables,
+    bucketName,
+    objectPrefix,
+    projectId,
+    urlMapName,
+    cdnHost,
+    render: resolveRender,
+  } = createRenderContentsEntrypointState();
   const auth = getAuth();
-  const environmentVariables = getEnvironmentVariables();
-  const bucketName = resolveStaticBucketName(environmentVariables, DEFAULT_BUCKET_NAME);
-  const objectPrefix = resolveStaticObjectPrefix(environmentVariables);
-  const projectId = environmentVariables.GOOGLE_CLOUD_PROJECT || environmentVariables.GCLOUD_PROJECT;
-  const urlMapName = environmentVariables.URL_MAP;
-  const cdnHost = environmentVariables.CDN_HOST;
 
-  const dynamicFetch = (...args) =>
-    (typeof globalThis.fetch === 'function' ? globalThis.fetch : fetchFn).apply(globalThis, args);
-
-  let renderInstance;
-  let fetchTopStoryIdsInstance;
-  let fetchStoryInfoInstance;
-
-  function resolveRender() {
-    if (!renderInstance) {
-      renderInstance = createRenderContents({
-        db,
-        storage,
-        fetchFn: dynamicFetch,
-        randomUUID: () => crypto.randomUUID(),
-        projectId,
-        urlMapName,
-        cdnHost,
-        bucketName,
-        objectPrefix,
-        consoleError: (...args) => console.error(...args),
-      });
-    }
-
-    return renderInstance;
-  }
-
-  function resolveFetchTopStoryIds() {
-    if (!fetchTopStoryIdsInstance) {
-      if (!db || typeof db.collection !== 'function') {
-        throw new TypeError('db must provide a collection helper');
-      }
-
-      fetchTopStoryIdsInstance = createFetchTopStoryIds(db);
-    }
-
-    return fetchTopStoryIdsInstance;
-  }
-
-  function resolveFetchStoryInfo() {
-    if (!fetchStoryInfoInstance) {
-      if (!db || typeof db.collection !== 'function') {
-        throw new TypeError('db must provide a collection helper');
-      }
-
-      fetchStoryInfoInstance = createFetchStoryInfo(db);
-    }
-
-    return fetchStoryInfoInstance;
-  }
+  const resolveFetchTopStoryIds = createMemoizedLoader(() =>
+    createFetchTopStoryIds(db)
+  );
+  const resolveFetchStoryInfo = createMemoizedLoader(() =>
+    createFetchStoryInfo(db)
+  );
 
   const allowedOrigins = getAllowedOrigins(environmentVariables);
   const applyCorsHeaders = createApplyCorsHeaders({ allowedOrigins });
@@ -120,4 +97,27 @@ export function createRenderContentsEntrypoint(deps) {
     buildHtml,
     handleRenderRequest,
   };
+
+  function createRenderContentsEntrypointState() {
+    const renderStateOptions = {
+      initializeApp,
+      createFirebaseAppManager,
+      getFirestoreInstance,
+      Storage,
+      getEnvironmentVariables,
+      fetchFn,
+      resolveBucketName: resolveStaticBucketName,
+      resolveObjectPrefix: resolveStaticObjectPrefix,
+      entrypointKind: 'contents',
+      defaultBucketName: DEFAULT_BUCKET_NAME,
+    };
+    renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
+        createRenderer: createRenderContents,
+        crypto,
+        consoleError: (...args) => console.error(...args),
+      });
+    renderStateOptions.entrypointKind = 'contents';
+    return createCloudRenderEntrypointState(renderStateOptions);
+  }
+
 }

@@ -3,6 +3,12 @@
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { DEFAULT_CODEX_RALPH_ARGS } from './launcherCodex.js';
+import {
+  normalizePositiveNumber,
+  normalizePathValue,
+  normalizeString,
+  normalizeStringArray,
+} from '../config-utils.js';
 
 export const DEFAULT_SYMPHONY_CONFIG = {
   tracker: {
@@ -22,84 +28,56 @@ export const DEFAULT_SYMPHONY_CONFIG = {
   defaultBranch: 'main',
 };
 
+/**
+ *
+ * @param tracker
+ */
 function normalizeTracker(tracker) {
   if (!tracker || typeof tracker !== 'object') {
     return { ...DEFAULT_SYMPHONY_CONFIG.tracker };
   }
 
   return {
-    kind:
-      typeof tracker.kind === 'string'
-        ? tracker.kind
-        : DEFAULT_SYMPHONY_CONFIG.tracker.kind,
-    readyCommand:
-      typeof tracker.readyCommand === 'string' && tracker.readyCommand.trim()
-        ? tracker.readyCommand.trim()
-        : DEFAULT_SYMPHONY_CONFIG.tracker.readyCommand,
+    kind: normalizeString(tracker.kind, DEFAULT_SYMPHONY_CONFIG.tracker.kind),
+    readyCommand: normalizeString(
+      tracker.readyCommand,
+      DEFAULT_SYMPHONY_CONFIG.tracker.readyCommand
+    ),
   };
 }
 
+/**
+ *
+ * @param launcher
+ */
 function normalizeLauncher(launcher) {
   if (!launcher || typeof launcher !== 'object') {
     return { ...DEFAULT_SYMPHONY_CONFIG.launcher };
   }
 
   return {
-    kind:
-      typeof launcher.kind === 'string' && launcher.kind.trim()
-        ? launcher.kind.trim()
-        : DEFAULT_SYMPHONY_CONFIG.launcher.kind,
-    command:
-      typeof launcher.command === 'string' && launcher.command.trim()
-        ? launcher.command.trim()
-        : DEFAULT_SYMPHONY_CONFIG.launcher.command,
-    args: normalizeLauncherArgs(launcher.args),
+    kind: normalizeString(launcher.kind, DEFAULT_SYMPHONY_CONFIG.launcher.kind),
+    command: normalizeString(
+      launcher.command,
+      DEFAULT_SYMPHONY_CONFIG.launcher.command
+    ),
+    args: normalizeStringArray(
+      launcher.args,
+      DEFAULT_SYMPHONY_CONFIG.launcher.args
+    ),
     mcpServers: normalizeLauncherMcpServers(launcher.mcpServers),
   };
 }
 
-function normalizeLauncherArgs(args) {
-  if (!Array.isArray(args)) {
-    return [...DEFAULT_SYMPHONY_CONFIG.launcher.args];
-  }
-
-  const normalizedArgs = args
-    .filter(value => typeof value === 'string')
-    .map(value => value.trim())
-    .filter(Boolean);
-
-  if (normalizedArgs.length === 0) {
-    return [...DEFAULT_SYMPHONY_CONFIG.launcher.args];
-  }
-
-  return normalizedArgs;
-}
-
+/**
+ *
+ * @param mcpServers
+ */
 function normalizeLauncherMcpServers(mcpServers) {
-  if (!Array.isArray(mcpServers)) {
-    return [...DEFAULT_SYMPHONY_CONFIG.launcher.mcpServers];
-  }
-
-  return mcpServers
-    .filter(value => typeof value === 'string')
-    .map(value => value.trim())
-    .filter(Boolean);
-}
-
-function normalizeNumber(value, fallback) {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
-    return fallback;
-  }
-
-  return value;
-}
-
-function normalizePathValue(value, fallback) {
-  if (typeof value !== 'string' || !value.trim()) {
-    return fallback;
-  }
-
-  return value.trim();
+  return normalizeStringArray(
+    mcpServers,
+    DEFAULT_SYMPHONY_CONFIG.launcher.mcpServers
+  );
 }
 
 /**
@@ -123,7 +101,10 @@ export function normalizeSymphonyConfig(config, repoRoot, configPath) {
     config?.workspaceRoot,
     DEFAULT_SYMPHONY_CONFIG.workspaceRoot
   );
-  const logDir = normalizePathValue(config?.logDir, DEFAULT_SYMPHONY_CONFIG.logDir);
+  const logDir = normalizePathValue(
+    config?.logDir,
+    DEFAULT_SYMPHONY_CONFIG.logDir
+  );
 
   return {
     configPath,
@@ -132,11 +113,11 @@ export function normalizeSymphonyConfig(config, repoRoot, configPath) {
     workspaceRoot: path.resolve(repoRoot, workspaceRoot),
     logDir: path.resolve(repoRoot, logDir),
     statusPath: path.resolve(repoRoot, logDir, 'status.json'),
-    pollIntervalMs: normalizeNumber(
+    pollIntervalMs: normalizePositiveNumber(
       config?.pollIntervalMs,
       DEFAULT_SYMPHONY_CONFIG.pollIntervalMs
     ),
-    maxConcurrentRuns: normalizeNumber(
+    maxConcurrentRuns: normalizePositiveNumber(
       config?.maxConcurrentRuns,
       DEFAULT_SYMPHONY_CONFIG.maxConcurrentRuns
     ),

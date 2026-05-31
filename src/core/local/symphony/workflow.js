@@ -3,10 +3,18 @@
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 
+/**
+ *
+ * @param content
+ */
 function toLineCount(content) {
   return content.split('\n').length;
 }
 
+/**
+ *
+ * @param content
+ */
 function toTrimmedLines(content) {
   return content
     .split('\n')
@@ -14,6 +22,11 @@ function toTrimmedLines(content) {
     .filter(Boolean);
 }
 
+/**
+ *
+ * @param lines
+ * @param heading
+ */
 function collectBullets(lines, heading) {
   const sectionIndex = lines.findIndex(line => line === heading);
   if (sectionIndex === -1) {
@@ -34,6 +47,10 @@ function collectBullets(lines, heading) {
   return items;
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeFrontMatterValue(value) {
   const trimmedValue = value.trim();
   if (trimmedValue === 'true') {
@@ -55,6 +72,10 @@ function normalizeFrontMatterValue(value) {
   return trimmedValue;
 }
 
+/**
+ *
+ * @param line
+ */
 function parseFrontMatterLine(line) {
   const separatorIndex = line.indexOf(':');
   if (separatorIndex === -1) {
@@ -72,6 +93,10 @@ function parseFrontMatterLine(line) {
   };
 }
 
+/**
+ *
+ * @param content
+ */
 function parseFrontMatter(content) {
   if (!content.startsWith('---\n')) {
     return { config: {}, body: content };
@@ -127,7 +152,10 @@ export function summarizeWorkflow(content) {
     lineCount,
     config,
     prompt_template: promptTemplate,
-    allowedCommandFamilies: collectBullets(lines, '## Allowed command families'),
+    allowedCommandFamilies: collectBullets(
+      lines,
+      '## Allowed command families'
+    ),
     requiredQualityGates: collectBullets(lines, '## Required quality gates'),
     handoffRequirements: collectBullets(lines, '## Handoff requirements'),
   };
@@ -148,7 +176,10 @@ export function summarizeWorkflow(content) {
  */
 export async function loadSymphonyWorkflow(options = {}) {
   const repoRoot = options.repoRoot ?? process.cwd();
-  const workflowPath = path.resolve(repoRoot, options.workflowPath ?? 'WORKFLOW.md');
+  const workflowPath = path.resolve(
+    repoRoot,
+    options.workflowPath ?? 'WORKFLOW.md'
+  );
   const readFileImpl = options.readFileImpl ?? readFile;
 
   try {

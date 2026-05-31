@@ -48,19 +48,4 @@ export function asStringWithFallback(value, fallback) {
  * @param {string[]} fallback Fallback string array.
  * @returns {string[]} Normalized string array.
  */
-export function normalizeStringArray(value, fallback) {
-  if (!Array.isArray(value)) {
-    return [...fallback];
-  }
-
-  const normalized = value
-    .filter(item => typeof item === 'string')
-    .map(item => item.trim())
-    .filter(Boolean);
-
-  if (normalized.length === 0) {
-    return [...fallback];
-  }
-
-  return normalized;
-}
+export { normalizeStringArray } from '../config-utils.js';

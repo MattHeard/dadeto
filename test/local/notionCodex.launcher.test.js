@@ -243,4 +243,41 @@ describe('local notion codex launcher', () => {
     );
     consoleError.mockRestore();
   });
+
+  test('defaults missing prompt and launch args to empty values', async () => {
+    const calls = [];
+    const launcher = createNotionCodexLauncherCore({
+      command: 'codex',
+      openImpl: async () => ({
+        fd: 40,
+        close: () => Promise.resolve(),
+      }),
+      spawnImpl(command, args, options) {
+        calls.push({ command, args, options });
+        return {
+          pid: 45678,
+          once() {},
+          unref() {},
+        };
+      },
+    });
+
+    const result = await launcher.launch({
+      repoRoot: '/tmp/repo',
+      runId: '2026-04-30T07:44:00.000Z--notion-codex',
+    });
+
+    expect(calls).toEqual([
+      {
+        command: 'codex',
+        args: [''],
+        options: {
+          cwd: '/tmp/repo',
+          detached: true,
+          stdio: ['ignore', 40, 40],
+        },
+      },
+    ]);
+    expect(result.pid).toBe(45678);
+  });
 });

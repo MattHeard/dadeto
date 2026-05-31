@@ -104,4 +104,50 @@ describe('local symphony codex launcher', () => {
       '/tmp/repo/tracking/symphony/runs/2026-03-08T19-20-00.000Z--dadeto-0fzi--stderr.log',
     ]);
   });
+
+  test('forwards exit payload metadata when the runner exits', async () => {
+    const onExitCalls = [];
+    let exitHandler;
+    const launcher = createCodexRalphLauncher({
+      command: 'codex',
+      openImpl: async () => ({
+        fd: 41,
+        close: () => Promise.resolve(),
+      }),
+      spawnImpl() {
+        return {
+          pid: 43210,
+          once(event, handler) {
+            if (event === 'exit') {
+              exitHandler = handler;
+            }
+          },
+          unref() {},
+        };
+      },
+    });
+
+    await launcher.launchRunner({
+      repoRoot: '/tmp/repo',
+      beadId: 'dadeto-0fzi',
+      beadTitle: 'Invoke a real Ralph agent session from Symphony runner launch',
+      runId: '2026-03-08T19:21:00.000Z--dadeto-0fzi',
+      onExit: payload => {
+        onExitCalls.push(payload);
+      },
+    });
+
+    await exitHandler(7, null);
+
+    expect(onExitCalls).toEqual([
+      {
+        runId: '2026-03-08T19:21:00.000Z--dadeto-0fzi',
+        beadId: 'dadeto-0fzi',
+        beadTitle:
+          'Invoke a real Ralph agent session from Symphony runner launch',
+        exitCode: 7,
+        signal: null,
+      },
+    ]);
+  });
 });

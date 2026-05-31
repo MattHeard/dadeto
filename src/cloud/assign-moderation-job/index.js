@@ -21,6 +21,7 @@ const entrypoint = createAssignModerationJobEntrypoint({
   getFirestore: getAdminFirestore,
   getEnvironmentVariables,
   now,
+  random: Math.random,
 });
 
 export const handle = entrypoint.handle;
