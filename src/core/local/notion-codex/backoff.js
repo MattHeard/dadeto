@@ -37,14 +37,24 @@ export function getNextPollAfterIso(options) {
 }
 
 /**
- *
- * @param exponent
- * @param options
+ * Clamp a backoff exponent to the configured bounds.
+ * @param {number} exponent Candidate exponent.
+ * @param {{
+ *   initialExponent: number,
+ *   maxExponent: number
+ * }} options Backoff bounds.
+ * @returns {number} Clamped exponent.
  */
 function clampExponent(exponent, options) {
-  const min = Number.isInteger(options.initialExponent)
-    ? options.initialExponent
-    : 0;
-  const max = Number.isInteger(options.maxExponent) ? options.maxExponent : min;
+  let min = 0;
+  if (Number.isInteger(options.initialExponent)) {
+    min = options.initialExponent;
+  }
+
+  let max = min;
+  if (Number.isInteger(options.maxExponent)) {
+    max = options.maxExponent;
+  }
+
   return Math.min(Math.max(exponent, min), max);
 }

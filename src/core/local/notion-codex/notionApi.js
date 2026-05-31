@@ -35,10 +35,7 @@ export async function appendNotionCodexReply(options) {
       'Content-Type': 'application/json',
       'Notion-Version': options.notionVersion ?? DEFAULT_NOTION_VERSION,
     },
-    body: JSON.stringify({
-      parent: { page_id: pageId },
-      rich_text: buildReplyRichText({ runId, message }),
-    }),
+    body: JSON.stringify(buildReplyPayload({ pageId, runId, message })),
   });
 
   const body = await readJsonResponse(response);
@@ -88,9 +85,10 @@ export function buildReplyRichText(options) {
 }
 
 /**
- *
- * @param value
- * @param name
+ * Normalize a required string value.
+ * @param {unknown} value Candidate value.
+ * @param {string} name Parameter name.
+ * @returns {string} Trimmed string value.
  */
 function normalizeRequiredString(value, name) {
   if (typeof value !== 'string' || !value.trim()) {
@@ -101,16 +99,18 @@ function normalizeRequiredString(value, name) {
 }
 
 /**
- *
- * @param value
+ * Normalize the configured Notion token environment names.
+ * @param {unknown} value Candidate token environment names.
+ * @returns {string[]} Normalized environment names.
  */
 function normalizeTokenEnvNames(value) {
   return normalizeStringArray(value, DEFAULT_TOKEN_ENV_NAMES);
 }
 
 /**
- *
- * @param value
+ * Split rich text into Notion payload chunks.
+ * @param {string} value Rich text source.
+ * @returns {string[]} Content chunks.
  */
 function splitRichText(value) {
   const trimmed = value.trim();
@@ -123,8 +123,9 @@ function splitRichText(value) {
 }
 
 /**
- *
- * @param response
+ * Read a JSON response body while tolerating empty and non-JSON payloads.
+ * @param {Response} response Fetch response.
+ * @returns {Promise<unknown>} Parsed body or raw text.
  */
 async function readJsonResponse(response) {
   const text = await response.text();
@@ -140,18 +141,47 @@ async function readJsonResponse(response) {
 }
 
 /**
- *
- * @param status
- * @param body
+ * Render a Notion API failure message.
+ * @param {number} status HTTP status code.
+ * @param {unknown} body Response body.
+ * @returns {string} Failure message.
  */
 function buildNotionApiError(status, body) {
   if (body && typeof body === 'object') {
-    const message = typeof body.message === 'string' ? body.message : null;
-    const code = typeof body.code === 'string' ? body.code : null;
-    return `Notion API request failed with HTTP ${status}: ${[code, message]
-      .filter(Boolean)
-      .join(' - ')}`;
+    let message = null;
+    if (typeof body.message === 'string') {
+      message = body.message;
+    }
+
+    let code = null;
+    if (typeof body.code === 'string') {
+      code = body.code;
+    }
+
+    const details = [code, message].filter(Boolean).join(' - ');
+    return `Notion API request failed with HTTP ${status}: ${details}`;
   }
 
   return `Notion API request failed with HTTP ${status}: ${String(body)}`;
+}
+
+/**
+ * Build the request payload for the Notion comment endpoint.
+ * @param {{ pageId: string, runId: string, message: string }} options Payload options.
+ * @returns {Record<string, unknown>} Request payload.
+ */
+function buildReplyPayload(options) {
+  const payload = {
+    parent: {},
+  };
+
+  Object.assign(payload.parent, { ['page_id']: options.pageId });
+  Object.assign(payload, {
+    ['rich_text']: buildReplyRichText({
+      runId: options.runId,
+      message: options.message,
+    }),
+  });
+
+  return payload;
 }

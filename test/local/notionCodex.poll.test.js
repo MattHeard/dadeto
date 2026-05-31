@@ -193,6 +193,41 @@ describe('local notion codex poll runner', () => {
     expect(writes).toEqual([]);
   });
 
+  test('skips launching when the active run is missing a pid', async () => {
+    const writes = [];
+    const result = await runNotionCodexPoll({
+      config,
+      repoRoot: '/tmp/repo',
+      now: new Date('2026-04-30T07:46:45.000Z'),
+      stateStore: {
+        async readState() {
+          return {
+            activeRun: {
+              runId: 'pidless-run',
+            },
+            eventLog: [],
+          };
+        },
+        async writeState(state) {
+          writes.push(state);
+        },
+      },
+      launcher: {
+        async launch() {
+          throw new Error('should not launch');
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      launched: false,
+      skipped: true,
+      reason: 'active-run',
+      runId: 'pidless-run',
+    });
+    expect(writes).toEqual([]);
+  });
+
   test('records a launched run after clearing a completed active run', async () => {
     const writes = [];
     const launchPayloads = [];

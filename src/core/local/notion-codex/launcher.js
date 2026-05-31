@@ -48,9 +48,7 @@ export function createNotionCodexLauncherCore(options) {
         stdoutHandle,
         stderrHandle,
       } = await openRunLogFiles({
-        logDir:
-          options.logDir ??
-          path.join(payload.repoRoot, 'tracking', 'notion-codex'),
+        logDir: getLogDir(options.logDir, payload.repoRoot),
         runId: payload.runId,
         mkdirImpl,
         openImpl,
@@ -59,7 +57,7 @@ export function createNotionCodexLauncherCore(options) {
       let child;
       try {
         child = spawnImpl(options.command, args, {
-          cwd: options.cwd ?? payload.repoRoot,
+          cwd: getWorkingDirectory(options.cwd, payload.repoRoot),
           detached: true,
           stdio: ['ignore', stdoutFd, stderrFd],
         });
@@ -72,7 +70,7 @@ export function createNotionCodexLauncherCore(options) {
           Promise.resolve(
             payload.onExit({
               runId: payload.runId,
-              exitCode: typeof code === 'number' ? code : null,
+              exitCode: getExitCode(code),
               signal: signal ?? null,
             })
           ).catch(error => {
@@ -90,7 +88,7 @@ export function createNotionCodexLauncherCore(options) {
         launcherKind: 'codex',
         command: options.command,
         args,
-        pid: typeof child.pid === 'number' ? child.pid : null,
+        pid: getChildPid(child),
         stdoutPath,
         stderrPath,
       };
@@ -99,12 +97,13 @@ export function createNotionCodexLauncherCore(options) {
 }
 
 /**
+ * Open the append-only run log files.
  * @param {{
  *   logDir: string,
  *   runId: string,
  *   mkdirImpl: typeof mkdir,
  *   openImpl: typeof open
- * }} options
+ * }} options Open-file dependencies.
  * @returns {Promise<{
  *   stdoutPath: string,
  *   stderrPath: string,
@@ -137,11 +136,12 @@ async function openRunLogFiles(options) {
 }
 
 /**
+ * Close any open run log file handles.
  * @param {{
  *   stdoutHandle?: { close?: () => Promise<void> | void },
  *   stderrHandle?: { close?: () => Promise<void> | void }
- * }} handles
- * @returns {Promise<void>}
+ * }} handles Run log handles.
+ * @returns {Promise<void>} Nothing.
  */
 async function closeRunLogHandles({ stdoutHandle, stderrHandle }) {
   const closers = [];
@@ -167,4 +167,58 @@ async function closeRunLogHandles({ stdoutHandle, stderrHandle }) {
       );
     }
   }
+}
+
+/**
+ * Resolve the run log directory.
+ * @param {string | undefined} logDir Configured log directory.
+ * @param {string} repoRoot Repository root.
+ * @returns {string} Log directory.
+ */
+function getLogDir(logDir, repoRoot) {
+  if (typeof logDir === 'string' && logDir) {
+    return logDir;
+  }
+
+  return path.join(repoRoot, 'tracking', 'notion-codex');
+}
+
+/**
+ * Resolve the working directory for the spawned process.
+ * @param {string | undefined} cwd Configured working directory.
+ * @param {string} repoRoot Repository root.
+ * @returns {string} Working directory.
+ */
+function getWorkingDirectory(cwd, repoRoot) {
+  if (typeof cwd === 'string' && cwd) {
+    return cwd;
+  }
+
+  return repoRoot;
+}
+
+/**
+ * Read the spawned child PID.
+ * @param {{ pid?: number }} child Spawned child process.
+ * @returns {number | null} PID or null.
+ */
+function getChildPid(child) {
+  if (typeof child.pid === 'number') {
+    return child.pid;
+  }
+
+  return null;
+}
+
+/**
+ * Normalize a child exit code.
+ * @param {unknown} code Child exit code.
+ * @returns {number | null} Exit code or null.
+ */
+function getExitCode(code) {
+  if (typeof code === 'number') {
+    return code;
+  }
+
+  return null;
 }

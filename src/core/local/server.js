@@ -3,8 +3,6 @@ import fs from 'node:fs';
 import http from 'node:http';
 import https from 'node:https';
 
-const ENABLED_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
-
 /**
  * Wire the local writer routes onto an app-like dependency.
  * @param {{
@@ -127,7 +125,11 @@ function formatRequestLog(req, res, durationMs) {
  * @returns {number} Move direction.
  */
 export function getMoveDirection(body) {
-  return body?.direction === 'left' ? -1 : 1;
+  if (body?.direction === 'left') {
+    return -1;
+  }
+
+  return 1;
 }
 
 /**
@@ -136,7 +138,11 @@ export function getMoveDirection(body) {
  * @returns {number} Next index.
  */
 export function getNextIndex(body) {
-  return Number.isInteger(body?.activeIndex) ? body.activeIndex : 1;
+  if (Number.isInteger(body?.activeIndex)) {
+    return body.activeIndex;
+  }
+
+  return 1;
 }
 
 /**
@@ -145,7 +151,11 @@ export function getNextIndex(body) {
  * @returns {string} Document content.
  */
 export function getDocumentContent(body) {
-  return typeof body?.content === 'string' ? body.content : '';
+  if (typeof body?.content === 'string') {
+    return body.content;
+  }
+
+  return '';
 }
 
 /**
@@ -184,10 +194,11 @@ export function isWriterRequestLogEnabled(env) {
  * @returns {string} Writer app URL.
  */
 export function getWriterUrl(serverPort, env) {
-  const protocol = {
-    true: 'https',
-    false: 'http',
-  }[String(isWriterHttpsEnabled(env))];
+  let protocol = 'http';
+  if (isWriterHttpsEnabled(env)) {
+    protocol = 'https';
+  }
+
   return `${protocol}://localhost:${serverPort}/writer/`;
 }
 

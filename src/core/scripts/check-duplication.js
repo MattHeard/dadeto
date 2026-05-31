@@ -1,7 +1,4 @@
-import {
-  handleSpawnFailure,
-  spawnGateCommand,
-} from './gate-utils.js';
+import { handleSpawnFailure, spawnGateCommand } from './gate-utils.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_CONFIG_PATH = '.jscpd.json';
