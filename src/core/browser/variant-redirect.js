@@ -23,10 +23,9 @@ export function createVariantRedirectHandle({
     rewriteVariantLink({ link, locationObj, cryptoObj, URLCtor });
   }
   const init = () => {
-    const links =
-      /** @type {NodeListOf<HTMLAnchorElement>} */ (
-        documentObj.querySelectorAll('a.variant-link[data-variants]')
-      );
+    const links = /** @type {HTMLAnchorElement[]} */ (
+      Array.from(documentObj.querySelectorAll('a.variant-link[data-variants]'))
+    );
     links.forEach(rewriteLink);
   };
   return function handleVariantRedirect() {

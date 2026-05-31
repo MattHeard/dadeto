@@ -42,10 +42,9 @@ export function createWriteCoverageSummaryHandle({
  * @returns {Record<string, unknown>} Coverage summary payload.
  */
 export function buildCoverageSummary(coverageMap) {
-  const summary =
-    /** @type {Record<string, unknown>} */ ({
-      total: coverageMap.getCoverageSummary().toJSON(),
-    });
+  const summary = /** @type {Record<string, unknown>} */ ({
+    total: coverageMap.getCoverageSummary().toJSON(),
+  });
 
   for (const filePath of coverageMap.files()) {
     summary[filePath] = coverageMap

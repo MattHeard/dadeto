@@ -284,8 +284,9 @@ export function createGetApiKeyCreditExpressHandle({ Firestore }) {
         return undefined;
       }
 
-      const creditData =
-        /** @type {{ credit?: number | null | undefined }} */ (data);
+      const creditData = /** @type {{ credit?: number | null | undefined }} */ (
+        data
+      );
       return creditData.credit;
     },
     getUuid(request) {

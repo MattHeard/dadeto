@@ -17,22 +17,18 @@ export function createGoogleAuthStatusHandle({
   isAdminFn,
 }) {
   return function handleGoogleAuthStatus() {
-    const signInButtons =
-      /** @type {NodeListOf<HTMLElement>} */ (
-        documentObj.querySelectorAll('#signinButton')
-      );
-    const signOutWraps =
-      /** @type {NodeListOf<HTMLElement>} */ (
-        documentObj.querySelectorAll('#signoutWrap')
-      );
-    const signOutLinks =
-      /** @type {NodeListOf<HTMLAnchorElement>} */ (
-        documentObj.querySelectorAll('#signoutLink')
-      );
-    const adminLinks =
-      /** @type {NodeListOf<HTMLElement>} */ (
-        documentObj.querySelectorAll('.admin-link')
-      );
+    const signInButtons = /** @type {HTMLElement[]} */ (
+      Array.from(documentObj.querySelectorAll('#signinButton'))
+    );
+    const signOutWraps = /** @type {HTMLElement[]} */ (
+      Array.from(documentObj.querySelectorAll('#signoutWrap'))
+    );
+    const signOutLinks = /** @type {HTMLAnchorElement[]} */ (
+      Array.from(documentObj.querySelectorAll('#signoutLink'))
+    );
+    const adminLinks = /** @type {HTMLElement[]} */ (
+      Array.from(documentObj.querySelectorAll('.admin-link'))
+    );
 
     const showSignedIn = createShowSignedIn({
       signInButtons,
@@ -64,9 +60,9 @@ export function createGoogleAuthStatusHandle({
 /**
  * Create the signed-in display action.
  * @param {{
- *   signInButtons: NodeListOf<HTMLElement>,
- *   signOutWraps: NodeListOf<HTMLElement>,
- *   adminLinks: NodeListOf<HTMLElement>,
+ *   signInButtons: HTMLElement[],
+ *   signOutWraps: HTMLElement[],
+ *   adminLinks: HTMLElement[],
  *   isAdminFn: () => boolean,
  * }} deps Display dependencies.
  * @returns {() => void} Signed-in display action.
@@ -95,9 +91,9 @@ function createShowSignedIn({
 /**
  * Create the signed-out display action.
  * @param {{
- *   signInButtons: NodeListOf<HTMLElement>,
- *   signOutWraps: NodeListOf<HTMLElement>,
- *   adminLinks: NodeListOf<HTMLElement>,
+ *   signInButtons: HTMLElement[],
+ *   signOutWraps: HTMLElement[],
+ *   adminLinks: HTMLElement[],
  * }} deps Display dependencies.
  * @returns {() => void} Signed-out display action.
  */

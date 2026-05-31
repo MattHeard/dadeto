@@ -403,7 +403,7 @@ async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
  * @property {TriggerContext | undefined} context Trigger context.
  * @property {Firestore} db Firestore instance.
  * @property {() => string} randomUUID UUID generator.
- * @property {(() => number) | undefined} random Random number generator.
+ * @property {() => number} random Random number generator.
  * @property {() => FieldValue} getServerTimestamp Server timestamp helper.
  */
 
@@ -414,7 +414,7 @@ async function addAuthorRecordIfMissing(authorRef, batch, randomUUID) {
  * @param {object} options Configuration.
  * @param {Firestore} options.db Firestore instance.
  * @param {() => string} options.randomUUID UUID generator.
- * @param {(() => number) | undefined} options.random Random number generator.
+ * @param {() => number} options.random Random number generator.
  * @param {() => FieldValue} options.getServerTimestamp Server timestamp helper.
  * @returns {ProcessStoryParams} Mapped parameters for processStorySubmission.
  */
@@ -436,7 +436,7 @@ function mapProcessStoryParams(snapshot, context, options) {
  * @param {Firestore} options.db Firestore instance.
  * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper with timestamp and increment helpers.
  * @param {() => string} options.randomUUID UUID generator.
- * @param {() => number} [options.random] Random number generator (defaults to Math.random).
+ * @param {() => number} options.random Random number generator.
  * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Firestore trigger handler.
  */
 export function createProcessNewStoryHandler({
@@ -469,7 +469,7 @@ export function createProcessNewStoryHandler({
  * @param {() => import('firebase-admin/firestore').Firestore} options.getFirestoreInstance Firestore accessor.
  * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper.
  * @param {() => string} options.randomUUID UUID generator.
- * @param {(() => number) | undefined} [options.random] Random generator.
+ * @param {() => number} options.random Random generator.
  * @returns {unknown} Registered Firestore trigger handle.
  */
 export function createProcessNewStoryHandle({
@@ -501,7 +501,7 @@ export function createProcessNewStoryHandle({
  * @param {{ params?: Record<string, string> } | undefined} params.context Trigger context.
  * @param {Firestore} params.db Firestore instance.
  * @param {() => string} params.randomUUID UUID generator.
- * @param {(() => number) | undefined} params.random Random number generator.
+ * @param {() => number} params.random Random number generator.
  * @param {() => FieldValue} params.getServerTimestamp Server timestamp helper.
  * @returns {Promise<null>} Null once work completes.
  */
@@ -518,9 +518,8 @@ async function processStorySubmission({
     return null;
   }
 
-  const randomFn = random ?? Math.random;
   const identifiers = resolveStoryIdentifiers(snapshot, context, randomUUID);
-  const pageNumber = await findAvailablePageNumberResolver(db, randomFn);
+  const pageNumber = await findAvailablePageNumberResolver(db, random);
   const refs = createStoryReferences(db, identifiers);
   const batch = db.batch();
 
@@ -530,7 +529,7 @@ async function processStorySubmission({
     refs,
     submission,
     pageNumber,
-    random: randomFn,
+    random,
     randomUUID,
     getServerTimestamp,
     storyId: identifiers.storyId,

@@ -8,7 +8,10 @@
  */
 export function getNextIdleBackoffExponent(options) {
   const previousExponent = options.previousExponent;
-  if (typeof previousExponent !== 'number' || !Number.isInteger(previousExponent)) {
+  if (
+    typeof previousExponent !== 'number' ||
+    !Number.isInteger(previousExponent)
+  ) {
     return clampExponent(options.initialExponent, options);
   }
 

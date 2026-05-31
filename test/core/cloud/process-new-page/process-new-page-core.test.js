@@ -681,7 +681,7 @@ describe('createProcessNewPageHandler', () => {
     expect(storyRef.collection).toHaveBeenCalledWith('pages');
   });
 
-  it('creates a page when option submissions lack a target page and no random generator is injected', async () => {
+  it('creates a page when option submissions lack a target page', async () => {
     const optionDocs = [];
     const { storyRef, pageDocRef, variantDoc, variantsCollection } =
       createStoryHierarchy({ optionDocs });
@@ -750,6 +750,7 @@ describe('createProcessNewPageHandler', () => {
       db,
       fieldValue,
       randomUUID: jest.fn(() => 'generated'),
+      random: jest.fn(() => 0.33),
     });
 
     const snapshot = {

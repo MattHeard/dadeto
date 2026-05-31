@@ -13,21 +13,20 @@ export function createMobileMenuToggleHandle({
   setTimeoutFn,
 }) {
   return function handleMobileMenuToggle() {
-    const toggle =
-      /** @type {HTMLElement | null} */ (
-        documentObj.querySelector('.menu-toggle')
-      );
+    const toggle = /** @type {HTMLElement | null} */ (
+      documentObj.querySelector('.menu-toggle')
+    );
     const overlay = documentObj.getElementById('mobile-menu');
     if (!toggle || !overlay) {
       return;
     }
 
-    const sheet =
-      /** @type {HTMLElement | null} */ (overlay.querySelector('.menu-sheet'));
-    const closeBtn =
-      /** @type {HTMLButtonElement | null} */ (
-        overlay.querySelector('.menu-close')
-      );
+    const sheet = /** @type {HTMLElement | null} */ (
+      overlay.querySelector('.menu-sheet')
+    );
+    const closeBtn = /** @type {HTMLButtonElement | null} */ (
+      overlay.querySelector('.menu-close')
+    );
     const openMenu = createOpenMenu({ documentObj, toggle, overlay, sheet });
     const closeMenu = createCloseMenu({
       documentObj,
@@ -74,10 +73,9 @@ function createOpenMenu({ documentObj, toggle, overlay, sheet }) {
     overlay.setAttribute('aria-hidden', 'false');
     toggle.setAttribute('aria-expanded', 'true');
     documentObj.body.style.overflow = 'hidden';
-    const first =
-      /** @type {HTMLElement | null} */ (
-        sheet?.querySelector('a,button,[tabindex="0"]') ?? null
-      );
+    const first = /** @type {HTMLElement | null} */ (
+      sheet?.querySelector('a,button,[tabindex="0"]') ?? null
+    );
     first?.focus();
   };
 }

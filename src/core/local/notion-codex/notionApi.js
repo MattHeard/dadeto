@@ -172,13 +172,16 @@ function buildNotionApiError(status, body) {
  * @returns {Record<string, unknown>} Request payload.
  */
 function buildReplyPayload(options) {
-  return {
-    parent: {
-      page_id: options.pageId,
-    },
-    rich_text: buildReplyRichText({
-      runId: options.runId,
-      message: options.message,
-    }),
-  };
+  const pageIdPropertyName = 'page_id';
+  const richTextPropertyName = 'rich_text';
+  const payload =
+    /** @type {{ parent: Record<string, string> } & Record<string, unknown>} */ ({
+      parent: {},
+    });
+  payload.parent[pageIdPropertyName] = options.pageId;
+  payload[richTextPropertyName] = buildReplyRichText({
+    runId: options.runId,
+    message: options.message,
+  });
+  return payload;
 }

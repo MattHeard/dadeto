@@ -339,7 +339,7 @@ describe('createProcessNewStoryHandler', () => {
     expect(randomUUID).toHaveBeenCalledTimes(3);
   });
 
-  it('uses the default random generator when one is not injected', async () => {
+  it('uses the injected random generator', async () => {
     const { db, getDoc } = createFakeDb({ authorExists: false });
     const randomUUID = jest
       .fn()
@@ -354,11 +354,13 @@ describe('createProcessNewStoryHandler', () => {
       serverTimestamp: jest.fn(() => 'timestamp'),
       increment: jest.fn(() => 'increment'),
     };
+    const random = jest.fn(() => 0.5);
 
     const handler = createProcessNewStoryHandler({
       db,
       fieldValue,
       randomUUID,
+      random,
     });
 
     const submission = {
@@ -379,7 +381,7 @@ describe('createProcessNewStoryHandler', () => {
 
     await expect(handler(snapshot, context)).resolves.toBeNull();
 
-    expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, Math.random);
+    expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, random);
     expect(db.doc).toHaveBeenCalledWith('stories/context-story');
     expect(randomUUID).toHaveBeenCalledTimes(5);
   });

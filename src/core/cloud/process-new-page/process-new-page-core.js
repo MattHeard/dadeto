@@ -200,7 +200,7 @@ async function queryExistingPageNumber(db, candidate) {
  * @param {object} params - Query parameters.
  * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
  * @param {number} params.candidate - Candidate page number.
- * @param {(() => number) | undefined} params.random - Random generator.
+ * @param {() => number} params.random - Random generator.
  * @param {number} params.depth - Recursion depth.
  * @returns {Promise<number>} Available page number.
  */
@@ -254,7 +254,7 @@ export async function findAvailablePageNumber(db, random, depth) {
  * @param {import('firebase-admin/firestore').QuerySnapshot} params.existing Snapshot of existing matches.
  * @param {number} params.candidate Candidate page number.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
- * @param {(() => number) | undefined} params.random Random number generator.
+ * @param {() => number} params.random Random number generator.
  * @param {number} params.depth Current recursion depth.
  * @returns {Promise<number>} Page number that can be assigned.
  */
@@ -499,7 +499,7 @@ function getValidIncomingOptionRefs(refs) {
  * @param {import('firebase-admin/firestore').DocumentSnapshot} params.snapshot Submission snapshot from the trigger.
  * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch used to queue updates.
  * @param {() => string} params.randomUUID UUID generator used to create new document identifiers.
- * @param {(() => number) | undefined} params.random Random number generator for variant metadata.
+ * @param {() => number} params.random Random number generator for variant metadata.
  * @param {() => unknown} params.getServerTimestamp Function that returns a Firestore server timestamp sentinel.
  * @returns {Promise<PageContext | null>} Resolved context or null when the submission is already processed.
  */
@@ -638,7 +638,7 @@ function resolveTargetPageFromOption(optionData) {
  * @param {import('firebase-admin/firestore').DocumentReference | null} params.targetPage Page reference to reuse when available.
  * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance for lookups.
  * @param {import('firebase-admin/firestore').WriteBatch} params.batch Write batch collecting updates.
- * @param {(() => number) | undefined} params.random Random number generator.
+ * @param {() => number} params.random Random number generator.
  * @param {() => string} params.randomUUID UUID generator for new documents.
  * @param {import('firebase-admin/firestore').DocumentReference} params.optionRef Option reference involved in the submission.
  * @param {string} params.incomingOptionFullName Full document path for the option.
@@ -797,7 +797,7 @@ async function createPageContext({
   incomingOptionFullName,
   getServerTimestamp,
 }) {
-  const nextPageNumber = await findAvailablePageNumber(db, random ?? Math.random);
+  const nextPageNumber = await findAvailablePageNumber(db, random);
 
   const newPageId = randomUUID();
   const pageDocRef = storyRef.collection('pages').doc(newPageId);
@@ -1092,7 +1092,6 @@ function getSnapshotDocumentId(snapshotRef) {
  */
 function buildVariantPayload(nextName, submission, helpers) {
   const { random, getServerTimestamp } = helpers;
-  const randomFn = random ?? Math.random;
   return {
     name: nextName,
     content: submission.content,
@@ -1100,7 +1099,7 @@ function buildVariantPayload(nextName, submission, helpers) {
     authorName: submission.author,
     incomingOption: normalizeOptionalString(submission.incomingOptionFullName),
     moderatorReputationSum: 0,
-    rand: randomFn(),
+    rand: random(),
     createdAt: getServerTimestamp(),
   };
 }
@@ -1509,7 +1508,7 @@ async function processSubmissionWithContext({
  *   increment: (value: number) => import('firebase-admin/firestore').FieldValue,
  * }} options.fieldValue FieldValue helper with server timestamp and increment capabilities.
  * @param {() => string} options.randomUUID UUID generator used for new documents.
- * @param {(() => number) | undefined} [options.random] Random number generator (defaults to Math.random).
+ * @param {() => number} options.random Random number generator.
  *   The helper reuses the module-scoped {@link findAvailablePageNumber} and {@link incrementVariantName}.
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler that processes new page submissions.
  */
@@ -1615,7 +1614,7 @@ function buildSubmissionHandler({
  * @param {import('firebase-admin/firestore').Firestore} options.db - Firestore instance used for document access.
  * @param {{ serverTimestamp: () => import('firebase-admin/firestore').FieldValue, increment: (value: number) => import('firebase-admin/firestore').FieldValue }} options.fieldValue - FieldValue helper with server timestamp and increment capabilities.
  * @param {() => string} options.randomUUID - UUID generator used for new documents.
- * @param {(() => number) | undefined} options.random - Random number generator (defaults to Math.random).
+ * @param {() => number} options.random - Random number generator.
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>, context?: { params?: Record<string, string> }) => Promise<null>} Firestore trigger handler that processes new page submissions.
  */
 export function createProcessNewPageHandler({

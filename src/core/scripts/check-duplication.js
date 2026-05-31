@@ -202,8 +202,9 @@ function readDuplicationReport(readFileSync, reportPath) {
  * @returns {number} Clone count.
  */
 function countClones(report) {
-  const duplicates =
-    /** @type {Array<unknown> | undefined} */ (report.duplicates);
+  const duplicates = /** @type {Array<unknown> | undefined} */ (
+    report.duplicates
+  );
   if (Array.isArray(duplicates)) {
     return duplicates.length;
   }
@@ -227,7 +228,10 @@ function summarizeReport(report) {
     return '';
   }
 
-  const cloneCount = typeof total.clones === 'number' ? total.clones : 0;
+  let cloneCount = 0;
+  if (typeof total.clones === 'number') {
+    cloneCount = total.clones;
+  }
   const cloneSuffix = formatCloneSuffix(cloneCount);
   return `Report summary: ${cloneCount} clone${cloneSuffix}, ${total.percentage}% duplicated lines, ${total.percentageTokens}% duplicated tokens.`;
 }

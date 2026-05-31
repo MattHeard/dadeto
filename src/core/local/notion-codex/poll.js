@@ -10,7 +10,9 @@ import {
  * @property {number} baseDelayMs Base delay in milliseconds.
  * @property {number} initialExponent Initial exponent value.
  * @property {number} maxExponent Maximum exponent value.
- *
+ */
+
+/**
  * @typedef {object} NotionCodexPollConfig
  * @property {{
  *   dadetoPageId: string,
@@ -26,7 +28,8 @@ import {
  *   apiVersion?: string
  * }} notion Notion config payload.
  * @property {NotionCodexIdleBackoffConfig} idleBackoff Idle backoff settings.
- *
+ */
+/**
  * @typedef {object} NotionCodexPollActiveRun
  * @property {string} runId Run identifier.
  * @property {string} startedAt Start timestamp.
@@ -36,11 +39,15 @@ import {
  * @property {string[]} [args] Launcher args.
  * @property {string} [stdoutPath] Run stdout path.
  * @property {string} [stderrPath] Run stderr path.
- *
+ */
+
+/**
  * @typedef {object} NotionCodexRunOutcome
  * @property {string} outcome Outcome name.
  * @property {string} summary Outcome summary.
- *
+ */
+
+/**
  * @typedef {object} NotionCodexPollState
  * @property {NotionCodexPollActiveRun | null} [activeRun] Active run state.
  * @property {string | null} [nextPollAfter] Next poll time.
@@ -49,7 +56,9 @@ import {
  * @property {string | null} [lastSummary] Last summary.
  * @property {string | null} [lastPollAt] Last poll time.
  * @property {Array<Record<string, unknown>>} [eventLog] Event history.
- *
+ */
+
+/**
  * @typedef {object} NotionCodexLaunchResult
  * @property {string} launcherKind Launcher kind.
  * @property {string} command Launcher command.
