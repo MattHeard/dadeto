@@ -2,16 +2,7 @@ import fs from 'node:fs';
 
 const { promises: fsPromises } = fs;
 
-/**
- * Provide synchronous filesystem helpers required by the copy generator.
- * @returns {{
- *   directoryExists: (target: string) => boolean,
- *   createDirectory: (target: string) => void,
- *   removeDirectory: (target: string) => void,
- *   copyFile: (source: string, destination: string) => void,
- *   readDirEntries: (dir: string) => fs.Dirent[],
- * }} Collection of synchronous filesystem helpers.
- */
+/** Sync filesystem helpers for the copy generator. */
 export function createFsAdapters() {
   return {
     directoryExists: target => fs.existsSync(target),
@@ -23,14 +14,7 @@ export function createFsAdapters() {
   };
 }
 
-/**
- * Provide asynchronous filesystem helpers used by copy-to-infra scripts.
- * @returns {{
- *   readDirEntries: (dir: string) => Promise<fs.Dirent[]>,
- *   ensureDirectory: (target: string) => Promise<void>,
- *   copyFile: (source: string, destination: string) => Promise<void>,
- * }} Collection of asynchronous filesystem helpers that swallow missing directories.
- */
+/** Async filesystem helpers that swallow missing directories. */
 export function createAsyncFsAdapters() {
   return {
     async readDirEntries(dir) {

@@ -2,39 +2,5 @@ export function renderNonCoreThinDashboard(status) {
   const badge = status.isClean ? 'Pass' : 'Needs attention';
   const badgeClass = status.isClean ? 'ok' : 'warn';
   const renderList = items => items.length ? `<ul>${items.map(item => `<li><code>${item.filePath ?? item}</code>${item.lines ? ` - ${item.lines} lines` : ''}</li>`).join('')}</ul>` : '<p>None.</p>';
-
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Non-core thin</title>
-<style>
-:root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #07111f; color: #e5eefc; }
-body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top, #17315a, #07111f 60%); }
-main { width: min(960px, calc(100vw - 32px)); background: rgba(10, 16, 28, 0.88); border: 1px solid rgba(142, 169, 214, 0.2); border-radius: 20px; padding: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.4); }
-h1 { margin: 0 0 8px; font-size: clamp(2rem, 5vw, 3.4rem); }
-.summary { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 20px; }
-.card { min-width: 120px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.04); }
-.label { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: #9fb4d4; }
-.value { font-size: 1.4rem; margin-top: 4px; }
-.badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: .85rem; font-weight: 700; }
-.ok { background: rgba(80, 200, 120, .18); color: #95f0b4; }
-.warn { background: rgba(255, 185, 74, .18); color: #ffd18a; }
-section { margin-top: 20px; }
-ul { margin: 10px 0 0; padding-left: 20px; }
-code { background: rgba(255,255,255,.08); padding: 2px 6px; border-radius: 6px; }
-</style>
-</head>
-<body>
-<main>
-  <span class="badge ${badgeClass}">${badge}</span>
-  <h1>Non-core thin dashboard</h1>
-  <p>Current status of the <code>non-core-thin</code> gate.</p>
-  <div class="summary"><div class="card"><div class="label">Files</div><div class="value">${status.fileCount}</div></div><div class="card"><div class="label">Exemptions</div><div class="value">${status.exemptionCount}</div></div><div class="card"><div class="label">Max lines</div><div class="value">${status.maxLines}</div></div></div>
-  <section><h2>Violations</h2>${renderList(status.violations)}</section>
-  <section><h2>Stale exemptions</h2>${renderList(status.staleExemptions)}</section>
-</main>
-</body>
-</html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Non-core thin</title><style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#07111f;color:#e5eefc}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at top,#17315a,#07111f 60%)}main{width:min(960px,calc(100vw - 32px));background:rgba(10,16,28,.88);border:1px solid rgba(142,169,214,.2);border-radius:20px;padding:24px;box-shadow:0 24px 80px rgba(0,0,0,.4)}h1{margin:0 0 8px;font-size:clamp(2rem,5vw,3.4rem)}.summary{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px}.card{min-width:120px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04)}.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:#9fb4d4}.value{font-size:1.4rem;margin-top:4px}.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:.85rem;font-weight:700}.ok{background:rgba(80,200,120,.18);color:#95f0b4}.warn{background:rgba(255,185,74,.18);color:#ffd18a}section{margin-top:20px}ul{margin:10px 0 0;padding-left:20px}code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px}</style></head><body><main><span class="badge ${badgeClass}">${badge}</span><h1>Non-core thin dashboard</h1><p>Current status of the <code>non-core-thin</code> gate.</p><div class="summary"><div class="card"><div class="label">Files</div><div class="value">${status.fileCount}</div></div><div class="card"><div class="label">Exemptions</div><div class="value">${status.exemptionCount}</div></div><div class="card"><div class="label">Max lines</div><div class="value">${status.maxLines}</div></div></div><section><h2>Violations</h2>${renderList(status.violations)}</section><section><h2>Stale exemptions</h2>${renderList(status.staleExemptions)}</section></main></body></html>`;
 }
