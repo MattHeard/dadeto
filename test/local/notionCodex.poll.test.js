@@ -1,4 +1,7 @@
-import { runNotionCodexPoll } from '../../src/local/notion-codex/poll.js';
+import {
+  getActiveRunId,
+  runNotionCodexPoll,
+} from '../../src/local/notion-codex/poll.js';
 
 const config = {
   notion: {
@@ -65,6 +68,58 @@ describe('local notion codex poll runner', () => {
     expect(launches).toEqual([]);
   });
 
+  test('uses the current clock when now is omitted', async () => {
+    const originalDate = Date;
+    const fixedNow = new originalDate('2026-04-30T07:45:30.000Z');
+    const writes = [];
+    global.Date = class extends originalDate {
+      constructor(...args) {
+        if (args.length === 0) {
+          return new originalDate(fixedNow);
+        }
+
+        return new originalDate(...args);
+      }
+
+      static now() {
+        return fixedNow.getTime();
+      }
+
+      static parse(value) {
+        return originalDate.parse(value);
+      }
+
+      static UTC(...args) {
+        return originalDate.UTC(...args);
+      }
+    };
+
+    try {
+      const result = await runNotionCodexPoll({
+        config,
+        repoRoot: '/tmp/repo',
+        stateStore: {
+          async readState() {
+            return { activeRun: null, eventLog: [] };
+          },
+          async writeState() {
+            writes.push(true);
+          },
+        },
+        launcher: {
+          async launch() {
+            return { pid: 900 };
+          },
+        },
+      });
+
+      expect(result.runId).toBe('2026-04-30T07:45:30.000Z--notion-codex');
+      expect(writes).toHaveLength(1);
+    } finally {
+      global.Date = originalDate;
+    }
+  });
+
   test('skips launching when an active run is still alive', async () => {
     const writes = [];
     const result = await runNotionCodexPoll({
@@ -78,6 +133,42 @@ describe('local notion codex poll runner', () => {
             activeRun: {
               runId: 'existing-run',
               pid: 777,
+            },
+            eventLog: [],
+          };
+        },
+        async writeState(state) {
+          writes.push(state);
+        },
+      },
+      launcher: {
+        async launch() {
+          throw new Error('should not launch');
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      launched: false,
+      skipped: true,
+      reason: 'active-run',
+      runId: 'existing-run',
+    });
+    expect(writes).toEqual([]);
+  });
+
+  test('skips launching when the active process is alive through process.kill', async () => {
+    const writes = [];
+    const result = await runNotionCodexPoll({
+      config,
+      repoRoot: '/tmp/repo',
+      now: new Date('2026-04-30T07:46:30.000Z'),
+      stateStore: {
+        async readState() {
+          return {
+            activeRun: {
+              runId: 'existing-run',
+              pid: process.pid,
             },
             eventLog: [],
           };
@@ -162,6 +253,41 @@ describe('local notion codex poll runner', () => {
     ]);
   });
 
+  test('records a launched run with a null pid when the launcher omits one', async () => {
+    const writes = [];
+    const result = await runNotionCodexPoll({
+      config,
+      repoRoot: '/tmp/repo',
+      now: new Date('2026-04-30T07:47:30.000Z'),
+      stateStore: {
+        async readState() {
+          return {
+            activeRun: null,
+            eventLog: 'not-an-array',
+          };
+        },
+        async writeState(state) {
+          writes.push(state);
+        },
+      },
+      launcher: {
+        async launch() {
+          return {};
+        },
+      },
+    });
+
+    expect(result.launched).toBe(true);
+    expect(writes[0].eventLog).toEqual([
+      {
+        at: '2026-04-30T07:47:30.000Z',
+        type: 'launched',
+        runId: '2026-04-30T07:47:30.000Z--notion-codex',
+        pid: null,
+      },
+    ]);
+  });
+
   test('backs off after an idle completed run outcome', async () => {
     const writes = [];
     const result = await runNotionCodexPoll({
@@ -221,6 +347,58 @@ describe('local notion codex poll runner', () => {
         nextPollAfter: '2026-04-30T07:49:00.000Z',
       },
     ]);
+  });
+
+  test('uses the default idle backoff and summary when config omits them', async () => {
+    const writes = [];
+    const result = await runNotionCodexPoll({
+      config: {},
+      repoRoot: '/tmp/repo',
+      now: new Date('2026-04-30T07:48:30.000Z'),
+      isProcessAliveImpl: () => false,
+      outcomeStore: {
+        async readOutcome(runId) {
+          expect(runId).toBe('idle-run');
+          return {
+            outcome: 'idle',
+          };
+        },
+      },
+      stateStore: {
+        async readState() {
+          return {
+            activeRun: {
+              runId: 'idle-run',
+              pid: 781,
+            },
+            eventLog: [],
+          };
+        },
+        async writeState(state) {
+          writes.push(state);
+        },
+      },
+      launcher: {
+        async launch() {
+          throw new Error('should not launch during default idle backoff');
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      launched: false,
+      skipped: true,
+      reason: 'idle-backoff',
+      nextDelayMs: 60000,
+    });
+    expect(writes[0]).toMatchObject({
+      lastOutcome: 'idle',
+      lastSummary:
+        'Observed idle Notion Codex run idle-run; next poll after 2026-04-30T07:49:30.000Z.',
+      idleBackoffExponent: 0,
+      nextPollAfter: '2026-04-30T07:49:30.000Z',
+      activeRun: null,
+    });
   });
 
   test('caps idle backoff at the configured exponent', async () => {
@@ -371,5 +549,225 @@ describe('local notion codex poll runner', () => {
         pid: 784,
       },
     ]);
+  });
+
+  test('launches when the next poll timestamp is invalid', async () => {
+    const writes = [];
+    const launchPayloads = [];
+    const result = await runNotionCodexPoll({
+      config,
+      repoRoot: '/tmp/repo',
+      now: new Date('2026-04-30T07:52:00.000Z'),
+      stateStore: {
+        async readState() {
+          return {
+            activeRun: null,
+            nextPollAfter: 'not-a-date',
+            eventLog: [],
+          };
+        },
+        async writeState(state) {
+          writes.push(state);
+        },
+      },
+      launcher: {
+        async launch(payload) {
+          launchPayloads.push(payload);
+          return { pid: 785 };
+        },
+      },
+    });
+
+    expect(result.launched).toBe(true);
+    expect(launchPayloads).toHaveLength(1);
+    expect(writes[0].activeRun).toMatchObject({
+      runId: '2026-04-30T07:52:00.000Z--notion-codex',
+      pid: 785,
+    });
+  });
+
+  test('marks a dead run completed when the process is gone', async () => {
+    const originalKill = process.kill;
+    const writes = [];
+    const launchPayloads = [];
+    process.kill = () => {
+      const error = new Error('gone');
+      error.code = 'ESRCH';
+      throw error;
+    };
+
+    try {
+      const result = await runNotionCodexPoll({
+        config,
+        repoRoot: '/tmp/repo',
+        now: new Date('2026-04-30T07:53:00.000Z'),
+        stateStore: {
+          async readState() {
+            return {
+              activeRun: {
+                runId: 'dead-run',
+                pid: 786,
+              },
+              eventLog: [],
+            };
+          },
+          async writeState(state) {
+            writes.push(state);
+          },
+        },
+        launcher: {
+          async launch(payload) {
+            launchPayloads.push(payload);
+            return { pid: 7861 };
+          },
+        },
+      });
+
+      expect(result.launched).toBe(true);
+      expect(launchPayloads).toHaveLength(1);
+      expect(launchPayloads[0]).toMatchObject({
+        repoRoot: '/tmp/repo',
+        runId: '2026-04-30T07:53:00.000Z--notion-codex',
+      });
+      expect(writes[0].eventLog[0]).toMatchObject({
+        type: 'completed',
+        runId: 'dead-run',
+        pid: 786,
+      });
+      expect(writes[0].eventLog[1]).toMatchObject({
+        type: 'launched',
+        runId: '2026-04-30T07:53:00.000Z--notion-codex',
+        pid: 7861,
+      });
+    } finally {
+      process.kill = originalKill;
+    }
+  });
+
+  test('returns null when the active run id is missing', () => {
+    expect(getActiveRunId(null)).toBeNull();
+    expect(getActiveRunId({})).toBeNull();
+    expect(getActiveRunId({ runId: 42 })).toBeNull();
+  });
+
+  test('keeps a run active when the process is alive but permission is denied', async () => {
+    const originalKill = process.kill;
+    const writes = [];
+    process.kill = () => {
+      const error = new Error('denied');
+      error.code = 'EPERM';
+      throw error;
+    };
+
+    try {
+      const result = await runNotionCodexPoll({
+        config,
+        repoRoot: '/tmp/repo',
+        now: new Date('2026-04-30T07:54:00.000Z'),
+        stateStore: {
+          async readState() {
+            return {
+              activeRun: {
+                runId: 'live-run',
+                pid: 787,
+              },
+              eventLog: [],
+            };
+          },
+          async writeState(state) {
+            writes.push(state);
+          },
+        },
+        launcher: {
+          async launch() {
+            throw new Error('should not launch');
+          },
+        },
+      });
+
+      expect(result).toMatchObject({
+        launched: false,
+        skipped: true,
+        reason: 'active-run',
+        runId: 'live-run',
+      });
+      expect(writes).toEqual([]);
+    } finally {
+      process.kill = originalKill;
+    }
+  });
+
+  test('propagates unexpected process state errors', async () => {
+    const originalKill = process.kill;
+    process.kill = () => {
+      throw new Error('boom');
+    };
+
+    try {
+      await expect(
+        runNotionCodexPoll({
+          config,
+          repoRoot: '/tmp/repo',
+          now: new Date('2026-04-30T07:55:00.000Z'),
+          stateStore: {
+            async readState() {
+              return {
+                activeRun: {
+                  runId: 'error-run',
+                  pid: 788,
+                },
+                eventLog: [],
+              };
+            },
+            async writeState() {},
+          },
+          launcher: {
+            async launch() {
+              throw new Error('should not launch');
+            },
+          },
+        })
+      ).rejects.toThrow('boom');
+    } finally {
+      process.kill = originalKill;
+    }
+  });
+
+  test('propagates non-object process.kill failures unchanged', async () => {
+    const originalKill = process.kill;
+    process.kill = () => {
+      throw 'boom';
+    };
+
+    try {
+      await expect(
+        runNotionCodexPoll({
+          config,
+          repoRoot: '/tmp/repo',
+          now: new Date('2026-04-30T07:56:00.000Z'),
+          stateStore: {
+            async readState() {
+              return {
+                activeRun: {
+                  runId: 'non-object-error-run',
+                  pid: 788,
+                },
+                eventLog: [],
+              };
+            },
+            async writeState() {
+              throw new Error('should not write');
+            },
+          },
+          launcher: {
+            async launch() {
+              throw new Error('should not launch');
+            },
+          },
+        })
+      ).rejects.toBe('boom');
+    } finally {
+      process.kill = originalKill;
+    }
   });
 });
