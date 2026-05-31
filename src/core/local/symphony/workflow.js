@@ -1,19 +1,21 @@
-// @ts-nocheck
-/* istanbul ignore file */
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 
+const PROMPT_TEMPLATE_KEY = 'prompt_template';
+
 /**
- *
- * @param content
+ * Count the number of lines in a block of text.
+ * @param {string} content Text content to measure.
+ * @returns {number} Number of lines in the content.
  */
 function toLineCount(content) {
   return content.split('\n').length;
 }
 
 /**
- *
- * @param content
+ * Split text into trimmed, non-empty lines.
+ * @param {string} content Text content to trim and split.
+ * @returns {string[]} Trimmed, non-empty lines.
  */
 function toTrimmedLines(content) {
   return content
@@ -23,9 +25,10 @@ function toTrimmedLines(content) {
 }
 
 /**
- *
- * @param lines
- * @param heading
+ * Collect bullet items that follow a heading.
+ * @param {string[]} lines Trimmed lines from the workflow document.
+ * @param {string} heading Heading to collect bullet items under.
+ * @returns {string[]} Bullet items after the heading.
  */
 function collectBullets(lines, heading) {
   const sectionIndex = lines.findIndex(line => line === heading);
@@ -48,8 +51,9 @@ function collectBullets(lines, heading) {
 }
 
 /**
- *
- * @param value
+ * Normalize a front-matter scalar value.
+ * @param {string} value Raw front-matter value text.
+ * @returns {string | number | boolean} Normalized scalar value.
  */
 function normalizeFrontMatterValue(value) {
   const trimmedValue = value.trim();
@@ -73,8 +77,9 @@ function normalizeFrontMatterValue(value) {
 }
 
 /**
- *
- * @param line
+ * Parse a single front-matter line.
+ * @param {string} line Front-matter line to parse.
+ * @returns {{ key: string, value: string | number | boolean } | null} Parsed key/value pair or null.
  */
 function parseFrontMatterLine(line) {
   const separatorIndex = line.indexOf(':');
@@ -94,8 +99,9 @@ function parseFrontMatterLine(line) {
 }
 
 /**
- *
- * @param content
+ * Parse the optional YAML-like front matter block from a workflow document.
+ * @param {string} content Workflow document content.
+ * @returns {{ config: Record<string, string | number | boolean>, body: string }} Parsed front matter and remaining body.
  */
 function parseFrontMatter(content) {
   if (!content.startsWith('---\n')) {
@@ -151,7 +157,7 @@ export function summarizeWorkflow(content) {
     exists: true,
     lineCount,
     config,
-    prompt_template: promptTemplate,
+    [PROMPT_TEMPLATE_KEY]: promptTemplate,
     allowedCommandFamilies: collectBullets(
       lines,
       '## Allowed command families'
@@ -162,7 +168,43 @@ export function summarizeWorkflow(content) {
 }
 
 /**
- * @param {{ workflowPath?: string, repoRoot?: string, readFileImpl?: typeof readFile }} [options]
+ * Determine whether a workflow read failed because the file does not exist.
+ * @param {unknown} error Read error candidate.
+ * @returns {boolean} True when the workflow file is missing.
+ */
+function isMissingWorkflowError(error) {
+  return Boolean(error && typeof error === 'object' && error.code === 'ENOENT');
+}
+
+/**
+ * Build the fallback response for a missing workflow file.
+ * @param {string} workflowPath Resolved workflow file path.
+ * @returns {{
+ *   path: string,
+ *   exists: false,
+ *   lineCount: number,
+ *   config: Record<string, never>,
+ *   prompt_template: string,
+ *   allowedCommandFamilies: string[],
+ *   requiredQualityGates: string[],
+ *   handoffRequirements: string[]
+ * }} Missing workflow scaffold response.
+ */
+function createMissingWorkflowResult(workflowPath) {
+  return {
+    path: workflowPath,
+    exists: false,
+    lineCount: 0,
+    config: {},
+    [PROMPT_TEMPLATE_KEY]: '',
+    allowedCommandFamilies: [],
+    requiredQualityGates: [],
+    handoffRequirements: [],
+  };
+}
+
+/**
+ * @param {{ workflowPath?: string, repoRoot?: string, readFileImpl?: typeof readFile }} [options] Optional workflow file resolution overrides.
  * @returns {Promise<{
  *   path: string,
  *   exists: boolean,
@@ -189,17 +231,8 @@ export async function loadSymphonyWorkflow(options = {}) {
       ...summarizeWorkflow(content),
     };
   } catch (error) {
-    if (error && typeof error === 'object' && error.code === 'ENOENT') {
-      return {
-        path: workflowPath,
-        exists: false,
-        lineCount: 0,
-        config: {},
-        prompt_template: '',
-        allowedCommandFamilies: [],
-        requiredQualityGates: [],
-        handoffRequirements: [],
-      };
+    if (isMissingWorkflowError(error)) {
+      return createMissingWorkflowResult(workflowPath);
     }
 
     throw error;

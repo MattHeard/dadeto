@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* istanbul ignore file */
 import { createDetachedProcessLauncher } from '../process-launcher.js';
 
 // Keep Ralph launches cheap and bounded while still allowing a single bead loop
@@ -14,6 +12,7 @@ export const DEFAULT_CODEX_RALPH_ARGS = [
 ];
 
 /**
+ * Create the Codex-backed Ralph launcher used by the Symphony runner.
  * @param {{
  *   command: string,
  *   args?: string[],
@@ -23,7 +22,7 @@ export const DEFAULT_CODEX_RALPH_ARGS = [
  *   mkdirImpl?: import('node:fs/promises').mkdir,
  *   openImpl?: import('node:fs/promises').open,
  *   spawnImpl?: import('node:child_process').spawn
- * }} options
+ * }} options Launcher options and dependency overrides.
  * @returns {{
  *   launchRunner: (payload: {
  *     repoRoot: string,

@@ -130,7 +130,8 @@ describe('local symphony codex launcher', () => {
     await launcher.launchRunner({
       repoRoot: '/tmp/repo',
       beadId: 'dadeto-0fzi',
-      beadTitle: 'Invoke a real Ralph agent session from Symphony runner launch',
+      beadTitle:
+        'Invoke a real Ralph agent session from Symphony runner launch',
       runId: '2026-03-08T19:21:00.000Z--dadeto-0fzi',
       onExit: payload => {
         onExitCalls.push(payload);
@@ -149,5 +150,78 @@ describe('local symphony codex launcher', () => {
         signal: null,
       },
     ]);
+  });
+
+  test('falls back to a null bead title in exit payloads when omitted', async () => {
+    const onExitCalls = [];
+    let exitHandler;
+    const launcher = createCodexRalphLauncher({
+      command: 'codex',
+      openImpl: async () => ({
+        fd: 41,
+        close: () => Promise.resolve(),
+      }),
+      spawnImpl() {
+        return {
+          pid: 43210,
+          once(event, handler) {
+            if (event === 'exit') {
+              exitHandler = handler;
+            }
+          },
+          unref() {},
+        };
+      },
+    });
+
+    await launcher.launchRunner({
+      repoRoot: '/tmp/repo',
+      beadId: 'dadeto-0fzi',
+      runId: '2026-03-08T19:23:00.000Z--dadeto-0fzi',
+      onExit: payload => {
+        onExitCalls.push(payload);
+      },
+    });
+
+    await exitHandler(0, null);
+
+    expect(onExitCalls).toEqual([
+      {
+        runId: '2026-03-08T19:23:00.000Z--dadeto-0fzi',
+        beadId: 'dadeto-0fzi',
+        beadTitle: null,
+        exitCode: 0,
+        signal: null,
+      },
+    ]);
+  });
+
+  test('omits the bead title from the prompt when it is absent', async () => {
+    const calls = [];
+    const launcher = createCodexRalphLauncher({
+      command: 'codex',
+      openImpl: async () => ({
+        fd: 41,
+        close: () => Promise.resolve(),
+      }),
+      spawnImpl(command, args, options) {
+        calls.push({ command, args, options });
+        return {
+          pid: 43210,
+          once() {},
+          unref() {},
+        };
+      },
+    });
+
+    await launcher.launchRunner({
+      repoRoot: '/tmp/repo',
+      beadId: 'dadeto-0fzi',
+      runId: '2026-03-08T19:22:00.000Z--dadeto-0fzi',
+    });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0].args[0]).toContain('pop dadeto-0fzi');
+    expect(calls[0].args[0]).not.toContain('bead title:');
   });
 });

@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,9 +10,7 @@ describe('process launcher helpers', () => {
   let tempDir;
 
   beforeEach(async () => {
-    tempDir = await mkdtemp(
-      path.join(os.tmpdir(), 'dadeto-process-launcher-')
-    );
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'dadeto-process-launcher-'));
   });
 
   afterEach(async () => {
@@ -111,6 +108,45 @@ describe('process launcher helpers', () => {
     expect(result.pid).toBe(12345);
   });
 
+  test('createDetachedProcessLauncher uses an empty prompt when none is provided', async () => {
+    const calls = [];
+    const launcher = createDetachedProcessLauncher({
+      command: 'codex',
+      args: ['exec'],
+      closeErrorLabel: 'Failed to close run log handle:',
+      exitErrorLabel: 'Failed to handle process exit:',
+      openImpl: async filePath => ({
+        fd: filePath.endsWith('--stdout.log') ? 40 : 41,
+        close: () => Promise.resolve(),
+      }),
+      spawnImpl(command, args, options) {
+        calls.push({ command, args, options });
+        return {
+          pid: 12345,
+          once() {},
+          unref() {},
+        };
+      },
+    });
+
+    await launcher.launch({
+      repoRoot: tempDir,
+      runId: '2026-05-31T18:31:30.000Z--process-launcher',
+    });
+
+    expect(calls).toEqual([
+      {
+        command: 'codex',
+        args: ['exec', ''],
+        options: {
+          cwd: tempDir,
+          detached: true,
+          stdio: ['ignore', 40, 41],
+        },
+      },
+    ]);
+  });
+
   test('createDetachedProcessLauncher honors custom cwd and log-dir resolvers', async () => {
     const calls = [];
     const launcher = createDetachedProcessLauncher({
@@ -167,6 +203,45 @@ describe('process launcher helpers', () => {
         '2026-05-31T18-33-00.000Z--process-launcher--stderr.log'
       )
     );
+  });
+
+  test('createDetachedProcessLauncher uses an empty prompt when none is provided', async () => {
+    const calls = [];
+    const launcher = createDetachedProcessLauncher({
+      command: 'codex',
+      args: ['exec'],
+      closeErrorLabel: 'Failed to close run log handle:',
+      exitErrorLabel: 'Failed to handle process exit:',
+      openImpl: async filePath => ({
+        fd: filePath.endsWith('--stdout.log') ? 40 : 41,
+        close: () => Promise.resolve(),
+      }),
+      spawnImpl(command, args, options) {
+        calls.push({ command, args, options });
+        return {
+          pid: 12345,
+          once() {},
+          unref() {},
+        };
+      },
+    });
+
+    await launcher.launch({
+      repoRoot: tempDir,
+      runId: '2026-05-31T18:31:30.000Z--process-launcher',
+    });
+
+    expect(calls).toEqual([
+      {
+        command: 'codex',
+        args: ['exec', ''],
+        options: {
+          cwd: tempDir,
+          detached: true,
+          stdio: ['ignore', 40, 41],
+        },
+      },
+    ]);
   });
 
   test('builds exit payloads when the child exits with non-numeric metadata', async () => {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {
@@ -60,6 +59,36 @@ export const getAllowedOrigins = environmentVariables => {
 
 let cachedDb = null;
 
+/**
+ * Determine whether the generate-stats Firestore call can reuse the cached instance.
+ * @param {{
+ *   ensureAppFn: () => void,
+ *   getFirestoreFn: typeof getAdminFirestore,
+ *   environment: Record<string, unknown>,
+ * }} options Firestore resolution inputs.
+ * @returns {boolean} True when the cached instance is safe to reuse.
+ */
+function shouldUseCachedFirestore({
+  ensureAppFn,
+  getFirestoreFn,
+  environment,
+}) {
+  return (
+    ensureAppFn === ensureFirebaseApp &&
+    getFirestoreFn === getAdminFirestore &&
+    environment === process.env
+  );
+}
+
+/**
+ * Resolve the generate-stats Firestore instance.
+ * @param {{
+ *   ensureAppFn?: () => void,
+ *   getFirestoreFn?: typeof getAdminFirestore,
+ *   environment?: Record<string, unknown>,
+ * }} [options] Optional Firestore overrides for tests.
+ * @returns {import('firebase-admin/firestore').Firestore} Firestore instance used by the stats workflow.
+ */
 export const getFirestoreInstance = (options = {}) => {
   const {
     ensureAppFn = ensureFirebaseApp,
@@ -74,11 +103,7 @@ export const getFirestoreInstance = (options = {}) => {
   ensureAppFn();
 
   const databaseId = resolveFirestoreDatabaseId(environment);
-  if (
-    ensureAppFn !== ensureFirebaseApp ||
-    getFirestoreFn !== getAdminFirestore ||
-    environment !== process.env
-  ) {
+  if (!shouldUseCachedFirestore({ ensureAppFn, getFirestoreFn, environment })) {
     return getFirestoreForDatabase(getFirestoreFn, undefined, databaseId);
   }
 

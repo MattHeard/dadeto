@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* istanbul ignore file */
 import {
   buildHtml,
   buildHandleRenderRequest,
@@ -20,8 +18,17 @@ import {
 } from '../render-support.js';
 
 /**
- *
- * @param deps
+ * Build the render-contents entrypoint from injected dependencies.
+ * @param {Record<string, unknown>} deps Runtime dependencies supplied by the cloud wrapper.
+ * @returns {{
+ *   handle: unknown,
+ *   handleTrigger: unknown,
+ *   render: (...args: unknown[]) => unknown,
+ *   fetchTopStoryIds: (...args: unknown[]) => unknown,
+ *   fetchStoryInfo: (...args: unknown[]) => unknown,
+ *   buildHtml: typeof buildHtml,
+ *   handleRenderRequest: unknown,
+ * }} Cloud entrypoint exports and test hooks.
  */
 export function createRenderContentsEntrypoint(deps) {
   const {
@@ -38,13 +45,7 @@ export function createRenderContentsEntrypoint(deps) {
   } = deps;
   const {
     db,
-    storage,
     environmentVariables,
-    bucketName,
-    objectPrefix,
-    projectId,
-    urlMapName,
-    cdnHost,
     render: resolveRender,
   } = createRenderContentsEntrypointState();
   const auth = getAuth();
@@ -76,14 +77,29 @@ export function createRenderContentsEntrypoint(deps) {
     .region('europe-west1')
     .https.onRequest(handleRenderRequest);
 
+  /**
+   * Forward render calls to the memoized render implementation.
+   * @param {...unknown} args Render call arguments.
+   * @returns {unknown} Render result from the shared core helper.
+   */
   function render(...args) {
     return resolveRender()(...args);
   }
 
+  /**
+   * Forward top-story lookups to the memoized loader.
+   * @param {...unknown} args Loader arguments.
+   * @returns {unknown} Top-story identifiers from the shared loader.
+   */
   function fetchTopStoryIds(...args) {
     return resolveFetchTopStoryIds()(...args);
   }
 
+  /**
+   * Forward story lookups to the memoized loader.
+   * @param {...unknown} args Loader arguments.
+   * @returns {unknown} Story details from the shared loader.
+   */
   function fetchStoryInfo(...args) {
     return resolveFetchStoryInfo()(...args);
   }
@@ -98,6 +114,10 @@ export function createRenderContentsEntrypoint(deps) {
     handleRenderRequest,
   };
 
+  /**
+   * Assemble the shared render state for this entrypoint.
+   * @returns {unknown} Shared render state consumed by the cloud wrapper.
+   */
   function createRenderContentsEntrypointState() {
     const renderStateOptions = {
       initializeApp,
@@ -112,12 +132,11 @@ export function createRenderContentsEntrypoint(deps) {
       defaultBucketName: DEFAULT_BUCKET_NAME,
     };
     renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
-        createRenderer: createRenderContents,
-        crypto,
-        consoleError: (...args) => console.error(...args),
-      });
+      createRenderer: createRenderContents,
+      crypto,
+      consoleError: (...args) => console.error(...args),
+    });
     renderStateOptions.entrypointKind = 'contents';
     return createCloudRenderEntrypointState(renderStateOptions);
   }
-
 }

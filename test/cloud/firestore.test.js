@@ -79,4 +79,33 @@ describe('getFirestoreInstance', () => {
     expect(ensureAppFn).toHaveBeenCalledTimes(1);
     expect(getFirestoreFn).toHaveBeenCalledWith(undefined);
   });
+
+  test('bypasses the cache when custom dependencies are supplied', () => {
+    const ensureAppFn = jest.fn();
+    const getFirestoreFn = jest.fn(() => ({}));
+    const environment = {
+      FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
+    };
+
+    getFirestoreInstance({
+      ensureAppFn,
+      getFirestoreFn,
+      environment,
+    });
+
+    getFirestoreInstance({
+      ensureAppFn: () => {},
+      getFirestoreFn,
+      environment,
+    });
+
+    expect(getFirestoreFn).toHaveBeenCalledTimes(2);
+  });
+
+  test('reuses the cached Firestore instance for default dependencies', () => {
+    const firstDb = getFirestoreInstance();
+    const secondDb = getFirestoreInstance();
+
+    expect(secondDb).toBe(firstDb);
+  });
 });

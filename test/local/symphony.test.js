@@ -1,6 +1,7 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { jest } from '@jest/globals';
 import {
   applyRunnerLaunch,
   applyRunnerOutcome,
@@ -10,7 +11,10 @@ import {
   refreshSymphonyStatus,
 } from '../../src/local/symphony/bootstrap.js';
 import { loadSymphonyConfig } from '../../src/local/symphony/config.js';
-import { loadSymphonyWorkflow } from '../../src/local/symphony/workflow.js';
+import {
+  loadSymphonyWorkflow,
+  summarizeWorkflow,
+} from '../../src/local/symphony/workflow.js';
 import { createSymphonyStatusStore } from '../../src/local/symphony/statusStore.js';
 
 describe('local symphony scaffold', () => {
@@ -69,6 +73,58 @@ describe('local symphony scaffold', () => {
     expect(config.pollIntervalMs).toBe(45000);
   });
 
+  test('falls back to the default branch when the config branch is blank', async () => {
+    await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
+    await writeFile(
+      path.join(tempDir, 'tracking', 'symphony.local.json'),
+      JSON.stringify({
+        defaultBranch: '   ',
+      }),
+      'utf8'
+    );
+
+    const config = await loadSymphonyConfig({ repoRoot: tempDir });
+
+    expect(config.defaultBranch).toBe('main');
+  });
+
+  test('uses process.cwd and the default config path when options are omitted', async () => {
+    await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
+    await writeFile(
+      path.join(tempDir, 'tracking', 'symphony.local.json'),
+      JSON.stringify({
+        defaultBranch: 'main',
+      }),
+      'utf8'
+    );
+    const originalCwd = process.cwd();
+    const readFileImpl = jest.fn().mockResolvedValue(
+      JSON.stringify({
+        defaultBranch: 'main',
+      })
+    );
+
+    try {
+      process.chdir(tempDir);
+      await expect(loadSymphonyConfig()).resolves.toMatchObject({
+        defaultBranch: 'main',
+      });
+
+      await expect(
+        loadSymphonyConfig({ readFileImpl })
+      ).resolves.toMatchObject({
+        defaultBranch: 'main',
+      });
+
+      expect(readFileImpl).toHaveBeenCalledWith(
+        path.join(tempDir, 'tracking', 'symphony.local.json'),
+        'utf8'
+      );
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
   test('parses workflow front matter and prompt template when WORKFLOW.md exists', async () => {
     await writeFile(
       path.join(tempDir, 'WORKFLOW.md'),
@@ -120,6 +176,134 @@ describe('local symphony scaffold', () => {
     expect(workflow.allowedCommandFamilies).toEqual(['`bd`', '`git`']);
     expect(workflow.requiredQualityGates).toEqual(['`npm test`']);
     expect(workflow.handoffRequirements).toEqual(['leave notes']);
+  });
+
+  test('summarizes malformed workflow content and coerces scalar values', () => {
+    const summary = summarizeWorkflow(
+      [
+        '---',
+        'enabled: false',
+        'threshold: 1.5',
+        'blank:',
+        ': ignored',
+        'ignored line without colon',
+        '---',
+        '',
+        '# Workflow',
+      ].join('\n')
+    );
+
+    expect(summary.config).toEqual({
+      enabled: false,
+      threshold: 1.5,
+      blank: '',
+    });
+    expect(summary.prompt_template).toBe('# Workflow');
+    expect(summary.allowedCommandFamilies).toEqual([]);
+    expect(summary.requiredQualityGates).toEqual([]);
+    expect(summary.handoffRequirements).toEqual([]);
+  });
+
+  test('ignores non-bullet text inside workflow sections', () => {
+    const summary = summarizeWorkflow(
+      [
+        '---',
+        'enabled: true',
+        '---',
+        '',
+        '# Workflow',
+        '',
+        '## Allowed command families',
+        'plain text',
+        '- `bd`',
+        '',
+        '## Required quality gates',
+        'more text',
+        '- `npm test`',
+      ].join('\n')
+    );
+
+    expect(summary.allowedCommandFamilies).toEqual(['`bd`']);
+    expect(summary.requiredQualityGates).toEqual(['`npm test`']);
+  });
+
+  test('skips comment lines inside workflow front matter', () => {
+    const summary = summarizeWorkflow(
+      [
+        '---',
+        '# comment',
+        'enabled: true',
+        '---',
+        '',
+        '# Workflow',
+      ].join('\n')
+    );
+
+    expect(summary.config).toEqual({
+      enabled: true,
+    });
+    expect(summary.prompt_template).toBe('# Workflow');
+  });
+
+  test('returns the original body when the workflow front matter is not closed', () => {
+    const summary = summarizeWorkflow(
+      [
+        '---',
+        '# comment',
+        'enabled: true',
+        '',
+        '# Workflow',
+      ].join('\n')
+    );
+
+    expect(summary.config).toEqual({});
+    expect(summary.prompt_template).toBe(
+      [
+        '---',
+        '# comment',
+        'enabled: true',
+        '',
+        '# Workflow',
+      ].join('\n')
+    );
+  });
+
+  test('uses process.cwd and the default workflow path when options are omitted', async () => {
+    await writeFile(
+      path.join(tempDir, 'WORKFLOW.md'),
+      [
+        '---',
+        'model: gpt-5',
+        '---',
+        '',
+        '# Workflow',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const originalCwd = process.cwd();
+    try {
+      process.chdir(tempDir);
+      await expect(loadSymphonyWorkflow()).resolves.toMatchObject({
+        exists: true,
+        config: {
+          model: 'gpt-5',
+        },
+      });
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
+  test('throws when workflow loading fails for a non-missing error', async () => {
+    await expect(
+      loadSymphonyWorkflow({
+        repoRoot: tempDir,
+        readFileImpl: async () => {
+          throw new Error('boom');
+        },
+      })
+    ).rejects.toThrow('boom');
   });
 
   test('bootstraps blocked status when WORKFLOW.md is missing and writes status artifacts', async () => {

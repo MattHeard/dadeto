@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   buildAltsHtml,
   buildHtml,
@@ -45,16 +44,7 @@ export function runRenderVariant(deps) {
     console: consoleLike = globalThis.console,
   } = deps;
 
-  const renderState = createRenderVariantEntrypointState();
-  const db = renderState.db;
-  const storage = renderState.storage;
-  const environmentVariables = renderState.environmentVariables;
-  const bucketName = renderState.bucketName;
-  const objectPrefix = renderState.objectPrefix;
-  const projectId = renderState.projectId;
-  const urlMapName = renderState.urlMapName;
-  const cdnHost = renderState.cdnHost;
-  const resolveRenderVariant = renderState.render;
+  const { render: resolveRenderVariant } = createRenderVariantEntrypointState();
 
   /* istanbul ignore next */
   const handleVariantWrite = createHandleVariantWrite({
@@ -73,7 +63,8 @@ export function runRenderVariant(deps) {
   return { renderVariant, render };
 
   /**
-   *
+   * Assemble the shared render state for the variant entrypoint.
+   * @returns {unknown} Shared render state consumed by the cloud wrapper.
    */
   function createRenderVariantEntrypointState() {
     const renderStateOptions = {};

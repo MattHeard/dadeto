@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* istanbul ignore file */
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { DEFAULT_CODEX_RALPH_ARGS } from './launcherCodex.js';
@@ -29,8 +27,9 @@ export const DEFAULT_SYMPHONY_CONFIG = {
 };
 
 /**
- *
- * @param tracker
+ * Normalize the tracker section of the Symphony config.
+ * @param {unknown} tracker Tracker config candidate.
+ * @returns {{ kind: string, readyCommand: string }} Normalized tracker config.
  */
 function normalizeTracker(tracker) {
   if (!tracker || typeof tracker !== 'object') {
@@ -47,8 +46,9 @@ function normalizeTracker(tracker) {
 }
 
 /**
- *
- * @param launcher
+ * Normalize the launcher section of the Symphony config.
+ * @param {unknown} launcher Launcher config candidate.
+ * @returns {{ kind: string, command: string, args: string[], mcpServers: string[] }} Normalized launcher config.
  */
 function normalizeLauncher(launcher) {
   if (!launcher || typeof launcher !== 'object') {
@@ -70,14 +70,52 @@ function normalizeLauncher(launcher) {
 }
 
 /**
- *
- * @param mcpServers
+ * Normalize the launcher MCP server list.
+ * @param {unknown} mcpServers Launcher MCP server list candidate.
+ * @returns {string[]} Normalized MCP server list.
  */
 function normalizeLauncherMcpServers(mcpServers) {
   return normalizeStringArray(
     mcpServers,
     DEFAULT_SYMPHONY_CONFIG.launcher.mcpServers
   );
+}
+
+/**
+ * Resolve the workspace root path from the raw config.
+ * @param {object | null | undefined} config Symphony config candidate.
+ * @returns {string} Normalized workspace root path relative to the repo.
+ */
+function resolveWorkspaceRoot(config) {
+  return normalizePathValue(
+    config?.workspaceRoot,
+    DEFAULT_SYMPHONY_CONFIG.workspaceRoot
+  );
+}
+
+/**
+ * Resolve the log directory path from the raw config.
+ * @param {object | null | undefined} config Symphony config candidate.
+ * @returns {string} Normalized log directory path relative to the repo.
+ */
+function resolveLogDir(config) {
+  return normalizePathValue(config?.logDir, DEFAULT_SYMPHONY_CONFIG.logDir);
+}
+
+/**
+ * Resolve the default branch name from the raw config.
+ * @param {unknown} defaultBranch Default branch candidate.
+ * @returns {string} Normalized default branch name.
+ */
+function resolveDefaultBranch(defaultBranch) {
+  if (typeof defaultBranch === 'string') {
+    const trimmedDefaultBranch = defaultBranch.trim();
+    if (trimmedDefaultBranch) {
+      return trimmedDefaultBranch;
+    }
+  }
+
+  return DEFAULT_SYMPHONY_CONFIG.defaultBranch;
 }
 
 /**
@@ -97,14 +135,8 @@ function normalizeLauncherMcpServers(mcpServers) {
  * }} Normalized local Symphony config.
  */
 export function normalizeSymphonyConfig(config, repoRoot, configPath) {
-  const workspaceRoot = normalizePathValue(
-    config?.workspaceRoot,
-    DEFAULT_SYMPHONY_CONFIG.workspaceRoot
-  );
-  const logDir = normalizePathValue(
-    config?.logDir,
-    DEFAULT_SYMPHONY_CONFIG.logDir
-  );
+  const workspaceRoot = resolveWorkspaceRoot(config);
+  const logDir = resolveLogDir(config);
 
   return {
     configPath,
@@ -121,15 +153,12 @@ export function normalizeSymphonyConfig(config, repoRoot, configPath) {
       config?.maxConcurrentRuns,
       DEFAULT_SYMPHONY_CONFIG.maxConcurrentRuns
     ),
-    defaultBranch:
-      typeof config?.defaultBranch === 'string' && config.defaultBranch.trim()
-        ? config.defaultBranch.trim()
-        : DEFAULT_SYMPHONY_CONFIG.defaultBranch,
+    defaultBranch: resolveDefaultBranch(config?.defaultBranch),
   };
 }
 
 /**
- * @param {{ configPath?: string, repoRoot?: string, readFileImpl?: typeof readFile }} [options]
+ * @param {{ configPath?: string, repoRoot?: string, readFileImpl?: typeof readFile }} [options] Optional file resolution overrides.
  * @returns {Promise<ReturnType<typeof normalizeSymphonyConfig>>} Normalized local Symphony config.
  */
 export async function loadSymphonyConfig(options = {}) {

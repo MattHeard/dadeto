@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* istanbul ignore file */
 import {
   resolveFirestoreDatabaseId,
   getFirestoreForDatabase,
@@ -32,11 +30,13 @@ export function createFirestoreModule(deps) {
   let cachedDb = null;
 
   /**
-   *
-   * @param root0
-   * @param root0.ensureAppFn
-   * @param root0.getFirestoreFn
-   * @param root0.environment
+   * Determine whether the current call should bypass the cached Firestore instance.
+   * @param {{
+   *   ensureAppFn: () => void,
+   *   getFirestoreFn: typeof deps.getFirestore,
+   *   environment: Record<string, unknown>,
+   * }} options Firestore resolution inputs.
+   * @returns {boolean} True when the call should use a fresh Firestore instance.
    */
   function shouldBypassFirestoreCache({
     ensureAppFn,
@@ -51,8 +51,13 @@ export function createFirestoreModule(deps) {
   }
 
   /**
-   *
-   * @param options
+   * Resolve the shared Firestore instance for this module.
+   * @param {{
+   *   ensureAppFn?: () => void,
+   *   getFirestoreFn?: typeof deps.getFirestore,
+   *   environment?: Record<string, unknown>,
+   * }} [options] Optional Firestore overrides for tests.
+   * @returns {import('firebase-admin/firestore').Firestore} Firestore instance for the current environment.
    */
   function getFirestoreInstance(options = {}) {
     const {
@@ -78,7 +83,8 @@ export function createFirestoreModule(deps) {
   }
 
   /**
-   *
+   * Clear the cached Firestore instance and reset Firebase bootstrap state.
+   * @returns {void}
    */
   function clearFirestoreInstanceCache() {
     cachedDb = null;

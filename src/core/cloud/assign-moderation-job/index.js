@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* istanbul ignore file */
 import {
   createAssignModerationJob,
   createFirebaseInitialization,
@@ -17,8 +15,19 @@ import {
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
 /**
- *
- * @param deps
+ * Build the assign-moderation-job entrypoint from injected dependencies.
+ * @param {Record<string, unknown>} deps Runtime dependencies supplied by the cloud wrapper.
+ * @returns {{
+ *   handle: unknown,
+ *   testing: {
+ *     firebaseInitialization: unknown,
+ *     resolveFirestoreDatabaseId: typeof resolveFirestoreDatabaseId,
+ *     resolveFirestoreEnvironment: typeof resolveFirestoreEnvironment,
+ *     shouldUseCustomFirestoreDependencies: typeof shouldUseCustomFirestoreDependencies,
+ *     getFirestoreInstance: (options?: Record<string, unknown>) => unknown,
+ *     clearFirestoreInstanceCache: () => void,
+ *   },
+ * }} Cloud entrypoint exports and test hooks.
  */
 export function createAssignModerationJobEntrypoint(deps) {
   const firebaseInitialization = createFirebaseInitialization();
@@ -31,15 +40,28 @@ export function createAssignModerationJobEntrypoint(deps) {
   const defaultEnsureFirebaseApp = () => {};
 
   /**
-   *
-   * @param firebaseInitializationHandlers
+   * Create Firestore helpers that share a cache and a reset hook.
+   * @param {{ reset: () => void }} firebaseInitializationHandlers Reset hook for the Firebase bootstrap state.
+   * @returns {{
+   *   getFirestoreInstance: (options?: {
+   *     ensureAppFn?: () => void,
+   *     getFirestoreFn?: typeof deps.getFirestore,
+   *     environment?: Record<string, unknown>,
+   *   }) => unknown,
+   *   clearFirestoreInstanceCache: () => void,
+   * }} Shared Firestore helpers.
    */
   function createFirestoreInstanceHandlers(firebaseInitializationHandlers) {
     let cachedDb = null;
 
     /**
-     *
-     * @param options
+     * Resolve the Firestore instance for this entrypoint.
+     * @param {{
+     *   ensureAppFn?: () => void,
+     *   getFirestoreFn?: typeof deps.getFirestore,
+     *   environment?: Record<string, unknown>,
+     * }} [options] Optional Firestore overrides for tests.
+     * @returns {unknown} Firestore instance for the current environment.
      */
     function getFirestoreInstance(options = {}) {
       const {
@@ -79,7 +101,8 @@ export function createAssignModerationJobEntrypoint(deps) {
     }
 
     /**
-     *
+     * Clear the cached Firestore instance and reset Firebase bootstrap state.
+     * @returns {void}
      */
     function clearFirestoreInstanceCache() {
       cachedDb = null;
@@ -93,8 +116,9 @@ export function createAssignModerationJobEntrypoint(deps) {
     createFirestoreInstanceHandlers(firebaseInitializationHandlers);
 
   /**
-   *
-   * @param initFn
+   * Ensure Firebase has been initialized once for this entrypoint.
+   * @param {() => unknown} [initFn] Initialization function to invoke on first use.
+   * @returns {void}
    */
   function ensureFirebaseApp(initFn = deps.initializeApp) {
     if (firebaseInitialization.hasBeenInitialized()) {
@@ -140,6 +164,7 @@ export function createAssignModerationJobEntrypoint(deps) {
     handle,
     testing: {
       firebaseInitialization,
+      ensureFirebaseApp,
       resolveFirestoreDatabaseId,
       resolveFirestoreEnvironment,
       shouldUseCustomFirestoreDependencies,

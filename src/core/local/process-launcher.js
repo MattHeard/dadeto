@@ -83,6 +83,125 @@ export async function closeRunLogHandles(handles, errorLabel) {
 }
 
 /**
+ * Normalize a possibly missing numeric value.
+ * @param {number | null | undefined} value Maybe-present number.
+ * @returns {number | null} Normalized numeric value.
+ */
+function normalizeMaybeNumber(value) {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  return null;
+}
+
+/**
+ * Resolve launch arguments from the wrapper options.
+ * @param {{
+ *   args?: string[],
+ *   resolveArgs?: (payload: Record<string, unknown>) => string[],
+ * }} options Launcher options.
+ * @param {Record<string, unknown>} payload Launch payload.
+ * @returns {string[]} Launch arguments.
+ */
+function resolveLaunchArgs(options, payload) {
+  if (typeof options.resolveArgs === 'function') {
+    return options.resolveArgs(payload);
+  }
+
+  return [...(options.args ?? []), String(payload.prompt ?? '')];
+}
+
+/**
+ * Resolve the working directory for a launch.
+ * @param {{
+ *   cwd?: string,
+ *   resolveCwd?: (payload: Record<string, unknown>) => string,
+ * }} options Launcher options.
+ * @param {Record<string, unknown>} payload Launch payload.
+ * @returns {string} Launch working directory.
+ */
+function resolveLaunchCwd(options, payload) {
+  if (typeof options.resolveCwd === 'function') {
+    return options.resolveCwd(payload);
+  }
+
+  return options.cwd ?? payload.repoRoot;
+}
+
+/**
+ * Resolve the log directory for a launch.
+ * @param {{
+ *   logDir?: string,
+ *   logDirSuffix?: string,
+ *   resolveLogDir?: (payload: Record<string, unknown>) => string,
+ * }} options Launcher options.
+ * @param {Record<string, unknown>} payload Launch payload.
+ * @returns {string} Launch log directory.
+ */
+function resolveLaunchLogDir(options, payload) {
+  if (typeof options.resolveLogDir === 'function') {
+    return options.resolveLogDir(payload);
+  }
+
+  if (options.logDir) {
+    return options.logDir;
+  }
+
+  return path.join(
+    payload.repoRoot,
+    'tracking',
+    options.logDirSuffix ?? 'launcher'
+  );
+}
+
+/**
+ * Resolve the exit error label for a launch.
+ * @param {{
+ *   exitErrorLabel: string | ((payload: Record<string, unknown>) => string),
+ * }} options Launcher options.
+ * @param {Record<string, unknown>} payload Launch payload.
+ * @returns {string} Exit error label.
+ */
+function resolveLaunchExitErrorLabel(options, payload) {
+  if (typeof options.exitErrorLabel === 'function') {
+    return options.exitErrorLabel(payload);
+  }
+
+  return options.exitErrorLabel;
+}
+
+/**
+ * Build the exit payload passed to the optional onExit hook.
+ * @param {{
+ *   runId: string,
+ *   buildExitPayload?: (payload: Record<string, unknown>, input: { runId: string, exitCode: number | null, signal: string | null }) => { runId: string, exitCode: number | null, signal: string | null },
+ * }} options Launcher options.
+ * @param {Record<string, unknown>} payload Launch payload.
+ * @param {number | null | undefined} code Exit code value.
+ * @param {string | null | undefined} signal Exit signal value.
+ * @returns {{ runId: string, exitCode: number | null, signal: string | null }} Exit payload.
+ */
+function resolveExitPayload(options, payload, code, signal) {
+  const normalizedExitCode = normalizeMaybeNumber(code);
+  const normalizedSignal = signal ?? null;
+
+  if (typeof options.buildExitPayload === 'function') {
+    return options.buildExitPayload(payload, {
+      runId: payload.runId,
+      exitCode: normalizedExitCode,
+      signal: normalizedSignal,
+    });
+  }
+
+  return {
+    runId: payload.runId,
+    exitCode: normalizedExitCode,
+    signal: normalizedSignal,
+  };
+}
+
+/**
  * Launch a detached process with append-only logs and an optional exit handler.
  * @param {{
  *   command: string,
@@ -146,17 +265,12 @@ export async function launchDetachedProcessWithRunLogs(options) {
 
   if (typeof options.onExit === 'function') {
     child.once('exit', (code, signal) => {
-      const exitPayload = options.buildExitPayload
-        ? options.buildExitPayload({
-            runId: options.runId,
-            exitCode: typeof code === 'number' ? code : null,
-            signal: signal ?? null,
-          })
-        : {
-            runId: options.runId,
-            exitCode: typeof code === 'number' ? code : null,
-            signal: signal ?? null,
-          };
+      const exitPayload = resolveExitPayload(
+        options,
+        { runId: options.runId },
+        code,
+        signal
+      );
 
       Promise.resolve(options.onExit(exitPayload)).catch(error => {
         console.error(options.exitErrorLabel, error);
@@ -170,7 +284,7 @@ export async function launchDetachedProcessWithRunLogs(options) {
     launcherKind: options.launcherKind ?? 'codex',
     command: options.command,
     args: options.args,
-    pid: typeof child.pid === 'number' ? child.pid : null,
+    pid: normalizeMaybeNumber(child.pid),
     stdoutPath,
     stderrPath,
   };
@@ -224,24 +338,16 @@ export function createDetachedProcessLauncher(options) {
 
   return {
     async launch(payload) {
-      const args = options.resolveArgs
-        ? options.resolveArgs(payload)
-        : [...(options.args ?? []), payload.prompt];
-      const cwd = options.resolveCwd
-        ? options.resolveCwd(payload)
-        : (options.cwd ?? payload.repoRoot);
-      const logDir = options.resolveLogDir
-        ? options.resolveLogDir(payload)
-        : (options.logDir ??
-          path.join(
-            payload.repoRoot,
-            'tracking',
-            options.logDirSuffix ?? 'launcher'
-          ));
-      const exitErrorLabel =
-        typeof options.exitErrorLabel === 'function'
-          ? options.exitErrorLabel(payload)
-          : options.exitErrorLabel;
+      const args = resolveLaunchArgs(options, payload);
+      const cwd = resolveLaunchCwd(options, payload);
+      const logDir = resolveLaunchLogDir(options, payload);
+      const exitErrorLabel = resolveLaunchExitErrorLabel(options, payload);
+      let buildExitPayload;
+
+      if (typeof options.buildExitPayload === 'function') {
+        buildExitPayload = (exitPayload, input) =>
+          options.buildExitPayload(payload, input);
+      }
 
       return launchDetachedProcessWithRunLogs({
         command: options.command,
@@ -253,9 +359,7 @@ export function createDetachedProcessLauncher(options) {
         openImpl,
         spawnImpl,
         onExit: payload.onExit,
-        buildExitPayload: options.buildExitPayload
-          ? input => options.buildExitPayload(payload, input)
-          : undefined,
+        buildExitPayload,
         closeErrorLabel: options.closeErrorLabel,
         exitErrorLabel,
         launcherKind: options.launcherKind,
