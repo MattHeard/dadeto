@@ -4,9 +4,6 @@
  *   command: string,
  *   args: string[],
  *   rootDir: string,
- *   stderr: { write: (text: string) => void },
- *   launchLabel: string,
- *   commandLabel: string,
  * }} options Spawned gate input.
  * @returns {{ status?: number | null, signal?: string | null, error?: Error }} Spawn result.
  */

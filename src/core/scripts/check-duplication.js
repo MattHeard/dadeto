@@ -3,6 +3,7 @@ import { handleSpawnFailure, spawnGateCommand } from './gate-utils.js';
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_CONFIG_PATH = '.jscpd.json';
 const DEFAULT_REPORT_PATH = 'reports/duplication/jscpd-report.json';
+/** @type {(from: string, to: string) => string} */
 const DEFAULT_RELATIVE_PATH = (_, target) => target;
 const DEFAULT_SPAWN_RESULT = { status: 0, signal: null };
 const DEFAULT_STDOUT = { write() {} };
@@ -201,12 +202,13 @@ function readDuplicationReport(readFileSync, reportPath) {
  * @returns {number} Clone count.
  */
 function countClones(report) {
-  const duplicates = report?.duplicates;
+  const duplicates =
+    /** @type {Array<unknown> | undefined} */ (report.duplicates);
   if (Array.isArray(duplicates)) {
     return duplicates.length;
   }
 
-  const total = report?.statistics?.total;
+  const total = getDuplicationStatistics(report).total;
   if (total && typeof total.clones === 'number') {
     return total.clones;
   }
@@ -220,13 +222,28 @@ function countClones(report) {
  * @returns {string} Human-readable summary.
  */
 function summarizeReport(report) {
-  const total = report?.statistics?.total;
+  const total = getDuplicationStatistics(report).total;
   if (!total) {
     return '';
   }
 
-  const cloneSuffix = formatCloneSuffix(total.clones);
-  return `Report summary: ${total.clones} clone${cloneSuffix}, ${total.percentage}% duplicated lines, ${total.percentageTokens}% duplicated tokens.`;
+  const cloneCount = typeof total.clones === 'number' ? total.clones : 0;
+  const cloneSuffix = formatCloneSuffix(cloneCount);
+  return `Report summary: ${cloneCount} clone${cloneSuffix}, ${total.percentage}% duplicated lines, ${total.percentageTokens}% duplicated tokens.`;
+}
+
+/**
+ * Read the statistics payload from a duplication report.
+ * @param {Record<string, unknown>} report Parsed report payload.
+ * @returns {{ total?: { clones?: number, percentage?: number, percentageTokens?: number } }} Statistics payload.
+ */
+function getDuplicationStatistics(report) {
+  const statistics =
+    /** @type {{ total?: { clones?: number, percentage?: number, percentageTokens?: number } } | undefined} */ (
+      report.statistics
+    );
+
+  return statistics ?? {};
 }
 
 /**

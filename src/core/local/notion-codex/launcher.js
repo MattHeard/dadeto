@@ -65,10 +65,11 @@ export function createNotionCodexLauncherCore(options) {
         await closeRunLogHandles({ stdoutHandle, stderrHandle });
       }
 
-      if (typeof payload.onExit === 'function') {
+      const onExit = payload.onExit;
+      if (typeof onExit === 'function') {
         child.once('exit', (code, signal) => {
           Promise.resolve(
-            payload.onExit({
+            onExit({
               runId: payload.runId,
               exitCode: getExitCode(code),
               signal: signal ?? null,

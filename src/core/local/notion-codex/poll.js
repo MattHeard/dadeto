@@ -6,22 +6,76 @@ import {
 } from './backoff.js';
 
 /**
+ * @typedef {object} NotionCodexIdleBackoffConfig
+ * @property {number} baseDelayMs Base delay in milliseconds.
+ * @property {number} initialExponent Initial exponent value.
+ * @property {number} maxExponent Maximum exponent value.
+ *
+ * @typedef {object} NotionCodexPollConfig
+ * @property {{
+ *   dadetoPageId: string,
+ *   dadetoPageUrl: string,
+ *   symphonyPageId: string,
+ *   symphonyPageUrl: string,
+ *   taskDataSourceUrl: string,
+ *   taskContext: string,
+ *   taskStatus: string,
+ *   messageSearchQuery: string,
+ *   inboxPageIds: string[],
+ *   apiTokenEnvNames?: string[],
+ *   apiVersion?: string
+ * }} notion Notion config payload.
+ * @property {NotionCodexIdleBackoffConfig} idleBackoff Idle backoff settings.
+ *
+ * @typedef {object} NotionCodexPollActiveRun
+ * @property {string} runId Run identifier.
+ * @property {string} startedAt Start timestamp.
+ * @property {number | null} [pid] Process identifier.
+ * @property {string} [launcherKind] Launcher kind.
+ * @property {string} [command] Launcher command.
+ * @property {string[]} [args] Launcher args.
+ * @property {string} [stdoutPath] Run stdout path.
+ * @property {string} [stderrPath] Run stderr path.
+ *
+ * @typedef {object} NotionCodexRunOutcome
+ * @property {string} outcome Outcome name.
+ * @property {string} summary Outcome summary.
+ *
+ * @typedef {object} NotionCodexPollState
+ * @property {NotionCodexPollActiveRun | null} [activeRun] Active run state.
+ * @property {string | null} [nextPollAfter] Next poll time.
+ * @property {number | null} [idleBackoffExponent] Idle backoff exponent.
+ * @property {string | null} [lastOutcome] Last outcome.
+ * @property {string | null} [lastSummary] Last summary.
+ * @property {string | null} [lastPollAt] Last poll time.
+ * @property {Array<Record<string, unknown>>} [eventLog] Event history.
+ *
+ * @typedef {object} NotionCodexLaunchResult
+ * @property {string} launcherKind Launcher kind.
+ * @property {string} command Launcher command.
+ * @property {string[]} args Launcher args.
+ * @property {number | null} pid Process identifier.
+ * @property {string} stdoutPath Stdout log path.
+ * @property {string} stderrPath Stderr log path.
+ */
+
+/**
  * @param {{
- *   config: Record<string, unknown>,
+ *   config: NotionCodexPollConfig,
  *   repoRoot: string,
  *   stateStore: {
- *     readState: () => Promise<Record<string, unknown>>,
- *     writeState: (state: Record<string, unknown>) => Promise<void>
+ *     readState: () => Promise<NotionCodexPollState>,
+ *     writeState: (state: NotionCodexPollState) => Promise<void>
  *   },
  *   outcomeStore?: {
- *     readOutcome: (runId: string) => Promise<{ outcome: string, summary: string } | null>
+ *     readOutcome: (runId: string) => Promise<NotionCodexRunOutcome | null>
  *   },
  *   launcher: {
  *     launch: (payload: {
  *       repoRoot: string,
  *       runId: string,
  *       prompt: string
- *     }) => Promise<Record<string, unknown>>
+ *     }) => Promise<NotionCodexLaunchResult>
  *   },
  *   now?: Date,
  *   dryRun?: boolean,
@@ -86,11 +140,11 @@ export async function runNotionCodexPoll(options) {
     runId,
     prompt,
   });
-  const activeRun = {
+  const activeRun = /** @type {NotionCodexPollActiveRun} */ ({
     runId,
     startedAt: nowIso,
     ...launchResult,
-  };
+  });
   const nextState = appendEvent(
     {
       ...state,
@@ -123,7 +177,7 @@ export async function runNotionCodexPoll(options) {
 /**
  * Reconcile any active Notion Codex run with the current process state.
  * @param {{
- *   state: Record<string, unknown>,
+ *   state: NotionCodexPollState,
  *   isProcessAliveImpl?: (pid: number) => boolean,
  *   now: Date,
  *   idleBackoff: {
@@ -132,26 +186,26 @@ export async function runNotionCodexPoll(options) {
  *     maxExponent: number
  *   },
  *   outcomeStore?: {
- *     readOutcome: (runId: string) => Promise<{ outcome: string, summary: string } | null>
+ *     readOutcome: (runId: string) => Promise<NotionCodexRunOutcome | null>
  *   }
  * }} options Reconciliation inputs.
- * @returns {Promise<Record<string, unknown>>} Updated state.
+ * @returns {Promise<NotionCodexPollState>} Updated state.
  */
 async function reconcileActiveRun(options) {
   const { state, now, idleBackoff, outcomeStore } = options;
   const isProcessAliveImpl = options.isProcessAliveImpl ?? isProcessAlive;
 
-  if (!hasActiveRun(state)) {
+  const activeRun = getActiveRun(state);
+  if (!activeRun) {
     return state;
   }
 
-  const activeRun = state.activeRun;
-  const pid = activeRun.pid;
+  const pid = activeRun.pid ?? null;
   if (!isStoppedRunPid(pid, isProcessAliveImpl)) {
     return state;
   }
 
-  const runId = getActiveRunId(activeRun);
+  const runId = activeRun.runId;
   const outcome = await readRunOutcome(outcomeStore, runId);
   if (outcome?.outcome === 'idle') {
     return appendIdleOutcome(state, {
@@ -174,10 +228,10 @@ async function reconcileActiveRun(options) {
 /**
  * Read the stored outcome for a finished run.
  * @param {{
- *   readOutcome?: (runId: string) => Promise<{ outcome: string, summary: string } | null>
+ *   readOutcome?: (runId: string) => Promise<NotionCodexRunOutcome | null>
  * } | undefined} outcomeStore Stored outcome accessor.
  * @param {string | null} runId Run identifier.
- * @returns {Promise<{ outcome: string, summary: string } | null>} Outcome record.
+ * @returns {Promise<NotionCodexRunOutcome | null>} Outcome record.
  */
 async function readRunOutcome(outcomeStore, runId) {
   if (
@@ -193,10 +247,10 @@ async function readRunOutcome(outcomeStore, runId) {
 
 /**
  * Append an idle outcome to state.
- * @param {Record<string, unknown>} state Current state.
+ * @param {NotionCodexPollState} state Current state.
  * @param {{
  *   now: Date,
- *   pid: number,
+ *   pid: number | null,
  *   runId: string,
  *   summary?: string,
  *   idleBackoff?: {
@@ -205,7 +259,7 @@ async function readRunOutcome(outcomeStore, runId) {
  *     maxExponent: number
  *   }
  * }} options Idle outcome details.
- * @returns {Record<string, unknown>} Updated state.
+ * @returns {NotionCodexPollState} Updated state.
  */
 function appendIdleOutcome(state, options) {
   const idleBackoff = options.idleBackoff ?? {
@@ -254,7 +308,7 @@ function appendIdleOutcome(state, options) {
 
 /**
  * Determine whether the poll should wait for backoff.
- * @param {Record<string, unknown>} state Current state.
+ * @param {NotionCodexPollState} state Current state.
  * @param {Date} now Current time.
  * @returns {boolean} True when the poll should wait.
  */
@@ -306,7 +360,7 @@ function isProcessAlive(pid) {
 
 /**
  * Read the active run identifier.
- * @param {Record<string, unknown> | null | undefined} activeRun Active run state.
+ * @param {NotionCodexPollActiveRun | null | undefined} activeRun Active run state.
  * @returns {string | null} Run identifier.
  */
 export function getActiveRunId(activeRun) {
@@ -321,9 +375,9 @@ export function getActiveRunId(activeRun) {
 
 /**
  * Append an event to the bounded event log.
- * @param {Record<string, unknown>} state Current state.
+ * @param {NotionCodexPollState} state Current state.
  * @param {Record<string, unknown>} event Event payload.
- * @returns {Record<string, unknown>} Updated state.
+ * @returns {NotionCodexPollState} Updated state.
  */
 function appendEvent(state, event) {
   const previousEvents = getPreviousEvents(state.eventLog);
@@ -335,11 +389,15 @@ function appendEvent(state, event) {
 
 /**
  * Determine whether there is an active run object.
- * @param {Record<string, unknown>} state Current state.
- * @returns {boolean} True when an active run object exists.
+ * @param {NotionCodexPollState} state Current state.
+ * @returns {NotionCodexPollActiveRun | null} Active run object or null.
  */
-function hasActiveRun(state) {
-  return Boolean(state.activeRun && typeof state.activeRun === 'object');
+function getActiveRun(state) {
+  if (state.activeRun && typeof state.activeRun === 'object') {
+    return state.activeRun;
+  }
+
+  return null;
 }
 
 /**
@@ -358,14 +416,14 @@ function isStoppedRunPid(pid, isProcessAliveImpl) {
 
 /**
  * Append a completed or handled outcome to state.
- * @param {Record<string, unknown>} state Current state.
+ * @param {NotionCodexPollState} state Current state.
  * @param {{
  *   now: Date,
- *   pid: number,
+ *   pid: number | null,
  *   runId: string,
- *   outcome: { outcome: string, summary: string } | null
+ *   outcome: NotionCodexRunOutcome | null
  * }} options Completion details.
- * @returns {Record<string, unknown>} Updated state.
+ * @returns {NotionCodexPollState} Updated state.
  */
 function appendCompletedOutcome(state, options) {
   let lastOutcome = 'completed';
@@ -405,7 +463,7 @@ function appendCompletedOutcome(state, options) {
  */
 function getPreviousEvents(eventLog) {
   if (Array.isArray(eventLog)) {
-    return eventLog;
+    return /** @type {Array<Record<string, unknown>>} */ (eventLog);
   }
 
   return [];

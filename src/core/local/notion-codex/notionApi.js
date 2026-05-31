@@ -148,14 +148,15 @@ async function readJsonResponse(response) {
  */
 function buildNotionApiError(status, body) {
   if (body && typeof body === 'object') {
+    const record = /** @type {Record<string, unknown>} */ (body);
     let message = null;
-    if (typeof body.message === 'string') {
-      message = body.message;
+    if (typeof record.message === 'string') {
+      message = record.message;
     }
 
     let code = null;
-    if (typeof body.code === 'string') {
-      code = body.code;
+    if (typeof record.code === 'string') {
+      code = record.code;
     }
 
     const details = [code, message].filter(Boolean).join(' - ');
@@ -171,17 +172,13 @@ function buildNotionApiError(status, body) {
  * @returns {Record<string, unknown>} Request payload.
  */
 function buildReplyPayload(options) {
-  const payload = {
-    parent: {},
-  };
-
-  Object.assign(payload.parent, { ['page_id']: options.pageId });
-  Object.assign(payload, {
-    ['rich_text']: buildReplyRichText({
+  return {
+    parent: {
+      page_id: options.pageId,
+    },
+    rich_text: buildReplyRichText({
       runId: options.runId,
       message: options.message,
     }),
-  });
-
-  return payload;
+  };
 }

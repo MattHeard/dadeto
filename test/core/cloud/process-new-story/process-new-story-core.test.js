@@ -338,4 +338,49 @@ describe('createProcessNewStoryHandler', () => {
     expect(db.doc).toHaveBeenCalledWith('stories/generated-story');
     expect(randomUUID).toHaveBeenCalledTimes(3);
   });
+
+  it('uses the default random generator when one is not injected', async () => {
+    const { db, getDoc } = createFakeDb({ authorExists: false });
+    const randomUUID = jest
+      .fn()
+      .mockReturnValueOnce('page-id')
+      .mockReturnValueOnce('variant-id')
+      .mockReturnValueOnce('option-1')
+      .mockReturnValueOnce('option-2')
+      .mockReturnValueOnce('author-uuid');
+    const findAvailablePageNumberFn = jest.fn().mockResolvedValue(87);
+    setFindAvailablePageNumberResolver(findAvailablePageNumberFn);
+    const fieldValue = {
+      serverTimestamp: jest.fn(() => 'timestamp'),
+      increment: jest.fn(() => 'increment'),
+    };
+
+    const handler = createProcessNewStoryHandler({
+      db,
+      fieldValue,
+      randomUUID,
+    });
+
+    const submission = {
+      processed: false,
+      title: 'Story Title',
+      content: 'Story body',
+      author: 'Author Name',
+      authorId: 'author-123',
+      options: ['Option A', 'Option B'],
+    };
+    const snapshotRef = getDoc('submissions/story-sub');
+    const snapshot = {
+      data: () => submission,
+      id: 'snapshot-id',
+      ref: snapshotRef,
+    };
+    const context = { params: { subId: 'context-story' } };
+
+    await expect(handler(snapshot, context)).resolves.toBeNull();
+
+    expect(findAvailablePageNumberFn).toHaveBeenCalledWith(db, Math.random);
+    expect(db.doc).toHaveBeenCalledWith('stories/context-story');
+    expect(randomUUID).toHaveBeenCalledTimes(5);
+  });
 });

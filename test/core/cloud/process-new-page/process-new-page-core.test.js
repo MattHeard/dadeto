@@ -681,6 +681,93 @@ describe('createProcessNewPageHandler', () => {
     expect(storyRef.collection).toHaveBeenCalledWith('pages');
   });
 
+  it('creates a page when option submissions lack a target page and no random generator is injected', async () => {
+    const optionDocs = [];
+    const { storyRef, pageDocRef, variantDoc, variantsCollection } =
+      createStoryHierarchy({ optionDocs });
+
+    const createdPages = [];
+    const pageCollection = {
+      doc: jest.fn(id => {
+        const variantDoc = createVariantDoc({ optionDocs });
+        const variantsCollection = createVariantCollection({
+          existingName: null,
+          variantDoc,
+        });
+
+        const docRef = {
+          id,
+          path: `pages/${id}`,
+          parent: { parent: storyRef },
+          collection: jest.fn(name => {
+            if (name === 'variants') {
+              variantsCollection.parent = docRef;
+              variantDoc.parent = variantsCollection;
+              return variantsCollection;
+            }
+            throw new Error(`Unexpected collection request: ${name}`);
+          }),
+        };
+
+        createdPages.push(docRef);
+        return docRef;
+      }),
+    };
+
+    storyRef.collection.mockReturnValue(pageCollection);
+
+    const optionRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+      parent: {
+        parent: variantDoc,
+      },
+    };
+
+    variantsCollection.parent = pageDocRef;
+    pageDocRef.parent = { parent: storyRef };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'incoming/options/no-random') {
+          return optionRef;
+        }
+        if (path.startsWith('storyStats/')) {
+          return { path };
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+      batch: jest.fn(() => createBatch()),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: true, docs: [] }),
+          })),
+        })),
+      })),
+    };
+
+    const handler = createProcessNewPageHandler({
+      db,
+      fieldValue,
+      randomUUID: jest.fn(() => 'generated'),
+    });
+
+    const snapshot = {
+      ref: { id: 'submission-890', update: jest.fn() },
+      data: () => ({
+        incomingOptionFullName: 'incoming/options/no-random',
+        processed: false,
+        options: ['Keep original'],
+        author: 'Writer',
+      }),
+    };
+
+    await handler(snapshot);
+
+    expect(createdPages).toHaveLength(1);
+    expect(storyRef.collection).toHaveBeenCalledWith('pages');
+  });
+
   it('recovers when reading a target page fails by creating a replacement page', async () => {
     const optionDocs = [];
     const { storyRef, variantDoc } = createStoryHierarchy({

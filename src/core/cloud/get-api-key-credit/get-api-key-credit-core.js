@@ -190,6 +190,7 @@ export function createGetApiKeyCreditHandler({ fetchCredit, getUuid }) {
  * @returns {() => Promise<import('@google-cloud/firestore').Firestore>} Memoized Firestore accessor.
  */
 function createGetFirestoreInstance(FirestoreConstructor) {
+  /** @type {import('@google-cloud/firestore').Firestore | undefined} */
   let firestoreInstance;
 
   return async function getFirestoreInstance() {
@@ -283,7 +284,9 @@ export function createGetApiKeyCreditExpressHandle({ Firestore }) {
         return undefined;
       }
 
-      return data.credit;
+      const creditData =
+        /** @type {{ credit?: number | null | undefined }} */ (data);
+      return creditData.credit;
     },
     getUuid(request) {
       return findUuidFromRequest(

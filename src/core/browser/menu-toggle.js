@@ -13,14 +13,21 @@ export function createMobileMenuToggleHandle({
   setTimeoutFn,
 }) {
   return function handleMobileMenuToggle() {
-    const toggle = documentObj.querySelector('.menu-toggle');
+    const toggle =
+      /** @type {HTMLElement | null} */ (
+        documentObj.querySelector('.menu-toggle')
+      );
     const overlay = documentObj.getElementById('mobile-menu');
     if (!toggle || !overlay) {
       return;
     }
 
-    const sheet = overlay.querySelector('.menu-sheet');
-    const closeBtn = overlay.querySelector('.menu-close');
+    const sheet =
+      /** @type {HTMLElement | null} */ (overlay.querySelector('.menu-sheet'));
+    const closeBtn =
+      /** @type {HTMLButtonElement | null} */ (
+        overlay.querySelector('.menu-close')
+      );
     const openMenu = createOpenMenu({ documentObj, toggle, overlay, sheet });
     const closeMenu = createCloseMenu({
       documentObj,
@@ -55,9 +62,9 @@ export function createMobileMenuToggleHandle({
  * Create the open-menu action.
  * @param {{
  *   documentObj: Document,
- *   toggle: Element,
+ *   toggle: HTMLElement,
  *   overlay: HTMLElement,
- *   sheet: Element | null,
+ *   sheet: HTMLElement | null,
  * }} deps Open-menu dependencies.
  * @returns {() => void} Open-menu action.
  */
@@ -67,7 +74,10 @@ function createOpenMenu({ documentObj, toggle, overlay, sheet }) {
     overlay.setAttribute('aria-hidden', 'false');
     toggle.setAttribute('aria-expanded', 'true');
     documentObj.body.style.overflow = 'hidden';
-    const first = sheet?.querySelector('a,button,[tabindex="0"]');
+    const first =
+      /** @type {HTMLElement | null} */ (
+        sheet?.querySelector('a,button,[tabindex="0"]') ?? null
+      );
     first?.focus();
   };
 }
@@ -76,7 +86,7 @@ function createOpenMenu({ documentObj, toggle, overlay, sheet }) {
  * Create the close-menu action.
  * @param {{
  *   documentObj: Document,
- *   toggle: Element,
+ *   toggle: HTMLElement,
  *   overlay: HTMLElement,
  *   setTimeoutFn: (listener: () => void, delay: number) => unknown,
  * }} deps Close-menu dependencies.

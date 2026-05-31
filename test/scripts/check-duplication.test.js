@@ -85,6 +85,36 @@ describe('createCheckDuplicationHandle', () => {
     expect(stderr.chunks.join('')).toContain('Report summary: 1 clone');
   });
 
+  test('summarizes clone totals when the report omits the clones field', () => {
+    const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
+    const readFileSync = jest.fn(() =>
+      JSON.stringify({
+        duplicates: [{ id: 'clone-1' }],
+        statistics: {
+          total: {
+            percentage: 1.6,
+            percentageTokens: 1.43,
+          },
+        },
+      })
+    );
+    const stdout = createWriter();
+    const stderr = createWriter();
+    const handle = createCheckDuplicationHandle({
+      spawnImpl,
+      readFileSync,
+      stdout,
+      stderr,
+    });
+
+    const result = handle();
+
+    expect(result).toEqual({ exitCode: 1, clones: 1 });
+    expect(stdout.chunks).toEqual([]);
+    expect(stderr.chunks.join('')).toContain('Duplication gate found 1 clone.');
+    expect(stderr.chunks.join('')).toContain('Report summary: 0 clones');
+  });
+
   test('fails when jscpd fails to launch', () => {
     const spawnImpl = jest.fn(() => ({
       error: new Error('boom'),

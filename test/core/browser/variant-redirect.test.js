@@ -77,6 +77,23 @@ describe('createVariantRedirectHandle', () => {
     expect(link.attrs['data-chosen-variant']).toBe('beta');
   });
 
+  it('skips rewriting when a variant link has no href', () => {
+    const link = createLink({
+      'data-variants': 'alpha:1',
+    });
+    const documentObj = createDocument([link]);
+    const handle = createVariantRedirectHandle({
+      documentObj,
+      locationObj: { href: 'https://example.test/stories/index.html' },
+      cryptoObj: { getRandomValues: values => values.fill(0) },
+      URLCtor: URL,
+    });
+
+    handle();
+
+    expect(link.setAttribute).not.toHaveBeenCalled();
+  });
+
   it('ignores invalid, empty, and unwriteable variant links', () => {
     const invalidJsonLink = createLink({
       'data-variants': '{bad json',

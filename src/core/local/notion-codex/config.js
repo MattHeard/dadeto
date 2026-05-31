@@ -108,8 +108,10 @@ function normalizeLauncherArgs(value) {
  *   notion: NotionCodexNotionConfig,
  *   launcher: { command: string, args: string[] },
  *   pollIntervalMs: number,
+ *   idleBackoff: NotionCodexIdleBackoffConfig,
  *   maxConcurrentRuns: number,
  *   logDir: string,
+ *   outcomeDir: string,
  *   statePath: string
  * }} Normalized Notion Codex poller config.
  */
@@ -224,7 +226,7 @@ function normalizeIdleBackoff(value) {
  * @returns {number} Normalized integer.
  */
 function normalizeNonNegativeInteger(value, fallback) {
-  if (!Number.isInteger(value) || value < 0) {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
     return fallback;
   }
 
@@ -262,7 +264,7 @@ export async function loadNotionCodexConfig(options = {}) {
  */
 function toObjectOrEmpty(value) {
   if (value && typeof value === 'object') {
-    return value;
+    return /** @type {Record<string, unknown>} */ (value);
   }
 
   return {};
@@ -276,7 +278,7 @@ function toObjectOrEmpty(value) {
  */
 async function readNotionCodexConfigJson(configPath, readFileImpl) {
   const rawConfig = await readFileImpl(configPath, 'utf8');
-  return JSON.parse(rawConfig);
+  return /** @type {Record<string, unknown>} */ (JSON.parse(rawConfig));
 }
 
 /**

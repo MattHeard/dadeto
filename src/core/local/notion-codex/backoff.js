@@ -7,11 +7,12 @@
  * @returns {number} Next idle exponent.
  */
 export function getNextIdleBackoffExponent(options) {
-  if (!Number.isInteger(options.previousExponent)) {
+  const previousExponent = options.previousExponent;
+  if (typeof previousExponent !== 'number' || !Number.isInteger(previousExponent)) {
     return clampExponent(options.initialExponent, options);
   }
 
-  return clampExponent(options.previousExponent + 1, options);
+  return clampExponent(previousExponent + 1, options);
 }
 
 /**

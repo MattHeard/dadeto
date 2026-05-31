@@ -14,12 +14,20 @@ export function createVariantRedirectHandle({
   cryptoObj,
   URLCtor,
 }) {
-  const rewriteLink = link =>
+  /**
+   * Rewrite one variant link.
+   * @param {HTMLAnchorElement} link Link to rewrite.
+   * @returns {void}
+   */
+  function rewriteLink(link) {
     rewriteVariantLink({ link, locationObj, cryptoObj, URLCtor });
+  }
   const init = () => {
-    documentObj
-      .querySelectorAll('a.variant-link[data-variants]')
-      .forEach(rewriteLink);
+    const links =
+      /** @type {NodeListOf<HTMLAnchorElement>} */ (
+        documentObj.querySelectorAll('a.variant-link[data-variants]')
+      );
+    links.forEach(rewriteLink);
   };
   return function handleVariantRedirect() {
     if (documentObj.readyState === 'loading') {
@@ -34,7 +42,7 @@ export function createVariantRedirectHandle({
 /**
  * Rewrite one link if a weighted variant can be selected.
  * @param {{
- *   link: Element,
+ *   link: HTMLAnchorElement,
  *   locationObj: Location,
  *   cryptoObj: Crypto,
  *   URLCtor: typeof URL,
@@ -52,7 +60,12 @@ function rewriteVariantLink({ link, locationObj, cryptoObj, URLCtor }) {
   }
 
   try {
-    const url = new URLCtor(link.getAttribute('href'), locationObj.href);
+    const href = link.getAttribute('href');
+    if (!href) {
+      return;
+    }
+
+    const url = new URLCtor(href, locationObj.href);
     const parts = url.pathname.split('/');
     parts[parts.length - 1] = `${chosen}.html`;
     url.pathname = parts.join('/');
