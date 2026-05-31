@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import {
+  createProcessNewStoryHandle,
   createProcessNewStoryHandler,
   setFindAvailablePageNumberResolver,
   resetFindAvailablePageNumberResolver,
@@ -19,6 +20,51 @@ describe('resolveContextSubId', () => {
     expect(resolveContextSubId({ params: { subId: 'story-123' } })).toBe(
       'story-123'
     );
+  });
+});
+
+describe('createProcessNewStoryHandle', () => {
+  it('wires the Firestore trigger from injected dependencies', () => {
+    const handle = Symbol('handle');
+    const onCreate = jest.fn(() => handle);
+    const document = jest.fn(() => ({ onCreate }));
+    const firestore = { document };
+    const region = jest.fn(() => ({ firestore }));
+    const functions = { region };
+    const db = { batch: jest.fn() };
+    const getFirestoreInstance = jest.fn(() => db);
+    const fieldValue = {
+      serverTimestamp: jest.fn(() => 'ts'),
+      increment: jest.fn(() => 'inc'),
+    };
+    const randomUUID = jest.fn(() => 'uuid');
+    const random = jest.fn(() => 0.5);
+
+    expect(
+      createProcessNewStoryHandle({
+        functions,
+        getFirestoreInstance,
+        fieldValue,
+        randomUUID,
+        random,
+      })
+    ).toBe(handle);
+
+    expect(
+      createProcessNewStoryHandle({
+        functions,
+        getFirestoreInstance,
+        fieldValue,
+        randomUUID,
+        random: Math.random,
+      })
+    ).toBe(handle);
+
+    expect(getFirestoreInstance).toHaveBeenCalledTimes(2);
+    expect(functions.region).toHaveBeenCalledWith('europe-west1');
+    expect(document).toHaveBeenCalledWith('storyFormSubmissions/{subId}');
+    expect(onCreate).toHaveBeenCalledTimes(2);
+    expect(onCreate).toHaveBeenCalledWith(expect.any(Function));
   });
 });
 
@@ -92,6 +138,7 @@ describe('createProcessNewStoryHandler', () => {
       db,
       fieldValue: baseFieldValue,
       randomUUID,
+      random: Math.random,
     });
 
     const snapshot = {
@@ -231,6 +278,7 @@ describe('createProcessNewStoryHandler', () => {
       db,
       fieldValue: baseFieldValue,
       randomUUID,
+      random: Math.random,
     });
 
     const submission = {
@@ -274,6 +322,7 @@ describe('createProcessNewStoryHandler', () => {
       db,
       fieldValue: baseFieldValue,
       randomUUID,
+      random: Math.random,
     });
 
     const snapshotRef = getDoc('submissions/random-story');

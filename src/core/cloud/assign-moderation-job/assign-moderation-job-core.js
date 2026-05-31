@@ -393,11 +393,12 @@ export function createRunGuards(authInstance) {
 }
 
 /**
- * Generate a random number between 0 (inclusive) and 1 (exclusive).
+ * Generate a random number through the provided generator.
+ * @param {() => number} randomFn Random number generator.
  * @returns {number} Pseudo-random number.
  */
-export function random() {
-  return Math.random();
+export function random(randomFn) {
+  return randomFn();
 }
 
 /**
@@ -1374,12 +1375,14 @@ export function createHandleAssignModerationJob({
  * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: NativeExpressApp }} firebaseResources - Firebase resources used to serve the moderation endpoint.
  * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
  * @param {() => unknown} now - Timestamp provider for persisted assignments.
+ * @param {() => number} random Random number generator.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Registered moderation handler.
  */
 export function setupAssignModerationJobRoute(
   firebaseResources,
   createRunVariantQuery,
-  now
+  now,
+  random
 ) {
   const { db, auth, app } = firebaseResources;
 

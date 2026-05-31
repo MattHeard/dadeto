@@ -538,16 +538,11 @@ describe('createRunGuards', () => {
 });
 
 describe('random', () => {
-  test('delegates to Math.random', () => {
-    const original = Math.random;
-    Math.random = jest.fn().mockReturnValue(0.5);
+  test('delegates to the injected random function', () => {
+    const randomFn = jest.fn().mockReturnValue(0.5);
 
-    try {
-      expect(random()).toBe(0.5);
-      expect(Math.random).toHaveBeenCalledTimes(1);
-    } finally {
-      Math.random = original;
-    }
+    expect(random(randomFn)).toBe(0.5);
+    expect(randomFn).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -857,11 +852,13 @@ describe('setupAssignModerationJobRoute', () => {
     const firebaseResources = { db: {}, auth: {}, app: { post } };
     const createRunVariantQuery = jest.fn();
     const now = jest.fn();
+    const randomFn = jest.fn();
 
     const handler = setupAssignModerationJobRoute(
       firebaseResources,
       createRunVariantQuery,
-      now
+      now,
+      randomFn
     );
 
     expect(post).toHaveBeenCalledWith('/', handler);

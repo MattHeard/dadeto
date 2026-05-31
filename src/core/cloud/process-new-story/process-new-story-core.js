@@ -1,3 +1,4 @@
+import { createFirestoreHandle } from '../firestore-handle.js';
 import { findAvailablePageNumber as defaultFindAvailablePageNumber } from '../process-new-page/process-new-page-core.js';
 import { normalizeHeaderValue, getSnapshotData } from '../cloud-core.js';
 import {
@@ -442,7 +443,7 @@ export function createProcessNewStoryHandler({
   db,
   fieldValue,
   randomUUID,
-  random = Math.random,
+  random,
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
@@ -459,6 +460,37 @@ export function createProcessNewStoryHandler({
   };
 
   return handler;
+}
+
+/**
+ * Build the Firestore trigger handle for new story submissions.
+ * @param {object} options Runtime dependencies required to wire the trigger.
+ * @param {typeof import('firebase-functions/v1').functions} options.functions Firestore functions namespace.
+ * @param {() => import('firebase-admin/firestore').Firestore} options.getFirestoreInstance Firestore accessor.
+ * @param {{ serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue }} options.fieldValue FieldValue helper.
+ * @param {() => string} options.randomUUID UUID generator.
+ * @param {() => number} [options.random] Random generator.
+ * @returns {unknown} Registered Firestore trigger handle.
+ */
+export function createProcessNewStoryHandle({
+  functions,
+  getFirestoreInstance,
+  fieldValue,
+  randomUUID,
+  random,
+}) {
+  return createFirestoreHandle({
+    functions,
+    getFirestoreInstance,
+    documentPath: 'storyFormSubmissions/{subId}',
+    createHandler: ({ db }) =>
+      createProcessNewStoryHandler({
+        db,
+        fieldValue,
+        randomUUID,
+        random,
+      }),
+  });
 }
 
 /**

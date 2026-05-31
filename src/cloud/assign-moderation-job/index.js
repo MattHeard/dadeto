@@ -197,7 +197,12 @@ configureUrlencodedBodyParser(app, express);
 
 const firebaseResources = { db, auth, app };
 
-setupAssignModerationJobRoute(firebaseResources, createRunVariantQuery, now);
+setupAssignModerationJobRoute(
+  firebaseResources,
+  createRunVariantQuery,
+  now,
+  Math.random
+);
 
 export const handle = createAssignModerationJob(
   functions,

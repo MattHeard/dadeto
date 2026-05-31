@@ -229,15 +229,6 @@ async function performPageNumberLookup(db, random, depth) {
 }
 
 /**
- * Resolve random generator or use default.
- * @param {(() => number)=} random Random generator.
- * @returns {(() => number)} Resolved generator.
- */
-function resolveRandomGenerator(random) {
-  return random ?? Math.random;
-}
-
-/**
  * Resolve depth or use default.
  * @param {number=} depth Recursion depth.
  * @returns {number} Resolved depth.
@@ -249,16 +240,12 @@ function resolvePageDepth(depth) {
 /**
  * Choose a random page number that is not already taken.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {(() => number)=} random Random number generator (defaults to Math.random).
+ * @param {() => number} random Random number generator.
  * @param {number=} depth Recursion depth used to widen the search range (defaults to 0).
  * @returns {Promise<number>} A unique page number.
  */
 export async function findAvailablePageNumber(db, random, depth) {
-  return performPageNumberLookup(
-    db,
-    resolveRandomGenerator(random),
-    resolvePageDepth(depth)
-  );
+  return performPageNumberLookup(db, random, resolvePageDepth(depth));
 }
 
 /**
@@ -1566,7 +1553,6 @@ export const processNewPageTestUtils = {
   routePageContext,
   extractSubmissionData,
   isSubmissionProcessed,
-  resolveRandomGenerator,
   resolvePageDepth,
   extractVariantRefFromOption,
   extractPageRefFromVariant,
@@ -1592,7 +1578,7 @@ export const processNewPageTestUtils = {
  * @param {object} params - Dependencies.
  * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
  * @param {() => string} params.randomUUID - UUID generator.
- * @param {(() => number) | undefined} params.random - Random generator.
+ * @param {() => number} params.random - Random generator.
  * @param {() => unknown} params.getServerTimestamp - Timestamp helper.
  * @param {{ serverTimestamp: () => unknown, increment: (value: number) => unknown }} params.fieldValue - FieldValue helper.
  * @returns {(snapshot: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Handler function.
@@ -1604,13 +1590,6 @@ function buildSubmissionHandler({
   getServerTimestamp,
   fieldValue,
 }) {
-  /**
-   * Resolve random handler or default.
-   * @param {(() => number) | undefined} randomFn Random generator.
-   * @returns {(() => number)} Resolved generator.
-   */
-  const resolveRandom = randomFn => resolveRandomGenerator(randomFn);
-
   return async function handleProcessNewPage(snapshot) {
     const submission = extractSubmissionData(snapshot);
     if (isSubmissionProcessed(submission)) {
@@ -1622,7 +1601,7 @@ function buildSubmissionHandler({
       snapshot,
       db,
       randomUUID,
-      random: resolveRandom(random),
+      random,
       getServerTimestamp,
       fieldValue,
     });

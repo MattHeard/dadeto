@@ -24,14 +24,12 @@ describe('processNewPageTestUtils', () => {
     ).toBe(true);
   });
 
-  test('resolveRandomGenerator falls back when missing', () => {
-    expect(
-      typeof processNewPageTestUtils.resolveRandomGenerator(undefined)
-    ).toBe('function');
-  });
-
   test('resolvePageDepth defaults to zero', () => {
     expect(processNewPageTestUtils.resolvePageDepth(undefined)).toBe(0);
+  });
+
+  test('processNewPageTestUtils no longer exposes a random fallback', () => {
+    expect(processNewPageTestUtils.resolveRandomGenerator).toBeUndefined();
   });
 
   test('extractVariantRefFromOption returns null when option lacks parents', () => {

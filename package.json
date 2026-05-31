@@ -24,7 +24,7 @@
     "build:dendritestories-co-nz": "npm run copy:dendrite",
     "build:browser": "npm run build:mattheard-net",
     "build": "npm run build:mattheard-net",
-    "depcruise": "depcruise --config dependency-cruiser.config.cjs src",
+    "depcruise": "node src/scripts/check-depcruise.js",
     "duplication": "node src/scripts/check-duplication.js",
     "entrypoint-pattern": "node src/scripts/check-build-entrypoint-pattern.js",
     "non-core-thin": "node src/scripts/check-non-core-thin-files.js",
