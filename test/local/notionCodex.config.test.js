@@ -109,4 +109,82 @@ describe('local notion codex config', () => {
       maxExponent: 4,
     });
   });
+
+  test('falls back to defaults when config is not an object', () => {
+    const config = normalizeNotionCodexConfig(
+      null,
+      '/tmp/repo',
+      '/tmp/config.json'
+    );
+
+    expect(config.notion).toEqual(DEFAULT_NOTION_CODEX_CONFIG.notion);
+    expect(config.launcher).toEqual(DEFAULT_NOTION_CODEX_CONFIG.launcher);
+    expect(config.idleBackoff).toEqual(DEFAULT_NOTION_CODEX_CONFIG.idleBackoff);
+  });
+
+  test('falls back to defaults when array inputs normalize to nothing', () => {
+    const config = normalizeNotionCodexConfig(
+      {
+        notion: {
+          inboxPageIds: ['', 0, null],
+          apiTokenEnvNames: [],
+        },
+        launcher: {
+          args: ['', null, 0],
+        },
+      },
+      '/tmp/repo',
+      '/tmp/config.json'
+    );
+
+    expect(config.notion.inboxPageIds).toEqual(
+      DEFAULT_NOTION_CODEX_CONFIG.notion.inboxPageIds
+    );
+    expect(config.notion.apiTokenEnvNames).toEqual(
+      DEFAULT_NOTION_CODEX_CONFIG.notion.apiTokenEnvNames
+    );
+    expect(config.launcher.args).toEqual(DEFAULT_NOTION_CODEX_CONFIG.launcher.args);
+  });
+
+  test('loads a config file and rethrows unexpected file errors', async () => {
+    const loaded = await loadNotionCodexConfig({
+      repoRoot: '/tmp/repo',
+      async readFileImpl() {
+        return JSON.stringify({
+          pollIntervalMs: 15000,
+          idleBackoff: {
+            baseDelayMs: 90000,
+            initialExponent: 2,
+            maxExponent: 5,
+          },
+        });
+      },
+    });
+
+    expect(loaded.pollIntervalMs).toBe(15000);
+    expect(loaded.idleBackoff).toEqual({
+      baseDelayMs: 90000,
+      initialExponent: 2,
+      maxExponent: 5,
+    });
+
+    await expect(
+      loadNotionCodexConfig({
+        repoRoot: '/tmp/repo',
+        async readFileImpl() {
+          throw new Error('boom');
+        },
+      })
+    ).rejects.toThrow('boom');
+  });
+
+  test('loads defaults when called without options', async () => {
+    const config = await loadNotionCodexConfig();
+
+    expect(config.configPath).toBe(
+      '/home/matt/dadeto/tracking/notion-codex.local.json'
+    );
+    expect(config.notion).toEqual(DEFAULT_NOTION_CODEX_CONFIG.notion);
+    expect(config.launcher).toEqual(DEFAULT_NOTION_CODEX_CONFIG.launcher);
+  });
 });
