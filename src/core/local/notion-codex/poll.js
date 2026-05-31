@@ -91,20 +91,23 @@ export async function runNotionCodexPoll(options) {
     startedAt: nowIso,
     ...launchResult,
   };
-  const nextState = appendEvent({
-    ...state,
-    lastPollAt: nowIso,
-    lastOutcome: 'launched',
-    lastSummary: `Launched Notion Codex run ${runId}.`,
-    idleBackoffExponent: null,
-    nextPollAfter: null,
-    activeRun,
-  }, {
-    at: nowIso,
-    type: 'launched',
-    runId,
-    pid: activeRun.pid ?? null,
-  });
+  const nextState = appendEvent(
+    {
+      ...state,
+      lastPollAt: nowIso,
+      lastOutcome: 'launched',
+      lastSummary: `Launched Notion Codex run ${runId}.`,
+      idleBackoffExponent: null,
+      nextPollAfter: null,
+      activeRun,
+    },
+    {
+      at: nowIso,
+      type: 'launched',
+      runId,
+      pid: activeRun.pid ?? null,
+    }
+  );
 
   await options.stateStore.writeState(nextState);
 
@@ -117,6 +120,14 @@ export async function runNotionCodexPoll(options) {
   };
 }
 
+/**
+ *
+ * @param state
+ * @param isProcessAliveImpl
+ * @param now
+ * @param idleBackoff
+ * @param outcomeStore
+ */
 async function reconcileActiveRun(
   state,
   isProcessAliveImpl = isProcessAlive,
@@ -145,29 +156,47 @@ async function reconcileActiveRun(
     });
   }
 
-  return appendEvent({
-    ...state,
-    lastOutcome: outcome?.outcome === 'handled' ? 'handled' : 'completed',
-    lastSummary: outcome?.summary || `Observed completed Notion Codex run ${runId}.`,
-    idleBackoffExponent: null,
-    nextPollAfter: null,
-    activeRun: null,
-  }, {
-    at: now.toISOString(),
-    type: outcome?.outcome === 'handled' ? 'handled' : 'completed',
-    runId,
-    pid,
-  });
+  return appendEvent(
+    {
+      ...state,
+      lastOutcome: outcome?.outcome === 'handled' ? 'handled' : 'completed',
+      lastSummary:
+        outcome?.summary || `Observed completed Notion Codex run ${runId}.`,
+      idleBackoffExponent: null,
+      nextPollAfter: null,
+      activeRun: null,
+    },
+    {
+      at: now.toISOString(),
+      type: outcome?.outcome === 'handled' ? 'handled' : 'completed',
+      runId,
+      pid,
+    }
+  );
 }
 
+/**
+ *
+ * @param outcomeStore
+ * @param runId
+ */
 async function readRunOutcome(outcomeStore, runId) {
-  if (!outcomeStore || typeof outcomeStore.readOutcome !== 'function' || !runId) {
+  if (
+    !outcomeStore ||
+    typeof outcomeStore.readOutcome !== 'function' ||
+    !runId
+  ) {
     return null;
   }
 
   return outcomeStore.readOutcome(runId);
 }
 
+/**
+ *
+ * @param state
+ * @param options
+ */
 function appendIdleOutcome(state, options) {
   const idleBackoff = options.idleBackoff ?? {
     baseDelayMs: 60000,
@@ -190,28 +219,41 @@ function appendIdleOutcome(state, options) {
     delayMs,
   });
 
-  return appendEvent({
-    ...state,
-    lastOutcome: 'idle',
-    lastSummary:
-      options.summary ||
-      `Observed idle Notion Codex run ${options.runId}; next poll after ${nextPollAfter}.`,
-    idleBackoffExponent,
-    nextPollAfter,
-    activeRun: null,
-  }, {
-    at: options.now.toISOString(),
-    type: 'idle',
-    runId: options.runId,
-    pid: options.pid,
-    nextPollAfter,
-  });
+  return appendEvent(
+    {
+      ...state,
+      lastOutcome: 'idle',
+      lastSummary:
+        options.summary ||
+        `Observed idle Notion Codex run ${options.runId}; next poll after ${nextPollAfter}.`,
+      idleBackoffExponent,
+      nextPollAfter,
+      activeRun: null,
+    },
+    {
+      at: options.now.toISOString(),
+      type: 'idle',
+      runId: options.runId,
+      pid: options.pid,
+      nextPollAfter,
+    }
+  );
 }
 
+/**
+ *
+ * @param state
+ * @param now
+ */
 function shouldDelayForBackoff(state, now) {
   return getRemainingDelayMs(state.nextPollAfter, now) > 0;
 }
 
+/**
+ *
+ * @param nextPollAfter
+ * @param now
+ */
 function getRemainingDelayMs(nextPollAfter, now) {
   if (typeof nextPollAfter !== 'string') {
     return 0;
@@ -225,6 +267,10 @@ function getRemainingDelayMs(nextPollAfter, now) {
   return Math.max(0, nextPollAt - now.getTime());
 }
 
+/**
+ *
+ * @param pid
+ */
 function isProcessAlive(pid) {
   try {
     process.kill(pid, 0);
@@ -243,6 +289,10 @@ function isProcessAlive(pid) {
   }
 }
 
+/**
+ *
+ * @param activeRun
+ */
 export function getActiveRunId(activeRun) {
   if (activeRun && typeof activeRun === 'object') {
     return typeof activeRun.runId === 'string' ? activeRun.runId : null;
@@ -251,6 +301,11 @@ export function getActiveRunId(activeRun) {
   return null;
 }
 
+/**
+ *
+ * @param state
+ * @param event
+ */
 function appendEvent(state, event) {
   const previousEvents = Array.isArray(state.eventLog) ? state.eventLog : [];
   return {

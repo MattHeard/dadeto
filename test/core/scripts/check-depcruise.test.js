@@ -62,9 +62,7 @@ describe('findCoreMathRandomViolations', () => {
         ].join('\n');
       }
 
-      return [
-        'const note = `Math.random in a template literal`;',
-      ].join('\n');
+      return ['const note = `Math.random in a template literal`;'].join('\n');
     });
     const readdirSync = jest.fn(dirPath => {
       if (dirPath === '/repo/src/core') {
@@ -95,10 +93,11 @@ describe('findCoreMathRandomViolations', () => {
   });
 
   test('counts multiple direct uses in one file as plural violations', () => {
-    const readFileSync = jest.fn(() => [
-      'const first = Math.random();',
-      'const second = Math.random();',
-    ].join('\n'));
+    const readFileSync = jest.fn(() =>
+      ['const first = Math.random();', 'const second = Math.random();'].join(
+        '\n'
+      )
+    );
     const readdirSync = jest.fn(() => [createDirentFile('double.js')]);
 
     const violations = findCoreMathRandomViolations({

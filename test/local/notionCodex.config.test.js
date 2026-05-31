@@ -143,7 +143,9 @@ describe('local notion codex config', () => {
     expect(config.notion.apiTokenEnvNames).toEqual(
       DEFAULT_NOTION_CODEX_CONFIG.notion.apiTokenEnvNames
     );
-    expect(config.launcher.args).toEqual(DEFAULT_NOTION_CODEX_CONFIG.launcher.args);
+    expect(config.launcher.args).toEqual(
+      DEFAULT_NOTION_CODEX_CONFIG.launcher.args
+    );
   });
 
   test('loads a config file and rethrows unexpected file errors', async () => {

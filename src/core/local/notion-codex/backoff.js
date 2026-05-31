@@ -25,7 +25,7 @@ export function getNextIdleBackoffExponent(options) {
  */
 export function getBinaryBackoffDelayMs(options) {
   const exponent = clampExponent(options.exponent, options);
-  return options.baseDelayMs * (2 ** exponent);
+  return options.baseDelayMs * 2 ** exponent;
 }
 
 /**
@@ -36,8 +36,15 @@ export function getNextPollAfterIso(options) {
   return new Date(options.now.getTime() + options.delayMs).toISOString();
 }
 
+/**
+ *
+ * @param exponent
+ * @param options
+ */
 function clampExponent(exponent, options) {
-  const min = Number.isInteger(options.initialExponent) ? options.initialExponent : 0;
+  const min = Number.isInteger(options.initialExponent)
+    ? options.initialExponent
+    : 0;
   const max = Number.isInteger(options.maxExponent) ? options.maxExponent : min;
   return Math.min(Math.max(exponent, min), max);
 }

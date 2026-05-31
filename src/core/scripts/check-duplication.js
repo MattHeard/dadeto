@@ -1,3 +1,8 @@
+import {
+  handleSpawnFailure,
+  spawnGateCommand,
+} from './gate-utils.js';
+
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_CONFIG_PATH = '.jscpd.json';
 const DEFAULT_REPORT_PATH = 'reports/duplication/jscpd-report.json';
@@ -104,14 +109,21 @@ function executeDuplicationGate({
   reportPath,
   relativePath,
 }) {
-  const runResult = spawnImpl('jscpd', ['--config', configPath], {
-    cwd: rootDir,
-    stdio: 'inherit',
+  const runResult = spawnGateCommand({
+    spawnImpl,
+    command: 'jscpd',
+    args: ['--config', configPath],
+    rootDir,
   });
 
-  const launchFailure = handleLaunchFailure(runResult, stderr);
+  const launchFailure = handleSpawnFailure(
+    runResult,
+    stderr,
+    'Duplication gate',
+    'jscpd'
+  );
   if (launchFailure) {
-    return launchFailure;
+    return { exitCode: launchFailure.exitCode, clones: 0 };
   }
 
   const report = readDuplicationReport(readFileSync, reportPath);
@@ -137,34 +149,6 @@ function executeDuplicationGate({
 
   stdout.write('Checked duplication report: 0 clones.\n');
   return { exitCode: 0, clones: 0 };
-}
-
-/**
- * Convert a failed launch into a gate result.
- * @param {{ error?: { message: string }, signal?: string | null, status?: number | null }} runResult Spawn result.
- * @param {{ write: (text: string) => void }} stderr Error writer.
- * @returns {{ exitCode: number, clones: number } | null} Failure result or null.
- */
-function handleLaunchFailure(runResult, stderr) {
-  if (runResult.error) {
-    stderr.write(
-      `Duplication gate failed to launch jscpd: ${runResult.error.message}\n`
-    );
-    return { exitCode: 1, clones: 0 };
-  }
-
-  if (runResult.signal) {
-    stderr.write(
-      `Duplication gate was terminated by signal ${runResult.signal}\n`
-    );
-    return { exitCode: 1, clones: 0 };
-  }
-
-  if (runResult.status !== 0) {
-    return { exitCode: getExitCode(runResult.status), clones: 0 };
-  }
-
-  return null;
 }
 
 /**
@@ -274,17 +258,4 @@ function useDefault(value, defaultValue) {
   }
 
   return defaultValue;
-}
-
-/**
- * Normalize a spawn exit status into an exit code.
- * @param {number | null | undefined} status Spawn exit status.
- * @returns {number} Exit code.
- */
-function getExitCode(status) {
-  if (typeof status === 'number') {
-    return status;
-  }
-
-  return 1;
 }

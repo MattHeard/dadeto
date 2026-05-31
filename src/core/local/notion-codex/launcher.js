@@ -48,7 +48,9 @@ export function createNotionCodexLauncherCore(options) {
         stdoutHandle,
         stderrHandle,
       } = await openRunLogFiles({
-        logDir: options.logDir ?? path.join(payload.repoRoot, 'tracking', 'notion-codex'),
+        logDir:
+          options.logDir ??
+          path.join(payload.repoRoot, 'tracking', 'notion-codex'),
         runId: payload.runId,
         mkdirImpl,
         openImpl,
@@ -159,7 +161,10 @@ async function closeRunLogHandles({ stdoutHandle, stderrHandle }) {
   const results = await Promise.allSettled(closers);
   for (const result of results) {
     if (result.status === 'rejected') {
-      console.error('Failed to close Notion Codex run log handle:', result.reason);
+      console.error(
+        'Failed to close Notion Codex run log handle:',
+        result.reason
+      );
     }
   }
 }

@@ -1,3 +1,4 @@
+import { normalizeStringArray } from './valueHelpers.js';
 const DEFAULT_NOTION_VERSION = '2026-03-11';
 const DEFAULT_TOKEN_ENV_NAMES = ['NOTION_API_KEY', 'NOTION_TOKEN'];
 const NOTION_API_BASE_URL = 'https://api.notion.com/v1';
@@ -22,24 +23,23 @@ export async function appendNotionCodexReply(options) {
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
 
   if (typeof fetchImpl !== 'function') {
-    throw new Error('A fetch implementation is required to call the Notion API.');
+    throw new Error(
+      'A fetch implementation is required to call the Notion API.'
+    );
   }
 
-  const response = await fetchImpl(
-    `${NOTION_API_BASE_URL}/comments`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Notion-Version': options.notionVersion ?? DEFAULT_NOTION_VERSION,
-      },
-      body: JSON.stringify({
-        parent: { page_id: pageId },
-        rich_text: buildReplyRichText({ runId, message }),
-      }),
-    }
-  );
+  const response = await fetchImpl(`${NOTION_API_BASE_URL}/comments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Notion-Version': options.notionVersion ?? DEFAULT_NOTION_VERSION,
+    },
+    body: JSON.stringify({
+      parent: { page_id: pageId },
+      rich_text: buildReplyRichText({ runId, message }),
+    }),
+  });
 
   const body = await readJsonResponse(response);
   if (!response.ok) {
@@ -87,6 +87,11 @@ export function buildReplyRichText(options) {
   }));
 }
 
+/**
+ *
+ * @param value
+ * @param name
+ */
 function normalizeRequiredString(value, name) {
   if (typeof value !== 'string' || !value.trim()) {
     throw new Error(`${name} is required.`);
@@ -95,19 +100,18 @@ function normalizeRequiredString(value, name) {
   return value.trim();
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeTokenEnvNames(value) {
-  if (!Array.isArray(value)) {
-    return [...DEFAULT_TOKEN_ENV_NAMES];
-  }
-
-  const names = value
-    .filter(item => typeof item === 'string')
-    .map(item => item.trim())
-    .filter(Boolean);
-
-  return names.length ? names : [...DEFAULT_TOKEN_ENV_NAMES];
+  return normalizeStringArray(value, DEFAULT_TOKEN_ENV_NAMES);
 }
 
+/**
+ *
+ * @param value
+ */
 function splitRichText(value) {
   const trimmed = value.trim();
   const chunks = [];
@@ -118,6 +122,10 @@ function splitRichText(value) {
   return chunks;
 }
 
+/**
+ *
+ * @param response
+ */
 async function readJsonResponse(response) {
   const text = await response.text();
   if (!text) {
@@ -131,14 +139,18 @@ async function readJsonResponse(response) {
   }
 }
 
+/**
+ *
+ * @param status
+ * @param body
+ */
 function buildNotionApiError(status, body) {
   if (body && typeof body === 'object') {
     const message = typeof body.message === 'string' ? body.message : null;
     const code = typeof body.code === 'string' ? body.code : null;
-    return `Notion API request failed with HTTP ${status}: ${[
-      code,
-      message,
-    ].filter(Boolean).join(' - ')}`;
+    return `Notion API request failed with HTTP ${status}: ${[code, message]
+      .filter(Boolean)
+      .join(' - ')}`;
   }
 
   return `Notion API request failed with HTTP ${status}: ${String(body)}`;

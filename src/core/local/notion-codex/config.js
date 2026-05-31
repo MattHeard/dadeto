@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { normalizeStringArray } from './valueHelpers.js';
 
 const DEFAULT_CODEX_ARGS = [
   'exec',
@@ -16,7 +17,8 @@ export const DEFAULT_NOTION_CODEX_CONFIG = {
     dadetoPageId: '1f2700afc30180a3abedd568190132c3',
     dadetoPageUrl: 'https://app.notion.com/p/1f2700afc30180a3abedd568190132c3',
     symphonyPageId: '352700afc30180feb33cc5065a91c0ef',
-    symphonyPageUrl: 'https://app.notion.com/p/352700afc30180feb33cc5065a91c0ef',
+    symphonyPageUrl:
+      'https://app.notion.com/p/352700afc30180feb33cc5065a91c0ef',
     taskDataSourceUrl: 'collection://9f6bfea5-08d7-4897-b438-0d7dcb8f494a',
     taskContext: 'At lorandil',
     taskStatus: 'Not Started',
@@ -68,28 +70,6 @@ function normalizePositiveNumber(value, fallback) {
 }
 
 /**
- * @param {unknown} value Candidate string array.
- * @param {string[]} fallback Fallback string array.
- * @returns {string[]} Normalized string array.
- */
-function normalizeStringArray(value, fallback) {
-  if (!Array.isArray(value)) {
-    return [...fallback];
-  }
-
-  const normalized = value
-    .filter(item => typeof item === 'string')
-    .map(item => item.trim())
-    .filter(Boolean);
-
-  if (normalized.length === 0) {
-    return [...fallback];
-  }
-
-  return normalized;
-}
-
-/**
  * @param {unknown} value Candidate launcher args.
  * @returns {string[]} Normalized Codex args.
  */
@@ -113,19 +93,25 @@ function normalizeLauncherArgs(value) {
  */
 export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
   const source = config && typeof config === 'object' ? config : {};
-  const notion = source.notion && typeof source.notion === 'object'
-    ? source.notion
-    : {};
-  const launcher = source.launcher && typeof source.launcher === 'object'
-    ? source.launcher
-    : {};
+  const notion =
+    source.notion && typeof source.notion === 'object' ? source.notion : {};
+  const launcher =
+    source.launcher && typeof source.launcher === 'object'
+      ? source.launcher
+      : {};
   const defaultNotion = DEFAULT_NOTION_CODEX_CONFIG.notion;
 
   return {
     configPath,
     notion: {
-      dadetoPageId: normalizeString(notion.dadetoPageId, defaultNotion.dadetoPageId),
-      dadetoPageUrl: normalizeString(notion.dadetoPageUrl, defaultNotion.dadetoPageUrl),
+      dadetoPageId: normalizeString(
+        notion.dadetoPageId,
+        defaultNotion.dadetoPageId
+      ),
+      dadetoPageUrl: normalizeString(
+        notion.dadetoPageUrl,
+        defaultNotion.dadetoPageUrl
+      ),
       symphonyPageId: normalizeString(
         notion.symphonyPageId,
         defaultNotion.symphonyPageId
@@ -138,13 +124,19 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
         notion.taskDataSourceUrl,
         defaultNotion.taskDataSourceUrl
       ),
-      taskContext: normalizeString(notion.taskContext, defaultNotion.taskContext),
+      taskContext: normalizeString(
+        notion.taskContext,
+        defaultNotion.taskContext
+      ),
       taskStatus: normalizeString(notion.taskStatus, defaultNotion.taskStatus),
       messageSearchQuery: normalizeString(
         notion.messageSearchQuery,
         defaultNotion.messageSearchQuery
       ),
-      inboxPageIds: normalizeStringArray(notion.inboxPageIds, defaultNotion.inboxPageIds),
+      inboxPageIds: normalizeStringArray(
+        notion.inboxPageIds,
+        defaultNotion.inboxPageIds
+      ),
       apiTokenEnvNames: normalizeStringArray(
         notion.apiTokenEnvNames,
         defaultNotion.apiTokenEnvNames
@@ -182,20 +174,35 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeIdleBackoff(value) {
   const source = value && typeof value === 'object' ? value : {};
   const fallback = DEFAULT_NOTION_CODEX_CONFIG.idleBackoff;
 
   return {
-    baseDelayMs: normalizePositiveNumber(source.baseDelayMs, fallback.baseDelayMs),
+    baseDelayMs: normalizePositiveNumber(
+      source.baseDelayMs,
+      fallback.baseDelayMs
+    ),
     initialExponent: normalizeNonNegativeInteger(
       source.initialExponent,
       fallback.initialExponent
     ),
-    maxExponent: normalizeNonNegativeInteger(source.maxExponent, fallback.maxExponent),
+    maxExponent: normalizeNonNegativeInteger(
+      source.maxExponent,
+      fallback.maxExponent
+    ),
   };
 }
 
+/**
+ *
+ * @param value
+ * @param fallback
+ */
 function normalizeNonNegativeInteger(value, fallback) {
   if (!Number.isInteger(value) || value < 0) {
     return fallback;
@@ -218,7 +225,11 @@ export async function loadNotionCodexConfig(options = {}) {
 
   try {
     const rawConfig = await readFileImpl(configPath, 'utf8');
-    return normalizeNotionCodexConfig(JSON.parse(rawConfig), repoRoot, configPath);
+    return normalizeNotionCodexConfig(
+      JSON.parse(rawConfig),
+      repoRoot,
+      configPath
+    );
   } catch (error) {
     if (error && typeof error === 'object' && error.code === 'ENOENT') {
       return normalizeNotionCodexConfig({}, repoRoot, configPath);

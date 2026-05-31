@@ -154,7 +154,9 @@ export function getDocumentContent(body) {
  * @returns {boolean} True when the value enables the feature.
  */
 function isEnabledEnvValue(value) {
-  return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
+  return ['1', 'true', 'yes', 'on'].includes(
+    (value ?? '').trim().toLowerCase()
+  );
 }
 
 /**

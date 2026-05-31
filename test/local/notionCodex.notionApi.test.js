@@ -141,7 +141,9 @@ describe('local notion codex api helper', () => {
         token: 'token-123',
         fetchImpl: {},
       })
-    ).rejects.toThrow('A fetch implementation is required to call the Notion API.');
+    ).rejects.toThrow(
+      'A fetch implementation is required to call the Notion API.'
+    );
   });
 
   test('uses the global fetch implementation when none is provided', async () => {

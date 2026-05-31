@@ -66,14 +66,18 @@ describe('local writer server transport', () => {
     const app = {};
     const server = createWriterServer(app, { env: {} });
 
-    expect(server).toEqual(expect.objectContaining({ listen: expect.any(Function) }));
+    expect(server).toEqual(
+      expect.objectContaining({ listen: expect.any(Function) })
+    );
   });
 
   test('uses built-in server defaults when no options object is provided', () => {
     const app = {};
     const server = createWriterServer(app);
 
-    expect(server).toEqual(expect.objectContaining({ listen: expect.any(Function) }));
+    expect(server).toEqual(
+      expect.objectContaining({ listen: expect.any(Function) })
+    );
   });
 
   test('requires key and certificate paths for HTTPS mode', () => {
@@ -142,7 +146,9 @@ describe('local writer request logging', () => {
     finishHandlers.finish();
 
     expect(requestLogger).toHaveBeenCalledWith(
-      expect.stringMatching(/^writer request GET \/api\/non-core-thin 200 \d+ms 127\.0\.0\.1$/)
+      expect.stringMatching(
+        /^writer request GET \/api\/non-core-thin 200 \d+ms 127\.0\.0\.1$/
+      )
     );
   });
 

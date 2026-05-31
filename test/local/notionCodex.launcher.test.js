@@ -90,7 +90,9 @@ describe('local notion codex launcher', () => {
   });
 
   test('invokes the exit handler and logs failures from it', async () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     let exitHandler;
     const launcher = createNotionCodexLauncher({
       command: 'codex',
@@ -211,7 +213,9 @@ describe('local notion codex launcher', () => {
   });
 
   test('logs rejected close handlers', async () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const launcher = createNotionCodexLauncher({
       command: 'codex',
       openImpl: async () => ({

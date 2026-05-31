@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { handleSpawnFailure, spawnGateCommand } from './gate-utils.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
@@ -147,14 +148,21 @@ function executeDepcruiseGate({
   sourceRoot,
   configPath,
 }) {
-  const runResult = spawnImpl('depcruise', ['--config', configPath, 'src'], {
-    cwd: rootDir,
-    stdio: 'inherit',
+  const runResult = spawnGateCommand({
+    spawnImpl,
+    command: 'depcruise',
+    args: ['--config', configPath, 'src'],
+    rootDir,
   });
 
-  const launchFailure = handleLaunchFailure(runResult, stderr);
+  const launchFailure = handleSpawnFailure(
+    runResult,
+    stderr,
+    'Dependency-cruiser gate',
+    'depcruise'
+  );
   if (launchFailure) {
-    return launchFailure;
+    return { exitCode: launchFailure.exitCode, violations: 0 };
   }
 
   const violations = findCoreMathRandomViolations({
@@ -180,34 +188,6 @@ function executeDepcruiseGate({
 
   stdout.write('Checked dependency-cruiser: no core random dependencies.\n');
   return { exitCode: 0, violations: 0 };
-}
-
-/**
- * Convert a failed launch into a gate result.
- * @param {{ error?: { message: string }, signal?: string | null, status?: number | null }} runResult Spawn result.
- * @param {{ write: (text: string) => void }} stderr Error writer.
- * @returns {{ exitCode: number, violations: number } | null} Failure result or null.
- */
-function handleLaunchFailure(runResult, stderr) {
-  if (runResult.error) {
-    stderr.write(
-      `Dependency-cruiser gate failed to launch depcruise: ${runResult.error.message}\n`
-    );
-    return { exitCode: 1, violations: 0 };
-  }
-
-  if (runResult.signal) {
-    stderr.write(
-      `Dependency-cruiser gate was terminated by signal ${runResult.signal}\n`
-    );
-    return { exitCode: 1, violations: 0 };
-  }
-
-  if (runResult.status !== 0) {
-    return { exitCode: getExitCode(runResult.status), violations: 0 };
-  }
-
-  return null;
 }
 
 /**
@@ -471,17 +451,4 @@ function resolveOption(value, fallback) {
  */
 function toRepoRelativePath(rootDir, absolutePath) {
   return path.relative(rootDir, absolutePath).replaceAll(path.sep, '/');
-}
-
-/**
- * Convert a process status to an exit code.
- * @param {number | null | undefined} status Spawn status.
- * @returns {number} Exit code.
- */
-function getExitCode(status) {
-  if (typeof status === 'number') {
-    return status;
-  }
-
-  return 1;
 }
