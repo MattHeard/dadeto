@@ -1,8 +1,9 @@
 import { PARSER_OPTIONS } from './parser-options.js';
 
 /**
- *
- * @param lineRange
+ * Normalize an optional CLI line range.
+ * @param {{ start: string, end: string } | null | undefined} lineRange Candidate line range.
+ * @returns {{ start: number, end: number } | null} Parsed line range, or null when omitted.
  */
 function normalizeLineRange(lineRange) {
   if (!lineRange) {
@@ -25,9 +26,10 @@ function normalizeLineRange(lineRange) {
 }
 
 /**
- *
- * @param method
- * @param lineRange
+ * Check whether a method overlaps the requested line range.
+ * @param {{ lineStart: number, lineEnd: number }} method Method metric.
+ * @param {{ start: number, end: number } | null} lineRange Optional filter range.
+ * @returns {boolean} True when the method should be included.
  */
 function isMethodWithinRange(method, lineRange) {
   if (!lineRange) {
@@ -38,9 +40,10 @@ function isMethodWithinRange(method, lineRange) {
 }
 
 /**
- *
- * @param method
- * @param threshold
+ * Convert analyzer method output into a compact profile row.
+ * @param {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number }} method Method metric.
+ * @param {number} threshold Warning threshold.
+ * @returns {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number, excess: number }} Method profile.
  */
 function toMethodProfile(method, threshold) {
   const excess = Math.max(method.cyclomatic - threshold, 0);
@@ -55,8 +58,9 @@ function toMethodProfile(method, threshold) {
 }
 
 /**
- *
- * @param analyzer
+ * Create the complexity profile builder with an injected analyzer.
+ * @param {{ analyzeModule: Function }} analyzer Complexity analyzer dependency.
+ * @returns {(source: string, options?: { threshold?: number, lineRange?: { start: string, end: string } | null }) => object} Profile builder.
  */
 function createBuildComplexityProfile(analyzer) {
   return function buildComplexityProfile(source, options = {}) {
@@ -103,18 +107,20 @@ function createBuildComplexityProfile(analyzer) {
 }
 
 /**
- *
- * @param baseline
- * @param current
- * @param key
+ * Compute one summary delta.
+ * @param {{ summary: Record<string, number> }} baseline Baseline profile.
+ * @param {{ summary: Record<string, number> }} current Current profile.
+ * @param {string} key Summary key.
+ * @returns {number} Current value minus baseline value.
  */
 function summarizeDelta(baseline, current, key) {
   return current.summary[key] - baseline.summary[key];
 }
 
 /**
- *
- * @param delta
+ * Classify a numeric delta.
+ * @param {number} delta Numeric delta.
+ * @returns {'improved' | 'worse' | 'unchanged'} Direction label.
  */
 function classifyChange(delta) {
   if (delta < 0) {
@@ -129,9 +135,10 @@ function classifyChange(delta) {
 }
 
 /**
- *
- * @param baseline
- * @param current
+ * Compare two complexity profiles.
+ * @param {{ summary: Record<string, number> }} baseline Baseline profile.
+ * @param {{ summary: Record<string, number> }} current Current profile.
+ * @returns {object} Summary comparison.
  */
 export function compareComplexityProfiles(baseline, current) {
   const warningDelta = summarizeDelta(baseline, current, 'warningCount');
@@ -155,8 +162,9 @@ export function compareComplexityProfiles(baseline, current) {
 }
 
 /**
- *
- * @param argv
+ * Parse complexity profile CLI arguments.
+ * @param {string[]} argv CLI arguments after the node/script pair.
+ * @returns {{ baselinePath: string, currentPath: string, options: { threshold: number, lineRange: { start: string | undefined, end: string | undefined } | null } }} Parsed arguments.
  */
 function parseArgs(argv) {
   const options = {
@@ -202,12 +210,13 @@ function parseArgs(argv) {
 }
 
 /**
- *
- * @param root0
- * @param root0.buildComplexityProfile
- * @param root0.readSource
- * @param root0.stdout
- * @param root0.argv
+ * Create the CLI runner.
+ * @param {object} root0 Runtime dependencies.
+ * @param {Function} root0.buildComplexityProfile Profile builder.
+ * @param {(filePath: string) => string} root0.readSource Source reader.
+ * @param {{ write: (output: string) => void }} root0.stdout Output stream.
+ * @param {string[]} root0.argv Process arguments.
+ * @returns {() => void} CLI runner.
  */
 function createRunFromCli({
   buildComplexityProfile,

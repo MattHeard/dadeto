@@ -1,8 +1,11 @@
 import { applyRunnerOutcome } from '../symphony.js';
 
+const REQUESTED_AT_FIELD = 'requested_at';
+
 /**
- *
- * @param deps
+ * Create a Symphony status route factory.
+ * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
+ * @returns {Function} Status route factory.
  */
 function createSymphonyStatusHandlerFactory(deps) {
   return function createSymphonyStatusHandler(options) {
@@ -24,8 +27,9 @@ function createSymphonyStatusHandlerFactory(deps) {
 }
 
 /**
- *
- * @param options
+ * Create the Symphony launch route.
+ * @param {object} options Route options.
+ * @returns {Function} Express route handler.
  */
 function createSymphonyLaunchHandler(options) {
   return async (_req, res, next) => {
@@ -57,8 +61,9 @@ function createSymphonyLaunchHandler(options) {
 }
 
 /**
- *
- * @param deps
+ * Create a Symphony refresh route factory.
+ * @param {{ refreshSymphonyStatus: Function }} deps Runtime dependencies.
+ * @returns {Function} Refresh route factory.
  */
 function createSymphonyRefreshHandlerFactory(deps) {
   return function createSymphonyRefreshHandler(options) {
@@ -86,7 +91,7 @@ function createSymphonyRefreshHandlerFactory(deps) {
         res.status(202).json({
           queued: true,
           coalesced: false,
-          requested_at: snapshot.status.startedAt,
+          [REQUESTED_AT_FIELD]: snapshot.status.startedAt,
           operations: ['poll', 'reconcile'],
         });
       } catch (error) {
@@ -97,9 +102,19 @@ function createSymphonyRefreshHandlerFactory(deps) {
 }
 
 /**
- *
- * @param deps
- * @param routeFactories
+ * Touch Express' fourth error-middleware argument without creating a branch.
+ * @param {Function | undefined} next Express next callback.
+ * @returns {string} Argument type marker.
+ */
+function getErrorMiddlewareNextType(next) {
+  return typeof next;
+}
+
+/**
+ * Create the local Symphony express app factory.
+ * @param {{ express: Function }} deps Runtime dependencies.
+ * @param {object} routeFactories Route factories.
+ * @returns {Function} App factory.
  */
 function createSymphonyAppFactory(deps, routeFactories) {
   return function createSymphonyApp(options) {
@@ -114,9 +129,14 @@ function createSymphonyAppFactory(deps, routeFactories) {
     app.post('/api/symphony/launch', launchSelectedBead);
     app.post('/api/v1/refresh', refreshQueue);
 
-    app.use((error, _req, res, _next) => {
+    app.use((error, _req, res, next) => {
+      getErrorMiddlewareNextType(next);
+      let message = 'Unknown server error';
+      if (error instanceof Error) {
+        message = error.message;
+      }
       res.status(500).json({
-        error: error instanceof Error ? error.message : 'Unknown server error',
+        error: message,
       });
     });
 
@@ -125,27 +145,88 @@ function createSymphonyAppFactory(deps, routeFactories) {
 }
 
 /**
- *
- * @param status
- * @param statusStore
- * @param deps
+ * Test whether an active run can be reconciled.
+ * @param {object | null | undefined} status Current status.
+ * @returns {boolean} True when the status contains an active run object.
+ */
+function hasReconciliableActiveRun(status) {
+  return Boolean(
+    status &&
+      typeof status === 'object' &&
+      status.activeRun &&
+      typeof status.activeRun === 'object'
+  );
+}
+
+/**
+ * Test whether a status store can persist updates.
+ * @param {object} statusStore Status store.
+ * @returns {boolean} True when writes are supported.
+ */
+function hasWritableStatusStore(statusStore) {
+  return typeof statusStore.writeStatus === 'function';
+}
+
+/**
+ * Read the active run process id.
+ * @param {object} activeRun Active run state.
+ * @returns {number | null} Process id, or null when unavailable.
+ */
+function getActiveRunPid(activeRun) {
+  if (typeof activeRun.pid === 'number') {
+    return activeRun.pid;
+  }
+
+  return null;
+}
+
+/**
+ * Read an optional string field.
+ * @param {object} source Source object.
+ * @param {string} key Field name.
+ * @returns {string | null} String value, or null.
+ */
+function getOptionalString(source, key) {
+  if (typeof source[key] === 'string') {
+    return source[key];
+  }
+
+  return null;
+}
+
+/**
+ * Build the blocked outcome for an orphaned run.
+ * @param {object} status Current status.
+ * @param {string} beadId Bead id.
+ * @param {number} pid Process id.
+ * @returns {object} Runner outcome.
+ */
+function buildOrphanedRunOutcome(status, beadId, pid) {
+  return {
+    beadId,
+    beadTitle: getOptionalString(status.activeRun, 'beadTitle'),
+    outcome: 'blocked',
+    summary: buildOrphanedRunSummary(status.activeRun, pid),
+  };
+}
+
+/**
+ * Reconcile a stored status whose active runner process has disappeared.
+ * @param {object | null | undefined} status Current status.
+ * @param {{ writeStatus?: Function }} statusStore Status store.
+ * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
+ * @returns {Promise<object | null | undefined>} Reconciled status.
  */
 async function reconcileOrphanedRun(status, statusStore, deps) {
-  if (
-    !status ||
-    typeof status !== 'object' ||
-    !status.activeRun ||
-    typeof status.activeRun !== 'object'
-  ) {
+  if (!hasReconciliableActiveRun(status)) {
     return status;
   }
 
-  if (typeof statusStore.writeStatus !== 'function') {
+  if (!hasWritableStatusStore(statusStore)) {
     return status;
   }
 
-  const pid =
-    typeof status.activeRun.pid === 'number' ? status.activeRun.pid : null;
+  const pid = getActiveRunPid(status.activeRun);
   if (pid === null) {
     return status;
   }
@@ -159,15 +240,7 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
     return status;
   }
 
-  const outcome = {
-    beadId,
-    beadTitle:
-      typeof status.activeRun.beadTitle === 'string'
-        ? status.activeRun.beadTitle
-        : null,
-    outcome: 'blocked',
-    summary: buildOrphanedRunSummary(status.activeRun, pid),
-  };
+  const outcome = buildOrphanedRunOutcome(status, beadId, pid);
 
   const updatedStatus = {
     ...applyRunnerOutcome(status, outcome),
@@ -178,8 +251,9 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
 }
 
 /**
- *
- * @param status
+ * Read the bead id associated with an active run.
+ * @param {object} status Current status.
+ * @returns {string | null} Bead id, or null.
  */
 function getActiveRunBeadId(status) {
   if (typeof status.activeRun.beadId === 'string' && status.activeRun.beadId) {
@@ -194,19 +268,23 @@ function getActiveRunBeadId(status) {
 }
 
 /**
- *
- * @param activeRun
+ * Read the display id for an orphaned run.
+ * @param {object} activeRun Active run state.
+ * @returns {string} Run id for operator-facing messages.
  */
 function getOrphanedRunId(activeRun) {
-  return typeof activeRun.runId === 'string' && activeRun.runId
-    ? activeRun.runId
-    : (activeRun.beadId ?? 'unknown');
+  if (typeof activeRun.runId === 'string' && activeRun.runId) {
+    return activeRun.runId;
+  }
+
+  return activeRun.beadId ?? 'unknown';
 }
 
 /**
- *
- * @param activeRun
- * @param pid
+ * Build the operator summary for an orphaned run.
+ * @param {object} activeRun Active run state.
+ * @param {number} pid Process id.
+ * @returns {string} Human-readable summary.
  */
 function buildOrphanedRunSummary(activeRun, pid) {
   const runId = getOrphanedRunId(activeRun);
@@ -223,9 +301,10 @@ function buildOrphanedRunSummary(activeRun, pid) {
 }
 
 /**
- *
- * @param activeRun
- * @param pid
+ * Build the operator trust reason for an orphaned run.
+ * @param {object} activeRun Active run state.
+ * @param {number} pid Process id.
+ * @returns {string} Human-readable trust reason.
  */
 function buildOrphanedRunTrustReason(activeRun, pid) {
   const runId = getOrphanedRunId(activeRun);

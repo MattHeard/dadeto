@@ -51,61 +51,109 @@ const FACTOR_DEFINITIONS = [
   },
 ];
 
+const IDENTIFIER_NAME_READERS = {
+  Identifier: node => node.name,
+  StringLiteral: node => String(node.value),
+  Literal: node => String(node.value),
+  NumericLiteral: node => String(node.value),
+  MemberExpression: node => getMemberExpressionName(node),
+  TSQualifiedName: node =>
+    `${getIdentifierName(node.left)}.${getIdentifierName(node.right)}`,
+};
+
 /**
- *
- * @param node
+ * Test whether a node starts a function scope.
+ * @param {{ type?: string } | null | undefined} node AST node.
+ * @returns {boolean} True when the node is a function node.
  */
 function isFunctionNode(node) {
   return node && FUNCTION_NODES.has(node.type);
 }
 
 /**
- *
- * @param node
+ * Read the key represented by a member expression.
+ * @param {object} node Member expression node.
+ * @returns {string | null} Member name, or null when incomplete.
  */
-function getIdentifierName(node) {
-  if (!node) {
-    return null;
+function getMemberExpressionName(node) {
+  const objectName = getIdentifierName(node.object);
+  let propertyName = getIdentifierName(node.property);
+  if (node.computed && node.property) {
+    propertyName = `[${propertyName ?? 'expr'}]`;
   }
 
-  if (node.type === 'Identifier') {
-    return node.name;
-  }
-
-  if (node.type === 'PrivateName' && node.id?.type === 'Identifier') {
-    return `#${node.id.name}`;
-  }
-
-  if (
-    node.type === 'StringLiteral' ||
-    node.type === 'Literal' ||
-    node.type === 'NumericLiteral'
-  ) {
-    return String(node.value);
-  }
-
-  if (node.type === 'MemberExpression') {
-    const objectName = getIdentifierName(node.object);
-    const propertyName =
-      node.computed && node.property
-        ? `[${getIdentifierName(node.property) ?? 'expr'}]`
-        : getIdentifierName(node.property);
-    if (objectName && propertyName) {
-      return `${objectName}.${propertyName}`;
-    }
-  }
-
-  if (node.type === 'TSQualifiedName') {
-    return `${getIdentifierName(node.left)}.${getIdentifierName(node.right)}`;
+  if (objectName && propertyName) {
+    return `${objectName}.${propertyName}`;
   }
 
   return null;
 }
 
 /**
- *
- * @param node
- * @param parent
+ * Read the display name represented by an AST identifier-like node.
+ * @param {object | null | undefined} node AST node.
+ * @returns {string | null} Display name, or null when unknown.
+ */
+function getIdentifierName(node) {
+  if (!node) {
+    return null;
+  }
+
+  if (node.type === 'PrivateName' && node.id?.type === 'Identifier') {
+    return `#${node.id.name}`;
+  }
+
+  const readName = IDENTIFIER_NAME_READERS[node.type];
+  if (readName) {
+    return readName(node);
+  }
+
+  return null;
+}
+
+/**
+ * Return a fallback anonymous marker when a name cannot be inferred.
+ * @param {string | null} name Candidate name.
+ * @returns {string} Candidate name or anonymous marker.
+ */
+function fallbackFunctionName(name) {
+  return name ?? '<anonymous>';
+}
+
+/**
+ * Infer a function name from the parent AST relationship.
+ * @param {object | null | undefined} parent Parent AST node.
+ * @returns {string | null} Inferred parent-based name.
+ */
+function getFunctionNameFromParent(parent) {
+  if (!parent) {
+    return null;
+  }
+
+  if (parent.type === 'VariableDeclarator') {
+    return getIdentifierName(parent.id);
+  }
+
+  if (parent.type === 'AssignmentExpression') {
+    return getIdentifierName(parent.left);
+  }
+
+  if (parent.type === 'Property' || parent.type === 'ObjectProperty') {
+    return getIdentifierName(parent.key);
+  }
+
+  if (parent.type === 'ExportDefaultDeclaration') {
+    return 'default export function';
+  }
+
+  return null;
+}
+
+/**
+ * Infer a function display name from the node and its parent.
+ * @param {object} node Function AST node.
+ * @param {object | null | undefined} parent Parent AST node.
+ * @returns {string} Function display name.
  */
 function getFunctionName(node, parent) {
   if (node.id && node.id.type === 'Identifier') {
@@ -117,54 +165,45 @@ function getFunctionName(node, parent) {
     node.type === 'ClassMethod' ||
     node.type === 'ClassPrivateMethod'
   ) {
-    return getIdentifierName(node.key) ?? '<anonymous>';
+    return fallbackFunctionName(getIdentifierName(node.key));
   }
 
-  if (parent) {
-    if (parent.type === 'VariableDeclarator') {
-      return getIdentifierName(parent.id) ?? '<anonymous>';
-    }
-
-    if (parent.type === 'AssignmentExpression') {
-      return getIdentifierName(parent.left) ?? '<anonymous>';
-    }
-
-    if (parent.type === 'Property' || parent.type === 'ObjectProperty') {
-      return getIdentifierName(parent.key) ?? '<anonymous>';
-    }
-
-    if (parent.type === 'ExportDefaultDeclaration') {
-      return 'default export function';
-    }
-  }
-
-  return '<anonymous>';
+  return fallbackFunctionName(getFunctionNameFromParent(parent));
 }
 
 /**
- *
- * @param name
- * @param loc
+ * Format a function label for output.
+ * @param {string} name Function name.
+ * @param {{ start?: { line?: number } } | null | undefined} loc Source location.
+ * @returns {string} Human-readable function label.
  */
 function formatFunctionLabel(name, loc) {
-  const nameSegment =
-    name === '<anonymous>' ? 'Anonymous function' : `Function ${name}`;
-  const lineSegment =
-    loc?.start?.line != null ? `line ${loc.start.line}` : 'unknown line';
+  let nameSegment = `Function ${name}`;
+  if (name === '<anonymous>') {
+    nameSegment = 'Anonymous function';
+  }
+
+  let lineSegment = 'unknown line';
+  if (loc?.start?.line !== null && loc?.start?.line !== undefined) {
+    lineSegment = `line ${loc.start.line}`;
+  }
+
   return `${nameSegment} (${lineSegment})`;
 }
 
 /**
- *
- * @param node
+ * Read a node start line.
+ * @param {object | null | undefined} node AST node.
+ * @returns {number | null} Source line, or null when unavailable.
  */
 function getNodeLine(node) {
   return node?.loc?.start?.line ?? null;
 }
 
 /**
- *
- * @param snippet
+ * Collapse a source snippet for inclusion in output.
+ * @param {string | null | undefined} snippet Source snippet.
+ * @returns {string | null} Collapsed snippet, or null when empty.
  */
 function collapseSnippet(snippet) {
   if (!snippet) {
@@ -176,25 +215,97 @@ function collapseSnippet(snippet) {
     return null;
   }
 
-  return normalized.length > 120
-    ? `${normalized.slice(0, 120)}...`
-    : normalized;
+  if (normalized.length > 120) {
+    return `${normalized.slice(0, 120)}...`;
+  }
+
+  return normalized;
 }
 
 /**
- *
- * @param snippet
+ * Format a collapsed snippet as a parenthetical suffix.
+ * @param {string | null | undefined} snippet Source snippet.
+ * @returns {string} Snippet suffix.
  */
 function formatSnippetForDescription(snippet) {
   const collapsed = collapseSnippet(snippet);
-  return collapsed ? ` (${collapsed})` : '';
+  if (collapsed) {
+    return ` (${collapsed})`;
+  }
+
+  return '';
 }
 
 /**
- *
- * @param node
- * @param parent
- * @param state
+ * Read the slice of source text represented by a node.
+ * @param {object} node AST node.
+ * @param {string} source Source text.
+ * @returns {string | null} Node source snippet, or null when unavailable.
+ */
+function getNodeSnippet(node, source) {
+  if (
+    source &&
+    typeof node.start === 'number' &&
+    typeof node.end === 'number'
+  ) {
+    return source.slice(node.start, node.end);
+  }
+
+  return null;
+}
+
+/**
+ * Record a matching cyclomatic factor for the current function.
+ * @param {object} node AST node.
+ * @param {{ label: string }} currentFunction Current function frame.
+ * @param {{ factors: object[], source: string }} state Traversal state.
+ * @returns {void}
+ */
+function recordCyclomaticFactor(node, currentFunction, state) {
+  const factor = FACTOR_DEFINITIONS.find(definition => definition.match(node));
+  if (!factor) {
+    return;
+  }
+
+  const line = getNodeLine(node);
+  const nodeSnippet = getNodeSnippet(node, state.source);
+  let lineSegment = '';
+  if (line) {
+    lineSegment = ` at line ${line}`;
+  }
+  state.factors.push({
+    index: node.start ?? Number.MAX_SAFE_INTEGER,
+    description: `${currentFunction.label}: ${factor.describe(
+      node,
+      nodeSnippet
+    )}${lineSegment}`,
+  });
+}
+
+/**
+ * Traverse a child value from an AST node.
+ * @param {*} child Child value.
+ * @param {object} node Parent AST node.
+ * @param {object} state Traversal state.
+ * @returns {void}
+ */
+function traverseChild(child, node, state) {
+  if (Array.isArray(child)) {
+    child.forEach(item => traverseNode(item, node, state));
+    return;
+  }
+
+  if (child && typeof child.type === 'string') {
+    traverseNode(child, node, state);
+  }
+}
+
+/**
+ * Walk the AST and collect factors under each function.
+ * @param {object | null | undefined} node AST node.
+ * @param {object | null | undefined} parent Parent AST node.
+ * @param {{ functionStack: object[], factors: object[], source: string }} state Traversal state.
+ * @returns {void}
  */
 function traverseNode(node, parent, state) {
   if (!node || typeof node.type !== 'string') {
@@ -209,28 +320,9 @@ function traverseNode(node, parent, state) {
   }
 
   const currentFunction = state.functionStack[state.functionStack.length - 1];
-  const nodeSnippet =
-    state.source &&
-    typeof node.start === 'number' &&
-    typeof node.end === 'number'
-      ? state.source.slice(node.start, node.end)
-      : null;
 
   if (currentFunction) {
-    const factor = FACTOR_DEFINITIONS.find(definition =>
-      definition.match(node)
-    );
-
-    if (factor) {
-      const line = getNodeLine(node);
-      state.factors.push({
-        index: node.start ?? Number.MAX_SAFE_INTEGER,
-        description: `${currentFunction.label}: ${factor.describe(
-          node,
-          nodeSnippet
-        )}${line ? ` at line ${line}` : ''}`,
-      });
-    }
+    recordCyclomaticFactor(node, currentFunction, state);
   }
 
   for (const key of Object.keys(node)) {
@@ -238,11 +330,7 @@ function traverseNode(node, parent, state) {
       continue;
     }
     const child = node[key];
-    if (Array.isArray(child)) {
-      child.forEach(item => traverseNode(item, node, state));
-    } else if (child && typeof child.type === 'string') {
-      traverseNode(child, node, state);
-    }
+    traverseChild(child, node, state);
   }
 
   if (enteringFunction) {
@@ -251,8 +339,9 @@ function traverseNode(node, parent, state) {
 }
 
 /**
- *
- * @param parser
+ * Create the cyclomatic factor analyzer.
+ * @param {{ parse: Function }} parser Parser dependency.
+ * @returns {(code: string) => string[]} Analyzer function.
  */
 function createDescribeCyclomaticFactors(parser) {
   return function describeCyclomaticFactors(code) {
@@ -276,11 +365,12 @@ function createDescribeCyclomaticFactors(parser) {
 }
 
 /**
- *
- * @param root0
- * @param root0.describeCyclomaticFactors
- * @param root0.readInput
- * @param root0.stdout
+ * Create the CLI runner.
+ * @param {object} root0 Runtime dependencies.
+ * @param {(code: string) => string[]} root0.describeCyclomaticFactors Analyzer function.
+ * @param {() => Promise<string>} root0.readInput Source reader.
+ * @param {{ write: (output: string) => void }} root0.stdout Output stream.
+ * @returns {() => Promise<void>} CLI runner.
  */
 function createRunFromCli({ describeCyclomaticFactors, readInput, stdout }) {
   return async function runFromCli() {

@@ -105,19 +105,19 @@ export default function (value) {
 
     const factors = describeCyclomaticFactors(code);
 
-    expect(factors.some(entry => entry.includes('Function quoted-method'))).toBe(
-      true
-    );
+    expect(
+      factors.some(entry => entry.includes('Function quoted-method'))
+    ).toBe(true);
     expect(factors.some(entry => entry.includes('Function plain'))).toBe(true);
     expect(factors.some(entry => entry.includes('Function #secret'))).toBe(
       true
     );
-    expect(factors.some(entry => entry.includes('Function assigned.handler'))).toBe(
-      true
-    );
-    expect(factors.some(entry => entry.includes('default export function'))).toBe(
-      true
-    );
+    expect(
+      factors.some(entry => entry.includes('Function assigned.handler'))
+    ).toBe(true);
+    expect(
+      factors.some(entry => entry.includes('default export function'))
+    ).toBe(true);
     expect(factors.some(entry => entry.includes('while loop'))).toBe(true);
     expect(factors.some(entry => entry.includes('for-in loop'))).toBe(true);
     expect(factors.some(entry => entry.includes('do-while loop'))).toBe(true);
@@ -322,6 +322,48 @@ export default function (value) {
                   },
                 },
               },
+              {
+                type: 'ObjectMethod',
+                key: {
+                  type: 'Literal',
+                  value: 'literalMethod',
+                },
+                start: 7,
+                end: 8,
+                loc: { start: { line: 7 } },
+                body: {
+                  type: 'BlockStatement',
+                  body: [
+                    {
+                      type: 'IfStatement',
+                      start: 8,
+                      end: 9,
+                      loc: { start: { line: 8 } },
+                    },
+                  ],
+                },
+              },
+              {
+                type: 'ObjectMethod',
+                key: {
+                  type: 'NumericLiteral',
+                  value: 42,
+                },
+                start: 9,
+                end: 10,
+                loc: { start: { line: 9 } },
+                body: {
+                  type: 'BlockStatement',
+                  body: [
+                    {
+                      type: 'IfStatement',
+                      start: 10,
+                      end: 11,
+                      loc: { start: { line: 10 } },
+                    },
+                  ],
+                },
+              },
             ],
           };
         },
@@ -336,6 +378,8 @@ export default function (value) {
       'Function Namespace.method (line 1): if statement at line 2',
       'Anonymous function (line 3): if statement at line 4',
       'Function propertyHandler (line 5): if statement at line 6',
+      'Function literalMethod (line 7): if statement at line 8',
+      'Function 42 (line 9): if statement at line 10',
     ]);
   });
 
@@ -448,15 +492,15 @@ export default function (value) {
 
     expect(factors[0]).toContain('Anonymous function (line 1)');
     expect(factors[0]).toContain('xxx...');
-    expect(factors.some(entry => entry.includes('Function target.[expr]'))).toBe(
-      true
-    );
-    expect(factors.some(entry => entry.includes('Anonymous function (line 5)'))).toBe(
-      true
-    );
-    expect(factors.some(entry => entry.includes('Anonymous function (line 7)'))).toBe(
-      true
-    );
+    expect(
+      factors.some(entry => entry.includes('Function target.[expr]'))
+    ).toBe(true);
+    expect(
+      factors.some(entry => entry.includes('Anonymous function (line 5)'))
+    ).toBe(true);
+    expect(
+      factors.some(entry => entry.includes('Anonymous function (line 7)'))
+    ).toBe(true);
   });
 
   it('handles a root anonymous function AST', () => {

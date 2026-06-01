@@ -1,6 +1,11 @@
 import { jest } from '@jest/globals';
 import { createSymphonyBootstrapHandle } from '../../../src/core/local/symphony/bootstrap.js';
 
+/**
+ * Create bootstrap dependencies for tests.
+ * @param {object} overrides Dependency overrides.
+ * @returns {object} Test dependencies plus written statuses.
+ */
 function createDeps(overrides = {}) {
   const writtenStatuses = [];
   return {
