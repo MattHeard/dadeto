@@ -1,22 +1,4 @@
-const PARSER_OPTIONS = {
-  allowAwaitOutsideFunction: true,
-  allowReturnOutsideFunction: true,
-  allowSuperOutsideMethod: true,
-  plugins: [
-    'jsx',
-    'classProperties',
-    'classPrivateProperties',
-    'classPrivateMethods',
-    'decorators-legacy',
-    'dynamicImport',
-    'exportDefaultFrom',
-    'exportNamespaceFrom',
-    'nullishCoalescingOperator',
-    'optionalChaining',
-    'topLevelAwait',
-  ],
-  sourceType: 'unambiguous',
-};
+import { PARSER_OPTIONS } from './parser-options.js';
 
 const FUNCTION_NODES = new Set([
   'FunctionDeclaration',

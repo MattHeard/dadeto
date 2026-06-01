@@ -196,13 +196,20 @@ function getActiveRunBeadId(status) {
 /**
  *
  * @param activeRun
+ */
+function getOrphanedRunId(activeRun) {
+  return typeof activeRun.runId === 'string' && activeRun.runId
+    ? activeRun.runId
+    : (activeRun.beadId ?? 'unknown');
+}
+
+/**
+ *
+ * @param activeRun
  * @param pid
  */
 function buildOrphanedRunSummary(activeRun, pid) {
-  const runId =
-    typeof activeRun.runId === 'string' && activeRun.runId
-      ? activeRun.runId
-      : (activeRun.beadId ?? 'unknown');
+  const runId = getOrphanedRunId(activeRun);
   const baseMessage = `Runner ${runId} (pid ${pid}) is not running when Symphony status was requested; the exit event may have been missed while the server was offline.`;
   const logPaths = [activeRun.stdoutPath, activeRun.stderrPath].filter(
     path => typeof path === 'string' && path.trim()
@@ -221,10 +228,7 @@ function buildOrphanedRunSummary(activeRun, pid) {
  * @param pid
  */
 function buildOrphanedRunTrustReason(activeRun, pid) {
-  const runId =
-    typeof activeRun.runId === 'string' && activeRun.runId
-      ? activeRun.runId
-      : (activeRun.beadId ?? 'unknown');
+  const runId = getOrphanedRunId(activeRun);
 
   return `Symphony marked run ${runId} as blocked because pid ${pid} was no longer alive when status was requested.`;
 }
