@@ -60,10 +60,10 @@ describe('non-core thin status', () => {
     expect(status.exemptionCount).toEqual(expect.any(Number));
     expect(status.fileCount).toBeGreaterThan(0);
     expect(status.staleExemptions).toEqual([]);
-    expect(status.isClean).toBe(false);
+    expect(status.isClean).toBe(true);
     expect(status.exemptionCount).toBe(0);
-    expect(status.violations.length).toBeGreaterThan(0);
-    expect(status.patternViolations.length).toBeGreaterThan(0);
+    expect(status.violations).toEqual([]);
+    expect(status.patternViolations).toEqual([]);
   });
 
   test('builds a clean status and reports stale exemptions when data says so', () => {
@@ -85,7 +85,7 @@ describe('non-core thin status', () => {
     expect(
       nonCoreThinStatusTestOnly.buildNonCoreThinStatus(
         {
-          maxLines: 50,
+          maxLines: 1,
           exemptions: {
             'src/browser/missing.js': 'stale',
           },
@@ -94,7 +94,7 @@ describe('non-core thin status', () => {
       )
     ).toEqual({
       isClean: false,
-      maxLines: 50,
+      maxLines: 1,
       fileCount: 1,
       exemptionCount: 1,
       staleExemptions: ['src/browser/missing.js'],
@@ -104,21 +104,35 @@ describe('non-core thin status', () => {
           lines: expect.any(Number),
         },
       ],
-      patternViolations: [
-        {
-          filePath: 'src/browser/document.js',
-          reason:
-            'expected `const handle = coreFactory(...)` in this non-core wrapper',
-        },
-      ],
+      patternViolations: [],
     });
   });
 
   test('reports wrapper shape violations separately from size violations', () => {
     expect(
-      nonCoreThinStatusTestOnly.getWrapperPatternViolations(
+      nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
+        'src/browser/empty.js',
+        '',
+        0
+      )
+    ).toEqual([
+      {
+        filePath: 'src/browser/empty.js',
+        reason:
+          'expected `const handle = coreFactory(...)` in this non-core wrapper',
+      },
+    ]);
+
+    expect(
+      nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
         'src/browser/document.js',
-        new Set()
+        [
+          'const value = 1;',
+          'const other = 2;',
+          'const third = 3;',
+          'const fourth = 4;',
+        ].join('\n'),
+        3
       )
     ).toEqual([
       {

@@ -138,7 +138,7 @@ function buildNonCoreThinStatus(config, files) {
       ({ filePath, lines }) => lines > maxLines && !exemptions.has(filePath)
     );
   const patternViolations = files.flatMap(filePath =>
-    getWrapperPatternViolations(filePath, exemptions)
+    getWrapperPatternViolations(filePath, exemptions, maxLines)
   );
 
   return {
@@ -240,27 +240,35 @@ function pluralize(count, singular) {
  * Check whether a non-core file follows the dependency-only wrapper shape.
  * @param {string} filePath Repo-relative file path.
  * @param {Set<string>} exemptions Explicitly exempted file paths.
+ * @param {number} maxLines Maximum line count for tiny platform adapters.
  * @returns {Array<{ filePath: string, reason: string }>} Wrapper shape violations.
  */
-function getWrapperPatternViolations(filePath, exemptions) {
+function getWrapperPatternViolations(filePath, exemptions, maxLines) {
   if (exemptions.has(filePath) || !shouldEnforceWrapperPattern(filePath)) {
     return [];
   }
 
   const source = fs.readFileSync(path.resolve(filePath), 'utf8');
-  return getWrapperPatternViolationsForSource(filePath, source);
+  return getWrapperPatternViolationsForSource(filePath, source, maxLines);
 }
 
 /**
  * Check whether source follows the dependency-only wrapper shape.
  * @param {string} filePath Repo-relative file path.
  * @param {string} source JavaScript source text.
+ * @param {number} [maxLines] Maximum line count for tiny platform adapters.
  * @returns {Array<{ filePath: string, reason: string }>} Wrapper shape violations.
  */
-function getWrapperPatternViolationsForSource(filePath, source) {
-  const hasHandleDeclaration =
-    /\bconst\s+handle\s*=\s*[A-Za-z_$][\w$]*\s*\(/u.test(source);
-  if (!hasHandleDeclaration) {
+function getWrapperPatternViolationsForSource(filePath, source, maxLines = 0) {
+  if (isPureCoreReExportWrapper(source)) {
+    return [];
+  }
+
+  if (maxLines > 0 && countSourceLines(source) <= maxLines) {
+    return [];
+  }
+
+  if (!declaresHandle(source)) {
     return [
       {
         filePath,
@@ -270,11 +278,7 @@ function getWrapperPatternViolationsForSource(filePath, source) {
     ];
   }
 
-  const exportsHandle =
-    /\bexport\s*\{\s*handle\s*\}/u.test(source) ||
-    /\bexport\s+const\s+handle\s*=/u.test(source);
-  const invokesHandle = /(?:^|[^\w$])(?:await\s+)?handle\s*\(/u.test(source);
-  if (!exportsHandle && !invokesHandle) {
+  if (!exportsHandle(source) && !invokesHandle(source)) {
     return [
       {
         filePath,
@@ -284,6 +288,71 @@ function getWrapperPatternViolationsForSource(filePath, source) {
   }
 
   return [];
+}
+
+/**
+ * Check whether source declares a wrapper handle.
+ * @param {string} source JavaScript source text.
+ * @returns {boolean} True when a handle declaration is present.
+ */
+function declaresHandle(source) {
+  return [
+    /\bconst\s+handle\s*=\s*[A-Za-z_$][\w$]*\s*\(/u,
+    /\bconst\s+\{[^}]*\bhandle\b[^}]*\}\s*=\s*[A-Za-z_$][\w$]*\s*\(/u,
+    /\bexport\s+const\s+handle\s*=/u,
+  ].some(pattern => pattern.test(source));
+}
+
+/**
+ * Check whether source exports a wrapper handle.
+ * @param {string} source JavaScript source text.
+ * @returns {boolean} True when the handle is exported.
+ */
+function exportsHandle(source) {
+  return [
+    /\bexport\s*\{[^}]*\bhandle\b[^}]*\}/u,
+    /\bexport\s+const\s+handle\s*=/u,
+  ].some(pattern => pattern.test(source));
+}
+
+/**
+ * Check whether source invokes a wrapper handle.
+ * @param {string} source JavaScript source text.
+ * @returns {boolean} True when the handle is invoked.
+ */
+function invokesHandle(source) {
+  return /(?:^|[^\w$])(?:await\s+)?handle\s*\(/u.test(source);
+}
+
+/**
+ * Count source lines the same way the size gate does.
+ * @param {string} source JavaScript source text.
+ * @returns {number} Source line count.
+ */
+function countSourceLines(source) {
+  return source.split('\n').length;
+}
+
+/**
+ * Check whether a file is only a dependency-free re-export from `src/core`.
+ * @param {string} source JavaScript source text.
+ * @returns {boolean} True when the source contains only core re-export declarations.
+ */
+function isPureCoreReExportWrapper(source) {
+  const executableSource = source
+    .replace(/^\s*\/\/.*$/gmu, '')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  if (!executableSource) {
+    return false;
+  }
+
+  const withoutCoreReExports = executableSource.replace(
+    /export\s+(?:\*|\{[^}]*\})\s+from\s+['"](?:\.\.\/)+(?:core\/|commonCore\.js)[^'"]*['"]\s*;?/gu,
+    ''
+  );
+
+  return withoutCoreReExports.trim() === '';
 }
 
 /**

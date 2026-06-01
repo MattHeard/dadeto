@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { describe, test, expect } from '@jest/globals';
 
-const sourcePath = path.join(process.cwd(), 'src/browser/toys.js');
+const sourcePath = path.join(process.cwd(), 'src/core/browser/toys.js');
 
 describe('inputHandlersMap constant source', () => {
   test('definition includes expected handler mappings', () => {

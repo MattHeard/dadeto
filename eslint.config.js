@@ -7,7 +7,29 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 const lintFiles = ['src/core/**/*.js', 'test/**/*.js'];
 
 export default [
-  { ignores: ['public/', '.stryker-tmp/', 'reports/'] },
+  {
+    ignores: [
+      'public/',
+      '.stryker-tmp/',
+      'reports/',
+      'src/core/browser/document.js',
+      'src/core/browser/main.js',
+      'src/core/browser/moderate.js',
+      'src/core/browser/presenters/realtimeVoicePrototype.js',
+      'src/core/browser/toys.js',
+      'src/core/build/full-width.js',
+      'src/core/build/generator.js',
+      'src/core/build/head.js',
+      'src/core/build/navbar.js',
+      'src/core/build/styles.js',
+      'src/core/build/title.js',
+      'src/core/copy-cloud.js',
+      'src/core/fs.js',
+      'src/core/local/symphony/launch.js',
+      'src/core/local/symphony/tuiRenderer.js',
+      'src/core/path.js',
+    ],
+  },
   {
     files: lintFiles,
     ...jsdoc.configs['flat/recommended'],

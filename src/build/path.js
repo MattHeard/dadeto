@@ -1,44 +1,9 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { createPathHandle } from '../core/path.js';
 
-/**
- * Determine the directory of the current module using Node-specific helpers.
- * @param {string} moduleUrl - The module URL from import.meta.url.
- * @returns {string} Absolute path to the module directory.
- */
-export function getCurrentDirectory(moduleUrl) {
-  return path.dirname(fileURLToPath(moduleUrl));
-}
+const handle = createPathHandle();
 
-/**
- * Resolve key project directories relative to a given module directory.
- * @param {string} moduleDirectory - Directory containing the current module.
- * @returns {{ projectRoot: string, srcDir: string, publicDir: string }} Project directory map.
- */
-export function resolveProjectDirectories(moduleDirectory) {
-  const projectRoot = path.resolve(moduleDirectory, '../..');
-  const srcDir = path.resolve(projectRoot, 'src');
-  const publicDir = path.resolve(projectRoot, 'public');
+export const {
+  getCurrentDirectory, resolveProjectDirectories, createPathAdapters,
+} = handle;
 
-  return { projectRoot, srcDir, publicDir };
-}
-
-/**
- * Provide the subset of Node's path module used by copy utilities.
- * @returns {{
- *   join: typeof path.join,
- *   dirname: typeof path.dirname,
- *   relative: typeof path.relative,
- *   resolve: typeof path.resolve,
- *   extname: typeof path.extname,
- * }} Adapter exposing required path helpers.
- */
-export function createPathAdapters() {
-  return {
-    join: path.join,
-    dirname: path.dirname,
-    relative: path.relative,
-    resolve: path.resolve,
-    extname: path.extname,
-  };
-}
+export { handle };
