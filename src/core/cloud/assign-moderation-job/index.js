@@ -91,7 +91,9 @@ export function createAssignModerationJobEntrypoint(deps) {
       } = options;
 
       const environment = resolveFirestoreEnvironment(
-        /** @type {Record<string, unknown> | undefined} */ (providedEnvironment),
+        /** @type {Record<string, unknown> | undefined} */ (
+          providedEnvironment
+        ),
         typedDeps.getEnvironmentVariables
       );
 
@@ -184,7 +186,10 @@ export function createAssignModerationJobEntrypoint(deps) {
     typedDeps.random
   );
 
-  const handle = createAssignModerationJob(typedDeps.functions, firebaseResources);
+  const handle = createAssignModerationJob(
+    typedDeps.functions,
+    firebaseResources
+  );
 
   return {
     handle,

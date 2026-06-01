@@ -114,7 +114,8 @@ function parseFrontMatter(content) {
   }
 
   const frontMatterBlock = content.slice(4, frontMatterEndIndex);
-  const config = /** @type {{ [key: string]: string | number | boolean }} */ ({});
+  const config =
+    /** @type {{ [key: string]: string | number | boolean }} */ ({});
   for (const line of frontMatterBlock.split('\n')) {
     const trimmedLine = line.trim();
     if (trimmedLine.length === 0 || trimmedLine.startsWith('#')) {

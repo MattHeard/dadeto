@@ -64,25 +64,27 @@ export function createRenderContentsEntrypoint(deps) {
 
   const handleRenderRequest = /** @type {any} */ (buildHandleRenderRequest)({
     validateRequest,
-    verifyIdToken: /** @type {(token: any) => any} */ (token =>
-      auth.verifyIdToken(token)
+    verifyIdToken: /** @type {(token: any) => any} */ (
+      token => auth.verifyIdToken(token)
     ),
     adminUid: ADMIN_UID,
     render: () => render(),
   });
 
-  const handle = /** @type {any} */ (functions
-    .region('europe-west1')
-    .firestore.document('stories/{storyId}')
-    .onCreate(
-      /** @type {(snap: any, context: any) => any} */ ((snap, context) =>
-        render(snap, context)
+  const handle = /** @type {any} */ (
+    functions
+      .region('europe-west1')
+      .firestore.document('stories/{storyId}')
+      .onCreate(
+        /** @type {(snap: any, context: any) => any} */ (
+          (snap, context) => render(snap, context)
+        )
       )
-    ));
+  );
 
-  const handleTrigger = /** @type {any} */ (functions
-    .region('europe-west1')
-    .https.onRequest(handleRenderRequest));
+  const handleTrigger = /** @type {any} */ (
+    functions.region('europe-west1').https.onRequest(handleRenderRequest)
+  );
 
   /**
    * Forward render calls to the memoized render implementation.
@@ -148,8 +150,8 @@ export function createRenderContentsEntrypoint(deps) {
       /** @type {any} */ (createCloudRenderInstanceBuilder)({
         createRenderer: createRenderContents,
         crypto,
-        consoleError: /** @type {(...args: any[]) => void} */ ((...args) =>
-          console.error(...args)
+        consoleError: /** @type {(...args: any[]) => void} */ (
+          (...args) => console.error(...args)
         ),
       })
     );

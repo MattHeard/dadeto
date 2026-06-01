@@ -58,19 +58,25 @@ export function runRenderVariant(deps) {
   });
 
   /* istanbul ignore next */
-  const renderVariant = /** @type {any} */ (functions
-    .region('europe-west1')
-    .firestore.document('stories/{storyId}/pages/{pageId}/variants/{variantId}')
-    .onWrite(
-      /** @type {(change: any, context: any) => any} */ ((change, context) =>
-        handleVariantWrite(change, context)
+  const renderVariant = /** @type {any} */ (
+    functions
+      .region('europe-west1')
+      .firestore.document(
+        'stories/{storyId}/pages/{pageId}/variants/{variantId}'
       )
-    ));
+      .onWrite(
+        /** @type {(change: any, context: any) => any} */ (
+          (change, context) => handleVariantWrite(change, context)
+        )
+      )
+  );
 
-  const render = /** @type {(...args: any[]) => any} */ ((...args) =>
-    /** @type {(...args: unknown[]) => unknown} */ (resolveRenderVariant())(
-      ...args
-    ));
+  const render = /** @type {(...args: any[]) => any} */ (
+    (...args) =>
+      /** @type {(...args: unknown[]) => unknown} */ (resolveRenderVariant())(
+        ...args
+      )
+  );
 
   return /** @type {any} */ ({ renderVariant, render });
 
@@ -94,8 +100,8 @@ export function runRenderVariant(deps) {
       /** @type {any} */ (createCloudRenderInstanceBuilder)({
         createRenderer: createRenderVariant,
         crypto,
-        consoleError: /** @type {(...args: any[]) => void} */ ((...args) =>
-          consoleLike.error(...args)
+        consoleError: /** @type {(...args: any[]) => void} */ (
+          (...args) => consoleLike.error(...args)
         ),
       })
     );

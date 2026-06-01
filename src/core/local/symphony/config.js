@@ -38,7 +38,10 @@ function normalizeTracker(tracker) {
 
   const typedTracker = /** @type {any} */ (tracker);
   return {
-    kind: normalizeString(typedTracker.kind, DEFAULT_SYMPHONY_CONFIG.tracker.kind),
+    kind: normalizeString(
+      typedTracker.kind,
+      DEFAULT_SYMPHONY_CONFIG.tracker.kind
+    ),
     readyCommand: normalizeString(
       typedTracker.readyCommand,
       DEFAULT_SYMPHONY_CONFIG.tracker.readyCommand
@@ -58,7 +61,10 @@ function normalizeLauncher(launcher) {
 
   const typedLauncher = /** @type {any} */ (launcher);
   return {
-    kind: normalizeString(typedLauncher.kind, DEFAULT_SYMPHONY_CONFIG.launcher.kind),
+    kind: normalizeString(
+      typedLauncher.kind,
+      DEFAULT_SYMPHONY_CONFIG.launcher.kind
+    ),
     command: normalizeString(
       typedLauncher.command,
       DEFAULT_SYMPHONY_CONFIG.launcher.command
@@ -103,7 +109,10 @@ function resolveWorkspaceRoot(config) {
  */
 function resolveLogDir(config) {
   const typedConfig = /** @type {any} */ (config);
-  return normalizePathValue(typedConfig?.logDir, DEFAULT_SYMPHONY_CONFIG.logDir);
+  return normalizePathValue(
+    typedConfig?.logDir,
+    DEFAULT_SYMPHONY_CONFIG.logDir
+  );
 }
 
 /**

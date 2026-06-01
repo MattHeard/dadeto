@@ -110,11 +110,11 @@ describe('local symphony scaffold', () => {
         defaultBranch: 'main',
       });
 
-      await expect(
-        loadSymphonyConfig({ readFileImpl })
-      ).resolves.toMatchObject({
-        defaultBranch: 'main',
-      });
+      await expect(loadSymphonyConfig({ readFileImpl })).resolves.toMatchObject(
+        {
+          defaultBranch: 'main',
+        }
+      );
 
       expect(readFileImpl).toHaveBeenCalledWith(
         path.join(tempDir, 'tracking', 'symphony.local.json'),
@@ -229,14 +229,7 @@ describe('local symphony scaffold', () => {
 
   test('skips comment lines inside workflow front matter', () => {
     const summary = summarizeWorkflow(
-      [
-        '---',
-        '# comment',
-        'enabled: true',
-        '---',
-        '',
-        '# Workflow',
-      ].join('\n')
+      ['---', '# comment', 'enabled: true', '---', '', '# Workflow'].join('\n')
     );
 
     expect(summary.config).toEqual({
@@ -247,37 +240,19 @@ describe('local symphony scaffold', () => {
 
   test('returns the original body when the workflow front matter is not closed', () => {
     const summary = summarizeWorkflow(
-      [
-        '---',
-        '# comment',
-        'enabled: true',
-        '',
-        '# Workflow',
-      ].join('\n')
+      ['---', '# comment', 'enabled: true', '', '# Workflow'].join('\n')
     );
 
     expect(summary.config).toEqual({});
     expect(summary.prompt_template).toBe(
-      [
-        '---',
-        '# comment',
-        'enabled: true',
-        '',
-        '# Workflow',
-      ].join('\n')
+      ['---', '# comment', 'enabled: true', '', '# Workflow'].join('\n')
     );
   });
 
   test('uses process.cwd and the default workflow path when options are omitted', async () => {
     await writeFile(
       path.join(tempDir, 'WORKFLOW.md'),
-      [
-        '---',
-        'model: gpt-5',
-        '---',
-        '',
-        '# Workflow',
-      ].join('\n'),
+      ['---', 'model: gpt-5', '---', '', '# Workflow'].join('\n'),
       'utf8'
     );
 

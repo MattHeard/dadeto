@@ -169,13 +169,13 @@ export function runGenerateStats(deps) {
 
   const generateStatsCore = /** @type {any} */ (
     createGenerateStatsCore({
-    db,
-    auth,
-    storage,
-    fetchFn,
-    env,
-    cryptoModule,
-    console: consoleLike,
+      db,
+      auth,
+      storage,
+      fetchFn,
+      env,
+      cryptoModule,
+      console: consoleLike,
     })
   );
 
