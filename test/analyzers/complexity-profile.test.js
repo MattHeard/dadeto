@@ -1,7 +1,17 @@
+import escomplex from 'typhonjs-escomplex';
 import {
-  buildComplexityProfile,
+  createComplexityProfileHandle,
   compareComplexityProfiles,
-} from '../../src/build/complexity-profile.js';
+} from '../../src/core/build/complexity-profile.js';
+
+const { buildComplexityProfile } = createComplexityProfileHandle({
+  analyzer: escomplex,
+  readSource: () => '',
+  stdout: {
+    write() {},
+  },
+  argv: ['node', 'script.js', 'before.js', 'after.js'],
+});
 
 describe('complexity profile comparator', () => {
   test('reports improvement even when a slice still has over-threshold methods', () => {
@@ -87,5 +97,181 @@ function insideSlice(value) {
       cyclomatic: 5,
       excess: 3,
     });
+  });
+
+  test('rejects invalid sources and line ranges', () => {
+    expect(() => buildComplexityProfile(null)).toThrow(
+      'source must be a string'
+    );
+    expect(() =>
+      buildComplexityProfile('function noop() {}', {
+        lineRange: { start: '4', end: '2' },
+      })
+    ).toThrow('Invalid line range: 4:2');
+  });
+
+  test('sorts tied methods by line number and reports unchanged deltas', () => {
+    const source = `
+function first(value) {
+  if (value) return true;
+  return false;
+}
+function second(value) {
+  if (value) return true;
+  return false;
+}
+`;
+
+    const profile = buildComplexityProfile(source);
+    const comparison = compareComplexityProfiles(profile, profile);
+
+    expect(profile.threshold).toBe(2);
+    expect(profile.methods.map(method => method.name)).toEqual([
+      'first',
+      'second',
+    ]);
+    expect(comparison.assessment).toEqual({
+      warningCount: 'unchanged',
+      peakCyclomatic: 'unchanged',
+      totalExcess: 'unchanged',
+    });
+  });
+
+  test('runs the CLI handle with injected file readers', () => {
+    const writes = [];
+    const handle = createComplexityProfileHandle({
+      analyzer: {
+        analyzeModule() {
+          return {
+            methods: [
+              {
+                name: 'fake',
+                lineStart: 1,
+                lineEnd: 1,
+                cyclomatic: 3,
+              },
+            ],
+          };
+        },
+      },
+      readSource: filePath => `source:${filePath}`,
+      stdout: {
+        write: output => writes.push(output),
+      },
+      argv: [
+        'node',
+        'src/build/complexity-profile.js',
+        '--threshold',
+        '2',
+        '--lines',
+        '1:1',
+        'before.js',
+        'after.js',
+      ],
+    });
+
+    handle.runFromCli();
+
+    expect(JSON.parse(writes[0])).toMatchObject({
+      baselinePath: 'before.js',
+      currentPath: 'after.js',
+      profileOptions: {
+        threshold: 2,
+        lineRange: { start: 1, end: 1 },
+      },
+    });
+  });
+
+  test('sorts zero-excess methods by cyclomatic score before line number', () => {
+    const handle = createComplexityProfileHandle({
+      analyzer: {
+        analyzeModule() {
+          return {
+            methods: [
+              {
+                name: 'simpler',
+                lineStart: 1,
+                lineEnd: 1,
+                cyclomatic: 1,
+              },
+              {
+                name: 'threshold',
+                lineStart: 2,
+                lineEnd: 2,
+                cyclomatic: 2,
+              },
+            ],
+          };
+        },
+      },
+      readSource: () => '',
+      stdout: {
+        write() {},
+      },
+      argv: ['node', 'script.js', 'before.js', 'after.js'],
+    });
+
+    expect(handle.buildComplexityProfile('source').methods).toEqual([
+      expect.objectContaining({ name: 'threshold' }),
+      expect.objectContaining({ name: 'simpler' }),
+    ]);
+  });
+
+  test('reports CLI argument failures', () => {
+    const handle = createComplexityProfileHandle({
+      analyzer: {
+        analyzeModule() {
+          return { methods: [] };
+        },
+      },
+      readSource: () => '',
+      stdout: {
+        write() {},
+      },
+      argv: ['node', 'script.js', '--threshold', '0', 'a.js', 'b.js'],
+    });
+
+    expect(() => handle.runFromCli()).toThrow('Invalid threshold: 0');
+
+    const missingArgsHandle = createComplexityProfileHandle({
+      analyzer: {
+        analyzeModule() {
+          return { methods: [] };
+        },
+      },
+      readSource: () => '',
+      stdout: {
+        write() {},
+      },
+      argv: ['node', 'script.js', 'a.js'],
+    });
+
+    expect(() => missingArgsHandle.runFromCli()).toThrow(
+      'Usage: node src/build/complexity-profile.js'
+    );
+  });
+
+  test('reports invalid missing line range ends from CLI args', () => {
+    const handle = createComplexityProfileHandle({
+      analyzer: {
+        analyzeModule() {
+          return { methods: [] };
+        },
+      },
+      readSource: () => '',
+      stdout: {
+        write() {},
+      },
+      argv: [
+        'node',
+        'script.js',
+        '--lines',
+        undefined,
+        'before.js',
+        'after.js',
+      ],
+    });
+
+    expect(() => handle.runFromCli()).toThrow('Invalid line range: :undefined');
   });
 });

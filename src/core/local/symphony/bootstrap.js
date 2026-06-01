@@ -236,7 +236,7 @@ function preserveRunningStatus(status, previousStatus) {
     ...status,
     startedAt: previousStatus.startedAt ?? status.startedAt,
     state: previousStatus.state,
-    currentBeadId: previousStatus.currentBeadId ?? status.currentBeadId,
+    currentBeadId: previousStatus.currentBeadId,
     currentBeadTitle:
       previousStatus.currentBeadTitle ?? status.currentBeadTitle,
     currentBeadPriority:

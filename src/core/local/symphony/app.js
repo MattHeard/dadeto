@@ -182,14 +182,10 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
  * @param status
  */
 function getActiveRunBeadId(status) {
-  if (status.activeRun && typeof status.activeRun === 'object') {
-    if (
-      typeof status.activeRun.beadId === 'string' &&
-      status.activeRun.beadId
-    ) {
-      return status.activeRun.beadId;
-    }
+  if (typeof status.activeRun.beadId === 'string' && status.activeRun.beadId) {
+    return status.activeRun.beadId;
   }
+
   if (typeof status.currentBeadId === 'string' && status.currentBeadId) {
     return status.currentBeadId;
   }
