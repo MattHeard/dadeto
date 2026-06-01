@@ -1,5 +1,12 @@
 import { PARSER_OPTIONS } from './parser-options.js';
 
+/**
+ * @typedef {Record<string, any>} AstNode
+ * @typedef {{ name: string, label: string, loc: any }} FunctionFrame
+ * @typedef {{ index: number, description: string }} FactorEntry
+ * @typedef {{ functionStack: FunctionFrame[], factors: FactorEntry[], source: string }} TraversalState
+ */
+
 const FUNCTION_NODES = new Set([
   'FunctionDeclaration',
   'FunctionExpression',
@@ -9,6 +16,7 @@ const FUNCTION_NODES = new Set([
   'ClassPrivateMethod',
 ]);
 
+/** @type {{ match: (node: AstNode) => boolean, describe: (node: AstNode, snippet: string | null) => string }[]} */
 const FACTOR_DEFINITIONS = [
   {
     match: node => node.type === 'IfStatement',
@@ -51,6 +59,7 @@ const FACTOR_DEFINITIONS = [
   },
 ];
 
+/** @type {Record<string, (node: AstNode) => string | null>} */
 const IDENTIFIER_NAME_READERS = {
   Identifier: node => node.name,
   StringLiteral: node => String(node.value),
@@ -63,16 +72,16 @@ const IDENTIFIER_NAME_READERS = {
 
 /**
  * Test whether a node starts a function scope.
- * @param {{ type?: string } | null | undefined} node AST node.
+ * @param {AstNode | null | undefined} node AST node.
  * @returns {boolean} True when the node is a function node.
  */
 function isFunctionNode(node) {
-  return node && FUNCTION_NODES.has(node.type);
+  return Boolean(node && FUNCTION_NODES.has(node.type));
 }
 
 /**
  * Read the key represented by a member expression.
- * @param {object} node Member expression node.
+ * @param {AstNode} node Member expression node.
  * @returns {string | null} Member name, or null when incomplete.
  */
 function getMemberExpressionName(node) {
@@ -91,7 +100,7 @@ function getMemberExpressionName(node) {
 
 /**
  * Read the display name represented by an AST identifier-like node.
- * @param {object | null | undefined} node AST node.
+ * @param {AstNode | null | undefined} node AST node.
  * @returns {string | null} Display name, or null when unknown.
  */
 function getIdentifierName(node) {
@@ -122,7 +131,7 @@ function fallbackFunctionName(name) {
 
 /**
  * Infer a function name from the parent AST relationship.
- * @param {object | null | undefined} parent Parent AST node.
+ * @param {AstNode | null | undefined} parent Parent AST node.
  * @returns {string | null} Inferred parent-based name.
  */
 function getFunctionNameFromParent(parent) {
@@ -151,8 +160,8 @@ function getFunctionNameFromParent(parent) {
 
 /**
  * Infer a function display name from the node and its parent.
- * @param {object} node Function AST node.
- * @param {object | null | undefined} parent Parent AST node.
+ * @param {AstNode} node Function AST node.
+ * @param {AstNode | null | undefined} parent Parent AST node.
  * @returns {string} Function display name.
  */
 function getFunctionName(node, parent) {
@@ -193,7 +202,7 @@ function formatFunctionLabel(name, loc) {
 
 /**
  * Read a node start line.
- * @param {object | null | undefined} node AST node.
+ * @param {AstNode | null | undefined} node AST node.
  * @returns {number | null} Source line, or null when unavailable.
  */
 function getNodeLine(node) {
@@ -238,7 +247,7 @@ function formatSnippetForDescription(snippet) {
 
 /**
  * Read the slice of source text represented by a node.
- * @param {object} node AST node.
+ * @param {AstNode} node AST node.
  * @param {string} source Source text.
  * @returns {string | null} Node source snippet, or null when unavailable.
  */
@@ -256,9 +265,9 @@ function getNodeSnippet(node, source) {
 
 /**
  * Record a matching cyclomatic factor for the current function.
- * @param {object} node AST node.
- * @param {{ label: string }} currentFunction Current function frame.
- * @param {{ factors: object[], source: string }} state Traversal state.
+ * @param {AstNode} node AST node.
+ * @param {FunctionFrame} currentFunction Current function frame.
+ * @param {TraversalState} state Traversal state.
  * @returns {void}
  */
 function recordCyclomaticFactor(node, currentFunction, state) {
@@ -285,8 +294,8 @@ function recordCyclomaticFactor(node, currentFunction, state) {
 /**
  * Traverse a child value from an AST node.
  * @param {*} child Child value.
- * @param {object} node Parent AST node.
- * @param {object} state Traversal state.
+ * @param {AstNode} node Parent AST node.
+ * @param {TraversalState} state Traversal state.
  * @returns {void}
  */
 function traverseChild(child, node, state) {
@@ -302,9 +311,9 @@ function traverseChild(child, node, state) {
 
 /**
  * Walk the AST and collect factors under each function.
- * @param {object | null | undefined} node AST node.
- * @param {object | null | undefined} parent Parent AST node.
- * @param {{ functionStack: object[], factors: object[], source: string }} state Traversal state.
+ * @param {AstNode | null | undefined} node AST node.
+ * @param {AstNode | null | undefined} parent Parent AST node.
+ * @param {TraversalState} state Traversal state.
  * @returns {void}
  */
 function traverseNode(node, parent, state) {
@@ -350,6 +359,7 @@ function createDescribeCyclomaticFactors(parser) {
     }
 
     const ast = parser.parse(code, PARSER_OPTIONS);
+    /** @type {TraversalState} */
     const state = {
       functionStack: [],
       factors: [],

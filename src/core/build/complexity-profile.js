@@ -1,9 +1,15 @@
 import { PARSER_OPTIONS } from './parser-options.js';
 
 /**
+ * @typedef {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number }} ComplexityMethod
+ * @typedef {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number, excess: number }} MethodProfile
+ * @typedef {{ start: number, end: number } | null} NormalizedLineRange
+ */
+
+/**
  * Normalize an optional CLI line range.
  * @param {{ start: string, end: string } | null | undefined} lineRange Candidate line range.
- * @returns {{ start: number, end: number } | null} Parsed line range, or null when omitted.
+ * @returns {NormalizedLineRange} Parsed line range, or null when omitted.
  */
 function normalizeLineRange(lineRange) {
   if (!lineRange) {
@@ -27,8 +33,8 @@ function normalizeLineRange(lineRange) {
 
 /**
  * Check whether a method overlaps the requested line range.
- * @param {{ lineStart: number, lineEnd: number }} method Method metric.
- * @param {{ start: number, end: number } | null} lineRange Optional filter range.
+ * @param {ComplexityMethod} method Method metric.
+ * @param {NormalizedLineRange} lineRange Optional filter range.
  * @returns {boolean} True when the method should be included.
  */
 function isMethodWithinRange(method, lineRange) {
@@ -41,9 +47,9 @@ function isMethodWithinRange(method, lineRange) {
 
 /**
  * Convert analyzer method output into a compact profile row.
- * @param {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number }} method Method metric.
+ * @param {ComplexityMethod} method Method metric.
  * @param {number} threshold Warning threshold.
- * @returns {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number, excess: number }} Method profile.
+ * @returns {MethodProfile} Method profile.
  */
 function toMethodProfile(method, threshold) {
   const excess = Math.max(method.cyclomatic - threshold, 0);
@@ -71,7 +77,9 @@ function createBuildComplexityProfile(analyzer) {
     const threshold = options.threshold ?? 2;
     const lineRange = normalizeLineRange(options.lineRange);
     const report = analyzer.analyzeModule(source, {}, PARSER_OPTIONS);
-    const methods = report.methods
+    /** @type {ComplexityMethod[]} */
+    const reportMethods = report.methods;
+    const methods = reportMethods
       .filter(method => isMethodWithinRange(method, lineRange))
       .map(method => toMethodProfile(method, threshold))
       .sort((left, right) => {
@@ -167,6 +175,7 @@ export function compareComplexityProfiles(baseline, current) {
  * @returns {{ baselinePath: string, currentPath: string, options: { threshold: number, lineRange: { start: string | undefined, end: string | undefined } | null } }} Parsed arguments.
  */
 function parseArgs(argv) {
+  /** @type {{ threshold: number, lineRange: { start: string | undefined, end: string | undefined } | null }} */
   const options = {
     threshold: 2,
     lineRange: null,
