@@ -3,8 +3,21 @@ import globals from 'globals';
 import jsdoc from 'eslint-plugin-jsdoc';
 import prettierPlugin from 'eslint-plugin-prettier';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import tautologicalWrapperRule from './src/core/lint/tautological-wrapper.js';
 
 const lintFiles = ['src/core/**/*.js', 'test/**/*.js'];
+const tautologicalWrapperFiles = [
+  'src/core/**/index.js',
+  'src/core/**/run.js',
+  'src/local/**/index.js',
+  'src/local/**/run.js',
+  'src/scripts/**/*.js',
+];
+const repoLintPlugin = {
+  rules: {
+    'tautological-wrapper': tautologicalWrapperRule,
+  },
+};
 
 export default [
   {
@@ -49,6 +62,7 @@ export default [
     plugins: {
       jsdoc,
       prettier: prettierPlugin,
+      repo: repoLintPlugin,
     },
     rules: {
       complexity: ['warn', { max: 8 }],
@@ -91,6 +105,15 @@ export default [
     },
   },
   {
+    files: tautologicalWrapperFiles,
+    plugins: {
+      repo: repoLintPlugin,
+    },
+    rules: {
+      'repo/tautological-wrapper': 'warn',
+    },
+  },
+  {
     files: ['src/core/**/*.js'],
     rules: {
       'no-restricted-globals': ['warn', 'event', 'fdescribe'],
@@ -123,6 +146,7 @@ export default [
       'max-lines-per-function': 'off',
       'max-statements': 'off',
       'max-params': 'off',
+      'repo/tautological-wrapper': 'off',
     },
   },
 ];
