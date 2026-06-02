@@ -123,15 +123,7 @@ export async function runCheckSuite(options) {
         const finishWithFailure = (failure, shouldAbort) => {
           settled = true;
           failures.push(failure);
-          emitEvent(stderr, {
-            type: 'check-failure',
-            name: command.name,
-            command: failure.command,
-            exitCode: failure.exitCode,
-            signal: failure.signal,
-            durationMs: failure.durationMs,
-            error: failure.error,
-          });
+          emitFailureEvent(stderr, command.name, failure);
 
           if (shouldAbort && failFast && !aborted) {
             aborted = true;
@@ -148,15 +140,7 @@ export async function runCheckSuite(options) {
         } catch (error) {
           const failure = buildSpawnFailure(command, startedAt, error, now);
           failures.push(failure);
-          emitEvent(stderr, {
-            type: 'check-failure',
-            name: command.name,
-            command: renderCommand(command),
-            exitCode: 1,
-            signal: null,
-            durationMs: failure.durationMs,
-            error: failure.error,
-          });
+          emitFailureEvent(stderr, command.name, failure);
 
           if (failFast) {
             aborted = true;
@@ -386,6 +370,25 @@ function renderCommand(command) {
  */
 function emitEvent(writer, event) {
   writer.write(`${JSON.stringify(event)}\n`);
+}
+
+/**
+ * Emit a structured failure event for a specific check.
+ * @param {{ write: (text: string) => void }} writer Output writer.
+ * @param {string} name Check label.
+ * @param {CheckFailure} failure Failure details to report.
+ * @returns {void}
+ */
+function emitFailureEvent(writer, name, failure) {
+  emitEvent(writer, {
+    type: 'check-failure',
+    name,
+    command: failure.command,
+    exitCode: failure.exitCode,
+    signal: failure.signal,
+    durationMs: failure.durationMs,
+    error: failure.error,
+  });
 }
 
 export const runCheckSuiteTestOnly = {
