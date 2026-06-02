@@ -7,7 +7,7 @@
 
 ## Completed Work
 - Cloud Functions now follow the bridge/core split. Example: `src/cloud/get-moderation-variant/index.js` imports its Firebase + Express wiring from `get-moderation-variant-gcf.js` and delegates behavior to `get-moderation-variant-core.js`.
-- The cloud copy pipeline (`src/build/copy-cloud.js`) packages both bridge and core modules into the Terraform build artifacts so deployments stay in sync with source.
+- The cloud copy pipeline (`src/build/copy-cloud.js`) delegates to the relocated build core at [`src/core/build/copy-cloud.js`](/home/matt/dadeto/src/core/build/copy-cloud.js), so deployments keep the bridge/core split aligned with source.
 - Supporting utilities such as `src/browser/loadStaticConfig.js` already inject their external dependencies rather than importing globals, and data controllers accept dependency bundles.
 - Browser entry modules now consume core helpers through sibling bridge shims (for example `src/browser/audio-controls.js` and `src/browser/data.js`), keeping adapter imports within the browser surface.
 

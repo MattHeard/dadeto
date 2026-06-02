@@ -41,7 +41,7 @@ const config = {
     '!src/core/build/navbar.js',
     '!src/core/build/styles.js',
     '!src/core/build/title.js',
-    '!src/core/copy-cloud.js',
+    '!src/core/build/copy-cloud.js',
     '!src/core/fs.js',
     '!src/core/local/symphony/launch.js',
     '!src/core/local/symphony/tuiRenderer.js',

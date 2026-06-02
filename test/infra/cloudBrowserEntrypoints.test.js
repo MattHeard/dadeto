@@ -34,7 +34,7 @@ describe('cloud browser entrypoints', () => {
 
   it('copies and uploads the deep core browser module tree used by root wrappers', async () => {
     const [copyCloudJs, mainTf] = await Promise.all([
-      readFile('src/core/copy-cloud.js', 'utf8'),
+      readFile('src/core/build/copy-cloud.js', 'utf8'),
       readFile('infra/main.tf', 'utf8'),
     ]);
 
