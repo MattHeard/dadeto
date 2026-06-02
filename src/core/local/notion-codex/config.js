@@ -6,6 +6,7 @@ import {
   normalizeString,
   normalizeStringArray,
 } from '../config-utils.js';
+import { objectOrEmpty } from '../../commonCore.js';
 
 const DEFAULT_CODEX_ARGS = [
   'exec',
@@ -95,9 +96,9 @@ function normalizeLauncherArgs(value) {
  * }} Normalized Notion Codex poller config.
  */
 export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
-  const source = toObjectOrEmpty(config);
-  const notion = toObjectOrEmpty(source.notion);
-  const launcher = toObjectOrEmpty(source.launcher);
+  const source = objectOrEmpty(config);
+  const notion = objectOrEmpty(source.notion);
+  const launcher = objectOrEmpty(source.launcher);
   const defaultNotion = DEFAULT_NOTION_CODEX_CONFIG.notion;
 
   return {
@@ -179,7 +180,7 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
  * @returns {NotionCodexIdleBackoffConfig} Normalized idle backoff config.
  */
 function normalizeIdleBackoff(value) {
-  const source = toObjectOrEmpty(value);
+  const source = objectOrEmpty(value);
   const fallback = DEFAULT_NOTION_CODEX_CONFIG.idleBackoff;
 
   return {
@@ -220,19 +221,6 @@ export async function loadNotionCodexConfig(options = {}) {
 
     throw error;
   }
-}
-
-/**
- * Convert a value into an object or return an empty object.
- * @param {unknown} value Candidate object.
- * @returns {Record<string, unknown>} Object-like value or empty object.
- */
-function toObjectOrEmpty(value) {
-  if (value && typeof value === 'object') {
-    return /** @type {Record<string, unknown>} */ (value);
-  }
-
-  return {};
 }
 
 /**

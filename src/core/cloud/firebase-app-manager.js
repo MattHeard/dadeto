@@ -32,6 +32,31 @@ export function createFirebaseAppManager(initializer) {
 }
 
 /**
+ * Create initialized Firebase-backed cloud app dependencies.
+ * @param {{
+ *   initializeApp: () => void,
+ *   createFirebaseAppManager: (initializer: () => void) => { ensureFirebaseApp: (initFn?: () => void) => void },
+ *   getFirestoreInstance: () => unknown,
+ *   getAuth: () => unknown,
+ *   express: () => unknown,
+ * }} deps Cloud wiring dependencies.
+ * @returns {{ db: unknown, auth: unknown, app: unknown }} Initialized cloud app parts.
+ */
+export function createFirebaseAppContext(deps) {
+  const { ensureFirebaseApp } = deps.createFirebaseAppManager(
+    deps.initializeApp
+  );
+
+  ensureFirebaseApp();
+
+  return {
+    db: deps.getFirestoreInstance(),
+    auth: deps.getAuth(),
+    app: deps.express(),
+  };
+}
+
+/**
  * Determine whether Firebase has already been initialized.
  * @param {{ firebaseInitialized: boolean }} state Initialization state.
  * @returns {boolean} True when initialization should be skipped.

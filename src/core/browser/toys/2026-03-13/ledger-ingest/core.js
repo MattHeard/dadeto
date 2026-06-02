@@ -4,11 +4,12 @@ import {
 } from './ledgerIngestShared.js';
 import {
   arrayOrEmpty,
+  ensureString,
   isBlankStringValue,
   numberOrZero,
-  ensureString,
   trimmedStringOrEmpty,
 } from '../../../browser-core.js';
+import { objectOrEmpty } from '../../../../commonCore.js';
 
 /**
  * Contracts and fixtures for the ledger-ingest toy.
@@ -548,29 +549,6 @@ function normalizeFieldMapping(mapping) {
 }
 
 /**
- * Normalize a candidate object-like value through the shared handler map.
- * @param {unknown} value Candidate object-like value.
- * @returns {Record<string, unknown>} Safe plain object.
- */
-function normalizeObjectLikeValue(value) {
-  if (value && typeof value === 'object') {
-    return /** @type {Record<string, unknown>} */ (value);
-  }
-  return {};
-}
-
-/**
- * Guard that only returns a mapping when the argument is an object.
- * @param {Record<string, string>|null|undefined} mapping Adapter overrides.
- * @returns {Record<string, string>} Valid mapping.
- */
-function sanitizeFieldMapping(mapping) {
-  return /** @type {Record<string, string>} */ (
-    normalizeObjectLikeValue(mapping)
-  );
-}
-
-/**
  * Normalize a dedupe policy while falling back to the defaults for missing
  * knobs.
  * @param {DedupePolicy|Record<string, unknown>} [policy] Partial policy overrides.
@@ -592,7 +570,16 @@ function normalizeDedupePolicy(policy) {
  * @returns {Record<string, unknown>} Safe policy-like object.
  */
 function sanitizePolicy(policy) {
-  return normalizeObjectLikeValue(policy);
+  return sanitizeFieldMapping(policy);
+}
+
+/**
+ * Guard that only returns a mapping when the argument is an object.
+ * @param {unknown} mapping Adapter overrides.
+ * @returns {Record<string, unknown>} Valid mapping.
+ */
+function sanitizeFieldMapping(mapping) {
+  return objectOrEmpty(mapping);
 }
 
 /**

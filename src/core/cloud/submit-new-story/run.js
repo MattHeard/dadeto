@@ -5,6 +5,7 @@ import {
   createHandleSubmitNewStory,
   createSubmitNewStoryResponder,
 } from './submit-new-story-core.js';
+import { createFirebaseAppContext } from '../firebase-app-manager.js';
 
 /**
  * Set up and export the submit-new-story cloud function.
@@ -24,14 +25,7 @@ import {
  * @returns {{ submitNewStory: unknown, handleSubmitNewStory: Function, app: unknown }} Wired endpoint exports.
  */
 export function runSubmitNewStory(deps) {
-  const { ensureFirebaseApp } = deps.createFirebaseAppManager(
-    deps.initializeApp
-  );
-
-  ensureFirebaseApp();
-  const db = deps.getFirestoreInstance();
-  const auth = deps.getAuth();
-  const app = deps.express();
+  const { db, auth, app } = createFirebaseAppContext(deps);
 
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = deps.getAllowedOrigins(environmentVariables);

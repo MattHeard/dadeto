@@ -15,6 +15,7 @@ import {
   sendUnauthorized,
 } from './mark-variant-dirty-core.js';
 import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
+import { createFirebaseAppContext } from '../firebase-app-manager.js';
 
 /**
  * Wire and return the mark-variant-dirty cloud exports.
@@ -32,15 +33,7 @@ import { createVerifyAdmin, isAllowedOrigin } from '../cloud-core.js';
  * @returns {{ markVariantDirty: unknown, handleRequest: Function, app: unknown }} Wired cloud export objects for index.js.
  */
 export function runMarkVariantDirty(deps) {
-  const { ensureFirebaseApp } = deps.createFirebaseAppManager(
-    deps.initializeApp
-  );
-
-  ensureFirebaseApp();
-
-  const auth = deps.getAuth();
-  const db = deps.getFirestoreInstance();
-  const app = deps.express();
+  const { auth, db, app } = createFirebaseAppContext(deps);
 
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = getAllowedOrigins(environmentVariables);
