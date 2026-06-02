@@ -174,12 +174,19 @@ describe('runCheckSuite', () => {
   });
 
   it('resolves default runner options when none are supplied', () => {
-    const resolved = runCheckSuiteTestOnly.resolveRunCheckOptions();
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(4321);
 
-    expect(resolved.commands).toHaveLength(8);
-    expect(resolved.failFast).toBe(false);
-    expect(resolved.stdout).toBe(process.stdout);
-    expect(resolved.stderr).toBe(process.stderr);
+    try {
+      const resolved = runCheckSuiteTestOnly.resolveRunCheckOptions();
+
+      expect(resolved.commands).toHaveLength(8);
+      expect(resolved.failFast).toBe(false);
+      expect(resolved.stdout).toBe(process.stdout);
+      expect(resolved.stderr).toBe(process.stderr);
+      expect(resolved.now()).toBe(4321);
+    } finally {
+      nowSpy.mockRestore();
+    }
   });
 
   it('handles children without output streams and uses the default clock', async () => {

@@ -1,8 +1,19 @@
 import { jest } from '@jest/globals';
+import fs from 'node:fs';
+import fsPromises from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   assertFunction,
+  createAsyncFsAdapters,
+  createFsAdapters,
+  createFsHandle,
+  createPathAdapters,
+  createPathHandle,
   ensureString,
   arrayOrEmpty,
+  getCurrentDirectory,
   isNonNullObject,
   isNullish,
   isValidString,
@@ -25,6 +36,8 @@ import {
   trimmedStringOrNull,
   runEntriesInParallel,
   runMappedEntries,
+  resolveRunCheckOptions,
+  resolveProjectDirectories,
 } from '../../src/core/commonCore.js';
 import {
   areValidStrings,
@@ -236,5 +249,151 @@ describe('commonCore helpers', () => {
       }
     );
     expect(seen).toEqual([10, 20]);
+  });
+
+  test('path and filesystem adapter handles expose the shared helpers', () => {
+    const pathHandle = createPathHandle({
+      pathModule: path,
+      fileURLToPathFn: fileURLToPath,
+      dirnameFn: path.dirname,
+    });
+    const fsHandle = createFsHandle({
+      fsModule: fs,
+      fsPromisesModule: fsPromises,
+    });
+
+    expect(
+      pathHandle.getCurrentDirectory('file:///tmp/dadeto/src/core/example.js')
+    ).toBe('/tmp/dadeto/src/core');
+    expect(pathHandle.resolveProjectDirectories('/tmp/dadeto/src/core')).toEqual(
+      {
+        projectRoot: '/tmp/dadeto',
+        srcDir: '/tmp/dadeto/src',
+        publicDir: '/tmp/dadeto/public',
+      }
+    );
+    expect(pathHandle.createPathAdapters()).toMatchObject({
+      join: path.join,
+      dirname: path.dirname,
+      relative: path.relative,
+      resolve: path.resolve,
+      extname: path.extname,
+    });
+    expect(fsHandle.createFsAdapters()).toEqual(expect.any(Object));
+    expect(fsHandle.createAsyncFsAdapters()).toEqual(expect.any(Object));
+  });
+
+  test('path helpers derive module and project directories', () => {
+    expect(
+      getCurrentDirectory(
+        'file:///tmp/dadeto/src/core/example.js',
+        fileURLToPath,
+        path.dirname
+      )
+    ).toBe('/tmp/dadeto/src/core');
+    expect(resolveProjectDirectories('/tmp/dadeto/src/core', path.resolve)).toEqual({
+      projectRoot: '/tmp/dadeto',
+      srcDir: '/tmp/dadeto/src',
+      publicDir: '/tmp/dadeto/public',
+    });
+    expect(createPathAdapters(path)).toMatchObject({
+      join: path.join,
+      dirname: path.dirname,
+      relative: path.relative,
+      resolve: path.resolve,
+      extname: path.extname,
+    });
+  });
+
+  test('filesystem adapters read, create, and copy files', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dadeto-core-'));
+    const syncAdapters = createFsAdapters(fs);
+    const asyncAdapters = createAsyncFsAdapters(fsPromises);
+
+    try {
+      const nestedDir = path.join(root, 'nested');
+      const sourceFile = path.join(root, 'source.txt');
+      const copiedFile = path.join(root, 'copied.txt');
+
+      expect(syncAdapters.directoryExists(root)).toBe(true);
+      syncAdapters.createDirectory(nestedDir);
+      expect(
+        syncAdapters.readDirEntries(root).some(entry => entry.name === 'nested')
+      ).toBe(true);
+      syncAdapters.removeDirectory(nestedDir);
+      expect(syncAdapters.directoryExists(nestedDir)).toBe(false);
+
+      fs.writeFileSync(sourceFile, 'hello');
+      syncAdapters.copyFile(sourceFile, copiedFile);
+      expect(fs.readFileSync(copiedFile, 'utf8')).toBe('hello');
+
+      await expect(
+        asyncAdapters.readDirEntries(path.join(root, 'missing'))
+      ).resolves.toEqual([]);
+
+      const failingAsyncAdapters = createAsyncFsAdapters({
+        readdir: async () => {
+          const error = new Error('permission denied');
+          error.code = 'EACCES';
+          throw error;
+        },
+        mkdir: fsPromises.mkdir,
+        copyFile: fsPromises.copyFile,
+      });
+      await expect(
+        failingAsyncAdapters.readDirEntries(path.join(root, 'forbidden'))
+      ).rejects.toThrow('permission denied');
+
+      const asyncDir = path.join(root, 'async');
+      await asyncAdapters.ensureDirectory(asyncDir);
+      fs.writeFileSync(path.join(asyncDir, 'value.txt'), 'world');
+      const asyncEntries = await asyncAdapters.readDirEntries(asyncDir);
+      expect(asyncEntries.map(entry => entry.name)).toContain('value.txt');
+      const asyncCopy = path.join(root, 'async-copy.txt');
+      await asyncAdapters.copyFile(sourceFile, asyncCopy);
+      expect(await fsPromises.readFile(asyncCopy, 'utf8')).toBe('hello');
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test('resolveRunCheckOptions falls back to default writers and clock helpers', () => {
+    const stdoutSpy = jest
+      .spyOn(process, 'stdout', 'get')
+      .mockReturnValue(undefined);
+    const stderrSpy = jest
+      .spyOn(process, 'stderr', 'get')
+      .mockReturnValue(undefined);
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(123456);
+
+    try {
+      const resolved = resolveRunCheckOptions({}, { defaultSpawn: jest.fn() });
+
+      expect(resolved.stdout.write).toEqual(expect.any(Function));
+      expect(resolved.stderr.write).toEqual(expect.any(Function));
+      expect(() => resolved.stdout.write('noop')).not.toThrow();
+      expect(() => resolved.stderr.write('noop')).not.toThrow();
+      expect(resolved.now()).toBe(123456);
+    } finally {
+      nowSpy.mockRestore();
+      stdoutSpy.mockRestore();
+      stderrSpy.mockRestore();
+    }
+  });
+
+  test('resolveRunCheckOptions uses the real process streams when available', () => {
+    const resolved = resolveRunCheckOptions({}, { defaultSpawn: jest.fn() });
+
+    expect(resolved.stdout).toBe(process.stdout);
+    expect(resolved.stderr).toBe(process.stderr);
+  });
+
+  test('resolveRunCheckOptions uses built-in defaults when called without arguments', () => {
+    const resolved = resolveRunCheckOptions();
+
+    expect(resolved.commands).toHaveLength(8);
+    expect(resolved.failFast).toBe(false);
+    expect(resolved.stdout).toBe(process.stdout);
+    expect(resolved.stderr).toBe(process.stderr);
   });
 });

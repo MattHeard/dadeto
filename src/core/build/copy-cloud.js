@@ -1,8 +1,8 @@
 import { promises as fs } from 'node:fs';
 
-import { createCopyToInfraCore } from './cloud/copy.js';
-import { createAsyncFsAdapters } from './fs.js';
-import { createPathAdapters, getCurrentDirectory } from './path.js';
+import { createCopyToInfraCore } from '../cloud/copy.js';
+import { createAsyncFsAdapters } from '../fs.js';
+import { createPathAdapters, getCurrentDirectory } from '../path.js';
 
 const __dirname = getCurrentDirectory(import.meta.url);
 

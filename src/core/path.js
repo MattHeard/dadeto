@@ -1,56 +1,22 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/**
- * Determine the directory of the current module using Node-specific helpers.
- * @param {string} moduleUrl - The module URL from import.meta.url.
- * @returns {string} Absolute path to the module directory.
- */
-export function getCurrentDirectory(moduleUrl) {
-  return path.dirname(fileURLToPath(moduleUrl));
-}
+import {
+  createPathHandle as createPathHandleCore,
+} from './commonCore.js';
 
-/**
- * Resolve key project directories relative to a given module directory.
- * @param {string} moduleDirectory - Directory containing the current module.
- * @returns {{ projectRoot: string, srcDir: string, publicDir: string }} Project directory map.
- */
-export function resolveProjectDirectories(moduleDirectory) {
-  const projectRoot = path.resolve(moduleDirectory, '../..');
-  const srcDir = path.resolve(projectRoot, 'src');
-  const publicDir = path.resolve(projectRoot, 'public');
+const handle = createPathHandleCore({
+  pathModule: path,
+  fileURLToPathFn: fileURLToPath,
+  dirnameFn: path.dirname,
+});
 
-  return { projectRoot, srcDir, publicDir };
-}
+export const {
+  getCurrentDirectory,
+  resolveProjectDirectories,
+  createPathAdapters,
+} = handle;
 
-/**
- * Provide the subset of Node's path module used by copy utilities.
- * @returns {{
- *   join: typeof path.join,
- *   dirname: typeof path.dirname,
- *   relative: typeof path.relative,
- *   resolve: typeof path.resolve,
- *   extname: typeof path.extname,
- * }} Adapter exposing required path helpers.
- */
-export function createPathAdapters() {
-  return {
-    join: path.join,
-    dirname: path.dirname,
-    relative: path.relative,
-    resolve: path.resolve,
-    extname: path.extname,
-  };
-}
+export const createPathHandle = createPathHandleCore;
 
-/**
- * Create the path adapter wrapper handle.
- * @returns {{
- *   getCurrentDirectory: typeof getCurrentDirectory,
- *   resolveProjectDirectories: typeof resolveProjectDirectories,
- *   createPathAdapters: typeof createPathAdapters
- * }} Path adapter exports.
- */
-export function createPathHandle() {
-  return { getCurrentDirectory, resolveProjectDirectories, createPathAdapters };
-}
+export { handle };
