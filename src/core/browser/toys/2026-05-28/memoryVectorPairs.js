@@ -6,6 +6,7 @@ import {
   normalizeMemoryLocation,
   normalizeMemoryPath,
   parseMemoryVectorRequest,
+  projectArrayOrSingletonToVector,
   readEnvelopeMemoryRoot,
   readMemoryPath,
   readMemoryRoot,
@@ -81,10 +82,6 @@ function resolvePathErrorForPairs(request, error) {
  * @returns {unknown[]} Vector projection.
  */
 function projectToVector(value) {
-  if (Array.isArray(value)) {
-    return value;
-  }
-
   return projectObjectOrScalarToVector(value);
 }
 
@@ -94,11 +91,15 @@ function projectToVector(value) {
  * @returns {unknown[]} Vector projection.
  */
 function projectObjectOrScalarToVector(value) {
+  if (Array.isArray(value)) {
+    return projectArrayOrSingletonToVector(value);
+  }
+
   if (isObjectLike(value)) {
     return projectObjectToVector(/** @type {object} */ (value));
   }
 
-  return [value];
+  return projectArrayOrSingletonToVector(value);
 }
 
 /**
@@ -139,6 +140,7 @@ export const memoryVectorPairsTestOnly = {
   normalizeMemoryPath,
   parseMemoryVectorRequest,
   projectToVector,
+  projectArrayOrSingletonToVector,
   projectObjectToVector,
   projectObjectOrScalarToVector,
   readEnvelopeMemoryRoot,

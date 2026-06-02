@@ -470,6 +470,15 @@ function resolveStringMemoryPath(resolved) {
  * @returns {unknown[]} Vector projection.
  */
 function projectToVector(value) {
+  return projectArrayOrSingletonToVector(value);
+}
+
+/**
+ * Wrap a non-object value in a vector while preserving arrays.
+ * @param {unknown} value Value to project.
+ * @returns {unknown[]} Vector projection.
+ */
+export function projectArrayOrSingletonToVector(value) {
   if (Array.isArray(value)) {
     return value;
   }
