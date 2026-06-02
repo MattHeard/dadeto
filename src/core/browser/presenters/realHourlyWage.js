@@ -208,20 +208,11 @@ function getSummaryRows(parsed) {
 
 /**
  * Normalize an arbitrary candidate to a record.
- * @param {unknown} candidate Candidate value.
+ * @param {Record<string, unknown>} parsed Parsed payload.
  * @returns {Record<string, unknown>} Record or empty object.
  */
-function getRecordOrEmpty(candidate) {
-  return objectOrEmpty(candidate);
-}
-
-/**
- * Read the breakdown object from a parsed wage payload.
- * @param {Record<string, unknown>} parsed Parsed payload.
- * @returns {Record<string, unknown>} Breakdown object.
- */
 function getBreakdown(parsed) {
-  return getRecordOrEmpty(parsed.breakdown);
+  return objectOrEmpty(parsed.breakdown);
 }
 
 /**
@@ -231,7 +222,7 @@ function getBreakdown(parsed) {
  * @returns {Record<string, unknown>} Nested record or empty object.
  */
 function getNestedRecord(source, key) {
-  return getRecordOrEmpty(source[key]);
+  return objectOrEmpty(source[key]);
 }
 
 /**

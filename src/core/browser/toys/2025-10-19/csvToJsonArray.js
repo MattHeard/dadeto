@@ -107,17 +107,8 @@ function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
 }
 
 /**
- * Check if line is empty.
- * @param {string} line Line.
- * @returns {boolean} True if empty.
- */
-function isLineEmpty(line) {
-  return isBlankStringValue(line);
-}
-
-/**
  * Remove empty lines from the end of the provided array.
- * @param {string[]} lines - Raw CSV lines including potential trailing blanks.
+ * @param {string[]} lines Raw CSV lines including potential trailing blanks.
  * @returns {string[]} A slice of the original lines without trailing blanks.
  */
 function removeTrailingEmptyLines(lines) {
@@ -136,7 +127,7 @@ function removeTrailingEmptyLines(lines) {
  */
 function findLastNonEmptyLineIndex(lines) {
   return lines.findLastIndex(
-    (/** @type {string} */ line) => !isLineEmpty(line)
+    (/** @type {string} */ line) => !isBlankStringValue(line)
   );
 }
 

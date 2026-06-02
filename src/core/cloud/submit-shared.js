@@ -13,15 +13,6 @@ import { normalizeExpressRequest } from './request-normalization.js';
 /** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
 
 /**
- * Normalize the short text submitted by callers (title, option, page markers, etc.).
- * @param {unknown} value Candidate value supplied by the request.
- * @returns {string} Trimmed string limited to the short-field length.
- */
-function normalizeShortSubmissionString(value) {
-  return normalizeShortString(value);
-}
-
-/**
  * Determine whether a raw option candidate is present.
  * @param {unknown} option Candidate option value from the request body.
  * @returns {boolean} True when the option was provided.
@@ -287,7 +278,4 @@ export function createCloudSubmitHandler(responder) {
   return createResponderHandler(responder, normalizeExpressRequest);
 }
 
-export {
-  normalizeShortSubmissionString as normalizeShortString,
-  resolveAuthorIdFromHeader,
-};
+export { normalizeShortString, resolveAuthorIdFromHeader };

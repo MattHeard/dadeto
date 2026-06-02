@@ -70,38 +70,10 @@ import { createResponder } from '../responder-utils.js';
  */
 const METHOD_NOT_ALLOWED_RESPONSE = { status: 405, body: 'POST only' };
 
-/**
- * Get auth header from getter.
- * @param {((name: string) => string | undefined) | undefined} getter Getter.
- * @returns {string | null} Auth header.
- */
-function getAuthFromGetter(getter) {
-  return getAuthorizationFromGetter(getter);
-}
-
-/**
- * Gather optional poll choices from the incoming request body.
- * @param {Record<string, unknown> | undefined} body - Request body containing poll options.
- * @param {number} maxLength - Maximum number of characters per option.
- * @returns {string[]} Normalized non-empty poll options.
- */
-function collectOptions(body, maxLength) {
-  return collectSubmissionOptions(body, maxLength);
-}
-
 export const submitNewStoryCoreTestUtils = {
-  getAuthFromGetter,
-  collectOptions,
+  getAuthFromGetter: getAuthorizationFromGetter,
+  collectOptions: collectSubmissionOptions,
 };
-
-/**
- * Get valid UID.
- * @param {unknown} uid UID.
- * @returns {string | null} UID or null.
- */
-function getValidUid(uid) {
-  return trimmedStringOrNull(uid);
-}
 
 /**
  * Validate decoded token.
@@ -109,7 +81,7 @@ function getValidUid(uid) {
  * @returns {string | null} UID or null.
  */
 function validateDecodedToken(decoded) {
-  return whenNotNullish(decoded, value => getValidUid(value.uid));
+  return whenNotNullish(decoded, value => trimmedStringOrNull(value.uid));
 }
 
 /**
@@ -268,7 +240,7 @@ function normalizeSubmissionData(body) {
     /** @type {string} */ (body.content)
   );
   const author = normalizeAuthor(body.author ?? '???');
-  const options = collectOptions(body, 120);
+  const options = collectSubmissionOptions(body, 120);
 
   return { title, content, author, options };
 }

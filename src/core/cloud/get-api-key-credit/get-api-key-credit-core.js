@@ -43,15 +43,6 @@ export function createFirestore(FirestoreConstructor) {
 }
 
 /**
- * Check if a UUID is a valid string.
- * @param {unknown} uuid Candidate UUID.
- * @returns {boolean} True if UUID is valid string.
- */
-function isValidUuid(uuid) {
-  return isValidString(uuid);
-}
-
-/**
  * Resolve the UUID from the request or dependency helper.
  * @param {Record<string, unknown>} request - Incoming request object.
  * @param {(request: unknown) => string | undefined} getUuid - Helper to derive the UUID.
@@ -59,7 +50,7 @@ function isValidUuid(uuid) {
  */
 function resolveUuid(request, getUuid) {
   const directUuid = request.uuid;
-  if (isValidUuid(directUuid)) {
+  if (isValidString(directUuid)) {
     return /** @type {string} */ (directUuid);
   }
   return getUuid(request);
@@ -122,7 +113,7 @@ async function fetchCreditResponse(fetchCredit, uuid) {
  * @returns {{ status: number, body: string } | null} Response when missing, otherwise null.
  */
 function getMissingUuidResponse(uuid) {
-  if (isValidUuid(uuid)) {
+  if (isValidString(uuid)) {
     return null;
   }
   return MISSING_UUID_RESPONSE;

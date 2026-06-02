@@ -21,11 +21,13 @@ function createNode(overrides = {}) {
 /**
  * Create a minimal source-code stub for comment-based helper tests.
  * @param {Array<Record<string, unknown>>} [comments] Comments returned before the node.
- * @returns {{ getCommentsBefore: () => Array<Record<string, unknown>> }} Fake source code helper.
+ * @param {Array<Record<string, unknown>>} [ancestors] Ancestors returned for node lookups.
+ * @returns {{ getCommentsBefore: () => Array<Record<string, unknown>>, getAncestors: () => Array<Record<string, unknown>> }} Fake source code helper.
  */
-function createSourceCode(comments = []) {
+function createSourceCode(comments = [], ancestors = []) {
   return {
     getCommentsBefore: () => comments,
+    getAncestors: () => ancestors,
   };
 }
 
@@ -310,17 +312,18 @@ describe('tautological-wrapper helper coverage', () => {
         createSourceCode([comment])
       )
     ).toBe(false);
-    expect(helpers.isExportedFunction(createNode())).toBe(false);
+    expect(helpers.isExportedFunction(createNode(), createSourceCode())).toBe(
+      false
+    );
     expect(
       helpers.isExportedFunction(
-        createNode({
-          parent: {
-            type: 'ExportNamedDeclaration',
-            parent: null,
-          },
-        })
+        createNode(),
+        createSourceCode([], [{ type: 'ExportNamedDeclaration' }])
       )
     ).toBe(true);
+    expect(helpers.isExportBoundary({ type: 'ExportDefaultDeclaration' })).toBe(
+      true
+    );
   });
 
   test('skips unsupported wrapper shapes and detects tautological wrappers', () => {

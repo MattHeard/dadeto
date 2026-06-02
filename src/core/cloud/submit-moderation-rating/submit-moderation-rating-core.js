@@ -113,15 +113,6 @@ function extractBearerToken(header) {
  * @returns {boolean} True when the origin may access the endpoint.
  */
 /**
- * Normalize origins defined in the configuration.
- * @param {unknown} allowedOrigins Raw origins value.
- * @returns {string[]} Array of origin strings.
- */
-function normalizeOrigins(allowedOrigins) {
-  return arrayOrEmpty(allowedOrigins);
-}
-
-/**
  * Build CORS options consumed by the moderation responder.
  * @param {{
  *   allowedOrigins?: string[] | null,
@@ -133,7 +124,7 @@ function normalizeOrigins(allowedOrigins) {
  * }} Express-compatible CORS configuration.
  */
 export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
-  const origins = normalizeOrigins(allowedOrigins);
+  const origins = arrayOrEmpty(allowedOrigins);
 
   return {
     origin: (origin, cb) => {

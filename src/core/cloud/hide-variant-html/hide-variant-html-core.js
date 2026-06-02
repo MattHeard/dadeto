@@ -60,8 +60,8 @@ function normalizeObjectLoadResult(loadResult) {
   }
 
   return {
-    page: normalizeNullableField(loadResult.page),
-    variant: normalizeNullableField(loadResult.variant),
+    page: whenNotNullishValue(loadResult.page),
+    variant: whenNotNullishValue(loadResult.variant),
   };
 }
 
@@ -75,15 +75,6 @@ function hasPageOrVariant(value) {
     return true;
   }
   return 'variant' in value;
-}
-
-/**
- * Normalize nullable fields to `null`.
- * @param {*} value Field value.
- * @returns {*} Null when the value is undefined; otherwise returns the value.
- */
-function normalizeNullableField(value) {
-  return whenNotNullishValue(value);
 }
 
 /**
@@ -410,15 +401,6 @@ function formatPageNumber(value) {
 }
 
 /**
- * Normalize a variant name when available.
- * @param {unknown} value Candidate variant name.
- * @returns {string} Variant name string or empty string when invalid.
- */
-function formatVariantName(value) {
-  return ensureString(value);
-}
-
-/**
  * Build the rendered HTML path for a variant page.
  * @param {{ page: *, variantData?: * }} payload Page and variant details.
  * @returns {string} Relative path to the rendered HTML file.
@@ -444,7 +426,7 @@ function extractPageNumber(page) {
  * @returns {string} Variant name segment.
  */
 function extractVariantName(variantData) {
-  return formatVariantName(variantData?.name);
+  return ensureString(variantData?.name);
 }
 
 /**

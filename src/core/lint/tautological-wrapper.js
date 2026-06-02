@@ -98,7 +98,7 @@ function shouldSkipWrapperCheck(node, sourceCode) {
   return (
     node.async ||
     node.generator ||
-    isExportedFunction(node) ||
+    isExportedFunction(node, sourceCode) ||
     hasDocumentedExemption(node, sourceCode)
   );
 }
@@ -384,25 +384,23 @@ function hasDocumentedExemption(node, sourceCode) {
 /**
  * Determine whether the function is exported from the current module.
  * @param {WrapperFunctionNode} node Function under inspection.
+ * @param {import('eslint').SourceCode} sourceCode ESLint source code helper.
  * @returns {boolean} True when the function is part of the public module API.
  */
-function isExportedFunction(node) {
-  let current = /** @type {import('estree').Node | null | undefined} */ (
-    node.parent
+function isExportedFunction(node, sourceCode) {
+  return sourceCode.getAncestors(node).some(isExportBoundary);
+}
+
+/**
+ * Determine whether an ancestor marks a public export boundary.
+ * @param {import('estree').Node} ancestor Ancestor node.
+ * @returns {boolean} True when the ancestor exports the wrapper.
+ */
+function isExportBoundary(ancestor) {
+  return (
+    ancestor.type === 'ExportNamedDeclaration' ||
+    ancestor.type === 'ExportDefaultDeclaration'
   );
-
-  while (current) {
-    if (
-      current.type === 'ExportNamedDeclaration' ||
-      current.type === 'ExportDefaultDeclaration'
-    ) {
-      return true;
-    }
-
-    current = /** @type {any} */ (current).parent;
-  }
-
-  return false;
 }
 
 export const tautologicalWrapperTestOnly = {
@@ -418,6 +416,7 @@ export const tautologicalWrapperTestOnly = {
   getSingleReturnExpression,
   hasDocumentedExemption,
   isExportedFunction,
+  isExportBoundary,
   isForwardedIdentifierParameter,
   isForwardedParameter,
   isForwardedRestParameter,

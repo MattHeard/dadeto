@@ -1,10 +1,6 @@
 import { createNotionCodexLauncherCore } from '../../core/local/notion-codex/launcher.js';
 
-const handle = createNotionCodexLauncherFactory();
+const handle = createNotionCodexLauncherCore;
 
 export { handle };
 export { handle as createNotionCodexLauncher };
-
-function createNotionCodexLauncherFactory() {
-  return options => createNotionCodexLauncherCore(options);
-}

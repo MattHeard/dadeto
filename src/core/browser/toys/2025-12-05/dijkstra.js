@@ -17,7 +17,7 @@ export function shortestDistanceToAdmin({
   ignoredPageId,
 }) {
   return (
-    whenTruthy(areIdsValid(moderatorId, adminId), () =>
+    whenTruthy(areValidStrings(moderatorId, adminId), () =>
       resolveDistance({
         moderatorId,
         adminId,
@@ -271,28 +271,17 @@ function enqueue(queue, entry) {
  * @returns {string[]} Unique node identifiers.
  */
 function buildNodeList(ratings, moderatorId, adminId) {
-  /** @type {Record<string, boolean>} */
-  const uniqueNodes = {};
+  const uniqueNodes = new Set();
   if (isPlainObject(ratings)) {
     const normalizedRatings =
       /** @type {Record<string, Record<string, boolean>>} */ (ratings);
     Object.keys(normalizedRatings).forEach(node => {
-      uniqueNodes[node] = true;
+      uniqueNodes.add(node);
     });
   }
-  uniqueNodes[moderatorId] = true;
-  uniqueNodes[adminId] = true;
-  return Object.keys(uniqueNodes);
-}
-
-/**
- * Validate moderator and admin identifiers.
- * @param {string} moderatorId - Moderator identifier.
- * @param {string} adminId - Admin identifier.
- * @returns {boolean} True when both are valid.
- */
-function areIdsValid(moderatorId, adminId) {
-  return areValidStrings(moderatorId, adminId);
+  uniqueNodes.add(moderatorId);
+  uniqueNodes.add(adminId);
+  return [...uniqueNodes];
 }
 
 /**

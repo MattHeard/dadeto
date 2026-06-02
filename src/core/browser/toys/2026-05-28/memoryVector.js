@@ -79,7 +79,7 @@ function parseObjectMemoryVectorRequest(parsed) {
 
   return createMemoryVectorRequest(
     normalizeMemoryLocation(parsed.memoryLocation),
-    normalizeMemoryPath(getPathCandidate(parsed))
+    trimmedStringOrEmpty(getPathCandidate(parsed))
   );
 }
 
@@ -90,15 +90,6 @@ function parseObjectMemoryVectorRequest(parsed) {
  */
 function normalizeMemoryLocation(value) {
   return fallbackIfEmpty(trimmedStringOrEmpty(value), DEFAULT_MEMORY_LOCATION);
-}
-
-/**
- * Normalize the requested memory path.
- * @param {unknown} value Path candidate.
- * @returns {string} Dot-separated path.
- */
-function normalizeMemoryPath(value) {
-  return trimmedStringOrEmpty(value);
 }
 
 /**
@@ -421,7 +412,7 @@ function readValidatedEnvelopeRoot(env, selectRoot) {
  * @returns {{ root?: object | unknown[], error?: string }} Root lookup result.
  */
 function readValidatedSourceRoot(env, helperName, selectRoot) {
-  const getter = getRequiredEnvHelper(env, helperName);
+  const getter = requireEnvHelper(env, helperName);
   const source = getter();
   if (!isObjectLike(source)) {
     return {
@@ -505,16 +496,6 @@ function buildMemoryVectorError(
     vector: [],
     error,
   };
-}
-
-/**
- * Require a helper from the toy environment.
- * @param {ToyEnv} env Environment helpers.
- * @param {string} key Helper name.
- * @returns {Function} Helper function.
- */
-function getRequiredEnvHelper(env, key) {
-  return requireEnvHelper(env, key);
 }
 
 /**
@@ -649,7 +630,7 @@ export {
   formatThrownError,
   getPathCandidate,
   normalizeMemoryLocation,
-  normalizeMemoryPath,
+  trimmedStringOrEmpty as normalizeMemoryPath,
   parseMemoryVectorRequest,
   projectToVector,
   readEnvelopeMemoryRoot,
@@ -666,7 +647,7 @@ export const memoryVectorTestOnly = {
   buildResolvedMemoryVectorResponseFromValue,
   buildResolvedMemoryVectorError,
   normalizeMemoryLocation,
-  normalizeMemoryPath,
+  normalizeMemoryPath: trimmedStringOrEmpty,
   parseMemoryVectorRequest,
   projectToVector,
   readEnvelopeMemoryRoot,

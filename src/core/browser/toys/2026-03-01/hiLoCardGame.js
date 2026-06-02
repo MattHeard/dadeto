@@ -1,6 +1,7 @@
 import {
   getStringCandidate,
   isNonNullObject,
+  normalizeObjectOrFallback,
   whenTruthy,
   whenString,
 } from '../../browser-core.js';
@@ -108,7 +109,12 @@ function hasInputPayload(input) {
  * @returns {HiLoInputEvent | null} Valid input event or null.
  */
 export function normalizeParsedEvent(parsed) {
-  const candidate = toRecordOrNull(parsed, isRecordCandidate);
+  const candidate = toRecordOrNull(
+    parsed,
+    /** @type {(value: unknown) => value is Record<string, unknown>} */ (
+      isNonNullObject
+    )
+  );
   if (!candidate) {
     return null;
   }
@@ -148,11 +154,13 @@ function readEventType(candidate) {
  * @returns {HiLoScore} Safe score value.
  */
 function normalizeScore(value) {
-  return normalizeStoredObject(value, createInitialScore, candidate => ({
-    correct: toScoreNumber(candidate.correct),
-    incorrect: toScoreNumber(candidate.incorrect),
-    total: toScoreNumber(candidate.total),
-  }));
+  return /** @type {HiLoScore} */ (
+    normalizeObjectOrFallback(value, createInitialScore, candidate => ({
+      correct: toScoreNumber(candidate.correct),
+      incorrect: toScoreNumber(candidate.incorrect),
+      total: toScoreNumber(candidate.total),
+    }))
+  );
 }
 
 /**
@@ -204,12 +212,10 @@ function buildNormalizedGameState(candidate, getRandomNumber) {
  * @returns {HiLoKeyboardState} Safe keyboard state.
  */
 export function normalizeKeyboardState(value) {
-  return normalizeStoredObject(
-    value,
-    createInitialKeyboardState,
-    candidate => ({
+  return /** @type {HiLoKeyboardState} */ (
+    normalizeObjectOrFallback(value, createInitialKeyboardState, candidate => ({
       activeKey: readActiveKey(candidate.activeKey),
-    })
+    }))
   );
 }
 
@@ -260,30 +266,6 @@ function isIntegerCard(card) {
  */
 function isCardInRange(card) {
   return card >= 1 && card <= 13;
-}
-
-/**
- * Normalize an object-like stored value or fall back to a default state.
- * @template T
- * @param {unknown} value - Stored candidate.
- * @param {() => T} fallback - Fallback value creator.
- * @param {(candidate: Record<string, unknown>) => T} transform - Mapper for object-like values.
- * @returns {T} Normalized value.
- */
-function normalizeStoredObject(value, fallback, transform) {
-  if (!isRecordCandidate(value)) {
-    return fallback();
-  }
-
-  return /** @type {T} */ (transform(value));
-}
-
-/**
- * @param {unknown} value - Candidate object-like value.
- * @returns {value is Record<string, unknown>} True when the value is a record.
- */
-function isRecordCandidate(value) {
-  return isNonNullObject(value);
 }
 
 /**

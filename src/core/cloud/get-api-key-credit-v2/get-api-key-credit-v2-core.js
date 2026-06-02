@@ -124,7 +124,7 @@ export function createGetApiKeyCreditV2Handler(deps) {
     );
 
   return async function handleRequest(request = {}) {
-    const method = deriveRequestMethod(request.method);
+    const method = ensureString(request.method);
     const uuid = resolveUuid(request);
     const validationError = resolveRequestValidationError(method, uuid);
 
@@ -198,15 +198,6 @@ function resolveErrorLogger(logError) {
   return /** @type {(error: unknown) => void} */ (
     functionOrFallback(logError, () => () => {})
   );
-}
-
-/**
- * Normalize the HTTP method before validation.
- * @param {unknown} method Candidate HTTP method.
- * @returns {string} Method string when valid, otherwise an empty string.
- */
-function deriveRequestMethod(method) {
-  return ensureString(method);
 }
 
 /**

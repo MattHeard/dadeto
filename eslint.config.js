@@ -7,11 +7,7 @@ import tautologicalWrapperRule from './src/core/lint/tautological-wrapper.js';
 
 const lintFiles = ['src/core/**/*.js', 'test/**/*.js'];
 const tautologicalWrapperFiles = [
-  'src/core/**/index.js',
-  'src/core/**/run.js',
-  'src/local/**/index.js',
-  'src/local/**/run.js',
-  'src/scripts/**/*.js',
+  'src/**/*.js',
 ];
 const repoLintPlugin = {
   rules: {

@@ -315,16 +315,16 @@ export const fixtures = {
 
 export const ledgerIngestCoreTestOnly = {
   getSourceLabel,
-  getRawRecords,
+  getRawRecords: arrayOrEmpty,
   findMissingRequiredFields,
   isMissingRequiredField,
   getRequiredRawValue,
   isMissingRequiredValue,
   isBlankStringValue,
   normalizeFieldMapping,
-  sanitizeFieldMapping,
+  sanitizeFieldMapping: objectOrEmpty,
   normalizeDedupePolicy,
-  sanitizePolicy,
+  sanitizePolicy: objectOrEmpty,
   sanitizePolicyName,
   sanitizePolicyStrategy,
   sanitizePolicyCandidateFields,
@@ -348,7 +348,9 @@ export const ledgerIngestCoreTestOnly = {
  */
 export function importTransactions(input) {
   const sourceLabel = getSourceLabel(input);
-  const rawRecords = getRawRecords(input.rawRecords);
+  const rawRecords = /** @type {Record<string, unknown>[]} */ (
+    arrayOrEmpty(input.rawRecords)
+  );
   const fieldMapping = normalizeFieldMapping(input.fieldMapping);
   const dedupePolicy = normalizeDedupePolicy(input.dedupePolicy);
 
@@ -449,15 +451,6 @@ function getSourceLabel(input) {
 }
 
 /**
- * Normalize the raw-records payload into a guaranteed array.
- * @param {Record<string, unknown>[]|undefined} rawRecords Adapter-provided rows.
- * @returns {Record<string, unknown>[]} Safe raw record list.
- */
-function getRawRecords(rawRecords) {
-  return /** @type {Record<string, unknown>[]} */ (arrayOrEmpty(rawRecords));
-}
-
-/**
  * Identify missing canonical values before normalization runs.
  * @param {Record<string, unknown>} record Raw row under review.
  * @param {Record<string, string>} mapping Field mapping for this run.
@@ -544,7 +537,7 @@ function recordCanonicalTransaction({
 function normalizeFieldMapping(mapping) {
   return {
     ...DEFAULT_FIELD_MAPPING,
-    ...sanitizeFieldMapping(mapping),
+    ...objectOrEmpty(mapping),
   };
 }
 
@@ -555,31 +548,13 @@ function normalizeFieldMapping(mapping) {
  * @returns {DedupePolicy} Policy that is safe for the core logic.
  */
 function normalizeDedupePolicy(policy) {
-  const sanitizedPolicy = sanitizePolicy(policy);
+  const sanitizedPolicy = objectOrEmpty(policy);
   return {
     name: sanitizePolicyName(sanitizedPolicy),
     strategy: sanitizePolicyStrategy(sanitizedPolicy),
     candidateFields: sanitizePolicyCandidateFields(sanitizedPolicy),
     caseInsensitive: sanitizePolicyCaseInsensitive(sanitizedPolicy),
   };
-}
-
-/**
- * Ensure we always work with an object when normalizing the policy.
- * @param {DedupePolicy|Record<string, unknown>|null|undefined} policy Policy override candidate.
- * @returns {Record<string, unknown>} Safe policy-like object.
- */
-function sanitizePolicy(policy) {
-  return sanitizeFieldMapping(policy);
-}
-
-/**
- * Guard that only returns a mapping when the argument is an object.
- * @param {unknown} mapping Adapter overrides.
- * @returns {Record<string, unknown>} Valid mapping.
- */
-function sanitizeFieldMapping(mapping) {
-  return objectOrEmpty(mapping);
 }
 
 /**

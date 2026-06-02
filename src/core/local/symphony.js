@@ -740,8 +740,7 @@ function formatAgentFailureExitCodeMessage(exitCode) {
  * @returns {string | null} Summary failure message or null.
  */
 function formatAgentFailureSummaryMessage(summary) {
-  const normalizedSummary = normalizeAgentFailureSummary(summary);
-  return formatAgentFailureDetailMessage(normalizedSummary);
+  return formatAgentFailureDetailMessage(trimmedStringOrNull(summary));
 }
 
 /**
@@ -751,15 +750,6 @@ function formatAgentFailureSummaryMessage(summary) {
  */
 function formatAgentFailureDetailMessage(detail) {
   return whenString(detail, value => `agent failure: ${value}`);
-}
-
-/**
- * Normalize a summary string for failure reporting.
- * @param {string | null} summary Raw summary value.
- * @returns {string | null} Normalized summary or null when empty.
- */
-function normalizeAgentFailureSummary(summary) {
-  return trimmedStringOrNull(summary);
 }
 
 /**

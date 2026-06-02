@@ -527,17 +527,8 @@ export function parseMarkVariantRequestBody(body) {
   const { page, variant } = parsed ?? {};
   return {
     pageNumber: Number(page),
-    variantName: resolveVariantName(variant),
+    variantName: commonCore.ensureString(variant),
   };
-}
-
-/**
- * Resolve the variant name from the incoming payload.
- * @param {unknown} candidate Candidate variant identifier.
- * @returns {string} Variant name or empty string.
- */
-function resolveVariantName(candidate) {
-  return commonCore.ensureString(candidate);
 }
 
 /**
@@ -553,7 +544,7 @@ function extractValidatedConfig(optionsTyped) {
 }
 
 export const markVariantDirtyTestUtils = {
-  resolveVariantName,
+  resolveVariantName: commonCore.ensureString,
 };
 
 /**

@@ -9,14 +9,6 @@ const DEFAULT_STATE = {
 
 /**
  * @param {string} input Serialized Joy-Con mapper action payload.
- * @returns {Record<string, unknown> | null} Parsed JSON value or null on parse failure.
- */
-function parseJsonInput(input) {
-  return parseJsonObject(input);
-}
-
-/**
- * @param {string} input Serialized Joy-Con mapper action payload.
  * @returns {Record<string, unknown> | null} Parsed action object or null for invalid input.
  */
 function parseInput(input) {
@@ -24,7 +16,7 @@ function parseInput(input) {
     return null;
   }
 
-  return parseJsonInput(input);
+  return parseJsonObject(input);
 }
 
 /**
@@ -197,14 +189,7 @@ function isCaptureAction(parsed) {
 }
 
 /**
- * @param {Record<string, unknown> | null} parsed Parsed Joy-Con mapper action.
- * @returns {parsed is Record<string, unknown>} Whether the parsed action is object-like.
- */
-function isParsedAction(parsed) {
-  return isNonNullObject(parsed);
-}
-
-/**
+ * Resolve the next state for a parsed action.
  * @param {{ mappings: Record<string, unknown>, skippedControls: string[] }} storedState Current persisted state.
  * @param {Record<string, unknown>} parsed Parsed Joy-Con mapper action.
  * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] } | null} State update for non-capture actions.
@@ -241,11 +226,14 @@ function getResolvedActionState(storedState, parsed) {
  * @returns {{ mappings: Record<string, unknown>, skippedControls: string[] } | null} Resolved state candidate.
  */
 function getNextState(parsed, storedState) {
-  if (!isParsedAction(parsed)) {
+  if (!isNonNullObject(parsed)) {
     return null;
   }
 
-  return getResolvedActionState(storedState, parsed);
+  return getResolvedActionState(
+    storedState,
+    /** @type {Record<string, unknown>} */ (parsed)
+  );
 }
 
 /**
