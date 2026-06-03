@@ -1,5 +1,4 @@
-import path from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { resolveLocalConfigLoader } from '../config-utils.js';
 
 const PROMPT_TEMPLATE_KEY = 'prompt_template';
 
@@ -209,7 +208,7 @@ function createMissingWorkflowResult(workflowPath) {
 }
 
 /**
- * @param {{ workflowPath?: string, repoRoot?: string, readFileImpl?: typeof readFile }} [options] Optional workflow file resolution overrides.
+ * @param {{ workflowPath?: string, repoRoot?: string, cwd?: () => string, pathModule?: { resolve: (first: string, ...parts: string[]) => string }, readFileImpl?: (filePath: string, encoding: 'utf8') => Promise<string> }} [options] Optional workflow file resolution overrides.
  * @returns {Promise<{
  *   path: string,
  *   exists: boolean,
@@ -222,12 +221,11 @@ function createMissingWorkflowResult(workflowPath) {
  * }>} Workflow load result for the local Symphony scaffold.
  */
 export async function loadSymphonyWorkflow(options = {}) {
-  const repoRoot = options.repoRoot ?? process.cwd();
-  const workflowPath = path.resolve(
-    repoRoot,
-    options.workflowPath ?? 'WORKFLOW.md'
+  const { filePath: workflowPath, readFileImpl } = resolveLocalConfigLoader(
+    options,
+    'workflowPath',
+    'WORKFLOW.md'
   );
-  const readFileImpl = options.readFileImpl ?? readFile;
 
   try {
     const content = await readFileImpl(workflowPath, 'utf8');

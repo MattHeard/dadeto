@@ -1,3 +1,6 @@
+import path from 'node:path';
+import { resolveLocalConfigLoader } from '../../src/core/local/config-utils.js';
+import { loadNotionCodexConfig as loadNotionCodexConfigCore } from '../../src/core/local/notion-codex/config.js';
 import {
   DEFAULT_NOTION_CODEX_CONFIG,
   loadNotionCodexConfig,
@@ -9,7 +12,8 @@ describe('local notion codex config', () => {
     const config = normalizeNotionCodexConfig(
       {},
       '/tmp/repo',
-      '/tmp/repo/tracking/notion-codex.local.json'
+      '/tmp/repo/tracking/notion-codex.local.json',
+      path
     );
 
     expect(config.notion.dadetoPageId).toBe('1f2700afc30180a3abedd568190132c3');
@@ -58,6 +62,27 @@ describe('local notion codex config', () => {
     });
   });
 
+  test('requires injected path helpers in the core loader', async () => {
+    await expect(loadNotionCodexConfigCore()).rejects.toThrow();
+  });
+
+  test('resolveLocalConfigLoader requires path and readFile helpers', () => {
+    expect(() =>
+      resolveLocalConfigLoader(
+        {},
+        'configPath',
+        'tracking/notion-codex.local.json'
+      )
+    ).toThrow('pathModule is required.');
+    expect(() =>
+      resolveLocalConfigLoader(
+        { pathModule: path },
+        'configPath',
+        'tracking/notion-codex.local.json'
+      )
+    ).toThrow('readFileImpl is required.');
+  });
+
   test('applies explicit config overrides', () => {
     const config = normalizeNotionCodexConfig(
       {
@@ -84,7 +109,8 @@ describe('local notion codex config', () => {
         },
       },
       '/tmp/repo',
-      '/tmp/config.json'
+      '/tmp/config.json',
+      path
     );
 
     expect(config.notion.symphonyPageId).toBe('symphony-page');
@@ -114,7 +140,8 @@ describe('local notion codex config', () => {
     const config = normalizeNotionCodexConfig(
       null,
       '/tmp/repo',
-      '/tmp/config.json'
+      '/tmp/config.json',
+      path
     );
 
     expect(config.notion).toEqual(DEFAULT_NOTION_CODEX_CONFIG.notion);
@@ -134,7 +161,8 @@ describe('local notion codex config', () => {
         },
       },
       '/tmp/repo',
-      '/tmp/config.json'
+      '/tmp/config.json',
+      path
     );
 
     expect(config.notion.inboxPageIds).toEqual(
@@ -188,5 +216,40 @@ describe('local notion codex config', () => {
     );
     expect(config.notion).toEqual(DEFAULT_NOTION_CODEX_CONFIG.notion);
     expect(config.launcher).toEqual(DEFAULT_NOTION_CODEX_CONFIG.launcher);
+  });
+
+  test('uses cwd-based repo resolution in the core loader', async () => {
+    const config = await loadNotionCodexConfigCore({
+      cwd: () => '/tmp/repo',
+      pathModule: path,
+      async readFileImpl() {
+        const error = new Error('missing');
+        error.code = 'ENOENT';
+        throw error;
+      },
+    });
+
+    expect(config.configPath).toBe(
+      '/tmp/repo/tracking/notion-codex.local.json'
+    );
+  });
+
+  test('falls back to the current working directory in the core loader', async () => {
+    await expect(
+      loadNotionCodexConfigCore({
+        pathModule: path,
+        async readFileImpl() {
+          const error = new Error('missing');
+          error.code = 'ENOENT';
+          throw error;
+        },
+      })
+    ).resolves.toMatchObject({
+      configPath: path.join(
+        process.cwd(),
+        'tracking',
+        'notion-codex.local.json'
+      ),
+    });
   });
 });

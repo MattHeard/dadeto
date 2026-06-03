@@ -2,6 +2,8 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { jest } from '@jest/globals';
+import { loadSymphonyConfig as loadSymphonyConfigCore } from '../../src/core/local/symphony/config.js';
+import { loadSymphonyWorkflow as loadSymphonyWorkflowCore } from '../../src/core/local/symphony/workflow.js';
 import {
   applyRunnerLaunch,
   applyRunnerOutcome,
@@ -71,6 +73,33 @@ describe('local symphony scaffold', () => {
       path.join(tempDir, 'tracking', 'symphony', 'status.json')
     );
     expect(config.pollIntervalMs).toBe(45000);
+  });
+
+  test('loads config through the core loader using cwd fallback', async () => {
+    await mkdir(path.join(tempDir, 'tracking'), { recursive: true });
+    await writeFile(
+      path.join(tempDir, 'tracking', 'symphony.local.json'),
+      JSON.stringify({ defaultBranch: 'main' }),
+      'utf8'
+    );
+
+    await expect(
+      loadSymphonyConfigCore({
+        cwd: () => tempDir,
+        pathModule: path,
+        async readFileImpl(filePath, encoding) {
+          expect(encoding).toBe('utf8');
+          return readFile(filePath, encoding);
+        },
+      })
+    ).resolves.toMatchObject({
+      defaultBranch: 'main',
+      configPath: path.join(tempDir, 'tracking', 'symphony.local.json'),
+    });
+  });
+
+  test('requires injected path helpers in the core config loader', async () => {
+    await expect(loadSymphonyConfigCore()).rejects.toThrow();
   });
 
   test('falls back to the default branch when the config branch is blank', async () => {
@@ -202,6 +231,60 @@ describe('local symphony scaffold', () => {
     expect(summary.allowedCommandFamilies).toEqual([]);
     expect(summary.requiredQualityGates).toEqual([]);
     expect(summary.handoffRequirements).toEqual([]);
+  });
+
+  test('loads workflow through the core loader using cwd fallback', async () => {
+    await writeFile(
+      path.join(tempDir, 'WORKFLOW.md'),
+      ['---', 'model: gpt-5', '---', '', '# Workflow'].join('\n'),
+      'utf8'
+    );
+
+    await expect(
+      loadSymphonyWorkflowCore({
+        cwd: () => tempDir,
+        pathModule: path,
+        async readFileImpl(filePath, encoding) {
+          expect(encoding).toBe('utf8');
+          return readFile(filePath, encoding);
+        },
+      })
+    ).resolves.toMatchObject({
+      exists: true,
+      path: path.join(tempDir, 'WORKFLOW.md'),
+    });
+  });
+
+  test('requires injected path helpers in the core workflow loader', async () => {
+    await expect(loadSymphonyWorkflowCore()).rejects.toThrow();
+  });
+
+  test('loads config through the core loader using the default repo root fallback', async () => {
+    await expect(
+      loadSymphonyConfigCore({
+        pathModule: path,
+        async readFileImpl() {
+          return JSON.stringify({ defaultBranch: 'main' });
+        },
+      })
+    ).resolves.toMatchObject({
+      defaultBranch: 'main',
+      configPath: path.join(process.cwd(), 'tracking', 'symphony.local.json'),
+    });
+  });
+
+  test('loads workflow through the core loader using the default repo root fallback', async () => {
+    await expect(
+      loadSymphonyWorkflowCore({
+        pathModule: path,
+        async readFileImpl() {
+          return ['---', 'model: gpt-5', '---', '', '# Workflow'].join('\n');
+        },
+      })
+    ).resolves.toMatchObject({
+      exists: true,
+      path: path.join(process.cwd(), 'WORKFLOW.md'),
+    });
   });
 
   test('ignores non-bullet text inside workflow sections', () => {

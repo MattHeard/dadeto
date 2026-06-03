@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import path from 'node:path';
 import {
   checkDepcruiseTestUtils,
   createCheckDepcruiseHandle,
@@ -85,6 +86,7 @@ describe('findCoreMathRandomViolations', () => {
       readdirSync,
       rootDir: '/repo',
       sourceRoot: 'src/core',
+      pathModule: path,
     });
 
     expect(violations).toEqual([
@@ -105,6 +107,7 @@ describe('findCoreMathRandomViolations', () => {
       readdirSync,
       rootDir: '/repo',
       sourceRoot: 'src/core',
+      pathModule: path,
     });
 
     expect(violations).toEqual([
@@ -127,18 +130,41 @@ describe('findCoreMathRandomViolations', () => {
 
   test('normalizeCheckDepcruiseOptions fills every default dependency', () => {
     expect(
-      checkDepcruiseTestUtils.normalizeCheckDepcruiseOptions()
+      checkDepcruiseTestUtils.normalizeCheckDepcruiseOptions({
+        pathModule: path,
+      })
     ).toMatchObject({
       rootDir: '.',
       sourceRoot: 'src/core',
       configPath: 'dependency-cruiser.config.cjs',
     });
   });
+
+  test('normalizeCheckDepcruiseOptions requires injected path helpers', () => {
+    expect(() =>
+      checkDepcruiseTestUtils.normalizeCheckDepcruiseOptions({})
+    ).toThrow('pathModule is required.');
+    expect(() =>
+      checkDepcruiseTestUtils.normalizeCheckDepcruiseOptions()
+    ).toThrow('pathModule is required.');
+  });
 });
 
 describe('createCheckDepcruiseHandle', () => {
+  test('can be created without explicit options', () => {
+    const handle = createCheckDepcruiseHandle({ pathModule: path });
+
+    expect(typeof handle).toBe('function');
+  });
+
+  test('requires injected path helpers when options are omitted', () => {
+    expect(() => createCheckDepcruiseHandle()).toThrow(
+      'pathModule is required.'
+    );
+  });
+
   test('uses default options when none are provided', () => {
-    const handle = createCheckDepcruiseHandle();
+    const handle = createCheckDepcruiseHandle({ pathModule: path });
 
     expect(handle()).toEqual({ exitCode: 0, violations: 0 });
   });
@@ -152,6 +178,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout: createWriter(),
       stderr: createWriter(),
       rootDir: '/repo',
+      pathModule: path,
     });
 
     expect(handle()).toEqual({ exitCode: 0, violations: 0 });
@@ -170,6 +197,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout,
       stderr,
       rootDir: '/repo',
+      pathModule: path,
     });
 
     const result = handle();
@@ -199,6 +227,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout,
       stderr,
       rootDir: '/repo',
+      pathModule: path,
     });
 
     const result = handle();
@@ -235,6 +264,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout,
       stderr,
       rootDir: '/repo',
+      pathModule: path,
     });
 
     const result = handle();
@@ -262,6 +292,7 @@ describe('createCheckDepcruiseHandle', () => {
       readdirSync,
       stdout,
       rootDir: '/repo',
+      pathModule: path,
     });
 
     expect(handle()).toEqual({ exitCode: 1, violations: 1 });
@@ -279,6 +310,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout: createWriter(),
       stderr: createWriter(),
       rootDir: '/repo',
+      pathModule: path,
     })();
 
     const signalWriter = createWriter();
@@ -289,6 +321,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout: createWriter(),
       stderr: signalWriter,
       rootDir: '/repo',
+      pathModule: path,
     })();
 
     const statusResult = createCheckDepcruiseHandle({
@@ -298,6 +331,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout: createWriter(),
       stderr: createWriter(),
       rootDir: '/repo',
+      pathModule: path,
     })();
 
     const missingStatusResult = createCheckDepcruiseHandle({
@@ -307,6 +341,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout: createWriter(),
       stderr: createWriter(),
       rootDir: '/repo',
+      pathModule: path,
     })();
 
     expect(errorResult).toEqual({ exitCode: 1, violations: 0 });

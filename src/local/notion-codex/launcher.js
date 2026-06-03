@@ -1,6 +1,18 @@
-import { createNotionCodexLauncherCore } from '../../core/local/notion-codex/launcher.js';
+import { mkdir, open } from 'node:fs/promises';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import {
+  createNotionCodexLauncherCore,
+} from '../../core/local/notion-codex/launcher.js';
 
-const handle = createNotionCodexLauncherCore;
+export function createNotionCodexLauncher(options = {}) {
+  return createNotionCodexLauncherCore({
+    ...options,
+    mkdirImpl: options.mkdirImpl ?? mkdir,
+    openImpl: options.openImpl ?? open,
+    spawnImpl: options.spawnImpl ?? spawn,
+    pathModule: path,
+  });
+}
 
-export { handle };
-export { handle as createNotionCodexLauncher };
+export { createNotionCodexLauncher as handle };

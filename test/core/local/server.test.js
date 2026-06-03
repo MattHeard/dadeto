@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import {
   createLocalAppCore,
+  createWriterServer,
   getWriterUrl,
   isWriterHttpsEnabled,
   isWriterRequestLogEnabled,
@@ -165,6 +166,58 @@ describe('core local server helpers', () => {
 
     expect(app.use).not.toHaveBeenCalledWith(expect.any(Function));
     expect(response.set).not.toHaveBeenCalled();
+  });
+
+  test('creates an http writer server by default', () => {
+    const app = {};
+    const server = {};
+    const httpCreateServer = jest.fn(() => server);
+    const httpsCreateServer = jest.fn();
+
+    expect(
+      createWriterServer(app, {
+        env: {},
+        readFileSync: jest.fn(),
+        httpCreateServer,
+        httpsCreateServer,
+      })
+    ).toBe(server);
+    expect(httpCreateServer).toHaveBeenCalledWith(app);
+    expect(httpsCreateServer).not.toHaveBeenCalled();
+  });
+
+  test('requires injected writer server constructors', () => {
+    expect(() => createWriterServer({})).toThrow();
+  });
+
+  test('creates an https writer server when enabled', () => {
+    const app = {};
+    const server = {};
+    const env = {
+      WRITER_HTTPS: 'true',
+      WRITER_TLS_KEY: 'key.pem',
+      WRITER_TLS_CERT: 'cert.pem',
+    };
+    const httpCreateServer = jest.fn();
+    const httpsCreateServer = jest.fn(() => server);
+    const readFileSync = jest.fn(path => `${path} contents`);
+
+    expect(
+      createWriterServer(app, {
+        env,
+        readFileSync,
+        httpCreateServer,
+        httpsCreateServer,
+      })
+    ).toBe(server);
+    expect(httpsCreateServer).toHaveBeenCalledWith(
+      {
+        key: 'key.pem contents',
+        cert: 'cert.pem contents',
+      },
+      app
+    );
+    expect(httpCreateServer).not.toHaveBeenCalled();
   });
 
   test('reads feature flags and startup URL from injected env', () => {

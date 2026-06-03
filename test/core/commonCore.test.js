@@ -265,13 +265,13 @@ describe('commonCore helpers', () => {
     expect(
       pathHandle.getCurrentDirectory('file:///tmp/dadeto/src/core/example.js')
     ).toBe('/tmp/dadeto/src/core');
-    expect(pathHandle.resolveProjectDirectories('/tmp/dadeto/src/core')).toEqual(
-      {
-        projectRoot: '/tmp/dadeto',
-        srcDir: '/tmp/dadeto/src',
-        publicDir: '/tmp/dadeto/public',
-      }
-    );
+    expect(
+      pathHandle.resolveProjectDirectories('/tmp/dadeto/src/core')
+    ).toEqual({
+      projectRoot: '/tmp/dadeto',
+      srcDir: '/tmp/dadeto/src',
+      publicDir: '/tmp/dadeto/public',
+    });
     expect(pathHandle.createPathAdapters()).toMatchObject({
       join: path.join,
       dirname: path.dirname,
@@ -291,7 +291,9 @@ describe('commonCore helpers', () => {
         path.dirname
       )
     ).toBe('/tmp/dadeto/src/core');
-    expect(resolveProjectDirectories('/tmp/dadeto/src/core', path.resolve)).toEqual({
+    expect(
+      resolveProjectDirectories('/tmp/dadeto/src/core', path.resolve)
+    ).toEqual({
       projectRoot: '/tmp/dadeto',
       srcDir: '/tmp/dadeto/src',
       publicDir: '/tmp/dadeto/public',
@@ -352,6 +354,12 @@ describe('commonCore helpers', () => {
       const asyncCopy = path.join(root, 'async-copy.txt');
       await asyncAdapters.copyFile(sourceFile, asyncCopy);
       expect(await fsPromises.readFile(asyncCopy, 'utf8')).toBe('hello');
+
+      const textFile = path.join(root, 'value.txt');
+      await asyncAdapters.writeFile(textFile, 'world');
+      await expect(asyncAdapters.readFile(textFile, 'utf8')).resolves.toBe(
+        'world'
+      );
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

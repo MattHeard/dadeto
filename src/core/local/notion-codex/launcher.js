@@ -7,6 +7,7 @@ import { createDetachedProcessLauncher } from '../process-launcher.js';
  *   cwd?: string,
  *   logDir?: string,
  *   logDirSuffix?: string,
+ *   pathModule: { join: (first: string, ...parts: string[]) => string },
  *   resolveArgs?: (payload: { repoRoot: string, runId: string, prompt: string, onExit?: (options: { runId: string, exitCode: number | null, signal: string | null }) => unknown }) => string[],
  *   mkdirImpl?: import('node:fs/promises').mkdir,
  *   openImpl?: import('node:fs/promises').open,

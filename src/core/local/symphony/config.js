@@ -1,11 +1,10 @@
-import path from 'node:path';
-import { readFile } from 'node:fs/promises';
 import { DEFAULT_CODEX_RALPH_ARGS } from './launcherCodex.js';
 import {
   normalizePositiveNumber,
   normalizePathValue,
   normalizeString,
   normalizeStringArray,
+  resolveLocalConfigLoader,
 } from '../config-utils.js';
 
 export const DEFAULT_SYMPHONY_CONFIG = {
@@ -135,6 +134,7 @@ function resolveDefaultBranch(defaultBranch) {
  * @param {object | null | undefined} config Symphony config candidate.
  * @param {string} repoRoot Repo root used to resolve relative paths.
  * @param {string} configPath Config file path used for status reporting.
+ * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathModule Path helper.
  * @returns {{
  *   configPath: string,
  *   tracker: { kind: string, readyCommand: string },
@@ -147,7 +147,12 @@ function resolveDefaultBranch(defaultBranch) {
  *   defaultBranch: string
  * }} Normalized local Symphony config.
  */
-export function normalizeSymphonyConfig(config, repoRoot, configPath) {
+export function normalizeSymphonyConfig(
+  config,
+  repoRoot,
+  configPath,
+  pathModule
+) {
   const typedConfig = /** @type {any} */ (config);
   const workspaceRoot = resolveWorkspaceRoot(config);
   const logDir = resolveLogDir(config);
@@ -156,9 +161,9 @@ export function normalizeSymphonyConfig(config, repoRoot, configPath) {
     configPath,
     tracker: normalizeTracker(typedConfig?.tracker),
     launcher: normalizeLauncher(typedConfig?.launcher),
-    workspaceRoot: path.resolve(repoRoot, workspaceRoot),
-    logDir: path.resolve(repoRoot, logDir),
-    statusPath: path.resolve(repoRoot, logDir, 'status.json'),
+    workspaceRoot: pathModule.resolve(repoRoot, workspaceRoot),
+    logDir: pathModule.resolve(repoRoot, logDir),
+    statusPath: pathModule.resolve(repoRoot, logDir, 'status.json'),
     pollIntervalMs: normalizePositiveNumber(
       typedConfig?.pollIntervalMs,
       DEFAULT_SYMPHONY_CONFIG.pollIntervalMs
@@ -172,18 +177,27 @@ export function normalizeSymphonyConfig(config, repoRoot, configPath) {
 }
 
 /**
- * @param {{ configPath?: string, repoRoot?: string, readFileImpl?: typeof readFile }} [options] Optional file resolution overrides.
+ * @param {{ configPath?: string, repoRoot?: string, cwd?: () => string, pathModule?: { resolve: (first: string, ...parts: string[]) => string }, readFileImpl?: (filePath: string, encoding: 'utf8') => Promise<string> }} [options] Optional file resolution overrides.
  * @returns {Promise<ReturnType<typeof normalizeSymphonyConfig>>} Normalized local Symphony config.
  */
 export async function loadSymphonyConfig(options = {}) {
-  const repoRoot = options.repoRoot ?? process.cwd();
-  const configPath = path.resolve(
-    repoRoot,
-    options.configPath ?? 'tracking/symphony.local.json'
+  const loadContext = resolveLocalConfigLoader(
+    options,
+    'configPath',
+    'tracking/symphony.local.json'
   );
-  const readFileImpl = options.readFileImpl ?? readFile;
+  const repoRoot = loadContext.repoRoot;
+  const configPath = loadContext.filePath;
+  const pathModule = loadContext.pathModule;
+  const readFileImpl = loadContext.readFileImpl;
+
   const rawConfig = await readFileImpl(configPath, 'utf8');
   const parsedConfig = JSON.parse(rawConfig);
 
-  return normalizeSymphonyConfig(parsedConfig, repoRoot, configPath);
+  return normalizeSymphonyConfig(
+    parsedConfig,
+    repoRoot,
+    configPath,
+    pathModule
+  );
 }

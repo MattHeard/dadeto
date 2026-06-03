@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   getNonCoreThinStatus,
   nonCoreThinStatusTestOnly,
@@ -54,7 +56,11 @@ describe('non-core thin status', () => {
   });
 
   test('reports the current repo status', () => {
-    const status = getNonCoreThinStatus();
+    const status = getNonCoreThinStatus({
+      fsModule: fs,
+      pathModule: path,
+      repoRoot: '/home/matt/dadeto',
+    });
 
     expect(status).toMatchObject({ maxLines: 50 });
     expect(status.exemptionCount).toEqual(expect.any(Number));
@@ -70,7 +76,15 @@ describe('non-core thin status', () => {
     expect(
       nonCoreThinStatusTestOnly.buildNonCoreThinStatus(
         { maxLines: 50, exemptions: {} },
-        []
+        [],
+        {
+          fsModule: {
+            readFileSync: () => '',
+          },
+          pathModule: path,
+          repoRoot: '/repo',
+          srcDir: '/repo/src',
+        }
       )
     ).toEqual({
       isClean: true,
@@ -90,7 +104,22 @@ describe('non-core thin status', () => {
             'src/browser/missing.js': 'stale',
           },
         },
-        ['src/browser/document.js']
+        ['src/browser/document.js'],
+        {
+          fsModule: {
+            readFileSync: filePath =>
+              filePath.endsWith('document.js')
+                ? [
+                    "import { createDocumentHandle } from './document-core.js';",
+                    'const handle = createDocumentHandle();',
+                    'export { handle };',
+                  ].join('\n')
+                : '',
+          },
+          pathModule: path,
+          repoRoot: '/repo',
+          srcDir: '/repo/src',
+        }
       )
     ).toEqual({
       isClean: false,
@@ -145,7 +174,15 @@ describe('non-core thin status', () => {
     expect(
       nonCoreThinStatusTestOnly.getWrapperPatternViolations(
         'src/core/local/non-core-thin/status.js',
-        new Set()
+        new Set(),
+        0,
+        {
+          fsModule: {
+            readFileSync: () => '',
+          },
+          pathModule: path,
+          repoRoot: '/repo',
+        }
       )
     ).toEqual([]);
   });

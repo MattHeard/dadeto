@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { handleSpawnFailure, spawnGateCommand } from './gate-utils.js';
 
 const DEFAULT_ROOT_DIR = '.';
@@ -21,6 +20,12 @@ const MATH_RANDOM_NEEDLE = ['Math', 'random'].join('.');
  *   rootDir?: string,
  *   sourceRoot?: string,
  *   configPath?: string,
+ *   pathModule?: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
  * }} [options] Gate dependencies.
  * @returns {() => { exitCode: number, violations: number }} Dependency gate handler.
  */
@@ -35,6 +40,12 @@ export function createCheckDepcruiseHandle(options = {}) {
  *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
  *   rootDir: string,
  *   sourceRoot: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
  * }} deps Filesystem dependencies.
  * @returns {Array<{ filePath: string, occurrences: number }>} Files that directly use the injected random source.
  */
@@ -43,23 +54,26 @@ export function findCoreMathRandomViolations({
   readdirSync,
   rootDir,
   sourceRoot,
+  pathModule,
 }) {
-  const sourceRootPath = path.resolve(rootDir, sourceRoot);
-  return listJsFiles(sourceRootPath, readdirSync).flatMap(filePath => {
-    const source = readFileSync(filePath, 'utf8');
-    const occurrences = countMathRandomOccurrences(source);
+  const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
+  return listJsFiles(sourceRootPath, readdirSync, pathModule).flatMap(
+    filePath => {
+      const source = readFileSync(filePath, 'utf8');
+      const occurrences = countMathRandomOccurrences(source);
 
-    if (occurrences <= 0) {
-      return [];
+      if (occurrences <= 0) {
+        return [];
+      }
+
+      return [
+        {
+          filePath: toRepoRelativePath(rootDir, filePath, pathModule),
+          occurrences,
+        },
+      ];
     }
-
-    return [
-      {
-        filePath: toRepoRelativePath(rootDir, filePath),
-        occurrences,
-      },
-    ];
-  });
+  );
 }
 
 export const checkDepcruiseTestUtils = {
@@ -79,6 +93,12 @@ export const checkDepcruiseTestUtils = {
  *   rootDir?: string,
  *   sourceRoot?: string,
  *   configPath?: string,
+ *   pathModule?: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
  * }} [options] Optional dependencies.
  * @returns {{
  *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
@@ -89,9 +109,19 @@ export const checkDepcruiseTestUtils = {
  *   rootDir: string,
  *   sourceRoot: string,
  *   configPath: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
  * }} Normalized dependencies.
  */
 function normalizeCheckDepcruiseOptions(options = {}) {
+  if (!options.pathModule) {
+    throw new Error('pathModule is required.');
+  }
+
   return {
     spawnImpl: resolveOption(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
     readFileSync: resolveOption(options.readFileSync, () => ''),
@@ -101,6 +131,7 @@ function normalizeCheckDepcruiseOptions(options = {}) {
     rootDir: resolveOption(options.rootDir, DEFAULT_ROOT_DIR),
     sourceRoot: resolveOption(options.sourceRoot, DEFAULT_SOURCE_ROOT),
     configPath: resolveOption(options.configPath, DEFAULT_CONFIG_PATH),
+    pathModule: options.pathModule,
   };
 }
 
@@ -115,6 +146,12 @@ function normalizeCheckDepcruiseOptions(options = {}) {
  *   rootDir: string,
  *   sourceRoot: string,
  *   configPath: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
  * }} deps Normalized dependencies.
  * @returns {() => { exitCode: number, violations: number }} Gate handler.
  */
@@ -135,6 +172,12 @@ function createDepcruiseGateHandle(deps) {
  *   rootDir: string,
  *   sourceRoot: string,
  *   configPath: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
  * }} deps Gate dependencies.
  * @returns {{ exitCode: number, violations: number }} Gate outcome.
  */
@@ -147,6 +190,7 @@ function executeDepcruiseGate({
   rootDir,
   sourceRoot,
   configPath,
+  pathModule,
 }) {
   const runResult = spawnGateCommand({
     spawnImpl,
@@ -170,6 +214,7 @@ function executeDepcruiseGate({
     readdirSync,
     rootDir,
     sourceRoot,
+    pathModule,
   });
 
   if (violations.length > 0) {
@@ -194,15 +239,16 @@ function executeDepcruiseGate({
  * Read JavaScript files recursively from a directory.
  * @param {string} dirPath Directory to scan.
  * @param {(dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>} readdirSync Directory reader.
+ * @param {{ join: (first: string, ...parts: string[]) => string }} pathModule Path helper.
  * @returns {string[]} Absolute JavaScript file paths.
  */
-function listJsFiles(dirPath, readdirSync) {
+function listJsFiles(dirPath, readdirSync, pathModule) {
   const entries = readdirSync(dirPath, { withFileTypes: true });
 
   return entries.flatMap(entry => {
-    const entryPath = path.join(dirPath, entry.name);
+    const entryPath = pathModule.join(dirPath, entry.name);
     if (entry.isDirectory()) {
-      return listJsFiles(entryPath, readdirSync);
+      return listJsFiles(entryPath, readdirSync, pathModule);
     }
 
     if (entry.isFile() && entry.name.endsWith('.js')) {
@@ -447,8 +493,11 @@ function resolveOption(value, fallback) {
  * Convert a path to a repo-relative POSIX path.
  * @param {string} rootDir Repository root.
  * @param {string} absolutePath Absolute file path.
+ * @param {{ relative: (from: string, to: string) => string, sep: string }} pathModule Path helper.
  * @returns {string} Repo-relative path.
  */
-function toRepoRelativePath(rootDir, absolutePath) {
-  return path.relative(rootDir, absolutePath).replaceAll(path.sep, '/');
+function toRepoRelativePath(rootDir, absolutePath, pathModule) {
+  return pathModule
+    .relative(rootDir, absolutePath)
+    .replaceAll(pathModule.sep, '/');
 }

@@ -673,7 +673,7 @@ export function createFsHandle(deps) {
  *   removeDirectory: (target: string) => void,
  *   copyFile: (source: string, destination: string) => void,
  *   readDirEntries: (dir: string) => unknown[],
- * }}
+ * }} Filesystem adapter helpers.
  */
 export function createFsAdapters(fsModule) {
   return {
@@ -695,10 +695,12 @@ export function createFsAdapters(fsModule) {
  *   copyFile: (source: string, destination: string) => Promise<void>,
  * }} fsPromisesModule Promise-based filesystem dependency bundle.
  * @returns {{
- *   readDirEntries: (dir: string) => Promise<unknown[]>,
- *   ensureDirectory: (target: string) => Promise<unknown>,
+ *   readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
+ *   ensureDirectory: (target: string) => Promise<void>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
- * }}
+ *   readFile: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   writeFile: (filePath: string, content: string) => Promise<void>,
+ * }} Promise-based filesystem adapter helpers.
  */
 export function createAsyncFsAdapters(fsPromisesModule) {
   return {
@@ -712,10 +714,18 @@ export function createAsyncFsAdapters(fsPromisesModule) {
         throw error;
       }
     },
-    ensureDirectory: target =>
-      fsPromisesModule.mkdir(target, { recursive: true }),
-    copyFile: (source, destination) =>
-      fsPromisesModule.copyFile(source, destination),
+    async ensureDirectory(target) {
+      await fsPromisesModule.mkdir(target, { recursive: true });
+    },
+    async copyFile(source, destination) {
+      await fsPromisesModule.copyFile(source, destination);
+    },
+    async readFile(filePath, encoding) {
+      return fsPromisesModule.readFile(filePath, encoding);
+    },
+    async writeFile(filePath, content) {
+      await fsPromisesModule.writeFile(filePath, content);
+    },
   };
 }
 
@@ -1004,19 +1014,70 @@ export function createRunCheckSuite(defaults) {
  */
 export function resolveRunCheckOptions(options = {}, defaults = {}) {
   return {
-    commands: options.commands ?? CHECK_COMMANDS,
-    failFast: options.failFast ?? false,
-    spawnImpl: options.spawnImpl ?? defaults.defaultSpawn,
-    stdout:
-      options.stdout ??
-      defaults.defaultStdout ??
-      getDefaultOutputStream('stdout'),
-    stderr:
-      options.stderr ??
-      defaults.defaultStderr ??
-      getDefaultOutputStream('stderr'),
-    now: options.now ?? defaults.defaultNow ?? (() => Date.now()),
+    commands: resolveCheckCommands(options),
+    failFast: resolveFailFast(options),
+    spawnImpl: resolveSpawnImpl(options, defaults),
+    stdout: resolveOutputStream(
+      options.stdout,
+      defaults.defaultStdout,
+      'stdout'
+    ),
+    stderr: resolveOutputStream(
+      options.stderr,
+      defaults.defaultStderr,
+      'stderr'
+    ),
+    now: resolveNow(options, defaults),
   };
+}
+
+/**
+ * Resolve the command list for a run-check invocation.
+ * @param {{ commands?: CheckCommand[] }} options Runner options.
+ * @returns {CheckCommand[]} Commands to execute.
+ */
+function resolveCheckCommands(options) {
+  return options.commands ?? CHECK_COMMANDS;
+}
+
+/**
+ * Resolve whether run-check should stop after the first failure.
+ * @param {{ failFast?: boolean }} options Runner options.
+ * @returns {boolean} True when the runner should stop after the first failure.
+ */
+function resolveFailFast(options) {
+  return options.failFast ?? false;
+}
+
+/**
+ * Resolve the child-process spawn implementation.
+ * @param {{ spawnImpl?: unknown }} options Runner options.
+ * @param {{ defaultSpawn?: unknown }} defaults Injected defaults.
+ * @returns {unknown} Spawn implementation.
+ */
+function resolveSpawnImpl(options, defaults) {
+  return options.spawnImpl ?? defaults.defaultSpawn;
+}
+
+/**
+ * Resolve a standard output stream for run-check logging.
+ * @param {{ write: (text: string) => void } | undefined} stream Explicit stream.
+ * @param {{ write: (text: string) => void } | undefined} defaultStream Default stream.
+ * @param {'stdout' | 'stderr'} kind Stream kind.
+ * @returns {{ write: (text: string) => void }} Output stream.
+ */
+function resolveOutputStream(stream, defaultStream, kind) {
+  return stream ?? defaultStream ?? getDefaultOutputStream(kind);
+}
+
+/**
+ * Resolve the timestamp provider for run-check timing.
+ * @param {{ now?: () => number }} options Runner options.
+ * @param {{ defaultNow?: () => number }} defaults Injected defaults.
+ * @returns {() => number} Timestamp provider.
+ */
+function resolveNow(options, defaults) {
+  return options.now ?? defaults.defaultNow ?? (() => Date.now());
 }
 
 /**

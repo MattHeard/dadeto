@@ -1,13 +1,10 @@
 // @ts-nocheck
-import { spawn } from 'node:child_process';
-import path from 'node:path';
-import { mkdir, open } from 'node:fs/promises';
-
 /**
  * Open append-only run log files for a spawned process.
  * @param {{
  *   logDir: string,
  *   runId: string,
+ *   pathModule: { join: (first: string, ...parts: string[]) => string },
  *   mkdirImpl?: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
  *   openImpl?: (filePath: string, flags: 'a') => Promise<{ fd: number, close?: () => Promise<void> | void }>,
  * }} options Run-log dependencies.
@@ -21,14 +18,20 @@ import { mkdir, open } from 'node:fs/promises';
  * }>} Opened append-only run log files.
  */
 export async function openAppendOnlyRunLogFiles(options) {
-  const mkdirImpl = options.mkdirImpl ?? mkdir;
-  const openImpl = options.openImpl ?? open;
-  const runsDir = path.join(options.logDir, 'runs');
+  const mkdirImpl = options.mkdirImpl;
+  const openImpl = options.openImpl;
+  const runsDir = options.pathModule.join(options.logDir, 'runs');
   await mkdirImpl(runsDir, { recursive: true });
 
   const baseName = options.runId.replaceAll(':', '-');
-  const stdoutPath = path.join(runsDir, `${baseName}--stdout.log`);
-  const stderrPath = path.join(runsDir, `${baseName}--stderr.log`);
+  const stdoutPath = options.pathModule.join(
+    runsDir,
+    `${baseName}--stdout.log`
+  );
+  const stderrPath = options.pathModule.join(
+    runsDir,
+    `${baseName}--stderr.log`
+  );
   const [stdoutHandle, stderrHandle] = await Promise.all([
     openImpl(stdoutPath, 'a'),
     openImpl(stderrPath, 'a'),
@@ -148,7 +151,7 @@ function resolveLaunchLogDir(options, payload) {
     return options.logDir;
   }
 
-  return path.join(
+  return options.pathModule.join(
     payload.repoRoot,
     'tracking',
     options.logDirSuffix ?? 'launcher'
@@ -208,6 +211,7 @@ function resolveExitPayload(options, payload, code, signal) {
  *   args: string[],
  *   repoRoot: string,
  *   runId: string,
+ *   pathModule: { join: (first: string, ...parts: string[]) => string },
  *   cwd?: string,
  *   logDir?: string,
  *   logDirSuffix?: string,
@@ -230,10 +234,14 @@ function resolveExitPayload(options, payload, code, signal) {
  * }>} Launched process details.
  */
 export async function launchDetachedProcessWithRunLogs(options) {
-  const spawnImpl = options.spawnImpl ?? spawn;
+  const spawnImpl = options.spawnImpl;
   const logDir =
     options.logDir ??
-    path.join(options.repoRoot, 'tracking', options.logDirSuffix ?? 'launcher');
+    options.pathModule.join(
+      options.repoRoot,
+      'tracking',
+      options.logDirSuffix ?? 'launcher'
+    );
 
   const {
     stdoutPath,
@@ -244,6 +252,7 @@ export async function launchDetachedProcessWithRunLogs(options) {
     stderrHandle,
   } = await openAppendOnlyRunLogFiles({
     logDir,
+    pathModule: options.pathModule,
     runId: options.runId,
     mkdirImpl: options.mkdirImpl,
     openImpl: options.openImpl,
@@ -298,9 +307,14 @@ export async function launchDetachedProcessWithRunLogs(options) {
  *   cwd?: string,
  *   logDir?: string,
  *   logDirSuffix?: string,
- *   mkdirImpl?: typeof mkdir,
- *   openImpl?: typeof open,
- *   spawnImpl?: typeof spawn,
+ *   pathModule: { join: (first: string, ...parts: string[]) => string },
+ *   mkdirImpl?: (dirPath: string, options?: { recursive?: boolean }) => Promise<unknown>,
+ *   openImpl?: (filePath: string, flags: string) => Promise<{ fd: number, close?: () => Promise<void> | void }>,
+ *   spawnImpl?: (command: string, args: string[], options?: Record<string, unknown>) => {
+ *     pid?: number,
+ *     unref: () => void,
+ *     on: (event: string, handler: (...args: Array<unknown>) => void) => void,
+ *   },
  *   launcherKind?: string,
  *   resolveArgs?: (payload: Record<string, unknown>) => string[],
  *   resolveCwd?: (payload: Record<string, unknown>) => string,
@@ -332,9 +346,9 @@ export async function launchDetachedProcessWithRunLogs(options) {
  * }} Launcher wrapper.
  */
 export function createDetachedProcessLauncher(options) {
-  const spawnImpl = options.spawnImpl ?? spawn;
-  const mkdirImpl = options.mkdirImpl ?? mkdir;
-  const openImpl = options.openImpl ?? open;
+  const spawnImpl = options.spawnImpl;
+  const mkdirImpl = options.mkdirImpl;
+  const openImpl = options.openImpl;
 
   return {
     async launch(payload) {
@@ -354,6 +368,7 @@ export function createDetachedProcessLauncher(options) {
         args,
         cwd,
         logDir,
+        pathModule: options.pathModule,
         runId: payload.runId,
         mkdirImpl,
         openImpl,

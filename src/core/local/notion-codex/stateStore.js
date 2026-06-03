@@ -1,5 +1,3 @@
-import path from 'node:path';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import {
   asNullableString,
   asStringWithFallback,
@@ -85,9 +83,10 @@ function readErrorCode(error) {
 /**
  * @param {{
  *   statePath: string,
- *   mkdirImpl?: typeof mkdir,
- *   readFileImpl?: typeof readFile,
- *   writeFileImpl?: typeof writeFile
+ *   pathModule: { dirname: (input: string) => string },
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>
  * }} options Store dependencies.
  * @returns {{
  *   readState: () => Promise<Record<string, unknown>>,
@@ -106,6 +105,7 @@ export function createNotionCodexStateStore(options) {
     mkdirImpl,
     writeFileImpl,
     readStatePath,
+    pathModule: options.pathModule,
   });
 
   return {
@@ -117,29 +117,32 @@ export function createNotionCodexStateStore(options) {
 /**
  * @param {{
  *   statePath: string,
- *   mkdirImpl?: typeof mkdir,
- *   readFileImpl?: typeof readFile,
- *   writeFileImpl?: typeof writeFile
+ *   pathModule: { dirname: (input: string) => string },
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>
  * }} options Store dependencies.
  * @returns {{
- *   mkdirImpl: typeof mkdir,
- *   readFileImpl: typeof readFile,
- *   writeFileImpl: typeof writeFile,
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>,
+ *   pathModule: { dirname: (input: string) => string },
  *   readStatePath: string
  * }} Resolved store dependencies.
  */
 function resolveStoreDeps(options) {
   return {
-    mkdirImpl: resolveDependency(options.mkdirImpl, mkdir),
-    readFileImpl: resolveDependency(options.readFileImpl, readFile),
-    writeFileImpl: resolveDependency(options.writeFileImpl, writeFile),
+    mkdirImpl: options.mkdirImpl,
+    readFileImpl: options.readFileImpl,
+    writeFileImpl: options.writeFileImpl,
     readStatePath: options.statePath,
+    pathModule: options.pathModule,
   };
 }
 
 /**
  * @param {{
- *   readFileImpl: typeof readFile,
+ *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
  *   readStatePath: string
  * }} options Read state dependencies.
  * @returns {() => Promise<Record<string, unknown>>} Reader for persisted state.
@@ -150,7 +153,7 @@ function createReadState({ readFileImpl, readStatePath }) {
 
 /**
  * @param {{
- *   readFileImpl: typeof readFile,
+ *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
  *   readStatePath: string
  * }} options Read state dependencies.
  * @returns {Promise<Record<string, unknown>>} Parsed state or defaults.
@@ -178,27 +181,23 @@ function readStateErrorFallback(error) {
 
 /**
  * @param {{
- *   mkdirImpl: typeof mkdir,
- *   writeFileImpl: typeof writeFile,
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>,
+ *   pathModule: { dirname: (input: string) => string },
  *   readStatePath: string
  * }} options Write state dependencies.
  * @returns {(state: Record<string, unknown>) => Promise<void>} Writer for persisted state.
  */
-function createWriteState({ mkdirImpl, writeFileImpl, readStatePath }) {
+function createWriteState({
+  mkdirImpl,
+  writeFileImpl,
+  readStatePath,
+  pathModule,
+}) {
   return async state => {
-    await mkdirImpl(path.dirname(readStatePath), { recursive: true });
+    await mkdirImpl(pathModule.dirname(readStatePath), { recursive: true });
     const normalizedState = normalizeNotionCodexState(state);
     const serializedState = JSON.stringify(normalizedState, null, 2);
     await writeFileImpl(readStatePath, serializedState, 'utf8');
   };
-}
-
-/**
- * @template T
- * @param {T | undefined} value Candidate dependency.
- * @param {T} fallback Default dependency.
- * @returns {T} Resolved dependency.
- */
-function resolveDependency(value, fallback) {
-  return value ?? fallback;
 }

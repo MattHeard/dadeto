@@ -2,6 +2,7 @@ import {
   createNotionCodexOutcomeStore,
   normalizeNotionCodexOutcome,
 } from '../../../src/core/local/notion-codex/outcomeStore.js';
+import path from 'node:path';
 
 describe('core local notion codex outcome store', () => {
   test('normalizes missing fields from non-object input', () => {
@@ -14,6 +15,7 @@ describe('core local notion codex outcome store', () => {
   test('reads a missing outcome as null', async () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
+      pathModule: path,
       async readFileImpl() {
         const error = new Error('missing');
         error.code = 'ENOENT';
@@ -27,6 +29,7 @@ describe('core local notion codex outcome store', () => {
   test('reads a stored outcome file', async () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
+      pathModule: path,
       async readFileImpl(pathValue, encoding) {
         expect(pathValue).toBe('/tmp/outcomes/run-123.json');
         expect(encoding).toBe('utf8');
@@ -43,6 +46,7 @@ describe('core local notion codex outcome store', () => {
   test('rethrows unexpected read errors', async () => {
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
+      pathModule: path,
       async readFileImpl() {
         throw new Error('boom');
       },
@@ -55,6 +59,7 @@ describe('core local notion codex outcome store', () => {
     const writes = [];
     const store = createNotionCodexOutcomeStore({
       outcomeDir: '/tmp/outcomes',
+      pathModule: path,
       async mkdirImpl(pathValue, options) {
         writes.push({ type: 'mkdir', pathValue, options });
       },

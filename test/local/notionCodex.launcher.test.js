@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import path from 'node:path';
 import { createNotionCodexLauncherCore } from '../../src/core/local/notion-codex/launcher.js';
 import { createNotionCodexLauncher } from '../../src/local/notion-codex/launcher.js';
 
@@ -248,6 +249,8 @@ describe('local notion codex launcher', () => {
     const calls = [];
     const launcher = createNotionCodexLauncherCore({
       command: 'codex',
+      pathModule: path,
+      mkdirImpl: async () => {},
       openImpl: async () => ({
         fd: 40,
         close: () => Promise.resolve(),

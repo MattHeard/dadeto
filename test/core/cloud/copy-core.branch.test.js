@@ -1,5 +1,5 @@
 import path from 'path';
-import { createCopyToInfraCore } from '../../../src/core/cloud/copy.js';
+import { createCopyToInfraCore } from '../../../src/core/build/copy.js';
 
 describe('copy core test hooks', () => {
   const helpers = createCopyToInfraCore({

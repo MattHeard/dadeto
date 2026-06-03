@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import path from 'path';
-import { createCopyToInfraCore } from '../../../src/core/cloud/copy.js';
+import { createCopyToInfraCore } from '../../../src/core/build/copy.js';
 
 const posix = path.posix;
 

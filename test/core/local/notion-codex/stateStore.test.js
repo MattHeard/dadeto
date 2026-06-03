@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import path from 'node:path';
 import {
   createNotionCodexStateStore,
   normalizeActiveRun,
@@ -11,6 +12,7 @@ describe('notion codex state store core', () => {
     const writeFileImpl = jest.fn(async () => {});
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
+      pathModule: path,
       readFileImpl: jest.fn(async () => '{}'),
       mkdirImpl,
       writeFileImpl,
@@ -72,6 +74,7 @@ describe('notion codex state store core', () => {
   test('keeps object activeRun values and normalizes parsed read state', async () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
+      pathModule: path,
       readFileImpl: jest.fn(async () =>
         JSON.stringify({
           activeRun: { id: 'run-1' },
@@ -111,7 +114,13 @@ describe('notion codex state store core', () => {
   });
 
   test('uses node fs defaults when dependency implementations are omitted', () => {
-    const store = createNotionCodexStateStore({ statePath: '/tmp/state.json' });
+    const store = createNotionCodexStateStore({
+      statePath: '/tmp/state.json',
+      pathModule: path,
+      mkdirImpl: async () => {},
+      readFileImpl: async () => '{}',
+      writeFileImpl: async () => {},
+    });
     expect(typeof store.readState).toBe('function');
     expect(typeof store.writeState).toBe('function');
   });
@@ -120,6 +129,7 @@ describe('notion codex state store core', () => {
     const notFound = Object.assign(new Error('missing'), { code: 'ENOENT' });
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
+      pathModule: path,
       readFileImpl: jest.fn(async () => {
         throw notFound;
       }),
@@ -131,6 +141,7 @@ describe('notion codex state store core', () => {
     const fatal = new Error('fatal');
     const badStore = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
+      pathModule: path,
       readFileImpl: jest.fn(async () => {
         throw fatal;
       }),
@@ -141,6 +152,7 @@ describe('notion codex state store core', () => {
   test('rethrows non-object read errors without treating them as missing state', async () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
+      pathModule: path,
       readFileImpl: jest.fn(async () => {
         throw null;
       }),
@@ -152,6 +164,7 @@ describe('notion codex state store core', () => {
   test('rethrows read errors when the code is not a string', async () => {
     const store = createNotionCodexStateStore({
       statePath: '/tmp/state.json',
+      pathModule: path,
       readFileImpl: jest.fn(async () => {
         throw { code: 123 };
       }),

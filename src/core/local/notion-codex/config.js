@@ -1,10 +1,9 @@
-import path from 'node:path';
-import { readFile } from 'node:fs/promises';
 import {
   normalizeNonNegativeInteger,
   normalizePositiveNumber,
   normalizeString,
   normalizeStringArray,
+  resolveLocalConfigLoader,
 } from '../config-utils.js';
 import { objectOrEmpty } from '../../commonCore.js';
 
@@ -83,6 +82,7 @@ function normalizeLauncherArgs(value) {
  * @param {unknown} config Candidate config object.
  * @param {string} repoRoot Repository root for path resolution.
  * @param {string} configPath Config path for reporting.
+ * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathModule Path helper.
  * @returns {{
  *   configPath: string,
  *   notion: NotionCodexNotionConfig,
@@ -95,7 +95,12 @@ function normalizeLauncherArgs(value) {
  *   statePath: string
  * }} Normalized Notion Codex poller config.
  */
-export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
+export function normalizeNotionCodexConfig(
+  config,
+  repoRoot,
+  configPath,
+  pathModule
+) {
   const source = objectOrEmpty(config);
   const notion = objectOrEmpty(source.notion);
   const launcher = objectOrEmpty(source.launcher);
@@ -159,15 +164,15 @@ export function normalizeNotionCodexConfig(config, repoRoot, configPath) {
       source.maxConcurrentRuns,
       DEFAULT_NOTION_CODEX_CONFIG.maxConcurrentRuns
     ),
-    logDir: path.resolve(
+    logDir: pathModule.resolve(
       repoRoot,
       normalizeString(source.logDir, DEFAULT_NOTION_CODEX_CONFIG.logDir)
     ),
-    outcomeDir: path.resolve(
+    outcomeDir: pathModule.resolve(
       repoRoot,
       normalizeString(source.outcomeDir, DEFAULT_NOTION_CODEX_CONFIG.outcomeDir)
     ),
-    statePath: path.resolve(
+    statePath: pathModule.resolve(
       repoRoot,
       normalizeString(source.statePath, DEFAULT_NOTION_CODEX_CONFIG.statePath)
     ),
@@ -200,23 +205,32 @@ function normalizeIdleBackoff(value) {
 }
 
 /**
- * @param {{ configPath?: string, repoRoot?: string, readFileImpl?: typeof readFile }} [options] Load options.
+ * @param {{ configPath?: string, repoRoot?: string, cwd?: () => string, pathModule?: { resolve: (first: string, ...parts: string[]) => string }, readFileImpl?: (filePath: string, encoding: 'utf8') => Promise<string> }} [options] Load options.
  * @returns {Promise<ReturnType<typeof normalizeNotionCodexConfig>>} Loaded config.
  */
 export async function loadNotionCodexConfig(options = {}) {
-  const repoRoot = options.repoRoot ?? process.cwd();
-  const configPath = path.resolve(
+  const {
     repoRoot,
-    options.configPath ?? 'tracking/notion-codex.local.json'
+    filePath: configPath,
+    pathModule,
+    readFileImpl,
+  } = resolveLocalConfigLoader(
+    options,
+    'configPath',
+    'tracking/notion-codex.local.json'
   );
-  const readFileImpl = options.readFileImpl ?? readFile;
 
   try {
     const rawConfig = await readNotionCodexConfigJson(configPath, readFileImpl);
-    return normalizeNotionCodexConfig(rawConfig, repoRoot, configPath);
+    return normalizeNotionCodexConfig(
+      rawConfig,
+      repoRoot,
+      configPath,
+      pathModule
+    );
   } catch (error) {
     if (isMissingConfigFileError(error)) {
-      return normalizeNotionCodexConfig({}, repoRoot, configPath);
+      return normalizeNotionCodexConfig({}, repoRoot, configPath, pathModule);
     }
 
     throw error;

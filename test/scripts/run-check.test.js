@@ -2,9 +2,18 @@ import { jest } from '@jest/globals';
 import { PassThrough } from 'node:stream';
 import {
   createRunCheckHandle,
-  runCheckSuite,
+  createRunCheckSuite,
   runCheckSuiteTestOnly,
 } from '../../src/core/check-runner.js';
+
+const runCheckSuite = createRunCheckSuite({
+  defaultSpawn: () => {
+    throw new Error('unexpected spawn');
+  },
+  defaultStdout: process.stdout,
+  defaultStderr: process.stderr,
+  defaultNow: () => Date.now(),
+});
 
 /**
  * Create a writer stub that records everything written to it.
@@ -177,7 +186,17 @@ describe('runCheckSuite', () => {
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(4321);
 
     try {
-      const resolved = runCheckSuiteTestOnly.resolveRunCheckOptions();
+      const resolved = runCheckSuiteTestOnly.resolveRunCheckOptions(
+        {},
+        {
+          defaultSpawn: () => {
+            throw new Error('unexpected spawn');
+          },
+          defaultStdout: process.stdout,
+          defaultStderr: process.stderr,
+          defaultNow: () => Date.now(),
+        }
+      );
 
       expect(resolved.commands).toHaveLength(8);
       expect(resolved.failFast).toBe(false);

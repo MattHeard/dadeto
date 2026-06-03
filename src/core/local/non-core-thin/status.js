@@ -1,12 +1,12 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
-const CONFIG_PATH = path.resolve('non-core-thin-exemptions.json');
-const SRC_DIR = path.resolve('src');
-const REPO_ROOT = path.resolve('.');
-
 /**
  * Read the current non-core thin status.
+ * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dir: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
+ *   pathModule: { resolve: (...parts: string[]) => string, join: (...parts: string[]) => string, relative: (from: string, to: string) => string, sep: string },
+ *   repoRoot: string,
+ *   configPath?: string,
+ *   srcDir?: string,
+ * }} options Status dependencies.
  * @returns {{
  *   isClean: boolean,
  *   maxLines: number,
@@ -17,9 +17,23 @@ const REPO_ROOT = path.resolve('.');
  *   patternViolations: Array<{ filePath: string, reason: string }>,
  * }} non-core thin status for the current repo snapshot
  */
-export function getNonCoreThinStatus() {
-  const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-  return buildNonCoreThinStatus(config, listJsFiles(SRC_DIR));
+export function getNonCoreThinStatus(options) {
+  const paths = resolveStatusPaths(options);
+  const coreDir = options.pathModule.join(paths.srcDir, 'core');
+  const config = JSON.parse(
+    options.fsModule.readFileSync(paths.configPath, 'utf8')
+  );
+  return buildNonCoreThinStatus(
+    config,
+    listJsFiles(paths.srcDir, options, coreDir),
+    {
+      fsModule: options.fsModule,
+      pathModule: options.pathModule,
+      repoRoot: options.repoRoot,
+      srcDir: paths.srcDir,
+      coreDir,
+    }
+  );
 }
 
 /**
@@ -115,6 +129,13 @@ export function formatNonCoreThinFailure(status) {
  * Build the non-core thin status from a config snapshot and file list.
  * @param {{ maxLines: number, exemptions: Record<string, string> }} config Status config.
  * @param {string[]} files Repo-relative JavaScript files outside `src/core`.
+ * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dir: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
+ *   pathModule: { resolve: (...parts: string[]) => string, join: (...parts: string[]) => string, relative: (from: string, to: string) => string, sep: string },
+ *   repoRoot: string,
+ *   srcDir?: string,
+ *   coreDir?: string,
+ * }} options Status dependencies.
  * @returns {{
  *   isClean: boolean,
  *   maxLines: number,
@@ -125,7 +146,7 @@ export function formatNonCoreThinFailure(status) {
  *   patternViolations: Array<{ filePath: string, reason: string }>,
  * }} non-core thin status for the current repo snapshot
  */
-function buildNonCoreThinStatus(config, files) {
+function buildNonCoreThinStatus(config, files, options) {
   const maxLines = config.maxLines;
   const exemptions = new Set(Object.keys(config.exemptions));
   const fileSet = new Set(files);
@@ -133,12 +154,12 @@ function buildNonCoreThinStatus(config, files) {
     filePath => !fileSet.has(filePath)
   );
   const violations = files
-    .map(filePath => ({ filePath, lines: countLines(filePath) }))
+    .map(filePath => ({ filePath, lines: countLines(filePath, options) }))
     .filter(
       ({ filePath, lines }) => lines > maxLines && !exemptions.has(filePath)
     );
   const patternViolations = files.flatMap(filePath =>
-    getWrapperPatternViolations(filePath, exemptions, maxLines)
+    getWrapperPatternViolations(filePath, exemptions, maxLines, options)
   );
 
   return {
@@ -158,19 +179,30 @@ function buildNonCoreThinStatus(config, files) {
 /**
  * List non-core JavaScript files under `dir`.
  * @param {string} dir directory to scan
+ * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dir: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
+ *   pathModule: { resolve: (...parts: string[]) => string, join: (...parts: string[]) => string, relative: (from: string, to: string) => string, sep: string },
+ *   repoRoot: string,
+ *   srcDir?: string
+ * }} options Status dependencies.
+ * @param {string} coreDir Core directory path to skip.
  * @returns {string[]} repo-relative JavaScript paths outside `src/core`
  */
-function listJsFiles(dir) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+function listJsFiles(dir, options, coreDir) {
+  const entries = options.fsModule.readdirSync(dir, { withFileTypes: true });
   const directories = entries.filter(entry =>
-    shouldIncludeDirectory(dir, entry)
+    shouldIncludeDirectory(dir, entry, coreDir)
   );
   const files = entries
     .filter(entry => entry.isFile() && entry.name.endsWith('.js'))
-    .map(entry => toRepoPath(path.join(dir, entry.name)));
+    .map(entry =>
+      toRepoPath(options.pathModule.join(dir, entry.name), options)
+    );
 
   return [
-    ...directories.flatMap(entry => listJsFiles(path.join(dir, entry.name))),
+    ...directories.flatMap(entry =>
+      listJsFiles(options.pathModule.join(dir, entry.name), options, coreDir)
+    ),
     ...files,
   ];
 }
@@ -178,40 +210,81 @@ function listJsFiles(dir) {
 /**
  * Count lines in a file.
  * @param {string} filePath repo-relative file path
+ * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
+ *   pathModule: { resolve: (...parts: string[]) => string },
+ *   repoRoot: string
+ * }} options Status dependencies.
  * @returns {number} total number of lines in the file
  */
-function countLines(filePath) {
-  return fs.readFileSync(path.resolve(filePath), 'utf8').split('\n').length;
+function countLines(filePath, options) {
+  return options.fsModule
+    .readFileSync(
+      options.pathModule.resolve(options.repoRoot, filePath),
+      'utf8'
+    )
+    .split('\n').length;
 }
 
 /**
  * Convert an absolute path into a repo-relative path.
  * @param {string} filePath absolute file path
+ * @param {{
+ *   pathModule: { relative: (from: string, to: string) => string, sep: string },
+ *   repoRoot: string
+ * }} options Status dependencies.
  * @returns {string} repo-relative path using forward slashes
  */
-function toRepoPath(filePath) {
-  return path.relative(REPO_ROOT, filePath).replaceAll(path.sep, '/');
+function toRepoPath(filePath, options) {
+  return options.pathModule
+    .relative(options.repoRoot, filePath)
+    .replaceAll(options.pathModule.sep, '/');
 }
 
 /**
  * Tell whether a directory should be skipped during the scan.
  * @param {string} fullPath absolute path for the entry
+ * @param {string} coreDir Core directory path to skip.
  * @returns {boolean} true when the directory is `src/core`
  */
-function shouldSkipDirectory(fullPath) {
-  return fullPath === path.join(SRC_DIR, 'core');
+function shouldSkipDirectory(fullPath, coreDir) {
+  return fullPath === coreDir;
 }
 
 /**
  * Tell whether a directory entry should be scanned.
  * @param {string} dir directory being scanned
- * @param {import('node:fs').Dirent} entry directory entry
+ * @param {{ isDirectory: () => boolean, name: string }} entry directory entry
+ * @param {string} coreDir Core directory path to skip.
  * @returns {boolean} true when the entry is a non-core directory
  */
-function shouldIncludeDirectory(dir, entry) {
+function shouldIncludeDirectory(dir, entry, coreDir) {
   return (
-    entry.isDirectory() && !shouldSkipDirectory(path.join(dir, entry.name))
+    entry.isDirectory() && !shouldSkipDirectory(`${dir}/${entry.name}`, coreDir)
   );
+}
+
+/**
+ * Resolve the status paths for the current repo snapshot.
+ * @param {{
+ *   repoRoot: string,
+ *   pathModule: { resolve: (...parts: string[]) => string }
+ *   configPath?: string,
+ *   srcDir?: string,
+ * }} options Status path inputs.
+ * @returns {{ configPath: string, srcDir: string }} Resolved status paths.
+ */
+function resolveStatusPaths(options) {
+  return {
+    configPath: options.pathModule.resolve(
+      options.repoRoot,
+      options.configPath ?? 'non-core-thin-exemptions.json'
+    ),
+    srcDir: options.pathModule.resolve(
+      options.repoRoot,
+      options.srcDir ?? 'src'
+    ),
+  };
 }
 
 export const nonCoreThinStatusTestOnly = {
@@ -241,14 +314,22 @@ function pluralize(count, singular) {
  * @param {string} filePath Repo-relative file path.
  * @param {Set<string>} exemptions Explicitly exempted file paths.
  * @param {number} maxLines Maximum line count for tiny platform adapters.
+ * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
+ *   pathModule: { resolve: (...parts: string[]) => string },
+ *   repoRoot: string
+ * }} options Status dependencies.
  * @returns {Array<{ filePath: string, reason: string }>} Wrapper shape violations.
  */
-function getWrapperPatternViolations(filePath, exemptions, maxLines) {
+function getWrapperPatternViolations(filePath, exemptions, maxLines, options) {
   if (exemptions.has(filePath) || !shouldEnforceWrapperPattern(filePath)) {
     return [];
   }
 
-  const source = fs.readFileSync(path.resolve(filePath), 'utf8');
+  const source = options.fsModule.readFileSync(
+    options.pathModule.resolve(options.repoRoot, filePath),
+    'utf8'
+  );
   return getWrapperPatternViolationsForSource(filePath, source, maxLines);
 }
 

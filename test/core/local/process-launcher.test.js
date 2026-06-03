@@ -1,4 +1,5 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, open } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import {
@@ -23,6 +24,10 @@ describe('process launcher helpers', () => {
       args: ['-e', ''],
       repoRoot: tempDir,
       runId: '2026-05-31T18:30:00.000Z--process-launcher',
+      pathModule: path,
+      mkdirImpl: mkdir,
+      openImpl: open,
+      spawnImpl: spawn,
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
     });
@@ -54,6 +59,8 @@ describe('process launcher helpers', () => {
     const launcher = createDetachedProcessLauncher({
       command: 'codex',
       args: ['exec'],
+      pathModule: path,
+      mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       openImpl: async filePath => ({
@@ -113,6 +120,8 @@ describe('process launcher helpers', () => {
     const launcher = createDetachedProcessLauncher({
       command: 'codex',
       args: ['exec'],
+      pathModule: path,
+      mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       openImpl: async filePath => ({
@@ -152,6 +161,8 @@ describe('process launcher helpers', () => {
     const launcher = createDetachedProcessLauncher({
       command: 'codex',
       args: ['exec'],
+      pathModule: path,
+      mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       resolveCwd: payload => path.join(payload.repoRoot, 'custom-cwd'),
@@ -210,6 +221,8 @@ describe('process launcher helpers', () => {
     const launcher = createDetachedProcessLauncher({
       command: 'codex',
       args: ['exec'],
+      pathModule: path,
+      mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       openImpl: async filePath => ({
@@ -249,6 +262,8 @@ describe('process launcher helpers', () => {
     let exitHandler;
     const launcher = createDetachedProcessLauncher({
       command: 'codex',
+      pathModule: path,
+      mkdirImpl: async () => {},
       closeErrorLabel: 'Failed to close run log handle:',
       exitErrorLabel: 'Failed to handle process exit:',
       buildExitPayload: (payload, input) => ({

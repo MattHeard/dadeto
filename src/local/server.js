@@ -1,22 +1,13 @@
-import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDocumentStore } from './documentStore.js';
 import { exchangeRealtimeCallSdp } from './openaiRealtimeCalls.js';
 import { formatListenErrorMessage } from './serverMessages.js';
-import {
-  createLocalAppCore,
-  createRequestLogger,
-  createWriterServer,
-  getDocumentContent,
-  getMoveDirection,
-  getNextIndex,
-  getWriterUrl,
-  isWriterRequestLogEnabled,
-  shouldSetResponseLocation,
-} from '../core/local/server.js';
-import { getNonCoreThinStatus } from '../core/local/non-core-thin/status.js';
+import { getWriterUrl, isWriterRequestLogEnabled } from '../core/local/server.js';
+import { getNonCoreThinStatus } from './non-core-thin/status.js';
 import { renderNonCoreThinDashboard } from './non-core-thin/dashboard.js';
+import { createLocalApp } from './createLocalApp.js';
+import { createWriterServer } from './createWriterServer.js';
 import { createLocalServerRuntime } from '../core/local/run.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,12 +20,16 @@ const store = createDocumentStore({
   legacyDocumentPath: process.env.WRITER_LEGACY_DOCUMENT_PATH,
 });
 
-export function createLocalApp(deps) {
-  return createLocalAppCore({ app: express(), requestLoggerMiddleware: deps.requestLogger ? createRequestLogger(deps.requestLogger) : undefined, static: express.static, text: express.text, json: express.json, store: deps.store, publicDir: deps.publicDir, writerDir: deps.writerDir, exchangeRealtimeCallSdp: deps.exchangeRealtimeCallSdp, getNonCoreThinStatus: deps.getNonCoreThinStatus, renderNonCoreThinDashboard: deps.renderNonCoreThinDashboard, requestLogger: deps.requestLogger, getMoveDirection, getNextIndex, getDocumentContent, shouldSetResponseLocation }).app;
-}
+const handle = createLocalServerRuntime({
+  createLocalApp,
+  createWriterServer,
+  formatListenErrorMessage,
+  getWriterUrl,
+  isWriterRequestLogEnabled,
+}).runLocalServer;
 
-export const { runLocalServer } = createLocalServerRuntime({ createLocalApp, createWriterServer, formatListenErrorMessage, getWriterUrl, isWriterRequestLogEnabled });
+export { handle };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  runLocalServer({ env: process.env, port, store, publicDir, writerDir, exchangeRealtimeCallSdp, getNonCoreThinStatus, renderNonCoreThinDashboard });
+  handle({ env: process.env, port, store, publicDir, writerDir, exchangeRealtimeCallSdp, getNonCoreThinStatus, renderNonCoreThinDashboard });
 }

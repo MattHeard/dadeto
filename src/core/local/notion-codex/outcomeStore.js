@@ -1,8 +1,5 @@
 // @ts-nocheck
 /* eslint-disable no-ternary, jsdoc/require-returns */
-import path from 'node:path';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-
 /**
  * @param {unknown} value Candidate outcome payload.
  * @returns {{ outcome: string, summary: string }} Normalized outcome.
@@ -20,9 +17,10 @@ export function normalizeNotionCodexOutcome(value) {
 /**
  * @param {{
  *   outcomeDir: string,
- *   mkdirImpl?: typeof mkdir,
- *   readFileImpl?: typeof readFile,
- *   writeFileImpl?: typeof writeFile
+ *   pathModule: { join: (first: string, ...parts: string[]) => string },
+ *   mkdirImpl: (dirPath: string, options: { recursive: boolean }) => Promise<void>,
+ *   readFileImpl: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   writeFileImpl: (filePath: string, data: string, encoding: 'utf8') => Promise<void>
  * }} options Store dependencies.
  * @returns {{
  *   readOutcome: (runId: string) => Promise<{ outcome: string, summary: string } | null>,
@@ -30,15 +28,15 @@ export function normalizeNotionCodexOutcome(value) {
  * }} Outcome store.
  */
 export function createNotionCodexOutcomeStore(options) {
-  const mkdirImpl = options.mkdirImpl ?? mkdir;
-  const readFileImpl = options.readFileImpl ?? readFile;
-  const writeFileImpl = options.writeFileImpl ?? writeFile;
+  const mkdirImpl = options.mkdirImpl;
+  const readFileImpl = options.readFileImpl;
+  const writeFileImpl = options.writeFileImpl;
 
   return {
     async readOutcome(runId) {
       try {
         const rawOutcome = await readFileImpl(
-          getOutcomePath(options.outcomeDir, runId),
+          getOutcomePath(options.outcomeDir, runId, options.pathModule),
           'utf8'
         );
         return normalizeNotionCodexOutcome(JSON.parse(rawOutcome));
@@ -54,7 +52,7 @@ export function createNotionCodexOutcomeStore(options) {
     async writeOutcome(runId, outcome) {
       await mkdirImpl(options.outcomeDir, { recursive: true });
       await writeFileImpl(
-        getOutcomePath(options.outcomeDir, runId),
+        getOutcomePath(options.outcomeDir, runId, options.pathModule),
         JSON.stringify(normalizeNotionCodexOutcome(outcome), null, 2),
         'utf8'
       );
@@ -66,7 +64,8 @@ export function createNotionCodexOutcomeStore(options) {
  *
  * @param {string} outcomeDir Outcome directory.
  * @param {string} runId Run id.
+ * @param {{ join: (first: string, ...parts: string[]) => string }} pathModule Path helper.
  */
-function getOutcomePath(outcomeDir, runId) {
-  return path.join(outcomeDir, `${runId.replaceAll(':', '-')}.json`);
+function getOutcomePath(outcomeDir, runId, pathModule) {
+  return pathModule.join(outcomeDir, `${runId.replaceAll(':', '-')}.json`);
 }

@@ -120,6 +120,13 @@ export default [
     },
   },
   {
+    files: ['src/core/build/copy-cloud.js'],
+    rules: {
+      'max-lines-per-function': 'off',
+      'max-statements': 'off',
+    },
+  },
+  {
     files: lintFiles,
     ...eslintConfigPrettier,
   },

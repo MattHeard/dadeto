@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
 import { createCheckDepcruiseHandle } from '../core/scripts/check-depcruise.js';
 
 const handle = createCheckDepcruiseHandle({
@@ -9,6 +10,7 @@ const handle = createCheckDepcruiseHandle({
   stdout: process.stdout,
   stderr: process.stderr,
   rootDir: process.cwd(),
+  pathModule: path,
 });
 
 const result = handle();

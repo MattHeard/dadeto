@@ -1,7 +1,19 @@
 import { createSymphonyLaunchHandle } from '../../core/local/symphony/launch.js';
 
-const handle = createSymphonyLaunchHandle();
+const coreHandle = createSymphonyLaunchHandle();
 
-export const { launchSelectedRunnerLoop, createRunnerExitHandler } = handle;
+export function launchSelectedRunnerLoop(options = {}) {
+  return coreHandle.launchSelectedRunnerLoop({
+    ...options,
+    cwd: options.cwd ?? (() => process.cwd()),
+  });
+}
 
-export { handle };
+export function createRunnerExitHandler(options) {
+  return coreHandle.createRunnerExitHandler(options);
+}
+
+export const handle = {
+  launchSelectedRunnerLoop,
+  createRunnerExitHandler,
+};

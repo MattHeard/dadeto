@@ -13,6 +13,7 @@ import {
  *   status: Record<string, unknown>,
  *   statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
  *   repoRoot?: string,
+ *   cwd?: () => string,
  *   launcher?: {
  *     launchRunner: (payload: {
  *       repoRoot: string,
@@ -95,7 +96,7 @@ export async function launchSelectedRunnerLoop(options) {
 
   try {
     const invocation = await launcher.launchRunner({
-      repoRoot: options.repoRoot ?? process.cwd(),
+      repoRoot: options.repoRoot ?? options.cwd?.() ?? '',
       beadId: currentBeadId,
       beadTitle: currentBeadTitle,
       runId,
@@ -222,7 +223,7 @@ function getRequiredString(value, fieldName) {
 
 /**
  * @param {Record<string, unknown>} status Current Symphony status.
- * @param {{ repoRoot?: string }} options Launch options.
+ * @param {{ repoRoot?: string, cwd?: () => string }} options Launch options.
  * @returns {{ launchRunner: ReturnType<typeof createCodexRalphLauncher>['launchRunner'] }} Configured launcher.
  */
 function createConfiguredLauncher(status, options) {
@@ -231,7 +232,7 @@ function createConfiguredLauncher(status, options) {
   return createCodexRalphLauncher({
     command: launcherConfig.command,
     args: launcherConfig.args,
-    cwd: options.repoRoot ?? process.cwd(),
+    cwd: options.repoRoot ?? options.cwd?.() ?? '',
   });
 }
 

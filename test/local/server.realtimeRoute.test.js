@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
+import { createWriterServer } from '../../src/local/createWriterServer.js';
 import {
   getDocumentContent,
   createRequestLogger,
-  createWriterServer,
   getMoveDirection,
   getNextIndex,
   getWriterUrl,
@@ -38,14 +38,14 @@ describe('local writer server transport', () => {
       WRITER_TLS_KEY: 'certs/dadeto-key.pem',
       WRITER_TLS_CERT: 'certs/dadeto.pem',
     };
-    const readFile = jest.fn(path => `${path} contents`);
+    const readFileSync = jest.fn(path => `${path} contents`);
     const httpCreateServer = jest.fn();
     const httpsCreateServer = jest.fn(() => server);
 
     expect(
       createWriterServer(app, {
         env,
-        readFile,
+        readFileSync,
         httpCreateServer,
         httpsCreateServer,
       })

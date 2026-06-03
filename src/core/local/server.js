@@ -1,8 +1,4 @@
 // @ts-nocheck
-import fs from 'node:fs';
-import http from 'node:http';
-import https from 'node:https';
-
 /**
  * Wire the local writer routes onto an app-like dependency.
  * @param {{
@@ -246,22 +242,17 @@ export function readWriterTlsOptions(env, readFile) {
  * @param {unknown} localApp Express application.
  * @param {{
  *   env?: Record<string, string | undefined>,
- *   readFile?: (filePath: string, encoding: 'utf8') => string,
- *   httpCreateServer?: (app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
- *   httpsCreateServer?: (options: { key: string, cert: string }, app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
+ *   httpCreateServer: (app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
+ *   httpsCreateServer: (options: { key: string, cert: string }, app: unknown) => { listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void },
  * }} [options] Server options.
  * @returns {{ listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }} Node server.
  */
 export function createWriterServer(localApp, options = {}) {
-  const {
-    env,
-    readFile = fs.readFileSync,
-    httpCreateServer = http.createServer,
-    httpsCreateServer = https.createServer,
-  } = options;
+  const { env, readFileSync, httpCreateServer, httpsCreateServer } = options;
 
   if (isWriterHttpsEnabled(env)) {
-    return httpsCreateServer(readWriterTlsOptions(env, readFile), localApp);
+    return httpsCreateServer(readWriterTlsOptions(env, readFileSync), localApp);
   }
 
   return httpCreateServer(localApp);
