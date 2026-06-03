@@ -16,7 +16,7 @@ resource "google_cloudfunctions2_function" "get_api_key_credit_v2" {
 
   build_config {
     runtime     = "nodejs22"
-    entry_point = "getApiKeyCreditV2"
+    entry_point = "handle"
     source {
       storage_source {
         bucket = google_storage_bucket.gcf_source_bucket.name

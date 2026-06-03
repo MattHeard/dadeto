@@ -63,6 +63,15 @@ describe('cloud browser entrypoints', () => {
     }
   });
 
+  it('targets the v2 API key function at the exported handle entrypoint', async () => {
+    const functionsV2Tf = await readFile('infra/functions-v2.tf', 'utf8');
+
+    expect(functionsV2Tf).toContain('entry_point = "handle"');
+    expect(functionsV2Tf).not.toContain(
+      'entry_point = "getApiKeyCreditV2"'
+    );
+  });
+
   it('copies and uploads the deep core browser module tree used by root wrappers', async () => {
     const [copyCloudJs, mainTf] = await Promise.all([
       readFile('src/core/build/copy-cloud.js', 'utf8'),
