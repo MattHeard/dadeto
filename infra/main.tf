@@ -554,7 +554,7 @@ resource "google_storage_bucket_object" "submit_new_page" {
 resource "google_cloudfunctions_function" "submit_new_story" {
   name                         = "${var.environment}-submit-new-story"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "submitNewStory"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.submit_new_story.name
   trigger_http                 = true
@@ -576,7 +576,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
 resource "google_cloudfunctions_function" "submit_new_page" {
   name                         = "${var.environment}-submit-new-page"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "submitNewPage"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.submit_new_page.name
   trigger_http                 = true
@@ -635,7 +635,7 @@ resource "google_storage_bucket_object" "realtime_call" {
 resource "google_cloudfunctions_function" "realtime_call" {
   name                         = "${var.environment}-realtime-call"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "realtimeCall"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.realtime_call.name
   trigger_http                 = true
@@ -683,7 +683,7 @@ resource "google_storage_bucket_object" "assign_moderation_job" {
 resource "google_cloudfunctions_function" "assign_moderation_job" {
   name                         = "${var.environment}-assign-moderation-job"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "assignModerationJob"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.assign_moderation_job.name
   trigger_http                 = true
@@ -728,7 +728,7 @@ resource "google_storage_bucket_object" "get_moderation_variant" {
 resource "google_cloudfunctions_function" "get_moderation_variant" {
   name                         = "${var.environment}-get-moderation-variant"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "getModerationVariant"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.get_moderation_variant.name
   trigger_http                 = true
@@ -773,7 +773,7 @@ resource "google_storage_bucket_object" "submit_moderation_rating" {
 resource "google_cloudfunctions_function" "submit_moderation_rating" {
   name                         = "${var.environment}-submit-moderation-rating"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "submitModerationRating"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.submit_moderation_rating.name
   trigger_http                 = true
@@ -819,7 +819,7 @@ resource "google_storage_bucket_object" "report_for_moderation" {
 resource "google_cloudfunctions_function" "report_for_moderation" {
   name                         = "${var.environment}-report-for-moderation"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "reportForModeration"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.report_for_moderation.name
   trigger_http                 = true
@@ -866,7 +866,7 @@ resource "google_cloudfunctions_function" "process_new_story" {
   name        = "${var.environment}-process-new-story"
   runtime     = var.cloud_functions_runtime
   region      = var.region
-  entry_point = "processNewStory"
+  entry_point = "handle"
 
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.process_new_story.name
@@ -904,7 +904,7 @@ resource "google_cloudfunctions_function" "prod_update_variant_visibility" {
   name        = "${var.environment}-update-variant-visibility"
   runtime     = var.cloud_functions_runtime
   region      = var.region
-  entry_point = "updateVariantVisibility"
+  entry_point = "handle"
 
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.prod_update_variant_visibility.name
@@ -941,7 +941,7 @@ resource "google_cloudfunctions_function" "process_new_page" {
   name        = "${var.environment}-process-new-page"
   runtime     = var.cloud_functions_runtime
   region      = var.region
-  entry_point = "processNewPage"
+  entry_point = "handle"
 
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.process_new_page.name
@@ -979,7 +979,7 @@ resource "google_cloudfunctions_function" "render_variant" {
   name        = "${var.environment}-render-variant"
   runtime     = var.cloud_functions_runtime
   region      = var.region
-  entry_point = "renderVariant"
+  entry_point = "handle"
 
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.render_variant.name
@@ -1017,7 +1017,7 @@ resource "google_cloudfunctions_function" "hide_variant_html" {
   name        = "${var.environment}-hide-variant-html"
   runtime     = var.cloud_functions_runtime
   region      = var.region
-  entry_point = "hideVariantHtml"
+  entry_point = "handle"
 
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.hide_variant_html.name
@@ -1053,7 +1053,7 @@ resource "google_storage_bucket_object" "mark_variant_dirty" {
 resource "google_cloudfunctions_function" "mark_variant_dirty" {
   name                         = "${var.environment}-mark-variant-dirty"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "markVariantDirty"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.mark_variant_dirty.name
   trigger_http                 = true
@@ -1098,7 +1098,7 @@ resource "google_storage_bucket_object" "generate_stats" {
 resource "google_cloudfunctions_function" "generate_stats" {
   name                         = "${var.environment}-generate-stats"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "generateStats"
+  entry_point                  = "handle"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.generate_stats.name
   trigger_http                 = true
@@ -1162,7 +1162,7 @@ resource "google_cloudfunctions_function" "render_contents" {
   name        = "${var.environment}-render-contents"
   runtime     = var.cloud_functions_runtime
   region      = var.region
-  entry_point = "renderContents"
+  entry_point = "handle"
 
   source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
   source_archive_object = google_storage_bucket_object.render_contents.name
@@ -1187,7 +1187,7 @@ resource "google_cloudfunctions_function" "render_contents" {
 resource "google_cloudfunctions_function" "trigger_render_contents" {
   name                         = "${var.environment}-trigger-render-contents"
   runtime                      = var.cloud_functions_runtime
-  entry_point                  = "triggerRenderContents"
+  entry_point                  = "handleTrigger"
   source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
   source_archive_object        = google_storage_bucket_object.render_contents.name
   trigger_http                 = true

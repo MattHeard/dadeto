@@ -3,6 +3,37 @@ import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from '@jest/globals';
 
 describe('cloud browser entrypoints', () => {
+  it('targets the exported cloud function handles used by src/cloud entrypoints', async () => {
+    const mainTf = await readFile('infra/main.tf', 'utf8');
+
+    for (const legacyEntryPoint of [
+      'submitNewStory',
+      'submitNewPage',
+      'realtimeCall',
+      'assignModerationJob',
+      'getModerationVariant',
+      'submitModerationRating',
+      'reportForModeration',
+      'processNewStory',
+      'updateVariantVisibility',
+      'processNewPage',
+      'renderVariant',
+      'hideVariantHtml',
+      'markVariantDirty',
+      'generateStats',
+      'renderContents',
+      'triggerRenderContents',
+    ]) {
+      expect(mainTf).not.toContain(
+        `entry_point                  = "${legacyEntryPoint}"`
+      );
+      expect(mainTf).not.toContain(`entry_point = "${legacyEntryPoint}"`);
+    }
+
+    expect(mainTf).toContain('entry_point                  = "handler"');
+    expect(mainTf).toContain('entry_point                  = "handleTrigger"');
+  });
+
   it('uploads root browser wrappers instead of deep core modules', async () => {
     await expect(readFile('infra/admin-core.js', 'utf8')).resolves.toBe(
       "export * from '../core/browser/admin-core.js';\n"
