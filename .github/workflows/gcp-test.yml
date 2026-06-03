@@ -377,6 +377,17 @@ jobs:
             echo "Playwright job not provisioned; skipping log export"
             exit 0
           fi
+          EXECUTION="${EXECUTION:-}"
+          if [ -z "$EXECUTION" ] || [ "$EXECUTION" = "null" ]; then
+            EXECUTION="$(gcloud run jobs executions list --job "$JOB_NAME" --region="$(terraform output -raw playwright_region 2>/dev/null || true)" --format='value(name)' --limit=1 || true)"
+          fi
+          if [ -n "$EXECUTION" ] && [ "$EXECUTION" != "null" ]; then
+            gcloud run jobs executions describe "$EXECUTION" --region "$(terraform output -raw playwright_region 2>/dev/null || true)" --format=yaml > /tmp/pw-execution.yaml || true
+            TASK="$(gcloud run jobs executions tasks list --execution "$EXECUTION" --region "$(terraform output -raw playwright_region 2>/dev/null || true)" --format='value(name)' --limit=1 || true)"
+            if [ -n "$TASK" ] && [ "$TASK" != "null" ]; then
+              gcloud run jobs executions tasks describe "$TASK" --region "$(terraform output -raw playwright_region 2>/dev/null || true)" --format=yaml > /tmp/pw-task.yaml || true
+            fi
+          fi
           gcloud logging read \
             'resource.type="cloud_run_job" AND resource.labels.job_name="'$JOB_NAME'"' \
             --limit=2000 --format=json > /tmp/run-job-logs.json || true
@@ -387,6 +398,8 @@ jobs:
         with:
           name: playwright-job-logs-${{ steps.environment.outputs.environment }}
           path: |
+            /tmp/pw-execution.yaml
+            /tmp/pw-task.yaml
             /tmp/run-job-logs.json
             /tmp/pw-logs.json
           if-no-files-found: ignore
