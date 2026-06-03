@@ -260,6 +260,11 @@ resource "google_cloud_run_v2_job" "playwright" {
         }
 
         env {
+          name  = "PLAYWRIGHT_BASE_URL"
+          value = local.gcs_proxy_uri
+        }
+
+        env {
           name  = "REPORT_BUCKET"
           value = local.reports_bucket_name
         }
