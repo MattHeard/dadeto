@@ -39,7 +39,7 @@ export async function createCopyCloudHandle(deps) {
   const pathAdapters = createPathAdapters(deps.pathModule);
   const { join, resolve, relative } = pathAdapters;
 
-  const projectRoot = resolve(__dirname, '../..');
+  const projectRoot = resolve(__dirname, '../../..');
   const srcDir = join(projectRoot, 'src');
   const infraDir = resolve(projectRoot, 'infra');
   const srcCloudDir = resolve(srcDir, 'cloud');
