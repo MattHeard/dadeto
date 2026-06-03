@@ -45,7 +45,9 @@ describe('PAGE_HTML', () => {
     expect(html).toContain(
       '<script type="module" src="./contentsGoogleAuthModule.js"></script>'
     );
-    expect(html).toContain('<script src="./contentsMenuToggle.js"></script>');
+    expect(html).toContain(
+      '<script type="module" src="./contentsMenuToggle.js"></script>'
+    );
     expect(contentsGoogleAuthModule).toContain('import {');
     expect(contentsGoogleAuthModule).toContain('createGoogleAuthStatusHandle');
     expect(contentsGoogleAuthModule).toContain('handle();');

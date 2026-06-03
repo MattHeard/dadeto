@@ -230,7 +230,7 @@ const GOOGLE_AUTH_CLIENT_SCRIPT = `    <script src="https://accounts.google.com/
 
 const GOOGLE_AUTH_MODULE_SCRIPT = `    <script type="module" src="./contentsGoogleAuthModule.js"></script>`;
 
-const MENU_TOGGLE_SCRIPT = `    <script src="./contentsMenuToggle.js"></script>`;
+const MENU_TOGGLE_SCRIPT = `    <script type="module" src="./contentsMenuToggle.js"></script>`;
 
 /**
  * Build the full HTML page shell for the contents list.
