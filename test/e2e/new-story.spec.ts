@@ -183,4 +183,12 @@ test('submits the new story form', async ({ page }) => {
   ]);
 
   await expect(page).toHaveURL(/\/story\/story-123\.html$/);
+  await expect(page).toHaveTitle(`Dendrite - ${submissionTitle}`);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    submissionTitle,
+  );
+
+  const main = page.locator('main');
+  await expect(main).toContainText(submissionContent);
+  await expect(main).toContainText(`By ${submissionAuthor}`);
 });
