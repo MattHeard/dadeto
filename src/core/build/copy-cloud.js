@@ -1,6 +1,9 @@
 import { createCopyToInfraCore } from './copy.js';
-import { createAsyncFsAdapters } from '../fs.js';
-import { createPathAdapters, getCurrentDirectory } from '../path.js';
+import {
+  createAsyncFsAdapters,
+  createPathAdapters,
+  getCurrentDirectory,
+} from '../commonCore.js';
 
 /**
  * Run the copy-cloud workflow with injected platform helpers.
