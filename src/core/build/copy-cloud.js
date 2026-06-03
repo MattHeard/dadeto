@@ -449,10 +449,6 @@ export async function createCopyCloudHandle(deps) {
    * @returns {string} Destination filename.
    */
   function toCopiedUtilityFileName(file) {
-    if (file === 'firestore-helpers.js') {
-      return 'firestore.js';
-    }
-
     return file;
   }
 
