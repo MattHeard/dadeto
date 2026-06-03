@@ -177,6 +177,28 @@ test('submits the new story form', async ({ page }) => {
     });
   });
 
+  await page.route(`**${submissionPath}`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dendrite - ${submissionTitle}</title>
+  </head>
+  <body>
+    <main>
+      <h1>${submissionTitle}</h1>
+      <p>${submissionContent}</p>
+      <p>By ${submissionAuthor}</p>
+    </main>
+  </body>
+</html>`,
+    });
+  });
+
   await Promise.all([
     page.waitForURL(`**${submissionPath}`),
     page.getByRole('button', { name: 'Submit' }).click(),
