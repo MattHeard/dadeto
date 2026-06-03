@@ -67,9 +67,7 @@ describe('cloud browser entrypoints', () => {
     const functionsV2Tf = await readFile('infra/functions-v2.tf', 'utf8');
 
     expect(functionsV2Tf).toContain('entry_point = "handle"');
-    expect(functionsV2Tf).not.toContain(
-      'entry_point = "getApiKeyCreditV2"'
-    );
+    expect(functionsV2Tf).not.toContain('entry_point = "getApiKeyCreditV2"');
   });
 
   it('copies and uploads the deep core browser module tree used by root wrappers', async () => {

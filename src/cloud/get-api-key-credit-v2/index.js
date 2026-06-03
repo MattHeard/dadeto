@@ -1,4 +1,4 @@
-import { onRequest, Firestore } from './get-api-key-credit-v2-gcf.js';
+import { Firestore } from './get-api-key-credit-v2-gcf.js';
 import {
   createDb,
   createFetchCredit,
@@ -16,7 +16,7 @@ const handleRequest = createGetApiKeyCreditV2Handler({
   logError: error => console.error(error),
 });
 
-export const handle = onRequest(async (req, res) => {
+export async function handle(req, res) {
   const { status, body, headers } = await handleRequest(req);
 
   if (headers) {
@@ -32,6 +32,6 @@ export const handle = onRequest(async (req, res) => {
   }
 
   return res.status(status).send(body);
-});
+}
 
 export { extractUuid, createDb } from './get-api-key-credit-v2-core.js';
