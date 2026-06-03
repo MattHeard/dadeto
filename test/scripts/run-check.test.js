@@ -3,8 +3,8 @@ import { PassThrough } from 'node:stream';
 import {
   createRunCheckHandle,
   createRunCheckSuite,
-  runCheckSuiteTestOnly,
-} from '../../src/core/check-runner.js';
+  resolveRunCheckOptions,
+} from '../../src/core/commonCore.js';
 
 const runCheckSuite = createRunCheckSuite({
   defaultSpawn: () => {
@@ -186,7 +186,7 @@ describe('runCheckSuite', () => {
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(4321);
 
     try {
-      const resolved = runCheckSuiteTestOnly.resolveRunCheckOptions(
+      const resolved = resolveRunCheckOptions(
         {},
         {
           defaultSpawn: () => {

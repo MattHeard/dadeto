@@ -11,7 +11,3 @@ export {
   createRunCheckSuite,
   resolveRunCheckOptions,
 };
-
-export const runCheckSuiteTestOnly = {
-  resolveRunCheckOptions,
-};
