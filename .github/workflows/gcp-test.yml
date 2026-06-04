@@ -346,16 +346,32 @@ jobs:
             exit "$STATUS"
           fi
 
-      - name: Verify reports in GCS
+      - name: Download Playwright report from GCS
         if: always()
         run: |
           set -euo pipefail
           BUCKET="$(terraform output -raw reports_bucket 2>/dev/null || true)"
           if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ]; then
-            echo "No reports bucket configured; skipping verification"
+            echo "No reports bucket configured; skipping report download"
             exit 0
           fi
-          gcloud storage ls "gs://${BUCKET}/${TF_VAR_environment}/${GITHUB_RUN_ID}/" || true
+
+          REPORT_ROOT="gs://${BUCKET}/${TF_VAR_environment}/${GITHUB_RUN_ID}"
+
+          rm -rf playwright-report test-results
+
+          download_tree() {
+            local tree="$1"
+            if gcloud storage ls "${REPORT_ROOT}/${tree}/" >/dev/null 2>&1; then
+              gcloud storage cp -r "${REPORT_ROOT}/${tree}" .
+              echo "Downloaded ${tree} from ${REPORT_ROOT}"
+            else
+              echo "Missing ${tree} in ${REPORT_ROOT}"
+            fi
+          }
+
+          download_tree playwright-report
+          download_tree test-results
 
       - name: Upload e2e artifacts
         if: always()
