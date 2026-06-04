@@ -1347,10 +1347,9 @@ describe('createRenderVariant', () => {
     expect(storage.bucket).toHaveBeenCalledWith(DEFAULT_BUCKET_NAME);
   });
 
-  it('persists a story landing page for the root variant', async () => {
+  it('persists the variant html, alts, and pending metadata', async () => {
     const variantFile = { save: jest.fn().mockResolvedValue(undefined) };
     const altsFile = { save: jest.fn().mockResolvedValue(undefined) };
-    const storyFile = { save: jest.fn().mockResolvedValue(undefined) };
     const pendingFile = { save: jest.fn().mockResolvedValue(undefined) };
 
     const bucket = {
@@ -1360,9 +1359,6 @@ describe('createRenderVariant', () => {
         }
         if (path === 'p/5-alts.html') {
           return altsFile;
-        }
-        if (path === 'story/story-5.html') {
-          return storyFile;
         }
         if (path === 'pending/story-5.json') {
           return pendingFile;
@@ -1453,10 +1449,19 @@ describe('createRenderVariant', () => {
 
     await renderVariant(snap, { params: { storyId: 'story-5' } });
 
-    expect(bucket.file).toHaveBeenCalledWith('story/story-5.html');
-    expect(storyFile.save).toHaveBeenCalledWith(
-      variantFile.save.mock.calls[0][0],
-      { contentType: 'text/html' }
+    expect(bucket.file).not.toHaveBeenCalledWith('story/story-5.html');
+    expect(variantFile.save).toHaveBeenCalledWith(expect.any(String), {
+      contentType: 'text/html',
+    });
+    expect(altsFile.save).toHaveBeenCalledWith(expect.any(String), {
+      contentType: 'text/html',
+    });
+    expect(pendingFile.save).toHaveBeenCalledWith(
+      JSON.stringify({ path: 'p/5a.html' }),
+      {
+        contentType: 'application/json',
+        metadata: { cacheControl: 'no-store' },
+      }
     );
   });
 

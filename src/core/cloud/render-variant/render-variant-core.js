@@ -2793,33 +2793,6 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
 }
 
 /**
- * Save the story landing page for the root variant when a story id is available.
- * @param {{
- *   bucket: StorageBucketLike;
- *   variant: VariantDocument;
- *   context: RenderContext | undefined;
- *   html: string;
- *   openVariant: boolean;
- * }} options Story landing page inputs.
- * @returns {Promise<void>} Promise.
- */
-async function saveStoryLandingPage({ bucket, variant, context, html, openVariant }) {
-  if (variant.incomingOption) {
-    return;
-  }
-
-  const storyId = resolvePendingStoryId(resolvePendingParams(context));
-  if (!storyId) {
-    return;
-  }
-
-  await bucket.file(`story/${storyId}.html`).save(html, {
-    contentType: 'text/html',
-    ...(openVariant && { metadata: { cacheControl: 'no-store' } }),
-  });
-}
-
-/**
  * Save alts HTML.
  * @param {{ snap: VariantSnapshot; bucket: StorageBucketLike; page: PageDocument }} deps Dependencies.
  * @returns {Promise<string>} Promise resolved with the saved path.
@@ -2925,7 +2898,6 @@ async function persistRenderPlan({
 }) {
   await saveVariantHtml({ bucket, filePath, html, openVariant });
   const altsPath = await saveAltsHtml({ snap, bucket, page });
-  await saveStoryLandingPage({ bucket, variant, context, html, openVariant });
 
   const pendingName = resolvePendingName(variant, context);
   await savePendingFile(bucket, pendingName, filePath);
