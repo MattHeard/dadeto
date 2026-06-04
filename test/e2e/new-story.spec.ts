@@ -150,14 +150,20 @@ test('submits the new story form', async ({ page }) => {
     (request) => request.url() === submitHref && request.method() === 'POST',
   );
   const submitResponsePromise = page.waitForResponse(
-    (response) => response.url() === submitHref && response.request().method() === 'POST',
+    (response) =>
+      response.url() === submitHref && response.request().method() === 'POST',
     { timeout: 15000 },
   );
+  let submissionId: string | undefined;
+  const pendingResponsePromise = page.waitForResponse(
+    (response) =>
+      Boolean(submissionId) &&
+      response.url().includes(`/pending/${submissionId}.json`) &&
+      response.request().method() === 'GET',
+    { timeout: 30000 },
+  );
 
-  await Promise.all([
-    page.waitForURL(/\/story\/[^/]+\.html$/),
-    page.getByRole('button', { name: 'Submit' }).click(),
-  ]);
+  await page.getByRole('button', { name: 'Submit' }).click();
 
   const submitRequest = await submitRequestPromise;
   const payload = new URLSearchParams(submitRequest.postData() ?? '');
@@ -173,13 +179,25 @@ test('submits the new story form', async ({ page }) => {
   expect(submitResponse.ok(), 'submit response ok').toBe(true);
 
   const submission = (await submitResponse.json()) as { id?: string };
-  const submissionId = submission.id;
+  submissionId = submission.id;
   expect(submissionId, 'submission id from response').toBeTruthy();
   if (!submissionId) {
     throw new Error('Expected submit-new-story response to include an id');
   }
 
-  await expect(page).toHaveURL(new RegExp(`/story/${submissionId}\\.html$`));
+  const pendingResponse = await pendingResponsePromise;
+  expect(pendingResponse.ok(), 'pending response ok').toBe(true);
+
+  const pending = (await pendingResponse.json()) as { path?: string };
+  const submissionPath = pending.path;
+  expect(submissionPath, 'story path from pending response').toBeTruthy();
+  if (!submissionPath) {
+    throw new Error('Expected pending response to include a path');
+  }
+
+  expect(submissionPath).toMatch(/^\/p\/\d+[a-z]\.html$/);
+
+  await expect(page).toHaveURL(new RegExp(`${submissionPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
   await expect(page).toHaveTitle(`Dendrite - ${submissionTitle}`);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     submissionTitle,
