@@ -408,6 +408,15 @@ jobs:
             'resource.type="cloud_run_job" AND resource.labels.job_name="'$JOB_NAME'"' \
             --limit=2000 --format=json > /tmp/run-job-logs.json || true
 
+      - name: Dump Cloud Function logs
+        if: always()
+        run: |
+          set -euo pipefail
+          FUNCTION_FILTER='resource.type="cloud_function" AND resource.labels.function_name=~"^'"${ENVIRONMENT}"'-"'
+          gcloud logging read "$FUNCTION_FILTER" \
+            --limit=5000 \
+            --format=json > /tmp/run-cloud-function-logs.json || true
+
       - name: Upload Cloud Run job logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -418,6 +427,14 @@ jobs:
             /tmp/pw-task.yaml
             /tmp/run-job-logs.json
             /tmp/pw-logs.json
+          if-no-files-found: ignore
+
+      - name: Upload Cloud Function logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-function-logs-${{ steps.environment.outputs.environment }}
+          path: /tmp/run-cloud-function-logs.json
           if-no-files-found: ignore
 
       - name: Terraform Destroy

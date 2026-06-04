@@ -562,7 +562,10 @@ resource "google_cloudfunctions_function" "submit_new_story" {
   service_account_email        = local.cloud_function_runtime_service_account_email
   region                       = var.region
 
-  environment_variables = local.cloud_function_environment
+  environment_variables = merge(
+    local.cloud_function_environment,
+    local.playwright_enabled ? { DENDRITE_DEBUG_SUBMIT_NEW_STORY = "1" } : {},
+  )
 
 
   depends_on = [

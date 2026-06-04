@@ -5,6 +5,7 @@ import {
   createHandleSubmitNewStory,
   createSubmitNewStoryResponder,
 } from './submit-new-story-core.js';
+import { getAuthorizationHeader } from '../submit-shared.js';
 import { createFirebaseAppContext } from '../firebase-app-manager.js';
 
 /**
@@ -29,6 +30,19 @@ export function runSubmitNewStory(deps) {
 
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = deps.getAllowedOrigins(environmentVariables);
+  const debugEnabled = isDebugSubmitNewStoryEnabled(environmentVariables);
+
+  if (debugEnabled) {
+    console.info(
+      JSON.stringify({
+        event: 'submit-new-story.debug.config',
+        environment: environmentVariables.DENDRITE_ENVIRONMENT,
+        playwrightOrigin: environmentVariables.PLAYWRIGHT_ORIGIN,
+        allowedOrigins,
+      })
+    );
+  }
+
   const corsOptions = createCorsOptions({ allowedOrigins });
 
   app.use(deps.cors(corsOptions));
@@ -44,8 +58,15 @@ export function runSubmitNewStory(deps) {
     getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
   });
 
+  let debuggedSubmitNewStoryResponder = submitNewStoryResponder;
+  if (debugEnabled) {
+    debuggedSubmitNewStoryResponder = createDebugSubmitNewStoryResponder(
+      submitNewStoryResponder
+    );
+  }
+
   const handleSubmitNewStory = createHandleSubmitNewStory(
-    submitNewStoryResponder
+    debuggedSubmitNewStoryResponder
   );
 
   app.post('/', handleSubmitNewStory);
@@ -55,4 +76,168 @@ export function runSubmitNewStory(deps) {
     .https.onRequest(app);
 
   return { submitNewStory, handleSubmitNewStory, app };
+}
+
+/**
+ * Check whether submit-new-story debug logging is enabled.
+ * @param {Record<string, unknown>} environmentVariables Environment variables.
+ * @returns {boolean} True when temporary debug logging should be emitted.
+ */
+function isDebugSubmitNewStoryEnabled(environmentVariables) {
+  return environmentVariables?.DENDRITE_DEBUG_SUBMIT_NEW_STORY === '1';
+}
+
+/**
+ * Read a request header from either an Express getter or raw header bag.
+ * @param {{ get?: (name: string) => string | null | undefined, headers?: Record<string, unknown> | null | undefined } | undefined} request Request-like value.
+ * @param {string} headerName Header to read.
+ * @returns {string | null} Header value when available.
+ */
+function readRequestHeader(request, headerName) {
+  const headerFromGetter = readRequestHeaderFromGetter(request, headerName);
+  if (headerFromGetter !== null) {
+    return headerFromGetter;
+  }
+
+  return readRequestHeaderFromHeaders(request?.headers, headerName);
+}
+
+/**
+ * Read a request header from an Express getter.
+ * @param {{ get?: (name: string) => string | null | undefined } | undefined} request Request-like value.
+ * @param {string} headerName Header to read.
+ * @returns {string | null} Header value when available.
+ */
+function readRequestHeaderFromGetter(request, headerName) {
+  const getter = request?.get;
+  if (typeof getter !== 'function') {
+    return null;
+  }
+
+  const value = getter(headerName);
+  if (typeof value === 'string' && value.length > 0) {
+    return value;
+  }
+
+  return null;
+}
+
+/**
+ * Read a request header from a raw headers bag.
+ * @param {Record<string, unknown> | null | undefined} headers Raw headers bag.
+ * @param {string} headerName Header to read.
+ * @returns {string | null} Header value when available.
+ */
+function readRequestHeaderFromHeaders(headers, headerName) {
+  if (!headers) {
+    return null;
+  }
+
+  const lowerHeaderName = headerName.toLowerCase();
+  const candidates = [headerName, lowerHeaderName];
+
+  for (const candidate of candidates) {
+    const value = readRequestHeaderCandidate(headers[candidate]);
+    if (value !== null) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Read a raw header value from a single candidate.
+ * @param {unknown} raw Raw header value.
+ * @returns {string | null} Normalized header value.
+ */
+function readRequestHeaderCandidate(raw) {
+  if (typeof raw === 'string' && raw.length > 0) {
+    return raw;
+  }
+
+  if (Array.isArray(raw) && raw.length > 0) {
+    const [first] = raw;
+    if (typeof first === 'string' && first.length > 0) {
+      return first;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Serialize an error for debug logging.
+ * @param {unknown} error Error-like value.
+ * @returns {{ name?: string; message?: string; stack?: string; value?: string }} Serialized error details.
+ */
+function serializeError(error) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return {
+    value: String(error),
+  };
+}
+
+/**
+ * Emit temporary debug logs around submit-new-story request handling.
+ * @param {(request?: unknown) => Promise<{ status: number, body?: unknown }>} responder Domain responder.
+ * @returns {(request?: unknown) => Promise<{ status: number, body?: unknown }>} Wrapped responder.
+ */
+function createDebugSubmitNewStoryResponder(responder) {
+  return async function debuggedSubmitNewStoryResponder(request) {
+    const requestBody = getRequestSummary(request);
+
+    console.info(
+      JSON.stringify({
+        event: 'submit-new-story.debug.request',
+        method: request?.method ?? null,
+        origin: readRequestHeader(request, 'origin'),
+        referer: readRequestHeader(request, 'referer'),
+        contentType: readRequestHeader(request, 'content-type'),
+        hasAuthorization: Boolean(getAuthorizationHeader(request)),
+        bodyKeys: requestBody.bodyKeys,
+      })
+    );
+
+    try {
+      const result = await responder(request);
+      console.info(
+        JSON.stringify({
+          event: 'submit-new-story.debug.response',
+          status: result.status,
+          body: result.body,
+        })
+      );
+      return result;
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          event: 'submit-new-story.debug.error',
+          error: serializeError(error),
+        })
+      );
+      throw error;
+    }
+  };
+}
+
+/**
+ * Summarize the incoming request body for debug logging.
+ * @param {{ body?: Record<string, unknown> | null | undefined } | undefined} request Request-like value.
+ * @returns {{ bodyKeys: string[] }} Stable summary for logs.
+ */
+function getRequestSummary(request) {
+  const body = request?.body;
+  if (!body || typeof body !== 'object') {
+    return { bodyKeys: [] };
+  }
+
+  return { bodyKeys: Object.keys(body) };
 }
