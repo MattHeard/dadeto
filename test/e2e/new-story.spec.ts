@@ -122,9 +122,6 @@ test('submits the new story form', async ({ page }) => {
   expect(submitUrl.pathname).toMatch(/submit-new-story$/);
 
   const submitHref = submitUrl.href;
-  const submissionId = 'story-123';
-  const submissionPath = `/story/${submissionId}.html`;
-
   const submissionTitle = 'Playwright submission title';
   const submissionContent = 'This is a test submission triggered by Playwright.';
   const submissionAuthor = 'Automated Test';
@@ -149,40 +146,40 @@ test('submits the new story form', async ({ page }) => {
     'true',
   );
 
-  await page.route(submitHref, async (route) => {
-    const request = route.request();
-    expect(request.method()).toBe('POST');
-
-    const payload = new URLSearchParams(request.postData() ?? '');
-    expect(payload.get('title')).toBe(submissionTitle);
-    expect(payload.get('content')).toBe(submissionContent);
-    expect(payload.get('author')).toBe(submissionAuthor);
-    expect(payload.get('option0')).toBe(optionEntries[0][1]);
-    expect(payload.get('option1')).toBe(optionEntries[1][1]);
-    expect(payload.get('option2')).toBe(optionEntries[2][1]);
-    expect(payload.get('option3')).toBe(optionEntries[3][1]);
-
-    await route.fulfill({
-      status: 201,
-      contentType: 'application/json',
-      body: JSON.stringify({ id: submissionId }),
-    });
-  });
-
-  await page.route(`**/pending/${submissionId}.json**`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ path: submissionPath }),
-    });
-  });
+  const submitRequestPromise = page.waitForRequest(
+    (request) => request.url() === submitHref && request.method() === 'POST',
+  );
+  const submitResponsePromise = page.waitForResponse(
+    (response) => response.url() === submitHref && response.request().method() === 'POST',
+    { timeout: 15000 },
+  );
 
   await Promise.all([
-    page.waitForURL(`**${submissionPath}`),
+    page.waitForURL(/\/story\/[^/]+\.html$/),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 
-  await expect(page).toHaveURL(/\/story\/story-123\.html$/);
+  const submitRequest = await submitRequestPromise;
+  const payload = new URLSearchParams(submitRequest.postData() ?? '');
+  expect(payload.get('title')).toBe(submissionTitle);
+  expect(payload.get('content')).toBe(submissionContent);
+  expect(payload.get('author')).toBe(submissionAuthor);
+  expect(payload.get('option0')).toBe(optionEntries[0][1]);
+  expect(payload.get('option1')).toBe(optionEntries[1][1]);
+  expect(payload.get('option2')).toBe(optionEntries[2][1]);
+  expect(payload.get('option3')).toBe(optionEntries[3][1]);
+
+  const submitResponse = await submitResponsePromise;
+  expect(submitResponse.ok(), 'submit response ok').toBe(true);
+
+  const submission = (await submitResponse.json()) as { id?: string };
+  const submissionId = submission.id;
+  expect(submissionId, 'submission id from response').toBeTruthy();
+  if (!submissionId) {
+    throw new Error('Expected submit-new-story response to include an id');
+  }
+
+  await expect(page).toHaveURL(new RegExp(`/story/${submissionId}\\.html$`));
   await expect(page).toHaveTitle(`Dendrite - ${submissionTitle}`);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     submissionTitle,
