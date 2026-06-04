@@ -205,11 +205,11 @@ const GOOGLE_SIGNIN_SCRIPTS = `
 `;
 
 const MENU_TOGGLE_SCRIPT = `
-    <script src="/variantMenuToggle.js"></script>
+    <script type="module" src="/variantMenuToggle.js"></script>
 `;
 
 const VARIANT_REDIRECT_SCRIPT = `
-    <script src="/variantRedirect.js"></script>
+    <script type="module" src="/variantRedirect.js"></script>
 `;
 
 const DEFAULT_CONSOLE_ERROR = () => {};

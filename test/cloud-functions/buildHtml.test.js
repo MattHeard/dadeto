@@ -234,11 +234,15 @@ describe('buildHtml', () => {
     const html = buildHtml(makeInput({ content: 'content' }));
     expect(html).toContain('<nav class="nav-inline"');
     expect(html).toContain('id="signinButton"');
-    expect(html).toContain('<script src="/variantMenuToggle.js"></script>');
+    expect(html).toContain(
+      '<script type="module" src="/variantMenuToggle.js"></script>'
+    );
     expect(html).toContain(
       '<script type="module" src="/variantGoogleSignIn.js"></script>'
     );
-    expect(html).toContain('<script src="/variantRedirect.js"></script>');
+    expect(html).toContain(
+      '<script type="module" src="/variantRedirect.js"></script>'
+    );
     expect(variantGoogleSignIn).toContain('import {');
     expect(variantGoogleSignIn).toContain('createGoogleAuthStatusHandle');
     expect(variantGoogleSignIn).toContain('handle();');
