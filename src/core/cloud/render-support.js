@@ -70,9 +70,11 @@ export function createRenderRuntime(fetchFn, buildInstance) {
  * }} Shared render environment.
  */
 export function createCloudRenderContext(options) {
-  const db = options.getFirestoreInstance();
-  const storage = new options.Storage();
   const environmentVariables = options.getEnvironmentVariables();
+  const db = options.getFirestoreInstance({
+    environment: environmentVariables,
+  });
+  const storage = new options.Storage();
   const bucketName = options.resolveBucketName(
     environmentVariables,
     options.defaultBucketName

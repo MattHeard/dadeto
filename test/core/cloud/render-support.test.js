@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import {
   createDynamicFetch,
   createMemoizedLoader,
+  createCloudRenderContext,
   createRenderRuntime,
 } from '../../../src/core/cloud/render-support.js';
 
@@ -57,5 +58,32 @@ describe('render support helpers', () => {
     } finally {
       globalThis.fetch = originalFetch;
     }
+  });
+
+  test('createCloudRenderContext forwards the runtime environment to Firestore resolution', () => {
+    const environmentVariables = {
+      FIREBASE_CONFIG: JSON.stringify({ databaseId: 't-123' }),
+      GOOGLE_CLOUD_PROJECT: 'proj',
+      GCLOUD_PROJECT: 'fallback-proj',
+      URL_MAP: 'map',
+      CDN_HOST: 'cdn.example.com',
+    };
+    const getFirestoreInstance = jest.fn(() => ({ db: true }));
+    const Storage = jest.fn(() => ({ storage: true }));
+    const context = createCloudRenderContext({
+      getEnvironmentVariables: jest.fn(() => environmentVariables),
+      getFirestoreInstance,
+      Storage,
+      resolveBucketName: jest.fn(() => 'bucket'),
+      resolveObjectPrefix: jest.fn(() => 'prefix'),
+      defaultBucketName: 'default-bucket',
+    });
+
+    expect(getFirestoreInstance).toHaveBeenCalledWith({
+      environment: environmentVariables,
+    });
+    expect(context.db).toEqual({ db: true });
+    expect(context.bucketName).toBe('bucket');
+    expect(context.objectPrefix).toBe('prefix');
   });
 });
