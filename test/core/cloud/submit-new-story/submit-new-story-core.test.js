@@ -363,6 +363,10 @@ describe('submit-new-story core', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
+    it('declares an Express error handler signature', () => {
+      expect(createCorsErrorHandler()).toHaveLength(4);
+    });
+
     it('passes non-CORS errors to the next middleware', () => {
       const handler = createCorsErrorHandler();
       const json = jest.fn();
