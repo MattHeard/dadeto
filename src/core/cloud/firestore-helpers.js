@@ -21,6 +21,14 @@ export function resolveFirestoreDatabaseId(environment) {
     return explicitDatabaseId;
   }
 
+  const deploymentEnvironment = environment.DENDRITE_ENVIRONMENT;
+  if (
+    typeof deploymentEnvironment === 'string' &&
+    deploymentEnvironment.startsWith('t-')
+  ) {
+    return deploymentEnvironment;
+  }
+
   const rawConfig = environment.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
