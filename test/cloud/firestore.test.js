@@ -4,6 +4,7 @@ import {
   getFirestoreInstance,
   resolveFirestoreDatabaseId,
 } from '../../src/cloud/firestore.js';
+import { getFirestoreForDatabase } from '../../src/core/cloud/firestore-helpers.js';
 
 describe('resolveFirestoreDatabaseId', () => {
   test('returns the configured database identifier when present', () => {
@@ -31,6 +32,16 @@ describe('getFirestoreInstance', () => {
     clearFirestoreInstanceCache();
   });
 
+  test('passes the named database as the second admin firestore argument', () => {
+    const expectedDb = { name: 'db' };
+    const getFirestoreFn = jest.fn(() => expectedDb);
+
+    const db = getFirestoreForDatabase(getFirestoreFn, undefined, 'custom-db');
+
+    expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
+    expect(db).toBe(expectedDb);
+  });
+
   test('creates a Firestore client for the configured database', () => {
     const expectedDb = { name: 'db' };
     const ensureAppFn = jest.fn();
@@ -46,7 +57,7 @@ describe('getFirestoreInstance', () => {
     });
 
     expect(ensureAppFn).toHaveBeenCalledTimes(1);
-    expect(getFirestoreFn).toHaveBeenCalledWith('custom-db');
+    expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
     expect(db).toBe(expectedDb);
   });
 

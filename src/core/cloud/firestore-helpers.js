@@ -50,7 +50,7 @@ export function getFirestoreForDatabase(
 ) {
   if (databaseId && databaseId !== '(default)') {
     if (!firebaseApp) {
-      return getFirestoreFn(databaseId);
+      return getFirestoreFn(undefined, databaseId);
     }
 
     return getFirestoreFn(firebaseApp, databaseId);

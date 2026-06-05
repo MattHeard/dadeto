@@ -181,8 +181,8 @@ describe('generate-stats run', () => {
 
     expect(
       mod.selectFirestoreDatabase(getFirestoreFn, undefined, 'custom-db')
-    ).toEqual(['custom-db']);
-    expect(getFirestoreFn).toHaveBeenLastCalledWith('custom-db');
+    ).toEqual([undefined, 'custom-db']);
+    expect(getFirestoreFn).toHaveBeenLastCalledWith(undefined, 'custom-db');
 
     expect(
       mod.selectFirestoreDatabase(getFirestoreFn, { app: true }, 'custom-db')
@@ -217,8 +217,8 @@ describe('generate-stats run', () => {
     });
 
     expect(ensureAppFn).toHaveBeenCalledTimes(1);
-    expect(getFirestoreFn).toHaveBeenCalledWith('custom-db');
-    expect(result).toEqual(['custom-db']);
+    expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
+    expect(result).toEqual([undefined, 'custom-db']);
   });
 
   it('rejects a non-function firestore factory', async () => {
