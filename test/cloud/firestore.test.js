@@ -15,6 +15,15 @@ describe('resolveFirestoreDatabaseId', () => {
     expect(resolveFirestoreDatabaseId(env)).toBe('test-db');
   });
 
+  test('prefers an explicit database id environment variable', () => {
+    const env = {
+      DATABASE_ID: 'runtime-db',
+      FIREBASE_CONFIG: JSON.stringify({ databaseId: 'test-db' }),
+    };
+
+    expect(resolveFirestoreDatabaseId(env)).toBe('runtime-db');
+  });
+
   test('returns null when the config string is missing or empty', () => {
     expect(resolveFirestoreDatabaseId({})).toBeNull();
     expect(resolveFirestoreDatabaseId({ FIREBASE_CONFIG: '' })).toBeNull();
@@ -59,6 +68,23 @@ describe('getFirestoreInstance', () => {
     expect(ensureAppFn).toHaveBeenCalledTimes(1);
     expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'custom-db');
     expect(db).toBe(expectedDb);
+  });
+
+  test('prefers the explicit database id environment variable over the Firebase config', () => {
+    const ensureAppFn = jest.fn();
+    const getFirestoreFn = jest.fn(() => ({}));
+
+    getFirestoreInstance({
+      ensureAppFn,
+      getFirestoreFn,
+      environment: {
+        DATABASE_ID: 'runtime-db',
+        FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
+      },
+    });
+
+    expect(ensureAppFn).toHaveBeenCalledTimes(1);
+    expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'runtime-db');
   });
 
   test('defaults to the primary database when the ID is missing', () => {

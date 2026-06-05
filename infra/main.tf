@@ -40,6 +40,7 @@ locals {
     {
       GCLOUD_PROJECT       = var.project_id
       GOOGLE_CLOUD_PROJECT = var.project_id
+      DATABASE_ID          = var.database_id
       FIREBASE_CONFIG      = local.firebase_config_json
       DENDRITE_ENVIRONMENT = var.environment
       STATIC_BUCKET_NAME   = local.dendrite_static_bucket_name

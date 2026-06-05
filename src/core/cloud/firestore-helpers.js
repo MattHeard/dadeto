@@ -8,11 +8,19 @@ export {
 } from './cloud-core.js';
 
 /**
- * Parse the database identifier from the Firebase configuration.
+ * Parse the database identifier from the runtime environment.
  * @param {Record<string, unknown>} environment Process environment variables.
  * @returns {string | null} The configured database identifier when available.
  */
 export function resolveFirestoreDatabaseId(environment) {
+  const explicitDatabaseId = environment.DATABASE_ID;
+  if (
+    typeof explicitDatabaseId === 'string' &&
+    explicitDatabaseId.trim() !== ''
+  ) {
+    return explicitDatabaseId;
+  }
+
   const rawConfig = environment.FIREBASE_CONFIG;
 
   if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
