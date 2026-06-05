@@ -16,7 +16,7 @@ Dadeto already has strong unit-style and fixture-style coverage in many areas, b
 
 There are browser-facing tests in the repo today, but they do not yet form a clear, production-like end-to-end story that serves locally built or published assets, exercises real module loading in the browser, and proves the user-visible toy still works from the operator's perspective.
 
-The first smoke harness now exists under `e2e/smoke.spec.js`, but recent runner attempts showed that the next useful scope is narrower than "full browser smoke assertions." The immediate gap is proving that `npx playwright test --config=playwright.config.js e2e/smoke.spec.js` can start, launch Chromium, and complete at all in the intended runner environment before adding more assertions or expanding coverage.
+The first smoke harness now exists under `e2e/smoke.spec.js`, but recent runner attempts showed that the next useful scope is narrower than "full browser smoke assertions." The immediate gap is proving that the smoke harness can start, launch Chromium, and complete at all in the intended runner environment before adding more assertions or expanding coverage. The legacy root `playwright.config.js` has been removed; if this harness is revived, it should use an explicit dedicated config instead of relying on a deprecated root file.
 
 Recent `dadeto-t5ca` attempts clarified that the current failure is a startup-class problem rather than a smoke-assertion problem: the Playwright command hangs before Chromium reaches a real launch/test phase, produces little or no useful output, and leaves no browser artifacts. That means the next high-signal work is to classify the hang precisely instead of adding more smoke assertions.
 
@@ -40,7 +40,7 @@ The goal is not snapshot-heavy browser automation or exhaustive coverage of ever
 
 ## Candidate next actions
 
-- Add one narrow bead whose only acceptance is that `npx playwright test --config=playwright.config.js e2e/smoke.spec.js` runs to completion and leaves operator-visible logs, without adding new assertions.
+- Add one narrow bead whose only acceptance is that the smoke harness runs to completion and leaves operator-visible logs, without adding new assertions.
 - Add one diagnostics bead whose only acceptance is that the smoke command produces enough startup logging to distinguish Playwright bootstrap failure, Chromium launch failure, and local harness/server failure.
 - Capture the exact Playwright/Chromium startup logs for the smoke harness so future beads can distinguish environment launch failures from harness failures.
 - Run the smoke command under a hard timeout with stdout/stderr redirected to durable artifacts so hangs stop producing empty evidence.
