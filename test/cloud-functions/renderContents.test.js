@@ -5,9 +5,36 @@ import {
   mockBucket,
   mockExists,
 } from '@google-cloud/storage';
-import { render } from '../../src/cloud/render-contents/index.js';
 
 const ACCESS_TOKEN_KEY = 'access_token';
+
+async function loadRender() {
+  const originalEnv = {
+    DENDRITE_ENVIRONMENT: process.env.DENDRITE_ENVIRONMENT,
+    DATABASE_ID: process.env.DATABASE_ID,
+  };
+
+  process.env.DENDRITE_ENVIRONMENT = 't-123';
+  process.env.DATABASE_ID = 't-123';
+
+  try {
+    jest.resetModules();
+    const mod = await import('../../src/cloud/render-contents/index.js');
+    return mod.render;
+  } finally {
+    if (originalEnv.DENDRITE_ENVIRONMENT === undefined) {
+      delete process.env.DENDRITE_ENVIRONMENT;
+    } else {
+      process.env.DENDRITE_ENVIRONMENT = originalEnv.DENDRITE_ENVIRONMENT;
+    }
+
+    if (originalEnv.DATABASE_ID === undefined) {
+      delete process.env.DATABASE_ID;
+    } else {
+      process.env.DATABASE_ID = originalEnv.DATABASE_ID;
+    }
+  }
+}
 
 describe('render contents', () => {
   beforeEach(() => {
@@ -25,6 +52,7 @@ describe('render contents', () => {
   });
 
   test('invalidates cache for generated pages', async () => {
+    const render = await loadRender();
     const ids = Array.from({ length: 101 }, (_, i) => `s${i + 1}`);
     await render({
       fetchTopStoryIds: async () => ids,
@@ -41,6 +69,7 @@ describe('render contents', () => {
   });
 
   test('logs error when cache invalidation fails', async () => {
+    const render = await loadRender();
     const ids = Array.from({ length: 101 }, (_, i) => `s${i + 1}`);
     const consoleError = jest
       .spyOn(console, 'error')

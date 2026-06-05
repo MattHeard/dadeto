@@ -9,7 +9,7 @@ import { getFirestoreForDatabase } from '../../src/core/cloud/firestore-helpers.
 describe('resolveFirestoreDatabaseId', () => {
   test('returns the configured database identifier when present', () => {
     const env = {
-      FIREBASE_CONFIG: JSON.stringify({ databaseId: 'test-db' }),
+      DATABASE_ID: 'test-db',
     };
 
     expect(resolveFirestoreDatabaseId(env)).toBe('test-db');
@@ -18,30 +18,28 @@ describe('resolveFirestoreDatabaseId', () => {
   test('prefers an explicit database id environment variable', () => {
     const env = {
       DATABASE_ID: 'runtime-db',
-      FIREBASE_CONFIG: JSON.stringify({ databaseId: 'test-db' }),
     };
 
     expect(resolveFirestoreDatabaseId(env)).toBe('runtime-db');
   });
 
-  test('falls back to the t-prefixed deployment environment when no explicit database id is present', () => {
+  test('uses the t-prefixed deployment environment when no explicit database id is present', () => {
     const env = {
       DENDRITE_ENVIRONMENT: 't-019924dc',
-      FIREBASE_CONFIG: JSON.stringify({ databaseId: 'test-db' }),
     };
 
     expect(resolveFirestoreDatabaseId(env)).toBe('t-019924dc');
   });
 
-  test('returns null when the config string is missing or empty', () => {
-    expect(resolveFirestoreDatabaseId({})).toBeNull();
-    expect(resolveFirestoreDatabaseId({ FIREBASE_CONFIG: '' })).toBeNull();
-  });
-
-  test('ignores malformed JSON and falls back to null', () => {
-    const env = { FIREBASE_CONFIG: '{not-valid-json' };
-
-    expect(resolveFirestoreDatabaseId(env)).toBeNull();
+  test('throws when the required database metadata is missing', () => {
+    expect(() => resolveFirestoreDatabaseId({})).toThrow(
+      'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
+    );
+    expect(() =>
+      resolveFirestoreDatabaseId({ PLAYWRIGHT_ORIGIN: 'http://playwright.test' })
+    ).toThrow(
+      'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
+    );
   });
 });
 
@@ -65,7 +63,7 @@ describe('getFirestoreInstance', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn(() => expectedDb);
     const environment = {
-      FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
+      DATABASE_ID: 'custom-db',
     };
 
     const db = getFirestoreInstance({
@@ -79,7 +77,7 @@ describe('getFirestoreInstance', () => {
     expect(db).toBe(expectedDb);
   });
 
-  test('prefers the explicit database id environment variable over the Firebase config', () => {
+  test('prefers the explicit database id environment variable over unrelated environment data', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn(() => ({}));
 
@@ -88,7 +86,7 @@ describe('getFirestoreInstance', () => {
       getFirestoreFn,
       environment: {
         DATABASE_ID: 'runtime-db',
-        FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
+        PLAYWRIGHT_ORIGIN: 'http://playwright.test',
       },
     });
 
@@ -96,7 +94,7 @@ describe('getFirestoreInstance', () => {
     expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 'runtime-db');
   });
 
-  test('falls back to the deployment environment when DATABASE_ID is absent', () => {
+  test('uses the deployment environment when DATABASE_ID is absent', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn(() => ({}));
 
@@ -105,7 +103,6 @@ describe('getFirestoreInstance', () => {
       getFirestoreFn,
       environment: {
         DENDRITE_ENVIRONMENT: 't-019924dc',
-        FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
       },
     });
 
@@ -113,41 +110,26 @@ describe('getFirestoreInstance', () => {
     expect(getFirestoreFn).toHaveBeenCalledWith(undefined, 't-019924dc');
   });
 
-  test('defaults to the primary database when the ID is missing', () => {
+  test('throws when the required database id is missing', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn(() => ({}));
 
-    getFirestoreInstance({
-      ensureAppFn,
-      getFirestoreFn,
-      environment: {},
-    });
-
-    expect(ensureAppFn).toHaveBeenCalledTimes(1);
-    expect(getFirestoreFn).toHaveBeenCalledWith(undefined);
-  });
-
-  test('treats the default database identifier as the primary database', () => {
-    const ensureAppFn = jest.fn();
-    const getFirestoreFn = jest.fn(() => ({}));
-
-    getFirestoreInstance({
-      ensureAppFn,
-      getFirestoreFn,
-      environment: {
-        FIREBASE_CONFIG: JSON.stringify({ databaseId: '(default)' }),
-      },
-    });
-
-    expect(ensureAppFn).toHaveBeenCalledTimes(1);
-    expect(getFirestoreFn).toHaveBeenCalledWith(undefined);
+    expect(() =>
+      getFirestoreInstance({
+        ensureAppFn,
+        getFirestoreFn,
+        environment: {},
+      })
+    ).toThrow(
+      'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
+    );
   });
 
   test('bypasses the cache when custom dependencies are supplied', () => {
     const ensureAppFn = jest.fn();
     const getFirestoreFn = jest.fn(() => ({}));
     const environment = {
-      FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
+      DATABASE_ID: 'custom-db',
     };
 
     getFirestoreInstance({
@@ -166,9 +148,20 @@ describe('getFirestoreInstance', () => {
   });
 
   test('reuses the cached Firestore instance for default dependencies', () => {
-    const firstDb = getFirestoreInstance();
-    const secondDb = getFirestoreInstance();
+    const originalDatabaseId = process.env.DATABASE_ID;
+    process.env.DATABASE_ID = 'cached-db';
 
-    expect(secondDb).toBe(firstDb);
+    try {
+      const firstDb = getFirestoreInstance();
+      const secondDb = getFirestoreInstance();
+
+      expect(secondDb).toBe(firstDb);
+    } finally {
+      if (originalDatabaseId === undefined) {
+        delete process.env.DATABASE_ID;
+      } else {
+        process.env.DATABASE_ID = originalDatabaseId;
+      }
+    }
   });
 });

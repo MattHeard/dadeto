@@ -47,6 +47,7 @@ describe('createAssignModerationJobEntrypoint', () => {
       getFirestore,
       getEnvironmentVariables: jest.fn(() => ({
         DENDRITE_ENVIRONMENT: 'prod',
+        DATABASE_ID: 'prod-db',
       })),
       now: jest.fn(() => 123),
       random: jest.fn(() => 0.5),
@@ -55,7 +56,7 @@ describe('createAssignModerationJobEntrypoint', () => {
     expect(entrypoint.handle).toBeDefined();
     expect(
       entrypoint.testing.resolveFirestoreDatabaseId({
-        FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
+        DATABASE_ID: 'custom-db',
       })
     ).toBe('custom-db');
 
@@ -63,20 +64,22 @@ describe('createAssignModerationJobEntrypoint', () => {
       ensureAppFn: jest.fn(),
       getFirestoreFn: getFirestore,
       environment: {
-        FIREBASE_CONFIG: JSON.stringify({ databaseId: 'custom-db' }),
+        DATABASE_ID: 'custom-db',
       },
     });
 
     expect(firestore).toBeDefined();
     expect(getFirestore).toHaveBeenCalledTimes(2);
 
-    const nullEnvironmentFirestore = entrypoint.testing.getFirestoreInstance({
-      ensureAppFn: jest.fn(),
-      getFirestoreFn: getFirestore,
-      environment: null,
-    });
-
-    expect(nullEnvironmentFirestore).toBeDefined();
+    expect(() =>
+      entrypoint.testing.getFirestoreInstance({
+        ensureAppFn: jest.fn(),
+        getFirestoreFn: getFirestore,
+        environment: null,
+      })
+    ).toThrow(
+      'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
+    );
 
     const defaultFirestore = entrypoint.testing.getFirestoreInstance();
     const cachedDefaultFirestore = entrypoint.testing.getFirestoreInstance();

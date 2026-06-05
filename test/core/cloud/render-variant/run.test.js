@@ -132,4 +132,55 @@ describe('runRenderVariant', () => {
 
     globalThis.fetch = previousFetch;
   });
+
+  test('forwards the cloud console error logger into the render builder', async () => {
+    createRenderVariant.mockClear();
+    ensureFirebaseApp.mockClear();
+    onWrite.mockClear();
+    importedFetchFn.mockClear();
+    const previousFetch = globalThis.fetch;
+    delete globalThis.fetch;
+
+    const consoleError = jest.fn();
+    const initializeApp = jest.fn();
+    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
+    const getFirestoreInstance = jest.fn(() => ({ firestore: true }));
+    const getEnvironmentVariables = jest.fn(() => ({
+      GOOGLE_CLOUD_PROJECT: 'proj',
+      URL_MAP: 'map',
+      CDN_HOST: 'cdn.example.com',
+    }));
+    const Storage = jest.fn(() => ({ storage: true }));
+    const FieldValue = { delete: jest.fn(() => 'delete-sentinel') };
+    const crypto = { randomUUID: jest.fn(() => 'uuid') };
+    const functions = { region };
+
+    createRenderVariant.mockImplementationOnce(options =>
+      jest.fn(async (...args) => {
+        options.consoleError('builder failure');
+        await options.fetchFn(...args);
+        return null;
+      })
+    );
+
+    const { render } = runRenderVariant({
+      initializeApp,
+      createFirebaseAppManager,
+      getFirestoreInstance,
+      getEnvironmentVariables,
+      functions,
+      FieldValue,
+      Storage,
+      fetchFn: importedFetchFn,
+      crypto,
+      console: { error: consoleError },
+    });
+
+    await render('snap', 'context');
+
+    expect(consoleError).toHaveBeenCalledWith('builder failure');
+    expect(importedFetchFn).toHaveBeenCalledTimes(1);
+
+    globalThis.fetch = previousFetch;
+  });
 });

@@ -27,6 +27,7 @@ describe('runSubmitModerationRating', () => {
     const FieldValue = { serverTimestamp: jest.fn(), delete: jest.fn() };
     const crypto = { randomUUID: jest.fn(() => 'id') };
     const getEnvironmentVariables = jest.fn(() => ({
+      DENDRITE_ENVIRONMENT: 'prod',
       CLOUD_RUNTIME_ENV: 'dev',
     }));
 

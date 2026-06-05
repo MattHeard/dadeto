@@ -1,4 +1,3 @@
-const firebaseFunctionsModule = await import('firebase-functions/v1');
-const functions = firebaseFunctionsModule.default ?? firebaseFunctionsModule;
+import functions from 'firebase-functions/v1';
 
 export { functions as default, functions };

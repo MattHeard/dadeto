@@ -38,7 +38,17 @@ describe('getAllowedOrigins', () => {
     expect(getAllowedOrigins(process.env)).toEqual([]);
   });
 
-  it('returns production origins when environment is unset', () => {
-    expect(getAllowedOrigins(process.env)).toEqual(productionOrigins);
+  it('throws when the deployment environment is unsupported', () => {
+    process.env.DENDRITE_ENVIRONMENT = 'dev';
+
+    expect(() => getAllowedOrigins(process.env)).toThrow(
+      'Unsupported DENDRITE_ENVIRONMENT value: dev. Expected prod or t-*.'
+    );
+  });
+
+  it('throws when the required deployment environment is unset', () => {
+    expect(() => getAllowedOrigins(process.env)).toThrow(
+      'DENDRITE_ENVIRONMENT is required to resolve allowed origins.'
+    );
   });
 });

@@ -20,13 +20,8 @@ const isTestEnvironment = environment =>
   typeof environment === 'string' && environment.startsWith('t-');
 
 /** @type {(environment: unknown, environmentVariables: Record<string, unknown>) => string[]} */
-const getTestEnvironmentOrigins = (environment, environmentVariables) => {
-  if (isTestEnvironment(environment)) {
-    return getPlaywrightOrigins(environmentVariables);
-  }
-
-  return productionOrigins;
-};
+const getTestEnvironmentOrigins = (_environment, environmentVariables) =>
+  getPlaywrightOrigins(environmentVariables);
 
 /** @type {(environment: unknown, environmentVariables: Record<string, unknown>) => string[]} */
 const getAllowedOriginsForEnvironment = (environment, environmentVariables) => {
@@ -34,7 +29,13 @@ const getAllowedOriginsForEnvironment = (environment, environmentVariables) => {
     return productionOrigins;
   }
 
-  return getTestEnvironmentOrigins(environment, environmentVariables);
+  if (isTestEnvironment(environment)) {
+    return getTestEnvironmentOrigins(environment, environmentVariables);
+  }
+
+  throw new Error(
+    `Unsupported DENDRITE_ENVIRONMENT value: ${String(environment)}. Expected prod or t-*.`
+  );
 };
 
 /**
@@ -43,6 +44,12 @@ const getAllowedOriginsForEnvironment = (environment, environmentVariables) => {
  */
 export const getAllowedOrigins = environmentVariables => {
   const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
+
+  if (typeof environment !== 'string' || environment.trim() === '') {
+    throw new Error(
+      'DENDRITE_ENVIRONMENT is required to resolve allowed origins.'
+    );
+  }
 
   return getAllowedOriginsForEnvironment(environment, environmentVariables);
 };

@@ -10,7 +10,8 @@ export {
 /**
  * Parse the database identifier from the runtime environment.
  * @param {Record<string, unknown>} environment Process environment variables.
- * @returns {string | null} The configured database identifier when available.
+ * @returns {string} The configured database identifier.
+ * @throws {Error} When the runtime environment does not provide one.
  */
 export function resolveFirestoreDatabaseId(environment) {
   const explicitDatabaseId = environment.DATABASE_ID;
@@ -29,24 +30,9 @@ export function resolveFirestoreDatabaseId(environment) {
     return deploymentEnvironment;
   }
 
-  const rawConfig = environment.FIREBASE_CONFIG;
-
-  if (typeof rawConfig !== 'string' || rawConfig.trim() === '') {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(rawConfig);
-    const { databaseId } = parsed;
-
-    if (typeof databaseId === 'string' && databaseId.trim() !== '') {
-      return databaseId;
-    }
-  } catch {
-    // Ignore malformed configuration strings and fall back to the default DB.
-  }
-
-  return null;
+  throw new Error(
+    'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
+  );
 }
 
 /**
