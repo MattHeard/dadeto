@@ -27,7 +27,7 @@ export PW_TEST_HTML_REPORT_OPEN="${PW_TEST_HTML_REPORT_OPEN:-never}"
 # export DEBUG="$DEBUG,pw:channel,pw:websocket"
 
 # serialize execution for easier-to-read logs
-CONFIG="--config ./playwright.config.ts"
+CONFIG=(--config ./playwright.config.ts)
 ARGS="--reporter=html,github,list --workers=1"
 
 # keep traces for failures and upload later
@@ -51,12 +51,12 @@ command -v gcloud >/dev/null 2>&1 && gcloud config get-value account || true
 stage "preflight playwright"
 "${PLAYWRIGHT_BIN}" --version || true
 node -e "console.log('node', process.version)"
-"${PLAYWRIGHT_BIN}" test "${CONFIG}" --list --reporter=list || exit 2
+"${PLAYWRIGHT_BIN}" test "${CONFIG[@]}" --list --reporter=list || exit 2
 
 # run tests without aborting the script
 set +e
 stage "run tests"
-"${PLAYWRIGHT_BIN}" test "${CONFIG}" $ARGS --trace=retain-on-failure | tee /tmp/playwright.log
+"${PLAYWRIGHT_BIN}" test "${CONFIG[@]}" $ARGS --trace=retain-on-failure | tee /tmp/playwright.log
 PW_STATUS=${PIPESTATUS[0]}   # exit code of playwright, not tee
 set -e
 log "tests finished with status=${PW_STATUS}"
