@@ -155,24 +155,6 @@ test('submits the new story form', async ({ page }) => {
     { timeout: 15000 },
   );
   let submissionId: string | undefined;
-  let pending: { path?: string } | undefined;
-  const pendingResponsePromise = page.waitForResponse(
-    async (response) => {
-      if (
-        !submissionId ||
-        !response.ok() ||
-        !response.url().includes(`/pending/${submissionId}.json`) ||
-        response.request().method() !== 'GET'
-      ) {
-        return false;
-      }
-
-      const pendingBody = (await response.text()) as string;
-      pending = JSON.parse(pendingBody) as { path?: string };
-      return true;
-    },
-    { timeout: 30000 },
-  );
 
   await page.getByRole('button', { name: 'Submit' }).click();
 
@@ -196,10 +178,9 @@ test('submits the new story form', async ({ page }) => {
     throw new Error('Expected submit-new-story response to include an id');
   }
 
-  const pendingResponse = await pendingResponsePromise;
-  expect(pendingResponse.ok(), 'pending response ok').toBe(true);
+  await expect(page).toHaveURL(new RegExp(`/p/\\d+[a-z]\\.html$`));
 
-  const submissionPath = pending.path;
+  const submissionPath = new URL(page.url()).pathname;
   expect(submissionPath, 'story path from pending response').toBeTruthy();
   if (!submissionPath) {
     throw new Error('Expected pending response to include a path');

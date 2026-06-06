@@ -1,0 +1,4 @@
+- Unexpected hurdle: even reading the pending response body inside `waitForResponse` was still too brittle because the app redirects immediately after the pending artifact is written.
+- Diagnosis path: the latest gcp-test run failed at `page.waitForResponse: response.text: Protocol error (Network.getResponseBody): No resource with given identifier found`, which means the response object became unreadable before the test could consume it.
+- Chosen fix: stop depending on the pending JSON body altogether and derive the submission path from the final redirected page URL, which is the actual user-visible contract.
+- Next-time guidance: if the browser already ends up on the canonical destination page, use that page URL as the assertion point instead of relying on a transient intermediate response body.
