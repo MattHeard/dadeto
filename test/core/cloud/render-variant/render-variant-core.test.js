@@ -244,6 +244,15 @@ describe('helper edge cases', () => {
     expect(extractStoryRef(undefined)).toBeNull();
     expect(extractStoryRef({})).toBeNull();
   });
+
+  it('returns null when tenant rebind receives no reference', () => {
+    expect(
+      RenderVariantCore.renderVariantCoreTestUtils.rebindTenantDocumentRef(
+        null,
+        { doc: jest.fn() }
+      )
+    ).toBeNull();
+  });
 });
 describe('escapeHtml', () => {
   it('coerces falsy values to their string equivalents', () => {
@@ -610,6 +619,65 @@ describe('resolveStoryMetadata', () => {
     expect(result).toEqual({
       storyTitle: 'Tenant Story',
       firstPageUrl: undefined,
+    });
+  });
+
+  it('rebounds the root page reference through the tenant db before resolving the first page', async () => {
+    const rootVariantSnap = {
+      empty: false,
+      docs: [{ data: () => ({ name: 'a' }) }],
+    };
+    const rootPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 7 }),
+      }),
+      collection: jest.fn(() => ({
+        orderBy: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue(rootVariantSnap),
+          })),
+        })),
+      })),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Story', rootPage: { path: 'stories/1/pages/7' } }),
+    };
+    const storyRef = {
+      get: jest.fn().mockResolvedValue(storySnap),
+    };
+    const pageRef = {
+      parent: { parent: storyRef },
+    };
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'stories/1/pages/42') {
+          return pageRef;
+        }
+        if (path === 'stories/1/pages/7') {
+          return rootPageRef;
+        }
+        throw new Error(`unexpected path ${path}`);
+      }),
+    };
+    const pageSnap = {
+      ref: { path: 'stories/1/pages/42' },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: { incomingOption: true },
+      db,
+      consoleError: jest.fn(),
+    });
+
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/42');
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/7');
+    expect(rootPageRef.get).toHaveBeenCalled();
+    expect(result).toEqual({
+      storyTitle: 'Story',
+      firstPageUrl: '/p/7a.html',
     });
   });
 

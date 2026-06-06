@@ -1542,7 +1542,7 @@ async function resolveStoryMetadata({ pageSnap, page, db, consoleError }) {
   if (!storyData) {
     return { storyTitle: '', firstPageUrl: undefined };
   }
-  return buildStoryMetadata({ storyData, page, consoleError });
+  return buildStoryMetadata({ storyData, page, db, consoleError });
 }
 
 /**
@@ -1583,11 +1583,12 @@ async function getStorySnapshot(storyRef) {
  * @param {StoryMetadataDeps} options Options.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata.
  */
-async function buildStoryMetadata({ storyData, page, consoleError }) {
+async function buildStoryMetadata({ storyData, page, db, consoleError }) {
   const storyTitle = /** @type {string} */ (storyData.title || '');
   const firstPageUrl = await resolveFirstPageUrl({
     page,
     storyData,
+    db,
     consoleError,
   });
 
@@ -1599,13 +1600,14 @@ async function buildStoryMetadata({ storyData, page, consoleError }) {
  * @param {{ page: Record<string, any>; storyData: StoryMetadata; consoleError?: ConsoleError }} options - Inputs describing the page and story context.
  * @returns {Promise<string | undefined>} URL for the first published page when resolvable.
  */
-async function resolveFirstPageUrl({ page, storyData, consoleError }) {
+async function resolveFirstPageUrl({ page, storyData, db, consoleError }) {
   if (!shouldResolveFirstPageUrl(page, storyData)) {
     return undefined;
   }
 
   return resolveRootPageUrl(
     /** @type {StoryDataWithRoot} */ (storyData),
+    db,
     consoleError
   );
 }
@@ -1626,8 +1628,8 @@ function shouldResolveFirstPageUrl(page, storyData) {
  * @param {ConsoleError} [consoleError] Optional logger for failures.
  * @returns {Promise<string | undefined>} Root page URL when available.
  */
-function resolveRootPageUrl(storyData, consoleError) {
-  return fetchRootPageUrl(storyData).catch(error => {
+function resolveRootPageUrl(storyData, db, consoleError) {
+  return fetchRootPageUrl(storyData, db).catch(error => {
     handleRootPageError(error, consoleError);
     return undefined;
   });
@@ -1660,15 +1662,16 @@ function logRootPageError(error, consoleError) {
  * @param {StoryDataWithRoot} storyData Story data.
  * @returns {Promise<string|undefined>} Root page URL.
  */
-async function fetchRootPageUrl(storyData) {
-  const rootPageSnap = await storyData.rootPage.get();
+async function fetchRootPageUrl(storyData, db) {
+  const rootPageRef = rebindTenantDocumentRef(storyData.rootPage, db);
+  const rootPageSnap = await rootPageRef.get();
   if (!rootPageSnap.exists) {
     return undefined;
   }
 
   return resolveUrlFromRootPage(
     /** @type {PageSnapshot} */ (rootPageSnap),
-    storyData.rootPage
+    rootPageRef
   );
 }
 
@@ -1734,6 +1737,7 @@ export const renderVariantCoreTestUtils = {
   extractVariantName,
   gatherMetadata,
   loadOptions,
+  rebindTenantDocumentRef,
   resolveStoryMetadata,
   resolveAuthorMetadata,
 };
@@ -1796,6 +1800,24 @@ function extractStoryRefFromTenantDb(pageSnap, db) {
   }
 
   return resolveStoryFromPageRef(pageRef);
+}
+
+/**
+ * Rebind a document reference through the tenant database when possible.
+ * @param {any} ref Firestore document reference.
+ * @param {FirestoreLike | null | undefined} db Tenant Firestore client.
+ * @returns {any} Tenant-bound document reference or the original ref when rebinding is unavailable.
+ */
+function rebindTenantDocumentRef(ref, db) {
+  if (!ref) {
+    return ref;
+  }
+
+  if (!hasDocumentPathResolver(db) || typeof ref.path !== 'string') {
+    return ref;
+  }
+
+  return db.doc(ref.path);
 }
 
 /**
