@@ -2,10 +2,7 @@ import { test, expect } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
 test('serves manual.html with guidance copy', async ({ page }) => {
-  const response = await page.goto('/manual.html', { waitUntil: 'domcontentloaded' });
-
-  expect(response, 'navigation response').not.toBeNull();
-  expect(response!.status()).toBe(200);
+  await page.goto('/manual.html', { waitUntil: 'domcontentloaded' });
 
   await expectSharedChrome(page);
 

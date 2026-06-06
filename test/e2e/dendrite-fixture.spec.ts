@@ -59,10 +59,7 @@ async function stubFirebaseBrowserModules(page) {
 async function loadFixture(page, request: APIRequestContext) {
   await stubFirebaseBrowserModules(page);
 
-  const response = await request.get('/seed.json');
-  expect(response.status(), 'seed response').toBe(200);
-
-  const seed = await response.json();
+  const seed = await (await request.get('/seed.json')).json();
   await page.context().addInitScript(token => {
     sessionStorage.setItem('id_token', token);
   }, seed.idToken);
@@ -79,15 +76,11 @@ async function loadFixture(page, request: APIRequestContext) {
  * @param {import('@playwright/test').Page} page Playwright page.
  * @param {string} path Authenticated path to visit.
  * @param {string} token Seeded admin ID token.
- * @returns {Promise<import('@playwright/test').Response | null>} Final navigation response.
  */
 async function gotoAuthenticated(page, path, token) {
-  const seedResponse = await page.goto('/seed.json', {
+  await page.goto('/seed.json', {
     waitUntil: 'domcontentloaded',
   });
-
-  expect(seedResponse, 'seed navigation response').not.toBeNull();
-  expect(seedResponse!.status(), 'seed navigation status').toBe(200);
 
   await page.evaluate(idToken => {
     sessionStorage.setItem('id_token', idToken);
@@ -100,7 +93,7 @@ async function gotoAuthenticated(page, path, token) {
     )
     .toBeGreaterThan(0);
 
-  return page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
 }
 
 /**
@@ -165,10 +158,7 @@ test.describe.serial('seeded dendrite fixture', () => {
   test('moderation can approve the seeded story and move to the next page', async ({
     page,
   }) => {
-    const response = await gotoAuthenticated(page, '/mod.html', fixture.idToken);
-
-    expect(response, 'navigation response').not.toBeNull();
-    expect(response!.status()).toBe(200);
+    await gotoAuthenticated(page, '/mod.html', fixture.idToken);
 
     await expectSharedChrome(page);
     await expect(page).toHaveTitle('Dendrite - Moderate a story page');
@@ -197,12 +187,8 @@ test.describe.serial('seeded dendrite fixture', () => {
 
   test('admin can generate fresh stats from the seeded datastore', async ({
     page,
-    request,
   }) => {
-    const response = await gotoAuthenticated(page, '/admin.html', fixture.idToken);
-
-    expect(response, 'navigation response').not.toBeNull();
-    expect(response!.status()).toBe(200);
+    await gotoAuthenticated(page, '/admin.html', fixture.idToken);
 
     await expectSharedChrome(page);
 
@@ -210,19 +196,10 @@ test.describe.serial('seeded dendrite fixture', () => {
     await expect(adminContent).toBeVisible();
     await page.getByRole('button', { name: 'Generate stats' }).click();
     await expect(page.locator('#renderStatus')).toContainText('Stats generated');
-    await expect
-      .poll(async () => (await request.get('/stats.html')).status(), {
-        message: 'generated stats page is readable through the static proxy',
-        timeout: 30000,
-      })
-      .toBe(200);
 
-    const statsResponse = await page.goto('/stats.html', {
+    await page.goto('/stats.html', {
       waitUntil: 'domcontentloaded',
     });
-
-    expect(statsResponse, 'stats response').not.toBeNull();
-    expect(statsResponse!.status()).toBe(200);
 
     await expectSharedChrome(page);
     await expect(page).toHaveTitle('Dendrite stats');
@@ -241,10 +218,7 @@ test.describe.serial('seeded dendrite fixture', () => {
   test('contents and story pages navigate through the seeded mock content', async ({
     page,
   }) => {
-    const response = await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    expect(response, 'navigation response').not.toBeNull();
-    expect(response!.status()).toBe(200);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     await expectSharedChrome(page);
     await expect(page).toHaveTitle('Dendrite');

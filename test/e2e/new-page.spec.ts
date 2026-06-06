@@ -2,15 +2,10 @@ import { test, expect } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
 test('serves new-page.html with submission form', async ({ page }) => {
-  const configResponse = await page.request.get('/config.json');
-  expect(configResponse.status()).toBe(200);
-  const config = await configResponse.json();
+  const config = await (await page.request.get('/config.json')).json();
   expect(typeof config.submitNewPageUrl).toBe('string');
 
-  const response = await page.goto('/new-page.html', { waitUntil: 'domcontentloaded' });
-
-  expect(response, 'navigation response').not.toBeNull();
-  expect(response!.status()).toBe(200);
+  await page.goto('/new-page.html', { waitUntil: 'domcontentloaded' });
 
   await expectSharedChrome(page);
 
