@@ -26,9 +26,14 @@ export PW_TEST_HTML_REPORT_OPEN="${PW_TEST_HTML_REPORT_OPEN:-never}"
 # optional debug channels for very verbose wire logs
 # export DEBUG="$DEBUG,pw:channel,pw:websocket"
 
+# Pin the working root so Playwright resolves the root config and test tree
+# even if the container runtime starts us from a different cwd.
+APP_ROOT="/app"
+cd "$APP_ROOT"
+
 # serialize execution for easier-to-read logs
-CONFIG=(--config ./playwright.config.ts)
-TEST_DIR="test/e2e"
+CONFIG=(--config "$APP_ROOT/playwright.config.ts")
+TEST_DIR="$APP_ROOT/test/e2e"
 ARGS="--reporter=html,github,list --workers=1"
 
 # keep traces for failures and upload later
@@ -48,7 +53,7 @@ log "REPORT_BUCKET=${REPORT_BUCKET:-<unset>}"
 log "REPORT_PREFIX=${REPORT_PREFIX:-<unset>}"
 log "PWD=$(pwd)"
 log "PLAYWRIGHT_BIN=${PLAYWRIGHT_BIN}"
-log "PLAYWRIGHT_CONFIG=$(realpath ./playwright.config.ts 2>/dev/null || printf '%s\n' './playwright.config.ts')"
+log "PLAYWRIGHT_CONFIG=$(realpath "$APP_ROOT/playwright.config.ts" 2>/dev/null || printf '%s\n' "$APP_ROOT/playwright.config.ts")"
 log "TEST_DIR=$(realpath "$TEST_DIR" 2>/dev/null || printf '%s\n' "$TEST_DIR")"
 log "test/e2e entries:"
 find "$TEST_DIR" -maxdepth 2 -type f | sort | sed 's/^/  /'

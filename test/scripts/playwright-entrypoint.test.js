@@ -4,12 +4,16 @@ describe('Playwright container entrypoint', () => {
   it('uses the repository root Playwright config explicitly', () => {
     const source = readFileSync('docker/playwright/entrypoint.sh', 'utf8');
 
-    expect(source).toContain('CONFIG=(--config ./playwright.config.ts)');
-    expect(source).toContain('TEST_DIR="test/e2e"');
+    expect(source).toContain('APP_ROOT="/app"');
+    expect(source).toContain('cd "$APP_ROOT"');
+    expect(source).toContain(
+      'CONFIG=(--config "$APP_ROOT/playwright.config.ts")'
+    );
+    expect(source).toContain('TEST_DIR="$APP_ROOT/test/e2e"');
     expect(source).toContain('log "PWD=$(pwd)"');
     expect(source).toContain('log "PLAYWRIGHT_BIN=${PLAYWRIGHT_BIN}"');
     expect(source).toContain(
-      'log "PLAYWRIGHT_CONFIG=$(realpath ./playwright.config.ts 2>/dev/null || printf \'%s\\n\' \'./playwright.config.ts\')"'
+      'log "PLAYWRIGHT_CONFIG=$(realpath "$APP_ROOT/playwright.config.ts" 2>/dev/null || printf \'%s\\n\' "$APP_ROOT/playwright.config.ts")"'
     );
     expect(source).toContain(
       'log "TEST_DIR=$(realpath "$TEST_DIR" 2>/dev/null || printf \'%s\\n\' "$TEST_DIR")"'
