@@ -1536,8 +1536,8 @@ async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
  * @param {StoryMetadataLookupDeps} options - Input describing the current page and lookup helpers.
  * @returns {Promise<{storyTitle: string, firstPageUrl: string | undefined}>} Story metadata used in templates.
  */
-async function resolveStoryMetadata({ pageSnap, page, consoleError }) {
-  const storyRef = extractStoryRef(pageSnap);
+async function resolveStoryMetadata({ pageSnap, page, db, consoleError }) {
+  const storyRef = extractStoryRefFromTenantDb(pageSnap, db);
   const storyData = await fetchStoryData(storyRef);
   if (!storyData) {
     return { storyTitle: '', firstPageUrl: undefined };
@@ -1781,6 +1781,21 @@ function extractStoryRef(pageSnap) {
  */
 function getPageRef(pageSnap) {
   return /** @type {any} */ (readNullableProperty(pageSnap, 'ref'));
+}
+
+/**
+ * Resolve the story reference for a page snapshot using the tenant database when available.
+ * @param {PageSnapshot | undefined | null} pageSnap Firestore page snapshot.
+ * @param {FirestoreLike | null | undefined} db Tenant Firestore client.
+ * @returns {object | null} Story reference or null when missing.
+ */
+function extractStoryRefFromTenantDb(pageSnap, db) {
+  const pageRef = resolveTenantDocumentRef(pageSnap, db);
+  if (!pageRef) {
+    return null;
+  }
+
+  return resolveStoryFromPageRef(pageRef);
 }
 
 /**
@@ -2678,6 +2693,7 @@ async function gatherMetadata(deps) {
   const { storyTitle, firstPageUrl } = await resolveStoryMetadata({
     pageSnap,
     page,
+    db,
     consoleError,
   });
   const { authorName, authorUrl } = await resolveAuthorMetadata({

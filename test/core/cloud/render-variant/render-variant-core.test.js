@@ -580,6 +580,39 @@ describe('resolveStoryMetadata', () => {
     });
   });
 
+  it('rebounds the page snapshot through the tenant db before loading story metadata', async () => {
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Tenant Story' }),
+    };
+    const storyRef = {
+      get: jest.fn().mockResolvedValue(storySnap),
+    };
+    const pageRef = {
+      parent: { parent: storyRef },
+    };
+    const db = {
+      doc: jest.fn(() => pageRef),
+    };
+    const pageSnap = {
+      ref: { path: 'stories/tenant/pages/42' },
+    };
+
+    const result = await resolveStoryMetadata({
+      pageSnap,
+      page: { incomingOption: true },
+      db,
+      consoleError: jest.fn(),
+    });
+
+    expect(db.doc).toHaveBeenCalledWith('stories/tenant/pages/42');
+    expect(storyRef.get).toHaveBeenCalled();
+    expect(result).toEqual({
+      storyTitle: 'Tenant Story',
+      firstPageUrl: undefined,
+    });
+  });
+
   it('logs when the root page lookup rejects', async () => {
     const consoleError = jest.fn();
     const rootPageRef = {
