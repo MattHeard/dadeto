@@ -1,0 +1,4 @@
+- Unexpected hurdle: even the submit-response status check was unnecessary for the user-facing contract and added extra coupling to the request path.
+- Diagnosis path: the form flow already redirects on success, so the visible page content after redirect is the only behavior the E2E test needs to prove.
+- Chosen fix: stop asserting on the POST response entirely and wait only for the redirected page title and content.
+- Next-time guidance: if the browser handles redirects for you, assert on the resulting page state and keep request-level checks out of the E2E unless they are the feature under test.

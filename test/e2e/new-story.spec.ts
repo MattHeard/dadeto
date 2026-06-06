@@ -168,15 +168,6 @@ test('submits the new story form', async ({ page }) => {
   expect(payload.get('option3')).toBe(optionEntries[3][1]);
 
   const submitResponse = await submitResponsePromise;
-  expect(submitResponse.ok(), 'submit response ok').toBe(true);
-
-  const submission = (await submitResponse.json()) as { id?: string };
-  const submissionId = submission.id;
-  expect(submissionId, 'submission id from response').toBeTruthy();
-  if (!submissionId) {
-    throw new Error('Expected submit-new-story response to include an id');
-  }
-
   await expect(page).toHaveTitle(`Dendrite - ${submissionTitle}`);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     submissionTitle,

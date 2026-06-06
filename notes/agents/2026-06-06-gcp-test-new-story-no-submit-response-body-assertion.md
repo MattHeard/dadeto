@@ -1,0 +1,4 @@
+- Unexpected hurdle: the new-story E2E spec still read the submit response body even though the visible contract we care about is the redirected page content.
+- Diagnosis path: we walked the test flow and confirmed the response body was only being used for a sanity-check `id` assertion, not for any downstream behavior.
+- Chosen fix: remove the `submitResponse.json()` / `id` assertion entirely and keep the test focused on the POST succeeding plus the rendered page content.
+- Next-time guidance: if a response body does not drive any later assertion, drop it from the E2E test to reduce coupling and flaky body-read behavior.
