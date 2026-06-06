@@ -468,19 +468,20 @@ describe('loadOptions', () => {
         }),
       },
     ];
-
-    const snap = {
-      ref: {
-        collection: () => ({
-          get: jest.fn().mockResolvedValue({ docs: optionDocs }),
-        }),
-      },
+    const variantRef = {
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({ docs: optionDocs }),
+      })),
     };
+    const db = {
+      doc: jest.fn(() => variantRef),
+    };
+    const snap = { ref: { path: 'stories/1/pages/2/variants/3' } };
 
     const result = await loadOptions({
       snap,
       visibilityThreshold: 0.5,
-      db: { doc: jest.fn() },
+      db,
       consoleError: jest.fn(),
     });
 
@@ -496,35 +497,42 @@ describe('loadOptions', () => {
         ],
       },
     ]);
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
   });
 
   it('uses the noop logger when consoleError is omitted', async () => {
-    const snap = {
-      ref: {
-        collection: () => ({
-          get: jest.fn().mockResolvedValue({
-            docs: [
-              {
-                data: () => ({
-                  content: 'Default',
-                  position: 0,
-                  targetPageNumber: 2,
-                }),
-              },
-            ],
-          }),
+    const variantRef = {
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [
+            {
+              data: () => ({
+                content: 'Default',
+                position: 0,
+                targetPageNumber: 2,
+              }),
+            },
+          ],
         }),
-      },
+      })),
+    };
+    const db = {
+      doc: jest.fn(() => variantRef),
+    };
+    const snap = {
+      ref: { path: 'stories/1/pages/2/variants/3' },
     };
 
     const result = await loadOptions({
       snap,
       visibilityThreshold: 0.5,
+      db,
     });
 
     expect(result).toEqual([
       { content: 'Default', position: 0, targetPageNumber: 2 },
     ]);
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
   });
 });
 
@@ -1124,13 +1132,6 @@ describe('createRenderVariant', () => {
     };
     variantsCollectionRef.parent = parentPageRef;
     parentPageRef.parent = { parent: null };
-    const optionsCollectionRef = {
-      parent: parentVariantRef,
-    };
-    const optionDocRef = {
-      parent: optionsCollectionRef,
-    };
-
     const authorRef = {
       get: jest.fn().mockResolvedValue({
         exists: true,
@@ -1160,20 +1161,12 @@ describe('createRenderVariant', () => {
       get: jest.fn(() => Promise.reject(new Error('boom'))),
     };
 
-    const db = {
-      doc: jest.fn(path => {
-        if (path === 'authors/author-123') {
-          return authorRef;
-        }
-        if (path === 'options/parent') {
-          return optionDocRef;
-        }
-        throw new Error(`Unexpected doc path: ${path}`);
-      }),
+    const optionsCollectionRef = {
+      parent: parentVariantRef,
     };
-
-    optionsCollectionRef.parent = parentVariantRef;
-    parentVariantRef.parent = { parent: parentPageRef };
+    const optionDocRef = {
+      parent: optionsCollectionRef,
+    };
 
     const variantsSnapForPersist = {
       docs: [{ data: () => ({ name: 'a', content: 'alpha', visibility: 1 }) }],
@@ -1228,6 +1221,38 @@ describe('createRenderVariant', () => {
       }),
     };
 
+    const variantPath = 'stories/story-1/pages/5/variants/a';
+    const variantRef = {
+      path: variantPath,
+      parent: {
+        get: jest.fn().mockResolvedValue(variantsSnapForPersist),
+        parent: pageRef,
+      },
+      collection: jest.fn(name => {
+        if (name === 'options') {
+          return {
+            get: jest.fn().mockResolvedValue(optionsSnap),
+          };
+        }
+        throw new Error(`Unexpected collection ${name}`);
+      }),
+    };
+
+    const db = {
+      doc: jest.fn(path => {
+        if (path === variantPath) {
+          return variantRef;
+        }
+        if (path === 'authors/author-123') {
+          return authorRef;
+        }
+        if (path === 'options/parent') {
+          return optionDocRef;
+        }
+        throw new Error(`Unexpected doc path: ${path}`);
+      }),
+    };
+
     const optionsSnap = {
       docs: [
         {
@@ -1259,15 +1284,7 @@ describe('createRenderVariant', () => {
         authorName: 'Author Name',
         incomingOption: 'options/parent',
       }),
-      ref: {
-        parent: {
-          parent: pageRef,
-          get: jest.fn().mockResolvedValue(variantsSnapForPersist),
-        },
-        collection: jest.fn(() => ({
-          get: jest.fn().mockResolvedValue(optionsSnap),
-        })),
-      },
+      ref: { path: variantPath },
     };
 
     pageSnap.ref = pageRef;
@@ -2580,13 +2597,22 @@ describe('getAncestorRef', () => {
 describe('getPageSnapFromRef', () => {
   it('resolves the nested page snapshot when parents exist', async () => {
     const pageSnap = { exists: true };
-    const grandparent = { get: jest.fn().mockResolvedValue(pageSnap) };
-    const snap = { ref: { parent: { parent: grandparent } } };
+    const pageRef = { get: jest.fn().mockResolvedValue(pageSnap) };
+    const variantRef = {
+      parent: {
+        parent: pageRef,
+      },
+    };
+    const db = {
+      doc: jest.fn(() => variantRef),
+    };
+    const snap = { ref: { path: 'stories/1/pages/2/variants/3' } };
 
-    const result = await getPageSnapFromRef(snap);
+    const result = await getPageSnapFromRef(snap, db);
 
     expect(result).toBe(pageSnap);
-    expect(grandparent.get).toHaveBeenCalled();
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
+    expect(pageRef.get).toHaveBeenCalled();
   });
 
   it('returns undefined when no snapshot is supplied', async () => {
@@ -2613,20 +2639,37 @@ describe('getPageSnapFromRef', () => {
 describe('fetchPageData', () => {
   it('returns a page snap when it exists', async () => {
     const pageSnap = { exists: true };
-    const grandparent = { get: jest.fn().mockResolvedValue(pageSnap) };
-    const snap = { ref: { parent: { parent: grandparent } } };
+    const pageRef = { get: jest.fn().mockResolvedValue(pageSnap) };
+    const variantRef = {
+      parent: {
+        parent: pageRef,
+      },
+    };
+    const db = {
+      doc: jest.fn(() => variantRef),
+    };
+    const snap = { ref: { path: 'stories/1/pages/2/variants/3' } };
 
-    const result = await fetchPageData(snap);
+    const result = await fetchPageData(snap, db);
 
     expect(result).toBe(pageSnap);
-    expect(grandparent.get).toHaveBeenCalled();
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
+    expect(pageRef.get).toHaveBeenCalled();
   });
 
   it('returns null when no page snap is found', async () => {
-    const grandparent = { get: jest.fn().mockResolvedValue(null) };
-    const snap = { ref: { parent: { parent: grandparent } } };
+    const pageRef = { get: jest.fn().mockResolvedValue(null) };
+    const variantRef = {
+      parent: {
+        parent: pageRef,
+      },
+    };
+    const db = {
+      doc: jest.fn(() => variantRef),
+    };
+    const snap = { ref: { path: 'stories/1/pages/2/variants/3' } };
 
-    const result = await fetchPageData(snap);
+    const result = await fetchPageData(snap, db);
 
     expect(result).toBeNull();
   });

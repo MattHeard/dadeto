@@ -1494,10 +1494,9 @@ function buildTargetMetadata(targetPageNumber, visible) {
  *   Dependencies required to load options.
  * @returns {Promise<OptionMetadata[]>} Ordered option metadata entries.
  */
-async function loadOptions({ snap, visibilityThreshold, consoleError }) {
-  const optionsSnap = await /** @type {any} */ (snap).ref
-    .collection('options')
-    .get();
+async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
+  const variantRef = resolveTenantDocumentRef(snap, db);
+  const optionsSnap = await variantRef.collection('options').get();
   const optionsData = optionsSnap.docs.map(
     /**
      * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} doc - Firestore document snapshot.
@@ -2420,6 +2419,7 @@ function createRenderVariantHandler({
     await persistRenderPlan({
       snap,
       context,
+      db,
       bucket,
       invalidatePaths,
       ...renderPlan,
@@ -2503,25 +2503,22 @@ function checkSnapExists(snap) {
  * @param {any} snap Snap.
  * @returns {Promise<any | undefined>} Page snap.
  */
-export async function getPageSnapFromRef(snap) {
-  if (!isSnapRefValid(snap)) {
-    return undefined;
-  }
-  return snap.ref.parent.parent.get();
+export async function getPageSnapFromRef(snap, db) {
+  return getPageSnapFromTenantDb(snap, db);
 }
 
 /**
- * Determine whether the variant snapshot exposes the expected parent chain.
- * @param {{ ref?: { parent?: { parent?: unknown } } } | null | undefined} snap - Variant snapshot passed to the renderer.
- * @returns {boolean} True when the snapshot contains a reachable page reference.
+ * Get page snap from ref using a tenant-bound Firestore client when available.
+ * @param {any} snap Snap.
+ * @param {FirestoreLike | null | undefined} db Firestore helper used for rebinding refs.
+ * @returns {Promise<any | undefined>} Page snap.
  */
-function isSnapRefValid(snap) {
-  const variantRef = resolveSnapshotRef(snap);
-  if (!variantRef) {
-    return false;
+async function getPageSnapFromTenantDb(snap, db) {
+  const variantRef = resolveTenantDocumentRef(snap, db);
+  if (!variantRef || !getAncestorRef(variantRef, 2)) {
+    return undefined;
   }
-
-  return Boolean(getAncestorRef(variantRef, 2));
+  return resolveTenantPageRef(snap, db).get();
 }
 
 /**
@@ -2531,6 +2528,54 @@ function isSnapRefValid(snap) {
  */
 function resolveSnapshotRef(snap) {
   return readNullableProperty(snap, 'ref');
+}
+
+/**
+ * Resolve a Firestore document reference against the tenant database when possible.
+ * @param {any} snap Candidate snapshot or document-like object.
+ * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the ref.
+ * @returns {any} Tenant-bound document reference or the original ref when rebinding is unavailable.
+ */
+function resolveTenantDocumentRef(snap, db) {
+  const ref = resolveSnapshotRef(snap);
+  if (!ref) {
+    return ref;
+  }
+
+  if (!hasDocumentPathResolver(db) || typeof ref.path !== 'string') {
+    return ref;
+  }
+
+  return db.doc(ref.path);
+}
+
+/**
+ * Resolve the parent page reference from a variant snapshot using the tenant db when available.
+ * @param {any} snap Variant snapshot.
+ * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the chain.
+ * @returns {any} Tenant-bound page reference.
+ */
+function resolveTenantPageRef(snap, db) {
+  const variantRef = resolveTenantDocumentRef(snap, db);
+  return resolveTenantPageRefFromVariantRef(variantRef);
+}
+
+/**
+ * Resolve the parent page reference from a variant document reference.
+ * @param {any} variantRef Variant reference.
+ * @returns {any} Tenant-bound page reference.
+ */
+function resolveTenantPageRefFromVariantRef(variantRef) {
+  return variantRef.parent.parent;
+}
+
+/**
+ * Determine whether a Firestore dependency can resolve document paths.
+ * @param {FirestoreLike | null | undefined} db Firestore dependency to inspect.
+ * @returns {boolean} True when the database can rebuild document references.
+ */
+function hasDocumentPathResolver(db) {
+  return db !== null && db !== undefined && typeof db.doc === 'function';
 }
 
 /**
@@ -2577,8 +2622,8 @@ function isObjectLike(value) {
  * @param {{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean, data: () => Record<string, any> }> } } } }} snap Variant snapshot.
  * @returns {Promise<{ exists?: boolean, data: () => Record<string, any> } | null>} Page snapshot when available.
  */
-export async function fetchPageData(snap) {
-  const pageSnap = await getPageSnapFromRef(snap);
+export async function fetchPageData(snap, db) {
+  const pageSnap = await getPageSnapFromTenantDb(snap, db);
   if (!isPageSnapValid(pageSnap)) {
     return null;
   }
@@ -2626,6 +2671,7 @@ async function gatherMetadata(deps) {
 
   const options = await loadOptions({
     snap,
+    db,
     visibilityThreshold: resolveVisibilityThreshold(visibilityThreshold),
     consoleError,
   });
@@ -2694,8 +2740,8 @@ function buildRenderOutput(data) {
  * @param {any} snap Snap.
  * @returns {Promise<any>} Page data.
  */
-async function fetchAndValidatePage(snap) {
-  const pageSnap = await fetchPageData(snap);
+async function fetchAndValidatePage(snap, db) {
+  const pageSnap = await fetchPageData(snap, db);
   if (!pageSnap) {
     return null;
   }
@@ -2723,7 +2769,7 @@ async function resolveRenderPlan(options) {
  */
 async function buildRenderPlanIfPageValid(options) {
   const { snap } = options;
-  const pageData = await fetchAndValidatePage(snap);
+  const pageData = await fetchAndValidatePage(snap, options.db);
   if (!pageData) {
     return null;
   }
@@ -2794,12 +2840,13 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
 
 /**
  * Save alts HTML.
- * @param {{ snap: VariantSnapshot; bucket: StorageBucketLike; page: PageDocument }} deps Dependencies.
+ * @param {{ snap: VariantSnapshot; db: FirestoreLike; bucket: StorageBucketLike; page: PageDocument }} deps Dependencies.
  * @returns {Promise<string>} Promise resolved with the saved path.
  */
 async function saveAltsHtml(deps) {
-  const { snap, bucket, page } = deps;
-  const variantsSnap = await /** @type {any} */ (snap).ref.parent.get();
+  const { snap, db, bucket, page } = deps;
+  const variantRef = resolveTenantDocumentRef(snap, db);
+  const variantsSnap = await variantRef.parent.get();
   const variants = getVisibleVariants(variantsSnap.docs);
   const altsHtml = buildAltsHtml(page.number, variants);
   const altsPath = `p/${page.number}-alts.html`;
@@ -2887,6 +2934,7 @@ function buildInvalidationPaths(altsPath, filePath, parentUrl) {
 async function persistRenderPlan({
   snap,
   context,
+  db,
   bucket,
   invalidatePaths,
   variant,
@@ -2897,7 +2945,7 @@ async function persistRenderPlan({
   openVariant,
 }) {
   await saveVariantHtml({ bucket, filePath, html, openVariant });
-  const altsPath = await saveAltsHtml({ snap, bucket, page });
+  const altsPath = await saveAltsHtml({ snap, db, bucket, page });
 
   const pendingName = resolvePendingName(variant, context);
   await savePendingFile(bucket, pendingName, filePath);
