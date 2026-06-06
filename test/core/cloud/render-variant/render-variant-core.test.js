@@ -322,6 +322,45 @@ describe('buildOptionMetadata', () => {
     });
   });
 
+  it('rebounds the target page reference through the tenant db before lookup', async () => {
+    const targetPageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 12 }),
+      }),
+      collection: jest.fn(() => ({
+        orderBy: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue({ docs: [] }),
+        })),
+      })),
+    };
+    const targetPage = { path: 'stories/1/pages/12' };
+    const db = {
+      doc: jest.fn(path => {
+        expect(path).toBe('stories/1/pages/12');
+        return targetPageRef;
+      }),
+    };
+
+    const result = await buildOptionMetadata({
+      data: {
+        content: 'Choice',
+        position: 1,
+        targetPage,
+      },
+      db,
+      visibilityThreshold: 0.5,
+      consoleError: jest.fn(),
+    });
+
+    expect(targetPageRef.get).toHaveBeenCalled();
+    expect(result).toEqual({
+      content: 'Choice',
+      position: 1,
+      targetPageNumber: 12,
+    });
+  });
+
   it('logs when the target page lookup fails', async () => {
     const consoleError = jest.fn();
     const targetPage = {

@@ -1277,17 +1277,19 @@ function getErrorMessage(error) {
 
 /**
  * Construct metadata for a single option attached to a story variant.
- * @param {{ data: OptionDocument; visibilityThreshold: number; consoleError: ConsoleError }} options
+ * @param {{ data: OptionDocument; db: FirestoreLike; visibilityThreshold: number; consoleError: ConsoleError }} options
  *   Information about the option to prepare for rendering.
  * @returns {Promise<OptionMetadata>} Metadata describing the option suitable for HTML rendering.
  */
 async function buildOptionMetadata({
   data,
+  db,
   visibilityThreshold,
   consoleError,
 }) {
   const targetMetadata = await resolveTargetMetadata(
     data,
+    db,
     visibilityThreshold,
     consoleError
   );
@@ -1302,17 +1304,14 @@ async function buildOptionMetadata({
 /**
  * Resolve the target metadata referenced by an option document.
  * @param {OptionDocument} data Raw option document data.
+ * @param {FirestoreLike} db Firestore helper used to rebind nested references.
  * @param {number} visibilityThreshold Minimum visibility required for variants.
  * @param {ConsoleError} [consoleError] Optional logger for errors.
  * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Target metadata derived from the option.
  */
-async function resolveTargetMetadata(data, visibilityThreshold, consoleError) {
+async function resolveTargetMetadata(data, db, visibilityThreshold, consoleError) {
   if (data.targetPage) {
-    return fetchTargetPageMetadata(
-      data.targetPage,
-      visibilityThreshold,
-      consoleError
-    );
+    return fetchTargetPageMetadata(data.targetPage, db, visibilityThreshold, consoleError);
   }
 
   return resolveTargetPageNumber(data);
@@ -1336,17 +1335,20 @@ function resolveTargetPageNumber(data) {
 /**
  * Retrieve metadata for a referenced target page, including the first visible variant.
  * @param {import('firebase-admin/firestore').DocumentReference} targetPage Firestore reference for the target page document.
+ * @param {FirestoreLike} db Firestore helper used to rebind the target reference.
  * @param {number} visibilityThreshold Minimum visibility required for a variant to be considered published.
  * @param {ConsoleError} [consoleError] Optional logger for unexpected failures.
  * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Metadata derived from the target page lookup.
  */
 async function fetchTargetPageMetadata(
   targetPage,
+  db,
   visibilityThreshold,
   consoleError
 ) {
+  const rehydratedTargetPage = rebindTenantDocumentRef(targetPage, db);
   return /** @type {Promise<Omit<OptionMetadata, 'content' | 'position'>>} */ (
-    targetPage
+    rehydratedTargetPage
       .get()
       .then(
         /**
@@ -1362,7 +1364,7 @@ async function fetchTargetPageMetadata(
 
           return processTargetSnap(
             targetSnap,
-            /** @type {any} */ (targetPage),
+            /** @type {any} */ (rehydratedTargetPage),
             visibilityThreshold
           );
         }
