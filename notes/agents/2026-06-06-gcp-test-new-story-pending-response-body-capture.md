@@ -1,0 +1,4 @@
+- Unexpected hurdle: the `new-story` spec was now waiting for the first successful pending poll, but `pendingResponse.json()` still failed because Playwright could lose the response body after the browser navigated away.
+- Diagnosis path: the Playwright job logs showed `response.json: Protocol error (Network.getResponseBody): No resource with given identifier found` at `test/e2e/new-story.spec.ts:192`, even though the pending request itself had already matched successfully.
+- Chosen fix: read and parse the pending response body inside the `page.waitForResponse` predicate while the response is still live, then assert on the captured JSON after the waiter resolves.
+- Next-time guidance: when a response is immediately followed by navigation or redirect, capture the body in the response callback instead of reading it later from the returned `Response` object.

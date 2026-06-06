@@ -155,12 +155,22 @@ test('submits the new story form', async ({ page }) => {
     { timeout: 15000 },
   );
   let submissionId: string | undefined;
+  let pending: { path?: string } | undefined;
   const pendingResponsePromise = page.waitForResponse(
-    (response) =>
-      Boolean(submissionId) &&
-      response.ok() &&
-      response.url().includes(`/pending/${submissionId}.json`) &&
-      response.request().method() === 'GET',
+    async (response) => {
+      if (
+        !submissionId ||
+        !response.ok() ||
+        !response.url().includes(`/pending/${submissionId}.json`) ||
+        response.request().method() !== 'GET'
+      ) {
+        return false;
+      }
+
+      const pendingBody = (await response.text()) as string;
+      pending = JSON.parse(pendingBody) as { path?: string };
+      return true;
+    },
     { timeout: 30000 },
   );
 
@@ -189,7 +199,6 @@ test('submits the new story form', async ({ page }) => {
   const pendingResponse = await pendingResponsePromise;
   expect(pendingResponse.ok(), 'pending response ok').toBe(true);
 
-  const pending = (await pendingResponse.json()) as { path?: string };
   const submissionPath = pending.path;
   expect(submissionPath, 'story path from pending response').toBeTruthy();
   if (!submissionPath) {
