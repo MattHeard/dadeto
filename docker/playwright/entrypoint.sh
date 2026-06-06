@@ -46,6 +46,12 @@ stage "env snapshot"
 log "BASE_URL=${BASE_URL:-<unset>}"
 log "REPORT_BUCKET=${REPORT_BUCKET:-<unset>}"
 log "REPORT_PREFIX=${REPORT_PREFIX:-<unset>}"
+log "PWD=$(pwd)"
+log "PLAYWRIGHT_BIN=${PLAYWRIGHT_BIN}"
+log "PLAYWRIGHT_CONFIG=$(realpath ./playwright.config.ts 2>/dev/null || printf '%s\n' './playwright.config.ts')"
+log "TEST_DIR=$(realpath "$TEST_DIR" 2>/dev/null || printf '%s\n' "$TEST_DIR")"
+log "test/e2e entries:"
+find "$TEST_DIR" -maxdepth 2 -type f | sort | sed 's/^/  /'
 command -v gcloud >/dev/null 2>&1 && gcloud --version || warn "gcloud not installed"
 command -v gcloud >/dev/null 2>&1 && gcloud config get-value account || true
 
