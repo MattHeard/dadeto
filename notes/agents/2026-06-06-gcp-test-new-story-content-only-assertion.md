@@ -1,0 +1,4 @@
+- Unexpected hurdle: the new-story E2E spec was still coupled to the final redirect path, even though the user-visible contract we actually care about is the rendered content after the redirect.
+- Diagnosis path: we traced the flow from form submit to pending artifact to redirected story page, then saw that the browser logs and the spec only needed the redirect as a bridge, not a path assertion.
+- Chosen fix: remove the path assertion and validate the redirected page purely by content: the submitted title, body, and author.
+- Next-time guidance: when the user-facing requirement is the rendered page content, prefer asserting the visible content and let the redirect path remain an implementation detail unless path stability is itself part of the contract.

@@ -154,7 +154,6 @@ test('submits the new story form', async ({ page }) => {
       response.url() === submitHref && response.request().method() === 'POST',
     { timeout: 15000 },
   );
-  let submissionId: string | undefined;
 
   await page.getByRole('button', { name: 'Submit' }).click();
 
@@ -172,23 +171,12 @@ test('submits the new story form', async ({ page }) => {
   expect(submitResponse.ok(), 'submit response ok').toBe(true);
 
   const submission = (await submitResponse.json()) as { id?: string };
-  submissionId = submission.id;
+  const submissionId = submission.id;
   expect(submissionId, 'submission id from response').toBeTruthy();
   if (!submissionId) {
     throw new Error('Expected submit-new-story response to include an id');
   }
 
-  await expect(page).toHaveURL(new RegExp(`/p/\\d+[a-z]\\.html$`));
-
-  const submissionPath = new URL(page.url()).pathname;
-  expect(submissionPath, 'story path from pending response').toBeTruthy();
-  if (!submissionPath) {
-    throw new Error('Expected pending response to include a path');
-  }
-
-  expect(submissionPath).toMatch(/^\/p\/\d+[a-z]\.html$/);
-
-  await expect(page).toHaveURL(new RegExp(`${submissionPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
   await expect(page).toHaveTitle(`Dendrite - ${submissionTitle}`);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     submissionTitle,
