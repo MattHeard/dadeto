@@ -41,6 +41,12 @@ describe('runMarkVariantDirty', () => {
     expect(createFirebaseAppManager).toHaveBeenCalledWith(initializeApp);
     expect(ensureFirebaseApp).toHaveBeenCalled();
     expect(getEnvironmentVariables).toHaveBeenCalled();
+    expect(getFirestoreInstance).toHaveBeenCalledWith({
+      environment: {
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://preview.local',
+      },
+    });
     expect(expressApp.use).toHaveBeenCalledWith('cors-middleware');
     expect(expressApp.use).toHaveBeenCalledWith('json-middleware');
     expect(expressApp.post).toHaveBeenCalledWith('/', expect.any(Function));

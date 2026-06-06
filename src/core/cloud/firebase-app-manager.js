@@ -48,9 +48,10 @@ export function createFirebaseAppContext(deps) {
   );
 
   ensureFirebaseApp();
+  const environmentVariables = deps.getEnvironmentVariables();
 
   return {
-    db: deps.getFirestoreInstance(),
+    db: deps.getFirestoreInstance({ environment: environmentVariables }),
     auth: deps.getAuth(),
     app: deps.express(),
   };

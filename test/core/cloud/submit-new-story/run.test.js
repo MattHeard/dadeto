@@ -87,6 +87,11 @@ describe('runSubmitNewStory', () => {
     expect(getAllowedOrigins).toHaveBeenCalledWith({
       SITE_URL: 'https://example.com',
     });
+    expect(getFirestoreInstance).toHaveBeenCalledWith({
+      environment: {
+        SITE_URL: 'https://example.com',
+      },
+    });
     expect(expressUse).toHaveBeenCalledWith('cors-middleware');
     expect(expressUse).toHaveBeenCalledWith(expect.any(Function));
     expect(expressUse).toHaveBeenCalledWith('json-middleware');
