@@ -158,6 +158,7 @@ test('submits the new story form', async ({ page }) => {
   const pendingResponsePromise = page.waitForResponse(
     (response) =>
       Boolean(submissionId) &&
+      response.ok() &&
       response.url().includes(`/pending/${submissionId}.json`) &&
       response.request().method() === 'GET',
     { timeout: 30000 },

@@ -1,0 +1,4 @@
+- Unexpected hurdle: the `new-story` Playwright spec was matching the first `/pending/<id>.json` response, which can be a transient 404 while `render-variant` is still writing the pending artifact.
+- Diagnosis path: I compared the Playwright job logs with the generated `infra/new-story.html` submit script and confirmed the client already polls `/pending/${id}.json` with exponential backoff until it gets `ok()`. The spec was asserting on the wrong response in that sequence.
+- Chosen fix: update `test/e2e/new-story.spec.ts` to wait for the first successful pending poll by requiring `response.ok()` in the matcher.
+- Next-time guidance: when an E2E flow has explicit retry/backoff behavior, match the success condition in the spec instead of the first network attempt, or the test will fail on normal transient 404s.
