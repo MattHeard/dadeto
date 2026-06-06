@@ -5,7 +5,12 @@ describe('Playwright container entrypoint', () => {
     const source = readFileSync('docker/playwright/entrypoint.sh', 'utf8');
 
     expect(source).toContain('CONFIG=(--config ./playwright.config.ts)');
-    expect(source).toContain('test "${CONFIG[@]}" --list --reporter=list');
-    expect(source).toContain('test "${CONFIG[@]}" $ARGS --trace=retain-on-failure');
+    expect(source).toContain('TEST_DIR="test/e2e"');
+    expect(source).toContain(
+      'test "${CONFIG[@]}" "$TEST_DIR" --list --reporter=list'
+    );
+    expect(source).toContain(
+      'test "${CONFIG[@]}" "$TEST_DIR" $ARGS --trace=retain-on-failure'
+    );
   });
 });
