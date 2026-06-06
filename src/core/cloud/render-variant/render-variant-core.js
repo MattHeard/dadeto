@@ -3036,10 +3036,12 @@ async function persistRenderPlan({
 export function createHandleVariantWrite({
   renderVariant,
   getDeleteSentinel,
+  db,
   visibilityThreshold = VISIBILITY_THRESHOLD,
 }) {
   assertFunction(renderVariant, 'renderVariant');
   assertFunction(getDeleteSentinel, 'getDeleteSentinel');
+  assertDb(db);
 
   /**
    * Handle dirty variant.
@@ -3057,7 +3059,12 @@ export function createHandleVariantWrite({
     getDeleteSentinel,
   }) {
     await renderVariant(/** @type {any} */ (change.after), context);
-    await /** @type {any} */ (change.after).ref.update({
+    const afterRef = /** @type {any} */ (change.after).ref;
+    const dirtyRef =
+      afterRef && typeof afterRef.path === 'string'
+        ? db.doc(afterRef.path)
+        : afterRef;
+    await dirtyRef.update({
       dirty: getDeleteSentinel(),
     });
     return null;

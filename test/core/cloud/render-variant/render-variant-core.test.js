@@ -2628,9 +2628,17 @@ describe('createHandleVariantWrite', () => {
   it('renders dirty variants and clears the flag', async () => {
     const renderVariant = jest.fn().mockResolvedValue(null);
     const getDeleteSentinel = jest.fn(() => 'sentinel');
+    const dirtyUpdate = jest.fn().mockResolvedValue(undefined);
+    const db = {
+      doc: jest.fn(path => ({
+        path,
+        update: dirtyUpdate,
+      })),
+    };
     const handler = createHandleVariantWrite({
       renderVariant,
       getDeleteSentinel,
+      db,
     });
 
     const change = {
@@ -2638,7 +2646,7 @@ describe('createHandleVariantWrite', () => {
       after: {
         exists: true,
         data: () => ({ dirty: true, visibility: VISIBILITY_THRESHOLD }),
-        ref: { update: jest.fn().mockResolvedValue(undefined) },
+        ref: { path: 'stories/1/pages/2/variants/3', update: jest.fn() },
       },
     };
 
@@ -2647,16 +2655,19 @@ describe('createHandleVariantWrite', () => {
     expect(renderVariant).toHaveBeenCalledWith(change.after, {
       params: { storyId: 'story-1' },
     });
-    expect(change.after.ref.update).toHaveBeenCalledWith({
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
+    expect(dirtyUpdate).toHaveBeenCalledWith({
       dirty: 'sentinel',
     });
   });
 
   it('renders newly visible variants and ignores unchanged ones', async () => {
     const renderVariant = jest.fn().mockResolvedValue(null);
+    const db = { doc: jest.fn(path => ({ path, update: jest.fn() })) };
     const handler = createHandleVariantWrite({
       renderVariant,
       getDeleteSentinel: () => null,
+      db,
       visibilityThreshold: 2,
     });
 
@@ -2708,15 +2719,44 @@ describe('createHandleVariantWrite', () => {
 
   it('returns early when the variant snapshot is deleted', async () => {
     const renderVariant = jest.fn();
+    const db = { doc: jest.fn(path => ({ path, update: jest.fn() })) };
     const handler = createHandleVariantWrite({
       renderVariant,
       getDeleteSentinel: () => null,
+      db,
     });
 
     await expect(
       handler({ before: { exists: true }, after: { exists: false } }, {})
     ).resolves.toBeNull();
     expect(renderVariant).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the original dirty ref when no path is available', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const dirtyUpdate = jest.fn().mockResolvedValue(undefined);
+    const db = { doc: jest.fn() };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => 'sentinel',
+      db,
+    });
+
+    const change = {
+      before: { exists: true, data: () => ({ visibility: 0 }) },
+      after: {
+        exists: true,
+        data: () => ({ dirty: true, visibility: VISIBILITY_THRESHOLD }),
+        ref: { update: dirtyUpdate },
+      },
+    };
+
+    await handler(change, {});
+
+    expect(db.doc).not.toHaveBeenCalled();
+    expect(dirtyUpdate).toHaveBeenCalledWith({
+      dirty: 'sentinel',
+    });
   });
 });
 

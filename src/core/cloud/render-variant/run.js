@@ -45,9 +45,8 @@ export function runRenderVariant(deps) {
     console: consoleLike = globalThis.console,
   } = typedDeps;
 
-  const { render: resolveRenderVariant } = /** @type {any} */ (
-    createRenderVariantEntrypointState()
-  );
+  const renderState = /** @type {any} */ (createRenderVariantEntrypointState());
+  const { render: resolveRenderVariant, db } = renderState;
 
   /* istanbul ignore next */
   const handleVariantWrite = /** @type {any} */ (createHandleVariantWrite)({
@@ -55,6 +54,7 @@ export function runRenderVariant(deps) {
       (snap, context) => resolveRenderVariant()(snap, context)
     ),
     getDeleteSentinel: () => FieldValue.delete(),
+    db,
   });
 
   /* istanbul ignore next */
