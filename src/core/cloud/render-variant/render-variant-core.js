@@ -1740,6 +1740,7 @@ export const renderVariantCoreTestUtils = {
   gatherMetadata,
   loadOptions,
   rebindTenantDocumentRef,
+  rebindTenantCollectionRef,
   resolveStoryMetadata,
   resolveAuthorMetadata,
 };
@@ -2596,7 +2597,8 @@ function resolveTenantDocumentRef(snap, db) {
  */
 function resolveTenantPageRef(snap, db) {
   const variantRef = resolveTenantDocumentRef(snap, db);
-  return resolveTenantPageRefFromVariantRef(variantRef);
+  const pageRef = resolveTenantPageRefFromVariantRef(variantRef);
+  return rebindTenantDocumentRef(pageRef, db);
 }
 
 /**
@@ -2609,12 +2611,39 @@ function resolveTenantPageRefFromVariantRef(variantRef) {
 }
 
 /**
+ * Resolve a Firestore collection reference against the tenant database when possible.
+ * @param {any} ref Candidate collection reference.
+ * @param {FirestoreLike | null | undefined} db Firestore helper used to rebind the collection.
+ * @returns {any} Tenant-bound collection reference or the original ref when rebinding is unavailable.
+ */
+function rebindTenantCollectionRef(ref, db) {
+  if (!ref) {
+    return ref;
+  }
+
+  if (!hasCollectionPathResolver(db) || typeof ref.path !== 'string') {
+    return ref;
+  }
+
+  return db.collection(ref.path);
+}
+
+/**
  * Determine whether a Firestore dependency can resolve document paths.
  * @param {FirestoreLike | null | undefined} db Firestore dependency to inspect.
  * @returns {boolean} True when the database can rebuild document references.
  */
 function hasDocumentPathResolver(db) {
   return db !== null && db !== undefined && typeof db.doc === 'function';
+}
+
+/**
+ * Determine whether a Firestore dependency can resolve collection paths.
+ * @param {FirestoreLike | null | undefined} db Firestore dependency to inspect.
+ * @returns {boolean} True when the database can rebuild collection references.
+ */
+function hasCollectionPathResolver(db) {
+  return db !== null && db !== undefined && typeof db.collection === 'function';
 }
 
 /**
@@ -2886,7 +2915,8 @@ async function saveVariantHtml({ bucket, filePath, html, openVariant }) {
 async function saveAltsHtml(deps) {
   const { snap, db, bucket, page } = deps;
   const variantRef = resolveTenantDocumentRef(snap, db);
-  const variantsSnap = await variantRef.parent.get();
+  const variantsRef = rebindTenantCollectionRef(variantRef.parent, db);
+  const variantsSnap = await variantsRef.get();
   const variants = getVisibleVariants(variantsSnap.docs);
   const altsHtml = buildAltsHtml(page.number, variants);
   const altsPath = `p/${page.number}-alts.html`;

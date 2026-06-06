@@ -2755,6 +2755,35 @@ describe('getPageSnapFromRef', () => {
     expect(pageRef.get).toHaveBeenCalled();
   });
 
+  it('rebounds the page reference through the tenant db before fetching', async () => {
+    const pageSnap = { exists: true };
+    const pageRef = { get: jest.fn().mockResolvedValue(pageSnap) };
+    const variantRef = {
+      parent: {
+        parent: pageRef,
+      },
+    };
+    pageRef.path = 'stories/1/pages/2';
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'stories/1/pages/2/variants/3') {
+          return variantRef;
+        }
+        if (path === 'stories/1/pages/2') {
+          return pageRef;
+        }
+        throw new Error(`unexpected doc path ${path}`);
+      }),
+    };
+    const snap = { ref: { path: 'stories/1/pages/2/variants/3' } };
+
+    const result = await getPageSnapFromRef(snap, db);
+
+    expect(result).toBe(pageSnap);
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2/variants/3');
+    expect(db.doc).toHaveBeenCalledWith('stories/1/pages/2');
+  });
+
   it('returns undefined when no snapshot is supplied', async () => {
     await expect(getPageSnapFromRef(null)).resolves.toBeUndefined();
   });
@@ -2773,6 +2802,36 @@ describe('getPageSnapFromRef', () => {
     const result = await getPageSnapFromRef({ ref: {} });
 
     expect(result).toBeUndefined();
+  });
+});
+
+describe('renderVariantCoreTestUtils', () => {
+  it('rebounds collection refs through the tenant db when possible', () => {
+    const collectionRef = { path: 'stories/1/pages/2/variants' };
+    const db = {
+      collection: jest.fn(path => ({ path: `tenant:${path}` })),
+    };
+
+    const rebound =
+      RenderVariantCore.renderVariantCoreTestUtils.rebindTenantCollectionRef(
+        collectionRef,
+        db
+      );
+
+    expect(db.collection).toHaveBeenCalledWith('stories/1/pages/2/variants');
+    expect(rebound).toEqual({ path: 'tenant:stories/1/pages/2/variants' });
+  });
+
+  it('returns nullish collection refs unchanged', () => {
+    const rebound =
+      RenderVariantCore.renderVariantCoreTestUtils.rebindTenantCollectionRef(
+        null,
+        {
+          collection: jest.fn(),
+        }
+      );
+
+    expect(rebound).toBeNull();
   });
 });
 
