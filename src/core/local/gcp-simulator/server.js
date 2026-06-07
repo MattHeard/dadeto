@@ -168,3 +168,5 @@ async function sendRouteResponse(resultPromise, res) {
 
   res.json(result.body);
 }
+
+export { sendRouteResponse };
