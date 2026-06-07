@@ -30,6 +30,7 @@
     "non-core-thin": "node src/scripts/check-non-core-thin-files.js",
     "start": "npx serve public",
     "start:symphony": "node src/local/symphony/server.js",
+    "start:gcp-simulator": "node src/local/gcp-simulator/server.js",
     "symphony:tui": "node scripts/symphony-tui.js",
     "notion:codex:poll": "node scripts/notion-codex-poll.js",
     "notion:codex:poll:dry": "node scripts/notion-codex-poll.js --dry-run",
