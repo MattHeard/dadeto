@@ -148,4 +148,10 @@ test('submits the new story form', async ({ page }) => {
   const main = page.locator('main');
   await expect(main).toContainText(submissionContent);
   await expect(main).toContainText(`By ${submissionAuthor}`);
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  await expect(page).toHaveTitle('Dendrite');
+  await expect(page.locator('main')).toContainText('Contents');
+  await expect(page.getByRole('link', { name: submissionTitle })).toBeVisible();
 });
