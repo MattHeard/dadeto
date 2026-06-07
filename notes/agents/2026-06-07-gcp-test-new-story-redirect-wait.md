@@ -1,0 +1,4 @@
+- Unexpected hurdle: the Playwright `new-story` submission test was still checking the post-submit title before the redirect had actually completed, so the page was sometimes still on the original `New Story` form when the assertion ran.
+- Diagnosis path: the Cloud Run Playwright logs for run `27086313646` showed the test failing at `toHaveTitle`, with the page title still `New Story` at the assertion point. That made the issue a timing problem in the spec rather than a backend response assertion or discovery issue.
+- Chosen fix: wait for the URL to change away from the initial form URL with `page.waitForURL(...)` in the submit click path, then assert on the redirected page content.
+- Next-time guidance: when a flow depends on a navigation or redirect, gate the user-visible assertions on the navigation itself instead of assuming the click and redirect finish before the next line runs.

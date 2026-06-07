@@ -132,7 +132,14 @@ test('submits the new story form', async ({ page }) => {
     'true',
   );
 
-  await page.getByRole('button', { name: 'Submit' }).click();
+  const submitButton = page.getByRole('button', { name: 'Submit' });
+  const initialUrl = page.url();
+
+  await Promise.all([
+    page.waitForURL(url => url.href !== initialUrl),
+    submitButton.click(),
+  ]);
+
   await expect(page).toHaveTitle(`Dendrite - ${submissionTitle}`);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     submissionTitle,
