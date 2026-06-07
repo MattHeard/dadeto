@@ -50,7 +50,7 @@ function parseArgs(argv) {
   const parsed = {
     runId: null,
     logPath: 'reports/gh-run-watch.log',
-    intervalSeconds: 1,
+    intervalSeconds: 10,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -78,7 +78,7 @@ function parseArgs(argv) {
   }
 
   if (!Number.isFinite(parsed.intervalSeconds) || parsed.intervalSeconds < 1) {
-    parsed.intervalSeconds = 1;
+    parsed.intervalSeconds = 10;
   }
 
   return parsed;
