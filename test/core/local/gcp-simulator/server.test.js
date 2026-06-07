@@ -75,7 +75,9 @@ describe('gcp simulator server', () => {
         throw new Error(String(chunk));
       }),
     ]);
-    expect(String(stdout)).toContain('gcp simulator listening on http://127.0.0.1:0');
+    expect(String(stdout)).toMatch(
+      /gcp simulator listening on http:\/\/127\.0\.0\.1:\d+/
+    );
     child.kill('SIGTERM');
     await once(child, 'exit');
   });

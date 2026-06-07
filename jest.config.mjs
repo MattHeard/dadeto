@@ -27,6 +27,8 @@ const config = {
   ],
   coveragePathIgnorePatterns: [
     '/node_modules/',
+    '<rootDir>/src/core/local/gcp-simulator/server.js',
+    '<rootDir>/src/local/gcp-simulator/server.js',
   ],
   collectCoverageFrom: [
     'src/core/**/*.js',

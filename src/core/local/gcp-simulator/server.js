@@ -138,7 +138,12 @@ async function startServer() {
 
   return new Promise(resolve => {
     const server = app.listen(port, () => {
-      console.log(`gcp simulator listening on http://127.0.0.1:${port}`);
+      const address = server.address();
+      const actualPort =
+        address && typeof address === 'object' ? address.port : port;
+      console.log(
+        `gcp simulator listening on http://127.0.0.1:${actualPort}`
+      );
       resolve(server);
     });
   });

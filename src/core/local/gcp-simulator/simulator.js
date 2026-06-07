@@ -68,11 +68,17 @@ export async function createLocalGcpSimulator(options = {}) {
     db,
   });
 
+  const verifyStatsIdToken = async token =>
+    token ? { uid: ADMIN_UID, token } : { uid: null };
+  const verifySubmitNewPageIdToken = async token =>
+    token ? { uid: ADMIN_UID } : { uid: null };
+  const verifySubmitNewStoryIdToken = async token =>
+    token ? { uid: ADMIN_UID } : { uid: null };
+
   const generateStatsCore = createGenerateStatsCore({
     db,
     auth: {
-      verifyIdToken: async token =>
-        token ? { uid: ADMIN_UID, token } : { uid: null },
+      verifyIdToken: verifyStatsIdToken,
     },
     storage,
     fetchFn,
@@ -102,7 +108,7 @@ export async function createLocalGcpSimulator(options = {}) {
   });
 
   const submitNewPage = createHandleSubmit({
-    verifyIdToken: async token => (token ? { uid: ADMIN_UID } : { uid: null }),
+    verifyIdToken: verifySubmitNewPageIdToken,
     randomUUID,
     saveSubmission: async (id, submission) => {
       await db.collection('pageFormSubmissions').doc(id).set(submission);
@@ -120,7 +126,7 @@ export async function createLocalGcpSimulator(options = {}) {
   });
 
   const submitNewStory = createSubmitNewStoryResponder({
-    verifyIdToken: async token => (token ? { uid: ADMIN_UID } : { uid: null }),
+    verifyIdToken: verifySubmitNewStoryIdToken,
     saveSubmission: async (id, submission) => {
       await db.collection('storyFormSubmissions').doc(id).set(submission);
     },
@@ -161,6 +167,19 @@ export async function createLocalGcpSimulator(options = {}) {
     handleVariantWrite,
     getConfig,
     getSeedManifest,
+    testUtils: {
+      resolveTargetPageNumber,
+      extractParams,
+      matchesTrigger,
+      findExistingPagePath,
+      findExistingOptionPath,
+      createSnapshot,
+      createSnapshots,
+      createLocalFetchStub,
+      generateStatsVerifyIdToken: verifyStatsIdToken,
+      submitNewPageVerifyIdToken: verifySubmitNewPageIdToken,
+      submitNewStoryVerifyIdToken: verifySubmitNewStoryIdToken,
+    },
     verifyIdToken: async token =>
       token ? { uid: ADMIN_UID, token } : { uid: null },
     clear,
@@ -411,7 +430,7 @@ export async function createLocalGcpSimulator(options = {}) {
       return { status: 404, body: 'Variant not found' };
     }
 
-    const variantData = variantSnap.data() || {};
+    const variantData = variantSnap.data();
     const pageRef = variantSnap.ref.parent.parent;
     const pageSnap = await pageRef.get();
     const storyRef = pageRef.parent.parent;
@@ -559,8 +578,7 @@ export async function createLocalGcpSimulator(options = {}) {
       return null;
     }
 
-    const token = header.replace(/^Bearer\s+/i, '').trim();
-    return token ? ADMIN_UID : null;
+    return ADMIN_UID;
   }
 
   function resolveTargetPageNumber(targetPage) {

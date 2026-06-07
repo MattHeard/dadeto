@@ -8,6 +8,7 @@
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage --watchman=false && node src/scripts/write-coverage-summary.js",
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
     "test:e2e": "playwright test",
+    "test:e2e:local": "node scripts/run-local-playwright.js",
     "generate": "node src/build/generate.js",
     "gh:watch": "node scripts/watch-gh-run.js",
     "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",

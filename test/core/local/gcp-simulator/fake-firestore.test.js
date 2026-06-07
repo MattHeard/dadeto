@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
   createFakeFieldValue,
   createFakeFirestore,
+  fakeFirestoreTestUtils,
 } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 
 describe('fake firestore', () => {
@@ -202,5 +203,55 @@ describe('fake firestore', () => {
     db.__setPathData('other/item', { rank: 99 });
     const prefixMismatch = await db.collection('things').get();
     expect(prefixMismatch.size).toBe(4);
+  });
+
+  it('covers the helper branches that are only exercised by low-level unit tests', () => {
+    expect(
+      fakeFirestoreTestUtils.getFieldValue({ nested: 5 }, 'nested.value')
+    ).toBeUndefined();
+    expect(fakeFirestoreTestUtils.matchesPrefix(['a'], ['a'])).toBe(false);
+    expect(
+      fakeFirestoreTestUtils.buildEventsFromTouched(
+        new Map(),
+        [{ path: 'missing/path' }]
+      )
+    ).toEqual([]);
+    expect(
+      fakeFirestoreTestUtils.cloneDocument({
+        createdAt: new Date('2026-06-07T00:00:00.000Z'),
+      })
+    ).toEqual({
+      createdAt: new Date('2026-06-07T00:00:00.000Z'),
+    });
+  });
+
+  it('covers write defaults, undefined update patches, and increment coercion', async () => {
+    const db = createFakeFirestore();
+    const fieldValue = createFakeFieldValue();
+
+    await db.__writeDocument('manual/default', {
+      flag: true,
+    });
+    expect(await db.__getDocument('manual/default')).toMatchObject({
+      flag: true,
+    });
+
+    await db.doc('manual/default').set({
+      count: 'not-a-number',
+    });
+    await db.__commitOperations([
+      {
+        path: 'manual/default',
+        nextData: undefined,
+        mode: 'update',
+      },
+    ]);
+    await db.doc('manual/default').update({
+      count: fieldValue.increment(3),
+    });
+
+    expect(await db.__getDocument('manual/default')).toMatchObject({
+      count: 3,
+    });
   });
 });

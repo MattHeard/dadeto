@@ -42,7 +42,7 @@ export function createFakeFirestore({ onCommit } = {}) {
     }
 
     doc(path) {
-      return new FakeDocumentReference(this, splitPath(path));
+      return new FakeDocumentReference(this, path);
     }
 
     batch() {
@@ -139,6 +139,13 @@ export function createFakeFirestore({ onCommit } = {}) {
 
   return new FakeFirestore();
 }
+
+export const fakeFirestoreTestUtils = {
+  getFieldValue,
+  matchesPrefix,
+  buildEventsFromTouched,
+  cloneDocument,
+};
 
 class FakeWriteBatch {
   constructor(db) {
