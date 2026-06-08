@@ -154,9 +154,13 @@ describe('local playwright runner', () => {
   it('covers the runner helper branches for settled exits and null children', () => {
     const exitedChild = new FakeChildProcess();
     exitedChild.exitCode = 0;
-    expect(() => playwrightRunnerTestUtils.terminateProcess(exitedChild)).not.toThrow();
+    expect(() =>
+      playwrightRunnerTestUtils.terminateProcess(exitedChild)
+    ).not.toThrow();
     expect(exitedChild.kills).toEqual([]);
-    expect(() => playwrightRunnerTestUtils.terminateProcess(null)).not.toThrow();
+    expect(() =>
+      playwrightRunnerTestUtils.terminateProcess(null)
+    ).not.toThrow();
   });
 
   it('uses the default runner commands when options are omitted', async () => {

@@ -36,7 +36,9 @@ describe('resolveFirestoreDatabaseId', () => {
       'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
     );
     expect(() =>
-      resolveFirestoreDatabaseId({ PLAYWRIGHT_ORIGIN: 'http://playwright.test' })
+      resolveFirestoreDatabaseId({
+        PLAYWRIGHT_ORIGIN: 'http://playwright.test',
+      })
     ).toThrow(
       'Firestore database id is required. Set DATABASE_ID or use a t-* deployment environment.'
     );

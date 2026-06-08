@@ -47,7 +47,9 @@ describe('local gcp simulator', () => {
     expect(await pendingFile.exists()).toEqual([true]);
 
     const [indexHtml] = await indexFile.download();
-    expect(indexHtml.toString('utf8')).toContain('E2E moderation fixture story');
+    expect(indexHtml.toString('utf8')).toContain(
+      'E2E moderation fixture story'
+    );
     expect(indexHtml.toString('utf8')).toContain('Contents');
 
     const [pendingJson] = await pendingFile.download();
@@ -211,10 +213,11 @@ describe('local gcp simulator', () => {
     await simulator.db.collection('moderators').doc(ADMIN_UID).update({
       variant: simulator.fieldValue.delete(),
     });
-    const missingAssignmentRating = await simulator.routes.submitModerationRating({
-      body: { isApproved: true },
-      headers: { authorization: 'Bearer local-admin-token' },
-    });
+    const missingAssignmentRating =
+      await simulator.routes.submitModerationRating({
+        body: { isApproved: true },
+        headers: { authorization: 'Bearer local-admin-token' },
+      });
     expect(missingAssignmentRating).toEqual({
       status: 404,
       body: 'Variant not found',
@@ -242,7 +245,9 @@ describe('local gcp simulator', () => {
       headers: { authorization: 'Bearer local-admin-token' },
     });
     expect(missingTargetPageInfo.status).toBe(200);
-    expect(missingTargetPageInfo.body.options[0].targetPageNumber).toBeUndefined();
+    expect(
+      missingTargetPageInfo.body.options[0].targetPageNumber
+    ).toBeUndefined();
 
     await simulator.db.collection('moderators').doc(ADMIN_UID).set({
       variant: 'stories/missing/pages/1/variants/a',
@@ -342,10 +347,7 @@ describe('local gcp simulator', () => {
       testUtils.extractParams('stories/{storyId}/pages/{pageId}', 'stories/1')
     ).toBeNull();
     expect(
-      testUtils.matchesTrigger(
-        'stories/{storyId}/pages/{pageId}',
-        'stories/1'
-      )
+      testUtils.matchesTrigger('stories/{storyId}/pages/{pageId}', 'stories/1')
     ).toBe(false);
     expect(testUtils.resolveTargetPageNumber({})).toBeUndefined();
     expect(
@@ -361,9 +363,11 @@ describe('local gcp simulator', () => {
       title: 'Story',
     });
     expect(
-      testUtils.createSnapshot('manual/story', {
-        title: 'Ignored',
-      }).data()
+      testUtils
+        .createSnapshot('manual/story', {
+          title: 'Ignored',
+        })
+        .data()
     ).toMatchObject({ title: 'Story' });
 
     await simulator.dispatchCommittedWrites([
@@ -374,12 +378,9 @@ describe('local gcp simulator', () => {
       },
     ]);
 
-    await simulator.db
-      .collection('moderators')
-      .doc(ADMIN_UID)
-      .set({
-        createdAt: new Date(),
-      });
+    await simulator.db.collection('moderators').doc(ADMIN_UID).set({
+      createdAt: new Date(),
+    });
 
     const missingVariantResponse = await simulator.routes.getModerationVariant({
       headers: { authorization: 'Bearer local-admin-token' },
@@ -450,9 +451,9 @@ describe('local gcp simulator', () => {
     expect(
       await testUtils.generateStatsVerifyIdToken('local-admin-token')
     ).toEqual({ uid: ADMIN_UID, token: 'local-admin-token' });
-    expect(
-      await testUtils.generateStatsVerifyIdToken('')
-    ).toEqual({ uid: null });
+    expect(await testUtils.generateStatsVerifyIdToken('')).toEqual({
+      uid: null,
+    });
     expect(
       await testUtils.submitNewPageVerifyIdToken('local-admin-token')
     ).toEqual({ uid: ADMIN_UID });
@@ -548,14 +549,20 @@ describe('local gcp simulator', () => {
         moderatorReputationSum: 2,
         moderationRatingCount: 1,
       });
-      localSimulator.db.__setPathData(variantRef.collection('options').doc('alpha').path, {
-        content: 'Alpha choice',
-        targetPage: pageTwoRef,
-      });
-      localSimulator.db.__setPathData(variantRef.collection('options').doc('beta').path, {
-        content: 'Beta choice',
-        targetPage: pageTwoRef,
-      });
+      localSimulator.db.__setPathData(
+        variantRef.collection('options').doc('alpha').path,
+        {
+          content: 'Alpha choice',
+          targetPage: pageTwoRef,
+        }
+      );
+      localSimulator.db.__setPathData(
+        variantRef.collection('options').doc('beta').path,
+        {
+          content: 'Beta choice',
+          targetPage: pageTwoRef,
+        }
+      );
 
       await localSimulator.db.collection('moderators').doc(ADMIN_UID).set({
         variant: variantRef.path,
@@ -592,10 +599,12 @@ describe('local gcp simulator', () => {
         body: 'Missing or invalid isApproved',
       });
 
-      const rejectedRating = await localSimulator.routes.submitModerationRating({
-        body: { isApproved: false },
-        headers: { authorization: 'Bearer local-admin-token' },
-      });
+      const rejectedRating = await localSimulator.routes.submitModerationRating(
+        {
+          body: { isApproved: false },
+          headers: { authorization: 'Bearer local-admin-token' },
+        }
+      );
       expect(rejectedRating).toEqual({
         status: 200,
         body: { ok: true },
@@ -614,10 +623,12 @@ describe('local gcp simulator', () => {
         createdAt: new Date(),
       });
 
-      const approvedRating = await localSimulator.routes.submitModerationRating({
-        body: { isApproved: true },
-        headers: { authorization: 'Bearer local-admin-token' },
-      });
+      const approvedRating = await localSimulator.routes.submitModerationRating(
+        {
+          body: { isApproved: true },
+          headers: { authorization: 'Bearer local-admin-token' },
+        }
+      );
       expect(approvedRating).toEqual({
         status: 200,
         body: { ok: true },

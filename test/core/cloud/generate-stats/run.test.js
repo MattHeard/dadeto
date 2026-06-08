@@ -143,10 +143,7 @@ describe('generate-stats run', () => {
       DENDRITE_ENVIRONMENT: 'dev',
     });
 
-    expect([
-      productionOrigins,
-      mockedOrigins,
-    ]).toContainEqual(prodOrigins);
+    expect([productionOrigins, mockedOrigins]).toContainEqual(prodOrigins);
     expect(devOrigins).toEqual(prodOrigins);
     expect(
       mod.getAllowedOrigins({
@@ -279,18 +276,12 @@ describe('generate-stats run', () => {
   });
 
   it('builds the cloud handle from runtime dependencies', async () => {
-    const {
-      mod,
-      functions,
-      express,
-      cors,
-      onRequest,
-      getFirestore,
-    } = await loadModule({
-      environment: {
-        DENDRITE_ENVIRONMENT: 'dev',
-      },
-    });
+    const { mod, functions, express, cors, onRequest, getFirestore } =
+      await loadModule({
+        environment: {
+          DENDRITE_ENVIRONMENT: 'dev',
+        },
+      });
     const Storage = jest.fn(function Storage() {
       return { kind: 'storage-instance' };
     });
@@ -326,6 +317,8 @@ describe('generate-stats run', () => {
   it('uses the global console when none is provided', async () => {
     const { mod, deps } = await loadModule();
 
-    expect(() => mod.runGenerateStats({ ...deps, console: undefined })).not.toThrow();
+    expect(() =>
+      mod.runGenerateStats({ ...deps, console: undefined })
+    ).not.toThrow();
   });
 });

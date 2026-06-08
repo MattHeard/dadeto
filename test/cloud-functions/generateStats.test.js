@@ -27,9 +27,9 @@ describe.skip('cloud generate-stats entrypoint', () => {
     await jest.unstable_mockModule(
       '../../src/cloud/generate-stats/firebase-functions.js',
       () => ({
-      default: {
-        region: functions.region,
-      },
+        default: {
+          region: functions.region,
+        },
       })
     );
     await jest.unstable_mockModule(

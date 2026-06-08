@@ -1309,9 +1309,19 @@ async function buildOptionMetadata({
  * @param {ConsoleError} [consoleError] Optional logger for errors.
  * @returns {Promise<Omit<OptionMetadata, 'content' | 'position'>>} Target metadata derived from the option.
  */
-async function resolveTargetMetadata(data, db, visibilityThreshold, consoleError) {
+async function resolveTargetMetadata(
+  data,
+  db,
+  visibilityThreshold,
+  consoleError
+) {
   if (data.targetPage) {
-    return fetchTargetPageMetadata(data.targetPage, db, visibilityThreshold, consoleError);
+    return fetchTargetPageMetadata(
+      data.targetPage,
+      db,
+      visibilityThreshold,
+      consoleError
+    );
   }
 
   return resolveTargetPageNumber(data);
@@ -1627,6 +1637,7 @@ function shouldResolveFirstPageUrl(page, storyData) {
 /**
  * Resolve the root page URL while gracefully handling errors.
  * @param {StoryDataWithRoot} storyData Story metadata containing the root page.
+ * @param db
  * @param {ConsoleError} [consoleError] Optional logger for failures.
  * @returns {Promise<string | undefined>} Root page URL when available.
  */
@@ -1662,6 +1673,7 @@ function logRootPageError(error, consoleError) {
 /**
  * Fetch root page URL.
  * @param {StoryDataWithRoot} storyData Story data.
+ * @param db
  * @returns {Promise<string|undefined>} Root page URL.
  */
 async function fetchRootPageUrl(storyData, db) {
@@ -2541,6 +2553,7 @@ function checkSnapExists(snap) {
 /**
  * Get page snap from ref.
  * @param {any} snap Snap.
+ * @param db
  * @returns {Promise<any | undefined>} Page snap.
  */
 export async function getPageSnapFromRef(snap, db) {
@@ -2688,6 +2701,7 @@ function isObjectLike(value) {
 /**
  * Fetch the parent page snapshot for the renderer's variant.
  * @param {{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean, data: () => Record<string, any> }> } } } }} snap Variant snapshot.
+ * @param db
  * @returns {Promise<{ exists?: boolean, data: () => Record<string, any> } | null>} Page snapshot when available.
  */
 export async function fetchPageData(snap, db) {
@@ -2807,6 +2821,7 @@ function buildRenderOutput(data) {
 /**
  * Fetch and validate page.
  * @param {any} snap Snap.
+ * @param db
  * @returns {Promise<any>} Page data.
  */
 async function fetchAndValidatePage(snap, db) {
@@ -3029,6 +3044,7 @@ async function persistRenderPlan({
  * Build a change handler that renders visible variants and clears dirty markers.
  * @param {object} options - Dependencies for the change handler.
  * @param {(snap: any, context?: object) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
+ * @param options.db
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
  * @param {number} [options.visibilityThreshold] - Minimum visibility required before rendering.
  * @returns {(change: FirestoreChange, context?: RenderContext) => Promise<null>} Firestore change handler.

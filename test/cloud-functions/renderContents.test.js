@@ -8,6 +8,9 @@ import {
 
 const ACCESS_TOKEN_KEY = 'access_token';
 
+/**
+ *
+ */
 async function loadRender() {
   const originalEnv = {
     DENDRITE_ENVIRONMENT: process.env.DENDRITE_ENVIRONMENT,

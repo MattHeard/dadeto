@@ -7,7 +7,10 @@ import { createFakeFieldValue, createFakeFirestore } from './fake-firestore.js';
 import { FakeStorage } from './fake-storage.js';
 import { createProcessNewStoryHandler } from '../../cloud/process-new-story/process-new-story-core.js';
 import { createProcessNewPageHandler } from '../../cloud/process-new-page/process-new-page-core.js';
-import { createHandleSubmit, parseIncomingOption } from '../../cloud/submit-new-page/submit-new-page-core.js';
+import {
+  createHandleSubmit,
+  parseIncomingOption,
+} from '../../cloud/submit-new-page/submit-new-page-core.js';
 import { createRenderContents } from '../../cloud/render-contents/render-contents-core.js';
 import {
   createRenderVariant,
@@ -18,7 +21,8 @@ import { createSubmitNewStoryResponder } from '../../cloud/submit-new-story/subm
 import { getAuthorizationHeader } from '../../cloud/submit-shared.js';
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
-const DEFAULT_FIRST_CONTENT = 'The first seeded page invites the reader forward.';
+const DEFAULT_FIRST_CONTENT =
+  'The first seeded page invites the reader forward.';
 const DEFAULT_SECOND_CONTENT = 'The second seeded page closes the loop.';
 const DEFAULT_OPTION_TEXT = 'Continue to the second page';
 const STORY_ID = 'gcp-test-fixture-story';
@@ -28,6 +32,10 @@ const FIRST_VARIANT_NAME = 'a';
 const SECOND_VARIANT_NAME = 'a';
 const LOCAL_ID_TOKEN = 'local-admin-token';
 
+/**
+ *
+ * @param options
+ */
 export async function createLocalGcpSimulator(options = {}) {
   const {
     baseUrl = 'http://127.0.0.1:4321',
@@ -187,12 +195,20 @@ export async function createLocalGcpSimulator(options = {}) {
     routes: buildRoutes(),
   };
 
+  /**
+   *
+   * @param records
+   */
   async function dispatchCommittedWrites(records) {
     for (const record of records) {
       await dispatchRecord(record);
     }
   }
 
+  /**
+   *
+   * @param record
+   */
   async function dispatchRecord(record) {
     const snapshots = createSnapshots(record.path, record.before, record.after);
     const isCreate = !record.before && record.after;
@@ -211,7 +227,9 @@ export async function createLocalGcpSimulator(options = {}) {
         continue;
       }
 
-      const context = { params: extractParams(trigger.pathPattern, record.path) };
+      const context = {
+        params: extractParams(trigger.pathPattern, record.path),
+      };
       if (trigger.eventName === 'onCreate') {
         await trigger.handler(snapshots.after, context);
         continue;
@@ -227,22 +245,36 @@ export async function createLocalGcpSimulator(options = {}) {
     }
   }
 
+  /**
+   *
+   * @param pathPattern
+   * @param eventName
+   * @param handler
+   */
   function registerTrigger(pathPattern, eventName, handler) {
     triggerRegistry.push({ pathPattern, eventName, handler });
   }
 
+  /**
+   *
+   */
   async function seedFixture() {
     const storyRef = db.collection('stories').doc(STORY_ID);
-    const firstPageRef = storyRef.collection('pages').doc(String(FIRST_PAGE_NUMBER));
+    const firstPageRef = storyRef
+      .collection('pages')
+      .doc(String(FIRST_PAGE_NUMBER));
     const secondPageRef = storyRef
       .collection('pages')
       .doc(String(SECOND_PAGE_NUMBER));
-    const firstVariantRef = firstPageRef.collection('variants').doc(FIRST_VARIANT_NAME);
+    const firstVariantRef = firstPageRef
+      .collection('variants')
+      .doc(FIRST_VARIANT_NAME);
     const secondVariantRef = secondPageRef
       .collection('variants')
       .doc(SECOND_VARIANT_NAME);
 
-    await db.batch()
+    await db
+      .batch()
       .set(storyRef, {
         title: DEFAULT_STORY_TITLE,
         rootPage: firstPageRef,
@@ -288,6 +320,12 @@ export async function createLocalGcpSimulator(options = {}) {
       .commit();
   }
 
+  /**
+   *
+   * @param pathValue
+   * @param before
+   * @param after
+   */
   function createSnapshots(pathValue, before, after) {
     return {
       before: createSnapshot(pathValue, before),
@@ -295,6 +333,11 @@ export async function createLocalGcpSimulator(options = {}) {
     };
   }
 
+  /**
+   *
+   * @param pathValue
+   * @param data
+   */
   function createSnapshot(pathValue, data) {
     if (data === undefined) {
       const ref = db.doc(pathValue);
@@ -309,10 +352,20 @@ export async function createLocalGcpSimulator(options = {}) {
     return db.__resolveDocumentSnapshot(pathValue);
   }
 
+  /**
+   *
+   * @param pathPattern
+   * @param pathValue
+   */
   function matchesTrigger(pathPattern, pathValue) {
     return Boolean(extractParams(pathPattern, pathValue));
   }
 
+  /**
+   *
+   * @param pathPattern
+   * @param pathValue
+   */
   function extractParams(pathPattern, pathValue) {
     const patternSegments = split(pathPattern);
     const pathSegments = split(pathValue);
@@ -337,17 +390,25 @@ export async function createLocalGcpSimulator(options = {}) {
     return params;
   }
 
+  /**
+   *
+   * @param value
+   */
   function split(value) {
-    return String(value)
-      .replace(/^\/+/, '')
-      .replace(/\/+$/, '')
-      .split('/');
+    return String(value).replace(/^\/+/, '').replace(/\/+$/, '').split('/');
   }
 
+  /**
+   *
+   * @param segment
+   */
   function isParam(segment) {
     return segment.startsWith('{') && segment.endsWith('}');
   }
 
+  /**
+   *
+   */
   function getConfig() {
     return {
       submitNewStoryUrl: `${baseUrl}/__sim/submit-new-story`,
@@ -361,6 +422,9 @@ export async function createLocalGcpSimulator(options = {}) {
     };
   }
 
+  /**
+   *
+   */
   function getSeedManifest() {
     return {
       idToken: LOCAL_ID_TOKEN,
@@ -386,33 +450,53 @@ export async function createLocalGcpSimulator(options = {}) {
     };
   }
 
+  /**
+   *
+   */
   async function clear() {
     await rm(storageRoot, { recursive: true, force: true });
   }
 
+  /**
+   *
+   */
   function buildRoutes() {
     return {
       submitNewStory: async request => handleSubmitNewStory(request),
       submitNewPage: async request => handleSubmitNewPage(request),
-      getModerationVariant: async request => handleGetModerationVariant(request),
+      getModerationVariant: async request =>
+        handleGetModerationVariant(request),
       assignModerationJob: async request => handleAssignModerationJob(request),
       submitModerationRating: async request =>
         handleSubmitModerationRating(request),
-      triggerRenderContents: async request => handleTriggerRenderContents(request),
+      triggerRenderContents: async request =>
+        handleTriggerRenderContents(request),
       markVariantDirty: async request => handleMarkVariantDirty(request),
       generateStats: async request => handleGenerateStats(request),
     };
   }
 
+  /**
+   *
+   * @param request
+   */
   async function handleSubmitNewStory(request) {
     const response = await submitNewStory(request);
     return response;
   }
 
+  /**
+   *
+   * @param request
+   */
   async function handleSubmitNewPage(request) {
     return submitNewPage(request);
   }
 
+  /**
+   *
+   * @param request
+   */
   async function handleGetModerationVariant(request) {
     const uid = resolveUid(request);
     if (!uid) {
@@ -438,7 +522,10 @@ export async function createLocalGcpSimulator(options = {}) {
     const optionsSnap = await variantSnap.ref.collection('options').get();
     const options = optionsSnap.docs
       .slice()
-      .sort((left, right) => (left.data().position ?? 0) - (right.data().position ?? 0))
+      .sort(
+        (left, right) =>
+          (left.data().position ?? 0) - (right.data().position ?? 0)
+      )
       .map(doc => ({
         content: doc.data().content,
         targetPageNumber: resolveTargetPageNumber(doc.data().targetPage),
@@ -456,6 +543,10 @@ export async function createLocalGcpSimulator(options = {}) {
     };
   }
 
+  /**
+   *
+   * @param request
+   */
   async function handleAssignModerationJob(request) {
     const uid = resolveUid(request);
     if (!uid) {
@@ -488,6 +579,10 @@ export async function createLocalGcpSimulator(options = {}) {
     return { status: 201, body: { ok: true } };
   }
 
+  /**
+   *
+   * @param request
+   */
   async function handleSubmitModerationRating(request) {
     const uid = resolveUid(request);
     if (!uid) {
@@ -515,8 +610,14 @@ export async function createLocalGcpSimulator(options = {}) {
     const variantRef = db.doc(variantPath);
     const variantSnap = await variantRef.get();
     const data = variantSnap.data() || {};
-    const currentScore = typeof data.moderatorReputationSum === 'number' ? data.moderatorReputationSum : 0;
-    const currentCount = typeof data.moderationRatingCount === 'number' ? data.moderationRatingCount : 0;
+    const currentScore =
+      typeof data.moderatorReputationSum === 'number'
+        ? data.moderatorReputationSum
+        : 0;
+    const currentCount =
+      typeof data.moderationRatingCount === 'number'
+        ? data.moderationRatingCount
+        : 0;
     await variantRef.update({
       moderatorReputationSum: currentScore + (isApproved ? 1 : -1),
       moderationRatingCount: currentCount + 1,
@@ -529,6 +630,9 @@ export async function createLocalGcpSimulator(options = {}) {
     return { status: 200, body: { ok: true } };
   }
 
+  /**
+   *
+   */
   async function handleTriggerRenderContents() {
     const storiesSnap = await db.collection('stories').get();
     for (const storyDoc of storiesSnap.docs) {
@@ -537,6 +641,10 @@ export async function createLocalGcpSimulator(options = {}) {
     return { status: 200, body: { ok: true } };
   }
 
+  /**
+   *
+   * @param request
+   */
   async function handleMarkVariantDirty(request) {
     const body = request?.body || {};
     const pageNumber = Number(body.pageNumber);
@@ -567,11 +675,18 @@ export async function createLocalGcpSimulator(options = {}) {
     return { status: 200, body: { ok: true } };
   }
 
+  /**
+   *
+   */
   async function handleGenerateStats() {
     await generateStatsCore.generate();
     return { status: 200, body: { ok: true } };
   }
 
+  /**
+   *
+   * @param request
+   */
   function resolveUid(request) {
     const header = getAuthorizationHeader(request);
     if (!header) {
@@ -581,6 +696,10 @@ export async function createLocalGcpSimulator(options = {}) {
     return ADMIN_UID;
   }
 
+  /**
+   *
+   * @param targetPage
+   */
   function resolveTargetPageNumber(targetPage) {
     if (!targetPage || typeof targetPage.path !== 'string') {
       return undefined;
@@ -590,6 +709,10 @@ export async function createLocalGcpSimulator(options = {}) {
     return match ? Number(match[1]) : undefined;
   }
 
+  /**
+   *
+   * @param pageNumber
+   */
   async function findExistingPagePath(pageNumber) {
     const pageSnap = await db
       .collectionGroup('pages')
@@ -603,12 +726,19 @@ export async function createLocalGcpSimulator(options = {}) {
     return pageSnap.docs[0].ref.path;
   }
 
+  /**
+   *
+   * @param option
+   */
   async function findExistingOptionPath(option) {
     if (!option || typeof option !== 'object') {
       return null;
     }
 
-    const typed = /** @type {{ pageNumber?: number, variantName?: string, optionNumber?: number }} */ (option);
+    const typed =
+      /** @type {{ pageNumber?: number, variantName?: string, optionNumber?: number }} */ (
+        option
+      );
     if (
       !Number.isInteger(typed.pageNumber) ||
       typeof typed.variantName !== 'string' ||
@@ -645,6 +775,9 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 }
 
+/**
+ *
+ */
 function createLocalFetchStub() {
   return async () => ({
     ok: true,

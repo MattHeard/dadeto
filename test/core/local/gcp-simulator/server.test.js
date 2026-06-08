@@ -59,15 +59,17 @@ describe('gcp simulator server', () => {
   });
 
   it('runs the server entrypoint when invoked directly', async () => {
-    const child = spawn(process.execPath, [
-      'src/core/local/gcp-simulator/server.js',
-    ], {
-      cwd: process.cwd(),
-      env: {
-        ...process.env,
-        GCP_SIMULATOR_PORT: '0',
-      },
-    });
+    const child = spawn(
+      process.execPath,
+      ['src/core/local/gcp-simulator/server.js'],
+      {
+        cwd: process.cwd(),
+        env: {
+          ...process.env,
+          GCP_SIMULATOR_PORT: '0',
+        },
+      }
+    );
 
     const [stdout] = await Promise.race([
       once(child.stdout, 'data'),

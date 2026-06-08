@@ -9,6 +9,8 @@ describe('GitHub run watcher helper', () => {
     expect(source).toContain(
       "['run', 'watch', args.runId, '--exit-status', '--interval', String(args.intervalSeconds)]"
     );
-    expect(source).toContain('const poller = watchForFailures(args.runId, args.intervalSeconds);');
+    expect(source).toContain(
+      'const poller = watchForFailures(args.runId, args.intervalSeconds);'
+    );
   });
 });

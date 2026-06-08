@@ -19,7 +19,9 @@ describe('Playwright container entrypoint', () => {
       'log "TEST_DIR=$(realpath "$TEST_DIR" 2>/dev/null || printf \'%s\\n\' "$TEST_DIR")"'
     );
     expect(source).toContain('log "test/e2e entries:"');
-    expect(source).toContain('find "$TEST_DIR" -maxdepth 2 -type f | sort | sed \'s/^/  /\'');
+    expect(source).toContain(
+      'find "$TEST_DIR" -maxdepth 2 -type f | sort | sed \'s/^/  /\''
+    );
     expect(source).toContain(
       'test "${CONFIG[@]}" "$TEST_DIR" --list --reporter=list'
     );

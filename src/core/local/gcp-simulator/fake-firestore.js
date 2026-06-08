@@ -12,6 +12,10 @@ class ServerTimestampValue {
   }
 }
 
+/**
+ *
+ * @param now
+ */
 export function createFakeFieldValue(now = () => new Date()) {
   return {
     serverTimestamp() {
@@ -26,6 +30,11 @@ export function createFakeFieldValue(now = () => new Date()) {
   };
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onCommit
+ */
 export function createFakeFirestore({ onCommit } = {}) {
   const state = new Map();
 
@@ -97,7 +106,11 @@ export function createFakeFirestore({ onCommit } = {}) {
 
     __resolveDocumentSnapshot(path) {
       const data = state.get(path);
-      return buildDocumentSnapshot(this, path, data ? cloneDocument(data) : undefined);
+      return buildDocumentSnapshot(
+        this,
+        path,
+        data ? cloneDocument(data) : undefined
+      );
     }
 
     __getPathData(path) {
@@ -113,6 +126,10 @@ export function createFakeFirestore({ onCommit } = {}) {
     }
   }
 
+  /**
+   *
+   * @param operations
+   */
   async function applyOperations(operations) {
     const touched = new Map();
     for (const operation of operations) {
@@ -235,10 +252,7 @@ class FakeDocumentReference {
     this.segments = Array.isArray(segments) ? segments : splitPath(segments);
     this.path = this.segments.join('/');
     this.id = this.segments[this.segments.length - 1];
-    this.parent = new FakeCollectionReference(
-      db,
-      this.segments.slice(0, -1)
-    );
+    this.parent = new FakeCollectionReference(db, this.segments.slice(0, -1));
   }
 
   collection(name) {
@@ -329,7 +343,9 @@ class FakeQuery {
         return acc;
       }
 
-      return acc.filter(doc => matchesWhere(doc.data, clause.field, clause.op, clause.value));
+      return acc.filter(doc =>
+        matchesWhere(doc.data, clause.field, clause.op, clause.value)
+      );
     }, docs);
   }
 
@@ -340,12 +356,16 @@ class FakeQuery {
     }
 
     const ordered = [...docs];
-    ordered.sort((left, right) => compareByOrderings(left.data, right.data, orderings));
+    ordered.sort((left, right) =>
+      compareByOrderings(left.data, right.data, orderings)
+    );
     return ordered;
   }
 
   applyLimitClause(docs) {
-    const limitClause = [...this.clauses].reverse().find(clause => clause.type === 'limit');
+    const limitClause = [...this.clauses]
+      .reverse()
+      .find(clause => clause.type === 'limit');
     if (!limitClause) {
       return docs;
     }
@@ -366,6 +386,12 @@ class FakeQuerySnapshot {
   }
 }
 
+/**
+ *
+ * @param db
+ * @param path
+ * @param data
+ */
 function buildDocumentSnapshot(db, path, data) {
   const ref = new FakeDocumentReference(db, splitPath(path));
   return new FakeDocumentSnapshot(ref, data);
@@ -384,6 +410,11 @@ class FakeDocumentSnapshot {
   }
 }
 
+/**
+ *
+ * @param existing
+ * @param operation
+ */
 function resolveOperation(existing, operation) {
   if (operation.mode === 'delete') {
     return undefined;
@@ -402,12 +433,23 @@ function resolveOperation(existing, operation) {
   return merged;
 }
 
+/**
+ *
+ * @param target
+ * @param patch
+ */
 function applyPatch(target, patch) {
   for (const [key, value] of Object.entries(patch)) {
     applyFieldPatch(target, key, value);
   }
 }
 
+/**
+ *
+ * @param target
+ * @param key
+ * @param value
+ */
 function applyFieldPatch(target, key, value) {
   const segments = key.split('.');
   const last = segments.pop();
@@ -433,6 +475,11 @@ function applyFieldPatch(target, key, value) {
   cursor[last] = resolved;
 }
 
+/**
+ *
+ * @param current
+ * @param value
+ */
 function resolveFieldValue(current, value) {
   if (value === DELETE_FIELD) {
     return DELETE_FIELD;
@@ -450,6 +497,10 @@ function resolveFieldValue(current, value) {
   return normalizeWrittenValue(value);
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeWrittenValue(value) {
   if (value === DELETE_FIELD) {
     return DELETE_FIELD;
@@ -481,6 +532,13 @@ function normalizeWrittenValue(value) {
   return output;
 }
 
+/**
+ *
+ * @param data
+ * @param field
+ * @param op
+ * @param value
+ */
 function matchesWhere(data, field, op, value) {
   if (op !== '==') {
     throw new Error(`Unsupported where operator: ${op}`);
@@ -494,6 +552,12 @@ function matchesWhere(data, field, op, value) {
   return candidate === value;
 }
 
+/**
+ *
+ * @param left
+ * @param right
+ * @param orderings
+ */
 function compareByOrderings(left, right, orderings) {
   for (const ordering of orderings) {
     const leftValue = getFieldValue(left, ordering.field);
@@ -507,6 +571,11 @@ function compareByOrderings(left, right, orderings) {
   return 0;
 }
 
+/**
+ *
+ * @param left
+ * @param right
+ */
 function compareValues(left, right) {
   if (left == null && right == null) {
     return 0;
@@ -526,6 +595,11 @@ function compareValues(left, right) {
   return 0;
 }
 
+/**
+ *
+ * @param data
+ * @param field
+ */
 function getFieldValue(data, field) {
   if (!isPlainObject(data)) {
     return undefined;
@@ -540,6 +614,11 @@ function getFieldValue(data, field) {
   }, data);
 }
 
+/**
+ *
+ * @param segments
+ * @param prefix
+ */
 function matchesPrefix(segments, prefix) {
   if (segments.length !== prefix.length + 1) {
     return false;
@@ -548,6 +627,11 @@ function matchesPrefix(segments, prefix) {
   return prefix.every((segment, index) => segments[index] === segment);
 }
 
+/**
+ *
+ * @param segments
+ * @param collectionId
+ */
 function containsCollectionId(segments, collectionId) {
   for (let index = 0; index < segments.length - 1; index += 2) {
     if (segments[index] === collectionId) {
@@ -558,10 +642,18 @@ function containsCollectionId(segments, collectionId) {
   return false;
 }
 
+/**
+ *
+ * @param path
+ */
 function splitPath(path) {
   return normalizePath(path).split('/');
 }
 
+/**
+ *
+ * @param path
+ */
 function normalizePath(path) {
   return String(path)
     .replace(/^\/+/, '')
@@ -569,6 +661,10 @@ function normalizePath(path) {
     .replace(/\/+/g, '/');
 }
 
+/**
+ *
+ * @param value
+ */
 function cloneDocument(value) {
   if (value === undefined || value === null) {
     return value;
@@ -597,10 +693,19 @@ function cloneDocument(value) {
   return output;
 }
 
+/**
+ *
+ * @param value
+ */
 function isPlainObject(value) {
   return Boolean(value) && Object.getPrototypeOf(value) === Object.prototype;
 }
 
+/**
+ *
+ * @param touched
+ * @param operations
+ */
 function buildEventsFromTouched(touched, operations) {
   const events = [];
   for (const operation of operations) {

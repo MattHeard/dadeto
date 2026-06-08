@@ -90,15 +90,16 @@ describe('fake firestore', () => {
       },
     ]);
 
-    await expect(db.doc('missing/doc').update({ title: 'fail' })).rejects.toThrow(
-      'Cannot update missing document: missing/doc'
-    );
+    await expect(
+      db.doc('missing/doc').update({ title: 'fail' })
+    ).rejects.toThrow('Cannot update missing document: missing/doc');
   });
 
   it('supports collection queries, collection groups, ordering, limits, and counts', async () => {
     const db = createFakeFirestore();
 
-    await db.batch()
+    await db
+      .batch()
       .set(db.doc('things/a'), { rank: 3, label: 'c', maybe: null })
       .set(db.doc('things/b'), { rank: 1, label: 'a', maybe: 0 })
       .set(db.doc('things/c'), { rank: 2, label: 'b', maybe: null })
@@ -122,14 +123,17 @@ describe('fake firestore', () => {
     const rankedCount = await db.collection('things').count().get();
     expect(rankedCount.data()).toEqual({ count: 3 });
 
-    const group = await db.collectionGroup('variants').where('score', '==', 0).get();
+    const group = await db
+      .collectionGroup('variants')
+      .where('score', '==', 0)
+      .get();
     expect(group.docs.map(doc => doc.ref.path)).toEqual([
       'stories/story-1/pages/2/variants/b',
     ]);
 
-    await expect(db.collection('things').where('rank', '>', 1).get()).rejects.toThrow(
-      'Unsupported where operator: >'
-    );
+    await expect(
+      db.collection('things').where('rank', '>', 1).get()
+    ).rejects.toThrow('Unsupported where operator: >');
 
     expect(db.collection('things').parent).toBeNull();
     expect(db.doc('stories/story-1').collection('pages').parent.path).toBe(
@@ -138,7 +142,9 @@ describe('fake firestore', () => {
   });
 
   it('covers helper edge cases and document iteration', async () => {
-    const fieldValue = createFakeFieldValue(() => new Date('2026-06-07T00:00:00.000Z'));
+    const fieldValue = createFakeFieldValue(
+      () => new Date('2026-06-07T00:00:00.000Z')
+    );
     const db = createFakeFirestore();
 
     await db.doc('things/item').set({
@@ -180,7 +186,8 @@ describe('fake firestore', () => {
   it('covers ordering comparisons with null and equal values', async () => {
     const db = createFakeFirestore();
 
-    await db.batch()
+    await db
+      .batch()
       .set(db.doc('things/a'), { rank: null, nested: { score: 2 } })
       .set(db.doc('things/b'), { rank: 1, nested: { score: 1 } })
       .set(db.doc('things/c'), { rank: 1, nested: { score: 1 } })
@@ -194,10 +201,16 @@ describe('fake firestore', () => {
       .get();
     expect(ordered.size).toBe(4);
 
-    const nullRanks = await db.collection('things').where('rank', '==', null).get();
+    const nullRanks = await db
+      .collection('things')
+      .where('rank', '==', null)
+      .get();
     expect(nullRanks.size).toBe(2);
 
-    const nullData = await db.collection('things').where('nested.score', '==', null).get();
+    const nullData = await db
+      .collection('things')
+      .where('nested.score', '==', null)
+      .get();
     expect(nullData.size).toBeGreaterThanOrEqual(1);
 
     db.__setPathData('other/item', { rank: 99 });
@@ -211,10 +224,9 @@ describe('fake firestore', () => {
     ).toBeUndefined();
     expect(fakeFirestoreTestUtils.matchesPrefix(['a'], ['a'])).toBe(false);
     expect(
-      fakeFirestoreTestUtils.buildEventsFromTouched(
-        new Map(),
-        [{ path: 'missing/path' }]
-      )
+      fakeFirestoreTestUtils.buildEventsFromTouched(new Map(), [
+        { path: 'missing/path' },
+      ])
     ).toEqual([]);
     expect(
       fakeFirestoreTestUtils.cloneDocument({
