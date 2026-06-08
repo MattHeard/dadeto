@@ -1,8 +1,11 @@
 import { spawn as defaultSpawn } from 'node:child_process';
 import path from 'node:path';
 
-const READY_PATTERN =
-  /gcp simulator listening on http:\/\/127\.0\.0\.1:(\d+)/;
+const READY_PATTERN = /gcp simulator listening on http:\/\/127\.0\.0\.1:(\d+)/;
+
+/**
+ * @typedef {{ [key: string]: string | undefined }} EnvMap
+ */
 
 export const playwrightRunnerTestUtils = {
   waitForSimulatorReady,
@@ -14,7 +17,7 @@ export const playwrightRunnerTestUtils = {
  * Launch the local GCP simulator and run Playwright against it.
  * @param {{
  *   repoRoot?: string,
- *   env?: NodeJS.ProcessEnv,
+ *   env?: Record<string, string | undefined>,
  *   spawnImpl?: typeof defaultSpawn,
  *   simulatorCommand?: string,
  *   simulatorScript?: string,
@@ -27,45 +30,24 @@ export const playwrightRunnerTestUtils = {
 export async function runLocalPlaywright(options = {}) {
   const repoRoot = options.repoRoot ?? process.cwd();
   const spawnImpl = options.spawnImpl ?? defaultSpawn;
-  const simulatorCommand = options.simulatorCommand ?? process.execPath;
-  const simulatorScript =
-    options.simulatorScript ??
-    path.resolve(repoRoot, 'src/local/gcp-simulator/server.js');
-  const simulatorArgs = options.simulatorArgs ?? [simulatorScript];
-  const simulatorEnv = {
-    ...process.env,
-    ...options.env,
-    GCP_SIMULATOR_PORT: '0',
-  };
-
-  const simulator = spawnImpl(simulatorCommand, simulatorArgs, {
-    cwd: repoRoot,
-    env: simulatorEnv,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  const simulatorEnv = createSimulatorEnv(options.env);
+  const simulator = spawnSimulator(repoRoot, spawnImpl, options, simulatorEnv);
 
   try {
     const port = await waitForSimulatorReady(simulator);
     const baseUrl = `http://127.0.0.1:${port}`;
-    const playwrightCommand = options.playwrightCommand ?? 'npx';
-    const playwrightArgs = [
-      'playwright',
-      'test',
-      ...(options.playwrightArgs ?? []),
-    ];
-    const playwright = spawnImpl(playwrightCommand, playwrightArgs, {
-      cwd: repoRoot,
-      env: {
-        ...simulatorEnv,
-        PLAYWRIGHT_BASE_URL: baseUrl,
-      },
-      stdio: 'inherit',
+    const playwright = spawnPlaywright({
+      repoRoot,
+      spawnImpl,
+      options,
+      simulatorEnv,
+      baseUrl,
     });
 
     const { code, signal } = await waitForExit(playwright);
     return {
       baseUrl,
-      exitCode: code ?? (signal ? 1 : 0),
+      exitCode: toExitCode(code, signal),
       signal: signal ?? null,
     };
   } finally {
@@ -88,6 +70,9 @@ function waitForSimulatorReady(child) {
       child.off('exit', onExit);
     };
 
+    /**
+     * @param {number} port Port number.
+     */
     const resolveOnce = port => {
       if (settled) {
         return;
@@ -97,6 +82,9 @@ function waitForSimulatorReady(child) {
       resolve(port);
     };
 
+    /**
+     * @param {Error} error Error to reject with.
+     */
     const rejectOnce = error => {
       if (settled) {
         return;
@@ -106,6 +94,9 @@ function waitForSimulatorReady(child) {
       reject(error);
     };
 
+    /**
+     * @param {Buffer} chunk Output chunk.
+     */
     const onStdout = chunk => {
       process.stdout.write(chunk);
       buffer += chunk.toString('utf8');
@@ -115,21 +106,38 @@ function waitForSimulatorReady(child) {
       }
     };
 
+    /**
+     * @param {Buffer} chunk Error chunk.
+     */
     const onStderr = chunk => {
       process.stderr.write(chunk);
     };
 
+    /**
+     * @param {Error} error Spawn error.
+     */
     const onError = error => {
       rejectOnce(error);
     };
 
+    /**
+     * @param {number | null} code Exit code.
+     * @param {string | null} signal Exit signal.
+     */
     const onExit = (code, signal) => {
+      let codeText = 'null';
+      if (code !== null) {
+        codeText = String(code);
+      }
+
+      let signalText = 'null';
+      if (signal !== null) {
+        signalText = signal;
+      }
+
+      const reason = `code ${codeText}, signal ${signalText}`;
       rejectOnce(
-        new Error(
-          `gcp simulator exited before announcing a port (code ${
-            code ?? 'null'
-          }, signal ${signal ?? 'null'})`
-        )
+        new Error(`gcp simulator exited before announcing a port (${reason})`)
       );
     };
 
@@ -152,6 +160,89 @@ function waitForExit(child) {
       resolve({ code, signal });
     });
   });
+}
+
+/**
+ * @param {EnvMap | undefined} env Extra environment variables.
+ * @returns {EnvMap} Simulator environment.
+ */
+function createSimulatorEnv(env) {
+  return {
+    ...process.env,
+    ...env,
+    GCP_SIMULATOR_PORT: '0',
+  };
+}
+
+/**
+ * @param {string} repoRoot Repository root.
+ * @param {typeof defaultSpawn} spawnImpl Spawn function.
+ * @param {{
+ *   simulatorCommand?: string,
+ *   simulatorScript?: string,
+ *   simulatorArgs?: string[],
+ * }} options Spawn options.
+ * @param {EnvMap} env Simulator environment.
+ * @returns {import('node:child_process').ChildProcess} Simulator process.
+ */
+function spawnSimulator(repoRoot, spawnImpl, options, env) {
+  const simulatorCommand = options.simulatorCommand ?? process.execPath;
+  const simulatorScript =
+    options.simulatorScript ??
+    path.resolve(repoRoot, 'src/local/gcp-simulator/server.js');
+  const simulatorArgs = options.simulatorArgs ?? [simulatorScript];
+
+  return spawnImpl(simulatorCommand, simulatorArgs, {
+    cwd: repoRoot,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
+/**
+ * @param {{
+ *   repoRoot: string,
+ *   spawnImpl: typeof defaultSpawn,
+ *   options: { playwrightCommand?: string, playwrightArgs?: string[] },
+ *   simulatorEnv: EnvMap,
+ *   baseUrl: string,
+ * }} input Spawn inputs.
+ * @returns {import('node:child_process').ChildProcess} Playwright process.
+ */
+function spawnPlaywright(input) {
+  const { repoRoot, spawnImpl, options, simulatorEnv, baseUrl } = input;
+  const playwrightCommand = options.playwrightCommand ?? 'npx';
+  const playwrightArgs = [
+    'playwright',
+    'test',
+    ...(options.playwrightArgs ?? []),
+  ];
+
+  return spawnImpl(playwrightCommand, playwrightArgs, {
+    cwd: repoRoot,
+    env: {
+      ...simulatorEnv,
+      PLAYWRIGHT_BASE_URL: baseUrl,
+    },
+    stdio: 'inherit',
+  });
+}
+
+/**
+ * @param {number | null} code Exit code.
+ * @param {string | null} signal Exit signal.
+ * @returns {number} Process exit code.
+ */
+function toExitCode(code, signal) {
+  if (code !== null) {
+    return code;
+  }
+
+  if (signal) {
+    return 1;
+  }
+
+  return 0;
 }
 
 /**

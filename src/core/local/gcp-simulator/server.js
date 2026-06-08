@@ -16,9 +16,13 @@ const simulatorPromise = createLocalGcpSimulator({
 export const handle = startServer;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  void startServer();
+  startServer();
 }
 
+/**
+ * Start the local simulator server.
+ * @returns {Promise<import('node:http').Server>} Server instance.
+ */
 async function startServer() {
   const simulator = await simulatorPromise;
   const app = express();
@@ -44,7 +48,7 @@ async function startServer() {
         method: req.method,
         body: req.body,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -56,7 +60,7 @@ async function startServer() {
         method: req.method,
         body: req.body,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -67,7 +71,7 @@ async function startServer() {
       simulator.routes.getModerationVariant({
         method: req.method,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -79,7 +83,7 @@ async function startServer() {
         method: req.method,
         body: req.body,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -91,7 +95,7 @@ async function startServer() {
         method: req.method,
         body: req.body,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -102,7 +106,7 @@ async function startServer() {
       simulator.routes.triggerRenderContents({
         method: req.method,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -114,7 +118,7 @@ async function startServer() {
         method: req.method,
         body: req.body,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -125,7 +129,7 @@ async function startServer() {
       simulator.routes.generateStats({
         method: req.method,
         headers: req.headers,
-        get: name => req.get(name),
+        get: getRequestHeader(req),
       }),
       res
     );
@@ -139,16 +143,21 @@ async function startServer() {
   return new Promise(resolve => {
     const server = app.listen(port, () => {
       const address = server.address();
-      const actualPort =
-        address && typeof address === 'object' ? address.port : port;
-      console.log(
-        `gcp simulator listening on http://127.0.0.1:${actualPort}`
-      );
+      let actualPort = port;
+      if (address && typeof address === 'object') {
+        actualPort = address.port;
+      }
+      console.log(`gcp simulator listening on http://127.0.0.1:${actualPort}`);
       resolve(server);
     });
   });
 }
 
+/**
+ * Send a simulator route result to an Express response.
+ * @param {Promise<{ status: number, body?: unknown }>} resultPromise Route result.
+ * @param {import('express').Response} res Express response.
+ */
 async function sendRouteResponse(resultPromise, res) {
   const result = await resultPromise;
   if (result.status >= 400) {
@@ -175,3 +184,11 @@ async function sendRouteResponse(resultPromise, res) {
 }
 
 export { sendRouteResponse };
+
+/**
+ * @param {import('express').Request} req Express request.
+ * @returns {(name: string) => string | undefined} Request header getter.
+ */
+function getRequestHeader(req) {
+  return name => req.get(name);
+}

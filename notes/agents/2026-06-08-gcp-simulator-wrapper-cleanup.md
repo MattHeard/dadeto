@@ -1,0 +1,4 @@
+- Unexpected hurdle: the first `npm run check` rerun showed the simulator wrapper layer was still carrying lint and tsdoc noise even though the real blockers lived deeper in `simulator.js`.
+- Diagnosis path: I isolated `src/core/local/gcp-simulator/server.js`, `fake-storage.js`, and `playwright-runner.js` with targeted `eslint` and `tsc` runs, which proved the wrapper cleanup could be completed independently of the larger simulator backlog.
+- Chosen fix: added JSDoc/type annotations, removed a `no-void`/ternary pair in the server wrapper, and split the Playwright runner into smaller helpers so those files now pass targeted lint and tsdoc checks.
+- Next-time guidance: treat `src/core/local/gcp-simulator/simulator.js` as a separate slice. The remaining `npm run check` failures are still dominated by `simulator.js`, `render-variant-core.js`, and `firebase-app-manager.js`, not the wrapper files cleaned in this pass.

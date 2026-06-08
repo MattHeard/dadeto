@@ -1,0 +1,4 @@
+- Unexpected hurdle: `npm run check` failed in the current repo state without any new code edits from this loop.
+- Diagnosis path: the aggregate runner reported four failures - `depcruise`, `tsdoc:check`, `duplication`, and `lint` - while `npm test` still passed.
+- Chosen fix: recorded the exact command output in bead `dadeto-bw24` and triggered the `gcp-test` GitHub Actions workflow for the current `main` head.
+- Next-time guidance: start with the existing `core/local/gcp-simulator` and `src/core/cloud/render-variant` failure clusters, then re-run `npm run check` after any targeted fix. GCP workflow run: `https://github.com/MattHeard/dadeto/actions/runs/27117928929`.
