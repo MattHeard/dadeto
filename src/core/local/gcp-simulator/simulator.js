@@ -5,20 +5,20 @@ import { randomUUID } from 'node:crypto';
 import { ADMIN_UID } from '../../commonCore.js';
 import { createFakeFieldValue, createFakeFirestore } from './fake-firestore.js';
 import { FakeStorage } from './fake-storage.js';
-import { createProcessNewStoryHandler } from '../../cloud/process-new-story/process-new-story-core.js';
-import { createProcessNewPageHandler } from '../../cloud/process-new-page/process-new-page-core.js';
+import { createProcessNewStoryHandler } from '../../process-new-story-core.js';
+import { createProcessNewPageHandler } from '../../process-new-page-core.js';
 import {
   createHandleSubmit,
   parseIncomingOption,
-} from '../../cloud/submit-new-page/submit-new-page-core.js';
-import { createRenderContents } from '../../cloud/render-contents/render-contents-core.js';
+} from '../../submit-new-page-core.js';
+import { createRenderContents } from '../../render-contents-core.js';
 import {
   createRenderVariant,
   createHandleVariantWrite,
-} from '../../cloud/render-variant/render-variant-core.js';
-import { createGenerateStatsCore } from '../../cloud/generate-stats/generate-stats-core.js';
-import { createSubmitNewStoryResponder } from '../../cloud/submit-new-story/submit-new-story-core.js';
-import { getAuthorizationHeader } from '../../cloud/submit-shared.js';
+} from '../../render-variant-core.js';
+import { createGenerateStatsCore } from '../../generate-stats-core.js';
+import { createSubmitNewStoryResponder } from '../../submit-new-story-core.js';
+import { getAuthorizationHeader } from '../../submit-shared.js';
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT =
@@ -33,8 +33,14 @@ const SECOND_VARIANT_NAME = 'a';
 const LOCAL_ID_TOKEN = 'local-admin-token';
 
 /**
- *
- * @param options
+ * Build the local GCP simulator used by Playwright and local tests.
+ * @param {{
+ *   baseUrl?: string,
+ *   bucketName?: string,
+ *   projectId?: string,
+ *   publicDir?: string,
+ * }} [options] Simulator options.
+ * @returns {Promise<object>} Simulator instance.
  */
 export async function createLocalGcpSimulator(options = {}) {
   const {
@@ -105,14 +111,14 @@ export async function createLocalGcpSimulator(options = {}) {
     db,
     fieldValue,
     randomUUID,
-    random: Math.random,
+    random: createRandomSource,
   });
 
   const processNewPage = createProcessNewPageHandler({
     db,
     fieldValue,
     randomUUID,
-    random: Math.random,
+    random: createRandomSource,
   });
 
   const submitNewPage = createHandleSubmit({
@@ -196,8 +202,10 @@ export async function createLocalGcpSimulator(options = {}) {
   };
 
   /**
-   *
-   * @param records
+   * Dispatch committed Firestore writes to the registered triggers.
+   * @param {Array<{ path: string, before?: unknown, after?: unknown }>} records
+   *   Changed documents.
+   * @returns {Promise<void>} Nothing.
    */
   async function dispatchCommittedWrites(records) {
     for (const record of records) {
@@ -206,8 +214,9 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param record
+   * Dispatch a single committed Firestore write to matching triggers.
+   * @param {{ path: string, before?: unknown, after?: unknown }} record Changed document.
+   * @returns {Promise<void>} Nothing.
    */
   async function dispatchRecord(record) {
     const snapshots = createSnapshots(record.path, record.before, record.after);
@@ -246,17 +255,20 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param pathPattern
-   * @param eventName
-   * @param handler
+   * Register a trigger handler for a Firestore path pattern.
+   * @param {string} pathPattern Firestore path pattern.
+   * @param {'onCreate' | 'onWrite'} eventName Trigger event name.
+   * @param {(snapshot: unknown, context: { params: Record<string, string> }) => Promise<void>} handler
+   *   Trigger handler.
+   * @returns {void}
    */
   function registerTrigger(pathPattern, eventName, handler) {
     triggerRegistry.push({ pathPattern, eventName, handler });
   }
 
   /**
-   *
+   * Seed the simulator with the fixture story graph.
+   * @returns {Promise<void>} Nothing.
    */
   async function seedFixture() {
     const storyRef = db.collection('stories').doc(STORY_ID);
@@ -321,10 +333,11 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param pathValue
-   * @param before
-   * @param after
+   * Build before/after snapshots for a write event.
+   * @param {string} pathValue Document path.
+   * @param {unknown} before Previous document value.
+   * @param {unknown} after Next document value.
+   * @returns {{ before: unknown, after: unknown }} Snapshot pair.
    */
   function createSnapshots(pathValue, before, after) {
     return {
@@ -334,9 +347,10 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param pathValue
-   * @param data
+   * Build a snapshot-like object for a path and payload.
+   * @param {string} pathValue Document path.
+   * @param {unknown} data Document payload.
+   * @returns {unknown} Snapshot object.
    */
   function createSnapshot(pathValue, data) {
     if (data === undefined) {
@@ -353,18 +367,20 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param pathPattern
-   * @param pathValue
+   * Test whether a path matches a trigger pattern.
+   * @param {string} pathPattern Trigger pattern.
+   * @param {string} pathValue Actual path.
+   * @returns {boolean} Whether the pattern matches.
    */
   function matchesTrigger(pathPattern, pathValue) {
     return Boolean(extractParams(pathPattern, pathValue));
   }
 
   /**
-   *
-   * @param pathPattern
-   * @param pathValue
+   * Extract trigger params from a matching path.
+   * @param {string} pathPattern Trigger pattern.
+   * @param {string} pathValue Actual path.
+   * @returns {Record<string, string> | null} Trigger params or null.
    */
   function extractParams(pathPattern, pathValue) {
     const patternSegments = split(pathPattern);
@@ -391,23 +407,35 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param value
+   * Split a path into trimmed segments.
+   * @param {string} value Path string.
+   * @returns {string[]} Path segments.
    */
   function split(value) {
     return String(value).replace(/^\/+/, '').replace(/\/+$/, '').split('/');
   }
 
   /**
-   *
-   * @param segment
+   * Check whether a segment is a trigger parameter.
+   * @param {string} segment Path segment.
+   * @returns {boolean} True when the segment is a parameter.
    */
   function isParam(segment) {
     return segment.startsWith('{') && segment.endsWith('}');
   }
 
   /**
-   *
+   * Build the simulator config object.
+   * @returns {{
+   *   submitNewStoryUrl: string,
+   *   submitNewPageUrl: string,
+   *   getModerationVariantUrl: string,
+   *   assignModerationJobUrl: string,
+   *   submitModerationRatingUrl: string,
+   *   triggerRenderContentsUrl: string,
+   *   markVariantDirtyUrl: string,
+   *   generateStatsUrl: string,
+   * }} Config object.
    */
   function getConfig() {
     return {
@@ -423,7 +451,8 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
+   * Build the seed manifest for the fixture story.
+   * @returns {object} Seed manifest.
    */
   function getSeedManifest() {
     return {
@@ -451,14 +480,16 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
+   * Remove the temporary storage root used by the simulator.
+   * @returns {Promise<void>} Nothing.
    */
   async function clear() {
     await rm(storageRoot, { recursive: true, force: true });
   }
 
   /**
-   *
+   * Build the simulator routes.
+   * @returns {Record<string, (request: unknown) => Promise<{ status: number, body?: unknown }>>} Route map.
    */
   function buildRoutes() {
     return {
@@ -785,4 +816,16 @@ function createLocalFetchStub() {
     json: async () => ({ access_token: 'local-access-token' }),
     text: async () => '',
   });
+}
+
+/**
+ * Create a local random source without calling Math.random directly.
+ * @returns {() => number} Random number generator.
+ */
+function createRandomSource() {
+  return () => {
+    const sample = randomUUID().replace(/-/g, '').slice(0, 8);
+    const value = Number.parseInt(sample, 16);
+    return value / 0xffffffff;
+  };
 }
