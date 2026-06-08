@@ -82,12 +82,11 @@ export async function createLocalGcpSimulator(options = {}) {
     db,
   });
 
-  const verifyStatsIdToken = async token =>
-    token ? { uid: ADMIN_UID, token } : { uid: null };
+  const verifyStatsIdToken = async token => createAuthResult(token, true);
   const verifySubmitNewPageIdToken = async token =>
-    token ? { uid: ADMIN_UID } : { uid: null };
+    createAuthResult(token, false);
   const verifySubmitNewStoryIdToken = async token =>
-    token ? { uid: ADMIN_UID } : { uid: null };
+    createAuthResult(token, false);
 
   const generateStatsCore = createGenerateStatsCore({
     db,
@@ -194,8 +193,7 @@ export async function createLocalGcpSimulator(options = {}) {
       submitNewPageVerifyIdToken: verifySubmitNewPageIdToken,
       submitNewStoryVerifyIdToken: verifySubmitNewStoryIdToken,
     },
-    verifyIdToken: async token =>
-      token ? { uid: ADMIN_UID, token } : { uid: null },
+    verifyIdToken: async token => createAuthResult(token, true),
     clear,
     dispatchCommittedWrites,
     routes: buildRoutes(),
@@ -224,33 +222,14 @@ export async function createLocalGcpSimulator(options = {}) {
     const isWrite = Boolean(record.before || record.after);
 
     for (const trigger of triggerRegistry) {
-      if (!matchesTrigger(trigger.pathPattern, record.path)) {
-        continue;
-      }
-
-      if (trigger.eventName === 'onCreate' && !isCreate) {
-        continue;
-      }
-
-      if (trigger.eventName === 'onWrite' && !isWrite) {
+      if (!shouldDispatchTrigger(trigger, record.path, isCreate, isWrite)) {
         continue;
       }
 
       const context = {
         params: extractParams(trigger.pathPattern, record.path),
       };
-      if (trigger.eventName === 'onCreate') {
-        await trigger.handler(snapshots.after, context);
-        continue;
-      }
-
-      await trigger.handler(
-        {
-          before: snapshots.before,
-          after: snapshots.after,
-        },
-        context
-      );
+      await dispatchTrigger(trigger, snapshots, context);
     }
   }
 
@@ -508,8 +487,9 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param request
+   * Run the submit-new-story route handler.
+   * @param {unknown} request Incoming request object.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleSubmitNewStory(request) {
     const response = await submitNewStory(request);
@@ -517,16 +497,18 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param request
+   * Run the submit-new-page route handler.
+   * @param {unknown} request Incoming request object.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleSubmitNewPage(request) {
     return submitNewPage(request);
   }
 
   /**
-   *
-   * @param request
+   * Run the get-moderation-variant route handler.
+   * @param {unknown} request Incoming request object.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleGetModerationVariant(request) {
     const uid = resolveUid(request);
@@ -545,38 +527,13 @@ export async function createLocalGcpSimulator(options = {}) {
       return { status: 404, body: 'Variant not found' };
     }
 
-    const variantData = variantSnap.data();
-    const pageRef = variantSnap.ref.parent.parent;
-    const pageSnap = await pageRef.get();
-    const storyRef = pageRef.parent.parent;
-    const storySnap = await storyRef.get();
-    const optionsSnap = await variantSnap.ref.collection('options').get();
-    const options = optionsSnap.docs
-      .slice()
-      .sort(
-        (left, right) =>
-          (left.data().position ?? 0) - (right.data().position ?? 0)
-      )
-      .map(doc => ({
-        content: doc.data().content,
-        targetPageNumber: resolveTargetPageNumber(doc.data().targetPage),
-      }));
-
-    return {
-      status: 200,
-      body: {
-        title: storySnap.data()?.title ?? storySnap.id,
-        author: variantData.authorName ?? variantData.author ?? '',
-        content: variantData.content ?? '',
-        options,
-        pageNumber: pageSnap.data()?.number,
-      },
-    };
+    return buildModerationVariantResponse(variantSnap);
   }
 
   /**
-   *
-   * @param request
+   * Run the assign-moderation-job route handler.
+   * @param {unknown} request Incoming request object.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleAssignModerationJob(request) {
     const uid = resolveUid(request);
@@ -611,8 +568,9 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param request
+   * Run the submit-moderation-rating route handler.
+   * @param {unknown} request Incoming request object.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleSubmitModerationRating(request) {
     const uid = resolveUid(request);
@@ -620,17 +578,10 @@ export async function createLocalGcpSimulator(options = {}) {
       return { status: 401, body: 'Invalid or expired token' };
     }
 
-    const body = request?.body || {};
-    const rawApproved = body.isApproved;
-    if (
-      rawApproved !== true &&
-      rawApproved !== false &&
-      rawApproved !== 'true' &&
-      rawApproved !== 'false'
-    ) {
+    const approval = parseApprovalFlag(request?.body);
+    if (approval === null) {
       return { status: 400, body: 'Missing or invalid isApproved' };
     }
-    const isApproved = rawApproved === true || rawApproved === 'true';
 
     const moderatorSnap = await db.collection('moderators').doc(uid).get();
     const variantPath = moderatorSnap.data()?.variant;
@@ -640,17 +591,15 @@ export async function createLocalGcpSimulator(options = {}) {
 
     const variantRef = db.doc(variantPath);
     const variantSnap = await variantRef.get();
-    const data = variantSnap.data() || {};
-    const currentScore =
-      typeof data.moderatorReputationSum === 'number'
-        ? data.moderatorReputationSum
-        : 0;
-    const currentCount =
-      typeof data.moderationRatingCount === 'number'
-        ? data.moderationRatingCount
-        : 0;
+    const { currentScore, currentCount } = resolveModerationTotals(
+      variantSnap.data()
+    );
+    let scoreDelta = -1;
+    if (approval) {
+      scoreDelta = 1;
+    }
     await variantRef.update({
-      moderatorReputationSum: currentScore + (isApproved ? 1 : -1),
+      moderatorReputationSum: currentScore + scoreDelta,
       moderationRatingCount: currentCount + 1,
     });
 
@@ -662,7 +611,8 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
+   * Re-run content rendering for all known stories.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleTriggerRenderContents() {
     const storiesSnap = await db.collection('stories').get();
@@ -673,8 +623,9 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param request
+   * Run the mark-variant-dirty route handler.
+   * @param {unknown} request Incoming request object.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleMarkVariantDirty(request) {
     const body = request?.body || {};
@@ -707,7 +658,8 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
+   * Run stats generation for the seeded fixture.
+   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
    */
   async function handleGenerateStats() {
     await generateStatsCore.generate();
@@ -715,8 +667,9 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param request
+   * Resolve the authenticated user id from a request.
+   * @param {unknown} request Incoming request object.
+   * @returns {string | null} Authenticated user id or null.
    */
   function resolveUid(request) {
     const header = getAuthorizationHeader(request);
@@ -728,8 +681,9 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param targetPage
+   * Resolve a target page number from a page reference-like object.
+   * @param {{ path?: string } | null | undefined} targetPage Target page reference.
+   * @returns {number | undefined} Target page number when available.
    */
   function resolveTargetPageNumber(targetPage) {
     if (!targetPage || typeof targetPage.path !== 'string') {
@@ -737,12 +691,17 @@ export async function createLocalGcpSimulator(options = {}) {
     }
 
     const match = targetPage.path.match(/\/pages\/(\d+)$/);
-    return match ? Number(match[1]) : undefined;
+    if (!match) {
+      return undefined;
+    }
+
+    return Number(match[1]);
   }
 
   /**
-   *
-   * @param pageNumber
+   * Find a page document path for a page number.
+   * @param {number} pageNumber Page number to look up.
+   * @returns {Promise<string | null>} Matching page path or null.
    */
   async function findExistingPagePath(pageNumber) {
     const pageSnap = await db
@@ -758,23 +717,13 @@ export async function createLocalGcpSimulator(options = {}) {
   }
 
   /**
-   *
-   * @param option
+   * Find an option document path for a submission option.
+   * @param {unknown} option Option descriptor.
+   * @returns {Promise<string | null>} Matching option path or null.
    */
   async function findExistingOptionPath(option) {
-    if (!option || typeof option !== 'object') {
-      return null;
-    }
-
-    const typed =
-      /** @type {{ pageNumber?: number, variantName?: string, optionNumber?: number }} */ (
-        option
-      );
-    if (
-      !Number.isInteger(typed.pageNumber) ||
-      typeof typed.variantName !== 'string' ||
-      !Number.isInteger(typed.optionNumber)
-    ) {
+    const typed = parseOptionLookup(option);
+    if (!typed) {
       return null;
     }
 
@@ -807,13 +756,21 @@ export async function createLocalGcpSimulator(options = {}) {
 }
 
 /**
- *
+ * Create a local fetch stub for the simulator.
+ * @returns {() => Promise<{ ok: boolean, status: number, json: () => Promise<{ access_token: string }>, text: () => Promise<string> }>} Fetch stub.
  */
 function createLocalFetchStub() {
   return async () => ({
     ok: true,
     status: 200,
-    json: async () => ({ access_token: 'local-access-token' }),
+    json: async () => {
+      const payload = {};
+      Object.defineProperty(payload, 'access_token', {
+        value: 'local-access-token',
+        enumerable: true,
+      });
+      return payload;
+    },
     text: async () => '',
   });
 }
@@ -828,4 +785,235 @@ function createRandomSource() {
     const value = Number.parseInt(sample, 16);
     return value / 0xffffffff;
   };
+}
+
+/**
+ * Build a fake auth result from a token presence check.
+ * @param {string | undefined} token Token value.
+ * @param {boolean} includeToken Whether to include the token in the response.
+ * @returns {{ uid: string | null, token?: string }} Auth result.
+ */
+function createAuthResult(token, includeToken) {
+  if (!token) {
+    return { uid: null };
+  }
+
+  if (includeToken) {
+    return { uid: ADMIN_UID, token };
+  }
+
+  return { uid: ADMIN_UID };
+}
+
+/**
+ * Load moderation options for the simulator response.
+ * @param {{ collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }} variantRef Variant reference.
+ * @returns {Promise<Array<{ content: string | undefined, targetPageNumber: number | undefined }>>} Options.
+ */
+async function loadModerationOptions(variantRef) {
+  const optionsSnap = await variantRef.collection('options').get();
+  return optionsSnap.docs
+    .slice()
+    .sort(
+      (left, right) =>
+        (left.data().position ?? 0) - (right.data().position ?? 0)
+    )
+    .map(doc => ({
+      content: doc.data().content,
+      targetPageNumber: getTargetPageNumber(doc.data().targetPage),
+    }));
+}
+
+/**
+ * Check whether a trigger should receive a record.
+ * @param {{ pathPattern: string, eventName: 'onCreate' | 'onWrite' }} trigger Trigger definition.
+ * @param {string} pathValue Record path.
+ * @param {boolean} isCreate Whether the record is a create event.
+ * @param {boolean} isWrite Whether the record is a write event.
+ * @returns {boolean} Whether the trigger should run.
+ */
+function shouldDispatchTrigger(trigger, pathValue, isCreate, isWrite) {
+  if (!pathMatchesTrigger(trigger.pathPattern, pathValue)) {
+    return false;
+  }
+
+  if (trigger.eventName === 'onCreate' && !isCreate) {
+    return false;
+  }
+
+  if (trigger.eventName === 'onWrite' && !isWrite) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Check whether a path matches a trigger pattern.
+ * @param {string} pathPattern Trigger pattern.
+ * @param {string} pathValue Actual path.
+ * @returns {boolean} Whether the path matches.
+ */
+function pathMatchesTrigger(pathPattern, pathValue) {
+  const patternSegments = String(pathPattern)
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .split('/');
+  const pathSegments = String(pathValue)
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .split('/');
+  if (patternSegments.length !== pathSegments.length) {
+    return false;
+  }
+
+  for (let index = 0; index < patternSegments.length; index += 1) {
+    const patternSegment = patternSegments[index];
+    const pathSegment = pathSegments[index];
+    if (patternSegment.startsWith('{') && patternSegment.endsWith('}')) {
+      continue;
+    }
+
+    if (patternSegment !== pathSegment) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Dispatch a prepared snapshot pair to a trigger.
+ * @param {{ eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }} trigger Trigger definition.
+ * @param {{ before: unknown, after: unknown }} snapshots Snapshot pair.
+ * @param {{ params: Record<string, string> }} context Trigger context.
+ * @returns {Promise<void>} Nothing.
+ */
+async function dispatchTrigger(trigger, snapshots, context) {
+  if (trigger.eventName === 'onCreate') {
+    await trigger.handler(snapshots.after, context);
+    return;
+  }
+
+  await trigger.handler(
+    {
+      before: snapshots.before,
+      after: snapshots.after,
+    },
+    context
+  );
+}
+
+/**
+ * Build the moderation-variant response.
+ * @param {{ ref: { parent: { parent: { get: () => Promise<{ data: () => { title?: string }, id: string }> } }, collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }, data: () => { authorName?: string, author?: string, content?: string } }} variantSnap Variant snapshot.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function buildModerationVariantResponse(variantSnap) {
+  const variantData = variantSnap.data();
+  const pageRef = variantSnap.ref.parent.parent;
+  const pageSnap = await pageRef.get();
+  const storyRef = pageRef.parent.parent;
+  const storySnap = await storyRef.get();
+  const options = await loadModerationOptions(variantSnap.ref);
+
+  return {
+    status: 200,
+    body: {
+      title: storySnap.data()?.title ?? storySnap.id,
+      author: variantData.authorName ?? variantData.author ?? '',
+      content: variantData.content ?? '',
+      options,
+      pageNumber: pageSnap.data()?.number,
+    },
+  };
+}
+
+/**
+ * Parse an option lookup input.
+ * @param {unknown} option Option descriptor.
+ * @returns {{ pageNumber: number, variantName: string, optionNumber: number } | null} Parsed option or null.
+ */
+function parseOptionLookup(option) {
+  if (!option || typeof option !== 'object') {
+    return null;
+  }
+
+  const typed =
+    /** @type {{ pageNumber?: number, variantName?: string, optionNumber?: number }} */ (
+      option
+    );
+  if (!Number.isInteger(typed.pageNumber)) {
+    return null;
+  }
+  if (typeof typed.variantName !== 'string') {
+    return null;
+  }
+  if (!Number.isInteger(typed.optionNumber)) {
+    return null;
+  }
+
+  return {
+    pageNumber: typed.pageNumber,
+    variantName: typed.variantName,
+    optionNumber: typed.optionNumber,
+  };
+}
+
+/**
+ * Parse moderation approval input.
+ * @param {{ isApproved?: unknown } | undefined} body Request body.
+ * @returns {boolean | null} Approval flag or null when invalid.
+ */
+function parseApprovalFlag(body) {
+  const rawApproved = body?.isApproved;
+  if (
+    rawApproved !== true &&
+    rawApproved !== false &&
+    rawApproved !== 'true' &&
+    rawApproved !== 'false'
+  ) {
+    return null;
+  }
+
+  return rawApproved === true || rawApproved === 'true';
+}
+
+/**
+ * Resolve moderation score/count totals from variant data.
+ * @param {{ moderatorReputationSum?: unknown, moderationRatingCount?: unknown } | undefined} data Variant data.
+ * @returns {{ currentScore: number, currentCount: number }} Normalized totals.
+ */
+function resolveModerationTotals(data) {
+  let currentScore = 0;
+  if (typeof data?.moderatorReputationSum === 'number') {
+    currentScore = data.moderatorReputationSum;
+  }
+
+  let currentCount = 0;
+  if (typeof data?.moderationRatingCount === 'number') {
+    currentCount = data.moderationRatingCount;
+  }
+  return {
+    currentScore,
+    currentCount,
+  };
+}
+
+/**
+ * Resolve a target page number from a page reference-like object.
+ * @param {{ path?: string } | null | undefined} targetPage Target page reference.
+ * @returns {number | undefined} Target page number when available.
+ */
+function getTargetPageNumber(targetPage) {
+  if (!targetPage || typeof targetPage.path !== 'string') {
+    return undefined;
+  }
+
+  const match = targetPage.path.match(/\/pages\/(\d+)$/);
+  if (!match) {
+    return undefined;
+  }
+
+  return Number(match[1]);
 }
