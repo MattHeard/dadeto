@@ -50,6 +50,56 @@ export async function createLocalGcpSimulator(options = {}) {
     publicDir = path.resolve('public'),
   } = options;
 
+  return createLocalGcpSimulatorRuntime({
+    baseUrl,
+    bucketName,
+    projectId,
+    publicDir,
+  });
+}
+
+/**
+ * Build the local GCP simulator runtime.
+ * @param {{
+ *   baseUrl: string,
+ *   bucketName: string,
+ *   projectId: string,
+ *   publicDir: string,
+ * }} config Simulator configuration.
+ * @returns {Promise<object>} Simulator instance.
+ */
+async function createLocalGcpSimulatorRuntime(config) {
+  const { baseUrl, bucketName, projectId, publicDir } = config;
+  const state = await buildSimulatorState({
+    baseUrl,
+    bucketName,
+    projectId,
+    publicDir,
+  });
+  return buildSimulatorApi(state);
+}
+
+/**
+ * Build the exported simulator API from state.
+ * @param {object} state Simulator state.
+ * @returns {object} Simulator instance.
+ */
+function buildSimulatorApi(state) {
+  return state;
+}
+
+/**
+ * Build simulator state and handlers.
+ * @param {{
+ *   baseUrl: string,
+ *   bucketName: string,
+ *   projectId: string,
+ *   publicDir: string,
+ * }} config Simulator configuration.
+ * @returns {Promise<object>} Simulator state.
+ */
+async function buildSimulatorState(config) {
+  const { baseUrl, bucketName, projectId, publicDir } = config;
   const storageRoot = await mkdtemp(path.join(os.tmpdir(), 'dadeto-gcp-sim-'));
   const storage = new FakeStorage({ rootDir: storageRoot });
   const fieldValue = createFakeFieldValue();
@@ -164,7 +214,7 @@ export async function createLocalGcpSimulator(options = {}) {
 
   await seedFixture();
 
-  return {
+  return buildSimulatorApi({
     baseUrl,
     bucketName,
     projectId,
@@ -197,7 +247,7 @@ export async function createLocalGcpSimulator(options = {}) {
     clear,
     dispatchCommittedWrites,
     routes: buildRoutes(),
-  };
+  });
 
   /**
    * Dispatch committed Firestore writes to the registered triggers.
