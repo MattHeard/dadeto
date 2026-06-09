@@ -177,8 +177,7 @@ async function buildSimulatorState(config) {
   const fieldValue = createFakeFieldValue();
   const db = createFakeFirestore({ onCommit: dispatchCommittedWrites });
   const fetchFn = createLocalFetchStub();
-
-  const renderContents = createRenderContents({
+  const renderContentsConfig = {
     db,
     storage,
     fetchFn,
@@ -186,9 +185,10 @@ async function buildSimulatorState(config) {
     bucketName,
     objectPrefix: '',
     projectId,
-  });
+  };
 
-  const renderVariant = createRenderVariant({
+  const renderContents = createRenderContents(renderContentsConfig);
+  const renderVariantConfig = {
     db,
     storage,
     fetchFn,
@@ -196,7 +196,9 @@ async function buildSimulatorState(config) {
     bucketName,
     objectPrefix: '',
     projectId,
-  });
+  };
+
+  const renderVariant = createRenderVariant(renderVariantConfig);
 
   const handleVariantWrite = createHandleVariantWrite({
     renderVariant,
@@ -210,7 +212,7 @@ async function buildSimulatorState(config) {
   const verifySubmitNewStoryIdToken = async token =>
     createAuthResult(token, false);
 
-  const generateStatsCore = createGenerateStatsCore({
+  const generateStatsConfig = {
     db,
     auth: {
       verifyIdToken: verifyStatsIdToken,
@@ -226,23 +228,20 @@ async function buildSimulatorState(config) {
     },
     cryptoModule: { randomUUID },
     console,
-  });
+  };
+  const generateStatsCore = createGenerateStatsCore(generateStatsConfig);
 
-  const processNewStory = createProcessNewStoryHandler({
+  const processWriteContext = {
     db,
     fieldValue,
     randomUUID,
     random: createRandomSource,
-  });
+  };
+  const processNewStory = createProcessNewStoryHandler(processWriteContext);
 
-  const processNewPage = createProcessNewPageHandler({
-    db,
-    fieldValue,
-    randomUUID,
-    random: createRandomSource,
-  });
+  const processNewPage = createProcessNewPageHandler(processWriteContext);
 
-  const submitNewPage = createHandleSubmit({
+  const submitNewPageConfig = {
     verifyIdToken: verifySubmitNewPageIdToken,
     randomUUID,
     saveSubmission: async (id, submission) => {
@@ -258,16 +257,18 @@ async function buildSimulatorState(config) {
       const pagePath = await findExistingPagePath(pageNumber);
       return pagePath;
     },
-  });
+  };
+  const submitNewPage = createHandleSubmit(submitNewPageConfig);
 
-  const submitNewStory = createSubmitNewStoryResponder({
+  const submitNewStoryConfig = {
     verifyIdToken: verifySubmitNewStoryIdToken,
     saveSubmission: async (id, submission) => {
       await db.collection('storyFormSubmissions').doc(id).set(submission);
     },
     randomUUID,
     getServerTimestamp: () => new Date(),
-  });
+  };
+  const submitNewStory = createSubmitNewStoryResponder(submitNewStoryConfig);
 
   const testUtils = {
     resolveTargetPageNumber,
