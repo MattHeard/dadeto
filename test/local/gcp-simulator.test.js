@@ -347,9 +347,24 @@ describe('local gcp simulator', () => {
       testUtils.extractParams('stories/{storyId}/pages/{pageId}', 'stories/1')
     ).toBeNull();
     expect(
+      testUtils.extractParams(
+        'stories/{storyId}/pages/{pageId}',
+        'stories/1/chapters/2'
+      )
+    ).toBeNull();
+    expect(
+      testUtils.extractParams(
+        'stories/{storyId}/pages/{pageId}',
+        'stories/1/pages/2'
+      )
+    ).toEqual({ storyId: '1', pageId: '2' });
+    expect(
       testUtils.matchesTrigger('stories/{storyId}/pages/{pageId}', 'stories/1')
     ).toBe(false);
     expect(testUtils.resolveTargetPageNumber({})).toBeUndefined();
+    expect(
+      testUtils.resolveTargetPageNumber({ path: '/stories/1/chapters/2' })
+    ).toBeUndefined();
     expect(
       testUtils.createSnapshot('stories/missing', undefined)
     ).toMatchObject({
@@ -429,6 +444,18 @@ describe('local gcp simulator', () => {
 
     expect(await testUtils.findExistingOptionPath(null)).toBeNull();
     expect(
+      testUtils.parseOptionLookup({
+        variantName: 'a',
+        optionNumber: 0,
+      })
+    ).toBeNull();
+    expect(
+      testUtils.parseOptionLookup({
+        pageNumber: 1,
+        optionNumber: 0,
+      })
+    ).toBeNull();
+    expect(
       await testUtils.findExistingOptionPath({
         pageNumber: 1,
         variantName: 'a',
@@ -466,6 +493,8 @@ describe('local gcp simulator', () => {
     expect(await testUtils.submitNewStoryVerifyIdToken('')).toEqual({
       uid: null,
     });
+    expect(testUtils.createRandomSource()()).toBeGreaterThanOrEqual(0);
+    expect(testUtils.createRandomSource()()).toBeLessThanOrEqual(1);
     expect(await simulator.verifyIdToken('local-admin-token')).toEqual({
       uid: ADMIN_UID,
       token: 'local-admin-token',
