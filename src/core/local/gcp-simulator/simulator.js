@@ -59,6 +59,78 @@ export async function createLocalGcpSimulator(options = {}) {
 }
 
 /**
+ * Create the simulator config object.
+ * @param {string} baseUrl Base URL.
+ * @param {string} bucketName Bucket name.
+ * @param {string} projectId Project id.
+ * @returns {{
+ *   submitNewStoryUrl: string,
+ *   submitNewPageUrl: string,
+ *   getModerationVariantUrl: string,
+ *   assignModerationJobUrl: string,
+ *   submitModerationRatingUrl: string,
+ *   triggerRenderContentsUrl: string,
+ *   markVariantDirtyUrl: string,
+ *   generateStatsUrl: string,
+ * }} Config object.
+ */
+function createSimulatorConfig(baseUrl, bucketName, projectId) {
+  return {
+    submitNewStoryUrl: `${baseUrl}/__sim/submit-new-story`,
+    submitNewPageUrl: `${baseUrl}/__sim/submit-new-page`,
+    getModerationVariantUrl: `${baseUrl}/__sim/get-moderation-variant`,
+    assignModerationJobUrl: `${baseUrl}/__sim/assign-moderation-job`,
+    submitModerationRatingUrl: `${baseUrl}/__sim/submit-moderation-rating`,
+    triggerRenderContentsUrl: `${baseUrl}/__sim/trigger-render-contents`,
+    markVariantDirtyUrl: `${baseUrl}/__sim/mark-variant-dirty`,
+    generateStatsUrl: `${baseUrl}/__sim/generate-stats`,
+    bucketName,
+    projectId,
+  };
+}
+
+/**
+ * Create the seed manifest for the fixture story.
+ * @param {string} bucketName Bucket name.
+ * @returns {object} Seed manifest.
+ */
+function createSeedManifest(bucketName) {
+  return {
+    idToken: LOCAL_ID_TOKEN,
+    storyTitle: DEFAULT_STORY_TITLE,
+    contentsPath: '/index.html',
+    statsPath: '/stats.html',
+    moderation: {
+      firstContent: DEFAULT_FIRST_CONTENT,
+      secondContent: DEFAULT_SECOND_CONTENT,
+    },
+    story: {
+      firstPagePath: `/p/${FIRST_PAGE_NUMBER}${FIRST_VARIANT_NAME}.html`,
+      secondPagePath: `/p/${SECOND_PAGE_NUMBER}${SECOND_VARIANT_NAME}.html`,
+      optionText: DEFAULT_OPTION_TEXT,
+    },
+    expectedStatsAfterModeration: {
+      storyCount: 1,
+      pageCount: 2,
+      unmoderatedPageCount: 1,
+    },
+    environment: 'local',
+    staticBucket: bucketName,
+  };
+}
+
+/**
+ * Create a cleanup function for the simulator storage root.
+ * @param {string} storageRoot Temporary storage root.
+ * @returns {() => Promise<void>} Cleanup function.
+ */
+function createClear(storageRoot) {
+  return async () => {
+    await rm(storageRoot, { recursive: true, force: true });
+  };
+}
+
+/**
  * Build the local GCP simulator runtime.
  * @param {{
  *   baseUrl: string,
@@ -197,20 +269,48 @@ async function buildSimulatorState(config) {
     getServerTimestamp: () => new Date(),
   });
 
+  const testUtils = {
+    resolveTargetPageNumber,
+    extractParams,
+    matchesTrigger,
+    findExistingPagePath,
+    findExistingOptionPath,
+    createSnapshot,
+    createSnapshots,
+    createLocalFetchStub,
+    generateStatsVerifyIdToken: verifyStatsIdToken,
+    submitNewPageVerifyIdToken: verifySubmitNewPageIdToken,
+    submitNewStoryVerifyIdToken: verifySubmitNewStoryIdToken,
+  };
+
   const triggerRegistry = [];
-  registerTrigger('storyFormSubmissions/{subId}', 'onCreate', processNewStory);
-  registerTrigger('pageFormSubmissions/{subId}', 'onCreate', processNewPage);
-  registerTrigger('stories/{storyId}', 'onCreate', renderContents);
-  registerTrigger(
-    'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-    'onCreate',
-    renderVariant
-  );
-  registerTrigger(
-    'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-    'onWrite',
-    handleVariantWrite
-  );
+  const triggerRegistrationsByEvent = {
+    onCreate: [
+      {
+        pathPattern: 'storyFormSubmissions/{subId}',
+        handler: processNewStory,
+      },
+      {
+        pathPattern: 'pageFormSubmissions/{subId}',
+        handler: processNewPage,
+      },
+      {
+        pathPattern: 'stories/{storyId}',
+        handler: renderContents,
+      },
+      {
+        pathPattern: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
+        handler: renderVariant,
+      },
+    ],
+    onWrite: [
+      {
+        pathPattern: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
+        handler: handleVariantWrite,
+      },
+    ],
+  };
+  registerTriggerRegistrationsByEvent(triggerRegistrationsByEvent);
 
   await seedFixture();
 
@@ -228,23 +328,11 @@ async function buildSimulatorState(config) {
     renderContents,
     renderVariant,
     handleVariantWrite,
-    getConfig,
-    getSeedManifest,
-    testUtils: {
-      resolveTargetPageNumber,
-      extractParams,
-      matchesTrigger,
-      findExistingPagePath,
-      findExistingOptionPath,
-      createSnapshot,
-      createSnapshots,
-      createLocalFetchStub,
-      generateStatsVerifyIdToken: verifyStatsIdToken,
-      submitNewPageVerifyIdToken: verifySubmitNewPageIdToken,
-      submitNewStoryVerifyIdToken: verifySubmitNewStoryIdToken,
-    },
+    getConfig: () => createSimulatorConfig(baseUrl, bucketName, projectId),
+    getSeedManifest: () => createSeedManifest(bucketName),
+    testUtils,
     verifyIdToken: async token => createAuthResult(token, true),
-    clear,
+    clear: createClear(storageRoot),
     dispatchCommittedWrites,
     routes: buildRoutes(),
   });
@@ -293,6 +381,26 @@ async function buildSimulatorState(config) {
    */
   function registerTrigger(pathPattern, eventName, handler) {
     triggerRegistry.push({ pathPattern, eventName, handler });
+  }
+
+  /**
+   * Register all trigger registrations grouped by event.
+   * @param {Record<string, Array<{ pathPattern: string, handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>>} triggerRegistrationsByEvent
+   *   Trigger registrations grouped by event.
+   * @returns {void}
+   */
+  function registerTriggerRegistrationsByEvent(triggerRegistrationsByEvent) {
+    for (const [eventName, registrations] of Object.entries(
+      triggerRegistrationsByEvent
+    )) {
+      for (const registration of registrations) {
+        registerTrigger(
+          registration.pathPattern,
+          eventName,
+          registration.handler
+        );
+      }
+    }
   }
 
   /**
@@ -451,69 +559,6 @@ async function buildSimulatorState(config) {
    */
   function isParam(segment) {
     return segment.startsWith('{') && segment.endsWith('}');
-  }
-
-  /**
-   * Build the simulator config object.
-   * @returns {{
-   *   submitNewStoryUrl: string,
-   *   submitNewPageUrl: string,
-   *   getModerationVariantUrl: string,
-   *   assignModerationJobUrl: string,
-   *   submitModerationRatingUrl: string,
-   *   triggerRenderContentsUrl: string,
-   *   markVariantDirtyUrl: string,
-   *   generateStatsUrl: string,
-   * }} Config object.
-   */
-  function getConfig() {
-    return {
-      submitNewStoryUrl: `${baseUrl}/__sim/submit-new-story`,
-      submitNewPageUrl: `${baseUrl}/__sim/submit-new-page`,
-      getModerationVariantUrl: `${baseUrl}/__sim/get-moderation-variant`,
-      assignModerationJobUrl: `${baseUrl}/__sim/assign-moderation-job`,
-      submitModerationRatingUrl: `${baseUrl}/__sim/submit-moderation-rating`,
-      triggerRenderContentsUrl: `${baseUrl}/__sim/trigger-render-contents`,
-      markVariantDirtyUrl: `${baseUrl}/__sim/mark-variant-dirty`,
-      generateStatsUrl: `${baseUrl}/__sim/generate-stats`,
-    };
-  }
-
-  /**
-   * Build the seed manifest for the fixture story.
-   * @returns {object} Seed manifest.
-   */
-  function getSeedManifest() {
-    return {
-      idToken: LOCAL_ID_TOKEN,
-      storyTitle: DEFAULT_STORY_TITLE,
-      contentsPath: '/index.html',
-      statsPath: '/stats.html',
-      moderation: {
-        firstContent: DEFAULT_FIRST_CONTENT,
-        secondContent: DEFAULT_SECOND_CONTENT,
-      },
-      story: {
-        firstPagePath: `/p/${FIRST_PAGE_NUMBER}${FIRST_VARIANT_NAME}.html`,
-        secondPagePath: `/p/${SECOND_PAGE_NUMBER}${SECOND_VARIANT_NAME}.html`,
-        optionText: DEFAULT_OPTION_TEXT,
-      },
-      expectedStatsAfterModeration: {
-        storyCount: 1,
-        pageCount: 2,
-        unmoderatedPageCount: 1,
-      },
-      environment: 'local',
-      staticBucket: bucketName,
-    };
-  }
-
-  /**
-   * Remove the temporary storage root used by the simulator.
-   * @returns {Promise<void>} Nothing.
-   */
-  async function clear() {
-    await rm(storageRoot, { recursive: true, force: true });
   }
 
   /**
