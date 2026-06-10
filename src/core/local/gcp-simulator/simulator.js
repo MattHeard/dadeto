@@ -273,14 +273,17 @@ async function buildSimulatorState(config) {
   const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
   const triggerRegistry = [];
+  const dbContext = { db: null };
+  const snapshotHelpers = createSnapshotHelpers(dbContext);
   const dispatchCommittedWrites = createDispatchCommittedWrites({
     triggerRegistry,
-    createSnapshots,
+    createSnapshots: snapshotHelpers.createSnapshots,
     shouldDispatchTrigger,
     dispatchTrigger,
     extractParams,
   });
   const db = createDb(dispatchCommittedWrites);
+  dbContext.db = db;
   const fetchFn = createLocalFetchStub();
   const renderConfig = {
     db,
@@ -297,21 +300,186 @@ async function buildSimulatorState(config) {
 
   const handleVariantWrite = createHandleVariantWrite({
     renderVariant,
-    getDeleteSentinel: () => fieldValue.delete(),
+    getDeleteSentinel: createDeleteSentinelGetter(fieldValue),
     db,
   });
 
-  const verifyStatsIdToken = async token => createAuthResult(token, true);
-  const verifySubmitNewPageIdToken = async token =>
-    createAuthResult(token, false);
-  const verifySubmitNewStoryIdToken = async token =>
-    createAuthResult(token, false);
-
-  const generateStatsConfig = {
+  const authVerifiers = createSimulatorAuthVerifiers();
+  const generateStatsConfig = createGenerateStatsConfig({
     db,
-    auth: {
-      verifyIdToken: verifyStatsIdToken,
-    },
+    storage,
+    fetchFn,
+    projectId,
+    baseUrl,
+    bucketName,
+    verifyIdToken: authVerifiers.verifyStatsIdToken,
+  });
+  const generateStatsCore = createGenerateStatsCore(generateStatsConfig);
+
+  const processWriteContext = {
+    db,
+    fieldValue,
+    randomUUID,
+    random: createRandomSource,
+  };
+  const processNewStory = createProcessNewStoryHandler(processWriteContext);
+  const processNewPage = createProcessNewPageHandler(processWriteContext);
+  const lookupHelpers = createLookupHelpers(db);
+  const submitNewPageConfig = createSubmitNewPageConfig({
+    verifyIdToken: authVerifiers.verifySubmitNewPageIdToken,
+    db,
+    findExistingOptionPath: lookupHelpers.findExistingOptionPath,
+    findExistingPagePath: lookupHelpers.findExistingPagePath,
+  });
+  const submitNewPage = createHandleSubmit(submitNewPageConfig);
+
+  const submitNewStoryConfig = createSubmitNewStoryConfig({
+    verifyIdToken: authVerifiers.verifySubmitNewStoryIdToken,
+    db,
+  });
+  const submitNewStory = createSubmitNewStoryResponder(submitNewStoryConfig);
+  const testUtils = createSimulatorTestUtils({
+    snapshotHelpers,
+    lookupHelpers,
+    authVerifiers,
+  });
+
+  registerTriggerRegistrationsByEvent(
+    triggerRegistry,
+    createTriggerRegistrationsByEvent({
+      processNewStory,
+      processNewPage,
+      renderContents,
+      renderVariant,
+      handleVariantWrite,
+    })
+  );
+
+  await createSeedFixture(db)();
+
+  return buildSimulatorApi({
+    baseUrl,
+    bucketName,
+    projectId,
+    publicDir,
+    storageRoot,
+    db,
+    storage,
+    fieldValue,
+    submitNewStory,
+    generateStatsCore,
+    renderContents,
+    renderVariant,
+    handleVariantWrite,
+    getConfig: createGetSimulatorConfig(baseUrl, bucketName, projectId),
+    getSeedManifest: createGetSeedManifest(bucketName),
+    testUtils,
+    verifyIdToken: authVerifiers.verifySimulatorIdToken,
+    clear: createClear(storageRoot),
+    dispatchCommittedWrites,
+    routes: createRoutes({
+      submitNewStory,
+      submitNewPage,
+      db,
+      fieldValue,
+      renderContents,
+      generateStatsCore,
+    }),
+  });
+}
+
+/**
+ * Create trigger snapshot helpers bound to the simulator database context.
+ * @param {{ db: ReturnType<typeof createDb> | null }} dbContext Database context.
+ * @returns {{ createSnapshot: (pathValue: string, data: unknown) => unknown, createSnapshots: (pathValue: string, before: unknown, after: unknown) => { before: unknown, after: unknown } }} Snapshot helpers.
+ */
+function createSnapshotHelpers(dbContext) {
+  return {
+    createSnapshot: (pathValue, data) =>
+      createSnapshot(dbContext, pathValue, data),
+    createSnapshots: (pathValue, before, after) =>
+      createSnapshots(dbContext, pathValue, before, after),
+  };
+}
+
+/**
+ * Build before/after snapshots for a write event.
+ * @param {{ db: ReturnType<typeof createDb> | null }} dbContext Database context.
+ * @param {string} pathValue Document path.
+ * @param {unknown} before Previous document value.
+ * @param {unknown} after Next document value.
+ * @returns {{ before: unknown, after: unknown }} Snapshot pair.
+ */
+function createSnapshots(dbContext, pathValue, before, after) {
+  return {
+    before: createSnapshot(dbContext, pathValue, before),
+    after: createSnapshot(dbContext, pathValue, after),
+  };
+}
+
+/**
+ * Build a snapshot-like object for a path and payload.
+ * @param {{ db: ReturnType<typeof createDb> | null }} dbContext Database context.
+ * @param {string} pathValue Document path.
+ * @param {unknown} data Document payload.
+ * @returns {unknown} Snapshot object.
+ */
+function createSnapshot(dbContext, pathValue, data) {
+  const { db } = dbContext;
+
+  if (data === undefined) {
+    const ref = db.doc(pathValue);
+    return {
+      exists: false,
+      id: ref.id,
+      ref,
+      data: () => undefined,
+    };
+  }
+
+  return db.__resolveDocumentSnapshot(pathValue);
+}
+
+/**
+ * Create a delete sentinel getter for write handlers.
+ * @param {{ delete: () => unknown }} fieldValue Fake field value helper.
+ * @returns {() => unknown} Delete sentinel getter.
+ */
+function createDeleteSentinelGetter(fieldValue) {
+  return () => fieldValue.delete();
+}
+
+/**
+ * Create simulator auth verifier functions.
+ * @returns {{ verifyStatsIdToken: (token: string | undefined) => Promise<{ uid: string | null, token?: string }>, verifySubmitNewPageIdToken: (token: string | undefined) => Promise<{ uid: string | null, token?: string }>, verifySubmitNewStoryIdToken: (token: string | undefined) => Promise<{ uid: string | null, token?: string }>, verifySimulatorIdToken: (token: string | undefined) => Promise<{ uid: string | null, token?: string }> }} Auth verifiers.
+ */
+function createSimulatorAuthVerifiers() {
+  return {
+    verifyStatsIdToken: async token => createAuthResult(token, true),
+    verifySubmitNewPageIdToken: async token => createAuthResult(token, false),
+    verifySubmitNewStoryIdToken: async token => createAuthResult(token, false),
+    verifySimulatorIdToken: async token => createAuthResult(token, true),
+  };
+}
+
+/**
+ * Create generate-stats dependencies for the simulator.
+ * @param {{ db: unknown, storage: unknown, fetchFn: Function, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: Function }} options Config dependencies.
+ * @returns {object} Generate stats config.
+ */
+function createGenerateStatsConfig(options) {
+  const {
+    db,
+    storage,
+    fetchFn,
+    projectId,
+    baseUrl,
+    bucketName,
+    verifyIdToken,
+  } = options;
+  return {
+    db,
+    auth: { verifyIdToken },
     storage,
     fetchFn,
     env: {
@@ -324,64 +492,152 @@ async function buildSimulatorState(config) {
     cryptoModule: { randomUUID },
     console,
   };
-  const generateStatsCore = createGenerateStatsCore(generateStatsConfig);
+}
 
-  const processWriteContext = {
-    db,
-    fieldValue,
-    randomUUID,
-    random: createRandomSource,
+/**
+ * Create lookup helpers that query the fake Firestore graph.
+ * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @returns {{ findExistingPagePath: (pageNumber: number) => Promise<string | null>, findExistingOptionPath: (option: unknown) => Promise<string | null> }} Lookup helpers.
+ */
+function createLookupHelpers(db) {
+  return {
+    findExistingPagePath: pageNumber => findExistingPagePath(db, pageNumber),
+    findExistingOptionPath: option => findExistingOptionPath(db, option),
   };
-  const processNewStory = createProcessNewStoryHandler(processWriteContext);
+}
 
-  const processNewPage = createProcessNewPageHandler(processWriteContext);
+/**
+ * Find a page document path for a page number.
+ * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @param {number} pageNumber Page number to look up.
+ * @returns {Promise<string | null>} Matching page path or null.
+ */
+async function findExistingPagePath(db, pageNumber) {
+  const pageSnap = await db
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+  if (pageSnap.empty) {
+    return null;
+  }
 
-  const submitNewPageConfig = {
-    verifyIdToken: verifySubmitNewPageIdToken,
+  return pageSnap.docs[0].ref.path;
+}
+
+/**
+ * Find an option document path for a submission option.
+ * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @param {unknown} option Option descriptor.
+ * @returns {Promise<string | null>} Matching option path or null.
+ */
+async function findExistingOptionPath(db, option) {
+  const typed = parseOptionLookup(option);
+  if (!typed) {
+    return null;
+  }
+
+  const pagePath = await findExistingPagePath(db, typed.pageNumber);
+  if (!pagePath) {
+    return null;
+  }
+
+  const pageRef = db.doc(pagePath);
+  const variantSnap = await pageRef
+    .collection('variants')
+    .where('name', '==', typed.variantName)
+    .limit(1)
+    .get();
+  if (variantSnap.empty) {
+    return null;
+  }
+
+  const optionSnap = await variantSnap.docs[0].ref
+    .collection('options')
+    .where('position', '==', typed.optionNumber)
+    .limit(1)
+    .get();
+  if (optionSnap.empty) {
+    return null;
+  }
+
+  return optionSnap.docs[0].ref.path;
+}
+
+/**
+ * Create submit-new-page dependencies for the simulator.
+ * @param {{ verifyIdToken: Function, db: ReturnType<typeof createDb>, findExistingOptionPath: Function, findExistingPagePath: Function }} options Dependencies.
+ * @returns {object} Submit-new-page config.
+ */
+function createSubmitNewPageConfig(options) {
+  const { verifyIdToken, db, findExistingOptionPath, findExistingPagePath } =
+    options;
+  return {
+    verifyIdToken,
     randomUUID,
-    saveSubmission: async (id, submission) => {
-      await db.collection('pageFormSubmissions').doc(id).set(submission);
-    },
+    saveSubmission: (id, submission) =>
+      db.collection('pageFormSubmissions').doc(id).set(submission),
     serverTimestamp: () => new Date(),
     parseIncomingOption,
-    findExistingOption: async option => {
-      const optionPath = await findExistingOptionPath(option);
-      return optionPath;
-    },
-    findExistingPage: async pageNumber => {
-      const pagePath = await findExistingPagePath(pageNumber);
-      return pagePath;
-    },
+    findExistingOption: option => findExistingOptionPath(option),
+    findExistingPage: pageNumber => findExistingPagePath(pageNumber),
   };
-  const submitNewPage = createHandleSubmit(submitNewPageConfig);
+}
 
-  const submitNewStoryConfig = {
-    verifyIdToken: verifySubmitNewStoryIdToken,
-    saveSubmission: async (id, submission) => {
-      await db.collection('storyFormSubmissions').doc(id).set(submission);
-    },
+/**
+ * Create submit-new-story dependencies for the simulator.
+ * @param {{ verifyIdToken: Function, db: ReturnType<typeof createDb> }} options Dependencies.
+ * @returns {object} Submit-new-story config.
+ */
+function createSubmitNewStoryConfig(options) {
+  const { verifyIdToken, db } = options;
+  return {
+    verifyIdToken,
+    saveSubmission: (id, submission) =>
+      db.collection('storyFormSubmissions').doc(id).set(submission),
     randomUUID,
     getServerTimestamp: () => new Date(),
   };
-  const submitNewStory = createSubmitNewStoryResponder(submitNewStoryConfig);
+}
 
-  const testUtils = {
-    resolveTargetPageNumber,
+/**
+ * Create test utilities exposed by the simulator.
+ * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers> }} options Utility dependencies.
+ * @returns {object} Test utility bag.
+ */
+function createSimulatorTestUtils(options) {
+  const { snapshotHelpers, lookupHelpers, authVerifiers } = options;
+  return {
+    resolveTargetPageNumber: getTargetPageNumber,
     extractParams,
     matchesTrigger,
     parseOptionLookup,
-    findExistingPagePath,
-    findExistingOptionPath,
-    createSnapshot,
-    createSnapshots,
+    findExistingPagePath: lookupHelpers.findExistingPagePath,
+    findExistingOptionPath: lookupHelpers.findExistingOptionPath,
+    createSnapshot: snapshotHelpers.createSnapshot,
+    createSnapshots: snapshotHelpers.createSnapshots,
     createLocalFetchStub,
     createRandomSource,
-    generateStatsVerifyIdToken: verifyStatsIdToken,
-    submitNewPageVerifyIdToken: verifySubmitNewPageIdToken,
-    submitNewStoryVerifyIdToken: verifySubmitNewStoryIdToken,
+    generateStatsVerifyIdToken: authVerifiers.verifyStatsIdToken,
+    submitNewPageVerifyIdToken: authVerifiers.verifySubmitNewPageIdToken,
+    submitNewStoryVerifyIdToken: authVerifiers.verifySubmitNewStoryIdToken,
   };
+}
 
-  const triggerRegistrationsByEvent = {
+/**
+ * Create trigger registrations for simulator-backed cloud handlers.
+ * @param {{ processNewStory: Function, processNewPage: Function, renderContents: Function, renderVariant: Function, handleVariantWrite: Function }} handlers Trigger handlers.
+ * @returns {Record<string, Array<{ pathPattern: string, handler: Function }>>} Registrations by event.
+ */
+function createTriggerRegistrationsByEvent(handlers) {
+  const {
+    processNewStory,
+    processNewPage,
+    renderContents,
+    renderVariant,
+    handleVariantWrite,
+  } = handlers;
+  return {
     onCreate: [
       {
         pathPattern: 'storyFormSubmissions/{subId}',
@@ -407,481 +663,382 @@ async function buildSimulatorState(config) {
       },
     ],
   };
-  registerTriggerRegistrationsByEvent(
-    triggerRegistry,
-    triggerRegistrationsByEvent
-  );
+}
 
-  await seedFixture();
+/**
+ * Create a fixture seeding function.
+ * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @returns {() => Promise<void>} Fixture seeder.
+ */
+function createSeedFixture(db) {
+  return async () => seedFixture(db);
+}
 
-  return buildSimulatorApi({
-    baseUrl,
-    bucketName,
-    projectId,
-    publicDir,
-    storageRoot,
-    db,
-    storage,
-    fieldValue,
-    submitNewStory,
-    generateStatsCore,
-    renderContents,
-    renderVariant,
-    handleVariantWrite,
-    getConfig: () => createSimulatorConfig(baseUrl, bucketName, projectId),
-    getSeedManifest: () => createSeedManifest(bucketName),
-    testUtils,
-    verifyIdToken: async token => createAuthResult(token, true),
-    clear: createClear(storageRoot),
-    dispatchCommittedWrites,
-    routes: buildRoutes(),
+/**
+ * Seed the simulator with the fixture story graph.
+ * @param {ReturnType<typeof createDb>} db Simulator database.
+ * @returns {Promise<void>} Nothing.
+ */
+async function seedFixture(db) {
+  const storyRef = db.collection('stories').doc(STORY_ID);
+  const firstPageRef = storyRef
+    .collection('pages')
+    .doc(String(FIRST_PAGE_NUMBER));
+  const secondPageRef = storyRef
+    .collection('pages')
+    .doc(String(SECOND_PAGE_NUMBER));
+  const firstVariantRef = firstPageRef
+    .collection('variants')
+    .doc(FIRST_VARIANT_NAME);
+  const secondVariantRef = secondPageRef
+    .collection('variants')
+    .doc(SECOND_VARIANT_NAME);
+
+  await db
+    .batch()
+    .set(storyRef, {
+      title: DEFAULT_STORY_TITLE,
+      rootPage: firstPageRef,
+    })
+    .set(firstPageRef, {
+      number: FIRST_PAGE_NUMBER,
+    })
+    .set(secondPageRef, {
+      number: SECOND_PAGE_NUMBER,
+    })
+    .set(firstVariantRef, {
+      name: FIRST_VARIANT_NAME,
+      content: DEFAULT_FIRST_CONTENT,
+      authorName: 'Fixture Author',
+      visibility: 1,
+      dirty: true,
+      rand: 0.2,
+      moderatorReputationSum: 1,
+      moderationRatingCount: 1,
+    })
+    .set(secondVariantRef, {
+      name: SECOND_VARIANT_NAME,
+      content: DEFAULT_SECOND_CONTENT,
+      authorName: 'Fixture Author',
+      visibility: 1,
+      dirty: true,
+      rand: 0.8,
+      moderatorReputationSum: 0,
+      moderationRatingCount: 0,
+    })
+    .set(firstVariantRef.collection('options').doc('continue'), {
+      content: DEFAULT_OPTION_TEXT,
+      position: 0,
+      targetPage: secondPageRef,
+    })
+    .set(db.collection('storyStats').doc(STORY_ID), {
+      variantCount: 2,
+    })
+    .set(db.collection('moderators').doc(ADMIN_UID), {
+      variant: firstVariantRef.path,
+      createdAt: new Date(),
+    })
+    .commit();
+}
+
+/**
+ * Test whether a path matches a trigger pattern.
+ * @param {string} pathPattern Trigger pattern.
+ * @param {string} pathValue Actual path.
+ * @returns {boolean} Whether the pattern matches.
+ */
+function matchesTrigger(pathPattern, pathValue) {
+  return Boolean(extractParams(pathPattern, pathValue));
+}
+
+/**
+ * Extract trigger params from a matching path.
+ * @param {string} pathPattern Trigger pattern.
+ * @param {string} pathValue Actual path.
+ * @returns {Record<string, string> | null} Trigger params or null.
+ */
+function extractParams(pathPattern, pathValue) {
+  const patternSegments = split(pathPattern);
+  const pathSegments = split(pathValue);
+  if (patternSegments.length !== pathSegments.length) {
+    return null;
+  }
+
+  const params = {};
+  for (let index = 0; index < patternSegments.length; index += 1) {
+    const patternSegment = patternSegments[index];
+    const pathSegment = pathSegments[index];
+    if (isParam(patternSegment)) {
+      params[patternSegment.slice(1, -1)] = pathSegment;
+      continue;
+    }
+
+    if (patternSegment !== pathSegment) {
+      return null;
+    }
+  }
+
+  return params;
+}
+
+/**
+ * Split a path into trimmed segments.
+ * @param {string} value Path string.
+ * @returns {string[]} Path segments.
+ */
+function split(value) {
+  return String(value).replace(/^\/+/, '').replace(/\/+$/, '').split('/');
+}
+
+/**
+ * Check whether a segment is a trigger parameter.
+ * @param {string} segment Path segment.
+ * @returns {boolean} True when the segment is a parameter.
+ */
+function isParam(segment) {
+  return segment.startsWith('{') && segment.endsWith('}');
+}
+
+/**
+ * Create a simulator config getter.
+ * @param {string} baseUrl Base URL.
+ * @param {string} bucketName Bucket name.
+ * @param {string} projectId Project id.
+ * @returns {() => ReturnType<typeof createSimulatorConfig>} Config getter.
+ */
+function createGetSimulatorConfig(baseUrl, bucketName, projectId) {
+  return () => createSimulatorConfig(baseUrl, bucketName, projectId);
+}
+
+/**
+ * Create a seed manifest getter.
+ * @param {string} bucketName Bucket name.
+ * @returns {() => ReturnType<typeof createSeedManifest>} Manifest getter.
+ */
+function createGetSeedManifest(bucketName) {
+  return () => createSeedManifest(bucketName);
+}
+
+/**
+ * Build the simulator routes.
+ * @param {{ submitNewStory: Function, submitNewPage: Function, db: ReturnType<typeof createDb>, fieldValue: unknown, renderContents: Function, generateStatsCore: { generate: Function } }} deps Route dependencies.
+ * @returns {Record<string, (request: unknown) => Promise<{ status: number, body?: unknown }>>} Route map.
+ */
+function createRoutes(deps) {
+  return {
+    submitNewStory: request => handleSubmitNewStory(deps, request),
+    submitNewPage: request => handleSubmitNewPage(deps, request),
+    getModerationVariant: request => handleGetModerationVariant(deps, request),
+    assignModerationJob: request => handleAssignModerationJob(deps, request),
+    submitModerationRating: request =>
+      handleSubmitModerationRating(deps, request),
+    triggerRenderContents: request =>
+      handleTriggerRenderContents(deps, request),
+    markVariantDirty: request => handleMarkVariantDirty(deps, request),
+    generateStats: request => handleGenerateStats(deps, request),
+  };
+}
+
+/**
+ * Run the submit-new-story route handler.
+ * @param {{ submitNewStory: Function }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleSubmitNewStory(deps, request) {
+  const response = await deps.submitNewStory(request);
+  return response;
+}
+
+/**
+ * Run the submit-new-page route handler.
+ * @param {{ submitNewPage: Function }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleSubmitNewPage(deps, request) {
+  return deps.submitNewPage(request);
+}
+
+/**
+ * Run the get-moderation-variant route handler.
+ * @param {{ db: ReturnType<typeof createDb> }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleGetModerationVariant(deps, request) {
+  const uid = resolveUid(request);
+  if (!uid) {
+    return { status: 401, body: 'Invalid or expired token' };
+  }
+
+  const moderatorSnap = await deps.db.collection('moderators').doc(uid).get();
+  const variantPath = moderatorSnap.data()?.variant;
+  if (typeof variantPath !== 'string' || !variantPath) {
+    return { status: 404, body: 'Variant not found' };
+  }
+
+  const variantSnap = await deps.db.doc(variantPath).get();
+  if (!variantSnap.exists) {
+    return { status: 404, body: 'Variant not found' };
+  }
+
+  return buildModerationVariantResponse(variantSnap);
+}
+
+/**
+ * Run the assign-moderation-job route handler.
+ * @param {{ db: ReturnType<typeof createDb> }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleAssignModerationJob(deps, request) {
+  const uid = resolveUid(request);
+  if (!uid) {
+    return { status: 401, body: 'Invalid or expired token' };
+  }
+
+  const current = await deps.db.collection('moderators').doc(uid).get();
+  const currentPath = current.data()?.variant;
+
+  const candidates = await deps.db
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', 0)
+    .get();
+  const fallbacks = await deps.db
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', null)
+    .get();
+  const all = [...candidates.docs, ...fallbacks.docs];
+  const chosen = all.find(doc => doc.ref.path !== currentPath) ?? null;
+
+  if (!chosen) {
+    return { status: 404, body: 'Variant not found' };
+  }
+
+  await deps.db.collection('moderators').doc(uid).set({
+    variant: chosen.ref.path,
+    createdAt: new Date(),
   });
 
-  /**
-   * Seed the simulator with the fixture story graph.
-   * @returns {Promise<void>} Nothing.
-   */
-  async function seedFixture() {
-    const storyRef = db.collection('stories').doc(STORY_ID);
-    const firstPageRef = storyRef
-      .collection('pages')
-      .doc(String(FIRST_PAGE_NUMBER));
-    const secondPageRef = storyRef
-      .collection('pages')
-      .doc(String(SECOND_PAGE_NUMBER));
-    const firstVariantRef = firstPageRef
-      .collection('variants')
-      .doc(FIRST_VARIANT_NAME);
-    const secondVariantRef = secondPageRef
-      .collection('variants')
-      .doc(SECOND_VARIANT_NAME);
+  return { status: 201, body: { ok: true } };
+}
 
-    await db
-      .batch()
-      .set(storyRef, {
-        title: DEFAULT_STORY_TITLE,
-        rootPage: firstPageRef,
-      })
-      .set(firstPageRef, {
-        number: FIRST_PAGE_NUMBER,
-      })
-      .set(secondPageRef, {
-        number: SECOND_PAGE_NUMBER,
-      })
-      .set(firstVariantRef, {
-        name: FIRST_VARIANT_NAME,
-        content: DEFAULT_FIRST_CONTENT,
-        authorName: 'Fixture Author',
-        visibility: 1,
-        dirty: true,
-        rand: 0.2,
-        moderatorReputationSum: 1,
-        moderationRatingCount: 1,
-      })
-      .set(secondVariantRef, {
-        name: SECOND_VARIANT_NAME,
-        content: DEFAULT_SECOND_CONTENT,
-        authorName: 'Fixture Author',
-        visibility: 1,
-        dirty: true,
-        rand: 0.8,
-        moderatorReputationSum: 0,
-        moderationRatingCount: 0,
-      })
-      .set(firstVariantRef.collection('options').doc('continue'), {
-        content: DEFAULT_OPTION_TEXT,
-        position: 0,
-        targetPage: secondPageRef,
-      })
-      .set(db.collection('storyStats').doc(STORY_ID), {
-        variantCount: 2,
-      })
-      .set(db.collection('moderators').doc(ADMIN_UID), {
-        variant: firstVariantRef.path,
-        createdAt: new Date(),
-      })
-      .commit();
+/**
+ * Run the submit-moderation-rating route handler.
+ * @param {{ db: ReturnType<typeof createDb>, fieldValue: { delete: () => unknown } }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleSubmitModerationRating(deps, request) {
+  const uid = resolveUid(request);
+  if (!uid) {
+    return { status: 401, body: 'Invalid or expired token' };
   }
 
-  /**
-   * Build before/after snapshots for a write event.
-   * @param {string} pathValue Document path.
-   * @param {unknown} before Previous document value.
-   * @param {unknown} after Next document value.
-   * @returns {{ before: unknown, after: unknown }} Snapshot pair.
-   */
-  function createSnapshots(pathValue, before, after) {
-    return {
-      before: createSnapshot(pathValue, before),
-      after: createSnapshot(pathValue, after),
-    };
+  const approval = parseApprovalFlag(request?.body);
+  if (approval === null) {
+    return { status: 400, body: 'Missing or invalid isApproved' };
   }
 
-  /**
-   * Build a snapshot-like object for a path and payload.
-   * @param {string} pathValue Document path.
-   * @param {unknown} data Document payload.
-   * @returns {unknown} Snapshot object.
-   */
-  function createSnapshot(pathValue, data) {
-    if (data === undefined) {
-      const ref = db.doc(pathValue);
-      return {
-        exists: false,
-        id: ref.id,
-        ref,
-        data: () => undefined,
-      };
-    }
-
-    return db.__resolveDocumentSnapshot(pathValue);
+  const moderatorSnap = await deps.db.collection('moderators').doc(uid).get();
+  const variantPath = moderatorSnap.data()?.variant;
+  if (typeof variantPath !== 'string' || !variantPath) {
+    return { status: 404, body: 'Variant not found' };
   }
 
-  /**
-   * Test whether a path matches a trigger pattern.
-   * @param {string} pathPattern Trigger pattern.
-   * @param {string} pathValue Actual path.
-   * @returns {boolean} Whether the pattern matches.
-   */
-  function matchesTrigger(pathPattern, pathValue) {
-    return Boolean(extractParams(pathPattern, pathValue));
+  const variantRef = deps.db.doc(variantPath);
+  const variantSnap = await variantRef.get();
+  const { currentScore, currentCount } = resolveModerationTotals(
+    variantSnap.data()
+  );
+  let scoreDelta = -1;
+  if (approval) {
+    scoreDelta = 1;
+  }
+  await variantRef.update({
+    moderatorReputationSum: currentScore + scoreDelta,
+    moderationRatingCount: currentCount + 1,
+  });
+
+  await deps.db.collection('moderators').doc(uid).update({
+    variant: deps.fieldValue.delete(),
+  });
+
+  return { status: 200, body: { ok: true } };
+}
+
+/**
+ * Re-run content rendering for all known stories.
+ * @param {{ db: ReturnType<typeof createDb>, renderContents: Function }} deps Route dependencies.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleTriggerRenderContents(deps) {
+  const storiesSnap = await deps.db.collection('stories').get();
+  for (const storyDoc of storiesSnap.docs) {
+    await deps.renderContents(storyDoc, { params: { storyId: storyDoc.id } });
+  }
+  return { status: 200, body: { ok: true } };
+}
+
+/**
+ * Run the mark-variant-dirty route handler.
+ * @param {{ db: ReturnType<typeof createDb> }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleMarkVariantDirty(deps, request) {
+  const body = request?.body || {};
+  const pageNumber = Number(body.pageNumber);
+  const variantName = String(body.variantName || '');
+  if (!Number.isInteger(pageNumber) || !variantName) {
+    return { status: 400, body: 'Missing pageNumber or variantName' };
   }
 
-  /**
-   * Extract trigger params from a matching path.
-   * @param {string} pathPattern Trigger pattern.
-   * @param {string} pathValue Actual path.
-   * @returns {Record<string, string> | null} Trigger params or null.
-   */
-  function extractParams(pathPattern, pathValue) {
-    const patternSegments = split(pathPattern);
-    const pathSegments = split(pathValue);
-    if (patternSegments.length !== pathSegments.length) {
-      return null;
-    }
-
-    const params = {};
-    for (let index = 0; index < patternSegments.length; index += 1) {
-      const patternSegment = patternSegments[index];
-      const pathSegment = pathSegments[index];
-      if (isParam(patternSegment)) {
-        params[patternSegment.slice(1, -1)] = pathSegment;
-        continue;
-      }
-
-      if (patternSegment !== pathSegment) {
-        return null;
-      }
-    }
-
-    return params;
+  const pageSnap = await deps.db
+    .collectionGroup('pages')
+    .where('number', '==', pageNumber)
+    .limit(1)
+    .get();
+  if (pageSnap.empty) {
+    return { status: 404, body: 'Page not found' };
   }
 
-  /**
-   * Split a path into trimmed segments.
-   * @param {string} value Path string.
-   * @returns {string[]} Path segments.
-   */
-  function split(value) {
-    return String(value).replace(/^\/+/, '').replace(/\/+$/, '').split('/');
+  const variantSnap = await pageSnap.docs[0].ref
+    .collection('variants')
+    .where('name', '==', variantName)
+    .limit(1)
+    .get();
+  if (variantSnap.empty) {
+    return { status: 404, body: 'Variant not found' };
   }
 
-  /**
-   * Check whether a segment is a trigger parameter.
-   * @param {string} segment Path segment.
-   * @returns {boolean} True when the segment is a parameter.
-   */
-  function isParam(segment) {
-    return segment.startsWith('{') && segment.endsWith('}');
+  await variantSnap.docs[0].ref.update({ dirty: true });
+  return { status: 200, body: { ok: true } };
+}
+
+/**
+ * Run stats generation for the seeded fixture.
+ * @param {{ generateStatsCore: { generate: Function } }} deps Route dependencies.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleGenerateStats(deps) {
+  await deps.generateStatsCore.generate();
+  return { status: 200, body: { ok: true } };
+}
+
+/**
+ * Resolve the authenticated user id from a request.
+ * @param {unknown} request Incoming request object.
+ * @returns {string | null} Authenticated user id or null.
+ */
+function resolveUid(request) {
+  const header = getAuthorizationHeader(request);
+  if (!header) {
+    return null;
   }
 
-  /**
-   * Build the simulator routes.
-   * @returns {Record<string, (request: unknown) => Promise<{ status: number, body?: unknown }>>} Route map.
-   */
-  function buildRoutes() {
-    return {
-      submitNewStory: async request => handleSubmitNewStory(request),
-      submitNewPage: async request => handleSubmitNewPage(request),
-      getModerationVariant: async request =>
-        handleGetModerationVariant(request),
-      assignModerationJob: async request => handleAssignModerationJob(request),
-      submitModerationRating: async request =>
-        handleSubmitModerationRating(request),
-      triggerRenderContents: async request =>
-        handleTriggerRenderContents(request),
-      markVariantDirty: async request => handleMarkVariantDirty(request),
-      generateStats: async request => handleGenerateStats(request),
-    };
-  }
-
-  /**
-   * Run the submit-new-story route handler.
-   * @param {unknown} request Incoming request object.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleSubmitNewStory(request) {
-    const response = await submitNewStory(request);
-    return response;
-  }
-
-  /**
-   * Run the submit-new-page route handler.
-   * @param {unknown} request Incoming request object.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleSubmitNewPage(request) {
-    return submitNewPage(request);
-  }
-
-  /**
-   * Run the get-moderation-variant route handler.
-   * @param {unknown} request Incoming request object.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleGetModerationVariant(request) {
-    const uid = resolveUid(request);
-    if (!uid) {
-      return { status: 401, body: 'Invalid or expired token' };
-    }
-
-    const moderatorSnap = await db.collection('moderators').doc(uid).get();
-    const variantPath = moderatorSnap.data()?.variant;
-    if (typeof variantPath !== 'string' || !variantPath) {
-      return { status: 404, body: 'Variant not found' };
-    }
-
-    const variantSnap = await db.doc(variantPath).get();
-    if (!variantSnap.exists) {
-      return { status: 404, body: 'Variant not found' };
-    }
-
-    return buildModerationVariantResponse(variantSnap);
-  }
-
-  /**
-   * Run the assign-moderation-job route handler.
-   * @param {unknown} request Incoming request object.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleAssignModerationJob(request) {
-    const uid = resolveUid(request);
-    if (!uid) {
-      return { status: 401, body: 'Invalid or expired token' };
-    }
-
-    const current = await db.collection('moderators').doc(uid).get();
-    const currentPath = current.data()?.variant;
-
-    const candidates = await db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', 0)
-      .get();
-    const fallbacks = await db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', null)
-      .get();
-    const all = [...candidates.docs, ...fallbacks.docs];
-    const chosen = all.find(doc => doc.ref.path !== currentPath) ?? null;
-
-    if (!chosen) {
-      return { status: 404, body: 'Variant not found' };
-    }
-
-    await db.collection('moderators').doc(uid).set({
-      variant: chosen.ref.path,
-      createdAt: new Date(),
-    });
-
-    return { status: 201, body: { ok: true } };
-  }
-
-  /**
-   * Run the submit-moderation-rating route handler.
-   * @param {unknown} request Incoming request object.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleSubmitModerationRating(request) {
-    const uid = resolveUid(request);
-    if (!uid) {
-      return { status: 401, body: 'Invalid or expired token' };
-    }
-
-    const approval = parseApprovalFlag(request?.body);
-    if (approval === null) {
-      return { status: 400, body: 'Missing or invalid isApproved' };
-    }
-
-    const moderatorSnap = await db.collection('moderators').doc(uid).get();
-    const variantPath = moderatorSnap.data()?.variant;
-    if (typeof variantPath !== 'string' || !variantPath) {
-      return { status: 404, body: 'Variant not found' };
-    }
-
-    const variantRef = db.doc(variantPath);
-    const variantSnap = await variantRef.get();
-    const { currentScore, currentCount } = resolveModerationTotals(
-      variantSnap.data()
-    );
-    let scoreDelta = -1;
-    if (approval) {
-      scoreDelta = 1;
-    }
-    await variantRef.update({
-      moderatorReputationSum: currentScore + scoreDelta,
-      moderationRatingCount: currentCount + 1,
-    });
-
-    await db.collection('moderators').doc(uid).update({
-      variant: fieldValue.delete(),
-    });
-
-    return { status: 200, body: { ok: true } };
-  }
-
-  /**
-   * Re-run content rendering for all known stories.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleTriggerRenderContents() {
-    const storiesSnap = await db.collection('stories').get();
-    for (const storyDoc of storiesSnap.docs) {
-      await renderContents(storyDoc, { params: { storyId: storyDoc.id } });
-    }
-    return { status: 200, body: { ok: true } };
-  }
-
-  /**
-   * Run the mark-variant-dirty route handler.
-   * @param {unknown} request Incoming request object.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleMarkVariantDirty(request) {
-    const body = request?.body || {};
-    const pageNumber = Number(body.pageNumber);
-    const variantName = String(body.variantName || '');
-    if (!Number.isInteger(pageNumber) || !variantName) {
-      return { status: 400, body: 'Missing pageNumber or variantName' };
-    }
-
-    const pageSnap = await db
-      .collectionGroup('pages')
-      .where('number', '==', pageNumber)
-      .limit(1)
-      .get();
-    if (pageSnap.empty) {
-      return { status: 404, body: 'Page not found' };
-    }
-
-    const variantSnap = await pageSnap.docs[0].ref
-      .collection('variants')
-      .where('name', '==', variantName)
-      .limit(1)
-      .get();
-    if (variantSnap.empty) {
-      return { status: 404, body: 'Variant not found' };
-    }
-
-    await variantSnap.docs[0].ref.update({ dirty: true });
-    return { status: 200, body: { ok: true } };
-  }
-
-  /**
-   * Run stats generation for the seeded fixture.
-   * @returns {Promise<{ status: number, body?: unknown }>} Route response.
-   */
-  async function handleGenerateStats() {
-    await generateStatsCore.generate();
-    return { status: 200, body: { ok: true } };
-  }
-
-  /**
-   * Resolve the authenticated user id from a request.
-   * @param {unknown} request Incoming request object.
-   * @returns {string | null} Authenticated user id or null.
-   */
-  function resolveUid(request) {
-    const header = getAuthorizationHeader(request);
-    if (!header) {
-      return null;
-    }
-
-    return ADMIN_UID;
-  }
-
-  /**
-   * Resolve a target page number from a page reference-like object.
-   * @param {{ path?: string } | null | undefined} targetPage Target page reference.
-   * @returns {number | undefined} Target page number when available.
-   */
-  function resolveTargetPageNumber(targetPage) {
-    if (!targetPage || typeof targetPage.path !== 'string') {
-      return undefined;
-    }
-
-    const match = targetPage.path.match(/\/pages\/(\d+)$/);
-    if (!match) {
-      return undefined;
-    }
-
-    return Number(match[1]);
-  }
-
-  /**
-   * Find a page document path for a page number.
-   * @param {number} pageNumber Page number to look up.
-   * @returns {Promise<string | null>} Matching page path or null.
-   */
-  async function findExistingPagePath(pageNumber) {
-    const pageSnap = await db
-      .collectionGroup('pages')
-      .where('number', '==', pageNumber)
-      .limit(1)
-      .get();
-    if (pageSnap.empty) {
-      return null;
-    }
-
-    return pageSnap.docs[0].ref.path;
-  }
-
-  /**
-   * Find an option document path for a submission option.
-   * @param {unknown} option Option descriptor.
-   * @returns {Promise<string | null>} Matching option path or null.
-   */
-  async function findExistingOptionPath(option) {
-    const typed = parseOptionLookup(option);
-    if (!typed) {
-      return null;
-    }
-
-    const pagePath = await findExistingPagePath(typed.pageNumber);
-    if (!pagePath) {
-      return null;
-    }
-
-    const pageRef = db.doc(pagePath);
-    const variantSnap = await pageRef
-      .collection('variants')
-      .where('name', '==', typed.variantName)
-      .limit(1)
-      .get();
-    if (variantSnap.empty) {
-      return null;
-    }
-
-    const optionSnap = await variantSnap.docs[0].ref
-      .collection('options')
-      .where('position', '==', typed.optionNumber)
-      .limit(1)
-      .get();
-    if (optionSnap.empty) {
-      return null;
-    }
-
-    return optionSnap.docs[0].ref.path;
-  }
+  return ADMIN_UID;
 }
 
 /**

@@ -1,5 +1,7 @@
 {
-  "database": "beads.db",
-  "jsonl_export": "issues.jsonl",
-  "backend": "sqlite"
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "dadeto",
+  "project_id": "6ecb62e7-0f65-42ac-918f-ba9fe5cf3b00"
 }
