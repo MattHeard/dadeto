@@ -59,7 +59,7 @@ describe('non-core thin status', () => {
     const status = getNonCoreThinStatus({
       fsModule: fs,
       pathModule: path,
-      repoRoot: '/home/matt/dadeto',
+      repoRoot: process.cwd(),
     });
 
     expect(status).toMatchObject({ maxLines: 50 });

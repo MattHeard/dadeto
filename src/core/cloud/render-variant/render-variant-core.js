@@ -25,7 +25,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
  * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} DocumentReferenceData
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>} DocumentSnapshotData
- * @typedef {{ doc: (path: string) => DocumentReferenceData }} FirestoreLike
+ * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => import('firebase-admin/firestore').CollectionReference }} FirestoreLike
  * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
  * @typedef {object} AncestorReference
@@ -95,13 +95,15 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  *   context?: RenderContext;
  *   bucket: StorageBucketLike;
  *   invalidatePaths: (paths: string[]) => Promise<void>;
+ *   db: FirestoreLike;
  * }} PersistRenderPlanDeps
  * @typedef {{
  *   storyData: import('firebase-admin/firestore').DocumentData;
  *   page: PageDocument;
+ *   db: FirestoreLike;
  *   consoleError?: ConsoleError;
  * }} StoryMetadataDeps
- * @typedef {{ pageSnap: PageSnapshot; page: PageDocument; consoleError?: ConsoleError }} StoryMetadataLookupDeps
+ * @typedef {{ pageSnap: PageSnapshot; page: PageDocument; db: FirestoreLike; consoleError?: ConsoleError }} StoryMetadataLookupDeps
  * @typedef {{ exists: boolean; data: () => Record<string, any> }} DocumentLike
  * @typedef {{ get: () => Promise<DocumentLike> }} DocumentRefLike
  * @typedef {{ parentVariantRef: DocumentRefLike; parentPageRef: DocumentRefLike }} ParentReferencePair
@@ -1502,7 +1504,7 @@ function buildTargetMetadata(targetPageNumber, visible) {
 
 /**
  * Load and normalize option documents for a particular variant.
- * @param {{ snap: VariantSnapshot; visibilityThreshold: number; consoleError?: ConsoleError }} options
+ * @param {{ snap: VariantSnapshot; db: FirestoreLike; visibilityThreshold: number; consoleError?: ConsoleError }} options
  *   Dependencies required to load options.
  * @returns {Promise<OptionMetadata[]>} Ordered option metadata entries.
  */
@@ -1536,6 +1538,7 @@ async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
       data =>
         buildOptionMetadata({
           data: /** @type {any} */ (data),
+          db,
           visibilityThreshold,
           consoleError: safeConsoleError,
         })
@@ -1609,7 +1612,7 @@ async function buildStoryMetadata({ storyData, page, db, consoleError }) {
 
 /**
  * Determine the parent route for a story when the variant was created from an option.
- * @param {{ page: Record<string, any>; storyData: StoryMetadata; consoleError?: ConsoleError }} options - Inputs describing the page and story context.
+ * @param {{ page: Record<string, any>; storyData: StoryMetadata; db: FirestoreLike; consoleError?: ConsoleError }} options - Inputs describing the page and story context.
  * @returns {Promise<string | undefined>} URL for the first published page when resolvable.
  */
 async function resolveFirstPageUrl({ page, storyData, db, consoleError }) {
@@ -1637,7 +1640,7 @@ function shouldResolveFirstPageUrl(page, storyData) {
 /**
  * Resolve the root page URL while gracefully handling errors.
  * @param {StoryDataWithRoot} storyData Story metadata containing the root page.
- * @param db
+ * @param {FirestoreLike} db Tenant Firestore client.
  * @param {ConsoleError} [consoleError] Optional logger for failures.
  * @returns {Promise<string | undefined>} Root page URL when available.
  */
@@ -1673,7 +1676,7 @@ function logRootPageError(error, consoleError) {
 /**
  * Fetch root page URL.
  * @param {StoryDataWithRoot} storyData Story data.
- * @param db
+ * @param {FirestoreLike} db Tenant Firestore client.
  * @returns {Promise<string|undefined>} Root page URL.
  */
 async function fetchRootPageUrl(storyData, db) {
@@ -1832,7 +1835,7 @@ function rebindTenantDocumentRef(ref, db) {
     return ref;
   }
 
-  return db.doc(ref.path);
+  return /** @type {FirestoreLike} */ (db).doc(ref.path);
 }
 
 /**
@@ -2553,7 +2556,7 @@ function checkSnapExists(snap) {
 /**
  * Get page snap from ref.
  * @param {any} snap Snap.
- * @param db
+ * @param {FirestoreLike} db Tenant Firestore client.
  * @returns {Promise<any | undefined>} Page snap.
  */
 export async function getPageSnapFromRef(snap, db) {
@@ -2599,7 +2602,7 @@ function resolveTenantDocumentRef(snap, db) {
     return ref;
   }
 
-  return db.doc(ref.path);
+  return /** @type {FirestoreLike} */ (db).doc(ref.path);
 }
 
 /**
@@ -2638,7 +2641,7 @@ function rebindTenantCollectionRef(ref, db) {
     return ref;
   }
 
-  return db.collection(ref.path);
+  return /** @type {FirestoreLike} */ (db).collection(ref.path);
 }
 
 /**
@@ -2701,7 +2704,7 @@ function isObjectLike(value) {
 /**
  * Fetch the parent page snapshot for the renderer's variant.
  * @param {{ ref: { parent?: { parent?: { get: () => Promise<{ exists?: boolean, data: () => Record<string, any> }> } } } }} snap Variant snapshot.
- * @param db
+ * @param {FirestoreLike} db Tenant Firestore client.
  * @returns {Promise<{ exists?: boolean, data: () => Record<string, any> } | null>} Page snapshot when available.
  */
 export async function fetchPageData(snap, db) {
@@ -2821,7 +2824,7 @@ function buildRenderOutput(data) {
 /**
  * Fetch and validate page.
  * @param {any} snap Snap.
- * @param db
+ * @param {FirestoreLike} db Tenant Firestore client.
  * @returns {Promise<any>} Page data.
  */
 async function fetchAndValidatePage(snap, db) {
@@ -3044,7 +3047,7 @@ async function persistRenderPlan({
  * Build a change handler that renders visible variants and clears dirty markers.
  * @param {object} options - Dependencies for the change handler.
  * @param {(snap: any, context?: object) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
- * @param options.db
+ * @param {FirestoreLike} options.db Tenant Firestore client.
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
  * @param {number} [options.visibilityThreshold] - Minimum visibility required before rendering.
  * @returns {(change: FirestoreChange, context?: RenderContext) => Promise<null>} Firestore change handler.
@@ -3076,10 +3079,10 @@ export function createHandleVariantWrite({
   }) {
     await renderVariant(/** @type {any} */ (change.after), context);
     const afterRef = /** @type {any} */ (change.after).ref;
-    const dirtyRef =
-      afterRef && typeof afterRef.path === 'string'
-        ? db.doc(afterRef.path)
-        : afterRef;
+    let dirtyRef = afterRef;
+    if (afterRef && typeof afterRef.path === 'string') {
+      dirtyRef = db.doc(afterRef.path);
+    }
     await dirtyRef.update({
       dirty: getDeleteSentinel(),
     });

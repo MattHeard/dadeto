@@ -6,9 +6,7 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import tautologicalWrapperRule from './src/core/lint/tautological-wrapper.js';
 
 const lintFiles = ['src/core/**/*.js', 'test/**/*.js'];
-const tautologicalWrapperFiles = [
-  'src/**/*.js',
-];
+const tautologicalWrapperFiles = ['src/**/*.js'];
 const repoLintPlugin = {
   rules: {
     'tautological-wrapper': tautologicalWrapperRule,
@@ -35,6 +33,7 @@ export default [
       'src/core/copy-cloud.js',
       'src/core/fs.js',
       'src/core/local/symphony/launch.js',
+      'src/core/local/gcp-simulator/fake-firestore.js',
       'src/core/local/symphony/tuiRenderer.js',
       'src/core/path.js',
     ],

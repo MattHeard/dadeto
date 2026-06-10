@@ -212,7 +212,7 @@ describe('local notion codex config', () => {
     const config = await loadNotionCodexConfig();
 
     expect(config.configPath).toBe(
-      '/home/matt/dadeto/tracking/notion-codex.local.json'
+      path.join(process.cwd(), 'tracking/notion-codex.local.json')
     );
     expect(config.notion).toEqual(DEFAULT_NOTION_CODEX_CONFIG.notion);
     expect(config.launcher).toEqual(DEFAULT_NOTION_CODEX_CONFIG.launcher);
