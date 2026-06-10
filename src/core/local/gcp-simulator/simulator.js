@@ -140,11 +140,14 @@ async function createStorageRoot() {
 
 /**
  * Create the simulator storage wrapper.
- * @param {string} storageRoot Storage root path.
- * @returns {FakeStorage} Fake storage instance.
+ * @returns {Promise<{storageRoot: string, storage: FakeStorage}>} Storage state.
  */
-function createStorage(storageRoot) {
-  return new FakeStorage({ rootDir: storageRoot });
+async function createStorage() {
+  const storageRoot = await createStorageRoot();
+  return {
+    storageRoot,
+    storage: new FakeStorage({ rootDir: storageRoot }),
+  };
 }
 
 /**
@@ -189,8 +192,7 @@ function buildSimulatorApi(state) {
  */
 async function buildSimulatorState(config) {
   const { baseUrl, bucketName, projectId, publicDir } = config;
-  const storageRoot = await createStorageRoot();
-  const storage = createStorage(storageRoot);
+  const { storageRoot, storage } = await createStorage();
   const fieldValue = createFakeFieldValue();
   const db = createFakeFirestore({ onCommit: dispatchCommittedWrites });
   const fetchFn = createLocalFetchStub();
