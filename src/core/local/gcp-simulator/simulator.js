@@ -162,6 +162,15 @@ function createStorage(storageRoot) {
 }
 
 /**
+ * Create the simulator Firestore instance.
+ * @param {Function} onCommit Commit callback.
+ * @returns {object} Fake Firestore instance.
+ */
+function createDb(onCommit) {
+  return createFakeFirestore({ onCommit });
+}
+
+/**
  * Build the exported simulator API from state.
  * @param {object} state Simulator state.
  * @returns {object} Simulator instance.
@@ -185,7 +194,7 @@ async function buildSimulatorState(config) {
   const storageRoot = await createStorageRoot();
   const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
-  const db = createFakeFirestore({ onCommit: dispatchCommittedWrites });
+  const db = createDb(dispatchCommittedWrites);
   const fetchFn = createLocalFetchStub();
   const renderConfig = {
     db,
