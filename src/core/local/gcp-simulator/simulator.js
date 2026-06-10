@@ -139,6 +139,15 @@ async function createStorageRoot() {
 }
 
 /**
+ * Create the simulator storage wrapper.
+ * @param {string} storageRoot Storage root path.
+ * @returns {FakeStorage} Fake storage instance.
+ */
+function createStorage(storageRoot) {
+  return new FakeStorage({ rootDir: storageRoot });
+}
+
+/**
  * Build the local GCP simulator runtime.
  * @param {{
  *   baseUrl: string,
@@ -181,7 +190,7 @@ function buildSimulatorApi(state) {
 async function buildSimulatorState(config) {
   const { baseUrl, bucketName, projectId, publicDir } = config;
   const storageRoot = await createStorageRoot();
-  const storage = new FakeStorage({ rootDir: storageRoot });
+  const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
   const db = createFakeFirestore({ onCommit: dispatchCommittedWrites });
   const fetchFn = createLocalFetchStub();
