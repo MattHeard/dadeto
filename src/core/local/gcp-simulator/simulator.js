@@ -171,6 +171,84 @@ function createDb(onCommit) {
 }
 
 /**
+ * Create a dispatch function for committed Firestore writes.
+ * @param {{
+ *   triggerRegistry: Array<{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>,
+ *   createSnapshots: (pathValue: string, before: unknown, after: unknown) => { before: unknown, after: unknown },
+ *   shouldDispatchTrigger: (trigger: { pathPattern: string, eventName: 'onCreate' | 'onWrite' }, pathValue: string, isCreate: boolean, isWrite: boolean) => boolean,
+ *   dispatchTrigger: (trigger: { eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }, snapshots: { before: unknown, after: unknown }, context: { params: Record<string, string> }) => Promise<void>,
+ *   extractParams: (pathPattern: string, pathValue: string) => Record<string, string> | null,
+ * }} deps Dispatch dependencies.
+ * @returns {(records: Array<{ path: string, before?: unknown, after?: unknown }>) => Promise<void>} Dispatch function.
+ */
+function createDispatchCommittedWrites(deps) {
+  return async records => {
+    for (const record of records) {
+      const snapshots = deps.createSnapshots(
+        record.path,
+        record.before,
+        record.after
+      );
+      const isCreate = !record.before && record.after;
+      const isWrite = Boolean(record.before || record.after);
+
+      for (const trigger of deps.triggerRegistry) {
+        if (
+          !deps.shouldDispatchTrigger(trigger, record.path, isCreate, isWrite)
+        ) {
+          continue;
+        }
+
+        const context = {
+          params: deps.extractParams(trigger.pathPattern, record.path),
+        };
+        await deps.dispatchTrigger(trigger, snapshots, context);
+      }
+    }
+  };
+}
+
+/**
+ * Register a trigger handler for a Firestore path pattern.
+ * @param {Array<{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>} triggerRegistry
+ *   Trigger registry.
+ * @param {string} pathPattern Firestore path pattern.
+ * @param {'onCreate' | 'onWrite'} eventName Trigger event name.
+ * @param {(snapshot: unknown, context: { params: Record<string, string> }) => Promise<void>} handler
+ *   Trigger handler.
+ * @returns {void}
+ */
+function registerTrigger(triggerRegistry, pathPattern, eventName, handler) {
+  triggerRegistry.push({ pathPattern, eventName, handler });
+}
+
+/**
+ * Register all trigger registrations grouped by event.
+ * @param {Array<{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>} triggerRegistry
+ *   Trigger registry.
+ * @param {Record<string, Array<{ pathPattern: string, handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>>} triggerRegistrationsByEvent
+ *   Trigger registrations grouped by event.
+ * @returns {void}
+ */
+function registerTriggerRegistrationsByEvent(
+  triggerRegistry,
+  triggerRegistrationsByEvent
+) {
+  for (const [eventName, registrations] of Object.entries(
+    triggerRegistrationsByEvent
+  )) {
+    for (const registration of registrations) {
+      registerTrigger(
+        triggerRegistry,
+        registration.pathPattern,
+        eventName,
+        registration.handler
+      );
+    }
+  }
+}
+
+/**
  * Build the exported simulator API from state.
  * @param {object} state Simulator state.
  * @returns {object} Simulator instance.
@@ -194,6 +272,14 @@ async function buildSimulatorState(config) {
   const storageRoot = await createStorageRoot();
   const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
+  const triggerRegistry = [];
+  const dispatchCommittedWrites = createDispatchCommittedWrites({
+    triggerRegistry,
+    createSnapshots,
+    shouldDispatchTrigger,
+    dispatchTrigger,
+    extractParams,
+  });
   const db = createDb(dispatchCommittedWrites);
   const fetchFn = createLocalFetchStub();
   const renderConfig = {
@@ -295,7 +381,6 @@ async function buildSimulatorState(config) {
     submitNewStoryVerifyIdToken: verifySubmitNewStoryIdToken,
   };
 
-  const triggerRegistry = [];
   const triggerRegistrationsByEvent = {
     onCreate: [
       {
@@ -322,7 +407,10 @@ async function buildSimulatorState(config) {
       },
     ],
   };
-  registerTriggerRegistrationsByEvent(triggerRegistrationsByEvent);
+  registerTriggerRegistrationsByEvent(
+    triggerRegistry,
+    triggerRegistrationsByEvent
+  );
 
   await seedFixture();
 
@@ -348,72 +436,6 @@ async function buildSimulatorState(config) {
     dispatchCommittedWrites,
     routes: buildRoutes(),
   });
-
-  /**
-   * Dispatch committed Firestore writes to the registered triggers.
-   * @param {Array<{ path: string, before?: unknown, after?: unknown }>} records
-   *   Changed documents.
-   * @returns {Promise<void>} Nothing.
-   */
-  async function dispatchCommittedWrites(records) {
-    for (const record of records) {
-      await dispatchRecord(record);
-    }
-  }
-
-  /**
-   * Dispatch a single committed Firestore write to matching triggers.
-   * @param {{ path: string, before?: unknown, after?: unknown }} record Changed document.
-   * @returns {Promise<void>} Nothing.
-   */
-  async function dispatchRecord(record) {
-    const snapshots = createSnapshots(record.path, record.before, record.after);
-    const isCreate = !record.before && record.after;
-    const isWrite = Boolean(record.before || record.after);
-
-    for (const trigger of triggerRegistry) {
-      if (!shouldDispatchTrigger(trigger, record.path, isCreate, isWrite)) {
-        continue;
-      }
-
-      const context = {
-        params: extractParams(trigger.pathPattern, record.path),
-      };
-      await dispatchTrigger(trigger, snapshots, context);
-    }
-  }
-
-  /**
-   * Register a trigger handler for a Firestore path pattern.
-   * @param {string} pathPattern Firestore path pattern.
-   * @param {'onCreate' | 'onWrite'} eventName Trigger event name.
-   * @param {(snapshot: unknown, context: { params: Record<string, string> }) => Promise<void>} handler
-   *   Trigger handler.
-   * @returns {void}
-   */
-  function registerTrigger(pathPattern, eventName, handler) {
-    triggerRegistry.push({ pathPattern, eventName, handler });
-  }
-
-  /**
-   * Register all trigger registrations grouped by event.
-   * @param {Record<string, Array<{ pathPattern: string, handler: (snapshot: unknown, context: { params: Record<string, string> }) => Promise<void> }>>} triggerRegistrationsByEvent
-   *   Trigger registrations grouped by event.
-   * @returns {void}
-   */
-  function registerTriggerRegistrationsByEvent(triggerRegistrationsByEvent) {
-    for (const [eventName, registrations] of Object.entries(
-      triggerRegistrationsByEvent
-    )) {
-      for (const registration of registrations) {
-        registerTrigger(
-          registration.pathPattern,
-          eventName,
-          registration.handler
-        );
-      }
-    }
-  }
 
   /**
    * Seed the simulator with the fixture story graph.
