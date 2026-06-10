@@ -187,7 +187,7 @@ async function buildSimulatorState(config) {
   const fieldValue = createFakeFieldValue();
   const db = createFakeFirestore({ onCommit: dispatchCommittedWrites });
   const fetchFn = createLocalFetchStub();
-  const renderContentsConfig = {
+  const renderConfig = {
     db,
     storage,
     fetchFn,
@@ -197,18 +197,8 @@ async function buildSimulatorState(config) {
     projectId,
   };
 
-  const renderContents = createRenderContents(renderContentsConfig);
-  const renderVariantConfig = {
-    db,
-    storage,
-    fetchFn,
-    randomUUID,
-    bucketName,
-    objectPrefix: '',
-    projectId,
-  };
-
-  const renderVariant = createRenderVariant(renderVariantConfig);
+  const renderContents = createRenderContents(renderConfig);
+  const renderVariant = createRenderVariant(renderConfig);
 
   const handleVariantWrite = createHandleVariantWrite({
     renderVariant,
