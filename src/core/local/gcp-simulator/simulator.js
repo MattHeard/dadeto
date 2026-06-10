@@ -59,6 +59,20 @@ export async function createLocalGcpSimulator(options = {}) {
 }
 
 /**
+ * Build the local GCP simulator runtime.
+ * @param {{
+ *   baseUrl: string,
+ *   bucketName: string,
+ *   projectId: string,
+ *   publicDir: string,
+ * }} config Simulator configuration.
+ * @returns {Promise<object>} Simulator instance.
+ */
+async function createLocalGcpSimulatorRuntime(config) {
+  return buildSimulatorApi(await buildSimulatorState(config));
+}
+
+/**
  * Create the simulator config object.
  * @param {string} baseUrl Base URL.
  * @param {string} bucketName Bucket name.
@@ -140,35 +154,11 @@ async function createStorageRoot() {
 
 /**
  * Create the simulator storage wrapper.
- * @returns {Promise<{storageRoot: string, storage: FakeStorage}>} Storage state.
+ * @param {string} storageRoot Storage root path.
+ * @returns {FakeStorage} Fake storage instance.
  */
-async function createStorage() {
-  const storageRoot = await createStorageRoot();
-  return {
-    storageRoot,
-    storage: new FakeStorage({ rootDir: storageRoot }),
-  };
-}
-
-/**
- * Build the local GCP simulator runtime.
- * @param {{
- *   baseUrl: string,
- *   bucketName: string,
- *   projectId: string,
- *   publicDir: string,
- * }} config Simulator configuration.
- * @returns {Promise<object>} Simulator instance.
- */
-async function createLocalGcpSimulatorRuntime(config) {
-  const { baseUrl, bucketName, projectId, publicDir } = config;
-  const state = await buildSimulatorState({
-    baseUrl,
-    bucketName,
-    projectId,
-    publicDir,
-  });
-  return buildSimulatorApi(state);
+function createStorage(storageRoot) {
+  return new FakeStorage({ rootDir: storageRoot });
 }
 
 /**
@@ -192,7 +182,8 @@ function buildSimulatorApi(state) {
  */
 async function buildSimulatorState(config) {
   const { baseUrl, bucketName, projectId, publicDir } = config;
-  const { storageRoot, storage } = await createStorage();
+  const storageRoot = await createStorageRoot();
+  const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
   const db = createFakeFirestore({ onCommit: dispatchCommittedWrites });
   const fetchFn = createLocalFetchStub();
