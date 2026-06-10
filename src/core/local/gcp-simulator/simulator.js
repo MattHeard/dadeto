@@ -131,6 +131,14 @@ function createClear(storageRoot) {
 }
 
 /**
+ * Create the temporary storage root for the simulator.
+ * @returns {Promise<string>} Storage root path.
+ */
+async function createStorageRoot() {
+  return mkdtemp(path.join(os.tmpdir(), 'dadeto-gcp-sim-'));
+}
+
+/**
  * Build the local GCP simulator runtime.
  * @param {{
  *   baseUrl: string,
@@ -172,7 +180,7 @@ function buildSimulatorApi(state) {
  */
 async function buildSimulatorState(config) {
   const { baseUrl, bucketName, projectId, publicDir } = config;
-  const storageRoot = await mkdtemp(path.join(os.tmpdir(), 'dadeto-gcp-sim-'));
+  const storageRoot = await createStorageRoot();
   const storage = new FakeStorage({ rootDir: storageRoot });
   const fieldValue = createFakeFieldValue();
   const db = createFakeFirestore({ onCommit: dispatchCommittedWrites });
