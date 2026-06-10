@@ -1,5 +1,4 @@
 import { EventEmitter } from 'node:events';
-import * as childProcess from 'node:child_process';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import {
   playwrightRunnerTestUtils,

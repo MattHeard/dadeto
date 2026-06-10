@@ -13,6 +13,69 @@ const simulatorPromise = createLocalGcpSimulator({
   publicDir: defaultPublicDir,
 });
 
+/**
+ * @typedef {{
+ *   routes: Record<string, Function>,
+ *   getConfig: () => unknown,
+ *   getSeedManifest: () => unknown,
+ *   storageRoot: string,
+ *   bucketName: string,
+ *   publicDir: string,
+ * }} LocalGcpSimulator
+ */
+
+/** @type {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }[]} */
+const SIMULATOR_ROUTES = [
+  {
+    method: 'post',
+    path: '/__sim/submit-new-story',
+    routeName: 'submitNewStory',
+    includeBody: true,
+  },
+  {
+    method: 'post',
+    path: '/__sim/submit-new-page',
+    routeName: 'submitNewPage',
+    includeBody: true,
+  },
+  {
+    method: 'get',
+    path: '/__sim/get-moderation-variant',
+    routeName: 'getModerationVariant',
+    includeBody: false,
+  },
+  {
+    method: 'post',
+    path: '/__sim/assign-moderation-job',
+    routeName: 'assignModerationJob',
+    includeBody: true,
+  },
+  {
+    method: 'post',
+    path: '/__sim/submit-moderation-rating',
+    routeName: 'submitModerationRating',
+    includeBody: true,
+  },
+  {
+    method: 'post',
+    path: '/__sim/trigger-render-contents',
+    routeName: 'triggerRenderContents',
+    includeBody: false,
+  },
+  {
+    method: 'post',
+    path: '/__sim/mark-variant-dirty',
+    routeName: 'markVariantDirty',
+    includeBody: true,
+  },
+  {
+    method: 'post',
+    path: '/__sim/generate-stats',
+    routeName: 'generateStats',
+    includeBody: false,
+  },
+];
+
 export const handle = startServer;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
@@ -24,7 +87,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
 async function startServer() {
-  const simulator = await simulatorPromise;
+  const simulator = /** @type {LocalGcpSimulator} */ (await simulatorPromise);
   const app = express();
 
   app.use(express.urlencoded({ extended: false }));
@@ -42,98 +105,9 @@ async function startServer() {
     res.json(simulator.getSeedManifest());
   });
 
-  app.post('/__sim/submit-new-story', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.submitNewStory({
-        method: req.method,
-        body: req.body,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
-
-  app.post('/__sim/submit-new-page', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.submitNewPage({
-        method: req.method,
-        body: req.body,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
-
-  app.get('/__sim/get-moderation-variant', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.getModerationVariant({
-        method: req.method,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
-
-  app.post('/__sim/assign-moderation-job', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.assignModerationJob({
-        method: req.method,
-        body: req.body,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
-
-  app.post('/__sim/submit-moderation-rating', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.submitModerationRating({
-        method: req.method,
-        body: req.body,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
-
-  app.post('/__sim/trigger-render-contents', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.triggerRenderContents({
-        method: req.method,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
-
-  app.post('/__sim/mark-variant-dirty', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.markVariantDirty({
-        method: req.method,
-        body: req.body,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
-
-  app.post('/__sim/generate-stats', async (req, res) => {
-    await sendRouteResponse(
-      simulator.routes.generateStats({
-        method: req.method,
-        headers: req.headers,
-        get: getRequestHeader(req),
-      }),
-      res
-    );
-  });
+  for (const route of SIMULATOR_ROUTES) {
+    registerSimulatorRoute(app, simulator, route);
+  }
 
   app.use(
     express.static(path.join(simulator.storageRoot, simulator.bucketName))
@@ -151,6 +125,40 @@ async function startServer() {
       resolve(server);
     });
   });
+}
+
+/**
+ * Register one simulator route on the Express app.
+ * @param {import('express').Express} app Express application.
+ * @param {LocalGcpSimulator} simulator Local simulator.
+ * @param {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} route Route configuration.
+ * @returns {void}
+ */
+function registerSimulatorRoute(app, simulator, route) {
+  app[route.method](route.path, async (req, res) => {
+    const handler = simulator.routes[route.routeName];
+    await sendRouteResponse(handler(buildSimulatorRequest(req, route)), res);
+  });
+}
+
+/**
+ * Build a request object for a simulator route handler.
+ * @param {import('express').Request} req Express request.
+ * @param {{ includeBody: boolean }} route Route configuration.
+ * @returns {{ method: string, body?: unknown, headers: import('node:http').IncomingHttpHeaders, get: (name: string) => string | undefined }} Simulator request object.
+ */
+function buildSimulatorRequest(req, route) {
+  const request = {
+    method: req.method,
+    headers: req.headers,
+    get: getRequestHeader(req),
+  };
+
+  if (route.includeBody) {
+    return { ...request, body: req.body };
+  }
+
+  return request;
 }
 
 /**

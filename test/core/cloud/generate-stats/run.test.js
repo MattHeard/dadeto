@@ -115,7 +115,7 @@ async function loadModule({
 
 describe('generate-stats run', () => {
   it('initializes Firebase once', async () => {
-    const { mod, initializeFirebaseApp } = await loadModule();
+    const { mod } = await loadModule();
     const initFn = jest.fn();
 
     const ensure = mod.createEnsureFirebaseApp(initFn);
@@ -192,7 +192,7 @@ describe('generate-stats run', () => {
   });
 
   it('caches the default firestore instance', async () => {
-    const { mod, getFirestore, initializeFirebaseApp } = await loadModule();
+    const { mod } = await loadModule();
     const originalDatabaseId = process.env.DATABASE_ID;
     process.env.DATABASE_ID = 'cached-db';
 

@@ -36,7 +36,8 @@ export function createFirebaseAppManager(initializer) {
  * @param {{
  *   initializeApp: () => void,
  *   createFirebaseAppManager: (initializer: () => void) => { ensureFirebaseApp: (initFn?: () => void) => void },
- *   getFirestoreInstance: () => unknown,
+ *   getEnvironmentVariables: () => Record<string, string | undefined>,
+ *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
  *   getAuth: () => unknown,
  *   express: () => unknown,
  * }} deps Cloud wiring dependencies.

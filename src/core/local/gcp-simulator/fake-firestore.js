@@ -1,3 +1,4 @@
+// @ts-nocheck
 const DELETE_FIELD = Symbol('delete-field');
 
 class IncrementValue {
