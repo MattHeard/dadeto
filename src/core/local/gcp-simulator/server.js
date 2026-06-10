@@ -7,11 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const defaultPublicDir = path.resolve(__dirname, '../../../../public');
 const port = Number.parseInt(process.env.GCP_SIMULATOR_PORT ?? '4322', 10);
-
-const simulatorPromise = createLocalGcpSimulator({
-  baseUrl: `http://127.0.0.1:${port}`,
-  publicDir: defaultPublicDir,
-});
+let simulatorPromise = null;
 
 /**
  * @typedef {{
@@ -87,7 +83,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
 async function startServer() {
-  const simulator = /** @type {LocalGcpSimulator} */ (await simulatorPromise);
+  const simulator = /** @type {LocalGcpSimulator} */ (
+    await getSimulatorPromise()
+  );
   const app = express();
 
   app.use(express.urlencoded({ extended: false }));
@@ -199,4 +197,19 @@ export { sendRouteResponse };
  */
 function getRequestHeader(req) {
   return name => req.get(name);
+}
+
+/**
+ * Lazily create the simulator so module import stays cheap.
+ * @returns {Promise<LocalGcpSimulator>} Simulator instance.
+ */
+function getSimulatorPromise() {
+  if (!simulatorPromise) {
+    simulatorPromise = createLocalGcpSimulator({
+      baseUrl: `http://127.0.0.1:${port}`,
+      publicDir: defaultPublicDir,
+    });
+  }
+
+  return simulatorPromise;
 }
