@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const defaultPublicDir = path.resolve(__dirname, '../../../../public');
 const port = Number.parseInt(process.env.GCP_SIMULATOR_PORT ?? '4322', 10);
+/** @type {Promise<any> | null} */
 let simulatorPromise = null;
 
 /**
@@ -201,7 +202,7 @@ function getRequestHeader(req) {
 
 /**
  * Lazily create the simulator so module import stays cheap.
- * @returns {Promise<LocalGcpSimulator>} Simulator instance.
+ * @returns {Promise<any>} Simulator instance.
  */
 function getSimulatorPromise() {
   if (!simulatorPromise) {
@@ -211,5 +212,5 @@ function getSimulatorPromise() {
     });
   }
 
-  return simulatorPromise;
+  return /** @type {Promise<any>} */ (simulatorPromise);
 }

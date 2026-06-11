@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 
-describe.skip('cloud generate-stats entrypoint', () => {
+describe('cloud generate-stats entrypoint', () => {
   it('passes cloud dependencies into the core runner', async () => {
     const handle = { label: 'generate-stats' };
     const createGenerateStatsHandle = jest.fn(() => handle);

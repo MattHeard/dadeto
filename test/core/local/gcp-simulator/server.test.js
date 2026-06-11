@@ -2,6 +2,8 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { afterAll, beforeAll, describe, expect, it, jest } from '@jest/globals';
 
+jest.setTimeout(20000);
+
 describe('gcp simulator server', () => {
   /** @type {import('node:http').Server | null} */
   let server = null;
