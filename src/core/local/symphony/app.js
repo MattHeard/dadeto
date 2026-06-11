@@ -3,6 +3,27 @@ import { applyRunnerOutcome } from '../symphony.js';
 const REQUESTED_AT_FIELD = 'requested_at';
 
 /**
+ * Wrap an async route operation with Express error forwarding.
+ * @param {(res: any) => Promise<void>} operation Route operation.
+ * @returns {Function} Express route handler.
+ */
+function createAsyncRouteHandler(operation) {
+  /**
+   * @param {any} _req Request.
+   * @param {any} res Response.
+   * @param {Function} next Error callback.
+   * @returns {Promise<void>} Completion promise.
+   */
+  return async (_req, res, next) => {
+    try {
+      await operation(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+/**
  * Create a Symphony status route factory.
  * @param {{ isProcessAlive: (pid: number) => boolean }} deps Runtime dependencies.
  * @returns {Function} Status route factory.
@@ -13,26 +34,16 @@ function createSymphonyStatusHandlerFactory(deps) {
    * @returns {Function} Express route handler.
    */
   return function createSymphonyStatusHandler(options) {
-    /**
-     * @param {any} _req Request.
-     * @param {any} res Response.
-     * @param {Function} next Error callback.
-     * @returns {Promise<void>} Completion promise.
-     */
-    return async (_req, res, next) => {
-      try {
-        const storedStatus = await options.statusStore.readStatus();
-        const baseStatus = storedStatus ?? options.initialStatus;
-        const reconciledStatus = await reconcileOrphanedRun(
-          baseStatus,
-          options.statusStore,
-          deps
-        );
-        res.json(reconciledStatus);
-      } catch (error) {
-        next(error);
-      }
-    };
+    return createAsyncRouteHandler(async res => {
+      const storedStatus = await options.statusStore.readStatus();
+      const baseStatus = storedStatus ?? options.initialStatus;
+      const reconciledStatus = await reconcileOrphanedRun(
+        baseStatus,
+        options.statusStore,
+        deps
+      );
+      res.json(reconciledStatus);
+    });
   };
 }
 
@@ -42,38 +53,25 @@ function createSymphonyStatusHandlerFactory(deps) {
  * @returns {Function} Express route handler.
  */
 function createSymphonyLaunchHandler(options) {
-  /**
-   * @param {any} _req Request.
-   * @param {any} res Response.
-   * @param {Function} next Error callback.
-   * @returns {Promise<void>} Completion promise.
-   */
-  return async (_req, res, next) => {
-    try {
-      const launchImpl = options.launchSelectedRunnerLoop;
-      if (
-        !launchImpl ||
-        typeof options.statusStore.writeStatus !== 'function'
-      ) {
-        res.status(501).json({
-          error: 'Symphony launch trigger is not configured.',
-        });
-        return;
-      }
-
-      const storedStatus = await options.statusStore.readStatus();
-      const status = storedStatus ?? options.initialStatus;
-      const launchedStatus = await launchImpl({
-        status,
-        statusStore: options.statusStore,
-        repoRoot: options.repoRoot,
+  return createAsyncRouteHandler(async res => {
+    const launchImpl = options.launchSelectedRunnerLoop;
+    if (!launchImpl || typeof options.statusStore.writeStatus !== 'function') {
+      res.status(501).json({
+        error: 'Symphony launch trigger is not configured.',
       });
-
-      res.status(202).json(launchedStatus);
-    } catch (error) {
-      next(error);
+      return;
     }
-  };
+
+    const storedStatus = await options.statusStore.readStatus();
+    const status = storedStatus ?? options.initialStatus;
+    const launchedStatus = await launchImpl({
+      status,
+      statusStore: options.statusStore,
+      repoRoot: options.repoRoot,
+    });
+
+    res.status(202).json(launchedStatus);
+  });
 }
 
 /**
@@ -87,43 +85,33 @@ function createSymphonyRefreshHandlerFactory(deps) {
    * @returns {Function} Express route handler.
    */
   return function createSymphonyRefreshHandler(options) {
-    /**
-     * @param {any} _req Request.
-     * @param {any} res Response.
-     * @param {Function} next Error callback.
-     * @returns {Promise<void>} Completion promise.
-     */
-    return async (_req, res, next) => {
-      try {
-        if (
-          !options.statusStore ||
-          typeof options.statusStore.writeStatus !== 'function'
-        ) {
-          res.status(501).json({
-            error: 'Symphony refresh trigger is not configured.',
-          });
-          return;
-        }
-
-        const snapshot = await deps.refreshSymphonyStatus({
-          repoRoot: options.repoRoot,
-          configLoader: options.configLoader,
-          workflowLoader: options.workflowLoader,
-          trackerFactory: options.trackerFactory,
-          now: options.now,
-          statusStore: options.statusStore,
+    return createAsyncRouteHandler(async res => {
+      if (
+        !options.statusStore ||
+        typeof options.statusStore.writeStatus !== 'function'
+      ) {
+        res.status(501).json({
+          error: 'Symphony refresh trigger is not configured.',
         });
-
-        res.status(202).json({
-          queued: true,
-          coalesced: false,
-          [REQUESTED_AT_FIELD]: snapshot.status.startedAt,
-          operations: ['poll', 'reconcile'],
-        });
-      } catch (error) {
-        next(error);
+        return;
       }
-    };
+
+      const snapshot = await deps.refreshSymphonyStatus({
+        repoRoot: options.repoRoot,
+        configLoader: options.configLoader,
+        workflowLoader: options.workflowLoader,
+        trackerFactory: options.trackerFactory,
+        now: options.now,
+        statusStore: options.statusStore,
+      });
+
+      res.status(202).json({
+        queued: true,
+        coalesced: false,
+        [REQUESTED_AT_FIELD]: snapshot.status.startedAt,
+        operations: ['poll', 'reconcile'],
+      });
+    });
   };
 }
 
