@@ -14,8 +14,10 @@ class ServerTimestampValue {
 }
 
 /**
- *
- * @param now
+ * Create a fake Firestore field-value helper.
+ * @param {() => Date} now - Clock callback used for server timestamps.
+ * @returns {{ serverTimestamp(): ServerTimestampValue, increment(amount: number): IncrementValue, delete(): symbol }}
+ *   Field value helper.
  */
 export function createFakeFieldValue(now = () => new Date()) {
   return {
@@ -32,9 +34,11 @@ export function createFakeFieldValue(now = () => new Date()) {
 }
 
 /**
- *
- * @param root0
- * @param root0.onCommit
+ * Create an in-memory Firestore-like database.
+ * @param {object} [options] - Configuration.
+ * @param {(records: Array<{path: string, before?: unknown, after?: unknown}>) => Promise<void>|void} [options.onCommit]
+ *   Commit callback.
+ * @returns {FakeFirestore} Fake Firestore instance.
  */
 export function createFakeFirestore({ onCommit } = {}) {
   const state = new Map();
@@ -128,8 +132,10 @@ export function createFakeFirestore({ onCommit } = {}) {
   }
 
   /**
-   *
-   * @param operations
+   * Apply a batch of write operations to the in-memory state.
+   * @param {Array<{path: string, nextData?: unknown, mode: 'set'|'update'|'delete'}>} operations
+   *   Operations to apply.
+   * @returns {Promise<undefined>} Nothing.
    */
   async function applyOperations(operations) {
     const touched = new Map();
@@ -388,10 +394,11 @@ class FakeQuerySnapshot {
 }
 
 /**
- *
- * @param db
- * @param path
- * @param data
+ * Build a document snapshot for the fake Firestore.
+ * @param {FakeFirestore} db - Database instance.
+ * @param {string} path - Document path.
+ * @param {unknown} data - Document payload.
+ * @returns {FakeDocumentSnapshot} Snapshot object.
  */
 function buildDocumentSnapshot(db, path, data) {
   const ref = new FakeDocumentReference(db, splitPath(path));
@@ -412,9 +419,11 @@ class FakeDocumentSnapshot {
 }
 
 /**
- *
- * @param existing
- * @param operation
+ * Resolve a write operation against an existing document value.
+ * @param {unknown} existing - Existing document payload.
+ * @param {{mode: 'set'|'update'|'delete', path: string, nextData?: unknown}} operation
+ *   Pending write operation.
+ * @returns {unknown} Next document payload, or undefined for deletes.
  */
 function resolveOperation(existing, operation) {
   if (operation.mode === 'delete') {
@@ -435,9 +444,10 @@ function resolveOperation(existing, operation) {
 }
 
 /**
- *
- * @param target
- * @param patch
+ * Apply a shallow patch object to a document target.
+ * @param {object} target - Document object to mutate.
+ * @param {object} patch - Patch payload.
+ * @returns {void}
  */
 function applyPatch(target, patch) {
   for (const [key, value] of Object.entries(patch)) {
@@ -446,10 +456,11 @@ function applyPatch(target, patch) {
 }
 
 /**
- *
- * @param target
- * @param key
- * @param value
+ * Apply a single field patch.
+ * @param {object} target - Document object to mutate.
+ * @param {string} key - Field path.
+ * @param {unknown} value - Field value.
+ * @returns {void}
  */
 function applyFieldPatch(target, key, value) {
   const segments = key.split('.');

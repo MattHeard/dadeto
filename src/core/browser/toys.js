@@ -1,11 +1,19 @@
 import { blogKeyHandler } from './inputHandlers/blogKeyHandler.js';
 import { realHourlyWageHandler } from './inputHandlers/realHourlyWage.js';
+import { textHandler } from './inputHandlers/text.js';
+import { textareaHandler } from './inputHandlers/textarea.js';
+import { fileHandler } from './inputHandlers/file.js';
+import { numberHandler } from './inputHandlers/number.js';
+import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
+import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
+import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
+import { joyConMapperHandler } from './inputHandlers/joyConMapper.js';
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createLedgerIngestReportElement } from './presenters/ledgerIngest.js';
 import { createRealHourlyWageReportElement } from './presenters/realHourlyWage.js';
 import { createPrefixedLoggers } from './document.js';
-import { deepClone } from './browser-core.js';
 import {
+  deepClone,
   createRemoveListener,
   defaultHandler,
   getInputValue,
@@ -18,6 +26,7 @@ import {
   setInputValue,
   dendritePageHandler,
   dendriteStoryHandler,
+  KV_CONTAINER_SELECTOR,
 } from './browser-core.js';
 
 /**
@@ -186,16 +195,6 @@ import { createRealtimeVoicePrototypeElement } from './presenters/realtimeVoiceP
 export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dom.addEventListener(dropdown, 'change', onChange);
 };
-
-import { textHandler } from './inputHandlers/text.js';
-import { textareaHandler } from './inputHandlers/textarea.js';
-import { fileHandler } from './inputHandlers/file.js';
-import { numberHandler } from './inputHandlers/number.js';
-import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
-import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
-import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
-import { joyConMapperHandler } from './inputHandlers/joyConMapper.js';
-import { KV_CONTAINER_SELECTOR } from './browser-core.js';
 
 export const ensureKeyValueInput = (container, textInput, dom) => {
   let kvContainer = dom.querySelector(container, KV_CONTAINER_SELECTOR);
@@ -709,13 +708,12 @@ function isUniqueNonEmpty(key, rows) {
 
 /**
  * Migrate an entry to a new key if the key is unique and non-empty.
- * @param {object} params - Options object.
- * @param {string} params.prevKey - Current key.
- * @param {string} params.newKey - Proposed new key.
- * @param {object} params.rows - Map of row values by key.
- * @param {HTMLElement} params.keyEl - Key input element.
- * @param {object} params.dom - DOM utilities.
- * @param params.rowData
+ * @param {object} options - Options object.
+ * @param {string} options.prevKey - Current key.
+ * @param {string} options.newKey - Proposed new key.
+ * @param {object} options.rowData - Map of row values by key.
+ * @param {HTMLElement} options.keyEl - Key input element.
+ * @param {object} options.dom - DOM utilities.
  * @returns {void}
  */
 function migrateRowIfValid({ prevKey, newKey, rowData, keyEl, dom }) {
@@ -786,10 +784,9 @@ export function createValueInputHandler(options) {
  * @param {object} options.dom - The DOM utilities object
  * @param {string} options.key - The initial key value
  * @param {HTMLElement} options.textInput - The hidden text input element
- * @param {object} options.rows - The rows object containing key-value pairs
+ * @param {object} options.rowData - The rows object containing key-value pairs
  * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
  * @param {Array<Function>} options.disposers - Array to store cleanup functions
- * @param options.rowData
  * @returns {HTMLInputElement} The created key input element
  */
 export const createKeyElement = ({
@@ -966,9 +963,7 @@ export const createTypeElement = ({
 
 /**
  * Creates an add button click handler for key-value rows
- * @param {object} rows - The rows object containing key-value pairs
- * @param {object} rowTypes - Per-key type map to seed when a new row is added.
- * @param rowData
+ * @param {object} rowData - The rows object containing key-value pairs.
  * @param {Function} render - Function to re-render the key-value editor
  * @returns {Function} The click event handler function
  */
@@ -1061,29 +1056,16 @@ export const setupRemoveButton = ({
 };
 
 /**
- * Creates and sets up a button element as either an add or remove button
- * @param {object} opts - Options for button creation
- * @param {object} opts.dom - The DOM utilities object
- * @param {boolean} opts.isAddButton - Whether to create an add button
- * @param {object} opts.rows - The rows object for the key-value editor
- * @param {Function} opts.render - The render function to update the UI
- * @param {string} opts.key - The key of the row (for remove button)
- * @param {Array} opts.disposers - Array to store cleanup functions
- * @returns {HTMLElement} The created and configured button element
- */
-/**
  * Creates a function that appends a key-value row to the container.
  * @param {object} options - Configuration.
  * @param {object} options.dom - DOM utilities.
  * @param {Array} options.entries - All [key, value] pairs.
  * @param {HTMLInputElement} options.textInput - Hidden JSON input.
- * @param {object} options.rows - Map of row values by key.
- * @param {object} [options.rowTypes] - Per-key type map for value coercion.
+ * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {Function} options.syncHiddenField - Updates the hidden field.
  * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
  * @param {Function} options.render - Re-render function.
  * @param {HTMLElement} options.container - Container to append to.
- * @param options.rowData
  * @returns {(entry: [string, string], idx: number) => void} Row builder.
  */
 export const createKeyValueRow =
@@ -1305,18 +1287,20 @@ export const createHandleSubmit =
   };
 
 /**
- *
- * @param dom
- * @param inputElement
+ * Reads the live input value from the DOM helper or element fallback.
+ * @param {object} dom - DOM helper object.
+ * @param {HTMLInputElement} inputElement - The live input element.
+ * @returns {string} Current live value.
  */
 function readLiveInputValue(dom, inputElement) {
   return String(getDomValue(dom, inputElement) ?? inputElement.value ?? '');
 }
 
 /**
- *
- * @param dom
- * @param callback
+ * Requests the next auto-submit frame using the available DOM scheduler.
+ * @param {object} dom - DOM helper object.
+ * @param {Function} callback - Frame callback.
+ * @returns {number} Frame identifier.
  */
 function requestAutoSubmitFrame(dom, callback) {
   if (typeof dom.requestAnimationFrame === 'function') {
@@ -1329,9 +1313,10 @@ function requestAutoSubmitFrame(dom, callback) {
 }
 
 /**
- *
- * @param dom
- * @param frameId
+ * Cancels a previously requested auto-submit frame.
+ * @param {object} dom - DOM helper object.
+ * @param {number|null} frameId - Frame identifier.
+ * @returns {void}
  */
 function cancelAutoSubmitFrame(dom, frameId) {
   if (frameId === null) {
@@ -1348,13 +1333,15 @@ function cancelAutoSubmitFrame(dom, frameId) {
 }
 
 /**
- *
- * @param root0
- * @param root0.elements
- * @param root0.processingFunction
- * @param root0.env
- * @param root0.inputElement
- * @param root0.autoSubmitState
+ * Registers a polling loop that watches an input element for changes.
+ * @param {object} options - Polling options.
+ * @param {object} options.elements - Interactive component elements.
+ * @param {Function} options.processingFunction - Component processor.
+ * @param {object} options.env - Environment helpers.
+ * @param {HTMLInputElement} options.inputElement - Live input element.
+ * @param {{frameId: number|null, lastValue: string|null}} options.autoSubmitState
+ *   Polling state.
+ * @returns {void}
  */
 function registerAutoSubmitPolling({
   elements,
@@ -1381,9 +1368,10 @@ function registerAutoSubmitPolling({
 }
 
 /**
- *
- * @param dom
- * @param autoSubmitState
+ * Unregisters the polling loop for auto-submit.
+ * @param {object} dom - DOM helper object.
+ * @param {{frameId: number|null, lastValue: string|null}} autoSubmitState - Polling state.
+ * @returns {void}
  */
 function unregisterAutoSubmitPolling(dom, autoSubmitState) {
   cancelAutoSubmitFrame(dom, autoSubmitState.frameId);
@@ -1437,7 +1425,8 @@ function getInteractiveElements(dom, article, logWarning) {
  * Sets up event listeners and initial state.
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {Function} processingFunction - The toy's core logic function.
- * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, dom, and getUuid.
+ * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, dom, getUuid, and loggers.
+ * @returns {void}
  */
 export function initializeInteractiveComponent(
   article,
@@ -1616,7 +1605,10 @@ const filterNonEmptyEntries = rows =>
 export const coerceValue = (value, type) => {
   if (type === 'number') {
     const n = parseFloat(value);
-    return Number.isNaN(n) ? null : n;
+    if (Number.isNaN(n)) {
+      return null;
+    }
+    return n;
   }
 
   if (type === 'boolean') {
@@ -1637,9 +1629,7 @@ export const coerceValue = (value, type) => {
 /**
  * Synchronize the hidden field with the filtered rows.
  * @param {HTMLInputElement} textInput - Hidden input element to update.
- * @param {object} rows - Key-value pairs to serialise.
- * @param {object} rowTypes - Per-key type map used to coerce values before serialisation.
- * @param rowData
+ * @param {object} rowData - Key-value pairs and per-key type map to serialise.
  * @param {object} dom - DOM helper utilities.
  * @returns {void}
  */
