@@ -21,56 +21,55 @@ let simulatorPromise = null;
  * }} LocalGcpSimulator
  */
 
+/**
+ * @param {'get' | 'post'} method HTTP method.
+ * @param {string} routePath Express route path.
+ * @param {string} routeName Simulator route name.
+ * @param {boolean} includeBody Whether to pass req.body to the route.
+ * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
+ */
+function createSimulatorRoute(method, routePath, routeName, includeBody) {
+  return {
+    method,
+    path: routePath,
+    routeName,
+    includeBody,
+  };
+}
+
+/**
+ * @param {string} routePath Express route path.
+ * @param {string} routeName Simulator route name.
+ * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
+ */
+function createGetRoute(routePath, routeName) {
+  return createSimulatorRoute('get', routePath, routeName, false);
+}
+
+/**
+ * @param {string} routePath Express route path.
+ * @param {string} routeName Simulator route name.
+ * @param {boolean} [includeBody] Whether to pass req.body to the route.
+ * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
+ */
+function createPostRoute(routePath, routeName, includeBody = true) {
+  return createSimulatorRoute('post', routePath, routeName, includeBody);
+}
+
 /** @type {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }[]} */
 const SIMULATOR_ROUTES = [
-  {
-    method: 'post',
-    path: '/__sim/submit-new-story',
-    routeName: 'submitNewStory',
-    includeBody: true,
-  },
-  {
-    method: 'post',
-    path: '/__sim/submit-new-page',
-    routeName: 'submitNewPage',
-    includeBody: true,
-  },
-  {
-    method: 'get',
-    path: '/__sim/get-moderation-variant',
-    routeName: 'getModerationVariant',
-    includeBody: false,
-  },
-  {
-    method: 'post',
-    path: '/__sim/assign-moderation-job',
-    routeName: 'assignModerationJob',
-    includeBody: true,
-  },
-  {
-    method: 'post',
-    path: '/__sim/submit-moderation-rating',
-    routeName: 'submitModerationRating',
-    includeBody: true,
-  },
-  {
-    method: 'post',
-    path: '/__sim/trigger-render-contents',
-    routeName: 'triggerRenderContents',
-    includeBody: false,
-  },
-  {
-    method: 'post',
-    path: '/__sim/mark-variant-dirty',
-    routeName: 'markVariantDirty',
-    includeBody: true,
-  },
-  {
-    method: 'post',
-    path: '/__sim/generate-stats',
-    routeName: 'generateStats',
-    includeBody: false,
-  },
+  createPostRoute('/__sim/submit-new-story', 'submitNewStory'),
+  createPostRoute('/__sim/submit-new-page', 'submitNewPage'),
+  createGetRoute('/__sim/get-moderation-variant', 'getModerationVariant'),
+  createPostRoute('/__sim/assign-moderation-job', 'assignModerationJob'),
+  createPostRoute('/__sim/submit-moderation-rating', 'submitModerationRating'),
+  createPostRoute(
+    '/__sim/trigger-render-contents',
+    'triggerRenderContents',
+    false
+  ),
+  createPostRoute('/__sim/mark-variant-dirty', 'markVariantDirty'),
+  createPostRoute('/__sim/generate-stats', 'generateStats', false),
 ];
 
 export const handle = startServer;
