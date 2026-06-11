@@ -276,12 +276,14 @@ async function reconcileOrphanedRun(status, statusStore, deps) {
  * @returns {string | null} Bead id, or null.
  */
 function getActiveRunBeadId(status) {
-  if (typeof status.activeRun.beadId === 'string' && status.activeRun.beadId) {
-    return status.activeRun.beadId;
+  const activeRunBeadId = getOptionalString(status.activeRun, 'beadId');
+  if (activeRunBeadId) {
+    return activeRunBeadId;
   }
 
-  if (typeof status.currentBeadId === 'string' && status.currentBeadId) {
-    return status.currentBeadId;
+  const currentBeadId = getOptionalString(status, 'currentBeadId');
+  if (currentBeadId) {
+    return currentBeadId;
   }
 
   return null;
