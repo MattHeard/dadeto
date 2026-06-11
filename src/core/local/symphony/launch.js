@@ -9,6 +9,7 @@ import {
 } from './launcherCodex.js';
 
 /**
+ * Launch the selected runner loop and persist the resulting status.
  * @param {{
  *   status: Record<string, unknown>,
  *   statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
@@ -30,10 +31,62 @@ import {
  *     }>
  *   },
  *   now?: () => Date
- * }} options
+ * }} options - Launch options for the runner loop.
  * @returns {Promise<Record<string, unknown>>} Updated launched-run status.
  */
 export async function launchSelectedRunnerLoop(options) {
+  const context = buildLaunchContext(options);
+  await ensureLaunchable(context);
+  return runLaunch(context);
+}
+
+/**
+ * Build the launch context used across the runner lifecycle.
+ * @param {{
+ *   status: Record<string, unknown>,
+ *   statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> },
+ *   repoRoot?: string,
+ *   cwd?: () => string,
+ *   launcher?: {
+ *     launchRunner: (payload: {
+ *       repoRoot: string,
+ *       beadId: string,
+ *       beadTitle?: string | null,
+ *       runId: string,
+ *       onExit?: (exitInfo: { exitCode: number | null, signal: string | null }) => Promise<void>
+ *     }) => Promise<{
+ *       launcherKind?: string | null,
+ *       command?: string | null,
+ *       args?: string[] | null,
+ *       pid?: number | null,
+ *       stdoutPath?: string | null,
+ *       stderrPath?: string | null
+ *     }>
+ *   },
+ *   now?: () => Date
+ * }} options - Launch options for the runner loop.
+ * @returns {{
+ *   options: typeof options,
+ *   now: () => Date,
+ *   status: Record<string, unknown>,
+ *   requestedBeadId: string | null,
+ *   currentBeadTitle: string | null,
+ *   currentBeadPriority: string | null,
+ *   startedAt: string,
+ *   failureBeadId: string,
+ *   failureLaunchRequest: string,
+ *   createInitialFailure: (error: string) => {
+ *     status: Record<string, unknown>,
+ *     startedAt: string,
+ *     beadId: string,
+ *     beadTitle: string | null,
+ *     beadPriority: string | null,
+ *     launchRequest: string,
+ *     error: string
+ *   }
+ * }} Launch context.
+ */
+function buildLaunchContext(options) {
   const now = options.now ?? (() => new Date());
   const status = options.status;
   const requestedBeadId = getOptionalString(status.currentBeadId);
@@ -42,72 +95,100 @@ export async function launchSelectedRunnerLoop(options) {
   const startedAt = now().toISOString();
   const failureBeadId = requestedBeadId ?? 'unknown-bead';
   const failureLaunchRequest = formatLaunchRequestForBead(requestedBeadId);
-  const createInitialFailure = error => ({
+
+  return {
+    options,
+    now,
     status,
+    requestedBeadId,
+    currentBeadTitle,
+    currentBeadPriority,
     startedAt,
-    beadId: failureBeadId,
-    beadTitle: currentBeadTitle,
-    beadPriority: currentBeadPriority,
-    launchRequest: failureLaunchRequest,
-    error,
-  });
+    failureBeadId,
+    failureLaunchRequest,
+    createInitialFailure: error => ({
+      status,
+      startedAt,
+      beadId: failureBeadId,
+      beadTitle: currentBeadTitle,
+      beadPriority: currentBeadPriority,
+      launchRequest: failureLaunchRequest,
+      error,
+    }),
+  };
+}
 
-  if (status.state !== 'ready') {
-    const guardError = new Error(
-      `Cannot launch runner loop unless Symphony is ready. Current state: ${String(
-        status.state ?? 'unknown'
-      )}.`
-    );
-
-    await persistInitialLaunchFailure(
-      options,
-      createInitialFailure(guardError.message)
-    );
-
-    throw guardError;
+/**
+ * Ensure the runner can be launched from the current state.
+ * @param {ReturnType<typeof buildLaunchContext>} context Launch context.
+ * @returns {Promise<void>} Nothing.
+ */
+async function ensureLaunchable(context) {
+  if (context.status.state === 'ready') {
+    return;
   }
 
+  const guardError = new Error(
+    `Cannot launch runner loop unless Symphony is ready. Current state: ${String(
+      context.status.state ?? 'unknown'
+    )}.`
+  );
+
+  await persistInitialLaunchFailure(
+    context.options,
+    context.createInitialFailure(guardError.message)
+  );
+
+  throw guardError;
+}
+
+/**
+ * Launch the configured runner and persist the resulting status.
+ * @param {ReturnType<typeof buildLaunchContext>} context Launch context.
+ * @returns {Promise<Record<string, unknown>>} Updated launched-run status.
+ */
+async function runLaunch(context) {
   let currentBeadId;
   try {
-    currentBeadId = getRequiredString(requestedBeadId, 'currentBeadId');
+    currentBeadId = getRequiredString(context.requestedBeadId, 'currentBeadId');
   } catch (error) {
-    const normalizedError =
-      error instanceof Error ? error : new Error(String(error));
+    const normalizedError = normalizeError(error);
     await persistInitialLaunchFailure(
-      options,
-      createInitialFailure(normalizedError.message)
+      context.options,
+      context.createInitialFailure(normalizedError.message)
     );
 
     throw normalizedError;
   }
 
   const launchRequest = formatLaunchRequestForBead(currentBeadId);
-  const runId = `${startedAt}--${currentBeadId}`;
+  const runId = `${context.startedAt}--${currentBeadId}`;
   const launcher =
-    options.launcher ?? createConfiguredLauncher(status, options);
+    context.options.launcher ??
+    createConfiguredLauncher(context.status, context.options);
   const launchStatusWrite = createDeferredPromise();
   const onRunnerExit = createRunnerExitHandler({
-    statusStore: options.statusStore,
+    statusStore: context.options.statusStore,
     runId,
     beadId: currentBeadId,
-    beadTitle: currentBeadTitle,
+    beadTitle: context.currentBeadTitle,
     waitForLaunchStatusWrite: () => launchStatusWrite.promise,
   });
 
   try {
     const invocation = await launcher.launchRunner({
-      repoRoot: options.repoRoot ?? options.cwd?.() ?? '',
+      repoRoot: context.options.repoRoot ?? context.options.cwd?.() ?? '',
       beadId: currentBeadId,
-      beadTitle: currentBeadTitle,
+      beadTitle: context.currentBeadTitle,
       runId,
       onExit: onRunnerExit,
     });
-    const launchedStatus = applyRunnerLaunch(status, {
+    const launchedStatus = applyRunnerLaunch(context.status, {
       runId,
-      startedAt,
+      startedAt: context.startedAt,
       beadId: currentBeadId,
-      beadTitle: currentBeadTitle,
-      beadPriority: currentBeadPriority,
+      beadTitle: context.currentBeadTitle,
+      beadPriority: context.currentBeadPriority,
       launchRequest,
       launcherKind: invocation.launcherKind,
       command: invocation.command,
@@ -119,7 +200,8 @@ export async function launchSelectedRunnerLoop(options) {
     launchedStatus.operatorRecommendation =
       buildLaunchLifecycleRecommendation(launchedStatus);
 
-    const writePromise = options.statusStore.writeStatus(launchedStatus);
+    const writePromise =
+      context.options.statusStore.writeStatus(launchedStatus);
     try {
       await writePromise;
     } finally {
@@ -129,20 +211,14 @@ export async function launchSelectedRunnerLoop(options) {
     return launchedStatus;
   } catch (error) {
     launchStatusWrite.resolve();
-    const failedStatus = await persistLaunchFailure(
-      options.statusStore,
-      status,
-      {
-        startedAt,
-        beadId: currentBeadId,
-        beadTitle: currentBeadTitle,
-        beadPriority: currentBeadPriority,
-        launchRequest,
-        error: getLaunchErrorMessage(error),
-      }
-    );
-
-    return failedStatus;
+    return persistLaunchFailure(context.options.statusStore, context.status, {
+      startedAt: context.startedAt,
+      beadId: currentBeadId,
+      beadTitle: context.currentBeadTitle,
+      beadPriority: context.currentBeadPriority,
+      launchRequest,
+      error: getLaunchErrorMessage(error),
+    });
   }
 }
 
@@ -169,19 +245,15 @@ function persistInitialLaunchFailure(options, failure) {
  */
 function buildLaunchLifecycleRecommendation(status) {
   const beadId = getRequiredString(status.currentBeadId, 'currentBeadId');
-  const operatorArtifacts =
-    status.operatorArtifacts && typeof status.operatorArtifacts === 'object'
-      ? status.operatorArtifacts
-      : null;
-  const activeRun =
-    status.activeRun && typeof status.activeRun === 'object'
-      ? status.activeRun
-      : null;
+  const operatorArtifacts = getRecordOrNull(status.operatorArtifacts);
+  const activeRun = getRecordOrNull(status.activeRun);
   const statusPath = getOptionalString(operatorArtifacts?.statusPath);
   const stdoutPath = getOptionalString(activeRun?.stdoutPath);
   const stderrPath = getOptionalString(activeRun?.stderrPath);
-  const persistedArtifacts = [statusPath, stdoutPath, stderrPath].filter(
-    Boolean
+  const persistedArtifacts = getDefinedStrings(
+    statusPath,
+    stdoutPath,
+    stderrPath
   );
 
   if (persistedArtifacts.length === 0) {
@@ -205,6 +277,38 @@ function getOptionalString(value) {
   }
 
   return value.trim();
+}
+
+/**
+ * @param {unknown} error Error-like value.
+ * @returns {Error} Normalized error instance.
+ */
+function normalizeError(error) {
+  if (error instanceof Error) {
+    return error;
+  }
+
+  return new Error(String(error));
+}
+
+/**
+ * @param {unknown} value Candidate object value.
+ * @returns {Record<string, unknown> | null} Object value or null.
+ */
+function getRecordOrNull(value) {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  return value;
+}
+
+/**
+ * @param {...(string | null)} values Candidate strings.
+ * @returns {string[]} Defined string values.
+ */
+function getDefinedStrings(...values) {
+  return values.filter(value => typeof value === 'string');
 }
 
 /**
@@ -241,26 +345,48 @@ function createConfiguredLauncher(status, options) {
  * @returns {{ command: string, args: string[] }} Launcher configuration.
  */
 function getLauncherConfig(status) {
-  const launcherConfig =
-    status.config && typeof status.config === 'object'
-      ? status.config.launcher
-      : null;
+  let launcherConfig = null;
+  if (status.config && typeof status.config === 'object') {
+    launcherConfig = status.config.launcher;
+  }
 
   return {
-    command:
-      launcherConfig &&
-      typeof launcherConfig === 'object' &&
-      typeof launcherConfig.command === 'string' &&
-      launcherConfig.command.trim()
-        ? launcherConfig.command.trim()
-        : 'codex',
-    args:
-      launcherConfig &&
-      typeof launcherConfig === 'object' &&
-      Array.isArray(launcherConfig.args)
-        ? launcherConfig.args.filter(arg => typeof arg === 'string')
-        : [...DEFAULT_CODEX_RALPH_ARGS],
+    command: getLauncherCommand(launcherConfig),
+    args: getLauncherArgs(launcherConfig),
   };
+}
+
+/**
+ * @param {unknown} launcherConfig Launcher config value.
+ * @returns {string} Command to execute.
+ */
+function getLauncherCommand(launcherConfig) {
+  if (
+    launcherConfig &&
+    typeof launcherConfig === 'object' &&
+    typeof launcherConfig.command === 'string' &&
+    launcherConfig.command.trim()
+  ) {
+    return launcherConfig.command.trim();
+  }
+
+  return 'codex';
+}
+
+/**
+ * @param {unknown} launcherConfig Launcher config value.
+ * @returns {string[]} Runner arguments.
+ */
+function getLauncherArgs(launcherConfig) {
+  if (
+    launcherConfig &&
+    typeof launcherConfig === 'object' &&
+    Array.isArray(launcherConfig.args)
+  ) {
+    return launcherConfig.args.filter(arg => typeof arg === 'string');
+  }
+
+  return [...DEFAULT_CODEX_RALPH_ARGS];
 }
 
 /**
@@ -290,8 +416,8 @@ function formatLaunchRequestForBead(beadId) {
 /**
  * @param {{
  *   writeStatus: (status: Record<string, unknown>) => Promise<void>
- * } | undefined | null} statusStore
- * @param {Record<string, unknown>} status
+ * } | undefined | null} statusStore - Status store to persist into.
+ * @param {Record<string, unknown>} status - Current Symphony status.
  * @param {{
  *   startedAt: string,
  *   beadId: string,
@@ -299,8 +425,8 @@ function formatLaunchRequestForBead(beadId) {
  *   beadPriority?: string | null,
  *   launchRequest: string,
  *   error: string
- * }} failure
- * @returns {Promise<Record<string, unknown>>}
+ * }} failure - Failure payload.
+ * @returns {Promise<Record<string, unknown>>} Persisted launched status.
  */
 async function persistLaunchFailure(statusStore, status, failure) {
   if (!statusStore || typeof statusStore.writeStatus !== 'function') {
@@ -322,8 +448,9 @@ async function persistLaunchFailure(statusStore, status, failure) {
  *   beadId: string,
  *   beadTitle: string | null,
  *   waitForLaunchStatusWrite?: () => Promise<void>
- * }} options
+ * }} options - Runner exit handler options.
  * @returns {((exitInfo: { exitCode: number | null, signal: string | null }) => Promise<void>) | undefined}
+ *   Exit handler or undefined when status persistence is unavailable.
  */
 export function createRunnerExitHandler(options) {
   if (
@@ -334,10 +461,10 @@ export function createRunnerExitHandler(options) {
     return undefined;
   }
 
-  const waitForLaunchStatusWrite =
-    typeof options.waitForLaunchStatusWrite === 'function'
-      ? options.waitForLaunchStatusWrite
-      : null;
+  let waitForLaunchStatusWrite = null;
+  if (typeof options.waitForLaunchStatusWrite === 'function') {
+    waitForLaunchStatusWrite = options.waitForLaunchStatusWrite;
+  }
 
   return async exitInfo => {
     if (waitForLaunchStatusWrite) {
@@ -380,7 +507,7 @@ export function createRunnerExitHandler(options) {
 }
 
 /**
- * @returns {{ promise: Promise<void>, resolve: () => void }}
+ * @returns {{ promise: Promise<void>, resolve: () => void }} Deferred promise pair.
  */
 function createDeferredPromise() {
   let resolver = () => {};
@@ -403,8 +530,9 @@ function createDeferredPromise() {
  *   beadTitle: string | null,
  *   exitCode: number | null,
  *   signal: string | null
- * }} input
+ * }} input - Runner exit info.
  * @returns {{ beadId: string, beadTitle: string | null, outcome: 'completed' | 'blocked', summary: string }}
+ *   Exit outcome payload.
  */
 function buildRunnerExitOutcome(input) {
   const outcomeKind = getRunnerExitOutcomeKind(input.exitCode, input.signal);
@@ -423,9 +551,9 @@ function buildRunnerExitOutcome(input) {
 }
 
 /**
- * @param {number | null} exitCode
- * @param {string | null} signal
- * @returns {'completed' | 'blocked'}
+ * @param {number | null} exitCode - Runner exit code.
+ * @param {string | null} signal - Runner signal.
+ * @returns {'completed' | 'blocked'} Outcome kind.
  */
 function getRunnerExitOutcomeKind(exitCode, signal) {
   if (exitCode === 0 && !signal) {
@@ -436,8 +564,8 @@ function getRunnerExitOutcomeKind(exitCode, signal) {
 }
 
 /**
- * @param {{ runId: string, exitCode: number | null, signal: string | null }} input
- * @returns {string}
+ * @param {{ runId: string, exitCode: number | null, signal: string | null }} input - Runner exit info.
+ * @returns {string} Human-readable summary.
  */
 function formatRunnerExitSummary(input) {
   if (typeof input.signal === 'string' && input.signal) {
