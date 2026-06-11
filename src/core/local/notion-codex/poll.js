@@ -297,21 +297,13 @@ function appendIdleOutcome(state, options) {
   }
 
   return appendEvent(
-    {
-      ...state,
+    withInactiveRun(state, {
       lastOutcome: 'idle',
       lastSummary,
       idleBackoffExponent,
       nextPollAfter,
-      activeRun: null,
-    },
-    {
-      at: options.now.toISOString(),
-      type: 'idle',
-      runId: options.runId,
-      pid: options.pid,
-      nextPollAfter,
-    }
+    }),
+    createRunEvent(options, 'idle', { nextPollAfter })
   );
 }
 
@@ -397,6 +389,37 @@ function appendEvent(state, event) {
 }
 
 /**
+ * Apply state updates while clearing the active run.
+ * @param {NotionCodexPollState} state Current state.
+ * @param {Record<string, unknown>} updates State updates.
+ * @returns {NotionCodexPollState} Updated inactive-run state.
+ */
+function withInactiveRun(state, updates) {
+  return {
+    ...state,
+    ...updates,
+    activeRun: null,
+  };
+}
+
+/**
+ * Build a poll event for the observed run.
+ * @param {{ now: Date, runId: string, pid: number | null }} options Poll options.
+ * @param {string} type Event type.
+ * @param {Record<string, unknown>} [extra] Extra event fields.
+ * @returns {Record<string, unknown>} Poll event.
+ */
+function createRunEvent(options, type, extra = {}) {
+  return {
+    at: options.now.toISOString(),
+    type,
+    runId: options.runId,
+    pid: options.pid,
+    ...extra,
+  };
+}
+
+/**
  * Determine whether there is an active run object.
  * @param {NotionCodexPollState} state Current state.
  * @returns {NotionCodexPollActiveRun | null} Active run object or null.
@@ -448,20 +471,13 @@ function appendCompletedOutcome(state, options) {
   }
 
   return appendEvent(
-    {
-      ...state,
+    withInactiveRun(state, {
       lastOutcome,
       lastSummary,
       idleBackoffExponent: null,
       nextPollAfter: null,
-      activeRun: null,
-    },
-    {
-      at: options.now.toISOString(),
-      type: eventType,
-      runId: options.runId,
-      pid: options.pid,
-    }
+    }),
+    createRunEvent(options, eventType)
   );
 }
 
