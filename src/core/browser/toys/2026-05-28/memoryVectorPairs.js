@@ -1,18 +1,4 @@
-import {
-  buildMemoryVectorError,
-  buildMemoryVectorResponseFromRoot,
-  buildMemoryVectorResponseWithFallback,
-  buildResolvedMemoryVectorResponseFromValue,
-  normalizeMemoryLocation,
-  normalizeMemoryPath,
-  parseMemoryVectorRequest,
-  projectArrayOrSingletonToVector,
-  readEnvelopeMemoryRoot,
-  readMemoryPath,
-  readMemoryRoot,
-  readPermanentMemoryRoot,
-  readTemporaryMemoryRoot,
-} from './memoryVector.js';
+import * as memoryVectorCore from './memoryVector.js';
 
 /**
  * Read a memory location and project the selected value as a vector of
@@ -23,7 +9,10 @@ import {
  */
 export function memoryVectorPairs(input, env) {
   return JSON.stringify(
-    resolveMemoryVectorPairsResponse(parseMemoryVectorRequest(input), env)
+    resolveMemoryVectorPairsResponse(
+      memoryVectorCore.parseMemoryVectorRequest(input),
+      env
+    )
   );
 }
 
@@ -35,7 +24,7 @@ export function memoryVectorPairs(input, env) {
  */
 function resolveMemoryVectorPairsResponse(request, env) {
   if (request.error) {
-    return buildMemoryVectorError(request, request.error);
+    return memoryVectorCore.buildMemoryVectorError(request, request.error);
   }
 
   return buildMemoryVectorPairsResponse(request, env);
@@ -49,7 +38,7 @@ function resolveMemoryVectorPairsResponse(request, env) {
  * @returns {{ memoryLocation: string, path: string, found: boolean, vector: unknown[], error?: string }} Structured response.
  */
 function buildMemoryVectorPairsResponse(request, env) {
-  return buildMemoryVectorResponseWithFallback(request, env, {
+  return memoryVectorCore.buildMemoryVectorResponseWithFallback(request, env, {
     projectToVector,
     resolvePathError: resolvePathErrorForPairs,
   });
@@ -72,7 +61,11 @@ function resolvePathErrorForPairs(request, error) {
     };
   }
 
-  return buildMemoryVectorError(request, error, request.memoryLocation);
+  return memoryVectorCore.buildMemoryVectorError(
+    request,
+    error,
+    request.memoryLocation
+  );
 }
 
 /**
@@ -92,14 +85,14 @@ function projectToVector(value) {
  */
 function projectObjectOrScalarToVector(value) {
   if (Array.isArray(value)) {
-    return projectArrayOrSingletonToVector(value);
+    return memoryVectorCore.projectArrayOrSingletonToVector(value);
   }
 
   if (isObjectLike(value)) {
     return projectObjectToVector(/** @type {object} */ (value));
   }
 
-  return projectArrayOrSingletonToVector(value);
+  return memoryVectorCore.projectArrayOrSingletonToVector(value);
 }
 
 /**
@@ -133,19 +126,13 @@ function isObjectLike(value) {
 }
 
 export const memoryVectorPairsTestOnly = {
-  buildMemoryVectorError,
-  buildMemoryVectorResponseFromRoot,
-  buildResolvedMemoryVectorResponseFromValue,
-  normalizeMemoryLocation,
-  normalizeMemoryPath,
-  parseMemoryVectorRequest,
+  ...memoryVectorCore.memoryVectorTestOnly,
+  buildMemoryVectorResponseFromRoot:
+    memoryVectorCore.buildMemoryVectorResponseFromRoot,
+  buildResolvedMemoryVectorResponseFromValue:
+    memoryVectorCore.buildResolvedMemoryVectorResponseFromValue,
+  parseMemoryVectorRequest: memoryVectorCore.parseMemoryVectorRequest,
   projectToVector,
-  projectArrayOrSingletonToVector,
   projectObjectToVector,
   projectObjectOrScalarToVector,
-  readEnvelopeMemoryRoot,
-  readMemoryPath,
-  readMemoryRoot,
-  readPermanentMemoryRoot,
-  readTemporaryMemoryRoot,
 };
