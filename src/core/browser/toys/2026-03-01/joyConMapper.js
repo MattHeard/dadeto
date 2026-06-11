@@ -98,10 +98,12 @@ function readStoredState(env) {
   }
 
   const storedRecord = /** @type {Record<string, unknown>} */ (stored);
-  return {
-    mappings: normalizeMappings(storedRecord.mappings),
-    skippedControls: normalizeSkippedControls(storedRecord.skippedControls),
-  };
+  const mappings = normalizeMappings(storedRecord.mappings);
+  const skippedControls = normalizeSkippedControls(
+    storedRecord.skippedControls
+  );
+
+  return { mappings, skippedControls };
 }
 
 /**
