@@ -10,11 +10,12 @@ import {
  * @returns {Record<string, unknown> | null} Active run object or null.
  */
 export function normalizeActiveRun(value) {
+  let activeRun = null;
   if (isObjectLike(value)) {
-    return value;
+    activeRun = value;
   }
 
-  return null;
+  return activeRun;
 }
 
 /**
