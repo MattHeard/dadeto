@@ -86,10 +86,20 @@ function parseFrontMatterLine(line) {
     return null;
   }
 
-  return {
-    key: parsed.key,
-    value: normalizeFrontMatterValue(parsed.value),
-  };
+  return createParsedKeyValue(
+    parsed.key,
+    normalizeFrontMatterValue(parsed.value)
+  );
+}
+
+/**
+ * Create a parsed key/value pair.
+ * @param {string} key Parsed key.
+ * @param {string | number | boolean} value Parsed value.
+ * @returns {{ key: string, value: string | number | boolean }} Parsed key/value pair.
+ */
+function createParsedKeyValue(key, value) {
+  return { key, value };
 }
 
 /**
@@ -108,10 +118,7 @@ function parseKeyValueLine(line) {
     return null;
   }
 
-  return {
-    key,
-    value: line.slice(separatorIndex + 1),
-  };
+  return createParsedKeyValue(key, line.slice(separatorIndex + 1));
 }
 
 /**
