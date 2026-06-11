@@ -36,6 +36,15 @@
  * @property {(data: CozyDataEnvelope) => void} setLocalTemporaryData Temporary state writer.
  */
 
+/**
+ * Story transition payload returned after processing a command.
+ * @typedef {object} CozyTransition
+ * @property {string} output Player-facing response text.
+ * @property {CozyState} state Next story state.
+ * @property {string[]} inventory Next inventory list.
+ * @property {string[]} progress Next progress list.
+ */
+
 const COZY_KEY = 'COZY1';
 
 const BUILD_REQUIREMENTS = {
@@ -67,6 +76,46 @@ const BUILD_REQUIREMENTS = {
 };
 
 const REQUIRED_STAGES = ['foundation', 'materials', 'roof', 'garden'];
+
+/**
+ * Create a transition payload from explicit state lists.
+ * @param {CozyTransition} transition Transition payload values.
+ * @returns {CozyTransition} Transition payload.
+ */
+function createTransitionFromLists(transition) {
+  const { output, state, inventory, progress } = transition;
+
+  return { output, state, inventory, progress };
+}
+
+/**
+ * Return state lists from the current runtime context.
+ * @param {CozyRuntimeContext} context Runtime context.
+ * @returns {{inventory: string[], progress: string[]}} Current state lists.
+ */
+function getContextLists(context) {
+  return {
+    inventory: context.inventory,
+    progress: context.progress,
+  };
+}
+
+/**
+ * Create a transition that preserves the current context lists.
+ * @param {CozyRuntimeContext} context Runtime context.
+ * @param {string} output Player-facing response text.
+ * @param {CozyState} state Next story state.
+ * @returns {CozyTransition} Transition payload.
+ */
+function createContextTransition(context, output, state) {
+  const lists = getContextLists(context);
+
+  return createTransitionFromLists({
+    output,
+    state,
+    ...lists,
+  });
+}
 
 /**
  * Read a required helper from the environment map.
@@ -160,20 +209,18 @@ function resolveYardSelection(lowerInput) {
 function handleYard(context) {
   const selection = resolveYardSelection(context.lowerInput);
   if (selection === 'yard') {
-    return {
-      output: '> The plan is simple: foundation / materials / roof / garden.',
-      state: 'yard',
-      inventory: context.inventory,
-      progress: context.progress,
-    };
+    return createContextTransition(
+      context,
+      '> The plan is simple: foundation / materials / roof / garden.',
+      'yard'
+    );
   }
 
-  return {
-    output: BUILD_REQUIREMENTS[selection].prompt,
-    state: selection,
-    inventory: context.inventory,
-    progress: context.progress,
-  };
+  return createContextTransition(
+    context,
+    BUILD_REQUIREMENTS[selection].prompt,
+    selection
+  );
 }
 
 /**
@@ -235,21 +282,20 @@ function getCompletionLine(progress) {
 function handleBuildStage(context, stage) {
   const requirement = BUILD_REQUIREMENTS[stage];
   if (!context.lowerInput.includes(requirement.command)) {
-    return {
-      output: `> Not quite. Try \`${requirement.command}\` to finish ${stage}.`,
-      state: stage,
-      inventory: context.inventory,
-      progress: context.progress,
-    };
+    return createContextTransition(
+      context,
+      `> Not quite. Try \`${requirement.command}\` to finish ${stage}.`,
+      stage
+    );
   }
 
   const updated = addCompletedStage(context, stage);
-  return {
+  return createTransitionFromLists({
     output: `> ${requirement.reward}\n${getCompletionLine(updated.progress)}`,
     state: 'yard',
     inventory: updated.inventory,
     progress: updated.progress,
-  };
+  });
 }
 
 /**
@@ -355,16 +401,27 @@ function persistTransition(context, result) {
 }
 
 /**
+ * Persist a state transition that keeps the current context lists.
+ * @param {CozyRuntimeContext} context Runtime context.
+ * @param {CozyState} state Next story state.
+ * @returns {void}
+ */
+function persistContextState(context, state) {
+  const lists = getContextLists(context);
+
+  persistTransition(context, {
+    state,
+    ...lists,
+  });
+}
+
+/**
  * Persist first-visit state and return intro text.
  * @param {CozyRuntimeContext} context Runtime context.
  * @returns {string} Intro message.
  */
 function handleFirstVisit(context) {
-  persistTransition(context, {
-    state: 'intro',
-    inventory: context.inventory,
-    progress: context.progress,
-  });
+  persistContextState(context, 'intro');
 
   return introMessage(context.name);
 }
