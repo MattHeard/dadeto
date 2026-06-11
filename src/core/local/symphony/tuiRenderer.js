@@ -462,21 +462,9 @@ function renderActiveRun(activeRun) {
 function renderStatusHeader(args) {
   const { lines, status, terminalSize, serverVersion, context } = args;
   const updateMessage = `Update: restart server or TUI for ${serverVersion}.`;
-  pushLine(
-    lines,
-    formatField('State', status.state ?? 'unknown', terminalSize),
-    terminalSize
-  );
-  pushLine(
-    lines,
-    formatField('SrvVer', serverVersion, terminalSize),
-    terminalSize
-  );
-  pushLine(
-    lines,
-    formatField('TUIVer', context.version ?? 'unknown', terminalSize),
-    terminalSize
-  );
+  renderFieldLine(lines, 'State', status.state ?? 'unknown', terminalSize);
+  renderFieldLine(lines, 'SrvVer', serverVersion, terminalSize);
+  renderFieldLine(lines, 'TUIVer', context.version ?? 'unknown', terminalSize);
 
   if (serverVersion !== 'unknown' && serverVersion !== context.version) {
     pushLine(lines, clampLine(updateMessage, terminalSize), terminalSize);
@@ -490,21 +478,19 @@ function renderStatusHeader(args) {
   );
 
   if (status.currentBeadTitle) {
-    pushLine(
-      lines,
-      formatField('Title', status.currentBeadTitle, terminalSize),
-      terminalSize
-    );
+    renderFieldLine(lines, 'Title', status.currentBeadTitle, terminalSize);
   }
 
-  pushLine(
+  renderFieldLine(
     lines,
-    formatField('Run', renderActiveRun(status.activeRun), terminalSize),
+    'Run',
+    renderActiveRun(status.activeRun),
     terminalSize
   );
-  pushLine(
+  renderFieldLine(
     lines,
-    formatField('Rec', status.operatorRecommendation ?? 'none', terminalSize),
+    'Rec',
+    status.operatorRecommendation ?? 'none',
     terminalSize
   );
 }
@@ -517,11 +503,7 @@ function renderStatusHeader(args) {
  * @returns {void}
  */
 function renderStatusFooter(lines, context, terminalSize) {
-  pushLine(
-    lines,
-    formatField('Auto', context.autoLoopLabel ?? 'off', terminalSize),
-    terminalSize
-  );
+  renderFieldLine(lines, 'Auto', context.autoLoopLabel ?? 'off', terminalSize);
 
   renderOptionalFooterLine(
     lines,
@@ -557,13 +539,25 @@ function renderOptionalFooterLine(lines, label, value, terminalSize) {
 }
 
 /**
+ * Render a standard label/value line.
+ * @param {string[]} lines Output lines.
+ * @param {string} label Line label.
+ * @param {unknown} value Line value.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {void}
+ */
+function renderFieldLine(lines, label, value, terminalSize) {
+  pushLine(lines, formatField(label, value, terminalSize), terminalSize);
+}
+
+/**
  * Render the no-status state.
  * @param {string[]} lines Output lines.
  * @param {TerminalSize} terminalSize Terminal size information.
  * @returns {void}
  */
 function renderUnavailableStatus(lines, terminalSize) {
-  pushLine(lines, 'State: unreachable', terminalSize);
+  renderFieldLine(lines, 'State', 'unreachable', terminalSize);
   pushLine(lines, 'Start `npm run start:symphony`', terminalSize);
   pushLine(lines, 'Waiting for service (polls every 5s)', terminalSize);
 }
