@@ -4,8 +4,26 @@ const ANSI_BOLD = '\u001b[1m';
 const ANSI_RESET = '\u001b[0m';
 
 /**
- *
- * @param terminalSize
+ * @typedef {object} TerminalSize
+ * @property {number} [columns] Terminal column count.
+ * @property {number} [rows] Terminal row count.
+ */
+
+/**
+ * @typedef {object} RenderContext
+ * @property {number} [columns] Terminal column count.
+ * @property {number} [rows] Terminal row count.
+ * @property {string} [version] UI version label.
+ * @property {string} [autoLoopLabel] Auto-loop label.
+ * @property {string} [launchFeedback] Launch status text.
+ * @property {string} [refreshFeedback] Refresh status text.
+ * @property {string} [statusError] Status error text.
+ */
+
+/**
+ * Get the visible column count from a terminal size-like object.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {number} Non-negative column count.
  */
 function getTerminalColumns(terminalSize = {}) {
   if (typeof terminalSize.columns === 'number') {
@@ -16,8 +34,9 @@ function getTerminalColumns(terminalSize = {}) {
 }
 
 /**
- *
- * @param terminalSize
+ * Get the visible row count from a terminal size-like object.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {number} Non-negative row count.
  */
 function getTerminalRows(terminalSize = {}) {
   if (typeof terminalSize.rows === 'number') {
@@ -28,8 +47,9 @@ function getTerminalRows(terminalSize = {}) {
 }
 
 /**
- *
- * @param terminalSize
+ * Get the maximum width for a rendered line.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {number} Maximum render width.
  */
 function getMaxWidth(terminalSize = {}) {
   const columns = getTerminalColumns(terminalSize);
@@ -41,8 +61,9 @@ function getMaxWidth(terminalSize = {}) {
 }
 
 /**
- *
- * @param terminalSize
+ * Get the maximum number of lines to render.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {number} Maximum line count.
  */
 function getMaxLines(terminalSize = {}) {
   const rows = getTerminalRows(terminalSize);
@@ -54,47 +75,64 @@ function getMaxLines(terminalSize = {}) {
 }
 
 /**
- *
- * @param text
- * @param terminalSize
+ * Clamp a line to the available width.
+ * @param {string} text Line content.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {string} Clamped line content.
  */
 function clampLine(text = '', terminalSize = {}) {
   const line = String(text ?? '');
   const maxWidth = getMaxWidth(terminalSize);
-  if (line.length <= maxWidth) return line;
-  if (maxWidth <= 3) return line.slice(0, maxWidth);
+  if (line.length <= maxWidth) {
+    return line;
+  }
+  if (maxWidth <= 3) {
+    return line.slice(0, maxWidth);
+  }
   return `${line.slice(0, maxWidth - 3)}...`;
 }
 
 /**
- *
- * @param lines
- * @param text
- * @param terminalSize
+ * Append a clamped line if space remains.
+ * @param {string[]} lines Accumulated lines.
+ * @param {string} text Line content.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {void}
  */
 function pushLine(lines, text = '', terminalSize = {}) {
-  if (lines.length >= getMaxLines(terminalSize)) return;
+  if (lines.length >= getMaxLines(terminalSize)) {
+    return;
+  }
+
   lines.push(clampLine(text, terminalSize));
 }
 
 /**
- *
- * @param text
- * @param terminalSize
+ * Highlight a line for display.
+ * @param {string} text Line content.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {string} Highlighted line content.
  */
 function highlightLine(text, terminalSize = {}) {
-  if (!text) return '';
+  if (!text) {
+    return '';
+  }
+
   return `${ANSI_BOLD}${clampLine(text, terminalSize)}${ANSI_RESET}`;
 }
 
 /**
- *
- * @param label
- * @param value
- * @param terminalSize
+ * Format a label/value pair for display.
+ * @param {string} label Field label.
+ * @param {unknown} value Field value.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {string} Rendered field text.
  */
 function formatField(label, value, terminalSize = {}) {
-  const trimmedLabel = label.length > 10 ? label.slice(0, 10) : label;
+  let trimmedLabel = label;
+  if (label.length > 10) {
+    trimmedLabel = label.slice(0, 10);
+  }
   const available = Math.max(
     getMaxWidth(terminalSize) - trimmedLabel.length - 2,
     0
@@ -106,53 +144,143 @@ function formatField(label, value, terminalSize = {}) {
   if (available <= 0) {
     return `${trimmedLabel}:`;
   }
-  const truncatedValue =
-    available > 3
-      ? `${normalizedValue.slice(0, available - 3)}...`
-      : normalizedValue.slice(0, available);
+
+  let truncatedValue = normalizedValue.slice(0, available);
+  if (available > 3) {
+    truncatedValue = `${normalizedValue.slice(0, available - 3)}...`;
+  }
   return `${trimmedLabel}: ${truncatedValue}`;
 }
 
 /**
- *
- * @param evidence
+ * Normalize evidence into a small renderable list.
+ * @param {unknown} evidence Evidence payload.
+ * @returns {unknown[]} Evidence items.
  */
-function formatEvidenceLines(evidence) {
-  const items = evidence
-    ? Array.isArray(evidence)
-      ? evidence
-      : [evidence]
-    : [];
-  if (items.length === 0) {
-    return ['  (none)'];
+function normalizeEvidenceItems(evidence) {
+  if (!evidence) {
+    return [];
   }
-  return items.slice(0, 2).map((item, index) => {
-    const text = typeof item === 'string' ? item : JSON.stringify(item);
-    return `${index + 1}> ${text.replace(/\s+/g, ' ')}`;
-  });
+
+  if (Array.isArray(evidence)) {
+    return evidence;
+  }
+
+  return [evidence];
 }
 
 /**
- *
- * @param events
+ * Format evidence entries for display.
+ * @param {unknown} evidence Evidence payload.
+ * @returns {string[]} Rendered evidence lines.
+ */
+function formatEvidenceLines(evidence) {
+  const items = normalizeEvidenceItems(evidence);
+  if (items.length === 0) {
+    return ['  (none)'];
+  }
+
+  const lines = [];
+  const limitedItems = items.slice(0, 2);
+  for (let index = 0; index < limitedItems.length; index += 1) {
+    const item = limitedItems[index];
+    let text = JSON.stringify(item);
+    if (typeof item === 'string') {
+      text = item;
+    }
+    lines.push(`${index + 1}> ${text.replace(/\s+/g, ' ')}`);
+  }
+  return lines;
+}
+
+/**
+ * Format event log entries for display.
+ * @param {unknown} events Event log payload.
+ * @returns {string[]} Rendered event lines.
  */
 function formatEventLines(events) {
   if (!Array.isArray(events) || events.length === 0) {
     return [];
   }
 
-  return events.map((event, index) => {
-    const text = typeof event === 'string' ? event : JSON.stringify(event);
-    return `E${index + 1}> ${text.replace(/\s+/g, ' ')}`;
-  });
+  const lines = [];
+  for (let index = 0; index < events.length; index += 1) {
+    const event = events[index];
+    let text = JSON.stringify(event);
+    if (typeof event === 'string') {
+      text = event;
+    }
+    lines.push(`E${index + 1}> ${text.replace(/\s+/g, ' ')}`);
+  }
+  return lines;
 }
 
 /**
- *
- * @param status
- * @param lines
- * @param slots
- * @param terminalSize
+ * Render the event section.
+ * @param {string[]} lines Accumulated lines.
+ * @param {string[]} eventLines Event lines.
+ * @param {number} remaining Remaining slots.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {number} Remaining slots after rendering.
+ */
+function renderEventSection(lines, eventLines, remaining, terminalSize) {
+  if (eventLines.length === 0 || remaining <= 0) {
+    return remaining;
+  }
+
+  let nextRemaining = remaining;
+  pushLine(lines, 'Events:', terminalSize);
+  nextRemaining -= 1;
+
+  for (const eventLine of eventLines) {
+    if (nextRemaining <= 0) {
+      return nextRemaining;
+    }
+
+    pushLine(lines, eventLine, terminalSize);
+    nextRemaining -= 1;
+  }
+
+  return nextRemaining;
+}
+
+/**
+ * Render the evidence section.
+ * @param {string[]} lines Accumulated lines.
+ * @param {unknown} evidence Evidence payload.
+ * @param {number} remaining Remaining slots.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {number} Remaining slots after rendering.
+ */
+function renderEvidenceSection(lines, evidence, remaining, terminalSize) {
+  if (remaining <= 0) {
+    return remaining;
+  }
+
+  const evidenceLines = formatEvidenceLines(evidence);
+  let nextRemaining = remaining;
+  pushLine(lines, 'Evidence:', terminalSize);
+  nextRemaining -= 1;
+
+  for (const evidenceLine of evidenceLines) {
+    if (nextRemaining <= 0) {
+      return nextRemaining;
+    }
+
+    pushLine(lines, evidenceLine, terminalSize);
+    nextRemaining -= 1;
+  }
+
+  return nextRemaining;
+}
+
+/**
+ * Render event and evidence sections into the current output.
+ * @param {object} status Status payload.
+ * @param {string[]} lines Accumulated lines.
+ * @param {number} slots Remaining slots.
+ * @param {TerminalSize} terminalSize Terminal size info.
+ * @returns {void}
  */
 function renderEventAndEvidence(status, lines, slots, terminalSize = {}) {
   if (slots <= 0) {
@@ -163,43 +291,30 @@ function renderEventAndEvidence(status, lines, slots, terminalSize = {}) {
   const eventLines = formatEventLines(status.eventLog);
   const availableEventSlots = Math.max(remaining - 1, 0);
   const eventLinesToShow = eventLines.slice(0, availableEventSlots);
-
-  if (eventLinesToShow.length > 0) {
-    pushLine(lines, 'Events:', terminalSize);
-    remaining -= 1;
-    for (const eventLine of eventLinesToShow) {
-      if (remaining <= 0) {
-        break;
-      }
-      pushLine(lines, eventLine, terminalSize);
-      remaining -= 1;
-    }
-  }
-
+  remaining = renderEventSection(
+    lines,
+    eventLinesToShow,
+    remaining,
+    terminalSize
+  );
   if (remaining <= 0) {
     return;
   }
 
-  const evidenceLines = formatEvidenceLines(status.latestEvidence);
-  pushLine(lines, 'Evidence:', terminalSize);
-  remaining -= 1;
-  for (const evidenceLine of evidenceLines.slice(0, remaining)) {
-    if (remaining <= 0) {
-      break;
-    }
-    pushLine(lines, evidenceLine, terminalSize);
-    remaining -= 1;
-  }
+  renderEvidenceSection(lines, status.latestEvidence, remaining, terminalSize);
 }
 
 /**
- *
- * @param status
+ * Resolve the queue summary to show in the renderer.
+ * @param {object} status Status payload.
+ * @returns {unknown[]} Queue summary entries.
  */
 function getQueueSummary(status) {
-  const pollSummary = Array.isArray(status?.lastPoll?.queueSummary)
-    ? status.lastPoll.queueSummary
-    : [];
+  let pollSummary = [];
+  if (Array.isArray(status?.lastPoll?.queueSummary)) {
+    pollSummary = status.lastPoll.queueSummary;
+  }
+
   if (pollSummary.length > 0) {
     return pollSummary;
   }
@@ -212,10 +327,11 @@ function getQueueSummary(status) {
 }
 
 /**
- *
- * @param totalSlots
- * @param queueLength
- * @param maxLines
+ * Decide how many slots to use for backlog rendering.
+ * @param {number} totalSlots Total available slots.
+ * @param {number} queueLength Queue entry count.
+ * @param {number} maxLines Maximum render lines.
+ * @returns {number} Slots assigned to backlog rendering.
  */
 function calculateBacklogSlots(totalSlots, queueLength, maxLines) {
   if (totalSlots <= 0) {
@@ -223,38 +339,48 @@ function calculateBacklogSlots(totalSlots, queueLength, maxLines) {
   }
 
   const hasQueue = queueLength > 0;
-  const minSlots = hasQueue ? 2 : 1;
+  let minSlots = 1;
+  if (hasQueue) {
+    minSlots = 2;
+  }
   if (totalSlots <= minSlots) {
     return Math.min(totalSlots, minSlots);
   }
 
   const extraCapacity = Math.max(0, totalSlots - minSlots);
   const extraRows = Math.max(0, maxLines - BASE_MAX_LINES);
-  const maxExtraBacklog =
-    extraRows > 0 ? Math.max(1, Math.floor(extraRows / 2)) : 1;
-  const queueExtra = hasQueue ? Math.min(queueLength - 1, extraCapacity) : 0;
+  let maxExtraBacklog = 1;
+  if (extraRows > 0) {
+    maxExtraBacklog = Math.max(1, Math.floor(extraRows / 2));
+  }
+  let queueExtra = 0;
+  if (hasQueue) {
+    queueExtra = Math.min(queueLength - 1, extraCapacity);
+  }
   const bonusSlots = Math.min(queueExtra, extraCapacity, maxExtraBacklog);
 
   return minSlots + bonusSlots;
 }
 
 /**
- *
- * @param status
- * @param lines
- * @param slots
- * @param queueSummary
- * @param terminalSize
+ * Render the queue backlog.
+ * @param {{
+ *   status: object,
+ *   lines: string[],
+ *   slots: number,
+ *   queueSummary: unknown[],
+ *   terminalSize?: TerminalSize
+ * }} args Backlog render arguments.
+ * @returns {number} Slots consumed.
  */
-function renderBacklog(status, lines, slots, queueSummary, terminalSize = {}) {
+function renderBacklog(args) {
+  const { status, lines, slots, queueSummary, terminalSize = {} } = args;
   if (slots <= 0) {
     return 0;
   }
 
-  const readyCount =
-    typeof status?.lastPoll?.readyCount === 'number'
-      ? status.lastPoll.readyCount
-      : queueSummary.length;
+  const readyCount = getReadyCount(status, queueSummary);
+
   pushLine(
     lines,
     formatField('Queue', `${readyCount} ready`, terminalSize),
@@ -266,10 +392,39 @@ function renderBacklog(status, lines, slots, queueSummary, terminalSize = {}) {
     return used;
   }
 
+  used += renderBacklogEntries(lines, queueSummary, slots, terminalSize);
+
+  return used;
+}
+
+/**
+ * Resolve the ready-count label for backlog rendering.
+ * @param {object} status Status payload.
+ * @param {unknown[]} queueSummary Queue summary entries.
+ * @returns {number} Ready count.
+ */
+function getReadyCount(status, queueSummary) {
+  if (typeof status?.lastPoll?.readyCount === 'number') {
+    return status.lastPoll.readyCount;
+  }
+
+  return queueSummary.length;
+}
+
+/**
+ * Render backlog entry lines.
+ * @param {string[]} lines Output lines.
+ * @param {unknown[]} queueSummary Queue summary entries.
+ * @param {number} slots Available slots.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {number} Number of backlog entries rendered.
+ */
+function renderBacklogEntries(lines, queueSummary, slots, terminalSize) {
   const backlogEntries = queueSummary.slice(0, Math.max(0, slots - 1));
+  let rendered = 0;
   for (
     let index = 0;
-    index < backlogEntries.length && used < slots;
+    index < backlogEntries.length && rendered + 1 < slots;
     index += 1
   ) {
     pushLine(
@@ -277,28 +432,150 @@ function renderBacklog(status, lines, slots, queueSummary, terminalSize = {}) {
       `B${index + 1}> ${clampLine(backlogEntries[index], terminalSize)}`,
       terminalSize
     );
-    used += 1;
+    rendered += 1;
   }
 
-  return used;
+  return rendered;
 }
 
 /**
- *
- * @param activeRun
+ * Render the active run label.
+ * @param {unknown} activeRun Active run payload.
+ * @returns {string} Rendered active run label.
  */
 function renderActiveRun(activeRun) {
-  if (!activeRun) return 'none';
-  if (typeof activeRun === 'string') return activeRun;
+  if (!activeRun) {
+    return 'none';
+  }
+
+  if (typeof activeRun === 'string') {
+    return activeRun;
+  }
+
   const id = activeRun.id ?? activeRun.runId ?? activeRun.beadId ?? 'unknown';
   const state = activeRun.state ?? activeRun.status ?? 'unknown';
   return `${id} (${state})`;
 }
 
 /**
- *
- * @param status
- * @param context
+ * Render the top status block.
+ * @param {{
+ *   lines: string[],
+ *   status: object,
+ *   terminalSize: TerminalSize,
+ *   serverVersion: string,
+ *   context: RenderContext
+ * }} args Status header arguments.
+ * @returns {void}
+ */
+function renderStatusHeader(args) {
+  const { lines, status, terminalSize, serverVersion, context } = args;
+  const updateMessage = `Update: restart server or TUI for ${serverVersion}.`;
+  pushLine(
+    lines,
+    formatField('State', status.state ?? 'unknown', terminalSize),
+    terminalSize
+  );
+  pushLine(
+    lines,
+    formatField('SrvVer', serverVersion, terminalSize),
+    terminalSize
+  );
+  pushLine(
+    lines,
+    formatField('TUIVer', context.version ?? 'unknown', terminalSize),
+    terminalSize
+  );
+
+  if (serverVersion !== 'unknown' && serverVersion !== context.version) {
+    pushLine(lines, clampLine(updateMessage, terminalSize), terminalSize);
+  }
+
+  const beadId = status.currentBeadId ?? 'none';
+  pushLine(
+    lines,
+    highlightLine(formatField('Bead ID', beadId, terminalSize), terminalSize),
+    terminalSize
+  );
+
+  if (status.currentBeadTitle) {
+    pushLine(
+      lines,
+      formatField('Title', status.currentBeadTitle, terminalSize),
+      terminalSize
+    );
+  }
+
+  pushLine(
+    lines,
+    formatField('Run', renderActiveRun(status.activeRun), terminalSize),
+    terminalSize
+  );
+  pushLine(
+    lines,
+    formatField('Rec', status.operatorRecommendation ?? 'none', terminalSize),
+    terminalSize
+  );
+}
+
+/**
+ * Render the status footer block.
+ * @param {string[]} lines Output lines.
+ * @param {RenderContext} context Renderer context.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {void}
+ */
+function renderStatusFooter(lines, context, terminalSize) {
+  pushLine(
+    lines,
+    formatField('Auto', context.autoLoopLabel ?? 'off', terminalSize),
+    terminalSize
+  );
+
+  if (context.launchFeedback) {
+    pushLine(
+      lines,
+      clampLine(`Launch: ${context.launchFeedback}`, terminalSize),
+      terminalSize
+    );
+  }
+
+  if (context.refreshFeedback) {
+    pushLine(
+      lines,
+      clampLine(`Refresh: ${context.refreshFeedback}`, terminalSize),
+      terminalSize
+    );
+  }
+
+  if (context.statusError) {
+    pushLine(
+      lines,
+      clampLine(`Status: ${context.statusError}`, terminalSize),
+      terminalSize
+    );
+  }
+
+  pushLine(lines, 'Polling every 5 seconds.', terminalSize);
+}
+
+/**
+ * Render the no-status state.
+ * @param {string[]} lines Output lines.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {void}
+ */
+function renderUnavailableStatus(lines, terminalSize) {
+  pushLine(lines, 'State: unreachable', terminalSize);
+  pushLine(lines, 'Start `npm run start:symphony`', terminalSize);
+  pushLine(lines, 'Waiting for service (polls every 5s)', terminalSize);
+}
+
+/**
+ * Build the full Symphony TUI line set.
+ * @param {object | null | undefined} status Status payload.
+ * @param {RenderContext} context Renderer context.
+ * @returns {string[]} Rendered output lines.
  */
 export function buildStatusLines(status, context = {}) {
   const terminalSize = {
@@ -308,109 +585,45 @@ export function buildStatusLines(status, context = {}) {
   const lines = [];
   pushLine(lines, 'Symphony TUI (Ctrl+C to exit)', terminalSize);
   pushLine(lines, '-'.repeat(getMaxWidth(terminalSize)), terminalSize);
+
   if (!status) {
-    pushLine(lines, 'State: unreachable', terminalSize);
-    pushLine(lines, 'Start `npm run start:symphony`', terminalSize);
-    pushLine(lines, 'Waiting for service (polls every 5s)', terminalSize);
-  } else {
-    const serverVersion =
-      typeof status.runtime?.version === 'string'
-        ? status.runtime.version
-        : 'unknown';
-    pushLine(
-      lines,
-      formatField('State', status.state ?? 'unknown', terminalSize),
-      terminalSize
-    );
-    pushLine(
-      lines,
-      formatField('SrvVer', serverVersion, terminalSize),
-      terminalSize
-    );
-    pushLine(
-      lines,
-      formatField('TUIVer', context.version ?? 'unknown', terminalSize),
-      terminalSize
-    );
-    if (serverVersion !== 'unknown' && serverVersion !== context.version) {
-      pushLine(
-        lines,
-        clampLine(
-          `Update: restart server or TUI for ${serverVersion}.`,
-          terminalSize
-        ),
-        terminalSize
-      );
-    }
-    const beadId = status.currentBeadId ?? 'none';
-    pushLine(
-      lines,
-      highlightLine(formatField('Bead ID', beadId, terminalSize), terminalSize),
-      terminalSize
-    );
-    if (status.currentBeadTitle) {
-      pushLine(
-        lines,
-        formatField('Title', status.currentBeadTitle, terminalSize),
-        terminalSize
-      );
-    }
-    pushLine(
-      lines,
-      formatField('Run', renderActiveRun(status.activeRun), terminalSize),
-      terminalSize
-    );
-    pushLine(
-      lines,
-      formatField('Rec', status.operatorRecommendation ?? 'none', terminalSize),
-      terminalSize
-    );
-    const footerLinesCount = 2;
-    const maxLines = getMaxLines(terminalSize);
-    const totalSlots = Math.max(maxLines - lines.length - footerLinesCount, 0);
-    const queueSummary = getQueueSummary(status);
-    const backlogSlots = calculateBacklogSlots(
-      totalSlots,
-      queueSummary.length,
-      maxLines
-    );
-    const usedBacklogLines = renderBacklog(
-      status,
-      lines,
-      backlogSlots,
-      queueSummary,
-      terminalSize
-    );
-    const remainingSlots = Math.max(totalSlots - usedBacklogLines, 0);
-    renderEventAndEvidence(status, lines, remainingSlots, terminalSize);
+    renderUnavailableStatus(lines, terminalSize);
+    return lines;
   }
-  pushLine(
+
+  const runtimeVersion = status.runtime?.version;
+  let serverVersion = 'unknown';
+  if (typeof runtimeVersion === 'string') {
+    serverVersion = runtimeVersion;
+  }
+
+  renderStatusHeader({
     lines,
-    formatField('Auto', context.autoLoopLabel ?? 'off', terminalSize),
-    terminalSize
+    status,
+    terminalSize,
+    serverVersion,
+    context,
+  });
+
+  const footerLinesCount = 2;
+  const maxLines = getMaxLines(terminalSize);
+  const totalSlots = Math.max(maxLines - lines.length - footerLinesCount, 0);
+  const queueSummary = getQueueSummary(status);
+  const backlogSlots = calculateBacklogSlots(
+    totalSlots,
+    queueSummary.length,
+    maxLines
   );
-  if (context.launchFeedback) {
-    pushLine(
-      lines,
-      clampLine(`Launch: ${context.launchFeedback}`, terminalSize),
-      terminalSize
-    );
-  }
-  if (context.refreshFeedback) {
-    pushLine(
-      lines,
-      clampLine(`Refresh: ${context.refreshFeedback}`, terminalSize),
-      terminalSize
-    );
-  }
-  if (context.statusError) {
-    pushLine(
-      lines,
-      clampLine(`Status: ${context.statusError}`, terminalSize),
-      terminalSize
-    );
-  }
-  pushLine(lines, 'Polling every 5 seconds.', terminalSize);
+  const usedBacklogLines = renderBacklog({
+    status,
+    lines,
+    slots: backlogSlots,
+    queueSummary,
+    terminalSize,
+  });
+  const remainingSlots = Math.max(totalSlots - usedBacklogLines, 0);
+  renderEventAndEvidence(status, lines, remainingSlots, terminalSize);
+  renderStatusFooter(lines, context, terminalSize);
   return lines;
 }
 

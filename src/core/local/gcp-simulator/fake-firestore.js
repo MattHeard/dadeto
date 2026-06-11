@@ -16,8 +16,11 @@ class ServerTimestampValue {
 /**
  * Create a fake Firestore field-value helper.
  * @param {() => Date} now - Clock callback used for server timestamps.
- * @returns {{ serverTimestamp(): ServerTimestampValue, increment(amount: number): IncrementValue, delete(): symbol }}
- *   Field value helper.
+ * @returns {{
+ *   serverTimestamp: () => ServerTimestampValue,
+ *   increment: (amount: number) => IncrementValue,
+ *   delete: () => symbol
+ * }} Field value helper.
  */
 export function createFakeFieldValue(now = () => new Date()) {
   return {
@@ -38,7 +41,7 @@ export function createFakeFieldValue(now = () => new Date()) {
  * @param {object} [options] - Configuration.
  * @param {(records: Array<{path: string, before?: unknown, after?: unknown}>) => Promise<void>|void} [options.onCommit]
  *   Commit callback.
- * @returns {FakeFirestore} Fake Firestore instance.
+ * @returns {FakeFirestoreShim} Fake Firestore instance.
  */
 export function createFakeFirestore({ onCommit } = {}) {
   const state = new Map();
@@ -111,11 +114,7 @@ export function createFakeFirestore({ onCommit } = {}) {
 
     __resolveDocumentSnapshot(path) {
       const data = state.get(path);
-      return buildDocumentSnapshot(
-        this,
-        path,
-        data ? cloneDocument(data) : undefined
-      );
+      return buildDocumentSnapshot(this, path, buildSnapshotData(data));
     }
 
     __getPathData(path) {
@@ -150,7 +149,7 @@ export function createFakeFirestore({ onCommit } = {}) {
 
       touched.set(operation.path, {
         before,
-        after: after === undefined ? undefined : cloneDocument(after),
+        after: buildSnapshotData(after),
       });
     }
 
@@ -214,10 +213,14 @@ class FakeCollectionReference {
     this.db = db;
     this.collectionSegments = collectionSegments;
     this.path = collectionSegments.join('/');
-    this.parent =
-      collectionSegments.length > 1
-        ? new FakeDocumentReference(db, collectionSegments.slice(0, -1))
-        : null;
+    if (collectionSegments.length > 1) {
+      this.parent = new FakeDocumentReference(
+        db,
+        collectionSegments.slice(0, -1)
+      );
+    } else {
+      this.parent = null;
+    }
   }
 
   doc(id) {
@@ -256,7 +259,11 @@ class FakeCollectionReference {
 class FakeDocumentReference {
   constructor(db, segments) {
     this.db = db;
-    this.segments = Array.isArray(segments) ? segments : splitPath(segments);
+    if (Array.isArray(segments)) {
+      this.segments = segments;
+    } else {
+      this.segments = splitPath(segments);
+    }
     this.path = this.segments.join('/');
     this.id = this.segments[this.segments.length - 1];
     this.parent = new FakeCollectionReference(db, this.segments.slice(0, -1));
@@ -395,7 +402,7 @@ class FakeQuerySnapshot {
 
 /**
  * Build a document snapshot for the fake Firestore.
- * @param {FakeFirestore} db - Database instance.
+ * @param {FakeFirestoreShim} db - Database instance.
  * @param {string} path - Document path.
  * @param {unknown} data - Document payload.
  * @returns {FakeDocumentSnapshot} Snapshot object.
@@ -414,9 +421,29 @@ class FakeDocumentSnapshot {
   }
 
   data() {
-    return this._data === undefined ? undefined : cloneDocument(this._data);
+    if (this._data === undefined) {
+      return undefined;
+    }
+
+    return cloneDocument(this._data);
   }
 }
+
+/**
+ * @typedef {object} FakeFirestoreShim
+ * @property {(name: string) => FakeCollectionReference} collection Collection lookup.
+ * @property {(name: string) => FakeQuery} collectionGroup Collection-group lookup.
+ * @property {(path: string) => FakeDocumentReference} doc Document lookup.
+ * @property {() => FakeWriteBatch} batch Batch writer factory.
+ * @property {(path: string, nextData: unknown, mode?: 'set'|'update'|'delete') => Promise<undefined>} __writeDocument Write helper.
+ * @property {(path: string) => Promise<unknown>} __getDocument Read helper.
+ * @property {(path: string) => FakeDocumentSnapshot} __resolveDocumentSnapshot Snapshot helper.
+ * @property {(collectionSegments: string[]) => Array<{path: string, data: unknown}>} __getCollectionDocuments Collection query helper.
+ * @property {(collectionId: string) => Array<{path: string, data: unknown}>} __getCollectionGroupDocuments Collection-group helper.
+ * @property {(path: string) => unknown} __getPathData Path-data getter.
+ * @property {(path: string, data: unknown) => void} __setPathData Path-data setter.
+ * @property {(path: string) => void} __deletePathData Path-data deleter.
+ */
 
 /**
  * Resolve a write operation against an existing document value.
@@ -488,9 +515,10 @@ function applyFieldPatch(target, key, value) {
 }
 
 /**
- *
- * @param current
- * @param value
+ * Resolve a field value during a write.
+ * @param {unknown} current - Existing field value.
+ * @param {unknown} value - Incoming field value.
+ * @returns {unknown} Resolved field value.
  */
 function resolveFieldValue(current, value) {
   if (value === DELETE_FIELD) {
@@ -498,7 +526,10 @@ function resolveFieldValue(current, value) {
   }
 
   if (value instanceof IncrementValue) {
-    const base = typeof current === 'number' ? current : 0;
+    let base = 0;
+    if (typeof current === 'number') {
+      base = current;
+    }
     return base + value.amount;
   }
 
@@ -510,12 +541,17 @@ function resolveFieldValue(current, value) {
 }
 
 /**
- *
- * @param value
+ * Normalize a written value into a clonable object tree.
+ * @param {unknown} value - Value to normalize.
+ * @returns {unknown} Normalized value.
  */
 function normalizeWrittenValue(value) {
   if (value === DELETE_FIELD) {
     return DELETE_FIELD;
+  }
+
+  if (Array.isArray(value)) {
+    return normalizeWrittenArray(value);
   }
 
   if (value instanceof IncrementValue) {
@@ -526,30 +562,20 @@ function normalizeWrittenValue(value) {
     return value.value;
   }
 
-  if (!isPlainObject(value) && !Array.isArray(value)) {
+  if (!isPlainObject(value)) {
     return value;
   }
 
-  if (Array.isArray(value)) {
-    return value.map(item => normalizeWrittenValue(item));
-  }
-
-  const output = {};
-  for (const [key, nested] of Object.entries(value)) {
-    const resolved = normalizeWrittenValue(nested);
-    if (resolved !== DELETE_FIELD) {
-      output[key] = resolved;
-    }
-  }
-  return output;
+  return normalizeWrittenObject(value);
 }
 
 /**
- *
- * @param data
- * @param field
- * @param op
- * @param value
+ * Test a Firestore-style where clause.
+ * @param {unknown} data - Document payload.
+ * @param {string} field - Field path.
+ * @param {string} op - Comparison operator.
+ * @param {unknown} value - Comparison value.
+ * @returns {boolean} Whether the document matches.
  */
 function matchesWhere(data, field, op, value) {
   if (op !== '==') {
@@ -558,17 +584,18 @@ function matchesWhere(data, field, op, value) {
 
   const candidate = getFieldValue(data, field);
   if (value === null) {
-    return candidate == null;
+    return candidate === null || candidate === undefined;
   }
 
   return candidate === value;
 }
 
 /**
- *
- * @param left
- * @param right
- * @param orderings
+ * Compare two values using the requested orderings.
+ * @param {unknown} left - Left document payload.
+ * @param {unknown} right - Right document payload.
+ * @param {Array<{field: string, direction: 'asc' | 'desc'}>} orderings - Sort orderings.
+ * @returns {number} Sort comparison result.
  */
 function compareByOrderings(left, right, orderings) {
   for (const ordering of orderings) {
@@ -576,7 +603,11 @@ function compareByOrderings(left, right, orderings) {
     const rightValue = getFieldValue(right, ordering.field);
     const comparison = compareValues(leftValue, rightValue);
     if (comparison !== 0) {
-      return ordering.direction === 'desc' ? -comparison : comparison;
+      if (ordering.direction === 'desc') {
+        return -comparison;
+      }
+
+      return comparison;
     }
   }
 
@@ -584,19 +615,15 @@ function compareByOrderings(left, right, orderings) {
 }
 
 /**
- *
- * @param left
- * @param right
+ * Compare two scalar values.
+ * @param {unknown} left - Left value.
+ * @param {unknown} right - Right value.
+ * @returns {number} Comparison result.
  */
 function compareValues(left, right) {
-  if (left == null && right == null) {
-    return 0;
-  }
-  if (left == null) {
-    return 1;
-  }
-  if (right == null) {
-    return -1;
+  const nullComparison = compareNullishValues(left, right);
+  if (nullComparison !== null) {
+    return nullComparison;
   }
   if (left < right) {
     return -1;
@@ -608,9 +635,70 @@ function compareValues(left, right) {
 }
 
 /**
- *
- * @param data
- * @param field
+ * Compare nullish scalar values before regular ordering.
+ * @param {unknown} left - Left value.
+ * @param {unknown} right - Right value.
+ * @returns {number | null} Comparison result or null when both values are non-nullish.
+ */
+function compareNullishValues(left, right) {
+  if (left === null && right === null) {
+    return 0;
+  }
+
+  if (left === null || left === undefined) {
+    return 1;
+  }
+
+  if (right === null || right === undefined) {
+    return -1;
+  }
+
+  return null;
+}
+
+/**
+ * Build a snapshot-safe clone of a document value.
+ * @param {unknown} value - Raw value.
+ * @returns {unknown} Snapshot-safe clone.
+ */
+function buildSnapshotData(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return cloneDocument(value);
+}
+
+/**
+ * Normalize an array value.
+ * @param {Array<unknown>} value - Array to normalize.
+ * @returns {Array<unknown>} Normalized array.
+ */
+function normalizeWrittenArray(value) {
+  return value.map(item => normalizeWrittenValue(item));
+}
+
+/**
+ * Normalize an object value.
+ * @param {Record<string, unknown>} value - Object to normalize.
+ * @returns {Record<string, unknown>} Normalized object.
+ */
+function normalizeWrittenObject(value) {
+  const output = {};
+  for (const [key, nested] of Object.entries(value)) {
+    const resolved = normalizeWrittenValue(nested);
+    if (resolved !== DELETE_FIELD) {
+      output[key] = resolved;
+    }
+  }
+  return output;
+}
+
+/**
+ * Look up a nested field value from a document payload.
+ * @param {unknown} data - Document payload.
+ * @param {string} field - Field path.
+ * @returns {unknown} Field value or undefined.
  */
 function getFieldValue(data, field) {
   if (!isPlainObject(data)) {
@@ -627,9 +715,10 @@ function getFieldValue(data, field) {
 }
 
 /**
- *
- * @param segments
- * @param prefix
+ * Determine whether a path has the given collection prefix.
+ * @param {string[]} segments - Full path segments.
+ * @param {string[]} prefix - Collection prefix segments.
+ * @returns {boolean} Whether the prefix matches.
  */
 function matchesPrefix(segments, prefix) {
   if (segments.length !== prefix.length + 1) {
@@ -640,9 +729,10 @@ function matchesPrefix(segments, prefix) {
 }
 
 /**
- *
- * @param segments
- * @param collectionId
+ * Check whether a path contains a collection id at an even segment.
+ * @param {string[]} segments - Path segments.
+ * @param {string} collectionId - Collection id.
+ * @returns {boolean} Whether the id appears.
  */
 function containsCollectionId(segments, collectionId) {
   for (let index = 0; index < segments.length - 1; index += 2) {
@@ -655,16 +745,18 @@ function containsCollectionId(segments, collectionId) {
 }
 
 /**
- *
- * @param path
+ * Split a Firestore path into segments.
+ * @param {string} path - Firestore path.
+ * @returns {string[]} Path segments.
  */
 function splitPath(path) {
   return normalizePath(path).split('/');
 }
 
 /**
- *
- * @param path
+ * Normalize a Firestore path string.
+ * @param {string} path - Firestore path.
+ * @returns {string} Normalized path.
  */
 function normalizePath(path) {
   return String(path)
@@ -674,8 +766,9 @@ function normalizePath(path) {
 }
 
 /**
- *
- * @param value
+ * Deep-clone a document payload.
+ * @param {unknown} value - Value to clone.
+ * @returns {unknown} Cloned value.
  */
 function cloneDocument(value) {
   if (value === undefined || value === null) {
@@ -706,17 +799,19 @@ function cloneDocument(value) {
 }
 
 /**
- *
- * @param value
+ * Test whether a value is a plain object.
+ * @param {unknown} value - Value to inspect.
+ * @returns {boolean} True when value is a plain object.
  */
 function isPlainObject(value) {
   return Boolean(value) && Object.getPrototypeOf(value) === Object.prototype;
 }
 
 /**
- *
- * @param touched
- * @param operations
+ * Build change events from touched write records.
+ * @param {Map<string, {before: unknown, after: unknown}>} touched - Touched writes.
+ * @param {Array<{path: string}>} operations - Applied operations.
+ * @returns {Array<{path: string, before: unknown, after: unknown}>} Dispatch events.
  */
 function buildEventsFromTouched(touched, operations) {
   const events = [];

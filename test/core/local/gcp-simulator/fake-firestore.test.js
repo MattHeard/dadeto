@@ -216,6 +216,10 @@ describe('fake firestore', () => {
     db.__setPathData('other/item', { rank: 99 });
     const prefixMismatch = await db.collection('things').get();
     expect(prefixMismatch.size).toBe(4);
+
+    const missingSnapshot = await db.doc('missing/doc').get();
+    expect(missingSnapshot.exists).toBe(false);
+    expect(missingSnapshot.data()).toBeUndefined();
   });
 
   it('covers the helper branches that are only exercised by low-level unit tests', () => {
@@ -265,5 +269,18 @@ describe('fake firestore', () => {
     expect(await db.__getDocument('manual/default')).toMatchObject({
       count: 3,
     });
+  });
+
+  it('covers null-null ordering and nullish comparison branches', async () => {
+    const db = createFakeFirestore();
+
+    await db
+      .batch()
+      .set(db.doc('things/a'), { rank: null })
+      .set(db.doc('things/b'), { rank: null })
+      .commit();
+
+    const ordered = await db.collection('things').orderBy('rank', 'asc').get();
+    expect(ordered.docs.map(doc => doc.id)).toEqual(['a', 'b']);
   });
 });

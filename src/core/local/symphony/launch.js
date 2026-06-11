@@ -184,12 +184,7 @@ async function runLaunch(context) {
       onExit: onRunnerExit,
     });
     const launchedStatus = applyRunnerLaunch(context.status, {
-      runId,
-      startedAt: context.startedAt,
-      beadId: currentBeadId,
-      beadTitle: context.currentBeadTitle,
-      beadPriority: context.currentBeadPriority,
-      launchRequest,
+      ...createLaunchMetadata(context, currentBeadId, launchRequest),
       launcherKind: invocation.launcherKind,
       command: invocation.command,
       args: invocation.args,
@@ -212,14 +207,35 @@ async function runLaunch(context) {
   } catch (error) {
     launchStatusWrite.resolve();
     return persistLaunchFailure(context.options.statusStore, context.status, {
-      startedAt: context.startedAt,
-      beadId: currentBeadId,
-      beadTitle: context.currentBeadTitle,
-      beadPriority: context.currentBeadPriority,
-      launchRequest,
+      ...createLaunchMetadata(context, currentBeadId, launchRequest),
       error: getLaunchErrorMessage(error),
     });
   }
+}
+
+/**
+ * Build shared launch metadata for success and failure persistence.
+ * @param {ReturnType<typeof buildLaunchContext>} context Launch context.
+ * @param {string} beadId Current bead id.
+ * @param {string} launchRequest Launch request label.
+ * @returns {{
+ *   runId: string,
+ *   startedAt: string,
+ *   beadId: string,
+ *   beadTitle: string | null,
+ *   beadPriority: string | null,
+ *   launchRequest: string
+ * }} Shared launch metadata.
+ */
+function createLaunchMetadata(context, beadId, launchRequest) {
+  return {
+    runId: `${context.startedAt}--${beadId}`,
+    startedAt: context.startedAt,
+    beadId,
+    beadTitle: context.currentBeadTitle,
+    beadPriority: context.currentBeadPriority,
+    launchRequest,
+  };
 }
 
 /**
