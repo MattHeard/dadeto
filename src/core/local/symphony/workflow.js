@@ -81,6 +81,23 @@ function normalizeFrontMatterValue(value) {
  * @returns {{ key: string, value: string | number | boolean } | null} Parsed key/value pair or null.
  */
 function parseFrontMatterLine(line) {
+  const parsed = parseKeyValueLine(line);
+  if (!parsed) {
+    return null;
+  }
+
+  return {
+    key: parsed.key,
+    value: normalizeFrontMatterValue(parsed.value),
+  };
+}
+
+/**
+ * Parse a key/value line into its parts.
+ * @param {string} line Input line.
+ * @returns {{ key: string, value: string } | null} Parsed key/value pair or null.
+ */
+function parseKeyValueLine(line) {
   const separatorIndex = line.indexOf(':');
   if (separatorIndex === -1) {
     return null;
@@ -93,7 +110,7 @@ function parseFrontMatterLine(line) {
 
   return {
     key,
-    value: normalizeFrontMatterValue(line.slice(separatorIndex + 1)),
+    value: line.slice(separatorIndex + 1),
   };
 }
 

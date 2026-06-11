@@ -180,17 +180,11 @@ function formatEvidenceLines(evidence) {
     return ['  (none)'];
   }
 
-  const lines = [];
-  const limitedItems = items.slice(0, 2);
-  for (let index = 0; index < limitedItems.length; index += 1) {
-    const item = limitedItems[index];
-    let text = JSON.stringify(item);
-    if (typeof item === 'string') {
-      text = item;
-    }
-    lines.push(`${index + 1}> ${text.replace(/\s+/g, ' ')}`);
-  }
-  return lines;
+  return formatIndexedLines(items.slice(0, 2), {
+    prefix: '',
+    indexOffset: 1,
+    suffix: '',
+  });
 }
 
 /**
@@ -203,71 +197,61 @@ function formatEventLines(events) {
     return [];
   }
 
+  return formatIndexedLines(events, {
+    prefix: 'E',
+    indexOffset: 1,
+    suffix: '>',
+  });
+}
+
+/**
+ * Format a list of indexed items with a common prefix/suffix pattern.
+ * @param {unknown[]} items Items to render.
+ * @param {{ prefix: string, indexOffset: number, suffix: string }} options Indexing options.
+ * @returns {string[]} Rendered lines.
+ */
+function formatIndexedLines(items, options) {
   const lines = [];
-  for (let index = 0; index < events.length; index += 1) {
-    const event = events[index];
-    let text = JSON.stringify(event);
-    if (typeof event === 'string') {
-      text = event;
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    let text = JSON.stringify(item);
+    if (typeof item === 'string') {
+      text = item;
     }
-    lines.push(`E${index + 1}> ${text.replace(/\s+/g, ' ')}`);
+    lines.push(
+      `${options.prefix}${index + options.indexOffset}${options.suffix} ${text.replace(/\s+/g, ' ')}`
+    );
   }
   return lines;
 }
 
 /**
- * Render the event section.
- * @param {string[]} lines Accumulated lines.
- * @param {string[]} eventLines Event lines.
- * @param {number} remaining Remaining slots.
- * @param {TerminalSize} terminalSize Terminal size information.
+ * Render a labeled, bounded list section.
+ * @param {{
+ *   lines: string[],
+ *   label: string,
+ *   sectionLines: string[],
+ *   remaining: number,
+ *   terminalSize: TerminalSize
+ * }} options Section render options.
  * @returns {number} Remaining slots after rendering.
  */
-function renderEventSection(lines, eventLines, remaining, terminalSize) {
-  if (eventLines.length === 0 || remaining <= 0) {
+function renderBoundedSection(options) {
+  const { lines, label, sectionLines, remaining, terminalSize } = options;
+  if (sectionLines.length === 0 || remaining <= 0) {
     return remaining;
   }
 
   let nextRemaining = remaining;
-  pushLine(lines, 'Events:', terminalSize);
+  pushLine(lines, label, terminalSize);
   nextRemaining -= 1;
 
-  for (const eventLine of eventLines) {
+  for (const sectionLine of sectionLines) {
     if (nextRemaining <= 0) {
       return nextRemaining;
     }
 
-    pushLine(lines, eventLine, terminalSize);
-    nextRemaining -= 1;
-  }
-
-  return nextRemaining;
-}
-
-/**
- * Render the evidence section.
- * @param {string[]} lines Accumulated lines.
- * @param {unknown} evidence Evidence payload.
- * @param {number} remaining Remaining slots.
- * @param {TerminalSize} terminalSize Terminal size information.
- * @returns {number} Remaining slots after rendering.
- */
-function renderEvidenceSection(lines, evidence, remaining, terminalSize) {
-  if (remaining <= 0) {
-    return remaining;
-  }
-
-  const evidenceLines = formatEvidenceLines(evidence);
-  let nextRemaining = remaining;
-  pushLine(lines, 'Evidence:', terminalSize);
-  nextRemaining -= 1;
-
-  for (const evidenceLine of evidenceLines) {
-    if (nextRemaining <= 0) {
-      return nextRemaining;
-    }
-
-    pushLine(lines, evidenceLine, terminalSize);
+    pushLine(lines, sectionLine, terminalSize);
     nextRemaining -= 1;
   }
 
@@ -291,17 +275,24 @@ function renderEventAndEvidence(status, lines, slots, terminalSize = {}) {
   const eventLines = formatEventLines(status.eventLog);
   const availableEventSlots = Math.max(remaining - 1, 0);
   const eventLinesToShow = eventLines.slice(0, availableEventSlots);
-  remaining = renderEventSection(
+  remaining = renderBoundedSection({
     lines,
-    eventLinesToShow,
+    label: 'Events:',
+    sectionLines: eventLinesToShow,
     remaining,
-    terminalSize
-  );
+    terminalSize,
+  });
   if (remaining <= 0) {
     return;
   }
 
-  renderEvidenceSection(lines, status.latestEvidence, remaining, terminalSize);
+  renderBoundedSection({
+    lines,
+    label: 'Evidence:',
+    sectionLines: formatEvidenceLines(status.latestEvidence),
+    remaining,
+    terminalSize,
+  });
 }
 
 /**
@@ -532,31 +523,37 @@ function renderStatusFooter(lines, context, terminalSize) {
     terminalSize
   );
 
-  if (context.launchFeedback) {
-    pushLine(
-      lines,
-      clampLine(`Launch: ${context.launchFeedback}`, terminalSize),
-      terminalSize
-    );
-  }
-
-  if (context.refreshFeedback) {
-    pushLine(
-      lines,
-      clampLine(`Refresh: ${context.refreshFeedback}`, terminalSize),
-      terminalSize
-    );
-  }
-
-  if (context.statusError) {
-    pushLine(
-      lines,
-      clampLine(`Status: ${context.statusError}`, terminalSize),
-      terminalSize
-    );
-  }
+  renderOptionalFooterLine(
+    lines,
+    'Launch:',
+    context.launchFeedback,
+    terminalSize
+  );
+  renderOptionalFooterLine(
+    lines,
+    'Refresh:',
+    context.refreshFeedback,
+    terminalSize
+  );
+  renderOptionalFooterLine(lines, 'Status:', context.statusError, terminalSize);
 
   pushLine(lines, 'Polling every 5 seconds.', terminalSize);
+}
+
+/**
+ * Render an optional footer line.
+ * @param {string[]} lines Output lines.
+ * @param {string} label Line label.
+ * @param {string | undefined} value Line value.
+ * @param {TerminalSize} terminalSize Terminal size information.
+ * @returns {void}
+ */
+function renderOptionalFooterLine(lines, label, value, terminalSize) {
+  if (!value) {
+    return;
+  }
+
+  pushLine(lines, clampLine(`${label} ${value}`, terminalSize), terminalSize);
 }
 
 /**
