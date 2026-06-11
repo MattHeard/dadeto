@@ -475,12 +475,13 @@ function toggleMute(state, controls, dom) {
       track.enabled = !state.muted;
     });
   }
-  dom.setTextContent(controls.muteButton, state.muted ? 'Unmute' : 'Mute');
-  appendDebugLog(
-    controls,
-    state.muted ? 'Microphone muted.' : 'Microphone live.',
-    dom
-  );
+  if (state.muted) {
+    dom.setTextContent(controls.muteButton, 'Unmute');
+    appendDebugLog(controls, 'Microphone muted.', dom);
+  } else {
+    dom.setTextContent(controls.muteButton, 'Mute');
+    appendDebugLog(controls, 'Microphone live.', dom);
+  }
 }
 
 /**

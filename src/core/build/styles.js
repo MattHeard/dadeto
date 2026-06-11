@@ -3,7 +3,10 @@
  * @returns {string} Inline CSS rules.
  */
 export function styles() {
-  return `
+  return STYLES;
+}
+
+const STYLES = String.raw`
   :root {
     color-scheme: dark;
     --bg: #121212;
@@ -479,7 +482,6 @@ export function styles() {
     color: var(--terminal-success);
   }
 `;
-}
 
 /**
  * Create the styles wrapper handle.

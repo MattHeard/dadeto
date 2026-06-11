@@ -955,7 +955,10 @@ const TOY_OUTPUT_TYPES = [
 function buildSelect(selectClass, entries, selectedValue) {
   const options = entries
     .map(([value, label]) => {
-      const selected = value === selectedValue ? ' selected' : '';
+      let selected = '';
+      if (value === selectedValue) {
+        selected = ' selected';
+      }
       return `<option value="${value}"${selected}>${label}</option>`;
     })
     .join('');

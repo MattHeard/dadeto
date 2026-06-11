@@ -119,10 +119,11 @@ function appendOptionsList(container, options) {
   const list = document.createElement('ol');
   options.forEach(opt => {
     const li = document.createElement('li');
-    li.textContent =
-      opt.targetPageNumber !== undefined
-        ? `${opt.content} (${opt.targetPageNumber})`
-        : opt.content;
+    if (opt.targetPageNumber !== undefined) {
+      li.textContent = `${opt.content} (${opt.targetPageNumber})`;
+    } else {
+      li.textContent = opt.content;
+    }
     list.appendChild(li);
   });
   container.appendChild(list);
@@ -155,7 +156,10 @@ function renderVariant(data) {
   container.innerHTML = '';
 
   container.appendChild(createTextElement('h3', data.title));
-  const author = data.author ? `By ${data.author}` : '';
+  let author = '';
+  if (data.author) {
+    author = `By ${data.author}`;
+  }
   container.appendChild(createTextElement('p', author));
   container.appendChild(createTextElement('p', data.content));
   appendOptionsList(container, data.options);
@@ -225,7 +229,8 @@ async function assignJob() {
   const token = getIdToken();
   if (!token) throw new Error('not signed in');
 
-  const body = new URLSearchParams({ id_token: token });
+  const body = new URLSearchParams();
+  body.set('id_token', token);
 
   const { assignModerationJobUrl } = await getModerationEndpoints();
   const resp = await fetch(assignModerationJobUrl, {
