@@ -85,9 +85,6 @@ export function parseHiLoInput(input) {
  */
 function parseInputPayload(input) {
   const parsed = parseJsonObject(input);
-  if (!parsed) {
-    return null;
-  }
   return normalizeParsedEvent(parsed);
 }
 
@@ -97,10 +94,7 @@ function parseInputPayload(input) {
  * @returns {input is string} True when parsing should be attempted.
  */
 function hasInputPayload(input) {
-  if (typeof input !== 'string') {
-    return false;
-  }
-  return input.length > 0;
+  return typeof input === 'string' && input.length > 0;
 }
 
 /**
@@ -129,10 +123,20 @@ export function normalizeParsedEvent(parsed) {
  */
 function buildNormalizedParsedEvent(candidate) {
   const eventType = readEventType(candidate);
-  if (!eventType) {
+  if (typeof eventType !== 'string') {
     return null;
   }
 
+  return createInputEvent(eventType, candidate);
+}
+
+/**
+ * Create a normalized input event from validated pieces.
+ * @param {string} eventType - Parsed event type.
+ * @param {Record<string, unknown>} candidate - Parsed input record.
+ * @returns {HiLoInputEvent} Normalized input event.
+ */
+function createInputEvent(eventType, candidate) {
   return {
     type: eventType,
     key: getStringCandidate(candidate.key),
