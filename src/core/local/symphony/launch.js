@@ -312,11 +312,11 @@ function normalizeError(error) {
  * @returns {Record<string, unknown> | null} Object value or null.
  */
 function getRecordOrNull(value) {
-  if (!value || typeof value !== 'object') {
-    return null;
+  if (value && typeof value === 'object') {
+    return value;
   }
 
-  return value;
+  return null;
 }
 
 /**

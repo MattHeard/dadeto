@@ -122,7 +122,7 @@ function isMissingMemoryPathError(value) {
  * @returns {value is Record<string, unknown>} True when the value is an object record.
  */
 function isObjectLike(value) {
-  return typeof value === 'object' && Boolean(value);
+  return value !== null && typeof value === 'object';
 }
 
 export const memoryVectorPairsTestOnly = {
