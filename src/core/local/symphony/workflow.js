@@ -51,11 +51,11 @@ function collectBullets(lines, heading) {
 
 /**
  * Normalize a front-matter scalar value.
- * @param {string} value Raw front-matter value text.
+ * @param {string | number | boolean} value Raw front-matter value text.
  * @returns {string | number | boolean} Normalized scalar value.
  */
 function normalizeFrontMatterValue(value) {
-  const trimmedValue = value.trim();
+  const trimmedValue = String(value).trim();
   if (trimmedValue === 'true') {
     return true;
   }
@@ -105,7 +105,7 @@ function createParsedKeyValue(key, value) {
 /**
  * Parse a key/value line into its parts.
  * @param {string} line Input line.
- * @returns {{ key: string, value: string } | null} Parsed key/value pair or null.
+ * @returns {{ key: string, value: string | number | boolean } | null} Parsed key/value pair or null.
  */
 function parseKeyValueLine(line) {
   const separatorIndex = line.indexOf(':');
