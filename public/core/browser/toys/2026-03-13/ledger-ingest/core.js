@@ -4,12 +4,12 @@ import {
 } from './ledgerIngestShared.js';
 import {
   arrayOrEmpty,
+  ensureString,
   isBlankStringValue,
   numberOrZero,
-  ensureString,
   trimmedStringOrEmpty,
-  whenOrDefault,
 } from '../../../browser-core.js';
+import { objectOrEmpty } from '../../../../commonCore.js';
 
 /**
  * Contracts and fixtures for the ledger-ingest toy.
@@ -315,16 +315,16 @@ export const fixtures = {
 
 export const ledgerIngestCoreTestOnly = {
   getSourceLabel,
-  getRawRecords,
+  getRawRecords: arrayOrEmpty,
   findMissingRequiredFields,
   isMissingRequiredField,
   getRequiredRawValue,
   isMissingRequiredValue,
   isBlankStringValue,
   normalizeFieldMapping,
-  sanitizeFieldMapping,
+  sanitizeFieldMapping: objectOrEmpty,
   normalizeDedupePolicy,
-  sanitizePolicy,
+  sanitizePolicy: objectOrEmpty,
   sanitizePolicyName,
   sanitizePolicyStrategy,
   sanitizePolicyCandidateFields,
@@ -348,7 +348,9 @@ export const ledgerIngestCoreTestOnly = {
  */
 export function importTransactions(input) {
   const sourceLabel = getSourceLabel(input);
-  const rawRecords = getRawRecords(input.rawRecords);
+  const rawRecords = /** @type {Record<string, unknown>[]} */ (
+    arrayOrEmpty(input.rawRecords)
+  );
   const fieldMapping = normalizeFieldMapping(input.fieldMapping);
   const dedupePolicy = normalizeDedupePolicy(input.dedupePolicy);
 
@@ -449,15 +451,6 @@ function getSourceLabel(input) {
 }
 
 /**
- * Normalize the raw-records payload into a guaranteed array.
- * @param {Record<string, unknown>[]|undefined} rawRecords Adapter-provided rows.
- * @returns {Record<string, unknown>[]} Safe raw record list.
- */
-function getRawRecords(rawRecords) {
-  return /** @type {Record<string, unknown>[]} */ (arrayOrEmpty(rawRecords));
-}
-
-/**
  * Identify missing canonical values before normalization runs.
  * @param {Record<string, unknown>} record Raw row under review.
  * @param {Record<string, string>} mapping Field mapping for this run.
@@ -544,31 +537,8 @@ function recordCanonicalTransaction({
 function normalizeFieldMapping(mapping) {
   return {
     ...DEFAULT_FIELD_MAPPING,
-    ...sanitizeFieldMapping(mapping),
+    ...objectOrEmpty(mapping),
   };
-}
-
-/**
- * Normalize a candidate object-like value through the shared handler map.
- * @param {unknown} value Candidate object-like value.
- * @returns {Record<string, unknown>} Safe plain object.
- */
-function normalizeObjectLikeValue(value) {
-  if (value && typeof value === 'object') {
-    return /** @type {Record<string, unknown>} */ (value);
-  }
-  return {};
-}
-
-/**
- * Guard that only returns a mapping when the argument is an object.
- * @param {Record<string, string>|null|undefined} mapping Adapter overrides.
- * @returns {Record<string, string>} Valid mapping.
- */
-function sanitizeFieldMapping(mapping) {
-  return /** @type {Record<string, string>} */ (
-    normalizeObjectLikeValue(mapping)
-  );
 }
 
 /**
@@ -578,22 +548,13 @@ function sanitizeFieldMapping(mapping) {
  * @returns {DedupePolicy} Policy that is safe for the core logic.
  */
 function normalizeDedupePolicy(policy) {
-  const sanitizedPolicy = sanitizePolicy(policy);
+  const sanitizedPolicy = objectOrEmpty(policy);
   return {
     name: sanitizePolicyName(sanitizedPolicy),
     strategy: sanitizePolicyStrategy(sanitizedPolicy),
     candidateFields: sanitizePolicyCandidateFields(sanitizedPolicy),
     caseInsensitive: sanitizePolicyCaseInsensitive(sanitizedPolicy),
   };
-}
-
-/**
- * Ensure we always work with an object when normalizing the policy.
- * @param {DedupePolicy|Record<string, unknown>|null|undefined} policy Policy override candidate.
- * @returns {Record<string, unknown>} Safe policy-like object.
- */
-function sanitizePolicy(policy) {
-  return normalizeObjectLikeValue(policy);
 }
 
 /**
@@ -713,7 +674,11 @@ function buildDedupeKey(transaction, policy) {
  */
 function serializeDedupeCandidate(value, caseInsensitive) {
   if (typeof value === 'string') {
-    return caseInsensitive ? value.toLowerCase() : value;
+    if (caseInsensitive) {
+      return value.toLowerCase();
+    }
+
+    return value;
   }
 
   if (typeof value === 'number') {
@@ -730,10 +695,13 @@ function serializeDedupeCandidate(value, caseInsensitive) {
  * @returns {string} ISO date (YYYY-MM-DD) or empty string on failure.
  */
 function normalizeDate(value) {
-  const candidate =
-    value instanceof Date
-      ? value
-      : new Date(/** @type {string | number} */ (value ?? ''));
+  /** @type {Date} */
+  let candidate;
+  if (value instanceof Date) {
+    candidate = value;
+  } else {
+    candidate = new Date(/** @type {string | number} */ (value ?? ''));
+  }
   if (Number.isNaN(candidate.getTime())) {
     return '';
   }

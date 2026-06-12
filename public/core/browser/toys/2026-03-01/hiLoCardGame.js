@@ -1,6 +1,7 @@
 import {
   getStringCandidate,
   isNonNullObject,
+  normalizeObjectOrFallback,
   whenTruthy,
   whenString,
 } from '../../browser-core.js';
@@ -84,9 +85,6 @@ export function parseHiLoInput(input) {
  */
 function parseInputPayload(input) {
   const parsed = parseJsonObject(input);
-  if (!parsed) {
-    return null;
-  }
   return normalizeParsedEvent(parsed);
 }
 
@@ -96,10 +94,7 @@ function parseInputPayload(input) {
  * @returns {input is string} True when parsing should be attempted.
  */
 function hasInputPayload(input) {
-  if (typeof input !== 'string') {
-    return false;
-  }
-  return input.length > 0;
+  return typeof input === 'string' && input.length > 0;
 }
 
 /**
@@ -108,7 +103,12 @@ function hasInputPayload(input) {
  * @returns {HiLoInputEvent | null} Valid input event or null.
  */
 export function normalizeParsedEvent(parsed) {
-  const candidate = toRecordOrNull(parsed, isRecordCandidate);
+  const candidate = toRecordOrNull(
+    parsed,
+    /** @type {(value: unknown) => value is Record<string, unknown>} */ (
+      isNonNullObject
+    )
+  );
   if (!candidate) {
     return null;
   }
@@ -123,10 +123,20 @@ export function normalizeParsedEvent(parsed) {
  */
 function buildNormalizedParsedEvent(candidate) {
   const eventType = readEventType(candidate);
-  if (!eventType) {
+  if (typeof eventType !== 'string') {
     return null;
   }
 
+  return createInputEvent(eventType, candidate);
+}
+
+/**
+ * Create a normalized input event from validated pieces.
+ * @param {string} eventType - Parsed event type.
+ * @param {Record<string, unknown>} candidate - Parsed input record.
+ * @returns {HiLoInputEvent} Normalized input event.
+ */
+function createInputEvent(eventType, candidate) {
   return {
     type: eventType,
     key: getStringCandidate(candidate.key),
@@ -148,11 +158,13 @@ function readEventType(candidate) {
  * @returns {HiLoScore} Safe score value.
  */
 function normalizeScore(value) {
-  return normalizeStoredObject(value, createInitialScore, candidate => ({
-    correct: toScoreNumber(candidate.correct),
-    incorrect: toScoreNumber(candidate.incorrect),
-    total: toScoreNumber(candidate.total),
-  }));
+  return /** @type {HiLoScore} */ (
+    normalizeObjectOrFallback(value, createInitialScore, candidate => ({
+      correct: toScoreNumber(candidate.correct),
+      incorrect: toScoreNumber(candidate.incorrect),
+      total: toScoreNumber(candidate.total),
+    }))
+  );
 }
 
 /**
@@ -204,12 +216,10 @@ function buildNormalizedGameState(candidate, getRandomNumber) {
  * @returns {HiLoKeyboardState} Safe keyboard state.
  */
 export function normalizeKeyboardState(value) {
-  return normalizeStoredObject(
-    value,
-    createInitialKeyboardState,
-    candidate => ({
+  return /** @type {HiLoKeyboardState} */ (
+    normalizeObjectOrFallback(value, createInitialKeyboardState, candidate => ({
       activeKey: readActiveKey(candidate.activeKey),
-    })
+    }))
   );
 }
 
@@ -260,30 +270,6 @@ function isIntegerCard(card) {
  */
 function isCardInRange(card) {
   return card >= 1 && card <= 13;
-}
-
-/**
- * Normalize an object-like stored value or fall back to a default state.
- * @template T
- * @param {unknown} value - Stored candidate.
- * @param {() => T} fallback - Fallback value creator.
- * @param {(candidate: Record<string, unknown>) => T} transform - Mapper for object-like values.
- * @returns {T} Normalized value.
- */
-function normalizeStoredObject(value, fallback, transform) {
-  if (!isRecordCandidate(value)) {
-    return fallback();
-  }
-
-  return /** @type {T} */ (transform(value));
-}
-
-/**
- * @param {unknown} value - Candidate object-like value.
- * @returns {value is Record<string, unknown>} True when the value is a record.
- */
-function isRecordCandidate(value) {
-  return isNonNullObject(value);
 }
 
 /**
@@ -463,7 +449,11 @@ function applyGuessWhenReady(inputEvent, state, getRandomNumber) {
  * @returns {string | null} Guess key when the event carries one.
  */
 function getGuessKey(inputEvent) {
-  return typeof inputEvent.key === 'string' ? inputEvent.key : null;
+  if (typeof inputEvent.key === 'string') {
+    return inputEvent.key;
+  }
+
+  return null;
 }
 
 /**

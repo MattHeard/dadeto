@@ -1,6 +1,24 @@
 {
   "posts": [
     {
+      "key": "CANV1",
+      "title": "Canvas Doodle",
+      "publicationDate": "2026-06-12",
+      "release": "beta",
+      "content": [
+        "A tiny Canvas experiment that turns JSON parameters into a few layered 2D shapes.",
+        "Use it to try out simple color, size, and shape combinations before we build anything more ambitious.",
+        "This post is beta-gated so it can be inspected in production before we decide whether to promote it."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-12/canvasDoodle.js",
+        "functionName": "canvasDoodle",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "canvas-2d"
+      },
+      "tags": ["toy", "beta", "canvas", "graphics", "html"]
+    },
+    {
       "key": "MEMO3",
       "title": "Memory Scalar/Vector Write",
       "publicationDate": "2026-05-30",

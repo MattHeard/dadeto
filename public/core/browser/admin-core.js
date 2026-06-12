@@ -2247,6 +2247,17 @@ export function initAdminApp({
 }
 
 /**
+ * Create a handle that initializes the admin app with the provided dependencies.
+ * @param {Parameters<typeof initAdminApp>[0]} deps Admin app dependencies.
+ * @returns {() => Promise<void> | void} Invoked admin app handle.
+ */
+export function createInitAdminAppHandle(deps) {
+  return function handleInitAdminApp() {
+    return initAdminApp(deps);
+  };
+}
+
+/**
  * Create a removeItem helper that reads storage lazily and validates its API.
  * @param {() => Storage | null | undefined} getStorage - Factory for the storage object.
  * @returns {(key: string) => void} Function that removes an item using the provided storage.

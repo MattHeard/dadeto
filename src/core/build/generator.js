@@ -932,6 +932,7 @@ const TOY_OUTPUT_TYPES = [
   ['text', 'text'],
   ['pre', 'pre'],
   ['copy-to-clipboard', 'copy-to-clipboard'],
+  ['canvas-2d', 'canvas-2d'],
   ['ledger-ingest', 'ledger-ingest'],
   ['real-hourly-wage', 'real-hourly-wage'],
   ['joycon-mapping', 'joycon-mapping'],

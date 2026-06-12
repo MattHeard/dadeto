@@ -21,7 +21,7 @@ try {
 
   await runCommand(
     'node',
-    ['--experimental-vm-modules', './node_modules/.bin/stryker', 'run', '--configFile', WORKTREE_STRYKER_CONFIG],
+    ['--experimental-vm-modules', './node_modules/.bin/stryker', 'run', WORKTREE_STRYKER_CONFIG],
     worktreePath,
     {
       ...process.env,

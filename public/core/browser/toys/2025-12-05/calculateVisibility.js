@@ -38,7 +38,7 @@ function resolveParsedResult(parsed) {
  * @returns {string} Visibility score.
  */
 function determineVisibility({ pageId, adminId, ratings }) {
-  if (!areIdentifiersValid(pageId, adminId)) {
+  if (!areValidStrings(pageId, adminId)) {
     return DEFAULT_VISIBILITY;
   }
 
@@ -135,16 +135,6 @@ function parseInput(input) {
   return /** @type {VisibilityPayload | null} */ (
     whenString(input, parseJsonOrFallback)
   );
-}
-
-/**
- * Validate payload identifiers.
- * @param {string} pageId - Target page identifier.
- * @param {string} adminId - Admin identifier.
- * @returns {boolean} True when both identifiers are valid strings.
- */
-function areIdentifiersValid(pageId, adminId) {
-  return areValidStrings(pageId, adminId);
 }
 
 /**

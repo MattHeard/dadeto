@@ -1,4 +1,4 @@
-import { deepClone, whenOrDefault } from '../../browser-core.js';
+import { deepClone } from '../../browser-core.js';
 import {
   runToyWithParsedJson,
   createOptions,
@@ -101,7 +101,11 @@ function getStar1Stories(temporary, fallback) {
  * @returns {DendriteStoryResult[]} Primary stories when populated, otherwise the fallback.
  */
 function pickPrimaryStories(stories, fallback) {
-  return whenOrDefault(stories.length > 0, () => stories, fallback);
+  if (stories.length > 0) {
+    return stories;
+  }
+
+  return fallback;
 }
 
 /**
@@ -110,7 +114,11 @@ function pickPrimaryStories(stories, fallback) {
  * @returns {DendriteStoryResult[]} Story array.
  */
 function readStoryArray(stories) {
-  return Array.isArray(stories) ? stories : [];
+  if (Array.isArray(stories)) {
+    return stories;
+  }
+
+  return [];
 }
 
 /**

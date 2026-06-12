@@ -593,12 +593,11 @@ function formatDisplayValue(value) {
  */
 function getDisplayText(value) {
   const text = String(value);
-  const replacements = {
-    undefined: '—',
-    null: '—',
-    '': '—',
-  };
-  return replacements[text] ?? text;
+  if (text === 'undefined' || text === 'null' || text === '') {
+    return '—';
+  }
+
+  return text;
 }
 
 /**
@@ -607,9 +606,15 @@ function getDisplayText(value) {
  * @returns {void}
  */
 function setTableSectionVerticalAlign(section) {
-  const style = section.style ?? {};
-  style.verticalAlign = 'top';
-  section.style = style;
+  if (!section) {
+    return;
+  }
+
+  if (!section.style) {
+    return;
+  }
+
+  section.style.verticalAlign = 'top';
 }
 
 /**

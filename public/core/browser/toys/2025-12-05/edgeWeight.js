@@ -1,8 +1,4 @@
-import {
-  isValidString,
-  whenNotNullish,
-  whenTruthy,
-} from '../../../commonCore.js';
+import { isValidString, whenNotNullish } from '../../../commonCore.js';
 
 const NO_CONNECTION_WEIGHT = 1;
 

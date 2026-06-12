@@ -66,6 +66,26 @@ describe('TOY_UI_SECTIONS integration', () => {
     expect(html).toContain('<option value="ledger-ingest" selected>');
   });
 
+  test('generateBlog selects the canvas output method', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'CANVAS',
+          title: 'Canvas',
+          publicationDate: '2026-06-12',
+          content: ['x'],
+          toy: {
+            modulePath: './toys/2026-06-12/canvasDoodle.js',
+            functionName: 'canvasDoodle',
+            defaultOutputMethod: 'canvas-2d',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<option value="canvas-2d" selected>');
+  });
+
   test('generateBlog defaults to text input method', () => {
     const blog = {
       posts: [

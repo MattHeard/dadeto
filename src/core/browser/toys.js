@@ -8,6 +8,7 @@ import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
 import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
 import { joyConMapperHandler } from './inputHandlers/joyConMapper.js';
+import { createCanvasDoodleElement } from './presenters/canvasDoodle.js';
 import { createParagraphElement } from './presenters/paragraph.js';
 import { createLedgerIngestReportElement } from './presenters/ledgerIngest.js';
 import { createRealHourlyWageReportElement } from './presenters/realHourlyWage.js';
@@ -395,6 +396,7 @@ const presentersMap = {
   text: createParagraphElement,
   pre: createPreElement,
   'copy-to-clipboard': createCopyToClipboardButtonElement,
+  'canvas-2d': createCanvasDoodleElement,
   'ledger-ingest': createLedgerIngestReportElement,
   'real-hourly-wage': createRealHourlyWageReportElement,
   'tic-tac-toe': createTicTacToeBoardElement,

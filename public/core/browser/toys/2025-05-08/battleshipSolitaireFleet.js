@@ -12,11 +12,7 @@
  *   • No diagonal placement; honours optional noTouching flag.
  */
 
-import {
-  whenNotNullish,
-  whenOrDefault,
-  whenOrNull,
-} from '../../browser-core.js';
+import { whenNotNullish, whenOrNull } from '../../browser-core.js';
 
 /**
  * @typedef {{ x: number, y: number }} Coord

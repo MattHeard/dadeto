@@ -160,15 +160,6 @@ function createDefaultFormData() {
 }
 
 /**
- * Check whether a candidate is a plain object.
- * @param {unknown} value Candidate value.
- * @returns {value is Record<string, unknown>} True when the value is object-like.
- */
-function isObjectLike(value) {
-  return isNonNullObject(value);
-}
-
-/**
  * Read a numeric field from a nested object.
  * @param {Record<string, unknown>} section Data section.
  * @param {string} key Field name.
@@ -186,8 +177,8 @@ function readNumber(section, key) {
  */
 function readSection(data, key) {
   const candidate = data[key];
-  if (isObjectLike(candidate)) {
-    return candidate;
+  if (isNonNullObject(candidate)) {
+    return /** @type {Record<string, unknown>} */ (candidate);
   }
   return {};
 }
@@ -198,11 +189,11 @@ function readSection(data, key) {
  * @returns {RealHourlyWageFormData} Normalized form data.
  */
 function normalizeFormData(candidate) {
-  if (!isObjectLike(candidate)) {
+  if (!isNonNullObject(candidate)) {
     return createDefaultFormData();
   }
 
-  const data = candidate;
+  const data = /** @type {Record<string, unknown>} */ (candidate);
   const period = readSection(data, 'period');
   const overhead = readSection(data, 'overhead');
   const normalized = createDefaultFormData();

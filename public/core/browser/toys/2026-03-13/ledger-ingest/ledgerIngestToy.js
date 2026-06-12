@@ -1,5 +1,9 @@
 import { parseJsonOrFallback } from '../../browserToysCore.js';
-import { fixtures, importTransactions } from './core.js';
+import {
+  fixtures,
+  importTransactions,
+  ledgerIngestCoreTestOnly,
+} from './core.js';
 
 const DEFAULT_FIXTURE = 'happyPath';
 
@@ -99,7 +103,7 @@ function getImportSource(parsed) {
  * Build the ledger-ingest input shape from an import-ready payload.
  * @param {Record<string, unknown>} parsed Parsed payload from the JSON import path.
  * @param {string} source Source label to pass into the core importer.
- * @returns {{ source: string, rawRecords: Record<string, unknown>[], fieldMapping?: Record<string, string>, dedupePolicy?: Record<string, unknown> }} Normalized core input.
+ * @returns {{ source: string, rawRecords: Record<string, unknown>[], fieldMapping?: Record<string, string>, dedupePolicy?: ReturnType<typeof ledgerIngestCoreTestOnly.normalizeDedupePolicy> }} Normalized core input.
  */
 function buildImportedLedgerIngestInput(parsed, source) {
   return {
@@ -108,8 +112,10 @@ function buildImportedLedgerIngestInput(parsed, source) {
     fieldMapping: /** @type {Record<string, string> | undefined} */ (
       parsed.fieldMapping
     ),
-    dedupePolicy: /** @type {Record<string, unknown> | undefined} */ (
-      parsed.dedupePolicy
+    dedupePolicy: ledgerIngestCoreTestOnly.normalizeDedupePolicy(
+      /** @type {Record<string, unknown> | ReturnType<typeof ledgerIngestCoreTestOnly.normalizeDedupePolicy> | undefined} */ (
+        parsed.dedupePolicy
+      )
     ),
   };
 }

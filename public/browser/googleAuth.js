@@ -4,12 +4,16 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
-import { createGoogleAuthModule, isAdminWithDeps, setupFirebase } from './admin-core.js';
+import {
+  createGoogleAuthModule,
+  isAdminWithDeps,
+  setupFirebase,
+} from '../core/browser/admin-core.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 
 setupFirebase(initializeApp);
 
-export const { initGoogleSignIn, signOut } = createGoogleAuthModule({
+const handle = createGoogleAuthModule({
   getAuthFn: getAuth,
   storage: sessionStorage,
   consoleObj: console,
@@ -17,6 +21,9 @@ export const { initGoogleSignIn, signOut } = createGoogleAuthModule({
   Provider: GoogleAuthProvider,
   credentialFactory: signInWithCredential,
 });
+
+export { handle };
+export const { initGoogleSignIn, signOut } = handle;
 
 const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 
