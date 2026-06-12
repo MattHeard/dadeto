@@ -1,6 +1,7 @@
 import { get } from '../2025-03-29/get.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 import { trimmedStringOrEmpty } from '../../../commonCore.js';
+import { normalizeString } from '../../../local/config-utils.js';
 /** @typedef {import('../browserToysCore.js').ToyEnv} ToyEnv */
 
 const DEFAULT_MEMORY_LOCATION = 'temporary';
@@ -89,7 +90,7 @@ function parseObjectMemoryVectorRequest(parsed) {
  * @returns {string} Supported memory location label.
  */
 function normalizeMemoryLocation(value) {
-  return fallbackIfEmpty(trimmedStringOrEmpty(value), DEFAULT_MEMORY_LOCATION);
+  return normalizeString(trimmedStringOrEmpty(value), DEFAULT_MEMORY_LOCATION);
 }
 
 /**
@@ -545,20 +546,6 @@ function createMemoryVectorRequest(memoryLocation, path) {
     memoryLocation,
     path,
   };
-}
-
-/**
- * Return the fallback value when the provided text is empty.
- * @param {string} value Candidate text.
- * @param {string} fallback Fallback text.
- * @returns {string} Either the candidate text or the fallback.
- */
-function fallbackIfEmpty(value, fallback) {
-  if (value.length === 0) {
-    return fallback;
-  }
-
-  return value;
 }
 
 /**
