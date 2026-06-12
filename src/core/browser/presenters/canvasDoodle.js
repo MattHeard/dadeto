@@ -31,8 +31,7 @@ function parseCanvasDoodle(inputString) {
 export function createCanvasDoodleElement(inputString, dom) {
   const payload = parseCanvasDoodle(inputString) || createFallbackPayload();
   const root = createPresenterRoot(dom, ROOT_CLASS);
-  /** @type {HTMLCanvasElement} */
-  const canvas = dom.createElement('canvas');
+  const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
   canvas.width = toCanvasDimension(payload.width, CANVAS_WIDTH);
   canvas.height = toCanvasDimension(payload.height, CANVAS_HEIGHT);
   dom.appendChild(root, canvas);
