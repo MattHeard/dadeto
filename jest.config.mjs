@@ -19,6 +19,7 @@ const config = {
   // When running with Stryker, use the special Stryker environment
   ...(process.env.STRYKER_TEST_ENV && {
     testEnvironment: '@stryker-mutator/jest-runner/jest-env/node',
+    maxWorkers: 1,
   }),
   testPathIgnorePatterns: [
     '<rootDir>/.stryker-tmp/',

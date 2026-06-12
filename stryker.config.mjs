@@ -17,7 +17,7 @@ export default {
   testRunner: 'jest',
   testRunnerNodeArgs: [
     '--experimental-vm-modules',
-    '--max-old-space-size=3072',
+    '--max-old-space-size=2048',
   ],
   coverageAnalysis: 'perTest',
   reporters: ['json', 'progress'],
