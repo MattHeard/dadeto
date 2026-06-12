@@ -123,22 +123,75 @@ async function runCommand(spawnImpl, command, args, cwd, options = {}) {
         env,
         stdio: 'inherit',
       });
-      child.once('error', error => {
-        if (allowFailure) {
-          resolve();
-          return;
-        }
-        reject(error);
-      });
-      child.once('exit', code => {
-        if (code === 0 || allowFailure) {
-          resolve();
-          return;
-        }
-        reject(
-          new Error(`${command} ${args.join(' ')} exited with code ${code}`)
-        );
-      });
+      child.once('error', error =>
+        handleRunCommandError(error, allowFailure, resolve, reject)
+      );
+      child.once('exit', code =>
+        handleRunCommandExit(
+          command,
+          args,
+          code,
+          allowFailure,
+          resolve,
+          reject
+        )
+      );
     }
   );
+}
+
+/**
+ * Handle a spawned command error.
+ * @param {unknown} error Spawn error.
+ * @param {boolean} allowFailure Whether failures should be ignored.
+ * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
+ * @param {(reason?: unknown) => void} reject Promise rejecter.
+ * @returns {void}
+ */
+function handleRunCommandError(error, allowFailure, resolve, reject) {
+  if (resolveIfAllowed(allowFailure, resolve)) {
+    return;
+  }
+
+  reject(error);
+}
+
+/**
+ * Handle a spawned command exit code.
+ * @param {string} command Command name.
+ * @param {string[]} args Command arguments.
+ * @param {number | null} code Exit code.
+ * @param {boolean} allowFailure Whether failures should be ignored.
+ * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
+ * @param {(reason?: unknown) => void} reject Promise rejecter.
+ * @returns {void}
+ */
+function handleRunCommandExit(
+  command,
+  args,
+  code,
+  allowFailure,
+  resolve,
+  reject
+) {
+  if (code === 0 || resolveIfAllowed(allowFailure, resolve)) {
+    return;
+  }
+
+  reject(new Error(`${command} ${args.join(' ')} exited with code ${code}`));
+}
+
+/**
+ * Resolve the command promise when failures are allowed.
+ * @param {boolean} allowFailure Whether failures should be ignored.
+ * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
+ * @returns {boolean} True when the promise was resolved.
+ */
+function resolveIfAllowed(allowFailure, resolve) {
+  if (!allowFailure) {
+    return false;
+  }
+
+  resolve();
+  return true;
 }
