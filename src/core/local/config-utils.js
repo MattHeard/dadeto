@@ -17,11 +17,11 @@ export function normalizeString(value, fallback) {
  * @returns {number} Positive finite number or fallback.
  */
 export function normalizePositiveNumber(value, fallback) {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
-    return fallback;
-  }
-
-  return value;
+  return normalizeNumberWithPredicate(
+    value,
+    fallback,
+    number => Number.isFinite(number) && number > 0
+  );
 }
 
 /**
@@ -30,11 +30,11 @@ export function normalizePositiveNumber(value, fallback) {
  * @returns {number} Non-negative integer or fallback.
  */
 export function normalizeNonNegativeInteger(value, fallback) {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
-    return fallback;
-  }
-
-  return value;
+  return normalizeNumberWithPredicate(
+    value,
+    fallback,
+    number => Number.isInteger(number) && number >= 0
+  );
 }
 
 /**
@@ -44,6 +44,21 @@ export function normalizeNonNegativeInteger(value, fallback) {
  */
 export function normalizePathValue(value, fallback) {
   return normalizeString(value, fallback);
+}
+
+/**
+ * Normalize a numeric value when it satisfies a predicate.
+ * @param {unknown} value Candidate numeric value.
+ * @param {number} fallback Fallback value.
+ * @param {(number: number) => boolean} isValid Predicate that accepts valid numeric values.
+ * @returns {number} Normalized numeric value.
+ */
+function normalizeNumberWithPredicate(value, fallback, isValid) {
+  if (typeof value !== 'number' || !isValid(value)) {
+    return fallback;
+  }
+
+  return value;
 }
 
 /**
