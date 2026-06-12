@@ -8,10 +8,7 @@ import {
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
-import {
-  getFirestoreForDatabase,
-  resolveFirestoreDatabaseId,
-} from '../firestore-helpers.js';
+import { resolveFirestoreDatabaseId } from '../firestore-helpers.js';
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
 /**
@@ -130,20 +127,6 @@ export function createAssignModerationJobEntrypoint(deps) {
     }
 
     return { getFirestoreInstance, clearFirestoreInstanceCache };
-  }
-
-  /**
-   * Create a Firestore instance for the requested database.
-   * @param {typeof deps.getFirestore} getFirestoreFn Firestore factory.
-   * @param {string} databaseId Firestore database identifier.
-   * @returns {unknown} Firestore instance.
-   */
-  function createFirestoreInstance(getFirestoreFn, databaseId) {
-    return getFirestoreForDatabase(
-      getFirestoreFn,
-      /** @type {any} */ (undefined),
-      databaseId
-    );
   }
 
   const { getFirestoreInstance, clearFirestoreInstanceCache } =

@@ -3,9 +3,10 @@ import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import {
   createGenerateStatsCore,
   initializeFirebaseApp,
-  productionOrigins,
 } from './generate-stats-core.js';
+import { getAllowedOrigins } from '../allowed-origins.js';
 import {
+  createFirestoreInstance,
   getFirestoreForDatabase,
   resolveFirestoreDatabaseId,
 } from '../firestore-helpers.js';
@@ -43,25 +44,6 @@ export const ensureFirebaseApp = createEnsureFirebaseApp();
  * @param {Record<string, string | undefined> | undefined} environmentVariables Runtime environment variables.
  * @returns {string[]} Allowed origins for the current environment.
  */
-export const getAllowedOrigins = environmentVariables => {
-  const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
-  const playwrightOrigin = environmentVariables?.PLAYWRIGHT_ORIGIN;
-
-  if (environment === 'prod') {
-    return productionOrigins;
-  }
-
-  if (typeof environment === 'string' && environment.startsWith('t-')) {
-    if (playwrightOrigin) {
-      return [playwrightOrigin];
-    }
-
-    return [];
-  }
-
-  return productionOrigins;
-};
-
 /** @type {import('firebase-admin/firestore').Firestore | null} */
 let cachedDb = null;
 
@@ -119,20 +101,6 @@ export const getFirestoreInstance = (options = {}) => {
 
   return cachedDb;
 };
-
-/**
- * Create a Firestore instance for the selected database.
- * @param {typeof getAdminFirestore} getFirestoreFn Firestore factory.
- * @param {string} databaseId Selected database identifier.
- * @returns {import('firebase-admin/firestore').Firestore} Firestore instance.
- */
-function createFirestoreInstance(getFirestoreFn, databaseId) {
-  return getFirestoreForDatabase(
-    getFirestoreFn,
-    /** @type {any} */ (undefined),
-    databaseId
-  );
-}
 
 /**
  * Build the public Cloud Function wrapper for generate-stats from injected dependencies.

@@ -1,3 +1,4 @@
+import { stringOr } from '../../commonCore.js';
 const STATUS = {
   DISCONNECTED: 'disconnected',
   CONNECTING: 'connecting',
@@ -62,19 +63,6 @@ function parseConfig(inputString) {
       endpointError: '',
     };
   }
-}
-
-/**
- * Resolve a string fallback.
- * @param {unknown} candidate Candidate value.
- * @param {string} fallback Fallback value.
- * @returns {string} Candidate or fallback.
- */
-function stringOr(candidate, fallback) {
-  if (typeof candidate === 'string' && candidate.trim()) {
-    return candidate;
-  }
-  return fallback;
 }
 
 /**

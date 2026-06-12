@@ -67,17 +67,17 @@ function resolveAuthorizationCandidate(...candidates) {
  * @param {string} name Header name to resolve.
  * @returns {string | null} Normalized header value or null.
  */
-function tryReadGetterHeader(getter, name) {
+export function readHeaderFromGetter(getter, name) {
   if (typeof getter !== 'function') {
     return null;
   }
 
   return tryGetHeader(headerName => {
     const value = getter(headerName);
-    if (value === null) {
-      return undefined;
+    if (typeof value === 'string' && value.length > 0) {
+      return value;
     }
-    return value;
+    return undefined;
   }, name);
 }
 
@@ -88,8 +88,8 @@ function tryReadGetterHeader(getter, name) {
  */
 export function getAuthorizationFromGetter(getter) {
   return resolveAuthorizationCandidate(
-    tryReadGetterHeader(getter, 'Authorization'),
-    tryReadGetterHeader(getter, 'authorization')
+    readHeaderFromGetter(getter, 'Authorization'),
+    readHeaderFromGetter(getter, 'authorization')
   );
 }
 

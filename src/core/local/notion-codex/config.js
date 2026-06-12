@@ -4,18 +4,10 @@ import {
   normalizeString,
   normalizeStringArray,
   loadNormalizedLocalJsonConfig,
+  resolveNormalizedRepoPaths,
 } from '../config-utils.js';
 import { objectOrEmpty } from '../../commonCore.js';
-
-const DEFAULT_CODEX_ARGS = [
-  'exec',
-  '--skip-git-repo-check',
-  '--ephemeral',
-  '--model',
-  'gpt-5.4-mini',
-  '--sandbox',
-  'workspace-write',
-];
+import { DEFAULT_CODEX_ARGS } from '../symphony/launcherCodex.js';
 
 export const DEFAULT_NOTION_CODEX_CONFIG = {
   notion: {
@@ -164,18 +156,20 @@ export function normalizeNotionCodexConfig(
       source.maxConcurrentRuns,
       DEFAULT_NOTION_CODEX_CONFIG.maxConcurrentRuns
     ),
-    logDir: pathModule.resolve(
-      repoRoot,
-      normalizeString(source.logDir, DEFAULT_NOTION_CODEX_CONFIG.logDir)
-    ),
-    outcomeDir: pathModule.resolve(
-      repoRoot,
-      normalizeString(source.outcomeDir, DEFAULT_NOTION_CODEX_CONFIG.outcomeDir)
-    ),
-    statePath: pathModule.resolve(
-      repoRoot,
-      normalizeString(source.statePath, DEFAULT_NOTION_CODEX_CONFIG.statePath)
-    ),
+    ...resolveNormalizedRepoPaths(repoRoot, pathModule, {
+      logDir: {
+        value: source.logDir,
+        fallback: DEFAULT_NOTION_CODEX_CONFIG.logDir,
+      },
+      outcomeDir: {
+        value: source.outcomeDir,
+        fallback: DEFAULT_NOTION_CODEX_CONFIG.outcomeDir,
+      },
+      statePath: {
+        value: source.statePath,
+        fallback: DEFAULT_NOTION_CODEX_CONFIG.statePath,
+      },
+    }),
   };
 }
 

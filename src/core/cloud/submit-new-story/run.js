@@ -5,8 +5,12 @@ import {
   createHandleSubmitNewStory,
   createSubmitNewStoryResponder,
 } from './submit-new-story-core.js';
-import { getAuthorizationHeader } from '../submit-shared.js';
+import {
+  getAuthorizationHeader,
+  readHeaderFromGetter,
+} from '../submit-shared.js';
 import { createFirebaseAppContext } from '../firebase-app-manager.js';
+import { whenOrNull } from '../../commonCore.js';
 
 /**
  * Set up and export the submit-new-story cloud function.
@@ -110,16 +114,7 @@ function readRequestHeader(request, headerName) {
  */
 function readRequestHeaderFromGetter(request, headerName) {
   const getter = request?.get;
-  if (typeof getter !== 'function') {
-    return null;
-  }
-
-  const value = getter(headerName);
-  if (typeof value === 'string' && value.length > 0) {
-    return value;
-  }
-
-  return null;
+  return readHeaderFromGetter(getter, headerName);
 }
 
 /**
@@ -129,21 +124,19 @@ function readRequestHeaderFromGetter(request, headerName) {
  * @returns {string | null} Header value when available.
  */
 function readRequestHeaderFromHeaders(headers, headerName) {
-  if (!headers) {
-    return null;
-  }
+  return whenOrNull(headers, currentHeaders => {
+    const lowerHeaderName = headerName.toLowerCase();
+    const candidates = [headerName, lowerHeaderName];
 
-  const lowerHeaderName = headerName.toLowerCase();
-  const candidates = [headerName, lowerHeaderName];
-
-  for (const candidate of candidates) {
-    const value = readRequestHeaderCandidate(headers[candidate]);
-    if (value !== null) {
-      return value;
+    for (const candidate of candidates) {
+      const value = readRequestHeaderCandidate(currentHeaders[candidate]);
+      if (value !== null) {
+        return value;
+      }
     }
-  }
 
-  return null;
+    return null;
+  });
 }
 
 /**
@@ -152,8 +145,11 @@ function readRequestHeaderFromHeaders(headers, headerName) {
  * @returns {string | null} Normalized header value.
  */
 function readRequestHeaderCandidate(raw) {
-  if (typeof raw === 'string' && raw.length > 0) {
-    return raw;
+  if (typeof raw === 'string') {
+    if (raw.length > 0) {
+      return raw;
+    }
+    return null;
   }
 
   if (Array.isArray(raw) && raw.length > 0) {

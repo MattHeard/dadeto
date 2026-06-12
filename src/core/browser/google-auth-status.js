@@ -74,16 +74,10 @@ function createShowSignedIn({
   isAdminFn,
 }) {
   return function showSignedIn() {
-    signInButtons.forEach(element => {
-      element.style.display = 'none';
-    });
-    signOutWraps.forEach(element => {
-      element.style.display = '';
-    });
+    setElementsDisplay(signInButtons, 'none');
+    setElementsDisplay(signOutWraps, '');
     if (isAdminFn()) {
-      adminLinks.forEach(element => {
-        element.style.display = '';
-      });
+      setElementsDisplay(adminLinks, '');
     }
   };
 }
@@ -99,14 +93,20 @@ function createShowSignedIn({
  */
 function createShowSignedOut({ signInButtons, signOutWraps, adminLinks }) {
   return function showSignedOut() {
-    signInButtons.forEach(element => {
-      element.style.display = '';
-    });
-    signOutWraps.forEach(element => {
-      element.style.display = 'none';
-    });
-    adminLinks.forEach(element => {
-      element.style.display = 'none';
-    });
+    setElementsDisplay(signInButtons, '');
+    setElementsDisplay(signOutWraps, 'none');
+    setElementsDisplay(adminLinks, 'none');
   };
+}
+
+/**
+ * Set the display style for a group of elements.
+ * @param {HTMLElement[]} elements Elements to update.
+ * @param {string} display CSS display value.
+ * @returns {void}
+ */
+function setElementsDisplay(elements, display) {
+  elements.forEach(element => {
+    element.style.display = display;
+  });
 }

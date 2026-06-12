@@ -1,10 +1,12 @@
 import * as browserCore from '../browser-core.js';
 import {
-  createManagedFormShellState,
+  buildManagedForm,
+  finalizeManagedForm,
   runFormHandler,
   syncHiddenInput,
   wireLabelledField,
 } from './createDendriteHandler.js';
+import { createSectionWithHeading } from '../presenters/browserPresentersCore.js';
 import { isNonNullObject, numberOrZero } from '../../commonCore.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -32,7 +34,6 @@ import { isNonNullObject, numberOrZero } from '../../commonCore.js';
 
 const FORM_CLASS = 'real-hourly-wage-form';
 const GROUP_CLASS = 'real-hourly-wage-form-group';
-const GROUP_TITLE_CLASS = 'real-hourly-wage-form-group-title';
 
 /**
  * @type {Array<{
@@ -45,92 +46,103 @@ const GROUP_TITLE_CLASS = 'real-hourly-wage-form-group-title';
  * }>}
  */
 const FIELD_GROUPS = [
-  {
-    title: 'Period',
-    fields: [
-      {
-        path: ['period', 'paidWorkHours'],
-        labelText: 'Paid work hours',
-        placeholder: '160',
-      },
-      {
-        path: ['period', 'grossIncome'],
-        labelText: 'Gross income',
-        placeholder: '5000',
-      },
-      {
-        path: ['period', 'netIncome'],
-        labelText: 'Net income',
-        placeholder: '3200',
-      },
-    ],
-  },
-  {
-    title: 'Overhead hours',
-    fields: [
-      {
-        path: ['overhead', 'commuteHours'],
-        labelText: 'Commute hours',
-        placeholder: '20',
-      },
-      {
-        path: ['overhead', 'prepHours'],
-        labelText: 'Prep hours',
-        placeholder: '5',
-      },
-      {
-        path: ['overhead', 'recoveryHours'],
-        labelText: 'Recovery hours',
-        placeholder: '10',
-      },
-      {
-        path: ['overhead', 'adminHours'],
-        labelText: 'Admin hours',
-        placeholder: '4',
-      },
-      {
-        path: ['overhead', 'overtimeHours'],
-        labelText: 'Overtime hours',
-        placeholder: '2',
-      },
-      {
-        path: ['overhead', 'otherWorkHours'],
-        labelText: 'Other work hours',
-        placeholder: '1',
-      },
-    ],
-  },
-  {
-    title: 'Overhead expenses',
-    fields: [
-      {
-        path: ['overhead', 'directWorkExpenses'],
-        labelText: 'Direct work expenses',
-        placeholder: '120',
-      },
-      {
-        path: ['overhead', 'commuteExpenses'],
-        labelText: 'Commute expenses',
-        placeholder: '40',
-      },
-      {
-        path: ['overhead', 'foodExpenses'],
-        labelText: 'Food expenses',
-        placeholder: '15',
-      },
-      {
-        path: ['overhead', 'clothingExpenses'],
-        labelText: 'Clothing expenses',
-        placeholder: '25',
-      },
-      {
-        path: ['overhead', 'otherWorkExpenses'],
-        labelText: 'Other work expenses',
-        placeholder: '10',
-      },
-    ],
-  },
+  createFieldGroup('Period', [
+    {
+      path: ['period', 'paidWorkHours'],
+      labelText: 'Paid work hours',
+      placeholder: '160',
+    },
+    {
+      path: ['period', 'grossIncome'],
+      labelText: 'Gross income',
+      placeholder: '5000',
+    },
+    {
+      path: ['period', 'netIncome'],
+      labelText: 'Net income',
+      placeholder: '3200',
+    },
+  ]),
+  createFieldGroup('Overhead hours', [
+    {
+      path: ['overhead', 'commuteHours'],
+      labelText: 'Commute hours',
+      placeholder: '20',
+    },
+    {
+      path: ['overhead', 'prepHours'],
+      labelText: 'Prep hours',
+      placeholder: '5',
+    },
+    {
+      path: ['overhead', 'recoveryHours'],
+      labelText: 'Recovery hours',
+      placeholder: '10',
+    },
+    {
+      path: ['overhead', 'adminHours'],
+      labelText: 'Admin hours',
+      placeholder: '4',
+    },
+    {
+      path: ['overhead', 'overtimeHours'],
+      labelText: 'Overtime hours',
+      placeholder: '2',
+    },
+    {
+      path: ['overhead', 'otherWorkHours'],
+      labelText: 'Other work hours',
+      placeholder: '1',
+    },
+  ]),
+  createFieldGroup('Overhead expenses', [
+    {
+      path: ['overhead', 'directWorkExpenses'],
+      labelText: 'Direct work expenses',
+      placeholder: '120',
+    },
+    {
+      path: ['overhead', 'commuteExpenses'],
+      labelText: 'Commute expenses',
+      placeholder: '40',
+    },
+    {
+      path: ['overhead', 'foodExpenses'],
+      labelText: 'Food expenses',
+      placeholder: '15',
+    },
+    {
+      path: ['overhead', 'clothingExpenses'],
+      labelText: 'Clothing expenses',
+      placeholder: '25',
+    },
+    {
+      path: ['overhead', 'otherWorkExpenses'],
+      labelText: 'Other work expenses',
+      placeholder: '10',
+    },
+  ]),
 ];
+
+/**
+ * @param {string} title Group title.
+ * @param {Array<{
+ *   path: [keyof RealHourlyWageFormData, string],
+ *   labelText: string,
+ *   placeholder: string,
+ * }>} fields Group fields.
+ * @returns {{
+ *   title: string,
+ *   fields: Array<{
+ *     path: [keyof RealHourlyWageFormData, string],
+ *     labelText: string,
+ *     placeholder: string,
+ *   }>,
+ * }} Field group spec.
+ */
+function createFieldGroup(title, fields) {
+  return { title, fields };
+}
 
 /**
  * Create a default form payload.
@@ -261,23 +273,6 @@ function setFieldValue(data, path, rawValue) {
 }
 
 /**
- * Create a section wrapper for a group of fields.
- * @param {DOMHelpers} dom DOM helper utilities.
- * @param {string} title Section title.
- * @returns {HTMLElement} Section element.
- */
-function createGroupSection(dom, title) {
-  const section = dom.createElement('section');
-  dom.setClassName(section, GROUP_CLASS);
-
-  const heading = dom.createElement('h4');
-  dom.setClassName(heading, GROUP_TITLE_CLASS);
-  dom.setTextContent(heading, title);
-  dom.appendChild(section, heading);
-  return section;
-}
-
-/**
  * Wire a numeric field into the form.
  * @param {{
  *   dom: DOMHelpers,
@@ -341,7 +336,7 @@ function buildNumericField(options) {
  */
 function buildGroupSection(options) {
   const { dom, form, data, textInput, disposers, title, fields } = options;
-  const section = createGroupSection(dom, title);
+  const section = createSectionWithHeading(dom, GROUP_CLASS, title);
 
   fields.forEach(field => {
     buildNumericField({
@@ -364,26 +359,24 @@ function buildGroupSection(options) {
  */
 function buildForm({ dom, container, textInput }) {
   const data = parseFormData(textInput);
-  const { form, disposers } = createManagedFormShellState({
-    dom,
-    container,
-    textInput,
-  });
+  return buildManagedForm(
+    { dom, container, textInput },
+    ({ form, disposers }) => {
+      dom.setClassName(form, `${form.className} ${FORM_CLASS}`.trim());
+      FIELD_GROUPS.forEach(group =>
+        buildGroupSection({
+          dom,
+          form,
+          data,
+          textInput,
+          disposers,
+          ...group,
+        })
+      );
 
-  dom.setClassName(form, `${form.className} ${FORM_CLASS}`.trim());
-  FIELD_GROUPS.forEach(group =>
-    buildGroupSection({
-      dom,
-      form,
-      data,
-      textInput,
-      disposers,
-      ...group,
-    })
+      return finalizeManagedForm({ dom, textInput, data, form });
+    }
   );
-
-  syncHiddenInput(dom, textInput, data);
-  return form;
 }
 
 /**

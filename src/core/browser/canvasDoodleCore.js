@@ -1,4 +1,5 @@
 import { parseJsonOrNull } from './jsonUtils.js';
+import { whenOrNull } from '../commonCore.js';
 
 const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 180;
@@ -11,11 +12,7 @@ const FOREGROUND = '#1f2937';
  */
 export function parseCanvasDoodle(inputString) {
   const parsed = parseJsonOrNull(inputString);
-  if (!parsed || typeof parsed !== 'object') {
-    return null;
-  }
-
-  return parsed;
+  return whenOrNull(parsed && typeof parsed === 'object', () => parsed);
 }
 
 /**
@@ -29,7 +26,15 @@ export function createCanvasDoodleFallbackPayload() {
       { type: 'rect', x: 20, y: 20, width: 280, height: 140, fill: '#fde68a' },
       { type: 'circle', x: 90, y: 90, radius: 34, fill: '#60a5fa' },
       { type: 'circle', x: 220, y: 90, radius: 34, fill: '#f472b6' },
-      { type: 'line', x1: 80, y1: 130, x2: 240, y2: 130, stroke: '#111827', lineWidth: 6 },
+      {
+        type: 'line',
+        x1: 80,
+        y1: 130,
+        x2: 240,
+        y2: 130,
+        stroke: '#111827',
+        lineWidth: 6,
+      },
     ],
   };
 }
@@ -123,6 +128,11 @@ function drawShape(context, shape) {
   }
 }
 
+/**
+ *
+ * @param context
+ * @param shape
+ */
 function drawRect(context, shape) {
   const x = numberOr(shape.x, 0);
   const y = numberOr(shape.y, 0);
@@ -132,6 +142,11 @@ function drawRect(context, shape) {
   context.fillRect(x, y, width, height);
 }
 
+/**
+ *
+ * @param context
+ * @param shape
+ */
 function drawCircle(context, shape) {
   const x = numberOr(shape.x, 0);
   const y = numberOr(shape.y, 0);
@@ -142,6 +157,11 @@ function drawCircle(context, shape) {
   context.fill();
 }
 
+/**
+ *
+ * @param context
+ * @param shape
+ */
 function drawLine(context, shape) {
   const x1 = numberOr(shape.x1, 0);
   const y1 = numberOr(shape.y1, 0);
@@ -155,10 +175,20 @@ function drawLine(context, shape) {
   context.stroke();
 }
 
+/**
+ *
+ * @param value
+ * @param fallback
+ */
 function numberOr(value, fallback) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
+/**
+ *
+ * @param value
+ * @param fallback
+ */
 function stringOr(value, fallback) {
   return typeof value === 'string' && value.length > 0 ? value : fallback;
 }

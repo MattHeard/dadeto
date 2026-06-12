@@ -3,6 +3,7 @@ import {
   runGateCommand,
   useDefaultValue,
 } from './gate-utils.js';
+import { requirePathModule } from '../commonCore.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
@@ -80,6 +81,18 @@ export function findCoreMathRandomViolations({
   );
 }
 
+/**
+ * Scan a quoted string segment.
+ * @param {string} source Source text.
+ * @param {number} index Current index.
+ * @param {"'" | '"' } delimiter String delimiter.
+ * @param {string} nextState Next scanner state.
+ * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
+ */
+function scanQuotedString(source, index, delimiter, nextState) {
+  return scanDelimitedString(source, index, delimiter, nextState);
+}
+
 export const checkDepcruiseTestUtils = {
   normalizeCheckDepcruiseOptions,
   scanQuotedString,
@@ -122,10 +135,6 @@ export const checkDepcruiseTestUtils = {
  * }} Normalized dependencies.
  */
 function normalizeCheckDepcruiseOptions(options = {}) {
-  if (!options.pathModule) {
-    throw new Error('pathModule is required.');
-  }
-
   return {
     spawnImpl: useDefaultValue(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
     readFileSync: useDefaultValue(options.readFileSync, () => ''),
@@ -135,7 +144,7 @@ function normalizeCheckDepcruiseOptions(options = {}) {
     rootDir: useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
     sourceRoot: useDefaultValue(options.sourceRoot, DEFAULT_SOURCE_ROOT),
     configPath: useDefaultValue(options.configPath, DEFAULT_CONFIG_PATH),
-    pathModule: options.pathModule,
+    pathModule: requirePathModule(options.pathModule),
   };
 }
 
@@ -219,12 +228,12 @@ function executeDepcruiseGate({
 
   if (violations.length > 0) {
     stderr.write(
-      `Dependency-cruiser core policy found ${violations.length} violation${pluralize(violations.length)}.\n`
+      `Dependency-cruiser core policy found ${violations.length} violation${pluralizeCount(violations.length)}.\n`
     );
 
     violations.forEach(({ filePath, occurrences }) => {
       stderr.write(
-        `${filePath} uses the injected random source directly ${occurrences} time${pluralize(occurrences)}.\n`
+        `${filePath} uses the injected random source directly ${occurrences} time${pluralizeCount(occurrences)}.\n`
       );
     });
 
@@ -300,14 +309,14 @@ function getMathRandomScanStep(source, index, state) {
   }
 
   if (state === 'single-quote') {
-    return scanQuotedString(source, index, "'", 'code');
+    return scanDelimitedString(source, index, "'", 'code');
   }
 
   if (state === 'double-quote') {
-    return scanQuotedString(source, index, '"', 'code');
+    return scanDelimitedString(source, index, '"', 'code');
   }
 
-  return scanTemplateString(source, index);
+  return scanDelimitedString(source, index, '`', 'template');
 }
 
 /**
@@ -335,7 +344,7 @@ function scanCodeForMathRandom(source, index) {
  * Build a scan result with an optional count.
  * @param {number} nextIndex Next source index.
  * @param {string} nextState Next scanner state.
- * @param {number} [count=0] Matched count.
+ * @param {number | undefined} count Matched count.
  * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
  */
 function createZeroCountScanResult(nextIndex, nextState, count = 0) {
@@ -408,28 +417,6 @@ function scanBlockComment(source, index) {
 }
 
 /**
- * Scan through a quoted string.
- * @param {string} source Source text.
- * @param {number} index Current index.
- * @param {"'" | '"'} quote Quote delimiter.
- * @param {string} nextState State to resume after the string.
- * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
- */
-function scanQuotedString(source, index, quote, nextState) {
-  return scanDelimitedString(source, index, quote, nextState);
-}
-
-/**
- * Scan through a template literal.
- * @param {string} source Source text.
- * @param {number} index Current index.
- * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
- */
-function scanTemplateString(source, index) {
-  return scanDelimitedString(source, index, '`', 'template');
-}
-
-/**
  * Scan through a delimited string-like region.
  * @param {string} source Source text.
  * @param {number} index Current index.
@@ -478,15 +465,6 @@ function isBoundary(character) {
   }
 
   return !/[A-Za-z0-9_$]/u.test(character);
-}
-
-/**
- * Format a singular or plural suffix.
- * @param {number} count Item count.
- * @returns {string} Suffix for singular/plural output.
- */
-function pluralize(count) {
-  return pluralizeCount(count);
 }
 
 /**

@@ -53,17 +53,17 @@ export function handleSpawnFailure(
   commandLabel
 ) {
   if (runResult.error) {
-    stderr.write(
+    return writeLaunchFailure(
+      stderr,
       `${launchLabel} failed to launch ${commandLabel}: ${runResult.error.message}\n`
     );
-    return { exitCode: 1 };
   }
 
   if (runResult.signal) {
-    stderr.write(
+    return writeLaunchFailure(
+      stderr,
       `${launchLabel} was terminated by signal ${runResult.signal}\n`
     );
-    return { exitCode: 1 };
   }
 
   if (runResult.status !== 0) {
@@ -71,6 +71,17 @@ export function handleSpawnFailure(
   }
 
   return null;
+}
+
+/**
+ * Write a launch failure message and return the standardized failure code.
+ * @param {{ write: (text: string) => void }} stderr Error writer.
+ * @param {string} message Failure message.
+ * @returns {{ exitCode: number }} Standard failure result.
+ */
+function writeLaunchFailure(stderr, message) {
+  stderr.write(message);
+  return { exitCode: 1 };
 }
 
 /**

@@ -1,6 +1,6 @@
 import {
   resolveFirestoreDatabaseId,
-  getFirestoreForDatabase,
+  createFirestoreInstance,
 } from './firestore-helpers.js';
 
 /**
@@ -74,19 +74,11 @@ export function createFirestoreModule(deps) {
     if (
       shouldBypassFirestoreCache({ ensureAppFn, getFirestoreFn, environment })
     ) {
-      return getFirestoreForDatabase(
-        getFirestoreFn,
-        /** @type {any} */ (undefined),
-        databaseId
-      );
+      return createFirestoreInstance(getFirestoreFn, databaseId);
     }
 
     if (!cachedDb) {
-      cachedDb = getFirestoreForDatabase(
-        getFirestoreFn,
-        /** @type {any} */ (undefined),
-        databaseId
-      );
+      cachedDb = createFirestoreInstance(getFirestoreFn, databaseId);
     }
 
     return cachedDb;

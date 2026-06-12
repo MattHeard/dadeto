@@ -1,6 +1,3 @@
-// @ts-nocheck
-/* istanbul ignore file */
-// @ts-nocheck
 /* istanbul ignore file */
 export {
   buildPageByNumberQuery,
@@ -59,4 +56,21 @@ export function getFirestoreForDatabase(
   }
 
   return getFirestoreFn(firebaseApp);
+}
+
+/**
+ * Create a Firestore instance for the requested database id.
+ * @param {(
+ *   app?: import('firebase-admin/app').App,
+ *   databaseId?: string,
+ * ) => import('firebase-admin/firestore').Firestore} getFirestoreFn Firestore factory.
+ * @param {string} databaseId Firestore database identifier.
+ * @returns {import('firebase-admin/firestore').Firestore} Firestore client.
+ */
+export function createFirestoreInstance(getFirestoreFn, databaseId) {
+  return getFirestoreForDatabase(
+    getFirestoreFn,
+    /** @type {any} */ (undefined),
+    databaseId
+  );
 }

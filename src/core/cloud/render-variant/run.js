@@ -5,6 +5,7 @@ import {
   createRenderVariant,
   getVisibleVariants,
   DEFAULT_BUCKET_NAME,
+  createFirestoreDocumentOnWriteTrigger,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
   VISIBILITY_THRESHOLD,
@@ -59,16 +60,12 @@ export function runRenderVariant(deps) {
 
   /* istanbul ignore next */
   const renderVariant = /** @type {any} */ (
-    functions
-      .region('europe-west1')
-      .firestore.document(
-        'stories/{storyId}/pages/{pageId}/variants/{variantId}'
-      )
-      .onWrite(
-        /** @type {(change: any, context: any) => any} */ (
-          (change, context) => handleVariantWrite(change, context)
-        )
-      )
+    createFirestoreDocumentOnWriteTrigger({
+      functions,
+      region: 'europe-west1',
+      documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
+      handler: (change, context) => handleVariantWrite(change, context),
+    })
   );
 
   const render = /** @type {(...args: any[]) => any} */ (
@@ -105,10 +102,11 @@ export function runRenderVariant(deps) {
         ),
       })
     );
-
-    return /** @type {any} */ (
+    const renderEntrypointState = /** @type {any} */ (
       /** @type {any} */ (createCloudRenderEntrypointState)(renderStateOptions)
     );
+
+    return renderEntrypointState;
   }
 }
 

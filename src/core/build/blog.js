@@ -458,6 +458,40 @@ export function createCopyCore({
   }
 
   /**
+   * Copy planned directory trees from compact tuples.
+   * @param {Array<[string, string, string, string]>} entries Directory plan tuples.
+   * @param {{
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     removeDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void, warn: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters, logger, and bound copier.
+   * @returns {void}
+   */
+  function copyPlannedDirectoryTreesFromTuples(entries, context) {
+    copyPlannedDirectoryTrees(buildDirectoryCopyPlans(entries), context);
+  }
+
+  /**
+   * Build directory copy plans from a compact tuple form.
+   * @param {Array<[string, string, string, string]>} entries Directory plan tuples.
+   * @returns {Array<{ src: string, dest: string, successMessage: string, missingMessage: string }>} Copy plans.
+   */
+  function buildDirectoryCopyPlans(entries) {
+    return entries.map(([src, dest, successMessage, missingLabel]) => ({
+      src,
+      dest,
+      successMessage,
+      missingMessage: `Warning: ${missingLabel} at ${formatPathForLog(src)}`,
+    }));
+  }
+
+  /**
    * Copy one or more browser-related directory trees into the public browser directory.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
@@ -474,26 +508,23 @@ export function createCopyCore({
    * @returns {void}
    */
   function copyBrowserTrees(dirs, context) {
-    const plans = [
-      {
-        src: dirs.srcBrowserDir,
-        dest: dirs.publicBrowserDir,
-        successMessage: 'Browser files copied successfully!',
-        missingMessage: `Warning: browser directory not found at ${formatPathForLog(
-          dirs.srcBrowserDir
-        )}`,
-      },
-      {
-        src: dirs.srcCoreBrowserDir,
-        dest: dirs.publicCoreBrowserDir,
-        successMessage: 'Core browser files copied successfully!',
-        missingMessage: `Warning: core/browser directory not found at ${formatPathForLog(
-          dirs.srcCoreBrowserDir
-        )}`,
-      },
-    ];
-
-    copyPlannedDirectoryTrees(plans, context);
+    copyPlannedDirectoryTreesFromTuples(
+      [
+        [
+          dirs.srcBrowserDir,
+          dirs.publicBrowserDir,
+          'Browser files copied successfully!',
+          'browser directory not found',
+        ],
+        [
+          dirs.srcCoreBrowserDir,
+          dirs.publicCoreBrowserDir,
+          'Core browser files copied successfully!',
+          'core/browser directory not found',
+        ],
+      ],
+      context
+    );
   }
 
   /**
@@ -585,34 +616,29 @@ export function createCopyCore({
    * @returns {void}
    */
   function copyStaticContentTrees(dirs, context) {
-    const plans = [
-      {
-        src: dirs.srcBrowserAssetsDir,
-        dest: dirs.publicDir,
-        successMessage: 'Browser assets copied successfully!',
-        missingMessage: `Warning: browser/assets directory not found at ${formatPathForLog(
-          dirs.srcBrowserAssetsDir
-        )}`,
-      },
-      {
-        src: dirs.srcContentBlogMediaDir,
-        dest: dirs.publicDir,
-        successMessage: 'Blog media copied successfully!',
-        missingMessage: `Warning: content/blog-media directory not found at ${formatPathForLog(
-          dirs.srcContentBlogMediaDir
-        )}`,
-      },
-      {
-        src: dirs.srcContentPagesDir,
-        dest: dirs.publicDir,
-        successMessage: 'Content pages copied successfully!',
-        missingMessage: `Warning: content/pages directory not found at ${formatPathForLog(
-          dirs.srcContentPagesDir
-        )}`,
-      },
-    ];
-
-    copyPlannedDirectoryTrees(plans, context);
+    copyPlannedDirectoryTreesFromTuples(
+      [
+        [
+          dirs.srcBrowserAssetsDir,
+          dirs.publicDir,
+          'Browser assets copied successfully!',
+          'browser/assets directory not found',
+        ],
+        [
+          dirs.srcContentBlogMediaDir,
+          dirs.publicDir,
+          'Blog media copied successfully!',
+          'content/blog-media directory not found',
+        ],
+        [
+          dirs.srcContentPagesDir,
+          dirs.publicDir,
+          'Content pages copied successfully!',
+          'content/pages directory not found',
+        ],
+      ],
+      context
+    );
   }
 
   /**

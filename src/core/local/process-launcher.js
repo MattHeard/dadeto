@@ -1,3 +1,4 @@
+import { normalizeMaybeNumber } from '../commonCore.js';
 // @ts-nocheck
 /**
  * Open append-only run log files for a spawned process.
@@ -83,19 +84,6 @@ export async function closeRunLogHandles(handles, errorLabel) {
       console.error(errorLabel, result.reason);
     }
   }
-}
-
-/**
- * Normalize a possibly missing numeric value.
- * @param {number | null | undefined} value Maybe-present number.
- * @returns {number | null} Normalized numeric value.
- */
-function normalizeMaybeNumber(value) {
-  if (typeof value === 'number') {
-    return value;
-  }
-
-  return null;
 }
 
 /**

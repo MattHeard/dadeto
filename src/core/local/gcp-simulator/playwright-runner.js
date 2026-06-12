@@ -63,36 +63,13 @@ export async function runLocalPlaywright(options = {}) {
 function waitForSimulatorReady(child) {
   return new Promise((resolve, reject) => {
     let buffer = '';
-    let settled = false;
 
     const cleanup = () => {
       child.off('error', onError);
       child.off('exit', onExit);
     };
 
-    /**
-     * @param {number} port Port number.
-     */
-    const resolveOnce = port => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      cleanup();
-      resolve(port);
-    };
-
-    /**
-     * @param {Error} error Error to reject with.
-     */
-    const rejectOnce = error => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      cleanup();
-      reject(error);
-    };
+    const settleOnce = createOnceSettler(cleanup);
 
     /**
      * @param {Buffer} chunk Output chunk.
@@ -102,7 +79,7 @@ function waitForSimulatorReady(child) {
       buffer += chunk.toString('utf8');
       const match = buffer.match(READY_PATTERN);
       if (match) {
-        resolveOnce(Number(match[1]));
+        settleOnce(resolve, Number(match[1]));
       }
     };
 
@@ -117,7 +94,7 @@ function waitForSimulatorReady(child) {
      * @param {Error} error Spawn error.
      */
     const onError = error => {
-      rejectOnce(error);
+      settleOnce(reject, error);
     };
 
     /**
@@ -136,7 +113,8 @@ function waitForSimulatorReady(child) {
       }
 
       const reason = `code ${codeText}, signal ${signalText}`;
-      rejectOnce(
+      settleOnce(
+        reject,
         new Error(`gcp simulator exited before announcing a port (${reason})`)
       );
     };
@@ -146,6 +124,25 @@ function waitForSimulatorReady(child) {
     child.once('error', onError);
     child.once('exit', onExit);
   });
+}
+
+/**
+ * Build a one-time settlement function for promise callbacks.
+ * @param {() => void} onFirstSettle Cleanup callback.
+ * @returns {(settle: (value: unknown) => void, value: unknown) => void} One-shot settler.
+ */
+function createOnceSettler(onFirstSettle) {
+  let settled = false;
+
+  return (settle, value) => {
+    if (settled) {
+      return;
+    }
+
+    settled = true;
+    onFirstSettle();
+    settle(value);
+  };
 }
 
 /**

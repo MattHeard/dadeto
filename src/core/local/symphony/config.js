@@ -2,9 +2,9 @@ import { DEFAULT_CODEX_RALPH_ARGS } from './launcherCodex.js';
 import {
   loadNormalizedLocalJsonConfig,
   normalizePositiveNumber,
-  normalizePathValue,
   normalizeString,
   normalizeStringArray,
+  resolveNormalizedRepoPaths,
 } from '../config-utils.js';
 
 export const DEFAULT_SYMPHONY_CONFIG = {
@@ -89,32 +89,6 @@ function normalizeLauncherMcpServers(mcpServers) {
 }
 
 /**
- * Resolve the workspace root path from the raw config.
- * @param {object | null | undefined} config Symphony config candidate.
- * @returns {string} Normalized workspace root path relative to the repo.
- */
-function resolveWorkspaceRoot(config) {
-  const typedConfig = /** @type {any} */ (config);
-  return normalizePathValue(
-    typedConfig?.workspaceRoot,
-    DEFAULT_SYMPHONY_CONFIG.workspaceRoot
-  );
-}
-
-/**
- * Resolve the log directory path from the raw config.
- * @param {object | null | undefined} config Symphony config candidate.
- * @returns {string} Normalized log directory path relative to the repo.
- */
-function resolveLogDir(config) {
-  const typedConfig = /** @type {any} */ (config);
-  return normalizePathValue(
-    typedConfig?.logDir,
-    DEFAULT_SYMPHONY_CONFIG.logDir
-  );
-}
-
-/**
  * Resolve the default branch name from the raw config.
  * @param {unknown} defaultBranch Default branch candidate.
  * @returns {string} Normalized default branch name.
@@ -128,6 +102,34 @@ function resolveDefaultBranch(defaultBranch) {
   }
 
   return DEFAULT_SYMPHONY_CONFIG.defaultBranch;
+}
+
+/**
+ * Resolve the Symphony path fields from the raw config.
+ * @param {object | null | undefined} config Symphony config candidate.
+ * @param {string} repoRoot Repo root used to resolve relative paths.
+ * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathModule Path helper.
+ * @returns {{ workspaceRoot: string, logDir: string, statusPath: string }} Resolved path fields.
+ */
+function resolveSymphonyPaths(config, repoRoot, pathModule) {
+  const typedConfig = /** @type {any} */ (config);
+  return {
+    ...resolveNormalizedRepoPaths(repoRoot, pathModule, {
+      workspaceRoot: {
+        value: typedConfig?.workspaceRoot,
+        fallback: DEFAULT_SYMPHONY_CONFIG.workspaceRoot,
+      },
+      logDir: {
+        value: typedConfig?.logDir,
+        fallback: DEFAULT_SYMPHONY_CONFIG.logDir,
+      },
+      statusPath: {
+        value: typedConfig?.logDir,
+        fallback: DEFAULT_SYMPHONY_CONFIG.logDir,
+        suffix: 'status.json',
+      },
+    }),
+  };
 }
 
 /**
@@ -153,26 +155,30 @@ export function normalizeSymphonyConfig(
   configPath,
   pathModule
 ) {
-  const typedConfig = /** @type {any} */ (config);
-  const workspaceRoot = resolveWorkspaceRoot(config);
-  const logDir = resolveLogDir(config);
+  const { workspaceRoot, logDir, statusPath } = resolveSymphonyPaths(
+    config,
+    repoRoot,
+    pathModule
+  );
 
   return {
     configPath,
-    tracker: normalizeTracker(typedConfig?.tracker),
-    launcher: normalizeLauncher(typedConfig?.launcher),
-    workspaceRoot: pathModule.resolve(repoRoot, workspaceRoot),
-    logDir: pathModule.resolve(repoRoot, logDir),
-    statusPath: pathModule.resolve(repoRoot, logDir, 'status.json'),
+    tracker: normalizeTracker(/** @type {any} */ (config)?.tracker),
+    launcher: normalizeLauncher(/** @type {any} */ (config)?.launcher),
+    workspaceRoot,
+    logDir,
+    statusPath,
     pollIntervalMs: normalizePositiveNumber(
-      typedConfig?.pollIntervalMs,
+      /** @type {any} */ (config)?.pollIntervalMs,
       DEFAULT_SYMPHONY_CONFIG.pollIntervalMs
     ),
     maxConcurrentRuns: normalizePositiveNumber(
-      typedConfig?.maxConcurrentRuns,
+      /** @type {any} */ (config)?.maxConcurrentRuns,
       DEFAULT_SYMPHONY_CONFIG.maxConcurrentRuns
     ),
-    defaultBranch: resolveDefaultBranch(typedConfig?.defaultBranch),
+    defaultBranch: resolveDefaultBranch(
+      /** @type {any} */ (config)?.defaultBranch
+    ),
   };
 }
 

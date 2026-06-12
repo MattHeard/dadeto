@@ -3,6 +3,7 @@ import {
   applyRunnerLaunchFailure,
   applyRunnerOutcome,
 } from '../symphony.js';
+import { getDefinedStrings, getRecordOrNull } from '../commonCore.js';
 import {
   createCodexRalphLauncher,
   DEFAULT_CODEX_RALPH_ARGS,
@@ -305,26 +306,6 @@ function normalizeError(error) {
   }
 
   return new Error(String(error));
-}
-
-/**
- * @param {unknown} value Candidate object value.
- * @returns {Record<string, unknown> | null} Object value or null.
- */
-function getRecordOrNull(value) {
-  if (value && typeof value === 'object') {
-    return value;
-  }
-
-  return null;
-}
-
-/**
- * @param {...(string | null)} values Candidate strings.
- * @returns {string[]} Defined string values.
- */
-function getDefinedStrings(...values) {
-  return values.filter(value => typeof value === 'string');
 }
 
 /**

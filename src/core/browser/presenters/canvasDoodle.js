@@ -18,7 +18,8 @@ const CANVAS_HEIGHT = 180;
  * @returns {HTMLElement} Rendered canvas container.
  */
 export function createCanvasDoodleElement(inputString, dom) {
-  const payload = parseCanvasDoodle(inputString) || createCanvasDoodleFallbackPayload();
+  const payload =
+    parseCanvasDoodle(inputString) || createCanvasDoodleFallbackPayload();
   const root = createPresenterRoot(dom, ROOT_CLASS);
   const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
   canvas.width = payload.width || CANVAS_WIDTH;

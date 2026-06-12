@@ -1,3 +1,4 @@
+import { stringOr } from '../../../commonCore.js';
 const DEFAULT_ENDPOINT = '/api/realtime/call';
 const DEFAULT_TITLE = 'Realtime Voice Prototype';
 const DEFAULT_DESCRIPTION =
@@ -126,24 +127,7 @@ function getCloudEndpointError(endpoint) {
 }
 
 /**
- * Resolve a string fallback.
- * @param {unknown} candidate Candidate value.
- * @param {string} fallback Fallback value.
- * @returns {string} Candidate or fallback.
- */
-function stringOr(candidate, fallback) {
-  if (!isNonEmptyString(candidate)) {
-    return fallback;
-  }
-
-  return candidate;
-}
-
-/**
  * Check whether a candidate is a non-empty string.
  * @param {unknown} candidate Candidate value.
  * @returns {candidate is string} True when candidate is a non-empty string.
  */
-function isNonEmptyString(candidate) {
-  return typeof candidate === 'string' && Boolean(candidate.trim());
-}

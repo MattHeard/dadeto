@@ -113,6 +113,47 @@ export function isDuplicateAppError(error) {
 }
 
 /**
+ * Initialize Firebase once, tolerating duplicate-app errors.
+ * @param {() => void} initializeApp Firebase initializer.
+ * @returns {void}
+ */
+export function ensureFirebaseAppOnce(initializeApp) {
+  try {
+    initializeApp();
+  } catch (error) {
+    if (!isDuplicateAppError(error)) {
+      throw error;
+    }
+  }
+}
+
+/**
+ * Create a Firestore document onWrite trigger for a specific region and path.
+ * @param {{
+ *   functions: { region: (region: string) => { firestore: { document: (path: string) => { onWrite: (handler: (change: unknown, context: unknown) => unknown) => unknown } } } },
+ *   region: string,
+ *   documentPath: string,
+ *   handler: (change: unknown, context: unknown) => unknown,
+ * }} options Trigger configuration.
+ * @returns {unknown} Firestore onWrite trigger.
+ */
+export function createFirestoreDocumentOnWriteTrigger({
+  functions,
+  region,
+  documentPath,
+  handler,
+}) {
+  return functions
+    .region(region)
+    .firestore.document(documentPath)
+    .onWrite(
+      /** @type {(change: unknown, context: unknown) => unknown} */ (
+        (change, context) => handler(change, context)
+      )
+    );
+}
+
+/**
  * Render the readable error message when available.
  * @param {unknown} error Candidate error object.
  * @returns {string} Message string or empty string when unavailable.

@@ -2,7 +2,7 @@ import { createDetachedProcessLauncher } from '../process-launcher.js';
 
 // Keep Ralph launches cheap and bounded while still allowing a single bead loop
 // to edit files and run local checks inside the repo workspace.
-export const DEFAULT_CODEX_RALPH_ARGS = [
+export const DEFAULT_CODEX_ARGS = [
   'exec',
   '--skip-git-repo-check',
   '--model',
@@ -10,6 +10,8 @@ export const DEFAULT_CODEX_RALPH_ARGS = [
   '--sandbox',
   'workspace-write',
 ];
+
+export const DEFAULT_CODEX_RALPH_ARGS = [...DEFAULT_CODEX_ARGS];
 
 /**
  * Create the Codex-backed Ralph launcher used by the Symphony runner.

@@ -178,6 +178,34 @@ export function createCloudRenderInstanceBuilder(options) {
 }
 
 /**
+ * Build the shared options bag for a cloud render entrypoint.
+ * @param {{
+ *   initializeApp: () => void,
+ *   createFirebaseAppManager: (initializeApp: () => void) => { ensureFirebaseApp: () => void },
+ *   getFirestoreInstance: () => unknown,
+ *   Storage: new () => unknown,
+ *   getEnvironmentVariables: () => Record<string, string | undefined>,
+ *   fetchFn: typeof fetch,
+ *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
+ *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
+ *   defaultBucketName: string,
+ *   entrypointKind: string,
+ *   buildRender: (state: {
+ *     db: unknown,
+ *     storage: unknown,
+ *     dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>,
+ *     environmentVariables: Record<string, string | undefined>,
+ *     bucketName: string,
+ *     objectPrefix: string,
+ *     projectId: string | undefined,
+ *     urlMapName: string | undefined,
+ *     cdnHost: string | undefined,
+ *   }) => unknown,
+ * }} options Entrypoint dependencies.
+ * @returns {typeof options} Shared cloud render options bag.
+ */
+
+/**
  * Create the full shared state for a cloud render entrypoint.
  * @param {{
  *   initializeApp: () => void,

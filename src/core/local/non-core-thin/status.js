@@ -1,3 +1,4 @@
+import { reportFailuresAndExit } from '../../commonCore.js';
 /**
  * Read the current non-core thin status.
  * @param {{
@@ -62,20 +63,17 @@ export function createCheckNonCoreThinHandle({
   output,
   setExitCode,
 }) {
-  return () => {
+  return function handleNonCoreThinCheck() {
     const status = getStatus();
-
-    if (!status.isClean) {
-      formatFailure(status).forEach(line => {
-        output.error(line);
-      });
-      setExitCode(1);
-      return;
+    const failures = formatFailure(status);
+    if (reportFailuresAndExit({ failures, output, setExitCode })) {
+      return true;
     }
 
     output.log(
       `Checked ${status.fileCount} non-core JS files; ${status.exemptionCount} baseline exemptions; max ${status.maxLines} lines.`
     );
+    return false;
   };
 }
 
@@ -372,16 +370,26 @@ function getWrapperPatternViolationsForSource(filePath, source, maxLines = 0) {
 }
 
 /**
+ * Check whether any pattern matches a source string.
+ * @param {string} source JavaScript source text.
+ * @param {RegExp[]} patterns Pattern list to test.
+ * @returns {boolean} True when any pattern matches.
+ */
+function matchesAnyPattern(source, patterns) {
+  return patterns.some(pattern => pattern.test(source));
+}
+
+/**
  * Check whether source declares a wrapper handle.
  * @param {string} source JavaScript source text.
  * @returns {boolean} True when a handle declaration is present.
  */
 function declaresHandle(source) {
-  return [
+  return matchesAnyPattern(source, [
     /\bconst\s+handle\s*=\s*[A-Za-z_$][\w$]*\s*\(/u,
     /\bconst\s+\{[^}]*\bhandle\b[^}]*\}\s*=\s*[A-Za-z_$][\w$]*\s*\(/u,
     /\bexport\s+const\s+handle\s*=/u,
-  ].some(pattern => pattern.test(source));
+  ]);
 }
 
 /**
@@ -390,10 +398,10 @@ function declaresHandle(source) {
  * @returns {boolean} True when the handle is exported.
  */
 function exportsHandle(source) {
-  return [
+  return matchesAnyPattern(source, [
     /\bexport\s*\{[^}]*\bhandle\b[^}]*\}/u,
     /\bexport\s+const\s+handle\s*=/u,
-  ].some(pattern => pattern.test(source));
+  ]);
 }
 
 /**

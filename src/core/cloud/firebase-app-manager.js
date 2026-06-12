@@ -1,4 +1,4 @@
-import { isDuplicateAppError } from './cloud-core.js';
+import { ensureFirebaseAppOnce } from './cloud-core.js';
 
 /**
  * Create helpers that manage Firebase Admin app initialization state.
@@ -78,32 +78,8 @@ function ensureFirebaseAppState(state, initFn) {
     return;
   }
 
-  initializeFirebaseApp(initFn);
+  ensureFirebaseAppOnce(initFn);
   markFirebaseInitialized(state);
-}
-
-/**
- * Run the Firebase initializer, tolerating duplicate-app errors.
- * @param {() => void} initFn Initialization function.
- * @returns {void} Nothing.
- */
-function initializeFirebaseApp(initFn) {
-  try {
-    initFn();
-  } catch (error) {
-    rethrowUnlessDuplicateAppError(error);
-  }
-}
-
-/**
- * Rethrow initialization errors unless they are duplicate-app errors.
- * @param {unknown} error Initialization error.
- * @returns {void} Nothing.
- */
-function rethrowUnlessDuplicateAppError(error) {
-  if (!isDuplicateAppError(error)) {
-    throw error;
-  }
 }
 
 /**

@@ -1,3 +1,5 @@
+import { requirePathModule } from '../commonCore.js';
+
 /**
  * @param {unknown} value Candidate string.
  * @param {string} fallback Fallback string.
@@ -47,6 +49,63 @@ export function normalizePathValue(value, fallback) {
 }
 
 /**
+ * Resolve a normalized repo-relative path.
+ * @param {string} repoRoot Repo root directory.
+ * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathModule Path helper.
+ * @param {unknown} value Candidate path value.
+ * @param {string} fallback Fallback repo-relative path.
+ * @returns {string} Resolved absolute path.
+ */
+export function resolveNormalizedRepoPath(
+  repoRoot,
+  pathModule,
+  value,
+  fallback
+) {
+  return pathModule.resolve(repoRoot, normalizePathValue(value, fallback));
+}
+
+/**
+ * Resolve a normalized repo-relative path with a suffix.
+ * @param {{
+ *   repoRoot: string,
+ *   pathModule: { resolve: (first: string, ...parts: string[]) => string },
+ *   value: unknown,
+ *   fallback: string,
+ *   suffix: string,
+ * }} options Path resolution options.
+ * @returns {string} Resolved absolute path.
+ */
+export function resolveNormalizedRepoPathWithSuffix(options) {
+  return options.pathModule.resolve(
+    options.repoRoot,
+    normalizePathValue(options.value, options.fallback),
+    options.suffix
+  );
+}
+
+/**
+ * Resolve multiple normalized repo-relative path fields.
+ * @param {string} repoRoot Repo root directory.
+ * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathModule Path helper.
+ * @param {Record<string, { value: unknown, fallback: string, suffix?: string }>} fields Field descriptors.
+ * @returns {Record<string, string>} Resolved path fields.
+ */
+export function resolveNormalizedRepoPaths(repoRoot, pathModule, fields) {
+  const resolved = {};
+
+  for (const [key, spec] of Object.entries(fields)) {
+    const parts = [normalizePathValue(spec.value, spec.fallback)];
+    if (spec.suffix) {
+      parts.push(spec.suffix);
+    }
+    resolved[key] = pathModule.resolve(repoRoot, ...parts);
+  }
+
+  return resolved;
+}
+
+/**
  * Normalize a numeric value when it satisfies a predicate.
  * @param {unknown} value Candidate numeric value.
  * @param {number} fallback Fallback value.
@@ -75,11 +134,7 @@ function normalizeNumberWithPredicate(value, fallback, isValid) {
  */
 export function resolveLocalFilePath(options, pathKey, defaultRelativePath) {
   const repoRoot = options.repoRoot ?? options.cwd?.() ?? '';
-  const pathModule = options.pathModule;
-
-  if (!pathModule) {
-    throw new Error('pathModule is required.');
-  }
+  const pathModule = requirePathModule(options.pathModule);
 
   return {
     repoRoot,
@@ -176,11 +231,12 @@ export function normalizeStringArray(value, fallback) {
  * @returns {Promise<T>} Loaded and normalized config value.
  */
 export async function loadNormalizedLocalJsonConfig(options) {
-  const { repoRoot, filePath, pathModule, readFileImpl } = resolveLocalConfigLoader(
-    options,
-    options.configPathKey,
-    options.defaultRelativePath
-  );
+  const { repoRoot, filePath, pathModule, readFileImpl } =
+    resolveLocalConfigLoader(
+      options,
+      options.configPathKey,
+      options.defaultRelativePath
+    );
 
   try {
     const rawConfig = await readFileImpl(filePath, 'utf8');
@@ -199,6 +255,11 @@ export async function loadNormalizedLocalJsonConfig(options) {
   }
 }
 
+/**
+ * Determine whether a config read failed because the file is missing.
+ * @param {unknown} error Error to inspect.
+ * @returns {boolean} True when the error is an ENOENT config miss.
+ */
 function isMissingConfigFileError(error) {
   return Boolean(
     error &&

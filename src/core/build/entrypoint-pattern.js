@@ -1,3 +1,4 @@
+import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 const CONFIG_PATH = 'src/build/entrypoint-patterns.json';
 const REQUIRED_EXECUTION_SNIPPETS = [
   'const environmentDependencies = {',
@@ -28,17 +29,12 @@ export function createBuildEntrypointPatternHandle({
       readSource,
     });
 
-    if (failures.length > 0) {
-      failures.forEach(failure => {
-        output.error(failure);
-      });
-      setExitCode(1);
-      return;
-    }
-
-    output.log(
-      `Checked ${entrypoints.length} build entrypoints for the object-passing pattern.`
-    );
+    reportFailuresAndMaybeLogSuccess({
+      failures,
+      output,
+      setExitCode,
+      successMessage: `Checked ${entrypoints.length} build entrypoints for the object-passing pattern.`,
+    });
   };
 }
 
@@ -78,11 +74,11 @@ function getFilePatternFailures(filePath, source) {
  * @returns {string[]} Failure lines.
  */
 function validateShebang(filePath, source) {
-  if (source.startsWith('#!/usr/bin/env node')) {
-    return [];
-  }
-
-  return [`${filePath}: missing shebang`];
+  return createValidationFailure(
+    filePath,
+    source.startsWith('#!/usr/bin/env node'),
+    'missing shebang'
+  );
 }
 
 /**
@@ -92,11 +88,11 @@ function validateShebang(filePath, source) {
  * @returns {string[]} Failure lines.
  */
 function validateImports(filePath, source) {
-  if (hasExpectedImportSplit(source)) {
-    return [];
-  }
-
-  return [`${filePath}: imports are not in the expected env/core split`];
+  return createValidationFailure(
+    filePath,
+    hasExpectedImportSplit(source),
+    'imports are not in the expected env/core split'
+  );
 }
 
 /**
@@ -106,11 +102,11 @@ function validateImports(filePath, source) {
  * @returns {string[]} Failure lines.
  */
 function validateTopLevelFunctions(filePath, source) {
-  if (getTopLevelFunctionNames(source).size === 0) {
-    return [];
-  }
-
-  return [`${filePath}: top-level functions are not allowed`];
+  return createValidationFailure(
+    filePath,
+    getTopLevelFunctionNames(source).size === 0,
+    'top-level functions are not allowed'
+  );
 }
 
 /**
@@ -120,13 +116,26 @@ function validateTopLevelFunctions(filePath, source) {
  * @returns {string[]} Failure lines.
  */
 function validateExecutionSnippet(filePath, source) {
-  if (REQUIRED_EXECUTION_SNIPPETS.some(snippet => source.includes(snippet))) {
+  return createValidationFailure(
+    filePath,
+    REQUIRED_EXECUTION_SNIPPETS.some(snippet => source.includes(snippet)),
+    'required direct execution pattern snippets are missing'
+  );
+}
+
+/**
+ * Return a single-line validation failure when a check does not pass.
+ * @param {string} filePath Entrypoint file path.
+ * @param {boolean} passed Whether the validation passed.
+ * @param {string} message Failure message suffix.
+ * @returns {string[]} Either an empty list or one failure line.
+ */
+function createValidationFailure(filePath, passed, message) {
+  if (passed) {
     return [];
   }
 
-  return [
-    `${filePath}: required direct execution pattern snippets are missing`,
-  ];
+  return [`${filePath}: ${message}`];
 }
 
 /**

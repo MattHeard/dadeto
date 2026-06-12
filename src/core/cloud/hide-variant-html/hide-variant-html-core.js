@@ -1,6 +1,7 @@
 import {
   DEFAULT_BUCKET_NAME,
-  isDuplicateAppError,
+  ensureFirebaseAppOnce,
+  createFirestoreDocumentOnWriteTrigger,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
   getSnapshotData,
@@ -656,12 +657,12 @@ export function createHideVariantHtmlCore(deps) {
   });
 
   return {
-    hideVariantHtml: deps.functions
-      .region('europe-west1')
-      .firestore.document(
-        'stories/{storyId}/pages/{pageId}/variants/{variantId}'
-      )
-      .onWrite(change => handleVariantVisibilityChange(change)),
+    hideVariantHtml: createFirestoreDocumentOnWriteTrigger({
+      functions: deps.functions,
+      region: 'europe-west1',
+      documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
+      handler: change => handleVariantVisibilityChange(change),
+    }),
     handleVariantVisibilityChange,
   };
 }
@@ -768,22 +769,7 @@ function isExistingPageSnapshot(pageSnap) {
  * @returns {void}
  */
 function ensureFirebaseApp(initializeApp) {
-  try {
-    initializeApp();
-  } catch (error) {
-    rethrowIfNotDuplicateAppError(error);
-  }
-}
-
-/**
- * Rethrow Firebase init errors unless they are duplicate-app noise.
- * @param {unknown} error Firebase initialization error.
- * @returns {void}
- */
-function rethrowIfNotDuplicateAppError(error) {
-  if (!isDuplicateAppError(error)) {
-    throw error;
-  }
+  ensureFirebaseAppOnce(initializeApp);
 }
 
 /**

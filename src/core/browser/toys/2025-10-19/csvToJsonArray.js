@@ -1,5 +1,6 @@
 import { parseCsvLine } from './toys-core.js';
 import { buildWhen } from '../../common.js';
+import { whenOrNull } from '../../../commonCore.js';
 import {
   isBlankStringValue,
   isValidString,
@@ -186,21 +187,9 @@ function buildHeaderEntriesResult(parsedHeader) {
 function getParsedHeaderLines(lines) {
   const [headerLine, ...dataLines] = lines;
   const trimmedHeader = getTrimmedHeaderLine(headerLine);
-  if (!trimmedHeader) {
-    return null;
-  }
-
-  return getParsedHeaders(trimmedHeader, dataLines);
-}
-
-/**
- * Get trimmed value.
- * @param {string} header Header.
- * @returns {string | null} Trimmed or null.
- */
-function getTrimmedValue(header) {
-  const trimmed = header.trim();
-  return trimmed || null;
+  return whenOrNull(trimmedHeader, currentHeader =>
+    getParsedHeaders(currentHeader, dataLines)
+  );
 }
 
 /**
@@ -213,7 +202,8 @@ function getTrimmedHeaderLine(headerLine) {
     return null;
   }
 
-  return getTrimmedValue(headerLine);
+  const trimmed = headerLine.trim();
+  return trimmed || null;
 }
 
 /**

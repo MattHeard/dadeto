@@ -36,6 +36,154 @@ export function arrayOrEmpty(value) {
 }
 
 /**
+ * Parse JSON and return null on failure.
+ * @param {string} value Raw JSON string.
+ * @returns {unknown} Parsed JSON value or null.
+ */
+export function parseJsonOrNull(value) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Ensure a path module is available.
+ * @param {{ resolve?: Function } | null | undefined} pathModule Path module candidate.
+ * @returns {{ resolve: Function }} Required path module.
+ */
+export function requirePathModule(pathModule) {
+  if (!pathModule) {
+    throw new Error('pathModule is required.');
+  }
+
+  return pathModule;
+}
+
+/**
+ * Normalize a possibly missing numeric value.
+ * @param {number | null | undefined} value Maybe-present number.
+ * @returns {number | null} Normalized numeric value.
+ */
+export function normalizeMaybeNumber(value) {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  return null;
+}
+
+/**
+ * @param {unknown} value Candidate object value.
+ * @returns {Record<string, unknown> | null} Object value or null.
+ */
+export function getRecordOrNull(value) {
+  if (value && typeof value === 'object') {
+    return value;
+  }
+
+  return null;
+}
+
+/**
+ * @param {...(string | null)} values Candidate strings.
+ * @returns {string[]} Defined string values.
+ */
+export function getDefinedStrings(...values) {
+  return values.filter(value => typeof value === 'string');
+}
+
+/**
+ * Report failures and set a non-zero exit code when needed.
+ * @param {{
+ *   failures: string[],
+ *   output: { error: (line: string) => void },
+ *   setExitCode: (exitCode: number) => void,
+ }} options Failure reporting dependencies.
+ * @returns {boolean} True when failures were reported.
+ */
+export function reportFailuresAndExit({ failures, output, setExitCode }) {
+  if (failures.length === 0) {
+    return false;
+  }
+
+  failures.forEach(failure => {
+    output.error(failure);
+  });
+  setExitCode(1);
+  return true;
+}
+
+/**
+ * Report failures or log a success message when the check passes.
+ * @param {{
+ *   failures: string[],
+ *   output: { error: (line: string) => void, log: (line: string) => void },
+ *   setExitCode: (exitCode: number) => void,
+ *   successMessage: string,
+ * }} options Check outcome dependencies.
+ * @returns {boolean} True when failures were reported.
+ */
+export function reportFailuresAndMaybeLogSuccess({
+  failures,
+  output,
+  setExitCode,
+  successMessage,
+}) {
+  if (reportFailuresAndExit({ failures, output, setExitCode })) {
+    return true;
+  }
+
+  output.log(successMessage);
+  return false;
+}
+
+/**
+ * Check whether a value is a non-empty string.
+ * @param {unknown} candidate Candidate value.
+ * @returns {candidate is string} True when the candidate is a non-empty string.
+ */
+export function isNonEmptyString(candidate) {
+  return typeof candidate === 'string' && Boolean(candidate.trim());
+}
+
+/**
+ * Resolve a string fallback.
+ * @param {unknown} candidate Candidate value.
+ * @param {string} fallback Fallback value.
+ * @returns {string} Candidate or fallback.
+ */
+export function stringOr(candidate, fallback) {
+  if (!isNonEmptyString(candidate)) {
+    return fallback;
+  }
+
+  return candidate;
+}
+
+/**
+ * Resolve the first non-empty string from a candidate value.
+ * @param {unknown} candidate Candidate string or string array.
+ * @returns {string | null} First non-empty string, or null when missing.
+ */
+export function firstStringOrNull(candidate) {
+  if (typeof candidate === 'string') {
+    if (isNonEmptyString(candidate)) {
+      return candidate.trim();
+    }
+    return null;
+  }
+
+  if (Array.isArray(candidate)) {
+    const [first] = candidate;
+    return firstStringOrNull(first);
+  }
+
+  return null;
+}
+
+/**
  * Return the string candidate when available.
  * @param {unknown} value Candidate value.
  * @returns {string | undefined} String when provided, otherwise undefined.

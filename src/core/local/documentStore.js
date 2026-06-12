@@ -355,15 +355,7 @@ export async function pruneTrailingDrafts(state, workflow) {
  * @returns {boolean} True when another trailing draft may be removed.
  */
 export function canPruneTrailingDraft(state, workflow) {
-  if (workflow.steps.length <= DEFAULT_SEQUENCE.length) {
-    return false;
-  }
-
-  if (workflow.steps.length - 1 <= workflow.activeIndex) {
-    return false;
-  }
-
-  return Boolean(getTrailingDraftStep(workflow));
+  return hasTrailingDraftBeyondActiveIndex(workflow, DEFAULT_SEQUENCE.length);
 }
 
 /**
@@ -447,8 +439,7 @@ async function serializeWorkflow(state, workflow) {
  */
 async function loadWorkflow(state) {
   const workflow = await ensureWorkflow(state);
-  await persistWorkflow(state, workflow);
-  return serializeWorkflow(state, workflow);
+  return persistAndSerializeWorkflow(state, workflow);
 }
 
 /**
@@ -541,8 +532,7 @@ async function setActiveIndex(state, nextIndex) {
  */
 async function setWorkflowActiveIndex(state, workflow, nextIndex) {
   workflow.activeIndex = clampIndex(nextIndex, workflow.steps.length);
-  await persistWorkflow(state, workflow);
-  return serializeWorkflow(state, workflow);
+  return persistAndSerializeWorkflow(state, workflow);
 }
 
 /**
@@ -557,6 +547,22 @@ async function persistWorkflow(state, workflow) {
 }
 
 /**
+ * Persist a workflow and return the serialized snapshot.
+ * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number, heading: string }} workflow Workflow to persist.
+ * @returns {Promise<{
+ *   workflowPath: string,
+ *   activeIndex: number,
+ *   heading: string,
+ *   documents: Array<{ id: string, title: string, path: string, content: string }>,
+ * }>} Serialized workflow response.
+ */
+async function persistAndSerializeWorkflow(state, workflow) {
+  await persistWorkflow(state, workflow);
+  return serializeWorkflow(state, workflow);
+}
+
+/**
  * Determine whether moving right should append a draft.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.
  * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to inspect.
@@ -564,11 +570,30 @@ async function persistWorkflow(state, workflow) {
  * @returns {boolean} True when a new draft should be appended.
  */
 function shouldAppendDraft(state, workflow, direction) {
-  if (direction <= 0) {
+  return direction > 0 && hasTrailingDraftAtActiveEnd(workflow);
+}
+
+/**
+ * Check whether a workflow has a trailing draft beyond the active index.
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to inspect.
+ * @param {number} minimumSteps Minimum step count required before pruning.
+ * @returns {boolean} True when a trailing draft can be pruned.
+ */
+function hasTrailingDraftBeyondActiveIndex(workflow, minimumSteps) {
+  if (workflow.steps.length <= minimumSteps) {
     return false;
   }
 
-  if (workflow.activeIndex !== workflow.steps.length - 1) {
+  return hasTrailingDraftAtActiveEnd(workflow);
+}
+
+/**
+ * Check whether a workflow ends with a trailing draft at the active index.
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to inspect.
+ * @returns {boolean} True when the last step is a trailing draft at the active index.
+ */
+function hasTrailingDraftAtActiveEnd(workflow) {
+  if (workflow.steps.length - 1 <= workflow.activeIndex) {
     return false;
   }
 

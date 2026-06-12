@@ -1,7 +1,6 @@
 import { get } from '../2025-03-29/get.js';
 import { requireEnvHelper } from '../browserToysCore.js';
 import { trimmedStringOrEmpty } from '../../../commonCore.js';
-import { normalizeString } from '../../../local/config-utils.js';
 /** @typedef {import('../browserToysCore.js').ToyEnv} ToyEnv */
 
 const DEFAULT_MEMORY_LOCATION = 'temporary';
@@ -90,7 +89,12 @@ function parseObjectMemoryVectorRequest(parsed) {
  * @returns {string} Supported memory location label.
  */
 function normalizeMemoryLocation(value) {
-  return normalizeString(trimmedStringOrEmpty(value), DEFAULT_MEMORY_LOCATION);
+  const trimmed = trimmedStringOrEmpty(value);
+  if (trimmed.length === 0) {
+    return DEFAULT_MEMORY_LOCATION;
+  }
+
+  return trimmed;
 }
 
 /**

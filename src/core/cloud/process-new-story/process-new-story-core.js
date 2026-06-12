@@ -440,17 +440,20 @@ export function createProcessNewStoryHandler({
   randomUUID,
   random,
 }) {
-  const getServerTimestamp = resolveServerTimestamp(fieldValue);
+  const handleStorySubmission =
+    /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */ (
+      async (snapshot, context = {}) => {
+        const params = mapProcessStoryParams(snapshot, context, {
+          db,
+          randomUUID,
+          random,
+          getServerTimestamp: resolveServerTimestamp(fieldValue),
+        });
+        return processStorySubmission(params);
+      }
+    );
 
-  return /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */ (async (snapshot, context = {}) => {
-    const params = mapProcessStoryParams(snapshot, context, {
-      db,
-      randomUUID,
-      random,
-      getServerTimestamp,
-    });
-    return processStorySubmission(params);
-  });
+  return handleStorySubmission;
 }
 
 /**
@@ -474,14 +477,35 @@ export function createProcessNewStoryHandle({
     functions,
     getFirestoreInstance,
     documentPath: 'storyFormSubmissions/{subId}',
-    createHandler: ({ db }) =>
-      createProcessNewStoryHandler({
-        db,
-        fieldValue,
-        randomUUID,
-        random,
-      }),
+    createHandler: createProcessNewStoryHandlerFactory({
+      fieldValue,
+      randomUUID,
+      random,
+    }),
   });
+}
+
+/**
+ * Build the callback used to create a new-story handler from a Firestore db.
+ * @param {{
+ *   fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue },
+ *   randomUUID: () => string,
+ *   random: () => number,
+ * }} options Handler factory dependencies.
+ * @returns {({ db: Firestore }) => ReturnType<typeof createProcessNewStoryHandler>} Handler factory.
+ */
+function createProcessNewStoryHandlerFactory({
+  fieldValue,
+  randomUUID,
+  random,
+}) {
+  return ({ db }) =>
+    createProcessNewStoryHandler({
+      db,
+      fieldValue,
+      randomUUID,
+      random,
+    });
 }
 
 /**

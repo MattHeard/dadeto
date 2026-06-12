@@ -1,4 +1,15 @@
-import { pluralizeCount, runGateCommand, useDefaultValue } from './gate-utils.js';
+import {
+  pluralizeCount,
+  runGateCommand,
+  useDefaultValue,
+} from './gate-utils.js';
+
+/**
+ * @returns {string} Duplication gate label.
+ */
+function getDuplicationGateLabel() {
+  return 'Duplication gate';
+}
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_CONFIG_PATH = '.jscpd.json';
@@ -113,7 +124,7 @@ function executeDuplicationGate({
     args: ['--config', configPath],
     rootDir,
     stderr,
-    launchLabel: 'Duplication gate',
+    launchLabel: getDuplicationGateLabel(),
     commandLabel: 'jscpd',
   });
   if (launchFailure) {
