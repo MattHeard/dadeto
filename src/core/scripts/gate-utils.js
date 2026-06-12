@@ -15,6 +15,31 @@ export function spawnGateCommand(options) {
 }
 
 /**
+ * Run a gate command and normalize the launch failure handling.
+ * @param {{
+ *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
+ *   command: string,
+ *   args: string[],
+ *   rootDir: string,
+ *   stderr: { write: (text: string) => void },
+ *   launchLabel: string,
+ *   commandLabel: string,
+ * }} options Gate command input.
+ * @returns {{ launchFailure: { exitCode: number } | null }} Gate command outcome.
+ */
+export function runGateCommand(options) {
+  const runResult = spawnGateCommand(options);
+  const launchFailure = handleSpawnFailure(
+    runResult,
+    options.stderr,
+    options.launchLabel,
+    options.commandLabel
+  );
+
+  return { launchFailure };
+}
+
+/**
  * @param {{ error?: { message: string }, signal?: string | null, status?: number | null }} runResult Spawn result.
  * @param {{ write: (text: string) => void }} stderr Error writer.
  * @param {string} launchLabel Human-readable gate label.
@@ -58,4 +83,32 @@ export function normalizeExitCode(status) {
   }
 
   return 1;
+}
+
+/**
+ * Use a default value when the provided value is undefined.
+ * @template T
+ * @param {T | undefined} value Candidate value.
+ * @param {T} defaultValue Fallback value.
+ * @returns {T} Selected value.
+ */
+export function useDefaultValue(value, defaultValue) {
+  if (typeof value !== 'undefined') {
+    return value;
+  }
+
+  return defaultValue;
+}
+
+/**
+ * Return the plural suffix for a count.
+ * @param {number} count Item count.
+ * @returns {'' | 's'} Plural suffix.
+ */
+export function pluralizeCount(count) {
+  if (count === 1) {
+    return '';
+  }
+
+  return 's';
 }

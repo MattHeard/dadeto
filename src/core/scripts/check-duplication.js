@@ -1,4 +1,4 @@
-import { handleSpawnFailure, spawnGateCommand } from './gate-utils.js';
+import { pluralizeCount, runGateCommand, useDefaultValue } from './gate-utils.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_CONFIG_PATH = '.jscpd.json';
@@ -52,14 +52,14 @@ export function createCheckDuplicationHandle(options) {
  */
 function normalizeDuplicationGateOptions(options = {}) {
   return {
-    spawnImpl: useDefault(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
-    readFileSync: useDefault(options.readFileSync, () => '{}'),
-    stdout: useDefault(options.stdout, DEFAULT_STDOUT),
-    stderr: useDefault(options.stderr, DEFAULT_STDERR),
-    rootDir: useDefault(options.rootDir, DEFAULT_ROOT_DIR),
-    configPath: useDefault(options.configPath, DEFAULT_CONFIG_PATH),
-    reportPath: useDefault(options.reportPath, DEFAULT_REPORT_PATH),
-    relativePath: useDefault(options.relativePath, DEFAULT_RELATIVE_PATH),
+    spawnImpl: useDefaultValue(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
+    readFileSync: useDefaultValue(options.readFileSync, () => '{}'),
+    stdout: useDefaultValue(options.stdout, DEFAULT_STDOUT),
+    stderr: useDefaultValue(options.stderr, DEFAULT_STDERR),
+    rootDir: useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
+    configPath: useDefaultValue(options.configPath, DEFAULT_CONFIG_PATH),
+    reportPath: useDefaultValue(options.reportPath, DEFAULT_REPORT_PATH),
+    relativePath: useDefaultValue(options.relativePath, DEFAULT_RELATIVE_PATH),
   };
 }
 
@@ -107,19 +107,15 @@ function executeDuplicationGate({
   reportPath,
   relativePath,
 }) {
-  const runResult = spawnGateCommand({
+  const { launchFailure } = runGateCommand({
     spawnImpl,
     command: 'jscpd',
     args: ['--config', configPath],
     rootDir,
-  });
-
-  const launchFailure = handleSpawnFailure(
-    runResult,
     stderr,
-    'Duplication gate',
-    'jscpd'
-  );
+    launchLabel: 'Duplication gate',
+    commandLabel: 'jscpd',
+  });
   if (launchFailure) {
     return { exitCode: launchFailure.exitCode, clones: 0 };
   }
@@ -256,24 +252,5 @@ function getDuplicationStatistics(report) {
  * @returns {'' | 's'} Plural suffix.
  */
 function formatCloneSuffix(cloneCount) {
-  if (cloneCount === 1) {
-    return '';
-  }
-
-  return 's';
-}
-
-/**
- * Use a default value when the provided value is undefined.
- * @template T
- * @param {T | undefined} value Candidate value.
- * @param {T} defaultValue Fallback value.
- * @returns {T} Selected value.
- */
-function useDefault(value, defaultValue) {
-  if (typeof value !== 'undefined') {
-    return value;
-  }
-
-  return defaultValue;
+  return pluralizeCount(cloneCount);
 }

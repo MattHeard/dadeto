@@ -1,4 +1,8 @@
-import { handleSpawnFailure, spawnGateCommand } from './gate-utils.js';
+import {
+  pluralizeCount,
+  runGateCommand,
+  useDefaultValue,
+} from './gate-utils.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
@@ -123,14 +127,14 @@ function normalizeCheckDepcruiseOptions(options = {}) {
   }
 
   return {
-    spawnImpl: resolveOption(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
-    readFileSync: resolveOption(options.readFileSync, () => ''),
-    readdirSync: resolveOption(options.readdirSync, () => []),
-    stdout: resolveOption(options.stdout, DEFAULT_STDOUT),
-    stderr: resolveOption(options.stderr, DEFAULT_STDERR),
-    rootDir: resolveOption(options.rootDir, DEFAULT_ROOT_DIR),
-    sourceRoot: resolveOption(options.sourceRoot, DEFAULT_SOURCE_ROOT),
-    configPath: resolveOption(options.configPath, DEFAULT_CONFIG_PATH),
+    spawnImpl: useDefaultValue(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
+    readFileSync: useDefaultValue(options.readFileSync, () => ''),
+    readdirSync: useDefaultValue(options.readdirSync, () => []),
+    stdout: useDefaultValue(options.stdout, DEFAULT_STDOUT),
+    stderr: useDefaultValue(options.stderr, DEFAULT_STDERR),
+    rootDir: useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
+    sourceRoot: useDefaultValue(options.sourceRoot, DEFAULT_SOURCE_ROOT),
+    configPath: useDefaultValue(options.configPath, DEFAULT_CONFIG_PATH),
     pathModule: options.pathModule,
   };
 }
@@ -192,19 +196,15 @@ function executeDepcruiseGate({
   configPath,
   pathModule,
 }) {
-  const runResult = spawnGateCommand({
+  const { launchFailure } = runGateCommand({
     spawnImpl,
     command: 'depcruise',
     args: ['--config', configPath, 'src'],
     rootDir,
-  });
-
-  const launchFailure = handleSpawnFailure(
-    runResult,
     stderr,
-    'Dependency-cruiser gate',
-    'depcruise'
-  );
+    launchLabel: 'Dependency-cruiser gate',
+    commandLabel: 'depcruise',
+  });
   if (launchFailure) {
     return { exitCode: launchFailure.exitCode, violations: 0 };
   }
@@ -467,26 +467,7 @@ function isBoundary(character) {
  * @returns {string} Suffix for singular/plural output.
  */
 function pluralize(count) {
-  if (count === 1) {
-    return '';
-  }
-
-  return 's';
-}
-
-/**
- * Return the provided option or a fallback when it is missing.
- * @template T
- * @param {T | undefined} value Optional value.
- * @param {T} fallback Fallback value.
- * @returns {T} Provided value or fallback.
- */
-function resolveOption(value, fallback) {
-  if (value === undefined) {
-    return fallback;
-  }
-
-  return value;
+  return pluralizeCount(count);
 }
 
 /**

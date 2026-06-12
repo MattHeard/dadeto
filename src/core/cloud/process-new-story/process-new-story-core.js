@@ -67,11 +67,6 @@ function resolveSubmission(snapshot) {
 }
 
 /**
- * Detect whether the snapshot exposes a data method.
- * @param {FirestoreDocumentSnapshot | null | undefined} snapshot Snapshot to inspect.
- * @returns {snapshot is { data: () => Record<string, unknown> }} True when snapshot exposes data.
- */
-/**
  * Resolve a function that returns the Firestore server timestamp helper.
  * @param {{ serverTimestamp: () => FieldValue }} fieldValue FieldValue helper provided to the handler.
  * @returns {() => FieldValue} Function returning a server timestamp FieldValue.
@@ -447,9 +442,7 @@ export function createProcessNewStoryHandler({
 }) {
   const getServerTimestamp = resolveServerTimestamp(fieldValue);
 
-  // Create wrapper function with correct signature to satisfy type requirements
-  /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */
-  const handler = async (snapshot, context = {}) => {
+  return /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */ (async (snapshot, context = {}) => {
     const params = mapProcessStoryParams(snapshot, context, {
       db,
       randomUUID,
@@ -457,9 +450,7 @@ export function createProcessNewStoryHandler({
       getServerTimestamp,
     });
     return processStorySubmission(params);
-  };
-
-  return handler;
+  });
 }
 
 /**
