@@ -110,23 +110,29 @@ export const getFirestoreInstance = (options = {}) => {
 
   const databaseId = resolveFirestoreDatabaseId(environment);
   if (!shouldUseCachedFirestore({ ensureAppFn, getFirestoreFn, environment })) {
-    return getFirestoreForDatabase(
-      getFirestoreFn,
-      /** @type {any} */ (undefined),
-      databaseId
-    );
+    return createFirestoreInstance(getFirestoreFn, databaseId);
   }
 
   if (!cachedDb) {
-    cachedDb = getFirestoreForDatabase(
-      getFirestoreFn,
-      /** @type {any} */ (undefined),
-      databaseId
-    );
+    cachedDb = createFirestoreInstance(getFirestoreFn, databaseId);
   }
 
   return cachedDb;
 };
+
+/**
+ * Create a Firestore instance for the selected database.
+ * @param {typeof getAdminFirestore} getFirestoreFn Firestore factory.
+ * @param {string} databaseId Selected database identifier.
+ * @returns {import('firebase-admin/firestore').Firestore} Firestore instance.
+ */
+function createFirestoreInstance(getFirestoreFn, databaseId) {
+  return getFirestoreForDatabase(
+    getFirestoreFn,
+    /** @type {any} */ (undefined),
+    databaseId
+  );
+}
 
 /**
  * Build the public Cloud Function wrapper for generate-stats from injected dependencies.

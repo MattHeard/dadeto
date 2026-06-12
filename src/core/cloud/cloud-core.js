@@ -9,6 +9,8 @@ import {
   whenOrNull,
   whenTruthy,
 } from '../commonCore.js';
+import { productionOrigins } from './cors-config.js';
+export { productionOrigins };
 export const DEFAULT_BUCKET_NAME = 'www.dendritestories.co.nz';
 export {
   assertFunction,
@@ -609,17 +611,6 @@ export function createCorsOptionsValue(origin, methods = ['POST']) {
 export function whenPredicateValue(value, predicate) {
   return whenOrNull(predicate(value), () => value);
 }
-
-/**
- * Origins that are permitted to access production endpoints.
- * Centralizes the allow list so every Cloud Function can reference
- * the same deployment configuration.
- */
-export const productionOrigins = [
-  'https://mattheard.net',
-  'https://dendritestories.co.nz',
-  'https://www.dendritestories.co.nz',
-];
 
 /**
  * Respond to an origin lookup using the supplied predicate.

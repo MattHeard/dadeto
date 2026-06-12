@@ -37,7 +37,12 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     const reportTarget = pathModule.join(mainRoot, 'reports/mutation');
 
     try {
-      await runCommand(spawnImpl, 'git', ['worktree', 'add', '--detach', worktreePath], mainRoot);
+      await runCommand(
+        spawnImpl,
+        'git',
+        ['worktree', 'add', '--detach', worktreePath],
+        mainRoot
+      );
       await runCommand(spawnImpl, 'npm', ['install'], worktreePath);
       await fsModule.writeFile(
         pathModule.join(worktreePath, worktreeStrykerConfig),
@@ -46,7 +51,12 @@ export function createRunStrykerWorktreeHandle(options = {}) {
       await runCommand(
         spawnImpl,
         'node',
-        ['--experimental-vm-modules', './node_modules/.bin/stryker', 'run', worktreeStrykerConfig],
+        [
+          '--experimental-vm-modules',
+          './node_modules/.bin/stryker',
+          'run',
+          worktreeStrykerConfig,
+        ],
         worktreePath,
         {
           env: {
@@ -57,7 +67,9 @@ export function createRunStrykerWorktreeHandle(options = {}) {
       );
       await fsModule.rm(reportTarget, { recursive: true, force: true });
       await fsModule.cp(reportSource, reportTarget, { recursive: true });
-      console.log(`Synced mutation reports to ${pathModule.relative(mainRoot, reportTarget)}`);
+      console.log(
+        `Synced mutation reports to ${pathModule.relative(mainRoot, reportTarget)}`
+      );
     } finally {
       await runCommand(
         spawnImpl,
@@ -66,11 +78,16 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         mainRoot,
         { allowFailure: true }
       ).catch(() => {});
-      await fsModule.rm(worktreePath, { recursive: true, force: true }).catch(() => {});
+      await fsModule
+        .rm(worktreePath, { recursive: true, force: true })
+        .catch(() => {});
     }
   };
 }
 
+/**
+ *
+ */
 function buildStrykerConfig() {
   return `import baseConfig from './stryker.config.mjs';
 
@@ -96,28 +113,32 @@ export default {
 async function runCommand(spawnImpl, command, args, cwd, options = {}) {
   const { allowFailure = false, env = process.env } = options;
   await new Promise(
-    /** @param {(value?: void | PromiseLike<void>) => void} resolve
+    /**
+     * @param {(value?: void | PromiseLike<void>) => void} resolve
      *  @param {(reason?: unknown) => void} reject
      */
     (resolve, reject) => {
-    const child = spawnImpl(command, args, {
-      cwd,
-      env,
-      stdio: 'inherit',
-    });
-    child.once('error', error => {
-      if (allowFailure) {
-        resolve();
-        return;
-      }
-      reject(error);
-    });
-    child.once('exit', code => {
-      if (code === 0 || allowFailure) {
-        resolve();
-        return;
-      }
-      reject(new Error(`${command} ${args.join(' ')} exited with code ${code}`));
-    });
-  });
+      const child = spawnImpl(command, args, {
+        cwd,
+        env,
+        stdio: 'inherit',
+      });
+      child.once('error', error => {
+        if (allowFailure) {
+          resolve();
+          return;
+        }
+        reject(error);
+      });
+      child.once('exit', code => {
+        if (code === 0 || allowFailure) {
+          resolve();
+          return;
+        }
+        reject(
+          new Error(`${command} ${args.join(' ')} exited with code ${code}`)
+        );
+      });
+    }
+  );
 }

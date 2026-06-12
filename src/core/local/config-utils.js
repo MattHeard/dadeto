@@ -143,3 +143,52 @@ export function normalizeStringArray(value, fallback) {
 
   return normalized;
 }
+
+/**
+ * Load a local JSON config file and normalize it with a callback.
+ * @template T
+ * @param {{
+ *   configPathKey: string,
+ *   defaultRelativePath: string,
+ *   normalize: (config: Record<string, unknown>, repoRoot: string, configPath: string, pathModule: { resolve: (first: string, ...parts: string[]) => string }) => T,
+ *   onMissing?: (repoRoot: string, configPath: string, pathModule: { resolve: (first: string, ...parts: string[]) => string }) => T,
+ *   repoRoot?: string,
+ *   cwd?: () => string,
+ *   pathModule?: { resolve: (first: string, ...parts: string[]) => string },
+ *   readFileImpl?: (filePath: string, encoding: 'utf8') => Promise<string>,
+ *   [key: string]: unknown,
+ * }} options Loader options.
+ * @returns {Promise<T>} Loaded and normalized config value.
+ */
+export async function loadNormalizedLocalJsonConfig(options) {
+  const { repoRoot, filePath, pathModule, readFileImpl } = resolveLocalConfigLoader(
+    options,
+    options.configPathKey,
+    options.defaultRelativePath
+  );
+
+  try {
+    const rawConfig = await readFileImpl(filePath, 'utf8');
+    return options.normalize(
+      /** @type {Record<string, unknown>} */ (JSON.parse(rawConfig)),
+      repoRoot,
+      filePath,
+      pathModule
+    );
+  } catch (error) {
+    if (!options.onMissing || !isMissingConfigFileError(error)) {
+      throw error;
+    }
+
+    return options.onMissing(repoRoot, filePath, pathModule);
+  }
+}
+
+function isMissingConfigFileError(error) {
+  return Boolean(
+    error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+  );
+}

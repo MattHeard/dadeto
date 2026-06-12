@@ -1,10 +1,10 @@
 import { DEFAULT_CODEX_RALPH_ARGS } from './launcherCodex.js';
 import {
+  loadNormalizedLocalJsonConfig,
   normalizePositiveNumber,
   normalizePathValue,
   normalizeString,
   normalizeStringArray,
-  resolveLocalConfigLoader,
 } from '../config-utils.js';
 
 export const DEFAULT_SYMPHONY_CONFIG = {
@@ -181,23 +181,10 @@ export function normalizeSymphonyConfig(
  * @returns {Promise<ReturnType<typeof normalizeSymphonyConfig>>} Normalized local Symphony config.
  */
 export async function loadSymphonyConfig(options = {}) {
-  const loadContext = resolveLocalConfigLoader(
-    options,
-    'configPath',
-    'tracking/symphony.local.json'
-  );
-  const repoRoot = loadContext.repoRoot;
-  const configPath = loadContext.filePath;
-  const pathModule = loadContext.pathModule;
-  const readFileImpl = loadContext.readFileImpl;
-
-  const rawConfig = await readFileImpl(configPath, 'utf8');
-  const parsedConfig = JSON.parse(rawConfig);
-
-  return normalizeSymphonyConfig(
-    parsedConfig,
-    repoRoot,
-    configPath,
-    pathModule
-  );
+  return loadNormalizedLocalJsonConfig({
+    ...options,
+    configPathKey: 'configPath',
+    defaultRelativePath: 'tracking/symphony.local.json',
+    normalize: normalizeSymphonyConfig,
+  });
 }

@@ -3,7 +3,7 @@ import {
   normalizePositiveNumber,
   normalizeString,
   normalizeStringArray,
-  resolveLocalConfigLoader,
+  loadNormalizedLocalJsonConfig,
 } from '../config-utils.js';
 import { objectOrEmpty } from '../../commonCore.js';
 
@@ -209,55 +209,12 @@ function normalizeIdleBackoff(value) {
  * @returns {Promise<ReturnType<typeof normalizeNotionCodexConfig>>} Loaded config.
  */
 export async function loadNotionCodexConfig(options = {}) {
-  const {
-    repoRoot,
-    filePath: configPath,
-    pathModule,
-    readFileImpl,
-  } = resolveLocalConfigLoader(
-    options,
-    'configPath',
-    'tracking/notion-codex.local.json'
-  );
-
-  try {
-    const rawConfig = await readNotionCodexConfigJson(configPath, readFileImpl);
-    return normalizeNotionCodexConfig(
-      rawConfig,
-      repoRoot,
-      configPath,
-      pathModule
-    );
-  } catch (error) {
-    if (isMissingConfigFileError(error)) {
-      return normalizeNotionCodexConfig({}, repoRoot, configPath, pathModule);
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Read and parse the local Notion Codex config file.
- * @param {string} configPath Config path.
- * @param {(filePath: string, encoding: 'utf8') => Promise<string>} readFileImpl File reader.
- * @returns {Promise<Record<string, unknown>>} Parsed config payload.
- */
-async function readNotionCodexConfigJson(configPath, readFileImpl) {
-  const rawConfig = await readFileImpl(configPath, 'utf8');
-  return /** @type {Record<string, unknown>} */ (JSON.parse(rawConfig));
-}
-
-/**
- * Check whether a config read failed because the file is missing.
- * @param {unknown} error Read failure.
- * @returns {boolean} True when the file is missing.
- */
-function isMissingConfigFileError(error) {
-  return Boolean(
-    error &&
-      typeof error === 'object' &&
-      'code' in error &&
-      error.code === 'ENOENT'
-  );
+  return loadNormalizedLocalJsonConfig({
+    ...options,
+    configPathKey: 'configPath',
+    defaultRelativePath: 'tracking/notion-codex.local.json',
+    normalize: normalizeNotionCodexConfig,
+    onMissing: (repoRoot, configPath, pathModule) =>
+      normalizeNotionCodexConfig({}, repoRoot, configPath, pathModule),
+  });
 }
