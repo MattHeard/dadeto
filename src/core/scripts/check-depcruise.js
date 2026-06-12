@@ -325,10 +325,25 @@ function scanCodeForMathRandom(source, index) {
   }
 
   if (isMathRandomAtIndex(source, index, needleLength)) {
-    return { count: 1, nextIndex: index + needleLength, nextState: 'code' };
+    return createZeroCountScanResult(index + needleLength, 'code', 1);
   }
 
-  return { count: 0, nextIndex: index + 1, nextState: 'code' };
+  return createZeroCountScanResult(index + 1, 'code');
+}
+
+/**
+ * Build a scan result with an optional count.
+ * @param {number} nextIndex Next source index.
+ * @param {string} nextState Next scanner state.
+ * @param {number} [count=0] Matched count.
+ * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
+ */
+function createZeroCountScanResult(nextIndex, nextState, count = 0) {
+  return {
+    count,
+    nextIndex,
+    nextState,
+  };
 }
 
 /**
@@ -342,23 +357,23 @@ function scanCodeForCommentOrString(source, index) {
   const next = source[index + 1];
 
   if (current === '/' && next === '/') {
-    return { count: 0, nextIndex: index + 2, nextState: 'line-comment' };
+    return createZeroCountScanResult(index + 2, 'line-comment');
   }
 
   if (current === '/' && next === '*') {
-    return { count: 0, nextIndex: index + 2, nextState: 'block-comment' };
+    return createZeroCountScanResult(index + 2, 'block-comment');
   }
 
   if (current === "'") {
-    return { count: 0, nextIndex: index + 1, nextState: 'single-quote' };
+    return createZeroCountScanResult(index + 1, 'single-quote');
   }
 
   if (current === '"') {
-    return { count: 0, nextIndex: index + 1, nextState: 'double-quote' };
+    return createZeroCountScanResult(index + 1, 'double-quote');
   }
 
   if (current === '`') {
-    return { count: 0, nextIndex: index + 1, nextState: 'template' };
+    return createZeroCountScanResult(index + 1, 'template');
   }
 
   return null;
@@ -372,10 +387,10 @@ function scanCodeForCommentOrString(source, index) {
  */
 function scanLineComment(source, index) {
   if (source[index] === '\n') {
-    return { count: 0, nextIndex: index + 1, nextState: 'code' };
+    return createZeroCountScanResult(index + 1, 'code');
   }
 
-  return { count: 0, nextIndex: index + 1, nextState: 'line-comment' };
+  return createZeroCountScanResult(index + 1, 'line-comment');
 }
 
 /**
@@ -386,10 +401,10 @@ function scanLineComment(source, index) {
  */
 function scanBlockComment(source, index) {
   if (source[index] === '*' && source[index + 1] === '/') {
-    return { count: 0, nextIndex: index + 2, nextState: 'code' };
+    return createZeroCountScanResult(index + 2, 'code');
   }
 
-  return { count: 0, nextIndex: index + 1, nextState: 'block-comment' };
+  return createZeroCountScanResult(index + 1, 'block-comment');
 }
 
 /**
@@ -401,15 +416,7 @@ function scanBlockComment(source, index) {
  * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
  */
 function scanQuotedString(source, index, quote, nextState) {
-  if (source[index] === '\\') {
-    return { count: 0, nextIndex: index + 2, nextState };
-  }
-
-  if (source[index] === quote) {
-    return { count: 0, nextIndex: index + 1, nextState: 'code' };
-  }
-
-  return { count: 0, nextIndex: index + 1, nextState };
+  return scanDelimitedString(source, index, quote, nextState);
 }
 
 /**
@@ -419,15 +426,27 @@ function scanQuotedString(source, index, quote, nextState) {
  * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
  */
 function scanTemplateString(source, index) {
+  return scanDelimitedString(source, index, '`', 'template');
+}
+
+/**
+ * Scan through a delimited string-like region.
+ * @param {string} source Source text.
+ * @param {number} index Current index.
+ * @param {string} delimiter Delimiter character.
+ * @param {string} nextState State to resume when the delimiter has not been closed.
+ * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
+ */
+function scanDelimitedString(source, index, delimiter, nextState) {
   if (source[index] === '\\') {
-    return { count: 0, nextIndex: index + 2, nextState: 'template' };
+    return createZeroCountScanResult(index + 2, nextState);
   }
 
-  if (source[index] === '`') {
-    return { count: 0, nextIndex: index + 1, nextState: 'code' };
+  if (source[index] === delimiter) {
+    return createZeroCountScanResult(index + 1, 'code');
   }
 
-  return { count: 0, nextIndex: index + 1, nextState: 'template' };
+  return createZeroCountScanResult(index + 1, nextState);
 }
 
 /**

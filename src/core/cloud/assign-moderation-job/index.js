@@ -110,19 +110,11 @@ export function createAssignModerationJobEntrypoint(deps) {
       });
 
       if (useCustomDependencies) {
-        return getFirestoreForDatabase(
-          getFirestoreFn,
-          /** @type {any} */ (undefined),
-          databaseId
-        );
+        return createFirestoreInstance(getFirestoreFn, databaseId);
       }
 
       if (!cachedDb) {
-        cachedDb = getFirestoreForDatabase(
-          getFirestoreFn,
-          /** @type {any} */ (undefined),
-          databaseId
-        );
+        cachedDb = createFirestoreInstance(getFirestoreFn, databaseId);
       }
 
       return cachedDb;
@@ -138,6 +130,20 @@ export function createAssignModerationJobEntrypoint(deps) {
     }
 
     return { getFirestoreInstance, clearFirestoreInstanceCache };
+  }
+
+  /**
+   * Create a Firestore instance for the requested database.
+   * @param {typeof deps.getFirestore} getFirestoreFn Firestore factory.
+   * @param {string} databaseId Firestore database identifier.
+   * @returns {unknown} Firestore instance.
+   */
+  function createFirestoreInstance(getFirestoreFn, databaseId) {
+    return getFirestoreForDatabase(
+      getFirestoreFn,
+      /** @type {any} */ (undefined),
+      databaseId
+    );
   }
 
   const { getFirestoreInstance, clearFirestoreInstanceCache } =
