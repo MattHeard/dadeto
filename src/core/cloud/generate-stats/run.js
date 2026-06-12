@@ -184,15 +184,7 @@ export function runGenerateStats(deps) {
       console: consoleLike,
     })
   );
-
-  const {
-    getStoryCount,
-    getPageCount,
-    getUnmoderatedPageCount,
-    getTopStories,
-    generate,
-    handleRequest,
-  } = generateStatsCore;
+  const handleRequest = generateStatsCore.handleRequest;
 
   const allowedOrigins = getAllowedOrigins(env);
   const app = express();
@@ -218,15 +210,7 @@ export function runGenerateStats(deps) {
 
   const generateStats = functions.region('europe-west1').https.onRequest(app);
 
-  return /** @type {any} */ ({
-    generateStats,
-    getStoryCount,
-    getPageCount,
-    getUnmoderatedPageCount,
-    getTopStories,
-    generate,
-    handleRequest,
-  });
+  return /** @type {any} */ ({ generateStats, ...generateStatsCore });
 }
 
 /**
