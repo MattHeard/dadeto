@@ -22,7 +22,7 @@ describe('non-core thin status', () => {
       exitCodes,
     });
 
-    handle();
+    expect(handle()).toEqual({ exitCode: 0, failures: [] });
 
     expect(logs).toEqual([
       'Checked 2 non-core JS files; 0 baseline exemptions; max 50 lines.',
@@ -48,7 +48,7 @@ describe('non-core thin status', () => {
       exitCodes,
     });
 
-    handle();
+    expect(handle()).toEqual({ exitCode: 1, failures: ['failure line'] });
 
     expect(logs).toEqual([]);
     expect(errors).toEqual(['failure line']);
@@ -270,7 +270,8 @@ describe('non-core thin status', () => {
 function createTestCheckHandle({ status, logs, errors, exitCodes }) {
   return nonCoreThinStatusTestOnly.createCheckNonCoreThinHandle({
     getStatus: () => status,
-    formatFailure: () => ['failure line'],
+    formatFailure: currentStatus =>
+      currentStatus.isClean ? [] : ['failure line'],
     output: {
       error: line => errors.push(line),
       log: line => logs.push(line),

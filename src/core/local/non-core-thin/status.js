@@ -67,13 +67,13 @@ export function createCheckNonCoreThinHandle({
     const status = getStatus();
     const failures = formatFailure(status);
     if (reportFailuresAndExit({ failures, output, setExitCode })) {
-      return true;
+      return { exitCode: 1, failures };
     }
 
     output.log(
       `Checked ${status.fileCount} non-core JS files; ${status.exemptionCount} baseline exemptions; max ${status.maxLines} lines.`
     );
-    return false;
+    return { exitCode: 0, failures };
   };
 }
 

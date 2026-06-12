@@ -23,8 +23,5 @@ const handle = createCheckNonCoreThinHandle({
   },
 });
 
-const hadFailures = handle();
-
-if (!hadFailures) {
-  process.exit(0);
-}
+const result = handle();
+process.exitCode = result.exitCode;
