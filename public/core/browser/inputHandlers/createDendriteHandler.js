@@ -128,6 +128,52 @@ export function syncHiddenInput(dom, textInput, data) {
 }
 
 /**
+ * Sync a managed form's hidden payload and return the form.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   textInput: HTMLInputElement,
+ *   data: DendriteData,
+ *   form: HTMLElement,
+ * }} options Managed form state.
+ * @returns {HTMLElement} The form passed in.
+ */
+export function finalizeManagedForm({ dom, textInput, data, form }) {
+  syncHiddenInput(dom, textInput, data);
+  return form;
+}
+
+/**
+ * Build and finalize a managed form in one step.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ * }} options Form setup dependencies.
+ * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => { data: DendriteData, form: HTMLElement } | HTMLElement} buildFormContent Form body callback.
+ * @returns {HTMLElement} Finalized form element.
+ */
+export function buildManagedForm(options, buildFormContent) {
+  return withManagedFormShell(options, shell => {
+    const result = buildFormContent(shell);
+    if (
+      result &&
+      typeof result === 'object' &&
+      'data' in result &&
+      'form' in result
+    ) {
+      return finalizeManagedForm({
+        dom: options.dom,
+        textInput: options.textInput,
+        data: /** @type {DendriteData} */ (result.data),
+        form: /** @type {HTMLElement} */ (result.form),
+      });
+    }
+
+    return /** @type {HTMLElement} */ (result);
+  });
+}
+
+/**
  * Create a helper to execute sync functions with the shared args.
  * @param {HTMLInputElement} textInput - Hidden JSON input.
  * @param {string} serialised - Serialized data payload.
@@ -367,6 +413,25 @@ export function createManagedFormShellState({ dom, container, textInput }) {
     disposers,
   });
   return { form, disposers };
+}
+
+/**
+ * Run a callback against a managed form shell.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ * }} options Form setup dependencies.
+ * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => HTMLElement} useShell Shell callback.
+ * @returns {HTMLElement} Result returned by the callback.
+ */
+export function withManagedFormShell({ dom, container, textInput }, useShell) {
+  const shellState = createManagedFormShellState({
+    dom,
+    container,
+    textInput,
+  });
+  return useShell(shellState);
 }
 
 /**

@@ -1,6 +1,7 @@
 import { normalizeToken } from './germanTokenizer.js';
 import { whenString } from '../../../commonCore.js';
 import { buildWhen } from '../../common.js';
+import { parseJsonOrNull } from '../../jsonUtils.js';
 import { isPlainObject } from '../browserToysCore.js';
 
 /**
@@ -28,11 +29,7 @@ function toStringOrEmpty(value) {
  * @returns {unknown} Parsed value or null.
  */
 function tryParse(raw) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  return parseJsonOrNull(raw);
 }
 
 /**

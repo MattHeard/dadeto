@@ -24,7 +24,7 @@
   - `node --experimental-vm-modules ./node_modules/.bin/jest --watchman=false --runTestsByPath test/core/browser/presenters/canvasDoodle.test.js test/toys/2026-06-12/canvasDoodle.test.js`
 
 ## First-Response Playbook
-1. Confirm the blog post is beta-released and the output key is present in the dropdown.
+1. Confirm the blog post is public and the output key is present in the dropdown.
 2. Check whether the parsed payload fell back to defaults or was accepted as JSON.
 3. Verify the canvas context exists in the test DOM and that the drawing commands were invoked.
 

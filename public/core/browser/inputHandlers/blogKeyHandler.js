@@ -1,9 +1,11 @@
 import * as browserCore from '../browser-core.js';
 import {
-  createManagedFormShellState,
+  buildManagedForm,
+  finalizeManagedForm,
   syncHiddenInput,
   wireLabelledField,
   runFormHandler,
+  withManagedFormShell,
 } from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -160,22 +162,23 @@ function createBlogKeyFields({ dom, data }) {
  */
 function buildForm({ dom, container, textInput }) {
   const data = parseData(dom, textInput);
-  const shellOptions = { textInput, container, dom };
-  const { form, disposers } = createManagedFormShellState(shellOptions);
-  const fieldDefinitions = createBlogKeyFields({ dom, data });
-  fieldDefinitions.forEach(field =>
-    buildBlogKeyField({
-      ...field,
-      form,
-      textInput,
-      data,
-      disposers,
-    })
+  return withManagedFormShell(
+    { dom, container, textInput },
+    ({ form, disposers }) => {
+      const fieldDefinitions = createBlogKeyFields({ dom, data });
+      fieldDefinitions.forEach(field =>
+        buildBlogKeyField({
+          ...field,
+          form,
+          textInput,
+          data,
+          disposers,
+        })
+      );
+
+      return finalizeManagedForm({ dom, textInput, data, form });
+    }
   );
-
-  syncHiddenInput(dom, textInput, data);
-
-  return form;
 }
 
 /**

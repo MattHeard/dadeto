@@ -16,7 +16,7 @@
 - In scope:
   - Parse a small JSON payload describing canvas size and shape colors.
   - Render a canvas element using the `canvas-2d` presenter.
-  - Keep the toy beta-gated so it can be inspected before public release.
+  - Keep the toy public so it can be exercised without a special query flag.
 - Out of scope:
   - Freehand drawing tools.
   - Pointer events or interactive animation.
@@ -33,7 +33,7 @@
   - Canvas rendering is supported by the browser presenter path.
 - Constraints:
   - The toy must stay synchronous.
-  - The blog post should remain hidden behind the beta release gate unless explicitly revealed.
+  - The blog post should remain visible on the public site.
 
 ## Dependencies
 - Internal dependencies:
