@@ -3,7 +3,7 @@ import {
   applyRunnerLaunchFailure,
   applyRunnerOutcome,
 } from '../symphony.js';
-import { getDefinedStrings, getRecordOrNull } from '../commonCore.js';
+import { getDefinedStrings, getRecordOrNull } from '../../commonCore.js';
 import {
   createCodexRalphLauncher,
   DEFAULT_CODEX_RALPH_ARGS,

@@ -151,6 +151,49 @@ describe('runSubmitNewStory', () => {
     );
   });
 
+  it('treats empty header values as missing', async () => {
+    const result = runSubmitNewStory({
+      initializeApp: jest.fn(),
+      createFirebaseAppManager,
+      getFirestoreInstance,
+      getAuth,
+      express,
+      cors,
+      crypto,
+      FieldValue,
+      functions,
+      getEnvironmentVariables,
+      getAllowedOrigins,
+    });
+
+    const response = {
+      status: jest.fn(() => ({
+        json: jest.fn(),
+        send: jest.fn(),
+        sendStatus: jest.fn(),
+      })),
+    };
+
+    await result.handleSubmitNewStory(
+      {
+        method: 'POST',
+        body: {
+          title: '  Another Story  ',
+          content: 'Hello',
+          author: 'Author',
+        },
+        headers: { Authorization: '' },
+      },
+      response
+    );
+
+    expect(set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Another Story',
+      })
+    );
+  });
+
   it('emits debug logs for successful POST submissions when enabled', async () => {
     const debugSet = jest.fn().mockResolvedValue();
     const debugDoc = jest.fn(() => ({ set: debugSet }));

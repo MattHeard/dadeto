@@ -570,7 +570,11 @@ async function persistAndSerializeWorkflow(state, workflow) {
  * @returns {boolean} True when a new draft should be appended.
  */
 function shouldAppendDraft(state, workflow, direction) {
-  return direction > 0 && hasTrailingDraftAtActiveEnd(workflow);
+  return (
+    direction > 0 &&
+    workflow.activeIndex >= workflow.steps.length - 1 &&
+    Boolean(getTrailingDraftStep(workflow))
+  );
 }
 
 /**

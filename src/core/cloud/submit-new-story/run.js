@@ -124,7 +124,12 @@ function readRequestHeaderFromGetter(request, headerName) {
  * @returns {string | null} Header value when available.
  */
 function readRequestHeaderFromHeaders(headers, headerName) {
-  return whenOrNull(headers, currentHeaders => {
+  if (!headers || typeof headers !== 'object') {
+    return null;
+  }
+
+  const currentHeaders = /** @type {Record<string, unknown>} */ (headers);
+  return whenOrNull(true, () => {
     const lowerHeaderName = headerName.toLowerCase();
     const candidates = [headerName, lowerHeaderName];
 

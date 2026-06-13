@@ -33,4 +33,22 @@ describe('canvasDoodle', () => {
     expect(result.height).toBe(180);
     expect(result.shapes).toHaveLength(5);
   });
+
+  test('uses the default random number helper when none is provided', () => {
+    const env = new Map();
+
+    const result = JSON.parse(
+      canvasDoodle(
+        JSON.stringify({
+          width: 240,
+          height: 160,
+          background: '#ffffff',
+          accent: '#000000',
+        }),
+        env
+      )
+    );
+
+    expect(result.shapes).toHaveLength(5);
+  });
 });

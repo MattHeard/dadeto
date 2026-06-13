@@ -8,7 +8,10 @@ import {
   resolveFirestoreEnvironment,
   shouldUseCustomFirestoreDependencies,
 } from './assign-moderation-job-core.js';
-import { resolveFirestoreDatabaseId } from '../firestore-helpers.js';
+import {
+  createFirestoreInstance,
+  resolveFirestoreDatabaseId,
+} from '../firestore-helpers.js';
 import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
 
 /**

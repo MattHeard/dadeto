@@ -7,6 +7,7 @@ import { assertFunction } from '../../commonCore.js';
 
 export {
   DEFAULT_BUCKET_NAME,
+  createFirestoreDocumentOnWriteTrigger,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
 } from '../cloud-core.js';

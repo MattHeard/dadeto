@@ -5,11 +5,11 @@ import {
   createRenderVariant,
   getVisibleVariants,
   DEFAULT_BUCKET_NAME,
-  createFirestoreDocumentOnWriteTrigger,
   resolveStaticBucketName,
   resolveStaticObjectPrefix,
   VISIBILITY_THRESHOLD,
 } from './render-variant-core.js';
+import { createFirestoreDocumentOnWriteTrigger } from '../cloud-core.js';
 import {
   createCloudRenderInstanceBuilder,
   createCloudRenderEntrypointState,

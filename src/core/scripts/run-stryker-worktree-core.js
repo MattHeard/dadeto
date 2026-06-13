@@ -147,7 +147,6 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         from: reportSource,
         to: reportTarget,
       });
-      await fsModule.rm(reportTarget, { recursive: true, force: true });
       await fsModule.cp(reportSource, reportTarget, { recursive: true });
       await writeMachineLog(fsModule, machineLogPath, {
         type: 'reports-sync-success',
@@ -182,6 +181,12 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     }
   };
 }
+
+export {
+  handleRunCommandError,
+  handleRunCommandExit,
+  resolveIfAllowed,
+};
 
 /**
  * Merge child-process environment variables.
@@ -296,7 +301,12 @@ function handleRunCommandExit(
   resolve,
   reject
 ) {
-  if (code === 0 || resolveIfAllowed(allowFailure, resolve)) {
+  if (code === 0) {
+    resolve();
+    return;
+  }
+
+  if (resolveIfAllowed(allowFailure, resolve)) {
     return;
   }
 

@@ -239,6 +239,9 @@ export function resolveAllowedOrigins(environmentVariables) {
     environmentVariables,
     'DENDRITE_ENVIRONMENT'
   );
+  if (environment === 'dev') {
+    return productionOrigins;
+  }
   const envType = classifyDeploymentEnvironment(environment);
 
   if (envType === 'test') {
@@ -382,6 +385,11 @@ function isProdEnvironmentLabel(environment) {
   return environment === 'prod';
 }
 
+/**
+ * Detect whether the deployment label is the development environment.
+ * @param {unknown} environment Candidate label.
+ * @returns {boolean} True when the label is 'dev'.
+ */
 /**
  * Detect whether the label represents a Playwright test deployment.
  * @param {unknown} environment Candidate label.

@@ -86,6 +86,26 @@ describe('TOY_UI_SECTIONS integration', () => {
     expect(html).toContain('<option value="canvas-2d" selected>');
   });
 
+  test('generateBlog selects the graph output method', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'GRAPH',
+          title: 'Graph',
+          publicationDate: '2026-06-13',
+          content: ['x'],
+          toy: {
+            modulePath: './toys/2026-06-13/graphPlot.js',
+            functionName: 'graphPlot',
+            defaultOutputMethod: 'graph-2d',
+          },
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<option value="graph-2d" selected>');
+  });
+
   test('generateBlog defaults to text input method', () => {
     const blog = {
       posts: [

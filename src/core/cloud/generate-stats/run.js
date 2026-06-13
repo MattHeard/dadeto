@@ -12,6 +12,7 @@ import {
 } from '../firestore-helpers.js';
 
 export { resolveFirestoreDatabaseId };
+export { getAllowedOrigins };
 export const selectFirestoreDatabase = getFirestoreForDatabase;
 
 /**
@@ -154,7 +155,11 @@ export function runGenerateStats(deps) {
   );
   const handleRequest = generateStatsCore.handleRequest;
 
-  const allowedOrigins = getAllowedOrigins(env);
+  const allowedOrigins = getAllowedOrigins(
+    env && env.DENDRITE_ENVIRONMENT
+      ? env
+      : { DENDRITE_ENVIRONMENT: 'dev' }
+  );
   const app = express();
 
   app.use(

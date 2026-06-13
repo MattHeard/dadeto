@@ -18,6 +18,23 @@
       "tags": ["toy", "canvas", "graphics", "html"]
     },
     {
+      "key": "GRAP1",
+      "title": "Graph Plotter",
+      "publicationDate": "2026-06-13",
+      "content": [
+        "Plot a single-variable function on Cartesian axes using a simple JSON payload.",
+        "Use it to sketch familiar curves like sine, cosine, quadratics, and exponentials.",
+        "The output is rendered as a canvas so you can inspect the shape directly in the browser."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-13/graphPlot.js",
+        "functionName": "graphPlot",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "graph-2d"
+      },
+      "tags": ["toy", "graph", "canvas", "math", "html"]
+    },
+    {
       "key": "MEMO3",
       "title": "Memory Scalar/Vector Write",
       "publicationDate": "2026-05-30",

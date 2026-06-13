@@ -1,5 +1,12 @@
 import path from 'node:path';
-import { resolveLocalConfigLoader } from '../../src/core/local/config-utils.js';
+import {
+  resolveLocalConfigLoader,
+  resolveNormalizedRepoPath,
+  resolveNormalizedRepoPathWithSuffix,
+  resolveNormalizedRepoPaths,
+  normalizePositiveNumber,
+  normalizeNonNegativeInteger,
+} from '../../src/core/local/config-utils.js';
 import { loadNotionCodexConfig as loadNotionCodexConfigCore } from '../../src/core/local/notion-codex/config.js';
 import {
   DEFAULT_NOTION_CODEX_CONFIG,
@@ -244,12 +251,42 @@ describe('local notion codex config', () => {
           throw error;
         },
       })
-    ).resolves.toMatchObject({
+      ).resolves.toMatchObject({
       configPath: path.join(
         process.cwd(),
         'tracking',
         'notion-codex.local.json'
       ),
+    });
+  });
+
+  test('normalizes numeric and path helper fallbacks directly', () => {
+    expect(normalizePositiveNumber(-1, 7)).toBe(7);
+    expect(normalizeNonNegativeInteger(-1, 3)).toBe(3);
+    expect(
+      resolveNormalizedRepoPath('/tmp/repo', path, 'tracking/file.txt', 'fallback.txt')
+    ).toBe('/tmp/repo/tracking/file.txt');
+    expect(
+      resolveNormalizedRepoPathWithSuffix({
+        repoRoot: '/tmp/repo',
+        pathModule: path,
+        value: 'tracking/file.txt',
+        fallback: 'fallback.txt',
+        suffix: 'status.json',
+      })
+    ).toBe('/tmp/repo/tracking/file.txt/status.json');
+    expect(
+      resolveNormalizedRepoPaths('/tmp/repo', path, {
+        filePath: { value: 'tracking/file.txt', fallback: 'fallback.txt' },
+        statusPath: {
+          value: '',
+          fallback: 'tracking/default.txt',
+          suffix: 'status.json',
+        },
+      })
+    ).toEqual({
+      filePath: '/tmp/repo/tracking/file.txt',
+      statusPath: '/tmp/repo/tracking/default.txt/status.json',
     });
   });
 });
