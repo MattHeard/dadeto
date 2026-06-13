@@ -1,0 +1,4 @@
+- Unexpected hurdle: the full `npm test` run picked up stale `.worktrees/stryker-*` copies, which still contained the older `run-stryker-worktree-core.test.js` timeout behavior and produced duplicate failures unrelated to the daemon env fix.
+- Diagnosis path: searched the installed `bd` binary and confirmed `BEADS_NO_DAEMON` exists, then traced `src/core/scripts/run-stryker-worktree-core.js` to the child-process spawn calls.
+- Chosen fix: pass `BEADS_NO_DAEMON=1` into every child process spawned by the worktree runner so git hook / bead startup work stays in direct mode during `npm run mutant:worktree`.
+- Next-time guidance: if the repo-wide test gate is needed again, clear or ignore `.worktrees/` before running Jest so the generated worktree copies do not get collected as test files.

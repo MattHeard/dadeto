@@ -36,6 +36,9 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   const worktreeParent = pathModule.join(mainRoot, '.worktrees');
   const worktreePrefix = pathModule.join(worktreeParent, 'stryker-');
   const worktreeStrykerConfig = 'stryker.worktree.config.mjs';
+  const noDaemonEnv = {
+    BEADS_NO_DAEMON: '1',
+  };
 
   return async () => {
     await fsModule.mkdir(worktreeParent, { recursive: true });
@@ -67,7 +70,8 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         spawnImpl,
         'git',
         ['worktree', 'add', '--detach', worktreePath],
-        mainRoot
+        mainRoot,
+        { env: buildChildEnv(processModule.env, noDaemonEnv) }
       );
       await writeMachineLog(fsModule, machineLogPath, {
         type: 'command-success',
@@ -82,7 +86,9 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         args: ['install'],
         cwd: worktreePath,
       });
-      await runCommand(spawnImpl, 'npm', ['install'], worktreePath);
+      await runCommand(spawnImpl, 'npm', ['install'], worktreePath, {
+        env: buildChildEnv(processModule.env, noDaemonEnv),
+      });
       await writeMachineLog(fsModule, machineLogPath, {
         type: 'command-success',
         command: 'npm',
@@ -119,10 +125,10 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         ],
         worktreePath,
         {
-          env: {
-            ...processModule.env,
+          env: buildChildEnv(processModule.env, {
             STRYKER_TEST_ENV: '1',
-          },
+            ...noDaemonEnv,
+          }),
         }
       );
       await writeMachineLog(fsModule, machineLogPath, {
@@ -161,7 +167,10 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         'git',
         ['worktree', 'remove', '--force', worktreePath],
         mainRoot,
-        { allowFailure: true }
+        {
+          allowFailure: true,
+          env: buildChildEnv(processModule.env, noDaemonEnv),
+        }
       ).catch(() => {});
       await fsModule
         .rm(worktreePath, { recursive: true, force: true })
@@ -171,6 +180,19 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         worktreePath,
       });
     }
+  };
+}
+
+/**
+ * Merge child-process environment variables.
+ * @param {NodeJS.ProcessEnv} baseEnv Base environment.
+ * @param {NodeJS.ProcessEnv} overrides Override environment.
+ * @returns {NodeJS.ProcessEnv} Combined environment.
+ */
+function buildChildEnv(baseEnv, overrides) {
+  return {
+    ...baseEnv,
+    ...overrides,
   };
 }
 

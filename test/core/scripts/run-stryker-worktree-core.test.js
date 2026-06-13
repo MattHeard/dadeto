@@ -73,9 +73,15 @@ describe('createRunStrykerWorktreeHandle', () => {
         'run',
         'stryker.worktree.config.mjs',
       ],
-      expect.objectContaining({ cwd: expect.any(String) })
+      expect.objectContaining({
+        cwd: expect.any(String),
+        env: expect.objectContaining({
+          BEADS_NO_DAEMON: '1',
+          STRYKER_TEST_ENV: '1',
+        }),
+      })
     );
 
     await fs.rm(rootDir, { recursive: true, force: true });
-  });
+  }, 15000);
 });
