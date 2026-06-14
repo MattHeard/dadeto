@@ -2,7 +2,6 @@ import {
   pluralizeCount,
   runGateCommand,
   useDefaultValue,
-  executeStandardGate,
 } from './gate-utils.js';
 import { requirePathModule } from '../commonCore.js';
 
@@ -206,7 +205,7 @@ function executeDepcruiseGate({
   configPath,
   pathModule,
 }) {
-  return executeStandardGate({
+  const { launchFailure } = runGateCommand({
     spawnImpl,
     command: 'depcruise',
     args: ['--config', configPath, 'src'],
@@ -214,38 +213,36 @@ function executeDepcruiseGate({
     stderr,
     launchLabel: 'Dependency-cruiser gate',
     commandLabel: 'depcruise',
-    readResult: () => {
-      const violations = findCoreMathRandomViolations({
-        readFileSync,
-        readdirSync,
-        rootDir,
-        sourceRoot,
-        pathModule,
-      });
-
-      if (violations.length > 0) {
-        const message =
-          `Dependency-cruiser core policy found ${violations.length} violation${pluralizeCount(violations.length)}.\n` +
-          violations
-            .map(
-              ({ filePath, occurrences }) =>
-                `${filePath} uses the injected random source directly ${occurrences} time${pluralizeCount(occurrences)}.\n`
-            )
-            .join('');
-
-        return {
-          exitCode: 1,
-          count: violations.length,
-          message,
-        };
-      }
-
-      return { exitCode: 0, count: 0 };
-    },
-    onSuccess: () => {
-      stdout.write('Checked dependency-cruiser: no core random dependencies.\n');
-    },
   });
+
+  if (launchFailure) {
+    return { exitCode: launchFailure.exitCode, violations: 0 };
+  }
+
+  const violations = findCoreMathRandomViolations({
+    readFileSync,
+    readdirSync,
+    rootDir,
+    sourceRoot,
+    pathModule,
+  });
+
+  if (violations.length > 0) {
+    stderr.write(
+      `Dependency-cruiser core policy found ${violations.length} violation${pluralizeCount(violations.length)}.\n`
+    );
+
+    violations.forEach(({ filePath, occurrences }) => {
+      stderr.write(
+        `${filePath} uses the injected random source directly ${occurrences} time${pluralizeCount(occurrences)}.\n`
+      );
+    });
+
+    return { exitCode: 1, violations: violations.length };
+  }
+
+  stdout.write('Checked dependency-cruiser: no core random dependencies.\n');
+  return { exitCode: 0, violations: 0 };
 }
 
 /**

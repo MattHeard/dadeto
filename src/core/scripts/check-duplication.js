@@ -1,5 +1,4 @@
 import {
-  executeStandardGate,
   pluralizeCount,
   runGateCommand,
   useDefaultValue,
@@ -120,7 +119,7 @@ function executeDuplicationGate({
   reportPath,
   relativePath,
 }) {
-  return executeStandardGate({
+  const { launchFailure } = runGateCommand({
     spawnImpl,
     command: 'jscpd',
     args: ['--config', configPath],
@@ -128,38 +127,35 @@ function executeDuplicationGate({
     stderr,
     launchLabel: getDuplicationGateLabel(),
     commandLabel: 'jscpd',
-    readResult: () => {
-      const report = readDuplicationReport(readFileSync, reportPath);
-      if (!report) {
-        stderr.write(
-          `Duplication gate could not read report at ${relativePath(rootDir, reportPath)}\n`
-        );
-        return null;
-      }
-
-      const cloneFailure = handleCloneFailure(
-        report,
-        {
-          rootDir,
-          reportPath,
-          relativePath,
-        },
-        stderr
-      );
-      if (cloneFailure) {
-        return {
-          exitCode: cloneFailure.exitCode,
-          count: cloneFailure.clones,
-          message: '',
-        };
-      }
-
-      return { exitCode: 0, count: 0 };
-    },
-    onSuccess: () => {
-      stdout.write('Checked duplication report: 0 clones.\n');
-    },
   });
+
+  if (launchFailure) {
+    return { exitCode: launchFailure.exitCode, clones: 0 };
+  }
+
+  const report = readDuplicationReport(readFileSync, reportPath);
+  if (!report) {
+    stderr.write(
+      `Duplication gate could not read report at ${relativePath(rootDir, reportPath)}\n`
+    );
+    return { exitCode: 1, clones: 0 };
+  }
+
+  const cloneFailure = handleCloneFailure(
+    report,
+    {
+      rootDir,
+      reportPath,
+      relativePath,
+    },
+    stderr
+  );
+  if (cloneFailure) {
+    return cloneFailure;
+  }
+
+  stdout.write('Checked duplication report: 0 clones.\n');
+  return { exitCode: 0, clones: 0 };
 }
 
 /**
@@ -202,7 +198,13 @@ function handleCloneFailure(report, reportInfo, stderr) {
  * @returns {Record<string, unknown> | null} Parsed report or null.
  */
 function readDuplicationReport(readFileSync, reportPath) {
-  return parseJsonOrNull(readFileSync(reportPath, 'utf8'));
+  try {
+    return /** @type {Record<string, unknown> | null} */ (
+      parseJsonOrNull(readFileSync(reportPath, 'utf8'))
+    );
+  } catch {
+    return null;
+  }
 }
 
 /**
