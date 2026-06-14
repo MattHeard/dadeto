@@ -145,7 +145,7 @@ export function resolveLocalConfigPaths(repoRoot, pathModule, fields) {
  * @returns {TResult} Normalized config result.
  */
 export function normalizeConfigWithResolvedPaths(options) {
-  const config = options.config ?? options.rawConfig;
+  const config = options.config;
   const resolvedPaths = resolveNormalizedRepoPaths(
     options.repoRoot,
     options.pathModule,
@@ -171,7 +171,24 @@ export function normalizeConfigWithResolvedPaths(options) {
  * @returns {TResult} Normalized config result.
  */
 export function buildNormalizedLocalConfig(options) {
-  return normalizeConfigWithResolvedPaths(options);
+  return normalizeConfigWithResolvedPaths(
+    /**
+     * @type {{
+     *   config: any,
+     *   repoRoot: string,
+     *   configPath: string,
+     *   pathModule: { resolve: (first: string, ...parts: string[]) => string },
+     *   pathFields: Record<string, { value: unknown, fallback: string, suffix?: string }>,
+     *   build: (resolvedPaths: Record<string, string>, config: any, configPath: string) => TResult,
+      }} */ ({
+      config: options.config ?? options.rawConfig,
+      repoRoot: options.repoRoot,
+      configPath: options.configPath,
+      pathModule: options.pathModule,
+      pathFields: options.pathFields,
+      build: options.build,
+    })
+  );
 }
 
 /**

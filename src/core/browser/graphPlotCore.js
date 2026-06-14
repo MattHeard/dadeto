@@ -1,4 +1,4 @@
-import { createObjectPayloadParser, numberOr, stringOr } from './plotShared.js';
+import { numberOr, parseObjectPayload, stringOr } from './plotShared.js';
 
 const DEFAULT_WIDTH = 420;
 const DEFAULT_HEIGHT = 280;
@@ -15,26 +15,38 @@ export function parseGraphPlot(inputString) {
   return parseGraphPlotPayload(inputString);
 }
 
-const parseGraphPlotPayload = createObjectPayloadParser(
-  /** @param {Record<string, unknown>} parsed */
-  parsed =>
+/**
+ * @param {string} inputString JSON graph options.
+ * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string} | null} Parsed payload.
+ */
+const parseGraphPlotPayload = inputString =>
+  parseObjectPayload(
+    inputString,
     /**
-     * @type {{
-     *   expression?: string,
-     *   width?: number,
-     *   height?: number,
-     *   xMin?: number,
-     *   xMax?: number,
-     *   yMin?: number,
-     *   yMax?: number,
-     *   background?: string,
-     *   axesColor?: string,
-     *   gridColor?: string,
-     *   lineColor?: string,
-      }} */ (parsed)
-);
+     * Map a parsed JSON object into graph plot fields.
+     * @param {Record<string, unknown>} parsed Parsed object payload.
+     * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string}} Graph plot payload fields.
+     */
+    parsed =>
+      /**
+       * @type {{
+       *   expression?: string,
+       *   width?: number,
+       *   height?: number,
+       *   xMin?: number,
+       *   xMax?: number,
+       *   yMin?: number,
+       *   yMax?: number,
+       *   background?: string,
+       *   axesColor?: string,
+       *   gridColor?: string,
+       *   lineColor?: string,
+       * }}
+       */ (parsed)
+  );
 
 /**
+ * Create the fallback graph payload.
  * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string}} Fallback payload.
  */
 export function createGraphPlotFallbackPayload() {
@@ -55,10 +67,9 @@ export function createGraphPlotFallbackPayload() {
 
 /**
  * @param {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string}} parsed Parsed options.
- * @param {() => number} getRandomNumber Random helper, used for deterministic test-friendly fallback variation.
- * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string}}
+ * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string}} Normalized graph payload.
  */
-export function normalizeGraphPlotPayload(parsed, getRandomNumber) {
+export function normalizeGraphPlotPayload(parsed) {
   const fallback = createGraphPlotFallbackPayload();
   return {
     expression: stringOr(parsed.expression, fallback.expression),
@@ -118,7 +129,7 @@ export function buildGraphPlotPayload(payload) {
 export function buildGraphPlotFromJson(inputString, getRandomNumber) {
   const parsed =
     parseGraphPlot(inputString) || createGraphPlotFallbackPayload();
-  const normalized = normalizeGraphPlotPayload(parsed, getRandomNumber);
+  const normalized = normalizeGraphPlotPayload(parsed);
   getRandomNumber();
   return buildGraphPlotPayload(normalized);
 }

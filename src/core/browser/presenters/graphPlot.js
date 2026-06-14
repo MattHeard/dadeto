@@ -25,13 +25,14 @@ export function createGraphPlotElement(inputString, dom) {
 
 /**
  * Create the graph plot presenter handle for browser re-export wrappers.
- * @returns {{createGraphPlotElement: (inputString: string, dom: import('../domHelpers.js').DOMHelpers) => HTMLElement}}
+ * @returns {{createGraphPlotElement: (inputString: string, dom: import('../domHelpers.js').DOMHelpers) => HTMLElement}} Presenter handle.
  */
 export function createGraphPlotPresenterHandle() {
   return { createGraphPlotElement };
 }
 
 /**
+ * Draw the graph plot contents.
  * @param {CanvasRenderingContext2D} context Canvas context.
  * @param {HTMLCanvasElement} canvas Canvas node.
  * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload Graph payload.
@@ -46,10 +47,10 @@ function drawGraphPlot(context, canvas, payload) {
 }
 
 /**
- *
- * @param {CanvasRenderingContext2D} context
- * @param {HTMLCanvasElement} canvas
- * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload
+ * Draw the grid.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload Graph payload.
  */
 function drawGrid(context, canvas, payload) {
   context.strokeStyle = payload.gridColor;
@@ -81,10 +82,10 @@ function drawGrid(context, canvas, payload) {
 }
 
 /**
- *
- * @param {CanvasRenderingContext2D} context
- * @param {HTMLCanvasElement} canvas
- * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload
+ * Draw the axes.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload Graph payload.
  */
 function drawAxes(context, canvas, payload) {
   context.strokeStyle = payload.axesColor;
@@ -100,10 +101,10 @@ function drawAxes(context, canvas, payload) {
 }
 
 /**
- *
- * @param {CanvasRenderingContext2D} context
- * @param {HTMLCanvasElement} canvas
- * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload
+ * Draw the plotted function.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload Graph payload.
  */
 function drawFunction(context, canvas, payload) {
   if (!payload.points.length) {
@@ -127,20 +128,22 @@ function drawFunction(context, canvas, payload) {
 }
 
 /**
- *
- * @param {HTMLCanvasElement} canvas
- * @param {{xMin:number,xMax:number}} payload
- * @param {number} x
+ * Convert graph X coordinates to canvas coordinates.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{xMin:number,xMax:number}} payload Graph payload.
+ * @param {number} x Graph X coordinate.
+ * @returns {number} Canvas X coordinate.
  */
 function toCanvasX(canvas, payload, x) {
   return ((x - payload.xMin) / (payload.xMax - payload.xMin)) * canvas.width;
 }
 
 /**
- *
- * @param {HTMLCanvasElement} canvas
- * @param {{yMin:number,yMax:number}} payload
- * @param {number} y
+ * Convert graph Y coordinates to canvas coordinates.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{yMin:number,yMax:number}} payload Graph payload.
+ * @param {number} y Graph Y coordinate.
+ * @returns {number} Canvas Y coordinate.
  */
 function toCanvasY(canvas, payload, y) {
   return (
@@ -150,8 +153,9 @@ function toCanvasY(canvas, payload, y) {
 }
 
 /**
- *
- * @param {number} span
+ * Choose a pleasant grid step for a span.
+ * @param {number} span Graph span.
+ * @returns {number} Grid step.
  */
 function niceStep(span) {
   const raw = span / 8;
@@ -159,8 +163,11 @@ function niceStep(span) {
     return 1;
   }
   const power = 10 ** Math.floor(Math.log10(raw));
-  return Math.max(
-    power,
-    raw < power * 2 ? power : raw < power * 5 ? power * 2 : power * 5
-  );
+  if (raw < power * 2) {
+    return power;
+  }
+  if (raw < power * 5) {
+    return power * 2;
+  }
+  return power * 5;
 }

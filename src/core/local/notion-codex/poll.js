@@ -292,17 +292,17 @@ function appendIdleOutcome(state, options) {
     delayMs,
   });
 
-  return appendOutcomeWithSummary(
+  return appendOutcomeWithSummary({
     state,
-    {
-      lastOutcome: 'idle',
+    inactiveRun: createInactiveRunState(
+      'idle',
       idleBackoffExponent,
-      nextPollAfter,
-    },
-    createRunEvent(options, 'idle', { nextPollAfter }),
-    `Observed idle Notion Codex run ${options.runId}; next poll after ${nextPollAfter}.`,
-    options.summary
-  );
+      nextPollAfter
+    ),
+    event: createRunEvent(options, 'idle', { nextPollAfter }),
+    fallbackSummary: `Observed idle Notion Codex run ${options.runId}; next poll after ${nextPollAfter}.`,
+    summary: options.summary,
+  });
 }
 
 /**
@@ -473,17 +473,13 @@ function appendCompletedOutcome(state, options) {
     eventType = 'handled';
   }
 
-  return appendOutcomeWithSummary(
+  return appendOutcomeWithSummary({
     state,
-    {
-      lastOutcome,
-      idleBackoffExponent: null,
-      nextPollAfter: null,
-    },
-    createRunEvent(options, eventType),
-    `Observed completed Notion Codex run ${options.runId}.`,
-    options.outcome?.summary
-  );
+    inactiveRun: createInactiveRunState(lastOutcome, null, null),
+    event: createRunEvent(options, eventType),
+    fallbackSummary: `Observed completed Notion Codex run ${options.runId}.`,
+    summary: options.outcome?.summary,
+  });
 }
 
 /**
@@ -504,24 +500,21 @@ function appendOutcomeEvent(state, inactiveRun, event) {
 
 /**
  * Append an outcome event after resolving the summary text.
- * @param {NotionCodexPollState} state Current state.
  * @param {{
- *   lastOutcome: string,
- *   idleBackoffExponent: number | null,
- *   nextPollAfter: string | null,
- * }} inactiveRun Inactive-run state fields.
- * @param {Record<string, unknown>} event Event payload.
- * @param {string} fallbackSummary Summary used when no override is supplied.
- * @param {string | null | undefined} summary Override summary.
+ *   state: NotionCodexPollState,
+ *   inactiveRun: {
+ *     lastOutcome: string,
+ *     idleBackoffExponent: number | null,
+ *     nextPollAfter: string | null,
+ *   },
+ *   event: Record<string, unknown>,
+ *   fallbackSummary: string,
+ *   summary: string | null | undefined,
+ * }} options Outcome update options.
  * @returns {NotionCodexPollState} Updated state.
  */
-function appendOutcomeWithSummary(
-  state,
-  inactiveRun,
-  event,
-  fallbackSummary,
-  summary
-) {
+function appendOutcomeWithSummary(options) {
+  const { state, inactiveRun, event, fallbackSummary, summary } = options;
   return appendOutcomeEvent(
     state,
     {
@@ -530,6 +523,54 @@ function appendOutcomeWithSummary(
     },
     event
   );
+}
+
+/**
+ * Create the shared outcome-summary options object.
+ * @param {{
+ *   state: NotionCodexPollState,
+ *   inactiveRun: {
+ *     lastOutcome: string,
+ *     idleBackoffExponent: number | null,
+ *     nextPollAfter: string | null,
+ *   },
+ *   event: Record<string, unknown>,
+ *   fallbackSummary: string,
+ *   summary: string | null | undefined,
+ * }} options Outcome summary options.
+ * @returns {{
+ *   state: NotionCodexPollState,
+ *   inactiveRun: {
+ *     lastOutcome: string,
+ *     idleBackoffExponent: number | null,
+ *     nextPollAfter: string | null,
+ *   },
+ *   event: Record<string, unknown>,
+ *   fallbackSummary: string,
+ *   summary: string | null | undefined,
+ * }} Outcome summary options.
+ */
+/**
+ * Build the shared inactive-run state payload.
+ * @param {string} lastOutcome Last outcome label.
+ * @param {number | null} idleBackoffExponent Current idle exponent.
+ * @param {string | null} nextPollAfter Next poll timestamp.
+ * @returns {{
+ *   lastOutcome: string,
+ *   idleBackoffExponent: number | null,
+ *   nextPollAfter: string | null,
+ * }} Inactive-run state.
+ */
+function createInactiveRunState(
+  lastOutcome,
+  idleBackoffExponent,
+  nextPollAfter
+) {
+  return {
+    lastOutcome,
+    idleBackoffExponent,
+    nextPollAfter,
+  };
 }
 
 /**

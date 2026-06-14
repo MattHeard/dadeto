@@ -37,7 +37,7 @@ module.exports = {
         path: '^src/browser',
       },
       to: {
-        pathNot: '^src/(browser|core)(?:/|$)',
+        pathNot: '^src/(browser|core)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -49,7 +49,7 @@ module.exports = {
         path: '^src/build',
       },
       to: {
-        pathNot: '^src/(build|core)(?:/|$)',
+        pathNot: '^src/(build|core)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -61,7 +61,7 @@ module.exports = {
         path: '^src/cloud',
       },
       to: {
-        pathNot: '^src/(cloud|core)(?:/|$)',
+        pathNot: '^src/(cloud|core)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -73,7 +73,7 @@ module.exports = {
         path: '^src/local',
       },
       to: {
-        pathNot: '^src/(local|core)(?:/|$)',
+        pathNot: '^src/(local|core)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -85,7 +85,7 @@ module.exports = {
         path: '^src/scripts',
       },
       to: {
-        pathNot: '^src/(scripts|core)(?:/|$)',
+        pathNot: '^src/(scripts|core)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -161,12 +161,24 @@ module.exports = {
       },
     },
     {
-      name: 'core-browser-no-node-modules',
+      name: 'browser-no-node-modules',
       comment:
-        'Prevent src/core and src/browser from depending on node_modules until we stabilize them.',
+        'Prevent src/browser from depending on node_modules until we stabilize it.',
       severity: 'error',
       from: {
-        path: '^src/(core|browser)',
+        path: '^src/browser',
+      },
+      to: {
+        path: 'node_modules',
+      },
+    },
+    {
+      name: 'core-no-node-modules',
+      comment:
+        'Prevent src/core from depending on node_modules until we stabilize it.',
+      severity: 'error',
+      from: {
+        path: '^src/core',
       },
       to: {
         path: 'node_modules',

@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { afterAll, beforeAll, describe, expect, it, jest } from '@jest/globals';
+import express from 'express';
 
 jest.setTimeout(20000);
 
@@ -18,7 +19,7 @@ describe('gcp simulator server', () => {
       '../../../../src/core/local/gcp-simulator/server.js'
     );
     serverModule = importedModule;
-    server = await importedModule.handle();
+    server = await importedModule.handle({ express });
     const address = server.address();
     if (address && typeof address === 'object') {
       baseUrl = `http://127.0.0.1:${address.port}`;
@@ -63,7 +64,7 @@ describe('gcp simulator server', () => {
   it('runs the server entrypoint when invoked directly', async () => {
     const child = spawn(
       process.execPath,
-      ['src/core/local/gcp-simulator/server.js'],
+      ['src/local/gcp-simulator/server.js'],
       {
         cwd: process.cwd(),
         env: {

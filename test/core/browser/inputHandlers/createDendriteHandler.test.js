@@ -5,7 +5,20 @@ import {
 } from '../../../../src/core/browser/inputHandlers/createDendriteHandler.js';
 
 /**
- *
+ * Create a minimal DOM adapter for handler tests.
+ * @returns {{
+ *   createElement: jest.Mock,
+ *   getNextSibling: jest.Mock,
+ *   insertBefore: jest.Mock,
+ *   appendChild: jest.Mock,
+ *   setClassName: jest.Mock,
+ *   setTextContent: jest.Mock,
+ *   setValue: jest.Mock,
+ *   getValue: jest.Mock,
+ *   addEventListener: jest.Mock,
+ *   removeEventListener: jest.Mock,
+ *   querySelector: jest.Mock,
+ * }} Minimal DOM adapter.
  */
 function createDom() {
   return {

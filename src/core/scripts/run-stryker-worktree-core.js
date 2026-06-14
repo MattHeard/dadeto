@@ -10,9 +10,13 @@ import {
 import path from 'node:path';
 
 /**
+ * @typedef {Record<string, string | undefined>} Env
+ */
+
+/**
  * Create the Stryker worktree runner.
  * @param {{
- *   processModule?: { env: NodeJS.ProcessEnv },
+ *   processModule?: { env: Env },
  *   fsModule?: {
  *     mkdtemp: typeof mkdtemp,
  *     rm: typeof rm,
@@ -77,14 +81,14 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         },
       ]) {
         await runLoggedCommandStep(
-          fsModule,
-          machineLogPath,
-          spawnImpl,
-          processModule.env,
-          noDaemonEnv,
-          step.command,
-          step.args,
-          step.cwd
+          {
+            fsModule,
+            machineLogPath,
+            spawnImpl,
+            baseEnv: processModule.env,
+            extraEnv: noDaemonEnv,
+          },
+          step
         );
       }
       await fsModule.writeFile(
@@ -96,22 +100,26 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         filePath: pathModule.join(worktreePath, worktreeStrykerConfig),
       });
       await runLoggedCommandStep(
-        fsModule,
-        machineLogPath,
-        spawnImpl,
-        processModule.env,
         {
-          STRYKER_TEST_ENV: '1',
-          ...noDaemonEnv,
+          fsModule,
+          machineLogPath,
+          spawnImpl,
+          baseEnv: processModule.env,
+          extraEnv: {
+            STRYKER_TEST_ENV: '1',
+            ...noDaemonEnv,
+          },
         },
-        'node',
-        [
-          '--experimental-vm-modules',
-          './node_modules/.bin/stryker',
-          'run',
-          worktreeStrykerConfig,
-        ],
-        worktreePath
+        {
+          command: 'node',
+          args: [
+            '--experimental-vm-modules',
+            './node_modules/.bin/stryker',
+            'run',
+            worktreeStrykerConfig,
+          ],
+          cwd: worktreePath,
+        }
       );
       await writeMachineLog(fsModule, machineLogPath, {
         type: 'reports-sync-start',
@@ -132,16 +140,14 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         type: 'cleanup-start',
         worktreePath,
       });
-      await runCommand(
+      await runCommand({
         spawnImpl,
-        'git',
-        ['worktree', 'remove', '--force', worktreePath],
-        mainRoot,
-        {
-          allowFailure: true,
-          env: buildChildEnv(processModule.env, noDaemonEnv),
-        }
-      ).catch(() => {});
+        command: 'git',
+        args: ['worktree', 'remove', '--force', worktreePath],
+        cwd: mainRoot,
+        allowFailure: true,
+        env: buildChildEnv(processModule.env, noDaemonEnv),
+      }).catch(() => {});
       await fsModule
         .rm(worktreePath, { recursive: true, force: true })
         .catch(() => {});
@@ -153,20 +159,13 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   };
 }
 
-export {
-  handleRunCommandError,
-  handleRunCommandExit,
-  resolveIfAllowed,
-  runCommand,
-  buildChildEnv,
-  buildStrykerConfig,
-};
+export { runCommand };
 
 /**
  * Merge child-process environment variables.
- * @param {NodeJS.ProcessEnv} baseEnv Base environment.
- * @param {NodeJS.ProcessEnv} overrides Override environment.
- * @returns {NodeJS.ProcessEnv} Combined environment.
+ * @param {Env} baseEnv Base environment.
+ * @param {Env} overrides Override environment.
+ * @returns {Env} Combined environment.
  */
 function buildChildEnv(baseEnv, overrides) {
   return {
@@ -176,7 +175,8 @@ function buildChildEnv(baseEnv, overrides) {
 }
 
 /**
- *
+ * Build the temporary Stryker config for the worktree.
+ * @returns {string} Serialized config module.
  */
 function buildStrykerConfig() {
   return `import baseConfig from './stryker.config.mjs';
@@ -195,35 +195,29 @@ export default {
 /**
  * Write the log entries and run a command with the shared env setup.
  * @param {{
- *   mkdir: typeof mkdir,
- *   appendFile: typeof appendFile,
- * }} fsModule Filesystem dependencies.
- * @param {string} machineLogPath Log destination.
- * @param {typeof spawn} spawnImpl Spawn implementation.
- * @param {NodeJS.ProcessEnv} baseEnv Parent environment.
- * @param {NodeJS.ProcessEnv} extraEnv Extra environment entries.
- * @param {string} command Command to run.
- * @param {string[]} args Command arguments.
- * @param {string} cwd Working directory.
+ *   fsModule: { mkdir: typeof mkdir, appendFile: typeof appendFile },
+ *   machineLogPath: string,
+ *   spawnImpl: typeof spawn,
+ *   baseEnv: Env,
+ *   extraEnv: Env,
+ * }} context Command context.
+ * @param {{ command: string, args: string[], cwd: string }} step Command step.
  * @returns {Promise<void>} Nothing.
  */
-async function runLoggedCommandStep(
-  fsModule,
-  machineLogPath,
-  spawnImpl,
-  baseEnv,
-  extraEnv,
-  command,
-  args,
-  cwd
-) {
+async function runLoggedCommandStep(context, step) {
+  const { fsModule, machineLogPath, spawnImpl, baseEnv, extraEnv } = context;
+  const { command, args, cwd } = step;
   await writeMachineLog(fsModule, machineLogPath, {
     type: 'command-start',
     command,
     args,
     cwd,
   });
-  await runCommand(spawnImpl, command, args, cwd, {
+  await runCommand({
+    spawnImpl,
+    command,
+    args,
+    cwd,
     env: buildChildEnv(baseEnv, extraEnv),
   });
   await writeMachineLog(fsModule, machineLogPath, {
@@ -235,19 +229,29 @@ async function runLoggedCommandStep(
 }
 
 /**
- * @param {typeof spawn} spawnImpl Spawn implementation.
- * @param {string} command Command to run.
- * @param {string[]} args Command arguments.
- * @param {string} cwd Working directory.
- * @param {{ allowFailure?: boolean, env?: NodeJS.ProcessEnv }} [options] Command options.
+ * @param {{
+ *   spawnImpl: typeof spawn,
+ *   command: string,
+ *   args: string[],
+ *   cwd: string,
+ *   allowFailure?: boolean,
+ *   env?: Env,
+ * }} options Command options.
  * @returns {Promise<void>} Resolves when the command exits successfully.
  */
-async function runCommand(spawnImpl, command, args, cwd, options = {}) {
-  const { allowFailure = false, env = process.env } = options;
+async function runCommand(options) {
+  const {
+    spawnImpl,
+    command,
+    args,
+    cwd,
+    allowFailure = false,
+    env = process.env,
+  } = options;
   await new Promise(
     /**
-     * @param {(value?: void | PromiseLike<void>) => void} resolve
-     *  @param {(reason?: unknown) => void} reject
+     * @param {(value?: unknown) => void} resolve Promise resolver.
+     * @param {(reason?: unknown) => void} reject Promise rejecter.
      */
     (resolve, reject) => {
       const child = spawnImpl(command, args, {
@@ -256,11 +260,18 @@ async function runCommand(spawnImpl, command, args, cwd, options = {}) {
         stdio: 'inherit',
       });
       child.once('error', error =>
-        handleRunCommandError(error, allowFailure, resolve, reject)
+        handleCommandError(error, allowFailure, resolve, reject)
       );
-      child.once('exit', code =>
-        handleRunCommandExit(command, args, code, allowFailure, resolve, reject)
-      );
+      child.once('exit', code => {
+        if (code === 0 || allowFailure) {
+          resolve();
+          return;
+        }
+
+        reject(
+          new Error(`${command} ${args.join(' ')} exited with code ${code}`)
+        );
+      });
     }
   );
 }
@@ -287,69 +298,15 @@ async function writeMachineLog(fsModule, logPath, entry) {
  * Handle a spawned command error.
  * @param {unknown} error Spawn error.
  * @param {boolean} allowFailure Whether failures should be ignored.
- * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
+ * @param {(value?: unknown) => void} resolve Promise resolver.
  * @param {(reason?: unknown) => void} reject Promise rejecter.
  * @returns {void}
  */
-function handleRunCommandError(error, allowFailure, resolve, reject) {
-  if (resolveIfAllowed(allowFailure, resolve)) {
-    return;
-  }
-
-  reject(error);
-}
-
-/**
- * Handle a spawned command exit code.
- * @param {string} command Command name.
- * @param {string[]} args Command arguments.
- * @param {number | null} code Exit code.
- * @param {boolean} allowFailure Whether failures should be ignored.
- * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
- * @param {(reason?: unknown) => void} reject Promise rejecter.
- * @returns {void}
- */
-function handleRunCommandExit(
-  command,
-  args,
-  code,
-  allowFailure,
-  resolve,
-  reject
-) {
-  if (code === 0) {
+function handleCommandError(error, allowFailure, resolve, reject) {
+  if (allowFailure) {
     resolve();
     return;
   }
 
-  if (handleAllowedFailure(allowFailure, resolve)) {
-    return;
-  }
-
-  reject(new Error(`${command} ${args.join(' ')} exited with code ${code}`));
-}
-
-/**
- * Resolve the command promise when failures are allowed.
- * @param {boolean} allowFailure Whether failures should be ignored.
- * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
- * @returns {boolean} True when the promise was resolved.
- */
-function resolveIfAllowed(allowFailure, resolve) {
-  if (!allowFailure) {
-    return false;
-  }
-
-  resolve();
-  return true;
-}
-
-/**
- * Resolve a command failure when ignored failures are enabled.
- * @param {boolean} allowFailure Whether failures should be ignored.
- * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
- * @returns {boolean} True when the promise was resolved.
- */
-function handleAllowedFailure(allowFailure, resolve) {
-  return resolveIfAllowed(allowFailure, resolve);
+  reject(error);
 }

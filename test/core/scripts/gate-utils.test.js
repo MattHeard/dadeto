@@ -2,7 +2,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { executeStandardGate } from '../../../src/core/scripts/gate-utils.js';
 
 /**
- *
+ * Create a simple writable capture for gate output.
+ * @returns {{chunks: string[], write: (text: string) => void}} Writable capture.
  */
 function createWriter() {
   const chunks = [];

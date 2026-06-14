@@ -156,13 +156,21 @@ export function runGenerateStats(deps) {
   );
   const handleRequest = generateStatsCore.handleRequest;
 
-  const allowedOrigins = getAllowedOrigins(
-    env && env.DENDRITE_ENVIRONMENT ? env : { DENDRITE_ENVIRONMENT: 'dev' }
-  );
-  const app = createJsonExpressApp({
-    createApp: () => express(),
+  let environmentForOrigins = { DENDRITE_ENVIRONMENT: 'dev' };
+  if (env && env.DENDRITE_ENVIRONMENT) {
+    environmentForOrigins = env;
+  }
+  const allowedOrigins = getAllowedOrigins(environmentForOrigins);
+  const createApp = () => express();
+  const appDeps = {
+    createApp,
     json: express.json,
     urlencoded: express.urlencoded,
+  };
+  const app = createJsonExpressApp({
+    createApp: appDeps.createApp,
+    json: appDeps.json,
+    urlencoded: appDeps.urlencoded,
   });
   app.use(
     /** @type {any} */ (

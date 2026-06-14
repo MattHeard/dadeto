@@ -45,7 +45,11 @@ function extractCsvRows(input) {
     }
   }
 
-  return rows.length > 0 ? rows : null;
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return rows;
 }
 
 /**
@@ -88,7 +92,11 @@ function parseHeaderRow(line) {
     .map(token => token.trim())
     .filter(token => token.length > 0);
 
-  return headers.length > 0 ? headers : null;
+  if (headers.length === 0) {
+    return null;
+  }
+
+  return headers;
 }
 
 /**

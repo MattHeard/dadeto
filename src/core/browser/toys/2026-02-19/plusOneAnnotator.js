@@ -24,15 +24,6 @@ function toStringOrEmpty(value) {
  * @returns {Record<string, unknown> | null} Parsed object or null when parsing fails.
  */
 /**
- * Try to JSON-parse a raw string, returning null on failure.
- * @param {string} raw - Raw JSON string.
- * @returns {unknown} Parsed value or null.
- */
-function tryParse(raw) {
-  return parseJsonOrNull(raw);
-}
-
-/**
  * Parse the toy input JSON into a payload.
  * @param {unknown} input - Raw input argument provided to the toy.
  * @returns {Record<string, unknown> | null} Parsed object or null when parsing fails.
@@ -43,7 +34,7 @@ function parseToyInput(input) {
     return null;
   }
 
-  const parsed = tryParse(raw);
+  const parsed = parseJsonOrNull(raw);
   if (!isPlainObject(parsed)) {
     return null;
   }

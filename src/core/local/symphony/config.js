@@ -1,6 +1,5 @@
 import { DEFAULT_CODEX_RALPH_ARGS } from './launcherCodex.js';
 import {
-  buildNormalizedLocalConfig,
   loadNormalizedLocalJsonConfig,
   normalizePositiveNumber,
   normalizeString,
@@ -134,7 +133,7 @@ function resolveDefaultBranch(defaultBranch) {
 export function normalizeSymphonyConfig(options) {
   const typedConfig = /** @type {any} */ (options.config);
   return normalizeConfigWithResolvedPaths({
-    rawConfig: typedConfig,
+    config: typedConfig,
     repoRoot: options.repoRoot,
     configPath: options.configPath,
     pathModule: options.pathModule,

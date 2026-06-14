@@ -178,7 +178,7 @@ function handleCloneFailure(report, reportInfo, stderr) {
   }
 
   stderr.write(
-    `Duplication gate found ${clones} clone${formatCloneSuffix(clones)}.\n`
+    `Duplication gate found ${clones} clone${pluralizeCount(clones)}.\n`
   );
 
   const summary = summarizeReport(report);
@@ -244,8 +244,7 @@ function summarizeReport(report) {
   if (typeof total.clones === 'number') {
     cloneCount = total.clones;
   }
-  const cloneSuffix = formatCloneSuffix(cloneCount);
-  return `Report summary: ${cloneCount} clone${cloneSuffix}, ${total.percentage}% duplicated lines, ${total.percentageTokens}% duplicated tokens.`;
+  return `Report summary: ${cloneCount} clone${pluralizeCount(cloneCount)}, ${total.percentage}% duplicated lines, ${total.percentageTokens}% duplicated tokens.`;
 }
 
 /**
@@ -260,13 +259,4 @@ function getDuplicationStatistics(report) {
     );
 
   return statistics ?? {};
-}
-
-/**
- * Return the plural suffix for "clone".
- * @param {number} cloneCount Clone count.
- * @returns {'' | 's'} Plural suffix.
- */
-function formatCloneSuffix(cloneCount) {
-  return pluralizeCount(cloneCount);
 }

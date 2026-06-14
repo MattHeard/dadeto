@@ -51,6 +51,8 @@ async function loadModule({
   };
   const cors = jest.fn(() => 'cors-middleware');
   const express = jest.fn(() => app);
+  express.json = jest.fn(() => 'json-middleware');
+  express.urlencoded = jest.fn(() => 'urlencoded-middleware');
   const onRequest = jest.fn(() => 'generateStats-export');
   const functions = {
     region: jest.fn(() => ({

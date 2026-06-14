@@ -1,6 +1,5 @@
 import * as browserCore from '../browser-core.js';
 import {
-  buildManagedForm,
   finalizeManagedForm,
   syncHiddenInput,
   wireLabelledField,

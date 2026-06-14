@@ -6,13 +6,18 @@ const BACKGROUND = '#f8f6f2';
 const FOREGROUND = '#1f2937';
 
 /**
+ * Parse canvas doodle JSON input.
  * @param {string} inputString JSON string describing the drawing.
  * @returns {{width?: number,height?: number,background?: string,accent?: string,shapes?: Array<Record<string, unknown>>} | null} Parsed payload.
  */
 export function parseCanvasDoodle(inputString) {
   return plotShared.parseObjectPayload(
     inputString,
-    /** @param {Record<string, unknown>} parsed */
+    /**
+     * Map the parsed JSON object into canvas doodle fields.
+     * @param {Record<string, unknown>} parsed Parsed object payload.
+     * @returns {{width?: number,height?: number,background?: string,accent?: string,shapes?: Array<Record<string, unknown>>}} Canvas doodle payload fields.
+     */
     parsed =>
       /**
        * @type {{
@@ -26,6 +31,7 @@ export function parseCanvasDoodle(inputString) {
 }
 
 /**
+ * Create the fallback canvas doodle payload.
  * @returns {{width:number,height:number,shapes:Array<Record<string, unknown>>}} Fallback payload.
  */
 export function createCanvasDoodleFallbackPayload() {
@@ -50,6 +56,7 @@ export function createCanvasDoodleFallbackPayload() {
 }
 
 /**
+ * Build the doodle shapes for a parsed payload.
  * @param {{width?: number,height?: number,background?: string,accent?: string}} parsed Parsed options.
  * @param {() => number} getRandomNumber Random helper.
  * @returns {Array<Record<string, unknown>>} Drawing shapes.
@@ -107,6 +114,7 @@ export function buildCanvasDoodleShapes(parsed, getRandomNumber) {
 }
 
 /**
+ * Draw the doodle to the canvas context.
  * @param {CanvasRenderingContext2D} context Canvas context.
  * @param {HTMLCanvasElement} canvas Canvas node.
  * @param {{shapes?: Array<Record<string, unknown>>}} payload Drawing payload.
@@ -124,6 +132,7 @@ export function drawCanvasDoodle(context, canvas, payload) {
 }
 
 /**
+ * Draw a single shape.
  * @param {CanvasRenderingContext2D} context Canvas context.
  * @param {Record<string, unknown>} shape Shape description.
  * @returns {void}
@@ -143,9 +152,9 @@ function drawShape(context, shape) {
 }
 
 /**
- *
- * @param {CanvasRenderingContext2D} context
- * @param {Record<string, unknown> & {type?: string}} shape
+ * Draw a rectangle.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {Record<string, unknown> & {type?: string}} shape Rectangle shape description.
  */
 function drawRect(context, shape) {
   const x = plotShared.numberOr(shape.x, 0);
@@ -157,9 +166,9 @@ function drawRect(context, shape) {
 }
 
 /**
- *
- * @param {CanvasRenderingContext2D} context
- * @param {Record<string, unknown> & {type?: string}} shape
+ * Draw a circle.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {Record<string, unknown> & {type?: string}} shape Circle shape description.
  */
 function drawCircle(context, shape) {
   const x = plotShared.numberOr(shape.x, 0);
@@ -172,9 +181,9 @@ function drawCircle(context, shape) {
 }
 
 /**
- *
- * @param {CanvasRenderingContext2D} context
- * @param {Record<string, unknown> & {type?: string}} shape
+ * Draw a line.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {Record<string, unknown> & {type?: string}} shape Line shape description.
  */
 function drawLine(context, shape) {
   const x1 = plotShared.numberOr(shape.x1, 0);

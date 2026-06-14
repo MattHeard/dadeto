@@ -37,10 +37,7 @@ await jest.unstable_mockModule('node:fs/promises', () => fsModule);
 const { createRunStrykerWorktreeHandle } = await import(
   '../../../src/core/scripts/run-stryker-worktree-core.js'
 );
-const { runCommand, resolveIfAllowed } = await import(
-  '../../../src/core/scripts/run-stryker-worktree-core.js'
-);
-const { buildChildEnv, buildStrykerConfig } = await import(
+const { runCommand } = await import(
   '../../../src/core/scripts/run-stryker-worktree-core.js'
 );
 
@@ -64,43 +61,22 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
     expect(fsModule.cp).toHaveBeenCalled();
   });
 
-  test('uses default runCommand options when none are provided', async () => {
-    await runCommand(spawnMock, 'node', ['--version'], '/tmp/worktree');
+  test('uses the process env when runCommand env is omitted', async () => {
+    await runCommand({
+      spawnImpl: spawnMock,
+      command: 'node',
+      args: ['--version'],
+      cwd: '/tmp/worktree',
+    });
 
     expect(spawnMock).toHaveBeenCalledWith(
       'node',
       ['--version'],
       expect.objectContaining({
         cwd: '/tmp/worktree',
-        env: expect.any(Object),
+        env: process.env,
         stdio: 'inherit',
       })
     );
-  });
-
-  test('returns false when resolveIfAllowed is called without permission', () => {
-    const resolve = jest.fn();
-
-    expect(resolveIfAllowed(false, resolve)).toBe(false);
-    expect(resolve).not.toHaveBeenCalled();
-  });
-
-  test('returns true when resolveIfAllowed is called with permission', () => {
-    const resolve = jest.fn();
-
-    expect(resolveIfAllowed(true, resolve)).toBe(true);
-    expect(resolve).toHaveBeenCalledTimes(1);
-  });
-
-  test('builds child env from base values and overrides', () => {
-    expect(buildChildEnv({ A: '1' }, { B: '2' })).toEqual({
-      A: '1',
-      B: '2',
-    });
-  });
-
-  test('builds the Stryker config text', () => {
-    expect(buildStrykerConfig()).toContain('concurrency: 1');
-    expect(buildStrykerConfig()).toContain('testRunnerNodeArgs');
   });
 });

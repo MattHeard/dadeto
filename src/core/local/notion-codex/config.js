@@ -113,7 +113,7 @@ export function normalizeNotionCodexConfig(
   const defaultNotion = DEFAULT_NOTION_CODEX_CONFIG.notion;
 
   return normalizeConfigWithResolvedPaths({
-    rawConfig: source,
+    config: source,
     repoRoot,
     configPath,
     pathModule,
