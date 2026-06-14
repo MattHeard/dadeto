@@ -398,12 +398,29 @@ function processPostsToHTML(posts) {
 }
 
 /**
+ *
+ * @param posts
+ */
+/**
+ * Sort posts with the newest publication date first.
+ * @param {object[]} posts - Array of blog post objects.
+ * @returns {object[]} New array sorted by `publicationDate` descending.
+ */
+function sortPostsByPublicationDateDescending(posts) {
+  return [...posts].sort(
+    (left, right) =>
+      new Date(right.publicationDate).getTime() -
+      new Date(left.publicationDate).getTime()
+  );
+}
+
+/**
  * Generate HTML for all articles in the blog.
  * @param {object[]} posts - Array of post objects.
  * @returns {string} Combined article HTML.
  */
 function generateArticles(posts) {
-  return processPostsToHTML(posts);
+  return processPostsToHTML(sortPostsByPublicationDateDescending(posts));
 }
 
 /**
