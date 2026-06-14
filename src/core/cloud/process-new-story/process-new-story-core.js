@@ -440,20 +440,12 @@ export function createProcessNewStoryHandler({
   randomUUID,
   random,
 }) {
-  const handleStorySubmission =
-    /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */ (
-      async (snapshot, context = {}) => {
-        const params = mapProcessStoryParams(snapshot, context, {
-          db,
-          randomUUID,
-          random,
-          getServerTimestamp: resolveServerTimestamp(fieldValue),
-        });
-        return processStorySubmission(params);
-      }
-    );
-
-  return handleStorySubmission;
+  return createProcessNewStorySubmissionHandler({
+    db,
+    getServerTimestamp: resolveServerTimestamp(fieldValue),
+    randomUUID,
+    random,
+  });
 }
 
 /**
@@ -477,35 +469,33 @@ export function createProcessNewStoryHandle({
     functions,
     getFirestoreInstance,
     documentPath: 'storyFormSubmissions/{subId}',
-    createHandler: createProcessNewStoryHandlerFactory({
-      fieldValue,
-      randomUUID,
-      random,
-    }),
+    createHandler: ({ db }) =>
+      createProcessNewStoryHandler({
+        db,
+        fieldValue,
+        randomUUID,
+        random,
+      }),
   });
 }
 
 /**
- * Build the callback used to create a new-story handler from a Firestore db.
+ * Create the async submission handler from normalized dependencies.
  * @param {{
- *   fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue },
+ *   db: Firestore,
+ *   getServerTimestamp: () => FieldValue,
  *   randomUUID: () => string,
  *   random: () => number,
- * }} options Handler factory dependencies.
- * @returns {({ db: Firestore }) => ReturnType<typeof createProcessNewStoryHandler>} Handler factory.
+ * }} deps Submission dependencies.
+ * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Submission handler.
  */
-function createProcessNewStoryHandlerFactory({
-  fieldValue,
-  randomUUID,
-  random,
-}) {
-  return ({ db }) =>
-    createProcessNewStoryHandler({
-      db,
-      fieldValue,
-      randomUUID,
-      random,
-    });
+function createProcessNewStorySubmissionHandler(deps) {
+  return /** @type {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} */ (
+    async (snapshot, context = {}) => {
+      const params = mapProcessStoryParams(snapshot, context, deps);
+      return processStorySubmission(params);
+    }
+  );
 }
 
 /**

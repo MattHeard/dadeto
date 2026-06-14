@@ -49,9 +49,9 @@ function extractCsvRows(input) {
 }
 
 /**
- * Check if lines are sufficient.
+ * Remove any trailing blank lines.
  * @param {string[]} lines Lines.
- * @returns {boolean} True if sufficient.
+ * @returns {string[]} Trimmed lines.
  */
 function removeTrailingEmptyLines(lines) {
   const lastIndex = findLastNonEmptyLineIndex(lines);
@@ -74,9 +74,9 @@ function findLastNonEmptyLineIndex(lines) {
 }
 
 /**
- * Convert header tokens into metadata records used for column lookups.
- * @param {string[]} headers - Parsed header values.
- * @returns {Array<{ name: string, index: number }>} Metadata entries for non-empty headers.
+ * Parse and normalize the CSV header row.
+ * @param {string} line - First CSV line.
+ * @returns {string[] | null} Parsed header names or null on invalid input.
  */
 function parseHeaderRow(line) {
   const headerTokens = parseCsvLine(line.trim());
@@ -91,6 +91,12 @@ function parseHeaderRow(line) {
   return headers.length > 0 ? headers : null;
 }
 
+/**
+ * Parse one data row against the header names.
+ * @param {string} rawLine - CSV data line.
+ * @param {string[]} headers - Header names.
+ * @returns {Record<string, string> | null} Parsed row object or null on invalid input.
+ */
 function parseRecordLine(rawLine, headers) {
   const normalizedLine = rawLine.trim();
   if (normalizedLine.length === 0) {
@@ -102,11 +108,13 @@ function parseRecordLine(rawLine, headers) {
     return null;
   }
 
-  return headers.reduce((record, header, index) => {
+  /** @type {Record<string, string>} */
+  const record = {};
+  headers.forEach((header, index) => {
     const value = values[index];
     if (typeof value === 'string' && value.trim().length > 0) {
       record[header] = value.trim();
     }
-    return record;
-  }, /** @type {Record<string, string>} */ ({}));
+  });
+  return record;
 }

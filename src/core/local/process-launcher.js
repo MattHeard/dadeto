@@ -1,5 +1,5 @@
-import { normalizeMaybeNumber } from '../commonCore.js';
 // @ts-nocheck
+import { normalizeMaybeNumber } from '../commonCore.js';
 /**
  * Open append-only run log files for a spawned process.
  * @param {{

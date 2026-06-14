@@ -1,5 +1,4 @@
-import { parseJsonOrNull } from './jsonUtils.js';
-import { whenOrNull } from '../commonCore.js';
+import { numberOr, parseObjectPayload, stringOr } from './plotShared.js';
 
 const DEFAULT_WIDTH = 420;
 const DEFAULT_HEIGHT = 280;
@@ -13,8 +12,21 @@ const DEFAULT_LINE = '#2563eb';
  * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string} | null} Parsed payload.
  */
 export function parseGraphPlot(inputString) {
-  const parsed = parseJsonOrNull(inputString);
-  return whenOrNull(parsed && typeof parsed === 'object', () => parsed);
+  return parseObjectPayload(inputString, parsed =>
+    /** @type {{
+     *   expression?: string,
+     *   width?: number,
+     *   height?: number,
+     *   xMin?: number,
+     *   xMax?: number,
+     *   yMin?: number,
+     *   yMax?: number,
+     *   background?: string,
+     *   axesColor?: string,
+     *   gridColor?: string,
+     *   lineColor?: string,
+     * }} */ (parsed)
+  );
 }
 
 /**
@@ -38,12 +50,11 @@ export function createGraphPlotFallbackPayload() {
 
 /**
  * @param {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string}} parsed Parsed options.
- * @param {(index?: number) => number} getRandomNumber Random helper, used for deterministic test-friendly fallback variation.
+ * @param {() => number} getRandomNumber Random helper, used for deterministic test-friendly fallback variation.
  * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string}}
  */
 export function normalizeGraphPlotPayload(parsed, getRandomNumber) {
   const fallback = createGraphPlotFallbackPayload();
-  const jitter = Math.floor(getRandomNumber() * 10);
   return {
     expression: stringOr(parsed.expression, fallback.expression),
     width: numberOr(parsed.width, fallback.width),
@@ -56,7 +67,6 @@ export function normalizeGraphPlotPayload(parsed, getRandomNumber) {
     axesColor: stringOr(parsed.axesColor, fallback.axesColor),
     gridColor: stringOr(parsed.gridColor, fallback.gridColor),
     lineColor: stringOr(parsed.lineColor, fallback.lineColor),
-    jitter,
   };
 }
 
@@ -95,6 +105,18 @@ export function buildGraphPlotPayload(payload) {
 }
 
 /**
+ * Convert JSON graph input into the final graph plot payload.
+ * @param {string} inputString JSON graph options.
+ * @param {() => number} getRandomNumber Random helper.
+ * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>}} Canvas payload.
+ */
+export function buildGraphPlotFromJson(inputString, getRandomNumber) {
+  const parsed = parseGraphPlot(inputString) || createGraphPlotFallbackPayload();
+  const normalized = normalizeGraphPlotPayload(parsed, getRandomNumber);
+  return buildGraphPlotPayload(normalized);
+}
+
+/**
  * @param {string} expression Expression body using `x`.
  * @returns {(x:number) => number} Safe-ish evaluator.
  */
@@ -106,12 +128,4 @@ function createExpressionEvaluator(expression) {
   } catch {
     return () => Number.NaN;
   }
-}
-
-function numberOr(value, fallback) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
-}
-
-function stringOr(value, fallback) {
-  return typeof value === 'string' && value.length > 0 ? value : fallback;
 }

@@ -251,7 +251,7 @@ describe('local notion codex config', () => {
           throw error;
         },
       })
-      ).resolves.toMatchObject({
+    ).resolves.toMatchObject({
       configPath: path.join(
         process.cwd(),
         'tracking',
@@ -264,7 +264,12 @@ describe('local notion codex config', () => {
     expect(normalizePositiveNumber(-1, 7)).toBe(7);
     expect(normalizeNonNegativeInteger(-1, 3)).toBe(3);
     expect(
-      resolveNormalizedRepoPath('/tmp/repo', path, 'tracking/file.txt', 'fallback.txt')
+      resolveNormalizedRepoPath(
+        '/tmp/repo',
+        path,
+        'tracking/file.txt',
+        'fallback.txt'
+      )
     ).toBe('/tmp/repo/tracking/file.txt');
     expect(
       resolveNormalizedRepoPathWithSuffix({

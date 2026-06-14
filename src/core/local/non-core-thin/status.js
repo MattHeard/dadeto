@@ -1,4 +1,4 @@
-import { reportFailuresAndExit } from '../../commonCore.js';
+import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
 /**
  * Read the current non-core thin status.
  * @param {{
@@ -65,15 +65,25 @@ export function createCheckNonCoreThinHandle({
 }) {
   return function handleNonCoreThinCheck() {
     const status = getStatus();
-    const failures = formatFailure(status);
-    if (reportFailuresAndExit({ failures, output, setExitCode })) {
-      return { exitCode: 1, failures };
+    const successMessage = `Checked ${status.fileCount} non-core JS files; ${status.exemptionCount} baseline exemptions; max ${status.maxLines} lines.`;
+
+    if (status.isClean) {
+      output.log(successMessage);
+      return { exitCode: 0, failures: [] };
     }
 
-    output.log(
-      `Checked ${status.fileCount} non-core JS files; ${status.exemptionCount} baseline exemptions; max ${status.maxLines} lines.`
-    );
-    return { exitCode: 0, failures };
+    const failures = formatFailure(status);
+    if (
+      reportFailuresAndMaybeLogSuccess({
+        failures,
+        output,
+        setExitCode,
+        successMessage,
+      })
+    ) {
+      return { exitCode: 1, failures };
+    }
+    return { exitCode: 0, failures: [] };
   };
 }
 

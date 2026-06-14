@@ -123,3 +123,59 @@ export function pluralizeCount(count) {
 
   return 's';
 }
+
+/**
+ * Build a standard gate handler around a command launcher and a result evaluator.
+ * @param {{
+ *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
+ *   command: string,
+ *   args: string[],
+ *   rootDir: string,
+ *   stderr: { write: (text: string) => void },
+ *   launchLabel: string,
+ *   commandLabel: string,
+ *   readResult: () => { exitCode: number, count: number, message?: string } | null,
+ *   onSuccess: () => void,
+ * }} options Gate execution inputs.
+ * @returns {{ exitCode: number, count: number }} Gate execution outcome.
+ */
+export function executeStandardGate({
+  spawnImpl,
+  command,
+  args,
+  rootDir,
+  stderr,
+  launchLabel,
+  commandLabel,
+  readResult,
+  onSuccess,
+}) {
+  const launchFailure = runGateCommand({
+    spawnImpl,
+    command,
+    args,
+    rootDir,
+    stderr,
+    launchLabel,
+    commandLabel,
+  }).launchFailure;
+
+  if (launchFailure) {
+    return { exitCode: launchFailure.exitCode, count: 0 };
+  }
+
+  const result = readResult();
+  if (!result) {
+    return { exitCode: 1, count: 0 };
+  }
+
+  if (result.count > 0) {
+    if (result.message) {
+      stderr.write(result.message);
+    }
+    return { exitCode: result.exitCode, count: result.count };
+  }
+
+  onSuccess();
+  return { exitCode: 0, count: 0 };
+}

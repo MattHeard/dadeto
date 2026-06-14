@@ -92,6 +92,7 @@ export function resolveNormalizedRepoPathWithSuffix(options) {
  * @returns {Record<string, string>} Resolved path fields.
  */
 export function resolveNormalizedRepoPaths(repoRoot, pathModule, fields) {
+  /** @type {Record<string, string>} */
   const resolved = {};
 
   for (const [key, spec] of Object.entries(fields)) {
@@ -103,6 +104,17 @@ export function resolveNormalizedRepoPaths(repoRoot, pathModule, fields) {
   }
 
   return resolved;
+}
+
+/**
+ * Resolve a small set of named local config path fields.
+ * @param {string} repoRoot Repo root directory.
+ * @param {{ resolve: (first: string, ...parts: string[]) => string }} pathModule Path helper.
+ * @param {Record<string, { value: unknown, fallback: string, suffix?: string }>} fields Field descriptors.
+ * @returns {Record<string, string>} Resolved path fields.
+ */
+export function resolveLocalConfigPaths(repoRoot, pathModule, fields) {
+  return resolveNormalizedRepoPaths(repoRoot, pathModule, fields);
 }
 
 /**

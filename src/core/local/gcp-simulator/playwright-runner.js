@@ -79,7 +79,7 @@ function waitForSimulatorReady(child) {
       buffer += chunk.toString('utf8');
       const match = buffer.match(READY_PATTERN);
       if (match) {
-        settleOnce(resolve, Number(match[1]));
+        settleOnce(/** @type {(value: unknown) => void} */ (resolve), Number(match[1]));
       }
     };
 
@@ -94,7 +94,7 @@ function waitForSimulatorReady(child) {
      * @param {Error} error Spawn error.
      */
     const onError = error => {
-      settleOnce(reject, error);
+      settleOnce(/** @type {(value: unknown) => void} */ (reject), error);
     };
 
     /**
@@ -114,7 +114,7 @@ function waitForSimulatorReady(child) {
 
       const reason = `code ${codeText}, signal ${signalText}`;
       settleOnce(
-        reject,
+        /** @type {(value: unknown) => void} */ (reject),
         new Error(`gcp simulator exited before announcing a port (${reason})`)
       );
     };

@@ -130,10 +130,10 @@ export function ensureFirebaseAppOnce(initializeApp) {
 /**
  * Create a Firestore document onWrite trigger for a specific region and path.
  * @param {{
- *   functions: { region: (region: string) => { firestore: { document: (path: string) => { onWrite: (handler: (change: unknown, context: unknown) => unknown) => unknown } } } },
+ *   functions: { region: (region: string) => { firestore: { document: (path: string) => { onWrite: (handler: (change: unknown) => Promise<null>) => unknown } } } },
  *   region: string,
  *   documentPath: string,
- *   handler: (change: unknown, context: unknown) => unknown,
+ *   handler: (change: unknown) => Promise<null>,
  * }} options Trigger configuration.
  * @returns {unknown} Firestore onWrite trigger.
  */
@@ -146,11 +146,7 @@ export function createFirestoreDocumentOnWriteTrigger({
   return functions
     .region(region)
     .firestore.document(documentPath)
-    .onWrite(
-      /** @type {(change: unknown, context: unknown) => unknown} */ (
-        (change, context) => handler(change, context)
-      )
-    );
+    .onWrite(/** @type {(change: unknown) => Promise<null>} */ (change => handler(change)));
 }
 
 /**

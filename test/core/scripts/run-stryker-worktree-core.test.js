@@ -9,6 +9,9 @@ import {
   handleRunCommandExit,
 } from '../../../src/core/scripts/run-stryker-worktree-core.js';
 
+/**
+ *
+ */
 function createSpawnImpl() {
   return jest.fn(() => {
     const child = new EventEmitter();
@@ -23,6 +26,9 @@ function createSpawnImpl() {
   });
 }
 
+/**
+ *
+ */
 function createErrorSpawnImpl() {
   return jest.fn(() => {
     const child = new EventEmitter();
@@ -37,6 +43,10 @@ function createErrorSpawnImpl() {
   });
 }
 
+/**
+ *
+ * @param prefix
+ */
 async function createWorktreeDir(prefix) {
   const dir = await fs.mkdtemp(prefix);
   await fs.mkdir(path.join(dir, 'reports', 'mutation'), { recursive: true });
@@ -64,9 +74,17 @@ describe('createRunStrykerWorktreeHandle', () => {
 
     await handle();
 
-    const logPath = path.join(rootDir, 'reports', 'mutation', 'worktree-run.jsonl');
+    const logPath = path.join(
+      rootDir,
+      'reports',
+      'mutation',
+      'worktree-run.jsonl'
+    );
     const logText = await fs.readFile(logPath, 'utf8');
-    const entries = logText.trim().split('\n').map(line => JSON.parse(line));
+    const entries = logText
+      .trim()
+      .split('\n')
+      .map(line => JSON.parse(line));
 
     expect(entries.map(entry => entry.type)).toEqual([
       'start',
@@ -107,7 +125,14 @@ describe('createRunStrykerWorktreeHandle', () => {
     const resolve = jest.fn();
     const reject = jest.fn();
 
-    handleRunCommandExit('git', ['worktree', 'remove'], 1, true, resolve, reject);
+    handleRunCommandExit(
+      'git',
+      ['worktree', 'remove'],
+      1,
+      true,
+      resolve,
+      reject
+    );
 
     expect(resolve).toHaveBeenCalledTimes(1);
     expect(reject).not.toHaveBeenCalled();
@@ -117,12 +142,17 @@ describe('createRunStrykerWorktreeHandle', () => {
     const resolve = jest.fn();
     const reject = jest.fn();
 
-    handleRunCommandExit('git', ['worktree', 'remove'], 2, false, resolve, reject);
+    handleRunCommandExit(
+      'git',
+      ['worktree', 'remove'],
+      2,
+      false,
+      resolve,
+      reject
+    );
 
     expect(resolve).not.toHaveBeenCalled();
-    expect(reject).toHaveBeenCalledWith(
-      expect.any(Error)
-    );
+    expect(reject).toHaveBeenCalledWith(expect.any(Error));
   });
 
   test('rejects when a command errors and failures are not allowed', () => {

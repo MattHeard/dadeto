@@ -156,9 +156,7 @@ export function runGenerateStats(deps) {
   const handleRequest = generateStatsCore.handleRequest;
 
   const allowedOrigins = getAllowedOrigins(
-    env && env.DENDRITE_ENVIRONMENT
-      ? env
-      : { DENDRITE_ENVIRONMENT: 'dev' }
+    env && env.DENDRITE_ENVIRONMENT ? env : { DENDRITE_ENVIRONMENT: 'dev' }
   );
   const app = express();
 

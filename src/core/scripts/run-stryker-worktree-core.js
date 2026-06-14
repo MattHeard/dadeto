@@ -1,5 +1,12 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm, cp, mkdir, writeFile, appendFile } from 'node:fs/promises';
+import {
+  mkdtemp,
+  rm,
+  cp,
+  mkdir,
+  writeFile,
+  appendFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 
 /**
@@ -7,13 +14,13 @@ import path from 'node:path';
  * @param {{
  *   processModule?: { env: NodeJS.ProcessEnv },
  *   fsModule?: {
-   *     mkdtemp: typeof mkdtemp,
-   *     rm: typeof rm,
-   *     cp: typeof cp,
-   *     mkdir: typeof mkdir,
-   *     writeFile: typeof writeFile,
-   *     appendFile: typeof appendFile,
-   *   },
+ *     mkdtemp: typeof mkdtemp,
+ *     rm: typeof rm,
+ *     cp: typeof cp,
+ *     mkdir: typeof mkdir,
+ *     writeFile: typeof writeFile,
+ *     appendFile: typeof appendFile,
+ *   },
  *   pathModule?: typeof path,
  *   spawnImpl?: typeof spawn,
  *   rootDir?: string,
@@ -46,10 +53,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     const worktreePath = await fsModule.mkdtemp(worktreePrefix);
     const reportSource = pathModule.join(worktreePath, 'reports/mutation');
     const reportTarget = pathModule.join(mainRoot, 'reports/mutation');
-    const machineLogPath = pathModule.join(
-      reportTarget,
-      'worktree-run.jsonl'
-    );
+    const machineLogPath = pathModule.join(reportTarget, 'worktree-run.jsonl');
 
     await fsModule.mkdir(reportTarget, { recursive: true });
     await writeMachineLog(fsModule, machineLogPath, {
@@ -60,41 +64,27 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     });
 
     try {
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'command-start',
-        command: 'git',
-        args: ['worktree', 'add', '--detach', worktreePath],
-        cwd: mainRoot,
-      });
-      await runCommand(
+      await runLoggedCommandStep(
+        fsModule,
+        machineLogPath,
         spawnImpl,
+        processModule.env,
+        noDaemonEnv,
         'git',
         ['worktree', 'add', '--detach', worktreePath],
-        mainRoot,
-        { env: buildChildEnv(processModule.env, noDaemonEnv) }
+        mainRoot
       );
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'command-success',
-        command: 'git',
-        args: ['worktree', 'add', '--detach', worktreePath],
-        cwd: mainRoot,
-      });
 
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'command-start',
-        command: 'npm',
-        args: ['install'],
-        cwd: worktreePath,
-      });
-      await runCommand(spawnImpl, 'npm', ['install'], worktreePath, {
-        env: buildChildEnv(processModule.env, noDaemonEnv),
-      });
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'command-success',
-        command: 'npm',
-        args: ['install'],
-        cwd: worktreePath,
-      });
+      await runLoggedCommandStep(
+        fsModule,
+        machineLogPath,
+        spawnImpl,
+        processModule.env,
+        noDaemonEnv,
+        'npm',
+        ['install'],
+        worktreePath
+      );
       await fsModule.writeFile(
         pathModule.join(worktreePath, worktreeStrykerConfig),
         buildStrykerConfig()
@@ -103,19 +93,15 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         type: 'config-written',
         filePath: pathModule.join(worktreePath, worktreeStrykerConfig),
       });
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'command-start',
-        command: 'node',
-        args: [
-          '--experimental-vm-modules',
-          './node_modules/.bin/stryker',
-          'run',
-          worktreeStrykerConfig,
-        ],
-        cwd: worktreePath,
-      });
-      await runCommand(
+      await runLoggedCommandStep(
+        fsModule,
+        machineLogPath,
         spawnImpl,
+        processModule.env,
+        {
+          STRYKER_TEST_ENV: '1',
+          ...noDaemonEnv,
+        },
         'node',
         [
           '--experimental-vm-modules',
@@ -123,25 +109,8 @@ export function createRunStrykerWorktreeHandle(options = {}) {
           'run',
           worktreeStrykerConfig,
         ],
-        worktreePath,
-        {
-          env: buildChildEnv(processModule.env, {
-            STRYKER_TEST_ENV: '1',
-            ...noDaemonEnv,
-          }),
-        }
+        worktreePath
       );
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'command-success',
-        command: 'node',
-        args: [
-          '--experimental-vm-modules',
-          './node_modules/.bin/stryker',
-          'run',
-          worktreeStrykerConfig,
-        ],
-        cwd: worktreePath,
-      });
       await writeMachineLog(fsModule, machineLogPath, {
         type: 'reports-sync-start',
         from: reportSource,
@@ -182,11 +151,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   };
 }
 
-export {
-  handleRunCommandError,
-  handleRunCommandExit,
-  resolveIfAllowed,
-};
+export { handleRunCommandError, handleRunCommandExit, resolveIfAllowed };
 
 /**
  * Merge child-process environment variables.
@@ -216,6 +181,50 @@ export default {
   ],
 };
 `;
+}
+
+/**
+ * Write the log entries and run a command with the shared env setup.
+ * @param {{
+ *   fsModule: {
+ *     mkdir: typeof mkdir,
+ *     appendFile: typeof appendFile,
+ *   },
+ *   machineLogPath: string,
+ *   command: string,
+ *   args: string[],
+ *   cwd: string,
+ *   spawnImpl: typeof spawn,
+ *   baseEnv: NodeJS.ProcessEnv,
+ *   extraEnv: NodeJS.ProcessEnv,
+ * }} options Step parameters.
+ * @returns {Promise<void>} Nothing.
+ */
+async function runLoggedCommandStep(
+  fsModule,
+  machineLogPath,
+  spawnImpl,
+  baseEnv,
+  extraEnv,
+  command,
+  args,
+  cwd
+) {
+  await writeMachineLog(fsModule, machineLogPath, {
+    type: 'command-start',
+    command,
+    args,
+    cwd,
+  });
+  await runCommand(spawnImpl, command, args, cwd, {
+    env: buildChildEnv(baseEnv, extraEnv),
+  });
+  await writeMachineLog(fsModule, machineLogPath, {
+    type: 'command-success',
+    command,
+    args,
+    cwd,
+  });
 }
 
 /**

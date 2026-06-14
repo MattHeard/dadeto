@@ -6,7 +6,7 @@ import {
 /**
  * Create a tiny Canvas drawing payload from JSON input.
  * @param {string} input JSON payload describing the drawing.
- * @param {Map<string, Function>} env Toy environment helpers.
+ * @param {{ get?: (name: string) => (() => number) | undefined }} env Toy environment helpers.
  * @returns {string} JSON drawing payload for the canvas presenter.
  */
 export function canvasDoodle(input, env) {
@@ -16,7 +16,7 @@ export function canvasDoodle(input, env) {
     background: '#f8f6f2',
     accent: '#1f2937',
   };
-  const getRandomNumber = env.get('getRandomNumber') || (() => 0.5);
+  const getRandomNumber = env.get?.('getRandomNumber') || (() => 0.5);
 
   return JSON.stringify({
     width: parsed.width,

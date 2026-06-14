@@ -1,8 +1,10 @@
 import {
+  executeStandardGate,
   pluralizeCount,
   runGateCommand,
   useDefaultValue,
 } from './gate-utils.js';
+import { parseJsonOrNull } from '../commonCore.js';
 
 /**
  * @returns {string} Duplication gate label.
@@ -118,7 +120,7 @@ function executeDuplicationGate({
   reportPath,
   relativePath,
 }) {
-  const { launchFailure } = runGateCommand({
+  return executeStandardGate({
     spawnImpl,
     command: 'jscpd',
     args: ['--config', configPath],
@@ -126,34 +128,38 @@ function executeDuplicationGate({
     stderr,
     launchLabel: getDuplicationGateLabel(),
     commandLabel: 'jscpd',
-  });
-  if (launchFailure) {
-    return { exitCode: launchFailure.exitCode, clones: 0 };
-  }
+    readResult: () => {
+      const report = readDuplicationReport(readFileSync, reportPath);
+      if (!report) {
+        stderr.write(
+          `Duplication gate could not read report at ${relativePath(rootDir, reportPath)}\n`
+        );
+        return null;
+      }
 
-  const report = readDuplicationReport(readFileSync, reportPath);
-  if (!report) {
-    stderr.write(
-      `Duplication gate could not read report at ${relativePath(rootDir, reportPath)}\n`
-    );
-    return { exitCode: 1, clones: 0 };
-  }
+      const cloneFailure = handleCloneFailure(
+        report,
+        {
+          rootDir,
+          reportPath,
+          relativePath,
+        },
+        stderr
+      );
+      if (cloneFailure) {
+        return {
+          exitCode: cloneFailure.exitCode,
+          count: cloneFailure.clones,
+          message: '',
+        };
+      }
 
-  const cloneFailure = handleCloneFailure(
-    report,
-    {
-      rootDir,
-      reportPath,
-      relativePath,
+      return { exitCode: 0, count: 0 };
     },
-    stderr
-  );
-  if (cloneFailure) {
-    return cloneFailure;
-  }
-
-  stdout.write('Checked duplication report: 0 clones.\n');
-  return { exitCode: 0, clones: 0 };
+    onSuccess: () => {
+      stdout.write('Checked duplication report: 0 clones.\n');
+    },
+  });
 }
 
 /**
@@ -196,11 +202,7 @@ function handleCloneFailure(report, reportInfo, stderr) {
  * @returns {Record<string, unknown> | null} Parsed report or null.
  */
 function readDuplicationReport(readFileSync, reportPath) {
-  try {
-    return JSON.parse(readFileSync(reportPath, 'utf8'));
-  } catch {
-    return null;
-  }
+  return parseJsonOrNull(readFileSync(reportPath, 'utf8'));
 }
 
 /**

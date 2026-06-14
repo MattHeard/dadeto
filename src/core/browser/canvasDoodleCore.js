@@ -1,5 +1,4 @@
-import { parseJsonOrNull } from './jsonUtils.js';
-import { whenOrNull } from '../commonCore.js';
+import { numberOr, parseObjectPayload, stringOr } from './plotShared.js';
 
 const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 180;
@@ -11,8 +10,15 @@ const FOREGROUND = '#1f2937';
  * @returns {{width?: number,height?: number,background?: string,accent?: string,shapes?: Array<Record<string, unknown>>} | null} Parsed payload.
  */
 export function parseCanvasDoodle(inputString) {
-  const parsed = parseJsonOrNull(inputString);
-  return whenOrNull(parsed && typeof parsed === 'object', () => parsed);
+  return parseObjectPayload(inputString, parsed =>
+    /** @type {{
+     *   width?: number,
+     *   height?: number,
+     *   background?: string,
+     *   accent?: string,
+     *   shapes?: Array<Record<string, unknown>>,
+     * }} */ (parsed)
+  );
 }
 
 /**
@@ -41,52 +47,56 @@ export function createCanvasDoodleFallbackPayload() {
 
 /**
  * @param {{width?: number,height?: number,background?: string,accent?: string}} parsed Parsed options.
- * @param {Function} getRandomNumber Random helper.
+ * @param {() => number} getRandomNumber Random helper.
  * @returns {Array<Record<string, unknown>>} Drawing shapes.
  */
 export function buildCanvasDoodleShapes(parsed, getRandomNumber) {
   const hue = Math.floor(getRandomNumber() * 360);
-  const bandHeight = Math.max(12, Math.round(parsed.height * 0.18));
-  const pad = Math.round(Math.min(parsed.width, parsed.height) * 0.12);
+  const width = parsed.width ?? CANVAS_WIDTH;
+  const height = parsed.height ?? CANVAS_HEIGHT;
+  const background = parsed.background ?? BACKGROUND;
+  const accent = parsed.accent ?? FOREGROUND;
+  const bandHeight = Math.max(12, Math.round(height * 0.18));
+  const pad = Math.round(Math.min(width, height) * 0.12);
 
   return [
     {
       type: 'rect',
       x: 0,
       y: 0,
-      width: parsed.width,
-      height: parsed.height,
-      fill: parsed.background,
+      width,
+      height,
+      fill: background,
     },
     {
       type: 'rect',
       x: pad,
       y: pad,
-      width: parsed.width - pad * 2,
+      width: width - pad * 2,
       height: bandHeight,
       fill: `hsl(${hue}, 70%, 65%)`,
     },
     {
       type: 'circle',
-      x: Math.round(parsed.width * 0.32),
-      y: Math.round(parsed.height * 0.58),
-      radius: Math.round(Math.min(parsed.width, parsed.height) * 0.16),
+      x: Math.round(width * 0.32),
+      y: Math.round(height * 0.58),
+      radius: Math.round(Math.min(width, height) * 0.16),
       fill: `hsl(${(hue + 120) % 360}, 70%, 60%)`,
     },
     {
       type: 'circle',
-      x: Math.round(parsed.width * 0.68),
-      y: Math.round(parsed.height * 0.58),
-      radius: Math.round(Math.min(parsed.width, parsed.height) * 0.16),
+      x: Math.round(width * 0.68),
+      y: Math.round(height * 0.58),
+      radius: Math.round(Math.min(width, height) * 0.16),
       fill: `hsl(${(hue + 240) % 360}, 70%, 60%)`,
     },
     {
       type: 'line',
       x1: pad,
-      y1: parsed.height - pad,
-      x2: parsed.width - pad,
-      y2: parsed.height - pad,
-      stroke: parsed.accent,
+      y1: height - pad,
+      x2: width - pad,
+      y2: height - pad,
+      stroke: accent,
       lineWidth: 6,
     },
   ];
@@ -130,8 +140,8 @@ function drawShape(context, shape) {
 
 /**
  *
- * @param context
- * @param shape
+ * @param {CanvasRenderingContext2D} context
+ * @param {Record<string, unknown> & {type?: string}} shape
  */
 function drawRect(context, shape) {
   const x = numberOr(shape.x, 0);
@@ -144,8 +154,8 @@ function drawRect(context, shape) {
 
 /**
  *
- * @param context
- * @param shape
+ * @param {CanvasRenderingContext2D} context
+ * @param {Record<string, unknown> & {type?: string}} shape
  */
 function drawCircle(context, shape) {
   const x = numberOr(shape.x, 0);
@@ -159,8 +169,8 @@ function drawCircle(context, shape) {
 
 /**
  *
- * @param context
- * @param shape
+ * @param {CanvasRenderingContext2D} context
+ * @param {Record<string, unknown> & {type?: string}} shape
  */
 function drawLine(context, shape) {
   const x1 = numberOr(shape.x1, 0);
@@ -173,22 +183,4 @@ function drawLine(context, shape) {
   context.moveTo(x1, y1);
   context.lineTo(x2, y2);
   context.stroke();
-}
-
-/**
- *
- * @param value
- * @param fallback
- */
-function numberOr(value, fallback) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
-}
-
-/**
- *
- * @param value
- * @param fallback
- */
-function stringOr(value, fallback) {
-  return typeof value === 'string' && value.length > 0 ? value : fallback;
 }

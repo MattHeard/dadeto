@@ -4,7 +4,7 @@ import {
   normalizeString,
   normalizeStringArray,
   loadNormalizedLocalJsonConfig,
-  resolveNormalizedRepoPaths,
+  resolveLocalConfigPaths,
 } from '../config-utils.js';
 import { objectOrEmpty } from '../../commonCore.js';
 import { DEFAULT_CODEX_ARGS } from '../symphony/launcherCodex.js';
@@ -98,6 +98,21 @@ export function normalizeNotionCodexConfig(
   const launcher = objectOrEmpty(source.launcher);
   const defaultNotion = DEFAULT_NOTION_CODEX_CONFIG.notion;
 
+  const paths = resolveLocalConfigPaths(repoRoot, pathModule, {
+    logDir: {
+      value: source.logDir,
+      fallback: DEFAULT_NOTION_CODEX_CONFIG.logDir,
+    },
+    outcomeDir: {
+      value: source.outcomeDir,
+      fallback: DEFAULT_NOTION_CODEX_CONFIG.outcomeDir,
+    },
+    statePath: {
+      value: source.statePath,
+      fallback: DEFAULT_NOTION_CODEX_CONFIG.statePath,
+    },
+  });
+
   return {
     configPath,
     notion: {
@@ -156,20 +171,9 @@ export function normalizeNotionCodexConfig(
       source.maxConcurrentRuns,
       DEFAULT_NOTION_CODEX_CONFIG.maxConcurrentRuns
     ),
-    ...resolveNormalizedRepoPaths(repoRoot, pathModule, {
-      logDir: {
-        value: source.logDir,
-        fallback: DEFAULT_NOTION_CODEX_CONFIG.logDir,
-      },
-      outcomeDir: {
-        value: source.outcomeDir,
-        fallback: DEFAULT_NOTION_CODEX_CONFIG.outcomeDir,
-      },
-      statePath: {
-        value: source.statePath,
-        fallback: DEFAULT_NOTION_CODEX_CONFIG.statePath,
-      },
-    }),
+    logDir: paths.logDir,
+    outcomeDir: paths.outcomeDir,
+    statePath: paths.statePath,
   };
 }
 

@@ -1,8 +1,5 @@
 import {
-  buildGraphPlotPayload,
-  createGraphPlotFallbackPayload,
-  normalizeGraphPlotPayload,
-  parseGraphPlot,
+  buildGraphPlotFromJson,
 } from '../graphPlotCore.js';
 import { createPresenterRoot } from './browserPresentersCore.js';
 
@@ -15,10 +12,7 @@ const ROOT_CLASS = 'graph-plot-output';
  * @returns {HTMLElement} Rendered graph container.
  */
 export function createGraphPlotElement(inputString, dom) {
-  const parsed =
-    parseGraphPlot(inputString) || createGraphPlotFallbackPayload();
-  const normalized = normalizeGraphPlotPayload(parsed, () => 0.5);
-  const payload = buildGraphPlotPayload(normalized);
+  const payload = buildGraphPlotFromJson(inputString, () => 0.5);
   const root = createPresenterRoot(dom, ROOT_CLASS);
   const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
   canvas.width = payload.width;
@@ -53,19 +47,33 @@ function drawGraphPlot(context, canvas, payload) {
   drawFunction(context, canvas, payload);
 }
 
+/**
+ *
+ * @param {CanvasRenderingContext2D} context
+ * @param {HTMLCanvasElement} canvas
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload
+ */
 function drawGrid(context, canvas, payload) {
   context.strokeStyle = payload.gridColor;
   context.lineWidth = 1;
   const xStep = niceStep(payload.xMax - payload.xMin);
   const yStep = niceStep(payload.yMax - payload.yMin);
-  for (let x = Math.ceil(payload.xMin / xStep) * xStep; x <= payload.xMax; x += xStep) {
+  for (
+    let x = Math.ceil(payload.xMin / xStep) * xStep;
+    x <= payload.xMax;
+    x += xStep
+  ) {
     const px = toCanvasX(canvas, payload, x);
     context.beginPath();
     context.moveTo(px, 0);
     context.lineTo(px, canvas.height);
     context.stroke();
   }
-  for (let y = Math.ceil(payload.yMin / yStep) * yStep; y <= payload.yMax; y += yStep) {
+  for (
+    let y = Math.ceil(payload.yMin / yStep) * yStep;
+    y <= payload.yMax;
+    y += yStep
+  ) {
     const py = toCanvasY(canvas, payload, y);
     context.beginPath();
     context.moveTo(0, py);
@@ -74,6 +82,12 @@ function drawGrid(context, canvas, payload) {
   }
 }
 
+/**
+ *
+ * @param {CanvasRenderingContext2D} context
+ * @param {HTMLCanvasElement} canvas
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload
+ */
 function drawAxes(context, canvas, payload) {
   context.strokeStyle = payload.axesColor;
   context.lineWidth = 2;
@@ -87,6 +101,12 @@ function drawAxes(context, canvas, payload) {
   context.stroke();
 }
 
+/**
+ *
+ * @param {CanvasRenderingContext2D} context
+ * @param {HTMLCanvasElement} canvas
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload
+ */
 function drawFunction(context, canvas, payload) {
   if (!payload.points.length) {
     return;
@@ -108,19 +128,41 @@ function drawFunction(context, canvas, payload) {
   context.stroke();
 }
 
+/**
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {{xMin:number,xMax:number}} payload
+ * @param {number} x
+ */
 function toCanvasX(canvas, payload, x) {
   return ((x - payload.xMin) / (payload.xMax - payload.xMin)) * canvas.width;
 }
 
+/**
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {{yMin:number,yMax:number}} payload
+ * @param {number} y
+ */
 function toCanvasY(canvas, payload, y) {
-  return canvas.height - ((y - payload.yMin) / (payload.yMax - payload.yMin)) * canvas.height;
+  return (
+    canvas.height -
+    ((y - payload.yMin) / (payload.yMax - payload.yMin)) * canvas.height
+  );
 }
 
+/**
+ *
+ * @param {number} span
+ */
 function niceStep(span) {
   const raw = span / 8;
   if (!Number.isFinite(raw) || raw <= 0) {
     return 1;
   }
   const power = 10 ** Math.floor(Math.log10(raw));
-  return Math.max(power, raw < power * 2 ? power : raw < power * 5 ? power * 2 : power * 5);
+  return Math.max(
+    power,
+    raw < power * 2 ? power : raw < power * 5 ? power * 2 : power * 5
+  );
 }

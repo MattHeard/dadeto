@@ -51,8 +51,8 @@ export function runRenderVariant(deps) {
 
   /* istanbul ignore next */
   const handleVariantWrite = /** @type {any} */ (createHandleVariantWrite)({
-    renderVariant: /** @type {(snap: any, context: any) => any} */ (
-      (snap, context) => resolveRenderVariant()(snap, context)
+    renderVariant: /** @type {(snap: any) => Promise<null>} */ (
+      snap => Promise.resolve(resolveRenderVariant()(snap))
     ),
     getDeleteSentinel: () => FieldValue.delete(),
     db,
@@ -64,7 +64,7 @@ export function runRenderVariant(deps) {
       functions,
       region: 'europe-west1',
       documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
-      handler: (change, context) => handleVariantWrite(change, context),
+      handler: change => handleVariantWrite(change),
     })
   );
 

@@ -4,7 +4,7 @@ import {
   normalizePositiveNumber,
   normalizeString,
   normalizeStringArray,
-  resolveNormalizedRepoPaths,
+  resolveLocalConfigPaths,
 } from '../config-utils.js';
 
 export const DEFAULT_SYMPHONY_CONFIG = {
@@ -113,22 +113,25 @@ function resolveDefaultBranch(defaultBranch) {
  */
 function resolveSymphonyPaths(config, repoRoot, pathModule) {
   const typedConfig = /** @type {any} */ (config);
+  const paths = resolveLocalConfigPaths(repoRoot, pathModule, {
+    workspaceRoot: {
+      value: typedConfig?.workspaceRoot,
+      fallback: DEFAULT_SYMPHONY_CONFIG.workspaceRoot,
+    },
+    logDir: {
+      value: typedConfig?.logDir,
+      fallback: DEFAULT_SYMPHONY_CONFIG.logDir,
+    },
+    statusPath: {
+      value: typedConfig?.logDir,
+      fallback: DEFAULT_SYMPHONY_CONFIG.logDir,
+      suffix: 'status.json',
+    },
+  });
   return {
-    ...resolveNormalizedRepoPaths(repoRoot, pathModule, {
-      workspaceRoot: {
-        value: typedConfig?.workspaceRoot,
-        fallback: DEFAULT_SYMPHONY_CONFIG.workspaceRoot,
-      },
-      logDir: {
-        value: typedConfig?.logDir,
-        fallback: DEFAULT_SYMPHONY_CONFIG.logDir,
-      },
-      statusPath: {
-        value: typedConfig?.logDir,
-        fallback: DEFAULT_SYMPHONY_CONFIG.logDir,
-        suffix: 'status.json',
-      },
-    }),
+    workspaceRoot: paths.workspaceRoot,
+    logDir: paths.logDir,
+    statusPath: paths.statusPath,
   };
 }
 
