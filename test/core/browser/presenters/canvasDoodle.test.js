@@ -78,4 +78,62 @@ describe('createCanvasDoodleElement', () => {
     expect(root.children[0]).toBe(canvas);
     expect(element).toBe(root);
   });
+
+  test('falls back to defaults when width and height are missing and skips draw without context', () => {
+    const canvas = {
+      width: 0,
+      height: 0,
+      getContext: jest.fn(() => null),
+    };
+    const root = { children: [] };
+    const dom = {
+      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      appendChild: jest.fn((parent, child) => {
+        parent.children.push(child);
+        return child;
+      }),
+      setClassName: jest.fn((node, className) => {
+        node.className = className;
+      }),
+    };
+
+    const element = createCanvasDoodleElement(
+      JSON.stringify({
+        width: 0,
+        height: 0,
+        shapes: [],
+      }),
+      dom
+    );
+
+    expect(canvas.width).toBe(320);
+    expect(canvas.height).toBe(180);
+    expect(canvas.getContext).toHaveBeenCalledWith('2d');
+    expect(element).toBe(root);
+  });
+
+  test('falls back to the default payload when the input is not valid JSON', () => {
+    const canvas = {
+      width: 0,
+      height: 0,
+      getContext: jest.fn(() => null),
+    };
+    const root = { children: [] };
+    const dom = {
+      createElement: jest.fn(tag => (tag === 'canvas' ? canvas : root)),
+      appendChild: jest.fn((parent, child) => {
+        parent.children.push(child);
+        return child;
+      }),
+      setClassName: jest.fn((node, className) => {
+        node.className = className;
+      }),
+    };
+
+    createCanvasDoodleElement('not json', dom);
+
+    expect(canvas.width).toBe(320);
+    expect(canvas.height).toBe(180);
+    expect(root.children[0]).toBe(canvas);
+  });
 });

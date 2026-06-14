@@ -11,9 +11,11 @@ import {
   createFsHandle,
   createPathAdapters,
   createPathHandle,
+  firstStringOrNull,
   ensureString,
   arrayOrEmpty,
   getCurrentDirectory,
+  getRecordOrNull,
   isNonNullObject,
   isNullish,
   isValidString,
@@ -77,6 +79,8 @@ describe('commonCore helpers', () => {
   test('string candidate helpers normalize strings predictably', () => {
     expect(getStringCandidate('hello')).toBe('hello');
     expect(getStringCandidate(123)).toBeUndefined();
+    expect(getRecordOrNull({ hello: 'world' })).toEqual({ hello: 'world' });
+    expect(getRecordOrNull(null)).toBeNull();
     expect(ensureString('hello')).toBe('hello');
     expect(ensureString(123)).toBe('');
     expect(normalizeNonStringValue('hello')).toBe('hello');
@@ -95,6 +99,14 @@ describe('commonCore helpers', () => {
     const fallback = jest.fn(() => 'fallback-value');
     expect(stringOrFallback(123, fallback)).toBe('fallback-value');
     expect(fallback).toHaveBeenCalledWith(123);
+  });
+
+  test('firstStringOrNull returns the first non-empty trimmed string', () => {
+    expect(firstStringOrNull('  hello  ')).toBe('hello');
+    expect(firstStringOrNull('   ')).toBeNull();
+    expect(firstStringOrNull(['  world  '])).toBe('world');
+    expect(firstStringOrNull([123, ' nope '])).toBeNull();
+    expect(firstStringOrNull(123)).toBeNull();
   });
 
   test('trimmedStringOrEmpty returns a trimmed string or an empty string', () => {

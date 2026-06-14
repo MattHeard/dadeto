@@ -194,4 +194,41 @@ describe('createRunStrykerWorktreeHandle', () => {
 
     await fs.rm(rootDir, { recursive: true, force: true });
   });
+
+  test('keeps cleaning up when worktree removal and file cleanup fail', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dadeto-stryker-'));
+    const spawnImpl = jest.fn((command, args) => {
+      if (command === 'git' && args[1] === 'remove') {
+        throw new Error('cleanup spawn failed');
+      }
+      const child = new EventEmitter();
+      child.once = (event, listener) => {
+        EventEmitter.prototype.once.call(child, event, listener);
+        if (event === 'exit') {
+          listener(0);
+        }
+        return child;
+      };
+      return child;
+    });
+    const handle = createRunStrykerWorktreeHandle({
+      rootDir,
+      spawnImpl,
+      processModule: { env: {} },
+      fsModule: {
+        ...fs,
+        mkdtemp: createWorktreeDir,
+        rm: jest.fn(async () => {
+          throw new Error('rm failed');
+        }),
+      },
+      pathModule: path,
+    });
+
+    await handle();
+
+    expect(spawnImpl).toHaveBeenCalled();
+
+    await fs.rm(rootDir, { recursive: true, force: true });
+  });
 });

@@ -151,7 +151,14 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   };
 }
 
-export { handleRunCommandError, handleRunCommandExit, resolveIfAllowed };
+export {
+  handleRunCommandError,
+  handleRunCommandExit,
+  resolveIfAllowed,
+  runCommand,
+  buildChildEnv,
+  buildStrykerConfig,
+};
 
 /**
  * Merge child-process environment variables.

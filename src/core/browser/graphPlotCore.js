@@ -113,6 +113,7 @@ export function buildGraphPlotPayload(payload) {
 export function buildGraphPlotFromJson(inputString, getRandomNumber) {
   const parsed = parseGraphPlot(inputString) || createGraphPlotFallbackPayload();
   const normalized = normalizeGraphPlotPayload(parsed, getRandomNumber);
+  getRandomNumber();
   return buildGraphPlotPayload(normalized);
 }
 

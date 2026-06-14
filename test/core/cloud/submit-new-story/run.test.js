@@ -390,6 +390,64 @@ describe('runSubmitNewStory', () => {
     expect(fallbackSet).toHaveBeenCalledTimes(2);
   });
 
+  it('logs null request headers when raw header strings are empty', async () => {
+    const fallbackSet = jest.fn().mockResolvedValue();
+    const fallbackDoc = jest.fn(() => ({ set: fallbackSet }));
+    const fallbackCollection = jest.fn(() => ({ doc: fallbackDoc }));
+    const fallbackGetFirestoreInstance = jest.fn(() => ({
+      collection: fallbackCollection,
+    }));
+    const result = runSubmitNewStory({
+      initializeApp: jest.fn(),
+      createFirebaseAppManager,
+      getFirestoreInstance: fallbackGetFirestoreInstance,
+      getAuth,
+      express,
+      cors,
+      crypto,
+      FieldValue,
+      functions,
+      getEnvironmentVariables: jest.fn(() => debugEnvironmentVariables),
+      getAllowedOrigins: jest.fn(() => debugAllowedOrigins),
+    });
+
+    const response = {
+      status: jest.fn(() => ({
+        json: jest.fn(),
+        send: jest.fn(),
+        sendStatus: jest.fn(),
+      })),
+    };
+
+    await result.handleSubmitNewStory(
+      {
+        method: 'POST',
+        body: {
+          title: '  Empty Header Story  ',
+          content: 'Empty header body',
+          author: '  Empty Header Author  ',
+        },
+        get: null,
+        headers: {
+          origin: '',
+          referer: [''],
+          'content-type': '',
+        },
+      },
+      response
+    );
+
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"origin":null')
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"referer":null')
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"contentType":null')
+    );
+  });
+
   it('logs debug errors when the responder rejects with a non-Error value', async () => {
     const rejectingSet = jest
       .fn()
