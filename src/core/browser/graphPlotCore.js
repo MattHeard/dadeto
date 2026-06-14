@@ -9,7 +9,7 @@ const DEFAULT_LINE = '#2563eb';
 
 /**
  * @param {string} inputString JSON graph options.
- * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string} | null} Parsed payload.
+ * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string,series?: { lineColor?: string, points?: { x: number, y: number }[] }[] } | null} Parsed payload.
  */
 export function parseGraphPlot(inputString) {
   return parseGraphPlotPayload(inputString);
@@ -17,7 +17,7 @@ export function parseGraphPlot(inputString) {
 
 /**
  * @param {string} inputString JSON graph options.
- * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string} | null} Parsed payload.
+ * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string,series?: { lineColor?: string, points?: { x: number, y: number }[] }[] } | null} Parsed payload.
  */
 const parseGraphPlotPayload = inputString =>
   parseObjectPayload(
@@ -25,7 +25,7 @@ const parseGraphPlotPayload = inputString =>
     /**
      * Map a parsed JSON object into graph plot fields.
      * @param {Record<string, unknown>} parsed Parsed object payload.
-     * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string}} Graph plot payload fields.
+     * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string,series?: { lineColor?: string, points?: { x: number, y: number }[] }[]}} Graph plot payload fields.
      */
     parsed =>
       /**
@@ -41,13 +41,14 @@ const parseGraphPlotPayload = inputString =>
        *   axesColor?: string,
        *   gridColor?: string,
        *   lineColor?: string,
+       *   series?: { lineColor?: string, points?: { x: number, y: number }[] }[],
        * }}
        */ (parsed)
   );
 
 /**
  * Create the fallback graph payload.
- * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string}} Fallback payload.
+ * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string,series:{ lineColor?: string, points?: { x: number, y: number }[] }[]}} Fallback payload.
  */
 export function createGraphPlotFallbackPayload() {
   return {
@@ -62,15 +63,20 @@ export function createGraphPlotFallbackPayload() {
     axesColor: DEFAULT_AXES,
     gridColor: DEFAULT_GRID,
     lineColor: DEFAULT_LINE,
+    series: [],
   };
 }
 
 /**
- * @param {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string}} parsed Parsed options.
- * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string}} Normalized graph payload.
+ * @param {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string,series?: { lineColor?: string, points?: { x: number, y: number }[] }[]}} parsed Parsed options.
+ * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string,series:{ lineColor?: string, points?: { x: number, y: number }[] }[]}} Normalized graph payload.
  */
 export function normalizeGraphPlotPayload(parsed) {
   const fallback = createGraphPlotFallbackPayload();
+  let series = fallback.series;
+  if (Array.isArray(parsed.series)) {
+    series = parsed.series;
+  }
   return {
     expression: stringOr(parsed.expression, fallback.expression),
     width: numberOr(parsed.width, fallback.width),
@@ -83,12 +89,13 @@ export function normalizeGraphPlotPayload(parsed) {
     axesColor: stringOr(parsed.axesColor, fallback.axesColor),
     gridColor: stringOr(parsed.gridColor, fallback.gridColor),
     lineColor: stringOr(parsed.lineColor, fallback.lineColor),
+    series,
   };
 }
 
 /**
- * @param {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string,jitter?:number}} payload Plot payload.
- * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>}} Canvas payload.
+ * @param {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string,jitter?:number,series?: { lineColor?: string, points?: { x: number, y: number }[] }[]}} payload Plot payload.
+ * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>, series?: { lineColor?: string, points?: { x:number, y:number }[] }[]}} Canvas payload.
  */
 export function buildGraphPlotPayload(payload) {
   const evaluator = createExpressionEvaluator(payload.expression);
@@ -117,6 +124,7 @@ export function buildGraphPlotPayload(payload) {
     yMin: payload.yMin,
     yMax: payload.yMax,
     points,
+    series: seriesOrUndefined(payload.series),
   };
 }
 
@@ -124,7 +132,7 @@ export function buildGraphPlotPayload(payload) {
  * Convert JSON graph input into the final graph plot payload.
  * @param {string} inputString JSON graph options.
  * @param {() => number} getRandomNumber Random helper.
- * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>}} Canvas payload.
+ * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>, series?: { lineColor?: string, points?: { x:number, y:number }[] }[]}} Canvas payload.
  */
 export function buildGraphPlotFromJson(inputString, getRandomNumber) {
   const parsed =
@@ -146,4 +154,28 @@ function createExpressionEvaluator(expression) {
   } catch {
     return () => Number.NaN;
   }
+}
+
+/**
+ * Check whether a payload contains series data.
+ * @param {{ lineColor?: string, points?: { x: number, y: number }[] }[] | undefined} series Series data.
+ * @returns {boolean} Whether the series list contains at least one series.
+ */
+function hasSeries(series) {
+  if (!series?.length) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Return series data only when it is present.
+ * @param {{ lineColor?: string, points?: { x: number, y: number }[] }[] | undefined} series Series data.
+ * @returns {{ lineColor?: string, points?: { x: number, y: number }[] }[] | undefined} Series data or undefined.
+ */
+function seriesOrUndefined(series) {
+  if (!hasSeries(series)) {
+    return undefined;
+  }
+  return series;
 }

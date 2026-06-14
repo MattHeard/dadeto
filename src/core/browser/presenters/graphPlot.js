@@ -35,7 +35,7 @@ export function createGraphPlotPresenterHandle() {
  * Draw the graph plot contents.
  * @param {CanvasRenderingContext2D} context Canvas context.
  * @param {HTMLCanvasElement} canvas Canvas node.
- * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload Graph payload.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>,series?:{lineColor?:string,points?:Array<{x:number,y:number}>}[]}} payload Graph payload.
  */
 function drawGraphPlot(context, canvas, payload) {
   context.fillStyle = payload.background;
@@ -44,6 +44,7 @@ function drawGraphPlot(context, canvas, payload) {
   drawGrid(context, canvas, payload);
   drawAxes(context, canvas, payload);
   drawFunction(context, canvas, payload);
+  drawSeries(context, canvas, payload);
 }
 
 /**
@@ -85,7 +86,7 @@ function drawGrid(context, canvas, payload) {
  * Draw the axes.
  * @param {CanvasRenderingContext2D} context Canvas context.
  * @param {HTMLCanvasElement} canvas Canvas node.
- * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload Graph payload.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>,series?:{lineColor?:string,points?:Array<{x:number,y:number}>}[]}} payload Graph payload.
  */
 function drawAxes(context, canvas, payload) {
   context.strokeStyle = payload.axesColor;
@@ -104,7 +105,7 @@ function drawAxes(context, canvas, payload) {
  * Draw the plotted function.
  * @param {CanvasRenderingContext2D} context Canvas context.
  * @param {HTMLCanvasElement} canvas Canvas node.
- * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>}} payload Graph payload.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>,series?:{lineColor?:string,points?:Array<{x:number,y:number}>}[]}} payload Graph payload.
  */
 function drawFunction(context, canvas, payload) {
   if (!payload.points.length) {
@@ -112,17 +113,56 @@ function drawFunction(context, canvas, payload) {
   }
   context.strokeStyle = payload.lineColor;
   context.lineWidth = 3;
+  drawSeriesPath(context, canvas, payload, payload.points);
+}
+
+/**
+ * Draw any additional series on the graph.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>,series?:{lineColor?:string,points?:Array<{x:number,y:number}>}[]}} payload Graph payload.
+ */
+function drawSeries(context, canvas, payload) {
+  payload.series?.forEach(series =>
+    drawSeriesLine(context, canvas, payload, series)
+  );
+}
+
+/**
+ * Draw one series line.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>,series?:{lineColor?:string,points?:Array<{x:number,y:number}>}[]}} payload Graph payload.
+ * @param {{lineColor?:string,points?:Array<{x:number,y:number}>}} series Series definition.
+ */
+function drawSeriesLine(context, canvas, payload, series) {
+  if (!series.points?.length) {
+    return;
+  }
+  context.strokeStyle = series.lineColor || payload.lineColor;
+  context.lineWidth = 3;
+  drawSeriesPath(context, canvas, payload, series.points);
+}
+
+/**
+ * Draw a polyline for one point list.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {HTMLCanvasElement} canvas Canvas node.
+ * @param {{background:string,axesColor:string,gridColor:string,lineColor:string,xMin:number,xMax:number,yMin:number,yMax:number,points:Array<{x:number,y:number}>,series?:{lineColor?:string,points?:Array<{x:number,y:number}>}[]}} payload Graph payload.
+ * @param {Array<{x:number,y:number}>} points Point list to draw.
+ */
+function drawSeriesPath(context, canvas, payload, points) {
   context.beginPath();
   let started = false;
-  for (const point of payload.points) {
+  for (const point of points) {
     const x = toCanvasX(canvas, payload, point.x);
     const y = toCanvasY(canvas, payload, point.y);
     if (!started) {
       context.moveTo(x, y);
       started = true;
-    } else {
-      context.lineTo(x, y);
+      continue;
     }
+    context.lineTo(x, y);
   }
   context.stroke();
 }
