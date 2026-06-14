@@ -1,6 +1,9 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { executeStandardGate } from '../../../src/core/scripts/gate-utils.js';
 
+/**
+ *
+ */
 function createWriter() {
   const chunks = [];
   return {

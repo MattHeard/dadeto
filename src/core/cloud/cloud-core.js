@@ -146,7 +146,11 @@ export function createFirestoreDocumentOnWriteTrigger({
   return functions
     .region(region)
     .firestore.document(documentPath)
-    .onWrite(/** @type {(change: unknown) => Promise<null>} */ (change => handler(change)));
+    .onWrite(
+      /** @type {(change: unknown) => Promise<null>} */ (
+        change => handler(change)
+      )
+    );
 }
 
 /**

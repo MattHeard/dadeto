@@ -3,6 +3,7 @@ import {
   runGateCommand,
   useDefaultValue,
 } from './gate-utils.js';
+import { createDefaultGateScriptOptions } from './gate-script-defaults.js';
 import { parseJsonOrNull } from '../commonCore.js';
 
 /**
@@ -12,14 +13,11 @@ function getDuplicationGateLabel() {
   return 'Duplication gate';
 }
 
-const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_CONFIG_PATH = '.jscpd.json';
 const DEFAULT_REPORT_PATH = 'reports/duplication/jscpd-report.json';
 /** @type {(from: string, to: string) => string} */
 const DEFAULT_RELATIVE_PATH = (_, target) => target;
-const DEFAULT_SPAWN_RESULT = { status: 0, signal: null };
-const DEFAULT_STDOUT = { write() {} };
-const DEFAULT_STDERR = { write() {} };
+const DEFAULT_GATE_OPTIONS = createDefaultGateScriptOptions();
 
 /**
  * Create the command handler that runs the duplication gate.
@@ -64,11 +62,14 @@ export function createCheckDuplicationHandle(options) {
  */
 function normalizeDuplicationGateOptions(options = {}) {
   return {
-    spawnImpl: useDefaultValue(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
+    spawnImpl: useDefaultValue(
+      options.spawnImpl,
+      () => DEFAULT_GATE_OPTIONS.spawnResult
+    ),
     readFileSync: useDefaultValue(options.readFileSync, () => '{}'),
-    stdout: useDefaultValue(options.stdout, DEFAULT_STDOUT),
-    stderr: useDefaultValue(options.stderr, DEFAULT_STDERR),
-    rootDir: useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
+    stdout: useDefaultValue(options.stdout, DEFAULT_GATE_OPTIONS.stdout),
+    stderr: useDefaultValue(options.stderr, DEFAULT_GATE_OPTIONS.stderr),
+    rootDir: useDefaultValue(options.rootDir, DEFAULT_GATE_OPTIONS.rootDir),
     configPath: useDefaultValue(options.configPath, DEFAULT_CONFIG_PATH),
     reportPath: useDefaultValue(options.reportPath, DEFAULT_REPORT_PATH),
     relativePath: useDefaultValue(options.relativePath, DEFAULT_RELATIVE_PATH),

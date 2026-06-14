@@ -1,4 +1,4 @@
-import { numberOr, parseObjectPayload, stringOr } from './plotShared.js';
+import * as plotShared from './plotShared.js';
 
 const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 180;
@@ -10,14 +10,18 @@ const FOREGROUND = '#1f2937';
  * @returns {{width?: number,height?: number,background?: string,accent?: string,shapes?: Array<Record<string, unknown>>} | null} Parsed payload.
  */
 export function parseCanvasDoodle(inputString) {
-  return parseObjectPayload(inputString, parsed =>
-    /** @type {{
-     *   width?: number,
-     *   height?: number,
-     *   background?: string,
-     *   accent?: string,
-     *   shapes?: Array<Record<string, unknown>>,
-     * }} */ (parsed)
+  return plotShared.parseObjectPayload(
+    inputString,
+    /** @param {Record<string, unknown>} parsed */
+    parsed =>
+      /**
+       * @type {{
+       *   width?: number,
+       *   height?: number,
+       *   background?: string,
+       *   accent?: string,
+       *   shapes?: Array<Record<string, unknown>>,
+        }} */ (parsed)
   );
 }
 
@@ -144,11 +148,11 @@ function drawShape(context, shape) {
  * @param {Record<string, unknown> & {type?: string}} shape
  */
 function drawRect(context, shape) {
-  const x = numberOr(shape.x, 0);
-  const y = numberOr(shape.y, 0);
-  const width = numberOr(shape.width, 10);
-  const height = numberOr(shape.height, 10);
-  context.fillStyle = stringOr(shape.fill, '#cbd5e1');
+  const x = plotShared.numberOr(shape.x, 0);
+  const y = plotShared.numberOr(shape.y, 0);
+  const width = plotShared.numberOr(shape.width, 10);
+  const height = plotShared.numberOr(shape.height, 10);
+  context.fillStyle = plotShared.stringOr(shape.fill, '#cbd5e1');
   context.fillRect(x, y, width, height);
 }
 
@@ -158,11 +162,11 @@ function drawRect(context, shape) {
  * @param {Record<string, unknown> & {type?: string}} shape
  */
 function drawCircle(context, shape) {
-  const x = numberOr(shape.x, 0);
-  const y = numberOr(shape.y, 0);
-  const radius = numberOr(shape.radius, 8);
+  const x = plotShared.numberOr(shape.x, 0);
+  const y = plotShared.numberOr(shape.y, 0);
+  const radius = plotShared.numberOr(shape.radius, 8);
   context.beginPath();
-  context.fillStyle = stringOr(shape.fill, '#cbd5e1');
+  context.fillStyle = plotShared.stringOr(shape.fill, '#cbd5e1');
   context.arc(x, y, radius, 0, Math.PI * 2);
   context.fill();
 }
@@ -173,13 +177,13 @@ function drawCircle(context, shape) {
  * @param {Record<string, unknown> & {type?: string}} shape
  */
 function drawLine(context, shape) {
-  const x1 = numberOr(shape.x1, 0);
-  const y1 = numberOr(shape.y1, 0);
-  const x2 = numberOr(shape.x2, 0);
-  const y2 = numberOr(shape.y2, 0);
+  const x1 = plotShared.numberOr(shape.x1, 0);
+  const y1 = plotShared.numberOr(shape.y1, 0);
+  const x2 = plotShared.numberOr(shape.x2, 0);
+  const y2 = plotShared.numberOr(shape.y2, 0);
   context.beginPath();
-  context.strokeStyle = stringOr(shape.stroke, FOREGROUND);
-  context.lineWidth = numberOr(shape.lineWidth, 2);
+  context.strokeStyle = plotShared.stringOr(shape.stroke, FOREGROUND);
+  context.lineWidth = plotShared.numberOr(shape.lineWidth, 2);
   context.moveTo(x1, y1);
   context.lineTo(x2, y2);
   context.stroke();

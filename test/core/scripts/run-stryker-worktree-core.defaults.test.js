@@ -1,4 +1,11 @@
-import { jest, describe, expect, test, beforeAll, afterAll } from '@jest/globals';
+import {
+  jest,
+  describe,
+  expect,
+  test,
+  beforeAll,
+  afterAll,
+} from '@jest/globals';
 
 const spawnMock = jest.fn(() => {
   const child = {
@@ -58,12 +65,7 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
   });
 
   test('uses default runCommand options when none are provided', async () => {
-    await runCommand(
-      spawnMock,
-      'node',
-      ['--version'],
-      '/tmp/worktree'
-    );
+    await runCommand(spawnMock, 'node', ['--version'], '/tmp/worktree');
 
     expect(spawnMock).toHaveBeenCalledWith(
       'node',

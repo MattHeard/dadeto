@@ -4,6 +4,7 @@ import {
   createGenerateStatsCore,
   initializeFirebaseApp,
 } from './generate-stats-core.js';
+import { createJsonExpressApp } from '../../express-app.js';
 import { getAllowedOrigins } from '../allowed-origins.js';
 import {
   createFirestoreInstance,
@@ -158,8 +159,11 @@ export function runGenerateStats(deps) {
   const allowedOrigins = getAllowedOrigins(
     env && env.DENDRITE_ENVIRONMENT ? env : { DENDRITE_ENVIRONMENT: 'dev' }
   );
-  const app = express();
-
+  const app = createJsonExpressApp({
+    createApp: () => express(),
+    json: express.json,
+    urlencoded: express.urlencoded,
+  });
   app.use(
     /** @type {any} */ (
       cors({

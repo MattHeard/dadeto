@@ -4,6 +4,9 @@ import {
   finalizeManagedForm,
 } from '../../../../src/core/browser/inputHandlers/createDendriteHandler.js';
 
+/**
+ *
+ */
 function createDom() {
   return {
     createElement: jest.fn(tag => ({ tagName: tag.toUpperCase() })),
@@ -52,16 +55,13 @@ describe('createDendriteHandler', () => {
     const textInput = { value: '' };
     const form = { tagName: 'FORM' };
 
-    const result = buildManagedForm(
-      { dom, container, textInput },
-      shell => {
-        expect(shell.form).toBeDefined();
-        return {
-          data: { hello: 'world' },
-          form,
-        };
-      }
-    );
+    const result = buildManagedForm({ dom, container, textInput }, shell => {
+      expect(shell.form).toBeDefined();
+      return {
+        data: { hello: 'world' },
+        form,
+      };
+    });
 
     expect(result).toBe(form);
     expect(dom.setValue).toHaveBeenCalledWith(textInput, '{"hello":"world"}');

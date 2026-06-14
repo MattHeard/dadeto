@@ -1,4 +1,4 @@
-import { numberOr, parseObjectPayload, stringOr } from './plotShared.js';
+import { createObjectPayloadParser, numberOr, stringOr } from './plotShared.js';
 
 const DEFAULT_WIDTH = 420;
 const DEFAULT_HEIGHT = 280;
@@ -12,8 +12,14 @@ const DEFAULT_LINE = '#2563eb';
  * @returns {{expression?: string,width?: number,height?: number,xMin?: number,xMax?: number,yMin?: number,yMax?: number,background?: string,axesColor?: string,gridColor?: string,lineColor?: string} | null} Parsed payload.
  */
 export function parseGraphPlot(inputString) {
-  return parseObjectPayload(inputString, parsed =>
-    /** @type {{
+  return parseGraphPlotPayload(inputString);
+}
+
+const parseGraphPlotPayload = createObjectPayloadParser(
+  /** @param {Record<string, unknown>} parsed */
+  parsed =>
+    /**
+     * @type {{
      *   expression?: string,
      *   width?: number,
      *   height?: number,
@@ -25,9 +31,8 @@ export function parseGraphPlot(inputString) {
      *   axesColor?: string,
      *   gridColor?: string,
      *   lineColor?: string,
-     * }} */ (parsed)
-  );
-}
+      }} */ (parsed)
+);
 
 /**
  * @returns {{expression:string,width:number,height:number,xMin:number,xMax:number,yMin:number,yMax:number,background:string,axesColor:string,gridColor:string,lineColor:string}} Fallback payload.
@@ -111,7 +116,8 @@ export function buildGraphPlotPayload(payload) {
  * @returns {{type:'graph-plot', width:number, height:number, background:string, axesColor:string, gridColor:string, lineColor:string, xMin:number, xMax:number, yMin:number, yMax:number, points:Array<{x:number,y:number}>}} Canvas payload.
  */
 export function buildGraphPlotFromJson(inputString, getRandomNumber) {
-  const parsed = parseGraphPlot(inputString) || createGraphPlotFallbackPayload();
+  const parsed =
+    parseGraphPlot(inputString) || createGraphPlotFallbackPayload();
   const normalized = normalizeGraphPlotPayload(parsed, getRandomNumber);
   getRandomNumber();
   return buildGraphPlotPayload(normalized);

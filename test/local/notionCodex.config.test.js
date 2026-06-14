@@ -1,6 +1,8 @@
 import path from 'node:path';
 import {
+  buildNormalizedLocalConfig,
   resolveLocalConfigLoader,
+  resolveLocalConfigPaths,
   resolveNormalizedRepoPath,
   resolveNormalizedRepoPathWithSuffix,
   resolveNormalizedRepoPaths,
@@ -88,6 +90,45 @@ describe('local notion codex config', () => {
         'tracking/notion-codex.local.json'
       )
     ).toThrow('readFileImpl is required.');
+  });
+
+  test('resolveLocalConfigPaths and buildNormalizedLocalConfig reuse the shared resolver', () => {
+    const paths = resolveLocalConfigPaths('/tmp/repo', path, {
+      logDir: {
+        value: 'tracking/notion-codex',
+        fallback: 'tracking/notion-codex',
+      },
+    });
+
+    expect(paths).toEqual({
+      logDir: '/tmp/repo/tracking/notion-codex',
+    });
+
+    const normalized = buildNormalizedLocalConfig({
+      rawConfig: { flag: true },
+      repoRoot: '/tmp/repo',
+      configPath: '/tmp/repo/config.json',
+      pathModule: path,
+      pathFields: {
+        logDir: {
+          value: undefined,
+          fallback: 'tracking/notion-codex',
+        },
+      },
+      build: (resolvedPaths, config, configPath) => ({
+        resolvedPaths,
+        config,
+        configPath,
+      }),
+    });
+
+    expect(normalized).toEqual({
+      resolvedPaths: {
+        logDir: '/tmp/repo/tracking/notion-codex',
+      },
+      config: { flag: true },
+      configPath: '/tmp/repo/config.json',
+    });
   });
 
   test('applies explicit config overrides', () => {

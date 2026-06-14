@@ -1,9 +1,7 @@
-import {
-  pluralizeCount,
-  runGateCommand,
-  useDefaultValue,
-} from './gate-utils.js';
-import { requirePathModule } from '../commonCore.js';
+import * as gateUtils from './gate-utils.js';
+import * as commonCore from '../commonCore.js';
+
+const { requirePathModule } = commonCore;
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
@@ -136,14 +134,23 @@ export const checkDepcruiseTestUtils = {
  */
 function normalizeCheckDepcruiseOptions(options = {}) {
   return {
-    spawnImpl: useDefaultValue(options.spawnImpl, () => DEFAULT_SPAWN_RESULT),
-    readFileSync: useDefaultValue(options.readFileSync, () => ''),
-    readdirSync: useDefaultValue(options.readdirSync, () => []),
-    stdout: useDefaultValue(options.stdout, DEFAULT_STDOUT),
-    stderr: useDefaultValue(options.stderr, DEFAULT_STDERR),
-    rootDir: useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
-    sourceRoot: useDefaultValue(options.sourceRoot, DEFAULT_SOURCE_ROOT),
-    configPath: useDefaultValue(options.configPath, DEFAULT_CONFIG_PATH),
+    spawnImpl: gateUtils.useDefaultValue(
+      options.spawnImpl,
+      () => DEFAULT_SPAWN_RESULT
+    ),
+    readFileSync: gateUtils.useDefaultValue(options.readFileSync, () => ''),
+    readdirSync: gateUtils.useDefaultValue(options.readdirSync, () => []),
+    stdout: gateUtils.useDefaultValue(options.stdout, DEFAULT_STDOUT),
+    stderr: gateUtils.useDefaultValue(options.stderr, DEFAULT_STDERR),
+    rootDir: gateUtils.useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
+    sourceRoot: gateUtils.useDefaultValue(
+      options.sourceRoot,
+      DEFAULT_SOURCE_ROOT
+    ),
+    configPath: gateUtils.useDefaultValue(
+      options.configPath,
+      DEFAULT_CONFIG_PATH
+    ),
     pathModule: requirePathModule(options.pathModule),
   };
 }
@@ -205,7 +212,7 @@ function executeDepcruiseGate({
   configPath,
   pathModule,
 }) {
-  const { launchFailure } = runGateCommand({
+  const { launchFailure } = gateUtils.runGateCommand({
     spawnImpl,
     command: 'depcruise',
     args: ['--config', configPath, 'src'],
@@ -229,12 +236,12 @@ function executeDepcruiseGate({
 
   if (violations.length > 0) {
     stderr.write(
-      `Dependency-cruiser core policy found ${violations.length} violation${pluralizeCount(violations.length)}.\n`
+      `Dependency-cruiser core policy found ${violations.length} violation${gateUtils.pluralizeCount(violations.length)}.\n`
     );
 
     violations.forEach(({ filePath, occurrences }) => {
       stderr.write(
-        `${filePath} uses the injected random source directly ${occurrences} time${pluralizeCount(occurrences)}.\n`
+        `${filePath} uses the injected random source directly ${occurrences} time${gateUtils.pluralizeCount(occurrences)}.\n`
       );
     });
 

@@ -118,6 +118,63 @@ export function resolveLocalConfigPaths(repoRoot, pathModule, fields) {
 }
 
 /**
+ * Normalize a local config object by resolving its repo-relative paths.
+ * @template TConfig
+ * @template TResult
+ * @param {{
+ *   config: TConfig,
+ *   repoRoot: string,
+ *   pathModule: { resolve: (first: string, ...parts: string[]) => string },
+ *   pathFields: Record<string, { value: unknown, fallback: string, suffix?: string }>,
+ *   build: (resolvedPaths: Record<string, string>, config: TConfig) => TResult,
+ * }} options Normalization options.
+ * @returns {TResult} Normalized config value.
+ */
+/**
+ * Build a normalized config result from a shared path resolver and builder.
+ * @template TConfig
+ * @template TResult
+ * @param {{
+ *   config: TConfig,
+ *   repoRoot: string,
+ *   configPath: string,
+ *   pathModule: { resolve: (first: string, ...parts: string[]) => string },
+ *   pathFields: Record<string, { value: unknown, fallback: string, suffix?: string }>,
+ *   build: (resolvedPaths: Record<string, string>, config: TConfig, configPath: string) => TResult,
+ * }} options Builder options.
+ * @returns {TResult} Normalized config result.
+ */
+export function normalizeConfigWithResolvedPaths(options) {
+  const config = options.config ?? options.rawConfig;
+  const resolvedPaths = resolveNormalizedRepoPaths(
+    options.repoRoot,
+    options.pathModule,
+    options.pathFields
+  );
+
+  return options.build(resolvedPaths, config, options.configPath);
+}
+
+/**
+ * Backwards-compatible alias for normalized local config builders.
+ * @template TConfig
+ * @template TResult
+ * @param {{
+ *   config?: TConfig,
+ *   rawConfig?: TConfig,
+ *   repoRoot: string,
+ *   configPath: string,
+ *   pathModule: { resolve: (first: string, ...parts: string[]) => string },
+ *   pathFields: Record<string, { value: unknown, fallback: string, suffix?: string }>,
+ *   build: (resolvedPaths: Record<string, string>, config: TConfig, configPath: string) => TResult,
+ * }} options Builder options.
+ * @returns {TResult} Normalized config result.
+ */
+export function buildNormalizedLocalConfig(options) {
+  return normalizeConfigWithResolvedPaths(options);
+}
+
+/**
  * Normalize a numeric value when it satisfies a predicate.
  * @param {unknown} value Candidate numeric value.
  * @param {number} fallback Fallback value.

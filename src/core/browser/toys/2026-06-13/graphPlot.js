@@ -1,6 +1,4 @@
-import {
-  buildGraphPlotFromJson,
-} from '../../graphPlotCore.js';
+import { buildGraphPlotFromJson } from '../../graphPlotCore.js';
 
 /**
  * Create a graph plotting payload from JSON input.

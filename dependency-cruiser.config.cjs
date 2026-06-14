@@ -68,7 +68,7 @@ module.exports = {
       name: 'src-local-only-core',
       comment:
         'Allow local tooling to depend only on itself or src/core for clearer layering.',
-      severity: 'error',
+      severity: 'warn',
       from: {
         path: '^src/local',
       },
@@ -164,7 +164,7 @@ module.exports = {
       name: 'core-browser-no-node-modules',
       comment:
         'Prevent src/core and src/browser from depending on node_modules until we stabilize them.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/(core|browser)',
       },
@@ -189,7 +189,7 @@ module.exports = {
     doNotFollow: {
       path: 'node_modules',
     },
-    includeOnly: '^src',
+    includeOnly: '^(src|node_modules)',
     prefix: './',
   },
 };

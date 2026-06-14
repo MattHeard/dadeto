@@ -1,6 +1,6 @@
-import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createJsonExpressApp } from '../../express-app.js';
 import { createLocalGcpSimulator } from './simulator.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -75,21 +75,32 @@ const SIMULATOR_ROUTES = [
 export const handle = startServer;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  startServer();
+  void startServer({
+    express: (await import('express')).default,
+  });
 }
 
 /**
  * Start the local simulator server.
+ * @param {{
+ *   express: {
+ *     (): import('express').Express,
+ *     static: typeof import('express').static,
+ *     json: typeof import('express').json,
+ *     urlencoded: typeof import('express').urlencoded,
+ *   },
+ * }} deps Runtime dependencies.
  * @returns {Promise<import('node:http').Server>} Server instance.
  */
-async function startServer() {
+async function startServer({ express }) {
   const simulator = /** @type {LocalGcpSimulator} */ (
     await getSimulatorPromise()
   );
-  const app = express();
-
-  app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
+  const app = createJsonExpressApp({
+    createApp: () => express(),
+    json: express.json,
+    urlencoded: express.urlencoded,
+  });
 
   app.get('/healthz', (_req, res) => {
     res.json({ ok: true });

@@ -1,6 +1,4 @@
-import {
-  buildGraphPlotFromJson,
-} from '../graphPlotCore.js';
+import { buildGraphPlotFromJson } from '../graphPlotCore.js';
 import { createPresenterRoot } from './browserPresentersCore.js';
 
 const ROOT_CLASS = 'graph-plot-output';

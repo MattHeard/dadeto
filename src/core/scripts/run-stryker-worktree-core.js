@@ -64,27 +64,29 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     });
 
     try {
-      await runLoggedCommandStep(
-        fsModule,
-        machineLogPath,
-        spawnImpl,
-        processModule.env,
-        noDaemonEnv,
-        'git',
-        ['worktree', 'add', '--detach', worktreePath],
-        mainRoot
-      );
-
-      await runLoggedCommandStep(
-        fsModule,
-        machineLogPath,
-        spawnImpl,
-        processModule.env,
-        noDaemonEnv,
-        'npm',
-        ['install'],
-        worktreePath
-      );
+      for (const step of [
+        {
+          command: 'git',
+          args: ['worktree', 'add', '--detach', worktreePath],
+          cwd: mainRoot,
+        },
+        {
+          command: 'npm',
+          args: ['install'],
+          cwd: worktreePath,
+        },
+      ]) {
+        await runLoggedCommandStep(
+          fsModule,
+          machineLogPath,
+          spawnImpl,
+          processModule.env,
+          noDaemonEnv,
+          step.command,
+          step.args,
+          step.cwd
+        );
+      }
       await fsModule.writeFile(
         pathModule.join(worktreePath, worktreeStrykerConfig),
         buildStrykerConfig()
@@ -193,18 +195,16 @@ export default {
 /**
  * Write the log entries and run a command with the shared env setup.
  * @param {{
- *   fsModule: {
- *     mkdir: typeof mkdir,
- *     appendFile: typeof appendFile,
- *   },
- *   machineLogPath: string,
- *   command: string,
- *   args: string[],
- *   cwd: string,
- *   spawnImpl: typeof spawn,
- *   baseEnv: NodeJS.ProcessEnv,
- *   extraEnv: NodeJS.ProcessEnv,
- * }} options Step parameters.
+ *   mkdir: typeof mkdir,
+ *   appendFile: typeof appendFile,
+ * }} fsModule Filesystem dependencies.
+ * @param {string} machineLogPath Log destination.
+ * @param {typeof spawn} spawnImpl Spawn implementation.
+ * @param {NodeJS.ProcessEnv} baseEnv Parent environment.
+ * @param {NodeJS.ProcessEnv} extraEnv Extra environment entries.
+ * @param {string} command Command to run.
+ * @param {string[]} args Command arguments.
+ * @param {string} cwd Working directory.
  * @returns {Promise<void>} Nothing.
  */
 async function runLoggedCommandStep(
@@ -322,7 +322,7 @@ function handleRunCommandExit(
     return;
   }
 
-  if (resolveIfAllowed(allowFailure, resolve)) {
+  if (handleAllowedFailure(allowFailure, resolve)) {
     return;
   }
 
@@ -342,4 +342,14 @@ function resolveIfAllowed(allowFailure, resolve) {
 
   resolve();
   return true;
+}
+
+/**
+ * Resolve a command failure when ignored failures are enabled.
+ * @param {boolean} allowFailure Whether failures should be ignored.
+ * @param {(value?: void | PromiseLike<void>) => void} resolve Promise resolver.
+ * @returns {boolean} True when the promise was resolved.
+ */
+function handleAllowedFailure(allowFailure, resolve) {
+  return resolveIfAllowed(allowFailure, resolve);
 }

@@ -662,7 +662,9 @@ export function createHideVariantHtmlCore(deps) {
       region: 'europe-west1',
       documentPath: 'stories/{storyId}/pages/{pageId}/variants/{variantId}',
       handler: change =>
-        Promise.resolve(handleVariantVisibilityChange(/** @type {any} */ (change))),
+        Promise.resolve(
+          handleVariantVisibilityChange(/** @type {any} */ (change))
+        ),
     }),
     handleVariantVisibilityChange,
   };

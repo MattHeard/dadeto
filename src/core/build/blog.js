@@ -492,6 +492,56 @@ export function createCopyCore({
   }
 
   /**
+   * Build the directory copy plans for browser trees.
+   * @param {Record<string, string>} dirs Directory map.
+   * @returns {Array<[string, string, string, string]>} Browser tree plan tuples.
+   */
+  function buildBrowserTreePlans(dirs) {
+    return [
+      [
+        dirs.srcBrowserDir,
+        dirs.publicBrowserDir,
+        'Browser files copied successfully!',
+        'browser directory not found',
+      ],
+      [
+        dirs.srcCoreBrowserDir,
+        dirs.publicCoreBrowserDir,
+        'Core browser files copied successfully!',
+        'core/browser directory not found',
+      ],
+    ];
+  }
+
+  /**
+   * Build the directory copy plans for static content trees.
+   * @param {Record<string, string>} dirs Directory map.
+   * @returns {Array<[string, string, string, string]>} Static content plan tuples.
+   */
+  function buildStaticContentTreePlans(dirs) {
+    return [
+      [
+        dirs.srcBrowserAssetsDir,
+        dirs.publicDir,
+        'Browser assets copied successfully!',
+        'browser/assets directory not found',
+      ],
+      [
+        dirs.srcContentBlogMediaDir,
+        dirs.publicDir,
+        'Blog media copied successfully!',
+        'content/blog-media directory not found',
+      ],
+      [
+        dirs.srcContentPagesDir,
+        dirs.publicDir,
+        'Content pages copied successfully!',
+        'content/pages directory not found',
+      ],
+    ];
+  }
+
+  /**
    * Copy one or more browser-related directory trees into the public browser directory.
    * @param {Record<string, string>} dirs - Directory map.
    * @param {{
@@ -508,23 +558,7 @@ export function createCopyCore({
    * @returns {void}
    */
   function copyBrowserTrees(dirs, context) {
-    copyPlannedDirectoryTreesFromTuples(
-      [
-        [
-          dirs.srcBrowserDir,
-          dirs.publicBrowserDir,
-          'Browser files copied successfully!',
-          'browser directory not found',
-        ],
-        [
-          dirs.srcCoreBrowserDir,
-          dirs.publicCoreBrowserDir,
-          'Core browser files copied successfully!',
-          'core/browser directory not found',
-        ],
-      ],
-      context
-    );
+    copyPlannedDirectoryTreesFromTuples(buildBrowserTreePlans(dirs), context);
   }
 
   /**
@@ -617,26 +651,7 @@ export function createCopyCore({
    */
   function copyStaticContentTrees(dirs, context) {
     copyPlannedDirectoryTreesFromTuples(
-      [
-        [
-          dirs.srcBrowserAssetsDir,
-          dirs.publicDir,
-          'Browser assets copied successfully!',
-          'browser/assets directory not found',
-        ],
-        [
-          dirs.srcContentBlogMediaDir,
-          dirs.publicDir,
-          'Blog media copied successfully!',
-          'content/blog-media directory not found',
-        ],
-        [
-          dirs.srcContentPagesDir,
-          dirs.publicDir,
-          'Content pages copied successfully!',
-          'content/pages directory not found',
-        ],
-      ],
+      buildStaticContentTreePlans(dirs),
       context
     );
   }

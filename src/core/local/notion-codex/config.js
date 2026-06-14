@@ -4,7 +4,7 @@ import {
   normalizeString,
   normalizeStringArray,
   loadNormalizedLocalJsonConfig,
-  resolveLocalConfigPaths,
+  normalizeConfigWithResolvedPaths,
 } from '../config-utils.js';
 import { objectOrEmpty } from '../../commonCore.js';
 import { DEFAULT_CODEX_ARGS } from '../symphony/launcherCodex.js';
@@ -94,11 +94,7 @@ export function normalizeNotionCodexConfig(
   pathModule
 ) {
   const source = objectOrEmpty(config);
-  const notion = objectOrEmpty(source.notion);
-  const launcher = objectOrEmpty(source.launcher);
-  const defaultNotion = DEFAULT_NOTION_CODEX_CONFIG.notion;
-
-  const paths = resolveLocalConfigPaths(repoRoot, pathModule, {
+  const fields = {
     logDir: {
       value: source.logDir,
       fallback: DEFAULT_NOTION_CODEX_CONFIG.logDir,
@@ -111,70 +107,86 @@ export function normalizeNotionCodexConfig(
       value: source.statePath,
       fallback: DEFAULT_NOTION_CODEX_CONFIG.statePath,
     },
-  });
-
-  return {
-    configPath,
-    notion: {
-      dadetoPageId: normalizeString(
-        notion.dadetoPageId,
-        defaultNotion.dadetoPageId
-      ),
-      dadetoPageUrl: normalizeString(
-        notion.dadetoPageUrl,
-        defaultNotion.dadetoPageUrl
-      ),
-      symphonyPageId: normalizeString(
-        notion.symphonyPageId,
-        defaultNotion.symphonyPageId
-      ),
-      symphonyPageUrl: normalizeString(
-        notion.symphonyPageUrl,
-        defaultNotion.symphonyPageUrl
-      ),
-      taskDataSourceUrl: normalizeString(
-        notion.taskDataSourceUrl,
-        defaultNotion.taskDataSourceUrl
-      ),
-      taskContext: normalizeString(
-        notion.taskContext,
-        defaultNotion.taskContext
-      ),
-      taskStatus: normalizeString(notion.taskStatus, defaultNotion.taskStatus),
-      messageSearchQuery: normalizeString(
-        notion.messageSearchQuery,
-        defaultNotion.messageSearchQuery
-      ),
-      inboxPageIds: normalizeStringArray(
-        notion.inboxPageIds,
-        defaultNotion.inboxPageIds
-      ),
-      apiTokenEnvNames: normalizeStringArray(
-        notion.apiTokenEnvNames,
-        defaultNotion.apiTokenEnvNames
-      ),
-      apiVersion: normalizeString(notion.apiVersion, defaultNotion.apiVersion),
-    },
-    launcher: {
-      command: normalizeString(
-        launcher.command,
-        DEFAULT_NOTION_CODEX_CONFIG.launcher.command
-      ),
-      args: normalizeLauncherArgs(launcher.args),
-    },
-    pollIntervalMs: normalizePositiveNumber(
-      source.pollIntervalMs,
-      DEFAULT_NOTION_CODEX_CONFIG.pollIntervalMs
-    ),
-    idleBackoff: normalizeIdleBackoff(source.idleBackoff),
-    maxConcurrentRuns: normalizePositiveNumber(
-      source.maxConcurrentRuns,
-      DEFAULT_NOTION_CODEX_CONFIG.maxConcurrentRuns
-    ),
-    logDir: paths.logDir,
-    outcomeDir: paths.outcomeDir,
-    statePath: paths.statePath,
   };
+  const notion = objectOrEmpty(source.notion);
+  const launcher = objectOrEmpty(source.launcher);
+  const defaultNotion = DEFAULT_NOTION_CODEX_CONFIG.notion;
+
+  return normalizeConfigWithResolvedPaths({
+    rawConfig: source,
+    repoRoot,
+    configPath,
+    pathModule,
+    pathFields: fields,
+    build: (paths, currentSource, currentConfigPath) => ({
+      configPath: currentConfigPath,
+      notion: {
+        dadetoPageId: normalizeString(
+          notion.dadetoPageId,
+          defaultNotion.dadetoPageId
+        ),
+        dadetoPageUrl: normalizeString(
+          notion.dadetoPageUrl,
+          defaultNotion.dadetoPageUrl
+        ),
+        symphonyPageId: normalizeString(
+          notion.symphonyPageId,
+          defaultNotion.symphonyPageId
+        ),
+        symphonyPageUrl: normalizeString(
+          notion.symphonyPageUrl,
+          defaultNotion.symphonyPageUrl
+        ),
+        taskDataSourceUrl: normalizeString(
+          notion.taskDataSourceUrl,
+          defaultNotion.taskDataSourceUrl
+        ),
+        taskContext: normalizeString(
+          notion.taskContext,
+          defaultNotion.taskContext
+        ),
+        taskStatus: normalizeString(
+          notion.taskStatus,
+          defaultNotion.taskStatus
+        ),
+        messageSearchQuery: normalizeString(
+          notion.messageSearchQuery,
+          defaultNotion.messageSearchQuery
+        ),
+        inboxPageIds: normalizeStringArray(
+          notion.inboxPageIds,
+          defaultNotion.inboxPageIds
+        ),
+        apiTokenEnvNames: normalizeStringArray(
+          notion.apiTokenEnvNames,
+          defaultNotion.apiTokenEnvNames
+        ),
+        apiVersion: normalizeString(
+          notion.apiVersion,
+          defaultNotion.apiVersion
+        ),
+      },
+      launcher: {
+        command: normalizeString(
+          launcher.command,
+          DEFAULT_NOTION_CODEX_CONFIG.launcher.command
+        ),
+        args: normalizeLauncherArgs(launcher.args),
+      },
+      pollIntervalMs: normalizePositiveNumber(
+        currentSource.pollIntervalMs,
+        DEFAULT_NOTION_CODEX_CONFIG.pollIntervalMs
+      ),
+      idleBackoff: normalizeIdleBackoff(currentSource.idleBackoff),
+      maxConcurrentRuns: normalizePositiveNumber(
+        currentSource.maxConcurrentRuns,
+        DEFAULT_NOTION_CODEX_CONFIG.maxConcurrentRuns
+      ),
+      logDir: paths.logDir,
+      outcomeDir: paths.outcomeDir,
+      statePath: paths.statePath,
+    }),
+  });
 }
 
 /**

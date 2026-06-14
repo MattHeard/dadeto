@@ -434,18 +434,15 @@ function mapProcessStoryParams(snapshot, context, options) {
  * @param {() => number} options.random Random number generator.
  * @returns {(snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Firestore trigger handler.
  */
-export function createProcessNewStoryHandler({
-  db,
-  fieldValue,
-  randomUUID,
-  random,
-}) {
-  return createProcessNewStorySubmissionHandler({
-    db,
-    getServerTimestamp: resolveServerTimestamp(fieldValue),
+export function createProcessNewStoryHandler(options) {
+  const { db, fieldValue, randomUUID, random } = options;
+  const createHandler = createProcessNewStorySubmissionHandlerFactory({
+    fieldValue,
     randomUUID,
     random,
   });
+
+  return createHandler({ db });
 }
 
 /**
@@ -469,14 +466,56 @@ export function createProcessNewStoryHandle({
     functions,
     getFirestoreInstance,
     documentPath: 'storyFormSubmissions/{subId}',
-    createHandler: ({ db }) =>
-      createProcessNewStoryHandler({
-        db,
-        fieldValue,
-        randomUUID,
-        random,
-      }),
+    createHandler: createProcessNewStorySubmissionHandlerFactory({
+      fieldValue,
+      randomUUID,
+      random,
+    }),
   });
+}
+
+/**
+ * Prepare the shared submission handler dependencies.
+ * @param {{
+ *   db: Firestore,
+ *   fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue },
+ *   randomUUID: () => string,
+ *   random: () => number,
+ * }} deps Shared handler dependencies.
+ * @returns {{
+ *   db: Firestore,
+ *   getServerTimestamp: () => FieldValue,
+ *   randomUUID: () => string,
+ *   random: () => number,
+ * }} Submission handler dependencies.
+ */
+function buildProcessNewStorySubmissionDeps(deps) {
+  return {
+    db: deps.db,
+    getServerTimestamp: resolveServerTimestamp(deps.fieldValue),
+    randomUUID: deps.randomUUID,
+    random: deps.random,
+  };
+}
+
+/**
+ * @param {{
+ *   fieldValue: { serverTimestamp: () => FieldValue, increment: (value: number) => FieldValue },
+ *   randomUUID: () => string,
+ *   random: () => number,
+ * }} deps Shared handler dependencies.
+ * @returns {(deps: { db: Firestore }) => (snap: FirestoreDocumentSnapshot | null | undefined, context: TriggerContext | undefined) => Promise<null>} Submission handler factory.
+ */
+function createProcessNewStorySubmissionHandlerFactory(deps) {
+  return ({ db }) =>
+    createProcessNewStorySubmissionHandler(
+      buildProcessNewStorySubmissionDeps({
+        db,
+        fieldValue: deps.fieldValue,
+        randomUUID: deps.randomUUID,
+        random: deps.random,
+      })
+    );
 }
 
 /**
