@@ -3,6 +3,7 @@
 ## Initial Predicted Failure Classes
 - Setup/configuration mismatch:
   - The toy file is not registered in `src/build/blog.json`, so it never appears in the public index.
+  - The blog key is manual instead of being generated from the title and existing keys.
 - Invalid or missing inputs:
   - `candidates` or `activeWork` is not an array.
   - Numeric fields are missing or non-numeric.
@@ -17,10 +18,10 @@
 ## Detection Signals
 - Error signatures/log lines:
   - Jest failure in `test/toys/2026-06-15/conflictAwareProductScheduler.test.js`.
-  - Missing `SCHD1` in `public/blog.json`.
+  - Missing `CONF1` in `public/blog.json`.
 - Observable symptoms:
   - Ranked output is unsorted or score math is wrong.
-  - Public index does not show the new toy.
+  - Public index does not show the new toy in date-descending order.
 - Failing command(s):
   - `npm test`
   - `npm run check`

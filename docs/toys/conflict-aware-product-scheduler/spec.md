@@ -1,7 +1,7 @@
 # Toy Spec: Conflict-Aware Product Scheduler
 
 ## Summary
-- Toy name: Conflict-Aware Product Scheduler (`SCHD1`)
+- Toy name: Conflict-Aware Product Scheduler (`CONF1`)
 - Owner: Dadeto browser toys
 - Last updated: 2026-06-15
 

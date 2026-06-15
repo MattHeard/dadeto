@@ -5,7 +5,7 @@
 - [x] `npm test` exits with status 0.
 - [x] `npm run check` exits with status 0.
 - [x] `npm run build` regenerates `public/blog.json` and `public/index.html`.
-- [x] `public/blog.json` contains `SCHD1` with `release`-style public blog registration through the build output.
+- [x] `public/blog.json` contains `CONF1` with `release`-style public blog registration through the build output.
 
 ## Evidence Collection
 - Command evidence:
@@ -21,4 +21,4 @@
 
 ## Pass/Fail Rules
 - Pass when the scheduler test, repo test gate, repo check gate, and build output all verify the new public toy registration.
-- Fail when any command exits non-zero, the scheduler ranking assertions fail, or the public blog artifacts do not include `SCHD1`.
+- Fail when any command exits non-zero, the scheduler ranking assertions fail, or the public blog artifacts do not include `CONF1`.

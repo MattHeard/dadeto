@@ -18,7 +18,7 @@
       "tags": ["toy", "canvas", "fractal", "math", "html"]
     },
     {
-      "key": "SCHD1",
+      "key": "CONF1",
       "title": "Conflict-Aware Product Scheduler",
       "publicationDate": "2026-06-15",
       "content": [
@@ -34,21 +34,21 @@
       "tags": ["toy", "planning", "scheduler", "json", "coordination"]
     },
     {
-      "key": "CANV1",
-      "title": "Canvas Doodle",
-      "publicationDate": "2026-06-12",
+      "key": "GDPS1",
+      "title": "GDP Sector Projection",
+      "publicationDate": "2026-06-14",
       "content": [
-        "A tiny Canvas experiment that turns JSON parameters into a few layered 2D shapes.",
-        "Use it to try out simple color, size, and shape combinations before we build anything more ambitious.",
-        "This post is now public so anyone can try the canvas presenter directly."
+        "Plot primary, secondary, and tertiary GDP sector share trends from public historical data, then project a simple structural transition forward.",
+        "The toy accepts optional forecast overrides so you can change the target years or output horizon without changing the core data shape.",
+        "When no rows are provided, it falls back to a committed World Bank historical snapshot so the graph still renders predictably."
       ],
       "toy": {
-        "modulePath": "/core/browser/toys/2026-06-12/canvasDoodle.js",
-        "functionName": "canvasDoodle",
+        "modulePath": "/core/browser/toys/2026-06-14/gdpSectorProjection.js",
+        "functionName": "gdpSectorProjection",
         "defaultInputMethod": "textarea",
-        "defaultOutputMethod": "canvas-2d"
+        "defaultOutputMethod": "graph-2d"
       },
-      "tags": ["toy", "canvas", "graphics", "html"]
+      "tags": ["toy", "graph", "canvas", "economics", "html"]
     },
     {
       "key": "GRAP1",
@@ -68,21 +68,21 @@
       "tags": ["toy", "graph", "canvas", "math", "html"]
     },
     {
-      "key": "GDPS1",
-      "title": "GDP Sector Projection",
-      "publicationDate": "2026-06-14",
+      "key": "CANV1",
+      "title": "Canvas Doodle",
+      "publicationDate": "2026-06-12",
       "content": [
-        "Plot primary, secondary, and tertiary GDP sector share trends from public historical data, then project a simple structural transition forward.",
-        "The toy accepts optional forecast overrides so you can change the target years or output horizon without changing the core data shape.",
-        "When no rows are provided, it falls back to a committed World Bank historical snapshot so the graph still renders predictably."
+        "A tiny Canvas experiment that turns JSON parameters into a few layered 2D shapes.",
+        "Use it to try out simple color, size, and shape combinations before we build anything more ambitious.",
+        "This post is now public so anyone can try the canvas presenter directly."
       ],
       "toy": {
-        "modulePath": "/core/browser/toys/2026-06-14/gdpSectorProjection.js",
-        "functionName": "gdpSectorProjection",
+        "modulePath": "/core/browser/toys/2026-06-12/canvasDoodle.js",
+        "functionName": "canvasDoodle",
         "defaultInputMethod": "textarea",
-        "defaultOutputMethod": "graph-2d"
+        "defaultOutputMethod": "canvas-2d"
       },
-      "tags": ["toy", "graph", "canvas", "economics", "html"]
+      "tags": ["toy", "canvas", "graphics", "html"]
     },
     {
       "key": "MEMO3",
