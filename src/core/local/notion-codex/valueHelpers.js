@@ -36,11 +36,12 @@ export function toSourceObject(value) {
  * @returns {string} String or fallback.
  */
 export function asStringWithFallback(value, fallback) {
-  if (typeof value === 'string') {
-    return value;
+  switch (typeof value) {
+    case 'string':
+      return value;
+    default:
+      return fallback;
   }
-
-  return fallback;
 }
 
 /**

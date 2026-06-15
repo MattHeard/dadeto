@@ -18,6 +18,22 @@
       "tags": ["toy", "canvas", "fractal", "math", "html"]
     },
     {
+      "key": "SCHD1",
+      "title": "Conflict-Aware Product Scheduler",
+      "publicationDate": "2026-06-15",
+      "content": [
+        "Ranks candidate product increments against active work so you can choose a small slice that creates value without colliding with ongoing quality work.",
+        "Uses a simple score model: product value plus learning and feedback value, minus overlap, shared-surface, test-refactor, and deployment risk.",
+        "Accepts pure JSON input and returns a ranked JSON recommendation list."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-15/conflictAwareProductScheduler.js",
+        "functionName": "conflictAwareProductScheduler",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "planning", "scheduler", "json", "coordination"]
+    },
+    {
       "key": "CANV1",
       "title": "Canvas Doodle",
       "publicationDate": "2026-06-12",
