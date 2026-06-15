@@ -369,13 +369,20 @@ export function toggleToyFocusMode(button, dom) {
   if (!article) {
     return;
   }
+  const container = article.closest('#container');
   const active = !dom.hasClass(article, 'toy-focus-mode');
   if (active) {
     dom.addClass(article, 'toy-focus-mode');
+    if (container) {
+      dom.addClass(container, 'toy-focus-mode-host');
+    }
     dom.setTextContent(button, 'Exit focus mode');
     return;
   }
   dom.removeClass(article, 'toy-focus-mode');
+  if (container) {
+    dom.removeClass(container, 'toy-focus-mode-host');
+  }
   dom.setTextContent(button, 'Focus mode');
 }
 

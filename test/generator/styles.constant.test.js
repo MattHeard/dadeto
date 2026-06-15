@@ -31,10 +31,12 @@ describe('styles constant', () => {
 
   test('includes focus mode layout rules for toy articles', () => {
     const css = styles();
-    expect(css).toContain('.entry.toy-focus-mode');
+    expect(css).toContain('#container.toy-focus-mode-host');
     expect(css).toContain('width: 100vw');
+    expect(css).toContain('overflow: visible');
+    expect(css).toContain('.entry.toy-focus-mode');
     expect(css).toContain('min-height: 100dvh');
-    expect(css).toContain('margin-inline: calc(50% - 50vw)');
+    expect(css).toContain('margin-inline: 0');
     expect(css).toContain('.toy-focus-toggle');
   });
 

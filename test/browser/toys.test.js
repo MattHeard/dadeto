@@ -1364,7 +1364,12 @@ describe('toys', () => {
     it('toggles the toy article class and button label', () => {
       const article = {
         classList: new Set(),
-        closest: jest.fn(() => null),
+        closest: jest.fn(selector => {
+          if (selector === '#container') {
+            return container;
+          }
+          return null;
+        }),
       };
       article.classList.contains = article.classList.has.bind(
         article.classList
@@ -1377,6 +1382,18 @@ describe('toys', () => {
         textContent: 'Focus mode',
         closest: jest.fn(() => article),
       };
+      const container = {
+        classList: new Set(),
+      };
+      container.classList.contains = container.classList.has.bind(
+        container.classList
+      );
+      container.classList.add = container.classList.add.bind(
+        container.classList
+      );
+      container.classList.remove = container.classList.delete.bind(
+        container.classList
+      );
       const dom = {
         hasClass: jest.fn((el, className) => el.classList.contains(className)),
         addClass: jest.fn((el, className) => el.classList.add(className)),
@@ -1388,10 +1405,18 @@ describe('toys', () => {
 
       toggleToyFocusMode(button, dom);
       expect(dom.addClass).toHaveBeenCalledWith(article, 'toy-focus-mode');
+      expect(dom.addClass).toHaveBeenCalledWith(
+        container,
+        'toy-focus-mode-host'
+      );
       expect(button.textContent).toBe('Exit focus mode');
 
       toggleToyFocusMode(button, dom);
       expect(dom.removeClass).toHaveBeenCalledWith(article, 'toy-focus-mode');
+      expect(dom.removeClass).toHaveBeenCalledWith(
+        container,
+        'toy-focus-mode-host'
+      );
       expect(button.textContent).toBe('Focus mode');
     });
   });

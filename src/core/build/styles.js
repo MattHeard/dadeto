@@ -61,6 +61,12 @@ const STYLES = String.raw`
     overflow: hidden;
   }
 
+  #container.toy-focus-mode-host {
+    width: 100vw;
+    max-width: 100vw;
+    overflow: visible;
+  }
+
   .entry {
     display: grid;
     grid-template-columns: 5ch minmax(0, 1fr);
@@ -73,9 +79,10 @@ const STYLES = String.raw`
   }
 
   .entry.toy-focus-mode {
-    width: 100vw;
+    width: 100%;
     min-height: 100dvh;
-    margin-inline: calc(50% - 50vw);
+    max-width: 100%;
+    margin-inline: 0;
     padding-inline: 1ch;
   }
 
