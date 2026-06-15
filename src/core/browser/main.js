@@ -9,6 +9,7 @@ import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
   handleDropdownChange,
+  toggleToyFocusMode,
   getComponentInitializer,
   makeCreateIntersectionObserver,
   initializeVisibleComponents,
@@ -199,6 +200,19 @@ window.addEventListener('DOMContentLoaded', () => {
   initializeDropdowns();
 
   revealBetaArticles(dom);
+
+  document.addEventListener('click', event => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const button = target.closest('.toy-focus-toggle');
+    if (!button) {
+      return;
+    }
+    event.preventDefault();
+    toggleToyFocusMode(button, dom);
+  });
 });
 
 /**

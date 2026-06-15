@@ -102,6 +102,17 @@
         tab-size: 1;
       }
 
+      .entry.toy-focus-mode {
+        width: 100vw;
+        min-height: 100dvh;
+        margin-inline: calc(50% - 50vw);
+        padding-inline: 1ch;
+      }
+
+      .entry.toy-focus-mode > .value {
+        min-width: 0;
+      }
+
       .entry:first-of-type {
         gap: 0 1ch;
       }
@@ -462,6 +473,10 @@
         color: var(--terminal-fg);
       }
 
+      .toy-focus-toggle {
+        margin-right: 1ch;
+      }
+
       .filter-button {
         cursor: pointer;
         transition: color 120ms ease;
@@ -588,38 +603,40 @@
         </p>
       </div>
       <article
-        class="entry tag-toy tag-canvas tag-graphics tag-html"
-        id="CANV1"
+        class="entry tag-toy tag-graph tag-canvas tag-economics tag-html"
+        id="GDPS1"
       >
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
         <div class="value full-width">
           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
         </div>
-        <div class="key article-title">CANV1</div>
+        <div class="key article-title">GDPS1</div>
         <div class="value">
-          <h2><a href="#CANV1">Canvas Doodle</a></h2>
+          <h2><a href="#GDPS1">GDP Sector Projection</a></h2>
         </div>
         <div class="key">pubAt</div>
-        <p class="value metadata">12 Jun 2026</p>
+        <p class="value metadata">14 Jun 2026</p>
         <div class="key">tags</div>
         <p class="value metadata">
-          <a class="tag-toy">toy</a>, <a class="tag-canvas">canvas</a>,
-          <a class="tag-graphics">graphics</a>, <a class="tag-html">html</a>
+          <a class="tag-toy">toy</a>, <a class="tag-graph">graph</a>,
+          <a class="tag-canvas">canvas</a>,
+          <a class="tag-economics">economics</a>, <a class="tag-html">html</a>
         </p>
         <div class="key">text</div>
         <p class="value">
-          A tiny Canvas experiment that turns JSON parameters into a few layered
-          2D shapes.
+          Plot primary, secondary, and tertiary GDP sector share trends from
+          public historical data, then project a simple structural transition
+          forward.
         </p>
         <div class="key"></div>
         <p class="value">
-          Use it to try out simple color, size, and shape combinations before we
-          build anything more ambitious.
+          The toy accepts optional forecast overrides so you can change the
+          target years or output horizon without changing the core data shape.
         </p>
         <div class="key"></div>
         <p class="value">
-          This post is now public so anyone can try the canvas presenter
-          directly.
+          When no rows are provided, it falls back to a committed World Bank
+          historical snapshot so the graph still renders predictably.
         </p>
         <div class="key">in</div>
         <div class="value">
@@ -643,7 +660,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -655,8 +673,8 @@
             <option value="text">text</option>
             <option value="pre">pre</option>
             <option value="copy-to-clipboard">copy-to-clipboard</option>
-            <option value="canvas-2d" selected>canvas-2d</option>
-            <option value="graph-2d">graph-2d</option>
+            <option value="canvas-2d">canvas-2d</option>
+            <option value="graph-2d" selected>graph-2d</option>
             <option value="ledger-ingest">ledger-ingest</option>
             <option value="real-hourly-wage">real-hourly-wage</option>
             <option value="joycon-mapping">joycon-mapping</option>
@@ -675,9 +693,9 @@
         </div>
         <script type="module">
           window.addComponent(
-            'CANV1',
-            '/core/browser/toys/2026-06-12/canvasDoodle.js',
-            'canvasDoodle'
+            'GDPS1',
+            '/core/browser/toys/2026-06-14/gdpSectorProjection.js',
+            'gdpSectorProjection'
           );
         </script>
       </article>
@@ -738,7 +756,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -773,6 +792,101 @@
             'GRAP1',
             '/core/browser/toys/2026-06-13/graphPlot.js',
             'graphPlot'
+          );
+        </script>
+      </article>
+      <article
+        class="entry tag-toy tag-canvas tag-graphics tag-html"
+        id="CANV1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">CANV1</div>
+        <div class="value">
+          <h2><a href="#CANV1">Canvas Doodle</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">12 Jun 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-canvas">canvas</a>,
+          <a class="tag-graphics">graphics</a>, <a class="tag-html">html</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          A tiny Canvas experiment that turns JSON parameters into a few layered
+          2D shapes.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Use it to try out simple color, size, and shape combinations before we
+          build anything more ambitious.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          This post is now public so anyone can try the canvas presenter
+          directly.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="canvas-2d" selected>canvas-2d</option>
+            <option value="graph-2d">graph-2d</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'CANV1',
+            '/core/browser/toys/2026-06-12/canvasDoodle.js',
+            'canvasDoodle'
           );
         </script>
       </article>
@@ -833,7 +947,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -928,7 +1043,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1023,7 +1139,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1122,7 +1239,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1218,7 +1336,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1313,7 +1432,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1408,7 +1528,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1504,7 +1625,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1599,7 +1721,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1698,7 +1821,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1793,7 +1917,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1884,7 +2009,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -1978,7 +2104,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2069,7 +2196,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2161,7 +2289,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2255,7 +2384,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2465,7 +2595,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2555,7 +2686,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2641,7 +2773,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2722,7 +2855,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2811,7 +2945,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2897,7 +3032,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -2985,7 +3121,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -3071,7 +3208,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -3157,7 +3295,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -3512,7 +3651,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -3598,7 +3738,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -3779,7 +3920,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -3871,7 +4013,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -3966,7 +4109,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4061,7 +4205,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4147,7 +4292,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4269,7 +4415,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4355,7 +4502,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4482,7 +4630,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4571,7 +4720,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4657,7 +4807,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4743,7 +4894,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4829,7 +4981,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -4926,7 +5079,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -5014,7 +5168,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -5111,7 +5266,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -5205,7 +5361,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label
@@ -5534,7 +5691,8 @@
         </div>
         <div class="key"></div>
         <div class="value">
-          <button type="submit" disabled>Submit</button
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
             ><input type="checkbox" class="auto-submit-checkbox" disabled />
             Auto</label

@@ -50,8 +50,18 @@ export function parseJsonOrNull(value) {
 
 /**
  * Ensure a path module is available.
- * @param {{ resolve?: Function } | null | undefined} pathModule Path module candidate.
- * @returns {{ resolve: Function }} Required path module.
+ * @param {{
+ *   join?: (...segments: string[]) => string,
+ *   resolve?: (...segments: string[]) => string,
+ *   relative?: (from: string, to: string) => string,
+ *   sep?: string,
+ * } | null | undefined} pathModule Path module candidate.
+ * @returns {{
+ *   join: (...segments: string[]) => string,
+ *   resolve: (...segments: string[]) => string,
+ *   relative: (from: string, to: string) => string,
+ *   sep: string,
+ * }} Required path module.
  */
 export function requirePathModule(pathModule) {
   if (!pathModule) {

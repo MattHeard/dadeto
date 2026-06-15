@@ -1,11 +1,5 @@
 import { parseCsvLine } from './toys-core.js';
-import { buildWhen } from '../../common.js';
-import { whenOrNull } from '../../../commonCore.js';
-import {
-  isBlankStringValue,
-  isValidString,
-  whenString,
-} from '../../browser-core.js';
+import { isBlankStringValue } from '../../browser-core.js';
 
 /**
  * Convert a multi-row CSV string into a JSON array string.
@@ -24,83 +18,34 @@ export function csvToJsonArrayToy(input) {
  * @returns {Array<Record<string, string>>|null} Parsed row objects or null when the input is invalid.
  */
 function extractCsvRows(input) {
-  const trimmedLines = normalizeInputLines(input);
-  if (!trimmedLines) {
+  if (typeof input !== 'string') {
     return null;
   }
 
-  return buildRowsFromLines(trimmedLines);
-}
-
-/**
- * Check if lines are sufficient.
- * @param {string[]} lines Lines.
- * @returns {boolean} True if sufficient.
- */
-function areLinesufficient(lines) {
-  return lines.length >= 2;
-}
-
-/**
- * Normalize the incoming CSV text into trimmed lines when the input is a string.
- * @param {string} input - Raw CSV text.
- * @returns {string[]|null} Trimmed lines when there are at least two rows, otherwise null.
- */
-function normalizeInputLines(input) {
-  return whenString(input, getTrimmedLines);
-}
-
-/**
- * Produce trimmed CSV lines with at least two rows after removing trailing blanks.
- * @param {string} input - Raw CSV text normalized for line breaks.
- * @returns {string[]|null} Trimmed lines when there are at least two rows, otherwise null.
- */
-function getTrimmedLines(input) {
-  const normalizedInput = input.replace(/\r\n?/g, '\n');
-  const trimmedLines = removeTrailingEmptyLines(normalizedInput.split('\n'));
-
-  if (!areLinesufficient(trimmedLines)) {
+  const trimmedLines = removeTrailingEmptyLines(
+    input.replace(/\r\n?/g, '\n').split('\n')
+  );
+  if (trimmedLines.length < 2) {
     return null;
   }
 
-  return trimmedLines;
-}
-
-/**
- * Build row objects when header metadata is available.
- * @param {string[]} trimmedLines - Normalized CSV lines with at least a header row.
- * @returns {Array<Record<string, string>>|null} Row objects or null when parsing fails.
- */
-function buildRowsFromLines(trimmedLines) {
-  const headerInfo = parseHeaderEntries(trimmedLines);
-  if (!headerInfo) {
+  const headers = parseHeaderRow(trimmedLines[0]);
+  if (!headers) {
     return null;
   }
 
-  return getRowsFromHeaderInfo(headerInfo);
-}
+  const rows = [];
+  for (const rawLine of trimmedLines.slice(1)) {
+    const record = parseRecordLine(rawLine, headers);
+    if (record === null) {
+      return null;
+    }
+    if (Object.keys(record).length > 0) {
+      rows.push(record);
+    }
+  }
 
-/**
- * Check if rows exist.
- * @param {Array<Record<string, string>>|null} rows Rows.
- * @returns {boolean} True if exist.
- */
-function doRowsExist(rows) {
-  return Boolean(rows && rows.length > 0);
-}
-
-/**
- * Build rows once header parsing succeeded and rows exist.
- * @param {{
- *   dataLines: string[],
- *   headerEntries: Array<{ name: string, index: number }>
- * }} headerInfo - Parsed header metadata with remaining data lines.
- * @returns {Array<Record<string, string>>|null} Parsed row objects or null when none could be built.
- */
-function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
-  const rows = buildRows(dataLines, headerEntries);
-
-  if (!doRowsExist(rows)) {
+  if (rows.length === 0) {
     return null;
   }
 
@@ -108,9 +53,9 @@ function getRowsFromHeaderInfo({ dataLines, headerEntries }) {
 }
 
 /**
- * Remove empty lines from the end of the provided array.
- * @param {string[]} lines Raw CSV lines including potential trailing blanks.
- * @returns {string[]} A slice of the original lines without trailing blanks.
+ * Remove any trailing blank lines.
+ * @param {string[]} lines Lines.
+ * @returns {string[]} Trimmed lines.
  */
 function removeTrailingEmptyLines(lines) {
   const lastIndex = findLastNonEmptyLineIndex(lines);
@@ -133,243 +78,51 @@ function findLastNonEmptyLineIndex(lines) {
 }
 
 /**
- * Convert header tokens into metadata records used for column lookups.
- * @param {string[]} headers - Parsed header values.
- * @returns {Array<{ name: string, index: number }>} Metadata entries for non-empty headers.
+ * Parse and normalize the CSV header row.
+ * @param {string} line - First CSV line.
+ * @returns {string[] | null} Parsed header names or null on invalid input.
  */
-function buildHeaderEntries(headers) {
-  return headers
-    .map((header, index) => ({ name: header.trim(), index }))
-    .filter(entry => entry.name.length > 0);
-}
-
-/**
- * Check if header entries exist.
- * @param {Array<{ name: string, index: number }>} entries Entries.
- * @returns {boolean} True if exist.
- */
-function doHeaderEntriesExist(entries) {
-  return entries.length > 0;
-}
-
-/**
- * Parse header entries from normalized CSV lines.
- * @param {string[]} lines - Normalized CSV lines beginning with the header row.
- * @returns {{headerEntries: Array<{name: string, index: number}>, dataLines: string[]} | null} Header metadata and remaining data lines when the header is valid, otherwise null.
- */
-function parseHeaderEntries(lines) {
-  const parsedHeader = getParsedHeaderLines(lines);
-  if (!parsedHeader) {
+function parseHeaderRow(line) {
+  const headerTokens = parseCsvLine(line.trim());
+  if (!headerTokens) {
     return null;
   }
 
-  return buildHeaderEntriesResult(parsedHeader);
-}
+  const headers = headerTokens
+    .map(token => token.trim())
+    .filter(token => token.length > 0);
 
-/**
- * Build header metadata when entries exist.
- * @param {{ headers: string[], dataLines: string[] }} parsedHeader - Parsed header tokens and remaining lines.
- * @returns {{headerEntries: Array<{name: string, index: number}>, dataLines: string[]} | null} Header metadata and data lines when the header entries exist, otherwise null.
- */
-function buildHeaderEntriesResult(parsedHeader) {
-  const headerEntries = buildHeaderEntries(parsedHeader.headers);
-  return buildWhen(doHeaderEntriesExist(headerEntries), () => ({
-    headerEntries,
-    dataLines: parsedHeader.dataLines,
-  }));
-}
-
-/**
- * Parse header and data lines when trimming succeeds.
- * @param {string[]} lines - Normalized CSV lines including the header row.
- * @returns {{ headers: string[], dataLines: string[] } | null} Parsed header tokens and remaining data lines when available.
- */
-function getParsedHeaderLines(lines) {
-  const [headerLine, ...dataLines] = lines;
-  const trimmedHeader = getTrimmedHeaderLine(headerLine);
-  return whenOrNull(trimmedHeader, currentHeader =>
-    getParsedHeaders(currentHeader, dataLines)
-  );
-}
-
-/**
- * Trim the header line before parsing.
- * @param {string | undefined} headerLine - Raw header text from the CSV input.
- * @returns {string|null} Trimmed header string when content exists, otherwise null.
- */
-function getTrimmedHeaderLine(headerLine) {
-  if (!headerLine) {
+  if (headers.length === 0) {
     return null;
   }
 
-  const trimmed = headerLine.trim();
-  return trimmed || null;
+  return headers;
 }
 
 /**
- * Parse the trimmed header into individual tokens.
- * @param {string} trimmedHeader - Header line without leading/trailing whitespace.
- * @param {string[]} dataLines - Remaining lines representing data rows.
- * @returns {{ headers: string[], dataLines: string[] } | null} Header tokens and untouched data lines, or null when parsing fails.
+ * Parse one data row against the header names.
+ * @param {string} rawLine - CSV data line.
+ * @param {string[]} headers - Header names.
+ * @returns {Record<string, string> | null} Parsed row object or null on invalid input.
  */
-function getParsedHeaders(trimmedHeader, dataLines) {
-  const headers = parseCsvLine(trimmedHeader);
-  if (!headers) {
-    return null;
+function parseRecordLine(rawLine, headers) {
+  const normalizedLine = rawLine.trim();
+  if (normalizedLine.length === 0) {
+    return {};
   }
 
-  return { headers, dataLines };
-}
-
-/**
- * Check if record is invalid.
- * @param {unknown} record Record.
- * @returns {boolean} True if invalid.
- */
-function isRecordInvalid(record) {
-  return record === null;
-}
-
-/**
- * Build JSON-ready row objects for each CSV data line.
- * @param {string[]} dataLines - Lines representing CSV records.
- * @param {Array<{name: string, index: number}>} headerEntries - Header metadata describing column order.
- * @returns {Array<Record<string, string>>|null} An array of row objects, or null when parsing fails.
- */
-function buildRows(dataLines, headerEntries) {
-  const records =
-    /** @type {Array<Record<string, string> | undefined | null>} */ (
-      dataLines.map(rawLine => createRecordForLine(rawLine, headerEntries))
-    );
-
-  if (records.some(isRecordInvalid)) {
-    return null;
-  }
-
-  const rows = /** @type {Array<Record<string, string>>} */ ([]);
-  records.forEach(record => pushRecordIfNotEmpty(rows, record));
-
-  return rows;
-}
-
-/**
- * Check if record has values.
- * @param {Record<string, string> | undefined | null} record Record.
- * @returns {record is Record<string, string>} True when the record contains values.
- */
-function doesRecordHaveValues(record) {
-  return Boolean(record && Object.keys(record).length > 0);
-}
-
-/**
- * Append parsed rows when the record contains data.
- * @param {Array<Record<string, string>>} rows - Collection being built.
- * @param {Record<string, string> | undefined | null} record - Parsed row data.
- * @returns {void}
- */
-function pushRecordIfNotEmpty(rows, record) {
-  if (doesRecordHaveValues(record)) {
-    rows.push(record);
-  }
-}
-
-/**
- * Build a record for a single CSV line using the supplied headers.
- * @param {string} rawLine - Raw data line read from the CSV input.
- * @param {Array<{name: string, index: number}>} headerEntries - Header metadata for column lookups.
- * @returns {Record<string, string> | undefined | null} Record when parsing succeeds, `undefined` when empty, or `null` when invalid.
- */
-function createRecordForLine(rawLine, headerEntries) {
-  const normalizedLine = normalizeDataLine(rawLine);
-  if (!normalizedLine) {
-    return undefined;
-  }
-
-  return buildRecordFromLine(normalizedLine, headerEntries);
-}
-
-/**
- * Normalize an individual CSV line by trimming trailing whitespace.
- * @param {string} rawLine - Data line read from the CSV input.
- * @returns {string|null} Trimmed line or null when it is empty.
- */
-function normalizeDataLine(rawLine) {
-  if (rawLine.trim().length === 0) {
-    return null;
-  }
-
-  return rawLine.trimEnd();
-}
-
-/**
- * Build a single record from a parsed CSV line using the provided headers.
- * @param {string} line - A normalized CSV data line.
- * @param {Array<{name: string, index: number}>} headerEntries - Header metadata.
- * @returns {Record<string, string>|null} Record object or null when parsing fails.
- */
-function buildRecordFromLine(line, headerEntries) {
-  const values = parseCsvLine(line);
+  const values = parseCsvLine(normalizedLine);
   if (!values) {
     return null;
   }
 
-  const record = /** @type {Record<string, string>} */ ({});
-  headerEntries.forEach(entry => assignRecordValue(record, entry, values));
-
+  /** @type {Record<string, string>} */
+  const record = {};
+  headers.forEach((header, index) => {
+    const value = values[index];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      record[header] = value.trim();
+    }
+  });
   return record;
-}
-
-/**
- * Assign a cell value to the record when the parsed value is not empty.
- * @param {Record<string, string>} record - Target record collecting field values.
- * @param {{ name: string, index: number }} column - Header metadata describing the column.
- * @param {Array<string>} values - Parsed CSV values for the row.
- * @returns {void}
- */
-function assignRecordValue(record, { name, index }, values) {
-  assignParsedValue(record, name, values[index]);
-}
-
-/**
- *
- * @param record
- * @param name
- * @param rawValue
- */
-/**
- * Assign a parsed and trimmed CSV cell value to the record when present.
- * @param {Record<string, string>} record - Target record collecting parsed fields.
- * @param {string} name - Field name derived from the header entry.
- * @param {unknown} rawValue - Value extracted from the parsed line.
- * @returns {void}
- */
-function assignParsedValue(record, name, rawValue) {
-  const value = normalizeCsvValue(rawValue);
-  if (!isValidString(value)) {
-    return;
-  }
-
-  record[name] = value;
-}
-
-/**
- * Normalize a parsed CSV cell value into a trimmed string.
- * @param {unknown} rawValue - Value extracted from the parsed line.
- * @returns {string} Trimmed string ready for assignment.
- */
-function normalizeCsvValue(rawValue) {
-  if (isCsvValueMissing(rawValue)) {
-    return '';
-  }
-
-  return String(rawValue).trim();
-}
-
-/**
- * Determine whether a CSV cell value is absent.
- * @param {unknown} value - Value extracted from the parsed line.
- * @returns {boolean} True when the value is `null` or `undefined`.
- */
-function isCsvValueMissing(value) {
-  return value === undefined || value === null;
 }

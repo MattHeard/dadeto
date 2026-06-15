@@ -24,7 +24,8 @@ describe('toy UI sections mutant', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<div class="key">in</div>');
     const buttonSection =
-      '<div class="key"></div><div class="value"><button type="submit" disabled>Submit</button>' +
+      '<div class="key"></div><div class="value"><button type="button" class="toy-focus-toggle">Focus mode</button>' +
+      '<button type="submit" disabled>Submit</button>' +
       '<label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" disabled /> Auto</label></div>';
     expect(html).toContain(buttonSection);
     expect(html).toContain('<div class="key">out</div>');

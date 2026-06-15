@@ -6,7 +6,7 @@ export const {
   convertArrayToKeyValueObject, parseExistingRows, clearDisposers,
   createDispose, createAddDropdownListener, ensureKeyValueInput, handleKVType,
   kvHandler, createInputDropdownHandler, getComponentInitializer,
-  handleDropdownChange, createOutputDropdownHandler, handleModuleError,
+  handleDropdownChange, toggleToyFocusMode, createOutputDropdownHandler, handleModuleError,
   getModuleInitializer, makeModuleConfig, makeObserverCallback,
   makeCreateIntersectionObserver, enableInteractiveControls, getText,
   makeDisplayBody, getFetchErrorHandler, handleRequestResponse,

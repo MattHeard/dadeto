@@ -359,6 +359,27 @@ export function handleDropdownChange(dropdown, getData, dom) {
 }
 
 /**
+ * Toggle a toy article between normal and focus mode.
+ * @param {HTMLElement} button Focus toggle button.
+ * @param {object} dom DOM utilities.
+ * @returns {void}
+ */
+export function toggleToyFocusMode(button, dom) {
+  const article = button.closest('article.entry');
+  if (!article) {
+    return;
+  }
+  const active = !dom.hasClass(article, 'toy-focus-mode');
+  if (active) {
+    dom.addClass(article, 'toy-focus-mode');
+    dom.setTextContent(button, 'Exit focus mode');
+    return;
+  }
+  dom.removeClass(article, 'toy-focus-mode');
+  dom.setTextContent(button, 'Focus mode');
+}
+
+/**
  * Checks if there is output for a given post id.
  * @param {object} output - Output mapping.
  * @param {string} postId - Post id to check.
@@ -1773,6 +1794,7 @@ export function createToysHandle() {
     createInputDropdownHandler,
     getComponentInitializer,
     handleDropdownChange,
+    toggleToyFocusMode,
     createOutputDropdownHandler,
     handleModuleError,
     getModuleInitializer,

@@ -132,7 +132,7 @@ export function syncHiddenInput(dom, textInput, data) {
  * @param {{
  *   dom: DOMHelpers,
  *   textInput: HTMLInputElement,
- *   data: DendriteData,
+ *   data: Record<string, unknown>,
  *   form: HTMLElement,
  * }} options Managed form state.
  * @returns {HTMLElement} The form passed in.
@@ -149,7 +149,7 @@ export function finalizeManagedForm({ dom, textInput, data, form }) {
  *   container: HTMLElement,
  *   textInput: HTMLInputElement,
  * }} options Form setup dependencies.
- * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => { data: DendriteData, form: HTMLElement } | HTMLElement} buildFormContent Form body callback.
+ * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => { data: Record<string, unknown>, form: HTMLElement } | HTMLElement} buildFormContent Form body callback.
  * @returns {HTMLElement} Finalized form element.
  */
 export function buildManagedForm(options, buildFormContent) {
@@ -164,7 +164,7 @@ export function buildManagedForm(options, buildFormContent) {
       return finalizeManagedForm({
         dom: options.dom,
         textInput: options.textInput,
-        data: /** @type {DendriteData} */ (result.data),
+        data: /** @type {Record<string, unknown>} */ (result.data),
         form: /** @type {HTMLElement} */ (result.form),
       });
     }
@@ -422,8 +422,8 @@ export function createManagedFormShellState({ dom, container, textInput }) {
  *   container: HTMLElement,
  *   textInput: HTMLInputElement,
  * }} options Form setup dependencies.
- * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => HTMLElement} useShell Shell callback.
- * @returns {HTMLElement} Result returned by the callback.
+ * @param {(shell: { form: HTMLElement, disposers: Disposer[] }) => *} useShell Shell callback.
+ * @returns {*} Result returned by the callback.
  */
 export function withManagedFormShell({ dom, container, textInput }, useShell) {
   const shellState = createManagedFormShellState({

@@ -23,6 +23,7 @@ describe('TOY_UI_SECTIONS integration', () => {
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<select class="input">');
+    expect(html).toContain('<button type="button" class="toy-focus-toggle">');
     expect(html).toContain('<button type="submit" disabled>Submit</button>');
   });
 

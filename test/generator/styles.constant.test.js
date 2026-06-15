@@ -29,6 +29,15 @@ describe('styles constant', () => {
     expect(css).toContain('max-width: min(100%, calc(48 * var(--cell-w)))');
   });
 
+  test('includes focus mode layout rules for toy articles', () => {
+    const css = styles();
+    expect(css).toContain('.entry.toy-focus-mode');
+    expect(css).toContain('width: 100vw');
+    expect(css).toContain('min-height: 100dvh');
+    expect(css).toContain('margin-inline: calc(50% - 50vw)');
+    expect(css).toContain('.toy-focus-toggle');
+  });
+
   test('left-aligns the terminal surface over the textured page background', () => {
     const css = styles();
     expect(css).toContain('margin-inline: 0 auto');

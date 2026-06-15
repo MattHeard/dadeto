@@ -72,6 +72,17 @@ const STYLES = String.raw`
     tab-size: 1;
   }
 
+  .entry.toy-focus-mode {
+    width: 100vw;
+    min-height: 100dvh;
+    margin-inline: calc(50% - 50vw);
+    padding-inline: 1ch;
+  }
+
+  .entry.toy-focus-mode > .value {
+    min-width: 0;
+  }
+
   .entry:first-of-type {
     gap: 0 1ch;
   }
@@ -424,6 +435,10 @@ const STYLES = String.raw`
     min-height: var(--cell-h);
     margin-left: 1ch;
     color: var(--terminal-fg);
+  }
+
+  .toy-focus-toggle {
+    margin-right: 1ch;
   }
 
   .filter-button {

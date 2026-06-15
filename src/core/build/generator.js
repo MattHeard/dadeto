@@ -1079,6 +1079,7 @@ const TOY_UI_SECTIONS_CONFIG = [
   {
     label: '',
     content: () =>
+      '<button type="button" class="toy-focus-toggle">Focus mode</button>' +
       '<button type="submit" disabled>Submit</button>' +
       '<label class="auto-submit-label">' +
       '<input type="checkbox" class="auto-submit-checkbox" disabled /> Auto' +

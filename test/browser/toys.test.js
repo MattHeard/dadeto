@@ -11,6 +11,7 @@ import {
   createAddDropdownListener,
   createInputDropdownHandler,
   getText,
+  toggleToyFocusMode,
 } from '../../src/browser/toys.js';
 
 describe('createAddDropdownListener', () => {
@@ -1356,6 +1357,42 @@ describe('toys', () => {
       expect(initializeComponent.mock.calls[1][0]).toEqual(componentB);
       expect(initializeComponent.mock.calls[2][0]).toEqual(componentC);
       expect(initializeComponent.mock.calls[3][0]).toEqual(componentD);
+    });
+  });
+
+  describe('toggleToyFocusMode', () => {
+    it('toggles the toy article class and button label', () => {
+      const article = {
+        classList: new Set(),
+        closest: jest.fn(() => null),
+      };
+      article.classList.contains = article.classList.has.bind(
+        article.classList
+      );
+      article.classList.add = article.classList.add.bind(article.classList);
+      article.classList.remove = article.classList.delete.bind(
+        article.classList
+      );
+      const button = {
+        textContent: 'Focus mode',
+        closest: jest.fn(() => article),
+      };
+      const dom = {
+        hasClass: jest.fn((el, className) => el.classList.contains(className)),
+        addClass: jest.fn((el, className) => el.classList.add(className)),
+        removeClass: jest.fn((el, className) => el.classList.remove(className)),
+        setTextContent: jest.fn((el, value) => {
+          el.textContent = value;
+        }),
+      };
+
+      toggleToyFocusMode(button, dom);
+      expect(dom.addClass).toHaveBeenCalledWith(article, 'toy-focus-mode');
+      expect(button.textContent).toBe('Exit focus mode');
+
+      toggleToyFocusMode(button, dom);
+      expect(dom.removeClass).toHaveBeenCalledWith(article, 'toy-focus-mode');
+      expect(button.textContent).toBe('Focus mode');
     });
   });
 });
