@@ -35,6 +35,23 @@
       "tags": ["toy", "graph", "canvas", "math", "html"]
     },
     {
+      "key": "GDPS1",
+      "title": "GDP Sector Projection",
+      "publicationDate": "2026-06-14",
+      "content": [
+        "Plot primary, secondary, and tertiary GDP sector share trends from public historical data, then project a simple structural transition forward.",
+        "The toy accepts optional forecast overrides so you can change the target years or output horizon without changing the core data shape.",
+        "When no rows are provided, it falls back to a committed World Bank historical snapshot so the graph still renders predictably."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-14/gdpSectorProjection.js",
+        "functionName": "gdpSectorProjection",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "graph-2d"
+      },
+      "tags": ["toy", "graph", "canvas", "economics", "html"]
+    },
+    {
       "key": "MEMO3",
       "title": "Memory Scalar/Vector Write",
       "publicationDate": "2026-05-30",

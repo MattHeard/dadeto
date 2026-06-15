@@ -18,3 +18,4 @@
 - Verbose mode command: `node --experimental-vm-modules ./node_modules/.bin/jest --watchman=false --runTestsByPath test/core/browser/presenters/graphPlot.series.test.js test/toys/2026-06-14/gdpSectorProjection.test.js --verbose`
 - Log location: test runner output in the terminal
 - Cleanup command: `npm test`
+- To verify the fallback snapshot specifically, run the toy with `{}` or `{"forecast":{"outputEndYear":2030}}` and confirm it still renders the public historical series.

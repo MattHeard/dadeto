@@ -3,6 +3,9 @@
 ## Initial Predicted Failure Classes
 - Setup/configuration mismatch:
   - The presenter still assumes only one line of points.
+- Input contract drift:
+  - Forecast overrides are ignored or rejected.
+  - The toy no longer falls back to the committed public data snapshot.
 - Invalid or missing inputs:
   - JSON is malformed or rows omit year or sector fields.
 - Dependency/service unavailable:
@@ -18,6 +21,9 @@
   - `getContext` returns `null`.
   - Only one series appears in the output payload.
 - Observable symptoms:
+  - Changes to `forecast` have no effect on the output.
+  - The 2000 through 2024 trend window is empty when no rows are supplied.
+- Observable symptoms:
   - Missing projection line after 2025.
   - Primary and secondary do not reach zero at the requested years.
 - Failing command(s):
@@ -26,7 +32,8 @@
 ## First-Response Playbook
 1. Confirm the toy is producing a `graph-plot` payload with a `series` array.
 2. Verify the presenter draws each series independently.
-3. Check that the projection rules use 2030, 2035, and 2050 as the hard endpoints.
+3. Check that the projection rules use 2030, 2035, and 2050 as the default endpoints and that overrides still flow through.
+4. Check that the public historical snapshot loads when the input omits `rows`.
 
 ## Promoted from Real Failures
 - Date:
