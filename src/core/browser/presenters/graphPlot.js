@@ -15,6 +15,10 @@ export function createGraphPlotElement(inputString, dom) {
   const canvas = /** @type {HTMLCanvasElement} */ (dom.createElement('canvas'));
   canvas.width = payload.width;
   canvas.height = payload.height;
+  canvas.style.width = '100%';
+  canvas.style.maxWidth = '100%';
+  canvas.style.height = 'auto';
+  canvas.style.display = 'block';
   dom.appendChild(root, canvas);
   const context = canvas.getContext('2d');
   if (context) {

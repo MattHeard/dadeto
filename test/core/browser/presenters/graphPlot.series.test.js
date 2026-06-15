@@ -22,6 +22,7 @@ describe('createGraphPlotElement series rendering', () => {
     const canvas = {
       width: 0,
       height: 0,
+      style: {},
       getContext: jest.fn(() => context),
     };
     const root = { children: [] };
@@ -87,6 +88,7 @@ describe('createGraphPlotElement series rendering', () => {
     const canvas = {
       width: 0,
       height: 0,
+      style: {},
       getContext: jest.fn(() => context),
     };
     const root = { children: [] };

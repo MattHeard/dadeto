@@ -29,6 +29,7 @@ describe('setTextContent via handleDropdownChange graph-2d', () => {
           ? {
               width: 0,
               height: 0,
+              style: {},
               getContext: jest.fn(() => context),
             }
           : { tagName: tag.toUpperCase() }

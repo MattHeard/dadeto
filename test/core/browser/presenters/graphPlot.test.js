@@ -25,6 +25,7 @@ describe('createGraphPlotElement', () => {
     const canvas = {
       width: 0,
       height: 0,
+      style: {},
       getContext: jest.fn(() => context),
     };
     const root = { children: [] };
@@ -60,6 +61,10 @@ describe('createGraphPlotElement', () => {
     expect(dom.createElement).toHaveBeenCalledWith('canvas');
     expect(canvas.width).toBe(240);
     expect(canvas.height).toBe(180);
+    expect(canvas.style.width).toBe('100%');
+    expect(canvas.style.maxWidth).toBe('100%');
+    expect(canvas.style.height).toBe('auto');
+    expect(canvas.style.display).toBe('block');
     expect(context.fillRect).toHaveBeenCalledWith(0, 0, 240, 180);
     expect(context.lineTo).toHaveBeenCalled();
     expect(root.children[0]).toBe(canvas);
@@ -70,6 +75,7 @@ describe('createGraphPlotElement', () => {
     const canvas = {
       width: 0,
       height: 0,
+      style: {},
       getContext: jest.fn(() => null),
     };
     const root = { children: [] };
@@ -101,6 +107,7 @@ describe('createGraphPlotElement', () => {
     expect(element).toBe(root);
     expect(canvas.width).toBe(0);
     expect(canvas.height).toBe(0);
+    expect(canvas.style.width).toBe('100%');
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
   });
 
@@ -124,6 +131,7 @@ describe('createGraphPlotElement', () => {
     const canvas = {
       width: 0,
       height: 0,
+      style: {},
       getContext: jest.fn(() => context),
     };
     const root = { children: [] };
@@ -212,6 +220,7 @@ describe('createGraphPlotElement', () => {
     const canvas = {
       width: 0,
       height: 0,
+      style: {},
       getContext: jest.fn(() => context),
     };
     const root = { children: [] };
