@@ -4,10 +4,10 @@
       "key": "FRAC1",
       "title": "Fractal Generator",
       "publicationDate": "2026-06-15",
-      "release": "beta",
+      "release": "public",
       "content": [
         "Generate a small recursive fractal tree using the 2D canvas presenter.",
-        "Pass JSON options like width, height, depth, and hue, or submit an empty payload for the default beta sketch."
+        "Pass JSON options like width, height, depth, and hue, or submit an empty payload for the default sketch."
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-06-15/fractalGenerator.js",
