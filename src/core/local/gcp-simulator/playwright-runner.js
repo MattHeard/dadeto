@@ -222,6 +222,7 @@ function spawnPlaywright(input) {
     cwd: repoRoot,
     env: {
       ...simulatorEnv,
+      API_BASE_URL: baseUrl,
       PLAYWRIGHT_BASE_URL: baseUrl,
     },
     stdio: 'inherit',

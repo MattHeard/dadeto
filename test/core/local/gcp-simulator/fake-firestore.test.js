@@ -283,4 +283,50 @@ describe('fake firestore', () => {
     const ordered = await db.collection('things').orderBy('rank', 'asc').get();
     expect(ordered.docs.map(doc => doc.id)).toEqual(['a', 'b']);
   });
+
+  it('supports transaction reads and batched writes for ledger updates', async () => {
+    const db = createFakeFirestore();
+
+    await db.doc('api-key-credit/user-1').set({ credit: 4 });
+
+    const result = await db.runTransaction(async transaction => {
+      const snapshot = await transaction.get(db.doc('api-key-credit/user-1'));
+      const current = snapshot.data()?.credit ?? 0;
+
+      transaction.set(db.doc('api-key-credit/user-1'), {
+        credit: current + 3,
+      });
+      transaction.update(db.doc('api-key-credit/user-1'), {
+        updatedFromTransaction: true,
+      });
+      transaction.set(db.doc('api-key-ledger/user-1/events/event-1'), {
+        amount: 3,
+        balanceAfter: current + 3,
+        balanceBefore: current,
+        eventId: 'event-1',
+        type: 'credit_added',
+      });
+      transaction.delete(db.doc('api-key-ledger/user-1/events/old-event'));
+
+      return current;
+    });
+
+    expect(result).toBe(4);
+    expect((await db.doc('api-key-credit/user-1').get()).data()).toMatchObject({
+      credit: 7,
+      updatedFromTransaction: true,
+    });
+    expect(
+      (await db.doc('api-key-ledger/user-1/events/event-1').get()).data()
+    ).toMatchObject({
+      amount: 3,
+      balanceAfter: 7,
+      balanceBefore: 4,
+      eventId: 'event-1',
+      type: 'credit_added',
+    });
+    expect(
+      await db.doc('api-key-ledger/user-1/events/old-event').get()
+    ).toMatchObject({ exists: false });
+  });
 });

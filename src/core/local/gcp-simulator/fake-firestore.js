@@ -66,6 +66,10 @@ export function createFakeFirestore({ onCommit } = {}) {
       return new FakeWriteBatch(this);
     }
 
+    runTransaction(updateFunction) {
+      return runFakeTransaction(this, updateFunction);
+    }
+
     async __commitOperations(operations) {
       return applyOperations(operations);
     }
@@ -160,6 +164,20 @@ export function createFakeFirestore({ onCommit } = {}) {
     return undefined;
   }
 
+  /**
+   * Execute a fake Firestore transaction against the current state.
+   * @param {FakeFirestore} db Fake Firestore instance.
+   * @param {(transaction: FakeTransaction) => Promise<unknown>} updateFunction
+   *   Transaction callback.
+   * @returns {Promise<unknown>} Transaction callback result.
+   */
+  async function runFakeTransaction(db, updateFunction) {
+    const transaction = new FakeTransaction(db);
+    const result = await updateFunction(transaction);
+    await db.__commitOperations(transaction.operations);
+    return result;
+  }
+
   return new FakeFirestore();
 }
 
@@ -205,6 +223,44 @@ class FakeWriteBatch {
 
   async commit() {
     await this.db.__commitOperations(this.operations);
+  }
+}
+
+class FakeTransaction {
+  constructor(db) {
+    this.db = db;
+    this.operations = [];
+  }
+
+  async get(ref) {
+    return ref.get();
+  }
+
+  set(ref, data) {
+    this.operations.push({
+      path: ref.path,
+      nextData: cloneDocument(data),
+      mode: 'set',
+    });
+    return this;
+  }
+
+  update(ref, data) {
+    this.operations.push({
+      path: ref.path,
+      nextData: cloneDocument(data),
+      mode: 'update',
+    });
+    return this;
+  }
+
+  delete(ref) {
+    this.operations.push({
+      path: ref.path,
+      nextData: undefined,
+      mode: 'delete',
+    });
+    return this;
   }
 }
 
@@ -443,6 +499,7 @@ class FakeDocumentSnapshot {
  * @property {(path: string) => unknown} __getPathData Path-data getter.
  * @property {(path: string, data: unknown) => void} __setPathData Path-data setter.
  * @property {(path: string) => void} __deletePathData Path-data deleter.
+ * @property {(updateFunction: (transaction: FakeTransaction) => Promise<unknown>) => Promise<unknown>} runTransaction Transaction helper.
  */
 
 /**

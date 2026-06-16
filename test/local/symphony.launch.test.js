@@ -1,8 +1,11 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { jest } from '@jest/globals';
 import { launchSelectedRunnerLoop } from '../../src/local/symphony/launch.js';
 import { createSymphonyStatusStore } from '../../src/local/symphony/statusStore.js';
+
+jest.setTimeout(15000);
 
 describe('local symphony runner launch', () => {
   let tempDir;

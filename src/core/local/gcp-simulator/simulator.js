@@ -20,6 +20,12 @@ import {
 import { createGenerateStatsCore } from '../../generate-stats-core.js';
 import { createSubmitNewStoryResponder } from '../../submit-new-story-core.js';
 import { getAuthorizationHeader } from '../../submit-shared.js';
+import {
+  createApplyCreditEvent,
+  createFetchCredit,
+  createGetApiKeyCreditV2Handler,
+  extractUuid,
+} from '../../get-api-key-credit-v2.js';
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT =
@@ -339,6 +345,12 @@ async function buildSimulatorState(config) {
     db,
   });
   const submitNewStory = createSubmitNewStoryResponder(submitNewStoryConfig);
+  const getApiKeyCreditV2 = createGetApiKeyCreditV2Handler({
+    fetchCredit: createFetchCredit(db),
+    applyCreditEvent: createApplyCreditEvent(db),
+    getUuid: extractUuid,
+    logError: error => console.error(error),
+  });
   const testUtils = createSimulatorTestUtils({
     snapshotHelpers,
     lookupHelpers,
@@ -368,6 +380,7 @@ async function buildSimulatorState(config) {
     storage,
     fieldValue,
     submitNewStory,
+    getApiKeyCreditV2,
     generateStatsCore,
     renderContents,
     renderVariant,
@@ -381,6 +394,7 @@ async function buildSimulatorState(config) {
     routes: createRoutes({
       submitNewStory,
       submitNewPage,
+      getApiKeyCreditV2,
       db,
       fieldValue,
       renderContents,
@@ -822,13 +836,14 @@ function createGetSeedManifest(bucketName) {
 
 /**
  * Build the simulator routes.
- * @param {{ submitNewStory: Function, submitNewPage: Function, db: ReturnType<typeof createDb>, fieldValue: unknown, renderContents: Function, generateStatsCore: { generate: Function } }} deps Route dependencies.
+ * @param {{ submitNewStory: Function, submitNewPage: Function, getApiKeyCreditV2: Function, db: ReturnType<typeof createDb>, fieldValue: unknown, renderContents: Function, generateStatsCore: { generate: Function } }} deps Route dependencies.
  * @returns {Record<string, (request: unknown) => Promise<{ status: number, body?: unknown }>>} Route map.
  */
 function createRoutes(deps) {
   return {
     submitNewStory: request => handleSubmitNewStory(deps, request),
     submitNewPage: request => handleSubmitNewPage(deps, request),
+    getApiKeyCreditV2: request => handleGetApiKeyCreditV2(deps, request),
     getModerationVariant: request => handleGetModerationVariant(deps, request),
     assignModerationJob: request => handleAssignModerationJob(deps, request),
     submitModerationRating: request =>
@@ -859,6 +874,16 @@ async function handleSubmitNewStory(deps, request) {
  */
 async function handleSubmitNewPage(deps, request) {
   return deps.submitNewPage(request);
+}
+
+/**
+ * Run the API key credit route handler.
+ * @param {{ getApiKeyCreditV2: Function }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleGetApiKeyCreditV2(deps, request) {
+  return deps.getApiKeyCreditV2(request);
 }
 
 /**

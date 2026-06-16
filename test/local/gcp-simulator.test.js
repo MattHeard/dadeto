@@ -683,4 +683,66 @@ describe('local gcp simulator', () => {
       await localSimulator.clear();
     }
   });
+
+  it('serves the credit v2 route locally and logs handler failures', async () => {
+    const localSimulator = await createLocalGcpSimulator({
+      baseUrl: 'http://127.0.0.1:4324',
+      publicDir: path.resolve('public'),
+    });
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    try {
+      const addResponse = await localSimulator.routes.getApiKeyCreditV2({
+        method: 'POST',
+        path: '/api-keys/77777777-7777-7777-7777-777777777777/credit',
+        body: {
+          type: 'credit_added',
+          eventId: 'event-local-1',
+          amount: 12,
+        },
+      });
+      expect(addResponse).toEqual({
+        status: 201,
+        body: {
+          credit: 12,
+          type: 'credit_added',
+          eventId: 'event-local-1',
+          applied: true,
+        },
+      });
+
+      const balanceResponse = await localSimulator.routes.getApiKeyCreditV2({
+        method: 'GET',
+        path: '/api-keys/77777777-7777-7777-7777-777777777777/credit',
+      });
+      expect(balanceResponse).toEqual({
+        status: 200,
+        body: { credit: 12 },
+      });
+
+      localSimulator.db.runTransaction = async () => {
+        throw new Error('boom');
+      };
+
+      const failureResponse = await localSimulator.routes.getApiKeyCreditV2({
+        method: 'POST',
+        path: '/api-keys/77777777-7777-7777-7777-777777777777/credit',
+        body: {
+          type: 'credit_added',
+          eventId: 'event-local-2',
+          amount: 1,
+        },
+      });
+      expect(failureResponse).toEqual({
+        status: 500,
+        body: 'Internal error',
+      });
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+    } finally {
+      consoleSpy.mockRestore();
+      await localSimulator.clear();
+    }
+  });
 });

@@ -8,5 +8,9 @@ describe('Playwright base URL contract', () => {
 
     expect(playwrightTf).toContain('name  = "BASE_URL"');
     expect(playwrightTf).toContain('name  = "PLAYWRIGHT_BASE_URL"');
+    expect(playwrightTf).toContain('name  = "API_BASE_URL"');
+    expect(playwrightTf).toContain(
+      'google_cloudfunctions2_function.get_api_key_credit_v2.service_config[0].uri'
+    );
   });
 });

@@ -1,5 +1,6 @@
 import { Firestore } from './get-api-key-credit-v2-gcf.js';
 import {
+  createApplyCreditEvent,
   createDb,
   createFetchCredit,
   createGetApiKeyCreditV2Handler,
@@ -9,9 +10,11 @@ import {
 const db = createDb(Firestore);
 
 export const fetchCredit = createFetchCredit(db);
+export const applyCreditEvent = createApplyCreditEvent(db);
 
 const handleRequest = createGetApiKeyCreditV2Handler({
   fetchCredit,
+  applyCreditEvent,
   getUuid: extractUuid,
   logError: error => console.error(error),
 });
@@ -34,4 +37,8 @@ export async function handle(req, res) {
   return res.status(status).send(body);
 }
 
-export { extractUuid, createDb } from './get-api-key-credit-v2-core.js';
+export {
+  createApplyCreditEvent,
+  extractUuid,
+  createDb,
+} from './get-api-key-credit-v2-core.js';

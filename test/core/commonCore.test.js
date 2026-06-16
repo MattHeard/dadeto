@@ -14,6 +14,7 @@ import {
   firstStringOrNull,
   ensureString,
   arrayOrEmpty,
+  getDefinedStrings,
   getCurrentDirectory,
   getRecordOrNull,
   isNonNullObject,
@@ -81,6 +82,9 @@ describe('commonCore helpers', () => {
     expect(getStringCandidate(123)).toBeUndefined();
     expect(getRecordOrNull({ hello: 'world' })).toEqual({ hello: 'world' });
     expect(getRecordOrNull(null)).toBeNull();
+    expect(
+      getDefinedStrings('alpha', null, 'beta', undefined, 'gamma')
+    ).toEqual(['alpha', 'beta', 'gamma']);
     expect(ensureString('hello')).toBe('hello');
     expect(ensureString(123)).toBe('');
     expect(normalizeNonStringValue('hello')).toBe('hello');

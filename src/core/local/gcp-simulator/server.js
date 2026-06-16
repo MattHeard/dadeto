@@ -63,6 +63,8 @@ function createPostRoute(routePath, routeName, includeBody = true) {
 const SIMULATOR_ROUTES = [
   createPostRoute('/__sim/submit-new-story', 'submitNewStory'),
   createPostRoute('/__sim/submit-new-page', 'submitNewPage'),
+  createGetRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
+  createPostRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
   createGetRoute('/__sim/get-moderation-variant', 'getModerationVariant'),
   createPostRoute('/__sim/assign-moderation-job', 'assignModerationJob'),
   createPostRoute('/__sim/submit-moderation-rating', 'submitModerationRating'),

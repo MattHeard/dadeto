@@ -265,6 +265,11 @@ resource "google_cloud_run_v2_job" "playwright" {
         }
 
         env {
+          name  = "API_BASE_URL"
+          value = google_cloudfunctions2_function.get_api_key_credit_v2.service_config[0].uri
+        }
+
+        env {
           name  = "REPORT_BUCKET"
           value = local.reports_bucket_name
         }

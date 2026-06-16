@@ -3,6 +3,7 @@ import { getNumericValueOrZero, productionOrigins } from '../cloud-core.js';
 import {
   ensureString,
   functionOrFallback,
+  isNonNullObject,
   whenOrNull,
   whenString,
 } from '../../commonCore.js';
@@ -21,6 +22,70 @@ const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
  *     groups?: Record<string, string | undefined>,
  *   }
  * )} RegExpExecArray
+ */
+
+/**
+ * Credit event type.
+ * @typedef {'credit_added' | 'credit_deducted'} CreditEventType
+ */
+
+/**
+ * Credit event request payload.
+ * @typedef {{
+ *   type: CreditEventType,
+ *   eventId: string,
+ *   amount: number,
+ * }} CreditEventInput
+ */
+
+/**
+ * Credit balance response body.
+ * @typedef {{
+ *   credit: number,
+ * }} CreditBalanceResponseBody
+ */
+
+/**
+ * Credit event response body.
+ * @typedef {{
+ *   credit: number,
+ *   type: CreditEventType,
+ *   eventId: string,
+ *   applied: true,
+ * }} CreditEventResponseBody
+ */
+
+/**
+ * Credit API response metadata.
+ * @typedef {{
+ *   status: number,
+ *   body: string | CreditBalanceResponseBody | CreditEventResponseBody,
+ *   headers?: Record<string, string>,
+ * }} CreditApiResponse
+ */
+
+/**
+ * Credit event validation error metadata.
+ * @typedef {{
+ *   status: number,
+ *   body: string,
+ *   headers?: Record<string, string>,
+ * }} ValidationErrorResponse
+ */
+
+/**
+ * Firestore transaction surface used by the credit ledger helpers.
+ * @typedef {{
+ *   get: (ref: import('@google-cloud/firestore').DocumentReference) => Promise<import('@google-cloud/firestore').DocumentSnapshot>,
+ *   set: (ref: import('@google-cloud/firestore').DocumentReference, data: Record<string, unknown>) => void,
+ * }} CreditTransaction
+ */
+
+/**
+ * Firestore database surface used by the credit ledger helpers.
+ * @typedef {import('@google-cloud/firestore').Firestore & {
+ *   runTransaction: (updateFunction: (transaction: CreditTransaction) => Promise<CreditApiResponse>) => Promise<CreditApiResponse>,
+ * }} CreditFirestore
  */
 
 /**
@@ -54,11 +119,6 @@ function extractUuidFromMatch(match) {
 }
 
 /**
- * Normalize a string-like value into a UUID candidate.
- * @param {unknown} value Candidate value that may contain a UUID.
- * @returns {string} UUID string when valid, otherwise an empty string.
- */
-/**
  * Invoke resolvers until one produces a value.
  * @param {Array<() => string>} resolvers Candidate value resolvers.
  * @returns {string} First non-empty string returned by a resolver.
@@ -69,7 +129,7 @@ function resolveFirstValue(resolvers) {
 
 /**
  * Check if request is valid for UUID extraction.
- * @param {unknown} request - Request data to validate.
+ * @param {unknown} request Request data to validate.
  * @returns {boolean} True if request is a valid object.
  */
 function isValidRequestObject(request) {
@@ -102,6 +162,7 @@ export function extractUuid(request) {
 /**
  * @typedef {{
  *   fetchCredit?: (uuid: string) => Promise<number | null>,
+ *   applyCreditEvent?: (uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
  *   getUuid?: (request: unknown) => string,
  *   logError?: (error: unknown) => void,
  * }} HandlerDependencies
@@ -110,33 +171,36 @@ export function extractUuid(request) {
 /**
  * Factory for the HTTPS handler serving API key credit data.
  * @param {HandlerDependencies} [deps] Runtime dependencies for the handler.
- * @returns {(request?: { method?: string } & Record<string, unknown>) => Promise<{
- *   status: number,
- *   body: string | { credit: number },
- *   headers?: Record<string, string>,
- * }>} Handler producing HTTP response metadata.
+ * @returns {(request?: { method?: string, body?: unknown } & Record<string, unknown>) => Promise<CreditApiResponse>} Handler producing HTTP response metadata.
  */
 export function createGetApiKeyCreditV2Handler(deps) {
-  const resolvedDeps = deps || {};
-  const { fetchCredit, resolveUuid, errorLogger } =
-    resolveV2HandlerDependencies(
-      /** @type {HandlerDependencies} */ (resolvedDeps)
-    );
+  const { fetchCredit, applyCreditEvent, resolveUuid, errorLogger } =
+    resolveV2HandlerDependencies(deps);
 
   return async function handleRequest(request = {}) {
-    const method = ensureString(request.method);
+    const method = ensureString(request.method).toUpperCase();
     const uuid = resolveUuid(request);
     const validationError = resolveRequestValidationError(method, uuid);
 
-    return resolveRequestResponse(validationError, () =>
-      fetchCreditResponse(fetchCredit, uuid, errorLogger)
-    );
+    return resolveRequestResponse(validationError, () => {
+      if (method === 'GET') {
+        return fetchCreditResponse(fetchCredit, uuid, errorLogger);
+      }
+
+      return applyCreditEventResponse(
+        applyCreditEvent,
+        uuid,
+        request.body,
+        errorLogger
+      );
+    });
   };
 }
 
 /**
  * @typedef {{
  *   fetchCredit: (uuid: string) => Promise<number | null>,
+ *   applyCreditEvent: (uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
  *   resolveUuid: (request: unknown) => string,
  *   errorLogger: (error: unknown) => void,
  * }} ResolvedHandlerDependencies
@@ -147,14 +211,20 @@ export function createGetApiKeyCreditV2Handler(deps) {
  * @param {HandlerDependencies} deps Handler dependencies.
  * @returns {ResolvedHandlerDependencies} Runtime helpers for the handler.
  */
-function resolveV2HandlerDependencies(deps) {
-  const { fetchCredit, getUuid, logError } = deps;
+function resolveV2HandlerDependencies(deps = {}) {
+  const { fetchCredit, applyCreditEvent, getUuid, logError } =
+    /** @type {HandlerDependencies} */ (deps);
   ensureFetchCredit(fetchCredit);
+  ensureApplyCreditEvent(applyCreditEvent);
 
   return {
     fetchCredit: /** @type {(uuid: string) => Promise<number | null>} */ (
       fetchCredit
     ),
+    applyCreditEvent:
+      /** @type {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} */ (
+        applyCreditEvent
+      ),
     resolveUuid: resolveUuidDependency(getUuid),
     errorLogger: resolveErrorLogger(logError),
   };
@@ -168,6 +238,17 @@ function resolveV2HandlerDependencies(deps) {
 function ensureFetchCredit(fetchCredit) {
   if (typeof fetchCredit !== 'function') {
     throw new TypeError('fetchCredit must be a function');
+  }
+}
+
+/**
+ * Ensure an applyCreditEvent dependency is provided.
+ * @param {unknown} applyCreditEvent Candidate dependency.
+ * @returns {void}
+ */
+function ensureApplyCreditEvent(applyCreditEvent) {
+  if (typeof applyCreditEvent !== 'function') {
+    throw new TypeError('applyCreditEvent must be a function');
   }
 }
 
@@ -206,10 +287,10 @@ function resolveErrorLogger(logError) {
  * @returns {{ status: number, body: string, headers?: Record<string, string> } | null} Error response when invalid.
  */
 function resolveMethodError(method) {
-  return whenOrNull(method !== 'GET', () => ({
+  return whenOrNull(method !== 'GET' && method !== 'POST', () => ({
     status: 405,
     body: 'Method Not Allowed',
-    headers: { Allow: 'GET' },
+    headers: { Allow: 'GET, POST' },
   }));
 }
 
@@ -217,7 +298,7 @@ function resolveMethodError(method) {
  * Validate the request payload.
  * @param {string} method Normalized HTTP method.
  * @param {string} uuid Extracted UUID string.
- * @returns {{ status: number, body: string, headers?: Record<string, string> } | null} Validation error metadata.
+ * @returns {ValidationErrorResponse | null} Validation error metadata.
  */
 function resolveRequestValidationError(method, uuid) {
   const methodError = resolveMethodError(method);
@@ -230,20 +311,12 @@ function resolveRequestValidationError(method, uuid) {
 
 /**
  * Build the response after validation.
- * @param {{ status: number, body: string, headers?: Record<string, string> } | null} validationError Validation result.
- * @param {() => Promise<{
- *   status: number,
- *   body: string | { credit: number },
- *   headers?: Record<string, string>,
- * }>} onSuccess Success callback returning HTTP metadata.
- * @returns {Promise<{ status: number, body: string | { credit: number }, headers?: Record<string, string> }>} HTTP response information.
+ * @param {ValidationErrorResponse | null} validationError Validation result.
+ * @param {() => Promise<CreditApiResponse>} onSuccess Success callback returning HTTP metadata.
+ * @returns {Promise<CreditApiResponse>} HTTP response information.
  */
 async function resolveRequestResponse(validationError, onSuccess) {
-  if (validationError) {
-    return validationError;
-  }
-
-  return onSuccess();
+  return resolveValidationOrValue(validationError, onSuccess);
 }
 
 /**
@@ -267,39 +340,194 @@ function missingUuidResponse() {
 }
 
 /**
- * Fetch credit for a UUID and translate it into a JSON payload.
+ * Read a positive credit amount from a request body.
+ * @param {Record<string, unknown>} body Request body.
+ * @returns {number} Normalized credit amount.
+ */
+function readCreditAmount(body) {
+  const amount = Number(body.amount);
+  if (!Number.isFinite(amount)) {
+    return 0;
+  }
+
+  return amount;
+}
+
+/**
+ * Read the event type from a request body.
+ * @param {Record<string, unknown>} body Request body.
+ * @returns {string} Normalized event type.
+ */
+function readCreditEventType(body) {
+  return ensureString(body.type ?? body.eventType);
+}
+
+/**
+ * Read the idempotency UUID from a request body.
+ * @param {Record<string, unknown>} body Request body.
+ * @returns {string} Normalized idempotency UUID.
+ */
+function readIdempotencyUuid(body) {
+  return ensureString(body.eventId ?? body.idempotencyUuid);
+}
+
+/**
+ * Determine whether a credit event type is recognized.
+ * @param {unknown} type Event type.
+ * @returns {type is CreditEventType} True when the type is supported.
+ */
+function isCreditEventType(type) {
+  return type === 'credit_added' || type === 'credit_deducted';
+}
+
+/**
+ * Validate the request payload for a credit event write.
+ * @param {unknown} body Request body.
+ * @returns {ValidationErrorResponse | null} Validation error metadata.
+ */
+function resolveCreditEventBodyError(body) {
+  if (!isNonNullObject(body)) {
+    return {
+      status: 400,
+      body: 'Missing or invalid event body',
+    };
+  }
+
+  const type = readCreditEventType(
+    /** @type {Record<string, unknown>} */ (body)
+  );
+  if (!type) {
+    return {
+      status: 400,
+      body: 'Missing or invalid event type',
+    };
+  }
+
+  if (!isCreditEventType(type)) {
+    return {
+      status: 400,
+      body: 'Unsupported event type',
+    };
+  }
+
+  const eventId = readIdempotencyUuid(
+    /** @type {Record<string, unknown>} */ (body)
+  );
+  if (!eventId) {
+    return {
+      status: 400,
+      body: 'Missing or invalid idempotency UUID',
+    };
+  }
+
+  const amount = readCreditAmount(
+    /** @type {Record<string, unknown>} */ (body)
+  );
+  if (amount <= 0) {
+    return {
+      status: 400,
+      body: 'Missing or invalid amount',
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Normalize and validate a request body into a credit event payload.
+ * @param {unknown} body Event body.
+ * @returns {CreditEventInput | ValidationErrorResponse} Normalized event or validation error.
+ */
+function resolveCreditEventInput(body) {
+  return resolveValidationOrValue(resolveCreditEventBodyError(body), () => {
+    const typedBody =
+      /** @type {{ type?: unknown, eventType?: unknown, eventId?: unknown, idempotencyUuid?: unknown, amount?: unknown }} */ (
+        body
+      );
+    const type = readCreditEventType(typedBody);
+
+    return {
+      type: /** @type {CreditEventType} */ (type),
+      eventId: readIdempotencyUuid(typedBody),
+      amount: readCreditAmount(typedBody),
+    };
+  });
+}
+
+/**
+ * Fetch credit for a UUID and translate it into an HTTP response.
  * @param {(uuid: string) => Promise<number | null>} fetchCredit Function to fetch credit totals.
  * @param {string} uuid UUID used for the lookup.
  * @param {(error: unknown) => void} errorLogger Logger invoked when fetch attempts fail.
- * @returns {Promise<{ status: number, body: string | { credit: number } }>} HTTP response metadata.
+ * @returns {Promise<CreditApiResponse>} HTTP response metadata.
  */
 async function fetchCreditResponse(fetchCredit, uuid, errorLogger) {
-  try {
+  return runWithInternalError(errorLogger, async () => {
     const credit = await fetchCredit(uuid);
-    return resolveCreditPayload(credit);
+    let resolvedCredit = 0;
+    if (typeof credit === 'number') {
+      resolvedCredit = credit;
+    }
+    return {
+      status: 200,
+      body: {
+        credit: resolvedCredit,
+      },
+    };
+  });
+}
+
+/**
+ * Apply a credit event and translate it into an HTTP response.
+ * @param {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} applyCreditEvent Function to execute the write.
+ * @param {string} uuid UUID used for the mutation.
+ * @param {unknown} body Request body.
+ * @param {(error: unknown) => void} errorLogger Logger invoked when write attempts fail.
+ * @returns {Promise<CreditApiResponse>} HTTP response metadata.
+ */
+async function applyCreditEventResponse(
+  applyCreditEvent,
+  uuid,
+  body,
+  errorLogger
+) {
+  const eventInput = resolveCreditEventInput(body);
+  if (isValidationErrorResponse(eventInput)) {
+    return eventInput;
+  }
+
+  return runWithInternalError(errorLogger, () =>
+    applyCreditEvent(uuid, eventInput)
+  );
+}
+
+/**
+ * Determine whether a handler result is a validation error.
+ * @param {CreditEventInput | ValidationErrorResponse} value Potential validation result.
+ * @returns {value is ValidationErrorResponse} True when the value is an error.
+ */
+function isValidationErrorResponse(value) {
+  return (
+    isNonNullObject(value) &&
+    'status' in value &&
+    typeof value.status === 'number'
+  );
+}
+
+/**
+ * Run a request and convert thrown errors into a standard internal error response.
+ * @template T
+ * @param {(error: unknown) => void} errorLogger Error logger.
+ * @param {() => Promise<T>} action Action to execute.
+ * @returns {Promise<T | CreditApiResponse>} Success result or internal error response.
+ */
+async function runWithInternalError(errorLogger, action) {
+  try {
+    return await action();
   } catch (error) {
     errorLogger(error);
     return internalErrorResponse();
   }
-}
-
-/**
- * Format the credit lookup result into an HTTP response.
- * @param {number | null} credit Credit total returned from Firestore.
- * @returns {{ status: number, body: string | { credit: number } }} Response metadata.
- */
-function resolveCreditPayload(credit) {
-  if (credit === null) {
-    return {
-      status: 404,
-      body: 'Not found',
-    };
-  }
-
-  return {
-    status: 200,
-    body: { credit },
-  };
 }
 
 /**
@@ -315,24 +543,52 @@ function internalErrorResponse() {
 
 /**
  * Create a fetchCredit function bound to the supplied Firestore database.
- * @param {import('@google-cloud/firestore').Firestore} db Firestore instance to use for lookups.
- * @returns {(uuid: string) => Promise<number|null>} Function to fetch credit.
+ * @param {CreditFirestore} db Firestore instance to use for lookups.
+ * @returns {(uuid: string) => Promise<number>} Function to fetch credit.
  */
 export function createFetchCredit(db) {
   return async function fetchCredit(uuid) {
     const snap = await getApiKeyCreditSnapshot(db, uuid);
-    return getCreditFromSnapshot(snap);
+    return resolveCreditFromSnapshot(snap);
+  };
+}
+
+/**
+ * Create a credit-event write function bound to the supplied Firestore database.
+ * @param {CreditFirestore} db Firestore instance to use for writes.
+ * @returns {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} Function to apply a credit event.
+ */
+export function createApplyCreditEvent(db) {
+  return async function applyCreditEvent(uuid, event) {
+    return db.runTransaction(async transaction => {
+      const eventRef = getApiKeyCreditEventDocument(db, uuid, event.eventId);
+      const eventSnap = await transaction.get(eventRef);
+      if (eventSnap.exists) {
+        return resolveStoredCreditEventResponse(eventSnap);
+      }
+
+      const creditRef = getApiKeyCreditDocument(db, uuid);
+      const creditSnap = await transaction.get(creditRef);
+
+      return applyCreditEventTransaction({
+        transaction,
+        creditRef,
+        creditSnap,
+        eventRef,
+        event,
+      });
+    });
   };
 }
 
 /**
  * Extract the credit number from a Firestore snapshot.
  * @param {import('@google-cloud/firestore').DocumentSnapshot} snap Snapshot containing credit data.
- * @returns {number | null} Stored credit total when present.
+ * @returns {number} Stored credit total when present, otherwise zero.
  */
-function getCreditFromSnapshot(snap) {
+function resolveCreditFromSnapshot(snap) {
   if (!snap.exists) {
-    return null;
+    return 0;
   }
 
   const data = resolveSnapshotData(snap);
@@ -359,4 +615,193 @@ function resolveSnapshotData(snap) {
  */
 function resolveCreditValue(data) {
   return getNumericValueOrZero(data, record => record.credit);
+}
+
+/**
+ * Build a document reference for the balance snapshot.
+ * @param {import('@google-cloud/firestore').Firestore} db Firestore instance.
+ * @param {string} uuid API key UUID.
+ * @returns {import('@google-cloud/firestore').DocumentReference} Balance document reference.
+ */
+function getApiKeyCreditDocument(db, uuid) {
+  return db.collection('api-key-credit').doc(String(uuid));
+}
+
+/**
+ * Build a document reference for a ledger event.
+ * @param {import('@google-cloud/firestore').Firestore} db Firestore instance.
+ * @param {string} uuid API key UUID.
+ * @param {string} eventId Idempotency UUID.
+ * @returns {import('@google-cloud/firestore').DocumentReference} Ledger event reference.
+ */
+function getApiKeyCreditEventDocument(db, uuid, eventId) {
+  return db
+    .collection('api-key-ledger')
+    .doc(String(uuid))
+    .collection('events')
+    .doc(String(eventId));
+}
+
+/**
+ * Apply a credit event within a transaction.
+ * @param {{
+ *   transaction: CreditTransaction,
+ *   creditRef: import('@google-cloud/firestore').DocumentReference,
+ *   creditSnap: import('@google-cloud/firestore').DocumentSnapshot,
+ *   eventRef: import('@google-cloud/firestore').DocumentReference,
+ *   event: CreditEventInput,
+ * }} input Mutation input.
+ * @returns {Promise<CreditApiResponse>} Response metadata.
+ */
+async function applyCreditEventTransaction(input) {
+  const { transaction, creditRef, creditSnap, eventRef, event } = input;
+  const currentCredit = resolveCreditFromSnapshot(creditSnap);
+
+  if (event.type === 'credit_added') {
+    return commitCreditEvent({
+      transaction,
+      creditRef,
+      eventRef,
+      event,
+      balanceBefore: currentCredit,
+      balanceAfter: currentCredit + event.amount,
+    });
+  }
+
+  if (!creditSnap.exists) {
+    return {
+      status: 404,
+      body: 'Not found',
+    };
+  }
+
+  const nextCredit = currentCredit - event.amount;
+  if (nextCredit < 0) {
+    return {
+      status: 409,
+      body: 'Insufficient credit',
+    };
+  }
+
+  return commitCreditEvent({
+    transaction,
+    creditRef,
+    eventRef,
+    event,
+    balanceBefore: currentCredit,
+    balanceAfter: nextCredit,
+  });
+}
+
+/**
+ * Persist a credit event and snapshot update in one transaction.
+ * @param {{
+ *   transaction: CreditTransaction,
+ *   creditRef: import('@google-cloud/firestore').DocumentReference,
+ *   eventRef: import('@google-cloud/firestore').DocumentReference,
+ *   event: CreditEventInput,
+ *   balanceBefore: number,
+ *   balanceAfter: number,
+ * }} input Transaction payload.
+ * @returns {CreditApiResponse} Response metadata.
+ */
+function commitCreditEvent(input) {
+  const response = createCreditEventResponse(input.event, input.balanceAfter);
+  input.transaction.set(input.eventRef, {
+    type: input.event.type,
+    eventId: input.event.eventId,
+    amount: input.event.amount,
+    balanceBefore: input.balanceBefore,
+    balanceAfter: input.balanceAfter,
+  });
+  input.transaction.set(input.creditRef, {
+    credit: input.balanceAfter,
+    lastEventId: input.event.eventId,
+  });
+  return response;
+}
+
+/**
+ * Create a response for a committed credit event.
+ * @param {CreditEventInput} event Event being applied.
+ * @param {number} credit Resulting credit balance.
+ * @returns {CreditApiResponse} HTTP response metadata.
+ */
+function createCreditEventResponse(event, credit) {
+  let status = 200;
+  if (event.type === 'credit_added') {
+    status = 201;
+  }
+
+  return {
+    status,
+    body: {
+      credit,
+      type: event.type,
+      eventId: event.eventId,
+      applied: true,
+    },
+  };
+}
+
+/**
+ * Reconstruct a response from a stored ledger event.
+ * @param {import('@google-cloud/firestore').DocumentSnapshot} snap Ledger event snapshot.
+ * @returns {CreditApiResponse} HTTP response metadata.
+ */
+function resolveStoredCreditEventResponse(snap) {
+  const data = resolveEventData(snap);
+  if (!data) {
+    return internalErrorResponse();
+  }
+
+  const { type } = data;
+  if (
+    !isCreditEventType(type) ||
+    typeof data.eventId !== 'string' ||
+    typeof data.amount !== 'number' ||
+    typeof data.balanceAfter !== 'number'
+  ) {
+    return internalErrorResponse();
+  }
+
+  return createCreditEventResponse(
+    {
+      type,
+      eventId: data.eventId,
+      amount: data.amount,
+    },
+    data.balanceAfter
+  );
+}
+
+/**
+ * Safely read event data from a snapshot.
+ * @param {import('@google-cloud/firestore').DocumentSnapshot} snap Ledger event snapshot.
+ * @returns {{ type?: CreditEventType, eventId?: string, amount?: number, balanceAfter?: number } | null} Event data.
+ */
+function resolveEventData(snap) {
+  if (typeof snap.data !== 'function') {
+    return null;
+  }
+
+  const data = snap.data();
+  if (!isNonNullObject(data)) {
+    return null;
+  }
+
+  return /** @type {{ type?: CreditEventType, eventId?: string, amount?: number, balanceAfter?: number }} */ (
+    data
+  );
+}
+
+/**
+ * Return either a validation error or a computed value.
+ * @template T
+ * @param {ValidationErrorResponse | null} validationError Validation error, if any.
+ * @param {() => T} onSuccess Value factory.
+ * @returns {ValidationErrorResponse | T} Validation error or computed value.
+ */
+function resolveValidationOrValue(validationError, onSuccess) {
+  return validationError ?? onSuccess();
 }
