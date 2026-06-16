@@ -47,178 +47,160 @@ const globalState = {
  */
 
 /**
- * Creates and returns a new environment map for dependency injection.
- * @returns {Map<string, Function>} Map of environment functions.
- */
-const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
-
-const memoryLens = createMemoryStorageLens();
-const permanentLens = createLocalStorageLens({
-  storage: localStorage,
-  logError: dom.logError,
-});
-
-const createBlogDependencies = () => ({
-  fetch,
-  loggers,
-  storage: localStorage,
-  memoryLens,
-  permanentLens,
-});
-
-const {
-  fetchAndCacheBlogData: fetchBlogData,
-  getData: getBlogData,
-  setLocalTemporaryData: applyLocalTemporaryData,
-  setLocalPermanentData: applyLocalPermanentData,
-  getLocalPermanentData: fetchLocalPermanentData,
-} = createBlogDataController(createBlogDependencies);
-
-/**
- * Generates a fresh environment map.
- * @returns {Map<string, Function>} Dependency map.
- */
-function createEnv() {
-  return new Map([
-    ['getRandomNumber', getRandomNumber],
-    ['getCurrentTime', getCurrentTime],
-    ['getUuid', getUuid],
-    ['getData', () => getBlogData(globalState)],
-    [
-      'setLocalTemporaryData',
-      newData =>
-        applyLocalTemporaryData({ desired: newData, current: globalState }),
-    ],
-    ['setLocalPermanentData', newData => applyLocalPermanentData(newData)],
-    ['getLocalPermanentData', () => fetchLocalPermanentData()],
-    ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
-    ['memoryLens', memoryLens],
-    ['permanentLens', permanentLens],
-  ]);
-}
-
-const env = {
-  globalState,
-  createEnv,
-  error: dom.logError,
-  fetch,
-  loggers,
-  getUuid,
-};
-
-// --- Interactive Components ---
-
-initializeVisibleComponents(
-  {
-    win: window,
-    logInfo: log,
-    logWarning: warn,
-    getElement: getElementById,
-    hasNoInteractiveComponents,
-    getInteractiveComponents,
-    getInteractiveComponentCount,
-    getComponentInitializer,
-  },
-  makeCreateIntersectionObserver(dom, env)
-);
-
-// --- Tag Filtering ---
-
-handleTagLinks(dom);
-
-// --- Navbar Filter Buttons ---
-
-/**
- * Reset all filters to show everything.
- */
-function resetFilters() {
-  const articles = Array.from(dom.getElementsByTagName('article'));
-  for (const article of articles) {
-    reveal(article);
-  }
-}
-
-/**
- * Initialize filter button event handlers for the navbar.
- */
-function initializeFilterButtons() {
-  const buttons = document.querySelectorAll('.filter-button');
-
-  buttons.forEach(button => {
-    button.addEventListener('click', e => {
-      e.preventDefault();
-      const filterType = button.dataset.filter;
-
-      // Update active button state
-      buttons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-
-      // Apply filter (always reset first to reveal hidden articles)
-      resetFilters();
-      switch (filterType) {
-        case 'all':
-          // All articles already visible after resetFilters
-          break;
-        case 'blog':
-          hideArticlesByClass('tag-toy', dom);
-          break;
-        case 'toys':
-          hideArticlesWithoutClass('tag-toy', dom);
-          break;
-      }
-    });
-  });
-}
-
-initializeFilterButtons();
-
-// --- Initial Data Fetch ---
-fetchBlogData(globalState);
-
-setupAudio(dom, dom.setTextContent);
-
-// --- Dropdown Initialization ---
-
-const getDataCallback = () => getBlogData(globalState);
-
-const onOutputDropdownChange = createOutputDropdownHandler(
-  handleDropdownChange,
-  getDataCallback,
-  dom
-);
-
-const onInputDropdownChange = createInputDropdownHandler(dom);
-
-const initializeDropdowns = createDropdownInitializer(
-  onOutputDropdownChange,
-  onInputDropdownChange,
-  dom
-);
-
-// Initialize dropdowns after DOM is fully loaded
-window.addEventListener('DOMContentLoaded', () => {
-  initializeDropdowns();
-
-  revealBetaArticles(dom);
-
-  document.addEventListener('click', event => {
-    const target = event.target;
-    if (!(target instanceof Element)) {
-      return;
-    }
-    const button = target.closest('.toy-focus-toggle');
-    if (!button) {
-      return;
-    }
-    event.preventDefault();
-    toggleToyFocusMode(button, dom);
-  });
-});
-
-/**
  * Create the browser main entry handle.
- * @returns {() => void} Entry handle; initialization runs when this module loads.
+ * @param {{
+ *   documentObj: Document,
+ *   windowObj: Window,
+ *   fetchFn: typeof fetch,
+ *   storageObj: Storage | null,
+ * }} deps Browser dependencies.
+ * @returns {() => void} Entry handle that performs browser initialization when invoked.
  */
-export function createMainHandle() {
-  return function handleMain() {};
+export function createMainHandle({
+  documentObj,
+  windowObj,
+  fetchFn,
+  storageObj,
+}) {
+  return function handleMain() {
+    const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
+    const memoryLens = createMemoryStorageLens();
+    const permanentLens = createLocalStorageLens({
+      storage: storageObj,
+      logError: dom.logError,
+    });
+
+    const createBlogDependencies = () => ({
+      fetch: fetchFn,
+      loggers,
+      storage: storageObj,
+      memoryLens,
+      permanentLens,
+    });
+
+    const {
+      fetchAndCacheBlogData: fetchBlogData,
+      getData: getBlogData,
+      setLocalTemporaryData: applyLocalTemporaryData,
+      setLocalPermanentData: applyLocalPermanentData,
+      getLocalPermanentData: fetchLocalPermanentData,
+    } = createBlogDataController(createBlogDependencies);
+
+    const createEnv = () =>
+      new Map([
+        ['getRandomNumber', getRandomNumber],
+        ['getCurrentTime', getCurrentTime],
+        ['getUuid', getUuid],
+        ['getData', () => getBlogData(globalState)],
+        [
+          'setLocalTemporaryData',
+          newData =>
+            applyLocalTemporaryData({ desired: newData, current: globalState }),
+        ],
+        ['setLocalPermanentData', newData => applyLocalPermanentData(newData)],
+        ['getLocalPermanentData', () => fetchLocalPermanentData()],
+        ['encodeBase64', getEncodeBase64(btoa, encodeURIComponent)],
+        ['memoryLens', memoryLens],
+        ['permanentLens', permanentLens],
+      ]);
+
+    const env = {
+      globalState,
+      createEnv,
+      error: dom.logError,
+      fetch: fetchFn,
+      loggers,
+      getUuid,
+    };
+
+    initializeVisibleComponents(
+      {
+        win: windowObj,
+        logInfo: log,
+        logWarning: warn,
+        getElement: getElementById,
+        hasNoInteractiveComponents,
+        getInteractiveComponents,
+        getInteractiveComponentCount,
+        getComponentInitializer,
+      },
+      makeCreateIntersectionObserver(dom, env)
+    );
+
+    handleTagLinks(dom);
+
+    function resetFilters() {
+      const articles = Array.from(dom.getElementsByTagName('article'));
+      for (const article of articles) {
+        reveal(article);
+      }
+    }
+
+    function initializeFilterButtons() {
+      const buttons = documentObj.querySelectorAll('.filter-button');
+
+      buttons.forEach(button => {
+        button.addEventListener('click', e => {
+          e.preventDefault();
+          const filterType = button.dataset.filter;
+
+          buttons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+
+          resetFilters();
+          switch (filterType) {
+            case 'all':
+              break;
+            case 'blog':
+              hideArticlesByClass('tag-toy', dom);
+              break;
+            case 'toys':
+              hideArticlesWithoutClass('tag-toy', dom);
+              break;
+          }
+        });
+      });
+    }
+
+    initializeFilterButtons();
+
+    fetchBlogData(globalState);
+
+    setupAudio(dom, dom.setTextContent);
+
+    const getDataCallback = () => getBlogData(globalState);
+
+    const onOutputDropdownChange = createOutputDropdownHandler(
+      handleDropdownChange,
+      getDataCallback,
+      dom
+    );
+
+    const onInputDropdownChange = createInputDropdownHandler(dom);
+
+    const initializeDropdowns = createDropdownInitializer(
+      onOutputDropdownChange,
+      onInputDropdownChange,
+      dom
+    );
+
+    windowObj.addEventListener('DOMContentLoaded', () => {
+      initializeDropdowns();
+
+      revealBetaArticles(dom);
+
+      documentObj.addEventListener('click', event => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+          return;
+        }
+        const button = target.closest('.toy-focus-toggle');
+        if (!button) {
+          return;
+        }
+        event.preventDefault();
+        toggleToyFocusMode(button, dom);
+      });
+    });
+  };
 }

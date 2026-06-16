@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
   checkDepcruiseTestUtils,
   createCheckDepcruiseHandle,
+  findCoreBrowserMainGlobalViolations,
   findCoreMathRandomViolations,
 } from '../../../src/core/scripts/check-depcruise.js';
 
@@ -148,6 +149,31 @@ describe('findCoreMathRandomViolations', () => {
       checkDepcruiseTestUtils.normalizeCheckDepcruiseOptions()
     ).toThrow('pathModule is required.');
   });
+
+  test('stripBrowserMainPolicyNoise keeps only executable browser main code', () => {
+    expect(
+      checkDepcruiseTestUtils.stripBrowserMainPolicyNoise(
+        [
+          "import { createMainHandle } from '../core/browser/main.js';",
+          '',
+          '/** doc comment */',
+          'export function createMainHandle() {',
+          '  return function handleMain() {};',
+          '}',
+        ].join('\n')
+      )
+    ).toBe(
+      ['export function createMainHandle() {', '  return function handleMain() {};', '}'].join(
+        '\n'
+      )
+    );
+  });
+
+  test('stripBrowserMainPolicyNoise returns the original text when no handle exists', () => {
+    expect(
+      checkDepcruiseTestUtils.stripBrowserMainPolicyNoise('const x = 1;\n')
+    ).toBe('const x = 1;\n');
+  });
 });
 
 describe('createCheckDepcruiseHandle', () => {
@@ -239,6 +265,108 @@ describe('createCheckDepcruiseHandle', () => {
     );
     expect(stderr.chunks.join('')).toContain(
       'src/core/random.js uses the injected random source directly 1 time.'
+    );
+  });
+
+  test('detects browser globals in the core browser main entry when present', () => {
+    const readFileSync = jest.fn(() =>
+      [
+        'export function createMainHandle() {',
+        '  // localStorage should not count in comments',
+        '  /* window should not count in block comments */',
+        "  const singleQuoted = 'fetch should not count in single quotes';",
+        '  const quotedFetch = "fetch should not count in strings";',
+        "  const templatedDocument = `document should not count in templates`;",
+        '  const dependencyBag = { fetch: fetchFn, localStorage: storageObj };',
+        '  const fetchProperty = fetch.url;',
+        'const storage = localStorage;',
+        'const response = fetch("/blog.json");',
+        'window.addEventListener("load", () => {});',
+        'document.addEventListener("click", () => {});',
+        'return storage + response + quotedFetch + templatedDocument + singleQuoted + dependencyBag + fetchProperty;',
+        '}',
+      ].join('\n')
+    );
+
+    expect(
+      findCoreBrowserMainGlobalViolations({
+        readFileSync,
+        rootDir: '/repo',
+        sourceRoot: 'src/core',
+        pathModule: path,
+      })
+    ).toEqual([
+      {
+        filePath: 'src/core/browser/main.js',
+        globals: ['localStorage', 'fetch', 'window', 'document'],
+      },
+    ]);
+  });
+
+  test('returns false for browser globals that are not recognized by the policy', () => {
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('crypto', 0, 'crypto')
+    ).toBe(false);
+  });
+
+  test('recognizes fetch usage only for direct calls and shorthand values', () => {
+    expect(
+      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch("/blog.json")', 0)
+    ).toBe(true);
+    expect(
+      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch.url', 0)
+    ).toBe(false);
+    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetchx', 0)).toBe(
+      false
+    );
+    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch', 0)).toBe(
+      false
+    );
+    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch:', 0)).toBe(
+      false
+    );
+  });
+
+  test('reports browser-global violations through the dependency-cruiser gate', () => {
+    const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
+    const readFileSync = jest.fn(filePath => {
+      if (filePath === '/repo/src/core/browser/main.js') {
+        return [
+          'export function createMainHandle() {',
+          '  const storage = localStorage;',
+          '  const response = fetch("/blog.json");',
+          '  window.addEventListener("load", () => {});',
+          '  document.addEventListener("click", () => {});',
+          '  return storage + response;',
+          '}',
+        ].join('\n');
+      }
+
+      return '';
+    });
+    const readdirSync = jest.fn(() => []);
+    const stdout = createWriter();
+    const stderr = createWriter();
+    const handle = createCheckDepcruiseHandle({
+      spawnImpl,
+      readFileSync,
+      readdirSync,
+      stdout,
+      stderr,
+      rootDir: '/repo',
+      sourceRoot: 'src/core',
+      pathModule: path,
+    });
+
+    const result = handle();
+
+    expect(result).toEqual({ exitCode: 1, violations: 1 });
+    expect(stdout.chunks).toEqual([]);
+    expect(stderr.chunks.join('')).toContain(
+      'Dependency-cruiser core browser policy found 1 violation.'
+    );
+    expect(stderr.chunks.join('')).toContain(
+      'src/core/browser/main.js uses browser globals directly: localStorage, fetch, window, document.'
     );
   });
 
