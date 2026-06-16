@@ -377,7 +377,7 @@ function createPageFooter() {
  */
 function createManualToggleScript(manualId) {
   const manualIdLiteral = JSON.stringify(manualId);
-  return `<script type="module">const manual=document.getElementById(${manualIdLiteral});if(manual){const body=manual.querySelector('.manual-body');const showButton=manual.querySelector('[data-manual-action="show"]');if(body&&showButton){const setOpen=open=>{body.hidden=!open;showButton.hidden=open;showButton.setAttribute('aria-expanded',String(open));};setOpen(false);showButton.addEventListener('click',event=>{event.preventDefault();setOpen(true);});const hideButton=manual.querySelector('[data-manual-action="hide"]');if(hideButton){hideButton.addEventListener('click',event=>{event.preventDefault();setOpen(false);});}}}</script>`;
+  return `<script type="module">const manual=document.getElementById(${manualIdLiteral});if(manual){const body=manual.querySelector('.manual-body');const toggle=manual.querySelector('[data-manual-toggle]');if(body&&toggle){const setOpen=open=>{body.hidden=!open;toggle.textContent=open?'hide':'show';toggle.setAttribute('aria-expanded',String(open));};setOpen(false);toggle.addEventListener('click',event=>{event.preventDefault();setOpen(body.hidden);});}}</script>`;
 }
 
 /**
@@ -625,10 +625,9 @@ function createManualBlock(manual) {
   }
   title = escapeHtml(title);
   const paragraphs = createParagraphs(manual.content || []);
-  const showButton = `<button type="button" class="manual-link" data-manual-action="show" aria-controls="${bodyId}" aria-expanded="false">show</button>`;
-  const hideButton = `<button type="button" class="manual-link" data-manual-action="hide" aria-controls="${bodyId}">hide</button>`;
+  const toggleButton = `<button type="button" class="manual-link" data-manual-toggle aria-controls="${bodyId}" aria-expanded="false">show</button>`;
   const manualScript = createManualToggleScript(manualId);
-  return `<div class="manual" id="${escapedManualId}"><p class="manual-toggle">${showButton} ${title}</p><div class="manual-body" id="${bodyId}" hidden>${paragraphs}<p class="manual-toggle">${hideButton}</p></div>${manualScript}</div>`;
+  return `<div class="manual" id="${escapedManualId}"><p class="manual-toggle">${title} <span class="manual-toggle-menu">(${toggleButton})</span></p><div class="manual-body" id="${bodyId}" hidden>${paragraphs}</div>${manualScript}</div>`;
 }
 
 /**

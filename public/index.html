@@ -246,6 +246,11 @@
         color: var(--terminal-key);
       }
 
+      .manual-toggle-menu {
+        color: var(--terminal-key);
+        white-space: nowrap;
+      }
+
       .manual-link {
         appearance: none;
         border: 0;
@@ -684,16 +689,18 @@
         <div class="key">man</div>
         <div class="manual" id="CHAN1-manual">
           <p class="manual-toggle">
-            <button
-              type="button"
-              class="manual-link"
-              data-manual-action="show"
-              aria-controls="CHAN1-manual-body"
-              aria-expanded="false"
-            >
-              show
-            </button>
             User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="CHAN1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
           </p>
           <div class="manual-body" id="CHAN1-manual-body" hidden>
             <p>
@@ -710,44 +717,23 @@
               Because this is a static toy, it ignores live git history, file
               watching, and any network or database access.
             </p>
-            <p class="manual-toggle">
-              <button
-                type="button"
-                class="manual-link"
-                data-manual-action="hide"
-                aria-controls="CHAN1-manual-body"
-              >
-                hide
-              </button>
-            </p>
           </div>
           <script type="module">
             const manual = document.getElementById('CHAN1-manual');
             if (manual) {
               const body = manual.querySelector('.manual-body');
-              const showButton = manual.querySelector(
-                '[data-manual-action="show"]'
-              );
-              if (body && showButton) {
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
                 const setOpen = open => {
                   body.hidden = !open;
-                  showButton.hidden = open;
-                  showButton.setAttribute('aria-expanded', String(open));
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
                 };
                 setOpen(false);
-                showButton.addEventListener('click', event => {
+                toggle.addEventListener('click', event => {
                   event.preventDefault();
-                  setOpen(true);
+                  setOpen(body.hidden);
                 });
-                const hideButton = manual.querySelector(
-                  '[data-manual-action="hide"]'
-                );
-                if (hideButton) {
-                  hideButton.addEventListener('click', event => {
-                    event.preventDefault();
-                    setOpen(false);
-                  });
-                }
               }
             }
           </script>

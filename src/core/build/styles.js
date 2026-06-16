@@ -212,6 +212,11 @@ const STYLES = String.raw`
     color: var(--terminal-key);
   }
 
+  .manual-toggle-menu {
+    color: var(--terminal-key);
+    white-space: nowrap;
+  }
+
   .manual-link {
     appearance: none;
     border: 0;
