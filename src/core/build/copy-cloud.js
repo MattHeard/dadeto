@@ -186,6 +186,7 @@ export async function createCopyCloudHandle(deps) {
 
   const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
   const commonCoreSource = join(srcCoreDir, 'commonCore.js');
+  const expressAppSource = join(srcCoreDir, 'express-app.js');
 
   const commonCoreCopies = functionDirectories.map(name => ({
     source: commonCoreSource,
@@ -470,6 +471,10 @@ export async function createCopyCloudHandle(deps) {
       target: join(infraDir, 'core', 'commonCore.js'),
     },
     {
+      source: expressAppSource,
+      target: join(infraDir, 'core', 'express-app.js'),
+    },
+    {
       source: join(srcCoreBrowserDir, 'browser-core.js'),
       target: join(infraDir, 'core', 'browser', 'browser-core.js'),
     },
@@ -585,6 +590,15 @@ export async function createCopyCloudHandle(deps) {
     {
       source: commonCoreSource,
       target: join(infraFunctionsDir, 'generate-stats', 'commonCore.js'),
+    },
+    {
+      source: expressAppSource,
+      target: join(
+        infraFunctionsDir,
+        'generate-stats',
+        'core',
+        'express-app.js'
+      ),
     },
     {
       source: commonGcfSource,
