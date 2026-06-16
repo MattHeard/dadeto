@@ -54,4 +54,29 @@ describe('content renderers mapping', () => {
     expect(html).not.toContain('data-manual-action="hide"');
     expect(html).toContain('<p>line one</p><p>line two</p>');
   });
+
+  test('generateBlog renders markdown manuals as collapsed preformatted text', () => {
+    const blog = {
+      posts: [
+        {
+          key: 'CR2',
+          title: 'Content',
+          publicationDate: '2024-01-01',
+          content: [
+            {
+              type: 'manual',
+              id: 'CR2-manual',
+              title: 'User manual',
+              markdown: '# Heading\n\n- item one\n- item two',
+            },
+          ],
+        },
+      ],
+    };
+    const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('class="manual-body manual-markdown"');
+    expect(html).toContain('# Heading');
+    expect(html).toContain('- item one');
+    expect(html).toContain('- item two');
+  });
 });

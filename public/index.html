@@ -274,6 +274,14 @@
         gap: 1em;
       }
 
+      .manual-markdown {
+        display: block;
+        font: inherit;
+        margin: 0;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+      }
+
       .manual-body[hidden] {
         display: none;
       }
@@ -701,22 +709,160 @@
               >)</span
             >
           </p>
-          <div class="manual-body" id="CHAN1-manual-body" hidden>
-            <p>
-              Paste a JSON object with a changeSets array. Each change set
-              should include an id and a files list, but the explorer will fall
-              back cleanly when fields are missing.
-            </p>
-            <p>
-              The first ranking table highlights pairs that change together most
-              often. The second ranking table shows the files with the broadest
-              surface area and the most partners.
-            </p>
-            <p>
-              Because this is a static toy, it ignores live git history, file
-              watching, and any network or database access.
-            </p>
-          </div>
+          <pre
+            class="manual-body manual-markdown"
+            id="CHAN1-manual-body"
+            hidden
+          >
+# CHAN1 — Change Together Explorer
+
+## What this toy does
+
+Change Together Explorer analyzes a static list of change sets and ranks:
+
+- file pairs that often change together
+- individual files that appear often and connect to many partner files
+
+Use it when you want a quick, local co-change report before doing heavier repository mining. The toy does not read live Git history. It only analyzes the JSON you paste into it.
+
+## Input format
+
+Paste a JSON object with a `changeSets` array.
+
+Each change set can contain:
+
+- `id`: optional string identifier
+- `files`: array of file path strings
+
+Only string file paths are counted. Duplicate file paths inside one change set are removed. File paths are sorted internally, so pair ordering is deterministic.
+
+If a change set has no string `id`, the toy creates a fallback ID such as `change-set-1`.
+
+```json
+{
+  &quot;changeSets&quot;: [
+    {
+      &quot;id&quot;: &quot;commit-a&quot;,
+      &quot;files&quot;: [
+        &quot;src/app.js&quot;,
+        &quot;src/router.js&quot;,
+        &quot;test/app.test.js&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;commit-b&quot;,
+      &quot;files&quot;: [
+        &quot;src/app.js&quot;,
+        &quot;src/router.js&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;commit-c&quot;,
+      &quot;files&quot;: [
+        &quot;src/billing.js&quot;,
+        &quot;test/billing.test.js&quot;
+      ]
+    }
+  ]
+}
+```
+
+## How to use it
+
+1. Gather a list of changes from commits, pull requests, task branches, or release notes.
+2. Convert each unit of change into one object in the `changeSets` array.
+3. Paste the JSON into the toy.
+4. Click **Submit**.
+5. Read the JSON report.
+
+## Output format
+
+The toy returns JSON with three top-level fields:
+
+```json
+{
+  &quot;rankedPairs&quot;: [],
+  &quot;rankedFiles&quot;: [],
+  &quot;summary&quot;: {}
+}
+```
+
+### `rankedPairs`
+
+Each entry contains:
+
+- `files`: the two files in the pair
+- `coChangeCount`: how many change sets contained both files
+- `supportingChangeSetIds`: the change-set IDs that support the count
+- `reason`: short text explanation
+
+Pairs are sorted by highest `coChangeCount` first. Ties are sorted by file name.
+
+### `rankedFiles`
+
+Each entry contains:
+
+- `file`: file path
+- `touchCount`: how many change sets included the file
+- `partnerCount`: how many distinct other files it appeared with
+- `partnerFiles`: list of partner file paths
+- `reason`: short text explanation
+
+Files are sorted by highest `touchCount`, then highest `partnerCount`, then file name.
+
+### `summary`
+
+The summary contains:
+
+- `changeSetCount`
+- `fileCount`
+- `pairCount`
+
+## How to interpret the report
+
+A high-ranking pair may indicate that the two files are coupled. This can be useful when deciding where to add tests, where to refactor, or where to inspect architecture boundaries.
+
+A high-ranking file may be a coordination hotspot. It may be a central module, a broad integration point, or a file that is simply edited frequently.
+
+The toy does not decide whether coupling is good or bad. It gives you evidence for further inspection.
+
+## Practical examples
+
+### Find risky files before refactoring
+
+Run the toy on recent change sets. Look for files with high `touchCount` and high `partnerCount`. These files may deserve extra regression tests before refactoring.
+
+### Spot hidden feature coupling
+
+If `src/pricing.js` and `src/checkout.js` repeatedly appear together, users may experience them as one feature even if the codebase treats them separately.
+
+### Check whether a split was successful
+
+Run the toy before and after a refactor. If two files changed together frequently before the refactor but no longer do, the split may have reduced coupling.
+
+## Troubleshooting
+
+### The report is empty
+
+The input may be invalid JSON, or `changeSets` may be missing or not an array. Invalid JSON produces an empty report rather than a crash.
+
+### Files are missing from the report
+
+Only string values inside `files` are counted. Numbers, objects, `null`, and other values are ignored.
+
+### Pair counts look too low
+
+Pairs are counted once per change set. Repeating the same file path inside a single change set does not increase the count.
+
+## Limitations
+
+- No live Git access.
+- No network access.
+- No database access.
+- No awareness of commit dates or authors.
+- No semantic understanding of the files.
+- No distinction between production code, tests, docs, or configuration unless you encode that in file paths.</pre
+          >
           <script type="module">
             const manual = document.getElementById('CHAN1-manual');
             if (manual) {
@@ -827,6 +973,187 @@
           Pass JSON options like width, height, depth, and hue, or submit an
           empty payload for the default sketch.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="FRAC1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="FRAC1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="FRAC1-manual-body"
+            hidden
+          >
+# FRAC1 — Fractal Generator
+
+## What this toy does
+
+Fractal Generator creates a small recursive tree drawing as a canvas payload. It is useful for quickly experimenting with recursion, branch depth, canvas sizing, and color hue.
+
+The toy accepts optional JSON. Empty input or malformed input falls back to defaults.
+
+## Input format
+
+Paste a JSON object with any of these optional fields:
+
+- `width`: canvas width
+- `height`: canvas height
+- `depth`: recursive branch depth
+- `hue`: base hue for branch colors
+
+```json
+{
+  &quot;width&quot;: 420,
+  &quot;height&quot;: 280,
+  &quot;depth&quot;: 6,
+  &quot;hue&quot;: 140
+}
+```
+
+## Defaults and limits
+
+The toy normalizes input before drawing.
+
+| Field | Default | Limit |
+|---|---:|---:|
+| `width` | 360 | 160–800 |
+| `height` | 240 | 120–600 |
+| `depth` | 5 | 1–8 |
+| `hue` | 180 | 0–360 |
+
+`depth` is rounded to the nearest whole number before being clamped.
+
+## How to use it
+
+1. Leave the input empty and click **Submit** to see the default tree.
+2. Add a JSON object with one or more fields.
+3. Click **Submit** again.
+4. Adjust values until the tree has the shape and color you want.
+
+## Output
+
+The toy returns a canvas drawing payload:
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 240,
+  &quot;shapes&quot;: []
+}
+```
+
+The `shapes` array contains:
+
+- one background rectangle
+- recursive branch lines
+
+The canvas presenter renders those shapes visually.
+
+## How the drawing is built
+
+The tree starts near the bottom center of the canvas. It draws an upward trunk, then recursively draws two child branches from the end of each branch.
+
+Each child branch:
+
+- is shorter than its parent
+- turns left or right
+- reduces the remaining depth by one
+
+The toy stops drawing when depth reaches zero or a branch becomes too short.
+
+## Useful experiments
+
+### Change size only
+
+```json
+{
+  &quot;width&quot;: 640,
+  &quot;height&quot;: 400
+}
+```
+
+This gives the same default tree logic more room.
+
+### Make a compact tree
+
+```json
+{
+  &quot;width&quot;: 240,
+  &quot;height&quot;: 160,
+  &quot;depth&quot;: 4
+}
+```
+
+This is useful when embedding the output in a small area.
+
+### Try different color families
+
+```json
+{
+  &quot;hue&quot;: 30
+}
+```
+
+Hue values are degrees on the color wheel:
+
+- `0`: red
+- `60`: yellow
+- `120`: green
+- `180`: cyan
+- `240`: blue
+- `300`: purple
+
+## Tips
+
+- Use `depth: 5` or `depth: 6` for a balanced drawing.
+- Use `depth: 8` for the densest possible tree.
+- Increase `height` if the tree feels cramped.
+- Change only one parameter at a time when learning what each one does.
+
+## Troubleshooting
+
+### The tree did not use my value
+
+The value may be outside the allowed range and was clamped. For example, `depth: 20` becomes `depth: 8`.
+
+### The toy ignored my input
+
+The input may be malformed JSON. Malformed JSON falls back to the default config.
+
+### The output is JSON rather than an image
+
+That is expected. The toy emits a canvas-presenter payload, and the presenter renders it visually.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('FRAC1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -924,6 +1251,239 @@
         <p class="value">
           Accepts pure JSON input and returns a ranked JSON recommendation list.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="CONF1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="CONF1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="CONF1-manual-body"
+            hidden
+          >
+# CONF1 — Conflict-Aware Product Scheduler
+
+## What this toy does
+
+Conflict-Aware Product Scheduler ranks candidate product increments against active work. It helps choose a small slice that creates value while avoiding file overlap, shared-surface conflicts, test/refactor collisions, and deployment risk.
+
+The toy is a deterministic JSON scoring helper. It does not inspect a repository or connect to a project-management tool.
+
+## Input format
+
+Paste a JSON object with:
+
+- `candidates`: array of candidate product increments
+- `activeWork`: array of current work items
+
+```json
+{
+  &quot;candidates&quot;: [
+    {
+      &quot;id&quot;: &quot;group-ride-minutes&quot;,
+      &quot;title&quot;: &quot;Shared minutes on group rides&quot;,
+      &quot;productValue&quot;: 9,
+      &quot;learningValue&quot;: 7,
+      &quot;userFeedbackValue&quot;: 8,
+      &quot;expectedTouchSet&quot;: [
+        &quot;src/rides/groupRide.js&quot;,
+        &quot;src/billing/passMinutes.js&quot;,
+        &quot;src/receipts/groupRideReceipt.js&quot;
+      ],
+      &quot;sharedTouchRisk&quot;: 2,
+      &quot;expectedTestRefactorCollision&quot;: 3,
+      &quot;expectedDeploymentRisk&quot;: 2
+    }
+  ],
+  &quot;activeWork&quot;: [
+    {
+      &quot;id&quot;: &quot;billing-refactor&quot;,
+      &quot;touchSet&quot;: [
+        &quot;src/billing/passMinutes.js&quot;
+      ],
+      &quot;reservedSurfaces&quot;: [
+        &quot;src/payments&quot;,
+        &quot;src/billing/passMinutes.js&quot;
+      ]
+    }
+  ]
+}
+```
+
+## Candidate fields
+
+### `id`
+
+A string identifier. If missing, the toy creates a fallback such as `candidate-1`.
+
+### `title`
+
+A readable title. If missing, the title falls back to the `id`.
+
+### `productValue`
+
+How much direct product value the candidate creates.
+
+### `learningValue`
+
+How much the candidate teaches you about the product, architecture, users, or delivery system.
+
+### `userFeedbackValue`
+
+How much useful feedback the candidate can produce once released.
+
+### `expectedTouchSet`
+
+A list of file paths or surfaces the candidate is expected to touch.
+
+Only string entries are counted.
+
+### `sharedTouchRisk`
+
+A numeric penalty for touching shared infrastructure, shared UI patterns, common data models, or other high-coordination surfaces.
+
+### `expectedTestRefactorCollision`
+
+A numeric penalty for expected conflict with current test-writing, refactoring, or cleanup work.
+
+### `expectedDeploymentRisk`
+
+A numeric penalty for rollout, migration, release, operational, or monitoring risk.
+
+## Active work fields
+
+### `touchSet`
+
+Files or surfaces already being changed by current work.
+
+### `reservedSurfaces`
+
+Files or surfaces that are currently sensitive or should be avoided.
+
+The scheduler counts overlaps between a candidate’s `expectedTouchSet` and these active-work sets.
+
+## Scoring model
+
+The toy computes:
+
+```text
+value =
+  productValue
++ learningValue
++ userFeedbackValue
+
+coordinationCost =
+  expectedFileOverlap
++ expectedSharedInfrastructureTouch
++ expectedTestRefactorCollision
++ expectedDeploymentRisk
+
+score = value - coordinationCost
+```
+
+Where:
+
+- `expectedFileOverlap` counts overlap between candidate `expectedTouchSet` and active-work `touchSet`.
+- `expectedSharedInfrastructureTouch` equals `sharedTouchRisk` plus overlap between candidate `expectedTouchSet` and active-work `reservedSurfaces`.
+
+## Output format
+
+The toy returns JSON:
+
+```json
+{
+  &quot;ranked&quot;: [
+    {
+      &quot;id&quot;: &quot;group-ride-minutes&quot;,
+      &quot;title&quot;: &quot;Shared minutes on group rides&quot;,
+      &quot;score&quot;: 17,
+      &quot;penalties&quot;: {
+        &quot;expectedFileOverlap&quot;: 1,
+        &quot;expectedSharedInfrastructureTouch&quot;: 3,
+        &quot;expectedTestRefactorCollision&quot;: 3,
+        &quot;expectedDeploymentRisk&quot;: 2
+      },
+      &quot;reason&quot;: &quot;score 17; 1 file overlap, 3 shared-surface touches, 3 test collisions, 2 deployment risks&quot;
+    }
+  ],
+  &quot;summary&quot;: {
+    &quot;candidateCount&quot;: 1,
+    &quot;activeWorkCount&quot;: 1
+  }
+}
+```
+
+Candidates are sorted by highest score first. Ties are sorted by `id`, then `title`.
+
+## How to use it
+
+1. List a few candidate product increments.
+2. Estimate the value fields.
+3. Estimate the risk fields.
+4. Add active work with `touchSet` and `reservedSurfaces`.
+5. Submit the JSON.
+6. Use the ranking as a starting point for discussion.
+
+## Tips
+
+- Use a consistent scoring scale, such as `0–10`.
+- Keep candidate slices small enough that their expected touch set is plausible.
+- Use `reservedSurfaces` for areas where parallel work would be especially expensive.
+- Rerun the toy when active work changes.
+
+## Limitations
+
+- The toy does not know the real repository.
+- It does not infer files from feature names.
+- It does not estimate effort.
+- It does not understand deadlines.
+- It only scores the numbers and lists you provide.
+
+## Troubleshooting
+
+### My candidates all score zero
+
+Check that the value fields use the exact names `productValue`, `learningValue`, and `userFeedbackValue`.
+
+### Overlap is not counted
+
+Check that the same exact string appears in the candidate `expectedTouchSet` and the active-work `touchSet` or `reservedSurfaces`.
+
+### A field seems ignored
+
+The toy only reads the exact field names documented above. For example, `feedbackValue` is ignored; use `userFeedbackValue`.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('CONF1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -1021,6 +1581,227 @@
           When no rows are provided, it falls back to a committed World Bank
           historical snapshot so the graph still renders predictably.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="GDPS1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="GDPS1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="GDPS1-manual-body"
+            hidden
+          >
+# GDPS1 — GDP Sector Projection
+
+## What this toy does
+
+GDP Sector Projection plots primary, secondary, and tertiary GDP sector shares over time. It combines historical rows with a simple forward projection.
+
+If you submit no valid rows, the toy uses its built-in public historical snapshot. This makes the graph render even with empty input.
+
+## Input formats
+
+You can provide either:
+
+1. a raw array of yearly rows
+2. an object with `rows` and optional `forecast`
+
+## Option 1: raw row array
+
+```json
+[
+  {
+    &quot;year&quot;: 2000,
+    &quot;primary&quot;: 25,
+    &quot;secondary&quot;: 30,
+    &quot;tertiary&quot;: 45
+  },
+  {
+    &quot;year&quot;: 2010,
+    &quot;primary&quot;: 15,
+    &quot;secondary&quot;: 35,
+    &quot;tertiary&quot;: 50
+  }
+]
+```
+
+## Option 2: object with rows and forecast
+
+```json
+{
+  &quot;rows&quot;: [
+    {
+      &quot;year&quot;: 2000,
+      &quot;primary&quot;: 25,
+      &quot;secondary&quot;: 30,
+      &quot;tertiary&quot;: 45
+    },
+    {
+      &quot;year&quot;: 2024,
+      &quot;primary&quot;: 6,
+      &quot;secondary&quot;: 24,
+      &quot;tertiary&quot;: 70
+    }
+  ],
+  &quot;forecast&quot;: {
+    &quot;inputEndYear&quot;: 2024,
+    &quot;primaryDropYear&quot;: 2030,
+    &quot;secondaryDropYear&quot;: 2035,
+    &quot;tertiaryTarget&quot;: 100,
+    &quot;outputEndYear&quot;: 2050
+  }
+}
+```
+
+## Row fields
+
+Each row should contain:
+
+- `year`
+- `primary`
+- `secondary`
+- `tertiary`
+
+The values are converted to numbers. Rows with non-finite values are ignored. Rows are sorted by year.
+
+The toy does not require the three sector shares to sum to `100`, but your graph will usually be easier to interpret if they do.
+
+## Forecast fields
+
+### `inputEndYear`
+
+The year used as the projection anchor. Default: `2024`.
+
+If there is a row for this year, the toy uses it. Otherwise it uses the last available row.
+
+### `primaryDropYear`
+
+The year when the primary sector reaches `0`. Default: `2030`.
+
+### `secondaryDropYear`
+
+The year when the secondary sector reaches `0`. Default: `2035`.
+
+### `tertiaryTarget`
+
+The final tertiary-sector target and graph y-axis maximum. Default: `100`.
+
+### `outputEndYear`
+
+The final year to plot. Default: `2050`.
+
+## Projection behavior
+
+The toy builds yearly points from `2000` through `outputEndYear`.
+
+For each year:
+
+- If a historical row exists, that row is used.
+- Otherwise, a projected row is generated.
+- Primary declines to `0` by `primaryDropYear`.
+- Secondary declines to `0` by `secondaryDropYear`.
+- Tertiary rises toward `tertiaryTarget`.
+- After `secondaryDropYear`, the projection is `0` primary, `0` secondary, and `tertiaryTarget` tertiary.
+
+Output values are clamped to the visible `0–100` range.
+
+## Output
+
+The toy returns a `graph-plot` payload for the graph presenter. It includes:
+
+- canvas dimensions
+- axis bounds
+- graph colors
+- primary sector series
+- secondary sector series
+- tertiary sector series
+
+The graph presenter renders the three series as lines.
+
+## How to use it
+
+1. Submit empty input to see the default historical snapshot and projection.
+2. Add a few rows if you want to model a different economy.
+3. Adjust `forecast` values to test different transition assumptions.
+4. Click **Submit** and inspect the plotted sector trajectories.
+
+## Useful experiments
+
+### Extend the projection
+
+```json
+{
+  &quot;forecast&quot;: {
+    &quot;outputEndYear&quot;: 2075
+  }
+}
+```
+
+### Slow down industrial decline
+
+```json
+{
+  &quot;forecast&quot;: {
+    &quot;secondaryDropYear&quot;: 2050
+  }
+}
+```
+
+### Use a lower tertiary target
+
+```json
+{
+  &quot;forecast&quot;: {
+    &quot;tertiaryTarget&quot;: 85
+  }
+}
+```
+
+## Tips
+
+- Include a row for `inputEndYear` if you want precise control over the projection anchor.
+- Use plausible sector-share values if you want the graph to be meaningful.
+- Keep `outputEndYear` after `inputEndYear`.
+- Compare multiple scenarios by changing one forecast field at a time.
+
+## Limitations
+
+- This is a simple structural projection, not an econometric model.
+- It does not fetch live data.
+- It does not validate that sector shares sum to `100`.
+- It does not model uncertainty.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('GDPS1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -1117,6 +1898,253 @@
           The output is rendered as a canvas so you can inspect the shape
           directly in the browser.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="GRAP1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="GRAP1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="GRAP1-manual-body"
+            hidden
+          >
+# GRAP1 — Graph Plotter
+
+## What this toy does
+
+Graph Plotter draws a single-variable mathematical expression on Cartesian axes. It turns a JSON graph configuration into a `graph-plot` payload for the canvas graph presenter.
+
+Use it to sketch simple functions such as sine, cosine, quadratics, exponentials, and logarithms.
+
+## Input format
+
+Paste a JSON object.
+
+```json
+{
+  &quot;expression&quot;: &quot;Math.sin(x)&quot;,
+  &quot;width&quot;: 420,
+  &quot;height&quot;: 280,
+  &quot;xMin&quot;: -6.283185307179586,
+  &quot;xMax&quot;: 6.283185307179586,
+  &quot;yMin&quot;: -1.5,
+  &quot;yMax&quot;: 1.5,
+  &quot;background&quot;: &quot;#faf8f4&quot;,
+  &quot;axesColor&quot;: &quot;#111827&quot;,
+  &quot;gridColor&quot;: &quot;#d1d5db&quot;,
+  &quot;lineColor&quot;: &quot;#2563eb&quot;
+}
+```
+
+All fields are optional. Invalid or missing fields fall back to defaults.
+
+## Default graph
+
+If you submit empty or invalid input, the toy uses a fallback sine graph:
+
+```json
+{
+  &quot;expression&quot;: &quot;Math.sin(x)&quot;,
+  &quot;width&quot;: 420,
+  &quot;height&quot;: 280,
+  &quot;xMin&quot;: -6.283185307179586,
+  &quot;xMax&quot;: 6.283185307179586,
+  &quot;yMin&quot;: -1.5,
+  &quot;yMax&quot;: 1.5
+}
+```
+
+## Supported fields
+
+### `expression`
+
+A JavaScript expression using `x`.
+
+Examples:
+
+```json
+{ &quot;expression&quot;: &quot;x * x&quot; }
+```
+
+```json
+{ &quot;expression&quot;: &quot;Math.cos(x)&quot; }
+```
+
+```json
+{ &quot;expression&quot;: &quot;Math.exp(x)&quot; }
+```
+
+The evaluator exposes `x` and `Math`.
+
+### `width` and `height`
+
+Canvas dimensions.
+
+The toy uses `width` to determine how many points to sample. Wider graphs produce more sampled points.
+
+### `xMin` and `xMax`
+
+The horizontal plotting range.
+
+### `yMin` and `yMax`
+
+The vertical plotting range.
+
+Values outside the visible range may be clipped by the graph presenter.
+
+### Color fields
+
+- `background`
+- `axesColor`
+- `gridColor`
+- `lineColor`
+
+Use CSS color strings.
+
+## Sampling behavior
+
+The toy does not accept a `samples` field.
+
+Instead, it computes the number of points from the width:
+
+```text
+max(24, round(width / 4))
+```
+
+Each point is evaluated across the interval from `xMin` to `xMax`.
+
+If an evaluated `y` value is not finite, that point is skipped.
+
+## Output
+
+The toy returns a graph payload:
+
+```json
+{
+  &quot;type&quot;: &quot;graph-plot&quot;,
+  &quot;width&quot;: 420,
+  &quot;height&quot;: 280,
+  &quot;xMin&quot;: -6.283185307179586,
+  &quot;xMax&quot;: 6.283185307179586,
+  &quot;yMin&quot;: -1.5,
+  &quot;yMax&quot;: 1.5,
+  &quot;points&quot;: []
+}
+```
+
+The presenter renders the graph visually.
+
+## How to use it
+
+1. Start with the default sine graph.
+2. Change `expression`.
+3. Adjust `xMin`, `xMax`, `yMin`, and `yMax` so the interesting part of the curve is visible.
+4. Adjust `width` and `height` if you need a larger graph.
+5. Submit again.
+
+## Example expressions
+
+### Quadratic
+
+```json
+{
+  &quot;expression&quot;: &quot;x * x&quot;,
+  &quot;xMin&quot;: -5,
+  &quot;xMax&quot;: 5,
+  &quot;yMin&quot;: 0,
+  &quot;yMax&quot;: 25
+}
+```
+
+### Cubic
+
+```json
+{
+  &quot;expression&quot;: &quot;x * x * x&quot;,
+  &quot;xMin&quot;: -4,
+  &quot;xMax&quot;: 4,
+  &quot;yMin&quot;: -64,
+  &quot;yMax&quot;: 64
+}
+```
+
+### Cosine
+
+```json
+{
+  &quot;expression&quot;: &quot;Math.cos(x)&quot;,
+  &quot;xMin&quot;: -6.283185307179586,
+  &quot;xMax&quot;: 6.283185307179586,
+  &quot;yMin&quot;: -1.5,
+  &quot;yMax&quot;: 1.5
+}
+```
+
+### Logarithm
+
+```json
+{
+  &quot;expression&quot;: &quot;Math.log(x)&quot;,
+  &quot;xMin&quot;: 0.1,
+  &quot;xMax&quot;: 10,
+  &quot;yMin&quot;: -3,
+  &quot;yMax&quot;: 3
+}
+```
+
+## Tips
+
+- Use `Math.sin(x)`, not `sin(x)`.
+- Use `Math.pow(x, 2)` or `x * x` for powers.
+- Avoid expressions with side effects.
+- Narrow the x-range when a curve changes too quickly.
+- Set y-axis limits manually when the graph looks flat.
+
+## Troubleshooting
+
+### No curve appears
+
+The expression may produce non-finite values, or the visible y-range may not include the curve.
+
+### The expression is ignored
+
+Check that the input is valid JSON. JSON strings require double quotes.
+
+### The graph is too rough
+
+Increase `width`. The toy samples more points on wider graphs.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('GRAP1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -1212,6 +2240,176 @@
           This post is now public so anyone can try the canvas presenter
           directly.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="CANV1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="CANV1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="CANV1-manual-body"
+            hidden
+          >
+# CANV1 — Canvas Doodle
+
+## What this toy does
+
+Canvas Doodle generates a small layered 2D doodle from a few JSON parameters. It is useful for testing the canvas presenter and experimenting with basic size and color inputs.
+
+This toy does not render arbitrary user-provided shape lists. It generates a fixed doodle pattern from the parameters you provide.
+
+## Input format
+
+Paste a JSON object with any of these optional fields:
+
+- `width`
+- `height`
+- `background`
+- `accent`
+
+```json
+{
+  &quot;width&quot;: 320,
+  &quot;height&quot;: 180,
+  &quot;background&quot;: &quot;#f8f6f2&quot;,
+  &quot;accent&quot;: &quot;#1f2937&quot;
+}
+```
+
+## Defaults
+
+If input is empty or malformed, the toy uses:
+
+```json
+{
+  &quot;width&quot;: 320,
+  &quot;height&quot;: 180,
+  &quot;background&quot;: &quot;#f8f6f2&quot;,
+  &quot;accent&quot;: &quot;#1f2937&quot;
+}
+```
+
+## How the doodle is generated
+
+The toy produces five shapes:
+
+1. a background rectangle covering the full canvas
+2. a horizontal color band near the top
+3. a left circle
+4. a right circle
+5. a bottom accent line
+
+The band and circles use generated hue values. The `accent` value controls the bottom line color.
+
+## Output
+
+The toy returns a canvas payload:
+
+```json
+{
+  &quot;width&quot;: 320,
+  &quot;height&quot;: 180,
+  &quot;shapes&quot;: []
+}
+```
+
+The `shapes` array is generated by the toy and rendered by the canvas presenter.
+
+## How to use it
+
+1. Submit empty input to see the default doodle.
+2. Change `width` and `height` to resize the canvas.
+3. Change `background` to alter the base color.
+4. Change `accent` to alter the bottom line.
+5. Click **Submit** again.
+
+## Examples
+
+### Dark background
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 220,
+  &quot;background&quot;: &quot;#111827&quot;,
+  &quot;accent&quot;: &quot;#f9fafb&quot;
+}
+```
+
+### Small thumbnail
+
+```json
+{
+  &quot;width&quot;: 180,
+  &quot;height&quot;: 120,
+  &quot;background&quot;: &quot;#fef3c7&quot;,
+  &quot;accent&quot;: &quot;#92400e&quot;
+}
+```
+
+### Wide banner
+
+```json
+{
+  &quot;width&quot;: 640,
+  &quot;height&quot;: 180,
+  &quot;background&quot;: &quot;#ecfeff&quot;,
+  &quot;accent&quot;: &quot;#164e63&quot;
+}
+```
+
+## Tips
+
+- Use standard CSS color strings for `background` and `accent`.
+- Keep width and height positive and moderate.
+- Use this toy as a simple presenter test rather than a full drawing tool.
+- If you want custom shape rendering, this toy would need to be extended to consume a user-provided `shapes` array.
+
+## Troubleshooting
+
+### My custom shapes did not appear
+
+That is expected. The current toy ignores user-provided `shapes` and generates its own fixed composition.
+
+### The colors changed unexpectedly
+
+The band and circles use a generated hue. Only `background` and `accent` are directly controlled by input.
+
+### The doodle looks cramped
+
+Increase `width` and `height`. The generated positions and sizes scale with the canvas dimensions.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('CANV1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -1308,6 +2506,266 @@
           Use MEMO2 after a write to inspect the target path and confirm the
           stored value is visible as a vector or key-value pair projection.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="MEMO3-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="MEMO3-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="MEMO3-manual-body"
+            hidden
+          >
+# MEMO3 — Memory Scalar/Vector Write
+
+## What this toy does
+
+Memory Scalar/Vector Write stores a JSON scalar or array value at a dot path inside one of Dadeto’s local memory locations.
+
+It can write into:
+
+- temporary memory
+- permanent memory
+- the full data envelope
+
+Missing intermediate containers are created automatically. Numeric path segments create or index arrays.
+
+## Input format
+
+Paste a JSON object with:
+
+- `memoryLocation`
+- `path` or `key`
+- `value`
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;project.tasks.0.title&quot;,
+  &quot;value&quot;: &quot;Design prototype&quot;
+}
+```
+
+## Supported memory locations
+
+| `memoryLocation` | Meaning |
+|---|---|
+| `temporary` | Session/local temporary data envelope |
+| `permanent` | Persistent local permanent data |
+| `envelope` | Full data envelope |
+
+If `memoryLocation` is missing or empty, it normalizes to `temporary`.
+
+## Path format
+
+Use dot notation:
+
+```text
+project.tasks.0.title
+```
+
+Path segments are split on `.`.
+
+Numeric path segments are treated as array indexes when an array is needed:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;tasks.0&quot;,
+  &quot;value&quot;: &quot;First task&quot;
+}
+```
+
+This can create an array under `tasks`.
+
+## Supported values
+
+`value` must be either:
+
+- `null`
+- string
+- number
+- boolean
+- array
+
+Objects are not accepted as values by this toy.
+
+Valid examples:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;profile.name&quot;,
+  &quot;value&quot;: &quot;Ada&quot;
+}
+```
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;scores&quot;,
+  &quot;value&quot;: [10, 20, 30]
+}
+```
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;flags.enabled&quot;,
+  &quot;value&quot;: true
+}
+```
+
+Invalid example:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;profile&quot;,
+  &quot;value&quot;: {
+    &quot;name&quot;: &quot;Ada&quot;
+  }
+}
+```
+
+The object value will be rejected.
+
+## Output format
+
+On success:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;project.tasks.0.title&quot;,
+  &quot;written&quot;: true,
+  &quot;value&quot;: &quot;Design prototype&quot;
+}
+```
+
+On error:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;&quot;,
+  &quot;written&quot;: false,
+  &quot;error&quot;: &quot;A non-empty path or key is required.&quot;
+}
+```
+
+## How to use it
+
+1. Choose a memory location.
+2. Choose a dot path.
+3. Choose a scalar or array value.
+4. Submit the JSON.
+5. Use MEMO1 or MEMO2 to inspect the value afterward.
+
+## Common workflows
+
+### Write a scalar, then inspect it
+
+Submit to MEMO3:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo.message&quot;,
+  &quot;value&quot;: &quot;Hello&quot;
+}
+```
+
+Then submit to MEMO2:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo&quot;
+}
+```
+
+### Write an array
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo.items&quot;,
+  &quot;value&quot;: [&quot;alpha&quot;, &quot;beta&quot;, &quot;gamma&quot;]
+}
+```
+
+### Write through numeric path segments
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo.items.0&quot;,
+  &quot;value&quot;: &quot;alpha&quot;
+}
+```
+
+## Tips
+
+- Use `temporary` while experimenting.
+- Use `permanent` only for values you want to persist locally.
+- Use `envelope` carefully because it writes into the full data envelope.
+- Namespace your paths, such as `myToy.settings.theme`.
+- Use MEMO2 to inspect object-like containers as key-value pairs.
+
+## Troubleshooting
+
+### “Input must be a JSON object write request.”
+
+The input was not valid JSON or was not a JSON object.
+
+### “A non-empty path or key is required.”
+
+Add a non-empty `path` or `key`.
+
+### “A value property is required.”
+
+The object must include a `value` field, even if the value is `null`.
+
+### “Value must be a scalar or vector array.”
+
+The value was probably an object. Use a scalar or array.
+
+### “Cannot write non-numeric segment into an array.”
+
+You tried to write an object-like key inside an array. Array paths must use numeric segments.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('MEMO3-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -1404,6 +2862,226 @@
           Start with the existing temporary, permanent, or full-envelope memory
           buckets that Dadeto already exposes through toy helpers.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="MEMO2-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="MEMO2-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="MEMO2-manual-body"
+            hidden
+          >
+# MEMO2 — Memory Vector
+
+## What this toy does
+
+MEMO2 reads a selected memory value and returns it as a vector-shaped JSON response.
+
+It is the key-value-pair variant of the memory vector tool:
+
+- arrays are preserved
+- scalars are wrapped in a one-item vector
+- objects are projected into `{ key, value }` pairs
+
+This makes it useful for inspecting object-like memory containers.
+
+## Input formats
+
+MEMO2 accepts either a plain path string or a JSON object.
+
+### Plain path string
+
+```text
+project.tasks
+```
+
+This reads from `temporary` memory by default.
+
+### JSON object
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;project.tasks&quot;
+}
+```
+
+You can also use `key` instead of `path`:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;key&quot;: &quot;project.tasks&quot;
+}
+```
+
+## Supported memory locations
+
+| `memoryLocation` | Meaning |
+|---|---|
+| `temporary` | Session/local temporary data |
+| `permanent` | Persistent local permanent data |
+| `envelope` | Full data envelope |
+
+If `memoryLocation` is missing or empty, the toy uses `temporary`.
+
+## Output format
+
+The response contains:
+
+- `memoryLocation`
+- `path`
+- `found`
+- `vector`
+- optional `error`
+
+## Projection behavior
+
+### Scalar value
+
+If the selected value is:
+
+```json
+&quot;Hello&quot;
+```
+
+The vector is:
+
+```json
+[&quot;Hello&quot;]
+```
+
+### Array value
+
+If the selected value is:
+
+```json
+[&quot;alpha&quot;, &quot;beta&quot;]
+```
+
+The vector is:
+
+```json
+[&quot;alpha&quot;, &quot;beta&quot;]
+```
+
+### Object value
+
+If the selected value is:
+
+```json
+{
+  &quot;name&quot;: &quot;Ada&quot;,
+  &quot;role&quot;: &quot;programmer&quot;
+}
+```
+
+The vector is:
+
+```json
+[
+  {
+    &quot;key&quot;: &quot;name&quot;,
+    &quot;value&quot;: &quot;Ada&quot;
+  },
+  {
+    &quot;key&quot;: &quot;role&quot;,
+    &quot;value&quot;: &quot;programmer&quot;
+  }
+]
+```
+
+## Example workflow
+
+1. Use MEMO3 to write a value:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo&quot;,
+  &quot;value&quot;: [&quot;alpha&quot;, &quot;beta&quot;]
+}
+```
+
+2. Use MEMO2 to read it:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo&quot;
+}
+```
+
+3. Inspect the returned vector.
+
+## Missing paths
+
+If a path segment is missing, MEMO2 returns:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;missing.path&quot;,
+  &quot;found&quot;: false,
+  &quot;vector&quot;: []
+}
+```
+
+This makes MEMO2 convenient for safe inspection when you are not sure whether a path exists.
+
+## Tips
+
+- Use MEMO2 when you want object values displayed as key-value rows.
+- Use MEMO1 when you want object values preserved as a single item.
+- Use a plain path string for quick temporary-memory lookups.
+- Use a JSON object when you need `permanent` or `envelope`.
+
+## Troubleshooting
+
+### The vector is empty
+
+The path may not exist.
+
+### The wrong memory location was read
+
+Use a JSON object and specify `memoryLocation`.
+
+### My object became a list of pairs
+
+That is expected for MEMO2. Use MEMO1 if you want the object preserved as a single vector item.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('MEMO2-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -1500,6 +3178,245 @@
           Use it as a tiny inspection tool when you want to see one memory value
           in a consistent vector wrapper without mutating any state.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="MEMO1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="MEMO1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="MEMO1-manual-body"
+            hidden
+          >
+# MEMO1 — Memory Vector
+
+## What this toy does
+
+MEMO1 reads a selected memory value and returns it as a vector-shaped JSON response.
+
+It is the simple memory vector inspector:
+
+- arrays are preserved
+- every non-array value is wrapped in a one-item vector
+- objects are preserved as object values inside the vector
+
+Use it when you want to inspect one memory value without mutating state.
+
+## Input formats
+
+MEMO1 accepts either a plain path string or a JSON object.
+
+### Plain path string
+
+```text
+project.tasks
+```
+
+This reads from `temporary` memory by default.
+
+### JSON object
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;project.tasks&quot;
+}
+```
+
+You can also use `key` instead of `path`:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;key&quot;: &quot;project.tasks&quot;
+}
+```
+
+A JSON string is also accepted:
+
+```json
+&quot;project.tasks&quot;
+```
+
+## Supported memory locations
+
+| `memoryLocation` | Meaning |
+|---|---|
+| `temporary` | Session/local temporary data |
+| `permanent` | Persistent local permanent data |
+| `envelope` | Full data envelope |
+
+If `memoryLocation` is missing or empty, the toy uses `temporary`.
+
+## Output format
+
+The response contains:
+
+- `memoryLocation`
+- `path`
+- `found`
+- `vector`
+- optional `error`
+
+Example:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo.message&quot;,
+  &quot;found&quot;: true,
+  &quot;vector&quot;: [&quot;Hello&quot;]
+}
+```
+
+## Projection behavior
+
+### Scalar value
+
+If the selected value is:
+
+```json
+&quot;Hello&quot;
+```
+
+The vector is:
+
+```json
+[&quot;Hello&quot;]
+```
+
+### Array value
+
+If the selected value is:
+
+```json
+[&quot;alpha&quot;, &quot;beta&quot;]
+```
+
+The vector is:
+
+```json
+[&quot;alpha&quot;, &quot;beta&quot;]
+```
+
+### Object value
+
+If the selected value is:
+
+```json
+{
+  &quot;name&quot;: &quot;Ada&quot;,
+  &quot;role&quot;: &quot;programmer&quot;
+}
+```
+
+The vector is:
+
+```json
+[
+  {
+    &quot;name&quot;: &quot;Ada&quot;,
+    &quot;role&quot;: &quot;programmer&quot;
+  }
+]
+```
+
+MEMO1 does not convert objects into key-value pairs. Use MEMO2 for that.
+
+## How to use it
+
+1. Choose the memory location.
+2. Enter the path you want to inspect.
+3. Submit the input.
+4. Read the returned vector.
+
+## Example workflow
+
+1. Write with MEMO3:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo.items&quot;,
+  &quot;value&quot;: [&quot;alpha&quot;, &quot;beta&quot;]
+}
+```
+
+2. Read with MEMO1:
+
+```json
+{
+  &quot;memoryLocation&quot;: &quot;temporary&quot;,
+  &quot;path&quot;: &quot;demo.items&quot;
+}
+```
+
+3. The vector should contain `alpha` and `beta`.
+
+## Missing paths
+
+MEMO1 treats missing paths as errors.
+
+A missing path response has:
+
+- `found: false`
+- `vector: []`
+- `error` with the path-resolution message
+
+Use MEMO2 if you prefer missing paths to return an empty vector without an error.
+
+## Tips
+
+- Use MEMO1 when you want the exact selected value preserved.
+- Use MEMO2 when you want object values projected into `{ key, value }` entries.
+- Use plain paths for quick reads from temporary memory.
+- Use JSON object input for permanent or envelope reads.
+
+## Troubleshooting
+
+### “Input must be a JSON object or a string path.”
+
+The input parsed as JSON but was not a string or object.
+
+### “Unsupported memoryLocation”
+
+Use `temporary`, `permanent`, or `envelope`.
+
+### The object did not become key-value pairs
+
+That is expected in MEMO1. Use MEMO2 for key-value-pair projection.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('MEMO1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
@@ -1600,6 +3517,256 @@
           /api/realtime/call-compatible server; the OpenAI API key stays in that
           server environment.
         </p>
+        <div class="key">man</div>
+        <div class="manual" id="REAL2-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="REAL2-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="REAL2-manual-body"
+            hidden
+          >
+# REAL2 — Realtime Voice Prototype
+
+## What this toy does
+
+Realtime Voice Prototype mounts a browser-based WebRTC voice interface for an OpenAI Realtime session.
+
+The browser does not receive the OpenAI API key. Instead, it sends a Session Description Protocol offer to a local or cloud relay endpoint. That server is responsible for talking to OpenAI and returning the SDP answer.
+
+## Input format
+
+Paste a JSON config object.
+
+### Local mode
+
+```json
+{
+  &quot;server&quot;: &quot;local&quot;
+}
+```
+
+Local mode uses `/api/realtime/call` by default.
+
+You can override the local endpoint:
+
+```json
+{
+  &quot;server&quot;: &quot;local&quot;,
+  &quot;localEndpoint&quot;: &quot;/api/realtime/call&quot;
+}
+```
+
+### Cloud mode
+
+```json
+{
+  &quot;server&quot;: &quot;cloud&quot;,
+  &quot;cloudEndpoint&quot;: &quot;https://example.com/api/realtime/call&quot;
+}
+```
+
+Cloud mode requires `cloudEndpoint`.
+
+## Optional display fields
+
+You can customize the visible title and description:
+
+```json
+{
+  &quot;server&quot;: &quot;local&quot;,
+  &quot;title&quot;: &quot;Voice Test&quot;,
+  &quot;description&quot;: &quot;Press Connect and test the realtime voice relay.&quot;
+}
+```
+
+## Defaults
+
+If the input is empty, malformed, or does not specify `&quot;server&quot;: &quot;cloud&quot;`, the toy uses local mode.
+
+Default local endpoint:
+
+```text
+/api/realtime/call
+```
+
+Default title:
+
+```text
+Realtime Voice Prototype
+```
+
+Default description:
+
+```text
+Press Connect, grant microphone permission, speak, and listen for streamed OpenAI Realtime audio.
+```
+
+## What the interface shows
+
+The realtime voice presenter shows:
+
+- title
+- description
+- selected session server
+- connection status
+- **Connect** button
+- **Disconnect** button
+- **Mute** button
+- debug log
+
+The debug log records connection lifecycle messages. It does not log raw audio or raw SDP.
+
+## How to use it
+
+1. Choose local or cloud mode.
+2. Paste the JSON config.
+3. Click **Submit**.
+4. Click **Connect**.
+5. Grant microphone permission when the browser asks.
+6. Speak into the microphone.
+7. Listen for streamed realtime audio.
+8. Use **Mute** to disable microphone audio.
+9. Use **Disconnect** to close the session.
+
+## Connection flow
+
+When you click **Connect**, the presenter:
+
+1. checks that the configured endpoint is usable
+2. disconnects any previous connection
+3. requests microphone permission
+4. creates an `RTCPeerConnection`
+5. adds the microphone track
+6. creates a debug data channel called `oai-events`
+7. creates an SDP offer
+8. posts the SDP offer to the configured endpoint
+9. reads the SDP answer from the response body
+10. applies the answer as the remote description
+11. marks the connection as live
+
+The POST request uses:
+
+```text
+Content-Type: application/sdp
+```
+
+The request body is the SDP offer.
+
+## Endpoint requirements
+
+The configured endpoint must accept a browser SDP offer and return an SDP answer.
+
+For local mode, your site should expose:
+
+```text
+/api/realtime/call
+```
+
+For cloud mode, provide a full URL in `cloudEndpoint`.
+
+If cloud mode is selected without `cloudEndpoint`, the toy reports:
+
+```text
+Cloud server mode requires a cloudEndpoint URL.
+```
+
+## Status values
+
+The interface may show:
+
+- `disconnected`
+- `connecting`
+- `live`
+- `error`
+
+## Controls
+
+### Connect
+
+Starts a new WebRTC voice session.
+
+### Disconnect
+
+Stops local media tracks, closes the data channel, closes the peer connection, clears remote audio, and resets the UI.
+
+### Mute
+
+Toggles the microphone track. When muted, the button changes to **Unmute**.
+
+## Tips
+
+- Use headphones to prevent feedback loops.
+- Use local mode first during development.
+- Use HTTPS for cloud endpoints.
+- Keep the OpenAI API key only on the server.
+- Check the debug log if connection setup fails.
+
+## Troubleshooting
+
+### Cloud mode shows an endpoint error
+
+Add `cloudEndpoint`.
+
+```json
+{
+  &quot;server&quot;: &quot;cloud&quot;,
+  &quot;cloudEndpoint&quot;: &quot;https://your-domain.example/api/realtime/call&quot;
+}
+```
+
+### The browser asks for microphone permission
+
+That is expected. The presenter needs microphone access for the voice session.
+
+### The session fails after microphone permission
+
+Check that your relay endpoint is reachable and returns a valid SDP answer.
+
+### The server returns an error
+
+The presenter shows a concise error based on the HTTP status and response body.
+
+### No audio plays
+
+Check browser autoplay behavior, audio output device, relay configuration, and whether the remote stream is actually being sent.
+
+### Mute does not affect the remote model
+
+Mute toggles the local microphone track. If the session already received audio before muting, the remote model may still respond to what it already heard.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('REAL2-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">

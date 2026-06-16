@@ -12,11 +12,7 @@
           "type": "manual",
           "id": "CHAN1-manual",
           "title": "User manual",
-          "content": [
-            "Paste a JSON object with a changeSets array. Each change set should include an id and a files list, but the explorer will fall back cleanly when fields are missing.",
-            "The first ranking table highlights pairs that change together most often. The second ranking table shows the files with the broadest surface area and the most partners.",
-            "Because this is a static toy, it ignores live git history, file watching, and any network or database access."
-          ]
+          "markdown": "# CHAN1 — Change Together Explorer\n\n## What this toy does\n\nChange Together Explorer analyzes a static list of change sets and ranks:\n\n- file pairs that often change together\n- individual files that appear often and connect to many partner files\n\nUse it when you want a quick, local co-change report before doing heavier repository mining. The toy does not read live Git history. It only analyzes the JSON you paste into it.\n\n## Input format\n\nPaste a JSON object with a `changeSets` array.\n\nEach change set can contain:\n\n- `id`: optional string identifier\n- `files`: array of file path strings\n\nOnly string file paths are counted. Duplicate file paths inside one change set are removed. File paths are sorted internally, so pair ordering is deterministic.\n\nIf a change set has no string `id`, the toy creates a fallback ID such as `change-set-1`.\n\n```json\n{\n  \"changeSets\": [\n    {\n      \"id\": \"commit-a\",\n      \"files\": [\n        \"src/app.js\",\n        \"src/router.js\",\n        \"test/app.test.js\"\n      ]\n    },\n    {\n      \"id\": \"commit-b\",\n      \"files\": [\n        \"src/app.js\",\n        \"src/router.js\"\n      ]\n    },\n    {\n      \"id\": \"commit-c\",\n      \"files\": [\n        \"src/billing.js\",\n        \"test/billing.test.js\"\n      ]\n    }\n  ]\n}\n```\n\n## How to use it\n\n1. Gather a list of changes from commits, pull requests, task branches, or release notes.\n2. Convert each unit of change into one object in the `changeSets` array.\n3. Paste the JSON into the toy.\n4. Click **Submit**.\n5. Read the JSON report.\n\n## Output format\n\nThe toy returns JSON with three top-level fields:\n\n```json\n{\n  \"rankedPairs\": [],\n  \"rankedFiles\": [],\n  \"summary\": {}\n}\n```\n\n### `rankedPairs`\n\nEach entry contains:\n\n- `files`: the two files in the pair\n- `coChangeCount`: how many change sets contained both files\n- `supportingChangeSetIds`: the change-set IDs that support the count\n- `reason`: short text explanation\n\nPairs are sorted by highest `coChangeCount` first. Ties are sorted by file name.\n\n### `rankedFiles`\n\nEach entry contains:\n\n- `file`: file path\n- `touchCount`: how many change sets included the file\n- `partnerCount`: how many distinct other files it appeared with\n- `partnerFiles`: list of partner file paths\n- `reason`: short text explanation\n\nFiles are sorted by highest `touchCount`, then highest `partnerCount`, then file name.\n\n### `summary`\n\nThe summary contains:\n\n- `changeSetCount`\n- `fileCount`\n- `pairCount`\n\n## How to interpret the report\n\nA high-ranking pair may indicate that the two files are coupled. This can be useful when deciding where to add tests, where to refactor, or where to inspect architecture boundaries.\n\nA high-ranking file may be a coordination hotspot. It may be a central module, a broad integration point, or a file that is simply edited frequently.\n\nThe toy does not decide whether coupling is good or bad. It gives you evidence for further inspection.\n\n## Practical examples\n\n### Find risky files before refactoring\n\nRun the toy on recent change sets. Look for files with high `touchCount` and high `partnerCount`. These files may deserve extra regression tests before refactoring.\n\n### Spot hidden feature coupling\n\nIf `src/pricing.js` and `src/checkout.js` repeatedly appear together, users may experience them as one feature even if the codebase treats them separately.\n\n### Check whether a split was successful\n\nRun the toy before and after a refactor. If two files changed together frequently before the refactor but no longer do, the split may have reduced coupling.\n\n## Troubleshooting\n\n### The report is empty\n\nThe input may be invalid JSON, or `changeSets` may be missing or not an array. Invalid JSON produces an empty report rather than a crash.\n\n### Files are missing from the report\n\nOnly string values inside `files` are counted. Numbers, objects, `null`, and other values are ignored.\n\n### Pair counts look too low\n\nPairs are counted once per change set. Repeating the same file path inside a single change set does not increase the count.\n\n## Limitations\n\n- No live Git access.\n- No network access.\n- No database access.\n- No awareness of commit dates or authors.\n- No semantic understanding of the files.\n- No distinction between production code, tests, docs, or configuration unless you encode that in file paths."
         }
       ],
       "toy": {
@@ -24,7 +20,13 @@
         "functionName": "changeTogetherExplorer",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "planning", "cochange", "json", "analysis"]
+      "tags": [
+        "toy",
+        "planning",
+        "cochange",
+        "json",
+        "analysis"
+      ]
     },
     {
       "key": "FRAC1",
@@ -33,7 +35,13 @@
       "release": "public",
       "content": [
         "Generate a small recursive fractal tree using the 2D canvas presenter.",
-        "Pass JSON options like width, height, depth, and hue, or submit an empty payload for the default sketch."
+        "Pass JSON options like width, height, depth, and hue, or submit an empty payload for the default sketch.",
+        {
+          "type": "manual",
+          "id": "FRAC1-manual",
+          "title": "User manual",
+          "markdown": "# FRAC1 — Fractal Generator\n\n## What this toy does\n\nFractal Generator creates a small recursive tree drawing as a canvas payload. It is useful for quickly experimenting with recursion, branch depth, canvas sizing, and color hue.\n\nThe toy accepts optional JSON. Empty input or malformed input falls back to defaults.\n\n## Input format\n\nPaste a JSON object with any of these optional fields:\n\n- `width`: canvas width\n- `height`: canvas height\n- `depth`: recursive branch depth\n- `hue`: base hue for branch colors\n\n```json\n{\n  \"width\": 420,\n  \"height\": 280,\n  \"depth\": 6,\n  \"hue\": 140\n}\n```\n\n## Defaults and limits\n\nThe toy normalizes input before drawing.\n\n| Field | Default | Limit |\n|---|---:|---:|\n| `width` | 360 | 160–800 |\n| `height` | 240 | 120–600 |\n| `depth` | 5 | 1–8 |\n| `hue` | 180 | 0–360 |\n\n`depth` is rounded to the nearest whole number before being clamped.\n\n## How to use it\n\n1. Leave the input empty and click **Submit** to see the default tree.\n2. Add a JSON object with one or more fields.\n3. Click **Submit** again.\n4. Adjust values until the tree has the shape and color you want.\n\n## Output\n\nThe toy returns a canvas drawing payload:\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"shapes\": []\n}\n```\n\nThe `shapes` array contains:\n\n- one background rectangle\n- recursive branch lines\n\nThe canvas presenter renders those shapes visually.\n\n## How the drawing is built\n\nThe tree starts near the bottom center of the canvas. It draws an upward trunk, then recursively draws two child branches from the end of each branch.\n\nEach child branch:\n\n- is shorter than its parent\n- turns left or right\n- reduces the remaining depth by one\n\nThe toy stops drawing when depth reaches zero or a branch becomes too short.\n\n## Useful experiments\n\n### Change size only\n\n```json\n{\n  \"width\": 640,\n  \"height\": 400\n}\n```\n\nThis gives the same default tree logic more room.\n\n### Make a compact tree\n\n```json\n{\n  \"width\": 240,\n  \"height\": 160,\n  \"depth\": 4\n}\n```\n\nThis is useful when embedding the output in a small area.\n\n### Try different color families\n\n```json\n{\n  \"hue\": 30\n}\n```\n\nHue values are degrees on the color wheel:\n\n- `0`: red\n- `60`: yellow\n- `120`: green\n- `180`: cyan\n- `240`: blue\n- `300`: purple\n\n## Tips\n\n- Use `depth: 5` or `depth: 6` for a balanced drawing.\n- Use `depth: 8` for the densest possible tree.\n- Increase `height` if the tree feels cramped.\n- Change only one parameter at a time when learning what each one does.\n\n## Troubleshooting\n\n### The tree did not use my value\n\nThe value may be outside the allowed range and was clamped. For example, `depth: 20` becomes `depth: 8`.\n\n### The toy ignored my input\n\nThe input may be malformed JSON. Malformed JSON falls back to the default config.\n\n### The output is JSON rather than an image\n\nThat is expected. The toy emits a canvas-presenter payload, and the presenter renders it visually."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-06-15/fractalGenerator.js",
@@ -41,7 +49,13 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "canvas-2d"
       },
-      "tags": ["toy", "canvas", "fractal", "math", "html"]
+      "tags": [
+        "toy",
+        "canvas",
+        "fractal",
+        "math",
+        "html"
+      ]
     },
     {
       "key": "CONF1",
@@ -50,14 +64,26 @@
       "content": [
         "Ranks candidate product increments against active work so you can choose a small slice that creates value without colliding with ongoing quality work.",
         "Uses a simple score model: product value plus learning and feedback value, minus overlap, shared-surface, test-refactor, and deployment risk.",
-        "Accepts pure JSON input and returns a ranked JSON recommendation list."
+        "Accepts pure JSON input and returns a ranked JSON recommendation list.",
+        {
+          "type": "manual",
+          "id": "CONF1-manual",
+          "title": "User manual",
+          "markdown": "# CONF1 — Conflict-Aware Product Scheduler\n\n## What this toy does\n\nConflict-Aware Product Scheduler ranks candidate product increments against active work. It helps choose a small slice that creates value while avoiding file overlap, shared-surface conflicts, test/refactor collisions, and deployment risk.\n\nThe toy is a deterministic JSON scoring helper. It does not inspect a repository or connect to a project-management tool.\n\n## Input format\n\nPaste a JSON object with:\n\n- `candidates`: array of candidate product increments\n- `activeWork`: array of current work items\n\n```json\n{\n  \"candidates\": [\n    {\n      \"id\": \"group-ride-minutes\",\n      \"title\": \"Shared minutes on group rides\",\n      \"productValue\": 9,\n      \"learningValue\": 7,\n      \"userFeedbackValue\": 8,\n      \"expectedTouchSet\": [\n        \"src/rides/groupRide.js\",\n        \"src/billing/passMinutes.js\",\n        \"src/receipts/groupRideReceipt.js\"\n      ],\n      \"sharedTouchRisk\": 2,\n      \"expectedTestRefactorCollision\": 3,\n      \"expectedDeploymentRisk\": 2\n    }\n  ],\n  \"activeWork\": [\n    {\n      \"id\": \"billing-refactor\",\n      \"touchSet\": [\n        \"src/billing/passMinutes.js\"\n      ],\n      \"reservedSurfaces\": [\n        \"src/payments\",\n        \"src/billing/passMinutes.js\"\n      ]\n    }\n  ]\n}\n```\n\n## Candidate fields\n\n### `id`\n\nA string identifier. If missing, the toy creates a fallback such as `candidate-1`.\n\n### `title`\n\nA readable title. If missing, the title falls back to the `id`.\n\n### `productValue`\n\nHow much direct product value the candidate creates.\n\n### `learningValue`\n\nHow much the candidate teaches you about the product, architecture, users, or delivery system.\n\n### `userFeedbackValue`\n\nHow much useful feedback the candidate can produce once released.\n\n### `expectedTouchSet`\n\nA list of file paths or surfaces the candidate is expected to touch.\n\nOnly string entries are counted.\n\n### `sharedTouchRisk`\n\nA numeric penalty for touching shared infrastructure, shared UI patterns, common data models, or other high-coordination surfaces.\n\n### `expectedTestRefactorCollision`\n\nA numeric penalty for expected conflict with current test-writing, refactoring, or cleanup work.\n\n### `expectedDeploymentRisk`\n\nA numeric penalty for rollout, migration, release, operational, or monitoring risk.\n\n## Active work fields\n\n### `touchSet`\n\nFiles or surfaces already being changed by current work.\n\n### `reservedSurfaces`\n\nFiles or surfaces that are currently sensitive or should be avoided.\n\nThe scheduler counts overlaps between a candidate’s `expectedTouchSet` and these active-work sets.\n\n## Scoring model\n\nThe toy computes:\n\n```text\nvalue =\n  productValue\n+ learningValue\n+ userFeedbackValue\n\ncoordinationCost =\n  expectedFileOverlap\n+ expectedSharedInfrastructureTouch\n+ expectedTestRefactorCollision\n+ expectedDeploymentRisk\n\nscore = value - coordinationCost\n```\n\nWhere:\n\n- `expectedFileOverlap` counts overlap between candidate `expectedTouchSet` and active-work `touchSet`.\n- `expectedSharedInfrastructureTouch` equals `sharedTouchRisk` plus overlap between candidate `expectedTouchSet` and active-work `reservedSurfaces`.\n\n## Output format\n\nThe toy returns JSON:\n\n```json\n{\n  \"ranked\": [\n    {\n      \"id\": \"group-ride-minutes\",\n      \"title\": \"Shared minutes on group rides\",\n      \"score\": 17,\n      \"penalties\": {\n        \"expectedFileOverlap\": 1,\n        \"expectedSharedInfrastructureTouch\": 3,\n        \"expectedTestRefactorCollision\": 3,\n        \"expectedDeploymentRisk\": 2\n      },\n      \"reason\": \"score 17; 1 file overlap, 3 shared-surface touches, 3 test collisions, 2 deployment risks\"\n    }\n  ],\n  \"summary\": {\n    \"candidateCount\": 1,\n    \"activeWorkCount\": 1\n  }\n}\n```\n\nCandidates are sorted by highest score first. Ties are sorted by `id`, then `title`.\n\n## How to use it\n\n1. List a few candidate product increments.\n2. Estimate the value fields.\n3. Estimate the risk fields.\n4. Add active work with `touchSet` and `reservedSurfaces`.\n5. Submit the JSON.\n6. Use the ranking as a starting point for discussion.\n\n## Tips\n\n- Use a consistent scoring scale, such as `0–10`.\n- Keep candidate slices small enough that their expected touch set is plausible.\n- Use `reservedSurfaces` for areas where parallel work would be especially expensive.\n- Rerun the toy when active work changes.\n\n## Limitations\n\n- The toy does not know the real repository.\n- It does not infer files from feature names.\n- It does not estimate effort.\n- It does not understand deadlines.\n- It only scores the numbers and lists you provide.\n\n## Troubleshooting\n\n### My candidates all score zero\n\nCheck that the value fields use the exact names `productValue`, `learningValue`, and `userFeedbackValue`.\n\n### Overlap is not counted\n\nCheck that the same exact string appears in the candidate `expectedTouchSet` and the active-work `touchSet` or `reservedSurfaces`.\n\n### A field seems ignored\n\nThe toy only reads the exact field names documented above. For example, `feedbackValue` is ignored; use `userFeedbackValue`."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-06-15/conflictAwareProductScheduler.js",
         "functionName": "conflictAwareProductScheduler",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "planning", "scheduler", "json", "coordination"]
+      "tags": [
+        "toy",
+        "planning",
+        "scheduler",
+        "json",
+        "coordination"
+      ]
     },
     {
       "key": "GDPS1",
@@ -66,7 +92,13 @@
       "content": [
         "Plot primary, secondary, and tertiary GDP sector share trends from public historical data, then project a simple structural transition forward.",
         "The toy accepts optional forecast overrides so you can change the target years or output horizon without changing the core data shape.",
-        "When no rows are provided, it falls back to a committed World Bank historical snapshot so the graph still renders predictably."
+        "When no rows are provided, it falls back to a committed World Bank historical snapshot so the graph still renders predictably.",
+        {
+          "type": "manual",
+          "id": "GDPS1-manual",
+          "title": "User manual",
+          "markdown": "# GDPS1 — GDP Sector Projection\n\n## What this toy does\n\nGDP Sector Projection plots primary, secondary, and tertiary GDP sector shares over time. It combines historical rows with a simple forward projection.\n\nIf you submit no valid rows, the toy uses its built-in public historical snapshot. This makes the graph render even with empty input.\n\n## Input formats\n\nYou can provide either:\n\n1. a raw array of yearly rows\n2. an object with `rows` and optional `forecast`\n\n## Option 1: raw row array\n\n```json\n[\n  {\n    \"year\": 2000,\n    \"primary\": 25,\n    \"secondary\": 30,\n    \"tertiary\": 45\n  },\n  {\n    \"year\": 2010,\n    \"primary\": 15,\n    \"secondary\": 35,\n    \"tertiary\": 50\n  }\n]\n```\n\n## Option 2: object with rows and forecast\n\n```json\n{\n  \"rows\": [\n    {\n      \"year\": 2000,\n      \"primary\": 25,\n      \"secondary\": 30,\n      \"tertiary\": 45\n    },\n    {\n      \"year\": 2024,\n      \"primary\": 6,\n      \"secondary\": 24,\n      \"tertiary\": 70\n    }\n  ],\n  \"forecast\": {\n    \"inputEndYear\": 2024,\n    \"primaryDropYear\": 2030,\n    \"secondaryDropYear\": 2035,\n    \"tertiaryTarget\": 100,\n    \"outputEndYear\": 2050\n  }\n}\n```\n\n## Row fields\n\nEach row should contain:\n\n- `year`\n- `primary`\n- `secondary`\n- `tertiary`\n\nThe values are converted to numbers. Rows with non-finite values are ignored. Rows are sorted by year.\n\nThe toy does not require the three sector shares to sum to `100`, but your graph will usually be easier to interpret if they do.\n\n## Forecast fields\n\n### `inputEndYear`\n\nThe year used as the projection anchor. Default: `2024`.\n\nIf there is a row for this year, the toy uses it. Otherwise it uses the last available row.\n\n### `primaryDropYear`\n\nThe year when the primary sector reaches `0`. Default: `2030`.\n\n### `secondaryDropYear`\n\nThe year when the secondary sector reaches `0`. Default: `2035`.\n\n### `tertiaryTarget`\n\nThe final tertiary-sector target and graph y-axis maximum. Default: `100`.\n\n### `outputEndYear`\n\nThe final year to plot. Default: `2050`.\n\n## Projection behavior\n\nThe toy builds yearly points from `2000` through `outputEndYear`.\n\nFor each year:\n\n- If a historical row exists, that row is used.\n- Otherwise, a projected row is generated.\n- Primary declines to `0` by `primaryDropYear`.\n- Secondary declines to `0` by `secondaryDropYear`.\n- Tertiary rises toward `tertiaryTarget`.\n- After `secondaryDropYear`, the projection is `0` primary, `0` secondary, and `tertiaryTarget` tertiary.\n\nOutput values are clamped to the visible `0–100` range.\n\n## Output\n\nThe toy returns a `graph-plot` payload for the graph presenter. It includes:\n\n- canvas dimensions\n- axis bounds\n- graph colors\n- primary sector series\n- secondary sector series\n- tertiary sector series\n\nThe graph presenter renders the three series as lines.\n\n## How to use it\n\n1. Submit empty input to see the default historical snapshot and projection.\n2. Add a few rows if you want to model a different economy.\n3. Adjust `forecast` values to test different transition assumptions.\n4. Click **Submit** and inspect the plotted sector trajectories.\n\n## Useful experiments\n\n### Extend the projection\n\n```json\n{\n  \"forecast\": {\n    \"outputEndYear\": 2075\n  }\n}\n```\n\n### Slow down industrial decline\n\n```json\n{\n  \"forecast\": {\n    \"secondaryDropYear\": 2050\n  }\n}\n```\n\n### Use a lower tertiary target\n\n```json\n{\n  \"forecast\": {\n    \"tertiaryTarget\": 85\n  }\n}\n```\n\n## Tips\n\n- Include a row for `inputEndYear` if you want precise control over the projection anchor.\n- Use plausible sector-share values if you want the graph to be meaningful.\n- Keep `outputEndYear` after `inputEndYear`.\n- Compare multiple scenarios by changing one forecast field at a time.\n\n## Limitations\n\n- This is a simple structural projection, not an econometric model.\n- It does not fetch live data.\n- It does not validate that sector shares sum to `100`.\n- It does not model uncertainty."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-06-14/gdpSectorProjection.js",
@@ -74,7 +106,13 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "graph-2d"
       },
-      "tags": ["toy", "graph", "canvas", "economics", "html"]
+      "tags": [
+        "toy",
+        "graph",
+        "canvas",
+        "economics",
+        "html"
+      ]
     },
     {
       "key": "GRAP1",
@@ -83,7 +121,13 @@
       "content": [
         "Plot a single-variable function on Cartesian axes using a simple JSON payload.",
         "Use it to sketch familiar curves like sine, cosine, quadratics, and exponentials.",
-        "The output is rendered as a canvas so you can inspect the shape directly in the browser."
+        "The output is rendered as a canvas so you can inspect the shape directly in the browser.",
+        {
+          "type": "manual",
+          "id": "GRAP1-manual",
+          "title": "User manual",
+          "markdown": "# GRAP1 — Graph Plotter\n\n## What this toy does\n\nGraph Plotter draws a single-variable mathematical expression on Cartesian axes. It turns a JSON graph configuration into a `graph-plot` payload for the canvas graph presenter.\n\nUse it to sketch simple functions such as sine, cosine, quadratics, exponentials, and logarithms.\n\n## Input format\n\nPaste a JSON object.\n\n```json\n{\n  \"expression\": \"Math.sin(x)\",\n  \"width\": 420,\n  \"height\": 280,\n  \"xMin\": -6.283185307179586,\n  \"xMax\": 6.283185307179586,\n  \"yMin\": -1.5,\n  \"yMax\": 1.5,\n  \"background\": \"#faf8f4\",\n  \"axesColor\": \"#111827\",\n  \"gridColor\": \"#d1d5db\",\n  \"lineColor\": \"#2563eb\"\n}\n```\n\nAll fields are optional. Invalid or missing fields fall back to defaults.\n\n## Default graph\n\nIf you submit empty or invalid input, the toy uses a fallback sine graph:\n\n```json\n{\n  \"expression\": \"Math.sin(x)\",\n  \"width\": 420,\n  \"height\": 280,\n  \"xMin\": -6.283185307179586,\n  \"xMax\": 6.283185307179586,\n  \"yMin\": -1.5,\n  \"yMax\": 1.5\n}\n```\n\n## Supported fields\n\n### `expression`\n\nA JavaScript expression using `x`.\n\nExamples:\n\n```json\n{ \"expression\": \"x * x\" }\n```\n\n```json\n{ \"expression\": \"Math.cos(x)\" }\n```\n\n```json\n{ \"expression\": \"Math.exp(x)\" }\n```\n\nThe evaluator exposes `x` and `Math`.\n\n### `width` and `height`\n\nCanvas dimensions.\n\nThe toy uses `width` to determine how many points to sample. Wider graphs produce more sampled points.\n\n### `xMin` and `xMax`\n\nThe horizontal plotting range.\n\n### `yMin` and `yMax`\n\nThe vertical plotting range.\n\nValues outside the visible range may be clipped by the graph presenter.\n\n### Color fields\n\n- `background`\n- `axesColor`\n- `gridColor`\n- `lineColor`\n\nUse CSS color strings.\n\n## Sampling behavior\n\nThe toy does not accept a `samples` field.\n\nInstead, it computes the number of points from the width:\n\n```text\nmax(24, round(width / 4))\n```\n\nEach point is evaluated across the interval from `xMin` to `xMax`.\n\nIf an evaluated `y` value is not finite, that point is skipped.\n\n## Output\n\nThe toy returns a graph payload:\n\n```json\n{\n  \"type\": \"graph-plot\",\n  \"width\": 420,\n  \"height\": 280,\n  \"xMin\": -6.283185307179586,\n  \"xMax\": 6.283185307179586,\n  \"yMin\": -1.5,\n  \"yMax\": 1.5,\n  \"points\": []\n}\n```\n\nThe presenter renders the graph visually.\n\n## How to use it\n\n1. Start with the default sine graph.\n2. Change `expression`.\n3. Adjust `xMin`, `xMax`, `yMin`, and `yMax` so the interesting part of the curve is visible.\n4. Adjust `width` and `height` if you need a larger graph.\n5. Submit again.\n\n## Example expressions\n\n### Quadratic\n\n```json\n{\n  \"expression\": \"x * x\",\n  \"xMin\": -5,\n  \"xMax\": 5,\n  \"yMin\": 0,\n  \"yMax\": 25\n}\n```\n\n### Cubic\n\n```json\n{\n  \"expression\": \"x * x * x\",\n  \"xMin\": -4,\n  \"xMax\": 4,\n  \"yMin\": -64,\n  \"yMax\": 64\n}\n```\n\n### Cosine\n\n```json\n{\n  \"expression\": \"Math.cos(x)\",\n  \"xMin\": -6.283185307179586,\n  \"xMax\": 6.283185307179586,\n  \"yMin\": -1.5,\n  \"yMax\": 1.5\n}\n```\n\n### Logarithm\n\n```json\n{\n  \"expression\": \"Math.log(x)\",\n  \"xMin\": 0.1,\n  \"xMax\": 10,\n  \"yMin\": -3,\n  \"yMax\": 3\n}\n```\n\n## Tips\n\n- Use `Math.sin(x)`, not `sin(x)`.\n- Use `Math.pow(x, 2)` or `x * x` for powers.\n- Avoid expressions with side effects.\n- Narrow the x-range when a curve changes too quickly.\n- Set y-axis limits manually when the graph looks flat.\n\n## Troubleshooting\n\n### No curve appears\n\nThe expression may produce non-finite values, or the visible y-range may not include the curve.\n\n### The expression is ignored\n\nCheck that the input is valid JSON. JSON strings require double quotes.\n\n### The graph is too rough\n\nIncrease `width`. The toy samples more points on wider graphs."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-06-13/graphPlot.js",
@@ -91,7 +135,13 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "graph-2d"
       },
-      "tags": ["toy", "graph", "canvas", "math", "html"]
+      "tags": [
+        "toy",
+        "graph",
+        "canvas",
+        "math",
+        "html"
+      ]
     },
     {
       "key": "CANV1",
@@ -100,7 +150,13 @@
       "content": [
         "A tiny Canvas experiment that turns JSON parameters into a few layered 2D shapes.",
         "Use it to try out simple color, size, and shape combinations before we build anything more ambitious.",
-        "This post is now public so anyone can try the canvas presenter directly."
+        "This post is now public so anyone can try the canvas presenter directly.",
+        {
+          "type": "manual",
+          "id": "CANV1-manual",
+          "title": "User manual",
+          "markdown": "# CANV1 — Canvas Doodle\n\n## What this toy does\n\nCanvas Doodle generates a small layered 2D doodle from a few JSON parameters. It is useful for testing the canvas presenter and experimenting with basic size and color inputs.\n\nThis toy does not render arbitrary user-provided shape lists. It generates a fixed doodle pattern from the parameters you provide.\n\n## Input format\n\nPaste a JSON object with any of these optional fields:\n\n- `width`\n- `height`\n- `background`\n- `accent`\n\n```json\n{\n  \"width\": 320,\n  \"height\": 180,\n  \"background\": \"#f8f6f2\",\n  \"accent\": \"#1f2937\"\n}\n```\n\n## Defaults\n\nIf input is empty or malformed, the toy uses:\n\n```json\n{\n  \"width\": 320,\n  \"height\": 180,\n  \"background\": \"#f8f6f2\",\n  \"accent\": \"#1f2937\"\n}\n```\n\n## How the doodle is generated\n\nThe toy produces five shapes:\n\n1. a background rectangle covering the full canvas\n2. a horizontal color band near the top\n3. a left circle\n4. a right circle\n5. a bottom accent line\n\nThe band and circles use generated hue values. The `accent` value controls the bottom line color.\n\n## Output\n\nThe toy returns a canvas payload:\n\n```json\n{\n  \"width\": 320,\n  \"height\": 180,\n  \"shapes\": []\n}\n```\n\nThe `shapes` array is generated by the toy and rendered by the canvas presenter.\n\n## How to use it\n\n1. Submit empty input to see the default doodle.\n2. Change `width` and `height` to resize the canvas.\n3. Change `background` to alter the base color.\n4. Change `accent` to alter the bottom line.\n5. Click **Submit** again.\n\n## Examples\n\n### Dark background\n\n```json\n{\n  \"width\": 360,\n  \"height\": 220,\n  \"background\": \"#111827\",\n  \"accent\": \"#f9fafb\"\n}\n```\n\n### Small thumbnail\n\n```json\n{\n  \"width\": 180,\n  \"height\": 120,\n  \"background\": \"#fef3c7\",\n  \"accent\": \"#92400e\"\n}\n```\n\n### Wide banner\n\n```json\n{\n  \"width\": 640,\n  \"height\": 180,\n  \"background\": \"#ecfeff\",\n  \"accent\": \"#164e63\"\n}\n```\n\n## Tips\n\n- Use standard CSS color strings for `background` and `accent`.\n- Keep width and height positive and moderate.\n- Use this toy as a simple presenter test rather than a full drawing tool.\n- If you want custom shape rendering, this toy would need to be extended to consume a user-provided `shapes` array.\n\n## Troubleshooting\n\n### My custom shapes did not appear\n\nThat is expected. The current toy ignores user-provided `shapes` and generates its own fixed composition.\n\n### The colors changed unexpectedly\n\nThe band and circles use a generated hue. Only `background` and `accent` are directly controlled by input.\n\n### The doodle looks cramped\n\nIncrease `width` and `height`. The generated positions and sizes scale with the canvas dimensions."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-06-12/canvasDoodle.js",
@@ -108,7 +164,12 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "canvas-2d"
       },
-      "tags": ["toy", "canvas", "graphics", "html"]
+      "tags": [
+        "toy",
+        "canvas",
+        "graphics",
+        "html"
+      ]
     },
     {
       "key": "MEMO3",
@@ -117,14 +178,27 @@
       "content": [
         "Writes a scalar or vector value into temporary, permanent, or full-envelope memory at a chosen dot path.",
         "Missing intermediate containers are constructed automatically, including arrays when numeric path segments imply indexed storage.",
-        "Use MEMO2 after a write to inspect the target path and confirm the stored value is visible as a vector or key-value pair projection."
+        "Use MEMO2 after a write to inspect the target path and confirm the stored value is visible as a vector or key-value pair projection.",
+        {
+          "type": "manual",
+          "id": "MEMO3-manual",
+          "title": "User manual",
+          "markdown": "# MEMO3 — Memory Scalar/Vector Write\n\n## What this toy does\n\nMemory Scalar/Vector Write stores a JSON scalar or array value at a dot path inside one of Dadeto’s local memory locations.\n\nIt can write into:\n\n- temporary memory\n- permanent memory\n- the full data envelope\n\nMissing intermediate containers are created automatically. Numeric path segments create or index arrays.\n\n## Input format\n\nPaste a JSON object with:\n\n- `memoryLocation`\n- `path` or `key`\n- `value`\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"project.tasks.0.title\",\n  \"value\": \"Design prototype\"\n}\n```\n\n## Supported memory locations\n\n| `memoryLocation` | Meaning |\n|---|---|\n| `temporary` | Session/local temporary data envelope |\n| `permanent` | Persistent local permanent data |\n| `envelope` | Full data envelope |\n\nIf `memoryLocation` is missing or empty, it normalizes to `temporary`.\n\n## Path format\n\nUse dot notation:\n\n```text\nproject.tasks.0.title\n```\n\nPath segments are split on `.`.\n\nNumeric path segments are treated as array indexes when an array is needed:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"tasks.0\",\n  \"value\": \"First task\"\n}\n```\n\nThis can create an array under `tasks`.\n\n## Supported values\n\n`value` must be either:\n\n- `null`\n- string\n- number\n- boolean\n- array\n\nObjects are not accepted as values by this toy.\n\nValid examples:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"profile.name\",\n  \"value\": \"Ada\"\n}\n```\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"scores\",\n  \"value\": [10, 20, 30]\n}\n```\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"flags.enabled\",\n  \"value\": true\n}\n```\n\nInvalid example:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"profile\",\n  \"value\": {\n    \"name\": \"Ada\"\n  }\n}\n```\n\nThe object value will be rejected.\n\n## Output format\n\nOn success:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"project.tasks.0.title\",\n  \"written\": true,\n  \"value\": \"Design prototype\"\n}\n```\n\nOn error:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"\",\n  \"written\": false,\n  \"error\": \"A non-empty path or key is required.\"\n}\n```\n\n## How to use it\n\n1. Choose a memory location.\n2. Choose a dot path.\n3. Choose a scalar or array value.\n4. Submit the JSON.\n5. Use MEMO1 or MEMO2 to inspect the value afterward.\n\n## Common workflows\n\n### Write a scalar, then inspect it\n\nSubmit to MEMO3:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo.message\",\n  \"value\": \"Hello\"\n}\n```\n\nThen submit to MEMO2:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo\"\n}\n```\n\n### Write an array\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo.items\",\n  \"value\": [\"alpha\", \"beta\", \"gamma\"]\n}\n```\n\n### Write through numeric path segments\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo.items.0\",\n  \"value\": \"alpha\"\n}\n```\n\n## Tips\n\n- Use `temporary` while experimenting.\n- Use `permanent` only for values you want to persist locally.\n- Use `envelope` carefully because it writes into the full data envelope.\n- Namespace your paths, such as `myToy.settings.theme`.\n- Use MEMO2 to inspect object-like containers as key-value pairs.\n\n## Troubleshooting\n\n### “Input must be a JSON object write request.”\n\nThe input was not valid JSON or was not a JSON object.\n\n### “A non-empty path or key is required.”\n\nAdd a non-empty `path` or `key`.\n\n### “A value property is required.”\n\nThe object must include a `value` field, even if the value is `null`.\n\n### “Value must be a scalar or vector array.”\n\nThe value was probably an object. Use a scalar or array.\n\n### “Cannot write non-numeric segment into an array.”\n\nYou tried to write an object-like key inside an array. Array paths must use numeric segments."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-05-28/memoryScalarVectorWrite.js",
         "functionName": "memoryScalarVectorWrite",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "memory", "vector", "write", "json", "storage"]
+      "tags": [
+        "toy",
+        "memory",
+        "vector",
+        "write",
+        "json",
+        "storage"
+      ]
     },
     {
       "key": "MEMO2",
@@ -133,14 +207,27 @@
       "content": [
         "Reads a selected memory location and path, then returns the matching value as a vector-shaped JSON payload.",
         "Object values are projected into vectors of { key, value } pairs, while arrays and scalars keep the existing vector behavior.",
-        "Start with the existing temporary, permanent, or full-envelope memory buckets that Dadeto already exposes through toy helpers."
+        "Start with the existing temporary, permanent, or full-envelope memory buckets that Dadeto already exposes through toy helpers.",
+        {
+          "type": "manual",
+          "id": "MEMO2-manual",
+          "title": "User manual",
+          "markdown": "# MEMO2 — Memory Vector\n\n## What this toy does\n\nMEMO2 reads a selected memory value and returns it as a vector-shaped JSON response.\n\nIt is the key-value-pair variant of the memory vector tool:\n\n- arrays are preserved\n- scalars are wrapped in a one-item vector\n- objects are projected into `{ key, value }` pairs\n\nThis makes it useful for inspecting object-like memory containers.\n\n## Input formats\n\nMEMO2 accepts either a plain path string or a JSON object.\n\n### Plain path string\n\n```text\nproject.tasks\n```\n\nThis reads from `temporary` memory by default.\n\n### JSON object\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"project.tasks\"\n}\n```\n\nYou can also use `key` instead of `path`:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"key\": \"project.tasks\"\n}\n```\n\n## Supported memory locations\n\n| `memoryLocation` | Meaning |\n|---|---|\n| `temporary` | Session/local temporary data |\n| `permanent` | Persistent local permanent data |\n| `envelope` | Full data envelope |\n\nIf `memoryLocation` is missing or empty, the toy uses `temporary`.\n\n## Output format\n\nThe response contains:\n\n- `memoryLocation`\n- `path`\n- `found`\n- `vector`\n- optional `error`\n\n## Projection behavior\n\n### Scalar value\n\nIf the selected value is:\n\n```json\n\"Hello\"\n```\n\nThe vector is:\n\n```json\n[\"Hello\"]\n```\n\n### Array value\n\nIf the selected value is:\n\n```json\n[\"alpha\", \"beta\"]\n```\n\nThe vector is:\n\n```json\n[\"alpha\", \"beta\"]\n```\n\n### Object value\n\nIf the selected value is:\n\n```json\n{\n  \"name\": \"Ada\",\n  \"role\": \"programmer\"\n}\n```\n\nThe vector is:\n\n```json\n[\n  {\n    \"key\": \"name\",\n    \"value\": \"Ada\"\n  },\n  {\n    \"key\": \"role\",\n    \"value\": \"programmer\"\n  }\n]\n```\n\n## Example workflow\n\n1. Use MEMO3 to write a value:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo\",\n  \"value\": [\"alpha\", \"beta\"]\n}\n```\n\n2. Use MEMO2 to read it:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo\"\n}\n```\n\n3. Inspect the returned vector.\n\n## Missing paths\n\nIf a path segment is missing, MEMO2 returns:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"missing.path\",\n  \"found\": false,\n  \"vector\": []\n}\n```\n\nThis makes MEMO2 convenient for safe inspection when you are not sure whether a path exists.\n\n## Tips\n\n- Use MEMO2 when you want object values displayed as key-value rows.\n- Use MEMO1 when you want object values preserved as a single item.\n- Use a plain path string for quick temporary-memory lookups.\n- Use a JSON object when you need `permanent` or `envelope`.\n\n## Troubleshooting\n\n### The vector is empty\n\nThe path may not exist.\n\n### The wrong memory location was read\n\nUse a JSON object and specify `memoryLocation`.\n\n### My object became a list of pairs\n\nThat is expected for MEMO2. Use MEMO1 if you want the object preserved as a single vector item."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-05-28/memoryVectorPairs.js",
         "functionName": "memoryVectorPairs",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "memory", "vector", "pairs", "json", "inspection"]
+      "tags": [
+        "toy",
+        "memory",
+        "vector",
+        "pairs",
+        "json",
+        "inspection"
+      ]
     },
     {
       "key": "MEMO1",
@@ -149,14 +236,26 @@
       "content": [
         "Reads a selected memory location and path, then returns the matching value as a vector-shaped JSON payload.",
         "Start with the existing temporary, permanent, or full-envelope memory buckets that Dadeto already exposes through toy helpers.",
-        "Use it as a tiny inspection tool when you want to see one memory value in a consistent vector wrapper without mutating any state."
+        "Use it as a tiny inspection tool when you want to see one memory value in a consistent vector wrapper without mutating any state.",
+        {
+          "type": "manual",
+          "id": "MEMO1-manual",
+          "title": "User manual",
+          "markdown": "# MEMO1 — Memory Vector\n\n## What this toy does\n\nMEMO1 reads a selected memory value and returns it as a vector-shaped JSON response.\n\nIt is the simple memory vector inspector:\n\n- arrays are preserved\n- every non-array value is wrapped in a one-item vector\n- objects are preserved as object values inside the vector\n\nUse it when you want to inspect one memory value without mutating state.\n\n## Input formats\n\nMEMO1 accepts either a plain path string or a JSON object.\n\n### Plain path string\n\n```text\nproject.tasks\n```\n\nThis reads from `temporary` memory by default.\n\n### JSON object\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"project.tasks\"\n}\n```\n\nYou can also use `key` instead of `path`:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"key\": \"project.tasks\"\n}\n```\n\nA JSON string is also accepted:\n\n```json\n\"project.tasks\"\n```\n\n## Supported memory locations\n\n| `memoryLocation` | Meaning |\n|---|---|\n| `temporary` | Session/local temporary data |\n| `permanent` | Persistent local permanent data |\n| `envelope` | Full data envelope |\n\nIf `memoryLocation` is missing or empty, the toy uses `temporary`.\n\n## Output format\n\nThe response contains:\n\n- `memoryLocation`\n- `path`\n- `found`\n- `vector`\n- optional `error`\n\nExample:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo.message\",\n  \"found\": true,\n  \"vector\": [\"Hello\"]\n}\n```\n\n## Projection behavior\n\n### Scalar value\n\nIf the selected value is:\n\n```json\n\"Hello\"\n```\n\nThe vector is:\n\n```json\n[\"Hello\"]\n```\n\n### Array value\n\nIf the selected value is:\n\n```json\n[\"alpha\", \"beta\"]\n```\n\nThe vector is:\n\n```json\n[\"alpha\", \"beta\"]\n```\n\n### Object value\n\nIf the selected value is:\n\n```json\n{\n  \"name\": \"Ada\",\n  \"role\": \"programmer\"\n}\n```\n\nThe vector is:\n\n```json\n[\n  {\n    \"name\": \"Ada\",\n    \"role\": \"programmer\"\n  }\n]\n```\n\nMEMO1 does not convert objects into key-value pairs. Use MEMO2 for that.\n\n## How to use it\n\n1. Choose the memory location.\n2. Enter the path you want to inspect.\n3. Submit the input.\n4. Read the returned vector.\n\n## Example workflow\n\n1. Write with MEMO3:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo.items\",\n  \"value\": [\"alpha\", \"beta\"]\n}\n```\n\n2. Read with MEMO1:\n\n```json\n{\n  \"memoryLocation\": \"temporary\",\n  \"path\": \"demo.items\"\n}\n```\n\n3. The vector should contain `alpha` and `beta`.\n\n## Missing paths\n\nMEMO1 treats missing paths as errors.\n\nA missing path response has:\n\n- `found: false`\n- `vector: []`\n- `error` with the path-resolution message\n\nUse MEMO2 if you prefer missing paths to return an empty vector without an error.\n\n## Tips\n\n- Use MEMO1 when you want the exact selected value preserved.\n- Use MEMO2 when you want object values projected into `{ key, value }` entries.\n- Use plain paths for quick reads from temporary memory.\n- Use JSON object input for permanent or envelope reads.\n\n## Troubleshooting\n\n### “Input must be a JSON object or a string path.”\n\nThe input parsed as JSON but was not a string or object.\n\n### “Unsupported memoryLocation”\n\nUse `temporary`, `permanent`, or `envelope`.\n\n### The object did not become key-value pairs\n\nThat is expected in MEMO1. Use MEMO2 for key-value-pair projection."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-05-28/memoryVector.js",
         "functionName": "memoryVector",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "memory", "vector", "json", "inspection"]
+      "tags": [
+        "toy",
+        "memory",
+        "vector",
+        "json",
+        "inspection"
+      ]
     },
     {
       "key": "REAL2",
@@ -165,7 +264,13 @@
       "content": [
         "Mounts a phone-friendly OpenAI Realtime WebRTC voice toy inside the normal Dadeto toy UI.",
         "Paste JSON config to choose a local or cloud SDP relay; for example {\"server\":\"local\"} or {\"server\":\"cloud\",\"cloudEndpoint\":\"https://example.com/api/realtime/call\"}.",
-        "The browser sends only its SDP offer to the selected /api/realtime/call-compatible server; the OpenAI API key stays in that server environment."
+        "The browser sends only its SDP offer to the selected /api/realtime/call-compatible server; the OpenAI API key stays in that server environment.",
+        {
+          "type": "manual",
+          "id": "REAL2-manual",
+          "title": "User manual",
+          "markdown": "# REAL2 — Realtime Voice Prototype\n\n## What this toy does\n\nRealtime Voice Prototype mounts a browser-based WebRTC voice interface for an OpenAI Realtime session.\n\nThe browser does not receive the OpenAI API key. Instead, it sends a Session Description Protocol offer to a local or cloud relay endpoint. That server is responsible for talking to OpenAI and returning the SDP answer.\n\n## Input format\n\nPaste a JSON config object.\n\n### Local mode\n\n```json\n{\n  \"server\": \"local\"\n}\n```\n\nLocal mode uses `/api/realtime/call` by default.\n\nYou can override the local endpoint:\n\n```json\n{\n  \"server\": \"local\",\n  \"localEndpoint\": \"/api/realtime/call\"\n}\n```\n\n### Cloud mode\n\n```json\n{\n  \"server\": \"cloud\",\n  \"cloudEndpoint\": \"https://example.com/api/realtime/call\"\n}\n```\n\nCloud mode requires `cloudEndpoint`.\n\n## Optional display fields\n\nYou can customize the visible title and description:\n\n```json\n{\n  \"server\": \"local\",\n  \"title\": \"Voice Test\",\n  \"description\": \"Press Connect and test the realtime voice relay.\"\n}\n```\n\n## Defaults\n\nIf the input is empty, malformed, or does not specify `\"server\": \"cloud\"`, the toy uses local mode.\n\nDefault local endpoint:\n\n```text\n/api/realtime/call\n```\n\nDefault title:\n\n```text\nRealtime Voice Prototype\n```\n\nDefault description:\n\n```text\nPress Connect, grant microphone permission, speak, and listen for streamed OpenAI Realtime audio.\n```\n\n## What the interface shows\n\nThe realtime voice presenter shows:\n\n- title\n- description\n- selected session server\n- connection status\n- **Connect** button\n- **Disconnect** button\n- **Mute** button\n- debug log\n\nThe debug log records connection lifecycle messages. It does not log raw audio or raw SDP.\n\n## How to use it\n\n1. Choose local or cloud mode.\n2. Paste the JSON config.\n3. Click **Submit**.\n4. Click **Connect**.\n5. Grant microphone permission when the browser asks.\n6. Speak into the microphone.\n7. Listen for streamed realtime audio.\n8. Use **Mute** to disable microphone audio.\n9. Use **Disconnect** to close the session.\n\n## Connection flow\n\nWhen you click **Connect**, the presenter:\n\n1. checks that the configured endpoint is usable\n2. disconnects any previous connection\n3. requests microphone permission\n4. creates an `RTCPeerConnection`\n5. adds the microphone track\n6. creates a debug data channel called `oai-events`\n7. creates an SDP offer\n8. posts the SDP offer to the configured endpoint\n9. reads the SDP answer from the response body\n10. applies the answer as the remote description\n11. marks the connection as live\n\nThe POST request uses:\n\n```text\nContent-Type: application/sdp\n```\n\nThe request body is the SDP offer.\n\n## Endpoint requirements\n\nThe configured endpoint must accept a browser SDP offer and return an SDP answer.\n\nFor local mode, your site should expose:\n\n```text\n/api/realtime/call\n```\n\nFor cloud mode, provide a full URL in `cloudEndpoint`.\n\nIf cloud mode is selected without `cloudEndpoint`, the toy reports:\n\n```text\nCloud server mode requires a cloudEndpoint URL.\n```\n\n## Status values\n\nThe interface may show:\n\n- `disconnected`\n- `connecting`\n- `live`\n- `error`\n\n## Controls\n\n### Connect\n\nStarts a new WebRTC voice session.\n\n### Disconnect\n\nStops local media tracks, closes the data channel, closes the peer connection, clears remote audio, and resets the UI.\n\n### Mute\n\nToggles the microphone track. When muted, the button changes to **Unmute**.\n\n## Tips\n\n- Use headphones to prevent feedback loops.\n- Use local mode first during development.\n- Use HTTPS for cloud endpoints.\n- Keep the OpenAI API key only on the server.\n- Check the debug log if connection setup fails.\n\n## Troubleshooting\n\n### Cloud mode shows an endpoint error\n\nAdd `cloudEndpoint`.\n\n```json\n{\n  \"server\": \"cloud\",\n  \"cloudEndpoint\": \"https://your-domain.example/api/realtime/call\"\n}\n```\n\n### The browser asks for microphone permission\n\nThat is expected. The presenter needs microphone access for the voice session.\n\n### The session fails after microphone permission\n\nCheck that your relay endpoint is reachable and returns a valid SDP answer.\n\n### The server returns an error\n\nThe presenter shows a concise error based on the HTTP status and response body.\n\n### No audio plays\n\nCheck browser autoplay behavior, audio output device, relay configuration, and whether the remote stream is actually being sent.\n\n### Mute does not affect the remote model\n\nMute toggles the local microphone track. If the session already received audio before muting, the remote model may still respond to what it already heard."
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-05-07/realtimeVoicePrototype.js",
@@ -173,7 +278,14 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "realtime-voice"
       },
-      "tags": ["toy", "voice", "webrtc", "realtime", "openai", "prototype"]
+      "tags": [
+        "toy",
+        "voice",
+        "webrtc",
+        "realtime",
+        "openai",
+        "prototype"
+      ]
     },
     {
       "key": "COZY1",
@@ -189,7 +301,13 @@
         "functionName": "cozyHouseAdventure",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "game", "text-adventure", "stateful", "storage"]
+      "tags": [
+        "toy",
+        "game",
+        "text-adventure",
+        "stateful",
+        "storage"
+      ]
     },
     {
       "key": "REAL1",
@@ -206,7 +324,13 @@
         "defaultInputMethod": "real-hourly-wage",
         "defaultOutputMethod": "real-hourly-wage"
       },
-      "tags": ["toy", "finance", "calculation", "budget", "json"]
+      "tags": [
+        "toy",
+        "finance",
+        "calculation",
+        "budget",
+        "json"
+      ]
     },
     {
       "key": "LEDG4",
@@ -223,7 +347,13 @@
         "defaultInputMethod": "textarea",
         "defaultOutputMethod": "ledger-ingest"
       },
-      "tags": ["toy", "ledger", "finance", "storage", "view"]
+      "tags": [
+        "toy",
+        "ledger",
+        "finance",
+        "storage",
+        "view"
+      ]
     },
     {
       "key": "LEDG3",
@@ -239,7 +369,13 @@
         "functionName": "ledgerIngestStorageToy",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "ledger", "finance", "storage", "merge"]
+      "tags": [
+        "toy",
+        "ledger",
+        "finance",
+        "storage",
+        "merge"
+      ]
     },
     {
       "key": "LEDG2",
@@ -255,7 +391,14 @@
         "functionName": "ledgerIngestCsvConverterToy",
         "defaultInputMethod": "file"
       },
-      "tags": ["toy", "ledger", "finance", "csv", "converter", "json"]
+      "tags": [
+        "toy",
+        "ledger",
+        "finance",
+        "csv",
+        "converter",
+        "json"
+      ]
     },
     {
       "key": "LEDG1",
@@ -271,7 +414,13 @@
         "functionName": "ledgerIngestToy",
         "defaultInputMethod": "textarea"
       },
-      "tags": ["toy", "ledger", "finance", "import", "json"]
+      "tags": [
+        "toy",
+        "ledger",
+        "finance",
+        "import",
+        "json"
+      ]
     },
     {
       "key": "JOYC1",
@@ -287,7 +436,13 @@
         "functionName": "joyConMapperToy",
         "defaultInputMethod": "gamepad-button-mapper"
       },
-      "tags": ["toy", "joycon", "gamepad", "input", "storage"]
+      "tags": [
+        "toy",
+        "joycon",
+        "gamepad",
+        "input",
+        "storage"
+      ]
     },
     {
       "key": "HILO1",
@@ -303,7 +458,12 @@
         "functionName": "hiLoCardGameToy",
         "defaultInputMethod": "keyboard-capture"
       },
-      "tags": ["toy", "game", "cards", "keyboard"]
+      "tags": [
+        "toy",
+        "game",
+        "cards",
+        "keyboard"
+      ]
     },
     {
       "key": "GENE1",
@@ -319,7 +479,12 @@
         "functionName": "generateBlogKey",
         "defaultInputMethod": "blog-key"
       },
-      "tags": ["toy", "blogging", "generator", "tools"]
+      "tags": [
+        "toy",
+        "blogging",
+        "generator",
+        "tools"
+      ]
     },
     {
       "key": "GERM2",

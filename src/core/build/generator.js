@@ -624,9 +624,13 @@ function createManualBlock(manual) {
     title = manual.title;
   }
   title = escapeHtml(title);
-  const paragraphs = createParagraphs(manual.content || []);
   const toggleButton = `<button type="button" class="manual-link" data-manual-toggle aria-controls="${bodyId}" aria-expanded="false">show</button>`;
   const manualScript = createManualToggleScript(manualId);
+  if (typeof manual.markdown === 'string') {
+    const markdown = escapeHtml(manual.markdown);
+    return `<div class="manual" id="${escapedManualId}"><p class="manual-toggle">${title} <span class="manual-toggle-menu">(${toggleButton})</span></p><pre class="manual-body manual-markdown" id="${bodyId}" hidden>${markdown}</pre>${manualScript}</div>`;
+  }
+  const paragraphs = createParagraphs(manual.content || []);
   return `<div class="manual" id="${escapedManualId}"><p class="manual-toggle">${title} <span class="manual-toggle-menu">(${toggleButton})</span></p><div class="manual-body" id="${bodyId}" hidden>${paragraphs}</div>${manualScript}</div>`;
 }
 

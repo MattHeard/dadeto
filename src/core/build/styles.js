@@ -240,6 +240,14 @@ const STYLES = String.raw`
     gap: 1em;
   }
 
+  .manual-markdown {
+    display: block;
+    font: inherit;
+    margin: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
   .manual-body[hidden] {
     display: none;
   }
