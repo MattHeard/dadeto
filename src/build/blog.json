@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "CHAN1",
+      "title": "Change Together Explorer",
+      "publicationDate": "2026-06-15",
+      "content": [
+        "Ranks file pairs and individual files by how often they change together in a static change-set history.",
+        "Use it to spot co-change hotspots before reaching for live repository mining or network-backed analysis.",
+        "The input stays pure JSON, and the output is a deterministic ranked report."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-15/changeTogetherExplorer.js",
+        "functionName": "changeTogetherExplorer",
+        "defaultInputMethod": "textarea"
+      },
+      "tags": ["toy", "planning", "cochange", "json", "analysis"]
+    },
+    {
       "key": "FRAC1",
       "title": "Fractal Generator",
       "publicationDate": "2026-06-15",

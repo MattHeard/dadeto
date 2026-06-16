@@ -610,6 +610,102 @@
         </p>
       </div>
       <article
+        class="entry tag-toy tag-planning tag-cochange tag-json tag-analysis"
+        id="CHAN1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">CHAN1</div>
+        <div class="value">
+          <h2><a href="#CHAN1">Change Together Explorer</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">15 Jun 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-planning">planning</a>,
+          <a class="tag-cochange">cochange</a>, <a class="tag-json">json</a>,
+          <a class="tag-analysis">analysis</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Ranks file pairs and individual files by how often they change
+          together in a static change-set history.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Use it to spot co-change hotspots before reaching for live repository
+          mining or network-backed analysis.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The input stays pure JSON, and the output is a deterministic ranked
+          report.
+        </p>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="canvas-2d">canvas-2d</option>
+            <option value="graph-2d">graph-2d</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'CHAN1',
+            '/core/browser/toys/2026-06-15/changeTogetherExplorer.js',
+            'changeTogetherExplorer'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-canvas tag-fractal tag-math tag-html"
         id="FRAC1"
       >

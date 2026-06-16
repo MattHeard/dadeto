@@ -42,8 +42,10 @@
  */
 export function conflictAwareProductScheduler(input) {
   const parsed = parseSchedulerInput(input);
-  const activeWork = normalizeActiveWork(parsed.activeWork);
-  const ranked = normalizeCandidates(parsed.candidates).map(candidate =>
+  const candidateInput = parsed.candidates;
+  const activeWorkInput = parsed.activeWork;
+  const activeWork = normalizeActiveWork(activeWorkInput);
+  const ranked = normalizeCandidates(candidateInput).map(candidate =>
     scoreCandidate(candidate, activeWork)
   );
 
@@ -54,7 +56,7 @@ export function conflictAwareProductScheduler(input) {
       ranked,
       summary: {
         candidateCount: ranked.length,
-        activeWorkCount: parsed.activeWork.length,
+        activeWorkCount: activeWorkInput.length,
       },
     },
     null,
@@ -69,26 +71,18 @@ export function conflictAwareProductScheduler(input) {
  */
 function parseSchedulerInput(input) {
   try {
-    return normalizeSchedulerPayload(JSON.parse(input));
+    const parsed = JSON.parse(input);
+    if (!isRecord(parsed)) {
+      return { candidates: [], activeWork: [] };
+    }
+
+    return {
+      candidates: toArray(parsed.candidates),
+      activeWork: toArray(parsed.activeWork),
+    };
   } catch {
     return { candidates: [], activeWork: [] };
   }
-}
-
-/**
- * Normalize a parsed scheduler payload.
- * @param {unknown} parsed Parsed JSON value.
- * @returns {{ candidates: unknown[], activeWork: unknown[] }} Normalized payload.
- */
-function normalizeSchedulerPayload(parsed) {
-  if (!isRecord(parsed)) {
-    return { candidates: [], activeWork: [] };
-  }
-
-  return {
-    candidates: toArray(parsed.candidates),
-    activeWork: toArray(parsed.activeWork),
-  };
 }
 
 /**
@@ -305,12 +299,16 @@ function countOverlap(values, lookup) {
 }
 
 /**
- * Check whether a parsed value is an object record.
- * @param {unknown} value Candidate value.
- * @returns {value is Record<string, unknown>} True when the value is a non-array object.
+ * Normalize a parsed value into a numeric scalar.
+ * @param {unknown} value Candidate numeric value.
+ * @returns {number} Finite number or zero.
  */
-function isRecord(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+function toNumber(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  return 0;
 }
 
 /**
@@ -331,6 +329,15 @@ function toArray(value) {
 }
 
 /**
+ * Check whether a parsed value is an object record.
+ * @param {unknown} value Candidate value.
+ * @returns {value is Record<string, unknown>} True when the value is a non-array object.
+ */
+function isRecord(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
  * Normalize a parsed value into text.
  * @param {unknown} value Candidate text value.
  * @returns {string} String or empty string.
@@ -341,19 +348,6 @@ function toText(value) {
   }
 
   return '';
-}
-
-/**
- * Normalize a parsed value into a numeric scalar.
- * @param {unknown} value Candidate numeric value.
- * @returns {number} Finite number or zero.
- */
-function toNumber(value) {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  return 0;
 }
 
 /**
