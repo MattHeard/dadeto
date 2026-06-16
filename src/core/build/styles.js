@@ -212,14 +212,32 @@ const STYLES = String.raw`
     color: var(--terminal-key);
   }
 
+  .manual-link {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--terminal-accent);
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-decoration: none;
+  }
+
+  .manual-link:hover,
+  .manual-link:focus {
+    color: var(--terminal-hover);
+    text-decoration: underline;
+    outline: 0;
+  }
+
   .manual-body {
-    display: none;
+    display: grid;
+    gap: 1em;
     padding-left: 2ch;
   }
 
-  .manual-body:target {
-    display: grid;
-    gap: 1em;
+  .manual-body[hidden] {
+    display: none;
   }
 
   a {

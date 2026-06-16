@@ -23,7 +23,7 @@ describe('content renderers mapping', () => {
     expect(html).toContain('<p>q</p>');
   });
 
-  test('generateBlog renders manual content as a collapsed block with show/hide links', () => {
+  test('generateBlog renders manual content as a collapsed block with show/hide controls', () => {
     const blog = {
       posts: [
         {
@@ -44,9 +44,12 @@ describe('content renderers mapping', () => {
     const html = generateBlog({ blog, header, footer }, wrapHtml);
     expect(html).toContain('<div class="key">man</div>');
     expect(html).toContain('class="manual"');
-    expect(html).toContain('href="#CR1-manual-body"');
-    expect(html).toContain('href="#CR1-manual"');
     expect(html).toContain('class="manual-body"');
+    expect(html).toContain('hidden');
+    expect(html).toContain('data-manual-action="show"');
+    expect(html).toContain('data-manual-action="hide"');
+    expect(html).not.toContain('href="#CR1-manual-body"');
+    expect(html).not.toContain('href="#CR1-manual"');
     expect(html).toContain('<p>line one</p><p>line two</p>');
   });
 });

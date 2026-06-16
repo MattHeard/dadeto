@@ -371,6 +371,16 @@ function createPageFooter() {
 }
 
 /**
+ * Build the inline script that wires up a manual block's show/hide controls.
+ * @param {string} manualId - Stable manual block identifier.
+ * @returns {string} Inline module script.
+ */
+function createManualToggleScript(manualId) {
+  const manualIdLiteral = JSON.stringify(manualId);
+  return `<script type="module">const manual=document.getElementById(${manualIdLiteral});if(manual){const body=manual.querySelector('.manual-body');const showButton=manual.querySelector('[data-manual-action="show"]');if(body&&showButton){const setOpen=open=>{body.hidden=!open;showButton.hidden=open;showButton.setAttribute('aria-expanded',String(open));};setOpen(false);showButton.addEventListener('click',event=>{event.preventDefault();setOpen(true);});const hideButton=manual.querySelector('[data-manual-action="hide"]');if(hideButton){hideButton.addEventListener('click',event=>{event.preventDefault();setOpen(false);});}}}</script>`;
+}
+
+/**
  * Convert a blog post object to an article HTML string.
  * @param {object} post - Blog post data.
  * @returns {string} HTML article.
@@ -607,15 +617,18 @@ function createManualBlock(manual) {
   if (typeof manual.id === 'string' && manual.id) {
     manualId = manual.id;
   }
-  manualId = escapeHtml(manualId);
-  const bodyId = `${manualId}-body`;
+  const escapedManualId = escapeHtml(manualId);
+  const bodyId = `${escapedManualId}-body`;
   let title = 'User manual';
   if (typeof manual.title === 'string' && manual.title) {
     title = manual.title;
   }
   title = escapeHtml(title);
   const paragraphs = createParagraphs(manual.content || []);
-  return `<div class="manual" id="${manualId}"><p class="manual-toggle"><a href="#${bodyId}">show</a> ${title}</p><div class="manual-body" id="${bodyId}">${paragraphs}<p class="manual-toggle"><a href="#${manualId}">hide</a></p></div></div>`;
+  const showButton = `<button type="button" class="manual-link" data-manual-action="show" aria-controls="${bodyId}" aria-expanded="false">show</button>`;
+  const hideButton = `<button type="button" class="manual-link" data-manual-action="hide" aria-controls="${bodyId}">hide</button>`;
+  const manualScript = createManualToggleScript(manualId);
+  return `<div class="manual" id="${escapedManualId}"><p class="manual-toggle">${showButton} ${title}</p><div class="manual-body" id="${bodyId}" hidden>${paragraphs}<p class="manual-toggle">${hideButton}</p></div>${manualScript}</div>`;
 }
 
 /**
