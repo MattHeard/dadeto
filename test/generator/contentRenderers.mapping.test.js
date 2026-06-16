@@ -42,6 +42,7 @@ describe('content renderers mapping', () => {
       ],
     };
     const html = generateBlog({ blog, header, footer }, wrapHtml);
+    expect(html).toContain('<div class="key">man</div>');
     expect(html).toContain('class="manual"');
     expect(html).toContain('href="#CR1-manual-body"');
     expect(html).toContain('href="#CR1-manual"');

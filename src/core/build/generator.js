@@ -639,6 +639,9 @@ function createContentSectionItem(content, isFirst) {
   if (isFirst) {
     key = 'text';
   }
+  if (normalizedContent.type === 'manual') {
+    key = 'man';
+  }
   const keyDiv = createDiv(CLASS.KEY, key);
   const valueDiv = renderValueDiv(normalizedContent);
   return createPair(keyDiv, valueDiv);
