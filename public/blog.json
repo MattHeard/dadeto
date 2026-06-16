@@ -7,7 +7,17 @@
       "content": [
         "Ranks file pairs and individual files by how often they change together in a static change-set history.",
         "Use it to spot co-change hotspots before reaching for live repository mining or network-backed analysis.",
-        "The input stays pure JSON, and the output is a deterministic ranked report."
+        "The input stays pure JSON, and the output is a deterministic ranked report.",
+        {
+          "type": "manual",
+          "id": "CHAN1-manual",
+          "title": "User manual",
+          "content": [
+            "Paste a JSON object with a changeSets array. Each change set should include an id and a files list, but the explorer will fall back cleanly when fields are missing.",
+            "The first ranking table highlights pairs that change together most often. The second ranking table shows the files with the broadest surface area and the most partners.",
+            "Because this is a static toy, it ignores live git history, file watching, and any network or database access."
+          ]
+        }
       ],
       "toy": {
         "modulePath": "/core/browser/toys/2026-06-15/changeTogetherExplorer.js",

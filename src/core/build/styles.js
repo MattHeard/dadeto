@@ -203,6 +203,25 @@ const STYLES = String.raw`
     color: var(--terminal-key);
   }
 
+  .manual {
+    display: grid;
+    gap: 1em;
+  }
+
+  .manual-toggle {
+    color: var(--terminal-key);
+  }
+
+  .manual-body {
+    display: none;
+    padding-left: 2ch;
+  }
+
+  .manual-body:target {
+    display: grid;
+    gap: 1em;
+  }
+
   a {
     color: var(--terminal-accent);
     text-decoration: none;

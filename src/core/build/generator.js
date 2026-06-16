@@ -590,8 +590,32 @@ function getContentRenderer(type) {
  */
 function renderValueDiv(normalizedContent) {
   const { type, content } = normalizedContent;
+  if (type === 'manual') {
+    return createManualBlock(normalizedContent);
+  }
   const renderer = getContentRenderer(type);
   return renderer(content);
+}
+
+/**
+ * Render a collapsed, text-only manual block with show/hide links.
+ * @param {object} manual Manual content payload.
+ * @returns {string} Manual HTML.
+ */
+function createManualBlock(manual) {
+  let manualId = 'manual';
+  if (typeof manual.id === 'string' && manual.id) {
+    manualId = manual.id;
+  }
+  manualId = escapeHtml(manualId);
+  const bodyId = `${manualId}-body`;
+  let title = 'User manual';
+  if (typeof manual.title === 'string' && manual.title) {
+    title = manual.title;
+  }
+  title = escapeHtml(title);
+  const paragraphs = createParagraphs(manual.content || []);
+  return `<div class="manual" id="${manualId}"><p class="manual-toggle"><a href="#${bodyId}">show</a> ${title}</p><div class="manual-body" id="${bodyId}">${paragraphs}<p class="manual-toggle"><a href="#${manualId}">hide</a></p></div></div>`;
 }
 
 /**

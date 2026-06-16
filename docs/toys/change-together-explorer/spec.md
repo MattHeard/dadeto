@@ -18,6 +18,7 @@
   - Rank file pairs by how often they appear together.
   - Rank individual files by how often they appear and how many partners they have.
   - Return a deterministic JSON report.
+  - Render a collapsed, text-only user manual block in the public blog post with show/hide links.
 - Out of scope:
   - Live git history analysis.
   - File watching.

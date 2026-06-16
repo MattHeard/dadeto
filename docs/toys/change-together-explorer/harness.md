@@ -13,6 +13,7 @@
 - Artifacts written to:
   - `public/blog.json`
   - `public/index.html`
+- Public blog output should include a `User manual` block for `CHAN1` that stays collapsed until the `show` link is activated.
 - Exit code:
   - `0`
 

@@ -237,6 +237,25 @@
         color: var(--terminal-key);
       }
 
+      .manual {
+        display: grid;
+        gap: 1em;
+      }
+
+      .manual-toggle {
+        color: var(--terminal-key);
+      }
+
+      .manual-body {
+        display: none;
+        padding-left: 2ch;
+      }
+
+      .manual-body:target {
+        display: grid;
+        gap: 1em;
+      }
+
       a {
         color: var(--terminal-accent);
         text-decoration: none;
@@ -644,6 +663,29 @@
           The input stays pure JSON, and the output is a deterministic ranked
           report.
         </p>
+        <div class="key"></div>
+        <div class="manual" id="CHAN1-manual">
+          <p class="manual-toggle">
+            <a href="#CHAN1-manual-body">show</a> User manual
+          </p>
+          <div class="manual-body" id="CHAN1-manual-body">
+            <p>
+              Paste a JSON object with a changeSets array. Each change set
+              should include an id and a files list, but the explorer will fall
+              back cleanly when fields are missing.
+            </p>
+            <p>
+              The first ranking table highlights pairs that change together most
+              often. The second ranking table shows the files with the broadest
+              surface area and the most partners.
+            </p>
+            <p>
+              Because this is a static toy, it ignores live git history, file
+              watching, and any network or database access.
+            </p>
+            <p class="manual-toggle"><a href="#CHAN1-manual">hide</a></p>
+          </div>
+        </div>
         <div class="key">in</div>
         <div class="value">
           <select class="input">
