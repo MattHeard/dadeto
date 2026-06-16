@@ -238,7 +238,6 @@ const STYLES = String.raw`
   .manual-body {
     display: grid;
     gap: 1em;
-    padding-left: 2ch;
   }
 
   .manual-body[hidden] {
