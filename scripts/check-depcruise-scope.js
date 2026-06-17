@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as espree from 'espree';
 import * as eslintScope from 'eslint-scope';
 

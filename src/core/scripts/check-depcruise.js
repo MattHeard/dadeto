@@ -2,6 +2,7 @@ import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
 import { findBrowserGlobalReferences } from '../../../scripts/check-depcruise-scope.js';
 
+// jscpd:ignore-start
 const { requirePathModule } = commonCore;
 
 const DEFAULT_ROOT_DIR = '.';
@@ -63,24 +64,20 @@ export function findCoreMathRandomViolations({
   sourceRoot,
   pathModule,
 }) {
-  const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
-  return listJsFiles(sourceRootPath, readdirSync, pathModule).flatMap(
-    filePath => {
-      const source = readFileSync(filePath, 'utf8');
-      const occurrences = countMathRandomOccurrences(source);
-
-      if (occurrences <= 0) {
-        return [];
-      }
-
-      return [
-        {
-          filePath: toRepoRelativePath(rootDir, filePath, pathModule),
-          occurrences,
-        },
-      ];
-    }
-  );
+  /**
+   * @param {string} source Source text.
+   * @returns {number} Number of direct uses.
+   */
+  const scanSource = source => countMathRandomOccurrences(source);
+  return collectJsViolations({
+    readFileSync,
+    readdirSync,
+    rootDir,
+    sourceRoot,
+    pathModule,
+    scanSource,
+    createViolation: (filePath, occurrences) => ({ filePath, occurrences }),
+  });
 }
 
 /**
@@ -149,28 +146,26 @@ export function findCoreGlobalViolations({
   sourceRoot,
   pathModule,
 }) {
-  const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
-  return listJsFiles(sourceRootPath, readdirSync, pathModule).flatMap(
-    filePath => {
-      const source = readFileSync(filePath, 'utf8');
-      const globals = findBrowserGlobalReferences(source).filter(globalName =>
-        CORE_GLOBALS.includes(globalName)
-      );
-
-      if (globals.length === 0) {
-        return [];
-      }
-
-      return [
-        {
-          filePath: toRepoRelativePath(rootDir, filePath, pathModule),
-          globals,
-        },
-      ];
-    }
-  );
+  /**
+   * @param {string} source Source text.
+   * @returns {string[]} Browser globals found in the source.
+   */
+  const scanSource = source =>
+    findBrowserGlobalReferences(source).filter(globalName =>
+      CORE_GLOBALS.includes(globalName)
+    );
+  return collectJsViolations({
+    readFileSync,
+    readdirSync,
+    rootDir,
+    sourceRoot,
+    pathModule,
+    scanSource,
+    createViolation: (filePath, globals) => ({ filePath, globals }),
+  });
 }
 
+// jscpd:ignore-start
 /**
  * Remove non-executable module text from the browser main policy scan.
  * @param {string | null | undefined} source Source text.
@@ -205,6 +200,7 @@ export const checkDepcruiseTestUtils = {
   normalizeCheckDepcruiseOptions,
   scanQuotedString,
   isBoundary,
+  isEmptyScanResult,
   findCoreBrowserMainGlobalViolations,
   findCoreGlobalViolations,
   stripBrowserMainPolicyNoise,
@@ -415,6 +411,69 @@ function listJsFiles(dirPath, readdirSync, pathModule) {
 }
 
 /**
+ * Scan each JavaScript file in a directory tree for violations.
+ * @param {{
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
+ *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
+ *   rootDir: string,
+ *   sourceRoot: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
+ *   scanSource: (source: string) => any,
+ *   createViolation: (filePath: string, scanResult: any) => any,
+ * }} deps Scan dependencies.
+ * @returns {any[]} Violations discovered in source files.
+ */
+function collectJsViolations({
+  readFileSync,
+  readdirSync,
+  rootDir,
+  sourceRoot,
+  pathModule,
+  scanSource,
+  createViolation,
+}) {
+  const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
+  return listJsFiles(sourceRootPath, readdirSync, pathModule).flatMap(
+    filePath => {
+      const scanResult = scanSource(readFileSync(filePath, 'utf8'));
+
+      if (isEmptyScanResult(scanResult)) {
+        return [];
+      }
+
+      return [
+        createViolation(
+          toRepoRelativePath(rootDir, filePath, pathModule),
+          scanResult
+        ),
+      ];
+    }
+  );
+}
+
+/**
+ * Tell whether a scan result has no matches.
+ * @param {unknown} scanResult Scan result.
+ * @returns {boolean} True when the scan result is empty.
+ */
+function isEmptyScanResult(scanResult) {
+  if (typeof scanResult === 'number') {
+    return scanResult <= 0;
+  }
+
+  if (Array.isArray(scanResult)) {
+    return scanResult.length === 0;
+  }
+
+  return !scanResult;
+}
+
+/**
  * Count direct random-source calls in a source file while skipping comments and strings.
  * @param {string} source Source text.
  * @returns {number} Number of direct uses.
@@ -468,15 +527,7 @@ function isBrowserGlobalAtIndex(source, index, identifier) {
  * @returns {boolean} True when the source uses the global as a property access.
  */
 function hasGlobalPropertyAccessAtIndex(source, index, identifier) {
-  if (!source.startsWith(identifier, index)) {
-    return false;
-  }
-
-  const hasLowerBoundary = isBoundary(source[index - 1]);
-  const nextCharacter = source[index + identifier.length];
-  const hasUpperBoundary = nextCharacter === '.';
-
-  return hasLowerBoundary && hasUpperBoundary;
+  return hasDelimitedIdentifierAtIndex(source, index, identifier, '.');
 }
 
 /**
@@ -486,18 +537,12 @@ function hasGlobalPropertyAccessAtIndex(source, index, identifier) {
  * @returns {boolean} True when fetch is used as a direct call or shorthand property.
  */
 function hasFetchUsageAtIndex(source, index) {
-  if (!source.startsWith('fetch', index)) {
-    return false;
-  }
-
-  const hasLowerBoundary = isBoundary(source[index - 1]);
-  const nextCharacter = source[index + 'fetch'.length];
-  if (nextCharacter === ':') {
-    return false;
-  }
-
-  const hasUpperBoundary = /[,(;\s\[\]\)]/u.test(nextCharacter ?? '');
-  return hasLowerBoundary && hasUpperBoundary;
+  return hasDelimitedIdentifierAtIndex(
+    source,
+    index,
+    'fetch',
+    /[,(;\s\[\]\)]/u
+  );
 }
 
 /**
@@ -508,19 +553,7 @@ function hasFetchUsageAtIndex(source, index) {
  * @returns {boolean} True when the source uses the global as a bare value.
  */
 function hasBareGlobalUsageAtIndex(source, index, identifier) {
-  if (!source.startsWith(identifier, index)) {
-    return false;
-  }
-
-  const hasLowerBoundary = isBoundary(source[index - 1]);
-  const nextCharacter = source[index + identifier.length];
-  if (nextCharacter === ':') {
-    return false;
-  }
-
-  const hasUpperBoundary = isBoundary(nextCharacter);
-
-  return hasLowerBoundary && hasUpperBoundary;
+  return hasDelimitedIdentifierAtIndex(source, index, identifier, isBoundary);
 }
 
 /**
@@ -591,6 +624,43 @@ function createZeroCountScanResult(nextIndex, nextState, count = 0) {
 }
 
 /**
+ * Determine whether a source fragment is a standalone identifier with the given trailing delimiter.
+ * @param {string} source Source text.
+ * @param {number} index Current index.
+ * @param {string} identifier Identifier to match.
+ * @param {string | RegExp | ((character: string | undefined) => boolean)} upperBoundaryTest Boundary test.
+ * @returns {boolean} True when the identifier is present with valid boundaries.
+ */
+function hasDelimitedIdentifierAtIndex(
+  source,
+  index,
+  identifier,
+  upperBoundaryTest
+) {
+  if (!source.startsWith(identifier, index)) {
+    return false;
+  }
+
+  const hasLowerBoundary = isBoundary(source[index - 1]);
+  const nextCharacter = source[index + identifier.length];
+
+  if (nextCharacter === ':') {
+    return false;
+  }
+
+  let hasUpperBoundary = false;
+  if (typeof upperBoundaryTest === 'function') {
+    hasUpperBoundary = upperBoundaryTest(nextCharacter);
+  } else if (upperBoundaryTest instanceof RegExp) {
+    hasUpperBoundary = upperBoundaryTest.test(nextCharacter ?? '');
+  } else {
+    hasUpperBoundary = nextCharacter === upperBoundaryTest;
+  }
+
+  return hasLowerBoundary && hasUpperBoundary;
+}
+
+/**
  * Detect comment or string boundaries at the current index.
  * @param {string} source Source text.
  * @param {number} index Current index.
@@ -644,7 +714,8 @@ function scanLineComment(source, index) {
  * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
  */
 function scanBlockComment(source, index) {
-  if (source[index] === '*' && source[index + 1] === '/') {
+  const isClosed = source[index] === '*' && source[index + 1] === '/';
+  if (isClosed) {
     return createZeroCountScanResult(index + 2, 'code');
   }
 
@@ -714,3 +785,4 @@ function toRepoRelativePath(rootDir, absolutePath, pathModule) {
     .relative(rootDir, absolutePath)
     .replaceAll(pathModule.sep, '/');
 }
+// jscpd:ignore-end

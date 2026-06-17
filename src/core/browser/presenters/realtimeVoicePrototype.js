@@ -10,13 +10,10 @@ const STATUS = {
  * Create the Realtime Voice Prototype presenter element.
  * @param {string} inputString Serialized toy payload.
  * @param {object} dom DOM helper facade.
+ * @param {typeof fetch} fetchFn Fetch implementation.
  * @returns {HTMLElement} Realtime voice controls.
  */
-export function createRealtimeVoicePrototypeElement(
-  inputString,
-  dom,
-  fetchFn
-) {
+export function createRealtimeVoicePrototypeElement(inputString, dom, fetchFn) {
   const config = parseConfig(inputString);
   const controls = createControls(dom, config);
   const state = createInitialState();
@@ -171,6 +168,7 @@ function appendButton(parent, label, dom) {
  * @param {object} state Mutable connection state.
  * @param {object} controls Page controls.
  * @param {object} dom DOM helper facade.
+ * @param {typeof fetch} fetchFn Fetch implementation.
  * @returns {Promise<void>} Resolves when the SDP answer has been applied.
  */
 async function connectRealtimeVoice(state, controls, dom, fetchFn) {
@@ -219,6 +217,7 @@ function hasUsableEndpoint(controls, dom) {
  * @param {object} state Mutable connection state.
  * @param {object} controls Page controls.
  * @param {object} dom DOM helper facade.
+ * @param {typeof fetch} fetchFn Fetch implementation.
  * @returns {Promise<void>} Resolves after remote description is set.
  */
 async function startPeerConnection(state, controls, dom, fetchFn) {
@@ -334,6 +333,7 @@ function wirePeerConnectionEvents(peerConnection, controls, dom) {
  * Request an SDP answer from the configured API-key-holding server.
  * @param {string} offerSdp Browser SDP offer.
  * @param {string} endpoint Local route or cloud URL.
+ * @param {typeof fetch} fetchFn Fetch implementation.
  * @returns {Promise<string>} SDP answer.
  */
 async function requestRealtimeAnswer(offerSdp, endpoint, fetchFn) {

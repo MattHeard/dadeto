@@ -130,6 +130,14 @@ describe('findCoreMathRandomViolations', () => {
     expect(checkDepcruiseTestUtils.isBoundary(undefined)).toBe(true);
   });
 
+  test('isEmptyScanResult recognizes empty and non-empty scan outputs', () => {
+    expect(checkDepcruiseTestUtils.isEmptyScanResult(0)).toBe(true);
+    expect(checkDepcruiseTestUtils.isEmptyScanResult(2)).toBe(false);
+    expect(checkDepcruiseTestUtils.isEmptyScanResult([])).toBe(true);
+    expect(checkDepcruiseTestUtils.isEmptyScanResult(['hit'])).toBe(false);
+    expect(checkDepcruiseTestUtils.isEmptyScanResult(null)).toBe(true);
+  });
+
   test('normalizeCheckDepcruiseOptions fills every default dependency', () => {
     expect(
       checkDepcruiseTestUtils.normalizeCheckDepcruiseOptions({
@@ -403,7 +411,11 @@ describe('createCheckDepcruiseHandle', () => {
       )
     ).toBe(true);
     expect(
-      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('localStorage', 0, 'localStorage')
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex(
+        'localStorage',
+        0,
+        'localStorage'
+      )
     ).toBe(true);
     expect(
       checkDepcruiseTestUtils.isBrowserGlobalAtIndex('fetch(', 0, 'fetch')
@@ -412,7 +424,11 @@ describe('createCheckDepcruiseHandle', () => {
       checkDepcruiseTestUtils.isBrowserGlobalAtIndex('fetch:', 0, 'fetch')
     ).toBe(false);
     expect(
-      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('localStorage:', 0, 'localStorage')
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex(
+        'localStorage:',
+        0,
+        'localStorage'
+      )
     ).toBe(false);
     expect(
       checkDepcruiseTestUtils.isBrowserGlobalAtIndex('window:', 0, 'window')
@@ -432,24 +448,16 @@ describe('createCheckDepcruiseHandle', () => {
     expect(
       checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch("/blog.json")', 0)
     ).toBe(true);
-    expect(
-      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch.url', 0)
-    ).toBe(
+    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch.url', 0)).toBe(
       false
     );
-    expect(
-      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetchx', 0)
-    ).toBe(
+    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetchx', 0)).toBe(
       false
     );
-    expect(
-      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch', 0)
-    ).toBe(
+    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch', 0)).toBe(
       false
     );
-    expect(
-      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch:', 0)
-    ).toBe(
+    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch:', 0)).toBe(
       false
     );
   });
@@ -613,5 +621,4 @@ describe('createCheckDepcruiseHandle', () => {
       'Dependency-cruiser gate was terminated by signal SIGTERM'
     );
   });
-
 });

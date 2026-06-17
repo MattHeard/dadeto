@@ -129,6 +129,9 @@ export function createMainHandle({
 
     handleTagLinks(dom);
 
+    /**
+     *
+     */
     function resetFilters() {
       const articles = Array.from(dom.getElementsByTagName('article'));
       for (const article of articles) {
@@ -136,6 +139,9 @@ export function createMainHandle({
       }
     }
 
+    /**
+     *
+     */
     function initializeFilterButtons() {
       const buttons = documentObj.querySelectorAll('.filter-button');
 

@@ -210,20 +210,7 @@ function wireSignOut() {
     link.addEventListener('click', async e => {
       e.preventDefault();
       await signOut();
-      moderateDocument
-        .querySelectorAll('#signoutWrap')
-        .forEach(el => (el.style.display = 'none'));
-      moderateDocument
-        .querySelectorAll('#signinButton')
-        .forEach(el => (el.style.display = ''));
-      moderateDocument
-        .querySelectorAll('.admin-link')
-        .forEach(link => (link.style.display = 'none'));
-      const content = moderateDocument.getElementById('pageContent');
-      if (content) {
-        content.innerHTML = '';
-        content.style.display = 'none';
-      }
+      resetModerationUi();
       toggleApproveReject(true);
       moderateDocument.body.classList.remove('authed');
     });
@@ -297,6 +284,26 @@ async function submitRating(isApproved) {
     alert("Sorry, that didn't work. See console for details.");
     if (approve) approve.disabled = false;
     if (reject) reject.disabled = false;
+  }
+}
+
+/**
+ * Reset the moderation page to its signed-out state.
+ */
+function resetModerationUi() {
+  moderateDocument
+    .querySelectorAll('#signoutWrap')
+    .forEach(el => (el.style.display = 'none'));
+  moderateDocument
+    .querySelectorAll('#signinButton')
+    .forEach(el => (el.style.display = ''));
+  moderateDocument
+    .querySelectorAll('.admin-link')
+    .forEach(link => (link.style.display = 'none'));
+  const content = moderateDocument.getElementById('pageContent');
+  if (content) {
+    content.innerHTML = '';
+    content.style.display = 'none';
   }
 }
 

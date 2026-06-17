@@ -1,5 +1,24 @@
-import { describe, it, expect } from '@jest/globals';
-import { getUuid } from '../../src/browser/document.js';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+
+let getUuid;
+
+beforeEach(async () => {
+  global.document = {
+    getElementById: jest.fn(),
+    querySelectorAll: jest.fn().mockReturnValue([]),
+    createElement: jest.fn(),
+    createTextNode: jest.fn(),
+    getElementsByTagName: jest.fn().mockReturnValue([]),
+  };
+  global.window = {
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  };
+  global.navigator = {
+    getGamepads: jest.fn().mockReturnValue([]),
+  };
+  ({ getUuid } = await import('../../src/browser/document.js'));
+});
 
 describe('getUuid', () => {
   it('returns a valid uuid', () => {

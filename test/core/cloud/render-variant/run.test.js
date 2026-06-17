@@ -48,12 +48,9 @@ jest.unstable_mockModule(
   })
 );
 
-jest.unstable_mockModule(
-  '../../../../src/core/cloud/cloud-core.js',
-  () => ({
-    createFirestoreDocumentOnWriteTrigger,
-  })
-);
+jest.unstable_mockModule('../../../../src/core/cloud/cloud-core.js', () => ({
+  createFirestoreDocumentOnWriteTrigger,
+}));
 
 let runRenderVariant;
 
@@ -89,7 +86,7 @@ describe('runRenderVariant', () => {
     const crypto = { randomUUID: jest.fn(() => 'uuid') };
     const functions = { region };
 
-    const { renderVariant, render } = runRenderVariant({
+    const { render } = runRenderVariant({
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,
@@ -171,7 +168,7 @@ describe('runRenderVariant', () => {
     const functions = { region };
 
     createRenderVariant.mockImplementationOnce(options =>
-      jest.fn(async (...args) => {
+      jest.fn(async () => {
         options.consoleError('builder failure');
         return null;
       })

@@ -29,7 +29,9 @@ function setDocumentEnvironment(deps) {
  */
 function getDocumentEnvironment() {
   if (!documentEnvironment) {
-    throw new Error('createDocumentHandle must be called before using DOM helpers.');
+    throw new Error(
+      'createDocumentHandle must be called before using DOM helpers.'
+    );
   }
 
   return documentEnvironment;
@@ -75,7 +77,8 @@ export const querySelector = (el, selector) => el.querySelector(selector);
  * @param {string} selector - The CSS selector to match elements against
  * @returns {NodeList} A NodeList of matching elements
  */
-export const querySelectorAll = selector => getDocumentObj().querySelectorAll(selector);
+export const querySelectorAll = selector =>
+  getDocumentObj().querySelectorAll(selector);
 export const addClass = (element, className) =>
   element.classList.add(className);
 
