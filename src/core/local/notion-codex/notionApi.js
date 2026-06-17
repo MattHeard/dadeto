@@ -11,7 +11,7 @@ const RICH_TEXT_CHUNK_SIZE = 1800;
  *   message: string,
  *   token: string,
  *   notionVersion?: string,
- *   fetchImpl?: typeof fetch
+ *   fetchImpl: typeof fetch
  * }} options Comment options.
  * @returns {Promise<unknown>} Notion API response payload.
  */
@@ -20,15 +20,13 @@ export async function appendNotionCodexReply(options) {
   const runId = normalizeRequiredString(options.runId, 'runId');
   const message = normalizeRequiredString(options.message, 'message');
   const token = normalizeRequiredString(options.token, 'token');
-  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
-
-  if (typeof fetchImpl !== 'function') {
+  if (typeof options.fetchImpl !== 'function') {
     throw new Error(
       'A fetch implementation is required to call the Notion API.'
     );
   }
 
-  const response = await fetchImpl(`${NOTION_API_BASE_URL}/comments`, {
+  const response = await options.fetchImpl(`${NOTION_API_BASE_URL}/comments`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

@@ -1,6 +1,8 @@
 import { createRealtimeVoicePrototypePresenterHandle } from '../../core/browser/presenters/realtimeVoicePrototype.js';
 
-const handle = createRealtimeVoicePrototypePresenterHandle();
+const handle = createRealtimeVoicePrototypePresenterHandle({
+  fetchFn: globalThis.fetch,
+});
 
 export const { createRealtimeVoicePrototypeElement } = handle;
 

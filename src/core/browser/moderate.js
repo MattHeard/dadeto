@@ -21,8 +21,17 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebas
 
 setupFirebase(initializeApp);
 
+/** @type {Document | null} */
+let moderateDocument = null;
+/** @type {typeof fetch | null} */
+let moderateFetchFn = null;
+/** @type {Storage | null} */
+let moderateSessionStorage = null;
+/** @type {typeof globalThis | null} */
+let moderateGlobalObject = null;
+
 const loadStaticConfig = createLoadStaticConfig({
-  fetchFn: (input, init) => fetch(input, init),
+  fetchFn: (input, init) => moderateFetchFn(input, init),
   warn: (message, error) => console.warn(message, error),
 });
 
@@ -32,9 +41,9 @@ const getInitGoogleSignInHandler = () => {
     const auth = getAuth();
     initGoogleSignInHandler = createGoogleSignInInit({
       auth,
-      storage: sessionStorage,
+      storage: moderateSessionStorage,
       logger: console,
-      globalObject: globalThis,
+      globalObject: moderateGlobalObject,
       authProvider: GoogleAuthProvider,
       signInWithCredential: signInWithCredential,
     });
@@ -48,14 +57,14 @@ let signOutHandler;
 const getSignOutHandler = () => {
   if (!signOutHandler) {
     const auth = getAuth();
-    signOutHandler = createSignOut(auth, globalThis);
+    signOutHandler = createSignOut(auth, moderateGlobalObject);
   }
   return signOutHandler;
 };
 
 const signOut = () => getSignOutHandler()();
 
-const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
+const isAdmin = () => isAdminWithDeps(moderateSessionStorage, JSON, atob);
 
 const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   loadStaticConfig,
@@ -69,7 +78,7 @@ const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
  */
 function toggleApproveReject(disabled) {
   ['approveBtn', 'rejectBtn'].forEach(id => {
-    const el = document.getElementById(id);
+    const el = moderateDocument.getElementById(id);
     if (el) el.disabled = disabled;
   });
 }
@@ -81,7 +90,7 @@ function toggleApproveReject(disabled) {
  * @returns {() => void} Function to stop the animation.
  */
 function startAnimation(id, text) {
-  const el = document.getElementById(id);
+  const el = moderateDocument.getElementById(id);
   if (!el) return () => {};
   let dots = 1;
   el.textContent = `${text}.`;
@@ -103,7 +112,7 @@ function startAnimation(id, text) {
  * @returns {HTMLElement} The created element.
  */
 function createTextElement(tagName, text) {
-  const el = document.createElement(tagName);
+  const el = moderateDocument.createElement(tagName);
   el.textContent = text || '';
   return el;
 }
@@ -116,9 +125,9 @@ function createTextElement(tagName, text) {
  */
 function appendOptionsList(container, options) {
   if (!Array.isArray(options) || options.length === 0) return;
-  const list = document.createElement('ol');
+  const list = moderateDocument.createElement('ol');
   options.forEach(opt => {
-    const li = document.createElement('li');
+    const li = moderateDocument.createElement('li');
     if (opt.targetPageNumber !== undefined) {
       li.textContent = `${opt.content} (${opt.targetPageNumber})`;
     } else {
@@ -134,8 +143,8 @@ function appendOptionsList(container, options) {
  * @returns {void}
  */
 function enableModerationButtons() {
-  const approve = document.getElementById('approveBtn');
-  const reject = document.getElementById('rejectBtn');
+  const approve = moderateDocument.getElementById('approveBtn');
+  const reject = moderateDocument.getElementById('rejectBtn');
   if (!approve || !reject) return;
   approve.disabled = false;
   reject.disabled = false;
@@ -149,7 +158,7 @@ function enableModerationButtons() {
  * @returns {void}
  */
 function renderVariant(data) {
-  const container = document.getElementById('pageContent');
+  const container = moderateDocument.getElementById('pageContent');
   if (!container) return;
 
   container.style.display = '';
@@ -197,26 +206,26 @@ async function retryLoadVariant() {
  * Register the click handler for the sign-out button.
  */
 function wireSignOut() {
-  document.querySelectorAll('#signoutLink').forEach(link => {
+  moderateDocument.querySelectorAll('#signoutLink').forEach(link => {
     link.addEventListener('click', async e => {
       e.preventDefault();
       await signOut();
-      document
+      moderateDocument
         .querySelectorAll('#signoutWrap')
         .forEach(el => (el.style.display = 'none'));
-      document
+      moderateDocument
         .querySelectorAll('#signinButton')
         .forEach(el => (el.style.display = ''));
-      document
+      moderateDocument
         .querySelectorAll('.admin-link')
         .forEach(link => (link.style.display = 'none'));
-      const content = document.getElementById('pageContent');
+      const content = moderateDocument.getElementById('pageContent');
       if (content) {
         content.innerHTML = '';
         content.style.display = 'none';
       }
       toggleApproveReject(true);
-      document.body.classList.remove('authed');
+      moderateDocument.body.classList.remove('authed');
     });
   });
 }
@@ -233,7 +242,7 @@ async function assignJob() {
   body.set('id_token', token);
 
   const { assignModerationJobUrl } = await getModerationEndpoints();
-  const resp = await fetch(assignModerationJobUrl, {
+  const resp = await moderateFetchFn(assignModerationJobUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -268,8 +277,8 @@ async function loadVariant(retried = false) {
  * @param {boolean} isApproved Whether the page was approved.
  */
 async function submitRating(isApproved) {
-  const approve = document.getElementById('approveBtn');
-  const reject = document.getElementById('rejectBtn');
+  const approve = moderateDocument.getElementById('approveBtn');
+  const reject = moderateDocument.getElementById('rejectBtn');
   if (approve) approve.disabled = true;
   if (reject) reject.disabled = true;
   const stopSaving = startAnimation('saving', 'Saving');
@@ -292,7 +301,12 @@ async function submitRating(isApproved) {
 }
 
 const fetchJson = async (url, init) => {
-  const resp = await fetch(url, init);
+  const fetchImpl = moderateFetchFn ?? globalThis.fetch;
+  if (typeof fetchImpl !== 'function') {
+    throw new Error('fetch is not available');
+  }
+
+  const resp = await fetchImpl(url, init);
   if (!resp.ok) {
     const body = await readErrorResponseBody(resp);
     const error = new Error(formatHttpErrorMessage(resp.status, body));
@@ -337,46 +351,57 @@ function formatHttpErrorMessage(status, body) {
 
 export const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
 
-initGoogleSignIn({
-  onSignIn: () => {
-    document.body.classList.add('authed');
-    document
-      .querySelectorAll('#signinButton')
-      .forEach(el => (el.style.display = 'none'));
-    document
-      .querySelectorAll('#signoutWrap')
-      .forEach(el => (el.style.display = ''));
-    if (isAdmin()) {
-      document
-        .querySelectorAll('.admin-link')
-        .forEach(link => (link.style.display = ''));
-    }
-    wireSignOut();
-    loadVariant();
-  },
-});
-
-if (getIdToken()) {
-  document.body.classList.add('authed');
-  document
-    .querySelectorAll('#signinButton')
-    .forEach(el => (el.style.display = 'none'));
-  document
-    .querySelectorAll('#signoutWrap')
-    .forEach(el => (el.style.display = ''));
-  if (isAdmin()) {
-    document
-      .querySelectorAll('.admin-link')
-      .forEach(link => (link.style.display = ''));
-  }
-  wireSignOut();
-  loadVariant();
-}
-
 /**
- * Create the moderation page entry handle.
- * @returns {() => void} Entry handle; initialization runs when this module loads.
+ * Initialize the moderation page with injected browser globals.
+ * @param {{
+ *   documentObj: Document,
+ *   fetchFn: typeof fetch,
+ *   sessionStorageObj: Storage,
+ *   globalObject: typeof globalThis,
+ * }} deps Browser globals.
+ * @returns {() => void} Entry handle.
  */
-export function createModerateHandle() {
-  return function handleModerate() {};
+export function createModerateHandle(deps = {}) {
+  moderateDocument = deps.documentObj;
+  moderateFetchFn = deps.fetchFn;
+  moderateSessionStorage = deps.sessionStorageObj;
+  moderateGlobalObject = deps.globalObject;
+
+  return function handleModerate() {
+    initGoogleSignIn({
+      onSignIn: () => {
+        moderateDocument.body.classList.add('authed');
+        moderateDocument
+          .querySelectorAll('#signinButton')
+          .forEach(el => (el.style.display = 'none'));
+        moderateDocument
+          .querySelectorAll('#signoutWrap')
+          .forEach(el => (el.style.display = ''));
+        if (isAdmin()) {
+          moderateDocument
+            .querySelectorAll('.admin-link')
+            .forEach(link => (link.style.display = ''));
+        }
+        wireSignOut();
+        loadVariant();
+      },
+    });
+
+    if (getIdToken()) {
+      moderateDocument.body.classList.add('authed');
+      moderateDocument
+        .querySelectorAll('#signinButton')
+        .forEach(el => (el.style.display = 'none'));
+      moderateDocument
+        .querySelectorAll('#signoutWrap')
+        .forEach(el => (el.style.display = ''));
+      if (isAdmin()) {
+        moderateDocument
+          .querySelectorAll('.admin-link')
+          .forEach(link => (link.style.display = ''));
+      }
+      wireSignOut();
+      loadVariant();
+    }
+  };
 }

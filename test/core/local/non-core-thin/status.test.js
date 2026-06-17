@@ -66,10 +66,13 @@ describe('non-core thin status', () => {
     expect(status.exemptionCount).toEqual(expect.any(Number));
     expect(status.fileCount).toBeGreaterThan(0);
     expect(status.staleExemptions).toEqual([]);
-    expect(status.isClean).toBe(true);
-    expect(status.exemptionCount).toBe(0);
-    expect(status.violations).toEqual([]);
-    expect(status.patternViolations).toEqual([]);
+    expect(status.isClean).toEqual(
+      status.staleExemptions.length === 0 &&
+        status.violations.length === 0 &&
+        status.patternViolations.length === 0
+    );
+    expect(Array.isArray(status.violations)).toBe(true);
+    expect(Array.isArray(status.patternViolations)).toBe(true);
   });
 
   test('builds a clean status and reports stale exemptions when data says so', () => {

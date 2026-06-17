@@ -94,7 +94,15 @@ export default [
   {
     files: ['src/core/**/*.js'],
     rules: {
-      'no-restricted-globals': ['warn', 'event', 'fdescribe'],
+      'no-restricted-globals': [
+        'error',
+        'event',
+        'fdescribe',
+        'fetch',
+        'window',
+        'document',
+        'localStorage',
+      ],
       'no-param-reassign': 'warn',
       'no-return-assign': 'warn',
       'prefer-const': 'warn',

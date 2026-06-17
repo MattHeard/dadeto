@@ -4,6 +4,7 @@ import {
   checkDepcruiseTestUtils,
   createCheckDepcruiseHandle,
   findCoreBrowserMainGlobalViolations,
+  findCoreGlobalViolations,
   findCoreMathRandomViolations,
 } from '../../../src/core/scripts/check-depcruise.js';
 
@@ -163,9 +164,11 @@ describe('findCoreMathRandomViolations', () => {
         ].join('\n')
       )
     ).toBe(
-      ['export function createMainHandle() {', '  return function handleMain() {};', '}'].join(
-        '\n'
-      )
+      [
+        'export function createMainHandle() {',
+        '  return function handleMain() {};',
+        '}',
+      ].join('\n')
     );
   });
 
@@ -173,6 +176,57 @@ describe('findCoreMathRandomViolations', () => {
     expect(
       checkDepcruiseTestUtils.stripBrowserMainPolicyNoise('const x = 1;\n')
     ).toBe('const x = 1;\n');
+  });
+});
+
+describe('findCoreGlobalViolations', () => {
+  test('finds direct browser-global usage in any core file while ignoring comments and strings', () => {
+    const readFileSync = jest.fn(filePath => {
+      if (filePath.endsWith('match.js')) {
+        return [
+          'const storage = localStorage;',
+          'window.addEventListener("load", () => {});',
+          'document.addEventListener("click", () => {});',
+          "const single = 'localStorage window document';",
+          'const double = "localStorage window document";',
+          'const template = `localStorage window document`;',
+          '// localStorage window document should not count',
+          '/* localStorage window document should not count either */',
+        ].join('\n');
+      }
+
+      return 'const note = `localStorage window document`;';
+    });
+    const readdirSync = jest.fn(dirPath => {
+      if (dirPath === '/repo/src/core') {
+        return [
+          createDirentFile('match.js'),
+          createDirentFile('notes.txt'),
+          createDirentDirectory('nested'),
+        ];
+      }
+
+      if (dirPath === '/repo/src/core/nested') {
+        return [createDirentFile('ignore.js')];
+      }
+
+      return [];
+    });
+
+    expect(
+      findCoreGlobalViolations({
+        readFileSync,
+        readdirSync,
+        rootDir: '/repo',
+        sourceRoot: 'src/core',
+        pathModule: path,
+      })
+    ).toEqual([
+      {
+        filePath: 'src/core/match.js',
+        globals: ['localStorage', 'window', 'document'],
+      },
+    ]);
   });
 });
 
@@ -235,7 +289,7 @@ describe('createCheckDepcruiseHandle', () => {
       { cwd: '/repo', stdio: 'inherit' }
     );
     expect(stdout.chunks.join('')).toContain(
-      'Checked dependency-cruiser: no core random dependencies.'
+      'Checked dependency-cruiser: no core global dependencies.'
     );
     expect(stderr.chunks).toEqual([]);
   });
@@ -274,16 +328,14 @@ describe('createCheckDepcruiseHandle', () => {
         'export function createMainHandle() {',
         '  // localStorage should not count in comments',
         '  /* window should not count in block comments */',
-        "  const singleQuoted = 'fetch should not count in single quotes';",
-        '  const quotedFetch = "fetch should not count in strings";',
-        "  const templatedDocument = `document should not count in templates`;",
+        "  const singleQuoted = 'window should not count in single quotes';",
+        '  const quotedDocument = "document should not count in strings";',
+        '  const templatedStorage = `localStorage should not count in templates`;',
         '  const dependencyBag = { fetch: fetchFn, localStorage: storageObj };',
-        '  const fetchProperty = fetch.url;',
         'const storage = localStorage;',
-        'const response = fetch("/blog.json");',
         'window.addEventListener("load", () => {});',
         'document.addEventListener("click", () => {});',
-        'return storage + response + quotedFetch + templatedDocument + singleQuoted + dependencyBag + fetchProperty;',
+        'return storage + quotedDocument + templatedStorage + singleQuoted + dependencyBag;',
         '}',
       ].join('\n')
     );
@@ -298,7 +350,7 @@ describe('createCheckDepcruiseHandle', () => {
     ).toEqual([
       {
         filePath: 'src/core/browser/main.js',
-        globals: ['localStorage', 'fetch', 'window', 'document'],
+        globals: ['localStorage', 'window', 'document'],
       },
     ]);
   });
@@ -315,14 +367,22 @@ describe('createCheckDepcruiseHandle', () => {
     ).toBe(true);
     expect(
       checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch.url', 0)
-    ).toBe(false);
-    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetchx', 0)).toBe(
+    ).toBe(
       false
     );
-    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch', 0)).toBe(
+    expect(
+      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetchx', 0)
+    ).toBe(
       false
     );
-    expect(checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch:', 0)).toBe(
+    expect(
+      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch', 0)
+    ).toBe(
+      false
+    );
+    expect(
+      checkDepcruiseTestUtils.hasFetchUsageAtIndex('fetch:', 0)
+    ).toBe(
       false
     );
   });
@@ -330,9 +390,9 @@ describe('createCheckDepcruiseHandle', () => {
   test('reports browser-global violations through the dependency-cruiser gate', () => {
     const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
     const readFileSync = jest.fn(filePath => {
-      if (filePath === '/repo/src/core/browser/main.js') {
+      if (filePath === '/repo/src/core/global-usage.js') {
         return [
-          'export function createMainHandle() {',
+          'export function handle() {',
           '  const storage = localStorage;',
           '  const response = fetch("/blog.json");',
           '  window.addEventListener("load", () => {});',
@@ -344,7 +404,13 @@ describe('createCheckDepcruiseHandle', () => {
 
       return '';
     });
-    const readdirSync = jest.fn(() => []);
+    const readdirSync = jest.fn(dirPath => {
+      if (dirPath === '/repo/src/core') {
+        return [createDirentFile('global-usage.js')];
+      }
+
+      return [];
+    });
     const stdout = createWriter();
     const stderr = createWriter();
     const handle = createCheckDepcruiseHandle({
@@ -363,10 +429,10 @@ describe('createCheckDepcruiseHandle', () => {
     expect(result).toEqual({ exitCode: 1, violations: 1 });
     expect(stdout.chunks).toEqual([]);
     expect(stderr.chunks.join('')).toContain(
-      'Dependency-cruiser core browser policy found 1 violation.'
+      'Dependency-cruiser core global policy found 1 violation.'
     );
     expect(stderr.chunks.join('')).toContain(
-      'src/core/browser/main.js uses browser globals directly: localStorage, fetch, window, document.'
+      'src/core/global-usage.js uses browser globals directly: localStorage, window, document.'
     );
   });
 

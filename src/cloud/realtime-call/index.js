@@ -1,6 +1,14 @@
 import { functions, express, cors, getEnvironmentVariables } from './realtime-call-gcf.js';
 import { getAllowedOrigins } from '../cors-config.js';
-import { exchangeRealtimeCallSdp } from './core/realtime/openaiRealtimeCalls.js';
+import {
+  exchangeRealtimeCallSdp as exchangeRealtimeCallSdpCore,
+} from './core/realtime/openaiRealtimeCalls.js';
+
+const exchangeRealtimeCallSdp = (body, options = {}) =>
+  exchangeRealtimeCallSdpCore(body, {
+    ...options,
+    fetchImpl: options.fetchImpl ?? globalThis.fetch,
+  });
 
 export function createRealtimeCallApp({ exchangeRealtimeCallSdp, allowedOrigins, expressImpl = express, corsImpl = cors }) {
   const app = expressImpl();

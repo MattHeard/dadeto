@@ -1,6 +1,12 @@
+import './document.js';
 import { createModerateHandle } from '../core/browser/moderate.js';
 
-const handle = createModerateHandle();
+const handle = createModerateHandle({
+  documentObj: document,
+  fetchFn: (...args) => globalThis.fetch(...args),
+  sessionStorageObj: sessionStorage,
+  globalObject: globalThis,
+});
 
 handle();
 

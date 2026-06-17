@@ -2,15 +2,80 @@ import { createRemoveListener } from './browser-core.js';
 
 /** @typedef {import('../core/browser/domHelpers.js').DOMHelpers} DOMHelpers */
 
+/**
+ * @typedef {object} DocumentEnvironment
+ * @property {Document} documentObj Browser document implementation.
+ * @property {Window} windowObj Browser window implementation.
+ * @property {typeof globalThis} globalThisObj Global object used for timers and feature probes.
+ * @property {Navigator} navigatorObj Browser navigator implementation.
+ */
+
+/** @type {DocumentEnvironment | null} */
+let documentEnvironment = null;
+
+/**
+ * Install the browser globals used by the DOM facade.
+ * @param {DocumentEnvironment} deps Browser globals.
+ * @returns {DocumentEnvironment} Installed environment.
+ */
+function setDocumentEnvironment(deps) {
+  documentEnvironment = deps;
+  return deps;
+}
+
+/**
+ * Read the installed browser globals.
+ * @returns {DocumentEnvironment} Browser globals.
+ */
+function getDocumentEnvironment() {
+  if (!documentEnvironment) {
+    throw new Error('createDocumentHandle must be called before using DOM helpers.');
+  }
+
+  return documentEnvironment;
+}
+
+/**
+ * Resolve the current document.
+ * @returns {Document} Browser document.
+ */
+function getDocumentObj() {
+  return getDocumentEnvironment().documentObj;
+}
+
+/**
+ * Resolve the current window.
+ * @returns {Window} Browser window.
+ */
+function getWindowObj() {
+  return getDocumentEnvironment().windowObj;
+}
+
+/**
+ * Resolve the current global object.
+ * @returns {typeof globalThis} Browser global object.
+ */
+function getGlobalThisObj() {
+  return getDocumentEnvironment().globalThisObj;
+}
+
+/**
+ * Resolve the current navigator.
+ * @returns {Navigator} Browser navigator.
+ */
+function getNavigatorObj() {
+  return getDocumentEnvironment().navigatorObj;
+}
+
 // DOM helper functions
-export const getElementById = id => document.getElementById(id);
+export const getElementById = id => getDocumentObj().getElementById(id);
 export const querySelector = (el, selector) => el.querySelector(selector);
 /**
  * Queries the document for all elements matching the given selector
  * @param {string} selector - The CSS selector to match elements against
  * @returns {NodeList} A NodeList of matching elements
  */
-export const querySelectorAll = selector => document.querySelectorAll(selector);
+export const querySelectorAll = selector => getDocumentObj().querySelectorAll(selector);
 export const addClass = (element, className) =>
   element.classList.add(className);
 
@@ -29,10 +94,10 @@ export const setClassName = (element, className) => {
 export const getAudioElements = () => querySelectorAll('audio');
 export const removeControlsAttribute = audio =>
   audio.removeAttribute('controls');
-export const createElement = tag => document.createElement(tag);
-export const createTextNode = value => document.createTextNode(value);
+export const createElement = tag => getDocumentObj().createElement(tag);
+export const createTextNode = value => getDocumentObj().createTextNode(value);
 export const getElementsByTagName = tagName =>
-  document.getElementsByTagName(tagName);
+  getDocumentObj().getElementsByTagName(tagName);
 export const hasClass = (element, cls) => element.classList.contains(cls);
 export const hide = element => (element.style.display = 'none');
 export const addEventListener = (element, event, func) =>
@@ -74,7 +139,7 @@ export const logError = (...args) => console.error(...args);
  * @returns {number} Animation frame identifier.
  */
 export const requestAnimationFrame = callback => {
-  const requestFrame = globalThis.requestAnimationFrame;
+  const requestFrame = getGlobalThisObj().requestAnimationFrame;
   if (typeof requestFrame !== 'function') {
     throw new Error('globalThis.requestAnimationFrame is not a function');
   }
@@ -88,7 +153,7 @@ export const requestAnimationFrame = callback => {
  * @returns {void}
  */
 export const cancelAnimationFrame = handle => {
-  const cancelFrame = globalThis.cancelAnimationFrame;
+  const cancelFrame = getGlobalThisObj().cancelAnimationFrame;
   if (typeof cancelFrame !== 'function') {
     throw new Error('globalThis.cancelAnimationFrame is not a function');
   }
@@ -103,7 +168,7 @@ export const cancelAnimationFrame = handle => {
  * @returns {number} Interval identifier.
  */
 export const setInterval = (callback, delay) => {
-  const setIntervalFn = globalThis.setInterval;
+  const setIntervalFn = getGlobalThisObj().setInterval;
   if (typeof setIntervalFn !== 'function') {
     throw new Error('globalThis.setInterval is not a function');
   }
@@ -117,7 +182,7 @@ export const setInterval = (callback, delay) => {
  * @returns {void}
  */
 export const clearInterval = handle => {
-  const clearIntervalFn = globalThis.clearInterval;
+  const clearIntervalFn = getGlobalThisObj().clearInterval;
   if (typeof clearIntervalFn !== 'function') {
     throw new Error('globalThis.clearInterval is not a function');
   }
@@ -132,7 +197,7 @@ export const clearInterval = handle => {
  * @returns {number} Timeout identifier.
  */
 export const setTimeout = (callback, delay) => {
-  const setTimeoutFn = globalThis.setTimeout;
+  const setTimeoutFn = getGlobalThisObj().setTimeout;
   if (typeof setTimeoutFn !== 'function') {
     throw new Error('globalThis.setTimeout is not a function');
   }
@@ -146,7 +211,7 @@ export const setTimeout = (callback, delay) => {
  * @returns {void}
  */
 export const clearTimeout = handle => {
-  const clearTimeoutFn = globalThis.clearTimeout;
+  const clearTimeoutFn = getGlobalThisObj().clearTimeout;
   if (typeof clearTimeoutFn !== 'function') {
     throw new Error('globalThis.clearTimeout is not a function');
   }
@@ -159,12 +224,12 @@ export const clearTimeout = handle => {
  * @returns {(Gamepad | null)[]} Connected gamepads list.
  */
 export const getGamepads = () => {
-  const getGamepadsFn = globalThis.navigator?.getGamepads;
+  const getGamepadsFn = getNavigatorObj().getGamepads;
   if (typeof getGamepadsFn !== 'function') {
     throw new Error('navigator.getGamepads is not a function');
   }
 
-  return getGamepadsFn.call(globalThis.navigator);
+  return getGamepadsFn.call(getNavigatorObj());
 };
 
 export { createPrefixedLogger, createPrefixedLoggers } from './browser-core.js';
@@ -173,7 +238,7 @@ export { createPrefixedLogger, createPrefixedLoggers } from './browser-core.js';
 export const getClasses = el => Array.from(el.classList);
 export const getRandomNumber = () => {
   const random = new Uint32Array(1);
-  crypto.getRandomValues(random);
+  getGlobalThisObj().crypto.getRandomValues(random);
   return random[0] / 2 ** 32;
 };
 export const getCurrentTime = () => new Date().toISOString();
@@ -182,7 +247,7 @@ export const getCurrentTime = () => new Date().toISOString();
  * `crypto.randomUUID` is supported in modern browsers.
  * @returns {string} The generated UUID
  */
-export const getUuid = () => crypto.randomUUID();
+export const getUuid = () => getGlobalThisObj().crypto.randomUUID();
 export const hasNextSiblingClass = (link, cls) =>
   link.nextElementSibling?.classList.contains(cls);
 
@@ -282,7 +347,7 @@ export const removeEventListener = (target, event, handler) => {
  * @returns {boolean} True when the page URL includes `?beta`
  */
 export const hasBetaParam = () => {
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(getWindowObj().location.search);
   return params.has('beta');
 };
 
@@ -332,7 +397,10 @@ export const setTextContent = (element, content) => {
  * @returns {IntersectionObserver} New observer instance.
  */
 export const makeIntersectionObserver = callback =>
-  new IntersectionObserver(callback, { root: null, threshold: 0.1 });
+  new (getWindowObj().IntersectionObserver)(callback, {
+    root: null,
+    threshold: 0.1,
+  });
 
 export const disconnectObserver = observer => {
   observer.disconnect();
@@ -413,7 +481,9 @@ export const dom = /** @type {DOMHelpers} */ ({
   setTimeout,
   clearTimeout,
   getGamepads,
-  globalThis,
+  get globalThis() {
+    return getGlobalThisObj();
+  },
   reveal,
 });
 
@@ -449,9 +519,11 @@ export const getInteractiveComponents = win => {
 
 /**
  * Create the browser document facade handle.
+ * @param {DocumentEnvironment} deps Browser globals.
  * @returns {DOMHelpers & Record<string, Function>} Browser document helpers.
  */
-export function createDocumentHandle() {
+export function createDocumentHandle(deps) {
+  setDocumentEnvironment(deps);
   return {
     getElementById,
     querySelector,

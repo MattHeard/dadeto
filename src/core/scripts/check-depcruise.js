@@ -1,5 +1,6 @@
 import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
+import { findBrowserGlobalReferences } from '../../../scripts/check-depcruise-scope.js';
 
 const { requirePathModule } = commonCore;
 
@@ -11,12 +12,8 @@ const DEFAULT_STDERR = { write() {} };
 const DEFAULT_SPAWN_RESULT = { status: 0, signal: null };
 const MATH_RANDOM_NEEDLE = ['Math', 'random'].join('.');
 const CORE_BROWSER_MAIN_RELATIVE_PATH = ['browser', 'main.js'].join('/');
-const CORE_BROWSER_MAIN_GLOBALS = [
-  'localStorage',
-  'fetch',
-  'window',
-  'document',
-];
+const CORE_GLOBALS = ['localStorage', 'window', 'document'];
+const CORE_BROWSER_MAIN_GLOBALS = ['localStorage', 'window', 'document'];
 
 /**
  * Create the command handler that runs dependency-cruiser and enforces the
@@ -113,8 +110,8 @@ export function findCoreBrowserMainGlobalViolations({
     CORE_BROWSER_MAIN_RELATIVE_PATH
   );
   const source = stripBrowserMainPolicyNoise(readFileSync(filePath, 'utf8'));
-  const globals = CORE_BROWSER_MAIN_GLOBALS.filter(
-    globalName => countBrowserGlobalOccurrences(source, globalName) > 0
+  const globals = findBrowserGlobalReferences(source).filter(globalName =>
+    CORE_BROWSER_MAIN_GLOBALS.includes(globalName)
   );
 
   if (globals.length === 0) {
@@ -127,6 +124,51 @@ export function findCoreBrowserMainGlobalViolations({
       globals,
     },
   ];
+}
+
+/**
+ * Find direct browser-global usage in all core source files.
+ * @param {{
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
+ *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
+ *   rootDir: string,
+ *   sourceRoot: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
+ * }} deps Filesystem dependencies.
+ * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
+ */
+export function findCoreGlobalViolations({
+  readFileSync,
+  readdirSync,
+  rootDir,
+  sourceRoot,
+  pathModule,
+}) {
+  const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
+  return listJsFiles(sourceRootPath, readdirSync, pathModule).flatMap(
+    filePath => {
+      const source = readFileSync(filePath, 'utf8');
+      const globals = findBrowserGlobalReferences(source).filter(globalName =>
+        CORE_GLOBALS.includes(globalName)
+      );
+
+      if (globals.length === 0) {
+        return [];
+      }
+
+      return [
+        {
+          filePath: toRepoRelativePath(rootDir, filePath, pathModule),
+          globals,
+        },
+      ];
+    }
+  );
 }
 
 /**
@@ -164,7 +206,9 @@ export const checkDepcruiseTestUtils = {
   scanQuotedString,
   isBoundary,
   findCoreBrowserMainGlobalViolations,
+  findCoreGlobalViolations,
   stripBrowserMainPolicyNoise,
+  findBrowserGlobalReferences,
   isBrowserGlobalAtIndex,
   hasFetchUsageAtIndex,
 };
@@ -306,8 +350,9 @@ function executeDepcruiseGate({
     pathModule,
   });
 
-  const browserGlobalViolations = findCoreBrowserMainGlobalViolations({
+  const browserGlobalViolations = findCoreGlobalViolations({
     readFileSync,
+    readdirSync,
     rootDir,
     sourceRoot,
     pathModule,
@@ -315,7 +360,7 @@ function executeDepcruiseGate({
 
   if (browserGlobalViolations.length > 0) {
     stderr.write(
-      `Dependency-cruiser core browser policy found ${browserGlobalViolations.length} violation${gateUtils.pluralizeCount(browserGlobalViolations.length)}.\n`
+      `Dependency-cruiser core global policy found ${browserGlobalViolations.length} violation${gateUtils.pluralizeCount(browserGlobalViolations.length)}.\n`
     );
 
     browserGlobalViolations.forEach(({ filePath, globals }) => {
@@ -341,7 +386,7 @@ function executeDepcruiseGate({
     return { exitCode: 1, violations: violations.length };
   }
 
-  stdout.write('Checked dependency-cruiser: no core random dependencies.\n');
+  stdout.write('Checked dependency-cruiser: no core global dependencies.\n');
   return { exitCode: 0, violations: 0 };
 }
 
@@ -390,83 +435,6 @@ function countMathRandomOccurrences(source) {
 }
 
 /**
- * Count direct browser-global uses in a source file while skipping comments and strings.
- * @param {string} source Source text.
- * @param {string} identifier Browser global to count.
- * @returns {number} Number of direct uses.
- */
-function countBrowserGlobalOccurrences(source, identifier) {
-  let count = 0;
-  let index = 0;
-  let state = 'code';
-
-  while (index < source.length) {
-    const scanStep = getBrowserGlobalScanStep(source, index, state, identifier);
-    count += scanStep.count;
-    index = scanStep.nextIndex;
-    state = scanStep.nextState;
-  }
-
-  return count;
-}
-
-/**
- * Inspect one scanner step for browser-global counting.
- * @param {string} source Source text.
- * @param {number} index Current index in the source.
- * @param {string} state Current scanner state.
- * @param {string} identifier Browser global to count.
- * @returns {{ count: number, nextIndex: number, nextState: string }} Scan step result.
- */
-function getBrowserGlobalScanStep(source, index, state, identifier) {
-  if (state === 'code') {
-    return scanCodeForBrowserGlobal(source, index, identifier);
-  }
-
-  if (state === 'line-comment') {
-    return scanLineComment(source, index);
-  }
-
-  if (state === 'block-comment') {
-    return scanBlockComment(source, index);
-  }
-
-  if (state === 'single-quote') {
-    return scanDelimitedString(source, index, "'", 'code');
-  }
-
-  if (state === 'double-quote') {
-    return scanDelimitedString(source, index, '"', 'code');
-  }
-
-  return scanDelimitedString(source, index, '`', 'template');
-}
-
-/**
- * Scan a code segment for a browser global and state transitions.
- * @param {string} source Source text.
- * @param {number} index Current index.
- * @param {string} identifier Browser global to match.
- * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
- */
-function scanCodeForBrowserGlobal(source, index, identifier) {
-  const commentOrString = scanCodeForCommentOrString(source, index);
-  if (commentOrString) {
-    return commentOrString;
-  }
-
-  if (isBrowserGlobalAtIndex(source, index, identifier)) {
-    return createZeroCountScanResult(
-      index + getBrowserGlobalMatchLength(identifier),
-      'code',
-      1
-    );
-  }
-
-  return createZeroCountScanResult(index + 1, 'code');
-}
-
-/**
  * Tell whether the target browser global appears at a given index.
  * @param {string} source Source text.
  * @param {number} index Current index.
@@ -475,7 +443,10 @@ function scanCodeForBrowserGlobal(source, index, identifier) {
  */
 function isBrowserGlobalAtIndex(source, index, identifier) {
   if (identifier === 'window' || identifier === 'document') {
-    return hasGlobalPropertyAccessAtIndex(source, index, identifier);
+    return (
+      hasGlobalPropertyAccessAtIndex(source, index, identifier) ||
+      hasBareGlobalUsageAtIndex(source, index, identifier)
+    );
   }
 
   if (identifier === 'fetch') {
@@ -550,15 +521,6 @@ function hasBareGlobalUsageAtIndex(source, index, identifier) {
   const hasUpperBoundary = isBoundary(nextCharacter);
 
   return hasLowerBoundary && hasUpperBoundary;
-}
-
-/**
- * Determine the number of characters to advance after a browser-global match.
- * @param {string} identifier Browser global name.
- * @returns {number} Number of characters to skip after a match.
- */
-function getBrowserGlobalMatchLength(identifier) {
-  return identifier.length;
 }
 
 /**

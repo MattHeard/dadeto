@@ -12,13 +12,17 @@ const STATUS = {
  * @param {object} dom DOM helper facade.
  * @returns {HTMLElement} Realtime voice controls.
  */
-export function createRealtimeVoicePrototypeElement(inputString, dom) {
+export function createRealtimeVoicePrototypeElement(
+  inputString,
+  dom,
+  fetchFn
+) {
   const config = parseConfig(inputString);
   const controls = createControls(dom, config);
   const state = createInitialState();
 
   controls.connectButton.addEventListener('click', () => {
-    connectRealtimeVoice(state, controls, dom);
+    connectRealtimeVoice(state, controls, dom, fetchFn);
   });
   controls.disconnectButton.addEventListener('click', () => {
     disconnectRealtimeVoice(state, controls, 'Disconnected.', dom);
@@ -169,7 +173,7 @@ function appendButton(parent, label, dom) {
  * @param {object} dom DOM helper facade.
  * @returns {Promise<void>} Resolves when the SDP answer has been applied.
  */
-async function connectRealtimeVoice(state, controls, dom) {
+async function connectRealtimeVoice(state, controls, dom, fetchFn) {
   if (!hasUsableEndpoint(controls, dom)) {
     return;
   }
@@ -179,7 +183,7 @@ async function connectRealtimeVoice(state, controls, dom) {
   appendDebugLog(controls, 'Requesting microphone permission.', dom);
 
   try {
-    await startPeerConnection(state, controls, dom);
+    await startPeerConnection(state, controls, dom, fetchFn);
     setStatus(controls, STATUS.LIVE, dom);
     appendDebugLog(controls, 'Realtime voice connection is live.', dom);
   } catch (error) {
@@ -217,7 +221,7 @@ function hasUsableEndpoint(controls, dom) {
  * @param {object} dom DOM helper facade.
  * @returns {Promise<void>} Resolves after remote description is set.
  */
-async function startPeerConnection(state, controls, dom) {
+async function startPeerConnection(state, controls, dom, fetchFn) {
   const peerConnection = new RTCPeerConnection();
   state.peerConnection = peerConnection;
   wirePeerConnectionEvents(peerConnection, controls, dom);
@@ -240,7 +244,8 @@ async function startPeerConnection(state, controls, dom) {
 
   const answerSdp = await requestRealtimeAnswer(
     offer.sdp ?? '',
-    controls.endpoint
+    controls.endpoint,
+    fetchFn
   );
   await peerConnection.setRemoteDescription({ type: 'answer', sdp: answerSdp });
   appendDebugLog(
@@ -331,8 +336,8 @@ function wirePeerConnectionEvents(peerConnection, controls, dom) {
  * @param {string} endpoint Local route or cloud URL.
  * @returns {Promise<string>} SDP answer.
  */
-async function requestRealtimeAnswer(offerSdp, endpoint) {
-  const response = await fetch(endpoint, {
+async function requestRealtimeAnswer(offerSdp, endpoint, fetchFn) {
+  const response = await fetchFn(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/sdp',
@@ -529,11 +534,13 @@ export const realtimeVoicePrototypePresenterTestOnly = {
 
 /**
  * Create the browser wrapper handle for the realtime voice presenter.
+ * @param {{ fetchFn: typeof fetch }} deps Presenter dependencies.
  * @returns {{ createRealtimeVoicePrototypeElement: typeof createRealtimeVoicePrototypeElement }}
  *   Presenter exports exposed through the non-core wrapper.
  */
-export function createRealtimeVoicePrototypePresenterHandle() {
+export function createRealtimeVoicePrototypePresenterHandle(deps) {
   return {
-    createRealtimeVoicePrototypeElement,
+    createRealtimeVoicePrototypeElement: (inputString, dom) =>
+      createRealtimeVoicePrototypeElement(inputString, dom, deps.fetchFn),
   };
 }

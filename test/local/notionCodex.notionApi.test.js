@@ -146,34 +146,6 @@ describe('local notion codex api helper', () => {
     );
   });
 
-  test('uses the global fetch implementation when none is provided', async () => {
-    const originalFetch = globalThis.fetch;
-    const calls = [];
-    globalThis.fetch = async (url, init) => {
-      calls.push({ url, init });
-      return {
-        ok: true,
-        async text() {
-          return JSON.stringify({ ok: true });
-        },
-      };
-    };
-
-    try {
-      await appendNotionCodexReply({
-        pageId: 'page-123',
-        runId: 'run-123',
-        message: 'hello',
-        token: 'token-123',
-      });
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
-
-    expect(calls).toHaveLength(1);
-    expect(calls[0].url).toBe('https://api.notion.com/v1/comments');
-  });
-
   test('returns null for empty Notion responses', async () => {
     const result = await appendNotionCodexReply({
       pageId: 'page-123',

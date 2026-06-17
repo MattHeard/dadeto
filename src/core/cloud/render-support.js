@@ -1,17 +1,12 @@
 // @ts-nocheck
 /**
- * Create a fetch wrapper that prefers the global fetch when available.
+ * Create a fetch wrapper that uses the injected fetch implementation.
  * @param {typeof fetch} fetchFn Fallback fetch implementation.
  * @returns {(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>} Fetch wrapper.
  */
 export function createDynamicFetch(fetchFn) {
   return (...args) => {
-    let fetchImpl = fetchFn;
-    if (typeof globalThis.fetch === 'function') {
-      fetchImpl = globalThis.fetch;
-    }
-
-    return fetchImpl.apply(globalThis, args);
+    return fetchFn.apply(globalThis, args);
   };
 }
 

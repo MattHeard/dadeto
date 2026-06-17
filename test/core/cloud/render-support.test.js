@@ -7,18 +7,11 @@ import {
 } from '../../../src/core/cloud/render-support.js';
 
 describe('render support helpers', () => {
-  test('createDynamicFetch falls back to the injected fetch implementation', async () => {
-    const originalFetch = globalThis.fetch;
+  test('createDynamicFetch delegates to the injected fetch implementation', async () => {
     const fetchFn = jest.fn(async value => value);
 
-    try {
-      globalThis.fetch = undefined;
-
-      const dynamicFetch = createDynamicFetch(fetchFn);
-      await expect(dynamicFetch('fallback')).resolves.toBe('fallback');
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
+    const dynamicFetch = createDynamicFetch(fetchFn);
+    await expect(dynamicFetch('fallback')).resolves.toBe('fallback');
 
     expect(fetchFn).toHaveBeenCalledWith('fallback');
   });
@@ -35,29 +28,20 @@ describe('render support helpers', () => {
   });
 
   test('createRenderRuntime memoizes the instance and delegates fetch calls', async () => {
-    const originalFetch = globalThis.fetch;
     const fetchFn = jest.fn(async value => `fallback:${value}`);
     const buildInstance = jest.fn(dynamicFetch => ({
       dynamicFetch,
     }));
 
-    try {
-      globalThis.fetch = undefined;
+    const runtime = createRenderRuntime(fetchFn, buildInstance);
+    await expect(runtime.dynamicFetch('value')).resolves.toBe('fallback:value');
 
-      const runtime = createRenderRuntime(fetchFn, buildInstance);
-      await expect(runtime.dynamicFetch('value')).resolves.toBe(
-        'fallback:value'
-      );
+    const first = runtime.resolveInstance();
+    const second = runtime.resolveInstance();
 
-      const first = runtime.resolveInstance();
-      const second = runtime.resolveInstance();
-
-      expect(first).toBe(second);
-      expect(buildInstance).toHaveBeenCalledTimes(1);
-      expect(first.dynamicFetch).toBe(runtime.dynamicFetch);
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
+    expect(first).toBe(second);
+    expect(buildInstance).toHaveBeenCalledTimes(1);
+    expect(first.dynamicFetch).toBe(runtime.dynamicFetch);
   });
 
   test('createCloudRenderContext forwards the runtime environment to Firestore resolution', () => {

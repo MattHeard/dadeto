@@ -50,10 +50,10 @@ describe('authedFetch', () => {
 
   it('sends token and returns json', async () => {
     sessionStorage.setItem('id_token', 'abc');
-    global.fetch.mockResolvedValue({
+    global.fetch = jest.fn(async () => ({
       ok: true,
-      json: () => Promise.resolve({ ok: true }),
-    });
+      json: async () => ({ ok: true }),
+    }));
     const result = await authedFetch('/api', { method: 'POST' });
     expect(global.fetch).toHaveBeenCalledWith('/api', {
       method: 'POST',
@@ -67,11 +67,11 @@ describe('authedFetch', () => {
 
   it('throws on HTTP errors', async () => {
     sessionStorage.setItem('id_token', 'abc');
-    global.fetch.mockResolvedValue({
+    global.fetch = jest.fn(async () => ({
       ok: false,
       status: 500,
-      text: () => Promise.resolve('backend exploded'),
-    });
+      text: async () => 'backend exploded',
+    }));
     await expect(authedFetch('/api')).rejects.toThrow(
       'HTTP 500: backend exploded'
     );

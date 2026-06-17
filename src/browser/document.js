@@ -1,6 +1,11 @@
 import { createDocumentHandle } from '../core/browser/document.js';
 
-const handle = createDocumentHandle();
+const handle = createDocumentHandle({
+  documentObj: getDocumentObj(),
+  windowObj: getWindowObj(),
+  globalThisObj: globalThis,
+  navigatorObj: getNavigatorObj(),
+});
 
 export const {
   getElementById, querySelector, querySelectorAll, addClass, removeClass,
@@ -21,3 +26,61 @@ export const {
 
 export { createPrefixedLogger, createPrefixedLoggers } from '../core/browser/browser-core.js';
 export { handle };
+
+function getDocumentObj() {
+  if (typeof document !== 'undefined') {
+    return document;
+  }
+
+  return createDocumentFallback();
+}
+
+function getWindowObj() {
+  if (typeof window !== 'undefined') {
+    return window;
+  }
+
+  return createWindowFallback();
+}
+
+function getNavigatorObj() {
+  if (typeof navigator !== 'undefined') {
+    return navigator;
+  }
+
+  return createNavigatorFallback();
+}
+
+function createDocumentFallback() {
+  return {
+    getElementById: () => null,
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    createElement: () => {
+      throw new Error('document is not available');
+    },
+    createTextNode: () => {
+      throw new Error('document is not available');
+    },
+    getElementsByTagName: () => [],
+    body: {
+      classList: {
+        add() {},
+        remove() {},
+      },
+    },
+  };
+}
+
+function createWindowFallback() {
+  return {
+    addEventListener() {},
+    removeEventListener() {},
+  };
+}
+
+function createNavigatorFallback() {
+  return {
+    getGamepads: () => [],
+  };
+}

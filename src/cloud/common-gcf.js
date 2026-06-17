@@ -24,7 +24,7 @@ export function getEnvironmentVariables() {
  * Binding ensures the experimental Node.js fetch retains its context.
  * @type {typeof fetch}
  */
-export const fetchFn = globalThis.fetch.bind(globalThis);
+export const fetchFn = (...args) => globalThis.fetch(...args);
 
 export const { ensureFirebaseApp, resetFirebaseInitializationState } =
   createFirebaseAppManager(initializeApp);
