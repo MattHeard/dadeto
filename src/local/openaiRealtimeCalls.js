@@ -6,9 +6,10 @@ import {
 } from '../core/realtime/openaiRealtimeCalls.js';
 
 export function exchangeRealtimeCallSdp(sdpOffer, options = {}) {
+  const exchangeOptions = options ?? {};
   return exchangeRealtimeCallSdpCore(sdpOffer, {
-    ...options,
-    fetchImpl: options.fetchImpl ?? globalThis.fetch,
+    ...exchangeOptions,
+    fetchImpl: exchangeOptions.fetchImpl ?? globalThis.fetch,
   });
 }
 

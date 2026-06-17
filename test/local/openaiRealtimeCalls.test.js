@@ -43,6 +43,12 @@ describe('openaiRealtimeCalls', () => {
     expect(resolveOpenAiApiKey({})).toBe('');
   });
 
+  test('reads the process environment when the environment bag is undefined', () => {
+    process.env.OPENAI_API_KEY = 'process-key';
+
+    expect(resolveOpenAiApiKey(undefined)).toBe('process-key');
+  });
+
   test('builds a default multipart form with the standard session config', () => {
     const form = buildRealtimeCallForm('offer-sdp');
     const session = JSON.parse(form.get('session'));
@@ -110,6 +116,38 @@ describe('openaiRealtimeCalls', () => {
       OPENAI_REALTIME_CALLS_URL,
       expect.any(Object)
     );
+  });
+
+  test('uses the default options object when exchange options are undefined', async () => {
+    process.env.OPENAI_API_KEY = 'process-key';
+    globalThis.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () => 'answer-sdp',
+      headers: new Headers([['location', '/default-call']]),
+    }));
+
+    await expect(
+      exchangeRealtimeCallSdp('offer-sdp', undefined)
+    ).resolves.toEqual({
+      sdpAnswer: 'answer-sdp',
+      location: '/default-call',
+    });
+  });
+
+  test('uses the default options object when exchange options are null', async () => {
+    process.env.OPENAI_API_KEY = 'process-key';
+    globalThis.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () => 'answer-sdp',
+      headers: new Headers([['location', '/default-call']]),
+    }));
+
+    await expect(exchangeRealtimeCallSdp('offer-sdp', null)).resolves.toEqual({
+      sdpAnswer: 'answer-sdp',
+      location: '/default-call',
+    });
   });
 
   test('uses process API key, global fetch, custom URL, and empty missing location', async () => {

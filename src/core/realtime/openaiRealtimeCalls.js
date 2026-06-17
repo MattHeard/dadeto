@@ -59,11 +59,14 @@ export function buildRealtimeCallForm(sdpOffer, options = {}) {
  *   Injectable dependencies for tests.
  * @returns {Promise<{sdpAnswer: string, location: string}>} SDP answer and optional call location.
  */
-export async function exchangeRealtimeCallSdp(sdpOffer, options = {}) {
+export async function exchangeRealtimeCallSdp(sdpOffer, options) {
+  const exchangeOptions = options ?? {};
+  const fetchImpl = exchangeOptions.fetchImpl ?? globalThis.fetch;
   const response = await postRealtimeCall(
     sdpOffer,
-    options,
-    requireOpenAiApiKey(resolveApiKeyOption(options))
+    exchangeOptions,
+    requireOpenAiApiKey(resolveApiKeyOption(exchangeOptions)),
+    fetchImpl
   );
   return readRealtimeCallResponse(response);
 }
@@ -123,12 +126,13 @@ function requireOpenAiApiKey(apiKey) {
 /**
  * Post the Realtime SDP form to OpenAI.
  * @param {string} sdpOffer Browser-generated SDP offer.
- * @param {{fetchImpl: typeof fetch, url?: string}} options Exchange options.
+ * @param {{fetchImpl?: typeof fetch, url?: string}} options Exchange options.
  * @param {string} apiKey OpenAI API key.
+ * @param {typeof fetch} fetchImpl Fetch implementation.
  * @returns {Promise<Response>} OpenAI response.
  */
-function postRealtimeCall(sdpOffer, options, apiKey) {
-  return options.fetchImpl(resolveRealtimeCallsUrl(options), {
+function postRealtimeCall(sdpOffer, options, apiKey, fetchImpl) {
+  return fetchImpl(resolveRealtimeCallsUrl(options), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,

@@ -176,6 +176,10 @@ describe('findCoreMathRandomViolations', () => {
     expect(
       checkDepcruiseTestUtils.stripBrowserMainPolicyNoise('const x = 1;\n')
     ).toBe('const x = 1;\n');
+    expect(checkDepcruiseTestUtils.stripBrowserMainPolicyNoise(null)).toBe('');
+    expect(checkDepcruiseTestUtils.stripBrowserMainPolicyNoise(undefined)).toBe(
+      ''
+    );
   });
 });
 
@@ -355,9 +359,72 @@ describe('createCheckDepcruiseHandle', () => {
     ]);
   });
 
+  test('returns no browser-main violations when the entry is clean', () => {
+    const readFileSync = jest.fn(() =>
+      [
+        'export function createMainHandle() {',
+        '  const fetchFn = options.fetchFn;',
+        '  return function handleMain() {',
+        '    return fetchFn;',
+        '  };',
+        '}',
+      ].join('\n')
+    );
+
+    expect(
+      findCoreBrowserMainGlobalViolations({
+        readFileSync,
+        rootDir: '/repo',
+        sourceRoot: 'src/core',
+        pathModule: path,
+      })
+    ).toEqual([]);
+  });
+
   test('returns false for browser globals that are not recognized by the policy', () => {
     expect(
       checkDepcruiseTestUtils.isBrowserGlobalAtIndex('crypto', 0, 'crypto')
+    ).toBe(false);
+  });
+
+  test('recognizes browser globals through property and bare usage checks', () => {
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex(
+        'window.addEventListener',
+        0,
+        'window'
+      )
+    ).toBe(true);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex(
+        'document.body',
+        0,
+        'document'
+      )
+    ).toBe(true);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('localStorage', 0, 'localStorage')
+    ).toBe(true);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('fetch(', 0, 'fetch')
+    ).toBe(true);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('fetch:', 0, 'fetch')
+    ).toBe(false);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('localStorage:', 0, 'localStorage')
+    ).toBe(false);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('window:', 0, 'window')
+    ).toBe(false);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('foo', 0, 'window')
+    ).toBe(false);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('foo', 0, 'fetch')
+    ).toBe(false);
+    expect(
+      checkDepcruiseTestUtils.isBrowserGlobalAtIndex('foo', 0, 'localStorage')
     ).toBe(false);
   });
 
@@ -546,4 +613,5 @@ describe('createCheckDepcruiseHandle', () => {
       'Dependency-cruiser gate was terminated by signal SIGTERM'
     );
   });
+
 });
