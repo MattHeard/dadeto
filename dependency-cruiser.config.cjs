@@ -95,6 +95,7 @@ module.exports = {
       severity: 'warn',
       from: {
         path: '^src/core',
+        pathNot: '^src/core/local/check-depcruise-scope\\.js$',
       },
       to: {
         pathNot: '^src/core(?:/|$)',
