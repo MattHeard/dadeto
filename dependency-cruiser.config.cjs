@@ -179,6 +179,7 @@ module.exports = {
       severity: 'error',
       from: {
         path: '^src/core',
+        pathNot: '^src/core/local/check-depcruise-scope\\.js$',
       },
       to: {
         path: 'node_modules',
@@ -201,7 +202,7 @@ module.exports = {
     doNotFollow: {
       path: 'node_modules',
     },
-    includeOnly: '^(src|node_modules)',
+    includeOnly: '^(src|scripts|node_modules)',
     prefix: './',
   },
 };

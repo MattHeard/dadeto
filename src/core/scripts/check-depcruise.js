@@ -1,6 +1,6 @@
 import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
-import { findBrowserGlobalReferences } from '../../../scripts/check-depcruise-scope.js';
+import { findBrowserGlobalReferences } from '../local/check-depcruise-scope.js';
 
 // jscpd:ignore-start
 const { requirePathModule } = commonCore;
@@ -785,4 +785,5 @@ function toRepoRelativePath(rootDir, absolutePath, pathModule) {
     .relative(rootDir, absolutePath)
     .replaceAll(pathModule.sep, '/');
 }
+
 // jscpd:ignore-end
