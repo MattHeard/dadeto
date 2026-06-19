@@ -4,6 +4,10 @@ data "local_file" "firestore_rules" {
   filename = "${path.module}/rules/firestore.rules"
 }
 
+locals {
+  manage_firestore_indexes = var.database_id != "(default)"
+}
+
 resource "google_firebaserules_ruleset" "firestore" {
   provider = google-beta
   project  = var.project_id
@@ -20,6 +24,7 @@ resource "google_firebaserules_ruleset" "firestore" {
 }
 
 resource "google_firestore_index" "variants_author_created" {
+  count       = local.manage_firestore_indexes ? 1 : 0
   project     = var.project_id
   database    = var.database_id
   collection  = "variants"
@@ -39,6 +44,7 @@ resource "google_firestore_index" "variants_author_created" {
 
 # Supports: variants where moderatorReputationSum == 0 and rand >= n
 resource "google_firestore_index" "variants_moderation_rand" {
+  count       = local.manage_firestore_indexes ? 1 : 0
   project     = var.project_id
   database    = var.database_id
   collection  = "variants"
@@ -58,6 +64,7 @@ resource "google_firestore_index" "variants_moderation_rand" {
 
 # Supports: querying variants by moderatorReputationSum alone
 resource "google_firestore_field" "variants_moderation" {
+  count      = local.manage_firestore_indexes ? 1 : 0
   provider   = google-beta
   project    = var.project_id
   database   = var.database_id
@@ -75,6 +82,7 @@ resource "google_firestore_field" "variants_moderation" {
 }
 
 resource "google_firestore_index" "ratings_by_variant" {
+  count       = local.manage_firestore_indexes ? 1 : 0
   project     = var.project_id
   database    = var.database_id
   collection  = "moderationRatings"
@@ -93,6 +101,7 @@ resource "google_firestore_index" "ratings_by_variant" {
 }
 
 resource "google_firestore_field" "pages_number_global" {
+  count      = local.manage_firestore_indexes ? 1 : 0
   provider   = google-beta
   project    = var.project_id
   database   = var.database_id
