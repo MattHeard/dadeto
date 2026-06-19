@@ -232,7 +232,7 @@ describe('non-core thin status', () => {
 
     expect(
       nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
-        'src/scripts/example.js',
+        'src/local/example.js',
         [
           "import { createScriptHandle } from '../core/scripts/example.js';",
           'const handle = createScriptHandle(process);',
@@ -245,7 +245,7 @@ describe('non-core thin status', () => {
   test('rejects wrapper files that leave handle unused', () => {
     expect(
       nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(
-        'src/scripts/example.js',
+        'src/local/example.js',
         [
           "import { createScriptHandle } from '../core/scripts/example.js';",
           'const handle = createScriptHandle(process);',
@@ -253,7 +253,7 @@ describe('non-core thin status', () => {
       )
     ).toEqual([
       {
-        filePath: 'src/scripts/example.js',
+        filePath: 'src/local/example.js',
         reason: 'expected the declared `handle` to be exported or invoked',
       },
     ]);

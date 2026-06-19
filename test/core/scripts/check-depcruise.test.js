@@ -7,6 +7,7 @@ import {
   findCoreGlobalViolations,
   findCoreMathRandomViolations,
 } from '../../../src/core/scripts/check-depcruise.js';
+import { createBrowserGlobalReferenceFinder } from '../../../src/core/local/check-depcruise-scope.js';
 
 /**
  * Build a file-like dirent stub.
@@ -31,6 +32,34 @@ function createDirentDirectory(name) {
     name,
     isDirectory: () => true,
     isFile: () => false,
+  };
+}
+
+/**
+ * Create a scope-analysis dependency stub.
+ * @returns {{
+ *   parseSourceForScopeAnalysis: (source: string | undefined) => unknown,
+ *   analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
+ * }} Scope-analysis dependency stub.
+ */
+function createScopeAnalysisDeps() {
+  return {
+    parseSourceForScopeAnalysis(source) {
+      return { source };
+    },
+    analyzeScope(ast) {
+      const source = ast.source ?? '';
+      const names = ['localStorage', 'window', 'document'];
+      return {
+        scopes: [
+          {
+            through: names
+              .filter(name => source.includes(name))
+              .map(name => ({ identifier: { name } })),
+          },
+        ],
+      };
+    },
   };
 }
 
@@ -77,7 +106,7 @@ describe('findCoreMathRandomViolations', () => {
       }
 
       if (dirPath === '/repo/src/core/nested') {
-        return [createDirentFile('ignore.js')];
+        return [];
       }
 
       return [];
@@ -89,6 +118,7 @@ describe('findCoreMathRandomViolations', () => {
       rootDir: '/repo',
       sourceRoot: 'src/core',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
 
     expect(violations).toEqual([
@@ -110,6 +140,7 @@ describe('findCoreMathRandomViolations', () => {
       rootDir: '/repo',
       sourceRoot: 'src/core',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
 
     expect(violations).toEqual([
@@ -142,6 +173,7 @@ describe('findCoreMathRandomViolations', () => {
     expect(
       checkDepcruiseTestUtils.normalizeCheckDepcruiseOptions({
         pathModule: path,
+        scopeAnalysisDeps: createScopeAnalysisDeps(),
       })
     ).toMatchObject({
       rootDir: '.',
@@ -219,7 +251,40 @@ describe('findCoreGlobalViolations', () => {
       }
 
       if (dirPath === '/repo/src/core/nested') {
-        return [createDirentFile('ignore.js')];
+        return [];
+      }
+
+      return [];
+    });
+
+    expect(
+      findCoreGlobalViolations({
+        readFileSync,
+        readdirSync,
+        rootDir: '/repo',
+        sourceRoot: 'src/core',
+        pathModule: path,
+        scopeAnalysisDeps: createScopeAnalysisDeps(),
+      })
+    ).toEqual([
+      {
+        filePath: 'src/core/match.js',
+        globals: ['localStorage', 'window', 'document'],
+      },
+    ]);
+  });
+
+  test('uses the default scope analysis dependencies when browser-global scans omit them', () => {
+    const readFileSync = jest.fn(filePath => {
+      expect(filePath).toBe('/repo/src/core/match.js');
+      return [
+        'const note = "localStorage window document";',
+        'const count = 1;',
+      ].join('\n');
+    });
+    const readdirSync = jest.fn(dirPath => {
+      if (dirPath === '/repo/src/core') {
+        return [createDirentFile('match.js')];
       }
 
       return [];
@@ -233,12 +298,7 @@ describe('findCoreGlobalViolations', () => {
         sourceRoot: 'src/core',
         pathModule: path,
       })
-    ).toEqual([
-      {
-        filePath: 'src/core/match.js',
-        globals: ['localStorage', 'window', 'document'],
-      },
-    ]);
+    ).toEqual([]);
   });
 });
 
@@ -261,11 +321,40 @@ describe('createCheckDepcruiseHandle', () => {
     expect(handle()).toEqual({ exitCode: 0, violations: 0 });
   });
 
+  test('uses the parser fallback when browser-global scope analysis receives no source', () => {
+    const seenSources = [];
+    const references =
+      checkDepcruiseTestUtils.defaultScopeAnalysisDeps.parseSourceForScopeAnalysis(
+        undefined
+      );
+
+    expect(references).toBe('');
+    expect(seenSources).toEqual([]);
+  });
+
   test('uses the default file reader when one is not provided', () => {
     const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
     const readdirSync = jest.fn(() => [createDirentFile('default-reader.js')]);
     const handle = createCheckDepcruiseHandle({
       spawnImpl,
+      readdirSync,
+      stdout: createWriter(),
+      stderr: createWriter(),
+      rootDir: '/repo',
+      pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
+    });
+
+    expect(handle()).toEqual({ exitCode: 0, violations: 0 });
+  });
+
+  test('uses default scope-analysis dependencies when they are omitted from the gate handle', () => {
+    const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
+    const readFileSync = jest.fn();
+    const readdirSync = jest.fn(() => []);
+    const handle = createCheckDepcruiseHandle({
+      spawnImpl,
+      readFileSync,
       readdirSync,
       stdout: createWriter(),
       stderr: createWriter(),
@@ -290,6 +379,7 @@ describe('createCheckDepcruiseHandle', () => {
       stderr,
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
 
     const result = handle();
@@ -320,6 +410,7 @@ describe('createCheckDepcruiseHandle', () => {
       stderr,
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
 
     const result = handle();
@@ -351,13 +442,13 @@ describe('createCheckDepcruiseHandle', () => {
         '}',
       ].join('\n')
     );
-
     expect(
       findCoreBrowserMainGlobalViolations({
         readFileSync,
         rootDir: '/repo',
         sourceRoot: 'src/core',
         pathModule: path,
+        scopeAnalysisDeps: createScopeAnalysisDeps(),
       })
     ).toEqual([
       {
@@ -378,12 +469,33 @@ describe('createCheckDepcruiseHandle', () => {
         '}',
       ].join('\n')
     );
-
     expect(
       findCoreBrowserMainGlobalViolations({
         readFileSync,
         rootDir: '/repo',
         sourceRoot: 'src/core',
+        pathModule: path,
+        scopeAnalysisDeps: createScopeAnalysisDeps(),
+      })
+    ).toEqual([]);
+  });
+
+  test('uses the default source root and scope analysis dependencies for browser-main scans', () => {
+    const readFileSync = jest.fn(filePath => {
+      expect(filePath).toBe('/repo/src/core/browser/main.js');
+      return [
+        'export function createMainHandle() {',
+        '  return function handleMain() {',
+        '    return 1;',
+        '  };',
+        '}',
+      ].join('\n');
+    });
+
+    expect(
+      findCoreBrowserMainGlobalViolations({
+        readFileSync,
+        rootDir: '/repo',
         pathModule: path,
       })
     ).toEqual([]);
@@ -497,6 +609,7 @@ describe('createCheckDepcruiseHandle', () => {
       rootDir: '/repo',
       sourceRoot: 'src/core',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
 
     const result = handle();
@@ -509,6 +622,17 @@ describe('createCheckDepcruiseHandle', () => {
     expect(stderr.chunks.join('')).toContain(
       'src/core/global-usage.js uses browser globals directly: localStorage, window, document.'
     );
+  });
+
+  test('exposes the default scope-analysis fallbacks for coverage', () => {
+    expect(
+      checkDepcruiseTestUtils.defaultScopeAnalysisDeps.parseSourceForScopeAnalysis(
+        null
+      )
+    ).toBe('');
+    expect(
+      checkDepcruiseTestUtils.defaultScopeAnalysisDeps.analyzeScope({})
+    ).toEqual({ scopes: [] });
   });
 
   test('reports plural violations when multiple files violate the policy', () => {
@@ -534,6 +658,7 @@ describe('createCheckDepcruiseHandle', () => {
       stderr,
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
 
     const result = handle();
@@ -562,6 +687,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout,
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
 
     expect(handle()).toEqual({ exitCode: 1, violations: 1 });
@@ -580,6 +706,7 @@ describe('createCheckDepcruiseHandle', () => {
       stderr: createWriter(),
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     })();
 
     const signalWriter = createWriter();
@@ -591,6 +718,7 @@ describe('createCheckDepcruiseHandle', () => {
       stderr: signalWriter,
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     })();
 
     const statusResult = createCheckDepcruiseHandle({
@@ -601,6 +729,7 @@ describe('createCheckDepcruiseHandle', () => {
       stderr: createWriter(),
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     })();
 
     const missingStatusResult = createCheckDepcruiseHandle({
@@ -611,6 +740,7 @@ describe('createCheckDepcruiseHandle', () => {
       stderr: createWriter(),
       rootDir: '/repo',
       pathModule: path,
+      scopeAnalysisDeps: createScopeAnalysisDeps(),
     })();
 
     expect(errorResult).toEqual({ exitCode: 1, violations: 0 });
@@ -620,5 +750,62 @@ describe('createCheckDepcruiseHandle', () => {
     expect(signalWriter.chunks.join('')).toContain(
       'Dependency-cruiser gate was terminated by signal SIGTERM'
     );
+  });
+});
+
+describe('createBrowserGlobalReferenceFinder', () => {
+  test('normalizes missing source text and filters core browser globals', () => {
+    const seenSources = [];
+    const findBrowserGlobalReferences = createBrowserGlobalReferenceFinder({
+      parseSourceForScopeAnalysis(source) {
+        seenSources.push(source ?? '');
+        return { source };
+      },
+      analyzeScope(ast) {
+        const source = ast.source ?? '';
+        return {
+          scopes: [
+            {
+              through: [
+                { identifier: { name: 'localStorage' } },
+                { identifier: { name: 'window' } },
+                { identifier: { name: 'document' } },
+                { identifier: { name: 'fetch' } },
+                { identifier: { name: 'crypto' } },
+              ].filter(({ identifier }) => source.includes(identifier.name)),
+            },
+          ],
+        };
+      },
+    });
+
+    expect(findBrowserGlobalReferences(undefined)).toEqual([]);
+    expect(findBrowserGlobalReferences('localStorage window document')).toEqual(
+      ['localStorage', 'window', 'document']
+    );
+    expect(seenSources).toEqual(['', 'localStorage window document']);
+  });
+
+  test('ignores non-browser globals and missing identifiers', () => {
+    const findBrowserGlobalReferences = createBrowserGlobalReferenceFinder({
+      parseSourceForScopeAnalysis(source) {
+        return { source };
+      },
+      analyzeScope() {
+        return {
+          scopes: [
+            {
+              through: [
+                { identifier: { name: 'crypto' } },
+                {},
+                { identifier: { name: 42 } },
+              ],
+            },
+          ],
+        };
+      },
+    });
+
+    expect(findBrowserGlobalReferences('anything')).toEqual([]);
   });
 });

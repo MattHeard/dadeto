@@ -1,8 +1,10 @@
 import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
-import { findBrowserGlobalReferences } from '../local/check-depcruise-scope.js';
-
-// jscpd:ignore-start
+import {
+  findCoreBrowserGlobalsInSource,
+  stripBrowserMainPolicyNoise,
+  toRepoRelativePath,
+} from './check-depcruise-browser.js';
 const { requirePathModule } = commonCore;
 
 const DEFAULT_ROOT_DIR = '.';
@@ -11,10 +13,49 @@ const DEFAULT_CONFIG_PATH = 'dependency-cruiser.config.cjs';
 const DEFAULT_STDOUT = { write() {} };
 const DEFAULT_STDERR = { write() {} };
 const DEFAULT_SPAWN_RESULT = { status: 0, signal: null };
+const DEFAULT_SCOPE_ANALYSIS_DEPS = {
+  /**
+   * @param {string | undefined} source Source text.
+   * @returns {string} Normalized source text.
+   */
+  parseSourceForScopeAnalysis(source) {
+    return source ?? '';
+  },
+  analyzeScope() {
+    return { scopes: [] };
+  },
+};
+/**
+ * @typedef {{
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
+ *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
+ *   rootDir: string,
+ *   sourceRoot: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
+ * }} CoreFileScanDeps
+ * @typedef {{
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
+ *   rootDir: string,
+ *   sourceRoot: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
+ *   scopeAnalysisDeps?: {
+ *     parseSourceForScopeAnalysis: (source: string) => unknown,
+ *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
+ *   },
+ * }} CoreBrowserMainDeps
+ */
 const MATH_RANDOM_NEEDLE = ['Math', 'random'].join('.');
-const CORE_BROWSER_MAIN_RELATIVE_PATH = ['browser', 'main.js'].join('/');
 const CORE_GLOBALS = ['localStorage', 'window', 'document'];
-const CORE_BROWSER_MAIN_GLOBALS = ['localStorage', 'window', 'document'];
 
 /**
  * Create the command handler that runs dependency-cruiser and enforces the
@@ -38,162 +79,72 @@ const CORE_BROWSER_MAIN_GLOBALS = ['localStorage', 'window', 'document'];
  * @returns {() => { exitCode: number, violations: number }} Dependency gate handler.
  */
 export function createCheckDepcruiseHandle(options = {}) {
-  return createDepcruiseGateHandle(normalizeCheckDepcruiseOptions(options));
+  return createDepcruiseGateHandle(
+    /** @type {Parameters<typeof createDepcruiseGateHandle>[0]} */ (
+      normalizeCheckDepcruiseOptions(options)
+    )
+  );
 }
 
 /**
- * Find direct injected-random usage in src/core files.
- * @param {{
- *   readFileSync: (filePath: string, encoding: 'utf8') => string,
- *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
- *   rootDir: string,
- *   sourceRoot: string,
- *   pathModule: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- * }} deps Filesystem dependencies.
+ * @param {CoreFileScanDeps} deps Filesystem dependencies.
  * @returns {Array<{ filePath: string, occurrences: number }>} Files that directly use the injected random source.
  */
-export function findCoreMathRandomViolations({
-  readFileSync,
-  readdirSync,
-  rootDir,
-  sourceRoot,
-  pathModule,
-}) {
-  /**
-   * @param {string} source Source text.
-   * @returns {number} Number of direct uses.
-   */
-  const scanSource = source => countMathRandomOccurrences(source);
-  return collectJsViolations({
-    readFileSync,
-    readdirSync,
-    rootDir,
-    sourceRoot,
-    pathModule,
-    scanSource,
-    createViolation: (filePath, occurrences) => ({ filePath, occurrences }),
+export function findCoreMathRandomViolations(
+  /** @type {CoreFileScanDeps} */ deps
+) {
+  return findCoreViolationsWithScanner(
+    deps,
+    countMathRandomOccurrences,
+    (filePath, occurrences) => ({ filePath, occurrences })
+  );
+}
+
+/**
+ * @param {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> }} deps Filesystem dependencies.
+ * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
+ */
+export function findCoreGlobalViolations(deps) {
+  return collectCoreBrowserGlobalViolations({
+    ...deps,
+    scopeAnalysisDeps: deps.scopeAnalysisDeps ?? DEFAULT_SCOPE_ANALYSIS_DEPS,
   });
 }
 
 /**
- * Find direct browser-global usage in src/core/browser/main.js.
- * @param {{
- *   readFileSync: (filePath: string, encoding: 'utf8') => string,
- *   rootDir: string,
- *   sourceRoot: string,
- *   pathModule: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- * }} deps Filesystem dependencies.
+ * @param {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> }} deps Filesystem dependencies.
  * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
  */
-export function findCoreBrowserMainGlobalViolations({
-  readFileSync,
-  rootDir,
-  sourceRoot,
-  pathModule,
-}) {
+export function findCoreBrowserMainGlobalViolations(deps) {
+  const {
+    readFileSync,
+    rootDir,
+    sourceRoot = DEFAULT_SOURCE_ROOT,
+    pathModule,
+    scopeAnalysisDeps = DEFAULT_SCOPE_ANALYSIS_DEPS,
+  } = deps;
   const filePath = pathModule.resolve(
     rootDir,
     sourceRoot,
-    CORE_BROWSER_MAIN_RELATIVE_PATH
+    ['browser', 'main.js'].join('/')
   );
-  const source = stripBrowserMainPolicyNoise(readFileSync(filePath, 'utf8'));
-  const globals = findBrowserGlobalReferences(source).filter(globalName =>
-    CORE_BROWSER_MAIN_GLOBALS.includes(globalName)
+  const globals = findCoreBrowserGlobalsInSource(
+    stripBrowserMainPolicyNoise(readFileSync(filePath, 'utf8')),
+    scopeAnalysisDeps,
+    CORE_GLOBALS
   );
 
-  if (globals.length === 0) {
-    return [];
-  }
+  /** @type {Array<{ filePath: string, globals: string[] }>} */
+  const globalsViolations = [];
 
-  return [
-    {
+  if (!isEmptyScanResult(globals)) {
+    globalsViolations.push({
       filePath: toRepoRelativePath(rootDir, filePath, pathModule),
       globals,
-    },
-  ];
-}
-
-/**
- * Find direct browser-global usage in all core source files.
- * @param {{
- *   readFileSync: (filePath: string, encoding: 'utf8') => string,
- *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
- *   rootDir: string,
- *   sourceRoot: string,
- *   pathModule: {
- *     join: (...segments: string[]) => string,
- *     resolve: (...segments: string[]) => string,
- *     relative: (from: string, to: string) => string,
- *     sep: string,
- *   },
- * }} deps Filesystem dependencies.
- * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
- */
-export function findCoreGlobalViolations({
-  readFileSync,
-  readdirSync,
-  rootDir,
-  sourceRoot,
-  pathModule,
-}) {
-  /**
-   * @param {string} source Source text.
-   * @returns {string[]} Browser globals found in the source.
-   */
-  const scanSource = source =>
-    findBrowserGlobalReferences(source).filter(globalName =>
-      CORE_GLOBALS.includes(globalName)
-    );
-  return collectJsViolations({
-    readFileSync,
-    readdirSync,
-    rootDir,
-    sourceRoot,
-    pathModule,
-    scanSource,
-    createViolation: (filePath, globals) => ({ filePath, globals }),
-  });
-}
-
-// jscpd:ignore-start
-/**
- * Remove non-executable module text from the browser main policy scan.
- * @param {string | null | undefined} source Source text.
- * @returns {string} Source text with import and doc-comment lines removed.
- */
-function stripBrowserMainPolicyNoise(source) {
-  const lines = (source ?? '').split('\n');
-  const startIndex = lines.findIndex(line =>
-    line.trimStart().startsWith('export function createMainHandle')
-  );
-
-  if (startIndex < 0) {
-    return source ?? '';
+    });
   }
 
-  return lines.slice(startIndex).join('\n');
-}
-
-/**
- * Scan a quoted string segment.
- * @param {string} source Source text.
- * @param {number} index Current index.
- * @param {"'" | '"' } delimiter String delimiter.
- * @param {string} nextState Next scanner state.
- * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
- */
-function scanQuotedString(source, index, delimiter, nextState) {
-  return scanDelimitedString(source, index, delimiter, nextState);
+  return globalsViolations;
 }
 
 export const checkDepcruiseTestUtils = {
@@ -201,10 +152,10 @@ export const checkDepcruiseTestUtils = {
   scanQuotedString,
   isBoundary,
   isEmptyScanResult,
+  defaultScopeAnalysisDeps: DEFAULT_SCOPE_ANALYSIS_DEPS,
   findCoreBrowserMainGlobalViolations,
   findCoreGlobalViolations,
   stripBrowserMainPolicyNoise,
-  findBrowserGlobalReferences,
   isBrowserGlobalAtIndex,
   hasFetchUsageAtIndex,
 };
@@ -226,6 +177,10 @@ export const checkDepcruiseTestUtils = {
  *     relative: (from: string, to: string) => string,
  *     sep: string,
  *   },
+ *   scopeAnalysisDeps?: {
+ *     parseSourceForScopeAnalysis: (source: string) => unknown,
+ *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
+ *   },
  * }} [options] Optional dependencies.
  * @returns {{
  *   spawnImpl: (command: string, args: string[], options: Record<string, unknown>) => { status?: number | null, signal?: string | null, error?: Error },
@@ -241,6 +196,10 @@ export const checkDepcruiseTestUtils = {
  *     resolve: (...segments: string[]) => string,
  *     relative: (from: string, to: string) => string,
  *     sep: string,
+ *   },
+ *   scopeAnalysisDeps: {
+ *     parseSourceForScopeAnalysis: (source: string) => unknown,
+ *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
  *   },
  * }} Normalized dependencies.
  */
@@ -264,6 +223,7 @@ function normalizeCheckDepcruiseOptions(options = {}) {
       DEFAULT_CONFIG_PATH
     ),
     pathModule: requirePathModule(options.pathModule),
+    scopeAnalysisDeps: options.scopeAnalysisDeps ?? DEFAULT_SCOPE_ANALYSIS_DEPS,
   };
 }
 
@@ -283,6 +243,10 @@ function normalizeCheckDepcruiseOptions(options = {}) {
  *     resolve: (...segments: string[]) => string,
  *     relative: (from: string, to: string) => string,
  *     sep: string,
+ *   },
+ *   scopeAnalysisDeps: {
+ *     parseSourceForScopeAnalysis: (source: string) => unknown,
+ *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
  *   },
  * }} deps Normalized dependencies.
  * @returns {() => { exitCode: number, violations: number }} Gate handler.
@@ -310,6 +274,10 @@ function createDepcruiseGateHandle(deps) {
  *     relative: (from: string, to: string) => string,
  *     sep: string,
  *   },
+ *   scopeAnalysisDeps: {
+ *     parseSourceForScopeAnalysis: (source: string) => unknown,
+ *     analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> },
+ *   },
  * }} deps Gate dependencies.
  * @returns {{ exitCode: number, violations: number }} Gate outcome.
  */
@@ -323,6 +291,7 @@ function executeDepcruiseGate({
   sourceRoot,
   configPath,
   pathModule,
+  scopeAnalysisDeps,
 }) {
   const { launchFailure } = gateUtils.runGateCommand({
     spawnImpl,
@@ -338,47 +307,51 @@ function executeDepcruiseGate({
     return { exitCode: launchFailure.exitCode, violations: 0 };
   }
 
-  const violations = findCoreMathRandomViolations({
+  /** @type {CoreFileScanDeps} */
+  const sharedScanDeps = {
     readFileSync,
     readdirSync,
     rootDir,
     sourceRoot,
     pathModule,
-  });
+  };
+  /** @type {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, scopeAnalysisDeps: { parseSourceForScopeAnalysis: (source: string) => unknown, analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> } } }} */
+  const browserScanDeps = {
+    ...sharedScanDeps,
+    scopeAnalysisDeps,
+  };
 
-  const browserGlobalViolations = findCoreGlobalViolations({
-    readFileSync,
-    readdirSync,
-    rootDir,
-    sourceRoot,
-    pathModule,
-  });
+  const violations = findCoreMathRandomViolations(sharedScanDeps);
+  const browserGlobalViolations =
+    collectCoreBrowserGlobalViolations(browserScanDeps);
 
   if (browserGlobalViolations.length > 0) {
-    stderr.write(
-      `Dependency-cruiser core global policy found ${browserGlobalViolations.length} violation${gateUtils.pluralizeCount(browserGlobalViolations.length)}.\n`
-    );
-
-    browserGlobalViolations.forEach(({ filePath, globals }) => {
-      stderr.write(
-        `${filePath} uses browser globals directly: ${globals.join(', ')}.\n`
-      );
+    reportViolations({
+      stderr,
+      violations: browserGlobalViolations,
+      countLabel: 'Dependency-cruiser core global policy',
+      /**
+       * @param {{ filePath: string, globals: string[] }} violation Violation details.
+       * @returns {string} Violation description.
+       */
+      describeViolation: ({ filePath, globals }) =>
+        `${filePath} uses browser globals directly: ${globals.join(', ')}.`,
     });
-
     return { exitCode: 1, violations: browserGlobalViolations.length };
   }
 
   if (violations.length > 0) {
-    stderr.write(
-      `Dependency-cruiser core policy found ${violations.length} violation${gateUtils.pluralizeCount(violations.length)}.\n`
-    );
-
-    violations.forEach(({ filePath, occurrences }) => {
-      stderr.write(
-        `${filePath} uses the injected random source directly ${occurrences} time${gateUtils.pluralizeCount(occurrences)}.\n`
-      );
+    reportViolations({
+      stderr,
+      violations,
+      countLabel: 'Dependency-cruiser core policy',
+      /**
+       * @param {{ filePath: string, occurrences: number }} violation Violation details.
+       * @returns {string} Violation description.
+       */
+      describeViolation: ({ filePath, occurrences }) =>
+        `${filePath} uses the injected random source directly ${occurrences} time${gateUtils.pluralizeCount(occurrences)}.`,
     });
-
     return { exitCode: 1, violations: violations.length };
   }
 
@@ -454,6 +427,101 @@ function collectJsViolations({
       ];
     }
   );
+}
+
+/**
+ * Collect browser-global violations from all core files.
+ * @param {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, scopeAnalysisDeps: { parseSourceForScopeAnalysis: (source: string) => unknown, analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> } } }} deps Filesystem dependencies.
+ * @returns {Array<{ filePath: string, globals: string[] }>} Files that directly use browser globals.
+ */
+function collectCoreBrowserGlobalViolations(deps) {
+  const readFileSync = deps.readFileSync;
+  const readdirSync = deps.readdirSync;
+  const rootDir = deps.rootDir;
+  const sourceRoot = deps.sourceRoot;
+  const pathModule = deps.pathModule;
+  const scopeAnalysisDeps = deps.scopeAnalysisDeps;
+  const sourceRootPath = pathModule.resolve(rootDir, sourceRoot);
+  /** @type {Array<{ filePath: string, globals: string[] }>} */
+  const globalsViolations = [];
+
+  listJsFiles(sourceRootPath, readdirSync, pathModule).forEach(filePath => {
+    const globals = findCoreBrowserGlobalsInSource(
+      readFileSync(filePath, 'utf8'),
+      scopeAnalysisDeps,
+      CORE_GLOBALS
+    );
+
+    if (globals.length > 0) {
+      globalsViolations.push({
+        filePath: toRepoRelativePath(rootDir, filePath, pathModule),
+        globals,
+      });
+    }
+  });
+
+  return globalsViolations;
+}
+
+/**
+ * Collect violations from core JS files using a shared file scanner.
+ * @param {{
+ *   readFileSync: (filePath: string, encoding: 'utf8') => string,
+ *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
+ *   rootDir: string,
+ *   sourceRoot: string,
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
+ * }} deps Core scan dependencies.
+ * @param {(source: string) => any} scanSource Source scanner.
+ * @param {(filePath: string, scanResult: any) => any} createViolation Violation builder.
+ * @returns {any[]} Violations discovered in source files.
+ */
+function findCoreViolationsWithScanner(deps, scanSource, createViolation) {
+  return collectJsViolations({
+    ...deps,
+    scanSource,
+    createViolation,
+  });
+}
+
+/**
+ * Scan a quoted string segment.
+ * @param {string} source Source text.
+ * @param {number} index Current index.
+ * @param {"'" | '"' } delimiter String delimiter.
+ * @param {string} nextState Next scanner state.
+ * @returns {{ count: number, nextIndex: number, nextState: string }} Scan result.
+ */
+function scanQuotedString(source, index, delimiter, nextState) {
+  return scanDelimitedString(source, index, delimiter, nextState);
+}
+
+/**
+ * @param {{
+ *   stderr: { write: (text: string) => void },
+ *   violations: Array<unknown>,
+ *   countLabel: string,
+ *   describeViolation: (violation: any) => string,
+ * }} options Violation report options.
+ */
+function reportViolations({
+  stderr,
+  violations,
+  countLabel,
+  describeViolation,
+}) {
+  stderr.write(
+    `${countLabel} found ${violations.length} violation${gateUtils.pluralizeCount(violations.length)}.\n`
+  );
+
+  violations.forEach(violation => {
+    stderr.write(`${describeViolation(violation)}\n`);
+  });
 }
 
 /**
@@ -601,7 +669,7 @@ function scanCodeForMathRandom(source, index) {
     return commentOrString;
   }
 
-  if (isMathRandomAtIndex(source, index, needleLength)) {
+  if (isMathRandomAtIndex(source, index)) {
     return createZeroCountScanResult(index + needleLength, 'code', 1);
   }
 
@@ -746,18 +814,15 @@ function scanDelimitedString(source, index, delimiter, nextState) {
  * Tell whether the target random source appears at a given index.
  * @param {string} source Source text.
  * @param {number} index Current index.
- * @param {number} needleLength Length of the target string.
  * @returns {boolean} True when the target appears at the current index.
  */
-function isMathRandomAtIndex(source, index, needleLength) {
-  if (!source.startsWith(MATH_RANDOM_NEEDLE, index)) {
-    return false;
-  }
-
-  const hasLowerBoundary = isBoundary(source[index - 1]);
-  const hasUpperBoundary = isBoundary(source[index + needleLength]);
-
-  return hasLowerBoundary && hasUpperBoundary;
+function isMathRandomAtIndex(source, index) {
+  return hasDelimitedIdentifierAtIndex(
+    source,
+    index,
+    MATH_RANDOM_NEEDLE,
+    isBoundary
+  );
 }
 
 /**
@@ -772,18 +837,3 @@ function isBoundary(character) {
 
   return !/[A-Za-z0-9_$]/u.test(character);
 }
-
-/**
- * Convert a path to a repo-relative POSIX path.
- * @param {string} rootDir Repository root.
- * @param {string} absolutePath Absolute file path.
- * @param {{ relative: (from: string, to: string) => string, sep: string }} pathModule Path helper.
- * @returns {string} Repo-relative path.
- */
-function toRepoRelativePath(rootDir, absolutePath, pathModule) {
-  return pathModule
-    .relative(rootDir, absolutePath)
-    .replaceAll(pathModule.sep, '/');
-}
-
-// jscpd:ignore-end

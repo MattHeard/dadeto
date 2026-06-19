@@ -189,6 +189,12 @@ After completing meaningful work, add a concise note under `notes/agents/` cover
 - chosen fix,
 - next-time guidance or open questions.
 
+## Notion inbox routing
+
+- The canonical Notion inbox list lives in `tracking/notion-codex.local.json` under `notion.inboxPageIds`.
+- When you need the active inbox list, inspect `src/core/local/notion-codex/config.js` for the default shape and `tracking/notion-codex.local.json` for the local overrides.
+- Use the `notion-codex` scripts and tests as the operational entry point before adding new helper code.
+
 ## Commit hygiene
 
 - Stage all changes together (`git add -A`) before commit.

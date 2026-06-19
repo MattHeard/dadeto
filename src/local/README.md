@@ -15,7 +15,7 @@ Fetches unresolved SonarCloud issues and per‑file duplication metrics for the 
 Run each script directly from the repository root, for example:
 
 ```bash
-SONAR_TOKEN=xxxxxxxx ./src/scripts/get-sonar-issues.sh
+SONAR_TOKEN=xxxxxxxx ./src/local/get-sonar-issues.sh
 ```
 
 The scripts assume their working directory is the repository root so relative paths resolve correctly.

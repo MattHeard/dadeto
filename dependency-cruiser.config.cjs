@@ -95,7 +95,6 @@ module.exports = {
       severity: 'warn',
       from: {
         path: '^src/core',
-        pathNot: '^src/core/local/check-depcruise-scope\\.js$',
       },
       to: {
         pathNot: '^src/core(?:/|$)',
@@ -180,7 +179,6 @@ module.exports = {
       severity: 'error',
       from: {
         path: '^src/core',
-        pathNot: '^src/core/local/check-depcruise-scope\\.js$',
       },
       to: {
         path: 'node_modules',

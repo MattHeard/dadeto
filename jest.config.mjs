@@ -27,6 +27,7 @@ const config = {
     '<rootDir>/test/e2e/',
     '<rootDir>/e2e/',
   ],
+  modulePathIgnorePatterns: ['<rootDir>/infra/cloud-functions/'],
   coveragePathIgnorePatterns: [
     '/node_modules/',
     '<rootDir>/src/core/local/gcp-simulator/server.js',

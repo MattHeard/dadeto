@@ -117,7 +117,7 @@ describe('runCheckSuite', () => {
     const exitCodes = [];
     const suiteCalls = [];
     const handle = createRunCheckHandle({
-      argv: ['node', 'src/scripts/run-check.js', '--fail-fast'],
+      argv: ['node', 'src/local/run-check.js', '--fail-fast'],
       runSuite: async options => {
         suiteCalls.push(options);
         return { exitCode: 7 };

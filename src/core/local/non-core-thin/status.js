@@ -464,7 +464,7 @@ function shouldEnforceWrapperPattern(filePath) {
     return filePath.endsWith('/index.js');
   }
 
-  return ['src/browser/', 'src/build/', 'src/local/', 'src/scripts/'].some(
-    prefix => filePath.startsWith(prefix)
+  return ['src/browser/', 'src/build/', 'src/local/'].some(prefix =>
+    filePath.startsWith(prefix)
   );
 }
