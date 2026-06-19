@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.5
-FROM mcr.microsoft.com/playwright:v1.59.1-jammy
+FROM mcr.microsoft.com/playwright:v1.61.0-jammy
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
