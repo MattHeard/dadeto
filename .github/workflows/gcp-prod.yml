@@ -74,8 +74,9 @@ jobs:
 
       - name: Terraform environment configuration
         run: |
-          mkdir -p ~/.terraform.d/plugin-cache
-          echo 'plugin_cache_dir = "~/.terraform.d/plugin-cache"' > ~/.terraformrc
+          plugin_cache_dir="${HOME}/.terraform.d/plugin-cache"
+          mkdir -p "$plugin_cache_dir"
+          printf 'plugin_cache_dir = "%s"\n' "$plugin_cache_dir" > ~/.terraformrc
 
       - name: Terraform Init (Validate)
         run: terraform init -backend=false
