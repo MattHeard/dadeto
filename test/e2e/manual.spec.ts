@@ -2,7 +2,14 @@ import { test, expect } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
 test('serves manual.html with guidance copy', async ({ page }) => {
-  await page.goto('/manual.html', { waitUntil: 'domcontentloaded' });
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? process.env.BASE_URL;
+  if (!baseUrl) {
+    throw new Error('PLAYWRIGHT_BASE_URL or BASE_URL is required for manual.spec.ts');
+  }
+
+  await page.goto(new URL('/manual.html', baseUrl).toString(), {
+    waitUntil: 'domcontentloaded',
+  });
 
   await expectSharedChrome(page);
 
