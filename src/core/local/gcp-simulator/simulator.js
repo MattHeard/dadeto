@@ -26,6 +26,10 @@ import {
   createGetApiKeyCreditV2Handler,
   extractUuid,
 } from '../../get-api-key-credit-v2.js';
+import {
+  createResolveApiKeyUuid,
+  createPaymentWebhookHandler,
+} from '../../payment-webhook-core.js';
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT =
@@ -351,6 +355,35 @@ async function buildSimulatorState(config) {
     getUuid: extractUuid,
     logError: error => console.error(error),
   });
+  const resolveApiKeyUuid = createResolveApiKeyUuid({
+    findApiKeyUuidByCustomerId: async customerId => {
+      const snap = await db
+        .collection('payment-customers')
+        .doc(customerId)
+        .get();
+      const apiKeyUuid = snap.data()?.apiKeyUuid;
+      return resolvePaymentCustomerApiKeyUuid(apiKeyUuid);
+    },
+  });
+  const paymentWebhook = createPaymentWebhookHandler({
+    fetchCredit: createFetchCredit(db),
+    applyCreditEvent: createApplyCreditEvent(db),
+    resolveApiKeyUuid,
+    isDuplicateEvent: async eventId => {
+      const snap = await db.collection('payment-events').doc(eventId).get();
+      return snap.exists;
+    },
+    markProcessedEvent: async (event, uuid) => {
+      await db
+        .collection('payment-events')
+        .doc(event.id)
+        .set({
+          apiKeyUuid: uuid,
+          type: event.type,
+          createdAt: resolvePaymentCreatedAt(event),
+        });
+    },
+  });
   const testUtils = createSimulatorTestUtils({
     snapshotHelpers,
     lookupHelpers,
@@ -395,6 +428,7 @@ async function buildSimulatorState(config) {
       submitNewStory,
       submitNewPage,
       getApiKeyCreditV2,
+      paymentWebhook,
       db,
       fieldValue,
       renderContents,
@@ -844,6 +878,7 @@ function createRoutes(deps) {
     submitNewStory: request => handleSubmitNewStory(deps, request),
     submitNewPage: request => handleSubmitNewPage(deps, request),
     getApiKeyCreditV2: request => handleGetApiKeyCreditV2(deps, request),
+    paymentWebhook: request => handlePaymentWebhook(deps, request),
     getModerationVariant: request => handleGetModerationVariant(deps, request),
     assignModerationJob: request => handleAssignModerationJob(deps, request),
     submitModerationRating: request =>
@@ -853,6 +888,32 @@ function createRoutes(deps) {
     markVariantDirty: request => handleMarkVariantDirty(deps, request),
     generateStats: request => handleGenerateStats(deps, request),
   };
+}
+
+/**
+ * Resolve a payment customer mapping value to a string or null.
+ * @param {unknown} apiKeyUuid Candidate UUID.
+ * @returns {string | null} Normalized UUID.
+ */
+export function resolvePaymentCustomerApiKeyUuid(apiKeyUuid) {
+  if (typeof apiKeyUuid === 'string' && apiKeyUuid) {
+    return apiKeyUuid;
+  }
+
+  return null;
+}
+
+/**
+ * Resolve a payment event creation timestamp for stored processing metadata.
+ * @param {{ created?: number }} event Payment event.
+ * @returns {Date} Created-at timestamp.
+ */
+export function resolvePaymentCreatedAt(event) {
+  if (typeof event.created === 'number' && Number.isFinite(event.created)) {
+    return new Date(event.created * 1000);
+  }
+
+  return new Date(Date.now());
 }
 
 /**
@@ -884,6 +945,16 @@ async function handleSubmitNewPage(deps, request) {
  */
 async function handleGetApiKeyCreditV2(deps, request) {
   return deps.getApiKeyCreditV2(request);
+}
+
+/**
+ * Run the payment webhook route handler.
+ * @param {{ paymentWebhook: Function }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handlePaymentWebhook(deps, request) {
+  return deps.paymentWebhook(request);
 }
 
 /**
