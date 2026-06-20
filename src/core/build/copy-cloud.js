@@ -70,6 +70,7 @@ export async function createCopyCloudHandle(deps) {
     'get-moderation-variant',
     'hide-variant-html',
     'mark-variant-dirty',
+    'payment-webhook',
     'process-new-page',
     'process-new-story',
     'update-variant-visibility',

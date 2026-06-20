@@ -270,6 +270,11 @@ resource "google_cloud_run_v2_job" "playwright" {
         }
 
         env {
+          name  = "PAYMENT_WEBHOOK_URL"
+          value = google_cloudfunctions2_function.payment_webhook.service_config[0].uri
+        }
+
+        env {
           name  = "REPORT_BUCKET"
           value = local.reports_bucket_name
         }

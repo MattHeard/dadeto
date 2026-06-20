@@ -159,6 +159,12 @@ async function seedFirestore(db) {
     variant: firstVariantRef.path,
     createdAt: new Date(),
   });
+  batch.set(db.collection('payment-customers').doc('cus_e2e_checkout'), {
+    apiKeyUuid: 'api-key-e2e-checkout',
+  });
+  batch.set(db.collection('payment-customers').doc('cus_e2e_mapping'), {
+    apiKeyUuid: 'api-key-e2e-mapping',
+  });
 
   await batch.commit();
 }
