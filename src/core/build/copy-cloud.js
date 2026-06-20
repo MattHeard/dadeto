@@ -187,6 +187,10 @@ export async function createCopyCloudHandle(deps) {
 
   const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
   const commonCoreSource = join(srcCoreDir, 'commonCore.js');
+  const paymentWebhookCoreSource = join(
+    srcCoreDir,
+    'payment-webhook-core.js'
+  );
   const expressAppSource = join(srcCoreDir, 'express-app.js');
 
   const commonCoreCopies = functionDirectories.map(name => ({
@@ -198,6 +202,16 @@ export async function createCopyCloudHandle(deps) {
     source: commonCoreSource,
     target: join(infraFunctionsDir, name, 'core', 'commonCore.js'),
   }));
+
+  const paymentWebhookCoreCopy = {
+    source: paymentWebhookCoreSource,
+    target: join(
+      infraFunctionsDir,
+      'payment-webhook',
+      'core',
+      'payment-webhook-core.js'
+    ),
+  };
 
   const generateStatsCoreSource = join(
     srcCoreCloudDir,
@@ -1216,6 +1230,7 @@ export async function createCopyCloudHandle(deps) {
     ...corsConfigCopies,
     ...commonCoreCopies,
     ...preservedCommonCoreCopies,
+    paymentWebhookCoreCopy,
     ...functionSpecificCommonCoreCopies,
     ...sharedUtilityCopies,
     ...preservedSharedUtilityCopies,
