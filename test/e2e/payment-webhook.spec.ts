@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+const CHECKOUT_API_KEY_UUID = '11111111-1111-1111-1111-111111111111';
+const MAPPED_API_KEY_UUID = '22222222-2222-2222-2222-222222222222';
+const MAPPED_CUSTOMER_ID = 'cus_e2e_mapping';
+
 function getApiBaseUrl() {
   const apiBaseUrl = process.env.API_BASE_URL;
   if (!apiBaseUrl) {
@@ -22,12 +26,8 @@ function buildApiUrl(path: string) {
   return new URL(path, getApiBaseUrl()).toString();
 }
 
-function buildWebhookUrl(path: string) {
-  return new URL(path, getWebhookBaseUrl()).toString();
-}
-
 async function postPaymentEvent(request, event) {
-  return request.post(buildWebhookUrl('/'), {
+  return request.post(getWebhookBaseUrl(), {
     data: event,
   });
 }
@@ -40,7 +40,7 @@ test('applies checkout credits, replays duplicates, and deducts refunds', async 
     type: 'checkout.session.completed',
     data: {
       object: {
-        client_reference_id: 'api-key-e2e-checkout',
+        client_reference_id: CHECKOUT_API_KEY_UUID,
         metadata: { credit_amount: '80' },
       },
     },
@@ -67,7 +67,7 @@ test('applies checkout credits, replays duplicates, and deducts refunds', async 
     type: 'charge.refunded',
     data: {
       object: {
-        client_reference_id: 'api-key-e2e-checkout',
+        client_reference_id: CHECKOUT_API_KEY_UUID,
         metadata: { credit_amount: '30' },
       },
     },
@@ -83,7 +83,7 @@ test('applies checkout credits, replays duplicates, and deducts refunds', async 
   });
 
   const balanceResponse = await request.get(
-    buildApiUrl('/api-keys/api-key-e2e-checkout/credit')
+    buildApiUrl(`/api-keys/${CHECKOUT_API_KEY_UUID}/credit`)
   );
   expect(balanceResponse.status()).toBe(200);
   await expect(balanceResponse.json()).resolves.toEqual({ credit: 50 });
@@ -97,7 +97,7 @@ test('resolves customer mappings for payment-intent events', async ({
     type: 'payment_intent.succeeded',
     data: {
       object: {
-        customer: 'cus_e2e_mapping',
+        customer: MAPPED_CUSTOMER_ID,
         metadata: { credit_amount: '12' },
       },
     },
@@ -113,7 +113,7 @@ test('resolves customer mappings for payment-intent events', async ({
   });
 
   const balanceResponse = await request.get(
-    buildApiUrl('/api-keys/api-key-e2e-mapping/credit')
+    buildApiUrl(`/api-keys/${MAPPED_API_KEY_UUID}/credit`)
   );
   expect(balanceResponse.status()).toBe(200);
   await expect(balanceResponse.json()).resolves.toEqual({ credit: 12 });

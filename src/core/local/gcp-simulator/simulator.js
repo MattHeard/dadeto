@@ -97,6 +97,7 @@ async function createLocalGcpSimulatorRuntime(config) {
  *   triggerRenderContentsUrl: string,
  *   markVariantDirtyUrl: string,
  *   generateStatsUrl: string,
+ *   paymentWebhookUrl: string,
  * }} Config object.
  */
 function createSimulatorConfig(baseUrl, bucketName, projectId) {
@@ -109,6 +110,7 @@ function createSimulatorConfig(baseUrl, bucketName, projectId) {
     triggerRenderContentsUrl: `${baseUrl}/__sim/trigger-render-contents`,
     markVariantDirtyUrl: `${baseUrl}/__sim/mark-variant-dirty`,
     generateStatsUrl: `${baseUrl}/__sim/generate-stats`,
+    paymentWebhookUrl: `${baseUrl}/__sim/payment-webhook`,
     bucketName,
     projectId,
   };
@@ -786,6 +788,9 @@ async function seedFixture(db) {
     .set(db.collection('moderators').doc(ADMIN_UID), {
       variant: firstVariantRef.path,
       createdAt: new Date(),
+    })
+    .set(db.collection('payment-customers').doc('cus_e2e_mapping'), {
+      apiKeyUuid: '22222222-2222-2222-2222-222222222222',
     })
     .commit();
 }

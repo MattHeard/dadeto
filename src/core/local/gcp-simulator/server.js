@@ -75,6 +75,7 @@ const SIMULATOR_ROUTES = [
   ),
   createPostRoute('/__sim/mark-variant-dirty', 'markVariantDirty'),
   createPostRoute('/__sim/generate-stats', 'generateStats', false),
+  createPostRoute('/__sim/payment-webhook', 'paymentWebhook'),
 ];
 
 export const handle = startServer;
@@ -148,6 +149,7 @@ function registerSimulatorRoute(app, simulator, route) {
 function buildSimulatorRequest(req, route) {
   const request = {
     method: req.method,
+    path: req.path,
     headers: req.headers,
     get: getRequestHeader(req),
   };

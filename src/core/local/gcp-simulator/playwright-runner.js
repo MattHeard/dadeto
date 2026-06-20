@@ -224,6 +224,7 @@ function spawnPlaywright(input) {
       ...simulatorEnv,
       API_BASE_URL: baseUrl,
       PLAYWRIGHT_BASE_URL: baseUrl,
+      PAYMENT_WEBHOOK_URL: `${baseUrl}/__sim/payment-webhook`,
     },
     stdio: 'inherit',
   });
