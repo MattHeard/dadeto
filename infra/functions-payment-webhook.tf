@@ -1,6 +1,6 @@
 data "archive_file" "payment_webhook_src" {
   type        = "zip"
-  source_dir  = "${path.module}/../src/cloud/payment-webhook"
+  source_dir  = "${path.module}/cloud-functions/payment-webhook"
   output_path = "${path.module}/build/payment-webhook.zip"
 }
 
