@@ -31,6 +31,7 @@ if (allowedPorts.size > 0) {
 
 export default defineConfig({
   testDir: '.',
+  testIgnore: ['**/local/**'],
   testMatch: [
     '**/api-key-credit-v2.spec.ts',
     '**/dendrite-fixture.spec.ts',
