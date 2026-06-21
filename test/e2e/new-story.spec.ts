@@ -125,6 +125,16 @@ test('submits the new story form', async ({ page }) => {
     submitNewStoryUrl,
   );
 
+  await expect
+    .poll(
+      () =>
+        page.locator('form').evaluate(form => form.dataset.submitHandlerReady),
+      {
+        message: 'new-story submit handler is attached before submitting',
+      },
+    )
+    .toBe('true');
+
   await page.getByLabel('Title').fill('Playwright Story');
   await page.getByLabel('Content').fill('A story created through the form.');
   await page.getByLabel('Author').fill('Playwright');
