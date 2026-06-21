@@ -54,9 +54,11 @@ log "REPORT_PREFIX=${REPORT_PREFIX:-<unset>}"
 log "PWD=$(pwd)"
 log "PLAYWRIGHT_BIN=${PLAYWRIGHT_BIN}"
 log "PLAYWRIGHT_CONFIG=$(realpath "$APP_ROOT/playwright.config.ts" 2>/dev/null || printf '%s\n' "$APP_ROOT/playwright.config.ts")"
+log "PLAYWRIGHT_CONFIG_HEAD:"
+sed -n '1,120p' "$APP_ROOT/playwright.config.ts" || true
 log "TEST_DIR=$(realpath "$TEST_DIR" 2>/dev/null || printf '%s\n' "$TEST_DIR")"
 log "test/e2e entries:"
-find "$TEST_DIR" -maxdepth 2 -type f | sort | sed 's/^/  /'
+find "$TEST_DIR" -maxdepth 4 -type f | sort | sed 's/^/  /'
 command -v gcloud >/dev/null 2>&1 && gcloud --version || warn "gcloud not installed"
 command -v gcloud >/dev/null 2>&1 && gcloud config get-value account || true
 
