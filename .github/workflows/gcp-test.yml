@@ -79,7 +79,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -97,9 +97,9 @@ jobs:
           echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Build cloud function sources
@@ -125,7 +125,7 @@ jobs:
           terraform_version: 1.13.3
 
       - name: Cache Terraform plugin dir
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.terraform.d/plugin-cache
           key: tf-plugins-${{ runner.os }}-${{ hashFiles('infra/**/.terraform.lock.hcl') }}
@@ -214,7 +214,7 @@ jobs:
 
       - name: Upload Terraform fmt/validate reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tf-lint-${{ steps.environment.outputs.environment }}
           path: |
@@ -240,7 +240,7 @@ jobs:
 
       - name: Upload tf artifacts
         if: always() && steps.terraform_init.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tf-${{ steps.environment.outputs.environment }}
           path: |
@@ -377,7 +377,7 @@ jobs:
 
       - name: Upload e2e artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: e2e-${{ steps.environment.outputs.environment }}
           path: |
@@ -421,7 +421,7 @@ jobs:
 
       - name: Upload Cloud Run job logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-job-logs-${{ steps.environment.outputs.environment }}
           path: |
@@ -433,7 +433,7 @@ jobs:
 
       - name: Upload Cloud Function logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cloud-function-logs-${{ steps.environment.outputs.environment }}
           path: /tmp/run-cloud-function-logs.json
