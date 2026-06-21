@@ -96,6 +96,11 @@ fi
 DEST="gs://${REPORT_BUCKET}"
 [ -n "${REPORT_PREFIX}" ] && DEST="${DEST}/${REPORT_PREFIX}"
 
+if [ -n "${REPORT_PREFIX}" ]; then
+  stage "clear previous report prefix"
+  gcloud storage rm --recursive "${DEST}" || true
+fi
+
 upload_with_tool() {
   local tool="$1" src="$2"
   if [ ! -e "$src" ]; then
