@@ -565,22 +565,37 @@ export function createGenerateStatsCore({
    * @returns {Promise<void>} Resolves when invalidation requests finish.
    */
   async function invalidatePaths(paths, logger = console) {
-    const token = await getAccessTokenFromMetadata();
     const resolvedLogger = /** @type {StatsLogger} */ (logger ?? console);
-    await runMappedEntries(
-      paths,
-      path => ({
-        path,
-        fetchImpl,
-        project,
-        resolvedUrlMap,
-        resolvedCdnHost,
-        randomUUID: cryptoModule.randomUUID,
-        logger: resolvedLogger,
-        token,
-      }),
-      invalidateSinglePath
-    );
+    let token;
+    try {
+      token = await getAccessTokenFromMetadata();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'metadata token fetch failed';
+      resolvedLogger.error(`Skipping CDN invalidation: ${message}`);
+      return;
+    }
+
+    try {
+      await runMappedEntries(
+        paths,
+        path => ({
+          path,
+          fetchImpl,
+          project,
+          resolvedUrlMap,
+          resolvedCdnHost,
+          randomUUID: cryptoModule.randomUUID,
+          logger: resolvedLogger,
+          token,
+        }),
+        invalidateSinglePath
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'CDN invalidation failed';
+      resolvedLogger.error(`Skipping CDN invalidation: ${message}`);
+    }
   }
 
   /**
