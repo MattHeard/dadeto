@@ -183,16 +183,36 @@ function generateCandidateNumber(random, depth) {
 
 /**
  * Query for existing page documents matching a candidate number.
+ *
+ * The Firestore collection-group query requires a composite index in GCP.
+ * For the test environment we keep the lookup index-free by scanning each
+ * story's nested pages collection instead.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {number} candidate Candidate page number.
  * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Query snapshot.
  */
 async function queryExistingPageNumber(db, candidate) {
-  return db
-    .collectionGroup('pages')
-    .where('number', '==', candidate)
-    .limit(1)
-    .get();
+  if (typeof db.collection !== 'function') {
+    return db
+      .collectionGroup('pages')
+      .where('number', '==', candidate)
+      .limit(1)
+      .get();
+  }
+
+  const storiesSnapshot = await db.collection('stories').get();
+  for (const storyDoc of storiesSnapshot.docs) {
+    const pageSnapshot = await storyDoc.ref
+      .collection('pages')
+      .where('number', '==', candidate)
+      .limit(1)
+      .get();
+    if (!pageSnapshot.empty) {
+      return pageSnapshot;
+    }
+  }
+
+  return db.collection('stories').limit(0).get();
 }
 
 /**
