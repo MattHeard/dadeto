@@ -27,7 +27,7 @@ resource "google_cloudfunctions2_function" "payment_webhook" {
 
   service_config {
     available_memory      = "256M"
-    timeout_seconds       = 10
+    timeout_seconds       = 30
     max_instance_count    = 20
     service_account_email = local.cloud_function_runtime_service_account_email
     environment_variables = local.cloud_function_environment
