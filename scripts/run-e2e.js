@@ -55,8 +55,6 @@ async function runCloudPlaywright(environment, playwrightArgs) {
     'test',
     '--config',
     'test/e2e/cloud.config.ts',
-    '--environment',
-    resolvedEnvironment,
     ...playwrightArgs,
   ];
   const child = spawn(
@@ -65,6 +63,10 @@ async function runCloudPlaywright(environment, playwrightArgs) {
     {
       stdio: 'inherit',
       shell: process.platform === 'win32',
+      env: {
+        ...process.env,
+        E2E_ENVIRONMENT: resolvedEnvironment,
+      },
     }
   );
 
