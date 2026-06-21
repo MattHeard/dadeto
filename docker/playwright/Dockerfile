@@ -16,6 +16,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
+COPY scripts ./scripts
+COPY src ./src
+COPY config ./config
 COPY test/e2e/cloud.config.ts ./playwright.config.ts
 COPY test/e2e ./test/e2e
 COPY docker/playwright/entrypoint.sh /entrypoint.sh
