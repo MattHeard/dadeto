@@ -5,33 +5,35 @@ import path from 'node:path';
 import { runLocalPlaywright } from '../src/core/local/gcp-simulator/playwright-runner.js';
 
 const args = process.argv.slice(2);
-const { mode, playwrightArgs } = parseArgs(args);
+const { suite, environment, playwrightArgs } = parseArgs(args);
 const runtimeConfigPath = path.resolve('config/e2e-runtime.json');
 const runtimeConfig = JSON.parse(fs.readFileSync(runtimeConfigPath, 'utf8'));
-const runtimeMode = runtimeConfig.cloudMode === 'gcp' ? 'cloud' : 'local';
-const selectedMode = mode ?? runtimeMode;
+const selectedSuite =
+  suite ?? process.env.E2E_SUITE ?? runtimeConfig.suite ?? 'cloud';
+const selectedEnvironment =
+  environment ?? process.env.E2E_ENVIRONMENT ?? runtimeConfig.environment;
 
-if (selectedMode === 'all') {
+if (selectedSuite === 'all') {
   try {
-    await runSuite('cloud', playwrightArgs);
-    await runSuite('local', playwrightArgs);
+    await runSuite('cloud', 'simulated-gcp', playwrightArgs);
+    await runSuite('local', 'direct-local', playwrightArgs);
   } catch (error) {
     console.error(error);
     process.exitCode = 1;
   }
 } else {
   try {
-    await runSuite(selectedMode, playwrightArgs);
+    await runSuite(selectedSuite, selectedEnvironment, playwrightArgs);
   } catch (error) {
     console.error(error);
     process.exitCode = 1;
   }
 }
 
-async function runSuite(suite, playwrightArgs) {
+async function runSuite(suite, environment, playwrightArgs) {
   if (suite === 'cloud') {
-    await runCloudPlaywright(playwrightArgs);
-    await uploadCloudArtifacts();
+    await runCloudPlaywright(environment, playwrightArgs);
+    await uploadCloudArtifacts(environment);
     return;
   }
 
@@ -46,10 +48,20 @@ async function runSuite(suite, playwrightArgs) {
   throw new Error(`Unknown e2e suite: ${suite}`);
 }
 
-async function runCloudPlaywright(playwrightArgs) {
+async function runCloudPlaywright(environment, playwrightArgs) {
+  const resolvedEnvironment = environment ?? 'simulated-gcp';
+  const cloudArgs = [
+    'playwright',
+    'test',
+    '--config',
+    'test/e2e/cloud.config.ts',
+    '--environment',
+    resolvedEnvironment,
+    ...playwrightArgs,
+  ];
   const child = spawn(
     'npx',
-    ['playwright', 'test', '--config', 'test/e2e/cloud.config.ts', ...playwrightArgs],
+    cloudArgs,
     {
       stdio: 'inherit',
       shell: process.platform === 'win32',
@@ -69,7 +81,7 @@ async function runCloudPlaywright(playwrightArgs) {
   });
 }
 
-async function uploadCloudArtifacts() {
+async function uploadCloudArtifacts(environment) {
   const reportBucket = process.env.REPORT_BUCKET;
   if (!reportBucket) {
     return;
@@ -119,16 +131,25 @@ async function run(command, commandArgs, allowFailure = false) {
 }
 
 function parseArgs(argv) {
-  const parsed = { mode: undefined, playwrightArgs: [] };
+  const parsed = { suite: undefined, environment: undefined, playwrightArgs: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === '--mode' && i + 1 < argv.length) {
-      parsed.mode = argv[i + 1];
+    if (arg === '--suite' && i + 1 < argv.length) {
+      parsed.suite = argv[i + 1];
       i += 1;
       continue;
     }
-    if (arg.startsWith('--mode=')) {
-      parsed.mode = arg.slice('--mode='.length);
+    if (arg.startsWith('--suite=')) {
+      parsed.suite = arg.slice('--suite='.length);
+      continue;
+    }
+    if (arg === '--environment' && i + 1 < argv.length) {
+      parsed.environment = argv[i + 1];
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith('--environment=')) {
+      parsed.environment = arg.slice('--environment='.length);
       continue;
     }
     parsed.playwrightArgs.push(arg);

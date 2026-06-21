@@ -1,3 +1,4 @@
 {
-  "cloudMode": "simulator"
+  "suite": "cloud",
+  "environment": "simulated-gcp"
 }
