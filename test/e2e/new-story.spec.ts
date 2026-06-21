@@ -10,6 +10,17 @@ function getApiBaseUrl() {
   return apiBaseUrl;
 }
 
+function getPageBaseUrl() {
+  const pageBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? process.env.BASE_URL;
+  if (!pageBaseUrl) {
+    throw new Error(
+      'PLAYWRIGHT_BASE_URL or BASE_URL is required for new-story e2e tests',
+    );
+  }
+
+  return pageBaseUrl;
+}
+
 test('serves new-story.html through the proxy', async ({ page }) => {
   await page.goto('/new-story.html', {
     waitUntil: 'domcontentloaded',
@@ -91,12 +102,12 @@ test('serves new-story.html through the proxy', async ({ page }) => {
 });
 
 test('submits the new story form', async ({ page }) => {
-  await page.goto(new URL('/new-story.html', getApiBaseUrl()).toString(), {
+  await page.goto(new URL('/new-story.html', getPageBaseUrl()).toString(), {
     waitUntil: 'domcontentloaded',
   });
 
   const apiConfigResponse = await page.request.get(
-    new URL('/config.json', getApiBaseUrl()).toString(),
+    new URL('/config.json', getPageBaseUrl()).toString(),
   );
   const config = (await apiConfigResponse.json()) as {
     submitNewStoryUrl?: string;

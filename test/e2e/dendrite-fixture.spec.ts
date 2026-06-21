@@ -77,6 +77,17 @@ async function loadFixture(page, request: APIRequestContext) {
   return seed;
 }
 
+function getPageBaseUrl() {
+  const pageBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? process.env.BASE_URL;
+  if (!pageBaseUrl) {
+    throw new Error(
+      'PLAYWRIGHT_BASE_URL or BASE_URL is required for dendrite fixture e2e tests',
+    );
+  }
+
+  return pageBaseUrl;
+}
+
 /**
  * Navigate to a same-origin page, verify the seeded token is present there, and
  * then load the authenticated surface under test.
@@ -85,7 +96,9 @@ async function loadFixture(page, request: APIRequestContext) {
  * @param {string} token Seeded admin ID token.
  */
 async function gotoAuthenticated(page, path, token) {
-  await page.goto('/seed.json', { waitUntil: 'domcontentloaded' });
+  await page.goto(new URL('/seed.json', getPageBaseUrl()).toString(), {
+    waitUntil: 'domcontentloaded',
+  });
   await page.evaluate(idToken => {
     sessionStorage.setItem('id_token', idToken);
   }, token);
@@ -97,7 +110,9 @@ async function gotoAuthenticated(page, path, token) {
     )
     .toBeGreaterThan(0);
 
-  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.goto(new URL(path, getPageBaseUrl()).toString(), {
+    waitUntil: 'domcontentloaded',
+  });
 }
 
 /**
