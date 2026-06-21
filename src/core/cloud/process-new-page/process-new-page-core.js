@@ -200,18 +200,6 @@ async function queryExistingPageNumber(db, candidate) {
       .get();
   }
 
-  const storiesSnapshot = await db.collection('stories').get();
-  for (const storyDoc of storiesSnapshot.docs) {
-    const pageSnapshot = await storyDoc.ref
-      .collection('pages')
-      .where('number', '==', candidate)
-      .limit(1)
-      .get();
-    if (!pageSnapshot.empty) {
-      return pageSnapshot;
-    }
-  }
-
   return db.collection('stories').limit(0).get();
 }
 
