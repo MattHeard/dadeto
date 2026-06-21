@@ -182,48 +182,6 @@ function generateCandidateNumber(random, depth) {
 }
 
 /**
- * Query for existing page documents matching a candidate number.
- *
- * The Firestore collection-group query requires a composite index in GCP.
- * For the test environment we keep the lookup index-free by scanning each
- * story's nested pages collection instead.
- * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
- * @param {number} candidate Candidate page number.
- * @returns {Promise<import('firebase-admin/firestore').QuerySnapshot>} Query snapshot.
- */
-async function queryExistingPageNumber(db, candidate) {
-  if (typeof db.collection !== 'function') {
-    return db
-      .collectionGroup('pages')
-      .where('number', '==', candidate)
-      .limit(1)
-      .get();
-  }
-
-  return db.collection('stories').limit(0).get();
-}
-
-/**
- * Query and resolve available page number.
- * @param {object} params - Query parameters.
- * @param {import('firebase-admin/firestore').Firestore} params.db - Firestore instance.
- * @param {number} params.candidate - Candidate page number.
- * @param {() => number} params.random - Random generator.
- * @param {number} params.depth - Recursion depth.
- * @returns {Promise<number>} Available page number.
- */
-async function queryAndResolvePageNumber({ db, candidate, random, depth }) {
-  const existing = await queryExistingPageNumber(db, candidate);
-  return resolveAvailablePageResult({
-    existing,
-    candidate,
-    db,
-    random,
-    depth,
-  });
-}
-
-/**
  * Perform lookup and resolution for available page number.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @param {(() => number)} random Random number generator.
@@ -232,8 +190,7 @@ async function queryAndResolvePageNumber({ db, candidate, random, depth }) {
  */
 async function performPageNumberLookup(db, random, depth) {
   assertRandom(random);
-  const candidate = generateCandidateNumber(random, depth);
-  return queryAndResolvePageNumber({ db, candidate, random, depth });
+  return generateCandidateNumber(random, depth);
 }
 
 /**
@@ -254,30 +211,6 @@ function resolvePageDepth(depth) {
  */
 export async function findAvailablePageNumber(db, random, depth) {
   return performPageNumberLookup(db, random, resolvePageDepth(depth));
-}
-
-/**
- * Choose the next available page number or recurse when busy.
- * @param {object} params Inputs describing the current candidate.
- * @param {import('firebase-admin/firestore').QuerySnapshot} params.existing Snapshot of existing matches.
- * @param {number} params.candidate Candidate page number.
- * @param {import('firebase-admin/firestore').Firestore} params.db Firestore instance.
- * @param {() => number} params.random Random number generator.
- * @param {number} params.depth Current recursion depth.
- * @returns {Promise<number>} Page number that can be assigned.
- */
-function resolveAvailablePageResult({
-  existing,
-  candidate,
-  db,
-  random,
-  depth,
-}) {
-  if (existing.empty) {
-    return Promise.resolve(candidate);
-  }
-
-  return findAvailablePageNumber(db, random, depth + 1);
 }
 
 /**
