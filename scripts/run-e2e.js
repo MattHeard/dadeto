@@ -50,6 +50,7 @@ async function runSuite(suite, environment, playwrightArgs) {
 
 async function runCloudPlaywright(environment, playwrightArgs) {
   const resolvedEnvironment = environment ?? 'simulated-gcp';
+  clearPlaywrightOutputs();
   const cloudArgs = [
     'playwright',
     'test',
@@ -81,6 +82,12 @@ async function runCloudPlaywright(environment, playwrightArgs) {
       reject(new Error(`playwright test exited with code ${code}`));
     });
   });
+}
+
+function clearPlaywrightOutputs() {
+  for (const target of ['playwright-report', 'test-results', '/tmp/playwright.log']) {
+    fs.rmSync(target, { recursive: true, force: true });
+  }
 }
 
 async function uploadCloudArtifacts(environment) {
