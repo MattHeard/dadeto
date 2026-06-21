@@ -122,7 +122,7 @@ test('submits the new story form', async ({ page }) => {
 
   await expect(page.locator('form')).toHaveAttribute(
     'action',
-    /\/__sim\/submit-new-story$/,
+    submitNewStoryUrl,
   );
 
   await page.getByLabel('Title').fill('Playwright Story');

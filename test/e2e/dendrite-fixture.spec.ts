@@ -59,13 +59,15 @@ async function stubFirebaseBrowserModules(page) {
 async function loadFixture(page, request: APIRequestContext) {
   await stubFirebaseBrowserModules(page);
 
-  const apiBaseUrl = process.env.API_BASE_URL;
-  if (!apiBaseUrl) {
-    throw new Error('API_BASE_URL is required for dendrite fixture e2e tests');
+  const pageBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? process.env.BASE_URL;
+  if (!pageBaseUrl) {
+    throw new Error(
+      'PLAYWRIGHT_BASE_URL or BASE_URL is required for dendrite fixture e2e tests',
+    );
   }
 
   const seed = await (
-    await request.get(new URL('/seed.json', apiBaseUrl).toString())
+    await request.get(new URL('/seed.json', pageBaseUrl).toString())
   ).json();
   await page.context().addInitScript(token => {
     sessionStorage.setItem('id_token', token);
