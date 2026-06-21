@@ -125,7 +125,6 @@ function pickThresholdSlug(pairs, threshold) {
       return pair.slug;
     }
   }
-  /* istanbul ignore next: threshold selection should be exhaustive when total is positive. */
   return null;
 }
 
@@ -170,3 +169,5 @@ function parseJsonVariants(trimmed) {
     return [];
   }
 }
+
+export { pickThresholdSlug };

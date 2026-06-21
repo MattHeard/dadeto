@@ -2,73 +2,72 @@
 /**
  * Wire the local writer routes onto an app-like dependency.
  * @param {{
- *   app: {
- *     use: (middlewareOrPath: unknown, middleware?: unknown) => unknown,
- *     get: (path: string, handler: (...args: Array<unknown>) => unknown) => unknown,
- *     post: (path: string, handler: (...args: Array<unknown>) => unknown) => unknown,
- *     put: (path: string, handler: (...args: Array<unknown>) => unknown) => unknown,
- *   },
- *   requestLoggerMiddleware?: (req: unknown, res: unknown, next: (error?: unknown) => void) => void,
- *   static: (path: string) => unknown,
- *   text: (options: { type: string[], limit: string }) => unknown,
- *   json: (options: { limit: string }) => unknown,
+ *   app: any,
+ *   requestLoggerMiddleware?: (req: any, res: any, next: (error?: unknown) => void) => void,
+ *   static: (path: string) => any,
+ *   text: (options: { type: string[], limit: string }) => any,
+ *   json: (options: { limit: string }) => any,
  *   store: {
- *     loadWorkflow: () => Promise<unknown>,
- *     moveActiveIndex: (direction: number) => Promise<unknown>,
- *     setActiveIndex: (nextIndex: number) => Promise<unknown>,
- *     saveDocument: (documentId: string, content: string) => Promise<unknown>,
+ *     loadWorkflow: () => Promise<any>,
+ *     moveActiveIndex: (direction: number) => Promise<any>,
+ *     setActiveIndex: (nextIndex: number) => Promise<any>,
+ *     saveDocument: (documentId: string, content: string) => Promise<any>,
  *   },
  *   publicDir: string,
  *   writerDir: string,
- *   exchangeRealtimeCallSdp: (body: unknown) => Promise<{ sdpAnswer: string, location?: string }>,
- *   getNonCoreThinStatus: () => unknown,
- *   renderNonCoreThinDashboard: (status: unknown) => string,
+ *   exchangeRealtimeCallSdp: (body: any) => Promise<{ sdpAnswer: string, location?: string }>,
+ *   getNonCoreThinStatus: () => any,
+ *   renderNonCoreThinDashboard: (status: any) => string,
  *   requestLogger?: (message: string) => void,
- *   getMoveDirection: (body: unknown) => number,
- *   getNextIndex: (body: unknown) => number,
- *   getDocumentContent: (body: unknown) => string,
+ *   getMoveDirection: (body: any) => number,
+ *   getNextIndex: (body: any) => number,
+ *   getDocumentContent: (body: any) => string,
  *   shouldSetResponseLocation: (location: string | undefined) => boolean,
  * }} deps Local server dependencies.
- * @returns {{ app: unknown }} The wired app reference.
+ * @returns {{ app: any }} The wired app reference.
  */
 export function createLocalAppCore(deps) {
-  const { app } = deps;
+  const app = /** @type {any} */ (deps.app);
+  const typedDeps = /** @type {any} */ (deps);
 
-  if (deps.requestLoggerMiddleware) {
-    app.use(deps.requestLoggerMiddleware);
+  if (typedDeps.requestLoggerMiddleware) {
+    app.use(typedDeps.requestLoggerMiddleware);
   }
 
   app.use(
-    deps.text({ type: ['application/sdp', 'text/plain'], limit: '256kb' })
+    typedDeps.text({ type: ['application/sdp', 'text/plain'], limit: '256kb' })
   );
-  app.use(deps.json({ limit: '2mb' }));
-  app.use('/writer', deps.static(deps.writerDir));
+  app.use(typedDeps.json({ limit: '2mb' }));
+  app.use('/writer', typedDeps.static(typedDeps.writerDir));
 
-  app.get('/api/writer/workflow', handleAsyncRoute(deps.store.loadWorkflow));
+  app.get(
+    '/api/writer/workflow',
+    handleAsyncRoute(typedDeps.store.loadWorkflow)
+  );
   app.post(
     '/api/writer/workflow/move',
-    handleAsyncRoute(req =>
-      deps.store.moveActiveIndex(deps.getMoveDirection(req.body))
+    handleAsyncRoute((/** @type {any} */ req) =>
+      typedDeps.store.moveActiveIndex(typedDeps.getMoveDirection(req.body))
     )
   );
   app.post(
     '/api/writer/workflow/select',
-    handleAsyncRoute(req =>
-      deps.store.setActiveIndex(deps.getNextIndex(req.body))
+    handleAsyncRoute((/** @type {any} */ req) =>
+      typedDeps.store.setActiveIndex(typedDeps.getNextIndex(req.body))
     )
   );
   app.put(
     '/api/writer/document/:documentId',
-    handleAsyncRoute(req =>
-      deps.store.saveDocument(
+    handleAsyncRoute((/** @type {any} */ req) =>
+      typedDeps.store.saveDocument(
         req.params.documentId,
-        deps.getDocumentContent(req.body)
+        typedDeps.getDocumentContent(req.body)
       )
     )
   );
   app.post(
     '/api/realtime/call',
-    handleAsyncRoute(createRealtimeCallHandler(deps))
+    handleAsyncRoute(/** @type {any} */ (createRealtimeCallHandler(typedDeps)))
   );
   app.get('/config.json', createConfigRoute());
   app.get('/seed.json', createSeedRoute());
@@ -105,13 +104,13 @@ export function createLocalAppCore(deps) {
     createStaticPageHandler('Dendrite stats', createStatsPage())
   );
 
-  app.get('/non-core-thin', createDashboardRouteHandler(deps));
+  app.get('/non-core-thin', createDashboardRouteHandler(typedDeps));
 
-  app.get('/api/non-core-thin', createStatusRouteHandler(deps));
+  app.get('/api/non-core-thin', createStatusRouteHandler(typedDeps));
 
   app.get('/', createRootRedirectHandler());
 
-  app.use(deps.static(deps.publicDir));
+  app.use(typedDeps.static(typedDeps.publicDir));
 
   return { app };
 }
@@ -264,7 +263,7 @@ function createStatsPage() {
  * @returns {(req: { method?: string, originalUrl?: string, url?: string, ip?: string, socket?: { remoteAddress?: string } }, res: { on: (event: string, handler: () => void) => void }, next: () => void) => void} Request logger middleware.
  */
 export function createRequestLogger(requestLogger) {
-  return (req, res, next) => {
+  return (/** @type {any} */ req, /** @type {any} */ res, next) => {
     const start = Date.now();
     res.on('finish', () => {
       requestLogger(formatRequestLog(req, res, Date.now() - start));
@@ -296,7 +295,7 @@ function formatRequestLog(req, res, durationMs) {
  * @param {{ direction?: string }} body Request body.
  * @returns {number} Move direction.
  */
-export function getMoveDirection(body) {
+export function getMoveDirection(/** @type {any} */ body) {
   if (body?.direction === 'left') {
     return -1;
   }
@@ -309,7 +308,7 @@ export function getMoveDirection(body) {
  * @param {{ activeIndex?: number }} body Request body.
  * @returns {number} Next index.
  */
-export function getNextIndex(body) {
+export function getNextIndex(/** @type {any} */ body) {
   if (Number.isInteger(body?.activeIndex)) {
     return body.activeIndex;
   }
@@ -322,7 +321,7 @@ export function getNextIndex(body) {
  * @param {{ content?: unknown }} body Request body.
  * @returns {string} Document content.
  */
-export function getDocumentContent(body) {
+export function getDocumentContent(/** @type {any} */ body) {
   if (typeof body?.content === 'string') {
     return body.content;
   }
@@ -425,13 +424,18 @@ export function readWriterTlsOptions(env, readFile) {
  * @returns {{ listen: (...args: Array<unknown>) => void, on: (event: string, handler: (error: unknown) => void) => void }} Node server.
  */
 export function createWriterServer(localApp, options = {}) {
-  const { env, readFileSync, httpCreateServer, httpsCreateServer } = options;
+  const { env, readFileSync, httpCreateServer, httpsCreateServer } =
+    /** @type {any} */ (options);
+  const typedLocalApp = /** @type {any} */ (localApp);
 
   if (isWriterHttpsEnabled(env)) {
-    return httpsCreateServer(readWriterTlsOptions(env, readFileSync), localApp);
+    return /** @type {any} */ (httpsCreateServer)(
+      readWriterTlsOptions(env, readFileSync),
+      typedLocalApp
+    );
   }
 
-  return httpCreateServer(localApp);
+  return /** @type {any} */ (httpCreateServer)(typedLocalApp);
 }
 
 /**
@@ -440,8 +444,14 @@ export function createWriterServer(localApp, options = {}) {
  * @returns {(req: unknown, res: unknown, next: (error: unknown) => void) => Promise<void>} Express route wrapper.
  */
 function handleAsyncRoute(handler) {
-  return async (req, res, next) => {
-    await Promise.resolve(handler(req, res, next)).catch(next);
+  return async (
+    /** @type {any} */ req,
+    /** @type {any} */ res,
+    /** @type {any} */ next
+  ) => {
+    await Promise.resolve(/** @type {any} */ (handler)(req, res, next)).catch(
+      next
+    );
   };
 }
 
@@ -454,7 +464,7 @@ function handleAsyncRoute(handler) {
  * @returns {(req: { body?: unknown }, res: { set: (name: string, value: string) => void, type: (type: string) => { send: (body: string) => void } }) => Promise<void>} Realtime route handler.
  */
 function createRealtimeCallHandler(deps) {
-  return async (req, res) => {
+  return async (/** @type {any} */ req, /** @type {any} */ res) => {
     const { sdpAnswer, location } = await deps.exchangeRealtimeCallSdp(
       req.body ?? ''
     );
@@ -472,7 +482,7 @@ function createRealtimeCallHandler(deps) {
  */
 function setResponseLocation(res, location, shouldSetResponseLocation) {
   if (shouldSetResponseLocation(location)) {
-    res.set('Location', location);
+    res.set('Location', /** @type {string} */ (location));
   }
 }
 
@@ -482,7 +492,7 @@ function setResponseLocation(res, location, shouldSetResponseLocation) {
  * @returns {(_req: unknown, res: { type: (type: string) => { send: (body: string) => void } }) => void} Dashboard route handler.
  */
 function createDashboardRouteHandler(deps) {
-  return (_req, res) => {
+  return (_req, /** @type {any} */ res) => {
     res
       .type('html')
       .send(deps.renderNonCoreThinDashboard(deps.getNonCoreThinStatus()));
@@ -495,7 +505,7 @@ function createDashboardRouteHandler(deps) {
  * @returns {(_req: unknown, res: { json: (body: unknown) => void }) => void} Status route handler.
  */
 function createStatusRouteHandler(deps) {
-  return (_req, res) => {
+  return (_req, /** @type {any} */ res) => {
     res.json(deps.getNonCoreThinStatus());
   };
 }
@@ -505,7 +515,7 @@ function createStatusRouteHandler(deps) {
  * @returns {(_req: unknown, res: { redirect: (location: string) => void }) => void} Redirect route handler.
  */
 function createRootRedirectHandler() {
-  return (_req, res) => {
+  return (_req, /** @type {any} */ res) => {
     res.redirect('/writer/');
   };
 }

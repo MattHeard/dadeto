@@ -1,20 +1,29 @@
-// @ts-nocheck
-/* eslint-disable no-ternary, jsdoc/require-returns */
 /**
+ * Normalize a candidate outcome payload.
  * @param {unknown} value Candidate outcome payload.
  * @returns {{ outcome: string, summary: string }} Normalized outcome.
  */
 export function normalizeNotionCodexOutcome(value) {
-  const source = value && typeof value === 'object' ? value : {};
+  const source = {};
+  if (value && typeof value === 'object') {
+    Object.assign(source, value);
+  }
   const record = /** @type {Record<string, unknown>} */ (source);
-  const outcome =
-    typeof record.outcome === 'string' ? record.outcome : 'unknown';
-  const summary = typeof record.summary === 'string' ? record.summary : '';
+  let outcome = 'unknown';
+  if (typeof record.outcome === 'string') {
+    outcome = record.outcome;
+  }
+
+  let summary = '';
+  if (typeof record.summary === 'string') {
+    summary = record.summary;
+  }
 
   return { outcome, summary };
 }
 
 /**
+ * Create a small JSON file store for Notion Codex outcomes.
  * @param {{
  *   outcomeDir: string,
  *   pathModule: { join: (first: string, ...parts: string[]) => string },
@@ -61,10 +70,11 @@ export function createNotionCodexOutcomeStore(options) {
 }
 
 /**
- *
+ * Resolve the on-disk path for one outcome record.
  * @param {string} outcomeDir Outcome directory.
  * @param {string} runId Run id.
  * @param {{ join: (first: string, ...parts: string[]) => string }} pathModule Path helper.
+ * @returns {string} Outcome file path.
  */
 function getOutcomePath(outcomeDir, runId, pathModule) {
   return pathModule.join(outcomeDir, `${runId.replaceAll(':', '-')}.json`);

@@ -103,10 +103,10 @@ module.exports = {
     {
       name: 'src-core-scripts-no-node-builtins',
       comment:
-        'Keep src/core/scripts free of direct Node built-in imports so executable wiring stays at the outer wrapper layer.',
+        'Keep src/core free of direct Node built-in imports so executable wiring stays at the outer wrapper layer.',
       severity: 'error',
       from: {
-        path: '^src/core/scripts/',
+        path: '^src/core/',
       },
       to: {
         dependencyTypes: ['core'],

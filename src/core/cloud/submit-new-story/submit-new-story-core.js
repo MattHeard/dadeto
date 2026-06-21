@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   normalizeAuthor,
   normalizeSubmissionContent,
@@ -81,7 +80,11 @@ export const submitNewStoryCoreTestUtils = {
  * @returns {string | null} UID or null.
  */
 function validateDecodedToken(decoded) {
-  return whenNotNullish(decoded, value => trimmedStringOrNull(value.uid));
+  return /** @type {string | null} */ (
+    whenNotNullish(decoded, value =>
+      trimmedStringOrNull(/** @type {any} */ (value).uid)
+    )
+  );
 }
 
 /**
@@ -101,7 +104,7 @@ export function resolveAuthorId(request, verifyIdToken) {
  * @returns {string[]} Allowed origins.
  */
 function getAllowedOrigins(options) {
-  return arrayOrEmpty(options.allowedOrigins);
+  return /** @type {string[]} */ (arrayOrEmpty(options.allowedOrigins));
 }
 
 /**
@@ -330,7 +333,9 @@ function handleSubmitNewStoryRequest(deps, request) {
  * @returns {string} Method value or empty string.
  */
 function getRequestMethod(method) {
-  return whenOrDefault(typeof method === 'string', () => method, '');
+  return /** @type {string} */ (
+    whenOrDefault(typeof method === 'string', () => method, '')
+  );
 }
 
 /**

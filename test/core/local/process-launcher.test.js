@@ -54,6 +54,22 @@ describe('process launcher helpers', () => {
     });
   });
 
+  test('launchDetachedProcessWithRunLogs requires a spawn implementation', async () => {
+    await expect(
+      launchDetachedProcessWithRunLogs({
+        command: process.execPath,
+        args: ['-e', ''],
+        repoRoot: tempDir,
+        runId: '2026-05-31T18:30:00.000Z--process-launcher',
+        pathModule: path,
+        mkdirImpl: mkdir,
+        openImpl: open,
+        closeErrorLabel: 'Failed to close run log handle:',
+        exitErrorLabel: 'Failed to handle process exit:',
+      })
+    ).rejects.toThrow('spawnImpl is required');
+  });
+
   test('createDetachedProcessLauncher falls back to repo-root launch settings', async () => {
     const calls = [];
     const launcher = createDetachedProcessLauncher({

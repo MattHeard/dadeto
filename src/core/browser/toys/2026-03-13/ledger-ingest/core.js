@@ -79,15 +79,17 @@ function createHappyPathRawRecords() {
 
 /**
  * Build a raw record with a consistent property order.
- * @param {string} id Record id.
- * @param {string} date Record date.
- * @param {string | number | null} amount Record amount.
- * @param {string} description Record description.
- * @param {string} currency Record currency.
+ * @param {{
+ *   id: string,
+ *   date: string,
+ *   amount: string | number | null,
+ *   description: string,
+ *   currency: string,
+ * }} record Record fields.
  * @returns {Record<string, unknown>} Raw transaction record.
  */
-// eslint-disable-next-line max-params
-function createRawRecord(id, date, amount, description, currency) {
+function createRawRecord(record) {
+  const { id, date, amount, description, currency } = record;
   return Object.fromEntries([
     ['id', id],
     ['date', date],
@@ -114,7 +116,7 @@ function createRawRecordGroup(...records) {
 function createRawRecordSpecGroup(...specs) {
   return createRawRecordGroup(
     ...specs.map(([id, date, amount, description, currency]) =>
-      createRawRecord(id, date, amount, description, currency)
+      createRawRecord({ id, date, amount, description, currency })
     )
   );
 }
@@ -187,15 +189,27 @@ function createInvalidRowFixture() {
  */
 function createDuplicateDetectionRawRecords() {
   return [
-    createRawRecord('dup-001', '2026-03-05', '120.00', 'Electric bill', 'usd'),
-    createRawRecord(
-      'dup-002',
-      '2026-03-05T00:00:00Z',
-      '120.00',
-      'electric bill ',
-      'USD'
-    ),
-    createRawRecord('dup-003', '2026-03-06', '-15.50', 'Lunch spot', 'usd'),
+    createRawRecord({
+      id: 'dup-001',
+      date: '2026-03-05',
+      amount: '120.00',
+      description: 'Electric bill',
+      currency: 'usd',
+    }),
+    createRawRecord({
+      id: 'dup-002',
+      date: '2026-03-05T00:00:00Z',
+      amount: '120.00',
+      description: 'electric bill ',
+      currency: 'USD',
+    }),
+    createRawRecord({
+      id: 'dup-003',
+      date: '2026-03-06',
+      amount: '-15.50',
+      description: 'Lunch spot',
+      currency: 'usd',
+    }),
   ];
 }
 
@@ -215,20 +229,20 @@ function createRepeatImportRawRecords() {
  * @returns {Record<string, unknown>[]} Invalid-row raw records.
  */
 function createInvalidRowRawRecords() {
-  const validRow = createRawRecord(
-    'valid-001',
-    '2026-03-08',
-    '120.75',
-    'Valid row',
-    'usd'
-  );
-  const invalidRow = createRawRecord(
-    'invalid-001',
-    '',
-    null,
-    'Missing critical fields',
-    'usd'
-  );
+  const validRow = createRawRecord({
+    id: 'valid-001',
+    date: '2026-03-08',
+    amount: '120.75',
+    description: 'Valid row',
+    currency: 'usd',
+  });
+  const invalidRow = createRawRecord({
+    id: 'invalid-001',
+    date: '',
+    amount: null,
+    description: 'Missing critical fields',
+    currency: 'usd',
+  });
   return [validRow, invalidRow];
 }
 

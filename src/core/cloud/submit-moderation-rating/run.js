@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getAllowedOrigins } from '../cors-config.js';
 import {
   createHandleSubmitModerationRating,
@@ -26,14 +25,18 @@ import { createModerationRatingDependencies } from './dependencies.js';
 export function runSubmitModerationRating(deps) {
   deps.createFirebaseAppManager(deps.initializeApp).ensureFirebaseApp();
 
-  const handleSubmitModerationRating = createHandleSubmitModerationRating(
-    createSubmitModerationRatingResponder(
-      createModerationRatingDependencies({
-        db: deps.getFirestoreInstance(),
-        auth: deps.getAuth(),
-        FieldValue: deps.FieldValue,
-        crypto: deps.crypto,
-      })
+  const handleSubmitModerationRating = /** @type {any} */ (
+    createHandleSubmitModerationRating(
+      /** @type {any} */ (
+        createSubmitModerationRatingResponder(
+          createModerationRatingDependencies({
+            db: deps.getFirestoreInstance(),
+            auth: deps.getAuth(),
+            FieldValue: deps.FieldValue,
+            crypto: deps.crypto,
+          })
+        )
+      )
     )
   );
 
@@ -44,7 +47,7 @@ export function runSubmitModerationRating(deps) {
     handleSubmit: handleSubmitModerationRating,
   });
 
-  const submitModerationRating = deps.functions
+  const submitModerationRating = /** @type {any} */ (deps.functions)
     .region('europe-west1')
     .https.onRequest(app);
 

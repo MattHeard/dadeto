@@ -8,13 +8,20 @@ describe('renderContentsTestUtils', () => {
 
   test('getDefaultConsoleError falls back when console.error missing', () => {
     const original = console.error;
-    // @ts-expect-error -- temporarily remove console.error
-    console.error = undefined;
+    Object.defineProperty(console, 'error', {
+      configurable: true,
+      value: undefined,
+      writable: true,
+    });
 
     const fn = renderContentsTestUtils.getDefaultConsoleError();
     expect(typeof fn).toBe('function');
     expect(() => fn('ignored')).not.toThrow();
 
-    console.error = original;
+    Object.defineProperty(console, 'error', {
+      configurable: true,
+      value: original,
+      writable: true,
+    });
   });
 });

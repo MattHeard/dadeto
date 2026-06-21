@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   arrayOrEmpty,
   getStringCandidate,
@@ -128,7 +127,7 @@ export function createCorsOptions({ allowedOrigins, methods = ['POST'] }) {
 
   return {
     origin: (origin, cb) => {
-      if (isAllowedOrigin(origin, origins)) {
+      if (isAllowedOrigin(origin, /** @type {string[]} */ (origins))) {
         cb(null, true);
       } else {
         cb(new Error('CORS'));
@@ -162,7 +161,7 @@ export function createSubmitModerationRatingApp(deps) {
   app.use(
     deps.cors(createCorsOptions({ allowedOrigins: deps.allowedOrigins }))
   );
-  app.use(deps.express.json());
+  app.use(/** @type {any} */ (deps.express).json());
   app.post('/', deps.handleSubmit);
   return app;
 }
@@ -200,7 +199,9 @@ function isNonEmptyString(value) {
  * @returns {string | null} UID or null.
  */
 function normalizeUid(uid) {
-  return whenPredicateValue(uid, isNonEmptyString);
+  return /** @type {string | null} */ (
+    whenPredicateValue(uid, isNonEmptyString)
+  );
 }
 
 /**

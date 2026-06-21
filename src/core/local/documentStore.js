@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   DEFAULT_SEQUENCE,
   extractLevelOneHeading,
@@ -134,9 +133,8 @@ export function getDefaultLegacyDocumentPath(deps) {
  *   workflowDir: string,
  *   documentDir: string,
  *   legacyDocumentPath: string,
- *   defaultSequence: Array<{ id: string, title: string }>,
  *   now: () => Date,
- *   deps: typeof deps,
+ *   deps: any,
  * }} Store state derived from the injected dependencies and options.
  */
 function createDocumentStoreState(deps, options) {
@@ -154,7 +152,7 @@ function createDocumentStoreState(deps, options) {
 
 /**
  * Resolve the workflow JSON path.
- * @param {Pick<Parameters<typeof createDocumentStoreCore>[0], 'cwd' | 'path'>} deps injected dependencies.
+ * @param {{ cwd: () => string, path: { dirname: (input: string) => string, join: (...parts: string[]) => string } }} deps injected dependencies.
  * @param {{ workflowPath?: string }} options store configuration.
  * @returns {string} Workflow JSON path.
  */
@@ -164,7 +162,7 @@ function resolveWorkflowPath(deps, options) {
 
 /**
  * Resolve the workflow directory.
- * @param {Pick<Parameters<typeof createDocumentStoreCore>[0], 'cwd' | 'path'>} deps injected dependencies.
+ * @param {{ cwd: () => string, path: { dirname: (input: string) => string, join: (...parts: string[]) => string } }} deps injected dependencies.
  * @param {{ workflowDir?: string }} options store configuration.
  * @param {string} workflowPath resolved workflow path.
  * @returns {string} Workflow directory.
@@ -175,7 +173,7 @@ function resolveWorkflowDir(deps, options, workflowPath) {
 
 /**
  * Resolve the legacy markdown path.
- * @param {Pick<Parameters<typeof createDocumentStoreCore>[0], 'cwd' | 'path'>} deps injected dependencies.
+ * @param {{ cwd: () => string, path: { dirname: (input: string) => string, join: (...parts: string[]) => string } }} deps injected dependencies.
  * @param {{ legacyDocumentPath?: string }} options store configuration.
  * @returns {string} Legacy markdown path.
  */
@@ -206,7 +204,7 @@ async function readText(deps, filePath) {
  * @returns {boolean} True when the file is missing.
  */
 function isMissingFileError(error) {
-  return Boolean(error && error.code === 'ENOENT');
+  return Boolean(error && /** @type {any} */ (error).code === 'ENOENT');
 }
 
 /**
@@ -273,6 +271,7 @@ async function readStoredWorkflow(state) {
 async function bootstrapWorkflow(state) {
   const legacyContent = await readText(state.deps, state.legacyDocumentPath);
   const workflow = normalizeWorkflow({
+    steps: DEFAULT_SEQUENCE.map(step => ({ ...step })),
     heading: extractLevelOneHeading(legacyContent),
   });
 
@@ -336,6 +335,9 @@ async function pruneWorkflow(state, workflow) {
 export async function pruneTrailingDrafts(state, workflow) {
   while (canPruneTrailingDraft(state, workflow)) {
     const lastStep = workflow.steps.at(-1);
+    if (!lastStep) {
+      break;
+    }
     const content = await loadStepContent(state, lastStep);
     if (shouldKeepStepContent(state, content)) {
       return workflow;
@@ -365,7 +367,7 @@ export function canPruneTrailingDraft(state, workflow) {
  * @returns {boolean} True when the content should not be removed.
  */
 export function shouldKeepStepContent(state, content) {
-  return content.trim() && !hasOnlyLevelOneHeading(content);
+  return Boolean(content.trim() && !hasOnlyLevelOneHeading(content));
 }
 
 /**
@@ -384,6 +386,19 @@ export function renumberDraftSteps(state, workflow) {
       step.title = `Draft ${nextNumber}`;
     }
   });
+}
+
+/**
+ * Check whether there are more drafts than the active index permits.
+ * @param {{ steps: Array<{ id: string, title: string }>, activeIndex: number }} workflow Workflow to inspect.
+ * @param {number} defaultSequenceLength Default sequence length.
+ * @returns {boolean} True when a trailing draft can still be pruned.
+ */
+function hasTrailingDraftBeyondActiveIndex(workflow, defaultSequenceLength) {
+  return (
+    workflow.steps.length >
+    Math.max(workflow.activeIndex + 1, defaultSequenceLength)
+  );
 }
 
 /**
@@ -583,7 +598,7 @@ function shouldAppendDraft(state, workflow, direction) {
  * @param {number} minimumSteps Minimum step count required before pruning.
  * @returns {boolean} True when a trailing draft can be pruned.
  */
-function hasTrailingDraftBeyondActiveIndex(workflow, minimumSteps) {
+function hasTrailingDraftBeyondActiveIndexFromMinimum(workflow, minimumSteps) {
   if (workflow.steps.length <= minimumSteps) {
     return false;
   }
@@ -642,3 +657,9 @@ function appendDraftStep(state, workflow) {
 function clampIndex(index, length) {
   return Math.min(Math.max(index, 0), Math.max(0, length - 1));
 }
+
+export {
+  hasTrailingDraftAtActiveEnd,
+  hasTrailingDraftBeyondActiveIndex,
+  hasTrailingDraftBeyondActiveIndexFromMinimum,
+};

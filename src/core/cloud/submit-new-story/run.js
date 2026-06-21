@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   createCorsOptions,
   createCorsErrorHandler,
@@ -30,7 +29,9 @@ import { whenOrNull } from '../../commonCore.js';
  * @returns {{ submitNewStory: unknown, handleSubmitNewStory: Function, app: unknown }} Wired endpoint exports.
  */
 export function runSubmitNewStory(deps) {
-  const { db, auth, app } = createFirebaseAppContext(deps);
+  const { db, auth, app } = /** @type {{ db: any, auth: any, app: any }} */ (
+    createFirebaseAppContext(deps)
+  );
 
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = deps.getAllowedOrigins(environmentVariables);
@@ -65,17 +66,21 @@ export function runSubmitNewStory(deps) {
   let debuggedSubmitNewStoryResponder = submitNewStoryResponder;
   if (debugEnabled) {
     debuggedSubmitNewStoryResponder = createDebugSubmitNewStoryResponder(
-      submitNewStoryResponder
+      /** @type {any} */ (submitNewStoryResponder)
     );
   }
 
-  const handleSubmitNewStory = createHandleSubmitNewStory(
-    debuggedSubmitNewStoryResponder
+  const handleSubmitNewStory = /** @type {any} */ (
+    createHandleSubmitNewStory(
+      /** @type {any} */ (
+        (/** @type {any} */ request) => debuggedSubmitNewStoryResponder(request)
+      )
+    )
   );
 
   app.post('/', handleSubmitNewStory);
 
-  const submitNewStory = deps.functions
+  const submitNewStory = /** @type {any} */ (deps.functions)
     .region('europe-west1')
     .https.onRequest(app);
 
@@ -193,22 +198,23 @@ function serializeError(error) {
  */
 function createDebugSubmitNewStoryResponder(responder) {
   return async function debuggedSubmitNewStoryResponder(request) {
-    const requestBody = getRequestSummary(request);
+    const typedRequest = /** @type {any} */ (request);
+    const requestBody = getRequestSummary(typedRequest);
 
     console.info(
       JSON.stringify({
         event: 'submit-new-story.debug.request',
-        method: request?.method ?? null,
-        origin: readRequestHeader(request, 'origin'),
-        referer: readRequestHeader(request, 'referer'),
-        contentType: readRequestHeader(request, 'content-type'),
-        hasAuthorization: Boolean(getAuthorizationHeader(request)),
+        method: typedRequest?.method ?? null,
+        origin: readRequestHeader(typedRequest, 'origin'),
+        referer: readRequestHeader(typedRequest, 'referer'),
+        contentType: readRequestHeader(typedRequest, 'content-type'),
+        hasAuthorization: Boolean(getAuthorizationHeader(typedRequest)),
         bodyKeys: requestBody.bodyKeys,
       })
     );
 
     try {
-      const result = await responder(request);
+      const result = await responder(typedRequest);
       console.info(
         JSON.stringify({
           event: 'submit-new-story.debug.response',

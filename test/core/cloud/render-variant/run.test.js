@@ -15,7 +15,10 @@ const createCloudRenderEntrypointState = jest.fn(() => ({
   render: jest.fn(() => jest.fn(() => 'rendered')),
 }));
 const createCloudRenderInstanceBuilder = jest.fn(() => jest.fn());
-const createFirestoreDocumentOnWriteTrigger = jest.fn(() => jest.fn());
+const createFirestoreDocumentOnWriteTrigger = jest.fn(options => {
+  options.handler('change');
+  return jest.fn(() => 'renderVariant');
+});
 const region = jest.fn(() => ({
   firestore: {
     document: jest.fn(() => ({
@@ -191,6 +194,54 @@ describe('runRenderVariant', () => {
 
     expect(consoleError).not.toHaveBeenCalled();
     expect(importedFetchFn).not.toHaveBeenCalled();
+
+    globalThis.fetch = previousFetch;
+  });
+
+  test('wires the onWrite trigger through the wrapper handler', async () => {
+    createRenderVariant.mockClear();
+    createFirestoreDocumentOnWriteTrigger.mockClear();
+    const previousFetch = globalThis.fetch;
+    delete globalThis.fetch;
+
+    const initializeApp = jest.fn();
+    const createFirebaseAppManager = jest.fn(() => ({ ensureFirebaseApp }));
+    const getFirestoreInstance = jest.fn(() => ({ doc: jest.fn() }));
+    const getEnvironmentVariables = jest.fn(() => ({
+      GOOGLE_CLOUD_PROJECT: 'proj',
+      URL_MAP: 'map',
+      CDN_HOST: 'cdn.example.com',
+    }));
+    const Storage = jest.fn(() => ({ bucket: jest.fn() }));
+    const FieldValue = { delete: jest.fn(() => 'delete-sentinel') };
+    const crypto = { randomUUID: jest.fn(() => 'uuid') };
+    const functions = { region };
+    createRenderVariant.mockImplementationOnce(options =>
+      jest.fn(async snap => {
+        await options.fetchFn(snap);
+        return null;
+      })
+    );
+    createHandleVariantWrite.mockImplementationOnce(options => {
+      options.getDeleteSentinel();
+      options.renderVariant('snap');
+      return jest.fn(() => 'handled');
+    });
+
+    const { renderVariant } = runRenderVariant({
+      initializeApp,
+      createFirebaseAppManager,
+      getFirestoreInstance,
+      getEnvironmentVariables,
+      functions,
+      FieldValue,
+      Storage,
+      fetchFn: importedFetchFn,
+      crypto,
+      console: { error: jest.fn() },
+    });
+
+    expect(renderVariant).toBeDefined();
 
     globalThis.fetch = previousFetch;
   });

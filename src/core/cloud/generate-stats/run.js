@@ -189,11 +189,20 @@ export function runGenerateStats(deps) {
     )
   );
 
+  const generateStats = createRegionOnRequest(functions, app);
   app.post('/', handleRequest);
 
-  const generateStats = functions.region('europe-west1').https.onRequest(app);
-
   return /** @type {any} */ ({ generateStats, ...generateStatsCore });
+}
+
+/**
+ * Bind an app to the europe-west1 HTTPS region.
+ * @param {{ region: (name: string) => { https: { onRequest: (app: any) => unknown } } }} functions Cloud Functions dependency.
+ * @param {any} app Express app.
+ * @returns {unknown} Cloud function wrapper.
+ */
+function createRegionOnRequest(functions, app) {
+  return functions.region('europe-west1').https.onRequest(app);
 }
 
 /**

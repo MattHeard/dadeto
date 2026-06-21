@@ -5,6 +5,7 @@ const jestBin = './node_modules/.bin/jest';
 const jestArgs = [
   '--coverage',
   '--watchman=false',
+  '--maxWorkers=50%',
   ...process.argv.slice(2),
 ];
 

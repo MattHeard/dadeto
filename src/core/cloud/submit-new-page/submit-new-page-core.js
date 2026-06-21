@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   normalizeSubmissionContent,
   normalizeAuthor as normalizeSubmittedAuthor,
@@ -216,7 +215,7 @@ async function resolvePageRefForInfo(db, info) {
   if (!areInputsValid(db, info)) {
     return null;
   }
-  return findPageByNumber(db, info.pageNumber);
+  return findPageByNumber(db, /** @type {OptionInfo} */ (info).pageNumber);
 }
 
 /**
@@ -323,6 +322,7 @@ export async function findExistingPage(db, pageNumber) {
  *   content: string;
  *   author: string;
  *   authorId: string | null;
+ *   authHeader: string;
  *   options: string[];
  * }} SubmitNewPageInput
  * @typedef {SubmitNewPageInput & { createdAt: unknown }} SubmitNewPageRecord
@@ -556,12 +556,12 @@ async function saveNewPage(deps, id, data) {
 
 /**
  * Build the submission payload.
- * @param {SubmitNewPageContext} context Context.
+ * @param {SubmitNewPageContext & { authHeader: string }} context Context.
  * @param {string | null} authorId Author id.
  * @returns {SubmitNewPageInput} Submission payload.
  */
 function createSubmissionData(context, authorId) {
-  const { target, content, author, options } = context;
+  const { target, content, author, options, authHeader } = context;
   return {
     incomingOptionFullName: target.incomingOptionFullName,
     pageNumber: target.pageNumber,
@@ -569,6 +569,7 @@ function createSubmissionData(context, authorId) {
     author,
     authorId,
     options,
+    authHeader,
   };
 }
 
@@ -585,15 +586,21 @@ async function processValidSubmission(deps, context) {
   const authorId = await resolveAuthorIdFromHeader(authHeader, verifyIdToken);
   const id = randomUUID();
   const submissionData = createSubmissionData(
-    { target, content, author, options },
+    { target, content, author, options, authHeader },
     authorId
   );
+  const persistedSubmissionData = /** @type {any} */ ({ ...submissionData });
+  Reflect.deleteProperty(persistedSubmissionData, 'authHeader');
 
-  await saveNewPage({ saveSubmission, serverTimestamp }, id, submissionData);
+  await saveNewPage(
+    { saveSubmission, serverTimestamp },
+    id,
+    /** @type {SubmitNewPageInput} */ (persistedSubmissionData)
+  );
 
   return {
     status: 201,
-    body: { id, ...submissionData },
+    body: { id, ...persistedSubmissionData },
   };
 }
 
@@ -614,12 +621,13 @@ function getTargetError(target) {
  *   body: Record<string, unknown>,
  *   target: SubmissionTargetResult,
  *   content: string,
- *   author: string
+ *   author: string,
+ *   authHeader: string
  * }} params Finalization inputs.
  * @returns {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} Final response.
  */
 function finalizeSubmissionResponse(params) {
-  const { deps, request, body, target, content, author } = params;
+  const { deps, body, target, content, author, authHeader } = params;
   const targetError = getTargetError(target);
   const successfulTarget = /** @type {SubmissionTargetSuccess} */ (target);
   return /** @type {Promise<{ status: number; body: SubmitNewPageData & { id: string } }>|{ status: number; body: { error: string } }} */ (
@@ -631,7 +639,7 @@ function finalizeSubmissionResponse(params) {
           target: successfulTarget,
           content,
           author,
-          authHeader: getAuthorizationHeader(request) || '',
+          authHeader,
           options: collectOptions(body),
         })
     )
@@ -680,6 +688,7 @@ export function createHandleSubmit(deps) {
       target,
       content,
       author,
+      authHeader: getAuthorizationHeader(request) || '',
     });
   };
 }
@@ -719,8 +728,13 @@ export function createSubmitNewPageApp(deps) {
     })
   );
 
-  app.use(deps.express.json({ limit: '20kb' }));
-  app.use(deps.express.urlencoded({ extended: false, limit: '20kb' }));
+  app.use(/** @type {any} */ (deps.express).json({ limit: '20kb' }));
+  app.use(
+    /** @type {any} */ (deps.express).urlencoded({
+      extended: false,
+      limit: '20kb',
+    })
+  );
   app.post('/', deps.handleSubmit);
 
   return app;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * UID for the admin user with elevated access.
  */
@@ -68,7 +67,7 @@ export function requirePathModule(pathModule) {
     throw new Error('pathModule is required.');
   }
 
-  return pathModule;
+  return /** @type {any} */ (pathModule);
 }
 
 /**
@@ -90,7 +89,7 @@ export function normalizeMaybeNumber(value) {
  */
 export function getRecordOrNull(value) {
   if (value && typeof value === 'object') {
-    return value;
+    return /** @type {Record<string, unknown>} */ (value);
   }
 
   return null;
@@ -212,7 +211,7 @@ export function getStringCandidate(value) {
  * @returns {string | null} String value when present, otherwise null.
  */
 export function stringOrNull(value) {
-  return whenTypeValue(value, 'string');
+  return /** @type {string | null} */ (whenTypeValue(value, 'string'));
 }
 
 /**
@@ -239,7 +238,7 @@ export function resolveMessageOrDefault(message, fallback) {
 export function stringOrFallback(value, fallback) {
   const normalized = getStringCandidate(value);
   if (!normalized) {
-    return fallback(value);
+    return fallback(/** @type {unknown} */ (value));
   }
 
   return normalized;
@@ -403,7 +402,7 @@ export function isNonNullObject(value) {
  */
 export function objectOrEmpty(value) {
   if (isNonNullObject(value)) {
-    return value;
+    return /** @type {Record<string, unknown>} */ (value);
   }
 
   return {};
@@ -456,7 +455,7 @@ export function normalizeNonStringValue(value) {
  * @returns {T | null} Callback result or `null` when the input is nullish.
  */
 export function whenNotNullish(value, fn) {
-  return whenValueMatches(value, isNullish, fn);
+  return /** @type {any} */ (whenValueMatches(value, isNullish, fn));
 }
 
 /**
@@ -466,7 +465,7 @@ export function whenNotNullish(value, fn) {
  * @returns {T | null} Original value or `null` when the value is nullish.
  */
 export function whenNotNullishValue(value) {
-  return whenNotNullish(value, candidate => candidate);
+  return /** @type {any} */ (whenNotNullish(value, candidate => candidate));
 }
 
 /**
@@ -477,7 +476,7 @@ export function whenNotNullishValue(value) {
  * @template T
  */
 export function whenString(value, fn) {
-  return whenValueMatches(value, isNotStringValue, fn);
+  return /** @type {any} */ (whenValueMatches(value, isNotStringValue, fn));
 }
 
 /**
@@ -549,7 +548,7 @@ export function reportAndReturnFalse(reportFn, ...args) {
  * @template T
  */
 export function whenArray(value, fn) {
-  return whenValueMatches(value, isNotArrayValue, fn);
+  return /** @type {any} */ (whenValueMatches(value, isNotArrayValue, fn));
 }
 
 /**
@@ -560,10 +559,12 @@ export function whenArray(value, fn) {
  * @template T
  */
 export function whenTruthy(value, fn) {
-  return when(
-    Boolean(value),
-    () => fn(value),
-    () => null
+  return /** @type {any} */ (
+    when(
+      Boolean(value),
+      () => fn(value),
+      () => null
+    )
   );
 }
 
@@ -575,7 +576,7 @@ export function whenTruthy(value, fn) {
  * @returns {T | null} Callback result or `null` when the condition fails.
  */
 export function whenOrNull(condition, fn) {
-  return when(condition, fn, () => null);
+  return /** @type {T | null} */ (when(condition, fn, () => null));
 }
 
 /**
@@ -583,7 +584,7 @@ export function whenOrNull(condition, fn) {
  * @template T
  * @param {unknown} value Candidate value.
  * @param {(value: unknown) => boolean} isRejected Predicate that identifies values to skip.
- * @param {(value: unknown) => T} fn Callback invoked when the value passes the predicate.
+ * @param {(value: any) => T} fn Callback invoked when the value passes the predicate.
  * @returns {T | null} Callback result or `null` when the predicate rejects the value.
  */
 function whenValueMatches(value, isRejected, fn) {
@@ -643,7 +644,13 @@ function isFiniteNumericValue(value) {
  * @returns {number} Number when provided, otherwise zero.
  */
 export function numberOrZero(value) {
-  return returnFallbackValue(isFiniteNumericValue(value), value, () => 0);
+  return /** @type {number} */ (
+    returnFallbackValue(
+      isFiniteNumericValue(value),
+      /** @type {any} */ (value),
+      () => 0
+    )
+  );
 }
 
 /**
@@ -751,21 +758,16 @@ export function resolveProjectDirectories(moduleDirectory, resolveFn) {
  *   resolve: (input: string, ...segments: string[]) => string,
  *   extname: (input: string) => string,
  * }} pathModule Path dependency bundle.
- * @returns {{
- *   join: typeof pathModule.join,
- *   dirname: typeof pathModule.dirname,
- *   relative: typeof pathModule.relative,
- *   resolve: typeof pathModule.resolve,
- *   extname: typeof pathModule.extname,
- * }} Adapter exposing required path helpers.
+ * @returns {any} Adapter exposing required path helpers.
  */
 export function createPathAdapters(pathModule) {
+  const typedPathModule = /** @type {any} */ (pathModule);
   return {
-    join: pathModule.join,
-    dirname: pathModule.dirname,
-    relative: pathModule.relative,
-    resolve: pathModule.resolve,
-    extname: pathModule.extname,
+    join: typedPathModule.join,
+    dirname: typedPathModule.dirname,
+    relative: typedPathModule.relative,
+    resolve: typedPathModule.resolve,
+    extname: typedPathModule.extname,
   };
 }
 
@@ -783,26 +785,20 @@ export function createPathHandle(deps) {
     getCurrentDirectory: moduleUrl =>
       getCurrentDirectory(moduleUrl, deps.fileURLToPathFn, deps.dirnameFn),
     resolveProjectDirectories: moduleDirectory =>
-      resolveProjectDirectories(moduleDirectory, deps.pathModule.resolve),
-    createPathAdapters: () => createPathAdapters(deps.pathModule),
+      resolveProjectDirectories(
+        moduleDirectory,
+        /** @type {any} */ (deps.pathModule).resolve
+      ),
+    createPathAdapters: () =>
+      createPathAdapters(/** @type {any} */ (deps.pathModule)),
   };
 }
 
 /**
  * Create the filesystem adapter wrapper handle.
  * @param {{
- *   fsModule: {
- *     existsSync: (target: string) => boolean,
- *     mkdirSync: (target: string, options?: { recursive?: boolean }) => void,
- *     rmSync: (target: string, options?: { recursive?: boolean, force?: boolean }) => void,
- *     copyFileSync: (source: string, destination: string) => void,
- *     readdirSync: (dir: string, options?: { withFileTypes?: boolean }) => unknown[],
- *   },
- *   fsPromisesModule: {
- *     readdir: (dir: string, options?: { withFileTypes?: boolean }) => Promise<unknown[]>,
- *     mkdir: (target: string, options?: { recursive?: boolean }) => Promise<unknown>,
- *     copyFile: (source: string, destination: string) => Promise<void>,
- *   },
+ *   fsModule: any,
+ *   fsPromisesModule: any,
  * }} deps Filesystem dependencies.
  * @returns {{
  *   createFsAdapters: typeof createFsAdapters,
@@ -861,10 +857,13 @@ export function createFsAdapters(fsModule) {
  * }} Promise-based filesystem adapter helpers.
  */
 export function createAsyncFsAdapters(fsPromisesModule) {
+  const typedFsPromisesModule = /** @type {any} */ (fsPromisesModule);
   return {
     async readDirEntries(dir) {
       try {
-        return await fsPromisesModule.readdir(dir, { withFileTypes: true });
+        return /** @type {import('fs').Dirent[]} */ (
+          await typedFsPromisesModule.readdir(dir, { withFileTypes: true })
+        );
       } catch (error) {
         if (error?.code === 'ENOENT') {
           return [];
@@ -873,16 +872,18 @@ export function createAsyncFsAdapters(fsPromisesModule) {
       }
     },
     async ensureDirectory(target) {
-      await fsPromisesModule.mkdir(target, { recursive: true });
+      await typedFsPromisesModule.mkdir(target, { recursive: true });
     },
     async copyFile(source, destination) {
-      await fsPromisesModule.copyFile(source, destination);
+      await typedFsPromisesModule.copyFile(source, destination);
     },
     async readFile(filePath, encoding) {
-      return fsPromisesModule.readFile(filePath, encoding);
+      return /** @type {Promise<string>} */ (
+        typedFsPromisesModule.readFile(filePath, encoding)
+      );
     },
     async writeFile(filePath, content) {
-      await fsPromisesModule.writeFile(filePath, content);
+      await typedFsPromisesModule.writeFile(filePath, content);
     },
   };
 }
@@ -1036,9 +1037,13 @@ export function createRunCheckSuite(defaults) {
           };
 
           try {
-            child = spawnImpl(command.command, command.args, {
-              stdio: ['ignore', 'pipe', 'pipe'],
-            });
+            child = /** @type {any} */ (spawnImpl)(
+              command.command,
+              command.args,
+              {
+                stdio: ['ignore', 'pipe', 'pipe'],
+              }
+            );
           } catch (error) {
             const failure = buildSpawnFailure(command, startedAt, error, now);
             failures.push(failure);
@@ -1066,57 +1071,66 @@ export function createRunCheckSuite(defaults) {
             stderr.write(`[${command.name}][stderr] ${line}\n`)
           );
 
-          child.on('error', error => {
-            if (settled || (aborted && failFast)) {
-              return;
-            }
+          child.on(
+            'error',
+            /** @param {any} error Error raised by the child process. */ error => {
+              if (settled || (aborted && failFast)) {
+                return;
+              }
 
-            const failure = buildSpawnFailure(command, startedAt, error, now);
-            finishWithFailure(failure, true);
-          });
-
-          child.on('close', (exitCode, signal) => {
-            activeChildren.delete(command.name);
-
-            if (settled) {
-              resolve(undefined);
-              return;
-            }
-
-            if (
-              aborted &&
-              failFast &&
-              failures.length > 0 &&
-              failures[0].name !== command.name
-            ) {
-              settled = true;
-              resolve(undefined);
-              return;
-            }
-
-            const durationMs = Math.max(0, now() - startedAt);
-            if (exitCode === 0 && signal === null) {
-              settled = true;
-              emitEvent(stderr, {
-                type: 'check-success',
-                name: command.name,
-                command: renderCommand(command),
-                exitCode,
-                signal,
-                durationMs,
-              });
-            } else {
-              const failure = {
-                name: command.name,
-                command: renderCommand(command),
-                exitCode,
-                signal,
-                durationMs,
-              };
+              const failure = buildSpawnFailure(command, startedAt, error, now);
               finishWithFailure(failure, true);
             }
-            resolve(undefined);
-          });
+          );
+
+          child.on(
+            'close',
+            /**
+             * @param {any} exitCode Exit code reported by the child process.
+             * @param {any} signal Process signal reported by the child process.
+             */ (exitCode, signal) => {
+              activeChildren.delete(command.name);
+
+              if (settled) {
+                resolve(undefined);
+                return;
+              }
+
+              if (
+                aborted &&
+                failFast &&
+                failures.length > 0 &&
+                failures[0].name !== command.name
+              ) {
+                settled = true;
+                resolve(undefined);
+                return;
+              }
+
+              const durationMs = Math.max(0, now() - startedAt);
+              if (exitCode === 0 && signal === null) {
+                settled = true;
+                emitEvent(stderr, {
+                  type: 'check-success',
+                  name: command.name,
+                  command: renderCommand(command),
+                  exitCode,
+                  signal,
+                  durationMs,
+                });
+              } else {
+                const failure = {
+                  name: command.name,
+                  command: renderCommand(command),
+                  exitCode,
+                  signal,
+                  durationMs,
+                };
+                finishWithFailure(failure, true);
+              }
+              resolve(undefined);
+            }
+          );
         });
       })
     );

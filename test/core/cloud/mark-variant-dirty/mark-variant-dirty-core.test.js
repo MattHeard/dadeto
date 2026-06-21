@@ -24,6 +24,9 @@ const {
   getRequestBody,
   getRequestMethod,
   hasStringMessage,
+  resolveHttpMethod,
+  resolveParseRequestBody,
+  resolveRequestParser,
 } = markVariantDirtyCore;
 
 describe('mark-variant-dirty core helpers', () => {
@@ -482,6 +485,12 @@ describe('mark-variant-dirty core helpers', () => {
       expect(() => createHandleRequest()).toThrow(
         new TypeError('verifyAdmin must be a function')
       );
+    });
+
+    it('falls back to the default parser and method helpers when options are missing', () => {
+      expect(resolveRequestParser()).toBe(parseMarkVariantRequestBody);
+      expect(resolveParseRequestBody()).toBe(parseMarkVariantRequestBody);
+      expect(resolveHttpMethod()).toBe('POST');
     });
 
     it('rejects disallowed HTTP methods', async () => {

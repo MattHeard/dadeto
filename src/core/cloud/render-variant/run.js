@@ -49,7 +49,6 @@ export function runRenderVariant(deps) {
   const renderState = /** @type {any} */ (createRenderVariantEntrypointState());
   const { render: resolveRenderVariant, db } = renderState;
 
-  /* istanbul ignore next */
   const handleVariantWrite = /** @type {any} */ (createHandleVariantWrite)({
     renderVariant: /** @type {(snap: any) => Promise<null>} */ (
       snap => Promise.resolve(resolveRenderVariant()(snap))
@@ -58,7 +57,6 @@ export function runRenderVariant(deps) {
     db,
   });
 
-  /* istanbul ignore next */
   const renderVariant = /** @type {any} */ (
     createFirestoreDocumentOnWriteTrigger({
       functions,

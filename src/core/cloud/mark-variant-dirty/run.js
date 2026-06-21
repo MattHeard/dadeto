@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   createCorsOptions,
   createHandleCorsOrigin,
@@ -33,7 +32,15 @@ import { createFirebaseAppContext } from '../firebase-app-manager.js';
  * @returns {{ markVariantDirty: unknown, handleRequest: Function, app: unknown }} Wired cloud export objects for index.js.
  */
 export function runMarkVariantDirty(deps) {
-  const { auth, db, app } = createFirebaseAppContext(deps);
+  const { auth, db, app } = /**
+     @type {{
+    auth: { verifyIdToken: (token: string) => Promise<unknown> },
+    db: import('firebase-admin/firestore').Firestore,
+    app: {
+      use: (...args: unknown[]) => unknown,
+      post: (path: string, handler: unknown) => unknown,
+    },
+  }} */ (createFirebaseAppContext(deps));
 
   const environmentVariables = deps.getEnvironmentVariables();
   const allowedOrigins = getAllowedOrigins(environmentVariables);
@@ -56,27 +63,47 @@ export function runMarkVariantDirty(deps) {
     },
   };
 
+  /**
+   * @param {number} pageNumber Page number.
+   * @param {string} variantName Variant name.
+   * @returns {Promise<boolean>} Result.
+   */
   const markVariantDirtyAction = (pageNumber, variantName) =>
     markVariantDirtyImpl(pageNumber, variantName, markVariantDirtyDeps);
 
   const verifyAdmin = createVerifyAdmin({
-    verifyToken: token => auth.verifyIdToken(token),
+    verifyToken: token =>
+      /** @type {Promise<import('firebase-admin/auth').DecodedIdToken>} */ (
+        auth.verifyIdToken(token)
+      ),
     isAdminUid: createIsAdminUid(deps.ADMIN_UID),
     sendUnauthorized,
     sendForbidden,
   });
 
-  const handleRequest = createHandleRequest({
-    verifyAdmin,
-    markVariantDirty: markVariantDirtyAction,
-    parseRequestBody: parseMarkVariantRequestBody,
-  });
+  const handleRequest = createHandleRequest(
+    /**
+     @type {{
+    verifyAdmin: (req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<boolean>,
+    markVariantDirty: (pageNumber: number, variantName: string) => Promise<boolean>,
+    parseRequestBody: (body: unknown) => { pageNumber: number, variantName: string },
+    allowedMethod: string,
+  }} */ ({
+      verifyAdmin,
+      markVariantDirty: markVariantDirtyAction,
+      parseRequestBody: parseMarkVariantRequestBody,
+      allowedMethod: 'POST',
+    })
+  );
 
   app.post('/', handleRequest);
 
-  const markVariantDirty = deps.functions
-    .region('europe-west1')
-    .https.onRequest(app);
+  const markVariantDirty =
+    /** @type {{ region: (name: string) => { https: { onRequest: (handler: unknown) => unknown } } }} */ (
+      deps.functions
+    )
+      .region('europe-west1')
+      .https.onRequest(app);
 
   return { markVariantDirty, handleRequest, app };
 }

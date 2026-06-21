@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   buildPageByNumberQuery,
   buildVariantByNameQuery,
@@ -236,9 +235,11 @@ export async function findVariantRef({
  * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Variant ref or null.
  */
 function resolveVariantRefFromPage(helpers, pageRef, variantName) {
-  return commonCore.whenOrNull(Boolean(pageRef), () =>
-    findVariantRefFromPage(helpers, pageRef, variantName)
-  );
+  if (!pageRef) {
+    return Promise.resolve(null);
+  }
+
+  return findVariantRefFromPage(helpers, pageRef, variantName);
 }
 
 /**
@@ -271,7 +272,11 @@ function resolveVariantHelpers(firebase) {
  * @returns {T} Helper.
  */
 function chooseHelper(override, fallback) {
-  return commonCore.whenTypeValue(override, 'function') ?? fallback;
+  if (typeof override === 'function') {
+    return override;
+  }
+
+  return fallback;
 }
 
 /**
@@ -597,6 +602,10 @@ function castCoreFunctions(verifyAdmin, markVariantDirty) {
  * @returns {Function} The request parser.
  */
 function resolveRequestParser(optionsTyped) {
+  if (!optionsTyped) {
+    return resolveParseRequestBody(undefined);
+  }
+
   return resolveParseRequestBody(optionsTyped.parseRequestBody);
 }
 
@@ -606,6 +615,10 @@ function resolveRequestParser(optionsTyped) {
  * @returns {string} The allowed method.
  */
 function resolveHttpMethod(optionsTyped) {
+  if (!optionsTyped) {
+    return resolveAllowedMethod(undefined);
+  }
+
   return resolveAllowedMethod(optionsTyped.allowedMethod);
 }
 
@@ -686,6 +699,13 @@ function resolveParseRequestBody(parser) {
 function resolveAllowedMethod(method) {
   return resolveMessageOrDefault(method, POST_METHOD);
 }
+
+export {
+  resolveAllowedMethod,
+  resolveHttpMethod,
+  resolveParseRequestBody,
+  resolveRequestParser,
+};
 
 /**
  * Build the HTTP handler once the inputs are normalized.

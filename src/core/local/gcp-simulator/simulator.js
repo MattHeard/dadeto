@@ -196,7 +196,7 @@ function createDb(onCommit) {
  * @returns {(records: Array<{ path: string, before?: unknown, after?: unknown }>) => Promise<void>} Dispatch function.
  */
 function createDispatchCommittedWrites(deps) {
-  return async records => {
+  return async (/** @type {any} */ records) => {
     for (const record of records) {
       const snapshots = deps.createSnapshots(
         record.path,
@@ -232,7 +232,12 @@ function createDispatchCommittedWrites(deps) {
  *   Trigger handler.
  * @returns {void}
  */
-function registerTrigger(triggerRegistry, pathPattern, eventName, handler) {
+function registerTrigger(
+  /** @type {any} */ triggerRegistry,
+  /** @type {any} */ pathPattern,
+  /** @type {any} */ eventName,
+  /** @type {any} */ handler
+) {
   triggerRegistry.push({ pathPattern, eventName, handler });
 }
 
@@ -245,8 +250,8 @@ function registerTrigger(triggerRegistry, pathPattern, eventName, handler) {
  * @returns {void}
  */
 function registerTriggerRegistrationsByEvent(
-  triggerRegistry,
-  triggerRegistrationsByEvent
+  /** @type {any} */ triggerRegistry,
+  /** @type {any} */ triggerRegistrationsByEvent
 ) {
   for (const [eventName, registrations] of Object.entries(
     triggerRegistrationsByEvent
@@ -267,7 +272,7 @@ function registerTriggerRegistrationsByEvent(
  * @param {object} state Simulator state.
  * @returns {object} Simulator instance.
  */
-function buildSimulatorApi(state) {
+function buildSimulatorApi(/** @type {any} */ state) {
   return state;
 }
 
@@ -281,7 +286,7 @@ function buildSimulatorApi(state) {
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator state.
  */
-async function buildSimulatorState(config) {
+async function buildSimulatorState(/** @type {any} */ config) {
   const { baseUrl, bucketName, projectId, publicDir } = config;
   const storageRoot = await createStorageRoot();
   const storage = createStorage(storageRoot);
@@ -446,7 +451,7 @@ async function buildSimulatorState(config) {
  * @param {{ db: ReturnType<typeof createDb> | null }} dbContext Database context.
  * @returns {{ createSnapshot: (pathValue: string, data: unknown) => unknown, createSnapshots: (pathValue: string, before: unknown, after: unknown) => { before: unknown, after: unknown } }} Snapshot helpers.
  */
-function createSnapshotHelpers(dbContext) {
+function createSnapshotHelpers(/** @type {any} */ dbContext) {
   return {
     createSnapshot: (pathValue, data) =>
       createSnapshot(dbContext, pathValue, data),
@@ -463,7 +468,12 @@ function createSnapshotHelpers(dbContext) {
  * @param {unknown} after Next document value.
  * @returns {{ before: unknown, after: unknown }} Snapshot pair.
  */
-function createSnapshots(dbContext, pathValue, before, after) {
+function createSnapshots(
+  /** @type {any} */ dbContext,
+  /** @type {any} */ pathValue,
+  /** @type {any} */ before,
+  /** @type {any} */ after
+) {
   return {
     before: createSnapshot(dbContext, pathValue, before),
     after: createSnapshot(dbContext, pathValue, after),
@@ -477,7 +487,11 @@ function createSnapshots(dbContext, pathValue, before, after) {
  * @param {unknown} data Document payload.
  * @returns {unknown} Snapshot object.
  */
-function createSnapshot(dbContext, pathValue, data) {
+function createSnapshot(
+  /** @type {any} */ dbContext,
+  /** @type {any} */ pathValue,
+  /** @type {any} */ data
+) {
   const { db } = dbContext;
 
   if (data === undefined) {
@@ -498,7 +512,7 @@ function createSnapshot(dbContext, pathValue, data) {
  * @param {{ delete: () => unknown }} fieldValue Fake field value helper.
  * @returns {() => unknown} Delete sentinel getter.
  */
-function createDeleteSentinelGetter(fieldValue) {
+function createDeleteSentinelGetter(/** @type {any} */ fieldValue) {
   return () => fieldValue.delete();
 }
 
@@ -520,7 +534,7 @@ function createSimulatorAuthVerifiers() {
  * @param {{ db: unknown, storage: unknown, fetchFn: Function, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: Function }} options Config dependencies.
  * @returns {object} Generate stats config.
  */
-function createGenerateStatsConfig(options) {
+function createGenerateStatsConfig(/** @type {any} */ options) {
   const {
     db,
     storage,
@@ -552,7 +566,7 @@ function createGenerateStatsConfig(options) {
  * @param {ReturnType<typeof createDb>} db Simulator database.
  * @returns {{ findExistingPagePath: (pageNumber: number) => Promise<string | null>, findExistingOptionPath: (option: unknown) => Promise<string | null> }} Lookup helpers.
  */
-function createLookupHelpers(db) {
+function createLookupHelpers(/** @type {any} */ db) {
   return {
     findExistingPagePath: pageNumber => findExistingPagePath(db, pageNumber),
     findExistingOptionPath: option => findExistingOptionPath(db, option),
@@ -565,7 +579,10 @@ function createLookupHelpers(db) {
  * @param {number} pageNumber Page number to look up.
  * @returns {Promise<string | null>} Matching page path or null.
  */
-async function findExistingPagePath(db, pageNumber) {
+async function findExistingPagePath(
+  /** @type {any} */ db,
+  /** @type {any} */ pageNumber
+) {
   const pageSnap = await db
     .collectionGroup('pages')
     .where('number', '==', pageNumber)
@@ -584,7 +601,10 @@ async function findExistingPagePath(db, pageNumber) {
  * @param {unknown} option Option descriptor.
  * @returns {Promise<string | null>} Matching option path or null.
  */
-async function findExistingOptionPath(db, option) {
+async function findExistingOptionPath(
+  /** @type {any} */ db,
+  /** @type {any} */ option
+) {
   const typed = parseOptionLookup(option);
   if (!typed) {
     return null;
@@ -622,7 +642,7 @@ async function findExistingOptionPath(db, option) {
  * @param {{ verifyIdToken: Function, db: ReturnType<typeof createDb>, findExistingOptionPath: Function, findExistingPagePath: Function }} options Dependencies.
  * @returns {object} Submit-new-page config.
  */
-function createSubmitNewPageConfig(options) {
+function createSubmitNewPageConfig(/** @type {any} */ options) {
   const { verifyIdToken, db, findExistingOptionPath, findExistingPagePath } =
     options;
   return {
@@ -642,7 +662,7 @@ function createSubmitNewPageConfig(options) {
  * @param {{ verifyIdToken: Function, db: ReturnType<typeof createDb> }} options Dependencies.
  * @returns {object} Submit-new-story config.
  */
-function createSubmitNewStoryConfig(options) {
+function createSubmitNewStoryConfig(/** @type {any} */ options) {
   const { verifyIdToken, db } = options;
   return {
     verifyIdToken,
@@ -658,7 +678,7 @@ function createSubmitNewStoryConfig(options) {
  * @param {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers> }} options Utility dependencies.
  * @returns {object} Test utility bag.
  */
-function createSimulatorTestUtils(options) {
+function createSimulatorTestUtils(/** @type {any} */ options) {
   const { snapshotHelpers, lookupHelpers, authVerifiers } = options;
   return {
     resolveTargetPageNumber: getTargetPageNumber,
@@ -682,7 +702,7 @@ function createSimulatorTestUtils(options) {
  * @param {{ processNewStory: Function, processNewPage: Function, renderContents: Function, renderVariant: Function, handleVariantWrite: Function }} handlers Trigger handlers.
  * @returns {Record<string, Array<{ pathPattern: string, handler: Function }>>} Registrations by event.
  */
-function createTriggerRegistrationsByEvent(handlers) {
+function createTriggerRegistrationsByEvent(/** @type {any} */ handlers) {
   const {
     processNewStory,
     processNewPage,
@@ -723,7 +743,7 @@ function createTriggerRegistrationsByEvent(handlers) {
  * @param {ReturnType<typeof createDb>} db Simulator database.
  * @returns {() => Promise<void>} Fixture seeder.
  */
-function createSeedFixture(db) {
+function createSeedFixture(/** @type {any} */ db) {
   return async () => seedFixture(db);
 }
 
@@ -732,7 +752,7 @@ function createSeedFixture(db) {
  * @param {ReturnType<typeof createDb>} db Simulator database.
  * @returns {Promise<void>} Nothing.
  */
-async function seedFixture(db) {
+async function seedFixture(/** @type {any} */ db) {
   const storyRef = db.collection('stories').doc(STORY_ID);
   const firstPageRef = storyRef
     .collection('pages')
@@ -803,7 +823,10 @@ async function seedFixture(db) {
  * @param {string} pathValue Actual path.
  * @returns {boolean} Whether the pattern matches.
  */
-function matchesTrigger(pathPattern, pathValue) {
+function matchesTrigger(
+  /** @type {any} */ pathPattern,
+  /** @type {any} */ pathValue
+) {
   return Boolean(extractParams(pathPattern, pathValue));
 }
 
@@ -813,7 +836,10 @@ function matchesTrigger(pathPattern, pathValue) {
  * @param {string} pathValue Actual path.
  * @returns {Record<string, string> | null} Trigger params or null.
  */
-function extractParams(pathPattern, pathValue) {
+function extractParams(
+  /** @type {any} */ pathPattern,
+  /** @type {any} */ pathValue
+) {
   const patternSegments = split(pathPattern);
   const pathSegments = split(pathValue);
   if (patternSegments.length !== pathSegments.length) {
@@ -842,7 +868,7 @@ function extractParams(pathPattern, pathValue) {
  * @param {string} value Path string.
  * @returns {string[]} Path segments.
  */
-function split(value) {
+function split(/** @type {any} */ value) {
   return String(value).replace(/^\/+/, '').replace(/\/+$/, '').split('/');
 }
 
@@ -851,7 +877,7 @@ function split(value) {
  * @param {string} segment Path segment.
  * @returns {boolean} True when the segment is a parameter.
  */
-function isParam(segment) {
+function isParam(/** @type {any} */ segment) {
   return segment.startsWith('{') && segment.endsWith('}');
 }
 
@@ -862,7 +888,11 @@ function isParam(segment) {
  * @param {string} projectId Project id.
  * @returns {() => ReturnType<typeof createSimulatorConfig>} Config getter.
  */
-function createGetSimulatorConfig(baseUrl, bucketName, projectId) {
+function createGetSimulatorConfig(
+  /** @type {any} */ baseUrl,
+  /** @type {any} */ bucketName,
+  /** @type {any} */ projectId
+) {
   return () => createSimulatorConfig(baseUrl, bucketName, projectId);
 }
 
@@ -871,7 +901,7 @@ function createGetSimulatorConfig(baseUrl, bucketName, projectId) {
  * @param {string} bucketName Bucket name.
  * @returns {() => ReturnType<typeof createSeedManifest>} Manifest getter.
  */
-function createGetSeedManifest(bucketName) {
+function createGetSeedManifest(/** @type {any} */ bucketName) {
   return () => createSeedManifest(bucketName);
 }
 
@@ -880,7 +910,7 @@ function createGetSeedManifest(bucketName) {
  * @param {{ submitNewStory: Function, submitNewPage: Function, getApiKeyCreditV2: Function, db: ReturnType<typeof createDb>, fieldValue: unknown, renderContents: Function, generateStatsCore: { generate: Function } }} deps Route dependencies.
  * @returns {Record<string, (request: unknown) => Promise<{ status: number, body?: unknown }>>} Route map.
  */
-function createRoutes(deps) {
+function createRoutes(/** @type {any} */ deps) {
   return {
     submitNewStory: request => handleSubmitNewStory(deps, request),
     submitNewPage: request => handleSubmitNewPage(deps, request),
@@ -902,7 +932,9 @@ function createRoutes(deps) {
  * @param {unknown} apiKeyUuid Candidate UUID.
  * @returns {string | null} Normalized UUID.
  */
-export function resolvePaymentCustomerApiKeyUuid(apiKeyUuid) {
+export function resolvePaymentCustomerApiKeyUuid(
+  /** @type {any} */ apiKeyUuid
+) {
   if (typeof apiKeyUuid === 'string' && apiKeyUuid) {
     return apiKeyUuid;
   }
@@ -915,7 +947,7 @@ export function resolvePaymentCustomerApiKeyUuid(apiKeyUuid) {
  * @param {{ created?: number }} event Payment event.
  * @returns {Date} Created-at timestamp.
  */
-export function resolvePaymentCreatedAt(event) {
+export function resolvePaymentCreatedAt(/** @type {any} */ event) {
   if (typeof event.created === 'number' && Number.isFinite(event.created)) {
     return new Date(event.created * 1000);
   }
@@ -929,7 +961,10 @@ export function resolvePaymentCreatedAt(event) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleSubmitNewStory(deps, request) {
+async function handleSubmitNewStory(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   const response = await deps.submitNewStory(request);
   return response;
 }
@@ -940,7 +975,10 @@ async function handleSubmitNewStory(deps, request) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleSubmitNewPage(deps, request) {
+async function handleSubmitNewPage(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   return deps.submitNewPage(request);
 }
 
@@ -950,7 +988,10 @@ async function handleSubmitNewPage(deps, request) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGetApiKeyCreditV2(deps, request) {
+async function handleGetApiKeyCreditV2(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   return deps.getApiKeyCreditV2(request);
 }
 
@@ -960,7 +1001,10 @@ async function handleGetApiKeyCreditV2(deps, request) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handlePaymentWebhook(deps, request) {
+async function handlePaymentWebhook(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   return deps.paymentWebhook(request);
 }
 
@@ -970,7 +1014,10 @@ async function handlePaymentWebhook(deps, request) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGetModerationVariant(deps, request) {
+async function handleGetModerationVariant(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   const uid = resolveUid(request);
   if (!uid) {
     return { status: 401, body: 'Invalid or expired token' };
@@ -996,7 +1043,10 @@ async function handleGetModerationVariant(deps, request) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleAssignModerationJob(deps, request) {
+async function handleAssignModerationJob(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   const uid = resolveUid(request);
   if (!uid) {
     return { status: 401, body: 'Invalid or expired token' };
@@ -1034,7 +1084,10 @@ async function handleAssignModerationJob(deps, request) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleSubmitModerationRating(deps, request) {
+async function handleSubmitModerationRating(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   const uid = resolveUid(request);
   if (!uid) {
     return { status: 401, body: 'Invalid or expired token' };
@@ -1077,7 +1130,7 @@ async function handleSubmitModerationRating(deps, request) {
  * @param {{ db: ReturnType<typeof createDb>, renderContents: Function }} deps Route dependencies.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleTriggerRenderContents(deps) {
+async function handleTriggerRenderContents(/** @type {any} */ deps) {
   const storiesSnap = await deps.db.collection('stories').get();
   for (const storyDoc of storiesSnap.docs) {
     await deps.renderContents(storyDoc, { params: { storyId: storyDoc.id } });
@@ -1091,7 +1144,10 @@ async function handleTriggerRenderContents(deps) {
  * @param {unknown} request Incoming request object.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleMarkVariantDirty(deps, request) {
+async function handleMarkVariantDirty(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
   const body = request?.body || {};
   const pageNumber = Number(body.pageNumber);
   const variantName = String(body.variantName || '');
@@ -1126,7 +1182,7 @@ async function handleMarkVariantDirty(deps, request) {
  * @param {{ generateStatsCore: { generate: Function } }} deps Route dependencies.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function handleGenerateStats(deps) {
+async function handleGenerateStats(/** @type {any} */ deps) {
   await deps.generateStatsCore.generate();
   return { status: 200, body: { ok: true } };
 }
@@ -1136,7 +1192,7 @@ async function handleGenerateStats(deps) {
  * @param {unknown} request Incoming request object.
  * @returns {string | null} Authenticated user id or null.
  */
-function resolveUid(request) {
+function resolveUid(/** @type {any} */ request) {
   const header = getAuthorizationHeader(request);
   if (!header) {
     return null;
@@ -1183,7 +1239,10 @@ function createRandomSource() {
  * @param {boolean} includeToken Whether to include the token in the response.
  * @returns {{ uid: string | null, token?: string }} Auth result.
  */
-function createAuthResult(token, includeToken) {
+function createAuthResult(
+  /** @type {any} */ token,
+  /** @type {any} */ includeToken
+) {
   if (!token) {
     return { uid: null };
   }
@@ -1200,7 +1259,7 @@ function createAuthResult(token, includeToken) {
  * @param {{ collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }} variantRef Variant reference.
  * @returns {Promise<Array<{ content: string | undefined, targetPageNumber: number | undefined }>>} Options.
  */
-async function loadModerationOptions(variantRef) {
+async function loadModerationOptions(/** @type {any} */ variantRef) {
   const optionsSnap = await variantRef.collection('options').get();
   return optionsSnap.docs
     .slice()
@@ -1222,7 +1281,12 @@ async function loadModerationOptions(variantRef) {
  * @param {boolean} isWrite Whether the record is a write event.
  * @returns {boolean} Whether the trigger should run.
  */
-function shouldDispatchTrigger(trigger, pathValue, isCreate, isWrite) {
+function shouldDispatchTrigger(
+  /** @type {any} */ trigger,
+  /** @type {any} */ pathValue,
+  /** @type {any} */ isCreate,
+  /** @type {any} */ isWrite
+) {
   if (!pathMatchesTrigger(trigger.pathPattern, pathValue)) {
     return false;
   }
@@ -1244,7 +1308,10 @@ function shouldDispatchTrigger(trigger, pathValue, isCreate, isWrite) {
  * @param {string} pathValue Actual path.
  * @returns {boolean} Whether the path matches.
  */
-function pathMatchesTrigger(pathPattern, pathValue) {
+function pathMatchesTrigger(
+  /** @type {any} */ pathPattern,
+  /** @type {any} */ pathValue
+) {
   const patternSegments = String(pathPattern)
     .replace(/^\/+/, '')
     .replace(/\/+$/, '')
@@ -1279,7 +1346,11 @@ function pathMatchesTrigger(pathPattern, pathValue) {
  * @param {{ params: Record<string, string> }} context Trigger context.
  * @returns {Promise<void>} Nothing.
  */
-async function dispatchTrigger(trigger, snapshots, context) {
+async function dispatchTrigger(
+  /** @type {any} */ trigger,
+  /** @type {any} */ snapshots,
+  /** @type {any} */ context
+) {
   if (trigger.eventName === 'onCreate') {
     await trigger.handler(snapshots.after, context);
     return;
@@ -1299,7 +1370,7 @@ async function dispatchTrigger(trigger, snapshots, context) {
  * @param {{ ref: { parent: { parent: { get: () => Promise<{ data: () => { title?: string }, id: string }> } }, collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }, data: () => { authorName?: string, author?: string, content?: string } }} variantSnap Variant snapshot.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function buildModerationVariantResponse(variantSnap) {
+async function buildModerationVariantResponse(/** @type {any} */ variantSnap) {
   const variantData = variantSnap.data();
   const pageRef = variantSnap.ref.parent.parent;
   const pageSnap = await pageRef.get();
@@ -1324,7 +1395,7 @@ async function buildModerationVariantResponse(variantSnap) {
  * @param {unknown} option Option descriptor.
  * @returns {{ pageNumber: number, variantName: string, optionNumber: number } | null} Parsed option or null.
  */
-function parseOptionLookup(option) {
+function parseOptionLookup(/** @type {any} */ option) {
   if (!option || typeof option !== 'object') {
     return null;
   }
@@ -1355,7 +1426,7 @@ function parseOptionLookup(option) {
  * @param {{ isApproved?: unknown } | undefined} body Request body.
  * @returns {boolean | null} Approval flag or null when invalid.
  */
-function parseApprovalFlag(body) {
+function parseApprovalFlag(/** @type {any} */ body) {
   const rawApproved = body?.isApproved;
   if (
     rawApproved !== true &&
@@ -1374,7 +1445,7 @@ function parseApprovalFlag(body) {
  * @param {{ moderatorReputationSum?: unknown, moderationRatingCount?: unknown } | undefined} data Variant data.
  * @returns {{ currentScore: number, currentCount: number }} Normalized totals.
  */
-function resolveModerationTotals(data) {
+function resolveModerationTotals(/** @type {any} */ data) {
   let currentScore = 0;
   if (typeof data?.moderatorReputationSum === 'number') {
     currentScore = data.moderatorReputationSum;

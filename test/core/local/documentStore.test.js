@@ -8,6 +8,8 @@ import {
   getDefaultWorkflowDir,
   getDefaultWorkflowPath,
   getTrailingDraftStep,
+  hasTrailingDraftAtActiveEnd,
+  hasTrailingDraftBeyondActiveIndexFromMinimum,
   pruneTrailingDrafts,
   renumberDraftSteps,
   shouldKeepStepContent,
@@ -428,6 +430,99 @@ describe('createDocumentStoreCore', () => {
         { id: 'draft-2', title: 'Draft 2' },
       ],
     };
+
+    await expect(pruneTrailingDrafts(state, workflow)).resolves.toBe(workflow);
+  });
+
+  test('canPruneTrailingDraft respects the default-sequence minimum before pruning sparse workflows', () => {
+    const workflow = {
+      activeIndex: 2,
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+      ],
+    };
+    workflow.steps.length = 5;
+
+    expect(canPruneTrailingDraft(createDeps(), workflow)).toBe(true);
+  });
+
+  test('prune helpers reject sparse trailing steps once the minimum is satisfied', () => {
+    const workflow = {
+      activeIndex: 1,
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-1', title: 'Draft 1' },
+      ],
+    };
+    workflow.steps.push({ id: 'draft-2', title: 'Draft 2' });
+
+    expect(hasTrailingDraftBeyondActiveIndexFromMinimum(workflow, 3)).toBe(
+      true
+    );
+    expect(hasTrailingDraftAtActiveEnd(workflow)).toBe(true);
+  });
+
+  test('prune helper returns false when the workflow has not reached the minimum', () => {
+    const workflow = {
+      activeIndex: 0,
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'draft-1', title: 'Draft 1' },
+      ],
+    };
+
+    expect(hasTrailingDraftBeyondActiveIndexFromMinimum(workflow, 3)).toBe(
+      false
+    );
+  });
+
+  test('prune helper returns false when the trailing draft is not beyond the active index', () => {
+    const workflow = {
+      activeIndex: 3,
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-1', title: 'Draft 1' },
+      ],
+    };
+
+    expect(hasTrailingDraftAtActiveEnd(workflow)).toBe(false);
+  });
+
+  test('pruneTrailingDrafts stops when the trailing array slot is empty', async () => {
+    const state = {
+      deps: {
+        mkdir: async () => {},
+        readFile: async () => {
+          throw new Error('should not read');
+        },
+        rm: async () => {
+          throw new Error('should not remove');
+        },
+        writeFile: async () => {},
+        path,
+        cwd: () => process.cwd(),
+      },
+      documentDir: path.join(tempDir, 'workflow', 'documents'),
+      workflowDir: path.join(tempDir, 'workflow'),
+      workflowPath,
+    };
+
+    const workflow = {
+      activeIndex: 1,
+      steps: [
+        { id: 'thesis', title: 'Thesis' },
+        { id: 'syllogistic-argument', title: 'Syllogistic Argument' },
+        { id: 'outline', title: 'Outline' },
+        { id: 'draft-1', title: 'Draft 1' },
+      ],
+    };
+    workflow.steps.length = 5;
 
     await expect(pruneTrailingDrafts(state, workflow)).resolves.toBe(workflow);
   });

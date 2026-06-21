@@ -27,7 +27,7 @@ export function createFakeFieldValue(now = () => new Date()) {
     serverTimestamp() {
       return new ServerTimestampValue(now());
     },
-    increment(amount) {
+    increment(/** @type {any} */ amount) {
       return new IncrementValue(amount);
     },
     delete() {
@@ -43,22 +43,22 @@ export function createFakeFieldValue(now = () => new Date()) {
  *   Commit callback.
  * @returns {FakeFirestoreShim} Fake Firestore instance.
  */
-export function createFakeFirestore({ onCommit } = {}) {
+export function createFakeFirestore({ onCommit } = /** @type {any} */ ({})) {
   const state = new Map();
 
   class FakeFirestore {
-    collection(name) {
+    collection(/** @type {any} */ name) {
       return new FakeCollectionReference(this, [name]);
     }
 
-    collectionGroup(name) {
+    collectionGroup(/** @type {any} */ name) {
       return new FakeQuery(this, {
         kind: 'collectionGroup',
         collectionId: name,
       });
     }
 
-    doc(path) {
+    doc(/** @type {any} */ path) {
       return new FakeDocumentReference(this, path);
     }
 
@@ -66,23 +66,27 @@ export function createFakeFirestore({ onCommit } = {}) {
       return new FakeWriteBatch(this);
     }
 
-    runTransaction(updateFunction) {
+    runTransaction(/** @type {any} */ updateFunction) {
       return runFakeTransaction(this, updateFunction);
     }
 
-    async __commitOperations(operations) {
+    async __commitOperations(/** @type {any} */ operations) {
       return applyOperations(operations);
     }
 
-    async __getDocument(path) {
+    async __getDocument(/** @type {any} */ path) {
       return cloneDocument(state.get(path));
     }
 
-    async __writeDocument(path, nextData, mode = 'set') {
+    async __writeDocument(
+      /** @type {any} */ path,
+      /** @type {any} */ nextData,
+      mode = 'set'
+    ) {
       return this.__commitOperations([{ path, nextData, mode }]);
     }
 
-    __getCollectionDocuments(collectionSegments) {
+    __getCollectionDocuments(/** @type {any} */ collectionSegments) {
       const docs = [];
       for (const [path, data] of state.entries()) {
         const segments = splitPath(path);
@@ -99,7 +103,7 @@ export function createFakeFirestore({ onCommit } = {}) {
       return docs;
     }
 
-    __getCollectionGroupDocuments(collectionId) {
+    __getCollectionGroupDocuments(/** @type {any} */ collectionId) {
       const docs = [];
       for (const [path, data] of state.entries()) {
         const segments = splitPath(path);
@@ -116,20 +120,20 @@ export function createFakeFirestore({ onCommit } = {}) {
       return docs;
     }
 
-    __resolveDocumentSnapshot(path) {
+    __resolveDocumentSnapshot(/** @type {any} */ path) {
       const data = state.get(path);
       return buildDocumentSnapshot(this, path, buildSnapshotData(data));
     }
 
-    __getPathData(path) {
+    __getPathData(/** @type {any} */ path) {
       return state.get(path);
     }
 
-    __setPathData(path, data) {
+    __setPathData(/** @type {any} */ path, /** @type {any} */ data) {
       state.set(path, data);
     }
 
-    __deletePathData(path) {
+    __deletePathData(/** @type {any} */ path) {
       state.delete(path);
     }
   }
@@ -140,7 +144,7 @@ export function createFakeFirestore({ onCommit } = {}) {
    *   Operations to apply.
    * @returns {Promise<undefined>} Nothing.
    */
-  async function applyOperations(operations) {
+  async function applyOperations(/** @type {any} */ operations) {
     const touched = new Map();
     for (const operation of operations) {
       const before = cloneDocument(state.get(operation.path));
@@ -171,7 +175,10 @@ export function createFakeFirestore({ onCommit } = {}) {
    *   Transaction callback.
    * @returns {Promise<unknown>} Transaction callback result.
    */
-  async function runFakeTransaction(db, updateFunction) {
+  async function runFakeTransaction(
+    /** @type {any} */ db,
+    /** @type {any} */ updateFunction
+  ) {
     const transaction = new FakeTransaction(db);
     const result = await updateFunction(transaction);
     await db.__commitOperations(transaction.operations);
@@ -189,12 +196,12 @@ export const fakeFirestoreTestUtils = {
 };
 
 class FakeWriteBatch {
-  constructor(db) {
+  constructor(/** @type {any} */ db) {
     this.db = db;
     this.operations = [];
   }
 
-  set(ref, data) {
+  set(/** @type {any} */ ref, /** @type {any} */ data) {
     this.operations.push({
       path: ref.path,
       nextData: cloneDocument(data),
@@ -203,7 +210,7 @@ class FakeWriteBatch {
     return this;
   }
 
-  update(ref, data) {
+  update(/** @type {any} */ ref, /** @type {any} */ data) {
     this.operations.push({
       path: ref.path,
       nextData: cloneDocument(data),
@@ -212,7 +219,7 @@ class FakeWriteBatch {
     return this;
   }
 
-  delete(ref) {
+  delete(/** @type {any} */ ref) {
     this.operations.push({
       path: ref.path,
       nextData: undefined,
@@ -265,7 +272,7 @@ class FakeTransaction {
 }
 
 class FakeCollectionReference {
-  constructor(db, collectionSegments) {
+  constructor(/** @type {any} */ db, /** @type {any} */ collectionSegments) {
     this.db = db;
     this.collectionSegments = collectionSegments;
     this.path = collectionSegments.join('/');
@@ -279,7 +286,7 @@ class FakeCollectionReference {
     }
   }
 
-  doc(id) {
+  doc(/** @type {any} */ id) {
     return new FakeDocumentReference(this.db, [...this.collectionSegments, id]);
   }
 
@@ -297,14 +304,18 @@ class FakeCollectionReference {
     }).count();
   }
 
-  where(field, op, value) {
+  where(
+    /** @type {any} */ field,
+    /** @type {any} */ op,
+    /** @type {any} */ value
+  ) {
     return new FakeQuery(this.db, {
       kind: 'collection',
       collectionSegments: this.collectionSegments,
     }).where(field, op, value);
   }
 
-  orderBy(field, direction) {
+  orderBy(/** @type {any} */ field, /** @type {any} */ direction) {
     return new FakeQuery(this.db, {
       kind: 'collection',
       collectionSegments: this.collectionSegments,
@@ -313,7 +324,7 @@ class FakeCollectionReference {
 }
 
 class FakeDocumentReference {
-  constructor(db, segments) {
+  constructor(/** @type {any} */ db, /** @type {any} */ segments) {
     this.db = db;
     if (Array.isArray(segments)) {
       this.segments = segments;
@@ -325,7 +336,7 @@ class FakeDocumentReference {
     this.parent = new FakeCollectionReference(db, this.segments.slice(0, -1));
   }
 
-  collection(name) {
+  collection(/** @type {any} */ name) {
     return new FakeCollectionReference(this.db, [...this.segments, name]);
   }
 
@@ -333,11 +344,11 @@ class FakeDocumentReference {
     return this.db.__resolveDocumentSnapshot(this.path);
   }
 
-  async set(data) {
+  async set(/** @type {any} */ data) {
     await this.db.__writeDocument(this.path, cloneDocument(data), 'set');
   }
 
-  async update(data) {
+  async update(/** @type {any} */ data) {
     await this.db.__writeDocument(this.path, cloneDocument(data), 'update');
   }
 
@@ -347,27 +358,31 @@ class FakeDocumentReference {
 }
 
 class FakeQuery {
-  constructor(db, source, clauses = []) {
+  constructor(/** @type {any} */ db, /** @type {any} */ source, clauses = []) {
     this.db = db;
     this.source = source;
     this.clauses = clauses;
   }
 
-  where(field, op, value) {
+  where(
+    /** @type {any} */ field,
+    /** @type {any} */ op,
+    /** @type {any} */ value
+  ) {
     return new FakeQuery(this.db, this.source, [
       ...this.clauses,
       { type: 'where', field, op, value },
     ]);
   }
 
-  orderBy(field, direction = 'asc') {
+  orderBy(/** @type {any} */ field, direction = 'asc') {
     return new FakeQuery(this.db, this.source, [
       ...this.clauses,
       { type: 'orderBy', field, direction },
     ]);
   }
 
-  limit(value) {
+  limit(/** @type {any} */ value) {
     return new FakeQuery(this.db, this.source, [
       ...this.clauses,
       { type: 'limit', value },

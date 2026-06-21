@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Create a fetch wrapper that uses the injected fetch implementation.
  * @param {typeof fetch} fetchFn Fallback fetch implementation.
@@ -17,6 +16,7 @@ export function createDynamicFetch(fetchFn) {
  * @returns {() => T} Memoized accessor.
  */
 export function createMemoizedLoader(factory) {
+  /** @type {T | undefined} */
   let instance;
 
   return function resolveLoader() {
@@ -47,7 +47,7 @@ export function createRenderRuntime(fetchFn, buildInstance) {
  * Create the shared cloud render environment snapshot.
  * @param {{
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   getFirestoreInstance: () => unknown,
+ *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
  *   Storage: new () => unknown,
  *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
  *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
@@ -122,16 +122,9 @@ export function createCloudRenderContext(options) {
  */
 export function createCloudRenderInstanceDeps(options) {
   return {
-    db: options.db,
-    storage: options.storage,
+    ...options,
     fetchFn: options.dynamicFetch,
     randomUUID: () => options.crypto.randomUUID(),
-    projectId: options.projectId,
-    urlMapName: options.urlMapName,
-    cdnHost: options.cdnHost,
-    bucketName: options.bucketName,
-    objectPrefix: options.objectPrefix,
-    consoleError: options.consoleError,
   };
 }
 
@@ -177,7 +170,7 @@ export function createCloudRenderInstanceBuilder(options) {
  * @param {{
  *   initializeApp: () => void,
  *   createFirebaseAppManager: (initializeApp: () => void) => { ensureFirebaseApp: () => void },
- *   getFirestoreInstance: () => unknown,
+ *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
  *   Storage: new () => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   fetchFn: typeof fetch,

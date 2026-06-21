@@ -1,5 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createVariantRedirectHandle } from '../../../src/core/browser/variant-redirect.js';
+import {
+  createVariantRedirectHandle,
+  pickThresholdSlug,
+} from '../../../src/core/browser/variant-redirect.js';
 
 /**
  * Create a link stub.
@@ -164,5 +167,9 @@ describe('createVariantRedirectHandle', () => {
 
     expect(link.attrs.href).toBe('https://example.test/stories/beta.html');
     expect(link.attrs['data-chosen-variant']).toBe('beta');
+  });
+
+  it('returns null when a threshold runs past the available positive weights', () => {
+    expect(pickThresholdSlug([{ slug: 'alpha', w: 1 }], 2)).toBeNull();
   });
 });
