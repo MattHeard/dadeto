@@ -114,6 +114,70 @@ describe('core local server helpers', () => {
     expect(response.redirect).toHaveBeenCalledWith('/writer/');
   });
 
+  test('serves the static pages and config routes', async () => {
+    const handlers = {};
+    const app = {
+      use: jest.fn(),
+      get: jest.fn((path, handler) => {
+        handlers[`get ${path}`] = handler;
+      }),
+      post: jest.fn((path, handler) => {
+        handlers[`post ${path}`] = handler;
+      }),
+      put: jest.fn((path, handler) => {
+        handlers[`put ${path}`] = handler;
+      }),
+    };
+    const deps = {
+      app,
+      static: prefix => `static:${prefix}`,
+      text: options => `text:${options.limit}`,
+      json: options => `json:${options.limit}`,
+      store: {
+        loadWorkflow: jest.fn(async () => ({ ok: true })),
+        moveActiveIndex: jest.fn(async () => ({ ok: true })),
+        setActiveIndex: jest.fn(async () => ({ ok: true })),
+        saveDocument: jest.fn(async () => ({ ok: true })),
+      },
+      publicDir: '/public',
+      writerDir: '/writer',
+      exchangeRealtimeCallSdp: jest.fn(async () => ({ sdpAnswer: 'answer' })),
+      getNonCoreThinStatus: jest.fn(() => ({ status: 'ok' })),
+      renderNonCoreThinDashboard: jest.fn(() => '<html />'),
+      getMoveDirection: jest.fn(() => 1),
+      getNextIndex: jest.fn(() => 1),
+      getDocumentContent: jest.fn(() => ''),
+      shouldSetResponseLocation,
+    };
+    const response = {
+      json: jest.fn(),
+      type: jest.fn(() => response),
+      send: jest.fn(() => response),
+      set: jest.fn(),
+      status: jest.fn(() => response),
+      redirect: jest.fn(),
+      headersSent: false,
+    };
+
+    createLocalAppCore(deps);
+    await handlers['get /config.json']({}, response, jest.fn());
+    await handlers['get /seed.json']({}, response, jest.fn());
+    await handlers['get /admin.html']({}, response, jest.fn());
+    await handlers['get /manual.html']({}, response, jest.fn());
+    await handlers['get /mod.html']({}, response, jest.fn());
+    await handlers['get /new-page.html']({}, response, jest.fn());
+    await handlers['get /new-story.html']({}, response, jest.fn());
+    await handlers['get /stats.html']({}, response, jest.fn());
+
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        submitNewStoryUrl: expect.any(String),
+      })
+    );
+    expect(response.send).toHaveBeenCalled();
+    expect(response.type).toHaveBeenCalledWith('html');
+  });
+
   test('wires the local app routes without a request logger and skips location headers when not needed', async () => {
     const handlers = {};
     const app = {

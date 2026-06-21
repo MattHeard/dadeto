@@ -27,6 +27,10 @@ class FakeChildProcess extends EventEmitter {
   }
 }
 
+/**
+ * Flush the current event loop tick.
+ * @returns {Promise<void>} Completion promise.
+ */
 function flushEventLoop() {
   return new Promise(resolve => setImmediate(resolve));
 }

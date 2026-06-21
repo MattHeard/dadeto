@@ -1,4 +1,5 @@
 import { ensureString, isNonNullObject } from './commonCore.js';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
   'checkout.session.completed',
@@ -17,6 +18,14 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
  *   api_version?: string,
  *   request?: { id?: string | null, idempotency_key?: string | null } | null,
  * }} PaymentEvent
+ */
+
+/**
+ * @typedef {{
+ *   rawBody?: string | Buffer,
+ *   body?: unknown,
+ *   headers?: Record<string, string | string[] | undefined>,
+ * }} PaymentWebhookRequest
  */
 
 /**
@@ -90,7 +99,10 @@ export function createPaymentWebhookHandler(deps) {
  *   getPaymentEvent: (request: unknown) => Promise<PaymentEvent>,
  * }} Runtime webhook dependencies.
  */
-function resolvePaymentWebhookDependencies(deps = {}) {
+function resolvePaymentWebhookDependencies(deps) {
+  const typedDeps = /** @type {Partial<PaymentWebhookDependencies>} */ (
+    deps ?? {}
+  );
   const {
     fetchCredit,
     applyCreditEvent,
@@ -101,23 +113,41 @@ function resolvePaymentWebhookDependencies(deps = {}) {
     allowedEventTypes = DEFAULT_ALLOWED_EVENT_TYPES,
     getAmountFromEvent = defaultGetAmountFromEvent,
     getPaymentEvent = async request => extractPaymentEvent(request),
-  } = deps;
+  } = typedDeps;
 
   assertWebhookDependency(fetchCredit, 'fetchCredit');
   assertWebhookDependency(applyCreditEvent, 'applyCreditEvent');
   assertWebhookDependency(resolveApiKeyUuid, 'resolveApiKeyUuid');
 
   return {
-    fetchCredit,
-    applyCreditEvent,
-    resolveApiKeyUuid: async event => resolveApiKeyUuid(event),
-    isDuplicateEvent: async eventId => Boolean(await isDuplicateEvent(eventId)),
-    markProcessedEvent: async (event, uuid) => markProcessedEvent(event, uuid),
+    fetchCredit: toCallable(fetchCredit),
+    applyCreditEvent: toCallable(applyCreditEvent),
+    resolveApiKeyUuid: async event => toCallable(resolveApiKeyUuid)(event),
+    isDuplicateEvent: async eventId =>
+      Boolean(
+        await /** @type {(eventId: string) => Promise<boolean> | boolean} */ (
+          isDuplicateEvent
+        )(eventId)
+      ),
+    markProcessedEvent: async (event, uuid) =>
+      /** @type {(event: PaymentEvent, uuid: string) => Promise<void> | void} */ (
+        markProcessedEvent
+      )(event, uuid),
     logger,
     allowedEventTypes,
     getAmountFromEvent,
     getPaymentEvent: async request => getPaymentEvent(request),
   };
+}
+
+/**
+ * Coerce a dependency into a callable value.
+ * @template {(...args: Array<any>) => any} T
+ * @param {T | undefined} dependency Dependency to wrap.
+ * @returns {T} Callable dependency.
+ */
+function toCallable(dependency) {
+  return /** @type {T} */ (dependency);
 }
 
 /**
@@ -163,9 +193,13 @@ export async function extractPaymentEvent(request) {
     throw new TypeError('request must be an object');
   }
 
-  const typed = /** @type {{ body?: unknown }} */ (request);
-  if (isNonNullObject(typed.body) && typeof typed.body.id === 'string') {
-    return /** @type {PaymentEvent} */ (typed.body);
+  const typed = /** @type {PaymentWebhookRequest} */ (request);
+  const body = /** @type {PaymentEvent | unknown} */ (typed.body);
+  if (isNonNullObject(body)) {
+    const event = /** @type {{ id?: unknown }} */ (body);
+    if (typeof event.id === 'string') {
+      return /** @type {PaymentEvent} */ (body);
+    }
   }
 
   throw new TypeError('request body must be a payment event object');
@@ -177,14 +211,16 @@ export async function extractPaymentEvent(request) {
  * @returns {Record<string, string>} Normalized metadata.
  */
 export function readMetadata(object) {
-  const metadata = object.metadata;
+  const metadata = /** @type {unknown} */ (object.metadata);
   if (!isNonNullObject(metadata)) {
     return {};
   }
 
   /** @type {Record<string, string>} */
   const values = {};
-  for (const [key, value] of Object.entries(metadata)) {
+  for (const [key, value] of Object.entries(
+    /** @type {Record<string, unknown>} */ (metadata)
+  )) {
     if (typeof value === 'string' && value.length > 0) {
       values[key] = value;
     }
@@ -258,6 +294,118 @@ export function firstNonEmptyString(values) {
   }
 
   return '';
+}
+
+/**
+ * Extract a raw payment webhook payload from a request-like object.
+ * @param {unknown} request Request-like input.
+ * @returns {string} Raw payload text when available.
+ */
+export function extractRawPayload(request) {
+  const typed = /** @type {PaymentWebhookRequest | null | undefined} */ (
+    request
+  );
+  const rawBody = typed?.rawBody;
+  if (typeof rawBody === 'string') {
+    return rawBody;
+  }
+
+  if (Buffer.isBuffer(rawBody)) {
+    return rawBody.toString('utf8');
+  }
+
+  return resolvePayloadBody(typed?.body);
+}
+
+/**
+ * Extract a header value from a request-like object.
+ * @param {unknown} request Request-like input.
+ * @param {string} name Header name.
+ * @returns {string} Header value or an empty string.
+ */
+export function extractHeader(request, name) {
+  const typed = /** @type {PaymentWebhookRequest | null | undefined} */ (
+    request
+  );
+  const headers = typed?.headers ?? {};
+  const lower = name.toLowerCase();
+  const value = headers[name] ?? headers[lower];
+  return ensureString(value);
+}
+
+/**
+ * Resolve a request body into a string payload.
+ * @param {unknown} body Request body.
+ * @returns {string} Payload string.
+ */
+function resolvePayloadBody(body) {
+  if (typeof body === 'string') {
+    return body;
+  }
+
+  if (body && typeof body === 'object') {
+    return JSON.stringify(body);
+  }
+
+  return '';
+}
+
+/**
+ * Parse a JSON payment event body.
+ * @param {string} payload JSON payload.
+ * @returns {PaymentEvent} Parsed event.
+ */
+export function parseJsonEvent(payload) {
+  const parsed = JSON.parse(payload);
+  if (!parsed || typeof parsed !== 'object' || typeof parsed.id !== 'string') {
+    throw new TypeError('Invalid payment event payload');
+  }
+
+  return parsed;
+}
+
+/**
+ * Verify a payment webhook signature.
+ * @param {string} payload Raw payload.
+ * @param {string} signature Signature header.
+ * @param {string} secret Webhook secret.
+ * @returns {boolean} True when signature matches.
+ */
+export function verifyPaymentSignature(payload, signature, secret) {
+  const parts = Object.fromEntries(
+    signature.split(',').map(part => {
+      const [key, value] = part.split('=');
+      return [key, value];
+    })
+  );
+  const timestamp = parts.t;
+  const expected = parts.v1;
+  if (!timestamp || !expected) {
+    return false;
+  }
+
+  const signedPayload = `${timestamp}.${payload}`;
+  const actual = createHmac('sha256', secret)
+    .update(signedPayload, 'utf8')
+    .digest('hex');
+
+  return safeEqual(actual, expected);
+}
+
+/**
+ * Compare two strings in constant time when lengths match.
+ * @param {string} actual Actual value.
+ * @param {string} expected Expected value.
+ * @returns {boolean} True when the values match.
+ */
+export function safeEqual(actual, expected) {
+  const left = Buffer.from(actual, 'utf8');
+  const right = Buffer.from(expected, 'utf8');
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return timingSafeEqual(left, right);
 }
 
 /**

@@ -187,10 +187,7 @@ export async function createCopyCloudHandle(deps) {
 
   const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
   const commonCoreSource = join(srcCoreDir, 'commonCore.js');
-  const paymentWebhookCoreSource = join(
-    srcCoreDir,
-    'payment-webhook-core.js'
-  );
+  const paymentWebhookCoreSource = join(srcCoreDir, 'payment-webhook-core.js');
   const expressAppSource = join(srcCoreDir, 'express-app.js');
 
   const commonCoreCopies = functionDirectories.map(name => ({

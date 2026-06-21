@@ -2,13 +2,19 @@ import {
   createResolveApiKeyUuid,
   createPaymentWebhookHandler,
   extractPaymentEvent,
+  extractHeader,
+  extractRawPayload,
   defaultGetAmountFromEvent,
   firstNonEmptyString,
   parsePositiveInteger,
+  parseJsonEvent,
   readMetadata,
+  safeEqual,
+  verifyPaymentSignature,
 } from '../../../../src/core/payment-webhook-core.js';
 import { createFakeFirestore } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 import { createApplyCreditEvent } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
+import { createHmac } from 'node:crypto';
 import { jest } from '@jest/globals';
 
 describe('createResolveApiKeyUuid', () => {
@@ -337,6 +343,9 @@ describe('extractPaymentEvent', () => {
     await expect(extractPaymentEvent({ body: {} })).rejects.toThrow(
       'request body must be a payment event object'
     );
+    await expect(extractPaymentEvent({ body: 'plain text' })).rejects.toThrow(
+      'request body must be a payment event object'
+    );
   });
 });
 
@@ -363,5 +372,57 @@ describe('helper exports', () => {
         type: 'payment_intent.succeeded',
       })
     ).toBe(0);
+  });
+
+  it('covers webhook payload and signature helpers', () => {
+    const payload =
+      '{"id":"evt_helper_payload","type":"payment_intent.succeeded"}';
+    const raw = Buffer.from(payload);
+    expect(extractRawPayload({ rawBody: payload })).toBe(payload);
+    expect(
+      extractRawPayload({
+        rawBody: raw,
+        headers: { 'payment-signature': 't=1,v1=2' },
+      })
+    ).toBe(payload);
+    expect(
+      extractRawPayload({
+        body: { id: 'evt_helper_payload_2', type: 'payment_intent.succeeded' },
+      })
+    ).toContain('evt_helper_payload_2');
+    expect(
+      extractRawPayload({
+        body: 'plain-payload',
+      })
+    ).toBe('plain-payload');
+    expect(
+      extractHeader(
+        { headers: { 'payment-signature': 'sig', 'x-test': 'value' } },
+        'payment-signature'
+      )
+    ).toBe('sig');
+    expect(extractHeader({}, 'missing')).toBe('');
+    expect(extractRawPayload({})).toBe('');
+    expect(extractHeader({ headers: {} }, 'missing')).toBe('');
+    expect(
+      parseJsonEvent('{"id":"evt_json","type":"payment_intent.succeeded"}')
+    ).toMatchObject({
+      id: 'evt_json',
+    });
+    expect(() => parseJsonEvent('{"type":"payment_intent.succeeded"}')).toThrow(
+      'Invalid payment event payload'
+    );
+    expect(safeEqual('abc', 'abc')).toBe(true);
+    expect(safeEqual('abc', 'abd')).toBe(false);
+    expect(safeEqual('ab', 'abc')).toBe(false);
+    const signed = createHmac('sha256', 'secret')
+      .update('123.payload', 'utf8')
+      .digest('hex');
+    expect(
+      verifyPaymentSignature('payload', `t=123,v1=${signed}`, 'secret')
+    ).toBe(true);
+    expect(verifyPaymentSignature('payload', 'v1=missing', 'secret')).toBe(
+      false
+    );
   });
 });

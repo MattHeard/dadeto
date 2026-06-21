@@ -23,6 +23,7 @@ import { getAuthorizationHeader } from '../../submit-shared.js';
 import {
   createApplyCreditEvent,
   createFetchCredit,
+  createFetchCreditEvents,
   createGetApiKeyCreditV2Handler,
   extractUuid,
 } from '../../get-api-key-credit-v2.js';
@@ -353,6 +354,7 @@ async function buildSimulatorState(config) {
   const submitNewStory = createSubmitNewStoryResponder(submitNewStoryConfig);
   const getApiKeyCreditV2 = createGetApiKeyCreditV2Handler({
     fetchCredit: createFetchCredit(db),
+    fetchCreditEvents: createFetchCreditEvents(db),
     applyCreditEvent: createApplyCreditEvent(db),
     getUuid: extractUuid,
     logError: error => console.error(error),

@@ -2,6 +2,8 @@ import { describe, expect, it, jest } from '@jest/globals';
 import {
   createApplyCreditEvent,
   createFetchCredit,
+  createFetchCreditEvents,
+  createGetApiKeyCreditV2Handler,
 } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import * as coreShim from '../../../../src/core/get-api-key-credit-v2.js';
 import { getApiKeyCreditSnapshot } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-snapshot.js';
@@ -66,6 +68,92 @@ describe('createFetchCredit', () => {
 
     const fetchCredit = createFetchCredit(database);
     await expect(fetchCredit('user-999')).resolves.toBe(0);
+  });
+});
+
+describe('createFetchCreditEvents', () => {
+  it('returns an empty history when no events exist', async () => {
+    const database = createFakeFirestore();
+    const fetchCreditEvents = createFetchCreditEvents(database);
+
+    await expect(fetchCreditEvents('missing-user')).resolves.toEqual([]);
+  });
+
+  it('returns internal error when a stored event payload is malformed', async () => {
+    const database = createFakeFirestore();
+    database.runTransaction = jest.fn(async callback =>
+      callback({
+        get: jest.fn(async ref => {
+          if (String(ref.path).includes('/events/')) {
+            return {
+              exists: true,
+              data: () => ({
+                type: 'credit_added',
+                eventId: 'event-bad',
+                amount: 1,
+                balanceAfter: 'not-a-number',
+              }),
+            };
+          }
+
+          return {
+            exists: true,
+            data: () => ({ credit: 1 }),
+          };
+        }),
+        set: jest.fn(),
+      })
+    );
+    const fetchCreditEvents = createFetchCreditEvents(database);
+
+    await expect(fetchCreditEvents('user-malformed')).resolves.toEqual([]);
+  });
+
+  it('skips null ledger event payloads', async () => {
+    const database = createFakeFirestore();
+    await database
+      .doc('api-key-ledger/user-null-event/events/event-null')
+      .set(null);
+    const fetchCreditEvents = createFetchCreditEvents(database);
+
+    await expect(fetchCreditEvents('user-null-event')).resolves.toEqual([]);
+  });
+
+  it('returns the stored ledger events in lexicographic event id order', async () => {
+    const database = createFakeFirestore();
+    await database.doc('api-key-ledger/user-history/events/event-b').set({
+      type: 'credit_added',
+      eventId: 'event-b',
+      amount: 5,
+      balanceBefore: 3,
+      balanceAfter: 8,
+    });
+    await database.doc('api-key-ledger/user-history/events/event-a').set({
+      type: 'credit_deducted',
+      eventId: 'event-a',
+      amount: 2,
+      balanceBefore: 5,
+      balanceAfter: 3,
+    });
+
+    const fetchCreditEvents = createFetchCreditEvents(database);
+
+    await expect(fetchCreditEvents('user-history')).resolves.toEqual([
+      {
+        type: 'credit_deducted',
+        eventId: 'event-a',
+        amount: 2,
+        balanceBefore: 5,
+        balanceAfter: 3,
+      },
+      {
+        type: 'credit_added',
+        eventId: 'event-b',
+        amount: 5,
+        balanceBefore: 3,
+        balanceAfter: 8,
+      },
+    ]);
   });
 });
 
@@ -411,6 +499,75 @@ describe('createApplyCreditEvent', () => {
       status: 500,
       body: 'Internal error',
     });
+  });
+});
+
+describe('createGetApiKeyCreditV2Handler', () => {
+  it('returns the stored ledger history on the events route', async () => {
+    const handler = createGetApiKeyCreditV2Handler({
+      fetchCredit: async () => 0,
+      fetchCreditEvents: async uuid => [
+        {
+          type: 'credit_added',
+          eventId: `event-${uuid}`,
+          amount: 5,
+          balanceBefore: 0,
+          balanceAfter: 5,
+        },
+      ],
+      applyCreditEvent: async () => ({
+        status: 200,
+        body: { ok: true },
+      }),
+      getUuid: request => String(request.path ?? '').split('/')[2] ?? '',
+    });
+
+    await expect(
+      handler({ method: 'GET', path: '/api-keys/user-events/credit/events' })
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        events: [
+          {
+            type: 'credit_added',
+            eventId: 'event-user-events',
+            amount: 5,
+            balanceBefore: 0,
+            balanceAfter: 5,
+          },
+        ],
+      },
+    });
+  });
+
+  it('defaults to an empty history when no fetchCreditEvents dependency is provided', async () => {
+    const handler = createGetApiKeyCreditV2Handler({
+      fetchCredit: async () => 0,
+      applyCreditEvent: async () => ({
+        status: 200,
+        body: { ok: true },
+      }),
+      getUuid: request => String(request.path ?? '').split('/')[2] ?? '',
+    });
+
+    await expect(
+      handler({ method: 'GET', path: '/api-keys/user-default/credit/events' })
+    ).resolves.toEqual({
+      status: 200,
+      body: {
+        events: [],
+      },
+    });
+  });
+
+  it('rejects invalid history dependencies', () => {
+    expect(() =>
+      createGetApiKeyCreditV2Handler({
+        fetchCredit: async () => 0,
+        fetchCreditEvents: 7,
+        applyCreditEvent: async () => ({ status: 200, body: {} }),
+      })
+    ).toThrow('fetchCreditEvents must be a function');
   });
 });
 

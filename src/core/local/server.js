@@ -72,14 +72,38 @@ export function createLocalAppCore(deps) {
   );
   app.get('/config.json', createConfigRoute());
   app.get('/seed.json', createSeedRoute());
-  app.get('/404.html', createStaticPageHandler('Page Not Found', createNotFoundPage()));
-  app.get('/about.html', createStaticPageHandler('Dendrite - About', createAboutPage()));
+  app.get(
+    '/404.html',
+    createStaticPageHandler('Page Not Found', createNotFoundPage())
+  );
+  app.get(
+    '/about.html',
+    createStaticPageHandler('Dendrite - About', createAboutPage())
+  );
   app.get('/admin.html', createStaticPageHandler('Admin', createAdminPage()));
-  app.get('/manual.html', createStaticPageHandler('Dendrite - User Manual', createManualPage()));
-  app.get('/mod.html', createStaticPageHandler('Dendrite - Moderate a story page', createModerationPage()));
-  app.get('/new-page.html', createStaticPageHandler('New Page', createNewPage()));
-  app.get('/new-story.html', createStaticPageHandler('New Story', createNewStory()));
-  app.get('/stats.html', createStaticPageHandler('Dendrite stats', createStatsPage()));
+  app.get(
+    '/manual.html',
+    createStaticPageHandler('Dendrite - User Manual', createManualPage())
+  );
+  app.get(
+    '/mod.html',
+    createStaticPageHandler(
+      'Dendrite - Moderate a story page',
+      createModerationPage()
+    )
+  );
+  app.get(
+    '/new-page.html',
+    createStaticPageHandler('New Page', createNewPage())
+  );
+  app.get(
+    '/new-story.html',
+    createStaticPageHandler('New Story', createNewStory())
+  );
+  app.get(
+    '/stats.html',
+    createStaticPageHandler('Dendrite stats', createStatsPage())
+  );
 
   app.get('/non-core-thin', createDashboardRouteHandler(deps));
 
@@ -92,40 +116,80 @@ export function createLocalAppCore(deps) {
   return { app };
 }
 
+/**
+ * Create an HTML route handler for a static page.
+ * @param {string} title Page title.
+ * @param {string} body Page body HTML.
+ * @returns {(req: unknown, res: { status: (code: number) => { type: (value: string) => { send: (html: string) => void } } }) => void} Express handler.
+ */
 function createStaticPageHandler(title, body) {
   return (_req, res) => {
     res.status(200).type('html').send(wrapHtml(title, body));
   };
 }
 
+/**
+ * Wrap page content in the shared document shell.
+ * @param {string} title Page title.
+ * @param {string} body Page body HTML.
+ * @returns {string} Full HTML document.
+ */
 function wrapHtml(title, body) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title}</title></head><body>${sharedChrome()}<main>${body}</main></body></html>`;
 }
 
+/**
+ * Render the shared header chrome for local pages.
+ * @returns {string} Shared chrome HTML.
+ */
 function sharedChrome() {
   return `<header class="site-header"><a class="brand" href="/">Dendrite</a><nav aria-label="Primary" class="nav-inline"><a href="/new-story.html">New story</a><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><a href="/about.html">About</a><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></nav><button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu">Open menu</button></header><div id="mobile-menu" hidden aria-hidden="true"><h3>Write</h3><a href="/new-story.html">New story</a><h3>Moderation</h3><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><h3>About</h3><a href="/about.html">About</a><h3>Account</h3><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></div><script>const toggle=document.querySelector('.menu-toggle');const menu=document.getElementById('mobile-menu');if(toggle&&menu){toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));menu.hidden=open;menu.setAttribute('aria-hidden',String(open));});}</script>`;
 }
 
+/**
+ * Render the local 404 page.
+ * @returns {string} HTML markup.
+ */
 function createNotFoundPage() {
   return `<h1>404 - Page Not Found</h1><p>requested content could not be found</p>`;
 }
 
+/**
+ * Render the about page.
+ * @returns {string} HTML markup.
+ */
 function createAboutPage() {
   return `<h1>About</h1><h2>Discuss Dendrite with us at:</h2><a href="https://reddit.com/r/DendriteStories">reddit.com/r/DendriteStories</a><p>Dendrite is an online, choose-your-own-adventure book</p>`;
 }
 
+/**
+ * Render the admin page.
+ * @returns {string} HTML markup.
+ */
 function createAdminPage() {
   return `<h1>Admin</h1><div id="adminContent" hidden><button>Render contents</button><button id="generateStatsButton" onclick="document.getElementById('renderStatus').textContent='Stats generated';document.getElementById('topStories').textContent='E2E moderation fixture story'">Generate stats</button><div id="renderStatus"></div></div><form id="regenForm">Page variant<input id="regenInput" placeholder="5a"></form><div id="topStories"></div><script>(()=>{const adminContent=document.getElementById('adminContent');if(sessionStorage.getItem('id_token')&&adminContent){adminContent.hidden=false;}})();</script>`;
 }
 
+/**
+ * Render the manual page.
+ * @returns {string} HTML markup.
+ */
 function createManualPage() {
   return `<h1>User Manual</h1><h2>Reading stories</h2><h2>Creating new content</h2><p>Welcome to Dendrite. This guide explains</p>`;
 }
 
+/**
+ * Render the moderation page.
+ * @returns {string} HTML markup.
+ */
 function createModerationPage() {
   return `<h1>Moderate a story page</h1><p>Please contribute to keeping Dendrite</p><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div><div id="pageContent" style="display:none"></div><div id="actions"><button id="approveBtn" disabled>Approve</button><button id="rejectBtn" disabled>Reject</button></div><div id="fetching">Fetching...</div><script>const setText=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};(async()=>{const seed=await fetch('/seed.json').then(r=>r.json());await fetch('/config.json').then(r=>r.json());if(sessionStorage.getItem('id_token')){document.body.classList.add('authed');const signoutWrap=document.getElementById('signoutWrap');if(signoutWrap)signoutWrap.style.display='';document.querySelectorAll('#signinButton').forEach(el=>el.style.display='none');const pageContent=document.getElementById('pageContent');if(pageContent)pageContent.style.display='';setText('pageContent',seed.moderation.firstContent);const approve=document.getElementById('approveBtn');const reject=document.getElementById('rejectBtn');if(approve)approve.disabled=false;if(reject)reject.disabled=false;approve?.addEventListener('click',()=>setText('pageContent',seed.moderation.secondContent));reject?.addEventListener('click',()=>setText('pageContent',seed.moderation.secondContent));}})().catch(()=>{});</script>`;
 }
 
+/**
+ * Create the config.json route handler.
+ * @returns {(req: unknown, res: { json: (body: unknown) => void }) => void} Express handler.
+ */
 function createConfigRoute() {
   return (_req, res) => {
     const apiBaseUrl = process.env.API_BASE_URL ?? '';
@@ -143,6 +207,10 @@ function createConfigRoute() {
   };
 }
 
+/**
+ * Create the seed.json route handler.
+ * @returns {(req: unknown, res: { json: (body: unknown) => void }) => void} Express handler.
+ */
 function createSeedRoute() {
   return (_req, res) => {
     res.json({
@@ -166,14 +234,26 @@ function createSeedRoute() {
   };
 }
 
+/**
+ * Render the new page form.
+ * @returns {string} HTML markup.
+ */
 function createNewPage() {
   return `<h1>New page</h1><form data-submit-handler-ready="true" method="post" action="${process.env.API_BASE_URL ?? ''}/__sim/submit-new-page"><label for="incoming_option">Incoming option</label><input name="incoming_option" type="hidden" id="incoming_option"><label for="page">Page</label><input name="page" type="hidden" id="page"><label for="option0">Option 1</label><input id="option0" name="option0" placeholder="Option 1"><label for="option1">Option 2</label><input id="option1" name="option1" placeholder="Option 2"><label for="option2">Option 3</label><input id="option2" name="option2" placeholder="Option 3"><label for="option3">Option 4</label><input id="option3" name="option3" placeholder="Option 4"><button type="submit">Submit</button></form><script>(async()=>{const config=await fetch('/config.json').then(r=>r.json());const form=document.querySelector('form');if(form&&config.submitNewPageUrl)form.setAttribute('action',config.submitNewPageUrl);})().catch(()=>{});</script>`;
 }
 
+/**
+ * Render the new story form.
+ * @returns {string} HTML markup.
+ */
 function createNewStory() {
   return `<h1>New story</h1><form data-submit-handler-ready="true" method="post" action="/__sim/submit-new-story"><label for="title">Title</label><input id="title" name="title"><label for="content">Content</label><textarea id="content" name="content"></textarea><label for="author">Author</label><input id="author" name="author"><label for="option0">Option 1</label><input id="option0" name="option0"><label for="option1">Option 2</label><input id="option1" name="option1"><label for="option2">Option 3</label><input id="option2" name="option2"><label for="option3">Option 4</label><input id="option3" name="option3"><button type="submit">Submit</button></form><script>(async()=>{const config=await fetch('/config.json').then(r=>r.json());const form=document.querySelector('form');if(!form||!config.submitNewStoryUrl)return;form.setAttribute('action',config.submitNewStoryUrl);form.addEventListener('submit',async event=>{event.preventDefault();const formData=new FormData(form);const response=await fetch(config.submitNewStoryUrl,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams(formData)});if(response.ok){window.location.assign('/index.html');}});})().catch(()=>{});</script>`;
 }
 
+/**
+ * Render the stats page.
+ * @returns {string} HTML markup.
+ */
 function createStatsPage() {
   return `<h1>Dendrite stats</h1><div id="topStories">E2E moderation fixture story</div><main>Number of stories: 1 Number of pages: 2 Number of unmoderated pages: 1</main>`;
 }

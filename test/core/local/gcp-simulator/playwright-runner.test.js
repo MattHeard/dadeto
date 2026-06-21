@@ -31,6 +31,10 @@ class FakeChildProcess extends EventEmitter {
   }
 }
 
+/**
+ * Flush the current event loop tick.
+ * @returns {Promise<void>} Completion promise.
+ */
 function flushEventLoop() {
   return new Promise(resolve => setImmediate(resolve));
 }
@@ -62,7 +66,7 @@ describe('local playwright runner', () => {
       .mockImplementation(chunk => {
         stderrWrites.push(String(chunk));
         return true;
-    });
+      });
 
     const simulator = new FakeChildProcess();
     const writer = new FakeChildProcess();
@@ -203,6 +207,55 @@ describe('local playwright runner', () => {
     expect(() =>
       playwrightRunnerTestUtils.terminateProcess(null)
     ).not.toThrow();
+  });
+
+  it('builds the playwright env from the provided api base url when present', async () => {
+    const playwright = new FakeChildProcess();
+    const spawnCalls = [];
+    const spawnImpl = jest.fn((command, args, options) => {
+      spawnCalls.push({ command, args, options });
+      return playwright;
+    });
+
+    playwrightRunnerTestUtils.spawnPlaywright({
+      repoRoot: '/repo',
+      spawnImpl,
+      options: {},
+      simulatorEnv: { GCP_SIMULATOR_PORT: '8080' },
+      baseUrl: 'http://127.0.0.1:4322',
+      apiBaseUrl: 'http://127.0.0.1:9001',
+    });
+
+    expect(spawnCalls[0].options.env).toMatchObject({
+      API_BASE_URL: 'http://127.0.0.1:9001',
+      GCP_SIMULATOR_PORT: '8080',
+      PAYMENT_WEBHOOK_URL: 'http://127.0.0.1:9001/__sim/payment-webhook',
+      PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:4322',
+    });
+  });
+
+  it('falls back to the writer base url when no api base url is provided', () => {
+    const playwright = new FakeChildProcess();
+    const spawnCalls = [];
+    const spawnImpl = jest.fn((command, args, options) => {
+      spawnCalls.push({ command, args, options });
+      return playwright;
+    });
+
+    playwrightRunnerTestUtils.spawnPlaywright({
+      repoRoot: '/repo',
+      spawnImpl,
+      options: { playwrightArgs: ['--grep', 'fallback'] },
+      simulatorEnv: { GCP_SIMULATOR_PORT: '8080' },
+      baseUrl: 'http://127.0.0.1:4322',
+    });
+
+    expect(spawnCalls[0].options.env).toMatchObject({
+      API_BASE_URL: 'http://127.0.0.1:4322',
+      GCP_SIMULATOR_PORT: '8080',
+      PAYMENT_WEBHOOK_URL: 'http://127.0.0.1:4322/__sim/payment-webhook',
+      PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:4322',
+    });
   });
 
   it('uses the default runner commands when options are omitted', async () => {

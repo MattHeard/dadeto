@@ -32,7 +32,7 @@ module.exports = {
       name: 'src-browser-only-core',
       comment:
         'Limit browser-layer dependencies to itself or src/core so layers stay focused.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/browser',
       },
@@ -44,7 +44,7 @@ module.exports = {
       name: 'src-build-only-core',
       comment:
         'Keep build helper modules isolated to their own folder or core for clarity.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/build',
       },
@@ -56,7 +56,7 @@ module.exports = {
       name: 'src-cloud-only-core',
       comment:
         'Keep cloud integration pieces limited to their own directory or src/core.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/cloud',
       },
@@ -68,7 +68,7 @@ module.exports = {
       name: 'src-local-only-core',
       comment:
         'Allow local tooling to depend only on itself or src/core for clearer layering.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/local',
       },
@@ -80,7 +80,7 @@ module.exports = {
       name: 'src-scripts-only-core',
       comment:
         'Keep script helpers scoped to their own folder or src/core to prevent leaks.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/scripts',
       },
@@ -92,7 +92,7 @@ module.exports = {
       name: 'src-core-within-core',
       comment:
         'Avoid core modules reaching outside src/core so the shared layer stays portable.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/core',
       },
@@ -188,7 +188,7 @@ module.exports = {
       name: 'src-local-no-cloud',
       comment:
         'Keep local tools insulated from cloud integration code so the local runner stays focused.',
-      severity: 'warn',
+      severity: 'error',
       from: {
         path: '^src/local',
       },

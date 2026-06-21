@@ -62,6 +62,20 @@ test('adds credit, replays idempotently, and persists the snapshot', async ({
   const balanceResponse = await request.get(url);
   expect(balanceResponse.status()).toBe(200);
   await expect(balanceResponse.json()).resolves.toEqual({ credit: 25 });
+
+  const historyResponse = await request.get(`${url}/events`);
+  expect(historyResponse.status()).toBe(200);
+  await expect(historyResponse.json()).resolves.toEqual({
+    events: [
+      {
+        type: 'credit_added',
+        eventId,
+        amount: 25,
+        balanceBefore: 0,
+        balanceAfter: 25,
+      },
+    ],
+  });
 });
 
 test('rejects unknown-key deductions and overdrafts', async ({ request }) => {

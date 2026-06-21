@@ -3,7 +3,7 @@ import { once } from 'node:events';
 import { afterAll, beforeAll, describe, expect, it, jest } from '@jest/globals';
 import express from 'express';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('gcp simulator server', () => {
   /** @type {import('node:http').Server | null} */

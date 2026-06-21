@@ -9,7 +9,7 @@ Every change (code, docs, config, or infra) is done only when all of the followi
 
 1. **Scope is bounded and explicit** (what changed and why).
 2. **Required evaluators are executed** for impacted subsystems.
-3. **`npm test` passes locally** (or failure is explicitly escalated with owning `bd` bead).
+3. **`npm test` passes locally** (or failure is explicitly escalated with owning `bd` bead). `npm test` is the full repo gate: unit plus all e2e.
 4. **Evidence is recorded** (exact command + outcome + artifact paths where applicable).
 5. **No untracked quality debt is introduced**; unresolved issues are tracked in `bd` before closure.
 6. **Branch is landed** (pull/rebase, sync, push, verify up-to-date status).
@@ -43,7 +43,7 @@ Use the evaluator matrix as source of truth. At minimum:
 - **Dendrite package/public path changes:** `npm run build:dendritestories-co-nz`
 - **Shared-module refactors with architecture risk:** `npm run duplication`
 - **Non-core JS changes:** `npm run non-core-thin`
-- **E2E-covered release surfaces:** cloud E2E workflow execution
+- **E2E-covered release surfaces:** `npm run test:e2e`
 
 ## Core-first architecture gates
 
@@ -60,6 +60,7 @@ The exemption file should normally stay empty; if a temporary exception is added
 
 Playwright E2E is split into:
 
+- `npm run test:e2e` for all Playwright coverage.
 - `npm run test:e2e:cloud` for Cloud Run / Google Cloud services.
 - `npm run test:e2e:local` for local server behavior that should not run in GCP.
 

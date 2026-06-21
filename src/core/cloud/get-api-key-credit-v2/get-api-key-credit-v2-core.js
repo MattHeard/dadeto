@@ -11,7 +11,8 @@ import {
 export { createDb } from './create-db.js';
 export { productionOrigins };
 
-const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
+const UUID_PATH_PATTERN =
+  /\/api-keys\/([0-9a-fA-F-]{36})\/credit(?:\/events)?\/?$/;
 
 /**
  * Result of executing a UUID capturing regex.
@@ -43,6 +44,11 @@ const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
  * @typedef {{
  *   credit: number,
  * }} CreditBalanceResponseBody
+ *
+ * Credit event history response body.
+ * @typedef {{
+ *   events: Array<CreditLedgerEvent>,
+ * }} CreditHistoryResponseBody
  */
 
 /**
@@ -53,13 +59,22 @@ const UUID_PATH_PATTERN = /\/api-keys\/([0-9a-fA-F-]{36})\/credit\/?$/;
  *   eventId: string,
  *   applied: true,
  * }} CreditEventResponseBody
+ *
+ * Credit ledger event response body.
+ * @typedef {{
+ *   type: CreditEventType,
+ *   eventId: string,
+ *   amount: number,
+ *   balanceBefore: number,
+ *   balanceAfter: number,
+ * }} CreditLedgerEvent
  */
 
 /**
  * Credit API response metadata.
  * @typedef {{
  *   status: number,
- *   body: string | CreditBalanceResponseBody | CreditEventResponseBody,
+ *   body: string | CreditBalanceResponseBody | CreditEventResponseBody | CreditHistoryResponseBody,
  *   headers?: Record<string, string>,
  * }} CreditApiResponse
  */
@@ -162,6 +177,7 @@ export function extractUuid(request) {
 /**
  * @typedef {{
  *   fetchCredit?: (uuid: string) => Promise<number | null>,
+ *   fetchCreditEvents?: (uuid: string) => Promise<Array<CreditLedgerEvent>>,
  *   applyCreditEvent?: (uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
  *   getUuid?: (request: unknown) => string,
  *   logError?: (error: unknown) => void,
@@ -174,8 +190,13 @@ export function extractUuid(request) {
  * @returns {(request?: { method?: string, body?: unknown } & Record<string, unknown>) => Promise<CreditApiResponse>} Handler producing HTTP response metadata.
  */
 export function createGetApiKeyCreditV2Handler(deps) {
-  const { fetchCredit, applyCreditEvent, resolveUuid, errorLogger } =
-    resolveV2HandlerDependencies(deps);
+  const {
+    fetchCredit,
+    fetchCreditEvents,
+    applyCreditEvent,
+    resolveUuid,
+    errorLogger,
+  } = resolveV2HandlerDependencies(deps);
 
   return async function handleRequest(request = {}) {
     const method = ensureString(request.method).toUpperCase();
@@ -184,6 +205,13 @@ export function createGetApiKeyCreditV2Handler(deps) {
 
     return resolveRequestResponse(validationError, () => {
       if (method === 'GET') {
+        if (isCreditEventsRequest(/** @type {{ path?: string }} */ (request))) {
+          return fetchCreditEventsResponse(
+            fetchCreditEvents,
+            uuid,
+            errorLogger
+          );
+        }
         return fetchCreditResponse(fetchCredit, uuid, errorLogger);
       }
 
@@ -200,6 +228,7 @@ export function createGetApiKeyCreditV2Handler(deps) {
 /**
  * @typedef {{
  *   fetchCredit: (uuid: string) => Promise<number | null>,
+ *   fetchCreditEvents: (uuid: string) => Promise<Array<CreditLedgerEvent>>,
  *   applyCreditEvent: (uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>,
  *   resolveUuid: (request: unknown) => string,
  *   errorLogger: (error: unknown) => void,
@@ -212,22 +241,36 @@ export function createGetApiKeyCreditV2Handler(deps) {
  * @returns {ResolvedHandlerDependencies} Runtime helpers for the handler.
  */
 function resolveV2HandlerDependencies(deps = {}) {
-  const { fetchCredit, applyCreditEvent, getUuid, logError } =
-    /** @type {HandlerDependencies} */ (deps);
+  const typedDeps = /** @type {HandlerDependencies} */ (deps);
+  const fetchCredit = typedDeps.fetchCredit;
+  const fetchCreditEvents = typedDeps.fetchCreditEvents;
+  const applyCreditEvent = typedDeps.applyCreditEvent;
+  const getUuid = typedDeps.getUuid;
+  const logError = typedDeps.logError;
   ensureFetchCredit(fetchCredit);
+  ensureFetchCreditEvents(fetchCreditEvents);
   ensureApplyCreditEvent(applyCreditEvent);
 
   return {
-    fetchCredit: /** @type {(uuid: string) => Promise<number | null>} */ (
-      fetchCredit
-    ),
-    applyCreditEvent:
-      /** @type {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} */ (
-        applyCreditEvent
+    fetchCredit: resolveCallable(fetchCredit),
+    fetchCreditEvents:
+      /** @type {(uuid: string) => Promise<Array<CreditLedgerEvent>>} */ (
+        fetchCreditEvents ?? (async () => [])
       ),
+    applyCreditEvent: resolveCallable(applyCreditEvent),
     resolveUuid: resolveUuidDependency(getUuid),
     errorLogger: resolveErrorLogger(logError),
   };
+}
+
+/**
+ * Coerce a dependency into a callable value.
+ * @template {(...args: Array<any>) => any} T
+ * @param {T | undefined} dependency Dependency to wrap.
+ * @returns {T} Callable dependency.
+ */
+function resolveCallable(dependency) {
+  return /** @type {T} */ (dependency);
 }
 
 /**
@@ -253,6 +296,20 @@ function ensureApplyCreditEvent(applyCreditEvent) {
 }
 
 /**
+ * Ensure a fetchCreditEvents dependency is provided when history is requested.
+ * @param {unknown} fetchCreditEvents Candidate dependency.
+ * @returns {void}
+ */
+function ensureFetchCreditEvents(fetchCreditEvents) {
+  if (
+    typeof fetchCreditEvents !== 'undefined' &&
+    typeof fetchCreditEvents !== 'function'
+  ) {
+    throw new TypeError('fetchCreditEvents must be a function');
+  }
+}
+
+/**
  * Use a custom UUID resolver or default to the internal extractor.
  * @param {((request: unknown) => string) | undefined} getUuid Optional resolver.
  * @returns {(request: unknown) => string} UUID resolver to run.
@@ -268,6 +325,15 @@ function resolveUuidDependency(getUuid) {
         request
       )
     );
+}
+
+/**
+ * Determine whether the request is for credit history.
+ * @param {{ path?: string }} request Request-like object.
+ * @returns {boolean} True when the history subresource was requested.
+ */
+function isCreditEventsRequest(request) {
+  return String(request.path ?? '').includes('/credit/events');
 }
 
 /**
@@ -478,6 +544,22 @@ async function fetchCreditResponse(fetchCredit, uuid, errorLogger) {
 }
 
 /**
+ * Fetch the ledger event history and translate it into an HTTP response.
+ * @param {(uuid: string) => Promise<Array<CreditLedgerEvent>>} fetchCreditEvents Function to fetch ledger entries.
+ * @param {string} uuid UUID used for the lookup.
+ * @param {(error: unknown) => void} errorLogger Logger invoked when fetch attempts fail.
+ * @returns {Promise<CreditApiResponse>} HTTP response metadata.
+ */
+async function fetchCreditEventsResponse(fetchCreditEvents, uuid, errorLogger) {
+  return runWithInternalError(errorLogger, async () => ({
+    status: 200,
+    body: {
+      events: await fetchCreditEvents(uuid),
+    },
+  }));
+}
+
+/**
  * Apply a credit event and translate it into an HTTP response.
  * @param {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} applyCreditEvent Function to execute the write.
  * @param {string} uuid UUID used for the mutation.
@@ -550,6 +632,25 @@ export function createFetchCredit(db) {
   return async function fetchCredit(uuid) {
     const snap = await getApiKeyCreditSnapshot(db, uuid);
     return resolveCreditFromSnapshot(snap);
+  };
+}
+
+/**
+ * Create a ledger history fetcher bound to the supplied Firestore database.
+ * @param {CreditFirestore} db Firestore instance to use for lookups.
+ * @returns {(uuid: string) => Promise<Array<CreditLedgerEvent>>} Function to fetch credit events.
+ */
+export function createFetchCreditEvents(db) {
+  return async function fetchCreditEvents(uuid) {
+    const ledgerSnap = await db
+      .collection('api-key-ledger')
+      .doc(String(uuid))
+      .collection('events')
+      .get();
+    return ledgerSnap.docs
+      .map(doc => resolveEventData(doc))
+      .filter(isCreditLedgerEvent)
+      .sort((a, b) => a.eventId.localeCompare(b.eventId));
   };
 }
 
@@ -772,6 +873,29 @@ function resolveStoredCreditEventResponse(snap) {
       amount: data.amount,
     },
     data.balanceAfter
+  );
+}
+
+/**
+ * Determine whether a value is a valid ledger event snapshot payload.
+ * @param {{ type?: CreditEventType, eventId?: string, amount?: number, balanceBefore?: number, balanceAfter?: number } | null} data Event payload candidate.
+ * @returns {data is CreditLedgerEvent} True when the payload is valid.
+ */
+function isCreditLedgerEvent(data) {
+  if (!isNonNullObject(data)) {
+    return false;
+  }
+
+  const typed =
+    /** @type {{ type?: CreditEventType, eventId?: string, amount?: number, balanceBefore?: number, balanceAfter?: number }} */ (
+      data
+    );
+  return (
+    isCreditEventType(typed.type) &&
+    typeof typed.eventId === 'string' &&
+    typeof typed.amount === 'number' &&
+    typeof typed.balanceBefore === 'number' &&
+    typeof typed.balanceAfter === 'number'
   );
 }
 

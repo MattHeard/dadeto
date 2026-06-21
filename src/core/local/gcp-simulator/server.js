@@ -64,6 +64,7 @@ const SIMULATOR_ROUTES = [
   createPostRoute('/__sim/submit-new-story', 'submitNewStory'),
   createPostRoute('/__sim/submit-new-page', 'submitNewPage'),
   createGetRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
+  createGetRoute('/api-keys/:uuid/credit/events', 'getApiKeyCreditV2'),
   createPostRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
   createGetRoute('/__sim/get-moderation-variant', 'getModerationVariant'),
   createPostRoute('/__sim/assign-moderation-job', 'assignModerationJob'),
@@ -105,7 +106,14 @@ async function startServer(deps) {
   });
 
   app.get('/new-story.html', (_req, res) => {
-    res.status(200).type('html').send(createNewStoryPage(simulator.getConfig()));
+    res
+      .status(200)
+      .type('html')
+      .send(
+        createNewStoryPage(
+          /** @type {{ submitNewStoryUrl: string }} */ (simulator.getConfig())
+        )
+      );
   });
 
   for (const route of SIMULATOR_ROUTES) {
@@ -141,7 +149,10 @@ function registerSimulatorRoute(app, simulator, route) {
   app[route.method](route.path, async (req, res) => {
     const handler = simulator.routes[route.routeName];
     const result = await handler(buildSimulatorRequest(req, route));
-    if (route.routeName === 'submitNewStory' && shouldRedirectSubmitStory(req, result)) {
+    if (
+      route.routeName === 'submitNewStory' &&
+      shouldRedirectSubmitStory(req, result)
+    ) {
       res.redirect(303, '/index.html');
       return;
     }

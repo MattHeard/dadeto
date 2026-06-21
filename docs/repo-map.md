@@ -32,13 +32,15 @@
 
 | Command | Subsystem focus | Primary impact |
 | --- | --- | --- |
-| `npm test` | Test + core/runtime integrity | Runs Jest suite with coverage over `src/**` via `test/**`.
+| `npm test` | Full repo test gate | Runs `npm run test:unit` and `npm run test:e2e`.
+| `npm run test:unit` | Unit/integration coverage | Runs Jest suite with coverage over `src/**` via `test/**`.
 | `npm run lint` | Quality gates + style health | ESLint/Prettier sweep with output in `reports/lint/lint.txt`.
 | `npm run build` / `npm run build:mattheard-net` | Build pipeline + static blog | Generates/copies blog output into `public/`.
 | `npm run build:dendritestories-co-nz` | Dendrite browser packaging | Copies browser/core artifacts for static Dendrite deploy.
 | `npm run build:cloud` | Cloud function packaging | Assembles cloud deploy payload from cloud + shared modules.
 | `npm run start` | Static serving | Serves generated `public/` output for local inspection.
 | `npm run start:writer` / `npm run start:writer:playwright` | Local writer runtime | Runs Express writer server with filesystem-backed state.
+| `npm run test:e2e` | All E2E validation | Runs both cloud and local Playwright suites.
 | `npm run test:e2e:cloud` | Cloud E2E validation | Executes Playwright suite intended for cloud/CI execution.
 | `npm run test:e2e:local` | Local server E2E validation | Executes Playwright against the local simulator/local writer path only.
 | `npm run duplication` | Architecture hygiene | Runs duplication analysis (`jscpd`) across repo sources.

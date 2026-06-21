@@ -87,6 +87,29 @@ test('applies checkout credits, replays duplicates, and deducts refunds', async 
   );
   expect(balanceResponse.status()).toBe(200);
   await expect(balanceResponse.json()).resolves.toEqual({ credit: 50 });
+
+  const historyResponse = await request.get(
+    buildApiUrl(`/api-keys/${CHECKOUT_API_KEY_UUID}/credit/events`)
+  );
+  expect(historyResponse.status()).toBe(200);
+  await expect(historyResponse.json()).resolves.toEqual({
+    events: [
+      {
+        type: 'credit_added',
+        eventId: 'evt_e2e_checkout_credit',
+        amount: 80,
+        balanceBefore: 0,
+        balanceAfter: 80,
+      },
+      {
+        type: 'credit_deducted',
+        eventId: 'evt_e2e_checkout_refund',
+        amount: 30,
+        balanceBefore: 80,
+        balanceAfter: 50,
+      },
+    ],
+  });
 });
 
 test('resolves customer mappings for payment-intent events', async ({
