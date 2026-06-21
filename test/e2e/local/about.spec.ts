@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expectSharedChrome } from './static-pages.helpers';
+import { expectSharedChrome } from '../static-pages.helpers';
 
 test('serves about.html with contributor information', async ({ page }) => {
   await page.goto('/about.html', { waitUntil: 'domcontentloaded' });

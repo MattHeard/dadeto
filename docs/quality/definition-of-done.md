@@ -58,7 +58,12 @@ The exemption file should normally stay empty; if a temporary exception is added
 
 ## E2E cloud-only constraint
 
-Playwright E2E is **cloud-executed**, not local-first. Local loops should rely on unit/integration checks unless explicitly instructed otherwise.
+Playwright E2E is split into:
+
+- `npm run test:e2e:cloud` for Cloud Run / Google Cloud services.
+- `npm run test:e2e:local` for local server behavior that should not run in GCP.
+
+Local loops should rely on unit/integration checks unless explicitly instructed otherwise, and the cloud workflow should only invoke the cloud suite.
 
 Reference workflow: `.github/workflows/gcp-test.yml` (Cloud Run Job execution + e2e artifact upload).
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expectSharedChrome } from './static-pages.helpers';
+import { expectSharedChrome } from '../static-pages.helpers';
 
 test('serves mod.html with moderation workflow scaffolding', async ({ page }) => {
   await page.goto('/mod.html', { waitUntil: 'domcontentloaded' });

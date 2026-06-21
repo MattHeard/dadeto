@@ -31,6 +31,10 @@ class FakeChildProcess extends EventEmitter {
   }
 }
 
+function flushEventLoop() {
+  return new Promise(resolve => setImmediate(resolve));
+}
+
 describe('local playwright runner', () => {
   /** @type {(() => void) | null} */
   let restoreStdout = null;
@@ -58,14 +62,23 @@ describe('local playwright runner', () => {
       .mockImplementation(chunk => {
         stderrWrites.push(String(chunk));
         return true;
-      });
+    });
 
     const simulator = new FakeChildProcess();
+    const writer = new FakeChildProcess();
     const playwright = new FakeChildProcess();
     const spawnCalls = [];
     const spawnImpl = jest.fn((command, args, options) => {
       spawnCalls.push({ command, args, options });
-      return spawnCalls.length === 1 ? simulator : playwright;
+      if (spawnCalls.length === 1) {
+        return simulator;
+      }
+
+      if (spawnCalls.length === 2) {
+        return writer;
+      }
+
+      return playwright;
     });
 
     const runPromise = runLocalPlaywright({
@@ -83,8 +96,13 @@ describe('local playwright runner', () => {
       'data',
       Buffer.from('gcp simulator listening on http://127.0.0.1:4532\n')
     );
+    await flushEventLoop();
+    writer.stdout.emit(
+      'data',
+      Buffer.from('writer server listening on http://localhost:4588/writer/\n')
+    );
     simulator.stderr.emit('data', Buffer.from('simulator warning\n'));
-    await Promise.resolve();
+    await flushEventLoop();
     simulator.stdout.emit(
       'data',
       Buffer.from('gcp simulator listening on http://127.0.0.1:4532\n')
@@ -93,12 +111,12 @@ describe('local playwright runner', () => {
     playwright.emit('exit', 0, null);
 
     await expect(runPromise).resolves.toEqual({
-      baseUrl: 'http://127.0.0.1:4532',
+      baseUrl: 'http://127.0.0.1:4588',
       exitCode: 0,
       signal: null,
     });
 
-    expect(spawnCalls).toHaveLength(2);
+    expect(spawnCalls).toHaveLength(3);
     expect(spawnCalls[0]).toMatchObject({
       command: process.execPath,
       args: ['/repo/src/local/gcp-simulator/server.js'],
@@ -109,23 +127,48 @@ describe('local playwright runner', () => {
     });
     expect(spawnCalls[0].options.env).toMatchObject({
       EXTRA_FLAG: '1',
-      GCP_SIMULATOR_PORT: '0',
+      GCP_SIMULATOR_PORT: '8080',
     });
     expect(spawnCalls[1]).toMatchObject({
+      command: process.execPath,
+      args: ['/repo/src/local/server.js'],
+      options: {
+        cwd: '/repo',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    });
+    expect(spawnCalls[1].options.env).toMatchObject({
+      API_BASE_URL: 'http://127.0.0.1:4532',
+      EXTRA_FLAG: '1',
+      GCP_SIMULATOR_PORT: '8080',
+    });
+    expect(spawnCalls[1].options.env.WRITER_PORT).toEqual(expect.any(String));
+    expect(spawnCalls[2]).toMatchObject({
       command: 'npx',
-      args: ['playwright', 'test', '--grep', 'contents'],
+      args: [
+        'playwright',
+        'test',
+        '--config',
+        '/repo/test/e2e/local.config.ts',
+        '--grep',
+        'contents',
+      ],
       options: {
         cwd: '/repo',
         stdio: 'inherit',
       },
     });
-    expect(spawnCalls[1].options.env).toMatchObject({
+    expect(spawnCalls[2].options.env).toMatchObject({
+      API_BASE_URL: 'http://127.0.0.1:4532',
       EXTRA_FLAG: '1',
-      GCP_SIMULATOR_PORT: '0',
-      PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:4532',
+      GCP_SIMULATOR_PORT: '8080',
+      PAYMENT_WEBHOOK_URL: 'http://127.0.0.1:4532/__sim/payment-webhook',
+      PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:4588',
     });
     expect(simulator.kills).toEqual(['SIGTERM']);
+    expect(writer.kills).toEqual(['SIGTERM']);
     expect(stdoutWrites.join('')).toContain('gcp simulator listening on');
+    expect(stdoutWrites.join('')).toContain('writer server listening on');
     expect(stderrWrites.join('')).toContain('simulator warning');
   });
 
@@ -164,11 +207,20 @@ describe('local playwright runner', () => {
 
   it('uses the default runner commands when options are omitted', async () => {
     const simulator = new FakeChildProcess();
+    const writer = new FakeChildProcess();
     const playwright = new FakeChildProcess();
     const spawnCalls = [];
     const spawnImpl = jest.fn((command, args, options) => {
       spawnCalls.push({ command, args, options });
-      return spawnCalls.length === 1 ? simulator : playwright;
+      if (spawnCalls.length === 1) {
+        return simulator;
+      }
+
+      if (spawnCalls.length === 2) {
+        return writer;
+      }
+
+      return playwright;
     });
 
     const runPromise = runLocalPlaywright({
@@ -179,11 +231,16 @@ describe('local playwright runner', () => {
       'data',
       Buffer.from('gcp simulator listening on http://127.0.0.1:4321\n')
     );
-    await Promise.resolve();
+    await flushEventLoop();
+    writer.stdout.emit(
+      'data',
+      Buffer.from('writer server listening on http://localhost:4322/writer/\n')
+    );
+    await flushEventLoop();
     playwright.emit('exit', null, 'SIGTERM');
 
     await expect(runPromise).resolves.toEqual({
-      baseUrl: 'http://127.0.0.1:4321',
+      baseUrl: 'http://127.0.0.1:4322',
       exitCode: 1,
       signal: 'SIGTERM',
     });
@@ -197,22 +254,50 @@ describe('local playwright runner', () => {
       },
     });
     expect(spawnCalls[1]).toMatchObject({
+      command: process.execPath,
+      args: [`${process.cwd()}/src/local/server.js`],
+      options: {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    });
+    expect(spawnCalls[2]).toMatchObject({
       command: 'npx',
-      args: ['playwright', 'test'],
+      args: [
+        'playwright',
+        'test',
+        '--config',
+        `${process.cwd()}/test/e2e/local.config.ts`,
+      ],
       options: {
         cwd: process.cwd(),
         stdio: 'inherit',
       },
     });
+    expect(spawnCalls[2].options.env).toMatchObject({
+      API_BASE_URL: 'http://127.0.0.1:4321',
+      GCP_SIMULATOR_PORT: '8080',
+      PAYMENT_WEBHOOK_URL: 'http://127.0.0.1:4321/__sim/payment-webhook',
+      PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:4322',
+    });
   });
 
   it('treats a null exit code and null signal as a clean exit', async () => {
     const simulator = new FakeChildProcess();
+    const writer = new FakeChildProcess();
     const playwright = new FakeChildProcess();
     const spawnCalls = [];
     const spawnImpl = jest.fn((command, args, options) => {
       spawnCalls.push({ command, args, options });
-      return spawnCalls.length === 1 ? simulator : playwright;
+      if (spawnCalls.length === 1) {
+        return simulator;
+      }
+
+      if (spawnCalls.length === 2) {
+        return writer;
+      }
+
+      return playwright;
     });
 
     const runPromise = runLocalPlaywright({
@@ -224,16 +309,21 @@ describe('local playwright runner', () => {
       'data',
       Buffer.from('gcp simulator listening on http://127.0.0.1:4321\n')
     );
-    await Promise.resolve();
+    await flushEventLoop();
+    writer.stdout.emit(
+      'data',
+      Buffer.from('writer server listening on http://localhost:4322/writer/\n')
+    );
+    await flushEventLoop();
     playwright.emit('exit', null, null);
 
     await expect(runPromise).resolves.toEqual({
-      baseUrl: 'http://127.0.0.1:4321',
+      baseUrl: 'http://127.0.0.1:4322',
       exitCode: 0,
       signal: null,
     });
 
-    expect(spawnCalls).toHaveLength(2);
+    expect(spawnCalls).toHaveLength(3);
   });
 
   it('rejects if the simulator errors before it is ready', async () => {

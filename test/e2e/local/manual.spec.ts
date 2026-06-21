@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expectSharedChrome } from './static-pages.helpers';
+import { expectSharedChrome } from '../static-pages.helpers';
 
 test('serves manual.html with guidance copy', async ({ page }) => {
   const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? process.env.BASE_URL;

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expectSharedChrome } from './static-pages.helpers';
+import { expectSharedChrome } from '../static-pages.helpers';
 
 test('serves admin.html with moderation controls', async ({ page }) => {
   await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });

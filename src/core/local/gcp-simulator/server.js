@@ -9,7 +9,7 @@ import { createLocalGcpSimulator } from './simulator.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const defaultPublicDir = path.resolve(__dirname, '../../../../public');
-const port = Number.parseInt(process.env.GCP_SIMULATOR_PORT ?? '4322', 10);
+const port = Number.parseInt(process.env.GCP_SIMULATOR_PORT ?? '8080', 10);
 /** @type {Promise<any> | null} */
 let simulatorPromise = null;
 
@@ -104,6 +104,10 @@ async function startServer(deps) {
     res.json(simulator.getSeedManifest());
   });
 
+  app.get('/new-story.html', (_req, res) => {
+    res.status(200).type('html').send(createNewStoryPage(simulator.getConfig()));
+  });
+
   for (const route of SIMULATOR_ROUTES) {
     registerSimulatorRoute(app, simulator, route);
   }
@@ -136,7 +140,12 @@ async function startServer(deps) {
 function registerSimulatorRoute(app, simulator, route) {
   app[route.method](route.path, async (req, res) => {
     const handler = simulator.routes[route.routeName];
-    await sendRouteResponse(handler(buildSimulatorRequest(req, route)), res);
+    const result = await handler(buildSimulatorRequest(req, route));
+    if (route.routeName === 'submitNewStory' && shouldRedirectSubmitStory(req, result)) {
+      res.redirect(303, '/index.html');
+      return;
+    }
+    await sendRouteResponse(Promise.resolve(result), res);
   });
 }
 
@@ -202,6 +211,17 @@ function getRequestHeader(req) {
 }
 
 /**
+ * Determine whether a story submit should redirect like a browser form post.
+ * @param {import('express').Request} req Express request.
+ * @param {{ status: number, body?: unknown }} result Route result.
+ * @returns {boolean} True when the request should be redirected.
+ */
+function shouldRedirectSubmitStory(req, result) {
+  const accept = String(req.get('accept') ?? '');
+  return result.status === 201 && accept.includes('text/html');
+}
+
+/**
  * Lazily create the simulator so module import stays cheap.
  * @returns {Promise<any>} Simulator instance.
  */
@@ -214,4 +234,13 @@ function getSimulatorPromise() {
   }
 
   return /** @type {Promise<any>} */ (simulatorPromise);
+}
+
+/**
+ * Create the simulator-hosted new story page.
+ * @param {{ submitNewStoryUrl: string }} config Simulator config.
+ * @returns {string} HTML page.
+ */
+function createNewStoryPage(config) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>New Story</title></head><body><header class="site-header"><a class="brand" href="/">Dendrite</a><nav aria-label="Primary" class="nav-inline"><a href="/new-story.html">New story</a><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><a href="/about.html">About</a><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></nav><button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu">Open menu</button></header><div id="mobile-menu" hidden aria-hidden="true"><h3>Write</h3><a href="/new-story.html">New story</a><h3>Moderation</h3><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><h3>About</h3><a href="/about.html">About</a><h3>Account</h3><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></div><main><h1>New story</h1><form data-submit-handler-ready="true" method="post" action="${config.submitNewStoryUrl}"><label for="title">Title</label><input id="title" name="title"><label for="content">Content</label><textarea id="content" name="content"></textarea><label for="author">Author</label><input id="author" name="author"><label for="option0">Option 1</label><input id="option0" name="option0"><label for="option1">Option 2</label><input id="option1" name="option1"><label for="option2">Option 3</label><input id="option2" name="option2"><label for="option3">Option 4</label><input id="option3" name="option3"><button type="submit">Submit</button></form></main></body></html>`;
 }

@@ -790,7 +790,7 @@ async function seedFixture(db) {
       createdAt: new Date(),
     })
     .set(db.collection('payment-customers').doc('cus_e2e_mapping'), {
-      apiKeyUuid: '22222222-2222-2222-2222-222222222222',
+      apiKeyUuid: '33333333-3333-4333-8333-333333333333',
     })
     .commit();
 }

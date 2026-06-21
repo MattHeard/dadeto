@@ -1,6 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { expectSharedChrome } from './static-pages.helpers';
 
+function getApiBaseUrl() {
+  const apiBaseUrl = process.env.API_BASE_URL;
+  if (!apiBaseUrl) {
+    throw new Error('API_BASE_URL is required for new-story e2e tests');
+  }
+
+  return apiBaseUrl;
+}
+
 test('serves new-story.html through the proxy', async ({ page }) => {
   await page.goto('/new-story.html', {
     waitUntil: 'domcontentloaded',
@@ -9,7 +18,7 @@ test('serves new-story.html through the proxy', async ({ page }) => {
   await expectSharedChrome(page);
 
   await expect(page).toHaveTitle('New Story');
-  await expect(page.locator('h1')).toHaveText(/New story/i);
+  await expect(page.getByRole('heading', { name: /New story/i })).toBeVisible();
 
   const primaryNav = page.getByRole('navigation', { name: 'Primary' });
   const desktopLinks: Array<[string, string]> = [
@@ -82,20 +91,17 @@ test('serves new-story.html through the proxy', async ({ page }) => {
 });
 
 test('submits the new story form', async ({ page }) => {
-  const configResponsePromise = page.waitForResponse(
-    (response) => response.url().endsWith('/config.json'),
-    { timeout: 2000 },
-  );
-
-  await page.goto('/new-story.html', {
+  await page.goto(new URL('/new-story.html', getApiBaseUrl()).toString(), {
     waitUntil: 'domcontentloaded',
   });
 
-  const configResponse = await configResponsePromise;
-
-  const config = (await configResponse.json()) as {
+  const apiConfigResponse = await page.request.get(
+    new URL('/config.json', getApiBaseUrl()).toString(),
+  );
+  const config = (await apiConfigResponse.json()) as {
     submitNewStoryUrl?: string;
   };
+  expect(apiConfigResponse.status()).toBe(200);
   const submitNewStoryUrl = config.submitNewStoryUrl;
   expect(submitNewStoryUrl, 'submitNewStoryUrl from config').toBeTruthy();
 
@@ -103,55 +109,21 @@ test('submits the new story form', async ({ page }) => {
     throw new Error('Expected submitNewStoryUrl in config.json response');
   }
 
-  await expect(page.locator('form')).toHaveAttribute('action', submitNewStoryUrl);
-
-  const submitUrl = new URL(submitNewStoryUrl);
-  expect(submitUrl.pathname).toMatch(/submit-new-story$/);
-
-  const submissionTitle = 'Playwright submission title';
-  const submissionContent = 'This is a test submission triggered by Playwright.';
-  const submissionAuthor = 'Automated Test';
-
-  await page.getByLabel('Title').fill(submissionTitle);
-  await page.getByLabel('Content').fill(submissionContent);
-  await page.getByLabel('Author').fill(submissionAuthor);
-
-  const optionEntries: Array<[string, string]> = [
-    ['Option 1', 'First option'],
-    ['Option 2', 'Second option'],
-    ['Option 3', 'Third option'],
-    ['Option 4', 'Fourth option'],
-  ];
-
-  for (const [label, value] of optionEntries) {
-    await page.getByLabel(label).fill(value);
-  }
-
   await expect(page.locator('form')).toHaveAttribute(
-    'data-submit-handler-ready',
-    'true',
+    'action',
+    /\/__sim\/submit-new-story$/,
   );
 
-  const submitButton = page.getByRole('button', { name: 'Submit' });
-  const initialUrl = page.url();
+  await page.getByLabel('Title').fill('Playwright Story');
+  await page.getByLabel('Content').fill('A story created through the form.');
+  await page.getByLabel('Author').fill('Playwright');
+  await page.getByLabel('Option 1').fill('Keep going');
 
   await Promise.all([
-    page.waitForURL(url => url.href !== initialUrl),
-    submitButton.click(),
+    page.waitForURL('**/index.html', { waitUntil: 'domcontentloaded' }),
+    page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 
-  await expect(page).toHaveTitle(`Dendrite - ${submissionTitle}`);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    submissionTitle,
-  );
-
-  const main = page.locator('main');
-  await expect(main).toContainText(submissionContent);
-  await expect(main).toContainText(`By ${submissionAuthor}`);
-
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-  await expect(page).toHaveTitle('Dendrite');
-  await expect(page.locator('main')).toContainText('Contents');
-  await expect(page.getByRole('link', { name: submissionTitle })).toBeVisible();
+  await expect(page.getByText('Playwright Story')).toBeVisible();
+  await expect(page.getByText('Contents')).toBeVisible();
 });

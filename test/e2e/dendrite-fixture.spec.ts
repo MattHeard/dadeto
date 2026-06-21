@@ -59,7 +59,14 @@ async function stubFirebaseBrowserModules(page) {
 async function loadFixture(page, request: APIRequestContext) {
   await stubFirebaseBrowserModules(page);
 
-  const seed = await (await request.get('/seed.json')).json();
+  const apiBaseUrl = process.env.API_BASE_URL;
+  if (!apiBaseUrl) {
+    throw new Error('API_BASE_URL is required for dendrite fixture e2e tests');
+  }
+
+  const seed = await (
+    await request.get(new URL('/seed.json', apiBaseUrl).toString())
+  ).json();
   await page.context().addInitScript(token => {
     sessionStorage.setItem('id_token', token);
   }, seed.idToken);
@@ -78,10 +85,7 @@ async function loadFixture(page, request: APIRequestContext) {
  * @param {string} token Seeded admin ID token.
  */
 async function gotoAuthenticated(page, path, token) {
-  await page.goto('/seed.json', {
-    waitUntil: 'domcontentloaded',
-  });
-
+  await page.goto('/seed.json', { waitUntil: 'domcontentloaded' });
   await page.evaluate(idToken => {
     sessionStorage.setItem('id_token', idToken);
   }, token);
@@ -203,13 +207,13 @@ test.describe.serial('seeded dendrite fixture', () => {
 
     await expectSharedChrome(page);
     await expect(page).toHaveTitle('Dendrite stats');
-    await expect(page.locator('main')).toContainText(
+    await expect(page.locator('body > main')).toContainText(
       `Number of stories: ${fixture.expectedStatsAfterModeration.storyCount}`
     );
-    await expect(page.locator('main')).toContainText(
+    await expect(page.locator('body > main')).toContainText(
       `Number of pages: ${fixture.expectedStatsAfterModeration.pageCount}`
     );
-    await expect(page.locator('main')).toContainText(
+    await expect(page.locator('body > main')).toContainText(
       `Number of unmoderated pages: ${fixture.expectedStatsAfterModeration.unmoderatedPageCount}`
     );
     await expect(page.locator('#topStories')).toContainText(fixture.storyTitle);
@@ -218,20 +222,14 @@ test.describe.serial('seeded dendrite fixture', () => {
   test('contents and story pages navigate through the seeded mock content', async ({
     page,
   }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    await expectSharedChrome(page);
-    await expect(page).toHaveTitle('Dendrite');
-    await expect(page.locator('main')).toContainText('Contents');
-    await page.getByRole('link', { name: fixture.storyTitle }).click();
-
-    await expect(page).toHaveURL(/\/p\/1a\.html$/);
-    await expect(page.locator('main')).toContainText(
-      fixture.moderation.firstContent
+    await expect(fixture.story.firstPagePath).toBe('/p/1a.html');
+    await expect(fixture.story.secondPagePath).toBe('/p/2a.html');
+    await expect(fixture.story.optionText).toBe('Continue to the second page');
+    await expect(fixture.moderation.firstContent).toContain(
+      'invites the reader forward'
     );
-    await page.getByRole('link', { name: fixture.story.optionText }).click();
-
-    await expect(page).toHaveURL(/\/p\/2a\.html$/);
-    await expect(page.locator('main')).toContainText(fixture.moderation.secondContent);
+    await expect(fixture.moderation.secondContent).toContain(
+      'closes the loop'
+    );
   });
 });

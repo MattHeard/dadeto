@@ -39,5 +39,6 @@
 | `npm run build:cloud` | Cloud function packaging | Assembles cloud deploy payload from cloud + shared modules.
 | `npm run start` | Static serving | Serves generated `public/` output for local inspection.
 | `npm run start:writer` / `npm run start:writer:playwright` | Local writer runtime | Runs Express writer server with filesystem-backed state.
-| `npm run test:e2e` | Cloud E2E validation | Executes Playwright suite intended for cloud/CI execution.
+| `npm run test:e2e:cloud` | Cloud E2E validation | Executes Playwright suite intended for cloud/CI execution.
+| `npm run test:e2e:local` | Local server E2E validation | Executes Playwright against the local simulator/local writer path only.
 | `npm run duplication` | Architecture hygiene | Runs duplication analysis (`jscpd`) across repo sources.

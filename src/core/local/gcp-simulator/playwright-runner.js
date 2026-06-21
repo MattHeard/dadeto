@@ -1,13 +1,16 @@
 import { spawn as defaultSpawn } from 'node:child_process';
+import net from 'node:net';
 import path from 'node:path';
 
 const READY_PATTERN = /gcp simulator listening on http:\/\/127\.0\.0\.1:(\d+)/;
+const WRITER_READY_PATTERN = /writer server listening on http:\/\/localhost:(\d+)\/writer\//;
 
 /**
  * @typedef {{ [key: string]: string | undefined }} EnvMap
  */
 
 export const playwrightRunnerTestUtils = {
+  waitForWriterReady,
   waitForSimulatorReady,
   waitForExit,
   terminateProcess,
@@ -32,26 +35,42 @@ export async function runLocalPlaywright(options = {}) {
   const spawnImpl = options.spawnImpl ?? defaultSpawn;
   const simulatorEnv = createSimulatorEnv(options.env);
   const simulator = spawnSimulator(repoRoot, spawnImpl, options, simulatorEnv);
+  let writer = null;
 
   try {
-    const port = await waitForSimulatorReady(simulator);
-    const baseUrl = `http://127.0.0.1:${port}`;
+    const simulatorPort = await waitForSimulatorReady(simulator);
+    const simulatorBaseUrl = `http://127.0.0.1:${simulatorPort}`;
+    const writerListenPort = await reserveFreePort();
+    writer = spawnWriterServer(
+      repoRoot,
+      spawnImpl,
+      options,
+      {
+        ...simulatorEnv,
+        API_BASE_URL: simulatorBaseUrl,
+      },
+      writerListenPort
+    );
+    const writerBoundPort = await waitForWriterReady(writer);
+    const writerBaseUrl = `http://127.0.0.1:${writerBoundPort}`;
     const playwright = spawnPlaywright({
       repoRoot,
       spawnImpl,
       options,
       simulatorEnv,
-      baseUrl,
+      baseUrl: writerBaseUrl,
+      apiBaseUrl: simulatorBaseUrl,
     });
 
     const { code, signal } = await waitForExit(playwright);
     return {
-      baseUrl,
+      baseUrl: writerBaseUrl,
       exitCode: toExitCode(code, signal),
       signal: signal ?? null,
     };
   } finally {
     terminateProcess(simulator);
+    terminateProcess(writer);
   }
 }
 
@@ -130,6 +149,67 @@ function waitForSimulatorReady(child) {
 }
 
 /**
+ * Wait for the writer server to print its bound port.
+ * @param {import('node:child_process').ChildProcess} child Writer process.
+ * @returns {Promise<number>} Bound port.
+ */
+function waitForWriterReady(child) {
+  return new Promise((resolve, reject) => {
+    let buffer = '';
+
+    const cleanup = () => {
+      child.off('error', onError);
+      child.off('exit', onExit);
+    };
+
+    const settleOnce = createOnceSettler(cleanup);
+
+    const onStdout = chunk => {
+      process.stdout.write(chunk);
+      buffer += chunk.toString('utf8');
+      const match = buffer.match(WRITER_READY_PATTERN);
+      if (match) {
+        settleOnce(
+          /** @type {(value: unknown) => void} */ (resolve),
+          Number(match[1])
+        );
+      }
+    };
+
+    const onStderr = chunk => {
+      process.stderr.write(chunk);
+    };
+
+    const onError = error => {
+      settleOnce(/** @type {(value: unknown) => void} */ (reject), error);
+    };
+
+    const onExit = (code, signal) => {
+      let codeText = 'null';
+      if (code !== null) {
+        codeText = String(code);
+      }
+
+      let signalText = 'null';
+      if (signal !== null) {
+        signalText = signal;
+      }
+
+      const reason = `code ${codeText}, signal ${signalText}`;
+      settleOnce(
+        /** @type {(value: unknown) => void} */ (reject),
+        new Error(`writer server exited before announcing a port (${reason})`)
+      );
+    };
+
+    child.stdout?.on('data', onStdout);
+    child.stderr?.on('data', onStderr);
+    child.once('error', onError);
+    child.once('exit', onExit);
+  });
+}
+
+/**
  * Build a one-time settlement function for promise callbacks.
  * @param {() => void} onFirstSettle Cleanup callback.
  * @returns {(settle: (value: unknown) => void, value: unknown) => void} One-shot settler.
@@ -170,7 +250,7 @@ function createSimulatorEnv(env) {
   return {
     ...process.env,
     ...env,
-    GCP_SIMULATOR_PORT: '0',
+    GCP_SIMULATOR_PORT: '8080',
   };
 }
 
@@ -200,6 +280,56 @@ function spawnSimulator(repoRoot, spawnImpl, options, env) {
 }
 
 /**
+ * @param {string} repoRoot Repository root.
+ * @param {typeof defaultSpawn} spawnImpl Spawn function.
+ * @param {{
+ *   writerCommand?: string,
+ *   writerScript?: string,
+ *   writerArgs?: string[],
+ * }} options Spawn options.
+ * @param {EnvMap} env Writer environment.
+ * @param {number} writerPort Listening port.
+ * @returns {import('node:child_process').ChildProcess} Writer process.
+ */
+function spawnWriterServer(repoRoot, spawnImpl, options, env, writerPort) {
+  const writerCommand = options.writerCommand ?? process.execPath;
+  const writerScript =
+    options.writerScript ?? path.resolve(repoRoot, 'src/local/server.js');
+  const writerArgs = options.writerArgs ?? [writerScript];
+
+  return spawnImpl(writerCommand, writerArgs, {
+    cwd: repoRoot,
+    env: {
+      ...env,
+      WRITER_PORT: String(writerPort),
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
+/**
+ * Reserve a free TCP port for the writer server.
+ * @returns {Promise<number>} Available port.
+ */
+function reserveFreePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.on('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      server.close(() => {
+        if (address && typeof address === 'object') {
+          resolve(address.port);
+          return;
+        }
+
+        reject(new Error('Unable to reserve a writer port'));
+      });
+    });
+  });
+}
+
+/**
  * @param {{
  *   repoRoot: string,
  *   spawnImpl: typeof defaultSpawn,
@@ -210,11 +340,14 @@ function spawnSimulator(repoRoot, spawnImpl, options, env) {
  * @returns {import('node:child_process').ChildProcess} Playwright process.
  */
 function spawnPlaywright(input) {
-  const { repoRoot, spawnImpl, options, simulatorEnv, baseUrl } = input;
+  const { repoRoot, spawnImpl, options, simulatorEnv, baseUrl, apiBaseUrl } =
+    input;
   const playwrightCommand = options.playwrightCommand ?? 'npx';
   const playwrightArgs = [
     'playwright',
     'test',
+    '--config',
+    path.resolve(repoRoot, 'test/e2e/local.config.ts'),
     ...(options.playwrightArgs ?? []),
   ];
 
@@ -222,9 +355,9 @@ function spawnPlaywright(input) {
     cwd: repoRoot,
     env: {
       ...simulatorEnv,
-      API_BASE_URL: baseUrl,
+      API_BASE_URL: apiBaseUrl ?? baseUrl,
       PLAYWRIGHT_BASE_URL: baseUrl,
-      PAYMENT_WEBHOOK_URL: `${baseUrl}/__sim/payment-webhook`,
+      PAYMENT_WEBHOOK_URL: `${apiBaseUrl ?? baseUrl}/__sim/payment-webhook`,
     },
     stdio: 'inherit',
   });
