@@ -22,7 +22,7 @@ function getPageBaseUrl() {
 }
 
 test('serves new-story.html through the proxy', async ({ page }) => {
-  await page.goto('/new-story.html', {
+  await page.goto(new URL('/new-story.html', getPageBaseUrl()).toString(), {
     waitUntil: 'domcontentloaded',
   });
 
@@ -131,7 +131,7 @@ test('submits the new story form', async ({ page }) => {
   await page.getByLabel('Option 1').fill('Keep going');
 
   await Promise.all([
-    page.waitForURL('**/index.html', { waitUntil: 'domcontentloaded' }),
+    page.waitForURL('**/p/*.html', { waitUntil: 'domcontentloaded' }),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 
