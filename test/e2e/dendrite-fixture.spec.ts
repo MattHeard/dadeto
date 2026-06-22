@@ -90,6 +90,10 @@ function getPageBaseUrl() {
   return pageBaseUrl;
 }
 
+function getPageUrl(path: string) {
+  return new URL(path, getPageBaseUrl()).toString();
+}
+
 /**
  * Navigate to a same-origin page, verify the seeded token is present there, and
  * then load the authenticated surface under test.
@@ -98,7 +102,7 @@ function getPageBaseUrl() {
  * @param {string} token Seeded admin ID token.
  */
 async function gotoAuthenticated(page, path, token) {
-  await page.goto(new URL('/seed.json', getPageBaseUrl()).toString(), {
+  await page.goto(getPageUrl('/seed.json'), {
     waitUntil: 'domcontentloaded',
   });
   await page.evaluate(idToken => {
@@ -112,7 +116,7 @@ async function gotoAuthenticated(page, path, token) {
     )
     .toBeGreaterThan(0);
 
-  await page.goto(new URL(path, getPageBaseUrl()).toString(), {
+  await page.goto(getPageUrl(path), {
     waitUntil: 'domcontentloaded',
   });
 }

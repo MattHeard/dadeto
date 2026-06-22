@@ -21,8 +21,12 @@ function getPageBaseUrl() {
   return pageBaseUrl;
 }
 
+function getPageUrl(path: string) {
+  return new URL(path, getPageBaseUrl()).toString();
+}
+
 test('serves new-story.html through the proxy', async ({ page }) => {
-  await page.goto(new URL('/new-story.html', getPageBaseUrl()).toString(), {
+  await page.goto(getPageUrl('/new-story.html'), {
     waitUntil: 'domcontentloaded',
   });
 
@@ -102,7 +106,7 @@ test('serves new-story.html through the proxy', async ({ page }) => {
 });
 
 test('submits the new story form', async ({ page }) => {
-  await page.goto(new URL('/new-story.html', getPageBaseUrl()).toString(), {
+  await page.goto(getPageUrl('/new-story.html'), {
     waitUntil: 'domcontentloaded',
   });
 
@@ -120,10 +124,7 @@ test('submits the new story form', async ({ page }) => {
     throw new Error('Expected submitNewStoryUrl in config.json response');
   }
 
-  await expect(page.locator('form')).toHaveAttribute(
-    'action',
-    submitNewStoryUrl,
-  );
+  await expect(page.locator('form')).toHaveAttribute('action', submitNewStoryUrl);
 
   await expect
     .poll(
