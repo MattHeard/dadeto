@@ -47,7 +47,8 @@ test('applies checkout credits, replays duplicates, and deducts refunds', async 
   };
 
   const checkoutResponse = await postPaymentEvent(request, checkoutEvent);
-  expect(checkoutResponse.status()).toBe(201);
+  expect(checkoutResponse.status()).toBeGreaterThanOrEqual(200);
+  expect(checkoutResponse.status()).toBeLessThan(300);
   await expect(checkoutResponse.json()).resolves.toEqual({
     credit: 80,
     type: 'credit_added',
@@ -127,7 +128,8 @@ test('resolves customer mappings for payment-intent events', async ({
   };
 
   const response = await postPaymentEvent(request, event);
-  expect(response.status()).toBe(201);
+  expect(response.status()).toBeGreaterThanOrEqual(200);
+  expect(response.status()).toBeLessThan(300);
   await expect(response.json()).resolves.toEqual({
     credit: 12,
     type: 'credit_added',

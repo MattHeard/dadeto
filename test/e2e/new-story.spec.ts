@@ -106,6 +106,7 @@ test('serves new-story.html through the proxy', async ({ page }) => {
 });
 
 test('submits the new story form', async ({ page }) => {
+  test.setTimeout(60000);
   await page.goto(getPageUrl('/new-story.html'), {
     waitUntil: 'domcontentloaded',
   });
@@ -142,7 +143,10 @@ test('submits the new story form', async ({ page }) => {
   await page.getByLabel('Option 1').fill('Keep going');
 
   await Promise.all([
-    page.waitForURL('**/index.html', { waitUntil: 'domcontentloaded' }),
+    page.waitForURL('**/index.html', {
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
+    }),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 

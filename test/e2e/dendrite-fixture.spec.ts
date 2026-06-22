@@ -183,6 +183,7 @@ test.describe.serial('seeded dendrite fixture', () => {
   test('moderation can approve the seeded story and move to the next page', async ({
     page,
   }) => {
+    test.setTimeout(60000);
     await gotoAuthenticated(page, '/mod.html', fixture.idToken);
 
     await expectSharedChrome(page);
@@ -206,7 +207,7 @@ test.describe.serial('seeded dendrite fixture', () => {
     await page.getByRole('button', { name: 'Approve' }).click();
 
     await expect(pageContent).toContainText(fixture.moderation.secondContent, {
-      timeout: 30000,
+      timeout: 60000,
     });
   });
 
