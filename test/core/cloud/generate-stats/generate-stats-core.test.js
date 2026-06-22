@@ -426,17 +426,95 @@ describe('createGenerateStatsCore', () => {
     });
 
     it('getUnmoderatedPageCount should return the correct count', async () => {
-      let callCount = 0;
-      mockDb.get = () => {
-        callCount++;
-        if (callCount === 1) {
-          return Promise.resolve({ data: () => ({ count: 2 }) }); // zeroSnap
-        } else {
-          return Promise.resolve({ data: () => ({ count: 1 }) }); // nullSnap
+      mockDb.collection = name => {
+        if (name !== 'stories') {
+          return mockDb;
         }
+
+        return {
+          get: () =>
+            Promise.resolve({
+              docs: [
+                {
+                  ref: {
+                    collection: collectionName => {
+                      if (collectionName !== 'pages') {
+                        return {
+                          get: () => Promise.resolve({ docs: [] }),
+                        };
+                      }
+
+                      return {
+                        get: () =>
+                          Promise.resolve({
+                            docs: [
+                              {
+                                ref: {
+                                  collection: variantName => {
+                                    if (variantName !== 'variants') {
+                                      return {
+                                        get: () =>
+                                          Promise.resolve({ docs: [] }),
+                                      };
+                                    }
+
+                                    return {
+                                      get: () =>
+                                        Promise.resolve({
+                                          docs: [
+                                            {
+                                              data: () => ({
+                                                moderatorReputationSum: 0,
+                                              }),
+                                            },
+                                            {
+                                              data: () => ({
+                                                moderatorReputationSum: null,
+                                              }),
+                                            },
+                                          ],
+                                        }),
+                                    };
+                                  },
+                                },
+                              },
+                              {
+                                ref: {
+                                  collection: variantName => {
+                                    if (variantName !== 'variants') {
+                                      return {
+                                        get: () =>
+                                          Promise.resolve({ docs: [] }),
+                                      };
+                                    }
+
+                                    return {
+                                      get: () =>
+                                        Promise.resolve({
+                                          docs: [
+                                            {
+                                              data: () => ({
+                                                moderatorReputationSum: 1,
+                                              }),
+                                            },
+                                          ],
+                                        }),
+                                    };
+                                  },
+                                },
+                              },
+                            ],
+                          }),
+                      };
+                    },
+                  },
+                },
+              ],
+            }),
+        };
       };
       const count = await core.getUnmoderatedPageCount();
-      expect(count).toBe(3);
+      expect(count).toBe(2);
     });
 
     it('getTopStories normalizes missing metadata', async () => {

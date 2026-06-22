@@ -382,17 +382,25 @@ export function createGenerateStatsCore({
    * @returns {Promise<number>} Page count.
    */
   async function getPageCount(dbRef) {
-    /**
-     * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
-     * @returns {import('firebase-admin/firestore').Query} Pages collection group query.
-     */
-    const buildPagesQuery = reference => reference.collectionGroup('pages');
+    if (!canWalkNestedCollections(dbRef)) {
+      /**
+       * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
+       * @returns {import('firebase-admin/firestore').Query} Pages collection group query.
+       */
+      const buildPagesQuery = reference => reference.collectionGroup('pages');
 
-    if (arguments.length > 0) {
-      return countDocuments(buildPagesQuery, dbRef);
+      if (arguments.length > 0) {
+        return countDocuments(buildPagesQuery, dbRef);
+      }
+
+      return countDocuments(buildPagesQuery);
     }
 
-    return countDocuments(buildPagesQuery);
+    if (arguments.length > 0) {
+      return countNestedPages(dbRef);
+    }
+
+    return countNestedPages(db);
   }
 
   /**
@@ -401,17 +409,21 @@ export function createGenerateStatsCore({
    * @returns {Promise<number>} Unmoderated variant count.
    */
   async function getUnmoderatedPageCount(dbRef = db) {
-    const zeroSnap = await dbRef
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', 0)
-      .count()
-      .get();
-    const nullSnap = await dbRef
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', null)
-      .count()
-      .get();
-    return zeroSnap.data().count + nullSnap.data().count;
+    if (!canWalkNestedCollections(dbRef)) {
+      const zeroSnap = await dbRef
+        .collectionGroup('variants')
+        .where('moderatorReputationSum', '==', 0)
+        .count()
+        .get();
+      const nullSnap = await dbRef
+        .collectionGroup('variants')
+        .where('moderatorReputationSum', '==', null)
+        .count()
+        .get();
+      return zeroSnap.data().count + nullSnap.data().count;
+    }
+
+    return countUnmoderatedVariants(dbRef);
   }
 
   /**
@@ -423,6 +435,89 @@ export function createGenerateStatsCore({
   async function countDocuments(buildQuery, dbRef = db) {
     const snap = await buildQuery(dbRef).count().get();
     return snap.data().count;
+  }
+
+  /**
+   * Count pages by walking the stories collection and nested page collections.
+   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+   * @returns {Promise<number>} Page count.
+   */
+  async function countNestedPages(dbRef) {
+    const storiesSnap = await dbRef.collection('stories').get();
+    const storyDocs = getSnapshotDocs(storiesSnap);
+    if (storyDocs.length === 0) {
+      return countDocuments(reference => reference.collectionGroup('pages'), dbRef);
+    }
+    const pageSnaps = await Promise.all(
+      storyDocs.map(storyDoc => storyDoc.ref.collection('pages').get())
+    );
+    return pageSnaps.reduce((total, snap) => total + snap.size, 0);
+  }
+
+  /**
+   * Count unmoderated variants by walking nested story/page collections.
+   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+   * @returns {Promise<number>} Unmoderated variant count.
+   */
+  async function countUnmoderatedVariants(dbRef) {
+    const storiesSnap = await dbRef.collection('stories').get();
+    const storyDocs = getSnapshotDocs(storiesSnap);
+    if (storyDocs.length === 0) {
+      const zeroSnap = await dbRef
+        .collectionGroup('variants')
+        .where('moderatorReputationSum', '==', 0)
+        .count()
+        .get();
+      const nullSnap = await dbRef
+        .collectionGroup('variants')
+        .where('moderatorReputationSum', '==', null)
+        .count()
+        .get();
+      return zeroSnap.data().count + nullSnap.data().count;
+    }
+    const pageSnaps = await Promise.all(
+      storyDocs.map(storyDoc => storyDoc.ref.collection('pages').get())
+    );
+    const variantSnaps = await Promise.all(
+      pageSnaps.flatMap(pageSnap =>
+        getSnapshotDocs(pageSnap).map(pageDoc =>
+          pageDoc.ref.collection('variants').get()
+        )
+      )
+    );
+
+    return variantSnaps.reduce((total, snap) => {
+      let count = 0;
+      snap.docs.forEach(variantDoc => {
+        const data = variantDoc.data();
+        if (data?.moderatorReputationSum === 0 || data?.moderatorReputationSum === null) {
+          count += 1;
+        }
+      });
+      return total + count;
+    }, 0);
+  }
+
+  /**
+   * Check whether a Firestore instance exposes the nested collection walk API used by production.
+   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+   * @returns {boolean} True when nested collection traversal is supported.
+   */
+  function canWalkNestedCollections(dbRef) {
+    return Boolean(
+      dbRef &&
+        typeof dbRef.collection === 'function' &&
+        typeof dbRef.collection('stories')?.get === 'function'
+    );
+  }
+
+  /**
+   * Normalize a Firestore snapshot to an array of docs.
+   * @param {{ docs?: Array<import('firebase-admin/firestore').QueryDocumentSnapshot> }} snap Snapshot-like value.
+   * @returns {Array<import('firebase-admin/firestore').QueryDocumentSnapshot>} Document list.
+   */
+  function getSnapshotDocs(snap) {
+    return Array.isArray(snap?.docs) ? snap.docs : [];
   }
 
   /**
