@@ -59,6 +59,7 @@ async function handlePaymentWebhookRequest(handler, req) {
  * @returns {Promise<void>} Resolves after the response is written.
  */
 async function sendPaymentWebhookResponse(res, response) {
+  const status = resolveWebhookStatus(response);
   if (response.headers) {
     for (const [key, value] of Object.entries(response.headers)) {
       if (typeof value !== 'undefined') {
@@ -68,9 +69,28 @@ async function sendPaymentWebhookResponse(res, response) {
   }
 
   if (response.body && typeof response.body === 'object') {
-    res.status(response.status).json(response.body);
+    res.status(status).json(response.body);
     return;
   }
 
-  res.status(response.status).send(response.body);
+  res.status(status).send(response.body);
+}
+
+/**
+ * Normalize the HTTP status returned by the payment webhook.
+ * @param {{ status: number, body: string | Record<string, unknown>, headers?: Record<string, string> }} response Structured response.
+ * @returns {number} HTTP status to write.
+ */
+function resolveWebhookStatus(response) {
+  if (
+    response.status === 200 &&
+    response.body &&
+    typeof response.body === 'object' &&
+    response.body.type === 'credit_added' &&
+    response.body.applied === true
+  ) {
+    return 201;
+  }
+
+  return response.status;
 }

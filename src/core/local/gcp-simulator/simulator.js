@@ -1055,16 +1055,7 @@ async function handleAssignModerationJob(
   const current = await deps.db.collection('moderators').doc(uid).get();
   const currentPath = current.data()?.variant;
 
-  const candidates = await deps.db
-    .collectionGroup('variants')
-    .where('moderatorReputationSum', '==', 0)
-    .get();
-  const fallbacks = await deps.db
-    .collectionGroup('variants')
-    .where('moderatorReputationSum', '==', null)
-    .get();
-  const all = [...candidates.docs, ...fallbacks.docs];
-  const chosen = all.find(doc => doc.ref.path !== currentPath) ?? null;
+  const chosen = await pickNextModerationVariant(deps.db, currentPath);
 
   if (!chosen) {
     return { status: 404, body: 'Variant not found' };
@@ -1076,6 +1067,65 @@ async function handleAssignModerationJob(
   });
 
   return { status: 201, body: { ok: true } };
+}
+
+/**
+ * Pick the next moderation variant using the same nested collection walk as the cloud core.
+ * @param {ReturnType<typeof createDb>} db Firestore-like database.
+ * @param {string | undefined} currentPath Current moderator assignment path.
+ * @returns {Promise<{ ref: { path: string } } | null>} Selected variant snapshot.
+ */
+async function pickNextModerationVariant(db, currentPath) {
+  if (typeof db.collection !== 'function') {
+    const candidates = await db
+      .collectionGroup('variants')
+      .where('moderatorReputationSum', '==', 0)
+      .get();
+    const fallbacks = await db
+      .collectionGroup('variants')
+      .where('moderatorReputationSum', '==', null)
+      .get();
+    const all = [...candidates.docs, ...fallbacks.docs];
+    return all.find(doc => doc.ref.path !== currentPath) ?? null;
+  }
+
+  const storiesSnap = await db.collection('stories').get();
+  const candidates = [];
+
+  for (const storyDoc of storiesSnap.docs) {
+    const pagesSnap = await storyDoc.ref.collection('pages').get();
+    for (const pageDoc of pagesSnap.docs) {
+      const variantsSnap = await pageDoc.ref.collection('variants').get();
+      for (const variantDoc of variantsSnap.docs) {
+        const data = variantDoc.data?.() ?? {};
+        const reputation = data.moderatorReputationSum;
+        if (reputation !== 0 && reputation !== null) {
+          continue;
+        }
+        if (variantDoc.ref.path === currentPath) {
+          continue;
+        }
+        candidates.push({
+          doc: variantDoc,
+          createdAt: data.createdAt?.toMillis?.() ?? 0,
+          rand: data.rand ?? 0,
+          path: variantDoc.ref.path,
+        });
+      }
+    }
+  }
+
+  candidates.sort((left, right) => {
+    if (left.createdAt !== right.createdAt) {
+      return left.createdAt - right.createdAt;
+    }
+    if (left.rand !== right.rand) {
+      return left.rand - right.rand;
+    }
+    return left.path.localeCompare(right.path);
+  });
+
+  return candidates[0]?.doc ?? null;
 }
 
 /**
