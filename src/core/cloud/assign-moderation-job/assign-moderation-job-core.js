@@ -765,17 +765,133 @@ export function createReputationScopedVariantsQuery(database, reputation) {
  * @returns {(descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} Query runner bound to the provided database.
  */
 export function createRunVariantQuery(database) {
-  return function runVariantQuery({ reputation, comparator, randomValue }) {
-    const reputationScopedQuery = createReputationScopedVariantsQuery(
-      database,
-      reputation
-    );
-    const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
-    const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
-    const limitedQuery = filteredQuery.limit(1);
+  const hasNestedCollections =
+    Boolean(database) && typeof database.collection === 'function';
 
-    return limitedQuery.get();
+  if (!hasNestedCollections) {
+    return function runLegacyVariantQuery({ reputation, comparator, randomValue }) {
+      const reputationScopedQuery = createReputationScopedVariantsQuery(
+        database,
+        reputation
+      );
+      const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
+      const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
+      const limitedQuery = filteredQuery.limit(1);
+
+      return limitedQuery.get();
+    };
+  }
+
+  return async function runVariantQuery({ reputation, comparator, randomValue }) {
+    const storiesSnap = await database.collection('stories').get();
+    const storyDocs = resolveSnapshotDocs(storiesSnap);
+    const matches = [];
+    for (const storyDoc of storyDocs) {
+      const pagesSnap = await storyDoc.ref.collection('pages').get();
+      const pageDocs = resolveSnapshotDocs(pagesSnap);
+      for (const pageDoc of pageDocs) {
+        const variantsSnap = await pageDoc.ref.collection('variants').get();
+        const variantDocs = resolveSnapshotDocs(variantsSnap);
+        for (const variantDoc of variantDocs) {
+          if (matchesReputation(reputation, variantDoc.data())) {
+            matches.push(variantDoc);
+          }
+        }
+      }
+    }
+
+    const filtered = matches.filter(variantDoc =>
+      matchesRandomValue(comparator, variantDoc.data()?.rand, randomValue)
+    );
+    const chosen = filtered.sort((left, right) => {
+      const leftData = left.data() ?? {};
+      const rightData = right.data() ?? {};
+      const createdAtDiff = compareCreatedAt(
+        leftData.createdAt,
+        rightData.createdAt
+      );
+      if (createdAtDiff !== 0) {
+        return createdAtDiff;
+      }
+
+      const leftRand = Number(leftData.rand ?? 0);
+      const rightRand = Number(rightData.rand ?? 0);
+      if (leftRand !== rightRand) {
+        return leftRand - rightRand;
+      }
+
+      return String(left.ref.path).localeCompare(String(right.ref.path));
+    })[0];
+
+    return { docs: chosen ? [chosen] : [] };
   };
+}
+
+/**
+ * Compare two createdAt values while preferring older candidates.
+ * @param {unknown} left Left createdAt value.
+ * @param {unknown} right Right createdAt value.
+ * @returns {number} Negative when left is older, positive when right is older.
+ */
+function compareCreatedAt(left, right) {
+  const leftTime = toTimeValue(left);
+  const rightTime = toTimeValue(right);
+  return leftTime - rightTime;
+}
+
+/**
+ * Convert a timestamp-like value to a sortable numeric time.
+ * @param {unknown} value Timestamp candidate.
+ * @returns {number} Numeric time or zero.
+ */
+function toTimeValue(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  if (typeof value?.toDate === 'function') {
+    return value.toDate().getTime();
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  return 0;
+}
+
+/**
+ * Check whether a variant matches the requested reputation bucket.
+ * @param {'zeroRated' | string} reputation Reputation filter.
+ * @param {Record<string, unknown> | undefined} data Variant payload.
+ * @returns {boolean} True when the variant should be included.
+ */
+function matchesReputation(reputation, data) {
+  if (reputation === 'zeroRated') {
+    return Number(data?.moderatorReputationSum ?? 0) === 0;
+  }
+
+  return true;
+}
+
+/**
+ * Compare a stored random value against a query cursor.
+ * @param {'>='|'<'} comparator Cursor comparator.
+ * @param {unknown} rand Stored random value.
+ * @param {number} randomValue Query cursor value.
+ * @returns {boolean} True when the value matches the cursor.
+ */
+function matchesRandomValue(comparator, rand, randomValue) {
+  const value = Number(rand ?? 0);
+  if (!Number.isFinite(value)) {
+    return false;
+  }
+
+  if (comparator === '>=') {
+    return value >= randomValue;
+  }
+
+  return value < randomValue;
 }
 
 /**

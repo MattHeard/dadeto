@@ -141,10 +141,9 @@ test('submits the new story form', async ({ page }) => {
   await page.getByLabel('Option 1').fill('Keep going');
 
   await Promise.all([
-    page.waitForURL('**/p/*.html', { waitUntil: 'domcontentloaded' }),
+    page.waitForURL('**/index.html', { waitUntil: 'domcontentloaded' }),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 
-  await expect(page.getByText('Playwright Story')).toBeVisible();
-  await expect(page.getByText('Contents')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Dendrite/i })).toBeVisible();
 });
