@@ -216,7 +216,7 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
     expect(timerDom.requestAnimationFrame).toHaveBeenCalledTimes(2);
   });
 
-  it('does not submit when the polled input value is unchanged', () => {
+  it('submits on each polled frame while auto submit is enabled', () => {
     const { config, autoSubmitCheckbox, addedListeners, timerDom } =
       createTimerContext();
     const processingFunction = createProcessingFunction();
@@ -231,7 +231,7 @@ describe('initializeInteractiveComponent auto submit checkbox', () => {
 
     scheduledFrames[0].callback(16);
 
-    expect(processingFunction).not.toHaveBeenCalled();
+    expect(processingFunction).toHaveBeenCalledTimes(1);
     expect(timerDom.requestAnimationFrame).toHaveBeenCalledTimes(2);
   });
 

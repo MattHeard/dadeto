@@ -1,0 +1,4 @@
+- Unexpected hurdle: the new Conway Life toy and auto-submit change were straightforward, but `npm test` still failed on the repo-wide coverage thresholds rather than on the new code path.
+- Diagnosis path: I verified the focused Life/auto-submit Jest slice first, then ran `npm run build`, and finally let `npm test` reach the global coverage gate to confirm the failure was baseline-wide.
+- Chosen fix: added a stateful Life toy that persists board state and tick speed in local storage, updated the auto-submit loop to submit every frame while enabled, and registered the toy in the blog data so the build emits a public canvas-2d post.
+- Next-time guidance: when a feature lands cleanly but `npm test` fails on repo thresholds, capture the exact threshold delta and decide whether the remaining work belongs in a separate coverage-bead instead of widening the feature loop.

@@ -659,6 +659,264 @@
         </p>
       </div>
       <article
+        class="entry tag-toy tag-canvas tag-life tag-storage tag-html"
+        id="CONW1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">CONW1</div>
+        <div class="value">
+          <h2><a href="#CONW1">Conway Life</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">22 Jun 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-canvas">canvas</a>,
+          <a class="tag-life">life</a>, <a class="tag-storage">storage</a>,
+          <a class="tag-html">html</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          A tiny Conway's Game of Life engine that persists its board and tick
+          speed in local storage.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Enable auto-submit to step the simulation once per browser frame and
+          watch the board evolve on canvas.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          This post is public so the stateful toy can be exercised directly in
+          the browser.
+        </p>
+        <div class="key">man</div>
+        <div class="manual" id="CONW1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="CONW1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="CONW1-manual-body"
+            hidden
+          >
+# CONW1 — Conway Life
+
+## What this toy does
+
+Conway Life runs a small Game of Life board, persists it in local storage, and renders the current generation as a canvas payload. It is useful for testing stateful toys, frame-stepped auto submit, and the canvas presenter together.
+
+## Input format
+
+Paste a JSON object with any of these optional fields:
+
+- `width`
+- `height`
+- `cols`
+- `rows`
+- `tickSpeedMs`
+- `cells`
+- `reset`
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 240,
+  &quot;cols&quot;: 24,
+  &quot;rows&quot;: 16,
+  &quot;tickSpeedMs&quot;: 128,
+  &quot;cells&quot;: [
+    [11, 7],
+    [12, 7],
+    [13, 7]
+  ]
+}
+```
+
+## Defaults
+
+If the input is empty or malformed, the toy falls back to a small seed pattern.
+
+## Storage behavior
+
+The toy stores the board state under the `CONW1` local-storage key. The persisted state includes:
+
+- canvas dimensions
+- grid dimensions
+- tick speed
+- frame countdown
+- generation number
+- live cell coordinates
+
+That means a refresh resumes the same board instead of starting over.
+
+## Auto-submit behavior
+
+When the browser&#039;s auto-submit checkbox is enabled, the toy is called once per animation frame. Each call advances the countdown, and when the countdown reaches zero the board evolves to the next generation.
+
+## Output
+
+The toy returns a canvas payload:
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 240,
+  &quot;shapes&quot;: []
+}
+```
+
+The payload contains a background rectangle plus one rectangle per live cell. The canvas presenter renders those shapes visually.
+
+## How to use it
+
+1. Submit empty input to load the default seed.
+2. Change `tickSpeedMs` to slow down or speed up stepping.
+3. Change `cells` to start from a different pattern.
+4. Enable auto-submit to watch the board continue to advance.
+5. Use `reset: true` if you want to re-seed from the current input.
+
+## Examples
+
+### Faster tick speed
+
+```json
+{
+  &quot;tickSpeedMs&quot;: 32
+}
+```
+
+### Different seed
+
+```json
+{
+  &quot;cells&quot;: [
+    [5, 5],
+    [6, 5],
+    [7, 5],
+    [7, 4],
+    [6, 3]
+  ]
+}
+```
+
+## Tips
+
+- Use a moderate grid size such as `24 x 16` or `32 x 20`.
+- Keep the tick speed above `16` so the frame countdown has a meaningful interval.
+- Submit once after changing the input before enabling auto-submit.
+- Use `reset: true` when you want to discard the persisted board.
+
+## Troubleshooting
+
+### The board does not move
+
+Check that auto-submit is enabled. The board only advances when the browser keeps submitting frames.
+
+### The board resets after refresh
+
+The storage helper may be unavailable, or the local-storage key may have been cleared.
+
+### The cells look squashed
+
+Adjust `cols`, `rows`, `width`, and `height` so the cell aspect ratio is closer to square.</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('CONW1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="canvas-2d" selected>canvas-2d</option>
+            <option value="graph-2d">graph-2d</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'CONW1',
+            '/core/browser/toys/2026-06-22/conwayLife.js',
+            'conwayLife'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-planning tag-cochange tag-json tag-analysis"
         id="CHAN1"
       >

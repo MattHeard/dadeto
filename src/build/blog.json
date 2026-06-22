@@ -172,6 +172,35 @@
       ]
     },
     {
+      "key": "CONW1",
+      "title": "Conway Life",
+      "publicationDate": "2026-06-22",
+      "content": [
+        "A tiny Conway's Game of Life engine that persists its board and tick speed in local storage.",
+        "Enable auto-submit to step the simulation once per browser frame and watch the board evolve on canvas.",
+        "This post is public so the stateful toy can be exercised directly in the browser.",
+        {
+          "type": "manual",
+          "id": "CONW1-manual",
+          "title": "User manual",
+          "markdown": "# CONW1 — Conway Life\n\n## What this toy does\n\nConway Life runs a small Game of Life board, persists it in local storage, and renders the current generation as a canvas payload. It is useful for testing stateful toys, frame-stepped auto submit, and the canvas presenter together.\n\n## Input format\n\nPaste a JSON object with any of these optional fields:\n\n- `width`\n- `height`\n- `cols`\n- `rows`\n- `tickSpeedMs`\n- `cells`\n- `reset`\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"cols\": 24,\n  \"rows\": 16,\n  \"tickSpeedMs\": 128,\n  \"cells\": [\n    [11, 7],\n    [12, 7],\n    [13, 7]\n  ]\n}\n```\n\n## Defaults\n\nIf the input is empty or malformed, the toy falls back to a small seed pattern.\n\n## Storage behavior\n\nThe toy stores the board state under the `CONW1` local-storage key. The persisted state includes:\n\n- canvas dimensions\n- grid dimensions\n- tick speed\n- frame countdown\n- generation number\n- live cell coordinates\n\nThat means a refresh resumes the same board instead of starting over.\n\n## Auto-submit behavior\n\nWhen the browser's auto-submit checkbox is enabled, the toy is called once per animation frame. Each call advances the countdown, and when the countdown reaches zero the board evolves to the next generation.\n\n## Output\n\nThe toy returns a canvas payload:\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"shapes\": []\n}\n```\n\nThe payload contains a background rectangle plus one rectangle per live cell. The canvas presenter renders those shapes visually.\n\n## How to use it\n\n1. Submit empty input to load the default seed.\n2. Change `tickSpeedMs` to slow down or speed up stepping.\n3. Change `cells` to start from a different pattern.\n4. Enable auto-submit to watch the board continue to advance.\n5. Use `reset: true` if you want to re-seed from the current input.\n\n## Examples\n\n### Faster tick speed\n\n```json\n{\n  \"tickSpeedMs\": 32\n}\n```\n\n### Different seed\n\n```json\n{\n  \"cells\": [\n    [5, 5],\n    [6, 5],\n    [7, 5],\n    [7, 4],\n    [6, 3]\n  ]\n}\n```\n\n## Tips\n\n- Use a moderate grid size such as `24 x 16` or `32 x 20`.\n- Keep the tick speed above `16` so the frame countdown has a meaningful interval.\n- Submit once after changing the input before enabling auto-submit.\n- Use `reset: true` when you want to discard the persisted board.\n\n## Troubleshooting\n\n### The board does not move\n\nCheck that auto-submit is enabled. The board only advances when the browser keeps submitting frames.\n\n### The board resets after refresh\n\nThe storage helper may be unavailable, or the local-storage key may have been cleared.\n\n### The cells look squashed\n\nAdjust `cols`, `rows`, `width`, and `height` so the cell aspect ratio is closer to square."
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-22/conwayLife.js",
+        "functionName": "conwayLife",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "canvas-2d"
+      },
+      "tags": [
+        "toy",
+        "canvas",
+        "life",
+        "storage",
+        "html"
+      ]
+    },
+    {
       "key": "MEMO3",
       "title": "Memory Scalar/Vector Write",
       "publicationDate": "2026-05-30",

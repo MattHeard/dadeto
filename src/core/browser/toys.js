@@ -1386,16 +1386,14 @@ function registerAutoSubmitPolling({
   if (autoSubmitState.frameId !== null) {
     return;
   }
-  autoSubmitState.lastValue = readLiveInputValue(dom, inputElement);
   const poll = () => {
     const nextValue = readLiveInputValue(dom, inputElement);
-    if (nextValue !== autoSubmitState.lastValue) {
-      autoSubmitState.lastValue = nextValue;
-      setInputValue(inputElement, nextValue);
-      handleInputProcessing(elements, processingFunction, env);
-    }
+    autoSubmitState.lastValue = nextValue;
+    setInputValue(inputElement, nextValue);
+    handleInputProcessing(elements, processingFunction, env);
     autoSubmitState.frameId = requestAutoSubmitFrame(dom, poll);
   };
+  autoSubmitState.lastValue = readLiveInputValue(dom, inputElement);
   autoSubmitState.frameId = requestAutoSubmitFrame(dom, poll);
 }
 
