@@ -168,7 +168,7 @@ jobs:
             gcloud artifacts repositories create "$AR_REPO" --repository-format=DOCKER --location="${REGION}"
           fi
           IMAGE_REF="${REGION}-docker.pkg.dev/${GOOGLE_PROJECT}/${AR_REPO}/${IMAGE}:$GITHUB_SHA"
-          docker build -f docker/playwright/Dockerfile -t "$IMAGE_REF" .
+          docker build --no-cache -f docker/playwright/Dockerfile -t "$IMAGE_REF" .
           docker push "$IMAGE_REF"
           echo "TF_VAR_playwright_image=$IMAGE_REF" >> "$GITHUB_ENV"
 
