@@ -192,7 +192,7 @@
       "defaultInputMethod": "life-seed",
       "defaultOutputMethod": "canvas-2d"
     },
-      "release": "beta",
+      "release": "public",
       "tags": [
         "toy",
         "canvas",
