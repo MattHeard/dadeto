@@ -359,10 +359,10 @@ export function createGenerateStatsCore({
 
   /**
    * Count the number of stories stored in Firestore.
-   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
+   * @param {import('firebase-admin/firestore').Firestore | undefined} [dbRef] - Firestore instance to query. Defaults to the configured db.
    * @returns {Promise<number>} Story count.
    */
-  async function getStoryCount(dbRef) {
+  async function getStoryCount(dbRef = db) {
     /**
      * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
      * @returns {import('firebase-admin/firestore').CollectionReference} Stories collection reference.
@@ -378,10 +378,10 @@ export function createGenerateStatsCore({
 
   /**
    * Count the number of pages across every story variant.
-   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
+   * @param {import('firebase-admin/firestore').Firestore | undefined} [dbRef] - Firestore instance to query. Defaults to the configured db.
    * @returns {Promise<number>} Page count.
    */
-  async function getPageCount(dbRef) {
+  async function getPageCount(dbRef = db) {
     if (!canWalkNestedCollections(dbRef)) {
       /**
        * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
@@ -405,7 +405,7 @@ export function createGenerateStatsCore({
 
   /**
    * Count unmoderated variants by checking for zero and null reputation sums.
-   * @param {import('firebase-admin/firestore').Firestore} [dbRef] - Firestore instance to query. Defaults to the configured db.
+   * @param {import('firebase-admin/firestore').Firestore | undefined} [dbRef] - Firestore instance to query. Defaults to the configured db.
    * @returns {Promise<number>} Unmoderated variant count.
    */
   async function getUnmoderatedPageCount(dbRef = db) {
@@ -429,7 +429,7 @@ export function createGenerateStatsCore({
   /**
    * Count the documents returned by a Firestore query builder.
    * @param {(database: import('firebase-admin/firestore').Firestore) => import('firebase-admin/firestore').Query} buildQuery Query constructor.
-   * @param {import('firebase-admin/firestore').Firestore} [dbRef] Optional Firestore instance.
+   * @param {import('firebase-admin/firestore').Firestore | undefined} [dbRef] Optional Firestore instance.
    * @returns {Promise<number>} Document count.
    */
   async function countDocuments(buildQuery, dbRef = db) {
@@ -446,12 +446,22 @@ export function createGenerateStatsCore({
     const storiesSnap = await dbRef.collection('stories').get();
     const storyDocs = getSnapshotDocs(storiesSnap);
     if (storyDocs.length === 0) {
-      return countDocuments(reference => reference.collectionGroup('pages'), dbRef);
+      return countDocuments(
+        reference => reference.collectionGroup('pages'),
+        dbRef
+      );
     }
     const pageSnaps = await Promise.all(
-      storyDocs.map(storyDoc => storyDoc.ref.collection('pages').get())
+      storyDocs.map(storyDoc => {
+        const storyRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (storyDoc)).ref;
+        return storyRef.collection('pages').get();
+      })
     );
-    return pageSnaps.reduce((total, snap) => total + snap.size, 0);
+    let total = 0;
+    for (const snap of pageSnaps) {
+      total += Array.isArray(snap.docs) ? snap.docs.length : 0;
+    }
+    return total;
   }
 
   /**
@@ -476,26 +486,37 @@ export function createGenerateStatsCore({
       return zeroSnap.data().count + nullSnap.data().count;
     }
     const pageSnaps = await Promise.all(
-      storyDocs.map(storyDoc => storyDoc.ref.collection('pages').get())
+      storyDocs.map(storyDoc => {
+        const storyRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (storyDoc)).ref;
+        return storyRef.collection('pages').get();
+      })
     );
     const variantSnaps = await Promise.all(
-      pageSnaps.flatMap(pageSnap =>
-        getSnapshotDocs(pageSnap).map(pageDoc =>
-          pageDoc.ref.collection('variants').get()
-        )
+      pageSnaps.flatMap(
+        /** @param {{ docs?: Array<import('firebase-admin/firestore').QueryDocumentSnapshot> }} pageSnap */
+        pageSnap =>
+          getSnapshotDocs(pageSnap).map(pageDoc => {
+            const pageRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (pageDoc)).ref;
+            return pageRef.collection('variants').get();
+          })
       )
     );
 
-    return variantSnaps.reduce((total, snap) => {
+    let total = 0;
+    for (const snap of variantSnaps) {
       let count = 0;
       snap.docs.forEach(variantDoc => {
         const data = variantDoc.data();
-        if (data?.moderatorReputationSum === 0 || data?.moderatorReputationSum === null) {
+        if (
+          data?.moderatorReputationSum === 0 ||
+          data?.moderatorReputationSum === null
+        ) {
           count += 1;
         }
       });
-      return total + count;
-    }, 0);
+      total += count;
+    }
+    return total;
   }
 
   /**

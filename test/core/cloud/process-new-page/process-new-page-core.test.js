@@ -25,13 +25,17 @@ describe('findAvailablePageNumber', () => {
   it('returns the candidate when no pages exist', async () => {
     const random = jest.fn(() => 0.4); // candidate becomes 1
 
-    await expect(findAvailablePageNumber({} /* db unused */, random)).resolves.toBe(1);
+    await expect(
+      findAvailablePageNumber({} /* db unused */, random)
+    ).resolves.toBe(1);
   });
 
   it('recurses when the candidate already exists', async () => {
     const random = jest.fn().mockReturnValue(0.7);
 
-    await expect(findAvailablePageNumber({} /* db unused */, random)).resolves.toBe(1);
+    await expect(
+      findAvailablePageNumber({} /* db unused */, random)
+    ).resolves.toBe(1);
   });
 
   it('fails fast when a random generator is missing', async () => {

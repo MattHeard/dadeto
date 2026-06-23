@@ -769,7 +769,11 @@ export function createRunVariantQuery(database) {
     Boolean(database) && typeof database.collection === 'function';
 
   if (!hasNestedCollections) {
-    return function runLegacyVariantQuery({ reputation, comparator, randomValue }) {
+    return function runLegacyVariantQuery({
+      reputation,
+      comparator,
+      randomValue,
+    }) {
       const reputationScopedQuery = createReputationScopedVariantsQuery(
         database,
         reputation
@@ -782,15 +786,21 @@ export function createRunVariantQuery(database) {
     };
   }
 
-  return async function runVariantQuery({ reputation, comparator, randomValue }) {
+  return async function runVariantQuery({
+    reputation,
+    comparator,
+    randomValue,
+  }) {
     const storiesSnap = await database.collection('stories').get();
     const storyDocs = resolveSnapshotDocs(storiesSnap);
     const matches = [];
     for (const storyDoc of storyDocs) {
-      const pagesSnap = await storyDoc.ref.collection('pages').get();
+      const storyRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (storyDoc)).ref;
+      const pagesSnap = await storyRef.collection('pages').get();
       const pageDocs = resolveSnapshotDocs(pagesSnap);
       for (const pageDoc of pageDocs) {
-        const variantsSnap = await pageDoc.ref.collection('variants').get();
+        const pageRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (pageDoc)).ref;
+        const variantsSnap = await pageRef.collection('variants').get();
         const variantDocs = resolveSnapshotDocs(variantsSnap);
         for (const variantDoc of variantDocs) {
           if (matchesReputation(reputation, variantDoc.data())) {
@@ -820,7 +830,9 @@ export function createRunVariantQuery(database) {
         return leftRand - rightRand;
       }
 
-      return String(left.ref.path).localeCompare(String(right.ref.path));
+      const leftRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (left)).ref;
+      const rightRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (right)).ref;
+      return String(leftRef.path).localeCompare(String(rightRef.path));
     })[0];
 
     return { docs: chosen ? [chosen] : [] };
@@ -849,8 +861,8 @@ function toTimeValue(value) {
     return value.getTime();
   }
 
-  if (typeof value?.toDate === 'function') {
-    return value.toDate().getTime();
+  if (value && typeof /** @type {{ toDate?: () => Date }} */ (/** @type {unknown} */ (value)).toDate === 'function') {
+    return /** @type {{ toDate: () => Date }} */ (/** @type {unknown} */ (value)).toDate().getTime();
   }
 
   if (typeof value === 'number' && Number.isFinite(value)) {

@@ -1,5 +1,7 @@
 import { describe, it, expect, jest } from '@jest/globals';
 
+const fieldOptions = [];
+
 jest.unstable_mockModule('../../src/core/browser/browser-core.js', () => ({
   applyBaseCleanupHandlers: jest.fn(),
   hideAndDisable: jest.fn(),
@@ -18,7 +20,11 @@ jest.unstable_mockModule(
         disposers: [],
       })
     ),
-    wireLabelledField: jest.fn(),
+    wireLabelledField: jest.fn(options => {
+      fieldOptions.push(options);
+      options.disposers.push(options.handler);
+      return options;
+    }),
   })
 );
 
@@ -31,18 +37,41 @@ const { buildManagedForm } = await import(
 );
 
 describe('lifeSeedHandler', () => {
-  it('builds a Conway form and hides the hidden text input', () => {
-    const checkbox = { checked: false };
+  it('builds the Conway form and wires the field handlers', () => {
+    const elements = [];
+    const values = new Map([
+      ['width', '481.5'],
+      ['height', '640'],
+      ['cols', '31'],
+      ['rows', '17'],
+      ['tickSpeedMs', '250'],
+      ['cells', '9,8\n10,8\n11,8'],
+    ]);
     const dom = {
-      createElement: jest.fn(tag => (tag === 'input' ? checkbox : {})),
-      setType: jest.fn(),
-      setValue: jest.fn(),
-      setPlaceholder: jest.fn(),
-      setClassName: jest.fn(),
-      getValue: jest.fn(() => ''),
+      createElement: jest.fn(tag => {
+        const element = { tag, checked: false, value: '' };
+        elements.push(element);
+        return element;
+      }),
+      setType: jest.fn((element, type) => {
+        element.type = type;
+      }),
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setPlaceholder: jest.fn((element, value) => {
+        element.placeholder = value;
+      }),
+      setClassName: jest.fn((element, value) => {
+        element.className = value;
+      }),
+      getValue: jest.fn(element => values.get(element.label) ?? element.value ?? ''),
     };
     const container = {};
-    const textInput = {};
+    const textInput = {
+      value:
+        '{"width":1,"height":2,"cols":3,"rows":4,"tickSpeedMs":5,"cells":[[1,1]],"reset":false}',
+    };
 
     lifeSeedHandler(dom, container, textInput);
 
@@ -54,6 +83,28 @@ describe('lifeSeedHandler', () => {
     });
     expect(buildManagedForm).toHaveBeenCalled();
     expect(browserCore.setInputValue).toHaveBeenCalled();
+
+    const numberInputs = elements.filter(element => element.type === 'number');
+    const textarea = elements.find(element => element.tag === 'textarea');
+    const checkbox = elements.find(
+      element => element.type === 'checkbox'
+    );
+
+    numberInputs.forEach((element, index) => {
+      element.label = ['width', 'height', 'cols', 'rows', 'tickSpeedMs'][index];
+    });
+    if (textarea) {
+      textarea.label = 'cells';
+    }
+
+    expect(checkbox).toBeDefined();
     expect(dom.setType).toHaveBeenCalledWith(checkbox, 'checkbox');
+
+    expect(fieldOptions).toHaveLength(7);
+    fieldOptions[0].handler();
+    fieldOptions[5].handler();
+    fieldOptions[6].handler();
+
+    expect(browserCore.setInputValue).toHaveBeenCalled();
   });
 });

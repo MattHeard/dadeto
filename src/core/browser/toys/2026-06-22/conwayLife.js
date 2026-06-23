@@ -209,7 +209,10 @@ function normalizeTickSpeedMs(value) {
   if (!Number.isFinite(next)) {
     return DEFAULT_TICK_SPEED_MS;
   }
-  return Math.min(MAX_TICK_SPEED_MS, Math.max(MIN_TICK_SPEED_MS, Math.round(next)));
+  return Math.min(
+    MAX_TICK_SPEED_MS,
+    Math.max(MIN_TICK_SPEED_MS, Math.round(next))
+  );
 }
 
 /**
@@ -399,7 +402,10 @@ function normalizeState(data) {
   const tickSpeedMs = normalizeTickSpeedMs(candidate.tickSpeedMs);
   const framesPerTick = Math.max(
     1,
-    normalizePositiveInteger(candidate.framesPerTick, Math.round(tickSpeedMs / 16))
+    normalizePositiveInteger(
+      candidate.framesPerTick,
+      Math.round(tickSpeedMs / 16)
+    )
   );
   const framesUntilTick = Math.max(
     1,

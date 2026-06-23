@@ -1,10 +1,19 @@
 import * as browserCore from '../browser-core.js';
-import { buildManagedForm, wireLabelledField } from './createDendriteHandler.js';
+import {
+  buildManagedForm,
+  wireLabelledField,
+} from './createDendriteHandler.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
+/** @typedef {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, cells: number[][], reset?: boolean }} LifeSeedData */
+/** @typedef {{ key: 'width' | 'height' | 'cols' | 'rows' | 'tickSpeedMs', label: string, placeholder: string, value: number }} NumberFieldOptions */
 
 const FORM_CLASS = 'life-seed-form';
 
+/**
+ * Build the default life-seed payload.
+ * @returns {LifeSeedData} Default data object.
+ */
 function createDefaultData() {
   return {
     width: 360,
@@ -12,6 +21,7 @@ function createDefaultData() {
     cols: 24,
     rows: 16,
     tickSpeedMs: 128,
+    reset: false,
     cells: [
       [11, 7],
       [12, 7],
@@ -22,22 +32,44 @@ function createDefaultData() {
   };
 }
 
+/**
+ * Normalize a positive integer-like value.
+ * @param {unknown} value Candidate value.
+ * @param {number} fallback Fallback when parsing fails.
+ * @returns {number} Normalized integer.
+ */
 function normalizePositiveInteger(value, fallback) {
   const next = Number(value);
   return Number.isFinite(next) && next > 0 ? Math.round(next) : fallback;
 }
 
+/**
+ * Parse a newline-delimited list of x,y coordinate pairs.
+ * @param {unknown} value Raw textarea contents.
+ * @param {number[][]} fallback Existing coordinates.
+ * @returns {number[][]} Parsed coordinates.
+ */
 function parseCells(value, fallback) {
   const lines = String(value ?? '')
     .split('\n')
     .map(line => line.trim())
     .filter(Boolean);
   const parsed = lines
-    .map(line => line.split(/[,\s]+/).slice(0, 2).map(Number))
+    .map(line =>
+      line
+        .split(/[,\s]+/)
+        .slice(0, 2)
+        .map(Number)
+    )
     .filter(parts => parts.length === 2 && parts.every(Number.isInteger));
   return parsed.length > 0 ? parsed : fallback;
 }
 
+/**
+ * Normalize any user-provided payload into the expected life-seed shape.
+ * @param {unknown} candidate Raw hidden-input payload.
+ * @returns {LifeSeedData} Normalized form data.
+ */
 function normalizeData(candidate) {
   if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
     return createDefaultData();
@@ -54,12 +86,16 @@ function normalizeData(candidate) {
     normalized.tickSpeedMs
   );
   normalized.cells = parseCells(data.cells, normalized.cells);
-  if (data.reset === true) {
-    normalized.reset = true;
-  }
+  normalized.reset = data.reset === true;
   return normalized;
 }
 
+/**
+ * Parse the hidden input into the managed life-seed data object.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @returns {LifeSeedData} Parsed payload.
+ */
 function parseData(textInput, dom) {
   const raw = browserCore.getInputValue(textInput) || '{}';
   const parsed = browserCore.parseJsonOrDefault(raw, {});
@@ -67,10 +103,26 @@ function parseData(textInput, dom) {
   return normalized;
 }
 
+/**
+ * Mirror the managed payload back into the hidden input.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {LifeSeedData} data Managed form data.
+ * @returns {void}
+ */
 function syncTextInput(textInput, data) {
   browserCore.setInputValue(textInput, JSON.stringify(data));
 }
 
+/**
+ * Create a number input bound to a life-seed field.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @param {HTMLElement} form Managed form element.
+ * @param {LifeSeedData} data Shared payload object.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {Array<() => void>} disposers Cleanup callbacks.
+ * @param {NumberFieldOptions} options Field metadata.
+ * @returns {void}
+ */
 function createNumberField(dom, form, data, textInput, disposers, options) {
   const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(input, 'number');
@@ -92,16 +144,22 @@ function createNumberField(dom, form, data, textInput, disposers, options) {
   });
 }
 
+/**
+ * Create the textarea for the live-cell coordinate list.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @param {HTMLElement} form Managed form element.
+ * @param {LifeSeedData} data Shared payload object.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {Array<() => void>} disposers Cleanup callbacks.
+ * @returns {void}
+ */
 function createCellsField(dom, form, data, textInput, disposers) {
   const textarea = /** @type {HTMLTextAreaElement} */ (
     dom.createElement('textarea')
   );
   dom.setClassName(textarea, 'toy-textarea');
   dom.setPlaceholder(textarea, '11,7\n12,7\n13,7');
-  dom.setValue(
-    textarea,
-    data.cells.map(cell => cell.join(',')).join('\n')
-  );
+  dom.setValue(textarea, data.cells.map(cell => cell.join(',')).join('\n'));
   wireLabelledField({
     dom,
     form,
@@ -115,6 +173,15 @@ function createCellsField(dom, form, data, textInput, disposers) {
   });
 }
 
+/**
+ * Create the reset checkbox bound to the managed payload.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @param {HTMLElement} form Managed form element.
+ * @param {LifeSeedData} data Shared payload object.
+ * @param {HTMLInputElement} textInput Hidden payload input.
+ * @param {Array<() => void>} disposers Cleanup callbacks.
+ * @returns {void}
+ */
 function createResetField(dom, form, data, textInput, disposers) {
   const checkbox = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(checkbox, 'checkbox');
@@ -139,6 +206,11 @@ function createResetField(dom, form, data, textInput, disposers) {
   });
 }
 
+/**
+ * Build the life-seed configuration form.
+ * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} root0 Form setup dependencies.
+ * @returns {HTMLElement} Rendered form.
+ */
 function buildForm({ dom, container, textInput }) {
   const data = parseData(textInput, dom);
   return buildManagedForm(
