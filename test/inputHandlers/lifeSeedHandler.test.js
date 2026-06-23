@@ -183,4 +183,42 @@ describe('lifeSeedHandler', () => {
     const checkbox = elements.find(element => element.type === 'checkbox');
     expect(checkbox.checked).toBe(true);
   });
+
+  it('keeps reset set when the checkbox is turned on', () => {
+    browserCore.getInputValue.mockReturnValueOnce('{"reset":false}');
+    browserCore.parseJsonOrDefault.mockReturnValueOnce({ reset: false });
+
+    const elements = [];
+    const dom = {
+      createElement: jest.fn(tag => {
+        const element = { tag, checked: false, value: '' };
+        elements.push(element);
+        return element;
+      }),
+      setType: jest.fn((element, type) => {
+        element.type = type;
+      }),
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setPlaceholder: jest.fn((element, value) => {
+        element.placeholder = value;
+      }),
+      setClassName: jest.fn((element, value) => {
+        element.className = value;
+      }),
+      getValue: jest.fn(() => ''),
+    };
+    const container = {};
+    const textInput = { value: '{"reset":false}' };
+
+    lifeSeedHandler(dom, container, textInput);
+
+    const checkbox = elements.find(element => element.type === 'checkbox');
+    const resetField = fieldOptions.at(-1);
+    checkbox.checked = true;
+    resetField.handler();
+
+    expect(browserCore.setInputValue).toHaveBeenCalled();
+  });
 });
