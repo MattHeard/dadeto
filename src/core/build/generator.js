@@ -1062,6 +1062,7 @@ function generateToyScript(post) {
 const INPUT_METHODS = [
   'text',
   'textarea',
+  'life-seed',
   'file',
   'number',
   'real-hourly-wage',

@@ -150,6 +150,7 @@ describe('TOY_UI_SECTIONS integration', () => {
     const expectedOptions = [
       'text',
       'textarea',
+      'life-seed',
       'file',
       'number',
       'kv',

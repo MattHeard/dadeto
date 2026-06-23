@@ -2,6 +2,7 @@ import { blogKeyHandler } from './inputHandlers/blogKeyHandler.js';
 import { realHourlyWageHandler } from './inputHandlers/realHourlyWage.js';
 import { textHandler } from './inputHandlers/text.js';
 import { textareaHandler } from './inputHandlers/textarea.js';
+import { lifeSeedHandler } from './inputHandlers/lifeSeedHandler.js';
 import { fileHandler } from './inputHandlers/file.js';
 import { numberHandler } from './inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
@@ -267,6 +268,7 @@ export function kvHandler(dom, container, textInput) {
 const inputHandlersMap = {
   text: textHandler,
   textarea: textareaHandler,
+  'life-seed': lifeSeedHandler,
   file: fileHandler,
   number: numberHandler,
   kv: kvHandler,

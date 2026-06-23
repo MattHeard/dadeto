@@ -187,11 +187,11 @@
         }
       ],
       "toy": {
-        "modulePath": "/core/browser/toys/2026-06-22/conwayLife.js",
-        "functionName": "conwayLife",
-        "defaultInputMethod": "textarea",
-        "defaultOutputMethod": "canvas-2d"
-      },
+      "modulePath": "/core/browser/toys/2026-06-22/conwayLife.js",
+      "functionName": "conwayLife",
+      "defaultInputMethod": "life-seed",
+      "defaultOutputMethod": "canvas-2d"
+    },
       "release": "beta",
       "tags": [
         "toy",
