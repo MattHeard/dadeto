@@ -115,4 +115,32 @@ describe('conwayLife', () => {
       [3, 1],
     ]);
   });
+
+  it('wraps edge neighbors across the board boundaries', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 5,
+          rows: 5,
+          tickSpeedMs: 16,
+          framesPerTick: 1,
+          framesUntilTick: 1,
+          generation: 0,
+          cells: [
+            [0, 0],
+            [4, 0],
+            [0, 4],
+          ],
+        },
+      },
+    };
+
+    const { payload } = getCanvasPayload('{}', storageValue);
+
+    expect(payload.shapes).toHaveLength(5);
+    expect(storageValue.current.CONW1.cells).toContainEqual([4, 4]);
+    expect(storageValue.current.CONW1.cells).toContainEqual([0, 0]);
+  });
 });

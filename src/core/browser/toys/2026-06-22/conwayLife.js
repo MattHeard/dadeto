@@ -233,12 +233,24 @@ function normalizeCells(cells, cols, rows) {
     if (!Number.isInteger(x) || !Number.isInteger(y)) {
       continue;
     }
-    if (x < 0 || y < 0 || x >= cols || y >= rows) {
-      continue;
-    }
-    valid.push({ x, y });
+    valid.push({
+      x: wrapCoordinate(x, cols),
+      y: wrapCoordinate(y, rows),
+    });
   }
   return dedupeCells(valid);
+}
+
+/**
+ * @param {number} value
+ * @param {number} size
+ * @returns {number}
+ */
+function wrapCoordinate(value, size) {
+  if (size <= 0) {
+    return 0;
+  }
+  return ((value % size) + size) % size;
 }
 
 /**
@@ -299,11 +311,10 @@ function getNeighbors(cell, cols, rows) {
       if (dx === 0 && dy === 0) {
         continue;
       }
-      const x = cell.x + dx;
-      const y = cell.y + dy;
-      if (x >= 0 && y >= 0 && x < cols && y < rows) {
-        neighbors.push({ x, y });
-      }
+      neighbors.push({
+        x: wrapCoordinate(cell.x + dx, cols),
+        y: wrapCoordinate(cell.y + dy, rows),
+      });
     }
   }
   return neighbors;
