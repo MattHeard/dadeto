@@ -78,4 +78,41 @@ describe('conwayLife', () => {
     expect(payload.height).toBe(240);
     expect(payload.shapes.length).toBeGreaterThan(1);
   });
+
+  it('resets to the input seed when reset is true', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 6,
+          rows: 6,
+          tickSpeedMs: 16,
+          framesPerTick: 1,
+          framesUntilTick: 1,
+          generation: 7,
+          cells: [[0, 0]],
+        },
+      },
+    };
+
+    getCanvasPayload(
+      JSON.stringify({
+        reset: true,
+        cells: [
+          [1, 1],
+          [2, 1],
+          [3, 1],
+        ],
+      }),
+      storageValue
+    );
+
+    expect(storageValue.current.CONW1.generation).toBe(0);
+    expect(storageValue.current.CONW1.cells).toEqual([
+      [1, 1],
+      [2, 1],
+      [3, 1],
+    ]);
+  });
 });

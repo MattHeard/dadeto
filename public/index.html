@@ -788,7 +788,7 @@ The payload contains a background rectangle plus one rectangle per live cell. Th
 2. Change `tickSpeedMs` to slow down or speed up stepping.
 3. Change `cells` to start from a different pattern.
 4. Enable auto-submit to watch the board continue to advance.
-5. Use `reset: true` if you want to re-seed from the current input.
+5. Use `reset: true` if you want to discard the persisted board and start from the current input.
 
 ## Examples
 
@@ -827,9 +827,9 @@ The payload contains a background rectangle plus one rectangle per live cell. Th
 
 Check that auto-submit is enabled. The board only advances when the browser keeps submitting frames.
 
-### The board resets after refresh
+### The board keeps its state after refresh
 
-The storage helper may be unavailable, or the local-storage key may have been cleared.
+That is expected. The toy persists board state in local storage. Use `reset: true` to replace the stored board with the current input.
 
 ### The cells look squashed
 
