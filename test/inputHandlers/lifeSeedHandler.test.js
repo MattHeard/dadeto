@@ -32,8 +32,9 @@ const { buildManagedForm } = await import(
 
 describe('lifeSeedHandler', () => {
   it('builds a Conway form and hides the hidden text input', () => {
+    const checkbox = { checked: false };
     const dom = {
-      createElement: jest.fn(() => ({})),
+      createElement: jest.fn(tag => (tag === 'input' ? checkbox : {})),
       setType: jest.fn(),
       setValue: jest.fn(),
       setPlaceholder: jest.fn(),
@@ -53,5 +54,6 @@ describe('lifeSeedHandler', () => {
     });
     expect(buildManagedForm).toHaveBeenCalled();
     expect(browserCore.setInputValue).toHaveBeenCalled();
+    expect(dom.setType).toHaveBeenCalledWith(checkbox, 'checkbox');
   });
 });

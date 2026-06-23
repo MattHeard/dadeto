@@ -67,6 +67,10 @@ function parseData(textInput, dom) {
   return normalized;
 }
 
+function syncTextInput(textInput, data) {
+  browserCore.setInputValue(textInput, JSON.stringify(data));
+}
+
 function createNumberField(dom, form, data, textInput, disposers, options) {
   const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(input, 'number');
@@ -106,7 +110,31 @@ function createCellsField(dom, form, data, textInput, disposers) {
     disposers,
     handler: () => {
       data.cells = parseCells(dom.getValue(textarea), data.cells);
-      browserCore.setInputValue(textInput, JSON.stringify(data));
+      syncTextInput(textInput, data);
+    },
+  });
+}
+
+function createResetField(dom, form, data, textInput, disposers) {
+  const checkbox = /** @type {HTMLInputElement} */ (dom.createElement('input'));
+  dom.setType(checkbox, 'checkbox');
+  if (data.reset === true) {
+    checkbox.checked = true;
+  }
+
+  wireLabelledField({
+    dom,
+    form,
+    input: checkbox,
+    labelText: 'Reset from seed',
+    disposers,
+    handler: () => {
+      if (checkbox.checked) {
+        data.reset = true;
+      } else {
+        delete data.reset;
+      }
+      syncTextInput(textInput, data);
     },
   });
 }
@@ -148,7 +176,8 @@ function buildForm({ dom, container, textInput }) {
         value: data.tickSpeedMs,
       });
       createCellsField(dom, form, data, textInput, disposers);
-      browserCore.setInputValue(textInput, JSON.stringify(data));
+      createResetField(dom, form, data, textInput, disposers);
+      syncTextInput(textInput, data);
       return form;
     }
   );
