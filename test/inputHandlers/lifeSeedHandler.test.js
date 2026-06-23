@@ -37,6 +37,15 @@ const { buildManagedForm } = await import(
 );
 
 describe('lifeSeedHandler', () => {
+  beforeEach(() => {
+    fieldOptions.length = 0;
+    browserCore.getInputValue.mockReset();
+    browserCore.parseJsonOrDefault.mockReset();
+    browserCore.getInputValue.mockReturnValue('');
+    browserCore.parseJsonOrDefault.mockReturnValue({});
+    browserCore.setInputValue.mockClear();
+  });
+
   it('builds the Conway form and wires the field handlers', () => {
     const elements = [];
     const values = new Map([
@@ -106,5 +115,72 @@ describe('lifeSeedHandler', () => {
     fieldOptions[6].handler();
 
     expect(browserCore.setInputValue).toHaveBeenCalled();
+  });
+
+  it('normalizes invalid payloads and preserves a reset seed flag', () => {
+    browserCore.parseJsonOrDefault.mockReturnValueOnce(null);
+
+    const elements = [];
+    const dom = {
+      createElement: jest.fn(tag => {
+        const element = { tag, checked: false, value: '' };
+        elements.push(element);
+        return element;
+      }),
+      setType: jest.fn((element, type) => {
+        element.type = type;
+      }),
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setPlaceholder: jest.fn((element, value) => {
+        element.placeholder = value;
+      }),
+      setClassName: jest.fn((element, value) => {
+        element.className = value;
+      }),
+      getValue: jest.fn(() => ''),
+    };
+    const container = {};
+    const textInput = { value: '{"reset":true}' };
+
+    lifeSeedHandler(dom, container, textInput);
+
+    expect(fieldOptions).toHaveLength(7);
+    expect(browserCore.setInputValue).toHaveBeenCalled();
+  });
+
+  it('starts with reset checked when the parsed payload asks for reset', () => {
+    browserCore.getInputValue.mockReturnValueOnce('{"reset":true}');
+    browserCore.parseJsonOrDefault.mockReturnValueOnce({ reset: true });
+
+    const elements = [];
+    const dom = {
+      createElement: jest.fn(tag => {
+        const element = { tag, checked: false, value: '' };
+        elements.push(element);
+        return element;
+      }),
+      setType: jest.fn((element, type) => {
+        element.type = type;
+      }),
+      setValue: jest.fn((element, value) => {
+        element.value = value;
+      }),
+      setPlaceholder: jest.fn((element, value) => {
+        element.placeholder = value;
+      }),
+      setClassName: jest.fn((element, value) => {
+        element.className = value;
+      }),
+      getValue: jest.fn(() => ''),
+    };
+    const container = {};
+    const textInput = { value: '{"reset":true}' };
+
+    lifeSeedHandler(dom, container, textInput);
+
+    const checkbox = elements.find(element => element.type === 'checkbox');
+    expect(checkbox.checked).toBe(true);
   });
 });
