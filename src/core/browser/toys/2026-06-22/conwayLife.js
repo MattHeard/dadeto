@@ -114,34 +114,34 @@ function buildNextState(persisted, input) {
   const initialCountdown = shouldReset
     ? framesPerTick
     : normalizePositiveInteger(base.framesUntilTick, framesPerTick);
-  const advanced = shouldReset
-    ? {
-        cells: startingCells,
-        generation: 0,
+  const nextState = shouldReset
+    ? createLifeState({
+        width: base.width,
+        height: base.height,
+        cols: base.cols,
+        rows: base.rows,
+        tickSpeedMs: nextTickSpeedMs,
+        framesPerTick,
         framesUntilTick: initialCountdown,
-      }
+        generation: 0,
+        cells: startingCells,
+      })
     : stepBoard(
-        {
-          ...base,
+        createLifeState({
+          width: base.width,
+          height: base.height,
+          cols: base.cols,
+          rows: base.rows,
           tickSpeedMs: nextTickSpeedMs,
           framesPerTick,
           framesUntilTick: initialCountdown,
+          generation: base.generation,
           cells: startingCells,
-        },
+        }),
         framesPerTick
       );
 
-  return {
-    width: base.width,
-    height: base.height,
-    cols: base.cols,
-    rows: base.rows,
-    tickSpeedMs: nextTickSpeedMs,
-    framesPerTick,
-    generation: advanced.generation,
-    framesUntilTick: advanced.framesUntilTick,
-    cells: advanced.cells,
-  };
+  return nextState;
 }
 
 /**
@@ -177,7 +177,7 @@ function normalizeSeed(input) {
   const cols = normalizePositiveInteger(input?.cols, DEFAULT_COLS);
   const rows = normalizePositiveInteger(input?.rows, DEFAULT_ROWS);
   const tickSpeedMs = normalizeTickSpeedMs(input?.tickSpeedMs);
-  return {
+  return createLifeState({
     width,
     height,
     cols,
@@ -187,7 +187,7 @@ function normalizeSeed(input) {
     framesUntilTick: Math.max(1, Math.round(tickSpeedMs / 16)),
     generation: 0,
     cells: normalizeCells(input?.cells, cols, rows),
-  };
+  });
 }
 
 /**
@@ -413,7 +413,7 @@ function normalizeState(data) {
   );
   const generation = normalizePositiveInteger(candidate.generation, 0);
 
-  return {
+  return createLifeState({
     width,
     height,
     cols,
@@ -423,5 +423,24 @@ function normalizeState(data) {
     framesUntilTick,
     generation,
     cells: normalizeCells(candidate.cells, cols, rows),
+  });
+}
+
+/**
+ * Build a normalized life state from a field bundle.
+ * @param {LifeState} state State fields.
+ * @returns {LifeState} Normalized state object.
+ */
+function createLifeState(state) {
+  return {
+    width: state.width,
+    height: state.height,
+    cols: state.cols,
+    rows: state.rows,
+    tickSpeedMs: state.tickSpeedMs,
+    framesPerTick: state.framesPerTick,
+    framesUntilTick: state.framesUntilTick,
+    generation: state.generation,
+    cells: state.cells,
   };
 }
