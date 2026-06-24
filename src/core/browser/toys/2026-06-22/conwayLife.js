@@ -103,29 +103,37 @@ function buildNextState(persisted, input) {
     ? framesPerTick
     : normalizePositiveInteger(base.framesUntilTick, framesPerTick);
   const nextState = shouldReset
-    ? composeLifeState({
-        width: base.width,
-        height: base.height,
-        cols: base.cols,
-        rows: base.rows,
-        tickSpeedMs: nextTickSpeedMs,
-        framesPerTick,
-        framesUntilTick: initialCountdown,
-        generation: 0,
-        cells: startingCells,
-      })
-    : stepBoard(
-        composeLifeState({
+    ? composeLifeState(
+        createBaseStateFields({
           width: base.width,
           height: base.height,
           cols: base.cols,
           rows: base.rows,
           tickSpeedMs: nextTickSpeedMs,
-          framesPerTick,
-          framesUntilTick: initialCountdown,
-          generation: base.generation,
           cells: startingCells,
         }),
+        {
+          framesPerTick,
+          framesUntilTick: initialCountdown,
+          generation: 0,
+        }
+      )
+    : stepBoard(
+        composeLifeState(
+          createBaseStateFields({
+            width: base.width,
+            height: base.height,
+            cols: base.cols,
+            rows: base.rows,
+            tickSpeedMs: nextTickSpeedMs,
+            cells: startingCells,
+          }),
+          {
+            framesPerTick,
+            framesUntilTick: initialCountdown,
+            generation: base.generation,
+          }
+        ),
         framesPerTick
       );
 
@@ -450,6 +458,9 @@ function createStoredLifeState(fields) {
  *   cols: number,
  *   rows: number,
  *   tickSpeedMs: number,
+ *   framesPerTick?: number,
+ *   framesUntilTick?: number,
+ *   generation?: number,
  *   cells: LifeCell[],
  * }} fields Common state fields.
  * @returns {{
@@ -458,6 +469,9 @@ function createStoredLifeState(fields) {
  *   cols: number,
  *   rows: number,
  *   tickSpeedMs: number,
+ *   framesPerTick?: number,
+ *   framesUntilTick?: number,
+ *   generation?: number,
  *   cells: LifeCell[],
  * }} Shared base state fields.
  */
@@ -468,6 +482,9 @@ function createBaseStateFields(fields) {
     cols: fields.cols,
     rows: fields.rows,
     tickSpeedMs: fields.tickSpeedMs,
+    framesPerTick: fields.framesPerTick,
+    framesUntilTick: fields.framesUntilTick,
+    generation: fields.generation,
     cells: fields.cells,
   };
 }
