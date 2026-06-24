@@ -164,6 +164,34 @@ function createCellsField(dom, form, data, textInput, disposers) {
 }
 
 /**
+ * Create a labelled checkbox field and wire its change handler.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @param {HTMLElement} form Managed form element.
+ * @param {string} labelText Label text shown next to the checkbox.
+ * @param {boolean} checked Whether the checkbox starts checked.
+ * @param {() => void} handler Change handler.
+ * @param {Array<() => void>} disposers Cleanup callbacks.
+ * @returns {HTMLInputElement} Created checkbox element.
+ */
+function createCheckboxField(dom, form, labelText, checked, handler, disposers) {
+  const checkbox = /** @type {HTMLInputElement} */ (dom.createElement('input'));
+  dom.setType(checkbox, 'checkbox');
+  if (checked) {
+    checkbox.checked = true;
+  }
+
+  wireLabelledField({
+    dom,
+    form,
+    input: checkbox,
+    labelText,
+    disposers,
+    handler,
+  });
+  return checkbox;
+}
+
+/**
  * Create the reset checkbox bound to the managed payload.
  * @param {DOMHelpers} dom DOM helper utilities.
  * @param {HTMLElement} form Managed form element.
@@ -173,19 +201,12 @@ function createCellsField(dom, form, data, textInput, disposers) {
  * @returns {void}
  */
 function createResetField(dom, form, data, textInput, disposers) {
-  const checkbox = /** @type {HTMLInputElement} */ (dom.createElement('input'));
-  dom.setType(checkbox, 'checkbox');
-  if (data.reset === true) {
-    checkbox.checked = true;
-  }
-
-  wireLabelledField({
+  const checkbox = createCheckboxField(
     dom,
     form,
-    input: checkbox,
-    labelText: 'Reset from seed',
-    disposers,
-    handler: () => {
+    'Reset from seed',
+    data.reset === true,
+    () => {
       if (checkbox.checked) {
         data.reset = true;
       } else {
@@ -193,7 +214,9 @@ function createResetField(dom, form, data, textInput, disposers) {
       }
       syncTextInput(textInput, data);
     },
-  });
+    disposers
+  );
+  return checkbox;
 }
 
 /**
