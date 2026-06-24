@@ -424,7 +424,7 @@ function normalizeState(data) {
  */
 function createSeedLifeState(fields) {
   const framesPerTick = Math.max(1, Math.round(fields.tickSpeedMs / 16));
-  return {
+  return createLifeStateFields({
     width: fields.width,
     height: fields.height,
     cols: fields.cols,
@@ -434,7 +434,7 @@ function createSeedLifeState(fields) {
     framesUntilTick: framesPerTick,
     generation: 0,
     cells: fields.cells,
-  };
+  });
 }
 
 /**
@@ -443,6 +443,25 @@ function createSeedLifeState(fields) {
  * @returns {LifeState} Normalized state object.
  */
 function createStoredLifeState(fields) {
+  return createLifeStateFields(fields);
+}
+
+/**
+ * Build a LifeState object from normalized fields.
+ * @param {{
+ *   width: number,
+ *   height: number,
+ *   cols: number,
+ *   rows: number,
+ *   tickSpeedMs: number,
+ *   framesPerTick: number,
+ *   framesUntilTick: number,
+ *   generation: number,
+ *   cells: LifeCell[],
+ * }} fields Normalized state fields.
+ * @returns {LifeState} Normalized state object.
+ */
+function createLifeStateFields(fields) {
   return {
     width: fields.width,
     height: fields.height,
