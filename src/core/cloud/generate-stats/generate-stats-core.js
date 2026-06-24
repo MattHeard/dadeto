@@ -453,7 +453,10 @@ export function createGenerateStatsCore({
     }
     const pageSnaps = await Promise.all(
       storyDocs.map(storyDoc => {
-        const storyRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (storyDoc)).ref;
+        const storyRef =
+          /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+            /** @type {unknown} */ (storyDoc)
+          ).ref;
         return storyRef.collection('pages').get();
       })
     );
@@ -487,7 +490,10 @@ export function createGenerateStatsCore({
     }
     const pageSnaps = await Promise.all(
       storyDocs.map(storyDoc => {
-        const storyRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (storyDoc)).ref;
+        const storyRef =
+          /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+            /** @type {unknown} */ (storyDoc)
+          ).ref;
         return storyRef.collection('pages').get();
       })
     );
@@ -496,7 +502,10 @@ export function createGenerateStatsCore({
         /** @param {{ docs?: Array<import('firebase-admin/firestore').QueryDocumentSnapshot> }} pageSnap */
         pageSnap =>
           getSnapshotDocs(pageSnap).map(pageDoc => {
-            const pageRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (pageDoc)).ref;
+            const pageRef =
+              /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+                /** @type {unknown} */ (pageDoc)
+              ).ref;
             return pageRef.collection('variants').get();
           })
       )

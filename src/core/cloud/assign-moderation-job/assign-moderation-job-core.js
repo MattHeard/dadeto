@@ -795,11 +795,17 @@ export function createRunVariantQuery(database) {
     const storyDocs = resolveSnapshotDocs(storiesSnap);
     const matches = [];
     for (const storyDoc of storyDocs) {
-      const storyRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (storyDoc)).ref;
+      const storyRef =
+        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+          /** @type {unknown} */ (storyDoc)
+        ).ref;
       const pagesSnap = await storyRef.collection('pages').get();
       const pageDocs = resolveSnapshotDocs(pagesSnap);
       for (const pageDoc of pageDocs) {
-        const pageRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (pageDoc)).ref;
+        const pageRef =
+          /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+            /** @type {unknown} */ (pageDoc)
+          ).ref;
         const variantsSnap = await pageRef.collection('variants').get();
         const variantDocs = resolveSnapshotDocs(variantsSnap);
         for (const variantDoc of variantDocs) {
@@ -830,8 +836,14 @@ export function createRunVariantQuery(database) {
         return leftRand - rightRand;
       }
 
-      const leftRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (left)).ref;
-      const rightRef = /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (/** @type {unknown} */ (right)).ref;
+      const leftRef =
+        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+          /** @type {unknown} */ (left)
+        ).ref;
+      const rightRef =
+        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+          /** @type {unknown} */ (right)
+        ).ref;
       return String(leftRef.path).localeCompare(String(rightRef.path));
     })[0];
 
@@ -861,8 +873,18 @@ function toTimeValue(value) {
     return value.getTime();
   }
 
-  if (value && typeof /** @type {{ toDate?: () => Date }} */ (/** @type {unknown} */ (value)).toDate === 'function') {
-    return /** @type {{ toDate: () => Date }} */ (/** @type {unknown} */ (value)).toDate().getTime();
+  if (
+    value &&
+    typeof (
+      /** @type {{ toDate?: () => Date }} */ (/** @type {unknown} */ (value))
+        .toDate
+    ) === 'function'
+  ) {
+    return /** @type {{ toDate: () => Date }} */ (
+      /** @type {unknown} */ (value)
+    )
+      .toDate()
+      .getTime();
   }
 
   if (typeof value === 'number' && Number.isFinite(value)) {

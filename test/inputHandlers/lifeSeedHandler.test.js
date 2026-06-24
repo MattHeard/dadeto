@@ -74,7 +74,9 @@ describe('lifeSeedHandler', () => {
       setClassName: jest.fn((element, value) => {
         element.className = value;
       }),
-      getValue: jest.fn(element => values.get(element.label) ?? element.value ?? ''),
+      getValue: jest.fn(
+        element => values.get(element.label) ?? element.value ?? ''
+      ),
     };
     const container = {};
     const textInput = {
@@ -95,9 +97,7 @@ describe('lifeSeedHandler', () => {
 
     const numberInputs = elements.filter(element => element.type === 'number');
     const textarea = elements.find(element => element.tag === 'textarea');
-    const checkbox = elements.find(
-      element => element.type === 'checkbox'
-    );
+    const checkbox = elements.find(element => element.type === 'checkbox');
 
     numberInputs.forEach((element, index) => {
       element.label = ['width', 'height', 'cols', 'rows', 'tickSpeedMs'][index];
