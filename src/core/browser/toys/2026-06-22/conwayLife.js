@@ -68,14 +68,7 @@ function readPersistedState(storage) {
     return null;
   }
 
-  try {
-    const data = storage({});
-    return normalizeState(
-      /** @type {Record<string, unknown> | null | undefined} */ (data)
-    );
-  } catch {
-    return null;
-  }
+  return normalizeState(parseJsonRecord(storage({})));
 }
 
 /**
@@ -87,14 +80,7 @@ function parseInput(input) {
     return null;
   }
 
-  try {
-    const parsed = JSON.parse(input);
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? /** @type {Record<string, unknown>} */ (parsed)
-      : null;
-  } catch {
-    return null;
-  }
+  return parseJsonRecord(input);
 }
 
 /**
@@ -177,7 +163,7 @@ function normalizeSeed(input) {
   const cols = normalizePositiveInteger(input?.cols, DEFAULT_COLS);
   const rows = normalizePositiveInteger(input?.rows, DEFAULT_ROWS);
   const tickSpeedMs = normalizeTickSpeedMs(input?.tickSpeedMs);
-  return createLifeState({
+  return createLifeStateFromParts({
     width,
     height,
     cols,
@@ -198,6 +184,22 @@ function normalizeSeed(input) {
 function normalizePositiveInteger(value, fallback) {
   const next = Number(value);
   return Number.isFinite(next) && next > 0 ? Math.round(next) : fallback;
+}
+
+/**
+ * Parse a JSON value into an object-like record.
+ * @param {unknown} value Raw JSON source or parsed payload.
+ * @returns {Record<string, unknown> | null} Object payload or null.
+ */
+function parseJsonRecord(value) {
+  try {
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? /** @type {Record<string, unknown>} */ (parsed)
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -413,7 +415,7 @@ function normalizeState(data) {
   );
   const generation = normalizePositiveInteger(candidate.generation, 0);
 
-  return createLifeState({
+  return createLifeStateFromParts({
     width,
     height,
     cols,
@@ -424,6 +426,15 @@ function normalizeState(data) {
     generation,
     cells: normalizeCells(candidate.cells, cols, rows),
   });
+}
+
+/**
+ * Create a life state from its component parts.
+ * @param {LifeState} state State fields.
+ * @returns {LifeState} Normalized state object.
+ */
+function createLifeStateFromParts(state) {
+  return createLifeState(state);
 }
 
 /**
