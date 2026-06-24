@@ -3,12 +3,26 @@ import { describe, it, expect, jest } from '@jest/globals';
 const fieldOptions = [];
 
 jest.unstable_mockModule('../../src/core/browser/browser-core.js', () => ({
+  DENDRITE_FORM_SELECTOR: '.dendrite-form',
   applyBaseCleanupHandlers: jest.fn(),
+  guardThen: jest.fn((condition, effect) => {
+    if (!condition) {
+      return false;
+    }
+    effect();
+    return true;
+  }),
   hideAndDisable: jest.fn(),
+  maybeRemoveFile: jest.fn(),
+  maybeRemoveKV: jest.fn(),
+  maybeRemoveNumber: jest.fn(),
   maybeRemoveTextarea: jest.fn(),
   getInputValue: jest.fn(() => ''),
   parseJsonOrDefault: jest.fn(() => ({})),
   setInputValue: jest.fn(),
+  whenOrDefault: jest.fn((condition, transform, fallback) =>
+    condition ? transform() : fallback
+  ),
 }));
 
 jest.unstable_mockModule(

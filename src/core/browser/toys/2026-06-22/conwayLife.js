@@ -103,7 +103,7 @@ function buildNextState(persisted, input) {
     ? framesPerTick
     : normalizePositiveInteger(base.framesUntilTick, framesPerTick);
   const nextState = shouldReset
-    ? createLifeState({
+    ? composeLifeState({
         width: base.width,
         height: base.height,
         cols: base.cols,
@@ -115,7 +115,7 @@ function buildNextState(persisted, input) {
         cells: startingCells,
       })
     : stepBoard(
-        createLifeState({
+        composeLifeState({
           width: base.width,
           height: base.height,
           cols: base.cols,
