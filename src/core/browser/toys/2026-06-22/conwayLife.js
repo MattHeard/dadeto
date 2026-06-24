@@ -165,14 +165,16 @@ function normalizeSeed(input) {
   const cols = normalizePositiveInteger(input?.cols, DEFAULT_COLS);
   const rows = normalizePositiveInteger(input?.rows, DEFAULT_ROWS);
   const tickSpeedMs = normalizeTickSpeedMs(input?.tickSpeedMs);
-  return createSeedLifeState({
-    width,
-    height,
-    cols,
-    rows,
-    tickSpeedMs,
-    cells: normalizeCells(input?.cells, cols, rows),
-  });
+  return createSeedLifeState(
+    createBaseStateFields({
+      width,
+      height,
+      cols,
+      rows,
+      tickSpeedMs,
+      cells: normalizeCells(input?.cells, cols, rows),
+    })
+  );
 }
 
 /**
@@ -437,7 +439,37 @@ function createSeedLifeState(fields) {
  * @returns {LifeState} Normalized state object.
  */
 function createStoredLifeState(fields) {
-  return composeLifeState(fields, {});
+  return composeLifeState(createBaseStateFields(fields), {});
+}
+
+/**
+ * Build the shared state fields used by both seed and stored state shapes.
+ * @param {{
+ *   width: number,
+ *   height: number,
+ *   cols: number,
+ *   rows: number,
+ *   tickSpeedMs: number,
+ *   cells: LifeCell[],
+ * }} fields Common state fields.
+ * @returns {{
+ *   width: number,
+ *   height: number,
+ *   cols: number,
+ *   rows: number,
+ *   tickSpeedMs: number,
+ *   cells: LifeCell[],
+ * }} Shared base state fields.
+ */
+function createBaseStateFields(fields) {
+  return {
+    width: fields.width,
+    height: fields.height,
+    cols: fields.cols,
+    rows: fields.rows,
+    tickSpeedMs: fields.tickSpeedMs,
+    cells: fields.cells,
+  };
 }
 
 /**
