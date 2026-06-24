@@ -221,15 +221,18 @@ export function makeCaptureFormBuilder(formClass, onFormReady) {
 
 /**
  * Prepare the shared input handler UI before the specific form is mounted.
- * @param {{
- *   dom: DOMHelpers,
- *   container: HTMLElement,
- *   textInput: HTMLInputElement,
- *   extraHandlers: Array<(container: HTMLElement, dom: DOMHelpers) => void>,
- * }} options - Handler entry dependencies.
+ * @param {DOMHelpers} dom DOM helper utilities.
+ * @param {HTMLElement} container Container element housing the input.
+ * @param {HTMLInputElement} textInput Hidden text input.
+ * @param {Array<(container: HTMLElement, dom: DOMHelpers) => void>} extraHandlers Extra cleanup callbacks.
  * @returns {void}
  */
-export function prepareInputHandler({ dom, container, textInput, extraHandlers }) {
+export function prepareInputHandler(
+  dom,
+  container,
+  textInput,
+  extraHandlers
+) {
   browserCore.hideAndDisable(textInput, dom);
   browserCore.applyBaseCleanupHandlers({
     container,
@@ -244,12 +247,7 @@ export function prepareInputHandler({ dom, container, textInput, extraHandlers }
  * @returns {void}
  */
 export function prepareCaptureHandler({ dom, container, textInput }) {
-  prepareInputHandler({
-    dom,
-    container,
-    textInput,
-    extraHandlers: [browserCore.maybeRemoveNumber],
-  });
+  prepareInputHandler(dom, container, textInput, [browserCore.maybeRemoveNumber]);
 }
 
 /**

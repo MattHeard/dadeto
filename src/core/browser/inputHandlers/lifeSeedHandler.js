@@ -274,11 +274,8 @@ function buildForm({ dom, container, textInput }) {
  * @returns {void}
  */
 export function lifeSeedHandler(dom, container, textInput) {
-  prepareInputHandler({
-    dom,
-    container,
-    textInput,
-    extraHandlers: [browserCore.maybeRemoveTextarea],
-  });
+  prepareInputHandler(dom, container, textInput, [
+    browserCore.maybeRemoveTextarea,
+  ]);
   buildForm({ dom, container, textInput });
 }
