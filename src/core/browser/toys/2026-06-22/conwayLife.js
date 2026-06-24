@@ -424,16 +424,10 @@ function normalizeState(data) {
  */
 function createSeedLifeState(fields) {
   const framesPerTick = Math.max(1, Math.round(fields.tickSpeedMs / 16));
-  return createLifeStateFields({
-    width: fields.width,
-    height: fields.height,
-    cols: fields.cols,
-    rows: fields.rows,
-    tickSpeedMs: fields.tickSpeedMs,
+  return composeLifeState(fields, {
     framesPerTick,
     framesUntilTick: framesPerTick,
     generation: 0,
-    cells: fields.cells,
   });
 }
 
@@ -443,7 +437,7 @@ function createSeedLifeState(fields) {
  * @returns {LifeState} Normalized state object.
  */
 function createStoredLifeState(fields) {
-  return createLifeStateFields(fields);
+  return composeLifeState(fields, {});
 }
 
 /**
@@ -458,19 +452,20 @@ function createStoredLifeState(fields) {
  *   framesUntilTick: number,
  *   generation: number,
  *   cells: LifeCell[],
- * }} fields Normalized state fields.
+ * }} base Normalized state fields.
+ * @param {Partial<Pick<LifeState, 'framesPerTick' | 'framesUntilTick' | 'generation'>>} overrides Derived fields.
  * @returns {LifeState} Normalized state object.
  */
-function createLifeStateFields(fields) {
+function composeLifeState(base, overrides) {
   return {
-    width: fields.width,
-    height: fields.height,
-    cols: fields.cols,
-    rows: fields.rows,
-    tickSpeedMs: fields.tickSpeedMs,
-    framesPerTick: fields.framesPerTick,
-    framesUntilTick: fields.framesUntilTick,
-    generation: fields.generation,
-    cells: fields.cells,
+    width: base.width,
+    height: base.height,
+    cols: base.cols,
+    rows: base.rows,
+    tickSpeedMs: base.tickSpeedMs,
+    framesPerTick: overrides.framesPerTick ?? base.framesPerTick,
+    framesUntilTick: overrides.framesUntilTick ?? base.framesUntilTick,
+    generation: overrides.generation ?? base.generation,
+    cells: base.cells,
   };
 }
