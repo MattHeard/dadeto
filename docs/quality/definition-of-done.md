@@ -18,7 +18,7 @@ Every change (code, docs, config, or infra) is done only when all of the followi
 
 Run fast local checks first, then expensive/cloud checks:
 
-Use `npm run check` when you want the default local aggregate gate for most changes. It runs `npm test`, `npm run lint`, `npm run depcruise`, `npm run duplication`, `npm run entrypoint-pattern`, `npm run non-core-thin`, `npm run tsdoc:check`, and `npm audit --audit-level=low` in parallel, while streaming structured failure events to stderr.
+Use `npm run check` when you want the default local aggregate gate for most changes. It runs `npm test`, `npm run lint`, `npm run depcruise`, `npm run core-parse`, `npm run duplication`, `npm run entrypoint-pattern`, `npm run non-core-thin`, `npm run tsdoc:check`, and `npm audit --audit-level=low` in parallel, while streaming structured failure events to stderr.
 
 Use `npm run check:fast` when you want the same gate to stop on the first failure instead of collecting all failures.
 

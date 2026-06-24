@@ -29,6 +29,7 @@
     "build:browser": "npm run build:mattheard-net",
     "build": "npm run build:mattheard-net",
     "depcruise": "node src/local/check-depcruise.js",
+    "core-parse": "node src/local/check-core-parse.js",
     "duplication": "node src/local/check-duplication.js",
     "entrypoint-pattern": "node src/local/check-build-entrypoint-pattern.js",
     "non-core-thin": "node src/local/check-non-core-thin-files.js",

@@ -25,7 +25,7 @@ Use this as the canonical checklist before closure.
   2. If tooling/config is broken, create/attach a `bd` bead with failing output.
 
 ### Aggregate shortcuts
-- **`npm run check`:** default local aggregate gate. It runs `npm test`, `npm run lint`, `npm run depcruise`, `npm run duplication`, `npm run entrypoint-pattern`, `npm run non-core-thin`, `npm run tsdoc:check`, and `npm audit --audit-level=low` in parallel, and emits structured failure events to stderr while it continues collecting the rest of the results.
+- **`npm run check`:** default local aggregate gate. It runs `npm test`, `npm run lint`, `npm run depcruise`, `npm run core-parse`, `npm run duplication`, `npm run entrypoint-pattern`, `npm run non-core-thin`, `npm run tsdoc:check`, and `npm audit --audit-level=low` in parallel, and emits structured failure events to stderr while it continues collecting the rest of the results.
 - **`npm run check:fast`:** fail-fast variant of the aggregate gate. It stops the suite on the first failing sub-check.
 - **What stays out:** `npm run build:cloud` and `npm run build:dendritestories-co-nz` remain opt-in / subsystem-specific until their owning beads call for them.
 
