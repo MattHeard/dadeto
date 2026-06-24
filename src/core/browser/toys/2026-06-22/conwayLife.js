@@ -165,17 +165,14 @@ function normalizeSeed(input) {
   const cols = normalizePositiveInteger(input?.cols, DEFAULT_COLS);
   const rows = normalizePositiveInteger(input?.rows, DEFAULT_ROWS);
   const tickSpeedMs = normalizeTickSpeedMs(input?.tickSpeedMs);
-  return createLifeStateFromValues(
+  return createSeedLifeState({
     width,
     height,
     cols,
     rows,
     tickSpeedMs,
-    Math.max(1, Math.round(tickSpeedMs / 16)),
-    Math.max(1, Math.round(tickSpeedMs / 16)),
-    0,
-    normalizeCells(input?.cells, cols, rows)
-  );
+    cells: normalizeCells(input?.cells, cols, rows),
+  });
 }
 
 /**
@@ -407,7 +404,7 @@ function normalizeState(data) {
   );
   const generation = normalizePositiveInteger(candidate.generation, 0);
 
-  return createLifeStateFromValues(
+  return createStoredLifeState({
     width,
     height,
     cols,
@@ -416,52 +413,45 @@ function normalizeState(data) {
     framesPerTick,
     framesUntilTick,
     generation,
-    normalizeCells(candidate.cells, cols, rows)
-  );
+    cells: normalizeCells(candidate.cells, cols, rows),
+  });
 }
 
 /**
- * Create a life state from its component parts.
- * @param {number} width Canvas width.
- * @param {number} height Canvas height.
- * @param {number} cols Board columns.
- * @param {number} rows Board rows.
- * @param {number} tickSpeedMs Tick speed in ms.
- * @param {number} framesPerTick Frames per tick.
- * @param {number} framesUntilTick Remaining frames until the next tick.
- * @param {number} generation Current generation number.
- * @param {LifeCell[]} cells Live cells.
+ * Create a seed state from the current input fields.
+ * @param {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, cells: LifeCell[] }} fields Seed fields.
  * @returns {LifeState} Normalized state object.
  */
-function createLifeStateFromValues(
-  width,
-  height,
-  cols,
-  rows,
-  tickSpeedMs,
-  framesPerTick,
-  framesUntilTick,
-  generation,
-  cells
-) {
+function createSeedLifeState(fields) {
+  const framesPerTick = Math.max(1, Math.round(fields.tickSpeedMs / 16));
   return {
-    width,
-    height,
-    cols,
-    rows,
-    tickSpeedMs,
+    width: fields.width,
+    height: fields.height,
+    cols: fields.cols,
+    rows: fields.rows,
+    tickSpeedMs: fields.tickSpeedMs,
     framesPerTick,
-    framesUntilTick,
-    generation,
-    cells,
+    framesUntilTick: framesPerTick,
+    generation: 0,
+    cells: fields.cells,
   };
 }
 
 /**
- * Build a normalized life state from a field bundle.
- * @param {LifeState} state State fields.
+ * Create a stored state from persisted fields.
+ * @param {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, framesPerTick: number, framesUntilTick: number, generation: number, cells: LifeCell[] }} fields Stored fields.
  * @returns {LifeState} Normalized state object.
  */
-function createLifeState(state) {
-  return state;
+function createStoredLifeState(fields) {
+  return {
+    width: fields.width,
+    height: fields.height,
+    cols: fields.cols,
+    rows: fields.rows,
+    tickSpeedMs: fields.tickSpeedMs,
+    framesPerTick: fields.framesPerTick,
+    framesUntilTick: fields.framesUntilTick,
+    generation: fields.generation,
+    cells: fields.cells,
+  };
 }
