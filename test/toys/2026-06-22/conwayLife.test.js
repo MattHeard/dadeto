@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { conwayLife } from '../../../src/core/browser/toys/2026-06-22/conwayLife.js';
 
-const getCanvasPayload = (input, storageValue) => {
+const getCanvasPayload = (input, storageValue, env = null) => {
   const setLocalPermanentData = jest.fn(next => {
     storageValue.current = {
       ...(storageValue.current || {}),
@@ -9,8 +9,9 @@ const getCanvasPayload = (input, storageValue) => {
     };
     return storageValue.current;
   });
-  const env = new Map([['setLocalPermanentData', setLocalPermanentData]]);
-  const payload = JSON.parse(conwayLife(input, env));
+  const runtimeEnv =
+    env || new Map([['setLocalPermanentData', setLocalPermanentData]]);
+  const payload = JSON.parse(conwayLife(input, runtimeEnv));
   return { payload, setLocalPermanentData, storageValue };
 };
 
@@ -142,5 +143,83 @@ describe('conwayLife', () => {
     expect(payload.shapes).toHaveLength(5);
     expect(storageValue.current.CONW1.cells).toContainEqual([4, 4]);
     expect(storageValue.current.CONW1.cells).toContainEqual([0, 0]);
+  });
+
+  it('treats blank input as an empty submission when storage is unavailable', () => {
+    const payload = JSON.parse(conwayLife('   '));
+
+    expect(payload.width).toBe(360);
+    expect(payload.height).toBe(240);
+    expect(payload.shapes).toHaveLength(6);
+  });
+
+  it('ignores malformed storage accessors and still renders the default seed', () => {
+    const storageValue = { current: null };
+    const env = new Map([['setLocalPermanentData', 'not a function']]);
+
+    const { payload } = getCanvasPayload('{}', storageValue, env);
+
+    expect(payload.width).toBe(360);
+    expect(storageValue.current).toBeNull();
+  });
+
+  it('falls back to the seed when stored data parses to a primitive', () => {
+    const storageValue = { current: null };
+    const env = new Map([['setLocalPermanentData', () => 42]]);
+
+    const { payload } = getCanvasPayload('{}', storageValue, env);
+
+    expect(payload.width).toBe(360);
+    expect(payload.shapes).toHaveLength(6);
+  });
+
+  it('keeps the board steady when the stored countdown has not elapsed', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 6,
+          rows: 6,
+          tickSpeedMs: 16,
+          framesPerTick: 2,
+          framesUntilTick: 2,
+          generation: 4,
+          cells: [
+            [1, 2],
+            [2, 2],
+            [3, 2],
+          ],
+        },
+      },
+    };
+
+    const { payload } = getCanvasPayload('{}', storageValue);
+
+    expect(payload.shapes).toHaveLength(4);
+    expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
+    expect(storageValue.current.CONW1.generation).toBe(4);
+  });
+
+  it('ignores invalid cell payloads while keeping valid wrapped cells', () => {
+    const storageValue = { current: null };
+    const { payload } = getCanvasPayload(
+      JSON.stringify({
+        cells: [
+          [1, 1],
+          [1, 1],
+          [7, 7],
+          ['x', 2],
+          [2],
+        ],
+      }),
+      storageValue
+    );
+
+    expect(payload.shapes).toHaveLength(3);
+    expect(storageValue.current.CONW1.cells).toEqual([
+      [1, 1],
+      [7, 7],
+    ]);
   });
 });

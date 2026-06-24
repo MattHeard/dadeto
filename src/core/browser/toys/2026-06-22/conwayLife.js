@@ -251,9 +251,6 @@ function normalizeCells(cells, cols, rows) {
  * @returns {number}
  */
 function wrapCoordinate(value, size) {
-  if (size <= 0) {
-    return 0;
-  }
   return ((value % size) + size) % size;
 }
 
