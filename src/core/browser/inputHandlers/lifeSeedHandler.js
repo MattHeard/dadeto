@@ -1,4 +1,5 @@
 import * as browserCore from '../browser-core.js';
+import { normalizePositiveInteger } from '../common.js';
 import {
   buildManagedForm,
   wireLabelledField,
@@ -30,17 +31,6 @@ function createDefaultData() {
       [12, 5],
     ],
   };
-}
-
-/**
- * Normalize a positive integer-like value.
- * @param {unknown} value Candidate value.
- * @param {number} fallback Fallback when parsing fails.
- * @returns {number} Normalized integer.
- */
-function normalizePositiveInteger(value, fallback) {
-  const next = Number(value);
-  return Number.isFinite(next) && next > 0 ? Math.round(next) : fallback;
 }
 
 /**

@@ -1,3 +1,5 @@
+import { normalizePositiveInteger } from '../../common.js';
+
 /**
  * @typedef {{ x: number, y: number }} LifeCell
  * @typedef {{
@@ -163,27 +165,17 @@ function normalizeSeed(input) {
   const cols = normalizePositiveInteger(input?.cols, DEFAULT_COLS);
   const rows = normalizePositiveInteger(input?.rows, DEFAULT_ROWS);
   const tickSpeedMs = normalizeTickSpeedMs(input?.tickSpeedMs);
-  return createLifeStateFromParts({
+  return createLifeStateFromValues(
     width,
     height,
     cols,
     rows,
     tickSpeedMs,
-    framesPerTick: Math.max(1, Math.round(tickSpeedMs / 16)),
-    framesUntilTick: Math.max(1, Math.round(tickSpeedMs / 16)),
-    generation: 0,
-    cells: normalizeCells(input?.cells, cols, rows),
-  });
-}
-
-/**
- * @param {unknown} value
- * @param {number} fallback
- * @returns {number}
- */
-function normalizePositiveInteger(value, fallback) {
-  const next = Number(value);
-  return Number.isFinite(next) && next > 0 ? Math.round(next) : fallback;
+    Math.max(1, Math.round(tickSpeedMs / 16)),
+    Math.max(1, Math.round(tickSpeedMs / 16)),
+    0,
+    normalizeCells(input?.cells, cols, rows)
+  );
 }
 
 /**
@@ -415,7 +407,7 @@ function normalizeState(data) {
   );
   const generation = normalizePositiveInteger(candidate.generation, 0);
 
-  return createLifeStateFromParts({
+  return createLifeStateFromValues(
     width,
     height,
     cols,
@@ -424,17 +416,45 @@ function normalizeState(data) {
     framesPerTick,
     framesUntilTick,
     generation,
-    cells: normalizeCells(candidate.cells, cols, rows),
-  });
+    normalizeCells(candidate.cells, cols, rows)
+  );
 }
 
 /**
  * Create a life state from its component parts.
- * @param {LifeState} state State fields.
+ * @param {number} width Canvas width.
+ * @param {number} height Canvas height.
+ * @param {number} cols Board columns.
+ * @param {number} rows Board rows.
+ * @param {number} tickSpeedMs Tick speed in ms.
+ * @param {number} framesPerTick Frames per tick.
+ * @param {number} framesUntilTick Remaining frames until the next tick.
+ * @param {number} generation Current generation number.
+ * @param {LifeCell[]} cells Live cells.
  * @returns {LifeState} Normalized state object.
  */
-function createLifeStateFromParts(state) {
-  return createLifeState(state);
+function createLifeStateFromValues(
+  width,
+  height,
+  cols,
+  rows,
+  tickSpeedMs,
+  framesPerTick,
+  framesUntilTick,
+  generation,
+  cells
+) {
+  return {
+    width,
+    height,
+    cols,
+    rows,
+    tickSpeedMs,
+    framesPerTick,
+    framesUntilTick,
+    generation,
+    cells,
+  };
 }
 
 /**
@@ -443,15 +463,5 @@ function createLifeStateFromParts(state) {
  * @returns {LifeState} Normalized state object.
  */
 function createLifeState(state) {
-  return {
-    width: state.width,
-    height: state.height,
-    cols: state.cols,
-    rows: state.rows,
-    tickSpeedMs: state.tickSpeedMs,
-    framesPerTick: state.framesPerTick,
-    framesUntilTick: state.framesUntilTick,
-    generation: state.generation,
-    cells: state.cells,
-  };
+  return state;
 }

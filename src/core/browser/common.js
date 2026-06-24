@@ -46,5 +46,16 @@ export function buildWhen(condition, builder) {
   return builder();
 }
 
+/**
+ * Normalize a positive integer-like value.
+ * @param {unknown} value Candidate value.
+ * @param {number} fallback Fallback when parsing fails.
+ * @returns {number} Normalized integer.
+ */
+export function normalizePositiveInteger(value, fallback) {
+  const next = Number(value);
+  return Number.isFinite(next) && next > 0 ? Math.round(next) : fallback;
+}
+
 export { guardThen } from './browser-core.js';
 export { tryOr, when } from '../commonCore.js';
