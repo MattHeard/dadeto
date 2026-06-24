@@ -34,6 +34,12 @@ jest.unstable_mockModule(
         disposers: [],
       })
     ),
+    withManagedFormShell: jest.fn((options, buildForm) =>
+      buildForm({
+        form: { _dispose: jest.fn() },
+        disposers: [],
+      })
+    ),
     wireLabelledField: jest.fn(options => {
       fieldOptions.push(options);
       options.disposers.push(options.handler);

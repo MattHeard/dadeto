@@ -1,9 +1,7 @@
 import * as browserCore from '../browser-core.js';
 import { normalizePositiveInteger } from '../common.js';
-import {
-  buildManagedForm,
-  wireLabelledField,
-} from './createDendriteHandler.js';
+import { buildManagedForm, wireLabelledField } from './createDendriteHandler.js';
+import { prepareInputHandler } from './captureFormShared.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ width: number, height: number, cols: number, rows: number, tickSpeedMs: number, cells: number[][], reset?: boolean }} LifeSeedData */
@@ -276,10 +274,10 @@ function buildForm({ dom, container, textInput }) {
  * @returns {void}
  */
 export function lifeSeedHandler(dom, container, textInput) {
-  browserCore.hideAndDisable(textInput, dom);
-  browserCore.applyBaseCleanupHandlers({
-    container,
+  prepareInputHandler({
     dom,
+    container,
+    textInput,
     extraHandlers: [browserCore.maybeRemoveTextarea],
   });
   buildForm({ dom, container, textInput });

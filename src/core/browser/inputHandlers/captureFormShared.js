@@ -220,15 +220,34 @@ export function makeCaptureFormBuilder(formClass, onFormReady) {
 }
 
 /**
+ * Prepare the shared input handler UI before the specific form is mounted.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   container: HTMLElement,
+ *   textInput: HTMLInputElement,
+ *   extraHandlers: Array<(container: HTMLElement, dom: DOMHelpers) => void>,
+ * }} options - Handler entry dependencies.
+ * @returns {void}
+ */
+export function prepareInputHandler({ dom, container, textInput, extraHandlers }) {
+  browserCore.hideAndDisable(textInput, dom);
+  browserCore.applyBaseCleanupHandlers({
+    container,
+    dom,
+    extraHandlers,
+  });
+}
+
+/**
  * Prepare the shared capture handler UI before the specific form is mounted.
  * @param {{ dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement }} options - Handler entry dependencies.
  * @returns {void}
  */
 export function prepareCaptureHandler({ dom, container, textInput }) {
-  browserCore.hideAndDisable(textInput, dom);
-  browserCore.applyBaseCleanupHandlers({
-    container,
+  prepareInputHandler({
     dom,
+    container,
+    textInput,
     extraHandlers: [browserCore.maybeRemoveNumber],
   });
 }
