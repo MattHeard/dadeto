@@ -227,12 +227,7 @@ export function makeCaptureFormBuilder(formClass, onFormReady) {
  * @param {Array<(container: HTMLElement, dom: DOMHelpers) => void>} extraHandlers Extra cleanup callbacks.
  * @returns {void}
  */
-export function prepareInputHandler(
-  dom,
-  container,
-  textInput,
-  extraHandlers
-) {
+export function prepareInputHandler(dom, container, textInput, extraHandlers) {
   browserCore.hideAndDisable(textInput, dom);
   browserCore.applyBaseCleanupHandlers({
     container,
@@ -247,7 +242,9 @@ export function prepareInputHandler(
  * @returns {void}
  */
 export function prepareCaptureHandler({ dom, container, textInput }) {
-  prepareInputHandler(dom, container, textInput, [browserCore.maybeRemoveNumber]);
+  prepareInputHandler(dom, container, textInput, [
+    browserCore.maybeRemoveNumber,
+  ]);
 }
 
 /**
