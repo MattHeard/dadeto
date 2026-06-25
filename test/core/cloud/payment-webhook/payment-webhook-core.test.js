@@ -12,6 +12,7 @@ import {
   safeEqual,
   verifyPaymentSignature,
 } from '../../../../src/core/payment-webhook-core.js';
+import { parsePaymentWebhookEvent as parsePaymentWebhookEventWithWrapper } from '../../../../src/core/cloud/payment-webhook/payment-webhook-core.js';
 import { createFakeFirestore } from '../../../../src/core/local/gcp-simulator/fake-firestore.js';
 import { createApplyCreditEvent } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import { createHmac } from 'node:crypto';
@@ -424,5 +425,22 @@ describe('helper exports', () => {
     expect(verifyPaymentSignature('payload', 'v1=missing', 'secret')).toBe(
       false
     );
+  });
+});
+
+describe('payment webhook cloud wrapper', () => {
+  it('parses requests without a signature secret and handles wrapper wiring', async () => {
+    expect(
+      parsePaymentWebhookEventWithWrapper(
+        {
+          body: {
+            id: 'evt_wrapper',
+            type: 'payment_intent.succeeded',
+            data: { object: { metadata: { credit_amount: '3' } } },
+          },
+        },
+        {}
+      )
+    ).toMatchObject({ id: 'evt_wrapper' });
   });
 });

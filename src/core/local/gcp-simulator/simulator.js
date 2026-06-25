@@ -1075,7 +1075,7 @@ async function handleAssignModerationJob(
  * @param {string | undefined} currentPath Current moderator assignment path.
  * @returns {Promise<{ ref: { path: string } } | null>} Selected variant snapshot.
  */
-async function pickNextModerationVariant(db, currentPath) {
+export async function pickNextModerationVariant(db, currentPath) {
   if (typeof db.collection !== 'function') {
     const candidates = await db
       .collectionGroup('variants')

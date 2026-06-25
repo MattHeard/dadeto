@@ -425,6 +425,19 @@ describe('createGenerateStatsCore', () => {
       expect(count).toBe(12);
     });
 
+    it('getPageCount falls back to collectionGroup when nested traversal is unavailable', async () => {
+      const collectionGroup = jest.fn(() => ({
+        count: () => ({
+          get: () => Promise.resolve({ data: () => ({ count: 9 }) }),
+        }),
+      }));
+      const customDb = { collectionGroup };
+
+      const count = await core.getPageCount(customDb);
+      expect(count).toBe(9);
+      expect(collectionGroup).toHaveBeenCalledWith('pages');
+    });
+
     it('getUnmoderatedPageCount should return the correct count', async () => {
       mockDb.collection = name => {
         if (name !== 'stories') {
@@ -572,6 +585,38 @@ describe('createGenerateStatsCore', () => {
         { title: 'story3', variantCount: 1 },
       ]);
       expect(recordedLimit.value).toBe(10);
+    });
+
+    it('getTopStories uses the default limit when none is provided', async () => {
+      const orderBy = jest.fn(() => ({
+        limit: jest.fn(() => ({
+          get: jest.fn(() =>
+            Promise.resolve({
+              docs: [{ id: 'story1', data: () => ({ variantCount: 2 }) }],
+            })
+          ),
+        })),
+      }));
+      const customDb = {
+        collection: jest.fn(name => {
+          if (name === 'storyStats') {
+            return { orderBy };
+          }
+          if (name === 'stories') {
+            return {
+              doc: () => ({
+                get: () =>
+                  Promise.resolve({ data: () => ({ title: 'Story One' }) }),
+              }),
+            };
+          }
+          throw new Error(`Unexpected collection ${name}`);
+        }),
+      };
+
+      const topStories = await core.getTopStories(customDb);
+      expect(topStories).toEqual([{ title: 'Story One', variantCount: 2 }]);
+      expect(orderBy).toHaveBeenCalledWith('variantCount', 'desc');
     });
   });
 
