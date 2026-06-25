@@ -84,10 +84,9 @@ function normalizeData(candidate) {
 /**
  * Parse the hidden input into the managed life-seed data object.
  * @param {HTMLInputElement} textInput Hidden payload input.
- * @param {DOMHelpers} dom DOM helper utilities.
  * @returns {LifeSeedData} Parsed payload.
  */
-function parseData(textInput, dom) {
+function parseData(textInput) {
   const raw = browserCore.getInputValue(textInput) || '{}';
   const parsed = browserCore.parseJsonOrDefault(raw, {});
   const normalized = normalizeData(parsed);
@@ -106,15 +105,17 @@ function syncTextInput(textInput, data) {
 
 /**
  * Create a number input bound to a life-seed field.
- * @param {DOMHelpers} dom DOM helper utilities.
- * @param {HTMLElement} form Managed form element.
- * @param {LifeSeedData} data Shared payload object.
- * @param {HTMLInputElement} textInput Hidden payload input.
- * @param {Array<() => void>} disposers Cleanup callbacks.
- * @param {NumberFieldOptions} options Field metadata.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   form: HTMLElement,
+ *   data: LifeSeedData,
+ *   textInput: HTMLInputElement,
+ *   disposers: Array<() => void>,
+ *   options: NumberFieldOptions,
+ * }} root0 Field setup dependencies.
  * @returns {void}
  */
-function createNumberField(dom, form, data, textInput, disposers, options) {
+function createNumberField({ dom, form, data, textInput, disposers, options }) {
   const input = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(input, 'number');
   dom.setValue(input, options.value);
@@ -137,14 +138,16 @@ function createNumberField(dom, form, data, textInput, disposers, options) {
 
 /**
  * Create the textarea for the live-cell coordinate list.
- * @param {DOMHelpers} dom DOM helper utilities.
- * @param {HTMLElement} form Managed form element.
- * @param {LifeSeedData} data Shared payload object.
- * @param {HTMLInputElement} textInput Hidden payload input.
- * @param {Array<() => void>} disposers Cleanup callbacks.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   form: HTMLElement,
+ *   data: LifeSeedData,
+ *   textInput: HTMLInputElement,
+ *   disposers: Array<() => void>,
+ * }} root0 Field setup dependencies.
  * @returns {void}
  */
-function createCellsField(dom, form, data, textInput, disposers) {
+function createCellsField({ dom, form, data, textInput, disposers }) {
   const textarea = /** @type {HTMLTextAreaElement} */ (
     dom.createElement('textarea')
   );
@@ -166,22 +169,24 @@ function createCellsField(dom, form, data, textInput, disposers) {
 
 /**
  * Create a labelled checkbox field and wire its change handler.
- * @param {DOMHelpers} dom DOM helper utilities.
- * @param {HTMLElement} form Managed form element.
- * @param {string} labelText Label text shown next to the checkbox.
- * @param {boolean} checked Whether the checkbox starts checked.
- * @param {() => void} handler Change handler.
- * @param {Array<() => void>} disposers Cleanup callbacks.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   form: HTMLElement,
+ *   labelText: string,
+ *   checked: boolean,
+ *   handler: () => void,
+ *   disposers: Array<() => void>,
+ * }} root0 Checkbox field dependencies.
  * @returns {HTMLInputElement} Created checkbox element.
  */
-function createCheckboxField(
+function createCheckboxField({
   dom,
   form,
   labelText,
   checked,
   handler,
-  disposers
-) {
+  disposers,
+}) {
   const checkbox = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(checkbox, 'checkbox');
   if (checked) {
@@ -201,20 +206,22 @@ function createCheckboxField(
 
 /**
  * Create the reset checkbox bound to the managed payload.
- * @param {DOMHelpers} dom DOM helper utilities.
- * @param {HTMLElement} form Managed form element.
- * @param {LifeSeedData} data Shared payload object.
- * @param {HTMLInputElement} textInput Hidden payload input.
- * @param {Array<() => void>} disposers Cleanup callbacks.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   form: HTMLElement,
+ *   data: LifeSeedData,
+ *   textInput: HTMLInputElement,
+ *   disposers: Array<() => void>,
+ * }} root0 Reset field dependencies.
  * @returns {void}
  */
-function createResetField(dom, form, data, textInput, disposers) {
-  const checkbox = createCheckboxField(
+function createResetField({ dom, form, data, textInput, disposers }) {
+  const checkbox = createCheckboxField({
     dom,
     form,
-    'Reset from seed',
-    data.reset === true,
-    () => {
+    labelText: 'Reset from seed',
+    checked: data.reset === true,
+    handler: () => {
       if (checkbox.checked) {
         data.reset = true;
       } else {
@@ -222,8 +229,8 @@ function createResetField(dom, form, data, textInput, disposers) {
       }
       syncTextInput(textInput, data);
     },
-    disposers
-  );
+    disposers,
+  });
 }
 
 /**
@@ -232,43 +239,78 @@ function createResetField(dom, form, data, textInput, disposers) {
  * @returns {HTMLElement} Rendered form.
  */
 function buildForm({ dom, container, textInput }) {
-  const data = parseData(textInput, dom);
+  const data = parseData(textInput);
   return buildManagedForm(
     { dom, container, textInput },
     ({ form, disposers }) => {
       dom.setClassName(form, FORM_CLASS);
-      createNumberField(dom, form, data, textInput, disposers, {
-        key: 'width',
-        label: 'Canvas width',
-        placeholder: '360',
-        value: data.width,
+      createNumberField({
+        dom,
+        form,
+        data,
+        textInput,
+        disposers,
+        options: {
+          key: 'width',
+          label: 'Canvas width',
+          placeholder: '360',
+          value: data.width,
+        },
       });
-      createNumberField(dom, form, data, textInput, disposers, {
-        key: 'height',
-        label: 'Canvas height',
-        placeholder: '240',
-        value: data.height,
+      createNumberField({
+        dom,
+        form,
+        data,
+        textInput,
+        disposers,
+        options: {
+          key: 'height',
+          label: 'Canvas height',
+          placeholder: '240',
+          value: data.height,
+        },
       });
-      createNumberField(dom, form, data, textInput, disposers, {
-        key: 'cols',
-        label: 'Columns',
-        placeholder: '24',
-        value: data.cols,
+      createNumberField({
+        dom,
+        form,
+        data,
+        textInput,
+        disposers,
+        options: {
+          key: 'cols',
+          label: 'Columns',
+          placeholder: '24',
+          value: data.cols,
+        },
       });
-      createNumberField(dom, form, data, textInput, disposers, {
-        key: 'rows',
-        label: 'Rows',
-        placeholder: '16',
-        value: data.rows,
+      createNumberField({
+        dom,
+        form,
+        data,
+        textInput,
+        disposers,
+        options: {
+          key: 'rows',
+          label: 'Rows',
+          placeholder: '16',
+          value: data.rows,
+        },
       });
-      createNumberField(dom, form, data, textInput, disposers, {
-        key: 'tickSpeedMs',
-        label: 'Tick speed (ms)',
-        placeholder: '128',
-        value: data.tickSpeedMs,
+      createNumberField({
+        dom,
+        form,
+        data,
+        textInput,
+        disposers,
+        options: {
+          key: 'tickSpeedMs',
+          label: 'Tick speed (ms)',
+          placeholder: '128',
+          value: data.tickSpeedMs,
+        },
       });
-      createCellsField(dom, form, data, textInput, disposers);
-      createResetField(dom, form, data, textInput, disposers);
+      createCellsField({ dom, form, data, textInput, disposers });
+      createResetField({ dom, form, data, textInput, disposers });
       syncTextInput(textInput, data);
       return form;
     }

@@ -206,7 +206,12 @@ function normalizeTickSpeedMs(value) {
  * @returns {Record<string, unknown> | null} Parsed object payload.
  */
 function parseObjectRecord(value) {
-  const parsed = parseJsonOrNull(value);
+  const parsed =
+    typeof value === 'string'
+      ? parseJsonOrNull(value)
+      : value && typeof value === 'object' && !Array.isArray(value)
+        ? value
+        : null;
   return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
     ? /** @type {Record<string, unknown>} */ (parsed)
     : null;

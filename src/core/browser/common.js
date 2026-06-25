@@ -28,7 +28,11 @@ export function isObject(val) {
  * @returns {string} Result of the transform when applied, or the fallback otherwise.
  */
 export function withFallback(condition, transform, fallback = '') {
-  return whenOrDefault(condition, transform, fallback);
+  if (condition) {
+    return transform();
+  }
+
+  return fallback;
 }
 
 /**

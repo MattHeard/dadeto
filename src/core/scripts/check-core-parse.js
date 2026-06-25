@@ -199,8 +199,13 @@ function formatFailures(violations) {
  */
 /* istanbul ignore next */
 /**
- *
- * @param deps
+ * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
+ *   pathModule: { resolve: (...segments: string[]) => string },
+ *   rootDir: string,
+ *   configPath: string,
+ * }} deps Exemption-file dependencies.
+ * @returns {Set<string>} Repo-relative files exempt from the baseline scan.
  */
 function readExemptions(deps) {
   try {
