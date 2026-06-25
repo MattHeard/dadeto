@@ -56,6 +56,27 @@ async function createWorktreeDir(prefix) {
   return dir;
 }
 
+/**
+ * Create an fs module that captures generated config writes.
+ * @returns {{ fsModule: Record<string, unknown>, configWrites: Array<[string, string]> }}
+ */
+function createFsModuleWithConfigCapture() {
+  const configWrites = [];
+  return {
+    configWrites,
+    fsModule: {
+      ...fs,
+      mkdtemp: createWorktreeDir,
+      writeFile: async (filePath, contents, ...rest) => {
+        if (String(filePath).endsWith('stryker.worktree.config.mjs')) {
+          configWrites.push([String(filePath), String(contents)]);
+        }
+        return fs.writeFile(filePath, contents, ...rest);
+      },
+    },
+  };
+}
+
 describe('createRunStrykerWorktreeHandle', () => {
   test('persists machine-level logs in the main reports directory', async () => {
     const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dadeto-stryker-'));
@@ -116,6 +137,27 @@ describe('createRunStrykerWorktreeHandle', () => {
         }),
       })
     );
+
+    await fs.rm(rootDir, { recursive: true, force: true });
+  }, 60000);
+
+  test('writes a mutate target into the generated worktree config', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dadeto-stryker-'));
+    const spawnImpl = createSpawnImpl();
+    const { fsModule, configWrites } = createFsModuleWithConfigCapture();
+    const handle = createRunStrykerWorktreeHandle({
+      rootDir,
+      mutateTargetDir: 'src/core/cloud',
+      spawnImpl,
+      processModule: { env: {} },
+      fsModule,
+      pathModule: path,
+    });
+
+    await handle();
+
+    expect(configWrites).toHaveLength(1);
+    expect(configWrites[0][1]).toContain(`mutate: ["src/core/cloud"]`);
 
     await fs.rm(rootDir, { recursive: true, force: true });
   }, 60000);

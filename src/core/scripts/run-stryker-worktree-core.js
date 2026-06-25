@@ -28,6 +28,7 @@ import path from 'node:path';
  *   pathModule?: typeof path,
  *   spawnImpl?: typeof spawn,
  *   rootDir?: string,
+ *   mutateTargetDir?: string,
  * }} [options] Runner dependencies.
  * @returns {() => Promise<void>} Runner handle.
  */
@@ -44,6 +45,9 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   const pathModule = options.pathModule || path;
   const spawnImpl = options.spawnImpl || spawn;
   const mainRoot = options.rootDir || pathModule.resolve('.');
+  const mutateTargetDir = options.mutateTargetDir
+    ? pathModule.normalize(options.mutateTargetDir)
+    : null;
   const worktreeParent = pathModule.join(mainRoot, '.worktrees');
   const worktreePrefix = pathModule.join(worktreeParent, 'stryker-');
   const worktreeStrykerConfig = 'stryker.worktree.config.mjs';
@@ -93,7 +97,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
       }
       await fsModule.writeFile(
         pathModule.join(worktreePath, worktreeStrykerConfig),
-        buildStrykerConfig()
+        buildStrykerConfig(mutateTargetDir)
       );
       await writeMachineLog(fsModule, machineLogPath, {
         type: 'config-written',
@@ -176,13 +180,18 @@ function buildChildEnv(baseEnv, overrides) {
 
 /**
  * Build the temporary Stryker config for the worktree.
+ * @param {string | null} mutateTargetDir Optional mutate target relative to the repo root.
  * @returns {string} Serialized config module.
  */
-function buildStrykerConfig() {
+function buildStrykerConfig(mutateTargetDir) {
+  const mutateLine = mutateTargetDir
+    ? `  mutate: [${JSON.stringify(mutateTargetDir)}],\n`
+    : '';
   return `import baseConfig from './stryker.config.mjs';
 
 export default {
   ...baseConfig,
+${mutateLine}  // Keep mutation runs resource-bounded in the worktree.
   concurrency: 1,
   testRunnerNodeArgs: [
     '--experimental-vm-modules',

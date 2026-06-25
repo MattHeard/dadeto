@@ -3,8 +3,10 @@ import path from 'node:path';
 import { createRunStrykerWorktreeHandle } from '../core/scripts/run-stryker-worktree-core.js';
 
 const ROOT_DIR = path.resolve('.');
+const mutateTargetDir = process.argv[2];
 const handle = createRunStrykerWorktreeHandle({
   rootDir: ROOT_DIR,
+  mutateTargetDir,
 });
 
 const isDirectExecution =
