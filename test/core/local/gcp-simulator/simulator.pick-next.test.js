@@ -27,6 +27,22 @@ describe('pickNextModerationVariant', () => {
     ).resolves.toEqual({ ref: { path: 'stories/b/pages/1/variants/a' } });
   });
 
+  it('returns null from the collectionGroup fallback when no alternate variant exists', async () => {
+    const db = {
+      collectionGroup: () => ({
+        where: () => ({
+          get: async () => ({
+            docs: [{ ref: { path: 'stories/a/pages/1/variants/a' } }],
+          }),
+        }),
+      }),
+    };
+
+    await expect(
+      pickNextModerationVariant(db, 'stories/a/pages/1/variants/a')
+    ).resolves.toBeNull();
+  });
+
   it('prefers the oldest, then lowest rand, then lexical path candidate', async () => {
     const db = {
       collection: () => ({
