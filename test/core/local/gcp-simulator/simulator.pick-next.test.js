@@ -184,4 +184,73 @@ describe('pickNextModerationVariant', () => {
       ref: { path: 'stories/a/pages/3/variants/c' },
     });
   });
+
+  it('uses lexical ordering when createdAt and rand are identical', async () => {
+    const db = {
+      collection: () => ({
+        get: async () => ({
+          docs: [
+            {
+              ref: {
+                collection: collectionName => {
+                  if (collectionName !== 'pages') {
+                    return { get: async () => ({ docs: [] }) };
+                  }
+
+                  return {
+                    get: async () => ({
+                      docs: [
+                        {
+                          ref: {
+                            collection: variantCollection => {
+                              if (variantCollection !== 'variants') {
+                                return { get: async () => ({ docs: [] }) };
+                              }
+
+                              return {
+                                get: async () => ({
+                                  docs: [
+                                    {
+                                      ref: {
+                                        path: 'stories/a/pages/4/variants/b',
+                                      },
+                                      data: () => ({
+                                        moderatorReputationSum: 0,
+                                        createdAt: { toMillis: () => 5 },
+                                        rand: 2,
+                                      }),
+                                    },
+                                    {
+                                      ref: {
+                                        path: 'stories/a/pages/4/variants/a',
+                                      },
+                                      data: () => ({
+                                        moderatorReputationSum: 0,
+                                        createdAt: { toMillis: () => 5 },
+                                        rand: 2,
+                                      }),
+                                    },
+                                  ],
+                                }),
+                              };
+                            },
+                          },
+                        },
+                      ],
+                    }),
+                  };
+                },
+              },
+            },
+          ],
+        }),
+      }),
+    };
+
+    await expect(
+      pickNextModerationVariant(db, 'stories/a/pages/4/variants/c')
+    ).resolves.toMatchObject({
+      ref: { path: 'stories/a/pages/4/variants/a' },
+    });
+  });
 });
