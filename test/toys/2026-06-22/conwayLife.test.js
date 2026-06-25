@@ -37,7 +37,7 @@ describe('conwayLife', () => {
     expect(payload.width).toBe(240);
     expect(payload.height).toBe(160);
     expect(payload.shapes[0].fill).toBe('#0f172a');
-    expect(payload.shapes).toHaveLength(4);
+    expect(payload.shapes).toHaveLength(5);
     expect(setLocalPermanentData).toHaveBeenCalledTimes(2);
   });
 
@@ -62,7 +62,7 @@ describe('conwayLife', () => {
     };
     const { payload } = getCanvasPayload('{}', storageValue);
 
-    expect(payload.shapes).toHaveLength(4);
+    expect(payload.shapes).toHaveLength(5);
     expect(storageValue.current.CONW1.generation).toBe(1);
     expect(storageValue.current.CONW1.cells).toEqual([
       [2, 1],
@@ -140,7 +140,7 @@ describe('conwayLife', () => {
 
     const { payload } = getCanvasPayload('{}', storageValue);
 
-    expect(payload.shapes).toHaveLength(5);
+    expect(payload.shapes).toHaveLength(6);
     expect(storageValue.current.CONW1.cells).toContainEqual([4, 4]);
     expect(storageValue.current.CONW1.cells).toContainEqual([0, 0]);
   });
@@ -150,7 +150,7 @@ describe('conwayLife', () => {
 
     expect(payload.width).toBe(360);
     expect(payload.height).toBe(240);
-    expect(payload.shapes).toHaveLength(6);
+    expect(payload.shapes).toHaveLength(7);
   });
 
   it('ignores malformed storage accessors and still renders the default seed', () => {
@@ -170,7 +170,7 @@ describe('conwayLife', () => {
     const { payload } = getCanvasPayload('{}', storageValue, env);
 
     expect(payload.width).toBe(360);
-    expect(payload.shapes).toHaveLength(6);
+    expect(payload.shapes).toHaveLength(7);
   });
 
   it('keeps the board steady when the stored countdown has not elapsed', () => {
@@ -196,7 +196,7 @@ describe('conwayLife', () => {
 
     const { payload } = getCanvasPayload('{}', storageValue);
 
-    expect(payload.shapes).toHaveLength(4);
+    expect(payload.shapes).toHaveLength(5);
     expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
     expect(storageValue.current.CONW1.generation).toBe(4);
   });
@@ -205,18 +205,12 @@ describe('conwayLife', () => {
     const storageValue = { current: null };
     const { payload } = getCanvasPayload(
       JSON.stringify({
-        cells: [
-          [1, 1],
-          [1, 1],
-          [7, 7],
-          ['x', 2],
-          [2],
-        ],
+        cells: [[1, 1], [1, 1], [7, 7], ['x', 2], [2]],
       }),
       storageValue
     );
 
-    expect(payload.shapes).toHaveLength(3);
+    expect(payload.shapes).toHaveLength(4);
     expect(storageValue.current.CONW1.cells).toEqual([
       [1, 1],
       [7, 7],

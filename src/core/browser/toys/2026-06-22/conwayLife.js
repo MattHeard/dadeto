@@ -1,3 +1,4 @@
+import { parseJsonOrNull } from '../../../commonCore.js';
 import { normalizePositiveInteger } from '../../common.js';
 
 /**
@@ -70,7 +71,7 @@ function readPersistedState(storage) {
     return null;
   }
 
-  return normalizeState(parseJsonRecord(storage({})));
+  return normalizeState(parseObjectRecord(storage({})));
 }
 
 /**
@@ -82,7 +83,7 @@ function parseInput(input) {
     return null;
   }
 
-  return parseJsonRecord(input);
+  return parseObjectRecord(input);
 }
 
 /**
@@ -186,22 +187,6 @@ function normalizeSeed(input) {
 }
 
 /**
- * Parse a JSON value into an object-like record.
- * @param {unknown} value Raw JSON source or parsed payload.
- * @returns {Record<string, unknown> | null} Object payload or null.
- */
-function parseJsonRecord(value) {
-  try {
-    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? /** @type {Record<string, unknown>} */ (parsed)
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * @param {unknown} value
  * @returns {number}
  */
@@ -214,6 +199,17 @@ function normalizeTickSpeedMs(value) {
     MAX_TICK_SPEED_MS,
     Math.max(MIN_TICK_SPEED_MS, Math.round(next))
   );
+}
+
+/**
+ * @param {unknown} value Raw JSON or parsed payload.
+ * @returns {Record<string, unknown> | null} Parsed object payload.
+ */
+function parseObjectRecord(value) {
+  const parsed = parseJsonOrNull(value);
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+    ? /** @type {Record<string, unknown>} */ (parsed)
+    : null;
 }
 
 /**
@@ -329,14 +325,7 @@ function toCanvasPayload(state) {
   const cellWidth = state.width / state.cols;
   const cellHeight = state.height / state.rows;
   const shapes = [
-    {
-      type: 'rect',
-      x: 0,
-      y: 0,
-      width: state.width,
-      height: state.height,
-      fill: '#0f172a',
-    },
+    createBackdropShape(state.width, state.height),
     ...state.cells.map(cell => ({
       type: 'rect',
       x: cell.x * cellWidth + 1,
@@ -351,6 +340,22 @@ function toCanvasPayload(state) {
     width: state.width,
     height: state.height,
     shapes,
+  };
+}
+
+/**
+ * @param {number} width Canvas width.
+ * @param {number} height Canvas height.
+ * @returns {Record<string, unknown>} Background shape.
+ */
+function createBackdropShape(width, height) {
+  return {
+    type: 'rect',
+    x: 0,
+    y: 0,
+    width,
+    height,
+    fill: '#0f172a',
   };
 }
 
@@ -431,7 +436,7 @@ function normalizeState(data) {
  */
 function createSeedLifeState(fields) {
   const framesPerTick = Math.max(1, Math.round(fields.tickSpeedMs / 16));
-  return composeLifeState(fields, {
+  return composeLifeState(createBaseStateFields(fields), {
     framesPerTick,
     framesUntilTick: framesPerTick,
     generation: 0,
@@ -466,22 +471,27 @@ function createStoredLifeState(fields) {
  *   cols: number,
  *   rows: number,
  *   tickSpeedMs: number,
- *   framesPerTick?: number,
- *   framesUntilTick?: number,
- *   generation?: number,
+ *   framesPerTick: number,
+ *   framesUntilTick: number,
+ *   generation: number,
  *   cells: LifeCell[],
  * }} Shared base state fields.
  */
 function createBaseStateFields(fields) {
+  const framesPerTick =
+    fields.framesPerTick ?? Math.max(1, Math.round(fields.tickSpeedMs / 16));
+  const framesUntilTick = fields.framesUntilTick ?? framesPerTick;
+  const generation = fields.generation ?? 0;
+
   return {
     width: fields.width,
     height: fields.height,
     cols: fields.cols,
     rows: fields.rows,
     tickSpeedMs: fields.tickSpeedMs,
-    framesPerTick: fields.framesPerTick,
-    framesUntilTick: fields.framesUntilTick,
-    generation: fields.generation,
+    framesPerTick,
+    framesUntilTick,
+    generation,
     cells: fields.cells,
   };
 }

@@ -1,6 +1,9 @@
 import * as browserCore from '../browser-core.js';
 import { normalizePositiveInteger } from '../common.js';
-import { buildManagedForm, wireLabelledField } from './createDendriteHandler.js';
+import {
+  buildManagedForm,
+  wireLabelledField,
+} from './createDendriteHandler.js';
 import { prepareInputHandler } from './captureFormShared.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
@@ -171,7 +174,14 @@ function createCellsField(dom, form, data, textInput, disposers) {
  * @param {Array<() => void>} disposers Cleanup callbacks.
  * @returns {HTMLInputElement} Created checkbox element.
  */
-function createCheckboxField(dom, form, labelText, checked, handler, disposers) {
+function createCheckboxField(
+  dom,
+  form,
+  labelText,
+  checked,
+  handler,
+  disposers
+) {
   const checkbox = /** @type {HTMLInputElement} */ (dom.createElement('input'));
   dom.setType(checkbox, 'checkbox');
   if (checked) {
@@ -214,7 +224,6 @@ function createResetField(dom, form, data, textInput, disposers) {
     },
     disposers
   );
-  return checkbox;
 }
 
 /**

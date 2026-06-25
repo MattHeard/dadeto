@@ -5,10 +5,32 @@ const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
 const DEFAULT_CONFIG_PATH = 'core-parse-exemptions.json';
 const DEFAULT_STDOUT = { log() {}, error() {} };
+/**
+ * @param {...string} segments Path segments.
+ * @returns {string} Joined path.
+ */
+function joinPath(...segments) {
+  return segments.join('/');
+}
+/**
+ * @param {...string} segments Path segments.
+ * @returns {string} Resolved path.
+ */
+function resolvePath(...segments) {
+  return joinPath(...segments);
+}
+/**
+ * @param {string} _from Base path.
+ * @param {string} to Target path.
+ * @returns {string} Relative path.
+ */
+function relativePath(_from, to) {
+  return to;
+}
 const DEFAULT_PATH_MODULE = {
-  join: (...segments) => segments.join('/'),
-  resolve: (...segments) => segments.join('/'),
-  relative: (_from, to) => to,
+  join: joinPath,
+  resolve: resolvePath,
+  relative: relativePath,
   sep: '/',
 };
 const DEFAULT_FS_MODULE = {
@@ -176,6 +198,10 @@ function formatFailures(violations) {
  * @returns {Set<string>} Repo-relative files exempt from the baseline scan.
  */
 /* istanbul ignore next */
+/**
+ *
+ * @param deps
+ */
 function readExemptions(deps) {
   try {
     const raw = deps.fsModule.readFileSync(
