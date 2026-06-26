@@ -642,6 +642,11 @@ function isSnapshotEmpty(snapshot, variantDoc) {
  */
 
 /**
+ * @typedef {object} VariantCandidate
+ * @property {VariantDocSnapshot} variantDoc Variant document snapshot.
+ */
+
+/**
  * Determine whether a variant document is missing from the snapshot.
  * @param {unknown} variantDoc Candidate document.
  * @returns {boolean} True when no variant document was returned.
@@ -753,189 +758,72 @@ export function createReputationScopedVariantsQuery(database, reputation) {
 }
 
 /**
- * @typedef {object} VariantQueryDescriptor
- * @property {"zeroRated"|"any"} reputation Reputation filter applied to the query.
- * @property {">="|"<"} comparator Comparison operator applied to the random value.
- * @property {number} randomValue Random value that seeds the Firestore cursor.
- */
-
-/**
- * Create a query runner that fetches a single variant candidate.
+ * Create a query runner that fetches all moderation candidates for a moderator.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
- * @returns {(descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} Query runner bound to the provided database.
+ * @returns {(uid: string) => Promise<VariantCandidate[]>} Query runner bound to the provided database.
  */
 export function createRunVariantQuery(database) {
-  const hasNestedCollections =
-    Boolean(database) && typeof database.collection === 'function';
-
-  if (!hasNestedCollections) {
-    return function runLegacyVariantQuery({
-      reputation,
-      comparator,
-      randomValue,
-    }) {
-      const reputationScopedQuery = createReputationScopedVariantsQuery(
-        database,
-        reputation
-      );
-      const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
-      const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
-      const limitedQuery = filteredQuery.limit(1);
-
-      return limitedQuery.get();
-    };
+  const collectionGroup = database?.collectionGroup?.('variants');
+  if (!collectionGroup || typeof collectionGroup.get !== 'function') {
+    return createLegacyRunVariantQuery(database);
   }
 
-  return async function runVariantQuery({
-    reputation,
-    comparator,
-    randomValue,
-  }) {
-    const storiesSnap = await database.collection('stories').get();
-    const storyDocs = resolveSnapshotDocs(storiesSnap);
-    const matches = [];
-    for (const storyDoc of storyDocs) {
-      const storyRef =
-        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
-          /** @type {unknown} */ (storyDoc)
-        ).ref;
-      const pagesSnap = await storyRef.collection('pages').get();
-      const pageDocs = resolveSnapshotDocs(pagesSnap);
-      for (const pageDoc of pageDocs) {
-        const pageRef =
-          /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
-            /** @type {unknown} */ (pageDoc)
-          ).ref;
-        const variantsSnap = await pageRef.collection('variants').get();
-        const variantDocs = resolveSnapshotDocs(variantsSnap);
-        for (const variantDoc of variantDocs) {
-          if (matchesReputation(reputation, variantDoc.data())) {
-            matches.push(variantDoc);
-          }
-        }
-      }
-    }
+  return async function runVariantQuery(uid) {
+    const [variantSnap, moderationRatingsSnap] = await Promise.all([
+      database.collectionGroup('variants').get(),
+      database.collection('moderationRatings').where('moderatorId', '==', uid).get(),
+    ]);
 
-    const filtered = matches.filter(variantDoc =>
-      matchesRandomValue(comparator, variantDoc.data()?.rand, randomValue)
+    const alreadyModerated = new Set(
+      resolveSnapshotDocs(moderationRatingsSnap)
+        .map(doc => doc.data()?.variantId)
+        .filter(value => typeof value === 'string')
     );
-    const chosen = filtered.sort((left, right) => {
-      const leftData = left.data() ?? {};
-      const rightData = right.data() ?? {};
-      const createdAtDiff = compareCreatedAt(
-        leftData.createdAt,
-        rightData.createdAt
-      );
-      if (createdAtDiff !== 0) {
-        return createdAtDiff;
-      }
 
-      const leftRand = Number(leftData.rand ?? 0);
-      const rightRand = Number(rightData.rand ?? 0);
-      if (leftRand !== rightRand) {
-        return leftRand - rightRand;
-      }
-
-      const leftRef =
-        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
-          /** @type {unknown} */ (left)
-        ).ref;
-      const rightRef =
-        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
-          /** @type {unknown} */ (right)
-        ).ref;
-      return String(leftRef.path).localeCompare(String(rightRef.path));
-    })[0];
-
-    if (chosen) {
-      return { docs: [chosen] };
-    }
-
-    return { docs: [] };
+    return resolveSnapshotDocs(variantSnap)
+      .filter(variantDoc => !alreadyModerated.has(variantDoc.ref.path))
+      .map(variantDoc => ({ variantDoc }));
   };
 }
 
 /**
- * Compare two createdAt values while preferring older candidates.
- * @param {unknown} left Left createdAt value.
- * @param {unknown} right Right createdAt value.
- * @returns {number} Negative when left is older, positive when right is older.
+ * Build the legacy query runner used by older tests and fallback databases.
+ * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
+ * @returns {(descriptor: { reputation: 'zeroRated' | 'any', comparator: '>=' | '<', randomValue: number }) => Promise<VariantSnapshot>} Legacy query runner.
  */
-function compareCreatedAt(left, right) {
-  const leftTime = toTimeValue(left);
-  const rightTime = toTimeValue(right);
-  return leftTime - rightTime;
+function createLegacyRunVariantQuery(database) {
+  return function runLegacyVariantQuery({ reputation, comparator, randomValue }) {
+    const reputationScopedQuery = createReputationScopedVariantsQuery(
+      database,
+      reputation
+    );
+    const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
+    const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
+    const limitedQuery = filteredQuery.limit(1);
+
+    return limitedQuery.get();
+  };
 }
 
 /**
- * Convert a timestamp-like value to a sortable numeric time.
- * @param {unknown} value Timestamp candidate.
- * @returns {number} Numeric time or zero.
+ * Build a factory that produces Firestore-backed moderation candidate fetchers.
+ * @param {(database: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>} createRunVariantQueryFn
+ * Adapter factory that accepts a database instance and returns a query executor.
+ * @returns {(database: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>} Factory producing candidate fetchers bound to a Firestore database.
  */
-function toTimeValue(value) {
-  if (value instanceof Date) {
-    return value.getTime();
-  }
-
-  if (
-    value &&
-    typeof (
-      /** @type {{ toDate?: () => Date }} */ (/** @type {unknown} */ (value))
-        .toDate
-    ) === 'function'
-  ) {
-    return /** @type {{ toDate: () => Date }} */ (
-      /** @type {unknown} */ (value)
-    )
-      .toDate()
-      .getTime();
-  }
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  return 0;
-}
-
-/**
- * Check whether a variant matches the requested reputation bucket.
- * @param {'zeroRated' | string} reputation Reputation filter.
- * @param {Record<string, unknown> | undefined} data Variant payload.
- * @returns {boolean} True when the variant should be included.
- */
-function matchesReputation(reputation, data) {
-  if (reputation === 'zeroRated') {
-    return Number(data?.moderatorReputationSum ?? 0) === 0;
-  }
-
-  return true;
-}
-
-/**
- * Compare a stored random value against a query cursor.
- * @param {'>='|'<'} comparator Cursor comparator.
- * @param {unknown} rand Stored random value.
- * @param {number} randomValue Query cursor value.
- * @returns {boolean} True when the value matches the cursor.
- */
-function matchesRandomValue(comparator, rand, randomValue) {
-  const value = Number(rand ?? 0);
-  if (!Number.isFinite(value)) {
-    return false;
-  }
-
-  if (comparator === '>=') {
-    return value >= randomValue;
-  }
-
-  return value < randomValue;
+export function createFetchVariantSnapshotFromDbFactory(createRunVariantQueryFn) {
+  return function createFetchVariantSnapshotFromDb(database) {
+    const runVariantQuery = createRunVariantQueryFn(database);
+    return createVariantSnapshotFetcher({
+      runQuery: runVariantQuery,
+    });
+  };
 }
 
 /**
  * Describe the queries used to fetch a moderation candidate.
  * @param {number} randomValue Random value that seeds the Firestore cursor.
- * @returns {VariantQueryDescriptor[]} Ordered query descriptors.
+ * @returns {{ reputation: 'zeroRated' | 'any', comparator: '>=' | '<', randomValue: number }[]} Ordered query descriptors.
  */
 export function buildVariantQueryPlan(randomValue) {
   return [
@@ -963,94 +851,25 @@ export function buildVariantQueryPlan(randomValue) {
 }
 
 /**
- * Check if snapshot contains results.
- * @param {VariantSnapshot} snapshot Snapshot to check.
- * @returns {boolean} True if snapshot has results.
- */
-const snapshotHasResults = snapshot => snapshot?.empty === false;
-
-/**
- * Evaluate a snapshot and continue the plan when empty.
- * @param {{ plan: VariantQueryDescriptor[], runQuery: (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>, index: number, snapshot: VariantSnapshot }} input Query evaluation context.
- * @returns {Promise<VariantSnapshot>} Snapshot containing results or the promise for the next step.
- */
-async function selectSnapshotFromStep({ plan, runQuery, index, snapshot }) {
-  if (snapshotHasResults(snapshot)) {
-    return snapshot;
-  }
-
-  return resolvePlanStep({
-    plan,
-    runQuery,
-    index: index + 1,
-    lastSnapshot: snapshot,
-  });
-}
-
-/**
- * Resolve the query plan sequentially until a snapshot yields results.
- * @param {{ plan: VariantQueryDescriptor[], runQuery: (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>, index: number, lastSnapshot: VariantSnapshot | undefined }} input Remaining plan execution state.
- * @returns {Promise<VariantSnapshot>} Snapshot matching the selection criteria or the last evaluated snapshot.
- */
-async function resolvePlanStep({ plan, runQuery, index, lastSnapshot }) {
-  if (index >= plan.length) {
-    return ensureSnapshot(lastSnapshot);
-  }
-
-  const snapshot = await runQuery(plan[index]);
-  return selectSnapshotFromStep({ plan, runQuery, index, snapshot });
-}
-
-/**
- * Provide an empty snapshot structure when no data exists.
- * @param {VariantSnapshot | undefined} snapshot Candidate snapshot.
- * @returns {VariantSnapshot} Snapshot with actual data or an empty marker.
- */
-function ensureSnapshot(snapshot) {
-  if (snapshot) {
-    return snapshot;
-  }
-
-  return { empty: true };
-}
-
-/**
  * Create a Firestore-agnostic variant snapshot fetcher.
- * @param {{ runQuery: (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot> }} deps
- * Adapter that executes a single query descriptor.
+ * @param {{ runQuery: (descriptor: { reputation: 'zeroRated' | 'any', comparator: '>=' | '<', randomValue: number }) => Promise<VariantSnapshot> }} deps Adapter that executes a single query descriptor.
  * @returns {(randomValue: number) => Promise<VariantSnapshot>} Function resolving with the first snapshot containing results.
  */
 export function createVariantSnapshotFetcher({ runQuery }) {
   return async function fetchVariantSnapshot(randomValue) {
     const plan = buildVariantQueryPlan(randomValue);
-    return resolvePlanStep({
-      plan,
-      runQuery,
-      index: 0,
-      lastSnapshot: undefined,
-    });
-  };
-}
+    /** @type {VariantSnapshot | undefined} */
+    let lastSnapshot;
 
-/**
- * @typedef {(database: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} CreateRunVariantQueryFunction
- */
+    for (const descriptor of plan) {
+      const snapshot = await runQuery(descriptor);
+      lastSnapshot = snapshot;
+      if (snapshot?.empty === false) {
+        return snapshot;
+      }
+    }
 
-/**
- * Build a factory that produces Firestore-backed variant snapshot fetchers.
- * @param {CreateRunVariantQueryFunction} createRunVariantQueryFn
- * Adapter factory that accepts a database instance and returns a query executor.
- * @returns {(database: import('firebase-admin/firestore').Firestore) => (randomValue: number) => Promise<VariantSnapshot>} Factory producing snapshot fetchers bound to a
- * Firestore database.
- */
-export function createFetchVariantSnapshotFromDbFactory(
-  createRunVariantQueryFn
-) {
-  return function createFetchVariantSnapshotFromDb(database) {
-    const runVariantQuery = createRunVariantQueryFn(database);
-    return createVariantSnapshotFetcher({
-      runQuery: runVariantQuery,
-    });
+    return ensureSnapshot(lastSnapshot);
   };
 }
 
@@ -1206,7 +1025,7 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
 /**
  * @typedef {object} AssignModerationWorkflowDeps
  * @property {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>} runGuards - Guard runner that validates the incoming request.
- * @property {(randomValue: number) => Promise<VariantSnapshot>} fetchVariantSnapshot - Resolver that fetches a moderation candidate snapshot.
+ * @property {(uid: string) => Promise<VariantCandidate[]>} fetchVariantSnapshots - Resolver that fetches moderation candidates for the caller.
  * @property {(snapshot: VariantSnapshot) => SelectVariantDocResult} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
  * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference} createModeratorRef - Factory that returns the moderator document reference for persisting assignments.
  * @property {() => unknown} now - Clock function that returns the timestamp persisted with the assignment.
@@ -1224,6 +1043,7 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
  */
 export function createAssignModerationWorkflow({
   runGuards,
+  fetchVariantSnapshots,
   fetchVariantSnapshot,
   selectVariantDoc,
   createModeratorRef,
@@ -1234,11 +1054,18 @@ export function createAssignModerationWorkflow({
     try {
       const context = await resolveGuardContext(runGuards, req);
       const userRecord = resolveUserRecord(context);
-      const variantDoc = await resolveVariantDoc({
-        fetchVariantSnapshot,
-        selectVariantDoc,
-        random,
-      });
+      const variantDoc = fetchVariantSnapshots
+        ? await resolveVariantDoc({
+            fetchVariantSnapshots,
+            selectVariantDoc,
+            random,
+            uid: userRecord.uid,
+          })
+        : await resolveLegacyVariantDoc({
+            fetchVariantSnapshot,
+            selectVariantDoc,
+            random,
+          });
 
       await persistAssignment(
         { createModeratorRef, now },
@@ -1250,6 +1077,29 @@ export function createAssignModerationWorkflow({
       return handleAssignmentError(err);
     }
   };
+}
+
+/**
+ * Resolve a single snapshot using the legacy selection path.
+ * @param {{
+ *   fetchVariantSnapshot?: (randomValue: number) => Promise<VariantSnapshot>,
+ *   selectVariantDoc: (snapshot: VariantSnapshot) => SelectVariantDocResult,
+ *   random: () => number,
+ * }} deps Legacy resolver dependencies.
+ * @returns {Promise<VariantDocSnapshot>} Selected variant document.
+ */
+async function resolveLegacyVariantDoc({
+  fetchVariantSnapshot,
+  selectVariantDoc,
+  random,
+}) {
+  const snapshot = await fetchVariantSnapshot?.(random());
+  const candidateVariantDoc = selectVariantDoc(snapshot);
+  const { errorMessage, variantDoc } = candidateVariantDoc;
+
+  ensureVariantDocAvailability(errorMessage, variantDoc);
+
+  return /** @type {VariantDocSnapshot} */ (variantDoc);
 }
 
 /**
@@ -1393,8 +1243,8 @@ function resolveUserRecord(context) {
 
 /**
  * @typedef {object} ResolveVariantDocDeps
- * @property {(randomValue: number) => Promise<VariantSnapshot>} fetchVariantSnapshot Function that loads a variant snapshot based on the provided candidate.
- * @property {(snapshot: VariantSnapshot) => SelectVariantDocResult} selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
+ * @property {(uid: string) => Promise<VariantCandidate[]>} fetchVariantSnapshots Function that loads moderation candidates for the caller.
+ * @property {(snapshot: VariantCandidate) => SelectVariantDocResult} selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
  * @property {() => number} random Random number generator used to pick a variant candidate.
  */
 
@@ -1405,16 +1255,110 @@ function resolveUserRecord(context) {
  * @throws {AssignmentResponse} When variant document cannot be resolved.
  */
 async function resolveVariantDoc({
-  fetchVariantSnapshot,
+  fetchVariantSnapshots,
   selectVariantDoc,
   random,
+  uid,
 }) {
-  const variantSnapshot = await fetchVariantSnapshot(random());
-  const { errorMessage, variantDoc } = selectVariantDoc(variantSnapshot);
+  const variantSnapshots = await fetchVariantSnapshots(uid);
+  const candidateVariantDoc = selectVariantDoc(
+    chooseVariantDocFromCandidates(variantSnapshots, random)
+  );
+
+  const { errorMessage, variantDoc } = candidateVariantDoc;
 
   ensureVariantDocAvailability(errorMessage, variantDoc);
 
   return /** @type {VariantDocSnapshot} */ (variantDoc);
+}
+
+/**
+ * Choose a single candidate snapshot from a list using the provided RNG.
+ * @param {VariantCandidate[]} snapshots Candidate moderation snapshots.
+ * @param {() => number} random RNG used to select from the top-ranked pages.
+ * @returns {VariantSnapshot | undefined} Selected snapshot or undefined when no candidates exist.
+ */
+function chooseVariantDocFromCandidates(snapshots, random) {
+  const rankedSnapshots = snapshots
+    .filter(snapshot => Boolean(snapshot?.variantDoc))
+    .sort(compareCandidateSnapshots);
+
+  const topCandidates = rankedSnapshots.slice(0, 5);
+
+  if (topCandidates.length === 0) {
+    return undefined;
+  }
+
+  const selectedIndex = Math.floor(random() * topCandidates.length);
+  return topCandidates[selectedIndex];
+}
+
+/**
+ * Rank candidate snapshots by urgency descending, then by deterministic tiebreakers.
+ * @param {VariantCandidate} left Left candidate.
+ * @param {VariantCandidate} right Right candidate.
+ * @returns {number} Ordering result.
+ */
+function compareCandidateSnapshots(left, right) {
+  const leftData = extractCandidateData(left);
+  const rightData = extractCandidateData(right);
+
+  const urgencyDiff =
+    getNumericCandidateValue(rightData.moderationUrgency) -
+    getNumericCandidateValue(leftData.moderationUrgency);
+  if (urgencyDiff !== 0) {
+    return urgencyDiff;
+  }
+
+  const leftPage = String(leftData.pagePath ?? '');
+  const rightPage = String(rightData.pagePath ?? '');
+  if (leftPage !== rightPage) {
+    return leftPage.localeCompare(rightPage);
+  }
+
+  return String(getVariantDocPath(left)).localeCompare(
+    String(getVariantDocPath(right))
+  );
+}
+
+/**
+ * Read the data object from a candidate snapshot safely.
+ * @param {VariantCandidate} snapshot Candidate snapshot.
+ * @returns {Record<string, unknown>} Snapshot data or an empty object.
+ */
+function extractCandidateData(snapshot) {
+  return snapshot?.variantDoc?.data() ?? {};
+}
+
+/**
+ * Read a numeric candidate field.
+ * @param {unknown} value Candidate field value.
+ * @returns {number} Numeric value or zero.
+ */
+function getNumericCandidateValue(value) {
+  return Number.isFinite(Number(value)) ? Number(value) : 0;
+}
+
+/**
+ * Read a stable path for a variant document.
+ * @param {VariantCandidate} snapshot Candidate snapshot.
+ * @returns {string} Document path or an empty string.
+ */
+function getVariantDocPath(snapshot) {
+  return String(snapshot?.variantDoc?.ref?.path ?? '');
+}
+
+/**
+ * Provide an empty snapshot structure when no data exists.
+ * @param {VariantSnapshot | undefined} snapshot Candidate snapshot.
+ * @returns {VariantSnapshot} Snapshot with actual data or an empty marker.
+ */
+function ensureSnapshot(snapshot) {
+  if (snapshot) {
+    return snapshot;
+  }
+
+  return { empty: true };
 }
 
 /**
@@ -1495,7 +1439,7 @@ function isResponse(value) {
 /**
  * Create the Express handler that assigns moderation jobs using Firestore.
  * @param {{
- *   createRunVariantQuery: (db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>,
+ *   createRunVariantQuery: (db: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>,
  *   auth: import('firebase-admin/auth').Auth,
  *   db: import('firebase-admin/firestore').Firestore,
  *   now: () => unknown,
@@ -1510,14 +1454,11 @@ export function createHandleAssignModerationJob({
   now,
   random,
 }) {
-  const createFetchVariantSnapshotFromDb =
-    createFetchVariantSnapshotFromDbFactory(createRunVariantQuery);
-
-  const fetchVariantSnapshot = createFetchVariantSnapshotFromDb(db);
+  const fetchVariantSnapshots = createRunVariantQuery(db);
 
   return createHandleAssignModerationJobFromAuth({
     auth,
-    fetchVariantSnapshot,
+    fetchVariantSnapshots,
     db,
     now,
     random,
@@ -1527,7 +1468,7 @@ export function createHandleAssignModerationJob({
 /**
  * Register the assign moderation job route on the provided Express app.
  * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: NativeExpressApp }} firebaseResources - Firebase resources used to serve the moderation endpoint.
- * @param {(db: import('firebase-admin/firestore').Firestore) => (descriptor: VariantQueryDescriptor) => Promise<VariantSnapshot>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
+ * @param {(db: import('firebase-admin/firestore').Firestore) => (uid: string) => Promise<VariantCandidate[]>} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
  * @param {() => unknown} now - Timestamp provider for persisted assignments.
  * @param {() => number} random Random number generator.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Registered moderation handler.
@@ -1569,7 +1510,7 @@ export function createAssignModerationJob(functionsModule, firebaseResources) {
  * Compose the moderation handler using Firebase auth and Firestore dependencies.
  * @param {{
  *   auth: import('firebase-admin/auth').Auth,
- *   fetchVariantSnapshot: (randomValue: number) => Promise<VariantSnapshot>,
+ *   fetchVariantSnapshots: (uid: string) => Promise<VariantCandidate[]>,
  *   db: import('firebase-admin/firestore').Firestore,
  *   now: () => unknown,
  *   random: () => number,
@@ -1578,7 +1519,7 @@ export function createAssignModerationJob(functionsModule, firebaseResources) {
  */
 export function createHandleAssignModerationJobFromAuth({
   auth,
-  fetchVariantSnapshot,
+  fetchVariantSnapshots,
   db,
   now,
   random,
@@ -1588,7 +1529,7 @@ export function createHandleAssignModerationJobFromAuth({
 
   const assignModerationWorkflow = createAssignModerationWorkflow({
     runGuards,
-    fetchVariantSnapshot,
+    fetchVariantSnapshots,
     selectVariantDoc,
     createModeratorRef,
     now,
