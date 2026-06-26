@@ -272,7 +272,23 @@ jobs:
           )"
 
           printf '%s\n' "$SEED_JSON" > /tmp/e2e-seed.json
-          gcloud storage cp /tmp/e2e-seed.json "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/seed.json"
+
+          upload_seed() {
+            local attempt
+            for attempt in 1 2 3; do
+              if gcloud storage cp /tmp/e2e-seed.json "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/seed.json"; then
+                return 0
+              fi
+
+              if [ "$attempt" -eq 3 ]; then
+                return 1
+              fi
+
+              sleep $((attempt * 5))
+            done
+          }
+
+          upload_seed
 
       - name: Wait for seeded pages
         if: success()

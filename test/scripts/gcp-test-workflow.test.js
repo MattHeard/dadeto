@@ -9,4 +9,12 @@ describe('gcp-test workflow report handling', () => {
     expect(source).toContain('download_tree test-results');
     expect(source).toContain('gcloud storage cp -r "${REPORT_ROOT}/${tree}" .');
   });
+
+  it('retries the seed object upload before failing the run', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+
+    expect(source).toContain('upload_seed()');
+    expect(source).toContain('gcloud storage cp /tmp/e2e-seed.json');
+    expect(source).toContain('sleep $((attempt * 5))');
+  });
 });
