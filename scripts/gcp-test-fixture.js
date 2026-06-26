@@ -60,6 +60,21 @@ function createFirebaseAppOptions(projectId) {
   };
 }
 
+function createStorageClient(projectId) {
+  const credentials = parseOptionalJsonEnv('GOOGLE_CREDENTIALS_JSON');
+  if (!credentials?.client_email || !credentials?.private_key) {
+    return new Storage({ projectId });
+  }
+
+  return new Storage({
+    projectId,
+    credentials: {
+      client_email: credentials.client_email,
+      private_key: credentials.private_key,
+    },
+  });
+}
+
 function createFirestoreDocumentRefs(db) {
   const storyRef = db.collection('stories').doc(STORY_ID);
   const firstPageRef = storyRef.collection('pages').doc(String(FIRST_PAGE_NUMBER));
@@ -179,7 +194,7 @@ async function renderSeededContents({
 }) {
   const renderContents = createRenderContents({
     db,
-    storage: new Storage({ projectId }),
+    storage: createStorageClient(projectId),
     bucketName: staticBucket,
     objectPrefix: staticObjectPrefix,
     fetchFn: async () => ({
@@ -210,7 +225,7 @@ async function renderSeededStoryPages({
   const { firstVariantRef, secondVariantRef } = createFirestoreDocumentRefs(db);
   const renderVariant = createRenderVariant({
     db,
-    storage: new Storage({ projectId }),
+    storage: createStorageClient(projectId),
     bucketName: staticBucket,
     objectPrefix: staticObjectPrefix,
     fetchFn: async () => createFixtureFetchResponse(),

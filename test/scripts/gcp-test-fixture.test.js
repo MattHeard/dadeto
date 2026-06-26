@@ -18,4 +18,13 @@ describe('gcp-test fixture seed contract', () => {
     expect(source).toContain('Premature close');
     expect(source).toContain('TRANSIENT_SEED_ATTEMPTS');
   });
+
+  it('uses explicit service account credentials for the storage client when available', () => {
+    const source = readFileSync('scripts/gcp-test-fixture.js', 'utf8');
+
+    expect(source).toContain('createStorageClient(projectId)');
+    expect(source).toContain('credentials: {');
+    expect(source).toContain('client_email: credentials.client_email');
+    expect(source).toContain('private_key: credentials.private_key');
+  });
 });
