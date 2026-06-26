@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import {
+  computeModerationUrgency,
   createReportForModerationHandler,
   createCorsOriginValidator,
   createCorsOptions,
@@ -52,14 +53,52 @@ describe('createReportForModerationHandler', () => {
 
     const response = await handler({
       method: 'POST',
-      body: { variant: ' slug ' },
+      body: { variant: ' slug ', reporterIdentity: ' anon-1 ' },
     });
 
     expect(addModerationReport).toHaveBeenCalledWith({
       variant: 'slug',
+      reporterIdentity: 'anon-1',
       createdAt: 'ts',
     });
     expect(response).toEqual({ status: 201, body: {} });
+  });
+
+  it('rejects duplicate reports from the same reporter', async () => {
+    const addModerationReport = jest.fn();
+    const hasModerationReport = jest.fn().mockResolvedValue(true);
+    const handler = createReportForModerationHandler({
+      addModerationReport,
+      hasModerationReport,
+      getServerTimestamp: jest.fn(),
+    });
+
+    await expect(
+      handler({
+        method: 'POST',
+        body: { variant: 'slug', reporterIdentity: 'anon-1' },
+      })
+    ).resolves.toEqual({ status: 409, body: 'Report already exists' });
+
+    expect(addModerationReport).not.toHaveBeenCalled();
+  });
+
+  it('rejects reports without a reporter identity', async () => {
+    const addModerationReport = jest.fn();
+    const handler = createReportForModerationHandler({
+      addModerationReport,
+      getServerTimestamp: jest.fn(),
+    });
+
+    await expect(
+      handler({
+        method: 'POST',
+        body: { variant: 'slug' },
+      })
+    ).resolves.toEqual({
+      status: 400,
+      body: 'Missing or invalid reporter identity',
+    });
   });
 
   it('rejects methods other than POST before reaching the handler', async () => {
@@ -88,6 +127,44 @@ describe('createReportForModerationHandler', () => {
     expect(response).toEqual({ status: 405, body: 'POST only' });
     expect(addModerationReport).not.toHaveBeenCalled();
     expect(getServerTimestamp).not.toHaveBeenCalled();
+  });
+});
+
+describe('computeModerationUrgency', () => {
+  it('ranks pages higher when the allowed urgency signals are stronger', () => {
+    const urgent = computeModerationUrgency({
+      reportCount: 5,
+      reportRecency: 1,
+      pageAge: 1,
+      timeSinceLastReview: 1,
+      visibilityDistanceFromThreshold: 1,
+      moderationCount: 0,
+    });
+    const calm = computeModerationUrgency({
+      reportCount: 0,
+      reportRecency: 0,
+      pageAge: 0,
+      timeSinceLastReview: 0,
+      visibilityDistanceFromThreshold: 0,
+      moderationCount: 5,
+    });
+
+    expect(urgent).toBeGreaterThan(calm);
+    expect(urgent).toBeLessThanOrEqual(1);
+    expect(calm).toBeGreaterThanOrEqual(0);
+  });
+
+  it('clamps non-finite signal inputs to zero', () => {
+    expect(
+      computeModerationUrgency({
+        reportCount: Number.NaN,
+        reportRecency: Number.POSITIVE_INFINITY,
+        pageAge: Number.NEGATIVE_INFINITY,
+        timeSinceLastReview: Number.NaN,
+        visibilityDistanceFromThreshold: Number.NaN,
+        moderationCount: Number.NaN,
+      })
+    ).toBe(0);
   });
 });
 

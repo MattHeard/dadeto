@@ -25,6 +25,15 @@ const reportForModerationHandler = createReportForModerationHandler({
   addModerationReport: moderationReportsCollection.add.bind(
     moderationReportsCollection
   ),
+  hasModerationReport: async (reporterIdentity, variant) => {
+    const snapshot = await moderationReportsCollection
+      .where('reporterIdentity', '==', reporterIdentity)
+      .where('variant', '==', variant)
+      .limit(1)
+      .get();
+
+    return !snapshot.empty;
+  },
   getServerTimestamp: FieldValue.serverTimestamp,
 });
 

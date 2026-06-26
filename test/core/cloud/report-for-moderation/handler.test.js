@@ -12,11 +12,12 @@ describe('createReportForModerationHandler', () => {
 
     const response = await handler({
       method: 'POST',
-      body: { variant: ' slug-value ' },
+      body: { variant: ' slug-value ', reporterIdentity: ' anon-1 ' },
     });
 
     expect(addModerationReport).toHaveBeenCalledWith({
       variant: 'slug-value',
+      reporterIdentity: 'anon-1',
       createdAt: 'timestamp',
     });
     expect(response).toEqual({ status: 201, body: {} });
