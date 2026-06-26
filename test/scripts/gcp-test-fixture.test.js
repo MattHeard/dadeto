@@ -10,4 +10,12 @@ describe('gcp-test fixture seed contract', () => {
     expect(source).toContain('moderatorReputationSum: 0');
     expect(source).toContain('moderationRatingCount: 0');
   });
+
+  it('retries transient seed uploads before failing the workflow', () => {
+    const source = readFileSync('scripts/gcp-test-fixture.js', 'utf8');
+
+    expect(source).toContain('retryTransientSeedStep');
+    expect(source).toContain('Premature close');
+    expect(source).toContain('TRANSIENT_SEED_ATTEMPTS');
+  });
 });

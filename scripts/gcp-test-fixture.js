@@ -23,6 +23,8 @@ const FIRST_PAGE_NUMBER = 1;
 const SECOND_PAGE_NUMBER = 2;
 const FIRST_VARIANT_NAME = 'a';
 const SECOND_VARIANT_NAME = 'a';
+const TRANSIENT_SEED_ATTEMPTS = 3;
+const TRANSIENT_SEED_RETRY_DELAY_MS = 2000;
 
 function requireEnv(name) {
   const value = process.env[name];
@@ -223,6 +225,51 @@ async function renderSeededStoryPages({
   });
 }
 
+async function retryTransientSeedStep(stepFn) {
+  let lastError;
+  for (let attempt = 1; attempt <= TRANSIENT_SEED_ATTEMPTS; attempt += 1) {
+    try {
+      return await stepFn();
+    } catch (error) {
+      lastError = error;
+      if (!isTransientSeedError(error) || attempt === TRANSIENT_SEED_ATTEMPTS) {
+        throw error;
+      }
+
+      await delay(TRANSIENT_SEED_RETRY_DELAY_MS * attempt);
+    }
+  }
+
+  throw lastError;
+}
+
+/**
+ * Determine whether a seed step failed for a transient transport/auth reason.
+ * @param {unknown} error Failure raised by the seed workflow.
+ * @returns {boolean} True when a retry is likely to help.
+ */
+function isTransientSeedError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes('Premature close') ||
+    message.includes('ERR_STREAM_PREMATURE_CLOSE') ||
+    message.includes('ECONNRESET') ||
+    message.includes('ETIMEDOUT') ||
+    message.includes('429')
+  );
+}
+
+/**
+ * Pause briefly before retrying a transient seed step.
+ * @param {number} delayMs Wait duration in milliseconds.
+ * @returns {Promise<void>} Resolves after the delay.
+ */
+function delay(delayMs) {
+  return new Promise(resolve => {
+    setTimeout(resolve, delayMs);
+  });
+}
+
 async function main() {
   const projectId = requireEnv('PROJECT_ID');
   const databaseId = requireEnv('DATABASE_ID');
@@ -245,18 +292,22 @@ async function main() {
 
   await seedFirestore(db);
 
-  await renderSeededContents({
-    db,
-    projectId,
-    staticBucket,
-    staticObjectPrefix,
-  });
-  await renderSeededStoryPages({
-    db,
-    projectId,
-    staticBucket,
-    staticObjectPrefix,
-  });
+  await retryTransientSeedStep(() =>
+    renderSeededContents({
+      db,
+      projectId,
+      staticBucket,
+      staticObjectPrefix,
+    })
+  );
+  await retryTransientSeedStep(() =>
+    renderSeededStoryPages({
+      db,
+      projectId,
+      staticBucket,
+      staticObjectPrefix,
+    })
+  );
 
   const fixture = {
     idToken,
