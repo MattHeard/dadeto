@@ -90,7 +90,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ variantId: 'foo' }))
+      handler(createSnapshot({ moderatorId: 'mod', variantId: 'foo' }))
     ).resolves.toBeNull();
     expect(db.doc).not.toHaveBeenCalled();
   });
@@ -104,7 +104,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ variantId: '   ', isApproved: true }))
+      handler(createSnapshot({ moderatorId: 'mod', variantId: '   ', isApproved: true }))
     ).resolves.toBeNull();
     expect(db.doc).not.toHaveBeenCalled();
   });
@@ -114,7 +114,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ variantId: 123, isApproved: true }))
+      handler(createSnapshot({ moderatorId: 'mod', variantId: 123, isApproved: true }))
     ).resolves.toBeNull();
     expect(db.doc).not.toHaveBeenCalled();
   });
@@ -129,7 +129,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ variantId: 'variants/id', isApproved: true }))
+      handler(createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: true }))
     ).resolves.toBeNull();
   });
 
@@ -143,7 +143,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ variantId: 'variants/id', isApproved: true }))
+      handler(createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: true }))
     ).resolves.toBeNull();
   });
 
@@ -172,7 +172,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ variantId: '/variants/id', isApproved: true }))
+      handler(createSnapshot({ moderatorId: 'mod', variantId: '/variants/id', isApproved: true }))
     ).resolves.toBeNull();
 
     expect(db.doc).toHaveBeenCalledWith('variants/id');
@@ -201,13 +201,113 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
-      createSnapshot({ variantId: 'variants/id', isApproved: false })
+      createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: false })
     );
 
     expect(variantRef.update).toHaveBeenCalledWith({
       visibility: (1 * 1 + 0) / 2,
       moderatorRatingCount: 2,
       moderatorReputationSum: 2,
+    });
+  });
+
+  it('locks visibility when the admin submits a moderation rating', async () => {
+    const variantData = {
+      visibility: 0.25,
+      moderationRatingCount: 2,
+      moderatorReputationSum: 2,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const db = { doc: jest.fn(() => variantRef) };
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
+        variantId: 'variants/id',
+        isApproved: false,
+      })
+    );
+
+    expect(variantRef.update).toHaveBeenNthCalledWith(1, {
+      visibility: 0.16666666666666666,
+      moderatorRatingCount: 3,
+      moderatorReputationSum: 3,
+    });
+    expect(variantRef.update).toHaveBeenNthCalledWith(2, {
+      visibility: 0,
+      visibilityLockedBy: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
+    });
+  });
+
+  it('locks visibility to one when the admin approves the page', async () => {
+    const variantData = {
+      visibility: 0.25,
+      moderationRatingCount: 2,
+      moderatorReputationSum: 2,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const db = { doc: jest.fn(() => variantRef) };
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
+        variantId: 'variants/id',
+        isApproved: true,
+      })
+    );
+
+    expect(variantRef.update).toHaveBeenNthCalledWith(2, {
+      visibility: 1,
+      visibilityLockedBy: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
+    });
+  });
+
+  it('preserves locked visibility for later non-admin ratings', async () => {
+    const variantData = {
+      visibility: 1,
+      moderationRatingCount: 2,
+      moderatorReputationSum: 2,
+      visibilityLockedBy: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const db = { doc: jest.fn(() => variantRef) };
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'variants/id',
+        isApproved: false,
+      })
+    );
+
+    expect(variantRef.update).toHaveBeenCalledWith({
+      visibility: 1,
+      moderatorRatingCount: 3,
+      moderatorReputationSum: 3,
     });
   });
 
@@ -224,7 +324,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
-      createSnapshot({ variantId: 'variants/id', isApproved: true })
+      createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: true })
     );
 
     expect(variantRef.update).toHaveBeenCalledWith({

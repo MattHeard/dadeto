@@ -1,9 +1,11 @@
 import { getNumericValueOrZero } from '../cloud-core.js';
 import { objectOrEmpty, when } from '../../commonCore.js';
 import { createFirestoreHandle } from '../firestore-handle.js';
+import { ADMIN_UID } from '../../commonCore.js';
 
 /**
  * @typedef {object} VariantUpdatePayload
+ * @property {string} moderatorId Moderator who submitted the rating.
  * @property {string} variantId Variant identifier.
  * @property {boolean} isApproved Approval status.
  */
@@ -183,6 +185,24 @@ function calculateNewStats(variantData, newRating) {
 }
 
 /**
+ * Determine whether the visibility is locked by an admin rating.
+ * @param {Record<string, unknown>} variantData Variant data.
+ * @returns {boolean} True when the admin has already locked the page.
+ */
+function isVisibilityLockedByAdmin(variantData) {
+  return variantData.visibilityLockedBy === ADMIN_UID;
+}
+
+/**
+ * Calculate the visibility value when the admin has locked the page.
+ * @param {boolean} isApproved Admin approval flag.
+ * @returns {number} Locked visibility value.
+ */
+function calculateAdminLockedVisibility(isApproved) {
+  return isApproved ? 1 : 0;
+}
+
+/**
  * Check if snapshot is valid and exists.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Snapshot.
  * @returns {boolean} True if valid.
@@ -229,7 +249,12 @@ async function processVariantUpdate(variantSnap, variantRef, isApproved) {
     return;
   }
 
-  const newStats = calculateNewStats(variantData, getNewRating(isApproved));
+  const newStats = isVisibilityLockedByAdmin(variantData)
+    ? {
+        ...calculateNewStats(variantData, getNewRating(isApproved)),
+        visibility: getSafeNumber(variantData, 'visibility'),
+      }
+    : calculateNewStats(variantData, getNewRating(isApproved));
 
   await updateVariantStats(variantRef, newStats);
 }
@@ -249,22 +274,24 @@ function validateApproval(isApproved) {
  * @returns {VariantUpdatePayload | null} Sanitized payload for processing.
  */
 function getValidVariantUpdatePayload(data) {
-  if (typeof data.variantId !== 'string') {
+  if (typeof data.variantId !== 'string' || typeof data.moderatorId !== 'string') {
     return null;
   }
 
-  return buildVariantUpdatePayload(data.variantId, data.isApproved);
+  return buildVariantUpdatePayload(data.moderatorId, data.variantId, data.isApproved);
 }
 
 /**
  * Build the final payload when approval status is valid.
+ * @param {string} moderatorId Moderator identifier.
  * @param {string} variantId Variant identifier.
  * @param {unknown} isApproved Approval flag.
  * @returns {VariantUpdatePayload | null} Payload for processing.
  */
-function buildVariantUpdatePayload(variantId, isApproved) {
+function buildVariantUpdatePayload(moderatorId, variantId, isApproved) {
   return /** @type {VariantUpdatePayload | null} */ (
     when(validateApproval(isApproved), () => ({
+      moderatorId,
       variantId,
       isApproved: /** @type {boolean} */ (isApproved),
     }))
@@ -346,6 +373,12 @@ async function applyVariantUpdate(db, payload) {
 
   const variantSnap = await variantRef.get();
   await processVariantUpdate(variantSnap, variantRef, payload.isApproved);
+  if (payload.moderatorId === ADMIN_UID) {
+    await variantRef.update({
+      visibility: calculateAdminLockedVisibility(payload.isApproved),
+      visibilityLockedBy: ADMIN_UID,
+    });
+  }
   return null;
 }
 
