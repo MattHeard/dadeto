@@ -847,7 +847,11 @@ export function createRunVariantQuery(database) {
       return String(leftRef.path).localeCompare(String(rightRef.path));
     })[0];
 
-    return { docs: chosen ? [chosen] : [] };
+    if (chosen) {
+      return { docs: [chosen] };
+    }
+
+    return { docs: [] };
   };
 }
 

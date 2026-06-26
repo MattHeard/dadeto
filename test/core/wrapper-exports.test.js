@@ -18,7 +18,9 @@ describe('core wrapper exports', () => {
 
     expect(generateStatsWrapper).toHaveProperty('createGenerateStatsCore');
     expect(processNewPageWrapper).toHaveProperty('createProcessNewPageHandler');
-    expect(submitNewStoryWrapper).toHaveProperty('createSubmitNewStoryResponder');
+    expect(submitNewStoryWrapper).toHaveProperty(
+      'createSubmitNewStoryResponder'
+    );
     expect(renderVariantWrapper).toHaveProperty('createRenderVariant');
     expect(paymentWebhookWrapper).toHaveProperty('createPaymentWebhookHandler');
   });

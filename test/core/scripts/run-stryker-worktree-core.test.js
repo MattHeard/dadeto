@@ -58,7 +58,10 @@ async function createWorktreeDir(prefix) {
 
 /**
  * Create an fs module that captures generated config writes.
- * @returns {{ fsModule: Record<string, unknown>, configWrites: Array<[string, string]> }}
+ * @returns {{
+ *   fsModule: Record<string, unknown>,
+ *   configWrites: Array<[string, string]>,
+ * }} Captured filesystem module and config writes.
  */
 function createFsModuleWithConfigCapture() {
   const configWrites = [];

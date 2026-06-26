@@ -45,9 +45,10 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   const pathModule = options.pathModule || path;
   const spawnImpl = options.spawnImpl || spawn;
   const mainRoot = options.rootDir || pathModule.resolve('.');
-  const mutateTargetDir = options.mutateTargetDir
-    ? pathModule.normalize(options.mutateTargetDir)
-    : null;
+  let mutateTargetDir = null;
+  if (options.mutateTargetDir) {
+    mutateTargetDir = pathModule.normalize(options.mutateTargetDir);
+  }
   const worktreeParent = pathModule.join(mainRoot, '.worktrees');
   const worktreePrefix = pathModule.join(worktreeParent, 'stryker-');
   const worktreeStrykerConfig = 'stryker.worktree.config.mjs';
@@ -184,9 +185,10 @@ function buildChildEnv(baseEnv, overrides) {
  * @returns {string} Serialized config module.
  */
 function buildStrykerConfig(mutateTargetDir) {
-  const mutateLine = mutateTargetDir
-    ? `  mutate: [${JSON.stringify(mutateTargetDir)}],\n`
-    : '';
+  let mutateLine = '';
+  if (mutateTargetDir) {
+    mutateLine = `  mutate: [${JSON.stringify(mutateTargetDir)}],\n`;
+  }
   return `import baseConfig from './stryker.config.mjs';
 
 export default {

@@ -289,15 +289,19 @@ export function getCdnHostFromEnv(env) {
  * @returns {string} Resolved CDN host.
  */
 function selectCdnHost(candidate) {
-  return (
-    whenString(candidate, value => {
-      if (value.trim().length > 0) {
-        return value;
-      }
+  const resolved = whenString(candidate, value => {
+    if (value.trim().length > 0) {
+      return value;
+    }
 
-      return null;
-    }) || DEFAULT_CDN_HOST
-  );
+    return null;
+  });
+
+  if (resolved) {
+    return resolved;
+  }
+
+  return DEFAULT_CDN_HOST;
 }
 
 /**
@@ -363,17 +367,9 @@ export function createGenerateStatsCore({
    * @returns {Promise<number>} Story count.
    */
   async function getStoryCount(dbRef = db) {
-    /**
-     * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
-     * @returns {import('firebase-admin/firestore').CollectionReference} Stories collection reference.
-     */
-    const buildStoriesQuery = reference => reference.collection('stories');
-
-    if (arguments.length > 0) {
-      return countDocuments(buildStoriesQuery, dbRef);
-    }
-
-    return countDocuments(buildStoriesQuery);
+    return countFirestoreDocuments(dbRef, reference =>
+      reference.collection('stories')
+    );
   }
 
   /**
@@ -383,24 +379,12 @@ export function createGenerateStatsCore({
    */
   async function getPageCount(dbRef = db) {
     if (!canWalkNestedCollections(dbRef)) {
-      /**
-       * @param {import('firebase-admin/firestore').Firestore} reference Firestore instance used to build the query.
-       * @returns {import('firebase-admin/firestore').Query} Pages collection group query.
-       */
-      const buildPagesQuery = reference => reference.collectionGroup('pages');
-
-      if (arguments.length > 0) {
-        return countDocuments(buildPagesQuery, dbRef);
-      }
-
-      return countDocuments(buildPagesQuery);
+      return countFirestoreDocuments(dbRef, reference =>
+        reference.collectionGroup('pages')
+      );
     }
 
-    if (arguments.length > 0) {
-      return countNestedPages(dbRef);
-    }
-
-    return countNestedPages(db);
+    return countNestedPages(dbRef);
   }
 
   /**
@@ -410,144 +394,10 @@ export function createGenerateStatsCore({
    */
   async function getUnmoderatedPageCount(dbRef = db) {
     if (!canWalkNestedCollections(dbRef)) {
-      const zeroSnap = await dbRef
-        .collectionGroup('variants')
-        .where('moderatorReputationSum', '==', 0)
-        .count()
-        .get();
-      const nullSnap = await dbRef
-        .collectionGroup('variants')
-        .where('moderatorReputationSum', '==', null)
-        .count()
-        .get();
-      return zeroSnap.data().count + nullSnap.data().count;
+      return countCollectionGroupVariants(dbRef);
     }
 
     return countUnmoderatedVariants(dbRef);
-  }
-
-  /**
-   * Count the documents returned by a Firestore query builder.
-   * @param {(database: import('firebase-admin/firestore').Firestore) => import('firebase-admin/firestore').Query} buildQuery Query constructor.
-   * @param {import('firebase-admin/firestore').Firestore | undefined} [dbRef] Optional Firestore instance.
-   * @returns {Promise<number>} Document count.
-   */
-  async function countDocuments(buildQuery, dbRef = db) {
-    const snap = await buildQuery(dbRef).count().get();
-    return snap.data().count;
-  }
-
-  /**
-   * Count pages by walking the stories collection and nested page collections.
-   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
-   * @returns {Promise<number>} Page count.
-   */
-  async function countNestedPages(dbRef) {
-    const storiesSnap = await dbRef.collection('stories').get();
-    const storyDocs = getSnapshotDocs(storiesSnap);
-    if (storyDocs.length === 0) {
-      return countDocuments(
-        reference => reference.collectionGroup('pages'),
-        dbRef
-      );
-    }
-    const pageSnaps = await Promise.all(
-      storyDocs.map(storyDoc => {
-        const storyRef =
-          /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
-            /** @type {unknown} */ (storyDoc)
-          ).ref;
-        return storyRef.collection('pages').get();
-      })
-    );
-    let total = 0;
-    for (const snap of pageSnaps) {
-      total += Array.isArray(snap.docs) ? snap.docs.length : 0;
-    }
-    return total;
-  }
-
-  /**
-   * Count unmoderated variants by walking nested story/page collections.
-   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
-   * @returns {Promise<number>} Unmoderated variant count.
-   */
-  async function countUnmoderatedVariants(dbRef) {
-    const storiesSnap = await dbRef.collection('stories').get();
-    const storyDocs = getSnapshotDocs(storiesSnap);
-    if (storyDocs.length === 0) {
-      const zeroSnap = await dbRef
-        .collectionGroup('variants')
-        .where('moderatorReputationSum', '==', 0)
-        .count()
-        .get();
-      const nullSnap = await dbRef
-        .collectionGroup('variants')
-        .where('moderatorReputationSum', '==', null)
-        .count()
-        .get();
-      return zeroSnap.data().count + nullSnap.data().count;
-    }
-    const pageSnaps = await Promise.all(
-      storyDocs.map(storyDoc => {
-        const storyRef =
-          /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
-            /** @type {unknown} */ (storyDoc)
-          ).ref;
-        return storyRef.collection('pages').get();
-      })
-    );
-    const variantSnaps = await Promise.all(
-      pageSnaps.flatMap(
-        /** @param {{ docs?: Array<import('firebase-admin/firestore').QueryDocumentSnapshot> }} pageSnap */
-        pageSnap =>
-          getSnapshotDocs(pageSnap).map(pageDoc => {
-            const pageRef =
-              /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
-                /** @type {unknown} */ (pageDoc)
-              ).ref;
-            return pageRef.collection('variants').get();
-          })
-      )
-    );
-
-    let total = 0;
-    for (const snap of variantSnaps) {
-      let count = 0;
-      snap.docs.forEach(variantDoc => {
-        const data = variantDoc.data();
-        if (
-          data?.moderatorReputationSum === 0 ||
-          data?.moderatorReputationSum === null
-        ) {
-          count += 1;
-        }
-      });
-      total += count;
-    }
-    return total;
-  }
-
-  /**
-   * Check whether a Firestore instance exposes the nested collection walk API used by production.
-   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
-   * @returns {boolean} True when nested collection traversal is supported.
-   */
-  function canWalkNestedCollections(dbRef) {
-    return Boolean(
-      dbRef &&
-        typeof dbRef.collection === 'function' &&
-        typeof dbRef.collection('stories')?.get === 'function'
-    );
-  }
-
-  /**
-   * Normalize a Firestore snapshot to an array of docs.
-   * @param {{ docs?: Array<import('firebase-admin/firestore').QueryDocumentSnapshot> }} snap Snapshot-like value.
-   * @returns {Array<import('firebase-admin/firestore').QueryDocumentSnapshot>} Document list.
-   */
-  function getSnapshotDocs(snap) {
-    return Array.isArray(snap?.docs) ? snap.docs : [];
   }
 
   /**
@@ -557,95 +407,7 @@ export function createGenerateStatsCore({
    * @returns {Promise<Array<{ title: string, variantCount: number }>>} Top stories data.
    */
   async function getTopStories(dbRef = db, limit) {
-    const resolvedLimit = resolveTopStoriesLimit(limit);
-    return loadTopStories(dbRef, resolvedLimit);
-  }
-
-  /**
-   * Resolve the limit used when fetching top stories.
-   * @param {number | undefined} limitCandidate Candidate limit provided by the caller.
-   * @returns {number} Limit guaranteed to be a finite number.
-   */
-  function resolveTopStoriesLimit(limitCandidate) {
-    if (limitCandidate === undefined) {
-      return 5;
-    }
-
-    return limitCandidate;
-  }
-
-  /**
-   * Load story stats documents ready for conversion into metadata.
-   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
-   * @param {number} limit Maximum number of entries to fetch.
-   * @returns {Promise<Array<{ title: string, variantCount: number }>>} Story metadata.
-   */
-  async function loadTopStories(dbRef, limit) {
-    const statsSnap = await dbRef
-      .collection('storyStats')
-      .orderBy('variantCount', 'desc')
-      .limit(limit)
-      .get();
-    return buildTopStoriesFromDocs(dbRef, statsSnap.docs);
-  }
-
-  /**
-   * Build the metadata payload for a top story entry.
-   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore reference.
-   * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} statsDoc Document from the storyStats collection.
-   * @returns {Promise<{ title: string, variantCount: number }>} Story metadata.
-   */
-  async function buildTopStoryFromStatsDoc(dbRef, statsDoc) {
-    const storyDoc = await dbRef.collection('stories').doc(statsDoc.id).get();
-    const variantCountValue = statsDoc.data().variantCount;
-    let variantCount = 0;
-    if (typeof variantCountValue === 'number') {
-      variantCount = variantCountValue;
-    }
-    return {
-      title: getStoryTitle(storyDoc.data(), statsDoc.id),
-      variantCount,
-    };
-  }
-
-  /**
-   * Build metadata payloads for a collection of stats documents.
-   * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance used for lookups.
-   * @param {import('firebase-admin/firestore').QueryDocumentSnapshot[]} docs Story stats documents to process.
-   * @returns {Promise<Array<{ title: string, variantCount: number }>>} Top story metadata.
-   */
-  function buildTopStoriesFromDocs(dbRef, docs) {
-    return Promise.all(
-      docs.map(statDoc => buildTopStoryFromStatsDoc(dbRef, statDoc))
-    );
-  }
-
-  /**
-   * Normalize the title stored on a story document.
-   * @param {import('firebase-admin/firestore').DocumentData | undefined} data Document data read from Firestore.
-   * @param {string} fallback Identifier used when the title is missing.
-   * @returns {string} Story title.
-   */
-  function getStoryTitle(data, fallback) {
-    return resolveStoryTitle(data?.title, fallback);
-  }
-
-  /**
-   * Normalize a story title candidate.
-   * @param {unknown} candidate Title candidate read from Firestore.
-   * @param {string} fallback Identifier to use when the title is missing.
-   * @returns {string} Resolved story title.
-   */
-  function resolveStoryTitle(candidate, fallback) {
-    return (
-      whenString(candidate, value => {
-        if (value.trim().length > 0) {
-          return value;
-        }
-
-        return null;
-      }) || fallback
-    );
+    return loadTopStories(dbRef, resolveTopStoriesLimit(limit));
   }
 
   /**
@@ -656,7 +418,7 @@ export function createGenerateStatsCore({
     const response = await fetchImpl(metadataTokenUrl, {
       headers: { 'Metadata-Flavor': 'Google' },
     });
-    validateMetadataResponse(response);
+    assertMetadataResponseOk(response);
     const metadata = /** @type {{ access_token: unknown }} */ (
       await response.json()
     );
@@ -665,22 +427,6 @@ export function createGenerateStatsCore({
       throw new Error('invalid access_token in metadata response');
     }
     return token;
-  }
-
-  /**
-   *
-   * @param response
-   */
-  /**
-   * Ensure the metadata response succeeded.
-   * @param {Response} response Metadata server response.
-   */
-  function validateMetadataResponse(response) {
-    if (response.ok) {
-      return;
-    }
-
-    throw new Error(`metadata token: HTTP ${response.status}`);
   }
 
   /**
@@ -695,8 +441,10 @@ export function createGenerateStatsCore({
     try {
       token = await getAccessTokenFromMetadata();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'metadata token fetch failed';
+      let message = 'metadata token fetch failed';
+      if (error instanceof Error) {
+        message = error.message;
+      }
       resolvedLogger.error(`Skipping CDN invalidation: ${message}`);
       return;
     }
@@ -717,8 +465,10 @@ export function createGenerateStatsCore({
         invalidateSinglePath
       );
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'CDN invalidation failed';
+      let message = 'CDN invalidation failed';
+      if (error instanceof Error) {
+        message = error.message;
+      }
       resolvedLogger.error(`Skipping CDN invalidation: ${message}`);
     }
   }
@@ -869,6 +619,257 @@ export function createGenerateStatsCore({
     generate,
     handleRequest,
   };
+}
+
+/**
+ * Check whether a Firestore instance exposes the nested collection walk API used by production.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @returns {boolean} True when nested collection traversal is supported.
+ */
+function canWalkNestedCollections(dbRef) {
+  return Boolean(
+    dbRef &&
+      typeof dbRef.collection === 'function' &&
+      typeof dbRef.collection('stories')?.get === 'function'
+  );
+}
+
+/**
+ * Normalize a Firestore snapshot to an array of docs.
+ * @param {{ docs?: Array<import('firebase-admin/firestore').QueryDocumentSnapshot> }} snap Snapshot-like value.
+ * @returns {Array<import('firebase-admin/firestore').QueryDocumentSnapshot>} Document list.
+ */
+function getSnapshotDocs(snap) {
+  if (Array.isArray(snap?.docs)) {
+    return snap.docs;
+  }
+
+  return [];
+}
+
+/**
+ * Count the documents returned by a Firestore query builder.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Optional Firestore instance.
+ * @param {(database: import('firebase-admin/firestore').Firestore) => import('firebase-admin/firestore').Query} buildQuery Query constructor.
+ * @returns {Promise<number>} Document count.
+ */
+async function countFirestoreDocuments(dbRef, buildQuery) {
+  const snap = await buildQuery(dbRef).count().get();
+  return snap.data().count;
+}
+
+/**
+ * Count pages by walking the stories collection and nested page collections.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @returns {Promise<number>} Page count.
+ */
+async function countNestedPages(dbRef) {
+  const storiesSnap = await dbRef.collection('stories').get();
+  const storyDocs = getSnapshotDocs(storiesSnap);
+  if (storyDocs.length === 0) {
+    return countFirestoreDocuments(dbRef, reference => {
+      return reference.collectionGroup('pages');
+    });
+  }
+
+  const pageSnaps = await Promise.all(
+    storyDocs.map(storyDoc => {
+      const storyRef =
+        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+          /** @type {unknown} */ (storyDoc)
+        ).ref;
+      return storyRef.collection('pages').get();
+    })
+  );
+
+  let total = 0;
+  for (const snap of pageSnaps) {
+    if (Array.isArray(snap.docs)) {
+      total += snap.docs.length;
+    }
+  }
+  return total;
+}
+
+/**
+ * Count unmoderated variants by checking the collection group directly.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @returns {Promise<number>} Unmoderated variant count.
+ */
+async function countCollectionGroupVariants(dbRef) {
+  const zeroSnap = await dbRef
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', 0)
+    .count()
+    .get();
+  const nullSnap = await dbRef
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', null)
+    .count()
+    .get();
+  return zeroSnap.data().count + nullSnap.data().count;
+}
+
+/**
+ * Count unmoderated variants by walking nested story/page collections.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @returns {Promise<number>} Unmoderated variant count.
+ */
+async function countUnmoderatedVariants(dbRef) {
+  const storiesSnap = await dbRef.collection('stories').get();
+  const storyDocs = getSnapshotDocs(storiesSnap);
+  if (storyDocs.length === 0) {
+    return countCollectionGroupVariants(dbRef);
+  }
+
+  const pageSnaps = await Promise.all(
+    storyDocs.map(storyDoc => {
+      const storyRef =
+        /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+          /** @type {unknown} */ (storyDoc)
+        ).ref;
+      return storyRef.collection('pages').get();
+    })
+  );
+
+  const variantSnaps = await Promise.all(
+    pageSnaps.flatMap(pageSnap => mapVariantRequestsFromPageSnap(pageSnap))
+  );
+
+  let total = 0;
+  for (const snap of variantSnaps) {
+    let count = 0;
+    snap.docs.forEach(variantDoc => {
+      const data = variantDoc.data();
+      if (
+        data?.moderatorReputationSum === 0 ||
+        data?.moderatorReputationSum === null
+      ) {
+        count += 1;
+      }
+    });
+    total += count;
+  }
+  return total;
+}
+
+/**
+ * Resolve the limit used when fetching top stories.
+ * @param {number | undefined} limitCandidate Candidate limit provided by the caller.
+ * @returns {number} Limit guaranteed to be a finite number.
+ */
+function resolveTopStoriesLimit(limitCandidate) {
+  if (limitCandidate === undefined) {
+    return 5;
+  }
+
+  return limitCandidate;
+}
+
+/**
+ * Load story stats documents ready for conversion into metadata.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance.
+ * @param {number} limit Maximum number of entries to fetch.
+ * @returns {Promise<Array<{ title: string, variantCount: number }>>} Story metadata.
+ */
+async function loadTopStories(dbRef, limit) {
+  const statsSnap = await dbRef
+    .collection('storyStats')
+    .orderBy('variantCount', 'desc')
+    .limit(limit)
+    .get();
+  return buildTopStoriesFromDocs(dbRef, statsSnap.docs);
+}
+
+/**
+ * Build the metadata payload for a top story entry.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore reference.
+ * @param {import('firebase-admin/firestore').QueryDocumentSnapshot} statsDoc Document from the storyStats collection.
+ * @returns {Promise<{ title: string, variantCount: number }>} Story metadata.
+ */
+async function buildTopStoryFromStatsDoc(dbRef, statsDoc) {
+  const storyDoc = await dbRef.collection('stories').doc(statsDoc.id).get();
+  const variantCountValue = statsDoc.data().variantCount;
+  let variantCount = 0;
+  if (typeof variantCountValue === 'number') {
+    variantCount = variantCountValue;
+  }
+  return {
+    title: getStoryTitle(storyDoc.data(), statsDoc.id),
+    variantCount,
+  };
+}
+
+/**
+ * Build metadata payloads for a collection of stats documents.
+ * @param {import('firebase-admin/firestore').Firestore} dbRef Firestore instance used for lookups.
+ * @param {import('firebase-admin/firestore').QueryDocumentSnapshot[]} docs Story stats documents to process.
+ * @returns {Promise<Array<{ title: string, variantCount: number }>>} Top story metadata.
+ */
+function buildTopStoriesFromDocs(dbRef, docs) {
+  return Promise.all(
+    docs.map(statDoc => buildTopStoryFromStatsDoc(dbRef, statDoc))
+  );
+}
+
+/**
+ * Normalize the title stored on a story document.
+ * @param {import('firebase-admin/firestore').DocumentData | undefined} data Document data read from Firestore.
+ * @param {string} fallback Identifier used when the title is missing.
+ * @returns {string} Story title.
+ */
+function getStoryTitle(data, fallback) {
+  return resolveStoryTitle(data?.title, fallback);
+}
+
+/**
+ * Normalize a story title candidate.
+ * @param {unknown} candidate Title candidate read from Firestore.
+ * @param {string} fallback Identifier to use when the title is missing.
+ * @returns {string} Resolved story title.
+ */
+function resolveStoryTitle(candidate, fallback) {
+  const resolved = whenString(candidate, value => {
+    if (value.trim().length > 0) {
+      return value;
+    }
+
+    return null;
+  });
+
+  if (resolved) {
+    return resolved;
+  }
+
+  return fallback;
+}
+
+/**
+ * Build the variant fetch requests for a page snapshot.
+ * @param {{ docs?: Array<import('firebase-admin/firestore').QueryDocumentSnapshot> }} pageSnap Page snapshot.
+ * @returns {Array<Promise<import('firebase-admin/firestore').QuerySnapshot>>} Variant fetch requests.
+ */
+function mapVariantRequestsFromPageSnap(pageSnap) {
+  return getSnapshotDocs(pageSnap).map(pageDoc => {
+    const pageRef =
+      /** @type {{ ref: import('firebase-admin/firestore').DocumentReference }} */ (
+        /** @type {unknown} */ (pageDoc)
+      ).ref;
+    return pageRef.collection('variants').get();
+  });
+}
+
+/**
+ * Ensure the metadata response succeeded.
+ * @param {Response} response Metadata server response.
+ * @returns {void}
+ */
+function assertMetadataResponseOk(response) {
+  if (response.ok) {
+    return;
+  }
+
+  throw new Error(`metadata token: HTTP ${response.status}`);
 }
 
 /**

@@ -48,8 +48,9 @@ export function conwayLife(input, env) {
 }
 
 /**
- * @param {{ get?: (name: string) => unknown }} env
- * @returns {((value: Record<string, unknown>) => unknown) | null}
+ * Resolve the persistence accessor from the toy environment.
+ * @param {{ get?: (name: string) => unknown }} env Toy environment helpers.
+ * @returns {((value: Record<string, unknown>) => unknown) | null} Persistence setter or null.
  */
 function getStorageAccessor(env) {
   if (!env || typeof env.get !== 'function') {
@@ -57,14 +58,17 @@ function getStorageAccessor(env) {
   }
 
   const setter = env.get('setLocalPermanentData');
-  return typeof setter === 'function'
-    ? /** @type {(value: Record<string, unknown>) => unknown} */ (setter)
-    : null;
+  if (typeof setter === 'function') {
+    return /** @type {(value: Record<string, unknown>) => unknown} */ (setter);
+  }
+
+  return null;
 }
 
 /**
- * @param {((value: Record<string, unknown>) => unknown) | null} storage
- * @returns {LifeState | null}
+ * Read and normalize persisted state from storage.
+ * @param {((value: Record<string, unknown>) => unknown) | null} storage Persistence setter.
+ * @returns {LifeState | null} Normalized stored state.
  */
 function readPersistedState(storage) {
   if (!storage) {
@@ -75,8 +79,9 @@ function readPersistedState(storage) {
 }
 
 /**
- * @param {string} input
- * @returns {Record<string, unknown> | null}
+ * Parse a raw input payload into an object record.
+ * @param {string} input Raw JSON input.
+ * @returns {Record<string, unknown> | null} Parsed object or null.
  */
 function parseInput(input) {
   if (typeof input !== 'string' || input.trim() === '') {
@@ -87,9 +92,10 @@ function parseInput(input) {
 }
 
 /**
- * @param {LifeState | null} persisted
- * @param {Record<string, unknown> | null} input
- * @returns {LifeState}
+ * Build the next simulation state from persisted and current input.
+ * @param {LifeState | null} persisted Previous persisted state.
+ * @param {Record<string, unknown> | null} input Current input payload.
+ * @returns {LifeState} Next simulation state.
  */
 function buildNextState(persisted, input) {
   const seed = normalizeSeed(input);
@@ -99,52 +105,73 @@ function buildNextState(persisted, input) {
   );
   const framesPerTick = Math.max(1, Math.round(nextTickSpeedMs / 16));
   const shouldReset = input?.reset === true || !persisted;
-  const startingCells = shouldReset ? seed.cells : base.cells;
-  const initialCountdown = shouldReset
-    ? framesPerTick
-    : normalizePositiveInteger(base.framesUntilTick, framesPerTick);
-  const nextState = shouldReset
-    ? composeLifeState(
-        createBaseStateFields({
-          width: base.width,
-          height: base.height,
-          cols: base.cols,
-          rows: base.rows,
-          tickSpeedMs: nextTickSpeedMs,
-          cells: startingCells,
-        }),
-        {
-          framesPerTick,
-          framesUntilTick: initialCountdown,
-          generation: 0,
-        }
-      )
-    : stepBoard(
-        composeLifeState(
-          createBaseStateFields({
-            width: base.width,
-            height: base.height,
-            cols: base.cols,
-            rows: base.rows,
-            tickSpeedMs: nextTickSpeedMs,
-            cells: startingCells,
-          }),
-          {
-            framesPerTick,
-            framesUntilTick: initialCountdown,
-            generation: base.generation,
-          }
-        ),
-        framesPerTick
-      );
+  const state = createNextState({
+    base,
+    nextTickSpeedMs,
+    framesPerTick,
+    seedCells: seed.cells,
+    shouldReset,
+  });
+  if (!shouldReset) {
+    return stepBoard(state, framesPerTick);
+  }
 
-  return nextState;
+  return state;
 }
 
 /**
- * @param {LifeState} base
- * @param {number} framesPerTick
- * @returns {LifeState}
+ * Create the state before advancing the board.
+ * @param {{
+ *   base: LifeState,
+ *   nextTickSpeedMs: number,
+ *   framesPerTick: number,
+ *   seedCells: LifeCell[],
+ *   shouldReset: boolean,
+ * }} options Next-state options.
+ * @returns {LifeState} Prepared state.
+ */
+function createNextState(options) {
+  const { base, nextTickSpeedMs, framesPerTick, seedCells, shouldReset } =
+    options;
+  let startingCells = base.cells;
+  if (shouldReset) {
+    startingCells = seedCells;
+  }
+
+  let initialCountdown = normalizePositiveInteger(
+    base.framesUntilTick,
+    framesPerTick
+  );
+  if (shouldReset) {
+    initialCountdown = framesPerTick;
+  }
+  let generation = base.generation;
+  if (shouldReset) {
+    generation = 0;
+  }
+
+  return composeLifeState(
+    createBaseStateFields({
+      width: base.width,
+      height: base.height,
+      cols: base.cols,
+      rows: base.rows,
+      tickSpeedMs: nextTickSpeedMs,
+      cells: startingCells,
+    }),
+    {
+      framesPerTick,
+      framesUntilTick: initialCountdown,
+      generation,
+    }
+  );
+}
+
+/**
+ * Advance the board by one frame or one generation.
+ * @param {LifeState} base Current board state.
+ * @param {number} framesPerTick Frames per tick.
+ * @returns {LifeState} Next board state.
  */
 function stepBoard(base, framesPerTick) {
   const nextFrameCountdown = base.framesUntilTick - 1;
@@ -165,8 +192,9 @@ function stepBoard(base, framesPerTick) {
 }
 
 /**
- * @param {Record<string, unknown> | null} input
- * @returns {LifeState}
+ * Normalize seed state from current input.
+ * @param {Record<string, unknown> | null} input Parsed current input.
+ * @returns {LifeState} Normalized seed state.
  */
 function normalizeSeed(input) {
   const width = normalizePositiveInteger(input?.width, DEFAULT_WIDTH);
@@ -187,8 +215,9 @@ function normalizeSeed(input) {
 }
 
 /**
- * @param {unknown} value
- * @returns {number}
+ * Clamp the tick speed to the allowed simulation range.
+ * @param {unknown} value Raw tick speed value.
+ * @returns {number} Clamped tick speed in milliseconds.
  */
 function normalizeTickSpeedMs(value) {
   const next = Number(value);
@@ -202,26 +231,33 @@ function normalizeTickSpeedMs(value) {
 }
 
 /**
+ * Parse raw JSON or a parsed object into a record.
  * @param {unknown} value Raw JSON or parsed payload.
  * @returns {Record<string, unknown> | null} Parsed object payload.
  */
 function parseObjectRecord(value) {
-  const parsed =
-    typeof value === 'string'
-      ? parseJsonOrNull(value)
-      : value && typeof value === 'object' && !Array.isArray(value)
-        ? value
-        : null;
-  return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-    ? /** @type {Record<string, unknown>} */ (parsed)
-    : null;
+  if (typeof value === 'string') {
+    const parsed = parseJsonOrNull(value);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return /** @type {Record<string, unknown>} */ (parsed);
+    }
+
+    return null;
+  }
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return /** @type {Record<string, unknown>} */ (value);
+  }
+
+  return null;
 }
 
 /**
- * @param {unknown} cells
- * @param {number} cols
- * @param {number} rows
- * @returns {LifeCell[]}
+ * Normalize a cell list to valid toroidal coordinates.
+ * @param {unknown} cells Raw cells payload.
+ * @param {number} cols Board columns.
+ * @param {number} rows Board rows.
+ * @returns {LifeCell[]} Normalized cell list.
  */
 function normalizeCells(cells, cols, rows) {
   if (!Array.isArray(cells)) {
@@ -247,17 +283,19 @@ function normalizeCells(cells, cols, rows) {
 }
 
 /**
- * @param {number} value
- * @param {number} size
- * @returns {number}
+ * Wrap a coordinate within the board dimensions.
+ * @param {number} value Raw coordinate.
+ * @param {number} size Board size.
+ * @returns {number} Wrapped coordinate.
  */
 function wrapCoordinate(value, size) {
   return ((value % size) + size) % size;
 }
 
 /**
- * @param {LifeCell[]} cells
- * @returns {LifeCell[]}
+ * Remove duplicate cells from the list.
+ * @param {LifeCell[]} cells Input cell list.
+ * @returns {LifeCell[]} Deduplicated cell list.
  */
 function dedupeCells(cells) {
   const seen = new Set();
@@ -274,10 +312,11 @@ function dedupeCells(cells) {
 }
 
 /**
- * @param {LifeCell[]} cells
- * @param {number} cols
- * @param {number} rows
- * @returns {LifeCell[]}
+ * Evolve the board by one generation.
+ * @param {LifeCell[]} cells Current cell list.
+ * @param {number} cols Board columns.
+ * @param {number} rows Board rows.
+ * @returns {LifeCell[]} Next generation cells.
  */
 function evolveCells(cells, cols, rows) {
   const live = new Set(cells.map(cell => `${cell.x}:${cell.y}`));
@@ -301,10 +340,11 @@ function evolveCells(cells, cols, rows) {
 }
 
 /**
- * @param {LifeCell} cell
- * @param {number} cols
- * @param {number} rows
- * @returns {LifeCell[]}
+ * Enumerate the neighbors of a cell on the torus.
+ * @param {LifeCell} cell Source cell.
+ * @param {number} cols Board columns.
+ * @param {number} rows Board rows.
+ * @returns {LifeCell[]} Neighbor cells.
  */
 function getNeighbors(cell, cols, rows) {
   const neighbors = [];
@@ -323,8 +363,9 @@ function getNeighbors(cell, cols, rows) {
 }
 
 /**
- * @param {LifeState} state
- * @returns {{ width: number, height: number, shapes: Array<Record<string, unknown>> }}
+ * Convert a life state into a canvas payload.
+ * @param {LifeState} state Board state.
+ * @returns {{ width: number, height: number, shapes: Array<Record<string, unknown>> }} Canvas payload.
  */
 function toCanvasPayload(state) {
   const cellWidth = state.width / state.cols;
@@ -349,6 +390,7 @@ function toCanvasPayload(state) {
 }
 
 /**
+ * Create the backdrop rectangle for the canvas payload.
  * @param {number} width Canvas width.
  * @param {number} height Canvas height.
  * @returns {Record<string, unknown>} Background shape.
@@ -365,8 +407,9 @@ function createBackdropShape(width, height) {
 }
 
 /**
- * @param {((value: Record<string, unknown>) => unknown) | null} storage
- * @param {LifeState} state
+ * Persist the current state when storage is available.
+ * @param {((value: Record<string, unknown>) => unknown) | null} storage Persistence setter.
+ * @param {LifeState} state State to persist.
  * @returns {void}
  */
 function persistState(storage, state) {
@@ -394,8 +437,9 @@ function persistState(storage, state) {
 }
 
 /**
- * @param {Record<string, unknown> | null | undefined} data
- * @returns {LifeState | null}
+ * Normalize a persisted state payload.
+ * @param {Record<string, unknown> | null | undefined} data Stored data.
+ * @returns {LifeState | null} Normalized state or null.
  */
 function normalizeState(data) {
   const stored = data?.[STORAGE_KEY];

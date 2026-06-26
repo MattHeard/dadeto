@@ -150,5 +150,7 @@ test('submits the new story form', async ({ page }) => {
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 
-  await expect(page.getByRole('heading', { name: /Dendrite/i })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Add Dendrite Page' }),
+  ).toBeVisible();
 });

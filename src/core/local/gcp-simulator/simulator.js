@@ -1077,42 +1077,45 @@ async function handleAssignModerationJob(
  */
 export async function pickNextModerationVariant(db, currentPath) {
   if (typeof db.collection !== 'function') {
-    const candidates = await db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', 0)
-      .get();
-    const fallbacks = await db
-      .collectionGroup('variants')
-      .where('moderatorReputationSum', '==', null)
-      .get();
-    const all = [...candidates.docs, ...fallbacks.docs];
-    return all.find(doc => doc.ref.path !== currentPath) ?? null;
+    return pickNextModerationVariantFromCollectionGroup(db, currentPath);
   }
 
+  const candidates = await collectModerationVariantCandidates(db, currentPath);
+  return candidates[0]?.doc ?? null;
+}
+
+/**
+ * Pick a moderation variant from the collection-group fallback path.
+ * @param {ReturnType<typeof createDb>} db Firestore-like database.
+ * @param {string | undefined} currentPath Current moderator assignment path.
+ * @returns {Promise<{ ref: { path: string } } | null>} Selected variant snapshot.
+ */
+async function pickNextModerationVariantFromCollectionGroup(db, currentPath) {
+  const candidates = await db
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', 0)
+    .get();
+  const fallbacks = await db
+    .collectionGroup('variants')
+    .where('moderatorReputationSum', '==', null)
+    .get();
+  const all = [...candidates.docs, ...fallbacks.docs];
+  return all.find(doc => doc.ref.path !== currentPath) ?? null;
+}
+
+/**
+ * Collect eligible moderation variants from the nested story/page tree.
+ * @param {ReturnType<typeof createDb>} db Firestore-like database.
+ * @param {string | undefined} currentPath Current moderator assignment path.
+ * @returns {Promise<Array<{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string }>>} Candidate variants.
+ */
+async function collectModerationVariantCandidates(db, currentPath) {
   const storiesSnap = await db.collection('stories').get();
   const candidates = [];
 
   for (const storyDoc of storiesSnap.docs) {
     const pagesSnap = await storyDoc.ref.collection('pages').get();
-    for (const pageDoc of pagesSnap.docs) {
-      const variantsSnap = await pageDoc.ref.collection('variants').get();
-      for (const variantDoc of variantsSnap.docs) {
-        const data = variantDoc.data?.() ?? {};
-        const reputation = data.moderatorReputationSum;
-        if (reputation !== 0 && reputation !== null) {
-          continue;
-        }
-        if (variantDoc.ref.path === currentPath) {
-          continue;
-        }
-        candidates.push({
-          doc: variantDoc,
-          createdAt: data.createdAt?.toMillis?.() ?? 0,
-          rand: data.rand ?? 0,
-          path: variantDoc.ref.path,
-        });
-      }
-    }
+    await collectPageVariantCandidates(pagesSnap.docs, currentPath, candidates);
   }
 
   candidates.sort((left, right) => {
@@ -1125,7 +1128,79 @@ export async function pickNextModerationVariant(db, currentPath) {
     return left.path.localeCompare(right.path);
   });
 
-  return candidates[0]?.doc ?? null;
+  return candidates;
+}
+
+/**
+ * Add eligible variants from a page collection into the candidate list.
+ * @param {Array<{ ref: { collection: (name: string) => { get: () => Promise<{ docs: Array<any> }> } } }>} pageDocs Page documents.
+ * @param {string | undefined} currentPath Current moderator assignment path.
+ * @param {Array<{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string }>} candidates Candidate list.
+ * @returns {Promise<void>} Resolves after the page variants are scanned.
+ */
+async function collectPageVariantCandidates(pageDocs, currentPath, candidates) {
+  for (const pageDoc of pageDocs) {
+    const variantsSnap = await pageDoc.ref.collection('variants').get();
+    for (const variantDoc of variantsSnap.docs) {
+      const candidate = buildModerationVariantCandidate(
+        variantDoc,
+        currentPath
+      );
+      if (candidate) {
+        candidates.push(candidate);
+      }
+    }
+  }
+}
+
+/**
+ * Build a sortable moderation variant candidate when the variant is eligible.
+ * @param {{ ref: { path: string }, data?: () => any }} variantDoc Variant document.
+ * @param {string | undefined} currentPath Current moderator assignment path.
+ * @returns {{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string } | null} Candidate or null.
+ */
+function buildModerationVariantCandidate(variantDoc, currentPath) {
+  const data = variantDoc.data?.() ?? {};
+  if (!isEligibleModerationVariant(data, variantDoc.ref.path, currentPath)) {
+    return null;
+  }
+
+  return createModerationVariantCandidate(variantDoc, data);
+}
+
+/**
+ * Check whether a variant is eligible for moderation selection.
+ * @param {Record<string, unknown>} data Variant data.
+ * @param {string} path Variant document path.
+ * @param {string | undefined} currentPath Current moderator assignment path.
+ * @returns {boolean} True when the variant is eligible.
+ */
+function isEligibleModerationVariant(data, path, currentPath) {
+  const reputation = data.moderatorReputationSum;
+  if (reputation !== 0 && reputation !== null) {
+    return false;
+  }
+
+  if (path === currentPath) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Create a sortable moderation candidate entry.
+ * @param {{ ref: { path: string } }} variantDoc Variant document.
+ * @param {Record<string, unknown>} data Variant data.
+ * @returns {{ doc: { ref: { path: string }, data?: () => any }, createdAt: number, rand: number, path: string }} Candidate entry.
+ */
+function createModerationVariantCandidate(variantDoc, data) {
+  return {
+    doc: variantDoc,
+    createdAt: data.createdAt?.toMillis?.() ?? 0,
+    rand: data.rand ?? 0,
+    path: variantDoc.ref.path,
+  };
 }
 
 /**

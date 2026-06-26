@@ -13,10 +13,11 @@ import {
 } from '../../payment-webhook-core.js';
 
 /** @typedef {typeof import('@google-cloud/firestore').Firestore} FirestoreCtor */
+/** @typedef {Record<string, string | undefined>} ProcessEnvLike */
 
 /**
  * Create the payment webhook request handler used by the cloud wrapper.
- * @param {{ firestore: FirestoreCtor, env?: NodeJS.ProcessEnv }} deps Dependencies for the wrapper.
+ * @param {{ firestore: FirestoreCtor, env?: ProcessEnvLike }} deps Dependencies for the wrapper.
  * @returns {(req: unknown, res: unknown) => Promise<unknown>} Request handler.
  */
 export function createPaymentWebhookIndexHandler({
@@ -34,19 +35,27 @@ export function createPaymentWebhookIndexHandler({
           .doc(customerId)
           .get();
         const apiKeyUuid = snap.data()?.apiKeyUuid;
-        return typeof apiKeyUuid === 'string' && apiKeyUuid ? apiKeyUuid : null;
+        if (typeof apiKeyUuid === 'string' && apiKeyUuid) {
+          return apiKeyUuid;
+        }
+
+        return null;
       },
     }),
     isDuplicateEvent: async eventId =>
       (await db.collection('payment-events').doc(eventId).get()).exists,
     markProcessedEvent: async (event, uuid) => {
       const doc = db.collection('payment-events').doc(event.id);
+      let createdAtMs = Date.now();
+      if (typeof event.created === 'number') {
+        createdAtMs = event.created * 1000;
+      }
       await /** @type {{ set: (value: { apiKeyUuid: string, type: string, createdAt: Date }) => Promise<void> }} */ (
         /** @type {unknown} */ (doc)
       ).set({
         apiKeyUuid: uuid,
         type: event.type,
-        createdAt: new Date(event.created ? event.created * 1000 : Date.now()),
+        createdAt: new Date(createdAtMs),
       });
     },
     getPaymentEvent: async request => parsePaymentWebhookEvent(request, env),
@@ -61,7 +70,7 @@ export function createPaymentWebhookIndexHandler({
 /**
  * Parse a payment webhook request body with optional signature validation.
  * @param {unknown} request Incoming request.
- * @param {NodeJS.ProcessEnv} [env] Environment values.
+ * @param {ProcessEnvLike} [env] Environment values.
  * @returns {import('../../payment-webhook-core.js').PaymentEvent} Parsed event.
  */
 export function parsePaymentWebhookEvent(request, env = process.env) {
@@ -118,11 +127,14 @@ function resolveWebhookStatus(response) {
   if (
     response.status === 200 &&
     response.body &&
-    typeof response.body === 'object' &&
-    response.body.type === 'credit_added' &&
-    response.body.applied === true
+    typeof response.body === 'object'
   ) {
-    return 201;
+    const body = /** @type {{ type?: unknown, applied?: unknown }} */ (
+      response.body
+    );
+    if (body.type === 'credit_added' && body.applied === true) {
+      return 201;
+    }
   }
 
   return response.status;

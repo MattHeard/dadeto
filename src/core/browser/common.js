@@ -1,7 +1,5 @@
 // Shared utility functions for browser code.
 
-import { whenOrDefault } from './browser-core.js';
-
 /**
  * Check that the value is an object, excluding `null` and arrays.
  * @param {*} val Candidate to inspect.
@@ -58,7 +56,11 @@ export function buildWhen(condition, builder) {
  */
 export function normalizePositiveInteger(value, fallback) {
   const next = Number(value);
-  return Number.isFinite(next) && next > 0 ? Math.round(next) : fallback;
+  if (Number.isFinite(next) && next > 0) {
+    return Math.round(next);
+  }
+
+  return fallback;
 }
 
 export { guardThen } from './browser-core.js';
