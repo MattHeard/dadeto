@@ -168,32 +168,48 @@ describe('createReputationScopedVariantsQuery', () => {
 });
 
 describe('createRunVariantQuery', () => {
-  test('runs the reputation scoped variant query', async () => {
-    const get = jest.fn().mockResolvedValue('snapshot');
-    const limitedQuery = { get };
-    const limit = jest.fn(() => limitedQuery);
-    const filteredQuery = { limit };
-    const where = jest.fn(() => filteredQuery);
-    const orderedQuery = { where };
-    const orderBy = jest.fn(() => orderedQuery);
-    const variantsQuery = { orderBy };
-    const collectionGroup = jest.fn(() => variantsQuery);
-    const database = { collectionGroup };
+  test('runs the collection group candidate query', async () => {
+    const variantDoc = {
+      ref: { path: 'stories/s1/pages/p1/variants/v1' },
+      data: () => ({ moderationUrgency: 0.9, pagePath: 'stories/s1/pages/p1' }),
+    };
+    const variantGroupGet = jest.fn().mockResolvedValue({ docs: [variantDoc] });
+    const moderationRatingsWhereGet = jest
+      .fn()
+      .mockResolvedValue({ docs: [] });
+    const database = {
+      collectionGroup: jest.fn(name => {
+        if (name === 'variants') {
+          return { get: variantGroupGet };
+        }
+
+        throw new Error(`Unexpected collectionGroup ${name}`);
+      }),
+      collection: jest.fn(name => {
+        if (name === 'moderationRatings') {
+          return {
+            where: jest.fn(() => ({
+              get: moderationRatingsWhereGet,
+            })),
+          };
+        }
+
+        throw new Error(`Unexpected collection ${name}`);
+      }),
+    };
 
     const runVariantQuery = createRunVariantQuery(database);
-    const descriptor = {
-      reputation: 'any',
-      comparator: '>=',
-      randomValue: 0.42,
-    };
-    const snapshot = await runVariantQuery(descriptor);
+    const result = await runVariantQuery('mod-1');
 
-    expect(collectionGroup).toHaveBeenCalledWith('variants');
-    expect(orderBy).toHaveBeenCalledWith('rand', 'asc');
-    expect(where).toHaveBeenCalledWith('rand', '>=', 0.42);
-    expect(limit).toHaveBeenCalledWith(1);
-    expect(get).toHaveBeenCalledTimes(1);
-    expect(snapshot).toBe('snapshot');
+    expect(database.collectionGroup).toHaveBeenCalledWith('variants');
+    expect(database.collection).toHaveBeenCalledWith('moderationRatings');
+    expect(moderationRatingsWhereGet).toHaveBeenCalledTimes(1);
+    expect(variantGroupGet).toHaveBeenCalledTimes(1);
+    expect(result).toEqual([
+      {
+        variantDoc,
+      },
+    ]);
   });
 });
 

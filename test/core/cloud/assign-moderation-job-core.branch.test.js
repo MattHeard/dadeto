@@ -142,6 +142,12 @@ describe('assignModerationJobTestUtils', () => {
     ]);
   });
 
+  test('createRunVariantQuery requires collectionGroup support', () => {
+    expect(() => createRunVariantQuery({})).toThrow(
+      'collectionGroup(variants) is required for moderation assignment'
+    );
+  });
+
   test('createAssignModerationWorkflow samples from the top five urgent candidates', async () => {
     const runGuards = jest.fn().mockResolvedValue({
       context: { userRecord: { uid: 'mod-1' } },

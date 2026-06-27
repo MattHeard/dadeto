@@ -20,14 +20,33 @@ describe('createAssignModerationJobEntrypoint', () => {
       })),
     };
     const getFirestore = jest.fn(() => ({
-      collection: jest.fn(() => ({
-        doc: jest.fn(() => ({
-          get: jest.fn().mockResolvedValue({
-            exists: true,
-            data: () => ({ rootPage: { get: jest.fn() } }),
-          }),
-        })),
-      })),
+      collectionGroup: jest.fn(name => {
+        if (name !== 'variants') {
+          throw new Error(`Unexpected collectionGroup ${name}`);
+        }
+
+        return {
+          get: jest.fn().mockResolvedValue({ docs: [] }),
+        };
+      }),
+      collection: jest.fn(name => {
+        if (name === 'moderationRatings') {
+          return {
+            where: jest.fn(() => ({
+              get: jest.fn().mockResolvedValue({ docs: [] }),
+            })),
+          };
+        }
+
+        return {
+          doc: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              exists: true,
+              data: () => ({ rootPage: { get: jest.fn() } }),
+            }),
+          })),
+        };
+      }),
     }));
     const express = Object.assign(
       jest.fn(() => ({

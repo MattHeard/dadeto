@@ -778,7 +778,7 @@ export function createReputationScopedVariantsQuery(database, reputation) {
 export function createRunVariantQuery(database) {
   const collectionGroup = database?.collectionGroup?.('variants');
   if (!collectionGroup || typeof collectionGroup.get !== 'function') {
-    return createLegacyRunVariantQuery(database);
+    throw new Error('collectionGroup(variants) is required for moderation assignment');
   }
 
   /**
@@ -806,29 +806,6 @@ export function createRunVariantQuery(database) {
           !alreadyModerated.has(/** @type {any} */ (variantDoc).ref.path)
       )
       .map(variantDoc => ({ variantDoc }));
-  };
-}
-
-/**
- * Build the legacy query runner used by older tests and fallback databases.
- * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
- * @returns {(descriptor: { reputation: 'zeroRated' | 'any', comparator: '>=' | '<', randomValue: number }) => Promise<VariantSnapshot>} Legacy query runner.
- */
-function createLegacyRunVariantQuery(database) {
-  return function runLegacyVariantQuery({
-    reputation,
-    comparator,
-    randomValue,
-  }) {
-    const reputationScopedQuery = createReputationScopedVariantsQuery(
-      database,
-      reputation
-    );
-    const orderedQuery = reputationScopedQuery.orderBy('rand', 'asc');
-    const filteredQuery = orderedQuery.where('rand', comparator, randomValue);
-    const limitedQuery = filteredQuery.limit(1);
-
-    return limitedQuery.get();
   };
 }
 
