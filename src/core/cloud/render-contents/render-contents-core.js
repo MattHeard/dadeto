@@ -339,7 +339,7 @@ async function resolveStoryInfoFromStory(story) {
  */
 async function resolveStoryInfoFromRoot(rootRef, story) {
   const pageSnap = await rootRef.get();
-  return buildStoryInfoFromPage(pageSnap, story);
+  return buildStoryInfoFromPage(rootRef, pageSnap, story);
 }
 
 /**
@@ -370,8 +370,26 @@ function isValidSnapshot(pageSnap) {
  * @param {Record<string, any>} story Story document data that owns the page.
  * @returns {StoryInfo | null} Story metadata or null when the page is missing.
  */
-function buildStoryInfoFromPage(pageSnap, story) {
+async function hasVisibleVariants(pageRef) {
+  if (!pageRef || typeof pageRef.collection !== 'function') {
+    return true;
+  }
+  const variantsSnap = await pageRef.collection('variants').get();
+  return variantsSnap.docs.some(doc => {
+    const visibility = extractVisibility(doc.data());
+    return visibility >= 0.5;
+  });
+}
+
+function extractVisibility(data) {
+  return typeof data?.visibility === 'number' ? data.visibility : 1;
+}
+
+async function buildStoryInfoFromPage(rootRef, pageSnap, story) {
   if (!isValidSnapshot(pageSnap)) {
+    return null;
+  }
+  if (!(await hasVisibleVariants(rootRef))) {
     return null;
   }
   return createStoryInfo(story, pageSnap);

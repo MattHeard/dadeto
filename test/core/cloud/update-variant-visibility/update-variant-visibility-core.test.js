@@ -3,6 +3,7 @@ import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 import {
   normalizeVariantPath,
   calculateUpdatedVisibility,
+  calculateNextVisibility,
   createUpdateVariantVisibilityHandle,
   createUpdateVariantVisibilityHandler,
 } from '../../../../src/core/cloud/update-variant-visibility/update-variant-visibility-core.js';
@@ -277,6 +278,200 @@ describe('createUpdateVariantVisibilityHandler', () => {
     });
   });
 
+  it('republishes contents when a root variant changes visibility across the threshold', async () => {
+    const variantData = {
+      visibility: 0.6,
+      moderationRatingCount: 1,
+      moderatorReputationSum: 1,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          path: 'stories/story-1/pages/page-1',
+          parent: {
+            parent: {
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({
+                  rootPage: { path: 'stories/story-1/pages/page-1' },
+                }),
+              }),
+            },
+          },
+        },
+      },
+    };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 1 },
+    });
+    const renderContents = jest.fn().mockResolvedValue(undefined);
+    const handler = createUpdateVariantVisibilityHandler({
+      db,
+      renderContents,
+    });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'stories/story-1/pages/page-1/variants/root',
+        isApproved: false,
+      })
+    );
+
+    expect(renderContents).toHaveBeenCalledWith();
+  });
+
+  it('republishes contents when a hidden root variant becomes visible', async () => {
+    const variantData = {
+      visibility: 0.4,
+      moderationRatingCount: 1,
+      moderatorReputationSum: 1,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          path: 'stories/story-1/pages/page-1',
+          parent: {
+            parent: {
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({
+                  rootPage: { path: 'stories/story-1/pages/page-1' },
+                }),
+              }),
+            },
+          },
+        },
+      },
+    };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 1 },
+    });
+    const renderContents = jest.fn().mockResolvedValue(undefined);
+    const handler = createUpdateVariantVisibilityHandler({
+      db,
+      renderContents,
+    });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'stories/story-1/pages/page-1/variants/root',
+        isApproved: true,
+      })
+    );
+
+    expect(renderContents).toHaveBeenCalledWith();
+  });
+
+  it('skips republishing when the variant page is not the story root', async () => {
+    const variantData = {
+      visibility: 0.6,
+      moderationRatingCount: 1,
+      moderatorReputationSum: 1,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          path: 'stories/story-1/pages/page-2',
+          parent: {
+            parent: {
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({
+                  rootPage: { path: 'stories/story-1/pages/page-1' },
+                }),
+              }),
+            },
+          },
+        },
+      },
+    };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 1 },
+    });
+    const renderContents = jest.fn().mockResolvedValue(undefined);
+    const handler = createUpdateVariantVisibilityHandler({
+      db,
+      renderContents,
+    });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'stories/story-1/pages/page-2/variants/root',
+        isApproved: false,
+      })
+    );
+
+    expect(renderContents).not.toHaveBeenCalled();
+  });
+
+  it('skips republishing when no root page reference exists', async () => {
+    const variantData = {
+      visibility: 0.6,
+      moderationRatingCount: 1,
+      moderatorReputationSum: 1,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          path: 'stories/story-1/pages/page-1',
+          parent: {
+            parent: {
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({}),
+              }),
+            },
+          },
+        },
+      },
+    };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 1 },
+    });
+    const renderContents = jest.fn().mockResolvedValue(undefined);
+    const handler = createUpdateVariantVisibilityHandler({
+      db,
+      renderContents,
+    });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'stories/story-1/pages/page-1/variants/root',
+        isApproved: false,
+      })
+    );
+
+    expect(renderContents).not.toHaveBeenCalled();
+  });
+
   it('falls back to a default weight when moderator reputation is missing', async () => {
     const variantData = {
       visibility: 0.5,
@@ -378,6 +573,75 @@ describe('createUpdateVariantVisibilityHandler', () => {
       visibility: 1,
       visibilityLockedBy: 'qcYSrXTaj1MZUoFsAloBwT86GNM2',
     });
+  });
+
+  it('keeps locked visibility when computing the next state', async () => {
+    const variantData = {
+      visibility: 0.25,
+      moderationRatingCount: 2,
+      moderatorReputationSum: 2,
+      visibilityLockedBy: ADMIN_UID,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          path: 'stories/story-1/pages/page-1',
+          parent: {
+            parent: {
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({
+                  rootPage: { path: 'stories/story-1/pages/page-1' },
+                }),
+              }),
+            },
+          },
+        },
+      },
+    };
+    const db = createDb(variantRef, {
+      [ADMIN_UID]: { moderatorReputation: 1 },
+    });
+    const renderContents = jest.fn().mockResolvedValue(undefined);
+    const handler = createUpdateVariantVisibilityHandler({
+      db,
+      renderContents,
+    });
+
+    await handler(
+      createSnapshot({
+        moderatorId: ADMIN_UID,
+        variantId: 'stories/story-1/pages/page-1/variants/root',
+        isApproved: true,
+      })
+    );
+
+    expect(renderContents).not.toHaveBeenCalled();
+    expect(variantRef.update).toHaveBeenNthCalledWith(2, {
+      visibility: 1,
+      visibilityLockedBy: ADMIN_UID,
+    });
+  });
+
+  it('returns the existing visibility when the variant is admin locked', () => {
+    expect(
+      calculateNextVisibility(
+        {
+          visibility: 0.25,
+          moderationRatingCount: 2,
+          moderatorReputationSum: 2,
+          visibilityLockedBy: ADMIN_UID,
+        },
+        true,
+        1
+      )
+    ).toBe(0.25);
   });
 
   it('preserves locked visibility for later non-admin ratings', async () => {

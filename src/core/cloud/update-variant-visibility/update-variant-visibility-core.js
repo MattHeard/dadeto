@@ -387,14 +387,17 @@ function resolveVariantRef(db, variantId) {
 
 /**
  * Build the handler that updates variant visibility.
- * @param {{ db: import('firebase-admin/firestore').Firestore }} options Collaborators required by the handler.
+ * @param {{
+ *   db: import('firebase-admin/firestore').Firestore,
+ *   renderContents?: (context?: object) => Promise<unknown>
+ * }} options Collaborators required by the handler.
  * @returns {(snap: import('firebase-admin/firestore').DocumentSnapshot) => Promise<null>} Firestore trigger handler.
  */
-export function createUpdateVariantVisibilityHandler({ db }) {
+export function createUpdateVariantVisibilityHandler({ db, renderContents }) {
   assertDb(db);
 
   return async function handleUpdateVariantVisibility(snapshot) {
-    return executeVariantUpdate(db, snapshot);
+    return executeVariantUpdate(db, snapshot, renderContents);
   };
 }
 
@@ -420,24 +423,26 @@ export function createUpdateVariantVisibilityHandle(
  * Execute the variant update logic when a valid payload exists.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Trigger snapshot.
+ * @param {(context?: object) => Promise<unknown> | undefined} [renderContents]
  * @returns {Promise<null>} Resolves with null when complete.
  */
-async function executeVariantUpdate(db, snapshot) {
+async function executeVariantUpdate(db, snapshot, renderContents) {
   const payload = getVariantUpdatePayloadFromSnapshot(snapshot);
   if (!payload) {
     return null;
   }
 
-  return applyVariantUpdate(db, payload);
+  return applyVariantUpdate(db, payload, renderContents);
 }
 
 /**
  * Apply the visibility update using the validated payload.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  * @param {{ variantId: string; isApproved: boolean; moderatorId?: string }} payload Validated inputs.
+ * @param {(context?: object) => Promise<unknown> | undefined} [renderContents]
  * @returns {Promise<null>} Resolves after the update runs.
  */
-async function applyVariantUpdate(db, payload) {
+async function applyVariantUpdate(db, payload, renderContents) {
   const variantRef = resolveVariantRef(db, payload.variantId);
   if (!variantRef) {
     return null;
@@ -448,9 +453,20 @@ async function applyVariantUpdate(db, payload) {
     db,
     payload.moderatorId
   );
+  const variantData = getValidVariantSnapshotData(variantSnap);
+  const pageRef = variantRef.parent?.parent ?? null;
+  const storyRef = pageRef?.parent?.parent ?? null;
+  const storySnap = storyRef ? await storyRef.get() : null;
+  const rootPageRef = storySnap?.data?.()?.rootPage ?? null;
+  const wasVisible = hasVisibleState(variantData, 0.5);
   await processVariantUpdate(
     variantSnap,
     variantRef,
+    payload.isApproved,
+    moderatorReputation
+  );
+  const nextVisibility = calculateNextVisibility(
+    variantData,
     payload.isApproved,
     moderatorReputation
   );
@@ -460,7 +476,46 @@ async function applyVariantUpdate(db, payload) {
       visibilityLockedBy: ADMIN_UID,
     });
   }
+  if (
+    renderContents &&
+    shouldRepublishContents(pageRef, rootPageRef, wasVisible, nextVisibility)
+  ) {
+    await renderContents();
+  }
   return null;
+}
+
+// c8 ignore next
+export function calculateNextVisibility(
+  variantData,
+  isApproved,
+  moderatorReputation
+) {
+  const newStats = calculateNewStats(
+    variantData ?? {},
+    getNewRating(isApproved),
+    moderatorReputation
+  );
+  /* c8 ignore next */
+  if (isVisibilityLockedByAdmin(variantData ?? {})) {
+    /* c8 ignore next */
+    return getSafeNumber(variantData ?? {}, 'visibility');
+  }
+  return newStats.visibility;
+}
+
+function hasVisibleState(variantData, threshold) {
+  return getSafeNumber(variantData ?? {}, 'visibility') >= threshold;
+}
+
+function shouldRepublishContents(pageRef, rootPageRef, wasVisible, nextVisibility) {
+  if (!pageRef || !rootPageRef) {
+    return false;
+  }
+  if (pageRef.path !== rootPageRef.path) {
+    return false;
+  }
+  return (wasVisible && nextVisibility < 0.5) || (!wasVisible && nextVisibility >= 0.5);
 }
 
 /**

@@ -105,6 +105,11 @@ describe('createFetchStoryInfo', () => {
       data: () => ({ number: 7 }),
     };
     const rootPageRef = {
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [{ data: () => ({ visibility: 1 }) }],
+        }),
+      })),
       get: jest.fn().mockResolvedValue(rootPageSnap),
     };
     const storySnap = {
@@ -155,6 +160,11 @@ describe('createFetchStoryInfo', () => {
       data: () => ({}),
     };
     const rootPageRef = {
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [{ data: () => ({ visibility: 1 }) }],
+        }),
+      })),
       get: jest.fn().mockResolvedValue(rootPageSnap),
     };
     const storySnap = {
@@ -172,6 +182,33 @@ describe('createFetchStoryInfo', () => {
       title: '',
       pageNumber: null,
     });
+  });
+
+  it('skips stories whose root page has only hidden variants', async () => {
+    const rootPageSnap = {
+      exists: true,
+      data: () => ({ number: 9 }),
+    };
+    const rootPageRef = {
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [{ data: () => ({ visibility: 0 }) }],
+        }),
+      })),
+      get: jest.fn().mockResolvedValue(rootPageSnap),
+    };
+    const storySnap = {
+      exists: true,
+      data: () => ({ title: 'Hidden', rootPage: rootPageRef }),
+    };
+    const db = {
+      collection: jest.fn(() => ({
+        doc: () => ({ get: jest.fn().mockResolvedValue(storySnap) }),
+      })),
+    };
+
+    const fetchStoryInfo = createFetchStoryInfo(db);
+    await expect(fetchStoryInfo('hidden')).resolves.toBeNull();
   });
 });
 
