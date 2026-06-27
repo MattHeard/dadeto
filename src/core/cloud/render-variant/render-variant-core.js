@@ -64,6 +64,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  *   bucket: StorageBucketLike;
  *   consoleError?: ConsoleError;
  *   visibilityThreshold?: number;
+ *   rewriteTargetPageNumbers?: number[];
  * }} ResolveRenderPlanDeps
  * @typedef {{
  *   snap: VariantSnapshot;
@@ -72,6 +73,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  *   bucket: StorageBucketLike;
  *   consoleError?: ConsoleError;
  *   visibilityThreshold?: number;
+ *   rewriteTargetPageNumbers?: number[];
  * }} BuildRenderPlanDeps
  * @typedef {{
  *   options: OptionMetadata[];
@@ -80,6 +82,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  *   authorUrl?: string;
  *   parentUrl?: string;
  *   firstPageUrl?: string;
+ *   rewriteTargetPageNumbers?: number[];
  * }} RenderMetadata
  * @typedef {RenderMetadata & { page: PageDocument; variant: VariantDocument }} RenderOutputInput
  * @typedef {{
@@ -89,11 +92,21 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  *   html: string;
  *   filePath: string;
  *   openVariant: boolean;
+ *   reverseLinks: ReverseLinkRecord[];
  * }} RenderOutput
+ * @typedef {{
+ *   sourcePageNumber: number;
+ *   sourceVariantName: string;
+ *   sourceOptionPosition: number;
+ *   sourceFilePath: string;
+ *   targetPageNumber: number;
+ *   targetVariantName?: string;
+ * }} ReverseLinkRecord
  * @typedef {{ params?: Record<string, string> }} RenderContext
+ * @typedef {{ params?: Record<string, string>, rewriteTargetPageNumbers?: number[] }} RewriteRenderContext
  * @typedef {RenderOutput & {
  *   snap: VariantSnapshot;
- *   context?: RenderContext;
+ *   context?: RewriteRenderContext;
  *   bucket: StorageBucketLike;
  *   invalidatePaths: (paths: string[]) => Promise<void>;
  *   db: FirestoreLike;
@@ -117,6 +130,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  *   page: PageDocument;
  *   consoleError?: ConsoleError;
  *   visibilityThreshold?: number;
+ *   rewriteTargetPageNumbers?: number[];
  *   variant?: VariantDocument;
  * }} GatherMetadataDeps
  */
@@ -246,9 +260,9 @@ function renderInlineMarkdown(text) {
  * @param {VariantOption} option - Option metadata from Firestore.
  * @returns {string} HTML list item for the option.
  */
-function buildOptionItem(pageNumber, variantName, option) {
+function buildOptionItem(pageNumber, variantName, option, rewriteContext) {
   const slug = buildOptionSlug(pageNumber, variantName, option.position);
-  const href = resolveOptionHref(slug, option);
+  const href = resolveOptionHref(slug, option, rewriteContext);
   const optionHtml = renderInlineMarkdown(option.content);
   const baseAttrs = buildBaseAttrs(slug, href);
   const variantAttrs = buildVariantAttrs(
@@ -276,9 +290,9 @@ function buildBaseAttrs(slug, href) {
  * @param {VariantOption[]} options - List of variant navigation options.
  * @returns {string} Joined HTML list of options.
  */
-function buildOptionsHtml(pageNumber, variantName, options) {
+function buildOptionsHtml(pageNumber, variantName, options, rewriteContext) {
   return options
-    .map(option => buildOptionItem(pageNumber, variantName, option))
+    .map(option => buildOptionItem(pageNumber, variantName, option, rewriteContext))
     .join('');
 }
 
@@ -288,8 +302,13 @@ function buildOptionsHtml(pageNumber, variantName, options) {
  * @returns {string} All option list items.
  */
 function buildOptionsItems(resolvedParams) {
-  const { pageNumber, variantName, options } = resolvedParams;
-  return buildOptionsHtml(pageNumber, variantName, options);
+  const { pageNumber, variantName, options, rewriteTargetPageNumbers } =
+    resolvedParams;
+  const rewriteContext =
+    rewriteTargetPageNumbers && rewriteTargetPageNumbers.length
+      ? { rewriteTargetPageNumbers }
+      : undefined;
+  return buildOptionsHtml(pageNumber, variantName, options, rewriteContext);
 }
 
 /**
@@ -298,8 +317,13 @@ function buildOptionsItems(resolvedParams) {
  * @param {{ targetPageNumber?: number, targetVariantName?: string }} option - Option metadata.
  * @returns {string} Final href for the option link.
  */
-function resolveOptionHref(slug, option) {
+function resolveOptionHref(slug, option, rewriteContext = {}) {
   if (option.targetPageNumber !== undefined) {
+    if (
+      rewriteContext.rewriteTargetPageNumbers?.includes(option.targetPageNumber)
+    ) {
+      return `../new-page.html?page=${option.targetPageNumber}`;
+    }
     return resolveTargetVariantHref(
       option.targetVariantName,
       option.targetPageNumber
@@ -658,6 +682,7 @@ const BUILD_HTML_BASE_DEFAULTS = {
  *   parentUrl?: string,
  *   firstPageUrl?: string,
  *   showTitleHeading?: boolean,
+ *   rewriteTargetPageNumbers?: number[],
  * }} buildHtmlInput - Rendering parameters provided either positionally or via an object.
  * @returns {string} Rendered HTML for the variant page.
  */
@@ -2416,6 +2441,7 @@ function validateDependencies(dependencies) {
  * @property {any} bucket Bucket.
  * @property {(message?: unknown, ...optionalParams: unknown[]) => void} [consoleError] Error logger.
  * @property {number} [visibilityThreshold] Visibility threshold.
+ * @property {number[]} [rewriteTargetPageNumbers] Targets to rewrite to the writer form.
  * @property {(paths: string[]) => Promise<void>} invalidatePaths Invalidate paths.
  */
 
@@ -2466,6 +2492,7 @@ function createRenderVariantHandler({
       bucket,
       consoleError,
       visibilityThreshold,
+      rewriteTargetPageNumbers: context?.rewriteTargetPageNumbers,
     });
 
     if (!renderPlan) {
@@ -2813,13 +2840,72 @@ function buildRenderOutput(data) {
     parentUrl,
     firstPageUrl,
     showTitleHeading: !page.incomingOption,
+    rewriteTargetPageNumbers: data.rewriteTargetPageNumbers,
   });
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(
     (/** @type {any} */ option) => option.targetPageNumber === undefined
   );
+  const reverseLinks = buildReverseLinkRecords({
+    page,
+    variant,
+    options,
+    filePath,
+  });
 
-  return { variant, page, parentUrl, html, filePath, openVariant };
+  return {
+    variant,
+    page,
+    parentUrl,
+    html,
+    filePath,
+    openVariant,
+    reverseLinks,
+  };
+}
+
+/**
+ * Build durable reverse-link records for the current source variant.
+ * @param {{
+ *   page: PageDocument;
+ *   variant: VariantDocument;
+ *   options: OptionMetadata[];
+ *   filePath: string;
+ * }} input Source variant render data.
+ * @returns {ReverseLinkRecord[]} Reverse-link records keyed by destination page.
+ */
+export function buildReverseLinkRecords({ page, variant, options, filePath }) {
+  return options
+    .filter(option => option.targetPageNumber !== undefined)
+    .map(option => ({
+      sourcePageNumber: page.number,
+      sourceVariantName: variant.name,
+      sourceOptionPosition: option.position,
+      sourceFilePath: filePath,
+      targetPageNumber: /** @type {number} */ (option.targetPageNumber),
+      targetVariantName: option.targetVariantName,
+    }));
+}
+
+/**
+ * Decide whether the update hid a previously visible variant.
+ * @param {FirestoreChange} change Variant change.
+ * @param {Record<string, any>} data New variant data.
+ * @param {number} visibilityThreshold Threshold value.
+ * @returns {boolean} True when the variant moved from visible to hidden.
+ */
+export function didHideLastVisibleVariant(change, data, visibilityThreshold) {
+  if (!(/** @type {any} */ (change.before).exists)) {
+    return false;
+  }
+
+  const beforeVisibility = /** @type {any} */ (change.before).data().visibility;
+  const afterVisibility = data.visibility;
+
+  return (
+    beforeVisibility >= visibilityThreshold &&
+    afterVisibility < visibilityThreshold
+  );
 }
 
 /**
@@ -2877,6 +2963,7 @@ async function buildRenderPlan({
   bucket,
   consoleError,
   visibilityThreshold,
+  rewriteTargetPageNumbers,
 }) {
   const { pageSnap, page } = pageData;
   const variant = /** @type {VariantDocument} */ (snap.data());
@@ -2889,9 +2976,15 @@ async function buildRenderPlan({
     consoleError,
     visibilityThreshold,
     variant,
+    rewriteTargetPageNumbers,
   });
 
-  return buildRenderOutput({ page, variant, ...metadata });
+  return buildRenderOutput({
+    page,
+    variant,
+    rewriteTargetPageNumbers,
+    ...metadata,
+  });
 }
 
 /**
@@ -3032,8 +3125,10 @@ async function persistRenderPlan({
   html,
   filePath,
   openVariant,
+  reverseLinks,
 }) {
   await saveVariantHtml({ bucket, filePath, html, openVariant });
+  await saveReverseLinkRecords({ snap, db, reverseLinks });
   const altsPath = await saveAltsHtml({ snap, db, bucket, page });
 
   const pendingName = resolvePendingName(variant, context);
@@ -3041,6 +3136,43 @@ async function persistRenderPlan({
 
   const paths = buildInvalidationPaths(altsPath, filePath, parentUrl);
   await invalidatePaths(paths);
+}
+
+/**
+ * Persist reverse-link records for a rendered source variant.
+ * @param {{
+ *   snap: VariantSnapshot;
+ *   db: FirestoreLike;
+ *   reverseLinks: ReverseLinkRecord[];
+ * }} options Reverse-link persistence options.
+ * @returns {Promise<void>} Void promise.
+ */
+async function saveReverseLinkRecords({ snap, db, reverseLinks }) {
+  if (!reverseLinks.length) {
+    return;
+  }
+
+  const variantRef = resolveTenantDocumentRef(snap, db);
+  if (!variantRef || typeof variantRef.path !== 'string' || !db?.doc) {
+    return;
+  }
+
+  await Promise.all(
+    reverseLinks.map(record =>
+      db.doc(`${variantRef.path}/reverse-links/${buildReverseLinkDocId(record)}`).set(
+        record
+      )
+    )
+  );
+}
+
+/**
+ * Build a stable document id for a reverse-link record.
+ * @param {ReverseLinkRecord} record Reverse-link record.
+ * @returns {string} Document id.
+ */
+function buildReverseLinkDocId(record) {
+  return `${record.targetPageNumber}-${record.sourceOptionPosition}`;
 }
 
 /**
@@ -3146,6 +3278,9 @@ export function createHandleVariantWrite({
     if (shouldRenderVariant(change, data, visibilityThreshold)) {
       return renderVariant(/** @type {any} */ (change.after), context);
     }
+    if (didHideLastVisibleVariant(change, data, visibilityThreshold)) {
+      await republishInboundPagesForHiddenOnlyVariant(change.after, db, renderVariant);
+    }
     return null;
   }
 
@@ -3170,6 +3305,56 @@ export function createHandleVariantWrite({
       afterVisibility,
       visibilityThreshold
     );
+  }
+
+  /**
+   * Decide whether the update hid a previously visible variant.
+   * @param {FirestoreChange} change Variant change.
+   * @param {Record<string, any>} data New variant data.
+   * @param {number} visibilityThreshold Threshold value.
+   * @returns {boolean} True when the variant moved from visible to hidden.
+   */
+  /**
+   * Republish inbound pages that point at a now-hidden-only page.
+   * @param {FirestoreChange['after']} after Variant snapshot after the update.
+   * @param {FirestoreLike} db Firestore client.
+   * @param {(snap: any, context?: object) => Promise<null>} renderVariantFn Renderer.
+   * @returns {Promise<void>} Promise.
+   */
+  async function republishInboundPagesForHiddenOnlyVariant(after, db, renderVariantFn) {
+    const pageRef = after?.ref?.parent?.parent;
+    if (!pageRef) {
+      return;
+    }
+
+    const variantsSnap = await pageRef.collection('variants').get();
+    const visibleVariants = variantsSnap.docs.filter(
+      doc => /** @type {any} */ (doc.data().visibility ?? 1) >= visibilityThreshold
+    );
+    if (visibleVariants.length > 0) {
+      return;
+    }
+
+    const pageSnap = await pageRef.get();
+    const pageNumber = /** @type {any} */ (pageSnap.data() || {}).number;
+    const inboundSnap = await db
+      .collectionGroup('reverse-links')
+      .where('targetPageNumber', '==', pageNumber)
+      .get();
+
+    const sourceFilePaths = inboundSnap.docs
+      .map(doc => doc.data().sourceFilePath)
+      .filter(path => typeof path === 'string' && path.length > 0);
+
+    for (const sourceFilePath of sourceFilePaths) {
+      const sourceSnap = await db.doc(sourceFilePath).get();
+      if (!sourceSnap.exists) {
+        continue;
+      }
+      await renderVariantFn(sourceSnap, {
+        rewriteTargetPageNumbers: [pageNumber],
+      });
+    }
   }
 }
 

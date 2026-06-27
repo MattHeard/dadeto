@@ -21,6 +21,8 @@ import {
   extractStoryRef,
   buildRootUrl,
   buildAltsHtml,
+  buildReverseLinkRecords,
+  didHideLastVisibleVariant,
 } from '../../../../src/core/cloud/render-variant/render-variant-core.js';
 
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -862,6 +864,51 @@ describe('buildRootUrl', () => {
   });
 });
 
+describe('buildReverseLinkRecords', () => {
+  it('records cross-page option targets for later republishing', () => {
+    const records = buildReverseLinkRecords({
+      page: { number: 12 },
+      variant: { name: 'b', content: 'Body' },
+      filePath: 'p/12b.html',
+      options: [
+        { content: 'Stay local', position: 0 },
+        {
+          content: 'Jump',
+          position: 1,
+          targetPageNumber: 27,
+          targetVariantName: 'a',
+        },
+      ],
+    });
+
+    expect(records).toEqual([
+      {
+        sourcePageNumber: 12,
+        sourceVariantName: 'b',
+        sourceOptionPosition: 1,
+        sourceFilePath: 'p/12b.html',
+        targetPageNumber: 27,
+        targetVariantName: 'a',
+      },
+    ]);
+  });
+});
+
+describe('didHideLastVisibleVariant', () => {
+  it('returns false when the previous snapshot did not exist', () => {
+    expect(
+      didHideLastVisibleVariant(
+        {
+          before: { exists: false, data: () => ({ visibility: 0.7 }) },
+          after: { exists: true, data: () => ({ visibility: 0.3 }) },
+        },
+        { visibility: 0.3 },
+        0.5
+      )
+    ).toBe(false);
+  });
+});
+
 describe('extractStoryRef', () => {
   it('returns null when the page snapshot lacks a story reference', () => {
     expect(RenderVariantCore.extractStoryRef(null)).toBeNull();
@@ -1383,6 +1430,11 @@ describe('createRenderVariant', () => {
         if (path === variantPath) {
           return variantRef;
         }
+        if (path === 'stories/story-1/pages/5/variants/a/reverse-links/7-2') {
+          return {
+            set: jest.fn().mockResolvedValue(undefined),
+          };
+        }
         if (path === 'authors/author-123') {
           return authorRef;
         }
@@ -1457,6 +1509,9 @@ describe('createRenderVariant', () => {
     expect(altsFile.save).toHaveBeenCalledWith(expect.any(String), {
       contentType: 'text/html',
     });
+    expect(db.doc).toHaveBeenCalledWith(
+      'stories/story-1/pages/5/variants/a/reverse-links/7-2'
+    );
     expect(pendingFile.save).toHaveBeenCalledWith(
       JSON.stringify({ path: 'p/5a.html' }),
       expect.objectContaining({ metadata: { cacheControl: 'no-store' } })
@@ -2729,6 +2784,229 @@ describe('createHandleVariantWrite', () => {
     await expect(
       handler({ before: { exists: true }, after: { exists: false } }, {})
     ).resolves.toBeNull();
+    expect(renderVariant).not.toHaveBeenCalled();
+  });
+
+  it('republishes inbound pages with rewrite targets when a page loses its last visible variant', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const getDeleteSentinel = jest.fn(() => 'sentinel');
+    const sourceSnap = {
+      exists: true,
+      data: () => ({
+        name: 'a',
+        content: 'Source',
+      }),
+      ref: { path: 'stories/story-1/pages/8/variants/a' },
+    };
+    const pageRef = {
+      get: jest.fn().mockResolvedValue({ data: () => ({ number: 9 }) }),
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [{ data: () => ({ visibility: 0 }) }],
+        }),
+      })),
+    };
+    const variantRef = { parent: { parent: pageRef } };
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'stories/story-1/pages/8/variants/a') {
+          return {
+            get: jest.fn().mockResolvedValue(sourceSnap),
+          };
+        }
+        return { path, update: jest.fn() };
+      }),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue({
+            docs: [
+              {
+                data: () => ({
+                  sourceFilePath: 'stories/story-1/pages/8/variants/a',
+                }),
+              },
+            ],
+          }),
+        })),
+      })),
+    };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel,
+      db,
+      visibilityThreshold: 0.5,
+    });
+
+    await handler(
+      {
+        before: { exists: true, data: () => ({ visibility: 0.7 }) },
+        after: {
+          exists: true,
+          data: () => ({ visibility: 0.3 }),
+          ref: variantRef,
+        },
+      },
+      {}
+    );
+
+    expect(renderVariant).toHaveBeenCalledWith(sourceSnap, {
+      rewriteTargetPageNumbers: [9],
+    });
+  });
+
+  it('skips republishing when the previous snapshot did not exist', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const db = { doc: jest.fn(path => ({ path, update: jest.fn() })) };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => null,
+      db,
+      visibilityThreshold: 0.5,
+    });
+
+    await handler(
+      {
+        before: { exists: false, data: () => ({ visibility: 0.8 }) },
+        after: {
+          exists: true,
+          data: () => ({ visibility: 0.2 }),
+          ref: { parent: { parent: { collection: jest.fn() } } },
+        },
+      },
+      {}
+    );
+
+    expect(renderVariant).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips republishing when visible variants still remain', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const pageRef = {
+      get: jest.fn(),
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [
+            { data: () => ({ visibility: 0.6 }) },
+            { data: () => ({}) },
+          ],
+        }),
+      })),
+    };
+    const db = { doc: jest.fn(path => ({ path, update: jest.fn() })) };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => null,
+      db,
+      visibilityThreshold: 0.5,
+    });
+
+    await handler(
+      {
+        before: { exists: true, data: () => ({ visibility: 0.8 }) },
+        after: {
+          exists: true,
+          data: () => ({ visibility: 0.2 }),
+          ref: { parent: { parent: pageRef } },
+        },
+      },
+      {}
+    );
+
+    expect(renderVariant).not.toHaveBeenCalled();
+  });
+
+  it('skips republishing when the page snapshot has no data', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const pageRef = {
+      get: jest.fn().mockResolvedValue({ data: () => undefined }),
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [{ data: () => ({ visibility: 0 }) }],
+        }),
+      })),
+    };
+    const db = {
+      doc: jest.fn(path => ({ path, get: jest.fn().mockResolvedValue({ exists: false }) })),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue({ docs: [] }),
+        })),
+      })),
+    };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => null,
+      db,
+      visibilityThreshold: 0.5,
+    });
+
+    await handler(
+      {
+        before: { exists: true, data: () => ({ visibility: 0.8 }) },
+        after: {
+          exists: true,
+          data: () => ({ visibility: 0.2 }),
+          ref: { parent: { parent: pageRef } },
+        },
+      },
+      {}
+    );
+
+    expect(renderVariant).not.toHaveBeenCalled();
+  });
+
+  it('skips republishing when an inbound source variant no longer exists', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const pageRef = {
+      get: jest.fn().mockResolvedValue({ data: () => ({ number: 11 }) }),
+      collection: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({
+          docs: [{ data: () => ({ visibility: 0 }) }],
+        }),
+      })),
+    };
+    const db = {
+      doc: jest.fn(path => {
+        if (path === 'stories/story-1/pages/8/variants/a') {
+          return {
+            get: jest.fn().mockResolvedValue({ exists: false }),
+          };
+        }
+        return { path, update: jest.fn() };
+      }),
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          get: jest.fn().mockResolvedValue({
+            docs: [
+              {
+                data: () => ({
+                  sourceFilePath: 'stories/story-1/pages/8/variants/a',
+                }),
+              },
+            ],
+          }),
+        })),
+      })),
+    };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => null,
+      db,
+      visibilityThreshold: 0.5,
+    });
+
+    await handler(
+      {
+        before: { exists: true, data: () => ({ visibility: 0.8 }) },
+        after: {
+          exists: true,
+          data: () => ({ visibility: 0.2 }),
+          ref: { parent: { parent: pageRef } },
+        },
+      },
+      {}
+    );
+
     expect(renderVariant).not.toHaveBeenCalled();
   });
 

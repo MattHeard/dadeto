@@ -97,6 +97,62 @@ describe('buildHtml', () => {
     );
   });
 
+  test('rewrites target page links to the writer form when requested', () => {
+    const html = buildHtml(
+      makeInput({
+        pageNumber: 5,
+        content: 'content',
+        rewriteTargetPageNumbers: [42],
+        options: [
+          {
+            content: 'Go right',
+            position: 1,
+            targetPageNumber: 42,
+            targetVariantName: 'b',
+          },
+        ],
+      })
+    );
+    expect(html).toContain(
+      '<li><a class="variant-link" data-link-id="5-a-1" href="../new-page.html?page=42">Go right</a></li>'
+    );
+  });
+
+  test('keeps unrelated target page links pointed at the published variant', () => {
+    const html = buildHtml(
+      makeInput({
+        pageNumber: 5,
+        content: 'content',
+        rewriteTargetPageNumbers: [99],
+        options: [
+          {
+            content: 'Go right',
+            position: 1,
+            targetPageNumber: 42,
+            targetVariantName: 'b',
+          },
+        ],
+      })
+    );
+    expect(html).toContain(
+      '<li><a class="variant-link" data-link-id="5-a-1" href="/p/42b.html">Go right</a></li>'
+    );
+  });
+
+  test('still uses the slug form for options that do not target another page', () => {
+    const html = buildHtml(
+      makeInput({
+        pageNumber: 5,
+        content: 'content',
+        rewriteTargetPageNumbers: [42],
+        options: [{ content: 'Go left', position: 0 }],
+      })
+    );
+    expect(html).toContain(
+      '<li><a class="variant-link" data-link-id="5-a-0" href="../new-page.html?option=5-a-0">Go left</a></li>'
+    );
+  });
+
   test('includes data-variants when multiple target variants provided', () => {
     const html = buildHtml(
       makeInput({

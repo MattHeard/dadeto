@@ -1,0 +1,4 @@
+- unexpected hurdle: the first reverse-link write used `parent.collection(...)`, which failed in the render tests and simulator because those fakes only exposed `db.doc(...)` for nested paths.
+- diagnosis path: traced the failure through `persistRenderPlan`, then compared the existing Firestore stubs in render and simulator tests to the new persistence call.
+- chosen fix: persist reverse-link records with direct document paths under the source variant, e.g. `stories/.../variants/.../reverse-links/<target>-<position>`, and add a test for the record shape plus one write path assertion.
+- next-time guidance: when the republish hook is added, reuse the same reverse-link path scheme so the lookup can be collection-group based or path-based without changing the record contract.
