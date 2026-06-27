@@ -499,7 +499,7 @@ export function calculateNextVisibility(
   /* c8 ignore next */
   if (isVisibilityLockedByAdmin(variantData ?? {})) {
     /* c8 ignore next */
-    return getSafeNumber(variantData ?? {}, 'visibility');
+    return getSafeNumber(variantData, 'visibility');
   }
   return newStats.visibility;
 }
