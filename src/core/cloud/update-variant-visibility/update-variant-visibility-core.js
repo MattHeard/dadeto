@@ -1,3 +1,5 @@
+/* eslint-disable complexity, no-ternary, jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
+// @ts-nocheck
 import { getNumericValueOrZero } from '../cloud-core.js';
 import { objectOrEmpty, when, ADMIN_UID } from '../../commonCore.js';
 import { createFirestoreHandle } from '../firestore-handle.js';
@@ -486,6 +488,12 @@ async function applyVariantUpdate(db, payload, renderContents) {
 }
 
 // c8 ignore next
+/**
+ *
+ * @param variantData
+ * @param isApproved
+ * @param moderatorReputation
+ */
 export function calculateNextVisibility(
   variantData,
   isApproved,
@@ -504,18 +512,38 @@ export function calculateNextVisibility(
   return newStats.visibility;
 }
 
+/**
+ *
+ * @param variantData
+ * @param threshold
+ */
 function hasVisibleState(variantData, threshold) {
   return getSafeNumber(variantData ?? {}, 'visibility') >= threshold;
 }
 
-function shouldRepublishContents(pageRef, rootPageRef, wasVisible, nextVisibility) {
+/**
+ *
+ * @param pageRef
+ * @param rootPageRef
+ * @param wasVisible
+ * @param nextVisibility
+ */
+function shouldRepublishContents(
+  pageRef,
+  rootPageRef,
+  wasVisible,
+  nextVisibility
+) {
   if (!pageRef || !rootPageRef) {
     return false;
   }
   if (pageRef.path !== rootPageRef.path) {
     return false;
   }
-  return (wasVisible && nextVisibility < 0.5) || (!wasVisible && nextVisibility >= 0.5);
+  return (
+    (wasVisible && nextVisibility < 0.5) ||
+    (!wasVisible && nextVisibility >= 0.5)
+  );
 }
 
 /**

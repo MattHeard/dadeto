@@ -2885,10 +2885,7 @@ describe('createHandleVariantWrite', () => {
       get: jest.fn(),
       collection: jest.fn(() => ({
         get: jest.fn().mockResolvedValue({
-          docs: [
-            { data: () => ({ visibility: 0.6 }) },
-            { data: () => ({}) },
-          ],
+          docs: [{ data: () => ({ visibility: 0.6 }) }, { data: () => ({}) }],
         }),
       })),
     };
@@ -2926,7 +2923,10 @@ describe('createHandleVariantWrite', () => {
       })),
     };
     const db = {
-      doc: jest.fn(path => ({ path, get: jest.fn().mockResolvedValue({ exists: false }) })),
+      doc: jest.fn(path => ({
+        path,
+        get: jest.fn().mockResolvedValue({ exists: false }),
+      })),
       collectionGroup: jest.fn(() => ({
         where: jest.fn(() => ({
           get: jest.fn().mockResolvedValue({ docs: [] }),

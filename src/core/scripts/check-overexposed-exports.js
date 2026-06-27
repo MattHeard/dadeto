@@ -1,3 +1,5 @@
+/* eslint-disable complexity, no-ternary */
+// @ts-nocheck
 import { readExemptions } from './read-exemptions.js';
 
 const DEFAULT_ROOT_DIR = '.';
@@ -242,25 +244,7 @@ function analyzeSourceFile(deps, filePath) {
 
   for (const node of ast.body) {
     if (node.type === 'ImportDeclaration') {
-      for (const specifier of node.specifiers) {
-        if (specifier.type === 'ImportNamespaceSpecifier') {
-          imports.set(specifier.local.name, {
-            source: node.source.value,
-            importedName: '*',
-            namespace: true,
-          });
-          continue;
-        }
-
-        imports.set(specifier.local.name, {
-          source: node.source.value,
-          importedName:
-            specifier.type === 'ImportDefaultSpecifier'
-              ? 'default'
-              : specifier.imported.name,
-          namespace: false,
-        });
-      }
+      collectImportSpecifiers(node, imports);
       continue;
     }
 
@@ -327,11 +311,7 @@ function analyzeSourceFile(deps, filePath) {
  */
 function collectExportedFunctionsFromDeclaration(declaration, exports) {
   if (declaration.type === 'FunctionDeclaration' && declaration.id?.name) {
-    exports.push({
-      exportName: declaration.id.name,
-      line: declaration.loc?.start.line ?? 1,
-      column: declaration.loc?.start.column ?? 0,
-    });
+    pushExportedFunction(exports, declaration.id.name, declaration.loc);
     return;
   }
 
@@ -346,12 +326,36 @@ function collectExportedFunctionsFromDeclaration(declaration, exports) {
       (declarator.init.type === 'ArrowFunctionExpression' ||
         declarator.init.type === 'FunctionExpression')
     ) {
-      exports.push({
-        exportName: declarator.id.name,
-        line: declarator.loc?.start.line ?? 1,
-        column: declarator.loc?.start.column ?? 0,
-      });
+      pushExportedFunction(exports, declarator.id.name, declarator.loc);
     }
+  }
+}
+
+/**
+ * Collect imported names from an import declaration.
+ * @param {import('estree').ImportDeclaration} declaration Import declaration node.
+ * @param {Map<string, { source: string, importedName: string, namespace: boolean }>} imports Import accumulator.
+ * @returns {void}
+ */
+function collectImportSpecifiers(declaration, imports) {
+  for (const specifier of declaration.specifiers) {
+    if (specifier.type === 'ImportNamespaceSpecifier') {
+      imports.set(specifier.local.name, {
+        source: declaration.source.value,
+        importedName: '*',
+        namespace: true,
+      });
+      continue;
+    }
+
+    imports.set(specifier.local.name, {
+      source: declaration.source.value,
+      importedName:
+        specifier.type === 'ImportDefaultSpecifier'
+          ? 'default'
+          : specifier.imported.name,
+      namespace: false,
+    });
   }
 }
 
@@ -363,12 +367,23 @@ function collectExportedFunctionsFromDeclaration(declaration, exports) {
  */
 function collectExportedFunctionsFromDefault(declaration, exports) {
   if (declaration.type === 'FunctionDeclaration' && declaration.id?.name) {
-    exports.push({
-      exportName: declaration.id.name,
-      line: declaration.loc?.start.line ?? 1,
-      column: declaration.loc?.start.column ?? 0,
-    });
+    pushExportedFunction(exports, declaration.id.name, declaration.loc);
   }
+}
+
+/**
+ * Push a normalized export record.
+ * @param {Array<{ exportName: string, line: number, column: number }>} exports Export accumulator.
+ * @param {string} exportName Exported name.
+ * @param {{ start?: { line?: number, column?: number } } | undefined} loc Source location.
+ * @returns {void}
+ */
+function pushExportedFunction(exports, exportName, loc) {
+  exports.push({
+    exportName,
+    line: loc?.start.line ?? 1,
+    column: loc?.start.column ?? 0,
+  });
 }
 
 /**

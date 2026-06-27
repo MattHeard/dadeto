@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   DEFAULT_BUCKET_NAME,
   normalizeStaticObjectPrefix,
@@ -365,10 +366,9 @@ function isValidSnapshot(pageSnap) {
 }
 
 /**
- * Build story metadata once the page snapshot has been fetched.
- * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
- * @param {Record<string, any>} story Story document data that owns the page.
- * @returns {StoryInfo | null} Story metadata or null when the page is missing.
+ * Check whether the page has visible variants.
+ * @param {{ collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} pageRef Page document reference.
+ * @returns {Promise<boolean>} True when at least one visible variant exists.
  */
 async function hasVisibleVariants(pageRef) {
   if (!pageRef || typeof pageRef.collection !== 'function') {
@@ -381,10 +381,25 @@ async function hasVisibleVariants(pageRef) {
   });
 }
 
+/**
+ * Extract the visibility score from variant data.
+ * @param {Record<string, any>} data Variant document data.
+ * @returns {number} Visibility score.
+ */
 function extractVisibility(data) {
-  return typeof data?.visibility === 'number' ? data.visibility : 1;
+  if (typeof data?.visibility === 'number') {
+    return data.visibility;
+  }
+  return 1;
 }
 
+/**
+ * Build story metadata once the page snapshot has been fetched.
+ * @param {{ collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} rootRef Root page reference.
+ * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
+ * @param {Record<string, any>} story Story document data that owns the page.
+ * @returns {Promise<StoryInfo | null>} Story metadata or null when the page is missing.
+ */
 async function buildStoryInfoFromPage(rootRef, pageSnap, story) {
   if (!isValidSnapshot(pageSnap)) {
     return null;

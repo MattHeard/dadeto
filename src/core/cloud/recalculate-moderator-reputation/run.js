@@ -1,5 +1,3 @@
-import { ADMIN_UID } from '../../commonCore.js';
-
 /**
  * @typedef {object} RecalculateModeratorReputationDeps
  * @property {unknown} db Firestore database instance.
@@ -24,7 +22,7 @@ export function createRecalculateModeratorReputationJob({
   nowIso,
 }) {
   return async function recalculateModeratorReputationJob() {
-    const ratings = await fetchModerationRatings(db);
+    const ratings = await fetchModerationRatings();
     const reputations = calculateModeratorReputations(
       ratings,
       adminModeratorId

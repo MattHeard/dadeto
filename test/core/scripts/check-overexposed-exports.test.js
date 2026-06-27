@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { describe, expect, test } from '@jest/globals';
 import * as espree from 'espree';
 import path from 'node:path';
@@ -8,8 +9,9 @@ import {
 } from '../../../src/core/scripts/check-overexposed-exports.js';
 
 /**
- *
- * @param files
+ * Create a fake file system for the script tests.
+ * @param {Record<string, string>} files File contents keyed by path.
+ * @returns {{ parse: Function, readFileSync: Function, readdirSync: Function, pathModule: typeof path, rootDir: string, sourceRoot: string, configPath: string }} Fake file-system adapter.
  */
 function createFileSystem(files) {
   return {

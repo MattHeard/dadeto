@@ -135,12 +135,7 @@ function normalizeOptions(options = {}) {
  * @returns {Set<string>} Exempted file paths.
  */
 function readExemptionsFromFsModule(deps) {
-  return readExemptions({
-    readFileSync: deps.fsModule.readFileSync,
-    rootDir: deps.rootDir,
-    configPath: deps.configPath,
-    pathModule: deps.pathModule,
-  });
+  return loadExemptions(deps);
 }
 
 /**
@@ -160,12 +155,7 @@ function readExemptionsFromFsModule(deps) {
  * @returns {Array<{ filePath: string, name: string }>} Validation helper violations.
  */
 function findValidationViolations(deps) {
-  const exemptions = readExemptions({
-    readFileSync: deps.fsModule.readFileSync,
-    rootDir: deps.rootDir,
-    configPath: deps.configPath,
-    pathModule: deps.pathModule,
-  });
+  const exemptions = loadExemptions(deps);
   return listJsFiles(deps.rootDir, deps.sourceRoot, deps).flatMap(filePath => {
     if (BOUNDARY_FILE_PATTERN.test(filePath)) {
       return [];
@@ -180,6 +170,24 @@ function findValidationViolations(deps) {
       'utf8'
     );
     return extractValidationNames(source).map(name => ({ filePath, name }));
+  });
+}
+
+/**
+ * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
+ *   pathModule: { resolve: (...segments: string[]) => string },
+ *   rootDir: string,
+ *   configPath: string,
+ * }} deps Parse gate dependencies.
+ * @returns {Set<string>} Exempted file paths.
+ */
+function loadExemptions(deps) {
+  return readExemptions({
+    readFileSync: deps.fsModule.readFileSync,
+    rootDir: deps.rootDir,
+    configPath: deps.configPath,
+    pathModule: deps.pathModule,
   });
 }
 
