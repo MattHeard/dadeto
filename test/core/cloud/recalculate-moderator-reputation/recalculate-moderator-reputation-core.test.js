@@ -4,6 +4,7 @@ import {
   calculateModeratorReputations,
   calculateReputation,
   fetchModerationRatings,
+  recalculateModeratorReputationTestOnly as helpers,
   shortestPathDistances,
   writeModeratorReputations,
 } from '../../../../src/core/cloud/recalculate-moderator-reputation/recalculate-moderator-reputation-core.js';
@@ -36,6 +37,25 @@ describe('recalculate-moderator-reputation core', () => {
     ]);
 
     expect(graph.get('admin')?.get('mod-a')).toBeCloseTo(1 / 3);
+  });
+
+  it('returns null when two moderators share no rated pages', () => {
+    expect(
+      helpers.calculateModeratorEdgeWeight(
+        new Map([['page-1', true]]),
+        new Map([['page-2', true]])
+      )
+    ).toBeNull();
+  });
+
+  it('falls back to an empty ratings map when the moderator has none', () => {
+    const ratingsByModerator = new Map([
+      ['mod-a', new Map([['page-1', true]])],
+    ]);
+
+    expect(helpers.getRatingsOrEmpty(ratingsByModerator, 'missing')).toEqual(
+      new Map()
+    );
   });
 
   it('returns zero weight when two moderators agree on every shared page', () => {
@@ -90,8 +110,21 @@ describe('recalculate-moderator-reputation core', () => {
       )
     ).toEqual([
       {
+        moderatorId: 'admin',
+        reputation: 1,
+      },
+      {
         moderatorId: 'mod-a',
         reputation: 0,
+      },
+    ]);
+  });
+
+  it('includes the admin moderator even when there are no ratings', () => {
+    expect(calculateModeratorReputations([], 'admin')).toEqual([
+      {
+        moderatorId: 'admin',
+        reputation: 1,
       },
     ]);
   });
@@ -113,6 +146,16 @@ describe('recalculate-moderator-reputation core', () => {
     expect(distances.get('admin')).toBe(0);
     expect(distances.get('mod-a')).toBe(2);
     expect(distances.get('mod-b')).toBe(1);
+  });
+
+  it('keeps the lower of repeated graph edge weights', () => {
+    const graph = new Map();
+
+    helpers.connectGraphEdge(graph, 'admin', 'mod-a', 0.75);
+    helpers.connectGraphEdge(graph, 'admin', 'mod-a', 0.25);
+
+    expect(graph.get('admin')?.get('mod-a')).toBe(0.25);
+    expect(helpers.getLowerWeight(undefined, 0.5)).toBe(0.5);
   });
 
   it('reads moderation ratings from Firestore-like snapshots and writes cached reputations', async () => {

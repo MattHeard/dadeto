@@ -87,7 +87,7 @@ export function createCheckCoreParseHandle(options = {}) {
 
 export const checkCoreParseTestUtils = {
   normalizeOptions,
-  readExemptions,
+  readExemptions: readExemptionsFromFsModule,
   defaultPathModule: DEFAULT_PATH_MODULE,
 };
 
@@ -127,6 +127,24 @@ function normalizeOptions(options = {}) {
 
 /**
  * @param {{
+ *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
+ *   pathModule: { resolve: (...segments: string[]) => string },
+ *   rootDir: string,
+ *   configPath: string,
+ * }} deps Parse-gate filesystem dependencies.
+ * @returns {Set<string>} Exempted file paths.
+ */
+function readExemptionsFromFsModule(deps) {
+  return readExemptions({
+    readFileSync: deps.fsModule.readFileSync,
+    rootDir: deps.rootDir,
+    configPath: deps.configPath,
+    pathModule: deps.pathModule,
+  });
+}
+
+/**
+ * @param {{
  *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule: {
  *     join: (...segments: string[]) => string,
@@ -142,7 +160,12 @@ function normalizeOptions(options = {}) {
  * @returns {Array<{ filePath: string, name: string }>} Validation helper violations.
  */
 function findValidationViolations(deps) {
-  const exemptions = readExemptions(deps);
+  const exemptions = readExemptions({
+    readFileSync: deps.fsModule.readFileSync,
+    rootDir: deps.rootDir,
+    configPath: deps.configPath,
+    pathModule: deps.pathModule,
+  });
   return listJsFiles(deps.rootDir, deps.sourceRoot, deps).flatMap(filePath => {
     if (BOUNDARY_FILE_PATTERN.test(filePath)) {
       return [];

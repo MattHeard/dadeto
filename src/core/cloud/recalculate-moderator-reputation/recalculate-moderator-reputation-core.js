@@ -32,8 +32,8 @@ export function buildModeratorGraph(ratings) {
       const leftModeratorId = moderatorIds[leftIndex];
       const rightModeratorId = moderatorIds[rightIndex];
       const weight = calculateModeratorEdgeWeight(
-        ratingsByModerator.get(leftModeratorId) ?? new Map(),
-        ratingsByModerator.get(rightModeratorId) ?? new Map()
+        getRatingsOrEmpty(ratingsByModerator, leftModeratorId),
+        getRatingsOrEmpty(ratingsByModerator, rightModeratorId)
       );
 
       if (weight === null) {
@@ -57,8 +57,9 @@ export function buildModeratorGraph(ratings) {
 export function calculateModeratorReputations(ratings, adminModeratorId) {
   const graph = buildModeratorGraph(ratings);
   const distances = shortestPathDistances(graph, adminModeratorId);
+  const moderatorIds = new Set([adminModeratorId, ...graph.keys()]);
 
-  return Array.from(graph.keys())
+  return Array.from(moderatorIds)
     .map(moderatorId => {
       const distance = distances.get(moderatorId);
       let finiteDistance = Infinity;
@@ -188,13 +189,33 @@ function calculateModeratorEdgeWeight(leftRatings, rightRatings) {
 function connectGraphEdge(graph, sourceId, targetId, weight) {
   const neighbors = graph.get(sourceId) ?? new Map();
   const existingWeight = neighbors.get(targetId);
-  const nextWeight = Math.min(
-    existingWeight ?? Number.POSITIVE_INFINITY,
-    weight
-  );
+  const nextWeight = getLowerWeight(existingWeight, weight);
 
   neighbors.set(targetId, nextWeight);
   graph.set(sourceId, neighbors);
+}
+
+/**
+ * Resolve ratings for a moderator or fall back to an empty set.
+ * @param {Map<string, Map<string, boolean>>} ratingsByModerator Grouped ratings.
+ * @param {string} moderatorId Moderator identifier.
+ * @returns {Map<string, boolean>} Ratings map for the moderator or empty map.
+ */
+function getRatingsOrEmpty(ratingsByModerator, moderatorId) {
+  return ratingsByModerator.get(moderatorId) ?? new Map();
+}
+
+/**
+ * Choose the lower of an existing edge weight and a new candidate.
+ * @param {number | undefined} existingWeight Existing weight.
+ * @param {number} candidateWeight Candidate weight.
+ * @returns {number} Lower weight.
+ */
+function getLowerWeight(existingWeight, candidateWeight) {
+  return Math.min(
+    existingWeight ?? Number.POSITIVE_INFINITY,
+    candidateWeight
+  );
 }
 
 /**
@@ -259,3 +280,10 @@ function isModerationRatingRecord(candidate) {
     typeof candidate.isApproved === 'boolean',
   ].every(Boolean);
 }
+
+export const recalculateModeratorReputationTestOnly = {
+  calculateModeratorEdgeWeight,
+  connectGraphEdge,
+  getLowerWeight,
+  getRatingsOrEmpty,
+};

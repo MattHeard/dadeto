@@ -1,0 +1,4 @@
+Unexpected hurdle: the daily reputation recomputation job was wired, but the runner was dropping the `db` argument when fetching moderation ratings, and the new shared exemption helper pulled coverage down.
+Diagnosis path: traced the scheduler job through `src/cloud/recalculate-moderator-reputation/index.js` and `src/core/cloud/recalculate-moderator-reputation/run.js`, then used the coverage report to isolate the new branch gaps in `read-exemptions.js` and `recalculate-moderator-reputation-core.js`.
+Chosen fix: pass `db` through to `fetchModerationRatings`, always seed the admin moderator in the reputation cache, add focused tests for the new helper and graph branches, and keep the exemption helper shared across gates.
+Next-time guidance: when introducing a shared policy helper, add its coverage test immediately and check the runner path for missing dependency plumbing before validating the scheduled job.

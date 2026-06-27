@@ -24,7 +24,7 @@ export function createRecalculateModeratorReputationJob({
   nowIso,
 }) {
   return async function recalculateModeratorReputationJob() {
-    const ratings = await fetchModerationRatings();
+    const ratings = await fetchModerationRatings(db);
     const reputations = calculateModeratorReputations(
       ratings,
       adminModeratorId
