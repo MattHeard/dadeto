@@ -33,6 +33,7 @@
     "duplication": "node src/local/check-duplication.js",
     "entrypoint-pattern": "node src/local/check-build-entrypoint-pattern.js",
     "non-core-thin": "node src/local/check-non-core-thin-files.js",
+    "overexposed-exports": "node src/local/check-overexposed-exports.js",
     "start": "npx serve public",
     "start:symphony": "node src/local/symphony/server.js",
     "start:gcp-simulator": "node src/local/gcp-simulator/server.js",

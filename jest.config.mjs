@@ -32,6 +32,7 @@ const config = {
     '/node_modules/',
     '<rootDir>/src/core/local/gcp-simulator/server.js',
     '<rootDir>/src/local/gcp-simulator/server.js',
+    '<rootDir>/src/core/scripts/check-overexposed-exports.js',
   ],
   collectCoverageFrom: [
     'src/core/**/*.js',

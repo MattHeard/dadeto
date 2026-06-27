@@ -198,7 +198,7 @@ describe('runCheckSuite', () => {
         }
       );
 
-      expect(resolved.commands).toHaveLength(9);
+      expect(resolved.commands).toHaveLength(10);
       expect(resolved.failFast).toBe(false);
       expect(resolved.stdout).toBe(process.stdout);
       expect(resolved.stderr).toBe(process.stderr);

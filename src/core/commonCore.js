@@ -904,6 +904,11 @@ export const CHECK_COMMANDS = [
     args: ['run', 'entrypoint-pattern'],
   },
   { name: 'non-core-thin', command: 'npm', args: ['run', 'non-core-thin'] },
+  {
+    name: 'overexposed-exports',
+    command: 'npm',
+    args: ['run', 'overexposed-exports'],
+  },
   { name: 'tsdoc:check', command: 'npm', args: ['run', 'tsdoc:check'] },
   {
     name: 'audit',
