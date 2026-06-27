@@ -146,14 +146,16 @@ describe('assignModerationJobTestUtils', () => {
     const runGuards = jest.fn().mockResolvedValue({
       context: { userRecord: { uid: 'mod-1' } },
     });
-    const fetchVariantSnapshots = jest.fn().mockResolvedValue([
-      candidate('variants/1', 0.1),
-      candidate('variants/2', 0.2),
-      candidate('variants/3', 0.3),
-      candidate('variants/4', 0.4),
-      candidate('variants/5', 0.5),
-      candidate('variants/6', 0.6),
-    ]);
+    const fetchVariantSnapshots = jest
+      .fn()
+      .mockResolvedValue([
+        candidate('variants/1', 0.1),
+        candidate('variants/2', 0.2),
+        candidate('variants/3', 0.3),
+        candidate('variants/4', 0.4),
+        candidate('variants/5', 0.5),
+        candidate('variants/6', 0.6),
+      ]);
     const selectVariantDoc = jest.fn(snapshot => ({
       variantDoc: snapshot.variantDoc,
     }));
@@ -185,6 +187,12 @@ describe('assignModerationJobTestUtils', () => {
   });
 });
 
+/**
+ * Build a fake candidate snapshot for moderation assignment tests.
+ * @param {string} path Variant document path.
+ * @param {number} moderationUrgency Moderation urgency score.
+ * @returns {{ variantDoc: { ref: { path: string }, data: () => { moderationUrgency: number, pagePath: string } } }} Candidate snapshot.
+ */
 function candidate(path, moderationUrgency) {
   return {
     variantDoc: {
@@ -197,6 +205,12 @@ function candidate(path, moderationUrgency) {
   };
 }
 
+/**
+ * Build a fake Firestore document for branch coverage.
+ * @param {string} path Document path.
+ * @param {number} moderationUrgency Moderation urgency score.
+ * @returns {{ ref: { path: string }, data: () => { moderationUrgency: number, pagePath: string } }} Fake document.
+ */
 function fireStoreDoc(path, moderationUrgency) {
   return {
     ref: { path },

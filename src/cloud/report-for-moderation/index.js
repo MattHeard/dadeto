@@ -8,51 +8,17 @@ import {
   getFirestoreInstance,
   getEnvironmentVariables,
 } from './report-for-moderation-gcf.js';
-import {
-  createCorsOptions,
-  createHandleReportForModeration,
-  createReportForModerationHandler,
-} from './report-for-moderation-core.js';
-import { getAllowedOrigins } from './cors-config.js';
+import { runReportForModeration } from '../../core/cloud/report-for-moderation/run.js';
 
-const { ensureFirebaseApp } = createFirebaseAppManager(initializeApp);
-
-ensureFirebaseApp();
-
-const db = getFirestoreInstance();
-const moderationReportsCollection = db.collection('moderationReports');
-const reportForModerationHandler = createReportForModerationHandler({
-  addModerationReport: moderationReportsCollection.add.bind(
-    moderationReportsCollection
-  ),
-  hasModerationReport: async (reporterIdentity, variant) => {
-    const snapshot = await moderationReportsCollection
-      .where('reporterIdentity', '==', reporterIdentity)
-      .where('variant', '==', variant)
-      .limit(1)
-      .get();
-
-    return !snapshot.empty;
-  },
-  getServerTimestamp: FieldValue.serverTimestamp,
+const { handle, handleReportForModeration } = runReportForModeration({
+  functions,
+  express,
+  cors,
+  FieldValue,
+  createFirebaseAppManager,
+  getFirestoreInstance,
+  getEnvironmentVariables,
+  initializeApp,
 });
 
-const handleReportForModeration = createHandleReportForModeration(
-  reportForModerationHandler
-);
-
-const app = express();
-
-const environmentVariables = getEnvironmentVariables();
-const allowedOrigins = getAllowedOrigins(environmentVariables);
-const corsOptions = createCorsOptions({ allowedOrigins, methods: ['POST'] });
-
-app.use(cors(corsOptions));
-app.use(express.json());
-app.all('/', handleReportForModeration);
-
-export const handle = functions
-  .region('europe-west1')
-  .https.onRequest(app);
-
-export { handleReportForModeration };
+export { handle, handleReportForModeration };

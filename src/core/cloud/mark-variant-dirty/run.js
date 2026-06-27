@@ -51,7 +51,8 @@ export function runMarkVariantDirty(deps) {
   const corsOptions = createCorsOptions(handleCorsOrigin, ['POST']);
 
   app.use(deps.cors(corsOptions));
-  app.use(deps.express.json());
+  const jsonMiddleware = deps.express.json();
+  app.use(jsonMiddleware);
 
   const markVariantDirtyDeps = {
     db,

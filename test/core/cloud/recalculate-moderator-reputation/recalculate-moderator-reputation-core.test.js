@@ -85,7 +85,13 @@ describe('recalculate-moderator-reputation core', () => {
 
   it('skips already-visited moderators when the graph contains a cycle', () => {
     const graph = new Map([
-      ['admin', new Map([['mod-a', 5], ['mod-b', 1]])],
+      [
+        'admin',
+        new Map([
+          ['mod-a', 5],
+          ['mod-b', 1],
+        ]),
+      ],
       ['mod-a', new Map([['admin', 5]])],
       ['mod-b', new Map([['mod-a', 1]])],
     ]);

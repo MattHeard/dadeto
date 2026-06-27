@@ -21,7 +21,9 @@ export function buildModeratorGraph(ratings) {
   const graph = new Map();
 
   for (const rating of ratings) {
-    ensureGraphNode(graph, rating.moderatorId);
+    if (!graph.has(rating.moderatorId)) {
+      graph.set(rating.moderatorId, new Map());
+    }
   }
 
   for (const variantRatings of ratingsByVariant.values()) {
@@ -44,7 +46,10 @@ export function calculateModeratorReputations(ratings, adminModeratorId) {
   return Array.from(graph.keys())
     .map(moderatorId => {
       const distance = distances.get(moderatorId);
-      const finiteDistance = typeof distance === 'number' ? distance : Infinity;
+      let finiteDistance = Infinity;
+      if (typeof distance === 'number') {
+        finiteDistance = distance;
+      }
 
       return {
         moderatorId,
@@ -132,10 +137,17 @@ function groupRatingsByVariant(ratings) {
  */
 function connectVariantModerators(graph, ratings) {
   for (let leftIndex = 0; leftIndex < ratings.length; leftIndex += 1) {
-    for (let rightIndex = leftIndex + 1; rightIndex < ratings.length; rightIndex += 1) {
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < ratings.length;
+      rightIndex += 1
+    ) {
       const left = ratings[leftIndex];
       const right = ratings[rightIndex];
-      const weight = left.isApproved === right.isApproved ? 0 : 1;
+      let weight = 1;
+      if (left.isApproved === right.isApproved) {
+        weight = 0;
+      }
 
       connectGraphEdge(graph, left.moderatorId, right.moderatorId, weight);
       connectGraphEdge(graph, right.moderatorId, left.moderatorId, weight);
@@ -152,6 +164,14 @@ function connectVariantModerators(graph, ratings) {
  * @returns {void}
  */
 /* istanbul ignore next */
+/**
+ * Add or update a weighted graph edge.
+ * @param {Map<string, Map<string, number>>} graph Graph to update.
+ * @param {string} sourceId Source moderator identifier.
+ * @param {string} targetId Target moderator identifier.
+ * @param {number} weight Edge weight.
+ * @returns {void}
+ */
 function connectGraphEdge(graph, sourceId, targetId, weight) {
   const neighbors = graph.get(sourceId) ?? new Map();
   const existingWeight = neighbors.get(targetId);
@@ -162,18 +182,6 @@ function connectGraphEdge(graph, sourceId, targetId, weight) {
 
   neighbors.set(targetId, nextWeight);
   graph.set(sourceId, neighbors);
-}
-
-/**
- * Ensure a moderator node exists in the graph.
- * @param {Map<string, Map<string, number>>} graph Graph to update.
- * @param {string} moderatorId Moderator identifier.
- * @returns {void}
- */
-function ensureGraphNode(graph, moderatorId) {
-  if (!graph.has(moderatorId)) {
-    graph.set(moderatorId, new Map());
-  }
 }
 
 /**
@@ -217,7 +225,7 @@ export async function fetchModerationRatings(db) {
   const snapshot = await db.collection('moderationRatings').get();
 
   return snapshot.docs
-    .map(doc => /** @type {Record<string, unknown>} */ (doc.data() ?? {}))
+    .map(doc => /** @type {ModerationRatingRecord} */ (doc.data() ?? {}))
     .filter(isModerationRatingRecord);
 }
 
@@ -227,6 +235,10 @@ export async function fetchModerationRatings(db) {
  * @returns {candidate is ModerationRatingRecord} True when the record is usable.
  */
 /* istanbul ignore next */
+/**
+ * @param {Record<string, unknown>} candidate Candidate record.
+ * @returns {candidate is ModerationRatingRecord} True when the record is usable.
+ */
 function isModerationRatingRecord(candidate) {
   return [
     typeof candidate.moderatorId === 'string' &&

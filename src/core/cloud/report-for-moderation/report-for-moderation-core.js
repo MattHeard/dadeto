@@ -6,12 +6,23 @@ import {
 import { whenPostRequestAsync } from '../http-method-guard.js';
 
 /**
- *
- * @param body
+ * @typedef {object} ReportRequestBody
+ * @property {unknown} [variant] Variant identifier supplied by the client.
+ * @property {unknown} [reporterIdentity] Logged-in reporter identity.
+ * @property {unknown} [reporterId] Alternate reporter identity field.
+ * @property {unknown} [anonymousReporterId] Anonymous reporter identity field.
  */
+
+/**
+ * @typedef {object} ModerationReportRecord
+ * @property {string} reporterIdentity Reporter identity.
+ * @property {string} variant Variant identifier.
+ * @property {unknown} createdAt Timestamp stored with the report.
+ */
+
 /**
  * Map the request body variant field to a trimmed display string.
- * @param {{ variant?: unknown } | null | undefined} body Incoming request body.
+ * @param {ReportRequestBody | null | undefined} body Incoming request body.
  * @returns {string} Trimmed variant string or an empty string.
  */
 function resolveVariant(body) {
@@ -19,64 +30,12 @@ function resolveVariant(body) {
 }
 
 /**
- * Handle a POST request for creating a moderation report.
- * @param {object} root0 Dependencies for handling the request.
- * @param {{ variant?: unknown } | null | undefined} root0.body Request payload sent by the client.
- * @param {(report: { variant: string, createdAt: unknown }) => Promise<void> | void} root0.addModerationReport Persist a new moderation report record.
- * @param {(reporterIdentity: string, variant: string) => Promise<boolean> | boolean} [root0.hasModerationReport] Check whether the reporter already reported the page.
- * @param {() => unknown} root0.getServerTimestamp Provide a timestamp used when storing the report.
- * @returns {Promise<{ status: number, body: string | Record<string, unknown> }>} Response details consumed by the HTTP adapter.
- */
-async function handlePostRequest({
-  body,
-  addModerationReport,
-  hasModerationReport,
-  getServerTimestamp,
-}) {
-  const variant = resolveVariant(body);
-  const reporterIdentity = resolveReporterIdentity(body);
-
-  if (!variant) {
-    return {
-      status: 400,
-      body: 'Missing or invalid variant',
-    };
-  }
-
-  if (!reporterIdentity) {
-    return {
-      status: 400,
-      body: 'Missing or invalid reporter identity',
-    };
-  }
-
-  if (await alreadyReported(hasModerationReport, reporterIdentity, variant)) {
-    return {
-      status: 409,
-      body: 'Report already exists',
-    };
-  }
-
-  await addModerationReport({
-    variant,
-    reporterIdentity,
-    createdAt: getServerTimestamp(),
-  });
-
-  const responseBody = /** @type {Record<string, unknown>} */ ({});
-  return {
-    status: 201,
-    body: responseBody,
-  };
-}
-
-/**
  * Build an HTTP handler that accepts moderation report submissions.
  * @param {object} root0 Dependencies required to process requests.
- * @param {(report: { variant: string, createdAt: unknown }) => Promise<void> | void} root0.addModerationReport Function used to persist new reports.
- * @param {(reporterIdentity: string, variant: string) => Promise<boolean> | boolean} [root0.hasModerationReport] Function used to detect duplicates.
+ * @param {(report: ModerationReportRecord) => Promise<void> | void} root0.addModerationReport Function used to persist new reports.
+ * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} [root0.hasModerationReport] Function used to detect duplicates.
  * @param {() => unknown} root0.getServerTimestamp Retrieve the timestamp for stored reports.
- * @returns {(request?: { method?: string, body?: { variant?: unknown } | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} Request handler that returns status and body details.
+ * @returns {(request?: { method?: string, body?: ReportRequestBody | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} Request handler that returns status and body details.
  */
 export function createReportForModerationHandler({
   addModerationReport,
@@ -99,9 +58,9 @@ export function createReportForModerationHandler({
 /**
  * Process the moderation report request when the HTTP method is validated.
  * @param {object} root0 Dependencies required for processing.
- * @param {{ method?: string, body?: { variant?: unknown } | null }} root0.request Incoming request details.
- * @param {(report: { variant: string, createdAt: unknown }) => Promise<void> | void} root0.addModerationReport Storage helper.
- * @param {(reporterIdentity: string, variant: string) => Promise<boolean> | boolean} [root0.hasModerationReport] Storage helper for duplicate detection.
+ * @param {{ method?: string, body?: ReportRequestBody | null }} root0.request Incoming request details.
+ * @param {(report: ModerationReportRecord) => Promise<void> | void} root0.addModerationReport Storage helper.
+ * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} [root0.hasModerationReport] Storage helper for duplicate detection.
  * @param {() => unknown} root0.getServerTimestamp Timestamp generator.
  * @returns {Promise<{ status: number, body: string | Record<string, unknown> }>} Promise resolved with the HTTP response.
  */
@@ -113,13 +72,45 @@ function processReportSubmission({
 }) {
   return whenPostRequestAsync({
     request,
-    onValid: () =>
-      handlePostRequest({
-        body: request.body,
-        addModerationReport,
-        hasModerationReport,
-        getServerTimestamp,
-      }),
+    onValid: async () => {
+      const body = request.body;
+      const variant = resolveVariant(body);
+      const reporterIdentity = resolveReporterIdentity(body);
+
+      if (!variant) {
+        return {
+          status: 400,
+          body: 'Missing or invalid variant',
+        };
+      }
+
+      if (!reporterIdentity) {
+        return {
+          status: 400,
+          body: 'Missing or invalid reporter identity',
+        };
+      }
+
+      if (
+        await alreadyReported(hasModerationReport, reporterIdentity, variant)
+      ) {
+        return {
+          status: 409,
+          body: 'Report already exists',
+        };
+      }
+
+      await addModerationReport({
+        variant,
+        reporterIdentity,
+        createdAt: getServerTimestamp(),
+      });
+
+      return {
+        status: 201,
+        body: {},
+      };
+    },
   });
 }
 
@@ -142,12 +133,16 @@ function resolveReporterIdentity(body) {
  * @returns {string} Trimmed reporter identity or an empty string.
  */
 function resolveReporterIdentityField(value) {
-  return typeof value === 'string' ? value.trim() : '';
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  return '';
 }
 
 /**
  * Check whether a reporter already reported a page.
- * @param {(reporterIdentity: string, variant: string) => Promise<boolean> | boolean | undefined} hasModerationReport Duplicate detector.
+ * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} hasModerationReport Duplicate detector.
  * @param {string} reporterIdentity Reporter identity.
  * @param {string} variant Variant slug.
  * @returns {Promise<boolean>} True when the report already exists.
@@ -176,7 +171,9 @@ export function computeModerationUrgency(page) {
   const reportRecencySignal = clamp01(page.reportRecency);
   const pageAgeSignal = clamp01(page.pageAge);
   const timeSinceLastReviewSignal = clamp01(page.timeSinceLastReview);
-  const visibilityDistanceSignal = clamp01(page.visibilityDistanceFromThreshold);
+  const visibilityDistanceSignal = clamp01(
+    page.visibilityDistanceFromThreshold
+  );
   const moderationCountSignal = clamp01(1 - page.moderationCount / 5);
 
   return clamp01(

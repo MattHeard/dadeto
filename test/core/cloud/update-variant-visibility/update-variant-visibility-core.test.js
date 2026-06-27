@@ -104,7 +104,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ moderatorId: 'mod', variantId: '   ', isApproved: true }))
+      handler(
+        createSnapshot({
+          moderatorId: 'mod',
+          variantId: '   ',
+          isApproved: true,
+        })
+      )
     ).resolves.toBeNull();
     expect(db.doc).not.toHaveBeenCalled();
   });
@@ -114,7 +120,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ moderatorId: 'mod', variantId: 123, isApproved: true }))
+      handler(
+        createSnapshot({ moderatorId: 'mod', variantId: 123, isApproved: true })
+      )
     ).resolves.toBeNull();
     expect(db.doc).not.toHaveBeenCalled();
   });
@@ -129,7 +137,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: true }))
+      handler(
+        createSnapshot({
+          moderatorId: 'mod',
+          variantId: 'variants/id',
+          isApproved: true,
+        })
+      )
     ).resolves.toBeNull();
   });
 
@@ -143,7 +157,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: true }))
+      handler(
+        createSnapshot({
+          moderatorId: 'mod',
+          variantId: 'variants/id',
+          isApproved: true,
+        })
+      )
     ).resolves.toBeNull();
   });
 
@@ -172,7 +192,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
-      handler(createSnapshot({ moderatorId: 'mod', variantId: '/variants/id', isApproved: true }))
+      handler(
+        createSnapshot({
+          moderatorId: 'mod',
+          variantId: '/variants/id',
+          isApproved: true,
+        })
+      )
     ).resolves.toBeNull();
 
     expect(db.doc).toHaveBeenCalledWith('variants/id');
@@ -201,7 +227,11 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
-      createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: false })
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'variants/id',
+        isApproved: false,
+      })
     );
 
     expect(variantRef.update).toHaveBeenCalledWith({
@@ -324,7 +354,11 @@ describe('createUpdateVariantVisibilityHandler', () => {
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
-      createSnapshot({ moderatorId: 'mod', variantId: 'variants/id', isApproved: true })
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'variants/id',
+        isApproved: true,
+      })
     );
 
     expect(variantRef.update).toHaveBeenCalledWith({

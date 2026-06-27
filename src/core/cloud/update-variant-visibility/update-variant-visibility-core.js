@@ -1,7 +1,6 @@
 import { getNumericValueOrZero } from '../cloud-core.js';
-import { objectOrEmpty, when } from '../../commonCore.js';
+import { objectOrEmpty, when, ADMIN_UID } from '../../commonCore.js';
 import { createFirestoreHandle } from '../firestore-handle.js';
-import { ADMIN_UID } from '../../commonCore.js';
 
 /**
  * @typedef {object} VariantUpdatePayload
@@ -134,10 +133,7 @@ function safeDivide(numerator, denominator) {
  * @returns {number} 1 if approved, 0 otherwise.
  */
 function getNewRating(isApproved) {
-  if (isApproved) {
-    return 1;
-  }
-  return 0;
+  return Number(Boolean(isApproved));
 }
 
 /**
@@ -199,7 +195,7 @@ function isVisibilityLockedByAdmin(variantData) {
  * @returns {number} Locked visibility value.
  */
 function calculateAdminLockedVisibility(isApproved) {
-  return isApproved ? 1 : 0;
+  return getNewRating(isApproved);
 }
 
 /**
@@ -249,12 +245,13 @@ async function processVariantUpdate(variantSnap, variantRef, isApproved) {
     return;
   }
 
-  const newStats = isVisibilityLockedByAdmin(variantData)
-    ? {
-        ...calculateNewStats(variantData, getNewRating(isApproved)),
-        visibility: getSafeNumber(variantData, 'visibility'),
-      }
-    : calculateNewStats(variantData, getNewRating(isApproved));
+  let newStats = calculateNewStats(variantData, getNewRating(isApproved));
+  if (isVisibilityLockedByAdmin(variantData)) {
+    newStats = {
+      ...newStats,
+      visibility: getSafeNumber(variantData, 'visibility'),
+    };
+  }
 
   await updateVariantStats(variantRef, newStats);
 }
@@ -274,11 +271,18 @@ function validateApproval(isApproved) {
  * @returns {VariantUpdatePayload | null} Sanitized payload for processing.
  */
 function getValidVariantUpdatePayload(data) {
-  if (typeof data.variantId !== 'string' || typeof data.moderatorId !== 'string') {
+  if (
+    typeof data.variantId !== 'string' ||
+    typeof data.moderatorId !== 'string'
+  ) {
     return null;
   }
 
-  return buildVariantUpdatePayload(data.moderatorId, data.variantId, data.isApproved);
+  return buildVariantUpdatePayload(
+    data.moderatorId,
+    data.variantId,
+    data.isApproved
+  );
 }
 
 /**
@@ -362,7 +366,7 @@ async function executeVariantUpdate(db, snapshot) {
 /**
  * Apply the visibility update using the validated payload.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
- * @param {{ variantId: string; isApproved: boolean }} payload Validated inputs.
+ * @param {{ variantId: string; isApproved: boolean; moderatorId?: string }} payload Validated inputs.
  * @returns {Promise<null>} Resolves after the update runs.
  */
 async function applyVariantUpdate(db, payload) {
