@@ -1,7 +1,9 @@
-import * as espree from 'espree';
+import { readExemptions } from './read-exemptions.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src';
+const DEFAULT_CONFIG_PATH = 'overexposed-exports-exemptions.json';
+const DEFAULT_PARSE = () => ({ type: 'Program', body: [] });
 const DEFAULT_STDOUT = { write() {} };
 const DEFAULT_STDERR = { write() {} };
 
@@ -11,6 +13,8 @@ const DEFAULT_STDERR = { write() {} };
  *   readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>,
  *   rootDir: string,
  *   sourceRoot: string,
+ *   configPath: string,
+ *   parse: (source: string, options: { ecmaVersion: string, sourceType: string, loc: boolean, range: boolean }) => import('estree').Program,
  *   pathModule: {
  *     join: (...segments: string[]) => string,
  *     resolve: (...segments: string[]) => string,
@@ -38,6 +42,8 @@ const DEFAULT_STDERR = { write() {} };
  *   stderr?: { write: (text: string) => void },
  *   rootDir?: string,
  *   sourceRoot?: string,
+ *   configPath?: string,
+ *   parse?: (source: string, options: { ecmaVersion: string, sourceType: string, loc: boolean, range: boolean }) => import('estree').Program,
  *   pathModule?: {
  *     join: (...segments: string[]) => string,
  *     resolve: (...segments: string[]) => string,
@@ -51,10 +57,15 @@ export function createCheckOverexposedExportsHandle(options = {}) {
   const deps = normalizeOptions(options);
 
   return function handleOverexposedExports() {
-    const violations = findOverexposedExportViolations(deps);
+    const exemptions = readExemptions(deps);
+    const violations = findOverexposedExportViolations(deps).filter(
+      violation => !exemptions.has(violation.filePath)
+    );
 
     if (violations.length === 0) {
-      deps.stdout.write('Checked export locality: no over-exposed exports found.\n');
+      deps.stdout.write(
+        'Checked export locality: no over-exposed exports found.\n'
+      );
       return { exitCode: 0, violations: 0 };
     }
 
@@ -98,10 +109,7 @@ export function findOverexposedExportViolations(deps) {
         continue;
       }
 
-      const usageKey = makeUsageKey(
-        resolvedFilePath,
-        importedCall.exportName
-      );
+      const usageKey = makeUsageKey(resolvedFilePath, importedCall.exportName);
       externalUsageCounts.set(
         usageKey,
         (externalUsageCounts.get(usageKey) ?? 0) + 1
@@ -116,7 +124,9 @@ export function findOverexposedExportViolations(deps) {
     for (const exportedFunction of file.exports) {
       const ownCalls = file.ownCalls.get(exportedFunction.exportName) ?? 0;
       const externalCalls =
-        externalUsageCounts.get(makeUsageKey(file.filePath, exportedFunction.exportName)) ?? 0;
+        externalUsageCounts.get(
+          makeUsageKey(file.filePath, exportedFunction.exportName)
+        ) ?? 0;
 
       if (ownCalls > 0 && externalCalls === 0) {
         violations.push({
@@ -142,6 +152,7 @@ export function findOverexposedExportViolations(deps) {
  *   stderr?: { write: (text: string) => void },
  *   rootDir?: string,
  *   sourceRoot?: string,
+ *   configPath?: string,
  *   pathModule?: {
  *     join: (...segments: string[]) => string,
  *     resolve: (...segments: string[]) => string,
@@ -159,6 +170,8 @@ function normalizeOptions(options) {
     stderr: options.stderr ?? DEFAULT_STDERR,
     rootDir: options.rootDir ?? DEFAULT_ROOT_DIR,
     sourceRoot: options.sourceRoot ?? DEFAULT_SOURCE_ROOT,
+    configPath: options.configPath ?? DEFAULT_CONFIG_PATH,
+    parse: options.parse ?? DEFAULT_PARSE,
     pathModule:
       options.pathModule ??
       /** @type {OverexposedExportsDeps['pathModule']} */ ({
@@ -213,7 +226,7 @@ function walkDir(deps, dirPath, files) {
  */
 function analyzeSourceFile(deps, filePath) {
   const source = deps.readFileSync(filePath, 'utf8');
-  const ast = espree.parse(source, {
+  const ast = deps.parse(source, {
     ecmaVersion: 'latest',
     sourceType: 'module',
     loc: true,
@@ -272,11 +285,16 @@ function analyzeSourceFile(deps, filePath) {
     if (callee.type === 'Identifier') {
       if (imports.has(callee.name)) {
         const imported = imports.get(callee.name);
+        if (!imported) {
+          return;
+        }
         importedCalls.push({
           source: imported.source,
           exportName: imported.importedName,
         });
-      } else if (exports.some(exported => exported.exportName === callee.name)) {
+      } else if (
+        exports.some(exported => exported.exportName === callee.name)
+      ) {
         ownCalls.set(callee.name, (ownCalls.get(callee.name) ?? 0) + 1);
       }
       return;
@@ -359,7 +377,10 @@ function collectExportedFunctionsFromDefault(declaration, exports) {
  * @returns {boolean} True when the node is a function expression or arrow function.
  */
 function isFunctionLike(node) {
-  return node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression';
+  return (
+    node.type === 'FunctionExpression' ||
+    node.type === 'ArrowFunctionExpression'
+  );
 }
 
 /**
@@ -373,7 +394,8 @@ function traverse(node, visitor) {
     return;
   }
 
-  const astNode = /** @type {import('estree').Node & Record<string, unknown>} */ (node);
+  const astNode =
+    /** @type {import('estree').Node & Record<string, unknown>} */ (node);
   if (typeof astNode.type === 'string') {
     visitor(astNode);
   }
@@ -405,7 +427,11 @@ function resolveImportSource(deps, fromFile, sourceLiteral, moduleIndex) {
 
   const fromDir = fromFile.slice(0, fromFile.lastIndexOf(deps.pathModule.sep));
   const base = deps.pathModule.resolve(fromDir, sourceLiteral);
-  const candidates = [base, `${base}.js`, deps.pathModule.join(base, 'index.js')];
+  const candidates = [
+    base,
+    `${base}.js`,
+    deps.pathModule.join(base, 'index.js'),
+  ];
   if (!moduleIndex) {
     return candidates[0] ?? null;
   }
@@ -433,6 +459,7 @@ export const checkOverexposedExportsTestOnly = {
   isFunctionLike,
   listJavaScriptFiles,
   makeUsageKey,
+  readExemptions,
   resolveImportSource,
   traverse,
 };

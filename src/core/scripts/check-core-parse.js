@@ -1,5 +1,6 @@
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 import { useDefaultValue } from './gate-utils.js';
+import { readExemptions } from './read-exemptions.js';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
@@ -186,44 +187,6 @@ function formatFailures(violations) {
     ({ filePath, name }) =>
       `${filePath} contains downstream validation helper ${name}; parse at the boundary instead.`
   );
-}
-
-/**
- * @param {{
- *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
- *   pathModule: { resolve: (...segments: string[]) => string },
- *   rootDir: string,
- *   configPath: string,
- * }} deps Exemption-file dependencies.
- * @returns {Set<string>} Repo-relative files exempt from the baseline scan.
- */
-/* istanbul ignore next */
-/**
- * @param {{
- *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
- *   pathModule: { resolve: (...segments: string[]) => string },
- *   rootDir: string,
- *   configPath: string,
- * }} deps Exemption-file dependencies.
- * @returns {Set<string>} Repo-relative files exempt from the baseline scan.
- */
-function readExemptions(deps) {
-  try {
-    const raw = deps.fsModule.readFileSync(
-      deps.pathModule.resolve(deps.rootDir, deps.configPath),
-      'utf8'
-    );
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') {
-      return new Set();
-    }
-
-    const exemptions = parsed.exemptions || {};
-    /* istanbul ignore next */
-    return new Set(Object.keys(exemptions));
-  } catch {
-    return new Set();
-  }
 }
 
 /**

@@ -174,9 +174,7 @@ describe('createRunVariantQuery', () => {
       data: () => ({ moderationUrgency: 0.9, pagePath: 'stories/s1/pages/p1' }),
     };
     const variantGroupGet = jest.fn().mockResolvedValue({ docs: [variantDoc] });
-    const moderationRatingsWhereGet = jest
-      .fn()
-      .mockResolvedValue({ docs: [] });
+    const moderationRatingsWhereGet = jest.fn().mockResolvedValue({ docs: [] });
     const database = {
       collectionGroup: jest.fn(name => {
         if (name === 'variants') {

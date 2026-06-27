@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
+import * as espree from 'espree';
 import path from 'node:path';
 import {
   createCheckOverexposedExportsHandle,
@@ -6,13 +7,26 @@ import {
   checkOverexposedExportsTestOnly as helpers,
 } from '../../../src/core/scripts/check-overexposed-exports.js';
 
+/**
+ *
+ * @param files
+ */
 function createFileSystem(files) {
   return {
+    parse: (source, options) =>
+      espree.parse(source, {
+        ecmaVersion: options.ecmaVersion,
+        sourceType: options.sourceType,
+        loc: options.loc,
+        range: options.range,
+      }),
     readFileSync(filePath) {
       return files[filePath];
     },
     readdirSync(dirPath, options) {
-      const prefix = dirPath.endsWith(path.sep) ? dirPath : `${dirPath}${path.sep}`;
+      const prefix = dirPath.endsWith(path.sep)
+        ? dirPath
+        : `${dirPath}${path.sep}`;
       const seen = new Map();
 
       for (const filePath of Object.keys(files)) {
@@ -48,6 +62,14 @@ function createFileSystem(files) {
 }
 
 describe('check-overexposed-exports', () => {
+  const parse = (source, options) =>
+    espree.parse(source, {
+      ecmaVersion: options.ecmaVersion,
+      sourceType: options.sourceType,
+      loc: options.loc,
+      range: options.range,
+    });
+
   test('runs the handler and reports success when there are no violations', () => {
     const stdout = [];
     const stderr = [];
@@ -58,7 +80,52 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
+      parse,
       pathModule: path,
+    });
+
+    expect(handle()).toEqual({ exitCode: 0, violations: 0 });
+    expect(stdout.join('')).toContain('no over-exposed exports found');
+    expect(stderr).toEqual([]);
+  });
+
+  test('skips files listed in the exemption baseline', () => {
+    const stdout = [];
+    const stderr = [];
+    const handle = createCheckOverexposedExportsHandle({
+      readFileSync: filePath =>
+        ({
+          '/repo/overexposed-exports-exemptions.json': JSON.stringify({
+            exemptions: {
+              'src/a.js': 'temporary baseline',
+            },
+          }),
+          '/repo/src/a.js': `
+            export function alpha() {
+              return alpha();
+            }
+          `,
+        })[filePath] ?? '',
+      readdirSync: dirPath => {
+        if (dirPath === '/repo/src') {
+          return [
+            {
+              name: 'a.js',
+              isDirectory: () => false,
+              isFile: () => true,
+            },
+          ];
+        }
+
+        return [];
+      },
+      stdout: { write: text => stdout.push(text) },
+      stderr: { write: text => stderr.push(text) },
+      rootDir: '/repo',
+      sourceRoot: 'src',
+      parse,
+      pathModule: path,
+      configPath: 'overexposed-exports-exemptions.json',
     });
 
     expect(handle()).toEqual({ exitCode: 0, violations: 0 });
@@ -92,6 +159,7 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
+      parse,
       pathModule: path,
     });
 
@@ -127,6 +195,7 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
+      parse,
     });
 
     expect(handle()).toEqual({ exitCode: 1, violations: 1 });
@@ -162,11 +231,14 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
+      parse,
       pathModule: path,
     });
 
     expect(handle()).toEqual({ exitCode: 1, violations: 1 });
-    expect(stderr.join('')).toContain('alpha is exported but only used in its own file');
+    expect(stderr.join('')).toContain(
+      'alpha is exported but only used in its own file'
+    );
   });
 
   test('flags exported functions that are only called in their own file', () => {
@@ -244,7 +316,9 @@ describe('check-overexposed-exports', () => {
     expect(helpers.makeUsageKey('/repo/src/a.js', 'alpha')).toBe(
       '/repo/src/a.js::alpha'
     );
-    expect(helpers.isFunctionLike({ type: 'ArrowFunctionExpression' })).toBe(true);
+    expect(helpers.isFunctionLike({ type: 'ArrowFunctionExpression' })).toBe(
+      true
+    );
     expect(helpers.isFunctionLike({ type: 'FunctionExpression' })).toBe(true);
     expect(helpers.isFunctionLike({ type: 'Identifier' })).toBe(false);
   });
@@ -322,11 +396,18 @@ describe('check-overexposed-exports', () => {
       '/repo/src/nested/b.js',
     ]);
     expect(
-      helpers.resolveImportSource(deps, '/repo/src/nested/c.js', './b.js', new Set(['/repo/src/nested/b.js']))
+      helpers.resolveImportSource(
+        deps,
+        '/repo/src/nested/c.js',
+        './b.js',
+        new Set(['/repo/src/nested/b.js'])
+      )
     ).toBe('/repo/src/nested/b.js');
     expect(
       helpers.resolveImportSource(deps, '/repo/src/nested/c.js', './b.js')
     ).toBe('/repo/src/nested/b.js');
-    expect(helpers.resolveImportSource(deps, '/repo/src/nested/c.js', 'pkg')).toBe(null);
+    expect(
+      helpers.resolveImportSource(deps, '/repo/src/nested/c.js', 'pkg')
+    ).toBe(null);
   });
 });

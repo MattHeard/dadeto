@@ -778,7 +778,9 @@ export function createReputationScopedVariantsQuery(database, reputation) {
 export function createRunVariantQuery(database) {
   const collectionGroup = database?.collectionGroup?.('variants');
   if (!collectionGroup || typeof collectionGroup.get !== 'function') {
-    throw new Error('collectionGroup(variants) is required for moderation assignment');
+    throw new Error(
+      'collectionGroup(variants) is required for moderation assignment'
+    );
   }
 
   /**
