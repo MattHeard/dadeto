@@ -36,3 +36,13 @@ test('serves new-page.html with submission form', async ({ page }) => {
   await expect(form.locator('#option3')).toHaveAttribute('placeholder', 'Option 4');
   await expect(form.locator('button[type="submit"]')).toHaveText('Submit');
 });
+
+test('prefills the hidden page field from the query string', async ({ page }) => {
+  await page.goto('/new-page.html?page=42', { waitUntil: 'domcontentloaded' });
+
+  await expectSharedChrome(page);
+
+  const form = page.locator('form');
+  await expect(form).toBeVisible();
+  await expect(form.locator('input[name="page"]')).toHaveValue('42');
+});
