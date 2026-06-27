@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { ADMIN_UID } from '../../../../src/core/commonCore.js';
 import {
   normalizeVariantPath,
   calculateUpdatedVisibility,
@@ -69,6 +70,23 @@ describe('createUpdateVariantVisibilityHandler', () => {
     data: () => data,
   });
 
+  const createDb = (variantRef, moderatorData = {}) => ({
+    doc: jest.fn(() => variantRef),
+    collection: jest.fn(name => {
+      if (name !== 'moderators') {
+        return null;
+      }
+
+      return {
+        doc: jest.fn(moderatorId => ({
+          get: jest.fn().mockResolvedValue({
+            data: () => moderatorData[moderatorId] ?? {},
+          }),
+        })),
+      };
+    }),
+  });
+
   it('throws when db is missing', () => {
     expect(() => createUpdateVariantVisibilityHandler({ db: null })).toThrow(
       new TypeError('db must expose a doc helper')
@@ -86,7 +104,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
       get: jest.fn(),
       update: jest.fn(),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = { doc: jest.fn(() => variantRef), collection: jest.fn() };
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
@@ -100,7 +118,7 @@ describe('createUpdateVariantVisibilityHandler', () => {
       get: jest.fn(),
       update: jest.fn(),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = { doc: jest.fn(() => variantRef), collection: jest.fn() };
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
@@ -116,7 +134,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
   });
 
   it('returns null when variant identifier is not a string', async () => {
-    const db = { doc: jest.fn() };
+    const db = createDb(
+      {
+        get: jest.fn(),
+        update: jest.fn(),
+      },
+      {}
+    );
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
@@ -128,12 +152,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
   });
 
   it('returns null when variant snapshot is missing or not found', async () => {
-    const db = {
-      doc: jest.fn(() => ({
+    const db = createDb(
+      {
         get: jest.fn().mockResolvedValue(null),
         update: jest.fn(),
-      })),
-    };
+      },
+      { mod: { moderatorReputation: 1 } }
+    );
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
@@ -148,12 +173,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
   });
 
   it('returns null when the variant document does not exist', async () => {
-    const db = {
-      doc: jest.fn(() => ({
+    const db = createDb(
+      {
         get: jest.fn().mockResolvedValue({ get: jest.fn(), exists: false }),
         update: jest.fn(),
-      })),
-    };
+      },
+      { mod: { moderatorReputation: 1 } }
+    );
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
@@ -168,7 +194,13 @@ describe('createUpdateVariantVisibilityHandler', () => {
   });
 
   it('returns null when the trigger snapshot data is missing', async () => {
-    const db = { doc: jest.fn() };
+    const db = createDb(
+      {
+        get: jest.fn(),
+        update: jest.fn(),
+      },
+      {}
+    );
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(handler({ data: () => null })).resolves.toBeNull();
@@ -188,7 +220,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       }),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 0.5 },
+    });
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await expect(
@@ -203,9 +237,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
 
     expect(db.doc).toHaveBeenCalledWith('variants/id');
     expect(variantRef.update).toHaveBeenCalledWith({
-      visibility: (0.5 * 2 + 1) / 3,
+      visibility: (0.5 * 2 + 1 * 0.5) / (2 + 0.5),
       moderatorRatingCount: 3,
-      moderatorReputationSum: 3,
+      moderatorReputationSum: 2.5,
     });
   });
 
@@ -223,7 +257,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       }),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 2 },
+    });
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
@@ -235,9 +271,41 @@ describe('createUpdateVariantVisibilityHandler', () => {
     );
 
     expect(variantRef.update).toHaveBeenCalledWith({
-      visibility: (1 * 1 + 0) / 2,
+      visibility: (1 * 1 + 0 * 2) / (1 + 2),
       moderatorRatingCount: 2,
+      moderatorReputationSum: 3,
+    });
+  });
+
+  it('falls back to a default weight when moderator reputation is missing', async () => {
+    const variantData = {
+      visibility: 0.5,
+      moderationRatingCount: 2,
       moderatorReputationSum: 2,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const db = createDb(variantRef, {});
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'missing-mod',
+        variantId: 'variants/id',
+        isApproved: true,
+      })
+    );
+
+    expect(variantRef.update).toHaveBeenCalledWith({
+      visibility: (0.5 * 2 + 1) / 3,
+      moderatorRatingCount: 3,
+      moderatorReputationSum: 3,
     });
   });
 
@@ -255,7 +323,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       }),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = createDb(variantRef, {
+      [ADMIN_UID]: { moderatorReputation: 1 },
+    });
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
@@ -291,7 +361,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       }),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = createDb(variantRef, {
+      [ADMIN_UID]: { moderatorReputation: 1 },
+    });
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
@@ -323,7 +395,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       }),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 1 },
+    });
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(
@@ -350,7 +424,9 @@ describe('createUpdateVariantVisibilityHandler', () => {
       }),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    const db = { doc: jest.fn(() => variantRef) };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 1 },
+    });
     const handler = createUpdateVariantVisibilityHandler({ db });
 
     await handler(

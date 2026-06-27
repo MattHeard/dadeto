@@ -1,0 +1,4 @@
+Unexpected hurdle: the reputation-weighted visibility path was correct in principle, but the admin-lock tests and the missing-reputation case were still exercising the old flat-weight behavior or invalid db fixtures.
+Diagnosis path: traced the update flow through `update-variant-visibility-core.js`, verified the admin UID path, and used focused Jest failures to confirm where the old averaging formula was still leaking through.
+Chosen fix: read the cached moderator reputation from `moderators/{uid}`, fall back to weight `1` when absent, keep the admin lock override intact, and extend the tests to cover weighted, fallback, and admin paths.
+Next-time guidance: when wiring a cache into a write path, add a fallback case and an explicit override case in the same pass so the tests prove both the new influence model and the unchanged special-case behavior.

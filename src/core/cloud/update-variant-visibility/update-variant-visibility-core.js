@@ -17,6 +17,11 @@ import { createFirestoreHandle } from '../firestore-handle.js';
  */
 
 /**
+ * @typedef {object} ModeratorStats
+ * @property {number} reputation Cached moderator reputation.
+ */
+
+/**
  * Validate a Firestore client using the provided predicate.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  * @param {(candidate: import('firebase-admin/firestore').Firestore) => boolean} predicate Validation predicate.
@@ -163,10 +168,10 @@ async function updateVariantStats(ref, { visibility, count, reputation }) {
  * Calculate new stats from data and rating.
  * @param {Record<string, unknown>} variantData Variant data.
  * @param {number} newRating New rating.
+ * @param {number} moderatorReputation Moderator reputation weight.
  * @returns {VariantStats} New stats.
  */
-function calculateNewStats(variantData, newRating) {
-  const updatedVisibility = calculateUpdatedVisibility(variantData, newRating);
+function calculateNewStats(variantData, newRating, moderatorReputation) {
   const moderationRatingCount = getSafeNumber(
     variantData,
     'moderationRatingCount'
@@ -174,10 +179,38 @@ function calculateNewStats(variantData, newRating) {
   const moderatorReputationSum = getModeratorReputationSum(variantData);
 
   return {
-    visibility: updatedVisibility,
+    visibility: calculateWeightedVisibility(
+      variantData,
+      newRating,
+      moderatorReputation
+    ),
     count: moderationRatingCount + 1,
-    reputation: moderatorReputationSum + 1,
+    reputation:
+      moderatorReputationSum +
+      normalizeModeratorReputation(moderatorReputation),
   };
+}
+
+/**
+ * Calculate a weighted visibility score from the current state and incoming rating.
+ * @param {Record<string, unknown>} variantData Existing variant state.
+ * @param {number} newRating Numeric representation of the latest rating.
+ * @param {number} moderatorReputation Moderator reputation weight.
+ * @returns {number} Weighted visibility score.
+ */
+function calculateWeightedVisibility(
+  variantData,
+  newRating,
+  moderatorReputation
+) {
+  const currentVisibility = getSafeNumber(variantData, 'visibility');
+  const currentReputationSum = getModeratorReputationSum(variantData);
+  const weight = normalizeModeratorReputation(moderatorReputation);
+  const numerator =
+    currentVisibility * currentReputationSum + newRating * weight;
+  const denominator = currentReputationSum + weight;
+
+  return safeDivide(numerator, denominator);
 }
 
 /**
@@ -196,6 +229,31 @@ function isVisibilityLockedByAdmin(variantData) {
  */
 function calculateAdminLockedVisibility(isApproved) {
   return getNewRating(isApproved);
+}
+
+/**
+ * Read the cached reputation for a moderator.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {string} moderatorId Moderator identifier.
+ * @returns {Promise<number>} Cached reputation weight or the default.
+ */
+async function getModeratorReputation(db, moderatorId) {
+  const snapshot = await db.collection('moderators').doc(moderatorId).get();
+  const data = snapshot?.data?.();
+  return normalizeModeratorReputation(data?.moderatorReputation);
+}
+
+/**
+ * Normalize a moderator reputation into a usable positive weight.
+ * @param {unknown} reputation Candidate reputation.
+ * @returns {number} Safe reputation weight.
+ */
+function normalizeModeratorReputation(reputation) {
+  return typeof reputation === 'number' &&
+    Number.isFinite(reputation) &&
+    reputation > 0
+    ? reputation
+    : 1;
 }
 
 /**
@@ -237,15 +295,25 @@ function getSnapshotDataOrFallback(snapshot) {
  * @param {import('firebase-admin/firestore').DocumentSnapshot} variantSnap Variant snapshot.
  * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant reference.
  * @param {boolean} isApproved Approval status.
+ * @param {number} moderatorReputation Moderator reputation weight.
  * @returns {Promise<void>} Promise.
  */
-async function processVariantUpdate(variantSnap, variantRef, isApproved) {
+async function processVariantUpdate(
+  variantSnap,
+  variantRef,
+  isApproved,
+  moderatorReputation
+) {
   const variantData = getValidVariantSnapshotData(variantSnap);
   if (!variantData) {
     return;
   }
 
-  let newStats = calculateNewStats(variantData, getNewRating(isApproved));
+  let newStats = calculateNewStats(
+    variantData,
+    getNewRating(isApproved),
+    moderatorReputation
+  );
   if (isVisibilityLockedByAdmin(variantData)) {
     newStats = {
       ...newStats,
@@ -376,7 +444,16 @@ async function applyVariantUpdate(db, payload) {
   }
 
   const variantSnap = await variantRef.get();
-  await processVariantUpdate(variantSnap, variantRef, payload.isApproved);
+  const moderatorReputation = await getModeratorReputation(
+    db,
+    payload.moderatorId
+  );
+  await processVariantUpdate(
+    variantSnap,
+    variantRef,
+    payload.isApproved,
+    moderatorReputation
+  );
   if (payload.moderatorId === ADMIN_UID) {
     await variantRef.update({
       visibility: calculateAdminLockedVisibility(payload.isApproved),

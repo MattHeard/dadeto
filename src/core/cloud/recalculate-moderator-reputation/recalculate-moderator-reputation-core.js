@@ -28,7 +28,11 @@ export function buildModeratorGraph(ratings) {
 
   const moderatorIds = Array.from(ratingsByModerator.keys());
   for (let leftIndex = 0; leftIndex < moderatorIds.length; leftIndex += 1) {
-    for (let rightIndex = leftIndex + 1; rightIndex < moderatorIds.length; rightIndex += 1) {
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < moderatorIds.length;
+      rightIndex += 1
+    ) {
       const leftModeratorId = moderatorIds[leftIndex];
       const rightModeratorId = moderatorIds[rightIndex];
       const weight = calculateModeratorEdgeWeight(
@@ -212,10 +216,7 @@ function getRatingsOrEmpty(ratingsByModerator, moderatorId) {
  * @returns {number} Lower weight.
  */
 function getLowerWeight(existingWeight, candidateWeight) {
-  return Math.min(
-    existingWeight ?? Number.POSITIVE_INFINITY,
-    candidateWeight
-  );
+  return Math.min(existingWeight ?? Number.POSITIVE_INFINITY, candidateWeight);
 }
 
 /**
