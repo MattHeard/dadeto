@@ -17,7 +17,7 @@
  * @returns {Map<string, Map<string, number>>} Weighted adjacency map.
  */
 export function buildModeratorGraph(ratings) {
-  const ratingsByVariant = groupRatingsByVariant(ratings);
+  const ratingsByModerator = groupRatingsByModerator(ratings);
   const graph = new Map();
 
   for (const rating of ratings) {
@@ -26,8 +26,23 @@ export function buildModeratorGraph(ratings) {
     }
   }
 
-  for (const variantRatings of ratingsByVariant.values()) {
-    connectVariantModerators(graph, variantRatings);
+  const moderatorIds = Array.from(ratingsByModerator.keys());
+  for (let leftIndex = 0; leftIndex < moderatorIds.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < moderatorIds.length; rightIndex += 1) {
+      const leftModeratorId = moderatorIds[leftIndex];
+      const rightModeratorId = moderatorIds[rightIndex];
+      const weight = calculateModeratorEdgeWeight(
+        ratingsByModerator.get(leftModeratorId) ?? new Map(),
+        ratingsByModerator.get(rightModeratorId) ?? new Map()
+      );
+
+      if (weight === null) {
+        continue;
+      }
+
+      connectGraphEdge(graph, leftModeratorId, rightModeratorId, weight);
+      connectGraphEdge(graph, rightModeratorId, leftModeratorId, weight);
+    }
   }
 
   return graph;
@@ -113,46 +128,45 @@ export function shortestPathDistances(graph, adminModeratorId) {
 }
 
 /**
- * Group ratings by variant id.
+ * Group ratings by moderator id.
  * @param {ModerationRatingRecord[]} ratings Ratings list.
- * @returns {Map<string, ModerationRatingRecord[]>} Ratings grouped by variant.
+ * @returns {Map<string, Map<string, boolean>>} Ratings grouped by moderator and keyed by variant.
  */
-function groupRatingsByVariant(ratings) {
+function groupRatingsByModerator(ratings) {
   const grouped = new Map();
 
   for (const rating of ratings) {
-    const variantRatings = grouped.get(rating.variantId) ?? [];
-    variantRatings.push(rating);
-    grouped.set(rating.variantId, variantRatings);
+    const moderatorRatings = grouped.get(rating.moderatorId) ?? new Map();
+    moderatorRatings.set(rating.variantId, rating.isApproved);
+    grouped.set(rating.moderatorId, moderatorRatings);
   }
 
   return grouped;
 }
 
 /**
- * Connect moderators that rated the same page with hamming-distance edge weights.
- * @param {Map<string, Map<string, number>>} graph Graph to update.
- * @param {ModerationRatingRecord[]} ratings Ratings for one shared variant.
- * @returns {void}
+ * Compute a normalized Hamming-distance edge weight for two moderators.
+ * @param {Map<string, boolean>} leftRatings Ratings for the left moderator keyed by variant.
+ * @param {Map<string, boolean>} rightRatings Ratings for the right moderator keyed by variant.
+ * @returns {number | null} Normalized disagreement weight or null when there is no shared overlap.
  */
-function connectVariantModerators(graph, ratings) {
-  for (let leftIndex = 0; leftIndex < ratings.length; leftIndex += 1) {
-    for (
-      let rightIndex = leftIndex + 1;
-      rightIndex < ratings.length;
-      rightIndex += 1
-    ) {
-      const left = ratings[leftIndex];
-      const right = ratings[rightIndex];
-      let weight = 1;
-      if (left.isApproved === right.isApproved) {
-        weight = 0;
-      }
+function calculateModeratorEdgeWeight(leftRatings, rightRatings) {
+  const sharedVariantIds = Array.from(leftRatings.keys()).filter(variantId =>
+    rightRatings.has(variantId)
+  );
 
-      connectGraphEdge(graph, left.moderatorId, right.moderatorId, weight);
-      connectGraphEdge(graph, right.moderatorId, left.moderatorId, weight);
+  if (sharedVariantIds.length === 0) {
+    return null;
+  }
+
+  let disagreementCount = 0;
+  for (const variantId of sharedVariantIds) {
+    if (leftRatings.get(variantId) !== rightRatings.get(variantId)) {
+      disagreementCount += 1;
     }
   }
+
+  return disagreementCount / sharedVariantIds.length;
 }
 
 /**
@@ -163,7 +177,6 @@ function connectVariantModerators(graph, ratings) {
  * @param {number} weight Edge weight.
  * @returns {void}
  */
-/* istanbul ignore next */
 /**
  * Add or update a weighted graph edge.
  * @param {Map<string, Map<string, number>>} graph Graph to update.
@@ -234,7 +247,6 @@ export async function fetchModerationRatings(db) {
  * @param {Record<string, unknown>} candidate Candidate record.
  * @returns {candidate is ModerationRatingRecord} True when the record is usable.
  */
-/* istanbul ignore next */
 /**
  * @param {Record<string, unknown>} candidate Candidate record.
  * @returns {candidate is ModerationRatingRecord} True when the record is usable.

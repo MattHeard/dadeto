@@ -9,7 +9,7 @@ import {
 } from '../../../../src/core/cloud/recalculate-moderator-reputation/recalculate-moderator-reputation-core.js';
 
 describe('recalculate-moderator-reputation core', () => {
-  it('seeds a graph from the current moderation ratings', () => {
+  it('seeds a graph from the current moderation ratings using normalized overlap weights', () => {
     const graph = buildModeratorGraph([
       { moderatorId: 'admin', variantId: 'page-1', isApproved: true },
       { moderatorId: 'mod-a', variantId: 'page-1', isApproved: false },
@@ -22,14 +22,27 @@ describe('recalculate-moderator-reputation core', () => {
 
     expect(graph.get('admin')?.get('mod-a')).toBe(1);
     expect(graph.get('mod-a')?.get('admin')).toBe(1);
-    expect(graph.get('mod-a')?.get('mod-b')).toBe(0);
+    expect(graph.get('mod-a')?.get('mod-b')).toBeCloseTo(2 / 3);
   });
 
-  it('keeps the lowest edge weight when a later shared page is less aligned', () => {
+  it('computes the edge weight from all shared pages between two moderators', () => {
     const graph = buildModeratorGraph([
       { moderatorId: 'admin', variantId: 'page-1', isApproved: true },
       { moderatorId: 'mod-a', variantId: 'page-1', isApproved: true },
       { moderatorId: 'admin', variantId: 'page-2', isApproved: true },
+      { moderatorId: 'mod-a', variantId: 'page-2', isApproved: false },
+      { moderatorId: 'admin', variantId: 'page-3', isApproved: true },
+      { moderatorId: 'mod-a', variantId: 'page-3', isApproved: true },
+    ]);
+
+    expect(graph.get('admin')?.get('mod-a')).toBeCloseTo(1 / 3);
+  });
+
+  it('returns zero weight when two moderators agree on every shared page', () => {
+    const graph = buildModeratorGraph([
+      { moderatorId: 'admin', variantId: 'page-1', isApproved: true },
+      { moderatorId: 'mod-a', variantId: 'page-1', isApproved: true },
+      { moderatorId: 'admin', variantId: 'page-2', isApproved: false },
       { moderatorId: 'mod-a', variantId: 'page-2', isApproved: false },
     ]);
 
