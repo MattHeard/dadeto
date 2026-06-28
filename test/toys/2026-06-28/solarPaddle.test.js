@@ -49,23 +49,6 @@ describe('solarPaddle', () => {
     expect(nextStorage.current.SOLA1.paddle.x).toBeGreaterThan(104);
   });
 
-  it('accepts WebHID-style reports as gamepad input', () => {
-    const storageValue = { current: null };
-    runToy(
-      JSON.stringify({
-        type: 'hid',
-        reportBytes: [0x01, 255, 0],
-      }),
-      storageValue
-    );
-    const next = runToy('{}', storageValue);
-
-    expect(next.storageValue.current.SOLA1.input.gamepad.buttons[0]).toBe(true);
-    expect(next.storageValue.current.SOLA1.input.gamepad.axes[0]).toBe(0.9921875);
-    expect(next.storageValue.current.SOLA1.input.actions.launch).toBe(true);
-    expect(next.storageValue.current.SOLA1.input.actions.right).toBe(true);
-  });
-
   it('pauses and resumes on repeated pause presses without duplicating the edge', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
@@ -113,6 +96,51 @@ describe('solarPaddle', () => {
 
     expect(nextStorage.current.SOLA1.score).toBe(1);
     expect(nextStorage.current.SOLA1.panels[0].charge).toBe(true);
+  });
+
+  it('separates the orb from a panel cluster instead of trapping it in place', () => {
+    const storageValue = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: { left: false, right: false, launch: false, pause: false, reset: false },
+            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
+            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+          },
+          paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
+          orb: { x: 61, y: 35, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          panels: [
+            { id: 'p1', x: 52, y: 32, width: 24, height: 10, charge: false },
+            { id: 'p2', x: 82, y: 32, width: 24, height: 10, charge: false },
+          ],
+        },
+      },
+    };
+
+    const { storageValue: nextStorage } = runToy('{}', storageValue);
+    const nextState = nextStorage.current.SOLA1;
+
+    expect(nextState.score).toBe(1);
+    expect(nextState.panels.filter(panel => panel.charge)).toHaveLength(1);
+    expect(nextState.orb.y).not.toBe(35);
+    expect(nextState.orb.vy === 0).toBe(false);
+  });
+
+  it('snaps the paddle to whole pixels while moving', () => {
+    const storageValue = { current: null };
+    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowRight' }), storageValue);
+    const { storageValue: nextStorage } = runToy('{}', storageValue);
+
+    expect(Number.isInteger(nextStorage.current.SOLA1.paddle.x)).toBe(true);
   });
 
   it('loses a life when the orb exits below the canvas', () => {

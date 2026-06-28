@@ -436,10 +436,6 @@ function deriveActions(input, keyboard, gamepad) {
   if (input?.type === 'capture' && input.capturing === false) {
     return createActionsFromState(keyboard, gamepad);
   }
-  if (input?.type === 'hid') {
-    applyHidInput(input, gamepad);
-    return createActionsFromState(keyboard, gamepad);
-  }
 
   if (Array.isArray(input?.buttons)) {
     gamepad.buttons = input.buttons.map(next => next === true);
@@ -452,75 +448,6 @@ function deriveActions(input, keyboard, gamepad) {
   }
 
   return createActionsFromState(keyboard, gamepad);
-}
-
-/**
- * Merge a WebHID-style payload into the normalized gamepad state.
- * @param {Record<string, unknown>} input Raw HID payload.
- * @param {PaddleGamepadState} gamepad Mutable normalized gamepad state.
- * @returns {void}
- */
-function applyHidInput(input, gamepad) {
-  if (Array.isArray(input.buttons)) {
-    gamepad.buttons = input.buttons.map(next => next === true);
-  }
-  if (Array.isArray(input.axes)) {
-    gamepad.axes = input.axes.map(next => Number(next) || 0);
-  }
-  if (typeof input.buttonIndex === 'number') {
-    gamepad.buttons[input.buttonIndex] = input.pressed === true;
-  }
-  if (Array.isArray(input.reportBytes)) {
-    const decoded = decodeHidReport(input.reportBytes);
-    if (decoded.buttons.length > 0) {
-      gamepad.buttons = decoded.buttons;
-    }
-    if (decoded.axes.length > 0) {
-      gamepad.axes = decoded.axes;
-    }
-  }
-}
-
-/**
- * Decode a compact HID report into button and axis values.
- * @param {unknown[]} reportBytes Raw report bytes from a WebHID device.
- * @returns {{ buttons: boolean[], axes: number[] }} Normalized state.
- */
-function decodeHidReport(reportBytes) {
-  const bytes = reportBytes.map(byte => Number(byte) || 0);
-  const buttons = bytes.length > 0 ? decodeHidButtons(bytes[0]) : [];
-  const axes = bytes.length > 1 ? decodeHidAxes(bytes.slice(1, 3)) : [];
-  return { buttons, axes };
-}
-
-/**
- * Decode the first byte as a compact button bitset.
- * @param {number} buttonByte Bitfield from a HID report.
- * @returns {boolean[]} Normalized button states.
- */
-function decodeHidButtons(buttonByte) {
-  return [
-    Boolean(buttonByte & 0x01),
-    Boolean(buttonByte & 0x02),
-    Boolean(buttonByte & 0x04),
-    Boolean(buttonByte & 0x08),
-    Boolean(buttonByte & 0x10),
-    Boolean(buttonByte & 0x20),
-    Boolean(buttonByte & 0x40),
-    Boolean(buttonByte & 0x80),
-  ];
-}
-
-/**
- * Decode up to two axis bytes into normalized signed values.
- * @param {number[]} axisBytes Axis bytes from a HID report.
- * @returns {number[]} Normalized signed axis values in the -1..1 range.
- */
-function decodeHidAxes(axisBytes) {
-  return axisBytes.map(byte => {
-    const normalized = clamp((byte - 128) / 128, -1, 1);
-    return Math.abs(normalized) < EDGE_THRESHOLD ? 0 : normalized;
-  });
 }
 
 function createActionsFromState(keyboard, gamepad) {
@@ -569,11 +496,11 @@ function applyGameplayInput(state, inputState) {
 
 function movePaddle(state, actions) {
   const delta = (actions.right ? 1 : 0) - (actions.left ? 1 : 0);
-  state.paddle.x = clamp(
+  state.paddle.x = Math.round(clamp(
     state.paddle.x + delta * state.paddle.speed,
     0,
     state.width - state.paddle.width
-  );
+  ));
 }
 
 function stepSimulation(state) {
@@ -630,12 +557,43 @@ function resolvePanels(state) {
       continue;
     }
     if (circleIntersectsPanel(state.orb, panel)) {
+      separateOrbFromPanel(state.orb, panel);
       panel.charge = true;
       state.score += 1;
-      state.orb.vy = -state.orb.vy;
+      reflectOrbVelocityFromPanel(state.orb, panel);
       break;
     }
   }
+}
+
+function separateOrbFromPanel(orb, panel) {
+  const panelCenterX = panel.x + panel.width / 2;
+  const panelCenterY = panel.y + panel.height / 2;
+  const dx = orb.x - panelCenterX;
+  const dy = orb.y - panelCenterY;
+  const overlapX = orb.radius + panel.width / 2 - Math.abs(dx);
+  const overlapY = orb.radius + panel.height / 2 - Math.abs(dy);
+
+  if (overlapX < overlapY) {
+    orb.x = panelCenterX + Math.sign(dx || 1) * (panel.width / 2 + orb.radius + 0.5);
+    return;
+  }
+
+  orb.y = panelCenterY + Math.sign(dy || 1) * (panel.height / 2 + orb.radius + 0.5);
+}
+
+function reflectOrbVelocityFromPanel(orb, panel) {
+  const panelCenterX = panel.x + panel.width / 2;
+  const panelCenterY = panel.y + panel.height / 2;
+  const dx = orb.x - panelCenterX;
+  const dy = orb.y - panelCenterY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    orb.vx = -orb.vx;
+    return;
+  }
+
+  orb.vy = -orb.vy;
 }
 
 function circleIntersectsPanel(orb, panel) {
