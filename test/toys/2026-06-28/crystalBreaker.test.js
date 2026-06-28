@@ -36,6 +36,26 @@ describe('crystalBreaker', () => {
     expect(next.storageValue.current.CRYS1.paddle.x).toBeGreaterThan(100);
   });
 
+  it('keeps held left input active across frames without snapping back to center', () => {
+    const storageValue = { current: null };
+    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowLeft' }), storageValue);
+    const first = runToy('{}', storageValue);
+    const firstX = first.storageValue.current.CRYS1.paddle.x;
+    const second = runToy('{}', storageValue);
+    const secondX = second.storageValue.current.CRYS1.paddle.x;
+
+    expect(firstX).toBeLessThan(156);
+    expect(secondX).toBeLessThan(firstX);
+  });
+
+  it('places HUD text within the canvas width', () => {
+    const { payload } = runToy(JSON.stringify({ width: 360, height: 240 }));
+    const hudTexts = payload.shapes.filter(shape => shape.type === 'text');
+
+    expect(hudTexts).toHaveLength(4);
+    expect(Math.max(...hudTexts.map(shape => shape.x))).toBeLessThan(360);
+  });
+
   it('reduces crystal hp and changes state on collision', () => {
     const storageValue = {
       current: {

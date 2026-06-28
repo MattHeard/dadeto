@@ -203,7 +203,12 @@ function normalizeCrystalsFromState(value) {
 
 function updateInputState(previous, input) {
   const nextActions = parseActions(input, previous);
-  return { ...previous, actions: nextActions, previousActions: previous.actions };
+  return {
+    ...previous,
+    keyboard: nextActions.keyboard,
+    actions: nextActions.actions,
+    previousActions: previous.actions,
+  };
 }
 
 function parseActions(input, previous) {
@@ -213,15 +218,16 @@ function parseActions(input, previous) {
       ? { [normalizedKey]: true }
       : input?.type === 'keyup'
         ? { [normalizedKey]: false }
-        : null;
+      : null;
   const keyboard = { ...previous.keyboard, ...(keys || {}) };
-  return {
+  const actions = {
     moveLeft: keyboard.arrowleft === true || keyboard.a === true || keyboard.left === true,
     moveRight: keyboard.arrowright === true || keyboard.d === true || keyboard.right === true,
     launchPressed: input?.type === 'keydown' && (normalizedKey === 'space' || normalizedKey === ' '),
     pausePressed: input?.type === 'keydown' && normalizedKey === 'p',
     resetPressed: input?.type === 'keydown' && normalizedKey === 'r',
   };
+  return { keyboard, actions };
 }
 
 function normalizeKeyName(key) {
@@ -302,10 +308,10 @@ function toCanvasPayload(state) {
     shapes: [
       { type: 'rect', x: 0, y: 0, width: state.width, height: state.height, fill: '#08111f' },
       { type: 'rect', x: 0, y: 0, width: state.width, height: HUD_HEIGHT, fill: '#0f172a' },
-      { type: 'text', x: 8, y: 16, text: `Score ${state.score}`, fill: '#dbeafe', font: '12px monospace', align: 'left', baseline: 'alphabetic' },
-      { type: 'text', x: 118, y: 16, text: `Lives ${state.lives}`, fill: '#dbeafe', font: '12px monospace', align: 'left', baseline: 'alphabetic' },
-      { type: 'text', x: 198, y: 16, text: `Crystals ${state.crystals.filter(c => c.state !== 'shattered').length}`, fill: '#dbeafe', font: '12px monospace', align: 'left', baseline: 'alphabetic' },
-      { type: 'text', x: 298, y: 16, text: `Status ${state.status.toUpperCase()}`, fill: '#dbeafe', font: '12px monospace', align: 'left', baseline: 'alphabetic' },
+      { type: 'text', x: 8, y: 16, text: `Score ${state.score}`, fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic' },
+      { type: 'text', x: 88, y: 16, text: `Lives ${state.lives}`, fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic' },
+      { type: 'text', x: 160, y: 16, text: `Crystals ${state.crystals.filter(c => c.state !== 'shattered').length}`, fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic' },
+      { type: 'text', x: 250, y: 16, text: `Status ${state.status.toUpperCase()}`, fill: '#dbeafe', font: '11px monospace', align: 'left', baseline: 'alphabetic' },
       ...state.crystals.filter(crystal => crystal.state !== 'shattered').map(crystal => ({
         type: 'rect',
         x: crystal.x,
