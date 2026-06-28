@@ -1,6 +1,35 @@
 {
   "posts": [
     {
+      "key": "BATT4",
+      "title": "Battery Breakout",
+      "publicationDate": "2026-06-28",
+      "release": "beta",
+      "content": [
+        "Battery Breakout is an original single-player DADETO browser toy where a charging paddle redirects an energy orb into a battery array.",
+        "The core mechanic is charge balancing: cells have target levels, stabilization states, and overcharge failure states.",
+        {
+          "type": "manual",
+          "id": "BATT4-manual",
+          "title": "User manual",
+          "markdown": "# BATT4 — Battery Breakout\n\n## What this toy does\n\nBattery Breakout is an original paddle-and-orb toy about stabilizing a battery array. You steer a charging paddle, launch an energy orb, and direct it into battery cells until each cell reaches its target charge.\n\nThe toy is designed to be deterministic, frame-stepped, and safe for repeated auto-submit calls.\n\n## Input format\n\nPaste a JSON object with any of these optional fields:\n\n- `width`\n- `height`\n- `paddleWidth`\n- `paddleHeight`\n- `paddleSpeed`\n- `orbRadius`\n- `lives`\n- `faults`\n- `reset`\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"paddleWidth\": 48,\n  \"paddleHeight\": 6,\n  \"paddleSpeed\": 4,\n  \"orbRadius\": 4,\n  \"lives\": 3\n}\n```\n\n## Defaults\n\nIf input is empty or malformed, the toy falls back to a deterministic default battery-pack layout.\n\n## Storage behavior\n\nThe toy stores its state under the `BATT4` local-storage key. The persisted state includes:\n\n- canvas dimensions\n- score\n- lives\n- faults\n- paddle position\n- orb position and velocity\n- battery cell charge state\n- held and edge-triggered input state\n\nThat means a refresh resumes the same game instead of starting over.\n\n## Input behavior\n\nThe toy handles keyboard input directly and can also map generic gamepad-style raw input inside the toy.\n\n- ArrowLeft / A: move left\n- ArrowRight / D: move right\n- Space: launch orb\n- P: pause or resume\n- R: reset\n\nHeld movement updates every submit frame. Launch, pause, and reset only trigger on a rising edge.\n\n## Output\n\nThe toy returns a canvas payload:\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"shapes\": []\n}\n```\n\nThe payload uses rectangles for the battery cells and paddle, a circle for the orb, and simple bars for score and faults.\n\n## How to use it\n\n1. Submit empty input to see the default battery array.\n2. Hold left or right to move the paddle.\n3. Press Space to launch the orb.\n4. Press P to pause or resume.\n5. Press R to reset.\n\n## Tips\n\n- Try to stabilize cells without overcharging them.\n- The default battery-pack layout is original and intentionally not a plain brick wall.\n- This toy is meant to demonstrate charge balancing, not to clone a specific commercial game.\n"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-28/batteryBreakout.js",
+        "functionName": "batteryBreakout",
+        "defaultInputMethod": "keyboard-capture",
+        "defaultOutputMethod": "canvas-2d"
+      },
+      "tags": [
+        "toy",
+        "canvas",
+        "game",
+        "storage",
+        "html"
+      ]
+    },
+    {
       "key": "SOLA1",
       "title": "Solar Paddle",
       "publicationDate": "2026-06-28",

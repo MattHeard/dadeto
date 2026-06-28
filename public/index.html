@@ -659,6 +659,233 @@
         </p>
       </div>
       <article
+        class="entry tag-toy tag-canvas tag-game tag-storage tag-html release-beta"
+        id="BATT4"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">BATT4</div>
+        <div class="value">
+          <h2><a href="#BATT4">Battery Breakout</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">28 Jun 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-canvas">canvas</a>,
+          <a class="tag-game">game</a>, <a class="tag-storage">storage</a>,
+          <a class="tag-html">html</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Battery Breakout is an original single-player DADETO browser toy where
+          a charging paddle redirects an energy orb into a battery array.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          The core mechanic is charge balancing: cells have target levels,
+          stabilization states, and overcharge failure states.
+        </p>
+        <div class="key">man</div>
+        <div class="manual" id="BATT4-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="BATT4-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="BATT4-manual-body"
+            hidden
+          >
+# BATT4 — Battery Breakout
+
+## What this toy does
+
+Battery Breakout is an original paddle-and-orb toy about stabilizing a battery array. You steer a charging paddle, launch an energy orb, and direct it into battery cells until each cell reaches its target charge.
+
+The toy is designed to be deterministic, frame-stepped, and safe for repeated auto-submit calls.
+
+## Input format
+
+Paste a JSON object with any of these optional fields:
+
+- `width`
+- `height`
+- `paddleWidth`
+- `paddleHeight`
+- `paddleSpeed`
+- `orbRadius`
+- `lives`
+- `faults`
+- `reset`
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 240,
+  &quot;paddleWidth&quot;: 48,
+  &quot;paddleHeight&quot;: 6,
+  &quot;paddleSpeed&quot;: 4,
+  &quot;orbRadius&quot;: 4,
+  &quot;lives&quot;: 3
+}
+```
+
+## Defaults
+
+If input is empty or malformed, the toy falls back to a deterministic default battery-pack layout.
+
+## Storage behavior
+
+The toy stores its state under the `BATT4` local-storage key. The persisted state includes:
+
+- canvas dimensions
+- score
+- lives
+- faults
+- paddle position
+- orb position and velocity
+- battery cell charge state
+- held and edge-triggered input state
+
+That means a refresh resumes the same game instead of starting over.
+
+## Input behavior
+
+The toy handles keyboard input directly and can also map generic gamepad-style raw input inside the toy.
+
+- ArrowLeft / A: move left
+- ArrowRight / D: move right
+- Space: launch orb
+- P: pause or resume
+- R: reset
+
+Held movement updates every submit frame. Launch, pause, and reset only trigger on a rising edge.
+
+## Output
+
+The toy returns a canvas payload:
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 240,
+  &quot;shapes&quot;: []
+}
+```
+
+The payload uses rectangles for the battery cells and paddle, a circle for the orb, and simple bars for score and faults.
+
+## How to use it
+
+1. Submit empty input to see the default battery array.
+2. Hold left or right to move the paddle.
+3. Press Space to launch the orb.
+4. Press P to pause or resume.
+5. Press R to reset.
+
+## Tips
+
+- Try to stabilize cells without overcharging them.
+- The default battery-pack layout is original and intentionally not a plain brick wall.
+- This toy is meant to demonstrate charge balancing, not to clone a specific commercial game.
+</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('BATT4-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea">textarea</option>
+            <option value="life-seed">life-seed</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture" selected>keyboard-capture</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="canvas-2d" selected>canvas-2d</option>
+            <option value="graph-2d">graph-2d</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'BATT4',
+            '/core/browser/toys/2026-06-28/batteryBreakout.js',
+            'batteryBreakout'
+          );
+        </script>
+      </article>
+      <article
         class="entry tag-toy tag-canvas tag-game tag-storage tag-html"
         id="SOLA1"
       >
