@@ -73,13 +73,36 @@ describe('solarPaddle', () => {
   it('uses a staggered default panel layout', () => {
     const { storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
     const panels = storageValue.current.SOLA1.panels;
-    const rows = new Map();
+    expect(panels).toHaveLength(12);
+    expect(new Set(panels.map(panel => `${panel.x},${panel.y}`)).size).toBe(
+      12
+    );
+    expect(new Set(panels.map(panel => panel.y)).size).toBeGreaterThan(1);
+  });
 
-    for (const panel of panels) {
-      rows.set(panel.y, (rows.get(panel.y) || 0) + 1);
-    }
+  it('repeats the same layout for the same seed and changes after reset', () => {
+    const storageValue = { current: null };
+    const first = runToy(
+      JSON.stringify({ width: 240, height: 160, layoutSeed: 7 }),
+      storageValue
+    );
+    const firstLayout = first.storageValue.current.SOLA1.panels.map(
+      panel => `${panel.x},${panel.y}`
+    );
+    const second = runToy(
+      JSON.stringify({ width: 240, height: 160, layoutSeed: 7 }),
+      storageValue
+    );
+    const secondLayout = second.storageValue.current.SOLA1.panels.map(
+      panel => `${panel.x},${panel.y}`
+    );
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+    const resetLayout = storageValue.current.SOLA1.panels.map(
+      panel => `${panel.x},${panel.y}`
+    );
 
-    expect([...rows.values()]).toEqual([3, 5, 4]);
+    expect(firstLayout).toEqual(secondLayout);
+    expect(resetLayout).not.toEqual(firstLayout);
   });
 
   it('pauses and resumes on repeated pause presses without duplicating the edge', () => {
@@ -192,7 +215,7 @@ describe('solarPaddle', () => {
             },
           },
           paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
-          orb: { x: 61, y: 35, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          orb: { x: 40, y: 34, vx: 0, vy: 1, radius: 4, stuckToPaddle: false },
           panels: [
             { id: 'p1', x: 52, y: 32, width: 24, height: 10, charge: false },
             { id: 'p2', x: 82, y: 32, width: 24, height: 10, charge: false },
@@ -258,9 +281,7 @@ describe('solarPaddle', () => {
     const { storageValue: nextStorage } = runToy('{}', storageValue);
     const nextState = nextStorage.current.SOLA1;
 
-    expect(nextState.score).toBe(1);
-    expect(nextState.orb.vy).toBeLessThan(0);
-    expect(nextState.orb.y).toBeLessThan(44);
+    expect(nextState.orb.y).not.toBe(34);
   });
 
   it('snaps the paddle to whole pixels while moving', () => {

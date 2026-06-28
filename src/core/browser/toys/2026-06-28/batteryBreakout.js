@@ -76,7 +76,10 @@ function buildNextState(persisted, input) {
   const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
   const inputState = updateInputState(base.input, input);
   if (inputState.actions.resetPressed && !inputState.previousActions.resetPressed) {
-    const resetState = createSeedState(input);
+    const resetState = createSeedState({
+      ...input,
+      layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
+    });
     resetState.input = inputState;
     return resetState;
   }
@@ -106,6 +109,10 @@ function createSeedState(input, fallback) {
   const orbRadius = normalizePositiveInteger(input?.orbRadius, DEFAULT_ORB_RADIUS);
   const orbSpeedX = normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X);
   const orbSpeedY = normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y);
+  const layoutSeed = normalizePositiveInteger(
+    input?.layoutSeed,
+    fallback?.layoutSeed ?? 1
+  );
   return createState({
     width,
     height,
@@ -115,9 +122,10 @@ function createSeedState(input, fallback) {
     orbRadius,
     orbSpeedX,
     orbSpeedY,
+    layoutSeed,
     lives: normalizePositiveInteger(input?.lives, fallback?.lives ?? DEFAULT_LIVES),
     faults: normalizePositiveInteger(input?.faults, 0),
-    cells: normalizeCells(width, height),
+    cells: normalizeCells(width, height, layoutSeed),
   });
 }
 
@@ -263,9 +271,10 @@ function createSeedOptions() {
     orbRadius: DEFAULT_ORB_RADIUS,
     orbSpeedX: DEFAULT_ORB_SPEED_X,
     orbSpeedY: DEFAULT_ORB_SPEED_Y,
+    layoutSeed: 1,
     lives: DEFAULT_LIVES,
     faults: 0,
-    cells: normalizeCells(DEFAULT_WIDTH, DEFAULT_HEIGHT),
+    cells: normalizeCells(DEFAULT_WIDTH, DEFAULT_HEIGHT, 1),
   };
 }
 
@@ -298,34 +307,65 @@ function normalizeCellState(value, charge, targetCharge, maxCharge) {
   return 'empty';
 }
 
-function normalizeCells(width, height) {
+function normalizeCells(width, height, seed = 1) {
   const cellWidth = 28;
   const cellHeight = 12;
-  const spineX = Math.max(
-    CELL_LEFT,
-    Math.round(width / 2) - Math.round(cellWidth / 2)
+  const positions = shufflePositions(
+    buildCellPositions(width, height, cellWidth, cellHeight),
+    seed
   );
-  const rows = [
-    { count: 2, offset: -48, y: CELL_TOP },
-    { count: 4, offset: -66, y: CELL_TOP + 20 },
-    { count: 3, offset: -12, y: CELL_TOP + 40 },
-  ];
-
-  return rows.flatMap((row, rowIndex) => {
-    const rowWidth = row.count * cellWidth + (row.count - 1) * CELL_GAP_X;
-    const startX = Math.max(CELL_LEFT, spineX + row.offset - rowWidth / 2);
-    return Array.from({ length: row.count }, (_, col) => ({
-      id: `cell-${rowIndex + 1}-${col + 1}`,
-      x: Math.round(startX + col * (cellWidth + CELL_GAP_X)),
-      y: row.y,
-      width: cellWidth,
-      height: cellHeight,
-      charge: 0,
-      targetCharge: DEFAULT_CELL_TARGET,
-      maxCharge: DEFAULT_CELL_MAX,
-      state: 'empty',
-    }));
+  const counts = [2, 4, 3];
+  const cells = [];
+  let index = 0;
+  counts.forEach((count, rowIndex) => {
+    for (let col = 0; col < count; col += 1) {
+      const position = positions[index++];
+      cells.push({
+        id: `cell-${rowIndex + 1}-${col + 1}`,
+        x: position.x,
+        y: position.y,
+        width: cellWidth,
+        height: cellHeight,
+        charge: 0,
+        targetCharge: DEFAULT_CELL_TARGET,
+        maxCharge: DEFAULT_CELL_MAX,
+        state: 'empty',
+      });
+    }
   });
+  return cells;
+}
+
+function buildCellPositions(width, height, cellWidth, cellHeight) {
+  const yPositions = [CELL_TOP, CELL_TOP + 18, CELL_TOP + 36];
+  const xPositions = [
+    CELL_LEFT,
+    Math.max(CELL_LEFT + 18, Math.round(width * 0.18)),
+    Math.max(CELL_LEFT + 36, Math.round(width * 0.34)),
+    Math.max(CELL_LEFT + 54, Math.round(width * 0.52)),
+    Math.max(CELL_LEFT + 72, Math.round(width * 0.68)),
+  ];
+  return yPositions.flatMap((y, rowIndex) =>
+    xPositions.map((x, colIndex) => ({
+      x: clamp(
+        x + (rowIndex === 1 ? 10 : rowIndex === 2 ? -6 : 0) + (colIndex % 2 === 0 ? 0 : 5),
+        CELL_LEFT,
+        width - cellWidth - CELL_LEFT
+      ),
+      y: clamp(y + (colIndex % 3 === 0 ? 0 : 2), CELL_TOP, height - cellHeight - 60),
+    }))
+  );
+}
+
+function shufflePositions(positions, seed) {
+  const items = positions.slice();
+  let state = seed || 1;
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    const j = state % (i + 1);
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
 }
 
 function updateInputState(previous, input) {

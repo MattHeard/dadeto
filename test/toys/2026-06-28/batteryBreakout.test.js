@@ -53,13 +53,34 @@ describe('batteryBreakout', () => {
   it('uses a staggered default cell layout', () => {
     const { storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
     const cells = storageValue.current.BATT4.cells;
-    const rows = new Map();
+    expect(cells).toHaveLength(9);
+    expect(new Set(cells.map(cell => `${cell.x},${cell.y}`)).size).toBe(9);
+    expect(new Set(cells.map(cell => cell.y)).size).toBeGreaterThan(1);
+  });
 
-    for (const cell of cells) {
-      rows.set(cell.y, (rows.get(cell.y) || 0) + 1);
-    }
+  it('repeats the same layout for the same seed and changes after reset', () => {
+    const storageValue = { current: null };
+    const first = runToy(
+      JSON.stringify({ width: 240, height: 160, layoutSeed: 7 }),
+      storageValue
+    );
+    const firstLayout = first.storageValue.current.BATT4.cells.map(
+      cell => `${cell.x},${cell.y}`
+    );
+    const second = runToy(
+      JSON.stringify({ width: 240, height: 160, layoutSeed: 7 }),
+      storageValue
+    );
+    const secondLayout = second.storageValue.current.BATT4.cells.map(
+      cell => `${cell.x},${cell.y}`
+    );
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+    const resetLayout = storageValue.current.BATT4.cells.map(
+      cell => `${cell.x},${cell.y}`
+    );
 
-    expect([...rows.values()]).toEqual([2, 4, 3]);
+    expect(firstLayout).toEqual(secondLayout);
+    expect(resetLayout).not.toEqual(firstLayout);
   });
 
   it('resets to a fresh state on r', () => {

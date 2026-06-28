@@ -132,7 +132,10 @@ function buildNextState(persisted, input) {
     stepSimulation(withInput);
   }
   if (inputState.edgeActions.resetPressed) {
-    return createSeedState(input);
+    return createSeedState({
+      ...input,
+      layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
+    });
   }
 
   return withInput;
@@ -192,6 +195,10 @@ function createSeedState(input, fallback) {
   );
   const orbSpeedX = normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X);
   const orbSpeedY = normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y);
+  const layoutSeed = normalizePositiveInteger(
+    input?.layoutSeed,
+    fallback?.layoutSeed ?? 1
+  );
   return createState({
     width,
     height,
@@ -201,11 +208,12 @@ function createSeedState(input, fallback) {
     orbRadius,
     orbSpeedX,
     orbSpeedY,
+    layoutSeed,
     lives: normalizePositiveInteger(
       input?.lives,
       fallback?.lives ?? DEFAULT_LIVES
     ),
-    panels: normalizePanels(width, height),
+    panels: normalizePanels(width, height, layoutSeed),
   });
 }
 
@@ -496,8 +504,9 @@ function createSeedOptions() {
     orbRadius: DEFAULT_ORB_RADIUS,
     orbSpeedX: DEFAULT_ORB_SPEED_X,
     orbSpeedY: DEFAULT_ORB_SPEED_Y,
+    layoutSeed: 1,
     lives: DEFAULT_LIVES,
-    panels: normalizePanels(DEFAULT_WIDTH, DEFAULT_HEIGHT),
+    panels: normalizePanels(DEFAULT_WIDTH, DEFAULT_HEIGHT, 1),
   };
 }
 
@@ -530,31 +539,62 @@ function normalizePanelsFromState(value) {
  * @param width
  * @param height
  */
-function normalizePanels(width, height) {
+function normalizePanels(width, height, seed = 1) {
   const panelWidth = 28;
   const panelHeight = 10;
-  const rowSpecs = [
-    { count: 3, xOffset: 22 },
-    { count: 5, xOffset: 8 },
-    { count: 4, xOffset: 36 },
-  ];
-  const centerX = Math.max(
-    PANEL_LEFT,
-    Math.round((width - (DEFAULT_PANEL_COLS * panelWidth + 4 * PANEL_GAP)) / 2)
+  const positions = shufflePositions(
+    buildPanelPositions(width, height, panelWidth, panelHeight),
+    seed
   );
-
-  return rowSpecs.flatMap((row, rowIndex) => {
-    const rowWidth = row.count * panelWidth + (row.count - 1) * PANEL_GAP;
-    const startX = Math.max(PANEL_LEFT, centerX + row.xOffset - rowWidth / 2);
-    return Array.from({ length: row.count }, (_, col) => ({
-      id: `p${rowIndex + 1}-${col + 1}`,
-      x: Math.round(startX + col * (panelWidth + PANEL_GAP)),
-      y: PANEL_TOP + rowIndex * (panelHeight + PANEL_GAP),
-      width: panelWidth,
-      height: panelHeight,
-      charge: false,
-    }));
+  const counts = [3, 5, 4];
+  const rows = [];
+  let index = 0;
+  counts.forEach((count, rowIndex) => {
+    for (let col = 0; col < count; col += 1) {
+      const position = positions[index++];
+      rows.push({
+        id: `p${rowIndex + 1}-${col + 1}`,
+        x: position.x,
+        y: position.y,
+        width: panelWidth,
+        height: panelHeight,
+        charge: false,
+      });
+    }
   });
+  return rows;
+}
+
+function buildPanelPositions(width, height, panelWidth, panelHeight) {
+  const yPositions = [PANEL_TOP, PANEL_TOP + 16, PANEL_TOP + 32];
+  const xPositions = [
+    PANEL_LEFT,
+    Math.max(PANEL_LEFT + 20, Math.round(width * 0.2)),
+    Math.max(PANEL_LEFT + 40, Math.round(width * 0.38)),
+    Math.max(PANEL_LEFT + 60, Math.round(width * 0.56)),
+    Math.max(PANEL_LEFT + 80, Math.round(width * 0.72)),
+  ];
+  return yPositions.flatMap((y, rowIndex) =>
+    xPositions.map((x, colIndex) => ({
+      x: clamp(
+        x + (rowIndex === 1 ? 12 : rowIndex === 2 ? -8 : 0) + (colIndex % 2 === 0 ? 0 : 6),
+        PANEL_LEFT,
+        width - panelWidth - PANEL_LEFT
+      ),
+      y: clamp(y + (colIndex % 3 === 0 ? 0 : 2), PANEL_TOP, height - panelHeight - 60),
+    }))
+  );
+}
+
+function shufflePositions(positions, seed) {
+  const items = positions.slice();
+  let state = seed || 1;
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    const j = state % (i + 1);
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
 }
 
 /**
