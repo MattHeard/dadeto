@@ -1789,6 +1789,7 @@ export const renderVariantCoreTestUtils = {
   extractVariantName,
   gatherMetadata,
   loadOptions,
+  hasVisibleVariants,
   rebindTenantDocumentRef,
   rebindTenantCollectionRef,
   resolveStoryMetadata,
@@ -3367,24 +3368,23 @@ async function getVariantsSnapshot(pageRef) {
   return /** @type {any} */ (pageRef).collection('variants').get();
 }
 
-/* c8 ignore start */
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 /**
- *
- * @param docs
- * @param visibilityThreshold
+ * @param {Array<{ data: () => Record<string, any> }>} docs Variant snapshots.
+ * @param {number} visibilityThreshold Visibility threshold.
+ * @returns {boolean} True when a visible variant exists.
  */
 function hasVisibleVariants(docs, visibilityThreshold) {
   return docs.some(
-    /** @param {{ data: () => Record<string, any> }} doc */
+    /**
+     * @param {{ data: () => Record<string, any> }} doc Variant snapshot.
+     * @returns {boolean} True when the snapshot is visible.
+     */
     doc => {
       const data = /** @type {any} */ (doc.data());
       return (data.visibility ?? 1) >= visibilityThreshold;
     }
   );
 }
-/* eslint-enable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
-/* c8 ignore end */
 
 /**
  * @param {FirestoreLike} db Firestore client.

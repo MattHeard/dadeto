@@ -207,6 +207,40 @@ describe('createUpdateVariantVisibilityHandler', () => {
     await expect(handler({ data: () => null })).resolves.toBeNull();
   });
 
+  it('updates visibility without a moderator id', async () => {
+    const variantData = {
+      visibility: 0.5,
+      moderationRatingCount: 2,
+      moderatorReputationSum: 2,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const db = createDb(variantRef, {});
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await expect(
+      handler(
+        createSnapshot({
+          moderatorId: '',
+          variantId: '/variants/id',
+          isApproved: true,
+        })
+      )
+    ).resolves.toBeNull();
+
+    expect(variantRef.update).toHaveBeenCalledWith({
+      visibility: 0.6666666666666666,
+      moderatorRatingCount: 3,
+      moderatorReputationSum: 3,
+    });
+  });
+
   it('updates visibility when the variant is approved', async () => {
     const variantData = {
       visibility: 0.5,

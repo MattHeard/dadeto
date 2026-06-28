@@ -12,4 +12,19 @@ describe('renderVariantCoreTestUtils', () => {
       renderVariantCore.VISIBILITY_THRESHOLD
     );
   });
+
+  test('hasVisibleVariants checks for any visible snapshot', () => {
+    expect(
+      renderVariantCoreTestUtils.hasVisibleVariants(
+        [{ data: () => ({ visibility: 0.25 }) }],
+        0.5
+      )
+    ).toBe(false);
+    expect(
+      renderVariantCoreTestUtils.hasVisibleVariants(
+        [{ data: () => ({ visibility: 0.75 }) }],
+        0.5
+      )
+    ).toBe(true);
+  });
 });

@@ -440,7 +440,6 @@ async function executeVariantUpdate(db, snapshot, renderContents) {
   return applyVariantUpdate(db, payload, renderContents);
 }
 
-/* c8 ignore start */
 /* eslint-disable complexity */
 /**
  * Apply the visibility update using the validated payload.
@@ -496,9 +495,7 @@ async function applyVariantUpdate(db, payload, renderContents) {
   return null;
 }
 /* eslint-enable complexity */
-/* c8 ignore end */
 
-// c8 ignore next
 /**
  * @param {Record<string, unknown> | null | undefined} variantData Variant data.
  * @param {boolean} isApproved Whether the rating is approved.
