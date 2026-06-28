@@ -456,6 +456,30 @@ describe('joyConMapper coverage helpers', () => {
     });
   });
 
+  it('logs each WebHID input report', () => {
+    const disposers = [];
+    const device = {
+      productName: 'Joy-Con (L)',
+      vendorId: 1406,
+      productId: 8198,
+      addEventListener: jest.fn((event, handler) => {
+        device._handler = handler;
+      }),
+      removeEventListener: jest.fn(),
+    };
+    const state = { dom: createDom(), hidSnapshot: null, hidDevices: [device] };
+
+    attachHidDeviceListener(state, disposers, device);
+    device._handler({
+      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+    });
+
+    expect(state.hidSnapshot).toEqual({
+      buttons: snapshotHidButtons(0x03),
+      axes: snapshotHidAxes([255, 0]),
+    });
+  });
+
   it('covers WebHID listener guards and gamepad snapshotting', () => {
     const state = { dom: createDom(), hidSnapshot: null };
     const disposers = [];

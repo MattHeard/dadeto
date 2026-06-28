@@ -265,6 +265,7 @@ function attachHidDeviceListener(state, disposers, device) {
 
   const handler = /** @type {(event: HidInputReportEventLike) => void} */ (
     event => {
+      logHidReportEvent(device, event);
       state.hidSnapshot = snapshotHidInputReport(event);
     }
   );
@@ -286,6 +287,25 @@ function snapshotHidInputReport(event) {
   /* c8 ignore next */
   const axes = bytes.length > 1 ? snapshotHidAxes(bytes.slice(1, 3)) : [];
   return { buttons, axes };
+}
+
+/**
+ * Log a WebHID input report from a Joy-Con.
+ * @param {HidDeviceLike} device
+ *   HID device that emitted the report.
+ * @param {HidInputReportEventLike} event
+ *   Raw input report event.
+ * @returns {void}
+ *   Writes a concise debug line.
+ */
+function logHidReportEvent(device, event) {
+  const bytes = Array.from(new Uint8Array(event.data.buffer));
+  console.log('[joyConMapper:webhid]', 'report', {
+    productName: device.productName,
+    vendorId: device.vendorId,
+    productId: device.productId,
+    bytes,
+  });
 }
 
 /**
