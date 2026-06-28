@@ -36,6 +36,35 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.paddle.x).toBeGreaterThan(100);
   });
 
+  it('resets to a fresh state on r', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 8,
+          status: 'running',
+          score: 2,
+          lives: 1,
+          faults: 2,
+          input: { keyboard: {}, gamepad: { buttons: [], axes: [] }, actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false }, previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false } },
+          paddle: { x: 10, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 44, y: 37, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [{ id: 'cell-1', x: 32, y: 32, width: 24, height: 10, charge: 3, targetCharge: 2, maxCharge: 3, state: 'overcharged' }],
+        },
+      },
+    };
+
+    const next = runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+
+    expect(next.storageValue.current.BATT4.status).toBe('ready');
+    expect(next.storageValue.current.BATT4.score).toBe(0);
+    expect(next.storageValue.current.BATT4.lives).toBe(3);
+    expect(next.storageValue.current.BATT4.faults).toBe(0);
+    expect(next.storageValue.current.BATT4.orb.stuckToPaddle).toBe(true);
+  });
+
   it('charges a cell and eventually stabilizes it', () => {
     const storageValue = {
       current: {

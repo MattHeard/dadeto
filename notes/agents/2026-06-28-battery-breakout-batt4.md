@@ -1,4 +1,5 @@
 - Unexpected hurdle: the PRD referenced `BATB1`, but the requested repo key was `BATT4`, so the implementation had to diverge from the document’s proposed key.
 - Diagnosis path: I fetched the Google Doc PRD, verified the existing blog-key generator output against `src/build/blog.json`, and then built the new toy around the actual existing key space.
 - Chosen fix: added `batteryBreakout.js`, focused Jest coverage, Battery Breakout docs, and a `BATT4` blog entry; then rebuilt the public artifacts.
+- Reset follow-up: the first implementation path preserved persisted lives on reset, which made the reset feel broken until I forced the seed to come from defaults and added a direct `r` regression test.
 - Next-time guidance: when a PRD’s proposed key conflicts with repo reality, lock the accepted key first and keep the manifest/docs/tests consistent with that one source of truth.

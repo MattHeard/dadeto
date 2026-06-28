@@ -75,12 +75,14 @@ function buildNextState(persisted, input) {
   const shouldReset = input?.reset === true || !persisted;
   const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
   const inputState = updateInputState(base.input, input);
+  if (inputState.actions.resetPressed && !inputState.previousActions.resetPressed) {
+    const resetState = createSeedState(input);
+    resetState.input = inputState;
+    return resetState;
+  }
   const withInput = { ...merged, input: inputState, frame: base.frame + 1 };
   applyGameplayInput(withInput, inputState);
   if (withInput.status === 'running') stepSimulation(withInput);
-  if (inputState.actions.reset && inputState.previousActions.reset === false) {
-    return createSeedState(input);
-  }
   return withInput;
 }
 
