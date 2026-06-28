@@ -126,6 +126,40 @@ describe('solarPaddle', () => {
     const { storageValue: nextStorage } = runToy('{}', storageValue);
 
     expect(nextStorage.current.SOLA1.lives).toBe(1);
+    expect(nextStorage.current.SOLA1.status).toBe('ready');
     expect(nextStorage.current.SOLA1.orb.stuckToPaddle).toBe(true);
+  });
+
+  it('can relaunch after a missed orb and life loss', () => {
+    const storageValue = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 2,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: { left: false, right: false, launch: false, pause: false, reset: false },
+            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
+            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+          },
+          paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
+          orb: { x: 80, y: 150, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          panels: [],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+    runToy(JSON.stringify({ type: 'keyup', key: 'Space' }), storageValue);
+    const relaunched = runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
+
+    expect(relaunched.storageValue.current.SOLA1.status).toBe('running');
+    expect(relaunched.storageValue.current.SOLA1.orb.stuckToPaddle).toBe(false);
   });
 });

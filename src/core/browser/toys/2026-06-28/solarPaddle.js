@@ -596,6 +596,7 @@ function resolveWinLoss(state) {
 }
 
 function resetOrbToPaddle(state) {
+  state.status = 'ready';
   state.orb.stuckToPaddle = true;
   state.orb.vx = DEFAULT_ORB_SPEED_X;
   state.orb.vy = DEFAULT_ORB_SPEED_Y;
