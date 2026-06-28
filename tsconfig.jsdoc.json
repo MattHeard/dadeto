@@ -37,10 +37,6 @@
     "src/core/browser/moderate.js",
     "src/core/browser/presenters/realtimeVoicePrototype.js",
     "src/core/browser/toys.js",
-    "src/core/cloud/recalculate-moderator-reputation/run.js",
-    "src/core/cloud/render-contents/render-contents-core.js",
-    "src/core/cloud/render-variant/render-variant-core.js",
-    "src/core/cloud/update-variant-visibility/update-variant-visibility-core.js",
     "src/core/build/generator.js",
     "src/core/build/full-width.js",
     "src/core/build/head.js",
@@ -52,7 +48,6 @@
     "src/core/local/symphony/launch.js",
     "src/core/local/symphony/tuiRenderer.js",
     "src/core/path.js",
-    "src/core/scripts/check-overexposed-exports.js",
     "src/browser",
     "src/cloud",
     "src/scripts"

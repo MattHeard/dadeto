@@ -1,5 +1,3 @@
-/* eslint-disable complexity, no-ternary, jsdoc/require-param-description, jsdoc/require-param-type */
-// @ts-nocheck
 import {
   DEFAULT_BUCKET_NAME,
   normalizeStaticObjectPrefix,
@@ -26,9 +24,9 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
 
 /**
  * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
- * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData>} DocumentReferenceData
+ * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> & { parent?: DocumentReferenceData | null, set?: (data: unknown) => Promise<unknown> }} DocumentReferenceData
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>} DocumentSnapshotData
- * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => import('firebase-admin/firestore').CollectionReference }} FirestoreLike
+ * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => import('firebase-admin/firestore').CollectionReference, collectionGroup: (path: string) => { where: Function, get: Function } }} FirestoreLike
  * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
  * @typedef {object} AncestorReference
@@ -104,7 +102,8 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  *   targetPageNumber: number;
  *   targetVariantName?: string;
  * }} ReverseLinkRecord
- * @typedef {{ params?: Record<string, string> }} RenderContext
+ * @typedef {{ params?: Record<string, string>, rewriteTargetPageNumbers?: number[] }} RenderContext
+ * @typedef {{ rewriteTargetPageNumbers?: number[] }} RewriteContext
  * @typedef {{ params?: Record<string, string>, rewriteTargetPageNumbers?: number[] }} RewriteRenderContext
  * @typedef {RenderOutput & {
  *   snap: VariantSnapshot;
@@ -260,7 +259,7 @@ function renderInlineMarkdown(text) {
  * @param {number} pageNumber - Page number the option belongs to.
  * @param {string} variantName - Variant identifier tied to the option.
  * @param {VariantOption} option - Option metadata from Firestore.
- * @param {{ rewriteTargetPageNumbers?: number[] } | undefined} rewriteContext Rewrite targets for generated URLs.
+ * @param {RewriteContext | undefined} rewriteContext Rewrite targets for generated URLs.
  * @returns {string} HTML list item for the option.
  */
 function buildOptionItem(pageNumber, variantName, option, rewriteContext) {
@@ -291,7 +290,7 @@ function buildBaseAttrs(slug, href) {
  * @param {number} pageNumber - Page number used for slug creation.
  * @param {string} variantName - Variant identifier used for slug creation.
  * @param {VariantOption[]} options - List of variant navigation options.
- * @param {{ rewriteTargetPageNumbers?: number[] } | undefined} rewriteContext Rewrite targets for generated URLs.
+ * @param {RewriteContext | undefined} rewriteContext Rewrite targets for generated URLs.
  * @returns {string} Joined HTML list of options.
  */
 function buildOptionsHtml(pageNumber, variantName, options, rewriteContext) {
@@ -310,10 +309,10 @@ function buildOptionsHtml(pageNumber, variantName, options, rewriteContext) {
 function buildOptionsItems(resolvedParams) {
   const { pageNumber, variantName, options, rewriteTargetPageNumbers } =
     resolvedParams;
-  const rewriteContext =
-    rewriteTargetPageNumbers && rewriteTargetPageNumbers.length
-      ? { rewriteTargetPageNumbers }
-      : undefined;
+  let rewriteContext;
+  if (rewriteTargetPageNumbers && rewriteTargetPageNumbers.length) {
+    rewriteContext = { rewriteTargetPageNumbers };
+  }
   return buildOptionsHtml(pageNumber, variantName, options, rewriteContext);
 }
 
@@ -321,12 +320,13 @@ function buildOptionsItems(resolvedParams) {
  * Resolve the href used to navigate from an option entry.
  * @param {string} slug - Slug referencing the option when linking back to the editor.
  * @param {{ targetPageNumber?: number, targetVariantName?: string }} option - Option metadata.
- * @param rewriteContext
+ * @param {RewriteContext | undefined} rewriteContext Rewrite targets for generated URLs.
  * @returns {string} Final href for the option link.
  */
 function resolveOptionHref(slug, option, rewriteContext = {}) {
   if (option.targetPageNumber !== undefined) {
     if (
+      rewriteContext &&
       rewriteContext.rewriteTargetPageNumbers?.includes(option.targetPageNumber)
     ) {
       return `../new-page.html?page=${option.targetPageNumber}`;
@@ -2772,6 +2772,7 @@ function isPageSnapValid(pageSnap) {
  * @property {ConsoleError} [consoleError] Optional logger for reporting issues.
  * @property {number} [visibilityThreshold] Threshold that determines visible options.
  * @property {VariantDocument} variant Variant document record stored in Firestore.
+ * @property {number[]} [rewriteTargetPageNumbers] Variant page numbers that should rewrite links.
  *
  * Gather metadata for rendering.
  * @param {RenderMetadataDeps} deps Dependencies required to resolve the render metadata.
@@ -2974,17 +2975,19 @@ async function buildRenderPlan({
 }) {
   const { pageSnap, page } = pageData;
   const variant = /** @type {VariantDocument} */ (snap.data());
-  const metadata = await gatherMetadata({
-    snap,
-    db,
-    bucket,
-    pageSnap,
-    page,
-    consoleError,
-    visibilityThreshold,
-    variant,
-    rewriteTargetPageNumbers,
-  });
+  const metadata = await gatherMetadata(
+    /** @type {RenderMetadataDeps} */ ({
+      snap,
+      db,
+      bucket,
+      pageSnap,
+      page,
+      consoleError,
+      visibilityThreshold,
+      variant,
+      rewriteTargetPageNumbers,
+    })
+  );
 
   return buildRenderOutput({
     page,
@@ -3166,11 +3169,11 @@ async function saveReverseLinkRecords({ snap, db, reverseLinks }) {
 
   await Promise.all(
     reverseLinks.map(record =>
-      db
-        .doc(
+      /** @type {any} */ (
+        db.doc(
           `${variantRef.path}/reverse-links/${buildReverseLinkDocId(record)}`
         )
-        .set(record)
+      ).set(record)
     )
   );
 }
@@ -3339,41 +3342,110 @@ export function createHandleVariantWrite({
     db,
     renderVariantFn
   ) {
-    const pageRef = after?.ref?.parent?.parent;
+    const pageRef = getPageRefFromVariantSnapshot(after);
     if (!pageRef) {
       return;
     }
 
-    const variantsSnap = await pageRef.collection('variants').get();
-    const visibleVariants = variantsSnap.docs.filter(
-      doc =>
-        /** @type {any} */ (doc.data().visibility ?? 1) >= visibilityThreshold
-    );
-    if (visibleVariants.length > 0) {
+    const variantsSnap = await getVariantsSnapshot(pageRef);
+    if (hasVisibleVariants(variantsSnap.docs, visibilityThreshold)) {
       return;
     }
 
-    const pageSnap = await pageRef.get();
-    const pageNumber = /** @type {any} */ (pageSnap.data() || {}).number;
-    const inboundSnap = await db
-      .collectionGroup('reverse-links')
-      .where('targetPageNumber', '==', pageNumber)
-      .get();
-
-    const sourceFilePaths = inboundSnap.docs
-      .map(doc => doc.data().sourceFilePath)
-      .filter(path => typeof path === 'string' && path.length > 0);
-
-    for (const sourceFilePath of sourceFilePaths) {
-      const sourceSnap = await db.doc(sourceFilePath).get();
-      if (!sourceSnap.exists) {
-        continue;
-      }
-      await renderVariantFn(sourceSnap, {
-        rewriteTargetPageNumbers: [pageNumber],
-      });
-    }
+    const pageNumber = await getPageNumber(pageRef);
+    await republishInboundVariants(db, renderVariantFn, pageNumber);
   }
+}
+
+/**
+ * @param {any} pageRef Page reference.
+ * @returns {Promise<{ docs: Array<{ data: () => Record<string, any> }> }>} Variant snapshot collection.
+ */
+async function getVariantsSnapshot(pageRef) {
+  return /** @type {any} */ (pageRef).collection('variants').get();
+}
+
+/**
+ * @param {Array<{ data: () => Record<string, any> }>} docs Variant snapshots.
+ * @param {number} visibilityThreshold Visibility threshold.
+ * @returns {boolean} True when a visible variant exists.
+ */
+/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
+function hasVisibleVariants(docs, visibilityThreshold) {
+  return docs.some(
+    /** @param {{ data: () => Record<string, any> }} doc */
+    doc => {
+      const data = /** @type {any} */ (doc.data());
+      return (data.visibility ?? 1) >= visibilityThreshold;
+    }
+  );
+}
+/* eslint-enable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
+/* eslint-enable jsdoc/require-param-description, jsdoc/require-returns */
+
+/**
+ * @param {FirestoreLike} db Firestore client.
+ * @param {(snap: any, context?: object) => Promise<null>} renderVariantFn Renderer.
+ * @param {number} pageNumber Page number.
+ * @returns {Promise<void>} Promise.
+ */
+async function republishInboundVariants(db, renderVariantFn, pageNumber) {
+  const sourceFilePaths = await getInboundSourceFilePaths(db, pageNumber);
+  for (const sourceFilePath of sourceFilePaths) {
+    const sourceSnap = await db.doc(sourceFilePath).get();
+    if (!sourceSnap.exists) {
+      continue;
+    }
+    await renderVariantFn(sourceSnap, {
+      rewriteTargetPageNumbers: [pageNumber],
+    });
+  }
+}
+
+/**
+ * @param {any} pageRef Page reference.
+ * @returns {Promise<number>} Page number.
+ */
+async function getPageNumber(pageRef) {
+  const pageSnap = await /** @type {any} */ (pageRef).get();
+  return /** @type {any} */ (pageSnap.data() || {}).number;
+}
+
+/**
+ * @param {FirestoreLike} db Firestore client.
+ * @param {number} pageNumber Page number.
+ * @returns {Promise<string[]>} Source file paths.
+ */
+async function getInboundSourceFilePaths(db, pageNumber) {
+  const inboundSnap = await db
+    .collectionGroup('reverse-links')
+    .where('targetPageNumber', '==', pageNumber)
+    .get();
+  return inboundSnap.docs.map(mapSourceFilePath).filter(isNonEmptyString);
+}
+
+/**
+ * @param {{ data: () => Record<string, any> }} doc Reverse-link snapshot.
+ * @returns {string | undefined} Source file path.
+ */
+function mapSourceFilePath(doc) {
+  return /** @type {any} */ (doc.data()).sourceFilePath;
+}
+
+/**
+ * @param {any} after Variant snapshot.
+ * @returns {any} Page reference.
+ */
+function getPageRefFromVariantSnapshot(after) {
+  return after?.ref?.parent?.parent ?? null;
+}
+
+/**
+ * @param {unknown} value Candidate path.
+ * @returns {value is string} True when the value is a non-empty string.
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.length > 0;
 }
 
 export {

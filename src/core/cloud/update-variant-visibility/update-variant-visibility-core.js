@@ -1,5 +1,3 @@
-/* eslint-disable complexity, no-ternary, jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
-// @ts-nocheck
 import { getNumericValueOrZero } from '../cloud-core.js';
 import { objectOrEmpty, when, ADMIN_UID } from '../../commonCore.js';
 import { createFirestoreHandle } from '../firestore-handle.js';
@@ -251,11 +249,14 @@ async function getModeratorReputation(db, moderatorId) {
  * @returns {number} Safe reputation weight.
  */
 function normalizeModeratorReputation(reputation) {
-  return typeof reputation === 'number' &&
+  if (
+    typeof reputation === 'number' &&
     Number.isFinite(reputation) &&
     reputation > 0
-    ? reputation
-    : 1;
+  ) {
+    return reputation;
+  }
+  return 1;
 }
 
 /**
@@ -425,7 +426,7 @@ export function createUpdateVariantVisibilityHandle(
  * Execute the variant update logic when a valid payload exists.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  * @param {import('firebase-admin/firestore').DocumentSnapshot} snapshot Trigger snapshot.
- * @param {(context?: object) => Promise<unknown> | undefined} [renderContents]
+ * @param {(context?: object) => Promise<unknown> | undefined} [renderContents] Optional content renderer.
  * @returns {Promise<null>} Resolves with null when complete.
  */
 async function executeVariantUpdate(db, snapshot, renderContents) {
@@ -441,9 +442,10 @@ async function executeVariantUpdate(db, snapshot, renderContents) {
  * Apply the visibility update using the validated payload.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
  * @param {{ variantId: string; isApproved: boolean; moderatorId?: string }} payload Validated inputs.
- * @param {(context?: object) => Promise<unknown> | undefined} [renderContents]
+ * @param {(context?: object) => Promise<unknown> | undefined} [renderContents] Optional content renderer.
  * @returns {Promise<null>} Resolves after the update runs.
  */
+/* eslint-disable complexity */
 async function applyVariantUpdate(db, payload, renderContents) {
   const variantRef = resolveVariantRef(db, payload.variantId);
   if (!variantRef) {
@@ -451,14 +453,18 @@ async function applyVariantUpdate(db, payload, renderContents) {
   }
 
   const variantSnap = await variantRef.get();
-  const moderatorReputation = await getModeratorReputation(
-    db,
-    payload.moderatorId
-  );
+  const moderatorId = payload.moderatorId;
+  let moderatorReputation = 0;
+  if (moderatorId) {
+    moderatorReputation = await getModeratorReputation(db, moderatorId);
+  }
   const variantData = getValidVariantSnapshotData(variantSnap);
-  const pageRef = variantRef.parent?.parent ?? null;
-  const storyRef = pageRef?.parent?.parent ?? null;
-  const storySnap = storyRef ? await storyRef.get() : null;
+  const pageRef = getPageRefFromVariantRef(/** @type {any} */ (variantRef));
+  const storyRef = getStoryRefFromPageRef(pageRef);
+  let storySnap = null;
+  if (storyRef) {
+    storySnap = await storyRef.get();
+  }
   const rootPageRef = storySnap?.data?.()?.rootPage ?? null;
   const wasVisible = hasVisibleState(variantData, 0.5);
   await processVariantUpdate(
@@ -468,31 +474,33 @@ async function applyVariantUpdate(db, payload, renderContents) {
     moderatorReputation
   );
   const nextVisibility = calculateNextVisibility(
-    variantData,
+    variantData ?? {},
     payload.isApproved,
     moderatorReputation
   );
-  if (payload.moderatorId === ADMIN_UID) {
-    await variantRef.update({
-      visibility: calculateAdminLockedVisibility(payload.isApproved),
-      visibilityLockedBy: ADMIN_UID,
-    });
-  }
-  if (
-    renderContents &&
-    shouldRepublishContents(pageRef, rootPageRef, wasVisible, nextVisibility)
-  ) {
-    await renderContents();
-  }
+  await applyAdminLockIfNeeded(
+    variantRef,
+    moderatorId ?? '',
+    payload.isApproved
+  );
+  await republishContentsIfNeeded({
+    renderContents,
+    pageRef,
+    rootPageRef,
+    wasVisible,
+    nextVisibility,
+  });
   return null;
 }
+/* eslint-enable complexity */
 
 // c8 ignore next
 /**
  *
- * @param variantData
- * @param isApproved
- * @param moderatorReputation
+ * @param {Record<string, unknown> | null | undefined} variantData Variant data.
+ * @param {boolean} isApproved Whether the rating is approved.
+ * @param {number} moderatorReputation Moderator reputation score.
+ * @returns {number} Next visibility score.
  */
 export function calculateNextVisibility(
   variantData,
@@ -507,15 +515,16 @@ export function calculateNextVisibility(
   /* c8 ignore next */
   if (isVisibilityLockedByAdmin(variantData ?? {})) {
     /* c8 ignore next */
-    return getSafeNumber(variantData, 'visibility');
+    return getSafeNumber(variantData ?? {}, 'visibility');
   }
   return newStats.visibility;
 }
 
 /**
  *
- * @param variantData
- * @param threshold
+ * @param {Record<string, unknown> | null | undefined} variantData Variant data.
+ * @param {number} threshold Visibility threshold.
+ * @returns {boolean} True when visible.
  */
 function hasVisibleState(variantData, threshold) {
   return getSafeNumber(variantData ?? {}, 'visibility') >= threshold;
@@ -523,10 +532,11 @@ function hasVisibleState(variantData, threshold) {
 
 /**
  *
- * @param pageRef
- * @param rootPageRef
- * @param wasVisible
- * @param nextVisibility
+ * @param {{ path?: string } | null | undefined} pageRef Page reference.
+ * @param {{ path?: string } | null | undefined} rootPageRef Root page reference.
+ * @param {boolean} wasVisible Whether the page was visible before.
+ * @param {number} nextVisibility Next visibility score.
+ * @returns {boolean} True when the contents should be republished.
  */
 function shouldRepublishContents(
   pageRef,
@@ -544,6 +554,57 @@ function shouldRepublishContents(
     (wasVisible && nextVisibility < 0.5) ||
     (!wasVisible && nextVisibility >= 0.5)
   );
+}
+
+/**
+ * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant reference.
+ * @param {string} moderatorId Moderator identifier.
+ * @param {boolean} isApproved Whether the variant was approved.
+ * @returns {Promise<void>} Promise.
+ */
+async function applyAdminLockIfNeeded(variantRef, moderatorId, isApproved) {
+  if (moderatorId !== ADMIN_UID) {
+    return;
+  }
+  await variantRef.update({
+    visibility: calculateAdminLockedVisibility(isApproved),
+    visibilityLockedBy: ADMIN_UID,
+  });
+}
+
+/**
+ * @param {{ renderContents?: (context?: object) => Promise<unknown> | undefined, pageRef: { path?: string } | null | undefined, rootPageRef: { path?: string } | null | undefined, wasVisible: boolean, nextVisibility: number }} deps Rendering decision inputs.
+ * @returns {Promise<void>} Promise.
+ */
+async function republishContentsIfNeeded(deps) {
+  if (
+    !deps.renderContents ||
+    !shouldRepublishContents(
+      deps.pageRef,
+      deps.rootPageRef,
+      deps.wasVisible,
+      deps.nextVisibility
+    )
+  ) {
+    return;
+  }
+  await deps.renderContents();
+}
+
+/**
+ * @param {any} variantRef Variant reference.
+ * @returns {any} Page reference or null.
+ */
+function getPageRefFromVariantRef(variantRef) {
+  return variantRef?.parent?.parent ?? null;
+}
+
+/**
+ * @param {any} pageRef Page reference.
+ * @returns {any} Story reference or null.
+ */
+function getStoryRefFromPageRef(pageRef) {
+  return /** @type {any} */ (pageRef?.parent?.parent ?? null);
 }
 
 /**

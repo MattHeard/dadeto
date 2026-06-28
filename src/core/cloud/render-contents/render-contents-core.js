@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   DEFAULT_BUCKET_NAME,
   normalizeStaticObjectPrefix,
@@ -334,7 +333,7 @@ async function resolveStoryInfoFromStory(story) {
 
 /**
  * Resolve story information once the root page return value arrives.
- * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }> }} rootRef Document reference for the root page.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }>, collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} rootRef Document reference for the root page.
  * @param {Record<string, any>} story Firestore story document data.
  * @returns {Promise<StoryInfo | null>} Story metadata or null when the page snapshot is missing.
  */
@@ -395,7 +394,7 @@ function extractVisibility(data) {
 
 /**
  * Build story metadata once the page snapshot has been fetched.
- * @param {{ collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} rootRef Root page reference.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }>, collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} rootRef Root page reference.
  * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
  * @param {Record<string, any>} story Story document data that owns the page.
  * @returns {Promise<StoryInfo | null>} Story metadata or null when the page is missing.

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { describe, expect, test } from '@jest/globals';
 import * as espree from 'espree';
 import path from 'node:path';
@@ -25,7 +24,8 @@ function createFileSystem(files) {
     readFileSync(filePath) {
       return files[filePath];
     },
-    readdirSync(dirPath, options) {
+    readdirSync(dirPath, _options) {
+      void _options;
       const prefix = dirPath.endsWith(path.sep)
         ? dirPath
         : `${dirPath}${path.sep}`;
@@ -38,7 +38,6 @@ function createFileSystem(files) {
 
         const relative = filePath.slice(prefix.length);
         const [entryName] = relative.split(path.sep);
-        const fullEntryPath = path.join(dirPath, entryName);
         if (relative.includes(path.sep)) {
           seen.set(entryName, {
             name: entryName,
@@ -63,15 +62,22 @@ function createFileSystem(files) {
   };
 }
 
-describe('check-overexposed-exports', () => {
-  const parse = (source, options) =>
-    espree.parse(source, {
-      ecmaVersion: options.ecmaVersion,
-      sourceType: options.sourceType,
-      loc: options.loc,
-      range: options.range,
-    });
+/**
+ * Parse source text using Espree with the repo's jsdoc config shape.
+ * @param {string} source Source text.
+ * @param {{ ecmaVersion: string, sourceType: string, loc: boolean, range: boolean }} options Parser options.
+ * @returns {import('estree').Program} Parsed program.
+ */
+function parseSource(source, options) {
+  return espree.parse(source, {
+    ecmaVersion: options.ecmaVersion,
+    sourceType: options.sourceType,
+    loc: options.loc,
+    range: options.range,
+  });
+}
 
+describe('check-overexposed-exports', () => {
   test('runs the handler and reports success when there are no violations', () => {
     const stdout = [];
     const stderr = [];
@@ -82,7 +88,7 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
-      parse,
+      parse: parseSource,
       pathModule: path,
     });
 
