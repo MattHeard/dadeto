@@ -418,13 +418,19 @@ function resolvePaddle(state) {
 
 function resolveCells(state) {
   for (const cell of state.cells) {
-    if (cell.state === 'stable') continue;
     if (circleIntersectsCell(state.orb, cell)) {
       reflectOrb(state, cell);
-      cell.charge += 1;
-      cell.state = cell.charge > cell.maxCharge ? 'overcharged' : cell.charge >= cell.targetCharge ? 'stable' : 'charging';
-      if (cell.state === 'stable') state.score += 1;
-      if (cell.state === 'overcharged') state.faults += 1;
+      if (cell.state !== 'stable') {
+        cell.charge += 1;
+        cell.state =
+          cell.charge > cell.maxCharge
+            ? 'overcharged'
+            : cell.charge >= cell.targetCharge
+              ? 'stable'
+              : 'charging';
+        if (cell.state === 'stable') state.score += 1;
+        if (cell.state === 'overcharged') state.faults += 1;
+      }
       break;
     }
   }
