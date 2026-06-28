@@ -64,6 +64,20 @@ function makeDom(autoSubmitCheckbox) {
 }
 
 /**
+ * Build a Joy-Con HID stub used by the mapper handler tests.
+ * @param {Record<string, unknown>} device Device stub to return from requestDevice.
+ * @returns {Record<string, unknown>} HID API mock.
+ */
+function makeHid(device) {
+  return {
+    requestDevice: jest.fn(async () => [device]),
+    getDevices: jest.fn(async () => []),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  };
+}
+
+/**
  * Find a nested stub element by text content.
  * @param {Record<string, unknown> | null | undefined} root Root node to search.
  * @param {string} text Text to match.
@@ -103,9 +117,29 @@ function createGamepad(overrides = {}) {
 }
 
 describe('joyConMapperHandler', () => {
-  it('renders mapper UI and emits initialize payload on start', () => {
+  it('renders mapper UI and emits initialize payload on start', async () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const joyCon = {
+      opened: false,
+      open: jest.fn(async function open() {
+        joyCon.opened = true;
+      }),
+      addEventListener: jest.fn((event, handler) => {
+        joyCon._listeners = joyCon._listeners ?? {};
+        joyCon._listeners[event] = handler;
+      }),
+      removeEventListener: jest.fn(),
+      productName: 'Joy-Con (L)',
+      vendorId: 1406,
+      productId: 8198,
+    };
     const dom = makeDom(autoSubmitCheckbox);
+    dom.globalThis = {
+      ...globalThis,
+      navigator: {
+        hid: makeHid(joyCon),
+      },
+    };
     const container = {
       _children: [],
       closest: jest.fn(() => ({ id: 'article-1' })),
@@ -136,11 +170,19 @@ describe('joyConMapperHandler', () => {
       expect(startButton).not.toBeNull();
 
       startButton._listeners.click();
+      await Promise.resolve();
+      await Promise.resolve();
 
       const payload = JSON.parse(readStoredOrElementValue(textInput));
       expect(payload).toBeTruthy();
       expect(autoSubmitCheckbox.checked).toBe(true);
       expect(autoSubmitCheckbox.dispatchEvent).toHaveBeenCalled();
+      expect(dom.globalThis.navigator.hid.requestDevice).toHaveBeenCalled();
+      expect(joyCon.open).toHaveBeenCalled();
+      expect(joyCon.addEventListener).toHaveBeenCalledWith(
+        'inputreport',
+        expect.any(Function)
+      );
     } finally {
       globalThis.requestAnimationFrame = previousRaf;
       globalThis.cancelAnimationFrame = previousCaf;
@@ -149,9 +191,26 @@ describe('joyConMapperHandler', () => {
     }
   });
 
-  it('covers skip, reset, and dispose cleanup', () => {
+  it('covers skip, reset, and dispose cleanup', async () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const joyCon = {
+      opened: false,
+      open: jest.fn(async function open() {
+        joyCon.opened = true;
+      }),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      productName: 'Joy-Con (L)',
+      vendorId: 1406,
+      productId: 8198,
+    };
     const dom = makeDom(autoSubmitCheckbox);
+    dom.globalThis = {
+      ...globalThis,
+      navigator: {
+        hid: makeHid(joyCon),
+      },
+    };
     const container = {
       _children: [],
       closest: jest.fn(() => ({ id: 'article-1' })),
@@ -213,9 +272,26 @@ describe('joyConMapperHandler', () => {
     }
   });
 
-  it('handles missing article wrappers by skipping the auto-submit checkbox lookup', () => {
+  it('handles missing article wrappers by skipping the auto-submit checkbox lookup', async () => {
     const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const joyCon = {
+      opened: false,
+      open: jest.fn(async function open() {
+        joyCon.opened = true;
+      }),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      productName: 'Joy-Con (L)',
+      vendorId: 1406,
+      productId: 8198,
+    };
     const dom = makeDom(autoSubmitCheckbox);
+    dom.globalThis = {
+      ...globalThis,
+      navigator: {
+        hid: makeHid(joyCon),
+      },
+    };
     const container = {
       _children: [],
       closest: jest.fn(() => null),
@@ -248,6 +324,8 @@ describe('joyConMapperHandler', () => {
       expect(autoSubmitCheckbox.checked).toBe(false);
 
       startButton._listeners.click();
+      await Promise.resolve();
+      await Promise.resolve();
 
       const payload = JSON.parse(readStoredOrElementValue(textInput));
       expect(payload).toBeTruthy();

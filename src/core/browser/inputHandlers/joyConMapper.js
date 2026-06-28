@@ -10,19 +10,21 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ data: { buffer: ArrayBuffer } }} HidInputReportEventLike */
 /**
  * @typedef {{
- *   vendorId?: number,
- *   productId?: number,
- *   productName?: string,
- *   collections?: unknown[],
- *   opened?: boolean,
- *   addEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
- *   removeEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
+  *   vendorId?: number,
+  *   productId?: number,
+  *   productName?: string,
+  *   collections?: unknown[],
+  *   opened?: boolean,
+  *   open?: () => Promise<void>,
+  *   addEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
+  *   removeEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
   }} HidDeviceLike */
 /**
  * @typedef {{
- *   getDevices?: () => Promise<HidDeviceLike[]>,
- *   addEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
- *   removeEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
+ *   requestDevice?: (options: { filters: Array<{ vendorId: number, productId?: number }> }) => Promise<HidDeviceLike[]>,
+  *   getDevices?: () => Promise<HidDeviceLike[]>,
+  *   addEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
+  *   removeEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
   }} HidApiLike */
 /** @typedef {{ navigator?: { hid?: HidApiLike } }} HidNavigatorLike */
 /** @typedef {{ type: 'button', index: number, value: number }} ButtonCapture */
@@ -36,6 +38,8 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 const EMPTY_ELEMENT_OPTIONS = /** @type {ElementOptions} */ (
   Object.freeze({ className: '' })
 );
+const JOYCON_VENDOR_ID = 0x057e;
+const JOYCON_PRODUCT_IDS = [0x2006, 0x2007, 0x2008, 0x2009];
 
 const MAPPER_STORAGE_KEY = 'JOYMAP1';
 const PERMANENT_DATA_KEY = 'permanentData';
@@ -245,6 +249,52 @@ function initializeWebHidCapture(state, disposers) {
       );
     }
   );
+}
+
+/**
+ * Prompt for Joy-Con devices and open any returned HID handles.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {Array<() => void>} disposers
+ *   Cleanup callbacks for the mapper lifecycle.
+ * @returns {Promise<void>}
+ *   Resolves after any returned devices are opened and wired for reports.
+ */
+async function requestAndOpenJoyConDevices(state, disposers) {
+  const navigator = /** @type {{ hid?: HidApiLike } | undefined} */ (
+    state.dom.globalThis?.navigator
+  );
+  const hid = navigator?.hid;
+  if (!hid || typeof hid.requestDevice !== 'function') {
+    return;
+  }
+
+  const devices = await hid.requestDevice({
+    filters: JOYCON_PRODUCT_IDS.map(productId => ({
+      vendorId: JOYCON_VENDOR_ID,
+      productId,
+    })),
+  });
+
+  for (const device of devices) {
+    if (!device) {
+      continue;
+    }
+
+    if (typeof device.open === 'function' && !device.opened) {
+      await device.open();
+    }
+
+    if (!state.hidDevices.includes(device)) {
+      state.hidDevices.push(device);
+    }
+
+    logHidDeviceEvent('connected', device);
+    attachHidDeviceListener(state, disposers, device);
+  }
+
+  renderPrompt(state);
+  renderMeta(state);
 }
 
 /**
@@ -1855,6 +1905,7 @@ export const joyConMapperTestOnly = {
   currentControllerSnapshot,
   currentHidSnapshot,
   initializeWebHidCapture,
+  requestAndOpenJoyConDevices,
   attachHidDeviceListener,
   snapshotHidInputReport,
   snapshotHidButtons,
@@ -1878,6 +1929,7 @@ function handleJoyConMapperStart(state) {
   const { dom, textInput, autoSubmitCheckbox } = state;
 
   startMapping(state);
+  void requestAndOpenJoyConDevices(state, []);
   syncToyInput({
     dom,
     textInput,

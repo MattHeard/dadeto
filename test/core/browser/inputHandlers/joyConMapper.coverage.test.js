@@ -28,6 +28,7 @@ const {
   currentControllerSnapshot,
   currentHidSnapshot,
   initializeWebHidCapture,
+  requestAndOpenJoyConDevices,
   attachHidDeviceListener,
   snapshotHidInputReport,
   snapshotHidButtons,
@@ -419,6 +420,7 @@ describe('joyConMapper coverage helpers', () => {
       removeEventListener: jest.fn(),
     };
     const dom = {
+      getGamepads: jest.fn(() => []),
       globalThis: {
         navigator: {
           hid: {
@@ -454,6 +456,66 @@ describe('joyConMapper coverage helpers', () => {
       buttons: snapshotHidButtons(0x03),
       axes: snapshotHidAxes([255, 0]),
     });
+  });
+
+  it('covers WebHID request-and-open flow', async () => {
+    const disposers = [];
+    const device = {
+      opened: false,
+      open: jest.fn(async function open() {
+        device.opened = true;
+      }),
+      addEventListener: jest.fn((event, handler) => {
+        device._handler = handler;
+      }),
+      removeEventListener: jest.fn(),
+      productName: 'Joy-Con (L)',
+      vendorId: 1406,
+      productId: 8198,
+    };
+    const dom = {
+      globalThis: {
+        navigator: {
+          hid: {
+            requestDevice: jest.fn(async () => [device]),
+          },
+        },
+      },
+    };
+    const state = {
+      dom: {
+        ...dom,
+        getGamepads: jest.fn(() => []),
+        setTextContent: jest.fn(),
+        setClassName: jest.fn(),
+      },
+      hidSnapshot: null,
+      hidDevices: [],
+      prompt: { textContent: '' },
+      subprompt: { textContent: '' },
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: { textContent: '' },
+      metaIndex: { textContent: '' },
+      metaId: { textContent: '' },
+      list: {},
+    };
+
+    await requestAndOpenJoyConDevices(state, disposers);
+
+    expect(dom.globalThis.navigator.hid.requestDevice).toHaveBeenCalledWith({
+      filters: [
+        { vendorId: 0x057e, productId: 0x2006 },
+        { vendorId: 0x057e, productId: 0x2007 },
+        { vendorId: 0x057e, productId: 0x2008 },
+        { vendorId: 0x057e, productId: 0x2009 },
+      ],
+    });
+    expect(device.open).toHaveBeenCalled();
+    expect(device.addEventListener).toHaveBeenCalledWith(
+      'inputreport',
+      expect.any(Function)
+    );
+    expect(state.hidDevices).toContain(device);
   });
 
   it('logs each WebHID input report', () => {
