@@ -479,7 +479,7 @@ function handleCallExpression(
 /* eslint-enable max-params, complexity */
 
 /**
- * @param {import('estree').Expression} callee Call target.
+ * @param {import('estree').Expression | import('estree').Super} callee Call target.
  * @returns {callee is import('estree').MemberExpression & { object: import('estree').Identifier, property: import('estree').Identifier }} True when the callee is a namespace import call.
  */
 function isNamespaceCall(callee) {

@@ -427,7 +427,9 @@ describe('joyConMapper coverage helpers', () => {
     attachHidDeviceListener(state, disposers, device);
     expect(disposers).toHaveLength(2);
 
-    const report = { data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer) };
+    const report = {
+      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+    };
     expect(snapshotHidInputReport(report)).toEqual({
       buttons: snapshotHidButtons(0x03),
       axes: snapshotHidAxes([255, 0]),
@@ -496,13 +498,11 @@ describe('joyConMapper coverage helpers', () => {
     );
     expect(disposers).toHaveLength(2);
     disposers.forEach(dispose => dispose());
-    expect(dom.globalThis.navigator.hid.removeEventListener).toHaveBeenCalledWith(
-      'connect',
-      expect.any(Function)
-    );
-    expect(dom.globalThis.navigator.hid.removeEventListener).toHaveBeenCalledWith(
-      'disconnect',
-      expect.any(Function)
-    );
+    expect(
+      dom.globalThis.navigator.hid.removeEventListener
+    ).toHaveBeenCalledWith('connect', expect.any(Function));
+    expect(
+      dom.globalThis.navigator.hid.removeEventListener
+    ).toHaveBeenCalledWith('disconnect', expect.any(Function));
   });
 });

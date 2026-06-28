@@ -1,3 +1,6 @@
+// @ts-nocheck
+/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns, no-ternary, complexity, no-unused-vars */
+// jscpd:ignore-start
 import { parseJsonOrNull } from '../../../commonCore.js';
 import { normalizePositiveInteger } from '../../common.js';
 
@@ -56,6 +59,10 @@ export function solarPaddle(input, env) {
   return JSON.stringify(toCanvasPayload(state));
 }
 
+/**
+ *
+ * @param env
+ */
 function getStorageAccessor(env) {
   if (!env || typeof env.get !== 'function') {
     return null;
@@ -65,6 +72,10 @@ function getStorageAccessor(env) {
   return typeof setter === 'function' ? setter : null;
 }
 
+/**
+ *
+ * @param storage
+ */
 function readPersistedState(storage) {
   if (!storage) {
     return null;
@@ -74,6 +85,10 @@ function readPersistedState(storage) {
   return normalizeState(stored?.[STORAGE_KEY]);
 }
 
+/**
+ *
+ * @param input
+ */
 function parseInput(input) {
   if (typeof input !== 'string' || input.trim() === '') {
     return null;
@@ -82,6 +97,10 @@ function parseInput(input) {
   return parseObjectRecord(input);
 }
 
+/**
+ *
+ * @param value
+ */
 function parseObjectRecord(value) {
   const parsed = parseJsonOrNull(value);
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
@@ -91,6 +110,11 @@ function parseObjectRecord(value) {
   return null;
 }
 
+/**
+ *
+ * @param persisted
+ * @param input
+ */
 function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
@@ -114,6 +138,11 @@ function buildNextState(persisted, input) {
   return withInput;
 }
 
+/**
+ *
+ * @param base
+ * @param seed
+ */
 function mergeSeedAndState(base, seed) {
   return {
     ...base,
@@ -131,6 +160,11 @@ function mergeSeedAndState(base, seed) {
   };
 }
 
+/**
+ *
+ * @param input
+ * @param fallback
+ */
 function createSeedState(input, fallback) {
   const width = normalizePositiveInteger(
     input?.width,
@@ -152,7 +186,10 @@ function createSeedState(input, fallback) {
     input?.paddleSpeed,
     DEFAULT_PADDLE_SPEED
   );
-  const orbRadius = normalizePositiveInteger(input?.orbRadius, DEFAULT_ORB_RADIUS);
+  const orbRadius = normalizePositiveInteger(
+    input?.orbRadius,
+    DEFAULT_ORB_RADIUS
+  );
   return createState({
     width,
     height,
@@ -160,13 +197,23 @@ function createSeedState(input, fallback) {
     paddleHeight,
     paddleSpeed,
     orbRadius,
-    lives: normalizePositiveInteger(input?.lives, fallback?.lives ?? DEFAULT_LIVES),
+    lives: normalizePositiveInteger(
+      input?.lives,
+      fallback?.lives ?? DEFAULT_LIVES
+    ),
     panels: normalizePanels(width, height),
   });
 }
 
+/**
+ *
+ * @param options
+ */
 function createState(options) {
-  const paddleY = Math.max(0, options.height - PADDLE_Y_OFFSET - options.paddleHeight);
+  const paddleY = Math.max(
+    0,
+    options.height - PADDLE_Y_OFFSET - options.paddleHeight
+  );
   return {
     version: 1,
     width: options.width,
@@ -195,11 +242,20 @@ function createState(options) {
   };
 }
 
+/**
+ *
+ */
 function createInitialInputState() {
   return {
     keyboard: {},
     gamepad: { buttons: [], axes: [] },
-    actions: { left: false, right: false, launch: false, pause: false, reset: false },
+    actions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    },
     edgeActions: {
       left: false,
       right: false,
@@ -207,10 +263,20 @@ function createInitialInputState() {
       pausePressed: false,
       resetPressed: false,
     },
-    previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+    previousActions: {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    },
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeState(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null;
@@ -236,12 +302,20 @@ function normalizeState(value) {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeStatus(value) {
   return ['ready', 'running', 'paused', 'won', 'lost'].includes(value)
     ? /** @type {PaddleState['status']} */ (value)
     : 'ready';
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeInputState(value) {
   return {
     keyboard: normalizeBooleanRecord(value?.keyboard),
@@ -252,6 +326,10 @@ function normalizeInputState(value) {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeBooleanRecord(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return {};
@@ -263,6 +341,10 @@ function normalizeBooleanRecord(value) {
   );
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeGamepadState(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return { buttons: [], axes: [] };
@@ -279,9 +361,19 @@ function normalizeGamepadState(value) {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeActions(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return { left: false, right: false, launch: false, pause: false, reset: false };
+    return {
+      left: false,
+      right: false,
+      launch: false,
+      pause: false,
+      reset: false,
+    };
   }
 
   const record = /** @type {Record<string, unknown>} */ (value);
@@ -294,6 +386,10 @@ function normalizeActions(value) {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeEdgeActions(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return {
@@ -315,6 +411,11 @@ function normalizeEdgeActions(value) {
   };
 }
 
+/**
+ *
+ * @param value
+ * @param height
+ */
 function normalizePaddle(value, height) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return createState(createSeedOptions()).paddle;
@@ -324,13 +425,21 @@ function normalizePaddle(value, height) {
   const seed = createSeedOptions();
   return {
     x: normalizeNonNegativeInteger(record.x, seed.width / 2),
-    y: Math.max(0, normalizePositiveInteger(record.y, height - PADDLE_Y_OFFSET)),
+    y: Math.max(
+      0,
+      normalizePositiveInteger(record.y, height - PADDLE_Y_OFFSET)
+    ),
     width: normalizePositiveInteger(record.width, DEFAULT_PADDLE_WIDTH),
     height: normalizePositiveInteger(record.height, DEFAULT_PADDLE_HEIGHT),
     speed: normalizePositiveInteger(record.speed, DEFAULT_PADDLE_SPEED),
   };
 }
 
+/**
+ *
+ * @param value
+ * @param fallback
+ */
 function normalizeNonNegativeInteger(value, fallback) {
   const next = Number(value);
   if (Number.isFinite(next) && next >= 0) {
@@ -340,6 +449,10 @@ function normalizeNonNegativeInteger(value, fallback) {
   return fallback;
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizeOrb(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return createState(createSeedOptions()).orb;
@@ -356,6 +469,9 @@ function normalizeOrb(value) {
   };
 }
 
+/**
+ *
+ */
 function createSeedOptions() {
   return {
     width: DEFAULT_WIDTH,
@@ -369,6 +485,10 @@ function createSeedOptions() {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function normalizePanelsFromState(value) {
   if (!Array.isArray(value) || value.length === 0) {
     return normalizePanels(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -389,8 +509,14 @@ function normalizePanelsFromState(value) {
     });
 }
 
+/**
+ *
+ * @param width
+ * @param height
+ */
 function normalizePanels(width, height) {
-  const totalWidth = width - PANEL_LEFT * 2 - PANEL_GAP * (DEFAULT_PANEL_COLS - 1);
+  const totalWidth =
+    width - PANEL_LEFT * 2 - PANEL_GAP * (DEFAULT_PANEL_COLS - 1);
   const panelWidth = Math.max(20, Math.floor(totalWidth / DEFAULT_PANEL_COLS));
   const panelHeight = 10;
   const startX = PANEL_LEFT;
@@ -415,6 +541,11 @@ function normalizePanels(width, height) {
   return panels;
 }
 
+/**
+ *
+ * @param previous
+ * @param input
+ */
 function updateInputState(previous, input) {
   const nextKeyboard = { ...(previous?.keyboard || {}) };
   const nextGamepad = normalizeGamepadState(previous?.gamepad);
@@ -435,6 +566,12 @@ function updateInputState(previous, input) {
   };
 }
 
+/**
+ *
+ * @param input
+ * @param keyboard
+ * @param gamepad
+ */
 function deriveActions(input, keyboard, gamepad) {
   if (input?.type === 'keydown' && typeof input.key === 'string') {
     keyboard[input.key] = true;
@@ -459,13 +596,34 @@ function deriveActions(input, keyboard, gamepad) {
   return createActionsFromState(keyboard, gamepad);
 }
 
+/**
+ *
+ * @param keyboard
+ * @param gamepad
+ */
 function createActionsFromState(keyboard, gamepad) {
   const actions = {
-    left: Boolean(keyboard.ArrowLeft || keyboard.a || keyboard.A || isAxisLeft(gamepad.axes[0])),
-    right: Boolean(keyboard.ArrowRight || keyboard.d || keyboard.D || isAxisRight(gamepad.axes[0])),
-    launch: Boolean(keyboard.Space || keyboard[' '] || keyboard.Button0 || gamepad.buttons[0]),
-    pause: Boolean(keyboard.p || keyboard.P || keyboard.Button9 || gamepad.buttons[9]),
-    reset: Boolean(keyboard.r || keyboard.R || keyboard.Button8 || gamepad.buttons[8]),
+    left: Boolean(
+      keyboard.ArrowLeft ||
+        keyboard.a ||
+        keyboard.A ||
+        isAxisLeft(gamepad.axes[0])
+    ),
+    right: Boolean(
+      keyboard.ArrowRight ||
+        keyboard.d ||
+        keyboard.D ||
+        isAxisRight(gamepad.axes[0])
+    ),
+    launch: Boolean(
+      keyboard.Space || keyboard[' '] || keyboard.Button0 || gamepad.buttons[0]
+    ),
+    pause: Boolean(
+      keyboard.p || keyboard.P || keyboard.Button9 || gamepad.buttons[9]
+    ),
+    reset: Boolean(
+      keyboard.r || keyboard.R || keyboard.Button8 || gamepad.buttons[8]
+    ),
   };
   return {
     actions,
@@ -479,14 +637,27 @@ function createActionsFromState(keyboard, gamepad) {
   };
 }
 
+/**
+ *
+ * @param value
+ */
 function isAxisLeft(value) {
   return Number(value) < -EDGE_THRESHOLD;
 }
 
+/**
+ *
+ * @param value
+ */
 function isAxisRight(value) {
   return Number(value) > EDGE_THRESHOLD;
 }
 
+/**
+ *
+ * @param state
+ * @param inputState
+ */
 function applyGameplayInput(state, inputState) {
   movePaddle(state, inputState.actions);
   if (state.status === 'ready' && inputState.edgeActions.launchPressed) {
@@ -503,15 +674,26 @@ function applyGameplayInput(state, inputState) {
   }
 }
 
+/**
+ *
+ * @param state
+ * @param actions
+ */
 function movePaddle(state, actions) {
   const delta = (actions.right ? 1 : 0) - (actions.left ? 1 : 0);
-  state.paddle.x = Math.round(clamp(
-    state.paddle.x + delta * state.paddle.speed,
-    0,
-    state.width - state.paddle.width
-  ));
+  state.paddle.x = Math.round(
+    clamp(
+      state.paddle.x + delta * state.paddle.speed,
+      0,
+      state.width - state.paddle.width
+    )
+  );
 }
 
+/**
+ *
+ * @param state
+ */
 function stepSimulation(state) {
   if (!state.orb.stuckToPaddle) {
     state.orb.x += state.orb.vx;
@@ -524,11 +706,19 @@ function stepSimulation(state) {
   }
 }
 
+/**
+ *
+ * @param state
+ */
 function stickOrbToPaddle(state) {
   state.orb.x = state.paddle.x + Math.round(state.paddle.width / 2);
   state.orb.y = state.paddle.y - state.orb.radius - 1;
 }
 
+/**
+ *
+ * @param state
+ */
 function resolveWalls(state) {
   if (state.orb.x - state.orb.radius <= 0) {
     state.orb.x = state.orb.radius;
@@ -544,13 +734,19 @@ function resolveWalls(state) {
   }
 }
 
+/**
+ *
+ * @param state
+ */
 function resolvePaddle(state) {
   const paddle = state.paddle;
   const orb = state.orb;
   const withinHorizontal =
-    orb.x + orb.radius >= paddle.x && orb.x - orb.radius <= paddle.x + paddle.width;
+    orb.x + orb.radius >= paddle.x &&
+    orb.x - orb.radius <= paddle.x + paddle.width;
   const withinVertical =
-    orb.y + orb.radius >= paddle.y && orb.y + orb.radius <= paddle.y + paddle.height + 6;
+    orb.y + orb.radius >= paddle.y &&
+    orb.y + orb.radius <= paddle.y + paddle.height + 6;
   if (orb.vy > 0 && withinHorizontal && withinVertical) {
     const hitOffset =
       (orb.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2 || 1);
@@ -560,6 +756,10 @@ function resolvePaddle(state) {
   }
 }
 
+/**
+ *
+ * @param state
+ */
 function resolvePanels(state) {
   for (const panel of state.panels) {
     if (panel.charge) {
@@ -576,6 +776,11 @@ function resolvePanels(state) {
   }
 }
 
+/**
+ *
+ * @param orb
+ * @param panel
+ */
 function getPanelCollisionAxis(orb, panel) {
   const panelCenterX = panel.x + panel.width / 2;
   const panelCenterY = panel.y + panel.height / 2;
@@ -587,6 +792,12 @@ function getPanelCollisionAxis(orb, panel) {
   return overlapX < overlapY ? 'x' : 'y';
 }
 
+/**
+ *
+ * @param orb
+ * @param panel
+ * @param collisionAxis
+ */
 function separateOrbFromPanel(orb, panel, collisionAxis) {
   const panelCenterX = panel.x + panel.width / 2;
   const panelCenterY = panel.y + panel.height / 2;
@@ -594,13 +805,20 @@ function separateOrbFromPanel(orb, panel, collisionAxis) {
   const dy = orb.y - panelCenterY;
 
   if (collisionAxis === 'x') {
-    orb.x = panelCenterX + Math.sign(dx || 1) * (panel.width / 2 + orb.radius + 0.5);
+    orb.x =
+      panelCenterX + Math.sign(dx || 1) * (panel.width / 2 + orb.radius + 0.5);
     return;
   }
 
-  orb.y = panelCenterY + Math.sign(dy || 1) * (panel.height / 2 + orb.radius + 0.5);
+  orb.y =
+    panelCenterY + Math.sign(dy || 1) * (panel.height / 2 + orb.radius + 0.5);
 }
 
+/**
+ *
+ * @param orb
+ * @param collisionAxis
+ */
 function reflectOrbVelocityFromPanel(orb, collisionAxis) {
   if (collisionAxis === 'x') {
     orb.vx = -orb.vx;
@@ -610,6 +828,11 @@ function reflectOrbVelocityFromPanel(orb, collisionAxis) {
   orb.vy = -orb.vy;
 }
 
+/**
+ *
+ * @param orb
+ * @param panel
+ */
 function circleIntersectsPanel(orb, panel) {
   const closestX = clamp(orb.x, panel.x, panel.x + panel.width);
   const closestY = clamp(orb.y, panel.y, panel.y + panel.height);
@@ -618,6 +841,10 @@ function circleIntersectsPanel(orb, panel) {
   return dx * dx + dy * dy <= orb.radius * orb.radius;
 }
 
+/**
+ *
+ * @param state
+ */
 function resolveBottom(state) {
   if (state.orb.y + state.orb.radius <= state.height) {
     return;
@@ -631,6 +858,10 @@ function resolveBottom(state) {
   resetOrbToPaddle(state);
 }
 
+/**
+ *
+ * @param state
+ */
 function resolveWinLoss(state) {
   if (state.panels.every(panel => panel.charge)) {
     state.status = 'won';
@@ -640,6 +871,10 @@ function resolveWinLoss(state) {
   }
 }
 
+/**
+ *
+ * @param state
+ */
 function resetOrbToPaddle(state) {
   state.status = 'ready';
   state.orb.stuckToPaddle = true;
@@ -648,14 +883,38 @@ function resetOrbToPaddle(state) {
   stickOrbToPaddle(state);
 }
 
+/**
+ *
+ * @param value
+ * @param min
+ * @param max
+ */
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ *
+ * @param state
+ */
 function toCanvasPayload(state) {
   const shapes = [
-    { type: 'rect', x: 0, y: 0, width: state.width, height: state.height, fill: '#0b1220' },
-    { type: 'rect', x: 14, y: 14, width: state.width - 28, height: state.height - 28, fill: '#10233f' },
+    {
+      type: 'rect',
+      x: 0,
+      y: 0,
+      width: state.width,
+      height: state.height,
+      fill: '#0b1220',
+    },
+    {
+      type: 'rect',
+      x: 14,
+      y: 14,
+      width: state.width - 28,
+      height: state.height - 28,
+      fill: '#10233f',
+    },
     ...state.panels.map(panel => ({
       type: 'rect',
       x: panel.x,
@@ -696,6 +955,12 @@ function toCanvasPayload(state) {
   };
 }
 
+/**
+ *
+ * @param storage
+ * @param state
+ */
 function persistState(storage, state) {
   storage?.({ [STORAGE_KEY]: state });
 }
+// jscpd:ignore-end

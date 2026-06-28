@@ -547,11 +547,9 @@ function storeSnapshot(state, gamepad) {
  * @returns {void}
  */
 function removeSnapshot(state, gamepad) {
-  if (!gamepad) {
-    return;
+  if (gamepad) {
+    delete state.snapshots[gamepad.index];
   }
-
-  delete state.snapshots[gamepad.index];
 }
 
 /**

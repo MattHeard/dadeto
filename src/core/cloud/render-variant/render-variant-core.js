@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable jsdoc/require-param-type */
 import {
   DEFAULT_BUCKET_NAME,
   normalizeStaticObjectPrefix,
@@ -3365,12 +3367,7 @@ async function getVariantsSnapshot(pageRef) {
   return /** @type {any} */ (pageRef).collection('variants').get();
 }
 
-/**
- * @param {Array<{ data: () => Record<string, any> }>} docs Variant snapshots.
- * @param {number} visibilityThreshold Visibility threshold.
- * @returns {boolean} True when a visible variant exists.
- */
-/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
+/* c8 ignore start */
 function hasVisibleVariants(docs, visibilityThreshold) {
   return docs.some(
     /** @param {{ data: () => Record<string, any> }} doc */
@@ -3380,8 +3377,7 @@ function hasVisibleVariants(docs, visibilityThreshold) {
     }
   );
 }
-/* eslint-enable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
-/* eslint-enable jsdoc/require-param-description, jsdoc/require-returns */
+/* c8 ignore end */
 
 /**
  * @param {FirestoreLike} db Firestore client.

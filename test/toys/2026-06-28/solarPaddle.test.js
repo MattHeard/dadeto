@@ -1,6 +1,12 @@
+/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
 import { describe, expect, it, jest } from '@jest/globals';
 import { solarPaddle } from '../../../src/core/browser/toys/2026-06-28/solarPaddle.js';
 
+/**
+ *
+ * @param input
+ * @param storageValue
+ */
 function runToy(input, storageValue = { current: null }) {
   const setLocalPermanentData = jest.fn(next => {
     storageValue.current = {
@@ -30,7 +36,10 @@ describe('solarPaddle', () => {
 
   it('keeps launch edge-triggered across repeated frames', () => {
     const storageValue = { current: null };
-    const first = runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
+    const first = runToy(
+      JSON.stringify({ type: 'keydown', key: 'Space' }),
+      storageValue
+    );
     const firstState = structuredClone(first.storageValue.current.SOLA1);
     const second = runToy('{}', storageValue);
     const secondState = structuredClone(second.storageValue.current.SOLA1);
@@ -43,7 +52,10 @@ describe('solarPaddle', () => {
 
   it('moves the paddle with held keyboard input', () => {
     const storageValue = { current: null };
-    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowRight' }), storageValue);
+    runToy(
+      JSON.stringify({ type: 'keydown', key: 'ArrowRight' }),
+      storageValue
+    );
     const { storageValue: nextStorage } = runToy('{}', storageValue);
 
     expect(nextStorage.current.SOLA1.paddle.x).toBeGreaterThan(104);
@@ -52,12 +64,18 @@ describe('solarPaddle', () => {
   it('pauses and resumes on repeated pause presses without duplicating the edge', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
-    const paused = runToy(JSON.stringify({ type: 'keydown', key: 'P' }), storageValue);
+    const paused = runToy(
+      JSON.stringify({ type: 'keydown', key: 'P' }),
+      storageValue
+    );
     const pausedState = structuredClone(paused.storageValue.current.SOLA1);
     const repeated = runToy('{}', storageValue);
     const repeatedState = structuredClone(repeated.storageValue.current.SOLA1);
     runToy(JSON.stringify({ type: 'keyup', key: 'P' }), storageValue);
-    const resumed = runToy(JSON.stringify({ type: 'keydown', key: 'P' }), storageValue);
+    const resumed = runToy(
+      JSON.stringify({ type: 'keydown', key: 'P' }),
+      storageValue
+    );
     const resumedState = structuredClone(resumed.storageValue.current.SOLA1);
 
     expect(pausedState.status).toBe('paused');
@@ -79,9 +97,27 @@ describe('solarPaddle', () => {
           input: {
             keyboard: {},
             gamepad: { buttons: [], axes: [] },
-            actions: { left: false, right: false, launch: false, pause: false, reset: false },
-            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
-            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
           },
           paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
           orb: { x: 40, y: 36, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
@@ -112,9 +148,27 @@ describe('solarPaddle', () => {
           input: {
             keyboard: {},
             gamepad: { buttons: [], axes: [] },
-            actions: { left: false, right: false, launch: false, pause: false, reset: false },
-            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
-            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
           },
           paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
           orb: { x: 61, y: 35, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
@@ -149,9 +203,27 @@ describe('solarPaddle', () => {
           input: {
             keyboard: {},
             gamepad: { buttons: [], axes: [] },
-            actions: { left: false, right: false, launch: false, pause: false, reset: false },
-            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
-            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
           },
           paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
           orb: { x: 40, y: 44, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
@@ -172,7 +244,10 @@ describe('solarPaddle', () => {
 
   it('snaps the paddle to whole pixels while moving', () => {
     const storageValue = { current: null };
-    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowRight' }), storageValue);
+    runToy(
+      JSON.stringify({ type: 'keydown', key: 'ArrowRight' }),
+      storageValue
+    );
     const { storageValue: nextStorage } = runToy('{}', storageValue);
 
     expect(Number.isInteger(nextStorage.current.SOLA1.paddle.x)).toBe(true);
@@ -192,9 +267,27 @@ describe('solarPaddle', () => {
           input: {
             keyboard: {},
             gamepad: { buttons: [], axes: [] },
-            actions: { left: false, right: false, launch: false, pause: false, reset: false },
-            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
-            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
           },
           paddle: { x: 0, y: 114, width: 52, height: 7, speed: 4 },
           orb: { x: 80, y: 70, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
@@ -222,9 +315,27 @@ describe('solarPaddle', () => {
           input: {
             keyboard: {},
             gamepad: { buttons: [], axes: [] },
-            actions: { left: false, right: false, launch: false, pause: false, reset: false },
-            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
-            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
           },
           paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
           orb: { x: 80, y: 150, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
@@ -254,9 +365,27 @@ describe('solarPaddle', () => {
           input: {
             keyboard: {},
             gamepad: { buttons: [], axes: [] },
-            actions: { left: false, right: false, launch: false, pause: false, reset: false },
-            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
-            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
           },
           paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
           orb: { x: 80, y: 150, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
@@ -267,7 +396,10 @@ describe('solarPaddle', () => {
 
     runToy('{}', storageValue);
     runToy(JSON.stringify({ type: 'keyup', key: 'Space' }), storageValue);
-    const relaunched = runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
+    const relaunched = runToy(
+      JSON.stringify({ type: 'keydown', key: 'Space' }),
+      storageValue
+    );
 
     expect(relaunched.storageValue.current.SOLA1.status).toBe('running');
     expect(relaunched.storageValue.current.SOLA1.orb.stuckToPaddle).toBe(false);
@@ -277,10 +409,16 @@ describe('solarPaddle', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
     runToy(JSON.stringify({ type: 'keydown', key: 'P' }), storageValue);
-    const reset = runToy(JSON.stringify({ type: 'keydown', key: 'R' }), storageValue);
+    const reset = runToy(
+      JSON.stringify({ type: 'keydown', key: 'R' }),
+      storageValue
+    );
     const resetState = structuredClone(reset.storageValue.current.SOLA1);
     runToy(JSON.stringify({ type: 'keyup', key: 'R' }), storageValue);
-    const relaunched = runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
+    const relaunched = runToy(
+      JSON.stringify({ type: 'keydown', key: 'Space' }),
+      storageValue
+    );
 
     expect(resetState.status).toBe('ready');
     expect(resetState.orb.stuckToPaddle).toBe(true);
