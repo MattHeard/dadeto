@@ -30,7 +30,7 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ key: string, label: string, type: 'button' | 'axis', direction?: 'negative' | 'positive' }} MapperControl */
 /** @typedef {{ mappings: Record<string, unknown>, skippedControls: string[] }} StoredMapperState */
 /** @typedef {ButtonCapture | AxisCapture} CaptureResult */
-/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, hidSnapshot: HidSnapshot | null, stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
+/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, hidSnapshot: HidSnapshot | null, hidDevices: HidDeviceLike[], stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
 /** @typedef {{ className?: string, text?: string }} ElementOptions */
 
 const EMPTY_ELEMENT_OPTIONS = /** @type {ElementOptions} */ (
@@ -176,6 +176,17 @@ function currentControllerSnapshot(state) {
 }
 
 /**
+ * Determine whether any controller source is currently connected.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {boolean}
+ *   True when either a gamepad or HID device is connected.
+ */
+function hasConnectedController(state) {
+  return Boolean(currentPad(state.dom) || (state.hidDevices?.length ?? 0) > 0);
+}
+
+/**
  * Begin listening for WebHID input reports when the browser exposes them.
  * @param {MapperState} state
  *   Current Joy-Con mapper runtime state.
@@ -195,11 +206,27 @@ function initializeWebHidCapture(state, disposers) {
 
   if (typeof hid.addEventListener === 'function') {
     const connectHandler = /** @type {(event: HidConnectEventLike) => void} */ (
-      event => logHidDeviceEvent('connected', event.device)
+      event => {
+        if (event.device) {
+          state.hidDevices.push(event.device);
+        }
+        logHidDeviceEvent('connected', event.device);
+        renderPrompt(state);
+        renderMeta(state);
+      }
     );
     const disconnectHandler =
       /** @type {(event: HidConnectEventLike) => void} */ (
-        event => logHidDeviceEvent('disconnected', event.device)
+        event => {
+          if (event.device) {
+            state.hidDevices = state.hidDevices.filter(
+              device => device !== event.device
+            );
+          }
+          logHidDeviceEvent('disconnected', event.device);
+          renderPrompt(state);
+          renderMeta(state);
+        }
       );
     hid.addEventListener('connect', connectHandler);
     hid.addEventListener('disconnect', disconnectHandler);
@@ -211,6 +238,7 @@ function initializeWebHidCapture(state, disposers) {
 
   void hid.getDevices().then(
     /** @param {HidDeviceLike[]} devices */ devices => {
+      state.hidDevices = devices;
       devices.forEach(device => logHidDeviceEvent('available', device));
       devices.forEach(device =>
         attachHidDeviceListener(state, disposers, device)
@@ -1236,7 +1264,7 @@ function getConnectedPromptCopy(state) {
  * @returns {void}
  */
 function renderPrompt(state) {
-  const gamepad = currentPad(state.dom);
+  const gamepad = hasConnectedController(state);
   let copy = getDisconnectedPromptCopy();
   if (gamepad) {
     copy = getConnectedPromptCopy(state);
@@ -1267,8 +1295,12 @@ function getActivePromptText(control) {
  */
 function renderMeta(state) {
   const gamepad = currentPad(state.dom);
-  state.dot.classList.toggle('connected', Boolean(gamepad));
-  state.dom.setTextContent(state.statusText, getGamepadStatusText(gamepad));
+  const connected = hasConnectedController(state);
+  state.dot.classList.toggle('connected', connected);
+  state.dom.setTextContent(
+    state.statusText,
+    getGamepadStatusText(gamepad, connected)
+  );
   state.dom.setTextContent(state.metaIndex, getGamepadIndexText(gamepad));
   state.dom.setTextContent(state.metaId, getGamepadIdText(gamepad));
 }
@@ -1276,11 +1308,13 @@ function renderMeta(state) {
 /**
  * @param {Gamepad | null} gamepad
  *   Connected gamepad, if present.
+ * @param {boolean} connected
+ *   Whether any controller source is connected.
  * @returns {string}
  *   UI status text for gamepad presence.
  */
-function getGamepadStatusText(gamepad) {
-  if (gamepad) {
+function getGamepadStatusText(gamepad, connected = Boolean(gamepad)) {
+  if (connected) {
     return 'Gamepad detected';
   }
 
@@ -1864,6 +1898,7 @@ function handleJoyConMapperReset(state) {
   state.currentIndex = 0;
   state.currentControl = CONTROLS[0];
   state.previousSnapshot = toGamepadSnapshot(currentControllerSnapshot(state));
+  state.hidDevices = (state.hidDevices ?? []).filter(Boolean);
   syncToyInput({
     dom,
     textInput,
@@ -1944,6 +1979,7 @@ export function joyConMapperHandler(dom, container, textInput) {
     currentControl: /** @type {MapperControl} */ (CONTROLS[0]),
     previousSnapshot: null,
     hidSnapshot: null,
+    hidDevices: [],
     stored: readStoredMapperState(dom),
     list,
     prompt,

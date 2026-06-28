@@ -21,6 +21,7 @@ const {
   getStartedPromptCopy,
   getConnectedPromptCopy,
   getActivePromptText,
+  getGamepadStatusText,
   ensureStarted,
   advanceToNextControl,
   isPendingControlAfterIndex,
@@ -504,5 +505,9 @@ describe('joyConMapper coverage helpers', () => {
     expect(
       dom.globalThis.navigator.hid.removeEventListener
     ).toHaveBeenCalledWith('disconnect', expect.any(Function));
+  });
+
+  it('treats connected HID devices as connected input for the prompt/status', () => {
+    expect(getGamepadStatusText(null, true)).toBe('Gamepad detected');
   });
 });
