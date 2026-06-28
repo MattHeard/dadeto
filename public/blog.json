@@ -1,6 +1,35 @@
 {
   "posts": [
     {
+      "key": "CRYS1",
+      "title": "Crystal Breaker",
+      "publicationDate": "2026-06-28",
+      "release": "public",
+      "content": [
+        "An original crystal-fracture paddle toy with a persistent state loop, multi-hit targets, and a text HUD rendered through canvas-2d.",
+        "Use the deflector paddle to launch an energy orb into crystal clusters and clear the cavern without borrowing a commercial breakout layout.",
+        {
+          "type": "manual",
+          "id": "CRYS1-manual",
+          "title": "User manual",
+          "markdown": "# CRYS1 — Crystal Breaker\n\n## What this toy does\n\nCrystal Breaker is an original paddle-and-orb toy about fracturing crystal clusters in a luminous cavern. You steer a deflector paddle, launch an energy orb, and clear the field by shattering every crystal.\n\nThe toy is deterministic, frame-stepped, and safe for repeated auto-submit calls.\n\n## Input format\n\nPaste a JSON object with any of these optional fields:\n\n- `width`\n- `height`\n- `paddleWidth`\n- `paddleHeight`\n- `paddleSpeed`\n- `orbRadius`\n- `lives`\n- `reset`\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"paddleWidth\": 48,\n  \"paddleHeight\": 6,\n  \"paddleSpeed\": 4,\n  \"orbRadius\": 4,\n  \"lives\": 3\n}\n```\n\n## Defaults\n\nIf input is empty or malformed, the toy falls back to a deterministic crystal layout.\n\n## Storage behavior\n\nThe toy stores its state under the `CRYS1` local-storage key. The persisted state includes:\n\n- canvas dimensions\n- score\n- lives\n- combo\n- paddle position\n- orb position and velocity\n- crystal hp, fracture state, and shatter state\n- held and edge-triggered input state\n\nThat means a refresh resumes the same game instead of starting over.\n\n## Input behavior\n\nThe toy handles keyboard input directly and can also map generic gamepad-style raw input inside the toy.\n\n- ArrowLeft / A: move left\n- ArrowRight / D: move right\n- Space: launch orb\n- P: pause or resume\n- R: reset\n\nHeld movement updates every submit frame. Launch, pause, and reset only trigger on a rising edge.\n\n## Output\n\nThe toy returns a canvas payload:\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"shapes\": []\n}\n```\n\nThe payload uses rectangles for the crystal clusters and paddle, a circle for the orb, and text shapes for the HUD.\n\n## How to use it\n\n1. Submit empty input to see the default cavern.\n2. Hold left or right to move the paddle.\n3. Press Space to launch the orb.\n4. Press P to pause or resume.\n5. Press R to reset.\n\n## Tips\n\n- Try to keep the orb bouncing through multiple crystals for better scoring.\n- Crystals visibly change state as they lose hp.\n- The layout is original and intentionally not a plain brick wall.\n- This toy is meant to demonstrate text HUD rendering and fracture-state gameplay, not to clone a specific commercial game.\n"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-28/crystalBreaker.js",
+        "functionName": "crystalBreaker",
+        "defaultInputMethod": "keyboard-capture",
+        "defaultOutputMethod": "canvas-2d"
+      },
+      "tags": [
+        "toy",
+        "canvas",
+        "game",
+        "storage",
+        "html"
+      ]
+    },
+    {
       "key": "BATT4",
       "title": "Battery Breakout",
       "publicationDate": "2026-06-28",

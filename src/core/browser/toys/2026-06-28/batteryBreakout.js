@@ -189,6 +189,7 @@ function normalizeState(value) {
     score: normalizePositiveInteger(candidate.score, 0),
     lives: normalizePositiveInteger(candidate.lives, DEFAULT_LIVES),
     faults: normalizePositiveInteger(candidate.faults, 0),
+    layoutSeed: normalizePositiveInteger(candidate.layoutSeed, 1),
     input: normalizeInputState(candidate.input),
     paddle: normalizePaddle(candidate.paddle, candidate.height),
     orb: normalizeOrb(candidate.orb),

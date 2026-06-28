@@ -41,6 +41,7 @@ describe('canvasDoodleCore', () => {
       beginPath: jest.fn(),
       arc: jest.fn(),
       fill: jest.fn(),
+      fillText: jest.fn(),
       moveTo: jest.fn(),
       lineTo: jest.fn(),
       stroke: jest.fn(),
@@ -61,6 +62,7 @@ describe('canvasDoodleCore', () => {
         { type: 'rect', x: 1, y: 2, width: 3, height: 4, fill: '' },
         { type: 'circle', x: 5, y: 6, radius: 7, fill: '' },
         { type: 'line', x1: 1, y1: 2, x2: 3, y2: 4, stroke: '' },
+        { type: 'text', x: 8, y: 9, text: 'HUD', fill: '' },
         { type: 'triangle' },
       ],
     });
@@ -68,6 +70,7 @@ describe('canvasDoodleCore', () => {
     expect(context.fillRect).toHaveBeenCalledWith(0, 0, 10, 10);
     expect(context.arc).toHaveBeenCalledWith(5, 6, 7, 0, Math.PI * 2);
     expect(context.lineTo).toHaveBeenCalledWith(3, 4);
+    expect(context.fillText).toHaveBeenCalledWith('HUD', 8, 9);
 
     drawCanvasDoodle(context, canvas, {});
     expect(context.fillRect).toHaveBeenCalledWith(0, 0, 10, 10);

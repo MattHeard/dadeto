@@ -8,6 +8,7 @@ describe('createCanvasDoodleElement', () => {
       beginPath: jest.fn(),
       arc: jest.fn(),
       fill: jest.fn(),
+      fillText: jest.fn(),
       moveTo: jest.fn(),
       lineTo: jest.fn(),
       stroke: jest.fn(),
@@ -63,6 +64,7 @@ describe('createCanvasDoodleElement', () => {
             stroke: '#0000ff',
             lineWidth: 4,
           },
+          { type: 'text', x: 12, y: 20, text: 'Score 12', fill: '#dbeafe' },
         ],
       }),
       dom
@@ -75,6 +77,7 @@ describe('createCanvasDoodleElement', () => {
     expect(context.fillRect).toHaveBeenCalledWith(0, 0, 200, 120);
     expect(context.arc).toHaveBeenCalled();
     expect(context.lineTo).toHaveBeenCalledWith(180, 90);
+    expect(context.fillText).toHaveBeenCalledWith('Score 12', 12, 20);
     expect(root.children[0]).toBe(canvas);
     expect(element).toBe(root);
   });

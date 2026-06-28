@@ -148,6 +148,10 @@ function drawShape(context, shape) {
   }
   if (shape.type === 'line') {
     drawLine(context, shape);
+    return;
+  }
+  if (shape.type === 'text') {
+    drawText(context, shape);
   }
 }
 
@@ -196,4 +200,19 @@ function drawLine(context, shape) {
   context.moveTo(x1, y1);
   context.lineTo(x2, y2);
   context.stroke();
+}
+
+/**
+ * Draw a text label.
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {Record<string, unknown> & {type?: string}} shape Text shape description.
+ */
+function drawText(context, shape) {
+  const x = plotShared.numberOr(shape.x, 0);
+  const y = plotShared.numberOr(shape.y, 0);
+  context.fillStyle = plotShared.stringOr(shape.fill, FOREGROUND);
+  context.font = plotShared.stringOr(shape.font, '12px monospace');
+  context.textAlign = plotShared.stringOr(shape.align, 'left');
+  context.textBaseline = plotShared.stringOr(shape.baseline, 'alphabetic');
+  context.fillText(plotShared.stringOr(shape.text, ''), x, y);
 }
