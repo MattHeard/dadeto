@@ -162,4 +162,19 @@ describe('solarPaddle', () => {
     expect(relaunched.storageValue.current.SOLA1.status).toBe('running');
     expect(relaunched.storageValue.current.SOLA1.orb.stuckToPaddle).toBe(false);
   });
+
+  it('resets cleanly from a paused state and can launch again', () => {
+    const storageValue = { current: null };
+    runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
+    runToy(JSON.stringify({ type: 'keydown', key: 'P' }), storageValue);
+    const reset = runToy(JSON.stringify({ type: 'keydown', key: 'R' }), storageValue);
+    const resetState = structuredClone(reset.storageValue.current.SOLA1);
+    runToy(JSON.stringify({ type: 'keyup', key: 'R' }), storageValue);
+    const relaunched = runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
+
+    expect(resetState.status).toBe('ready');
+    expect(resetState.orb.stuckToPaddle).toBe(true);
+    expect(relaunched.storageValue.current.SOLA1.status).toBe('running');
+    expect(relaunched.storageValue.current.SOLA1.orb.stuckToPaddle).toBe(false);
+  });
 });
