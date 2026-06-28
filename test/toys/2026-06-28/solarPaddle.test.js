@@ -49,6 +49,23 @@ describe('solarPaddle', () => {
     expect(nextStorage.current.SOLA1.paddle.x).toBeGreaterThan(104);
   });
 
+  it('accepts WebHID-style reports as gamepad input', () => {
+    const storageValue = { current: null };
+    runToy(
+      JSON.stringify({
+        type: 'hid',
+        reportBytes: [0x01, 255, 0],
+      }),
+      storageValue
+    );
+    const next = runToy('{}', storageValue);
+
+    expect(next.storageValue.current.SOLA1.input.gamepad.buttons[0]).toBe(true);
+    expect(next.storageValue.current.SOLA1.input.gamepad.axes[0]).toBe(0.9921875);
+    expect(next.storageValue.current.SOLA1.input.actions.launch).toBe(true);
+    expect(next.storageValue.current.SOLA1.input.actions.right).toBe(true);
+  });
+
   it('pauses and resumes on repeated pause presses without duplicating the edge', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
