@@ -79,7 +79,14 @@ function buildNextState(persisted, input) {
     const resetState = createSeedState({
       ...input,
       layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
-    });
+    },
+    persisted
+      ? {
+          width: persisted.width,
+          height: persisted.height,
+          layoutSeed: persisted.layoutSeed,
+        }
+      : undefined);
     resetState.input = inputState;
     return resetState;
   }

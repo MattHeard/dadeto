@@ -135,7 +135,15 @@ function buildNextState(persisted, input) {
     return createSeedState({
       ...input,
       layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
-    });
+    },
+    persisted
+      ? {
+          width: persisted.width,
+          height: persisted.height,
+          lives: persisted.lives,
+          layoutSeed: persisted.layoutSeed,
+        }
+      : undefined);
   }
 
   return withInput;
