@@ -299,28 +299,33 @@ function normalizeCellState(value, charge, targetCharge, maxCharge) {
 }
 
 function normalizeCells(width, height) {
-  const cellWidth = 30;
+  const cellWidth = 28;
   const cellHeight = 12;
-  const totalWidth = CELL_COLS * cellWidth + (CELL_COLS - 1) * CELL_GAP_X;
-  const startX = Math.max(CELL_LEFT, Math.round((width - totalWidth) / 2));
-  const startY = CELL_TOP;
-  const cells = [];
-  for (let row = 0; row < CELL_ROWS; row += 1) {
-    for (let col = 0; col < CELL_COLS; col += 1) {
-      cells.push({
-        id: `cell-${row + 1}-${col + 1}`,
-        x: startX + col * (cellWidth + CELL_GAP_X),
-        y: startY + row * (cellHeight + CELL_GAP_Y),
-        width: cellWidth,
-        height: cellHeight,
-        charge: 0,
-        targetCharge: DEFAULT_CELL_TARGET,
-        maxCharge: DEFAULT_CELL_MAX,
-        state: 'empty',
-      });
-    }
-  }
-  return cells;
+  const spineX = Math.max(
+    CELL_LEFT,
+    Math.round(width / 2) - Math.round(cellWidth / 2)
+  );
+  const rows = [
+    { count: 2, offset: -48, y: CELL_TOP },
+    { count: 4, offset: -66, y: CELL_TOP + 20 },
+    { count: 3, offset: -12, y: CELL_TOP + 40 },
+  ];
+
+  return rows.flatMap((row, rowIndex) => {
+    const rowWidth = row.count * cellWidth + (row.count - 1) * CELL_GAP_X;
+    const startX = Math.max(CELL_LEFT, spineX + row.offset - rowWidth / 2);
+    return Array.from({ length: row.count }, (_, col) => ({
+      id: `cell-${rowIndex + 1}-${col + 1}`,
+      x: Math.round(startX + col * (cellWidth + CELL_GAP_X)),
+      y: row.y,
+      width: cellWidth,
+      height: cellHeight,
+      charge: 0,
+      targetCharge: DEFAULT_CELL_TARGET,
+      maxCharge: DEFAULT_CELL_MAX,
+      state: 'empty',
+    }));
+  });
 }
 
 function updateInputState(previous, input) {

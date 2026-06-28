@@ -531,30 +531,30 @@ function normalizePanelsFromState(value) {
  * @param height
  */
 function normalizePanels(width, height) {
-  const totalWidth =
-    width - PANEL_LEFT * 2 - PANEL_GAP * (DEFAULT_PANEL_COLS - 1);
-  const panelWidth = Math.max(20, Math.floor(totalWidth / DEFAULT_PANEL_COLS));
+  const panelWidth = 28;
   const panelHeight = 10;
-  const startX = PANEL_LEFT;
-  const panelRows = DEFAULT_PANEL_ROWS;
-  const rowSpacing = panelHeight + PANEL_GAP;
-  const colSpacing = panelWidth + PANEL_GAP;
+  const rowSpecs = [
+    { count: 3, xOffset: 22 },
+    { count: 5, xOffset: 8 },
+    { count: 4, xOffset: 36 },
+  ];
+  const centerX = Math.max(
+    PANEL_LEFT,
+    Math.round((width - (DEFAULT_PANEL_COLS * panelWidth + 4 * PANEL_GAP)) / 2)
+  );
 
-  const panels = [];
-  for (let row = 0; row < panelRows; row += 1) {
-    for (let col = 0; col < DEFAULT_PANEL_COLS; col += 1) {
-      panels.push({
-        id: `p${row + 1}-${col + 1}`,
-        x: startX + col * colSpacing,
-        y: PANEL_TOP + row * rowSpacing,
-        width: panelWidth,
-        height: panelHeight,
-        charge: false,
-      });
-    }
-  }
-
-  return panels;
+  return rowSpecs.flatMap((row, rowIndex) => {
+    const rowWidth = row.count * panelWidth + (row.count - 1) * PANEL_GAP;
+    const startX = Math.max(PANEL_LEFT, centerX + row.xOffset - rowWidth / 2);
+    return Array.from({ length: row.count }, (_, col) => ({
+      id: `p${rowIndex + 1}-${col + 1}`,
+      x: Math.round(startX + col * (panelWidth + PANEL_GAP)),
+      y: PANEL_TOP + rowIndex * (panelHeight + PANEL_GAP),
+      width: panelWidth,
+      height: panelHeight,
+      charge: false,
+    }));
+  });
 }
 
 /**

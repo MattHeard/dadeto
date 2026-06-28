@@ -50,6 +50,18 @@ describe('batteryBreakout', () => {
     expect(storageValue.current.BATT4.orb.vy).toBe(-1);
   });
 
+  it('uses a staggered default cell layout', () => {
+    const { storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
+    const cells = storageValue.current.BATT4.cells;
+    const rows = new Map();
+
+    for (const cell of cells) {
+      rows.set(cell.y, (rows.get(cell.y) || 0) + 1);
+    }
+
+    expect([...rows.values()]).toEqual([2, 4, 3]);
+  });
+
   it('resets to a fresh state on r', () => {
     const storageValue = {
       current: {

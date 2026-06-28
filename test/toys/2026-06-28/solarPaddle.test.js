@@ -70,6 +70,18 @@ describe('solarPaddle', () => {
     expect(storageValue.current.SOLA1.orb.vy).toBe(-1);
   });
 
+  it('uses a staggered default panel layout', () => {
+    const { storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
+    const panels = storageValue.current.SOLA1.panels;
+    const rows = new Map();
+
+    for (const panel of panels) {
+      rows.set(panel.y, (rows.get(panel.y) || 0) + 1);
+    }
+
+    expect([...rows.values()]).toEqual([3, 5, 4]);
+  });
+
   it('pauses and resumes on repeated pause presses without duplicating the edge', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
