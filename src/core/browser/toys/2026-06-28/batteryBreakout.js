@@ -493,7 +493,19 @@ function toCanvasPayload(state) {
     { type: 'rect', x: state.paddle.x, y: state.paddle.y, width: state.paddle.width, height: state.paddle.height, fill: '#e5e7eb' },
     { type: 'circle', x: Math.round(state.orb.x), y: Math.round(state.orb.y), radius: state.orb.radius, fill: state.status === 'lost' ? '#fca5a5' : '#fde047' },
     { type: 'rect', x: 18, y: state.height - 12, width: Math.max(8, Math.min(state.width - 36, state.score * 12 + 20)), height: 4, fill: '#34d399' },
-    { type: 'rect', x: state.width - 54, y: 18, width: 36, height: 6, fill: state.faults > DEFAULT_MAX_FAULTS ? '#ef4444' : '#94a3b8' },
+    ...(state.faults > 0
+      ? [
+          {
+            type: 'rect',
+            x: state.width - 54,
+            y: 18,
+            width: 36,
+            height: 6,
+            fill:
+              state.faults > DEFAULT_MAX_FAULTS ? '#ef4444' : '#94a3b8',
+          },
+        ]
+      : []),
   ];
   return { width: state.width, height: state.height, shapes };
 }

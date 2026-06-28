@@ -18,6 +18,11 @@ describe('batteryBreakout', () => {
     expect(payload.width).toBe(240);
     expect(payload.height).toBe(160);
     expect(payload.shapes.some(shape => shape.type === 'circle')).toBe(true);
+    expect(
+      payload.shapes.some(
+        shape => shape.type === 'rect' && shape.x === 186 && shape.y === 18
+      )
+    ).toBe(false);
     expect(storageValue.current.BATT4.version).toBe(1);
   });
 
