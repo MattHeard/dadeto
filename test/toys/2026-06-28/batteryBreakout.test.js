@@ -41,6 +41,15 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.paddle.x).toBeGreaterThan(100);
   });
 
+  it('accepts custom orb speeds from input', () => {
+    const { storageValue } = runToy(
+      JSON.stringify({ orbSpeedX: 2, orbSpeedY: -1 })
+    );
+
+    expect(storageValue.current.BATT4.orb.vx).toBe(2);
+    expect(storageValue.current.BATT4.orb.vy).toBe(-1);
+  });
+
   it('resets to a fresh state on r', () => {
     const storageValue = {
       current: {

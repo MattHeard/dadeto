@@ -11,8 +11,8 @@ const DEFAULT_PADDLE_WIDTH = 52;
 const DEFAULT_PADDLE_HEIGHT = 7;
 const DEFAULT_PADDLE_SPEED = 4;
 const DEFAULT_ORB_RADIUS = 4;
-const DEFAULT_ORB_SPEED_X = 2;
-const DEFAULT_ORB_SPEED_Y = -3;
+const DEFAULT_ORB_SPEED_X = 1;
+const DEFAULT_ORB_SPEED_Y = -2;
 const DEFAULT_LIVES = 3;
 const DEFAULT_PANEL_ROWS = 3;
 const DEFAULT_PANEL_COLS = 5;
@@ -190,6 +190,8 @@ function createSeedState(input, fallback) {
     input?.orbRadius,
     DEFAULT_ORB_RADIUS
   );
+  const orbSpeedX = normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X);
+  const orbSpeedY = normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y);
   return createState({
     width,
     height,
@@ -197,6 +199,8 @@ function createSeedState(input, fallback) {
     paddleHeight,
     paddleSpeed,
     orbRadius,
+    orbSpeedX,
+    orbSpeedY,
     lives: normalizePositiveInteger(
       input?.lives,
       fallback?.lives ?? DEFAULT_LIVES
@@ -233,8 +237,8 @@ function createState(options) {
     orb: {
       x: Math.round(options.width / 2),
       y: paddleY - options.orbRadius - 1,
-      vx: DEFAULT_ORB_SPEED_X,
-      vy: DEFAULT_ORB_SPEED_Y,
+      vx: options.orbSpeedX,
+      vy: options.orbSpeedY,
       radius: options.orbRadius,
       stuckToPaddle: true,
     },
@@ -462,11 +466,21 @@ function normalizeOrb(value) {
   return {
     x: Number(record.x) || Math.round(DEFAULT_WIDTH / 2),
     y: Number(record.y) || 0,
-    vx: Number(record.vx) || DEFAULT_ORB_SPEED_X,
-    vy: Number(record.vy) || DEFAULT_ORB_SPEED_Y,
+    vx: normalizeNumber(record.vx, DEFAULT_ORB_SPEED_X),
+    vy: normalizeNumber(record.vy, DEFAULT_ORB_SPEED_Y),
     radius: normalizePositiveInteger(record.radius, DEFAULT_ORB_RADIUS),
     stuckToPaddle: record.stuckToPaddle === true,
   };
+}
+
+/**
+ *
+ * @param value
+ * @param fallback
+ */
+function normalizeNumber(value, fallback) {
+  const next = Number(value);
+  return Number.isFinite(next) && next !== 0 ? next : fallback;
 }
 
 /**
@@ -480,6 +494,8 @@ function createSeedOptions() {
     paddleHeight: DEFAULT_PADDLE_HEIGHT,
     paddleSpeed: DEFAULT_PADDLE_SPEED,
     orbRadius: DEFAULT_ORB_RADIUS,
+    orbSpeedX: DEFAULT_ORB_SPEED_X,
+    orbSpeedY: DEFAULT_ORB_SPEED_Y,
     lives: DEFAULT_LIVES,
     panels: normalizePanels(DEFAULT_WIDTH, DEFAULT_HEIGHT),
   };

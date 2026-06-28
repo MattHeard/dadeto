@@ -11,8 +11,8 @@ const DEFAULT_PADDLE_WIDTH = 48;
 const DEFAULT_PADDLE_HEIGHT = 6;
 const DEFAULT_PADDLE_SPEED = 4;
 const DEFAULT_ORB_RADIUS = 4;
-const DEFAULT_ORB_SPEED_X = 2;
-const DEFAULT_ORB_SPEED_Y = -3;
+const DEFAULT_ORB_SPEED_X = 1;
+const DEFAULT_ORB_SPEED_Y = -2;
 const DEFAULT_LIVES = 3;
 const DEFAULT_MAX_FAULTS = 3;
 const DEFAULT_CELL_TARGET = 2;
@@ -104,6 +104,8 @@ function createSeedState(input, fallback) {
   const paddleHeight = normalizePositiveInteger(input?.paddleHeight, DEFAULT_PADDLE_HEIGHT);
   const paddleSpeed = normalizePositiveInteger(input?.paddleSpeed, DEFAULT_PADDLE_SPEED);
   const orbRadius = normalizePositiveInteger(input?.orbRadius, DEFAULT_ORB_RADIUS);
+  const orbSpeedX = normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X);
+  const orbSpeedY = normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y);
   return createState({
     width,
     height,
@@ -111,6 +113,8 @@ function createSeedState(input, fallback) {
     paddleHeight,
     paddleSpeed,
     orbRadius,
+    orbSpeedX,
+    orbSpeedY,
     lives: normalizePositiveInteger(input?.lives, fallback?.lives ?? DEFAULT_LIVES),
     faults: normalizePositiveInteger(input?.faults, 0),
     cells: normalizeCells(width, height),
@@ -139,8 +143,8 @@ function createState(options) {
     orb: {
       x: Math.round(options.width / 2),
       y: paddleY - options.orbRadius - 1,
-      vx: DEFAULT_ORB_SPEED_X,
-      vy: DEFAULT_ORB_SPEED_Y,
+      vx: options.orbSpeedX,
+      vy: options.orbSpeedY,
       radius: options.orbRadius,
       stuckToPaddle: true,
     },
@@ -237,11 +241,16 @@ function normalizeOrb(value) {
   return {
     x: Number(value.x) || Math.round(DEFAULT_WIDTH / 2),
     y: Number(value.y) || 0,
-    vx: Number(value.vx) || DEFAULT_ORB_SPEED_X,
-    vy: Number(value.vy) || DEFAULT_ORB_SPEED_Y,
+    vx: normalizeNumber(value.vx, DEFAULT_ORB_SPEED_X),
+    vy: normalizeNumber(value.vy, DEFAULT_ORB_SPEED_Y),
     radius: normalizePositiveInteger(value.radius, DEFAULT_ORB_RADIUS),
     stuckToPaddle: value.stuckToPaddle === true,
   };
+}
+
+function normalizeNumber(value, fallback) {
+  const next = Number(value);
+  return Number.isFinite(next) && next !== 0 ? next : fallback;
 }
 
 function createSeedOptions() {
@@ -252,6 +261,8 @@ function createSeedOptions() {
     paddleHeight: DEFAULT_PADDLE_HEIGHT,
     paddleSpeed: DEFAULT_PADDLE_SPEED,
     orbRadius: DEFAULT_ORB_RADIUS,
+    orbSpeedX: DEFAULT_ORB_SPEED_X,
+    orbSpeedY: DEFAULT_ORB_SPEED_Y,
     lives: DEFAULT_LIVES,
     faults: 0,
     cells: normalizeCells(DEFAULT_WIDTH, DEFAULT_HEIGHT),

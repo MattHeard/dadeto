@@ -61,6 +61,15 @@ describe('solarPaddle', () => {
     expect(nextStorage.current.SOLA1.paddle.x).toBeGreaterThan(104);
   });
 
+  it('accepts custom orb speeds from input', () => {
+    const { storageValue } = runToy(
+      JSON.stringify({ orbSpeedX: 2, orbSpeedY: -1 })
+    );
+
+    expect(storageValue.current.SOLA1.orb.vx).toBe(2);
+    expect(storageValue.current.SOLA1.orb.vy).toBe(-1);
+  });
+
   it('pauses and resumes on repeated pause presses without duplicating the edge', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
