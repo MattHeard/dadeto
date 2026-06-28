@@ -4,7 +4,7 @@
       "key": "BATT4",
       "title": "Battery Breakout",
       "publicationDate": "2026-06-28",
-      "release": "beta",
+      "release": "public",
       "content": [
         "Battery Breakout is an original single-player DADETO browser toy where a charging paddle redirects an energy orb into a battery array.",
         "The core mechanic is charge balancing: cells have target levels, stabilization states, and overcharge failure states.",
