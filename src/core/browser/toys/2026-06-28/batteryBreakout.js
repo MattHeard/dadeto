@@ -385,12 +385,13 @@ function movePaddle(state, actions) {
 function stepSimulation(state) {
   if (state.orb.stuckToPaddle) return;
   const substeps = 3;
+  const hitCells = new Set();
   for (let i = 0; i < substeps; i += 1) {
     state.orb.x += state.orb.vx / substeps;
     state.orb.y += state.orb.vy / substeps;
     resolveWalls(state);
     resolvePaddle(state);
-    resolveCells(state);
+    resolveCells(state, hitCells);
     resolveBottom(state);
   }
   state.frame += 0;
@@ -421,11 +422,15 @@ function resolvePaddle(state) {
   }
 }
 
-function resolveCells(state) {
+function resolveCells(state, hitCells) {
   for (const cell of state.cells) {
+    if (hitCells.has(cell.id)) {
+      continue;
+    }
     if (circleIntersectsCell(state.orb, cell)) {
+      hitCells.add(cell.id);
       reflectOrb(state, cell);
-      if (cell.state !== 'stable') {
+      if (cell.state !== 'overcharged') {
         cell.charge += 1;
         cell.state =
           cell.charge > cell.maxCharge
