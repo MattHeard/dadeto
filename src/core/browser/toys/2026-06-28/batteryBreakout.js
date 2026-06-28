@@ -93,7 +93,7 @@ function mergeSeedAndState(base, seed) {
     height: seed.height,
     paddle: { ...base.paddle, y: Math.max(0, seed.height - PADDLE_Y_OFFSET - base.paddle.height) },
     orb: { ...base.orb, radius: DEFAULT_ORB_RADIUS },
-    cells: seed.cells,
+    cells: base.cells,
   };
 }
 
