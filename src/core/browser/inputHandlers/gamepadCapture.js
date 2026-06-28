@@ -572,6 +572,7 @@ function createConnectionHandler(options) {
 function handleConnectionEvent(options, event) {
   whenNotNullish(getHandledConnectionPayload(options.state, event), payload => {
     const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
+    logGamepadEvent('connected', gamepad);
     storeSnapshot(options.state, gamepad);
     syncToyPayload(
       createCaptureToyInput(options),
@@ -600,7 +601,9 @@ function handleDisconnectEvent(options, event) {
   whenNotNullish(
     getHandledDisconnectionPayload(options.state, event),
     payload => {
-      removeSnapshot(options.state, getEventGamepad(event));
+      const gamepad = getEventGamepad(event);
+      logGamepadEvent('disconnected', gamepad);
+      removeSnapshot(options.state, gamepad);
       syncToyPayload(
         createCaptureToyInput(options),
         /** @type {Record<string, unknown>} */ (payload)
@@ -640,6 +643,28 @@ function getHandledGamepadPayload(state, event, type) {
   return whenOrNull(shouldHandleConnectionEvent(state), () =>
     buildConnectionPayload(event, type)
   );
+}
+
+/**
+ * Log a gamepad connection lifecycle event.
+ * @param {'connected' | 'disconnected'} status
+ *   Event status to report.
+ * @param {Gamepad | null} gamepad
+ *   Gamepad associated with the lifecycle event.
+ * @returns {void}
+ *   Writes a console log when a gamepad exists.
+ */
+function logGamepadEvent(status, gamepad) {
+  if (!gamepad) {
+    return;
+  }
+
+  console.log('[gamepadCapture]', status, {
+    index: gamepad.index,
+    id: gamepad.id,
+    mapping: gamepad.mapping,
+    connected: gamepad.connected,
+  });
 }
 
 /**
@@ -872,4 +897,5 @@ export function gamepadCaptureHandler(dom, container, textInput) {
 
 export const gamepadCaptureTestOnly = {
   removeSnapshot,
+  logGamepadEvent,
 };

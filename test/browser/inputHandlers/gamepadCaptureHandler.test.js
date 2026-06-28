@@ -263,6 +263,9 @@ describe('gamepadCaptureHandler', () => {
       const state = { snapshots: { 0: { connected: true } } };
       gamepadCaptureTestOnly.removeSnapshot(state, null);
       expect(state.snapshots).toEqual({ 0: { connected: true } });
+      expect(
+        gamepadCaptureTestOnly.logGamepadEvent('connected', null)
+      ).toBeUndefined();
     } finally {
       globalThis.addEventListener = previousAdd;
       globalThis.removeEventListener = previousRemove;

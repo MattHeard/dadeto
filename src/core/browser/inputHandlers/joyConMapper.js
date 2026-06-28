@@ -170,7 +170,18 @@ function initializeWebHidCapture(state, disposers) {
     return;
   }
 
+  if (typeof hid.addEventListener === 'function') {
+    const connectHandler = event => logHidDeviceEvent('connected', event.device);
+    const disconnectHandler = event =>
+      logHidDeviceEvent('disconnected', event.device);
+    hid.addEventListener('connect', connectHandler);
+    hid.addEventListener('disconnect', disconnectHandler);
+    disposers.push(() => hid.removeEventListener('connect', connectHandler));
+    disposers.push(() => hid.removeEventListener('disconnect', disconnectHandler));
+  }
+
   void hid.getDevices().then(devices => {
+    devices.forEach(device => logHidDeviceEvent('available', device));
     devices.forEach(device => attachHidDeviceListener(state, disposers, device));
   });
 }
@@ -236,6 +247,29 @@ function snapshotHidAxes(axisBytes) {
   return axisBytes.map(byte => {
     const normalized = Math.min(1, Math.max(-1, (byte - 128) / 128));
     return Math.abs(normalized) < AXIS_THRESHOLD ? 0 : normalized;
+  });
+}
+
+/**
+ * Log a WebHID device lifecycle event.
+ * @param {'available' | 'connected' | 'disconnected'} status
+ *   Device state to report.
+ * @param {HIDDevice | null | undefined} device
+ *   HID device being observed.
+ * @returns {void}
+ *   Writes a structured console log when a device exists.
+ */
+function logHidDeviceEvent(status, device) {
+  if (!device) {
+    return;
+  }
+
+  console.log('[joyConMapper:webhid]', status, {
+    vendorId: device.vendorId,
+    productId: device.productId,
+    productName: device.productName,
+    collections: device.collections?.length ?? 0,
+    opened: device.opened,
   });
 }
 
@@ -1730,6 +1764,7 @@ export const joyConMapperTestOnly = {
   snapshotHidButtons,
   snapshotHidAxes,
   snapshotGamepad,
+  logHidDeviceEvent,
   toGamepadSnapshot,
   normalizeButtonSnapshot,
   normalizeAxisValue,

@@ -32,6 +32,7 @@ const {
   snapshotHidButtons,
   snapshotHidAxes,
   snapshotGamepad,
+  logHidDeviceEvent,
   toGamepadSnapshot,
   normalizeButtonSnapshot,
   normalizeAxisValue,
@@ -455,5 +456,53 @@ describe('joyConMapper coverage helpers', () => {
       buttons: [{ pressed: true, value: 0.8 }],
       axes: [0.1235],
     });
+  });
+
+  it('covers WebHID no-device and no-HID guards', () => {
+    const disposers = [];
+    const silentDom = {
+      globalThis: {},
+    };
+
+    initializeWebHidCapture({ dom: silentDom, hidSnapshot: null }, disposers);
+    expect(disposers).toHaveLength(0);
+    expect(logHidDeviceEvent('connected', null)).toBeUndefined();
+  });
+
+  it('covers WebHID connect and disconnect listener registration', async () => {
+    const disposers = [];
+    const dom = {
+      globalThis: {
+        navigator: {
+          hid: {
+            addEventListener: jest.fn(),
+            removeEventListener: jest.fn(),
+            getDevices: jest.fn(async () => []),
+          },
+        },
+      },
+    };
+
+    initializeWebHidCapture({ dom, hidSnapshot: null }, disposers);
+    await Promise.resolve();
+
+    expect(dom.globalThis.navigator.hid.addEventListener).toHaveBeenCalledWith(
+      'connect',
+      expect.any(Function)
+    );
+    expect(dom.globalThis.navigator.hid.addEventListener).toHaveBeenCalledWith(
+      'disconnect',
+      expect.any(Function)
+    );
+    expect(disposers).toHaveLength(2);
+    disposers.forEach(dispose => dispose());
+    expect(dom.globalThis.navigator.hid.removeEventListener).toHaveBeenCalledWith(
+      'connect',
+      expect.any(Function)
+    );
+    expect(dom.globalThis.navigator.hid.removeEventListener).toHaveBeenCalledWith(
+      'disconnect',
+      expect.any(Function)
+    );
   });
 });
