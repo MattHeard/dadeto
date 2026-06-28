@@ -135,6 +135,41 @@ describe('solarPaddle', () => {
     expect(nextState.orb.vy === 0).toBe(false);
   });
 
+  it('bounces the orb off a panel instead of letting it pass through after separation', () => {
+    const storageValue = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: { left: false, right: false, launch: false, pause: false, reset: false },
+            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
+            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+          },
+          paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
+          orb: { x: 40, y: 44, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          panels: [
+            { id: 'p1', x: 32, y: 32, width: 24, height: 10, charge: false },
+          ],
+        },
+      },
+    };
+
+    const { storageValue: nextStorage } = runToy('{}', storageValue);
+    const nextState = nextStorage.current.SOLA1;
+
+    expect(nextState.score).toBe(1);
+    expect(nextState.orb.vy).toBeLessThan(0);
+    expect(nextState.orb.y).toBeLessThan(44);
+  });
+
   it('snaps the paddle to whole pixels while moving', () => {
     const storageValue = { current: null };
     runToy(JSON.stringify({ type: 'keydown', key: 'ArrowRight' }), storageValue);

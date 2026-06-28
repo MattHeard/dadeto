@@ -566,16 +566,17 @@ function resolvePanels(state) {
       continue;
     }
     if (circleIntersectsPanel(state.orb, panel)) {
-      separateOrbFromPanel(state.orb, panel);
+      const collisionAxis = getPanelCollisionAxis(state.orb, panel);
+      separateOrbFromPanel(state.orb, panel, collisionAxis);
       panel.charge = true;
       state.score += 1;
-      reflectOrbVelocityFromPanel(state.orb, panel);
+      reflectOrbVelocityFromPanel(state.orb, collisionAxis);
       break;
     }
   }
 }
 
-function separateOrbFromPanel(orb, panel) {
+function getPanelCollisionAxis(orb, panel) {
   const panelCenterX = panel.x + panel.width / 2;
   const panelCenterY = panel.y + panel.height / 2;
   const dx = orb.x - panelCenterX;
@@ -583,7 +584,16 @@ function separateOrbFromPanel(orb, panel) {
   const overlapX = orb.radius + panel.width / 2 - Math.abs(dx);
   const overlapY = orb.radius + panel.height / 2 - Math.abs(dy);
 
-  if (overlapX < overlapY) {
+  return overlapX < overlapY ? 'x' : 'y';
+}
+
+function separateOrbFromPanel(orb, panel, collisionAxis) {
+  const panelCenterX = panel.x + panel.width / 2;
+  const panelCenterY = panel.y + panel.height / 2;
+  const dx = orb.x - panelCenterX;
+  const dy = orb.y - panelCenterY;
+
+  if (collisionAxis === 'x') {
     orb.x = panelCenterX + Math.sign(dx || 1) * (panel.width / 2 + orb.radius + 0.5);
     return;
   }
@@ -591,13 +601,8 @@ function separateOrbFromPanel(orb, panel) {
   orb.y = panelCenterY + Math.sign(dy || 1) * (panel.height / 2 + orb.radius + 0.5);
 }
 
-function reflectOrbVelocityFromPanel(orb, panel) {
-  const panelCenterX = panel.x + panel.width / 2;
-  const panelCenterY = panel.y + panel.height / 2;
-  const dx = orb.x - panelCenterX;
-  const dy = orb.y - panelCenterY;
-
-  if (Math.abs(dx) > Math.abs(dy)) {
+function reflectOrbVelocityFromPanel(orb, collisionAxis) {
+  if (collisionAxis === 'x') {
     orb.vx = -orb.vx;
     return;
   }
