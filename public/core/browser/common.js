@@ -1,7 +1,5 @@
 // Shared utility functions for browser code.
 
-import { whenOrDefault } from './browser-core.js';
-
 /**
  * Check that the value is an object, excluding `null` and arrays.
  * @param {*} val Candidate to inspect.
@@ -28,7 +26,11 @@ export function isObject(val) {
  * @returns {string} Result of the transform when applied, or the fallback otherwise.
  */
 export function withFallback(condition, transform, fallback = '') {
-  return whenOrDefault(condition, transform, fallback);
+  if (condition) {
+    return transform();
+  }
+
+  return fallback;
 }
 
 /**
@@ -44,6 +46,21 @@ export function buildWhen(condition, builder) {
   }
 
   return builder();
+}
+
+/**
+ * Normalize a positive integer-like value.
+ * @param {unknown} value Candidate value.
+ * @param {number} fallback Fallback when parsing fails.
+ * @returns {number} Normalized integer.
+ */
+export function normalizePositiveInteger(value, fallback) {
+  const next = Number(value);
+  if (Number.isFinite(next) && next > 0) {
+    return Math.round(next);
+  }
+
+  return fallback;
 }
 
 export { guardThen } from './browser-core.js';

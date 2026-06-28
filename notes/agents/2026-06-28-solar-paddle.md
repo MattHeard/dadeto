@@ -1,0 +1,4 @@
+- Unexpected hurdle: the new Solar Paddle slice itself passed, but the full `npm test` run still exits non-zero because the repository has a preexisting global coverage gate below 100%.
+- Diagnosis path: I verified the toy with a focused Jest slice, built the site to regenerate `public/blog.json` and `public/index.html`, then reran the full suite and confirmed the only remaining failure is the repo-wide coverage threshold, not the Solar Paddle code path.
+- Chosen fix: implemented `SOLA1` in `src/core/browser/toys/2026-06-28/solarPaddle.js`, added durable toy docs under `docs/toys/solar-paddle/`, added focused tests, and published the new blog entry through `src/build/blog.json`.
+- Next-time guidance: if another loop touches repo-wide gates, check whether the failure is baseline debt versus a regression before widening the scope; the Solar Paddle implementation is already green at the focused test level.

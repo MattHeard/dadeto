@@ -896,6 +896,7 @@ export const CHECK_COMMANDS = [
   { name: 'test', command: 'npm', args: ['test'] },
   { name: 'lint', command: 'npm', args: ['run', 'lint'] },
   { name: 'depcruise', command: 'npm', args: ['run', 'depcruise'] },
+  { name: 'core-parse', command: 'npm', args: ['run', 'core-parse'] },
   { name: 'duplication', command: 'npm', args: ['run', 'duplication'] },
   {
     name: 'entrypoint-pattern',
@@ -903,6 +904,11 @@ export const CHECK_COMMANDS = [
     args: ['run', 'entrypoint-pattern'],
   },
   { name: 'non-core-thin', command: 'npm', args: ['run', 'non-core-thin'] },
+  {
+    name: 'overexposed-exports',
+    command: 'npm',
+    args: ['run', 'overexposed-exports'],
+  },
   { name: 'tsdoc:check', command: 'npm', args: ['run', 'tsdoc:check'] },
   {
     name: 'audit',

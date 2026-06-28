@@ -1,6 +1,36 @@
 {
   "posts": [
     {
+      "key": "SOLA1",
+      "title": "Solar Paddle",
+      "publicationDate": "2026-06-28",
+      "release": "beta",
+      "content": [
+        "An original solarpunk paddle game that persists state across submits and advances one frame per invocation.",
+        "Move the deflector, launch the energy orb, and recharge the station's solar panels using shape-only canvas output.",
+        "This post is public so the frame-stepped toy can be exercised directly in the browser.",
+        {
+          "type": "manual",
+          "id": "SOLA1-manual",
+          "title": "User manual",
+          "markdown": "# SOLA1 — Solar Paddle\n\n## What this toy does\n\nSolar Paddle is an original solarpunk paddle-and-collision toy. You steer a station deflector, launch an energy orb, and recharge solar panels while the toy persists state across submits.\n\n## Input format\n\nPaste a JSON object with any of these optional fields:\n\n- `width`\n- `height`\n- `paddleWidth`\n- `paddleHeight`\n- `paddleSpeed`\n- `orbRadius`\n- `lives`\n- `reset`\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"paddleWidth\": 52,\n  \"paddleHeight\": 7,\n  \"paddleSpeed\": 4,\n  \"orbRadius\": 4,\n  \"lives\": 3\n}\n```\n\n## Defaults\n\nIf input is empty or malformed, the toy falls back to a deterministic default layout.\n\n## Storage behavior\n\nThe toy stores its state under the `SOLA1` local-storage key. The persisted state includes:\n\n- canvas dimensions\n- score\n- lives\n- paddle position\n- orb position and velocity\n- panel charge state\n- held and edge-triggered input state\n\nThat means a refresh resumes the same game instead of starting over.\n\n## Input behavior\n\nThe toy handles keyboard input directly and can also map generic gamepad-style raw input inside the toy.\n\n- ArrowLeft / A: move left\n- ArrowRight / D: move right\n- Space: launch orb\n- P: pause or resume\n- R: reset\n\nHeld movement updates every submit frame. Launch, pause, and reset only trigger on a rising edge.\n\n## Output\n\nThe toy returns a canvas payload:\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"shapes\": []\n}\n```\n\nThe payload uses rectangles for the station frame, panels, deflector, and progress bar, plus a circle for the orb.\n\n## How to use it\n\n1. Submit empty input to see the default station.\n2. Hold left or right to move the deflector.\n3. Press Space to launch the orb.\n4. Press P to pause or resume.\n5. Press R to reset.\n\n## Tips\n\n- Keep the orb speed modest so the collisions stay easy to follow.\n- The default panel layout is asymmetric and original on purpose.\n- This toy is meant to prove stateful frame-stepped gameplay, not to clone a specific arcade game.\n"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-06-28/solarPaddle.js",
+        "functionName": "solarPaddle",
+        "defaultInputMethod": "keyboard-capture",
+        "defaultOutputMethod": "canvas-2d"
+      },
+      "tags": [
+        "toy",
+        "canvas",
+        "game",
+        "storage",
+        "html"
+      ]
+    },
+    {
       "key": "CHAN1",
       "title": "Change Together Explorer",
       "publicationDate": "2026-06-15",

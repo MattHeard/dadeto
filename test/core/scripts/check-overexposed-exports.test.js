@@ -131,7 +131,7 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
-      parse,
+      parse: parseSource,
       pathModule: path,
       configPath: 'overexposed-exports-exemptions.json',
     });
@@ -167,7 +167,7 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
-      parse,
+      parse: parseSource,
       pathModule: path,
     });
 
@@ -203,7 +203,7 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
-      parse,
+      parse: parseSource,
     });
 
     expect(handle()).toEqual({ exitCode: 1, violations: 1 });
@@ -239,7 +239,7 @@ describe('check-overexposed-exports', () => {
       stderr: { write: text => stderr.push(text) },
       rootDir: '/repo',
       sourceRoot: 'src',
-      parse,
+      parse: parseSource,
       pathModule: path,
     });
 
