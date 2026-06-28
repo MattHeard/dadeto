@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* eslint-disable jsdoc/require-param-type */
+
 import {
   DEFAULT_BUCKET_NAME,
   normalizeStaticObjectPrefix,
@@ -3368,6 +3368,12 @@ async function getVariantsSnapshot(pageRef) {
 }
 
 /* c8 ignore start */
+/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
+/**
+ *
+ * @param docs
+ * @param visibilityThreshold
+ */
 function hasVisibleVariants(docs, visibilityThreshold) {
   return docs.some(
     /** @param {{ data: () => Record<string, any> }} doc */
@@ -3377,6 +3383,7 @@ function hasVisibleVariants(docs, visibilityThreshold) {
     }
   );
 }
+/* eslint-enable jsdoc/require-returns, jsdoc/require-param-description, jsdoc/require-param-type */
 /* c8 ignore end */
 
 /**

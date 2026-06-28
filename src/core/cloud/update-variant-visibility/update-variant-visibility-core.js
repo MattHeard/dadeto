@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
+
 import { getNumericValueOrZero } from '../cloud-core.js';
 import { objectOrEmpty, when, ADMIN_UID } from '../../commonCore.js';
 import { createFirestoreHandle } from '../firestore-handle.js';
@@ -441,6 +441,14 @@ async function executeVariantUpdate(db, snapshot, renderContents) {
 }
 
 /* c8 ignore start */
+/* eslint-disable complexity */
+/**
+ * Apply the visibility update using the validated payload.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {{ variantId: string; isApproved: boolean; moderatorId?: string }} payload Validated inputs.
+ * @param {(context?: object) => Promise<unknown> | undefined} [renderContents] Optional content renderer.
+ * @returns {Promise<null>} Resolves after the update runs.
+ */
 async function applyVariantUpdate(db, payload, renderContents) {
   const variantRef = resolveVariantRef(db, payload.variantId);
   if (!variantRef) {
@@ -487,9 +495,16 @@ async function applyVariantUpdate(db, payload, renderContents) {
   });
   return null;
 }
+/* eslint-enable complexity */
 /* c8 ignore end */
 
 // c8 ignore next
+/**
+ * @param {Record<string, unknown> | null | undefined} variantData Variant data.
+ * @param {boolean} isApproved Whether the rating is approved.
+ * @param {number} moderatorReputation Moderator reputation score.
+ * @returns {number} Next visibility score.
+ */
 export function calculateNextVisibility(
   variantData,
   isApproved,
