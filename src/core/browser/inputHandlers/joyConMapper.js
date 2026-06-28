@@ -172,7 +172,7 @@ function currentHidSnapshot(state) {
  *   Normalized controller snapshot or null when no input source is available.
  */
 function currentControllerSnapshot(state) {
-  return snapshotGamepad(currentPad(state.dom)) ?? currentHidSnapshot(state);
+  return currentHidSnapshot(state) ?? snapshotGamepad(currentPad(state.dom));
 }
 
 /**

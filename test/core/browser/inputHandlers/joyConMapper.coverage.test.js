@@ -395,6 +395,19 @@ describe('joyConMapper coverage helpers', () => {
       value: 2,
     });
     expect(normalizeAxisValue(0.123456)).toBe(0.1235);
+    expect(
+      currentControllerSnapshot({
+        dom: {
+          getGamepads: jest.fn(() => [
+            {
+              buttons: [],
+              axes: [],
+            },
+          ]),
+        },
+        hidSnapshot,
+      })
+    ).toBe(hidSnapshot);
   });
 
   it('covers WebHID listener setup and report decoding', async () => {
