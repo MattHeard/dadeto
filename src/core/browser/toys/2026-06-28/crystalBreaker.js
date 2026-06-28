@@ -207,15 +207,27 @@ function updateInputState(previous, input) {
 }
 
 function parseActions(input, previous) {
-  const keys = input?.type === 'keydown' ? { [String(input.key || '').toLowerCase()]: true } : input?.type === 'keyup' ? { [String(input.key || '').toLowerCase()]: false } : null;
+  const normalizedKey = normalizeKeyName(input?.key);
+  const keys =
+    input?.type === 'keydown'
+      ? { [normalizedKey]: true }
+      : input?.type === 'keyup'
+        ? { [normalizedKey]: false }
+        : null;
   const keyboard = { ...previous.keyboard, ...(keys || {}) };
   return {
     moveLeft: keyboard.arrowleft === true || keyboard.a === true || keyboard.left === true,
     moveRight: keyboard.arrowright === true || keyboard.d === true || keyboard.right === true,
-    launchPressed: input?.type === 'keydown' && String(input.key || '').toLowerCase() === 'space',
-    pausePressed: input?.type === 'keydown' && String(input.key || '').toLowerCase() === 'p',
-    resetPressed: input?.type === 'keydown' && String(input.key || '').toLowerCase() === 'r',
+    launchPressed: input?.type === 'keydown' && (normalizedKey === 'space' || normalizedKey === ' '),
+    pausePressed: input?.type === 'keydown' && normalizedKey === 'p',
+    resetPressed: input?.type === 'keydown' && normalizedKey === 'r',
   };
+}
+
+function normalizeKeyName(key) {
+  const value = String(key || '').toLowerCase();
+  if (value === ' ') return 'space';
+  return value;
 }
 
 function applyGameplayInput(state, inputState) {
@@ -312,4 +324,3 @@ function persistState(storage, state) {
   if (!storage) return;
   storage({ [STORAGE_KEY]: state });
 }
-

@@ -23,7 +23,7 @@ describe('crystalBreaker', () => {
 
   it('launches on space and keeps launch edge-triggered', () => {
     const storageValue = { current: null };
-    runToy(JSON.stringify({ type: 'keydown', key: 'Space' }), storageValue);
+    runToy(JSON.stringify({ type: 'keydown', key: ' ' }), storageValue);
     const second = runToy('{}', storageValue);
     expect(second.storageValue.current.CRYS1.status).toBe('running');
     expect(second.storageValue.current.CRYS1.orb.stuckToPaddle).toBe(false);
