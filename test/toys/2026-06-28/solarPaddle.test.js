@@ -143,6 +143,36 @@ describe('solarPaddle', () => {
     expect(Number.isInteger(nextStorage.current.SOLA1.paddle.x)).toBe(true);
   });
 
+  it('preserves a left-edge paddle position when state is rehydrated', () => {
+    const storageValue = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: { left: false, right: false, launch: false, pause: false, reset: false },
+            edgeActions: { left: false, right: false, launchPressed: false, pausePressed: false, resetPressed: false },
+            previousActions: { left: false, right: false, launch: false, pause: false, reset: false },
+          },
+          paddle: { x: 0, y: 114, width: 52, height: 7, speed: 4 },
+          orb: { x: 80, y: 70, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          panels: [],
+        },
+      },
+    };
+
+    const { storageValue: nextStorage } = runToy('{}', storageValue);
+
+    expect(nextStorage.current.SOLA1.paddle.x).toBe(0);
+  });
+
   it('loses a life when the orb exits below the canvas', () => {
     const storageValue = {
       current: {

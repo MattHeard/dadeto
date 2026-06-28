@@ -323,12 +323,21 @@ function normalizePaddle(value, height) {
   const record = /** @type {Record<string, unknown>} */ (value);
   const seed = createSeedOptions();
   return {
-    x: normalizePositiveInteger(record.x, seed.width / 2),
+    x: normalizeNonNegativeInteger(record.x, seed.width / 2),
     y: Math.max(0, normalizePositiveInteger(record.y, height - PADDLE_Y_OFFSET)),
     width: normalizePositiveInteger(record.width, DEFAULT_PADDLE_WIDTH),
     height: normalizePositiveInteger(record.height, DEFAULT_PADDLE_HEIGHT),
     speed: normalizePositiveInteger(record.speed, DEFAULT_PADDLE_SPEED),
   };
+}
+
+function normalizeNonNegativeInteger(value, fallback) {
+  const next = Number(value);
+  if (Number.isFinite(next) && next >= 0) {
+    return Math.round(next);
+  }
+
+  return fallback;
 }
 
 function normalizeOrb(value) {
