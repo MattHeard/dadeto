@@ -4,7 +4,7 @@
       "key": "SOLA1",
       "title": "Solar Paddle",
       "publicationDate": "2026-06-28",
-      "release": "beta",
+      "release": "public",
       "content": [
         "An original solarpunk paddle game that persists state across submits and advances one frame per invocation.",
         "Move the deflector, launch the energy orb, and recharge the station's solar panels using shape-only canvas output.",
