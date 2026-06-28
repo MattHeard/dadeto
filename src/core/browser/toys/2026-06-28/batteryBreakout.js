@@ -17,6 +17,7 @@ const DEFAULT_LIVES = 3;
 const DEFAULT_MAX_FAULTS = 3;
 const DEFAULT_CELL_TARGET = 2;
 const DEFAULT_CELL_MAX = 3;
+const DEFAULT_OVERCHARGE_COOLDOWN = 120;
 const CELL_COLS = 4;
 const CELL_ROWS = 3;
 const CELL_GAP_X = 8;
@@ -30,7 +31,7 @@ const EDGE_THRESHOLD = 0.4;
  * @typedef {{ moveLeft: boolean, moveRight: boolean, launchPressed: boolean, pausePressed: boolean, resetPressed: boolean }} BatteryActions
  * @typedef {{ keyboard: Record<string, boolean>, gamepad: BatteryGamepadState, actions: BatteryActions, previousActions: BatteryActions }} BatteryInputState
  * @typedef {{ buttons: boolean[], axes: number[] }} BatteryGamepadState
- * @typedef {{ id: string, x: number, y: number, width: number, height: number, charge: number, targetCharge: number, maxCharge: number, state: 'empty' | 'charging' | 'stable' | 'overcharged' }} BatteryCell
+ * @typedef {{ id: string, x: number, y: number, width: number, height: number, charge: number, targetCharge: number, maxCharge: number, overchargeCooldown: number, state: 'empty' | 'charging' | 'stable' | 'overcharged' }} BatteryCell
  * @typedef {{ x: number, y: number, vx: number, vy: number, radius: number, stuckToPaddle: boolean }} BatteryOrb
  * @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, faults: number, input: BatteryInputState, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BatteryOrb, cells: BatteryCell[] }} BatteryState
  */
@@ -301,13 +302,27 @@ function normalizeCellsFromState(value) {
       charge,
       targetCharge,
       maxCharge,
-      state: normalizeCellState(record.state, charge, targetCharge, maxCharge),
+      overchargeCooldown: normalizePositiveInteger(record.overchargeCooldown, 0),
+      state: normalizeCellState(
+        record.state,
+        charge,
+        targetCharge,
+        maxCharge,
+        record.overchargeCooldown
+      ),
     };
   });
 }
 
-function normalizeCellState(value, charge, targetCharge, maxCharge) {
+function normalizeCellState(
+  value,
+  charge,
+  targetCharge,
+  maxCharge,
+  overchargeCooldown
+) {
   if (['empty', 'charging', 'stable', 'overcharged'].includes(value)) return value;
+  if (normalizePositiveInteger(overchargeCooldown, 0) > 0) return 'overcharged';
   if (charge > maxCharge) return 'overcharged';
   if (charge >= targetCharge) return 'stable';
   if (charge > 0) return 'charging';
@@ -336,6 +351,7 @@ function normalizeCells(width, height, seed = 1) {
         charge: 0,
         targetCharge: DEFAULT_CELL_TARGET,
         maxCharge: DEFAULT_CELL_MAX,
+        overchargeCooldown: 0,
         state: 'empty',
       });
     }
@@ -433,6 +449,7 @@ function stepSimulation(state) {
   if (state.orb.stuckToPaddle) return;
   const substeps = 3;
   const hitCells = new Set();
+  advanceCellCooldowns(state);
   for (let i = 0; i < substeps; i += 1) {
     state.orb.x += state.orb.vx / substeps;
     state.orb.y += state.orb.vy / substeps;
@@ -477,6 +494,11 @@ function resolveCells(state, hitCells) {
     if (circleIntersectsCell(state.orb, cell)) {
       hitCells.add(cell.id);
       reflectOrb(state, cell);
+      if (cell.state === 'overcharged') {
+        cell.charge = Math.max(cell.charge, cell.maxCharge + 1);
+        cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
+        continue;
+      }
       if (cell.state !== 'overcharged') {
         cell.charge += 1;
         cell.state =
@@ -486,9 +508,23 @@ function resolveCells(state, hitCells) {
               ? 'stable'
               : 'charging';
         if (cell.state === 'stable') state.score += 1;
-        if (cell.state === 'overcharged') state.faults += 1;
+        if (cell.state === 'overcharged') {
+          cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
+          state.faults += 1;
+        }
       }
       break;
+    }
+  }
+}
+
+function advanceCellCooldowns(state) {
+  for (const cell of state.cells) {
+    if (cell.state !== 'overcharged' || cell.overchargeCooldown <= 0) continue;
+    cell.overchargeCooldown -= 1;
+    if (cell.overchargeCooldown <= 0) {
+      cell.state = 'charging';
+      cell.charge = Math.min(cell.charge, cell.targetCharge);
     }
   }
 }

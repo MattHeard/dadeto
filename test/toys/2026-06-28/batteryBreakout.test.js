@@ -246,6 +246,62 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.faults).toBe(1);
   });
 
+  it('cools down an overcharged cell back to charging', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 1,
+          lives: 3,
+          faults: 1,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 120, y: 90, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 4,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 1,
+              state: 'overcharged',
+            },
+          ],
+        },
+      },
+    };
+
+    const next = runToy('{}', storageValue);
+
+    expect(next.storageValue.current.BATT4.cells[0].state).toBe('charging');
+    expect(next.storageValue.current.BATT4.cells[0].charge).toBe(2);
+  });
+
   it('overcharges and can lose after too many faults', () => {
     const storageValue = {
       current: {
