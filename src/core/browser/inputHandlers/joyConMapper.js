@@ -32,7 +32,7 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ key: string, label: string, type: 'button' | 'axis', direction?: 'negative' | 'positive' }} MapperControl */
 /** @typedef {{ mappings: Record<string, unknown>, skippedControls: string[] }} StoredMapperState */
 /** @typedef {ButtonCapture | AxisCapture} CaptureResult */
-/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, hidSnapshot: HidSnapshot | null, hidDevices: HidDeviceLike[], stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
+/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, hidSnapshot: HidSnapshot | null, hidPendingSnapshot: HidSnapshot | null, hidPendingSnapshotCount: number, hidDevices: HidDeviceLike[], stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
 /** @typedef {{ className?: string, text?: string }} ElementOptions */
 
 const EMPTY_ELEMENT_OPTIONS = /** @type {ElementOptions} */ (
@@ -316,11 +316,90 @@ function attachHidDeviceListener(state, disposers, device) {
   const handler = /** @type {(event: HidInputReportEventLike) => void} */ (
     event => {
       logHidReportEvent(device, event);
-      state.hidSnapshot = snapshotHidInputReport(event);
+      updateHidSnapshot(state, snapshotHidInputReport(event));
     }
   );
   device.addEventListener?.('inputreport', handler);
   disposers.push(() => device.removeEventListener?.('inputreport', handler));
+}
+
+/**
+ * Stabilize noisy HID snapshots before feeding them into capture detection.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {HidSnapshot} snapshot
+ *   Fresh normalized HID snapshot.
+ * @returns {void}
+ *   Stores the snapshot only after it repeats.
+ */
+function updateHidSnapshot(state, snapshot) {
+  const previous = state.hidPendingSnapshot;
+  const sameAsPending = previous ? sameHidSnapshot(previous, snapshot) : false;
+
+  if (!sameAsPending) {
+    state.hidPendingSnapshot = snapshot;
+    state.hidPendingSnapshotCount = 1;
+    return;
+  }
+
+  state.hidPendingSnapshotCount += 1;
+  if (state.hidPendingSnapshotCount < 2) {
+    return;
+  }
+
+  state.hidSnapshot = snapshot;
+}
+
+/**
+ * Compare two normalized HID snapshots for equality.
+ * @param {HidSnapshot} left
+ *   First snapshot.
+ * @param {HidSnapshot} right
+ *   Second snapshot.
+ * @returns {boolean}
+ *   True when the snapshots match.
+ */
+function sameHidSnapshot(left, right) {
+  return sameButtonSnapshots(left.buttons, right.buttons) && sameNumberArray(left.axes, right.axes);
+}
+
+/**
+ * @param {ButtonSnapshot[]} left
+ *   First button list.
+ * @param {ButtonSnapshot[]} right
+ *   Second button list.
+ * @returns {boolean}
+ *   True when each button snapshot matches.
+ */
+function sameButtonSnapshots(left, right) {
+  return (
+    left.length === right.length &&
+    left.every((button, index) => sameButtonSnapshot(button, right[index]))
+  );
+}
+
+/**
+ * @param {ButtonSnapshot} left
+ *   First button snapshot.
+ * @param {ButtonSnapshot} right
+ *   Second button snapshot.
+ * @returns {boolean}
+ *   True when the snapshots match.
+ */
+function sameButtonSnapshot(left, right) {
+  return left.pressed === right.pressed && left.value === right.value;
+}
+
+/**
+ * @param {number[]} left
+ *   First list of numeric values.
+ * @param {number[]} right
+ *   Second list of numeric values.
+ * @returns {boolean}
+ *   True when the arrays match.
+ */
+function sameNumberArray(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 /**
@@ -1970,6 +2049,8 @@ function handleJoyConMapperReset(state) {
   state.currentIndex = 0;
   state.currentControl = CONTROLS[0];
   state.previousSnapshot = toGamepadSnapshot(currentControllerSnapshot(state));
+  state.hidPendingSnapshot = null;
+  state.hidPendingSnapshotCount = 0;
   state.hidDevices = (state.hidDevices ?? []).filter(Boolean);
   syncToyInput({
     dom,
@@ -2051,6 +2132,8 @@ export function joyConMapperHandler(dom, container, textInput) {
     currentControl: /** @type {MapperControl} */ (CONTROLS[0]),
     previousSnapshot: null,
     hidSnapshot: null,
+    hidPendingSnapshot: null,
+    hidPendingSnapshotCount: 0,
     hidDevices: [],
     stored: readStoredMapperState(dom),
     list,

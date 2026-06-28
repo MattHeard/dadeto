@@ -452,6 +452,10 @@ describe('joyConMapper coverage helpers', () => {
     });
 
     device._handler(report);
+    expect(state.hidSnapshot).toBeNull();
+    expect(state.hidPendingSnapshotCount).toBe(1);
+
+    device._handler(report);
     expect(state.hidSnapshot).toEqual({
       buttons: snapshotHidButtons(0x03),
       axes: snapshotHidAxes([255, 0]),
@@ -535,7 +539,44 @@ describe('joyConMapper coverage helpers', () => {
     device._handler({
       data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
     });
+    device._handler({
+      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+    });
 
+    expect(state.hidSnapshot).toEqual({
+      buttons: snapshotHidButtons(0x03),
+      axes: snapshotHidAxes([255, 0]),
+    });
+  });
+
+  it('waits for a repeated HID snapshot before adopting it', () => {
+    const disposers = [];
+    const device = {
+      productName: 'Joy-Con (L)',
+      vendorId: 1406,
+      productId: 8198,
+      addEventListener: jest.fn((event, handler) => {
+        device._handler = handler;
+      }),
+      removeEventListener: jest.fn(),
+    };
+    const state = {
+      dom: createDom(),
+      hidSnapshot: null,
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+    };
+
+    attachHidDeviceListener(state, disposers, device);
+    const report = {
+      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+    };
+
+    device._handler(report);
+    expect(state.hidSnapshot).toBeNull();
+    expect(state.hidPendingSnapshotCount).toBe(1);
+
+    device._handler(report);
     expect(state.hidSnapshot).toEqual({
       buttons: snapshotHidButtons(0x03),
       axes: snapshotHidAxes([255, 0]),
