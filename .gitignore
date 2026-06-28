@@ -33,6 +33,7 @@ public/
 *.tmp
 *.temp
 *.bak
+.tmp/
 tmp/
 local-data/
 

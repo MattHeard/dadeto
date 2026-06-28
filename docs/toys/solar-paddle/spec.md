@@ -18,7 +18,6 @@
   - Parse optional JSON configuration for canvas and paddle defaults.
   - Persist game state between submits.
   - Move the paddle with held input and trigger launch/pause/reset on rising edges.
-  - Accept WebHID-style raw reports that normalize into the existing gamepad input path.
   - Resolve paddle, panel, wall, and bottom-exit collisions.
   - Render the scene as a shape-only canvas payload.
 - Out of scope:

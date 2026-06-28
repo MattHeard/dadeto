@@ -24,6 +24,17 @@ const {
   ensureStarted,
   advanceToNextControl,
   isPendingControlAfterIndex,
+  currentControllerSnapshot,
+  currentHidSnapshot,
+  initializeWebHidCapture,
+  attachHidDeviceListener,
+  snapshotHidInputReport,
+  snapshotHidButtons,
+  snapshotHidAxes,
+  snapshotGamepad,
+  toGamepadSnapshot,
+  normalizeButtonSnapshot,
+  normalizeAxisValue,
   refreshStoredState,
   syncCurrentControlFromIndex,
   maybeCapture,
@@ -358,5 +369,91 @@ describe('joyConMapper coverage helpers', () => {
 
     syncCurrentControlFromIndex(syncedState);
     expect(syncedState.currentControl).toBeNull();
+  });
+
+  it('covers WebHID snapshot normalization helpers', () => {
+    const hidSnapshot = {
+      buttons: [{ pressed: true, value: 1 }],
+      axes: [0.3333333],
+    };
+
+    expect(currentHidSnapshot({ hidSnapshot })).toBe(hidSnapshot);
+    expect(
+      currentControllerSnapshot({
+        dom: createDom(),
+        hidSnapshot,
+      })
+    ).toBe(hidSnapshot);
+    expect(toGamepadSnapshot(hidSnapshot)).toEqual({
+      buttons: [{ pressed: true, value: 1 }],
+      axes: [0.3333],
+    });
+    expect(normalizeButtonSnapshot({ pressed: 1, value: '2' })).toEqual({
+      pressed: false,
+      value: 2,
+    });
+    expect(normalizeAxisValue(0.123456)).toBe(0.1235);
+  });
+
+  it('covers WebHID listener setup and report decoding', async () => {
+    const disposers = [];
+    const device = {
+      addEventListener: jest.fn((event, handler) => {
+        device._handler = handler;
+      }),
+      removeEventListener: jest.fn(),
+    };
+    const dom = {
+      globalThis: {
+        navigator: {
+          hid: {
+            getDevices: jest.fn(async () => [device]),
+          },
+        },
+      },
+    };
+    const state = { dom, hidSnapshot: null };
+
+    initializeWebHidCapture(state, disposers);
+    await Promise.resolve();
+
+    expect(device.addEventListener).toHaveBeenCalledWith(
+      'inputreport',
+      expect.any(Function)
+    );
+    expect(disposers).toHaveLength(1);
+
+    attachHidDeviceListener(state, disposers, device);
+    expect(disposers).toHaveLength(2);
+
+    const report = { data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer) };
+    expect(snapshotHidInputReport(report)).toEqual({
+      buttons: snapshotHidButtons(0x03),
+      axes: snapshotHidAxes([255, 0]),
+    });
+
+    device._handler(report);
+    expect(state.hidSnapshot).toEqual({
+      buttons: snapshotHidButtons(0x03),
+      axes: snapshotHidAxes([255, 0]),
+    });
+  });
+
+  it('covers WebHID listener guards and gamepad snapshotting', () => {
+    const state = { dom: createDom(), hidSnapshot: null };
+    const disposers = [];
+
+    attachHidDeviceListener(state, disposers, {});
+    expect(disposers).toHaveLength(0);
+    expect(snapshotGamepad(null)).toBeNull();
+    expect(
+      snapshotGamepad({
+        buttons: [{ pressed: true, value: 0.8 }],
+        axes: [0.123456],
+      })
+    ).toEqual({
+      buttons: [{ pressed: true, value: 0.8 }],
+      axes: [0.1235],
+    });
   });
 });

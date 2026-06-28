@@ -4,12 +4,13 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {{ pressed: boolean, value: number }} ButtonSnapshot */
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
+/** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} HidSnapshot */
 /** @typedef {{ type: 'button', index: number, value: number }} ButtonCapture */
 /** @typedef {{ type: 'axis', axis: number, direction: 'negative' | 'positive', magnitude: number }} AxisCapture */
 /** @typedef {{ key: string, label: string, type: 'button' | 'axis', direction?: 'negative' | 'positive' }} MapperControl */
 /** @typedef {{ mappings: Record<string, unknown>, skippedControls: string[] }} StoredMapperState */
 /** @typedef {ButtonCapture | AxisCapture} CaptureResult */
-/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
+/** @typedef {{ dom: DOMHelpers, textInput: HTMLInputElement, autoSubmitCheckbox: HTMLInputElement | null, started: boolean, currentIndex: number, currentControl: MapperControl | null, previousSnapshot: GamepadSnapshot | null, hidSnapshot: HidSnapshot | null, stored: StoredMapperState, list: HTMLElement, prompt: HTMLElement, subprompt: HTMLElement, dot: HTMLElement, statusText: HTMLElement, metaIndex: HTMLElement, metaId: HTMLElement }} MapperState */
 /** @typedef {{ className?: string, text?: string }} ElementOptions */
 
 const EMPTY_ELEMENT_OPTIONS = /** @type {ElementOptions} */ (
@@ -130,6 +131,112 @@ function syncToyInput({ dom, textInput, autoSubmitCheckbox, payload }) {
  */
 function currentPad(dom) {
   return readConnectedGamepads(dom)[0] ?? null;
+}
+
+/**
+ * Return the most recent WebHID snapshot, if one has been observed.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {HidSnapshot | null}
+ *   Latest HID snapshot or null when none has been received.
+ */
+function currentHidSnapshot(state) {
+  return state.hidSnapshot;
+}
+
+/**
+ * Return the first available controller snapshot from either gamepad or HID sources.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @returns {GamepadSnapshot | HidSnapshot | null}
+ *   Normalized controller snapshot or null when no input source is available.
+ */
+function currentControllerSnapshot(state) {
+  return currentPad(state.dom) ?? currentHidSnapshot(state);
+}
+
+/**
+ * Begin listening for WebHID input reports when the browser exposes them.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {Array<() => void>} disposers
+ *   Cleanup callbacks for the mapper lifecycle.
+ * @returns {void}
+ *   Registers listeners when WebHID is available.
+ */
+function initializeWebHidCapture(state, disposers) {
+  const hid = state.dom.globalThis?.navigator?.hid;
+  if (!hid || typeof hid.getDevices !== 'function') {
+    return;
+  }
+
+  void hid.getDevices().then(devices => {
+    devices.forEach(device => attachHidDeviceListener(state, disposers, device));
+  });
+}
+
+/**
+ * Attach an inputreport listener to a granted HID device.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {Array<() => void>} disposers
+ *   Cleanup callbacks for the mapper lifecycle.
+ * @param {HIDDevice} device
+ *   Granted HID device.
+ * @returns {void}
+ *   Updates the mapper snapshot whenever the device emits a report.
+ */
+function attachHidDeviceListener(state, disposers, device) {
+  if (typeof device.addEventListener !== 'function') {
+    return;
+  }
+
+  const handler = event => {
+    state.hidSnapshot = snapshotHidInputReport(event);
+  };
+  device.addEventListener('inputreport', handler);
+  disposers.push(() => device.removeEventListener('inputreport', handler));
+}
+
+/**
+ * Convert a HID input report into a mapper-compatible snapshot.
+ * @param {HIDInputReportEvent} event
+ *   Input report emitted by a HID device.
+ * @returns {HidSnapshot}
+ *   Normalized snapshot used by the capture loop.
+ */
+function snapshotHidInputReport(event) {
+  const bytes = Array.from(new Uint8Array(event.data.buffer));
+  const buttons = bytes.length > 0 ? snapshotHidButtons(bytes[0]) : [];
+  const axes = bytes.length > 1 ? snapshotHidAxes(bytes.slice(1, 3)) : [];
+  return { buttons, axes };
+}
+
+/**
+ * Decode a single HID byte into up to eight button snapshots.
+ * @param {number} buttonByte
+ *   Bitfield from a HID report.
+ * @returns {ButtonSnapshot[]}
+ *   Button snapshots usable by the mapper.
+ */
+function snapshotHidButtons(buttonByte) {
+  return [
+    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
+  ].map(mask => ({ pressed: Boolean(buttonByte & mask), value: buttonByte & mask ? 1 : 0 }));
+}
+
+/**
+ * Decode HID axis bytes into normalized axis values.
+ * @param {number[]} axisBytes
+ *   Raw axis bytes from a HID report.
+ * @returns {number[]}
+ *   Axis values normalized to the range used by the mapper.
+ */
+function snapshotHidAxes(axisBytes) {
+  return axisBytes.map(byte => {
+    const normalized = Math.min(1, Math.max(-1, (byte - 128) / 128));
+    return Math.abs(normalized) < AXIS_THRESHOLD ? 0 : normalized;
+  });
 }
 
 /**
@@ -1192,7 +1299,7 @@ function startMapping(state) {
   state.started = true;
   state.currentIndex = normalizePendingIndex(firstPendingIndex(state));
   syncCurrentControlFromIndex(state);
-  state.previousSnapshot = snapshotGamepad(currentPad(state.dom));
+  state.previousSnapshot = toGamepadSnapshot(currentControllerSnapshot(state));
 }
 
 /**
@@ -1276,7 +1383,50 @@ function maybeCapture(state) {
     return;
   }
 
-  updateCaptureState(state, snapshotGamepad(currentPad(state.dom)));
+  updateCaptureState(state, toGamepadSnapshot(currentControllerSnapshot(state)));
+}
+
+/**
+ * Convert a gamepad or HID snapshot into the mapper's button/axis snapshot.
+ * @param {GamepadSnapshot | HidSnapshot | null} snapshot
+ *   Source snapshot from any supported controller API.
+ * @returns {GamepadSnapshot | null}
+ *   Normalized mapper snapshot.
+ */
+function toGamepadSnapshot(snapshot) {
+  if (!snapshot) {
+    return null;
+  }
+
+  return {
+    buttons: snapshot.buttons.map(normalizeButtonSnapshot),
+    axes: snapshot.axes.map(normalizeAxisValue),
+  };
+}
+
+/**
+ * Normalize a button snapshot so button values stay in the mapper's expected range.
+ * @param {ButtonSnapshot} snapshot
+ *   Raw button snapshot from the browser or HID decoder.
+ * @returns {ButtonSnapshot}
+ *   Normalized button snapshot.
+ */
+function normalizeButtonSnapshot(snapshot) {
+  return {
+    pressed: snapshot.pressed === true,
+    value: Number(snapshot.value) || 0,
+  };
+}
+
+/**
+ * Normalize an axis value before capture comparisons run.
+ * @param {number} value
+ *   Raw axis value.
+ * @returns {number}
+ *   Rounded axis value.
+ */
+function normalizeAxisValue(value) {
+  return Number(value.toFixed(4));
 }
 
 /**
@@ -1572,6 +1722,17 @@ export const joyConMapperTestOnly = {
   ensureStarted,
   advanceToNextControl,
   isPendingControlAfterIndex,
+  currentControllerSnapshot,
+  currentHidSnapshot,
+  initializeWebHidCapture,
+  attachHidDeviceListener,
+  snapshotHidInputReport,
+  snapshotHidButtons,
+  snapshotHidAxes,
+  snapshotGamepad,
+  toGamepadSnapshot,
+  normalizeButtonSnapshot,
+  normalizeAxisValue,
   captureCurrentControl,
   shouldSkipCapture,
   updateCaptureState,
@@ -1625,7 +1786,7 @@ function handleJoyConMapperReset(state) {
   state.started = false;
   state.currentIndex = 0;
   state.currentControl = CONTROLS[0];
-  state.previousSnapshot = snapshotGamepad(currentPad(dom));
+  state.previousSnapshot = toGamepadSnapshot(currentControllerSnapshot(state));
   syncToyInput({
     dom,
     textInput,
@@ -1704,7 +1865,8 @@ export function joyConMapperHandler(dom, container, textInput) {
     started: false,
     currentIndex: 0,
     currentControl: /** @type {MapperControl} */ (CONTROLS[0]),
-    previousSnapshot: snapshotGamepad(currentPad(dom)),
+    previousSnapshot: null,
+    hidSnapshot: null,
     stored: readStoredMapperState(dom),
     list,
     prompt,
@@ -1714,6 +1876,8 @@ export function joyConMapperHandler(dom, container, textInput) {
     metaIndex,
     metaId,
   });
+  state.previousSnapshot = toGamepadSnapshot(currentControllerSnapshot(state));
+  initializeWebHidCapture(state, disposers);
 
   registerClick({
     dom,
