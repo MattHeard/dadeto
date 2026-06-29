@@ -1,5 +1,11 @@
 import { jest } from '@jest/globals';
-import { createUpdateTextInputValue } from '../../src/core/browser/inputHandlers/browserInputHandlersCore.js';
+import {
+  createInputDisposer,
+  createUpdateTextInputValue,
+  insertBeforeNextSibling,
+  revealAndEnable,
+  setupInputEvents,
+} from '../../src/core/browser/inputHandlers/browserInputHandlersCore.js';
 
 describe('createUpdateTextInputValue', () => {
   let textInput;
@@ -179,5 +185,58 @@ describe('createUpdateTextInputValue', () => {
     const handler = createUpdateTextInputValue(textInput, mockDom);
     handler(mockEvent);
     expect(mockDom.setValue).toHaveBeenCalledWith(textInput, symbolValue);
+  });
+
+  it('creates disposers and wires input events', () => {
+    const input = {};
+    const dom = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+    const handler = jest.fn();
+    const disposer = createInputDisposer(dom, input, handler);
+
+    setupInputEvents(dom, input, handler);
+    expect(dom.addEventListener).toHaveBeenCalledWith(input, 'input', handler);
+    expect(input._dispose).toEqual(expect.any(Function));
+
+    disposer();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(input, 'input', handler);
+  });
+
+  it('inserts before the next sibling or falls back to container insertBefore', () => {
+    const element = {};
+    const container = { insertBefore: jest.fn() };
+    const dom = {
+      getNextSibling: jest.fn(() => 'next'),
+      insertBefore: jest.fn(),
+    };
+
+    insertBeforeNextSibling({ container, textInput: element, element, dom });
+    expect(dom.insertBefore).toHaveBeenCalledWith(container, element, 'next');
+
+    const fallbackContainer = { insertBefore: jest.fn() };
+    insertBeforeNextSibling({
+      container: fallbackContainer,
+      textInput: element,
+      element,
+      dom: {
+        getNextSibling: jest.fn(() => 'next'),
+      },
+    });
+    expect(fallbackContainer.insertBefore).toHaveBeenCalledWith(element, 'next');
+  });
+
+  it('reveal and enable call both DOM helpers', () => {
+    const dom = {
+      reveal: jest.fn(),
+      enable: jest.fn(),
+    };
+    const element = {};
+
+    revealAndEnable(element, dom);
+
+    expect(dom.reveal).toHaveBeenCalledWith(element);
+    expect(dom.enable).toHaveBeenCalledWith(element);
   });
 });
