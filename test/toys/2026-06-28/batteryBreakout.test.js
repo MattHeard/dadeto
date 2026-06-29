@@ -108,8 +108,7 @@ describe('batteryBreakout', () => {
       false,
     ]);
     expect(snapshot.storageValue.current.BATT4.input.gamepad.axes).toEqual([
-      1,
-      0,
+      1, 0,
     ]);
   });
 

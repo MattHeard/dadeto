@@ -126,6 +126,93 @@ describe('captureFormShared helpers', () => {
     });
   });
 
+  describe('capture form context helpers', () => {
+    it('normalizes the capture form context and runs the ready callback', () => {
+      const dom = {};
+      const button = { label: 'capture' };
+      const cleanupFns = [jest.fn()];
+      const container = { id: 'container' };
+      const textInput = { value: '' };
+      const options = { dom, button, cleanupFns, container, textInput };
+      const updateButton = jest.fn();
+      const onReady = jest.fn();
+
+      expect(captureFormShared.getCaptureFormContext(options)).toEqual(options);
+
+      captureFormShared.withCaptureFormContext(options, updateButton, onReady);
+
+      expect(updateButton).toHaveBeenCalledWith(dom, button, false);
+      expect(onReady).toHaveBeenCalledWith(options);
+    });
+  });
+
+  describe('prepareInputHandler', () => {
+    it('hides the text input and registers cleanup handlers', () => {
+      const dom = {
+        hide: jest.fn(),
+        disable: jest.fn(),
+        querySelector: jest.fn(() => null),
+      };
+      const container = { id: 'container' };
+      const textInput = { value: '' };
+      const extraHandlers = [jest.fn()];
+
+      captureFormShared.prepareInputHandler(
+        dom,
+        container,
+        textInput,
+        extraHandlers
+      );
+
+      expect(dom.hide).toHaveBeenCalledWith(textInput);
+      expect(dom.disable).toHaveBeenCalledWith(textInput);
+    });
+  });
+
+  describe('prepareCaptureHandler', () => {
+    it('prepares the capture handler without throwing', () => {
+      const dom = {
+        hide: jest.fn(),
+        disable: jest.fn(),
+        querySelector: jest.fn(() => null),
+      };
+      const container = { id: 'container' };
+      const textInput = { value: '' };
+
+      expect(() =>
+        captureFormShared.prepareCaptureHandler({ dom, container, textInput })
+      ).not.toThrow();
+
+      expect(dom.hide).toHaveBeenCalledWith(textInput);
+      expect(dom.disable).toHaveBeenCalledWith(textInput);
+      expect(dom.querySelector).toHaveBeenCalled();
+    });
+  });
+
+  describe('registerGlobalListener', () => {
+    it('registers a global listener and returns a cleanup disposer', () => {
+      const addEventListener = jest.fn();
+      const removeEventListener = jest.fn();
+      const globalThisArg = { addEventListener, removeEventListener };
+      const cleanupFns = [];
+      const handler = jest.fn();
+
+      captureFormShared.registerGlobalListener({
+        globalThisArg,
+        cleanupFns,
+        type: 'keydown',
+        handler,
+      });
+
+      expect(addEventListener).toHaveBeenCalledWith('keydown', handler);
+      expect(cleanupFns).toHaveLength(1);
+
+      cleanupFns[0]();
+
+      expect(removeEventListener).toHaveBeenCalledWith('keydown', handler);
+    });
+  });
+
   describe('syncToyPayload', () => {
     it('persists the payload using the shared helpers', () => {
       const dom = { setValue: jest.fn() };

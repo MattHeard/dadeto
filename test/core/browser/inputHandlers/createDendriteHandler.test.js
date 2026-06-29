@@ -150,9 +150,9 @@ describe('createDendriteHandler', () => {
     runContainerRemovers(container, dom, [remover]);
     expect(remover).toHaveBeenCalledWith(container, dom);
 
-    expect(
-      runFormHandler({ dom, container, textInput, buildForm })
-    ).toEqual({ tagName: 'FORM' });
+    expect(runFormHandler({ dom, container, textInput, buildForm })).toEqual({
+      tagName: 'FORM',
+    });
   });
 
   test('creates a dendrite handler and renders fields', () => {

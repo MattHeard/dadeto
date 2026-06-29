@@ -11,6 +11,9 @@ import {
   renderParsedPresenter,
 } from '../../../../src/core/browser/presenters/browserPresentersCore.js';
 
+/**
+ *
+ */
 function createDom() {
   return {
     createElement: jest.fn(tag => ({ tag, children: [] })),

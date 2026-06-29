@@ -201,7 +201,11 @@ describe('createUpdateTextInputValue', () => {
     expect(input._dispose).toEqual(expect.any(Function));
 
     disposer();
-    expect(dom.removeEventListener).toHaveBeenCalledWith(input, 'input', handler);
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      input,
+      'input',
+      handler
+    );
   });
 
   it('inserts before the next sibling or falls back to container insertBefore', () => {
@@ -224,7 +228,10 @@ describe('createUpdateTextInputValue', () => {
         getNextSibling: jest.fn(() => 'next'),
       },
     });
-    expect(fallbackContainer.insertBefore).toHaveBeenCalledWith(element, 'next');
+    expect(fallbackContainer.insertBefore).toHaveBeenCalledWith(
+      element,
+      'next'
+    );
   });
 
   it('reveal and enable call both DOM helpers', () => {

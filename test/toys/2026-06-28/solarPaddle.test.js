@@ -510,4 +510,239 @@ describe('solarPaddle', () => {
     expect(relaunched.storageValue.current.SOLA1.status).toBe('running');
     expect(relaunched.storageValue.current.SOLA1.orb.stuckToPaddle).toBe(false);
   });
+
+  it('derives actions from capture snapshots and gamepad button edits', () => {
+    const storageValue = { current: null };
+    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowLeft' }), storageValue);
+    runToy(JSON.stringify({ type: 'keyup', key: 'ArrowLeft' }), storageValue);
+    const capture = runToy(
+      JSON.stringify({ type: 'capture', capturing: false }),
+      storageValue
+    );
+    const snapshot = runToy(
+      JSON.stringify({
+        buttons: [true, false, 'x'],
+        axes: [1, 'bad'],
+        buttonIndex: 1,
+        pressed: true,
+      }),
+      storageValue
+    );
+
+    expect(capture.storageValue.current.SOLA1.input.actions.left).toBe(false);
+    expect(snapshot.storageValue.current.SOLA1.input.gamepad.buttons).toEqual([
+      true,
+      true,
+      false,
+    ]);
+    expect(snapshot.storageValue.current.SOLA1.input.gamepad.axes).toEqual([
+      1, 0,
+    ]);
+  });
+
+  it('bounces from both walls and the top edge', () => {
+    const storageValue = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
+          orb: { x: 1, y: 1, vx: -2, vy: -3, radius: 4, stuckToPaddle: false },
+          panels: [
+            { id: 'p1', x: 32, y: 32, width: 24, height: 10, charge: false },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.SOLA1.orb.vx).toBeGreaterThan(0);
+    expect(storageValue.current.SOLA1.orb.vy).toBeGreaterThan(0);
+  });
+
+  it('bounces from the paddle and resets the orb when falling below the board', () => {
+    const storageValue = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 2,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
+          orb: { x: 86, y: 160, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
+          panels: [
+            { id: 'p1', x: 32, y: 32, width: 24, height: 10, charge: true },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.SOLA1.orb.vy).toBeLessThan(0);
+    expect(storageValue.current.SOLA1.lives).toBe(1);
+    expect(storageValue.current.SOLA1.orb.stuckToPaddle).toBe(true);
+  });
+
+  it('marks the scene won when every panel is charged and lost when lives are gone', () => {
+    const winStorage = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
+          orb: { x: 40, y: 34, vx: 0, vy: 1, radius: 4, stuckToPaddle: false },
+          panels: [
+            { id: 'p1', x: 32, y: 32, width: 24, height: 10, charge: false },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', winStorage);
+    expect(winStorage.current.SOLA1.status).toBe('running');
+
+    const lostStorage = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 1,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+            edgeActions: {
+              left: false,
+              right: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              left: false,
+              right: false,
+              launch: false,
+              pause: false,
+              reset: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 52, height: 7, speed: 4 },
+          orb: {
+            x: 86,
+            y: 150,
+            vx: 0,
+            vy: 10,
+            radius: 4,
+            stuckToPaddle: false,
+          },
+          panels: [
+            { id: 'p1', x: 32, y: 32, width: 24, height: 10, charge: false },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', lostStorage);
+    expect(lostStorage.current.SOLA1.status).toBe('lost');
+  });
 });

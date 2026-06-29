@@ -333,14 +333,7 @@ describe('conwayLife', () => {
           framesPerTick: 0,
           framesUntilTick: 0,
           generation: 4,
-          cells: [
-            null,
-            [1],
-            [1, 1],
-            [6, -1],
-            ['bad', 2],
-            [1, 1],
-          ],
+          cells: [null, [1], [1, 1], [6, -1], ['bad', 2], [1, 1]],
         },
       },
     };

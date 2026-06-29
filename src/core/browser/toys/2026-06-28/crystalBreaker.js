@@ -23,16 +23,12 @@ const HUD_HEIGHT = 24;
  * @returns {string} - result
  */
 export function crystalBreaker(input, env) {
-  return runToy(
-    input,
-    env,
-    {
-      storageKey: STORAGE_KEY,
-      normalizeState,
-      buildNextState,
-      toCanvasPayload: state => JSON.stringify(toCanvasPayload(state)),
-    }
-  );
+  return runToy(input, env, {
+    storageKey: STORAGE_KEY,
+    normalizeState,
+    buildNextState,
+    toCanvasPayload: state => JSON.stringify(toCanvasPayload(state)),
+  });
 }
 
 /**

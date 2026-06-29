@@ -27,10 +27,7 @@ describe('renderVariantCoreTestUtils', () => {
       )
     ).toBe(true);
     expect(
-      renderVariantCoreTestUtils.hasVisibleVariants(
-        [{ data: () => ({}) }],
-        0.5
-      )
+      renderVariantCoreTestUtils.hasVisibleVariants([{ data: () => ({}) }], 0.5)
     ).toBe(true);
   });
 });

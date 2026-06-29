@@ -79,9 +79,7 @@ describe('toyPersistence', () => {
 
   it('returns null when persistence is unavailable or malformed', () => {
     const normalizeState = jest.fn(value =>
-      value && typeof value === 'object' && !Array.isArray(value)
-        ? value
-        : null
+      value && typeof value === 'object' && !Array.isArray(value) ? value : null
     );
 
     expect(readPersistedState(null, 'KEY', normalizeState)).toBeNull();
@@ -89,11 +87,7 @@ describe('toyPersistence', () => {
     expect(readPersistedState(() => false, 'KEY', normalizeState)).toBeNull();
     expect(normalizeState).not.toHaveBeenCalled();
     expect(
-      readPersistedState(
-        () => ({ KEY: [1, 2, 3] }),
-        'KEY',
-        normalizeState
-      )
+      readPersistedState(() => ({ KEY: [1, 2, 3] }), 'KEY', normalizeState)
     ).toBeNull();
     expect(normalizeState).toHaveBeenCalledTimes(1);
   });
