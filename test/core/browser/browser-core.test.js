@@ -55,6 +55,7 @@ describe('browser-core helpers', () => {
   test('validates strings and normalizes blanks', () => {
     expect(areValidStrings('a', 'b')).toBe(true);
     expect(areValidStrings('a', '')).toBe(false);
+    expect(isBlankStringValue(null)).toBe(false);
     expect(isBlankStringValue('   ')).toBe(true);
     expect(isBlankStringValue('value')).toBe(false);
     expect(valueOr(undefined, 'fallback')).toBe('fallback');
@@ -85,6 +86,13 @@ describe('browser-core helpers', () => {
     expect(normalizeObjectOrFallback(null, () => ({ empty: true }), value => value)).toEqual({
       empty: true,
     });
+    expect(
+      normalizeObjectOrFallback(
+        { hello: 'world' },
+        () => ({ empty: true }),
+        value => ({ ...value, mapped: true })
+      )
+    ).toEqual({ hello: 'world', mapped: true });
     expect(isNullishOrEmptyString('')).toBe(true);
   });
 
@@ -93,10 +101,23 @@ describe('browser-core helpers', () => {
       ok: true,
       data: { ok: true },
     });
+    expect(safeJsonParse('not json').ok).toBe(false);
+    const parseSpy = jest.spyOn(JSON, 'parse').mockImplementation(() => {
+      throw 'bad json';
+    });
+    expect(safeJsonParse('{"ok":true}').message).toBe(
+      'Error: Invalid JSON input. Unknown error'
+    );
+    parseSpy.mockRestore();
     expect(parseJsonObject('{"ok":true}')).toEqual({ ok: true });
+    expect(parseJsonObject('null')).toBeNull();
     expect(parseJsonObject('not json')).toBeNull();
     expect(parseJsonOrDefault('{"ok":true}')).toEqual({ ok: true });
+    expect(parseJsonOrDefault('not json', { fallback: true })).toEqual({
+      fallback: true,
+    });
     expect(safeParseJson('{"ok":true}', JSON.parse)).toEqual({ ok: true });
+    expect(safeParseJson('not json', JSON.parse)).toBeUndefined();
     expect(parseExistingKeys({ existingKeys: ['a'] })).toEqual(['a']);
     expect(parseExistingKeys({})).toEqual([]);
   });
@@ -117,6 +138,10 @@ describe('browser-core helpers', () => {
     removeListener();
     expect(dom.removeEventListener).toHaveBeenCalled();
     expect(isDisposable({ _dispose() {} })).toBe(true);
+    expect(isDisposable(null)).toBe(false);
+    expect(isDisposable({})).toBe(false);
+    expect(getInputValue(null)).toBe('');
+    expect(getInputValue({ value: 'live-value' })).toBe('live-value');
     expect(maybeRemoveElement({ _dispose: dispose }, {}, dom)).toBeUndefined();
   });
 
@@ -153,6 +178,20 @@ describe('browser-core helpers', () => {
     applyBaseCleanupHandlers({ container: {}, dom, extraHandlers: [cleanup] });
     expect(cleanup).toHaveBeenCalled();
     defaultHandler(dom, {}, textInput);
+  });
+
+  test('handles deep merge helpers and cleanup branches', () => {
+    expect(deepMerge({ a: { one: 1 } }, { a: { two: 2 } })).toEqual({
+      a: { one: 1, two: 2 },
+    });
+    expect(deepMerge({ a: [1] }, { a: [2] })).toEqual({ a: [2] });
+    expect(createRemoveListener({
+      dom: { removeEventListener: jest.fn() },
+      el: {},
+      event: 'input',
+      handler: jest.fn(),
+    })).toEqual(expect.any(Function));
+    expect(areValidStrings('alpha', 'beta')).toBe(true);
   });
 
   describe('getFirstErrorMessage', () => {
