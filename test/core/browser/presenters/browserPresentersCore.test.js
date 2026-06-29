@@ -86,6 +86,11 @@ describe('browserPresentersCore', () => {
     expect(parsedJsonPresenter('{"ok":true}', dom)).toEqual({
       parsed: { ok: true },
     });
+    expect(parsedJsonPresenter('not json', dom)).toEqual({
+      textContent: 'not json',
+      tag: 'pre',
+      children: [],
+    });
     expect(parsePresenterJsonObject('{"ok":true}')).toEqual({ ok: true });
     expect(parsePresenterJsonObject('not json')).toBeNull();
   });
