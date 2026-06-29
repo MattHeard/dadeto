@@ -794,27 +794,11 @@ function applyGamepadInput(input, gamepad) {
  */
 function createActionsFromState(keyboard, gamepad) {
   const actions = {
-    left: Boolean(
-      keyboard.ArrowLeft ||
-        keyboard.a ||
-        keyboard.A ||
-        isAxisLeft(gamepad.axes[0])
-    ),
-    right: Boolean(
-      keyboard.ArrowRight ||
-        keyboard.d ||
-        keyboard.D ||
-        isAxisRight(gamepad.axes[0])
-    ),
-    launch: Boolean(
-      keyboard.Space || keyboard[' '] || keyboard.Button0 || gamepad.buttons[0]
-    ),
-    pause: Boolean(
-      keyboard.p || keyboard.P || keyboard.Button9 || gamepad.buttons[9]
-    ),
-    reset: Boolean(
-      keyboard.r || keyboard.R || keyboard.Button8 || gamepad.buttons[8]
-    ),
+    left: isLeftActionPressed(keyboard, gamepad),
+    right: isRightActionPressed(keyboard, gamepad),
+    launch: isLaunchActionPressed(keyboard, gamepad),
+    pause: isPauseActionPressed(keyboard, gamepad),
+    reset: isResetActionPressed(keyboard, gamepad),
   };
   return {
     actions,
@@ -826,6 +810,66 @@ function createActionsFromState(keyboard, gamepad) {
       resetPressed: actions.reset,
     },
   };
+}
+
+/**
+ * Determine whether the left action is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {boolean} True when left is pressed.
+ */
+function isLeftActionPressed(keyboard, gamepad) {
+  return Boolean(
+    keyboard.ArrowLeft || keyboard.a || keyboard.A || isAxisLeft(gamepad.axes[0])
+  );
+}
+
+/**
+ * Determine whether the right action is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {boolean} True when right is pressed.
+ */
+function isRightActionPressed(keyboard, gamepad) {
+  return Boolean(
+    keyboard.ArrowRight || keyboard.d || keyboard.D || isAxisRight(gamepad.axes[0])
+  );
+}
+
+/**
+ * Determine whether the launch action is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {boolean} True when launch is pressed.
+ */
+function isLaunchActionPressed(keyboard, gamepad) {
+  return Boolean(
+    keyboard.Space || keyboard[' '] || keyboard.Button0 || gamepad.buttons[0]
+  );
+}
+
+/**
+ * Determine whether the pause action is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {boolean} True when pause is pressed.
+ */
+function isPauseActionPressed(keyboard, gamepad) {
+  return Boolean(
+    keyboard.p || keyboard.P || keyboard.Button9 || gamepad.buttons[9]
+  );
+}
+
+/**
+ * Determine whether the reset action is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {boolean} True when reset is pressed.
+ */
+function isResetActionPressed(keyboard, gamepad) {
+  return Boolean(
+    keyboard.r || keyboard.R || keyboard.Button8 || gamepad.buttons[8]
+  );
 }
 
 /**
