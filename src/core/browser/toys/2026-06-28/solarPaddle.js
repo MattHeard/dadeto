@@ -1049,4 +1049,3 @@ function toCanvasPayload(state) {
 function persistState(storage, state) {
   storage?.({ [STORAGE_KEY]: state });
 }
-// jscpd:ignore-end

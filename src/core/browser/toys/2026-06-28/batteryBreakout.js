@@ -1082,4 +1082,3 @@ function getCellFill(cellState) {
   }
   return '#60a5fa';
 }
-// jscpd:ignore-end

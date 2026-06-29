@@ -121,17 +121,6 @@ export function createConsoleMessageLogger(consoleLike) {
 }
 
 /**
- * Format a path for display relative to the project root.
- * @param {string} projectRoot Project root.
- * @param {string} targetPath Absolute path to format.
- * @param {(from: string, to: string) => string} relative Path relative helper.
- * @returns {string} Human-friendly relative path.
- */
-function formatPathForLog(projectRoot, targetPath, relative) {
-  return formatPathRelativeToProject(projectRoot, targetPath, relative);
-}
-
-/**
  * Determine whether a filename represents a copyable JS module.
  * @param {string} entryName Directory entry name.
  * @returns {boolean} True when the file should be copied.
@@ -162,12 +151,13 @@ function shouldCheckEntry(entry) {
  * Resolve new files discovered from a directory entry.
  * @param {import('fs').Dirent} entry Directory entry encountered.
  * @param {string} fullPath Absolute path to the entry.
+ * @param {(from: string, to: string) => string} join Path join helper.
  * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
  * @returns {string[]} JS file paths sourced from the entry.
  */
-function getActualNewFiles(entry, fullPath, listEntries) {
+function getActualNewFiles(entry, fullPath, join, listEntries) {
   if (entry.isDirectory()) {
-    return findJsFiles(fullPath, listEntries);
+    return findJsFiles(fullPath, join, listEntries);
   }
   return [fullPath];
 }
@@ -176,12 +166,13 @@ function getActualNewFiles(entry, fullPath, listEntries) {
  * Filter entries that should yield candidate JS files.
  * @param {import('fs').Dirent} entry Directory entry to evaluate.
  * @param {string} fullPath Absolute path to the entry.
+ * @param {(from: string, to: string) => string} join Path join helper.
  * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
  * @returns {string[]} Candidate JS file paths.
  */
-function getPossibleNewFiles(entry, fullPath, listEntries) {
+function getPossibleNewFiles(entry, fullPath, join, listEntries) {
   if (shouldCheckEntry(entry)) {
-    return getActualNewFiles(entry, fullPath, listEntries);
+    return getActualNewFiles(entry, fullPath, join, listEntries);
   }
   return [];
 }
@@ -190,56 +181,30 @@ function getPossibleNewFiles(entry, fullPath, listEntries) {
  * Append JS files discovered from a directory entry.
  * @param {string[]} jsFiles Accumulated JS files.
  * @param {import('fs').Dirent} entry Directory entry to inspect.
- * @param {{ dir: string, listEntries: (dir: string) => import('fs').Dirent[] }} context Directory context.
+ * @param {{ dir: string, join: (from: string, to: string) => string, listEntries: (dir: string) => import('fs').Dirent[] }} context Directory context.
  * @returns {string[]} Updated list of JS files.
  */
 function accumulateJsFiles(jsFiles, entry, context) {
-  const { dir, listEntries } = context;
-  const fullPath = pathJoin(dir, entry.name);
-  const newFiles = getPossibleNewFiles(entry, fullPath, listEntries);
+  const { dir, join, listEntries } = context;
+  const fullPath = join(dir, entry.name);
+  const newFiles = getPossibleNewFiles(entry, fullPath, join, listEntries);
   return jsFiles.concat(newFiles);
 }
 
 /**
  * Recursively find JS files beneath the provided directory.
  * @param {string} dir Root directory to inspect.
+ * @param {(from: string, to: string) => string} join Path join helper.
  * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
  * @returns {string[]} JS file paths discovered within the directory tree.
  */
-function findJsFiles(dir, listEntries) {
+function findJsFiles(dir, join, listEntries) {
   const entries = listEntries(dir);
   return entries.reduce(
-    (jsFiles, entry) => accumulateJsFiles(jsFiles, entry, { dir, listEntries }),
+    (jsFiles, entry) =>
+      accumulateJsFiles(jsFiles, entry, { dir, join, listEntries }),
     /** @type {string[]} */ ([])
   );
-}
-
-/**
- * Create copy plans mapping source JS files to their destinations.
- * @param {string[]} files Source file paths.
- * @param {string} sourceRoot Root of the source directory.
- * @param {string} destinationRoot Root of the destination directory.
- * @param {(from: string, to: string) => string} join Path join helper.
- * @param {(from: string, to: string) => string} relative Path relative helper.
- * @returns {Array<{ source: string, destination: string }>} Copy instructions.
- */
-function createCopyPairs(files, sourceRoot, destinationRoot, join, relative) {
-  return files.map(filePath => ({
-    source: filePath,
-    destination: join(destinationRoot, relative(sourceRoot, filePath)),
-  }));
-}
-
-/**
- * Ensure the destination directory exists before copying files.
- * @param {{ directoryExists: (target: string) => boolean, createDirectory: (target: string) => void }} io Directory management helpers.
- * @param {string} targetDir Directory that must be present.
- * @returns {void}
- */
-function ensureDirectoryExists(io, targetDir) {
-  if (!io.directoryExists(targetDir)) {
-    io.createDirectory(targetDir);
-  }
 }
 
 /**
