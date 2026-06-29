@@ -237,8 +237,8 @@ function createSeedState(input, fallback) {
  */
 function normalizeSeedValues(input, fallback, defaults) {
   return {
-    width: normalizePositiveInteger(input?.width, defaults.width(fallback)),
-    height: normalizePositiveInteger(input?.height, defaults.height(fallback)),
+    width: normalizeSeedWidth(input, fallback, defaults),
+    height: normalizeSeedHeight(input, fallback, defaults),
     paddleWidth: normalizePositiveInteger(
       input?.paddleWidth,
       defaults.paddleWidth
@@ -254,12 +254,56 @@ function normalizeSeedValues(input, fallback, defaults) {
     orbRadius: normalizePositiveInteger(input?.orbRadius, defaults.orbRadius),
     orbSpeedX: normalizeNumber(input?.orbSpeedX, defaults.orbSpeedX),
     orbSpeedY: normalizeNumber(input?.orbSpeedY, defaults.orbSpeedY),
-    layoutSeed: normalizePositiveInteger(
-      input?.layoutSeed,
-      defaults.layoutSeed(fallback)
-    ),
-    lives: normalizePositiveInteger(input?.lives, defaults.lives(fallback)),
+    layoutSeed: normalizeSeedLayout(input, fallback, defaults),
+    lives: normalizeSeedLives(input, fallback, defaults),
   };
+}
+
+/**
+ * Normalize the seed width.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
+ * @returns {number} Normalized width.
+ */
+function normalizeSeedWidth(input, fallback, defaults) {
+  return normalizePositiveInteger(input?.width, defaults.width(fallback));
+}
+
+/**
+ * Normalize the seed height.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
+ * @returns {number} Normalized height.
+ */
+function normalizeSeedHeight(input, fallback, defaults) {
+  return normalizePositiveInteger(input?.height, defaults.height(fallback));
+}
+
+/**
+ * Normalize the seed layout key.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
+ * @returns {number} Normalized layout seed.
+ */
+function normalizeSeedLayout(input, fallback, defaults) {
+  return normalizePositiveInteger(
+    input?.layoutSeed,
+    defaults.layoutSeed(fallback)
+  );
+}
+
+/**
+ * Normalize the seed lives count.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
+ * @returns {number} Normalized lives count.
+ */
+function normalizeSeedLives(input, fallback, defaults) {
+  return normalizePositiveInteger(input?.lives, defaults.lives(fallback));
 }
 
 /**
