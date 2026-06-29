@@ -155,53 +155,76 @@ function mergeSeedAndState(base, seed) {
  * @returns {unknown} Return value.
  */
 function createSeedState(input, fallback) {
-  const width = normalizePositiveInteger(
-    input?.width,
-    fallback?.width ?? DEFAULT_WIDTH
-  );
-  const height = normalizePositiveInteger(
-    input?.height,
-    fallback?.height ?? DEFAULT_HEIGHT
-  );
-  const paddleWidth = normalizePositiveInteger(
-    input?.paddleWidth,
-    DEFAULT_PADDLE_WIDTH
-  );
-  const paddleHeight = normalizePositiveInteger(
-    input?.paddleHeight,
-    DEFAULT_PADDLE_HEIGHT
-  );
-  const paddleSpeed = normalizePositiveInteger(
-    input?.paddleSpeed,
-    DEFAULT_PADDLE_SPEED
-  );
-  const orbRadius = normalizePositiveInteger(
-    input?.orbRadius,
-    DEFAULT_ORB_RADIUS
-  );
-  const orbSpeedX = normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X);
-  const orbSpeedY = normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y);
-  const layoutSeed = normalizePositiveInteger(
-    input?.layoutSeed,
-    fallback?.layoutSeed ?? 1
-  );
+  const seed = normalizeSeedValues(input, fallback);
   return createState({
-    width,
-    height,
-    paddleWidth,
-    paddleHeight,
-    paddleSpeed,
-    orbRadius,
-    orbSpeedX,
-    orbSpeedY,
-    layoutSeed,
+    width: seed.width,
+    height: seed.height,
+    paddleWidth: seed.paddleWidth,
+    paddleHeight: seed.paddleHeight,
+    paddleSpeed: seed.paddleSpeed,
+    orbRadius: seed.orbRadius,
+    orbSpeedX: seed.orbSpeedX,
+    orbSpeedY: seed.orbSpeedY,
+    layoutSeed: seed.layoutSeed,
+    lives: seed.lives,
+    faults: seed.faults,
+    cells: normalizeCells(seed.width, seed.height, seed.layoutSeed),
+  });
+}
+
+/**
+ * Normalize seed values for battery breakout.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @returns {{
+ *   width: number,
+ *   height: number,
+ *   paddleWidth: number,
+ *   paddleHeight: number,
+ *   paddleSpeed: number,
+ *   orbRadius: number,
+ *   orbSpeedX: number,
+ *   orbSpeedY: number,
+ *   layoutSeed: number,
+ *   lives: number,
+ *   faults: number,
+ * }} Seed values.
+ */
+function normalizeSeedValues(input, fallback) {
+  return {
+    width: normalizePositiveInteger(
+      input?.width,
+      fallback?.width ?? DEFAULT_WIDTH
+    ),
+    height: normalizePositiveInteger(
+      input?.height,
+      fallback?.height ?? DEFAULT_HEIGHT
+    ),
+    paddleWidth: normalizePositiveInteger(
+      input?.paddleWidth,
+      DEFAULT_PADDLE_WIDTH
+    ),
+    paddleHeight: normalizePositiveInteger(
+      input?.paddleHeight,
+      DEFAULT_PADDLE_HEIGHT
+    ),
+    paddleSpeed: normalizePositiveInteger(
+      input?.paddleSpeed,
+      DEFAULT_PADDLE_SPEED
+    ),
+    orbRadius: normalizePositiveInteger(input?.orbRadius, DEFAULT_ORB_RADIUS),
+    orbSpeedX: normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X),
+    orbSpeedY: normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y),
+    layoutSeed: normalizePositiveInteger(
+      input?.layoutSeed,
+      fallback?.layoutSeed ?? 1
+    ),
     lives: normalizePositiveInteger(
       input?.lives,
       fallback?.lives ?? DEFAULT_LIVES
     ),
     faults: normalizePositiveInteger(input?.faults, 0),
-    cells: normalizeCells(width, height, layoutSeed),
-  });
+  };
 }
 
 /**
@@ -1018,7 +1041,7 @@ function toCanvasPayload(state) {
         )
       ),
       height: Math.max(2, cell.height - 6),
-      fill: cell.state === 'overcharged' ? '#f97316' : '#dbeafe',
+      fill: getCellChargeFill(cell.state),
     })),
     {
       type: 'rect',
@@ -1086,6 +1109,15 @@ function buildFaultIndicator(state) {
  */
 function getFaultIndicatorFill(faults) {
   return faults > DEFAULT_MAX_FAULTS ? '#ef4444' : '#94a3b8';
+}
+
+/**
+ * Get the charge fill color for a cell.
+ * @param {BatteryCell['state']} state Cell state.
+ * @returns {string} Fill color.
+ */
+function getCellChargeFill(state) {
+  return state === 'overcharged' ? '#f97316' : '#dbeafe';
 }
 
 /**
