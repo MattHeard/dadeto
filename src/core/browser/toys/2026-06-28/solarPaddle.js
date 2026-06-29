@@ -744,16 +744,37 @@ function updateInputState(previous, input) {
  * @returns {{ actions: PaddleActions, edgeActions: PaddleEdgeActions }} Derived actions.
  */
 function deriveActions(input, keyboard, gamepad) {
+  applyKeyboardInput(input, keyboard);
+  applyGamepadInput(input, gamepad);
+  if (input?.type === 'capture' && input.capturing === false) {
+    return createActionsFromState(keyboard, gamepad);
+  }
+
+  return createActionsFromState(keyboard, gamepad);
+}
+
+/**
+ * Apply keyboard-specific input events.
+ * @param {unknown} input Incoming input.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @returns {void}
+ */
+function applyKeyboardInput(input, keyboard) {
   if (input?.type === 'keydown' && typeof input.key === 'string') {
     keyboard[input.key] = true;
   }
   if (input?.type === 'keyup' && typeof input.key === 'string') {
     keyboard[input.key] = false;
   }
-  if (input?.type === 'capture' && input.capturing === false) {
-    return createActionsFromState(keyboard, gamepad);
-  }
+}
 
+/**
+ * Apply gamepad-specific input events.
+ * @param {unknown} input Incoming input.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {void}
+ */
+function applyGamepadInput(input, gamepad) {
   if (Array.isArray(input?.buttons)) {
     gamepad.buttons = input.buttons.map(next => next === true);
   }
@@ -763,8 +784,6 @@ function deriveActions(input, keyboard, gamepad) {
   if (typeof input?.buttonIndex === 'number') {
     gamepad.buttons[input.buttonIndex] = input.pressed === true;
   }
-
-  return createActionsFromState(keyboard, gamepad);
 }
 
 /**
