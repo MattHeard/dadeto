@@ -300,8 +300,9 @@ function createInitialInputState() {
 }
 
 /**
- *
- * @param value
+ * Normalize a persisted state value.
+ * @param {unknown} value Raw persisted value.
+ * @returns {PaddleState | null} Normalized state or null.
  */
 function normalizeState(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -330,8 +331,9 @@ function normalizeState(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize a persisted status field.
+ * @param {unknown} value Raw status value.
+ * @returns {PaddleState['status']} Normalized status.
  */
 function normalizeStatus(value) {
   return ['ready', 'running', 'paused', 'won', 'lost'].includes(value)
@@ -340,8 +342,9 @@ function normalizeStatus(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize the input state container.
+ * @param {unknown} value Raw input state.
+ * @returns {PaddleInputState} Normalized input state.
  */
 function normalizeInputState(value) {
   return {
@@ -354,8 +357,9 @@ function normalizeInputState(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize a record of booleans.
+ * @param {unknown} value Raw boolean record.
+ * @returns {Record<string, boolean>} Boolean record.
  */
 function normalizeBooleanRecord(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -369,8 +373,9 @@ function normalizeBooleanRecord(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize browser gamepad state.
+ * @param {unknown} value Raw gamepad state.
+ * @returns {PaddleGamepadState} Normalized gamepad state.
  */
 function normalizeGamepadState(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -389,8 +394,9 @@ function normalizeGamepadState(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize action flags.
+ * @param {unknown} value Raw actions.
+ * @returns {PaddleActions} Normalized actions.
  */
 function normalizeActions(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -414,8 +420,9 @@ function normalizeActions(value) {
 }
 
 /**
- *
- * @param value
+ * Normalize edge-trigger action flags.
+ * @param {unknown} value Raw edge actions.
+ * @returns {PaddleEdgeActions} Normalized edge actions.
  */
 function normalizeEdgeActions(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -439,9 +446,10 @@ function normalizeEdgeActions(value) {
 }
 
 /**
- *
- * @param value
- * @param height
+ * Normalize a paddle record.
+ * @param {unknown} value Raw paddle state.
+ * @param {number} height Current board height.
+ * @returns {PaddleState['paddle']} Normalized paddle.
  */
 function normalizePaddle(value, height) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -463,9 +471,10 @@ function normalizePaddle(value, height) {
 }
 
 /**
- *
- * @param value
- * @param fallback
+ * Normalize a non-negative integer, falling back when invalid.
+ * @param {unknown} value Raw numeric value.
+ * @param {number} fallback Fallback value.
+ * @returns {number} Rounded non-negative integer.
  */
 function normalizeNonNegativeInteger(value, fallback) {
   const next = Number(value);
@@ -477,8 +486,9 @@ function normalizeNonNegativeInteger(value, fallback) {
 }
 
 /**
- *
- * @param value
+ * Normalize an orb record.
+ * @param {unknown} value Raw orb state.
+ * @returns {PaddleState['orb']} Normalized orb.
  */
 function normalizeOrb(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -497,9 +507,10 @@ function normalizeOrb(value) {
 }
 
 /**
- *
- * @param value
- * @param fallback
+ * Normalize a floating-point number with a fallback.
+ * @param {unknown} value Raw numeric value.
+ * @param {number} fallback Fallback value.
+ * @returns {number} Normalized number.
  */
 function normalizeNumber(value, fallback) {
   const next = Number(value);
@@ -507,7 +518,17 @@ function normalizeNumber(value, fallback) {
 }
 
 /**
- *
+ * Provide the default seed options.
+ * @returns {{
+ *   width: number,
+ *   height: number,
+ *   paddleWidth: number,
+ *   paddleHeight: number,
+ *   paddleSpeed: number,
+ *   orbRadius: number,
+ *   orbSpeedX: number,
+ *   orbSpeedY: number,
+ * }} Default seed options.
  */
 function createSeedOptions() {
   return {
