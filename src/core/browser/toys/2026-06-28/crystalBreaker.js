@@ -12,7 +12,10 @@ import { normalizePositiveInteger } from '../../common.js';
  * @returns {string} Background fill color.
  */
 function getCrystalBackdropFill(isHud) {
-  return isHud ? '#0f172a' : '#08111f';
+  if (isHud) {
+    return '#0f172a';
+  }
+  return '#08111f';
 }
 
 const STORAGE_KEY = 'CRYS1';
@@ -55,11 +58,7 @@ function buildNextState(persisted, input) {
   const merged = buildMergedState(shouldReset, base, seed);
   const inputState = updateInputState(base.input, input);
   if (resetPressed(inputState)) {
-    const resetState = createSeedState(input, {
-      width: persisted?.width,
-      height: persisted?.height,
-      lives: persisted?.lives,
-    });
+    const resetState = createSeedState(input, buildResetFallback(persisted));
     resetState.input = inputState;
     return resetState;
   }
@@ -83,6 +82,22 @@ function buildMergedState(shouldReset, base, seed) {
     return seed;
   }
   return mergeSeedAndState(base, seed);
+}
+
+/**
+ * Builds the fallback values for a reset.
+ * @param {ReturnType<typeof normalizeState>|null} persisted - persisted value
+ * @returns {object|undefined} - result
+ */
+function buildResetFallback(persisted) {
+  if (!persisted) {
+    return undefined;
+  }
+  return {
+    width: persisted.width,
+    height: persisted.height,
+    lives: persisted.lives,
+  };
 }
 
 /**
@@ -112,10 +127,17 @@ function mergeSeedAndState(base, seed) {
  * @returns {ReturnType<typeof createSeedState>} - result
  */
 function createSeedState(input, fallback) {
+  const width = normalizeSeedWidth(input, fallback);
+  const height = normalizeSeedHeight(input, fallback);
+  const paddleWidth = normalizeSeedPaddleWidth(input);
+  const paddleHeight = normalizeSeedPaddleHeight(input);
+  const paddleSpeed = normalizeSeedPaddleSpeed(input);
+  const orbRadius = normalizeSeedOrbRadius(input);
+  const layoutSeed = normalizeSeedLayoutSeed(input);
   return {
     version: 1,
-    width: normalizeSeedWidth(input, fallback),
-    height: normalizeSeedHeight(input, fallback),
+    width,
+    height,
     frame: 0,
     status: 'ready',
     score: 0,
@@ -123,34 +145,21 @@ function createSeedState(input, fallback) {
     combo: 0,
     input: createInitialInputState(),
     paddle: {
-      x: Math.round(
-        (normalizeSeedWidth(input, fallback) - normalizeSeedPaddleWidth(input)) /
-          2
-      ),
-      y: Math.max(
-        0,
-        normalizeSeedHeight(input, fallback) - 18 - normalizeSeedPaddleHeight(input)
-      ),
-      width: normalizeSeedPaddleWidth(input),
-      height: normalizeSeedPaddleHeight(input),
-      speed: normalizeSeedPaddleSpeed(input),
+      x: Math.round((width - paddleWidth) / 2),
+      y: Math.max(0, height - 18 - paddleHeight),
+      width: paddleWidth,
+      height: paddleHeight,
+      speed: paddleSpeed,
     },
     orb: {
-      x: Math.round(normalizeSeedWidth(input, fallback) / 2),
-      y: Math.max(
-        0,
-        normalizeSeedHeight(input, fallback) - 19 - normalizeSeedOrbRadius(input)
-      ),
+      x: Math.round(width / 2),
+      y: Math.max(0, height - 19 - orbRadius),
       vx: DEFAULT_ORB_SPEED_X,
       vy: DEFAULT_ORB_SPEED_Y,
-      radius: normalizeSeedOrbRadius(input),
+      radius: orbRadius,
       stuckToPaddle: true,
     },
-    crystals: normalizeCrystals(
-      normalizeSeedWidth(input, fallback),
-      normalizeSeedHeight(input, fallback),
-      normalizeSeedLayoutSeed(input)
-    ),
+    crystals: normalizeCrystals(width, height, layoutSeed),
   };
 }
 
@@ -473,10 +482,10 @@ function normalizeCrystals(width, height, layoutSeed) {
   let id = 1;
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      const hp = row === 0 ? 2 : 1;
+      const hp = getCrystalHp(row);
       result.push({
         id: `crystal-${id++}`,
-        x: left + col * 58 + (row % 2 ? 10 : 0),
+        x: left + col * 58 + getCrystalRowOffset(row),
         y: top + row * 28,
         width: 24,
         height: 14,
@@ -491,6 +500,30 @@ function normalizeCrystals(width, height, layoutSeed) {
 }
 
 /**
+ * Get the hit points for a crystal row.
+ * @param {number} row - row value
+ * @returns {number} - result
+ */
+function getCrystalHp(row) {
+  if (row === 0) {
+    return 2;
+  }
+  return 1;
+}
+
+/**
+ * Get the horizontal offset for a crystal row.
+ * @param {number} row - row value
+ * @returns {number} - result
+ */
+function getCrystalRowOffset(row) {
+  if (row % 2 === 0) {
+    return 0;
+  }
+  return 10;
+}
+
+/**
  * Normalizes persisted crystals.
  * @param {unknown} value - value value
  * @returns {Array<object>} - result
@@ -498,17 +531,63 @@ function normalizeCrystals(width, height, layoutSeed) {
 function normalizeCrystalsFromState(value) {
   if (!Array.isArray(value))
     return normalizeCrystals(DEFAULT_WIDTH, DEFAULT_HEIGHT, 1);
-  return value.map((crystal, index) => ({
-    id: typeof crystal?.id === 'string' ? crystal.id : `crystal-${index + 1}`,
+  return value.map(normalizeCrystalFromState);
+}
+
+/**
+ * Normalize a persisted crystal entry.
+ * @param {unknown} crystal - crystal value
+ * @param {number} index - index value
+ * @returns {object} - result
+ */
+function normalizeCrystalFromState(crystal, index) {
+  return {
+    ...normalizeCrystalPositionAndSize(crystal, index),
+    ...normalizeCrystalStats(crystal),
+    state: normalizeCrystalState(crystal?.state),
+  };
+}
+
+/**
+ * Normalize crystal position and size.
+ * @param {unknown} crystal - crystal value
+ * @param {number} index - index value
+ * @returns {object} - result
+ */
+function normalizeCrystalPositionAndSize(crystal, index) {
+  return {
+    id: getCrystalId(crystal?.id, index),
     x: Number(crystal?.x) || 0,
     y: Number(crystal?.y) || 0,
     width: normalizePositiveInteger(crystal?.width, 24),
     height: normalizePositiveInteger(crystal?.height, 14),
+  };
+}
+
+/**
+ * Normalize crystal stats.
+ * @param {unknown} crystal - crystal value
+ * @returns {object} - result
+ */
+function normalizeCrystalStats(crystal) {
+  return {
     hp: normalizePositiveInteger(crystal?.hp, 1),
     maxHp: normalizePositiveInteger(crystal?.maxHp, 1),
     fracture: normalizePositiveInteger(crystal?.fracture, 0),
-    state: normalizeCrystalState(crystal?.state),
-  }));
+  };
+}
+
+/**
+ * Get a crystal id.
+ * @param {unknown} value - value value
+ * @param {number} index - index value
+ * @returns {string} - result
+ */
+function getCrystalId(value, index) {
+  if (typeof value === 'string') {
+    return value;
+  }
+  return `crystal-${index + 1}`;
 }
 
 /**
@@ -521,6 +600,61 @@ function normalizeCrystalState(value) {
     return value;
   }
   return 'whole';
+}
+
+/**
+ * Normalize the incoming input event into keyboard and action state.
+ * @param {object} input - input value
+ * @param {object} previous - previous value
+ * @returns {object} - result
+ */
+function parseActions(input, previous) {
+  const normalizedKey = normalizeKeyName(input?.key);
+  const keyboard = buildNextKeyboardState(
+    input,
+    previous.keyboard,
+    normalizedKey
+  );
+  return {
+    keyboard,
+    actions: buildActionState(input, keyboard, normalizedKey),
+  };
+}
+
+/**
+ * Build the next keyboard state from an input event.
+ * @param {object} input - input value
+ * @param {object} previousKeyboard - previous keyboard value
+ * @param {string} normalizedKey - normalized key value
+ * @returns {object} - result
+ */
+function buildNextKeyboardState(input, previousKeyboard, normalizedKey) {
+  let keys = null;
+  if (input?.type === 'keydown') {
+    keys = { [normalizedKey]: true };
+  } else if (input?.type === 'keyup') {
+    keys = { [normalizedKey]: false };
+  }
+  return { ...previousKeyboard, ...(keys || {}) };
+}
+
+/**
+ * Build the next action state from keyboard state.
+ * @param {object} input - input value
+ * @param {object} keyboard - keyboard value
+ * @param {string} normalizedKey - normalized key value
+ * @returns {object} - result
+ */
+function buildActionState(input, keyboard, normalizedKey) {
+  return {
+    moveLeft: isMoveLeftPressed(keyboard),
+    moveRight: isMoveRightPressed(keyboard),
+    launchPressed:
+      input?.type === 'keydown' &&
+      (normalizedKey === 'space' || normalizedKey === ' '),
+    pausePressed: input?.type === 'keydown' && normalizedKey === 'p',
+    resetPressed: input?.type === 'keydown' && normalizedKey === 'r',
+  };
 }
 
 /**
@@ -545,33 +679,6 @@ function updateInputState(previous, input) {
  * @param {object} previous - previous value
  * @returns {object} - result
  */
-function parseActions(input, previous) {
-  const normalizedKey = normalizeKeyName(input?.key);
-  let keys = null;
-  if (input?.type === 'keydown') {
-    keys = { [normalizedKey]: true };
-  } else if (input?.type === 'keyup') {
-    keys = { [normalizedKey]: false };
-  }
-  const keyboard = { ...previous.keyboard, ...(keys || {}) };
-  const actions = {
-    moveLeft:
-      keyboard.arrowleft === true ||
-      keyboard.a === true ||
-      keyboard.left === true,
-    moveRight:
-      keyboard.arrowright === true ||
-      keyboard.d === true ||
-      keyboard.right === true,
-    launchPressed:
-      input?.type === 'keydown' &&
-      (normalizedKey === 'space' || normalizedKey === ' '),
-    pausePressed: input?.type === 'keydown' && normalizedKey === 'p',
-    resetPressed: input?.type === 'keydown' && normalizedKey === 'r',
-  };
-  return { keyboard, actions };
-}
-
 /**
  * Normalizes a keyboard key name.
  * @param {unknown} key - key value
@@ -590,39 +697,70 @@ function normalizeKeyName(key) {
  * @returns {void} - result
  */
 function applyGameplayInput(state, inputState) {
+  applyPauseInput(state, inputState);
+  applyLaunchInput(state, inputState);
+  applyPaddleMotion(state, inputState);
+  if (state.orb.stuckToPaddle) {
+    stickOrbToPaddle(state);
+  }
+}
+
+/**
+ * Apply pause input transitions.
+ * @param {object} state - state value
+ * @param {object} inputState - inputState value
+ */
+function applyPauseInput(state, inputState) {
   if (
-    inputState.actions.pausePressed &&
-    !inputState.previousActions.pausePressed &&
-    (state.status === 'paused' || state.status === 'ready')
+    !inputState.actions.pausePressed ||
+    inputState.previousActions.pausePressed
   ) {
-    state.status = 'running';
-  } else if (
-    inputState.actions.pausePressed &&
-    !inputState.previousActions.pausePressed &&
-    state.status === 'running'
-  ) {
+    return;
+  }
+  if (state.status === 'running') {
     state.status = 'paused';
+    return;
   }
-  if (
-    inputState.actions.launchPressed &&
-    !inputState.previousActions.launchPressed &&
-    state.orb.stuckToPaddle
-  ) {
+  if (state.status === 'paused' || state.status === 'ready') {
     state.status = 'running';
-    state.orb.stuckToPaddle = false;
-    state.orb.vx = DEFAULT_ORB_SPEED_X;
-    state.orb.vy = DEFAULT_ORB_SPEED_Y;
   }
-  if (inputState.actions.moveLeft) state.paddle.x -= state.paddle.speed;
-  if (inputState.actions.moveRight) state.paddle.x += state.paddle.speed;
+}
+
+/**
+ * Apply launch input transitions.
+ * @param {object} state - state value
+ * @param {object} inputState - inputState value
+ */
+function applyLaunchInput(state, inputState) {
+  if (
+    !inputState.actions.launchPressed ||
+    inputState.previousActions.launchPressed ||
+    !state.orb.stuckToPaddle
+  ) {
+    return;
+  }
+  state.status = 'running';
+  state.orb.stuckToPaddle = false;
+  state.orb.vx = DEFAULT_ORB_SPEED_X;
+  state.orb.vy = DEFAULT_ORB_SPEED_Y;
+}
+
+/**
+ * Apply horizontal paddle motion.
+ * @param {object} state - state value
+ * @param {object} inputState - inputState value
+ */
+function applyPaddleMotion(state, inputState) {
+  if (inputState.actions.moveLeft) {
+    state.paddle.x -= state.paddle.speed;
+  }
+  if (inputState.actions.moveRight) {
+    state.paddle.x += state.paddle.speed;
+  }
   state.paddle.x = Math.max(
     0,
     Math.min(state.width - state.paddle.width, state.paddle.x)
   );
-  if (state.orb.stuckToPaddle) {
-    state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
-    state.orb.y = state.paddle.y - state.orb.radius - 1;
-  }
 }
 
 /**
@@ -631,24 +769,72 @@ function applyGameplayInput(state, inputState) {
  * @returns {void} - result
  */
 function stepSimulation(state) {
+  advanceOrb(state);
+  resolveOrbWalls(state);
+  resolveOrbPaddle(state);
+  resolveOrbCrystals(state);
+  resolveOrbLoss(state);
+  if (state.crystals.every(isCrystalShattered)) {
+    state.status = 'won';
+  }
+}
+
+/**
+ * Advance the orb position.
+ * @param {object} state - state value
+ */
+function advanceOrb(state) {
   state.orb.x += state.orb.vx;
   state.orb.y += state.orb.vy;
+}
+
+/**
+ * Resolve orb wall collisions.
+ * @param {object} state - state value
+ */
+function resolveOrbWalls(state) {
   if (
     state.orb.x - state.orb.radius <= 0 ||
     state.orb.x + state.orb.radius >= state.width
-  )
+  ) {
     state.orb.vx *= -1;
-  if (state.orb.y - state.orb.radius <= HUD_HEIGHT)
-    state.orb.vy = Math.abs(state.orb.vy);
-  if (orbHitsPaddle(state.orb, state.paddle)) {
-    state.orb.vy = -Math.abs(state.orb.vy);
-    state.orb.vx +=
-      (state.orb.x - (state.paddle.x + state.paddle.width / 2)) / 18;
-    state.combo = 0;
   }
+  if (state.orb.y - state.orb.radius <= HUD_HEIGHT) {
+    state.orb.vy = Math.abs(state.orb.vy);
+  }
+}
+
+/**
+ * Resolve orb paddle collisions.
+ * @param {object} state - state value
+ */
+function resolveOrbPaddle(state) {
+  if (!orbHitsPaddle(state.orb, state.paddle)) {
+    return;
+  }
+  state.orb.vy = -Math.abs(state.orb.vy);
+  state.orb.vx += calculatePaddleBounce(state);
+  state.combo = 0;
+}
+
+/**
+ * Calculate the paddle bounce adjustment.
+ * @param {object} state - state value
+ * @returns {number} - result
+ */
+function calculatePaddleBounce(state) {
+  return (state.orb.x - (state.paddle.x + state.paddle.width / 2)) / 18;
+}
+
+/**
+ * Resolve orb crystal collisions.
+ * @param {object} state - state value
+ */
+function resolveOrbCrystals(state) {
   for (const crystal of state.crystals) {
-    if (crystal.state === 'shattered' || !orbHitsCrystal(state.orb, crystal))
+    if (crystal.state === 'shattered' || !orbHitsCrystal(state.orb, crystal)) {
       continue;
+    }
     crystal.hp = Math.max(0, crystal.hp - 1);
     crystal.fracture += 1;
     if (crystal.hp <= 0) {
@@ -665,11 +851,25 @@ function stepSimulation(state) {
     state.orb.vy *= -1;
     break;
   }
+}
+
+/**
+ * Resolve orb loss.
+ * @param {object} state - state value
+ */
+function resolveOrbLoss(state) {
   if (state.orb.y - state.orb.radius > state.height) {
     resetOrbAfterLoss(state);
   }
-  if (state.crystals.every(crystal => crystal.state === 'shattered'))
-    state.status = 'won';
+}
+
+/**
+ * Check whether a crystal is shattered.
+ * @param {object} crystal - crystal value
+ * @returns {boolean} - result
+ */
+function isCrystalShattered(crystal) {
+  return crystal.state === 'shattered';
 }
 
 /**
@@ -791,10 +991,22 @@ export function getCrystalFill(state) {
 export function resetOrbAfterLoss(state) {
   state.lives = Math.max(0, state.lives - 1);
   state.combo = 0;
-  state.status = state.lives === 0 ? 'lost' : 'ready';
+  state.status = getLossStatus(state.lives);
   state.orb.stuckToPaddle = true;
   state.orb.vx = DEFAULT_ORB_SPEED_X;
   state.orb.vy = DEFAULT_ORB_SPEED_Y;
   state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
   state.orb.y = state.paddle.y - state.orb.radius - 1;
+}
+
+/**
+ * Get the status after a loss.
+ * @param {number} lives - lives value
+ * @returns {string} - result
+ */
+function getLossStatus(lives) {
+  if (lives === 0) {
+    return 'lost';
+  }
+  return 'ready';
 }
