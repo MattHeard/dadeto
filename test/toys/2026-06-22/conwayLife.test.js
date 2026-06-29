@@ -1,5 +1,9 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { conwayLife } from '../../../src/core/browser/toys/2026-06-22/conwayLife.js';
+import {
+  getStoredLifeCandidate,
+  normalizeState,
+} from '../../../src/core/browser/toys/2026-06-22/conwayLife.js';
 
 const getCanvasPayload = (input, storageValue, env = null) => {
   const setLocalPermanentData = jest.fn(next => {
@@ -186,6 +190,36 @@ describe('conwayLife', () => {
     expect(storageValue.current.CONW1.generation).toBe(0);
   });
 
+  it('returns null when the wrapped stored life record is falsy or an array', () => {
+    const falsyStorage = {
+      current: {
+        CONW1: false,
+      },
+    };
+    const arrayStorage = {
+      current: {
+        CONW1: [],
+      },
+    };
+
+    const falsy = getCanvasPayload('{}', falsyStorage);
+    const array = getCanvasPayload('{}', arrayStorage);
+
+    expect(falsy.payload.width).toBe(360);
+    expect(array.payload.width).toBe(360);
+  });
+
+  it('returns null from the normalized candidate guard for falsy wrapped records', () => {
+    expect(getStoredLifeCandidate({ CONW1: false })).toBeNull();
+    expect(normalizeState({ CONW1: false })).toBeNull();
+  });
+
+  it('returns the wrapped stored record when it is truthy', () => {
+    const stored = { width: 120 };
+
+    expect(getStoredLifeCandidate({ CONW1: stored })).toBe(stored);
+  });
+
   it('ignores wrapped storage objects without the expected key shape', () => {
     const storageValue = {
       current: {
@@ -226,6 +260,19 @@ describe('conwayLife', () => {
 
     expect(missing.payload.width).toBe(360);
     expect(empty.payload.width).toBe(360);
+  });
+
+  it('returns the default seed when the wrapped record is falsy', () => {
+    const storageValue = {
+      current: {
+        CONW1: false,
+      },
+    };
+
+    const { payload } = getCanvasPayload('{}', storageValue);
+
+    expect(payload.width).toBe(360);
+    expect(storageValue.current.CONW1.generation).toBe(0);
   });
 
   it('normalizes wrapped storage when frames are collapsed below one', () => {
@@ -272,6 +319,106 @@ describe('conwayLife', () => {
 
     expect(storageValue.current.CONW1.framesPerTick).toBe(1);
     expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
+  });
+
+  it('normalizes stored candidates with invalid cells and reset timing fields', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 5,
+          rows: 5,
+          tickSpeedMs: 15,
+          framesPerTick: 0,
+          framesUntilTick: 0,
+          generation: 4,
+          cells: [
+            null,
+            [1],
+            [1, 1],
+            [6, -1],
+            ['bad', 2],
+            [1, 1],
+          ],
+        },
+      },
+    };
+
+    getCanvasPayload('{}', storageValue);
+
+    expect(storageValue.current.CONW1.tickSpeedMs).toBe(16);
+    expect(storageValue.current.CONW1.framesPerTick).toBe(1);
+    expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
+    expect(storageValue.current.CONW1.generation).toBe(5);
+    expect(storageValue.current.CONW1.cells).toEqual([]);
+  });
+
+  it('clamps fractional timing fields that round below one', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 6,
+          rows: 6,
+          tickSpeedMs: 16,
+          framesPerTick: 0.4,
+          framesUntilTick: 0.4,
+          generation: 2,
+          cells: [[1, 1]],
+        },
+      },
+    };
+
+    getCanvasPayload('{}', storageValue);
+
+    expect(storageValue.current.CONW1.framesPerTick).toBe(1);
+    expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
+  });
+
+  it('creates a fresh seed from the input and resets generation to zero', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 6,
+          rows: 6,
+          tickSpeedMs: 16,
+          framesPerTick: 1,
+          framesUntilTick: 1,
+          generation: 9,
+          cells: [[0, 0]],
+        },
+      },
+    };
+
+    getCanvasPayload(
+      JSON.stringify({
+        reset: true,
+        width: 200,
+        height: 120,
+        cols: 8,
+        rows: 4,
+        tickSpeedMs: 32,
+        cells: [
+          [0, 0],
+          [7, 3],
+        ],
+      }),
+      storageValue
+    );
+
+    expect(storageValue.current.CONW1.width).toBe(120);
+    expect(storageValue.current.CONW1.height).toBe(80);
+    expect(storageValue.current.CONW1.framesPerTick).toBe(2);
+    expect(storageValue.current.CONW1.framesUntilTick).toBe(2);
+    expect(storageValue.current.CONW1.generation).toBe(0);
+    expect(storageValue.current.CONW1.cells).toEqual([
+      [0, 0],
+      [7, 3],
+    ]);
   });
 
   it('keeps the board steady when the stored countdown has not elapsed', () => {

@@ -558,3 +558,5 @@ function composeLifeState(base, overrides) {
     cells: base.cells,
   };
 }
+
+export { normalizeState, getStoredLifeCandidate };
