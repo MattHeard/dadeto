@@ -23,6 +23,14 @@ describe('auth-helpers', () => {
     ).resolves.toBeNull();
   });
 
+  test('uses the default UID mapper when no mapper is provided', async () => {
+    const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'user-3' });
+
+    await expect(verifyTokenSafe('token', verifyIdToken)).resolves.toBe(
+      'user-3'
+    );
+  });
+
   test('resolves an author id from a bearer authorization header', async () => {
     const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'user-2' });
 
@@ -38,6 +46,9 @@ describe('auth-helpers', () => {
 
     await expect(
       resolveAuthorIdFromHeader('', verifyIdToken)
+    ).resolves.toBeNull();
+    await expect(
+      resolveAuthorIdFromHeader(123, verifyIdToken)
     ).resolves.toBeNull();
     await expect(
       resolveAuthorIdFromHeader('Basic token-value', verifyIdToken)
