@@ -44,6 +44,7 @@ describe('browser-core helpers', () => {
     const prefixed = createPrefixedLogger(logger, 'pfx');
     prefixed('hello', 1);
     expect(logger).toHaveBeenCalledWith('pfx', 'hello', 1);
+    expect(createPrefixedLogger(null, 'pfx')()).toBeUndefined();
 
     const prefixedLoggers = createPrefixedLoggers(
       {
@@ -63,9 +64,10 @@ describe('browser-core helpers', () => {
   test('validates strings and normalizes blanks', () => {
     expect(areValidStrings('a', 'b')).toBe(true);
     expect(areValidStrings('a', '')).toBe(false);
+    expect(isBlankStringValue('value')).toBe(false);
     expect(isBlankStringValue(null)).toBe(false);
     expect(isBlankStringValue('   ')).toBe(true);
-    expect(isBlankStringValue('value')).toBe(false);
+    expect(valueOr('present', 'fallback')).toBe('present');
     expect(valueOr(undefined, 'fallback')).toBe('fallback');
   });
 
@@ -107,6 +109,7 @@ describe('browser-core helpers', () => {
         value => ({ ...value, mapped: true })
       )
     ).toEqual({ hello: 'world', mapped: true });
+    expect(getFirstErrorMessage([[() => false, 'never']], 'anything')).toBe('');
     expect(isNullishOrEmptyString('')).toBe(true);
   });
 
