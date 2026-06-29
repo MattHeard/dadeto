@@ -1,5 +1,9 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { numberHandler } from '../../src/core/browser/inputHandlers/number.js';
+import {
+  createNumberInput,
+  ensureNumberInput,
+  numberHandler,
+} from '../../src/core/browser/inputHandlers/number.js';
 
 describe('numberHandler', () => {
   test('removes kv and dendrite elements and leaves existing number input', () => {
@@ -83,5 +87,56 @@ describe('numberHandler', () => {
     numberHandler(dom, {}, {});
 
     expect(dom.removeChild).not.toHaveBeenCalled();
+  });
+
+  test('creates a number input and skips falsey initial values', () => {
+    const createdInput = {};
+    const dom = {
+      createElement: jest.fn(() => createdInput),
+      setType: jest.fn(),
+      setValue: jest.fn(),
+      addEventListener: jest.fn(),
+      getTargetValue: jest.fn(),
+    };
+    const onChange = jest.fn();
+
+    createNumberInput(7, onChange, dom);
+    createNumberInput(0, onChange, dom);
+
+    expect(dom.createElement).toHaveBeenCalledWith('input');
+    expect(dom.setType).toHaveBeenCalledWith(createdInput, 'number');
+    expect(dom.setValue).toHaveBeenCalledWith(createdInput, 7);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  test('ensures a number input when one does not already exist', () => {
+    const createdInput = {};
+    const dom = {
+      querySelector: jest.fn(() => null),
+      getNextSibling: jest.fn(() => null),
+      insertBefore: jest.fn(),
+      createElement: jest.fn(() => createdInput),
+      setType: jest.fn(),
+      setValue: jest.fn(),
+      addEventListener: jest.fn(),
+      getTargetValue: jest.fn(() => '42'),
+    };
+    const container = {};
+    const textInput = { value: '11' };
+
+    const ensuredInput = ensureNumberInput(container, textInput, dom);
+    const inputListener = dom.addEventListener.mock.calls[0][2];
+    inputListener({ target: { value: '42' } });
+
+    expect(ensuredInput).toBe(createdInput);
+    expect(dom.setType).toHaveBeenCalledWith(createdInput, 'number');
+    expect(dom.setValue).toHaveBeenCalledWith(createdInput, '11');
+    expect(dom.setValue).toHaveBeenCalledWith(textInput, '42');
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      createdInput,
+      'input',
+      expect.any(Function)
+    );
+    expect(dom.getTargetValue).toHaveBeenCalled();
   });
 });
