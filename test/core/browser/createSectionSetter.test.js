@@ -21,6 +21,14 @@ describe('createSectionSetter', () => {
     expect(setLocalTemporaryData).not.toHaveBeenCalled();
   });
 
+  it('rejects non-object JSON values', () => {
+    const setter = createSectionSetter('section');
+    const result = setter('null', env);
+
+    expect(result).toBe('Error: Input JSON must be a plain object.');
+    expect(setLocalTemporaryData).not.toHaveBeenCalled();
+  });
+
   it('deep merges valid JSON into the selected section', () => {
     const setter = createSectionSetter('section');
     const mergeEnv = new Map([
@@ -40,6 +48,21 @@ describe('createSectionSetter', () => {
     );
   });
 
+  it('creates a missing section before merging', () => {
+    const setter = createSectionSetter('section');
+    const mergeEnv = new Map([
+      ['getData', () => ({})],
+      ['setLocalTemporaryData', jest.fn()],
+    ]);
+
+    const result = setter('{"new":true}', mergeEnv);
+
+    expect(result).toBe('Success: Section data deep merged.');
+    expect(mergeEnv.get('setLocalTemporaryData')).toHaveBeenCalledWith({
+      section: { new: true },
+    });
+  });
+
   it('reports a friendly message when merge throws a non-error value', () => {
     const setter = createSectionSetter('section');
     const envWithThrow = new Map([
@@ -57,5 +80,31 @@ describe('createSectionSetter', () => {
     expect(result).toBe(
       'Error updating section data: An unexpected error occurred.'
     );
+  });
+
+  it('reports the underlying error message when merge throws an Error', () => {
+    const setter = createSectionSetter('section');
+    const envWithThrow = new Map([
+      ['getData', () => ({ section: {} })],
+      [
+        'setLocalTemporaryData',
+        () => {
+          throw new Error('boom');
+        },
+      ],
+    ]);
+
+    const result = setter('{}', envWithThrow);
+
+    expect(result).toBe('Error updating section data: boom');
+  });
+
+  it('uses fallback env functions when helpers are missing', () => {
+    const setter = createSectionSetter('section');
+    const envWithoutHelpers = new Map();
+
+    const result = setter('{"new":true}', envWithoutHelpers);
+
+    expect(result).toBe('Success: Section data deep merged.');
   });
 });
