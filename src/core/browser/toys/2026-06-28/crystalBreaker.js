@@ -1,7 +1,20 @@
 // @ts-nocheck
 /* eslint-disable no-ternary, complexity, no-unused-vars */
-import { createRectShape, runToy } from '../toyPersistence.js';
+import {
+  createBackgroundShape,
+  createRectShape,
+  runToy,
+} from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
+
+/**
+ * Get a Crystal Breaker backdrop color.
+ * @param {boolean} isHud Background selector.
+ * @returns {string} Background fill color.
+ */
+function getCrystalBackdropFill(isHud) {
+  return isHud ? '#0f172a' : '#08111f';
+}
 
 const STORAGE_KEY = 'CRYS1';
 const DEFAULT_WIDTH = 360;
@@ -173,24 +186,6 @@ function createHudTextShape(x, text) {
     font: '11px monospace',
     align: 'left',
     baseline: 'alphabetic',
-  };
-}
-
-/**
- * Creates a background rectangle shape.
- * @param {number} width - width value
- * @param {number} height - height value
- * @param {string} fill - fill value
- * @returns {object} - result
- */
-function createBackgroundShape(width, height, fill) {
-  return {
-    type: 'rect',
-    x: 0,
-    y: 0,
-    width,
-    height,
-    fill,
   };
 }
 
@@ -598,8 +593,16 @@ function toCanvasPayload(state) {
     width: state.width,
     height: state.height,
     shapes: [
-      createBackgroundShape(state.width, state.height, '#08111f'),
-      createBackgroundShape(state.width, HUD_HEIGHT, '#0f172a'),
+      createBackgroundShape(
+        state.width,
+        state.height,
+        getCrystalBackdropFill(false)
+      ),
+      createBackgroundShape(
+        state.width,
+        HUD_HEIGHT,
+        getCrystalBackdropFill(true)
+      ),
       createHudTextShape(8, `Score ${state.score}`),
       createHudTextShape(88, `Lives ${state.lives}`),
       createHudTextShape(160, `Crystals ${activeCrystals.length}`),

@@ -12,7 +12,7 @@ import {
 } from '../../../../src/core/browser/presenters/browserPresentersCore.js';
 
 /**
- *
+ * @returns {ReturnType<typeof createDom>} DOM adapter for the presenter tests.
  */
 function createDom() {
   return {

@@ -19,5 +19,4 @@ describe('createMemoryStorageLens', () => {
 
     expect(store.get('next')).toBe('item');
   });
-
 });

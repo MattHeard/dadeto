@@ -97,9 +97,12 @@ export const insertBeforeNextSibling = ({
   dom,
 }) => {
   const nextSibling = dom.getNextSibling(textInput);
-  return typeof dom.insertBefore === 'function'
-    ? dom.insertBefore(container, element, nextSibling)
-    : container.insertBefore(element, nextSibling);
+  if (typeof dom.insertBefore === 'function') {
+    dom.insertBefore(container, element, nextSibling);
+    return;
+  }
+
+  container.insertBefore(element, nextSibling);
 };
 
 /**

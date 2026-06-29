@@ -1,7 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import {
-  createParagraphElement,
-} from '../../src/core/browser/presenters/browserPresentersCore.js';
+import { createParagraphElement } from '../../src/core/browser/presenters/browserPresentersCore.js';
 import {
   createRealHourlyWageReportElement,
   realHourlyWagePresenterTestOnly,

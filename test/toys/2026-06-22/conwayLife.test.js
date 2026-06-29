@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { conwayLife } from '../../../src/core/browser/toys/2026-06-22/conwayLife.js';
 import {
+  conwayLife,
   getStoredLifeCandidate,
   normalizeState,
 } from '../../../src/core/browser/toys/2026-06-22/conwayLife.js';

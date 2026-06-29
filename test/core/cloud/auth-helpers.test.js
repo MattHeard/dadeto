@@ -8,9 +8,9 @@ describe('auth-helpers', () => {
   test('verifies tokens and maps decoded payloads', async () => {
     const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'user-1' });
 
-    await expect(
-      verifyTokenSafe('token', verifyIdToken)
-    ).resolves.toBe('user-1');
+    await expect(verifyTokenSafe('token', verifyIdToken)).resolves.toBe(
+      'user-1'
+    );
 
     expect(verifyIdToken).toHaveBeenCalledWith('token');
   });

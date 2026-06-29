@@ -89,11 +89,13 @@ export function persistState(storage, storageKey, state, serializeState) {
     return;
   }
 
-  const payload = { [storageKey]: state };
+  const payload = /** @type {Record<string, unknown>} */ ({
+    [storageKey]: state,
+  });
   if (serializeState) {
     payload[storageKey] = serializeState(state);
   }
-  storage(/** @type {Record<string, unknown>} */ (payload));
+  storage(payload);
 }
 
 /**
@@ -136,4 +138,21 @@ export function createRectShape(shape) {
     height: shape.height,
     fill: shape.fill,
   };
+}
+
+/**
+ * Create a full-size background rectangle shape payload.
+ * @param {number} width Background width.
+ * @param {number} height Background height.
+ * @param {string} fill Background fill color.
+ * @returns {Record<string, unknown>} Rectangle shape payload.
+ */
+export function createBackgroundShape(width, height, fill) {
+  return createRectShape({
+    x: 0,
+    y: 0,
+    width,
+    height,
+    fill,
+  });
 }

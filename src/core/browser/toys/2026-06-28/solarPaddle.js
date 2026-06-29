@@ -842,8 +842,7 @@ export function resolvePaddle(state) {
     orb.y + orb.radius >= paddle.y &&
     orb.y + orb.radius <= paddle.y + paddle.height + 6;
   if (orb.vy > 0 && withinHorizontal && withinVertical) {
-    const hitOffset =
-      (orb.x - (paddle.x + halfWidth)) / halfWidth;
+    const hitOffset = (orb.x - (paddle.x + halfWidth)) / halfWidth;
     orb.y = paddle.y - orb.radius - 1;
     orb.vy = -Math.abs(orb.vy);
     orb.vx = clamp(orb.vx + hitOffset * 2, -5, 5) || DEFAULT_ORB_SPEED_X;

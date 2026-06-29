@@ -1,5 +1,5 @@
 import {
-  createRectShape,
+  createBackgroundShape as createLifeBackdropShape,
   getStorageAccessor,
   parseInput,
   persistState,
@@ -7,8 +7,7 @@ import {
 } from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
 
-const LIFE_RENDER_MODE = 'toroidal';
-
+// Conway Life state is shaped separately from the other toy payloads.
 /**
  * @typedef {{ x: number, y: number }} LifeCell
  * @typedef {{
@@ -23,6 +22,14 @@ const LIFE_RENDER_MODE = 'toroidal';
  *   cells: LifeCell[],
  * }} LifeState
  */
+
+/**
+ * Get the Conway Life backdrop color.
+ * @returns {string} Backdrop fill color.
+ */
+function getLifeBackdropFill() {
+  return '#0f172a';
+}
 
 const STORAGE_KEY = 'CONW1';
 const DEFAULT_WIDTH = 360;
@@ -338,13 +345,7 @@ function toCanvasPayload(state) {
  * @returns {Record<string, unknown>} Background shape.
  */
 function createBackdropShape(width, height) {
-  return createRectShape({
-    x: 0,
-    y: 0,
-    width,
-    height,
-    fill: '#0f172a',
-  });
+  return createLifeBackdropShape(width, height, getLifeBackdropFill());
 }
 
 /**

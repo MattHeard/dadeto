@@ -32,9 +32,10 @@ import { createCaptureToyInput } from './captureFormShared.js';
  * @returns {void}
  */
 export function updateCaptureButtonLabel(options) {
-  const label = options.isCapturing
-    ? options.releaseLabel
-    : options.captureLabel;
+  let label = options.captureLabel;
+  if (options.isCapturing) {
+    label = options.releaseLabel;
+  }
   options.dom.setTextContent(options.button, label);
 }
 

@@ -1,4 +1,4 @@
-/* eslint-disable no-void, no-ternary, max-statements, jsdoc/require-param-description */
+/* eslint-disable no-ternary, max-statements, jsdoc/require-param-description */
 import * as browserCore from '../browser-core.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 

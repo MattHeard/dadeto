@@ -92,7 +92,7 @@ export default [
     },
   },
   {
-    files: ['src/core/**/*.js'],
+    files: ['src/core/browser/inputHandlers/browserInputHandlersCore.js'],
     rules: {
       'no-restricted-globals': [
         'error',

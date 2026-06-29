@@ -148,10 +148,26 @@ describe('batteryBreakout', () => {
   });
 
   it('switches from paused back to running on a pause press', () => {
-    const state = { status: 'paused', orb: { stuckToPaddle: false }, paddle: { x: 0, y: 0, width: 0, height: 0, speed: 0 } };
+    const state = {
+      status: 'paused',
+      orb: { stuckToPaddle: false },
+      paddle: { x: 0, y: 0, width: 0, height: 0, speed: 0 },
+    };
     applyGameplayInput(state, {
-      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: true, resetPressed: false },
-      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: true,
+        resetPressed: false,
+      },
+      previousActions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
     });
 
     expect(state.status).toBe('running');
@@ -164,8 +180,20 @@ describe('batteryBreakout', () => {
       paddle: { x: 0, y: 0, width: 0, height: 0, speed: 0 },
     };
     applyGameplayInput(state, {
-      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: true, resetPressed: false },
-      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: true,
+        resetPressed: false,
+      },
+      previousActions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
     });
 
     expect(state.status).toBe('paused');
@@ -178,8 +206,20 @@ describe('batteryBreakout', () => {
       paddle: { x: 0, y: 0, width: 0, height: 0, speed: 0 },
     };
     applyGameplayInput(state, {
-      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: true, resetPressed: false },
-      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: true,
+        resetPressed: false,
+      },
+      previousActions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
     });
 
     expect(state.status).toBe('won');
@@ -272,7 +312,12 @@ describe('batteryBreakout', () => {
   it('advances cooldowns for overcharged cells', () => {
     const state = {
       cells: [
-        { state: 'overcharged', overchargeCooldown: 1, charge: 5, targetCharge: 2 },
+        {
+          state: 'overcharged',
+          overchargeCooldown: 1,
+          charge: 5,
+          targetCharge: 2,
+        },
       ],
     };
 
@@ -860,7 +905,14 @@ describe('batteryBreakout', () => {
             },
           },
           paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
-          orb: { x: 177, y: 40, vx: 3, vy: -1, radius: 4, stuckToPaddle: false },
+          orb: {
+            x: 177,
+            y: 40,
+            vx: 3,
+            vy: -1,
+            radius: 4,
+            stuckToPaddle: false,
+          },
           cells: [
             {
               id: 'cell-1',
@@ -1598,7 +1650,14 @@ describe('batteryBreakout', () => {
             },
           },
           paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
-          orb: { x: 60, y: 103, vx: 0, vy: -2, radius: 4, stuckToPaddle: false },
+          orb: {
+            x: 60,
+            y: 103,
+            vx: 0,
+            vy: -2,
+            radius: 4,
+            stuckToPaddle: false,
+          },
           cells: [
             {
               id: 'cell-1',
