@@ -1,5 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import {
+  readStoredOrElementValue,
   setInputValue,
   hasInputValue,
   clearInputValue,
@@ -25,6 +26,17 @@ describe('inputValueStore', () => {
     setInputValue(element, 'from store');
     expect(getInputValue(element)).toBe('from store');
     clearInputValue(element);
+  });
+
+  it('reads stored or live values directly from the store module', () => {
+    const element = { value: 'live' };
+
+    expect(readStoredOrElementValue(element)).toBe('live');
+
+    setInputValue(element, 'stored');
+    expect(readStoredOrElementValue(element)).toBe('stored');
+    clearInputValue(element);
+    expect(readStoredOrElementValue(element)).toBe('live');
   });
 
   it('falls back to element.value when no stored value exists', () => {
