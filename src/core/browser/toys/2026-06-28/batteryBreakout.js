@@ -191,6 +191,23 @@ function createSeedState(input, fallback) {
  * }} Seed values.
  */
 function normalizeSeedValues(input, fallback) {
+  const dimensions = normalizeSeedDimensions(input, fallback);
+  const gameplay = normalizeSeedGameplay(input, fallback);
+  const orb = normalizeSeedOrb(input);
+  return {
+    ...dimensions,
+    ...gameplay,
+    ...orb,
+  };
+}
+
+/**
+ * Normalize seed dimensions.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @returns {{ width: number, height: number, layoutSeed: number, lives: number }} Normalized dimensions.
+ */
+function normalizeSeedDimensions(input, fallback) {
   return {
     width: normalizePositiveInteger(
       input?.width,
@@ -200,6 +217,24 @@ function normalizeSeedValues(input, fallback) {
       input?.height,
       fallback?.height ?? DEFAULT_HEIGHT
     ),
+    layoutSeed: normalizePositiveInteger(
+      input?.layoutSeed,
+      fallback?.layoutSeed ?? 1
+    ),
+    lives: normalizePositiveInteger(
+      input?.lives,
+      fallback?.lives ?? DEFAULT_LIVES
+    ),
+  };
+}
+
+/**
+ * Normalize seed gameplay fields.
+ * @param {unknown} input Input values.
+ * @returns {{ paddleWidth: number, paddleHeight: number, paddleSpeed: number, faults: number }} Normalized gameplay fields.
+ */
+function normalizeSeedGameplay(input) {
+  return {
     paddleWidth: normalizePositiveInteger(
       input?.paddleWidth,
       DEFAULT_PADDLE_WIDTH
@@ -212,18 +247,20 @@ function normalizeSeedValues(input, fallback) {
       input?.paddleSpeed,
       DEFAULT_PADDLE_SPEED
     ),
+    faults: normalizePositiveInteger(input?.faults, 0),
+  };
+}
+
+/**
+ * Normalize seed orb fields.
+ * @param {unknown} input Input values.
+ * @returns {{ orbRadius: number, orbSpeedX: number, orbSpeedY: number }} Normalized orb fields.
+ */
+function normalizeSeedOrb(input) {
+  return {
     orbRadius: normalizePositiveInteger(input?.orbRadius, DEFAULT_ORB_RADIUS),
     orbSpeedX: normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X),
     orbSpeedY: normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y),
-    layoutSeed: normalizePositiveInteger(
-      input?.layoutSeed,
-      fallback?.layoutSeed ?? 1
-    ),
-    lives: normalizePositiveInteger(
-      input?.lives,
-      fallback?.lives ?? DEFAULT_LIVES
-    ),
-    faults: normalizePositiveInteger(input?.faults, 0),
   };
 }
 
@@ -1077,7 +1114,10 @@ function toCanvasPayload(state) {
  * @returns {string} Fill color.
  */
 function getOrbFill(status) {
-  return status === 'lost' ? '#fca5a5' : '#fde047';
+  if (status === 'lost') {
+    return '#fca5a5';
+  }
+  return '#fde047';
 }
 
 /**
@@ -1108,7 +1148,10 @@ function buildFaultIndicator(state) {
  * @returns {string} Fill color.
  */
 function getFaultIndicatorFill(faults) {
-  return faults > DEFAULT_MAX_FAULTS ? '#ef4444' : '#94a3b8';
+  if (faults > DEFAULT_MAX_FAULTS) {
+    return '#ef4444';
+  }
+  return '#94a3b8';
 }
 
 /**
@@ -1117,7 +1160,10 @@ function getFaultIndicatorFill(faults) {
  * @returns {string} Fill color.
  */
 function getCellChargeFill(state) {
-  return state === 'overcharged' ? '#f97316' : '#dbeafe';
+  if (state === 'overcharged') {
+    return '#f97316';
+  }
+  return '#dbeafe';
 }
 
 /**
