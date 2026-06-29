@@ -34,6 +34,22 @@ describe('solarPaddle', () => {
     expect(setLocalPermanentData).toHaveBeenCalledTimes(2);
   });
 
+  it('falls back when storage access is unavailable', () => {
+    const payload = JSON.parse(solarPaddle('{}', new Map()));
+
+    expect(payload.width).toBeGreaterThan(0);
+    expect(payload.shapes.some(shape => shape.type === 'circle')).toBe(true);
+  });
+
+  it('treats blank input as null and uses the default seed', () => {
+    const storageValue = { current: null };
+
+    runToy('   ', storageValue);
+
+    expect(storageValue.current.SOLA1.width).toBe(360);
+    expect(storageValue.current.SOLA1.status).toBe('ready');
+  });
+
   it('keeps launch edge-triggered across repeated frames', () => {
     const storageValue = { current: null };
     const first = runToy(
@@ -231,6 +247,33 @@ describe('solarPaddle', () => {
     expect(nextState.panels.filter(panel => panel.charge)).toHaveLength(1);
     expect(nextState.orb.y).not.toBe(35);
     expect(nextState.orb.vy === 0).toBe(false);
+  });
+
+  it('normalizes malformed wrapped storage back to a fresh seed', () => {
+    const storageValue = {
+      current: {
+        SOLA1: {
+          version: 1,
+          width: 'x',
+          height: null,
+          frame: -1,
+          status: 'broken',
+          score: 'x',
+          lives: 'x',
+          input: null,
+          paddle: null,
+          orb: null,
+          panels: null,
+        },
+      },
+    };
+
+    runToy('not json', storageValue);
+
+    expect(storageValue.current.SOLA1.width).toBe(360);
+    expect(storageValue.current.SOLA1.height).toBe(240);
+    expect(storageValue.current.SOLA1.status).toBe('ready');
+    expect(storageValue.current.SOLA1.panels).toHaveLength(12);
   });
 
   it('bounces the orb off a panel instead of letting it pass through after separation', () => {
