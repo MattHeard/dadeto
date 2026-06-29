@@ -64,6 +64,21 @@ describe('calculateUpdatedVisibility', () => {
 
     expect(result).toBe(1);
   });
+
+  it('treats admin-locked variants as fixed at the incoming rating', () => {
+    const result = calculateNextVisibility(
+      {
+        visibilityLockedBy: ADMIN_UID,
+        visibility: 0.25,
+        moderationRatingCount: 2,
+        moderatorReputationSum: 2,
+      },
+      true,
+      1
+    );
+
+    expect(result).toBe(0.25);
+  });
 });
 
 describe('createUpdateVariantVisibilityHandler', () => {

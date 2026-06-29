@@ -65,6 +65,54 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.paddle.x).toBeGreaterThan(100);
   });
 
+  it('derives movement from axes in both directions', () => {
+    const leftStorage = { current: null };
+    runToy(JSON.stringify({ axes: [-1] }), leftStorage);
+    const left = runToy('{}', leftStorage);
+
+    const rightStorage = { current: null };
+    runToy(JSON.stringify({ axes: [1] }), rightStorage);
+    const right = runToy('{}', rightStorage);
+
+    expect(left.storageValue.current.BATT4.paddle.x).toBeLessThan(160);
+    expect(right.storageValue.current.BATT4.paddle.x).toBeGreaterThan(160);
+  });
+
+  it('handles key releases and capture snapshots', () => {
+    const storageValue = { current: null };
+    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowLeft' }), storageValue);
+    runToy(JSON.stringify({ type: 'keyup', key: 'ArrowLeft' }), storageValue);
+    const capture = runToy(
+      JSON.stringify({
+        type: 'capture',
+        capturing: false,
+      }),
+      storageValue
+    );
+    const snapshot = runToy(
+      JSON.stringify({
+        buttons: [true, false, 'x'],
+        axes: [1, 'bad'],
+        buttonIndex: 1,
+        pressed: true,
+      }),
+      storageValue
+    );
+
+    expect(capture.storageValue.current.BATT4.input.keyboard.ArrowLeft).toBe(
+      false
+    );
+    expect(snapshot.storageValue.current.BATT4.input.gamepad.buttons).toEqual([
+      true,
+      true,
+      false,
+    ]);
+    expect(snapshot.storageValue.current.BATT4.input.gamepad.axes).toEqual([
+      1,
+      0,
+    ]);
+  });
+
   it('accepts custom orb speeds from input', () => {
     const { storageValue } = runToy(
       JSON.stringify({ orbSpeedX: 2, orbSpeedY: -1 })
@@ -72,6 +120,24 @@ describe('batteryBreakout', () => {
 
     expect(storageValue.current.BATT4.orb.vx).toBe(2);
     expect(storageValue.current.BATT4.orb.vy).toBe(-1);
+  });
+
+  it('updates the captured gamepad buttons by index', () => {
+    const storageValue = { current: null };
+    runToy(
+      JSON.stringify({
+        buttons: [false, false, true],
+        buttonIndex: 1,
+        pressed: true,
+      }),
+      storageValue
+    );
+
+    expect(storageValue.current.BATT4.input.gamepad.buttons).toEqual([
+      false,
+      true,
+      true,
+    ]);
   });
 
   it('falls back through the normalization branches for malformed state', () => {
@@ -94,7 +160,68 @@ describe('batteryBreakout', () => {
           },
           paddle: null,
           orb: null,
-          cells: null,
+          cells: [
+            {
+              id: 'cell-a',
+              x: 1,
+              y: 1,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'invalid',
+            },
+            {
+              id: 'cell-b',
+              x: 2,
+              y: 2,
+              width: 24,
+              height: 10,
+              charge: 1,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'invalid',
+            },
+            {
+              id: 'cell-c',
+              x: 3,
+              y: 3,
+              width: 24,
+              height: 10,
+              charge: 2,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'invalid',
+            },
+            {
+              id: 'cell-d',
+              x: 4,
+              y: 4,
+              width: 24,
+              height: 10,
+              charge: 4,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'invalid',
+            },
+            {
+              id: 'cell-e',
+              x: 5,
+              y: 5,
+              width: 24,
+              height: 10,
+              charge: 1,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 1,
+              state: 'invalid',
+            },
+          ],
         },
       },
     };
@@ -109,7 +236,7 @@ describe('batteryBreakout', () => {
     expect(storageValue.current.BATT4.input.actions.moveLeft).toBe(false);
     expect(storageValue.current.BATT4.paddle.width).toBe(48);
     expect(storageValue.current.BATT4.orb.radius).toBe(4);
-    expect(storageValue.current.BATT4.cells).toHaveLength(9);
+    expect(storageValue.current.BATT4.cells).toHaveLength(5);
   });
 
   it('uses a staggered default cell layout', () => {
@@ -554,7 +681,44 @@ describe('batteryBreakout', () => {
           },
           paddle: null,
           orb: null,
-          cells: null,
+          cells: [
+            null,
+            {},
+            {
+              id: 12,
+              x: 'bad',
+              y: 'bad',
+              width: -1,
+              height: 0,
+              charge: 'bad',
+              targetCharge: 'bad',
+              maxCharge: 'bad',
+              overchargeCooldown: 'bad',
+              state: 'bad',
+            },
+            {
+              x: 30,
+              y: 20,
+              width: 24,
+              height: 12,
+              charge: 1,
+              targetCharge: 3,
+              maxCharge: 4,
+              overchargeCooldown: 0,
+              state: 'bad',
+            },
+            {
+              x: 40,
+              y: 30,
+              width: 24,
+              height: 12,
+              charge: 3,
+              targetCharge: 2,
+              maxCharge: 5,
+              overchargeCooldown: 0,
+              state: 'bad',
+            },
+          ],
         },
       },
     };
@@ -568,5 +732,66 @@ describe('batteryBreakout', () => {
     expect(storageValue.current.BATT4.score).toBe(0);
     expect(storageValue.current.BATT4.lives).toBe(3);
     expect(storageValue.current.BATT4.faults).toBe(0);
+    expect(storageValue.current.BATT4.cells.map(cell => cell.state)).toEqual([
+      'empty',
+      'empty',
+      'charging',
+      'stable',
+    ]);
+  });
+
+  it('loses a life when the orb falls below the paddle lane', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 1,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 60, y: 139, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    const next = runToy('{}', storageValue);
+
+    expect(next.storageValue.current.BATT4.status).toBe('lost');
+    expect(next.storageValue.current.BATT4.lives).toBeLessThanOrEqual(0);
   });
 });
