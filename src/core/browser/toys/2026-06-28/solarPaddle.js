@@ -121,34 +121,53 @@ function buildNextState(persisted, input) {
   const shouldReset = input?.reset === true || !persisted;
   const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
   const inputState = updateInputState(base.input, input);
+  const withInput = finalizeNextState(merged, base.frame, inputState);
+
+  if (inputState.edgeActions.resetPressed) {
+    return createResetSeedState(input, persisted);
+  }
+
+  return withInput;
+}
+
+/**
+ * Finalize the next state after merging and input updates.
+ * @param {PaddleState} merged Merged base state.
+ * @param {number} frame Previous frame number.
+ * @param {PaddleInputState} inputState Updated input state.
+ * @returns {PaddleState} Finalized next state.
+ */
+function finalizeNextState(merged, frame, inputState) {
   const withInput = {
     ...merged,
     input: inputState,
-    frame: base.frame + 1,
+    frame: frame + 1,
   };
 
   applyGameplayInput(withInput, inputState);
   if (withInput.status === 'running') {
     stepSimulation(withInput);
   }
-  if (inputState.edgeActions.resetPressed) {
-    return createSeedState(
-      {
-        ...input,
-        layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
-      },
-      persisted
-        ? {
-            width: persisted.width,
-            height: persisted.height,
-            lives: persisted.lives,
-            layoutSeed: persisted.layoutSeed,
-          }
-        : undefined
-    );
-  }
-
   return withInput;
+}
+
+/**
+ * Build the reset seed state after a reset press.
+ * @param {unknown} input Parsed input.
+ * @param {PaddleState | null} persisted Persisted state.
+ * @returns {unknown} Reset seed state.
+ */
+function createResetSeedState(input, persisted) {
+  const layoutSeed = (persisted?.layoutSeed ?? 0) + 1;
+  const fallback = persisted
+    ? {
+        width: persisted.width,
+        height: persisted.height,
+        lives: persisted.lives,
+        layoutSeed: persisted.layoutSeed,
+      }
+    : undefined;
+  return createSeedState({ ...input, layoutSeed }, fallback);
 }
 
 /**
@@ -181,35 +200,36 @@ function mergeSeedAndState(base, seed) {
  * @returns {unknown} Seed state.
  */
 function createSeedState(input, fallback) {
+  const defaults = createSeedDefaults();
   const width = normalizePositiveInteger(
     input?.width,
-    fallback?.width ?? DEFAULT_WIDTH
+    defaults.width(fallback)
   );
   const height = normalizePositiveInteger(
     input?.height,
-    fallback?.height ?? DEFAULT_HEIGHT
+    defaults.height(fallback)
   );
   const paddleWidth = normalizePositiveInteger(
     input?.paddleWidth,
-    DEFAULT_PADDLE_WIDTH
+    defaults.paddleWidth
   );
   const paddleHeight = normalizePositiveInteger(
     input?.paddleHeight,
-    DEFAULT_PADDLE_HEIGHT
+    defaults.paddleHeight
   );
   const paddleSpeed = normalizePositiveInteger(
     input?.paddleSpeed,
-    DEFAULT_PADDLE_SPEED
+    defaults.paddleSpeed
   );
   const orbRadius = normalizePositiveInteger(
     input?.orbRadius,
-    DEFAULT_ORB_RADIUS
+    defaults.orbRadius
   );
-  const orbSpeedX = normalizeNumber(input?.orbSpeedX, DEFAULT_ORB_SPEED_X);
-  const orbSpeedY = normalizeNumber(input?.orbSpeedY, DEFAULT_ORB_SPEED_Y);
+  const orbSpeedX = normalizeNumber(input?.orbSpeedX, defaults.orbSpeedX);
+  const orbSpeedY = normalizeNumber(input?.orbSpeedY, defaults.orbSpeedY);
   const layoutSeed = normalizePositiveInteger(
     input?.layoutSeed,
-    fallback?.layoutSeed ?? 1
+    defaults.layoutSeed(fallback)
   );
   return createState({
     width,
@@ -221,12 +241,39 @@ function createSeedState(input, fallback) {
     orbSpeedX,
     orbSpeedY,
     layoutSeed,
-    lives: normalizePositiveInteger(
-      input?.lives,
-      fallback?.lives ?? DEFAULT_LIVES
-    ),
+    lives: normalizePositiveInteger(input?.lives, defaults.lives(fallback)),
     panels: normalizePanels(width, height, layoutSeed),
   });
+}
+
+/**
+ * Build seed defaults and fallback resolvers.
+ * @returns {{
+ *   width: (fallback: unknown) => number,
+ *   height: (fallback: unknown) => number,
+ *   paddleWidth: number,
+ *   paddleHeight: number,
+ *   paddleSpeed: number,
+ *   orbRadius: number,
+ *   orbSpeedX: number,
+ *   orbSpeedY: number,
+ *   layoutSeed: (fallback: unknown) => number,
+ *   lives: (fallback: unknown) => number,
+ * }} Seed defaults.
+ */
+function createSeedDefaults() {
+  return {
+    width: fallback => fallback?.width ?? DEFAULT_WIDTH,
+    height: fallback => fallback?.height ?? DEFAULT_HEIGHT,
+    paddleWidth: DEFAULT_PADDLE_WIDTH,
+    paddleHeight: DEFAULT_PADDLE_HEIGHT,
+    paddleSpeed: DEFAULT_PADDLE_SPEED,
+    orbRadius: DEFAULT_ORB_RADIUS,
+    orbSpeedX: DEFAULT_ORB_SPEED_X,
+    orbSpeedY: DEFAULT_ORB_SPEED_Y,
+    layoutSeed: fallback => fallback?.layoutSeed ?? 1,
+    lives: fallback => fallback?.lives ?? DEFAULT_LIVES,
+  };
 }
 
 /**
@@ -547,8 +594,9 @@ function createSeedOptions() {
 }
 
 /**
- *
- * @param value
+ * Normalize persisted panels.
+ * @param {unknown} value Raw panel state.
+ * @returns {PaddlePanel[]} Normalized panels.
  */
 function normalizePanelsFromState(value) {
   if (!Array.isArray(value) || value.length === 0) {
@@ -571,10 +619,11 @@ function normalizePanelsFromState(value) {
 }
 
 /**
- *
- * @param width
- * @param height
- * @param seed
+ * Normalize panel layout for a board.
+ * @param {number} width Board width.
+ * @param {number} height Board height.
+ * @param {number} seed Layout seed.
+ * @returns {PaddlePanel[]} Generated panels.
  */
 function normalizePanels(width, height, seed = 1) {
   const panelWidth = 28;
@@ -603,11 +652,12 @@ function normalizePanels(width, height, seed = 1) {
 }
 
 /**
- *
- * @param width
- * @param height
- * @param panelWidth
- * @param panelHeight
+ * Build candidate panel positions for a board.
+ * @param {number} width Board width.
+ * @param {number} height Board height.
+ * @param {number} panelWidth Panel width.
+ * @param {number} panelHeight Panel height.
+ * @returns {Array<{ x: number, y: number }>} Position candidates.
  */
 function buildPanelPositions(width, height, panelWidth, panelHeight) {
   const yPositions = [PANEL_TOP, PANEL_TOP + 16, PANEL_TOP + 32];
@@ -644,9 +694,10 @@ function buildPanelPositions(width, height, panelWidth, panelHeight) {
 }
 
 /**
- *
- * @param positions
- * @param seed
+ * Shuffle positions with a seeded generator.
+ * @param {Array<{ x: number, y: number }>} positions Positions to shuffle.
+ * @param {number} seed Shuffle seed.
+ * @returns {Array<{ x: number, y: number }>} Shuffled positions.
  */
 function shufflePositions(positions, seed) {
   const items = positions.slice();
@@ -660,9 +711,10 @@ function shufflePositions(positions, seed) {
 }
 
 /**
- *
- * @param previous
- * @param input
+ * Update the input state from new input.
+ * @param {PaddleInputState | undefined} previous Previous input state.
+ * @param {unknown} input Incoming input.
+ * @returns {PaddleInputState} Updated input state.
  */
 function updateInputState(previous, input) {
   const nextKeyboard = { ...previous?.keyboard };
@@ -685,10 +737,11 @@ function updateInputState(previous, input) {
 }
 
 /**
- *
- * @param input
- * @param keyboard
- * @param gamepad
+ * Derive actions from keyboard and gamepad state.
+ * @param {unknown} input Incoming input.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {{ actions: PaddleActions, edgeActions: PaddleEdgeActions }} Derived actions.
  */
 function deriveActions(input, keyboard, gamepad) {
   if (input?.type === 'keydown' && typeof input.key === 'string') {
@@ -715,9 +768,10 @@ function deriveActions(input, keyboard, gamepad) {
 }
 
 /**
- *
- * @param keyboard
- * @param gamepad
+ * Create actions from normalized controller state.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {PaddleGamepadState} gamepad Gamepad state.
+ * @returns {{ actions: PaddleActions, edgeActions: PaddleEdgeActions }} Actions and edge actions.
  */
 function createActionsFromState(keyboard, gamepad) {
   const actions = {
