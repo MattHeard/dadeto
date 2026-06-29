@@ -1033,7 +1033,7 @@ function toCanvasPayload(state) {
       x: Math.round(state.orb.x),
       y: Math.round(state.orb.y),
       radius: state.orb.radius,
-      fill: state.status === 'lost' ? '#fca5a5' : '#fde047',
+      fill: getOrbFill(state.status),
     },
     {
       type: 'rect',
@@ -1043,20 +1043,49 @@ function toCanvasPayload(state) {
       height: 4,
       fill: '#34d399',
     },
-    ...(state.faults > 0
-      ? [
-          {
-            type: 'rect',
-            x: state.width - 54,
-            y: 18,
-            width: 36,
-            height: 6,
-            fill: state.faults > DEFAULT_MAX_FAULTS ? '#ef4444' : '#94a3b8',
-          },
-        ]
-      : []),
+    ...buildFaultIndicator(state),
   ];
   return { width: state.width, height: state.height, shapes };
+}
+
+/**
+ * Get the orb fill color for the current state.
+ * @param {string} status Current state status.
+ * @returns {string} Fill color.
+ */
+function getOrbFill(status) {
+  return status === 'lost' ? '#fca5a5' : '#fde047';
+}
+
+/**
+ * Build the optional fault indicator shape.
+ * @param {BatteryState} state Current state.
+ * @returns {Array<{ type: 'rect', x: number, y: number, width: number, height: number, fill: string }>} Fault indicator shapes.
+ */
+function buildFaultIndicator(state) {
+  if (state.faults <= 0) {
+    return [];
+  }
+
+  return [
+    {
+      type: 'rect',
+      x: state.width - 54,
+      y: 18,
+      width: 36,
+      height: 6,
+      fill: getFaultIndicatorFill(state.faults),
+    },
+  ];
+}
+
+/**
+ * Get the fault indicator fill color.
+ * @param {number} faults Fault count.
+ * @returns {string} Fill color.
+ */
+function getFaultIndicatorFill(faults) {
+  return faults > DEFAULT_MAX_FAULTS ? '#ef4444' : '#94a3b8';
 }
 
 /**
