@@ -820,7 +820,10 @@ function createActionsFromState(keyboard, gamepad) {
  */
 function isLeftActionPressed(keyboard, gamepad) {
   return Boolean(
-    keyboard.ArrowLeft || keyboard.a || keyboard.A || isAxisLeft(gamepad.axes[0])
+    keyboard.ArrowLeft ||
+      keyboard.a ||
+      keyboard.A ||
+      isAxisLeft(gamepad.axes[0])
   );
 }
 
@@ -832,7 +835,10 @@ function isLeftActionPressed(keyboard, gamepad) {
  */
 function isRightActionPressed(keyboard, gamepad) {
   return Boolean(
-    keyboard.ArrowRight || keyboard.d || keyboard.D || isAxisRight(gamepad.axes[0])
+    keyboard.ArrowRight ||
+      keyboard.d ||
+      keyboard.D ||
+      isAxisRight(gamepad.axes[0])
   );
 }
 
