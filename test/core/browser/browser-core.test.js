@@ -31,6 +31,12 @@ import {
   safeParseJson,
   valueOr,
 } from '../../../src/core/browser/browser-core.js';
+import {
+  clearInputValue,
+  hasInputValue,
+  readStoredOrElementValue,
+  setInputValue,
+} from '../../../src/core/browser/inputValueStore.js';
 
 describe('browser-core helpers', () => {
   test('creates prefixed loggers and no-op loggers', () => {
@@ -158,6 +164,23 @@ describe('browser-core helpers', () => {
     });
     await signOut();
     expect(storage.removeItem).toHaveBeenCalledWith('id_token');
+  });
+
+  test('stores, reads, and clears input values', () => {
+    const element = { value: 'live' };
+
+    expect(readStoredOrElementValue(element)).toBe('live');
+    expect(hasInputValue(element)).toBe(false);
+
+    setInputValue(element, 42);
+    expect(hasInputValue(element)).toBe(true);
+    expect(readStoredOrElementValue(element)).toBe('42');
+
+    clearInputValue(element);
+    expect(hasInputValue(element)).toBe(false);
+    expect(readStoredOrElementValue(element)).toBe('live');
+    expect(clearInputValue(null)).toBeUndefined();
+    expect(setInputValue(null, 'ignored')).toBeUndefined();
   });
 
   test('applies base cleanup handlers and default handler', () => {
