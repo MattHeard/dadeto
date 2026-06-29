@@ -238,6 +238,215 @@ describe('batteryBreakout', () => {
     expect(storageValue.current.BATT4.cells).toHaveLength(5);
   });
 
+  it('falls back to the default cell layout when persisted cells are empty', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 90, y: 90, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+          cells: [],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.cells).toHaveLength(9);
+  });
+
+  it('toggles pause on successive pause presses', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 90, y: 90, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'p' }), storageValue);
+    const paused = runToy('{}', storageValue);
+
+    expect(paused.storageValue.current.BATT4.status).toBe('paused');
+
+    runToy(JSON.stringify({ type: 'keyup', key: 'p' }), storageValue);
+    runToy(JSON.stringify({ type: 'keydown', key: 'p' }), storageValue);
+    const resumed = runToy('{}', storageValue);
+
+    expect(resumed.storageValue.current.BATT4.status).toBe('running');
+  });
+
+  it('bounces from the right wall and from the paddle face', () => {
+    const wallStorage = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 177, y: 40, vx: 3, vy: -1, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    const paddleStorage = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 78, y: 110, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    const wallNext = runToy('{}', wallStorage);
+    const paddleNext = runToy('{}', paddleStorage);
+
+    expect(wallNext.storageValue.current.BATT4.orb.x).toBeLessThan(180);
+    expect(wallNext.storageValue.current.BATT4.orb.vx).toBeLessThan(0);
+    expect(paddleNext.storageValue.current.BATT4.orb.vy).toBeLessThan(0);
+    expect(paddleNext.storageValue.current.BATT4.orb.vx).not.toBe(0);
+  });
+
   it('uses a staggered default cell layout', () => {
     const { storageValue } = runToy(
       JSON.stringify({ width: 240, height: 160 })
