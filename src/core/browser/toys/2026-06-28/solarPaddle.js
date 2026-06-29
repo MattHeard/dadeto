@@ -956,8 +956,9 @@ export function resolvePaddle(state) {
 }
 
 /**
- *
- * @param state
+ * Resolve panel collisions.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function resolvePanels(state) {
   for (const panel of state.panels) {
@@ -973,9 +974,10 @@ function resolvePanels(state) {
 }
 
 /**
- *
- * @param orb
- * @param panel
+ * Determine the primary collision axis for an orb and panel.
+ * @param {PaddleOrb} orb Orb state.
+ * @param {PaddlePanel} panel Panel state.
+ * @returns {'x' | 'y'} Collision axis.
  */
 function getPanelCollisionAxis(orb, panel) {
   const panelCenterX = panel.x + panel.width / 2;
@@ -989,10 +991,11 @@ function getPanelCollisionAxis(orb, panel) {
 }
 
 /**
- *
- * @param orb
- * @param panel
- * @param collisionAxis
+ * Separate an orb from a panel after a collision.
+ * @param {PaddleOrb} orb Orb state.
+ * @param {PaddlePanel} panel Panel state.
+ * @param {'x' | 'y'} collisionAxis Collision axis.
+ * @returns {void}
  */
 export function separateOrbFromPanel(orb, panel, collisionAxis) {
   const panelCenterX = panel.x + panel.width / 2;
@@ -1011,9 +1014,10 @@ export function separateOrbFromPanel(orb, panel, collisionAxis) {
 }
 
 /**
- *
- * @param orb
- * @param collisionAxis
+ * Reflect orb velocity after a panel collision.
+ * @param {PaddleOrb} orb Orb state.
+ * @param {'x' | 'y'} collisionAxis Collision axis.
+ * @returns {void}
  */
 export function reflectOrbVelocityFromPanel(orb, collisionAxis) {
   if (collisionAxis === 'x') {
@@ -1025,9 +1029,10 @@ export function reflectOrbVelocityFromPanel(orb, collisionAxis) {
 }
 
 /**
- *
- * @param orb
- * @param panel
+ * Test whether an orb intersects a panel.
+ * @param {PaddleOrb} orb Orb state.
+ * @param {PaddlePanel} panel Panel state.
+ * @returns {boolean} True when the orb intersects the panel.
  */
 function circleIntersectsPanel(orb, panel) {
   const closestX = clamp(orb.x, panel.x, panel.x + panel.width);
@@ -1038,8 +1043,9 @@ function circleIntersectsPanel(orb, panel) {
 }
 
 /**
- *
- * @param state
+ * Resolve the orb falling below the board.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function resolveBottom(state) {
   if (state.orb.y + state.orb.radius <= state.height) {
@@ -1055,8 +1061,9 @@ function resolveBottom(state) {
 }
 
 /**
- *
- * @param state
+ * Resolve win/loss transitions.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function resolveWinLoss(state) {
   if (state.panels.every(panel => panel.charge)) {
@@ -1068,8 +1075,9 @@ function resolveWinLoss(state) {
 }
 
 /**
- *
- * @param state
+ * Reset the orb to the paddle after a loss.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function resetOrbToPaddle(state) {
   state.status = 'ready';
@@ -1080,18 +1088,20 @@ function resetOrbToPaddle(state) {
 }
 
 /**
- *
- * @param value
- * @param min
- * @param max
+ * Clamp a value within a range.
+ * @param {number} value Value to clamp.
+ * @param {number} min Minimum value.
+ * @param {number} max Maximum value.
+ * @returns {number} Clamped value.
  */
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
 /**
- *
- * @param state
+ * Convert the current state into a canvas payload.
+ * @param {PaddleState} state Current state.
+ * @returns {{ width: number, height: number, shapes: Array<Record<string, unknown>> }} Canvas payload.
  */
 function toCanvasPayload(state) {
   const shapes = [
@@ -1152,9 +1162,10 @@ function toCanvasPayload(state) {
 }
 
 /**
- *
- * @param storage
- * @param state
+ * Persist the current state.
+ * @param {unknown} storage Storage accessor.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function persistState(storage, state) {
   storage?.({ [STORAGE_KEY]: state });
