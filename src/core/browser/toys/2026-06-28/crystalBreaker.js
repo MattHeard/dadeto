@@ -52,7 +52,7 @@ function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
-  const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
+  const merged = buildMergedState(shouldReset, base, seed);
   const inputState = updateInputState(base.input, input);
   if (resetPressed(inputState)) {
     const resetState = createSeedState(input, {
@@ -69,6 +69,20 @@ function buildNextState(persisted, input) {
     stepSimulation(next);
   }
   return next;
+}
+
+/**
+ * Builds the merged state for the current step.
+ * @param {boolean} shouldReset - shouldReset value
+ * @param {ReturnType<typeof createSeedState>} base - base value
+ * @param {ReturnType<typeof createSeedState>} seed - seed value
+ * @returns {ReturnType<typeof createSeedState>} - result
+ */
+function buildMergedState(shouldReset, base, seed) {
+  if (shouldReset) {
+    return seed;
+  }
+  return mergeSeedAndState(base, seed);
 }
 
 /**
@@ -98,61 +112,130 @@ function mergeSeedAndState(base, seed) {
  * @returns {ReturnType<typeof createSeedState>} - result
  */
 function createSeedState(input, fallback) {
-  const width = normalizePositiveInteger(
-    input?.width,
-    fallback?.width ?? DEFAULT_WIDTH
-  );
-  const height = normalizePositiveInteger(
-    input?.height,
-    fallback?.height ?? DEFAULT_HEIGHT
-  );
-  const paddleWidth = normalizePositiveInteger(
-    input?.paddleWidth,
-    DEFAULT_PADDLE_WIDTH
-  );
-  const paddleHeight = normalizePositiveInteger(
-    input?.paddleHeight,
-    DEFAULT_PADDLE_HEIGHT
-  );
-  const paddleSpeed = normalizePositiveInteger(
-    input?.paddleSpeed,
-    DEFAULT_PADDLE_SPEED
-  );
-  const orbRadius = normalizePositiveInteger(
-    input?.orbRadius,
-    DEFAULT_ORB_RADIUS
-  );
-  const layoutSeed = normalizePositiveInteger(input?.layoutSeed, 1);
   return {
     version: 1,
-    width,
-    height,
+    width: normalizeSeedWidth(input, fallback),
+    height: normalizeSeedHeight(input, fallback),
     frame: 0,
     status: 'ready',
     score: 0,
-    lives: normalizePositiveInteger(
-      input?.lives,
-      fallback?.lives ?? DEFAULT_LIVES
-    ),
+    lives: normalizeSeedLives(input, fallback),
     combo: 0,
     input: createInitialInputState(),
     paddle: {
-      x: Math.round((width - paddleWidth) / 2),
-      y: Math.max(0, height - 18 - paddleHeight),
-      width: paddleWidth,
-      height: paddleHeight,
-      speed: paddleSpeed,
+      x: Math.round(
+        (normalizeSeedWidth(input, fallback) - normalizeSeedPaddleWidth(input)) /
+          2
+      ),
+      y: Math.max(
+        0,
+        normalizeSeedHeight(input, fallback) - 18 - normalizeSeedPaddleHeight(input)
+      ),
+      width: normalizeSeedPaddleWidth(input),
+      height: normalizeSeedPaddleHeight(input),
+      speed: normalizeSeedPaddleSpeed(input),
     },
     orb: {
-      x: Math.round(width / 2),
-      y: Math.max(0, height - 19 - orbRadius),
+      x: Math.round(normalizeSeedWidth(input, fallback) / 2),
+      y: Math.max(
+        0,
+        normalizeSeedHeight(input, fallback) - 19 - normalizeSeedOrbRadius(input)
+      ),
       vx: DEFAULT_ORB_SPEED_X,
       vy: DEFAULT_ORB_SPEED_Y,
-      radius: orbRadius,
+      radius: normalizeSeedOrbRadius(input),
       stuckToPaddle: true,
     },
-    crystals: normalizeCrystals(width, height, layoutSeed),
+    crystals: normalizeCrystals(
+      normalizeSeedWidth(input, fallback),
+      normalizeSeedHeight(input, fallback),
+      normalizeSeedLayoutSeed(input)
+    ),
   };
+}
+
+/**
+ * Normalize seed width.
+ * @param {object} input - input value
+ * @param {object|null} fallback - fallback value
+ * @returns {number} - result
+ */
+function normalizeSeedWidth(input, fallback) {
+  return normalizePositiveInteger(
+    input?.width,
+    fallback?.width ?? DEFAULT_WIDTH
+  );
+}
+
+/**
+ * Normalize seed height.
+ * @param {object} input - input value
+ * @param {object|null} fallback - fallback value
+ * @returns {number} - result
+ */
+function normalizeSeedHeight(input, fallback) {
+  return normalizePositiveInteger(
+    input?.height,
+    fallback?.height ?? DEFAULT_HEIGHT
+  );
+}
+
+/**
+ * Normalize seed lives.
+ * @param {object} input - input value
+ * @param {object|null} fallback - fallback value
+ * @returns {number} - result
+ */
+function normalizeSeedLives(input, fallback) {
+  return normalizePositiveInteger(
+    input?.lives,
+    fallback?.lives ?? DEFAULT_LIVES
+  );
+}
+
+/**
+ * Normalize seed paddle width.
+ * @param {object} input - input value
+ * @returns {number} - result
+ */
+function normalizeSeedPaddleWidth(input) {
+  return normalizePositiveInteger(input?.paddleWidth, DEFAULT_PADDLE_WIDTH);
+}
+
+/**
+ * Normalize seed paddle height.
+ * @param {object} input - input value
+ * @returns {number} - result
+ */
+function normalizeSeedPaddleHeight(input) {
+  return normalizePositiveInteger(input?.paddleHeight, DEFAULT_PADDLE_HEIGHT);
+}
+
+/**
+ * Normalize seed paddle speed.
+ * @param {object} input - input value
+ * @returns {number} - result
+ */
+function normalizeSeedPaddleSpeed(input) {
+  return normalizePositiveInteger(input?.paddleSpeed, DEFAULT_PADDLE_SPEED);
+}
+
+/**
+ * Normalize seed orb radius.
+ * @param {object} input - input value
+ * @returns {number} - result
+ */
+function normalizeSeedOrbRadius(input) {
+  return normalizePositiveInteger(input?.orbRadius, DEFAULT_ORB_RADIUS);
+}
+
+/**
+ * Normalize seed layout seed.
+ * @param {object} input - input value
+ * @returns {number} - result
+ */
+function normalizeSeedLayoutSeed(input) {
+  return normalizePositiveInteger(input?.layoutSeed, 1);
 }
 
 /**
@@ -239,13 +322,33 @@ function normalizeInputState(value) {
  */
 function normalizeGamepadState(value) {
   return {
-    buttons: Array.isArray(value?.buttons)
-      ? value.buttons.map(next => next === true)
-      : [],
-    axes: Array.isArray(value?.axes)
-      ? value.axes.map(next => Number(next) || 0)
-      : [],
+    buttons: normalizeGamepadButtons(value?.buttons),
+    axes: normalizeGamepadAxes(value?.axes),
   };
+}
+
+/**
+ * Normalize gamepad buttons.
+ * @param {unknown} value - value value
+ * @returns {Array<boolean>} - result
+ */
+function normalizeGamepadButtons(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map(next => next === true);
+}
+
+/**
+ * Normalize gamepad axes.
+ * @param {unknown} value - value value
+ * @returns {Array<number>} - result
+ */
+function normalizeGamepadAxes(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map(next => Number(next) || 0);
 }
 
 /**
@@ -404,10 +507,20 @@ function normalizeCrystalsFromState(value) {
     hp: normalizePositiveInteger(crystal?.hp, 1),
     maxHp: normalizePositiveInteger(crystal?.maxHp, 1),
     fracture: normalizePositiveInteger(crystal?.fracture, 0),
-    state: ['whole', 'fractured', 'shattered'].includes(crystal?.state)
-      ? crystal.state
-      : 'whole',
+    state: normalizeCrystalState(crystal?.state),
   }));
+}
+
+/**
+ * Normalize a crystal state.
+ * @param {unknown} value - value value
+ * @returns {string} - result
+ */
+function normalizeCrystalState(value) {
+  if (['whole', 'fractured', 'shattered'].includes(value)) {
+    return value;
+  }
+  return 'whole';
 }
 
 /**
