@@ -788,6 +788,15 @@ function applyPaddleMotion(state, inputState) {
 }
 
 /**
+ * Stick the orb to the paddle.
+ * @param {object} state Current state.
+ */
+function stickOrbToPaddle(state) {
+  state.orb.x = state.paddle.x + Math.round(state.paddle.width / 2);
+  state.orb.y = state.paddle.y - state.orb.radius - 1;
+}
+
+/**
  * Advances the simulation by one frame.
  * @param {object} state - state value
  * @returns {void} - result
