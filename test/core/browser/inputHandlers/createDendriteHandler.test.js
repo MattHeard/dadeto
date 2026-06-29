@@ -6,6 +6,8 @@ import {
   createManagedFormShell,
   createManagedFormShellState,
   finalizeManagedForm,
+  appendLabelledField,
+  wireLabelledField,
   removeExistingForm,
   runContainerRemovers,
   runFormHandler,
@@ -107,16 +109,19 @@ describe('createDendriteHandler', () => {
     const dom = createDom();
     const container = { children: [] };
     const textInput = { value: '' };
+    const disposer = jest.fn();
     const shell = createManagedFormShell({
       dom,
       container,
       textInput,
-      disposers: [jest.fn()],
+      disposers: [disposer],
     });
 
     expect(dom.createElement).toHaveBeenCalledWith('div');
     expect(dom.setClassName).toHaveBeenCalled();
     expect(shell._dispose).toEqual(expect.any(Function));
+    shell._dispose();
+    expect(disposer).toHaveBeenCalled();
   });
 
   test('returns shell state from createManagedFormShellState and withManagedFormShell', () => {
@@ -159,7 +164,69 @@ describe('createDendriteHandler', () => {
     const result = handler(dom, container, textInput);
 
     expect(result).toBeDefined();
-    expect(dom.setPlaceholder).toHaveBeenCalled?.();
+    expect(dom.setPlaceholder).toHaveBeenCalledWith(
+      expect.objectContaining({}),
+      'Alpha'
+    );
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      expect.objectContaining({}),
+      'input',
+      expect.any(Function)
+    );
+
+    const inputNode = dom.addEventListener.mock.calls[0][0];
+    const inputHandler = dom.addEventListener.mock.calls[0][2];
+    dom.getValue.mockReturnValueOnce('gamma');
+    inputHandler();
+
+    expect(result._dispose).toEqual(expect.any(Function));
+    result._dispose();
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      inputNode,
+      'input',
+      inputHandler
+    );
+  });
+
+  test('appends labels and wires explicit field listeners', () => {
+    const dom = createDom();
+    const form = { children: [] };
+    const input = { value: '' };
+    const handler = jest.fn();
+    const disposers = [];
+
+    expect(
+      appendLabelledField({
+        dom,
+        form,
+        labelText: 'Label',
+        input,
+      })
+    ).toBeUndefined();
+
+    wireLabelledField({
+      dom,
+      form,
+      input,
+      labelText: 'Label',
+      handler,
+      disposers,
+    });
+
+    expect(dom.setTextContent).toHaveBeenCalled();
+    expect(dom.addEventListener).toHaveBeenCalledWith(input, 'input', handler);
+    expect(disposers).toHaveLength(1);
+  });
+
+  test('builds textarea inputs for content fields', () => {
+    const dom = createDom();
+    const container = { children: [] };
+    const textInput = { value: '{"content":"hello"}' };
+    const handler = createDendriteHandler([['content', 'Body']]);
+
+    handler(dom, container, textInput);
+
+    expect(dom.createElement).toHaveBeenCalledWith('textarea');
   });
 
   test('returns the raw form element when buildFormContent returns an element', () => {
