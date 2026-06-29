@@ -69,8 +69,9 @@ function getStorageAccessor(env) {
 }
 
 /**
- *
- * @param storage
+ * Read the persisted paddle state from storage.
+ * @param {unknown} storage Storage accessor.
+ * @returns {unknown} Normalized persisted state or null.
  */
 function readPersistedState(storage) {
   if (!storage) {
@@ -82,8 +83,9 @@ function readPersistedState(storage) {
 }
 
 /**
- *
- * @param input
+ * Parse an input payload string into a record.
+ * @param {unknown} input Input payload.
+ * @returns {unknown} Parsed record or null.
  */
 function parseInput(input) {
   if (typeof input !== 'string' || input.trim() === '') {
@@ -94,8 +96,9 @@ function parseInput(input) {
 }
 
 /**
- *
- * @param value
+ * Parse an object-like JSON value.
+ * @param {unknown} value Raw JSON input.
+ * @returns {unknown} Parsed record or null.
  */
 function parseObjectRecord(value) {
   const parsed = parseJsonOrNull(value);
@@ -107,9 +110,10 @@ function parseObjectRecord(value) {
 }
 
 /**
- *
- * @param persisted
- * @param input
+ * Build the next simulation state.
+ * @param {unknown} persisted Persisted state.
+ * @param {unknown} input Parsed input.
+ * @returns {unknown} Next state.
  */
 function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
@@ -148,9 +152,10 @@ function buildNextState(persisted, input) {
 }
 
 /**
- *
- * @param base
- * @param seed
+ * Merge seed values into an existing state.
+ * @param {unknown} base Existing state.
+ * @param {unknown} seed Seed state.
+ * @returns {unknown} Merged state.
  */
 function mergeSeedAndState(base, seed) {
   return {
@@ -170,9 +175,10 @@ function mergeSeedAndState(base, seed) {
 }
 
 /**
- *
- * @param input
- * @param fallback
+ * Create a new seed state from input and fallback values.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @returns {unknown} Seed state.
  */
 function createSeedState(input, fallback) {
   const width = normalizePositiveInteger(
@@ -224,8 +230,9 @@ function createSeedState(input, fallback) {
 }
 
 /**
- *
- * @param options
+ * Create an initial runtime state object.
+ * @param {unknown} options State options.
+ * @returns {unknown} New state.
  */
 function createState(options) {
   const paddleY = Math.max(
@@ -261,7 +268,8 @@ function createState(options) {
 }
 
 /**
- *
+ * Create the initial input state.
+ * @returns {PaddleInputState} Initial input state.
  */
 function createInitialInputState() {
   return {
