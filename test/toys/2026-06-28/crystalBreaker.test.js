@@ -1055,6 +1055,63 @@ describe('crystalBreaker', () => {
     };
     runToy(JSON.stringify({ type: 'keydown', key: 'p' }), runningStorage);
     expect(runningStorage.current.CRYS1.status).toBe('paused');
+
+    const lostStorage = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 1,
+          status: 'lost',
+          score: 0,
+          lives: 0,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
+          orb: {
+            x: 60,
+            y: 103,
+            vx: 0,
+            vy: -2,
+            radius: 4,
+            stuckToPaddle: false,
+          },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 20,
+              y: 20,
+              width: 24,
+              height: 14,
+              hp: 1,
+              maxHp: 1,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+    runToy(JSON.stringify({ type: 'keydown', key: 'p' }), lostStorage);
+    expect(lostStorage.current.CRYS1.status).toBe('lost');
   });
 
   it('loses the last life and keeps a lost state after the orb falls below the board', () => {
