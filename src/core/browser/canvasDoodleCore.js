@@ -212,7 +212,12 @@ function drawText(context, shape) {
   const y = plotShared.numberOr(shape.y, 0);
   context.fillStyle = plotShared.stringOr(shape.fill, FOREGROUND);
   context.font = plotShared.stringOr(shape.font, '12px monospace');
-  context.textAlign = plotShared.stringOr(shape.align, 'left');
-  context.textBaseline = plotShared.stringOr(shape.baseline, 'alphabetic');
+  context.textAlign = /** @type {CanvasRenderingContext2D['textAlign']} */ (
+    plotShared.stringOr(shape.align, 'left')
+  );
+  context.textBaseline =
+    /** @type {CanvasRenderingContext2D['textBaseline']} */ (
+      plotShared.stringOr(shape.baseline, 'alphabetic')
+    );
   context.fillText(plotShared.stringOr(shape.text, ''), x, y);
 }

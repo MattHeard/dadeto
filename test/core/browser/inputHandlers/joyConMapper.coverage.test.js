@@ -63,13 +63,19 @@ function createDom() {
       classList: { add: jest.fn() },
     })),
     setClassName: jest.fn((element, className) => {
-      element.className = className;
+      if (element) {
+        element.className = className;
+      }
     }),
     setTextContent: jest.fn((element, text) => {
-      element.textContent = text;
+      if (element) {
+        element.textContent = text;
+      }
     }),
     setValue: jest.fn((element, value) => {
-      element.value = value;
+      if (element) {
+        element.value = value;
+      }
     }),
     appendChild: jest.fn(),
     removeAllChildren: jest.fn(),
@@ -428,6 +434,7 @@ describe('joyConMapper coverage helpers', () => {
           },
         },
       },
+      getGamepads: jest.fn(() => []),
     };
     const state = { dom, hidSnapshot: null };
 
@@ -614,19 +621,36 @@ describe('joyConMapper coverage helpers', () => {
 
   it('covers WebHID connect and disconnect listener registration', async () => {
     const disposers = [];
-    const dom = {
-      globalThis: {
-        navigator: {
-          hid: {
-            addEventListener: jest.fn(),
-            removeEventListener: jest.fn(),
-            getDevices: jest.fn(async () => []),
-          },
-        },
+    const dom = createDom();
+    dom.globalThis.navigator = {
+      hid: {
+        addEventListener: jest.fn((type, handler) => {
+          handler({ device: null });
+        }),
+        removeEventListener: jest.fn(),
+        getDevices: jest.fn(async () => []),
       },
     };
+    const prompt = {};
+    const subprompt = {};
+    const dot = { classList: { toggle: jest.fn() } };
+    const statusText = {};
+    const metaIndex = {};
+    const metaId = {};
 
-    initializeWebHidCapture({ dom, hidSnapshot: null }, disposers);
+    initializeWebHidCapture(
+      {
+        dom,
+        prompt,
+        subprompt,
+        dot,
+        statusText,
+        metaIndex,
+        metaId,
+        hidSnapshot: null,
+      },
+      disposers
+    );
     await Promise.resolve();
 
     expect(dom.globalThis.navigator.hid.addEventListener).toHaveBeenCalledWith(
@@ -645,6 +669,201 @@ describe('joyConMapper coverage helpers', () => {
     expect(
       dom.globalThis.navigator.hid.removeEventListener
     ).toHaveBeenCalledWith('disconnect', expect.any(Function));
+  });
+
+  it('covers connect and disconnect event payload branches', async () => {
+    const connectHandler = jest.fn();
+    const disconnectHandler = jest.fn();
+    const device = { id: 'connected' };
+    const dom = createDom();
+    dom.globalThis.navigator = {
+      hid: {
+        addEventListener: jest.fn((type, handler) => {
+          if (type === 'connect') {
+            connectHandler.mockImplementation(handler);
+          }
+          if (type === 'disconnect') {
+            disconnectHandler.mockImplementation(handler);
+          }
+        }),
+        removeEventListener: jest.fn(),
+        getDevices: jest.fn(async () => []),
+      },
+    };
+    const prompt = {};
+    const subprompt = {};
+    const dot = { classList: { toggle: jest.fn() } };
+    const statusText = {};
+    const metaIndex = {};
+    const metaId = {};
+    const state = {
+      dom,
+      prompt,
+      subprompt,
+      dot,
+      statusText,
+      metaIndex,
+      metaId,
+      hidDevices: [],
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+    };
+    const disposers = [];
+
+    initializeWebHidCapture(state, disposers);
+    connectHandler({ device });
+    disconnectHandler({ device });
+
+    expect(state.hidDevices).toHaveLength(0);
+  });
+
+  it('covers the no-requestDevice guard', async () => {
+    const disposers = [];
+    const dom = createDom();
+    dom.globalThis.navigator = {
+      hid: { getDevices: jest.fn().mockResolvedValue([]) },
+    };
+    const prompt = {};
+    const subprompt = {};
+    const dot = { classList: { toggle: jest.fn() } };
+    const statusText = {};
+    const metaIndex = {};
+    const metaId = {};
+    const state = {
+      dom,
+      prompt,
+      subprompt,
+      dot,
+      statusText,
+      metaIndex,
+      metaId,
+      hidDevices: [],
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+    };
+
+    await requestAndOpenJoyConDevices(state, disposers);
+    expect(disposers).toHaveLength(0);
+    expect(state.hidDevices).toHaveLength(0);
+  });
+
+  it('covers request-and-open and attach listener cleanup branches', async () => {
+    const open = jest.fn().mockResolvedValue(undefined);
+    const removeEventListener = jest.fn();
+    const device = {
+      opened: false,
+      open,
+      addEventListener: jest.fn(),
+      removeEventListener,
+    };
+    const hid = {
+      requestDevice: jest.fn().mockResolvedValue([null, device]),
+      getDevices: jest.fn().mockResolvedValue([]),
+    };
+    const dom = createDom();
+    dom.globalThis.navigator = { hid };
+    const prompt = {};
+    const subprompt = {};
+    const dot = { classList: { toggle: jest.fn() } };
+    const statusText = {};
+    const metaIndex = {};
+    const metaId = {};
+    const state = {
+      dom,
+      prompt,
+      subprompt,
+      dot,
+      statusText,
+      metaIndex,
+      metaId,
+      hidDevices: [],
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+    };
+    const disposers = [];
+
+    await requestAndOpenJoyConDevices(state, disposers);
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(state.hidDevices).toContain(device);
+    expect(disposers).toHaveLength(1);
+
+    disposers[0]();
+    expect(removeEventListener).toHaveBeenCalledWith(
+      'inputreport',
+      expect.any(Function)
+    );
+  });
+
+  it('covers repeated snapshot stabilization', () => {
+    const state = {
+      dom: createDom(),
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+      hidSnapshot: null,
+      hidDevices: [],
+    };
+    const disposers = [];
+    let reportHandler;
+    const device = {
+      addEventListener: jest.fn((type, handler) => {
+        if (type === 'inputreport') {
+          reportHandler = handler;
+        }
+      }),
+      removeEventListener: jest.fn(),
+    };
+
+    attachHidDeviceListener(state, disposers, device);
+    reportHandler({
+      data: { buffer: new Uint8Array([0x03, 0xff, 0x00]).buffer },
+    });
+    state.hidPendingSnapshotCount = 1;
+    state.hidPendingSnapshot = state.hidSnapshot;
+    reportHandler({
+      data: { buffer: new Uint8Array([0x03, 0xff, 0x00]).buffer },
+    });
+
+    expect(state.hidSnapshot).not.toBeNull();
+  });
+
+  it('covers the pending snapshot early return path', () => {
+    const state = {
+      dom: createDom(),
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+      hidPendingSnapshot: { buttons: [], axes: [] },
+      hidPendingSnapshotCount: 1,
+      hidSnapshot: null,
+      hidDevices: [],
+    };
+    const disposers = [];
+    let reportHandler;
+    const device = {
+      addEventListener: jest.fn((type, handler) => {
+        if (type === 'inputreport') {
+          reportHandler = handler;
+        }
+      }),
+      removeEventListener: jest.fn(),
+    };
+
+    attachHidDeviceListener(state, disposers, device);
+    reportHandler({
+      data: { buffer: new Uint8Array([0x03, 0xff, 0x00]).buffer },
+    });
+
+    expect(state.hidPendingSnapshotCount).toBe(1);
+    expect(state.hidSnapshot).toBeNull();
   });
 
   it('treats connected HID devices as connected input for the prompt/status', () => {

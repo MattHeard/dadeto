@@ -173,6 +173,65 @@ describe('conwayLife', () => {
     expect(payload.shapes).toHaveLength(6);
   });
 
+  it('returns null for wrapped malformed stored life payloads', () => {
+    const storageValue = {
+      current: {
+        CONW1: 42,
+      },
+    };
+
+    const { payload } = getCanvasPayload('{}', storageValue);
+
+    expect(payload.width).toBe(360);
+    expect(storageValue.current.CONW1.generation).toBe(0);
+  });
+
+  it('ignores wrapped storage objects without the expected key shape', () => {
+    const storageValue = {
+      current: {
+        notConway: {
+          width: 120,
+          height: 80,
+          cols: 6,
+          rows: 6,
+          tickSpeedMs: 16,
+          framesPerTick: 0,
+          framesUntilTick: 0,
+          generation: 2,
+          cells: [[1, 1]],
+        },
+      },
+    };
+
+    const { payload } = getCanvasPayload('{}', storageValue);
+
+    expect(payload.width).toBe(360);
+    expect(payload.shapes).toHaveLength(6);
+  });
+
+  it('normalizes wrapped stored life payloads with collapsed counters', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 6,
+          rows: 6,
+          tickSpeedMs: 16,
+          framesPerTick: 0,
+          framesUntilTick: 0,
+          generation: 2,
+          cells: [[1, 1]],
+        },
+      },
+    };
+
+    getCanvasPayload('{}', storageValue);
+
+    expect(storageValue.current.CONW1.framesPerTick).toBe(1);
+    expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
+  });
+
   it('keeps the board steady when the stored countdown has not elapsed', () => {
     const storageValue = {
       current: {

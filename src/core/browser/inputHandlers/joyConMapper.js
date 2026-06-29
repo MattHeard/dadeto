@@ -10,21 +10,21 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ data: { buffer: ArrayBuffer } }} HidInputReportEventLike */
 /**
  * @typedef {{
-  *   vendorId?: number,
-  *   productId?: number,
-  *   productName?: string,
-  *   collections?: unknown[],
-  *   opened?: boolean,
-  *   open?: () => Promise<void>,
-  *   addEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
-  *   removeEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
+ *   vendorId?: number,
+ *   productId?: number,
+ *   productName?: string,
+ *   collections?: unknown[],
+ *   opened?: boolean,
+ *   open?: () => Promise<void>,
+ *   addEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
+ *   removeEventListener?: (type: 'inputreport', handler: (event: HidInputReportEventLike) => void) => void,
   }} HidDeviceLike */
 /**
  * @typedef {{
  *   requestDevice?: (options: { filters: Array<{ vendorId: number, productId?: number }> }) => Promise<HidDeviceLike[]>,
-  *   getDevices?: () => Promise<HidDeviceLike[]>,
-  *   addEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
-  *   removeEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
+ *   getDevices?: () => Promise<HidDeviceLike[]>,
+ *   addEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
+ *   removeEventListener?: (type: 'connect' | 'disconnect', handler: (event: HidConnectEventLike) => void) => void,
   }} HidApiLike */
 /** @typedef {{ navigator?: { hid?: HidApiLike } }} HidNavigatorLike */
 /** @typedef {{ type: 'button', index: number, value: number }} ButtonCapture */
@@ -277,24 +277,39 @@ async function requestAndOpenJoyConDevices(state, disposers) {
   });
 
   for (const device of devices) {
-    if (!device) {
-      continue;
-    }
-
-    if (typeof device.open === 'function' && !device.opened) {
-      await device.open();
-    }
-
-    if (!state.hidDevices.includes(device)) {
-      state.hidDevices.push(device);
-    }
-
-    logHidDeviceEvent('connected', device);
-    attachHidDeviceListener(state, disposers, device);
+    await openGrantedJoyConDevice(state, disposers, device);
   }
 
   renderPrompt(state);
   renderMeta(state);
+}
+
+/**
+ * Open and wire a single granted Joy-Con device.
+ * @param {MapperState} state
+ *   Current Joy-Con mapper runtime state.
+ * @param {Array<() => void>} disposers
+ *   Cleanup callbacks for the mapper lifecycle.
+ * @param {HidDeviceLike | null | undefined} device
+ *   Granted HID device.
+ * @returns {Promise<void>}
+ *   Resolves after the device has been opened and tracked.
+ */
+async function openGrantedJoyConDevice(state, disposers, device) {
+  if (!device) {
+    return;
+  }
+
+  if (typeof device.open === 'function' && !device.opened) {
+    await device.open();
+  }
+
+  if (!state.hidDevices.includes(device)) {
+    state.hidDevices.push(device);
+  }
+
+  logHidDeviceEvent('connected', device);
+  attachHidDeviceListener(state, disposers, device);
 }
 
 /**
@@ -360,7 +375,10 @@ function updateHidSnapshot(state, snapshot) {
  *   True when the snapshots match.
  */
 function sameHidSnapshot(left, right) {
-  return sameButtonSnapshots(left.buttons, right.buttons) && sameNumberArray(left.axes, right.axes);
+  return (
+    sameButtonSnapshots(left.buttons, right.buttons) &&
+    sameNumberArray(left.axes, right.axes)
+  );
 }
 
 /**
@@ -399,7 +417,10 @@ function sameButtonSnapshot(left, right) {
  *   True when the arrays match.
  */
 function sameNumberArray(left, right) {
-  return left.length === right.length && left.every((value, index) => value === right[index]);
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  );
 }
 
 /**

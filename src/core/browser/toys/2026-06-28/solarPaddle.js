@@ -1,6 +1,5 @@
 // @ts-nocheck
 /* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns, no-ternary, complexity, no-unused-vars */
-// jscpd:ignore-start
 import { parseJsonOrNull } from '../../../commonCore.js';
 import { normalizePositiveInteger } from '../../common.js';
 
@@ -45,10 +44,10 @@ const EDGE_THRESHOLD = 0.4;
  */
 
 /**
- * Build a Solar Paddle canvas payload from the current input and persisted state.
- * @param {string} input Raw JSON input payload.
- * @param {{ get?: (name: string) => unknown }} env Toy environment helpers.
- * @returns {string} JSON canvas payload for the canvas presenter.
+ * Solar Paddle.
+ * @param {unknown} input Parameter.
+ * @param {unknown} env Parameter.
+ * @returns {unknown} Return value.
  */
 export function solarPaddle(input, env) {
   const storage = getStorageAccessor(env);
@@ -60,8 +59,9 @@ export function solarPaddle(input, env) {
 }
 
 /**
- *
- * @param env
+ * Get Storage Accessor.
+ * @param {unknown} env Parameter.
+ * @returns {unknown} Return value.
  */
 function getStorageAccessor(env) {
   if (!env || typeof env.get !== 'function') {
@@ -132,18 +132,20 @@ function buildNextState(persisted, input) {
     stepSimulation(withInput);
   }
   if (inputState.edgeActions.resetPressed) {
-    return createSeedState({
-      ...input,
-      layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
-    },
-    persisted
-      ? {
-          width: persisted.width,
-          height: persisted.height,
-          lives: persisted.lives,
-          layoutSeed: persisted.layoutSeed,
-        }
-      : undefined);
+    return createSeedState(
+      {
+        ...input,
+        layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
+      },
+      persisted
+        ? {
+            width: persisted.width,
+            height: persisted.height,
+            lives: persisted.lives,
+            layoutSeed: persisted.layoutSeed,
+          }
+        : undefined
+    );
   }
 
   return withInput;
@@ -547,6 +549,7 @@ function normalizePanelsFromState(value) {
  *
  * @param width
  * @param height
+ * @param seed
  */
 function normalizePanels(width, height, seed = 1) {
   const panelWidth = 28;
@@ -574,6 +577,13 @@ function normalizePanels(width, height, seed = 1) {
   return rows;
 }
 
+/**
+ *
+ * @param width
+ * @param height
+ * @param panelWidth
+ * @param panelHeight
+ */
 function buildPanelPositions(width, height, panelWidth, panelHeight) {
   const yPositions = [PANEL_TOP, PANEL_TOP + 16, PANEL_TOP + 32];
   const xPositions = [
@@ -584,17 +594,35 @@ function buildPanelPositions(width, height, panelWidth, panelHeight) {
     Math.max(PANEL_LEFT + 80, Math.round(width * 0.72)),
   ];
   return yPositions.flatMap((y, rowIndex) =>
-    xPositions.map((x, colIndex) => ({
-      x: clamp(
-        x + (rowIndex === 1 ? 12 : rowIndex === 2 ? -8 : 0) + (colIndex % 2 === 0 ? 0 : 6),
-        PANEL_LEFT,
-        width - panelWidth - PANEL_LEFT
-      ),
-      y: clamp(y + (colIndex % 3 === 0 ? 0 : 2), PANEL_TOP, height - panelHeight - 60),
-    }))
+    xPositions.map((x, colIndex) => {
+      let rowOffset = 0;
+      if (rowIndex === 1) {
+        rowOffset = 12;
+      } else if (rowIndex === 2) {
+        rowOffset = -8;
+      }
+
+      return {
+        x: clamp(
+          x + rowOffset + (colIndex % 2 === 0 ? 0 : 6),
+          PANEL_LEFT,
+          width - panelWidth - PANEL_LEFT
+        ),
+        y: clamp(
+          y + (colIndex % 3 === 0 ? 0 : 2),
+          PANEL_TOP,
+          height - panelHeight - 60
+        ),
+      };
+    })
   );
 }
 
+/**
+ *
+ * @param positions
+ * @param seed
+ */
 function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = seed || 1;

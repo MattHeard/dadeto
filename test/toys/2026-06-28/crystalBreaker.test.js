@@ -1,7 +1,12 @@
-/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
 import { describe, expect, it, jest } from '@jest/globals';
 import { crystalBreaker } from '../../../src/core/browser/toys/2026-06-28/crystalBreaker.js';
 
+/**
+ * Runs the crystal breaker toy with a mocked storage accessor.
+ * @param {string} input Raw toy input.
+ * @param {{ current: Record<string, unknown> | null }} storageValue Storage wrapper.
+ * @returns {{ payload: Record<string, unknown>, storageValue: { current: Record<string, unknown> | null }, setLocalPermanentData: ReturnType<typeof jest.fn> }} Render result.
+ */
 function runToy(input, storageValue = { current: null }) {
   const setLocalPermanentData = jest.fn(next => {
     storageValue.current = { ...(storageValue.current || {}), ...next };
@@ -14,7 +19,9 @@ function runToy(input, storageValue = { current: null }) {
 
 describe('crystalBreaker', () => {
   it('renders an initial scene with HUD text and persists state under CRYS1', () => {
-    const { payload, storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
+    const { payload, storageValue } = runToy(
+      JSON.stringify({ width: 240, height: 160 })
+    );
     expect(payload.width).toBe(240);
     expect(payload.height).toBe(160);
     expect(payload.shapes.some(shape => shape.type === 'text')).toBe(true);
@@ -31,7 +38,10 @@ describe('crystalBreaker', () => {
 
   it('moves paddle with held input', () => {
     const storageValue = { current: null };
-    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowRight' }), storageValue);
+    runToy(
+      JSON.stringify({ type: 'keydown', key: 'ArrowRight' }),
+      storageValue
+    );
     const next = runToy('{}', storageValue);
     expect(next.storageValue.current.CRYS1.paddle.x).toBeGreaterThan(100);
   });
@@ -71,12 +81,36 @@ describe('crystalBreaker', () => {
           input: {
             keyboard: {},
             gamepad: { buttons: [], axes: [] },
-            actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
-            previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
           },
           paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
           orb: { x: 40, y: 36, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-          crystals: [{ id: 'crystal-1', x: 32, y: 32, width: 24, height: 14, hp: 2, maxHp: 2, fracture: 0, state: 'whole' }],
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 14,
+              hp: 2,
+              maxHp: 2,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
         },
       },
     };

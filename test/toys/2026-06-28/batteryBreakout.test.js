@@ -1,7 +1,12 @@
-/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
 import { describe, expect, it, jest } from '@jest/globals';
 import { batteryBreakout } from '../../../src/core/browser/toys/2026-06-28/batteryBreakout.js';
 
+/**
+ * Runs the battery breakout toy with a mocked storage accessor.
+ * @param {string} input Raw toy input.
+ * @param {{ current: Record<string, unknown> | null }} storageValue Storage wrapper.
+ * @returns {{ payload: Record<string, unknown>, storageValue: { current: Record<string, unknown> | null }, setLocalPermanentData: ReturnType<typeof jest.fn> }} Render result.
+ */
 function runToy(input, storageValue = { current: null }) {
   const setLocalPermanentData = jest.fn(next => {
     storageValue.current = { ...(storageValue.current || {}), ...next };
@@ -14,7 +19,9 @@ function runToy(input, storageValue = { current: null }) {
 
 describe('batteryBreakout', () => {
   it('renders an initial scene and persists state under BATT4', () => {
-    const { payload, storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
+    const { payload, storageValue } = runToy(
+      JSON.stringify({ width: 240, height: 160 })
+    );
     expect(payload.width).toBe(240);
     expect(payload.height).toBe(160);
     expect(payload.shapes.some(shape => shape.type === 'circle')).toBe(true);
@@ -24,6 +31,20 @@ describe('batteryBreakout', () => {
       )
     ).toBe(false);
     expect(storageValue.current.BATT4.version).toBe(1);
+  });
+
+  it('falls back when storage access is unavailable', () => {
+    const payload = JSON.parse(batteryBreakout('{}', new Map()));
+
+    expect(payload.width).toBeGreaterThan(0);
+    expect(payload.shapes.some(shape => shape.type === 'circle')).toBe(true);
+  });
+
+  it('parses invalid input as null and keeps the seed state', () => {
+    const { storageValue } = runToy('   ');
+
+    expect(storageValue.current.BATT4.width).toBe(360);
+    expect(storageValue.current.BATT4.status).toBe('ready');
   });
 
   it('launches on space and keeps launch edge-triggered', () => {
@@ -36,7 +57,10 @@ describe('batteryBreakout', () => {
 
   it('moves paddle with held input', () => {
     const storageValue = { current: null };
-    runToy(JSON.stringify({ type: 'keydown', key: 'ArrowRight' }), storageValue);
+    runToy(
+      JSON.stringify({ type: 'keydown', key: 'ArrowRight' }),
+      storageValue
+    );
     const next = runToy('{}', storageValue);
     expect(next.storageValue.current.BATT4.paddle.x).toBeGreaterThan(100);
   });
@@ -50,8 +74,48 @@ describe('batteryBreakout', () => {
     expect(storageValue.current.BATT4.orb.vy).toBe(-1);
   });
 
+  it('falls back through the normalization branches for malformed state', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 'x',
+          height: null,
+          frame: -1,
+          status: 'broken',
+          score: 'x',
+          lives: 'x',
+          faults: 'x',
+          input: {
+            keyboard: null,
+            gamepad: null,
+            actions: null,
+            previousActions: null,
+          },
+          paddle: null,
+          orb: null,
+          cells: null,
+        },
+      },
+    };
+
+    runToy('not json', storageValue);
+
+    expect(storageValue.current.BATT4.width).toBe(360);
+    expect(storageValue.current.BATT4.height).toBe(240);
+    expect(storageValue.current.BATT4.status).toBe('ready');
+    expect(storageValue.current.BATT4.input.keyboard).toEqual({});
+    expect(storageValue.current.BATT4.input.gamepad.buttons).toEqual([]);
+    expect(storageValue.current.BATT4.input.actions.moveLeft).toBe(false);
+    expect(storageValue.current.BATT4.paddle.width).toBe(48);
+    expect(storageValue.current.BATT4.orb.radius).toBe(4);
+    expect(storageValue.current.BATT4.cells).toHaveLength(9);
+  });
+
   it('uses a staggered default cell layout', () => {
-    const { storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
+    const { storageValue } = runToy(
+      JSON.stringify({ width: 240, height: 160 })
+    );
     const cells = storageValue.current.BATT4.cells;
     expect(cells).toHaveLength(9);
     expect(new Set(cells.map(cell => `${cell.x},${cell.y}`)).size).toBe(9);
@@ -95,15 +159,47 @@ describe('batteryBreakout', () => {
           score: 2,
           lives: 1,
           faults: 2,
-          input: { keyboard: {}, gamepad: { buttons: [], axes: [] }, actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false }, previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false } },
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
           paddle: { x: 10, y: 114, width: 48, height: 6, speed: 4 },
           orb: { x: 44, y: 37, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-          cells: [{ id: 'cell-1', x: 32, y: 32, width: 24, height: 10, charge: 3, targetCharge: 2, maxCharge: 3, state: 'overcharged' }],
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 3,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'overcharged',
+            },
+          ],
         },
       },
     };
 
-    const next = runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+    const next = runToy(
+      JSON.stringify({ type: 'keydown', key: 'r' }),
+      storageValue
+    );
 
     expect(next.storageValue.current.BATT4.status).toBe('ready');
     expect(next.storageValue.current.BATT4.score).toBe(0);
@@ -124,10 +220,39 @@ describe('batteryBreakout', () => {
           score: 0,
           lives: 3,
           faults: 0,
-          input: { keyboard: {}, gamepad: { buttons: [], axes: [] }, actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false }, previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false } },
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
           paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
           orb: { x: 44, y: 37, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-          cells: [{ id: 'cell-1', x: 32, y: 32, width: 24, height: 10, charge: 1, targetCharge: 2, maxCharge: 3, state: 'charging' }],
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 1,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'charging',
+            },
+          ],
         },
       },
     };
@@ -314,14 +439,98 @@ describe('batteryBreakout', () => {
           score: 0,
           lives: 3,
           faults: 4,
-          input: { keyboard: {}, gamepad: { buttons: [], axes: [] }, actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false }, previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false } },
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
           paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
           orb: { x: 44, y: 37, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
-          cells: [{ id: 'cell-1', x: 32, y: 32, width: 24, height: 10, charge: 3, targetCharge: 4, maxCharge: 3, state: 'charging' }],
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 3,
+              targetCharge: 4,
+              maxCharge: 3,
+              state: 'charging',
+            },
+          ],
         },
       },
     };
     const next = runToy('{}', storageValue);
     expect(next.storageValue.current.BATT4.status).toBe('lost');
+  });
+
+  it('bounces off walls and the paddle', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 4, y: 4, vx: -3, vy: -3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    const next = runToy('{}', storageValue);
+
+    expect(next.storageValue.current.BATT4.orb.vx).toBeGreaterThan(0);
+    expect(next.storageValue.current.BATT4.orb.vy).toBeGreaterThan(0);
   });
 });

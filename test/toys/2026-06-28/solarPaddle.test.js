@@ -71,12 +71,12 @@ describe('solarPaddle', () => {
   });
 
   it('uses a staggered default panel layout', () => {
-    const { storageValue } = runToy(JSON.stringify({ width: 240, height: 160 }));
+    const { storageValue } = runToy(
+      JSON.stringify({ width: 240, height: 160 })
+    );
     const panels = storageValue.current.SOLA1.panels;
     expect(panels).toHaveLength(12);
-    expect(new Set(panels.map(panel => `${panel.x},${panel.y}`)).size).toBe(
-      12
-    );
+    expect(new Set(panels.map(panel => `${panel.x},${panel.y}`)).size).toBe(12);
     expect(new Set(panels.map(panel => panel.y)).size).toBeGreaterThan(1);
   });
 

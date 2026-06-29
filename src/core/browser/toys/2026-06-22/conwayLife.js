@@ -1,5 +1,13 @@
-import { parseJsonOrNull } from '../../../commonCore.js';
+import {
+  createRectShape,
+  getStorageAccessor,
+  parseInput,
+  persistState,
+  readPersistedState,
+} from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
+
+const LIFE_RENDER_MODE = 'toroidal';
 
 /**
  * @typedef {{ x: number, y: number }} LifeCell
@@ -40,55 +48,11 @@ const DEFAULT_SEED = [
  */
 export function conwayLife(input, env) {
   const storage = getStorageAccessor(env);
-  const persisted = readPersistedState(storage);
+  const persisted = readPersistedState(storage, STORAGE_KEY, normalizeState);
   const parsed = parseInput(input);
   const state = buildNextState(persisted, parsed);
-  persistState(storage, state);
+  persistState(storage, STORAGE_KEY, state, serializeState);
   return JSON.stringify(toCanvasPayload(state));
-}
-
-/**
- * Resolve the persistence accessor from the toy environment.
- * @param {{ get?: (name: string) => unknown }} env Toy environment helpers.
- * @returns {((value: Record<string, unknown>) => unknown) | null} Persistence setter or null.
- */
-function getStorageAccessor(env) {
-  if (!env || typeof env.get !== 'function') {
-    return null;
-  }
-
-  const setter = env.get('setLocalPermanentData');
-  if (typeof setter === 'function') {
-    return /** @type {(value: Record<string, unknown>) => unknown} */ (setter);
-  }
-
-  return null;
-}
-
-/**
- * Read and normalize persisted state from storage.
- * @param {((value: Record<string, unknown>) => unknown) | null} storage Persistence setter.
- * @returns {LifeState | null} Normalized stored state.
- */
-function readPersistedState(storage) {
-  if (!storage) {
-    return null;
-  }
-
-  return normalizeState(parseObjectRecord(storage({})));
-}
-
-/**
- * Parse a raw input payload into an object record.
- * @param {string} input Raw JSON input.
- * @returns {Record<string, unknown> | null} Parsed object or null.
- */
-function parseInput(input) {
-  if (typeof input !== 'string' || input.trim() === '') {
-    return null;
-  }
-
-  return parseObjectRecord(input);
 }
 
 /**
@@ -228,28 +192,6 @@ function normalizeTickSpeedMs(value) {
     MAX_TICK_SPEED_MS,
     Math.max(MIN_TICK_SPEED_MS, Math.round(next))
   );
-}
-
-/**
- * Parse raw JSON or a parsed object into a record.
- * @param {unknown} value Raw JSON or parsed payload.
- * @returns {Record<string, unknown> | null} Parsed object payload.
- */
-function parseObjectRecord(value) {
-  if (typeof value === 'string') {
-    const parsed = parseJsonOrNull(value);
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return /** @type {Record<string, unknown>} */ (parsed);
-    }
-
-    return null;
-  }
-
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return /** @type {Record<string, unknown>} */ (value);
-  }
-
-  return null;
 }
 
 /**
@@ -396,73 +338,113 @@ function toCanvasPayload(state) {
  * @returns {Record<string, unknown>} Background shape.
  */
 function createBackdropShape(width, height) {
+  let fill = '#111827';
+  if (LIFE_RENDER_MODE === 'toroidal') {
+    fill = '#0f172a';
+  }
+  return createRectShape({ x: 0, y: 0, width, height, fill });
+}
+
+/**
+ * Serialize the current life state into the persisted storage shape.
+ * @param {LifeState} state State to serialize.
+ * @returns {{
+ *   width: number,
+ *   height: number,
+ *   cols: number,
+ *   rows: number,
+ *   tickSpeedMs: number,
+ *   framesPerTick: number,
+ *   framesUntilTick: number,
+ *   generation: number,
+ *   cells: Array<[number, number]>,
+ * }} Persisted payload.
+ */
+function serializeState(state) {
   return {
-    type: 'rect',
-    x: 0,
-    y: 0,
-    width,
-    height,
-    fill: '#0f172a',
+    width: state.width,
+    height: state.height,
+    cols: state.cols,
+    rows: state.rows,
+    tickSpeedMs: state.tickSpeedMs,
+    framesPerTick: state.framesPerTick,
+    framesUntilTick: state.framesUntilTick,
+    generation: state.generation,
+    cells: state.cells.map(serializeCell),
   };
 }
 
 /**
- * Persist the current state when storage is available.
- * @param {((value: Record<string, unknown>) => unknown) | null} storage Persistence setter.
- * @param {LifeState} state State to persist.
- * @returns {void}
+ * Serialize a single cell for persistence.
+ * @param {LifeCell} cell Cell to serialize.
+ * @returns {[number, number]} Persisted cell pair.
  */
-function persistState(storage, state) {
-  if (!storage) {
-    return;
-  }
-
-  try {
-    storage({
-      [STORAGE_KEY]: {
-        width: state.width,
-        height: state.height,
-        cols: state.cols,
-        rows: state.rows,
-        tickSpeedMs: state.tickSpeedMs,
-        framesPerTick: state.framesPerTick,
-        framesUntilTick: state.framesUntilTick,
-        generation: state.generation,
-        cells: state.cells.map(cell => [cell.x, cell.y]),
-      },
-    });
-  } catch {
-    // Ignore persistence errors and keep the current frame render.
-  }
+function serializeCell(cell) {
+  return [cell.x, cell.y];
 }
 
 /**
  * Normalize a persisted state payload.
- * @param {Record<string, unknown> | null | undefined} data Stored data.
+ * @param {unknown} data Stored data.
  * @returns {LifeState | null} Normalized state or null.
  */
 function normalizeState(data) {
-  const stored = data?.[STORAGE_KEY];
-  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return null;
   }
-  const candidate = /** @type {Record<string, unknown>} */ (stored);
+  const candidate = getStoredLifeCandidate(
+    /** @type {Record<string, unknown>} */ (data)
+  );
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+    return null;
+  }
+  return normalizeStoredLifeCandidate(candidate);
+}
+
+/**
+ * Resolve the stored life candidate from either the wrapped or raw persistence shape.
+ * @param {Record<string, unknown>} data Stored data.
+ * @returns {Record<string, unknown> | null} Stored life record.
+ */
+function getStoredLifeCandidate(data) {
+  if (STORAGE_KEY in data) {
+    const stored = /** @type {Record<string, unknown>} */ (data)[STORAGE_KEY];
+    if (stored) {
+      return /** @type {Record<string, unknown>} */ (stored);
+    }
+    return null;
+  }
+
+  return /** @type {Record<string, unknown>} */ (data);
+}
+
+/**
+ * Normalize a persisted life candidate into a stored state.
+ * @param {Record<string, unknown>} candidate Persisted candidate record.
+ * @returns {LifeState} Normalized stored state.
+ */
+function normalizeStoredLifeCandidate(candidate) {
   const width = normalizePositiveInteger(candidate.width, DEFAULT_WIDTH);
   const height = normalizePositiveInteger(candidate.height, DEFAULT_HEIGHT);
   const cols = normalizePositiveInteger(candidate.cols, DEFAULT_COLS);
   const rows = normalizePositiveInteger(candidate.rows, DEFAULT_ROWS);
   const tickSpeedMs = normalizeTickSpeedMs(candidate.tickSpeedMs);
-  const framesPerTick = Math.max(
-    1,
-    normalizePositiveInteger(
-      candidate.framesPerTick,
-      Math.round(tickSpeedMs / 16)
-    )
+  const framesPerTickRaw = normalizePositiveInteger(
+    candidate.framesPerTick,
+    Math.round(tickSpeedMs / 16)
   );
-  const framesUntilTick = Math.max(
-    1,
-    normalizePositiveInteger(candidate.framesUntilTick, framesPerTick)
+  let framesPerTick = framesPerTickRaw;
+  if (framesPerTick < 1) {
+    framesPerTick = 1;
+  }
+  const framesUntilTickRaw = normalizePositiveInteger(
+    candidate.framesUntilTick,
+    framesPerTick
   );
+  let framesUntilTick = framesUntilTickRaw;
+  if (framesUntilTick < 1) {
+    framesUntilTick = 1;
+  }
   const generation = normalizePositiveInteger(candidate.generation, 0);
 
   return createStoredLifeState({
