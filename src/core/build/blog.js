@@ -133,16 +133,24 @@ function isCorrectJsFileEnding(entryName) {
 /**
  * Create copy plans mapping source JS files to their destinations.
  * @param {string[]} files Source file paths.
- * @param {{ sourceRoot: string, destinationRoot: string }} roots Source and destination roots.
- * @param {(from: string, to: string) => string} join Path join helper.
- * @param {(from: string, to: string) => string} relative Path relative helper.
+ * @param {string} sourceRoot Root of the source directory.
+ * @param {string} destinationRoot Root of the destination directory.
+ * @param {{ join: (from: string, to: string) => string, relative: (from: string, to: string) => string }} [pathHelpers]
+ *   Path helper bundle.
  * @returns {Array<{ source: string, destination: string }>} Copy instructions.
  */
-function createCopyPairs(files, roots, join, relative) {
-  const { sourceRoot, destinationRoot } = roots;
+function createCopyPairs(
+  files,
+  sourceRoot,
+  destinationRoot,
+  pathHelpers = path
+) {
   return files.map(filePath => ({
     source: filePath,
-    destination: join(destinationRoot, relative(sourceRoot, filePath)),
+    destination: pathHelpers.join(
+      destinationRoot,
+      pathHelpers.relative(sourceRoot, filePath)
+    ),
   }));
 }
 
