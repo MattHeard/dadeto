@@ -65,7 +65,10 @@ function getStorageAccessor(env) {
   }
 
   const setter = env.get('setLocalPermanentData');
-  return typeof setter === 'function' ? setter : null;
+  if (typeof setter === 'function') {
+    return setter;
+  }
+  return null;
 }
 
 /**
@@ -119,7 +122,7 @@ function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
-  const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
+  const merged = buildMergedState(shouldReset, base, seed);
   const inputState = updateInputState(base.input, input);
   const withInput = finalizeNextState(merged, base.frame, inputState);
 
@@ -128,6 +131,20 @@ function buildNextState(persisted, input) {
   }
 
   return withInput;
+}
+
+/**
+ * Build the merged state for this step.
+ * @param {boolean} shouldReset Whether to reset.
+ * @param {PaddleState} base Base state.
+ * @param {PaddleState} seed Seed state.
+ * @returns {PaddleState} Merged state.
+ */
+function buildMergedState(shouldReset, base, seed) {
+  if (shouldReset) {
+    return seed;
+  }
+  return mergeSeedAndState(base, seed);
 }
 
 /**
@@ -159,15 +176,27 @@ function finalizeNextState(merged, frame, inputState) {
  */
 function createResetSeedState(input, persisted) {
   const layoutSeed = (persisted?.layoutSeed ?? 0) + 1;
-  const fallback = persisted
-    ? {
-        width: persisted.width,
-        height: persisted.height,
-        lives: persisted.lives,
-        layoutSeed: persisted.layoutSeed,
-      }
-    : undefined;
-  return createSeedState({ ...input, layoutSeed }, fallback);
+  return createSeedState(
+    { ...input, layoutSeed },
+    buildResetFallback(persisted)
+  );
+}
+
+/**
+ * Build reset fallback values.
+ * @param {PaddleState | null} persisted Persisted state.
+ * @returns {object|undefined} Fallback values.
+ */
+function buildResetFallback(persisted) {
+  if (!persisted) {
+    return undefined;
+  }
+  return {
+    width: persisted.width,
+    height: persisted.height,
+    lives: persisted.lives,
+    layoutSeed: persisted.layoutSeed,
+  };
 }
 
 /**
@@ -443,9 +472,10 @@ function normalizeState(value) {
  * @returns {PaddleState['status']} Normalized status.
  */
 function normalizeStatus(value) {
-  return ['ready', 'running', 'paused', 'won', 'lost'].includes(value)
-    ? /** @type {PaddleState['status']} */ (value)
-    : 'ready';
+  if (['ready', 'running', 'paused', 'won', 'lost'].includes(value)) {
+    return /** @type {PaddleState['status']} */ (value);
+  }
+  return 'ready';
 }
 
 /**
@@ -491,13 +521,33 @@ function normalizeGamepadState(value) {
 
   const record = /** @type {Record<string, unknown>} */ (value);
   return {
-    buttons: Array.isArray(record.buttons)
-      ? record.buttons.map(next => next === true)
-      : [],
-    axes: Array.isArray(record.axes)
-      ? record.axes.map(next => Number(next) || 0)
-      : [],
+    buttons: normalizeGamepadButtons(record.buttons),
+    axes: normalizeGamepadAxes(record.axes),
   };
+}
+
+/**
+ * Normalize gamepad buttons.
+ * @param {unknown} value Raw buttons.
+ * @returns {boolean[]} Buttons.
+ */
+function normalizeGamepadButtons(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map(next => next === true);
+}
+
+/**
+ * Normalize gamepad axes.
+ * @param {unknown} value Raw axes.
+ * @returns {number[]} Axes.
+ */
+function normalizeGamepadAxes(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map(next => Number(next) || 0);
 }
 
 /**
@@ -621,7 +671,10 @@ function normalizeOrb(value) {
  */
 function normalizeNumber(value, fallback) {
   const next = Number(value);
-  return Number.isFinite(next) && next !== 0 ? next : fallback;
+  if (Number.isFinite(next) && next !== 0) {
+    return next;
+  }
+  return fallback;
 }
 
 /**
@@ -665,17 +718,38 @@ function normalizePanelsFromState(value) {
 
   return value
     .filter(panel => panel && typeof panel === 'object')
-    .map((panel, index) => {
-      const record = /** @type {Record<string, unknown>} */ (panel);
-      return {
-        id: typeof record.id === 'string' ? record.id : `p${index + 1}`,
-        x: Number(record.x) || 0,
-        y: Number(record.y) || 0,
-        width: normalizePositiveInteger(record.width, 20),
-        height: normalizePositiveInteger(record.height, 10),
-        charge: record.charge === true,
-      };
-    });
+    .map(normalizePanelFromState);
+}
+
+/**
+ * Normalize a persisted panel entry.
+ * @param {unknown} panel Panel value.
+ * @param {number} index Panel index.
+ * @returns {PaddlePanel} Normalized panel.
+ */
+function normalizePanelFromState(panel, index) {
+  const record = /** @type {Record<string, unknown>} */ (panel);
+  return {
+    id: getPanelId(record.id, index),
+    x: Number(record.x) || 0,
+    y: Number(record.y) || 0,
+    width: normalizePositiveInteger(record.width, 20),
+    height: normalizePositiveInteger(record.height, 10),
+    charge: record.charge === true,
+  };
+}
+
+/**
+ * Get a panel id.
+ * @param {unknown} value Panel id value.
+ * @param {number} index Panel index.
+ * @returns {string} Panel id.
+ */
+function getPanelId(value, index) {
+  if (typeof value === 'string') {
+    return value;
+  }
+  return `p${index + 1}`;
 }
 
 /**
@@ -739,18 +813,42 @@ function buildPanelPositions(width, height, panelWidth, panelHeight) {
 
       return {
         x: clamp(
-          x + rowOffset + (colIndex % 2 === 0 ? 0 : 6),
+          x + rowOffset + getPanelColumnOffset(colIndex),
           PANEL_LEFT,
           width - panelWidth - PANEL_LEFT
         ),
         y: clamp(
-          y + (colIndex % 3 === 0 ? 0 : 2),
+          y + getPanelRowOffset(colIndex),
           PANEL_TOP,
           height - panelHeight - 60
         ),
       };
     })
   );
+}
+
+/**
+ * Get panel column offset.
+ * @param {number} colIndex Column index.
+ * @returns {number} Column offset.
+ */
+function getPanelColumnOffset(colIndex) {
+  if (colIndex % 2 === 0) {
+    return 0;
+  }
+  return 6;
+}
+
+/**
+ * Get panel row offset.
+ * @param {number} colIndex Column index.
+ * @returns {number} Row offset.
+ */
+function getPanelRowOffset(colIndex) {
+  if (colIndex % 3 === 0) {
+    return 0;
+  }
+  return 2;
 }
 
 /**
@@ -991,7 +1089,7 @@ function applyGameplayInput(state, inputState) {
  * @returns {void}
  */
 function movePaddle(state, actions) {
-  const delta = (actions.right ? 1 : 0) - (actions.left ? 1 : 0);
+  const delta = Number(actions.right) - Number(actions.left);
   state.paddle.x = Math.round(
     clamp(
       state.paddle.x + delta * state.paddle.speed,
@@ -1103,7 +1201,10 @@ function getPanelCollisionAxis(orb, panel) {
   const overlapX = orb.radius + panel.width / 2 - Math.abs(dx);
   const overlapY = orb.radius + panel.height / 2 - Math.abs(dy);
 
-  return overlapX < overlapY ? 'x' : 'y';
+  if (overlapX < overlapY) {
+    return 'x';
+  }
+  return 'y';
 }
 
 /**
@@ -1243,7 +1344,7 @@ function toCanvasPayload(state) {
       y: panel.y,
       width: panel.width,
       height: panel.height,
-      fill: panel.charge ? '#1d4ed8' : '#7dd3fc',
+      fill: getPanelFill(panel.charge),
     })),
     {
       type: 'rect',
@@ -1258,7 +1359,7 @@ function toCanvasPayload(state) {
       x: Math.round(state.orb.x),
       y: Math.round(state.orb.y),
       radius: state.orb.radius,
-      fill: state.status === 'lost' ? '#f87171' : '#fbbf24',
+      fill: getOrbFill(state.status),
     },
     {
       type: 'rect',
@@ -1275,6 +1376,30 @@ function toCanvasPayload(state) {
     height: state.height,
     shapes,
   };
+}
+
+/**
+ * Get a panel fill color.
+ * @param {boolean} charge Panel charge state.
+ * @returns {string} Fill color.
+ */
+function getPanelFill(charge) {
+  if (charge) {
+    return '#1d4ed8';
+  }
+  return '#7dd3fc';
+}
+
+/**
+ * Get the orb fill color.
+ * @param {PaddleState['status']} status Current status.
+ * @returns {string} Fill color.
+ */
+function getOrbFill(status) {
+  if (status === 'lost') {
+    return '#f87171';
+  }
+  return '#fbbf24';
 }
 
 /**
