@@ -1,6 +1,7 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import {
   buildGraphPlotPayload,
+  buildGraphPlotFromJson,
   createGraphPlotFallbackPayload,
   normalizeGraphPlotPayload,
   parseGraphPlot,
@@ -86,6 +87,81 @@ describe('graphPlotCore', () => {
     expect(buildGraphPlotPayload(normalized).points).toEqual([]);
   });
 
+  test('normalizes non-array series into the fallback empty list', () => {
+    const normalized = normalizeGraphPlotPayload(
+      {
+        expression: 'x',
+        width: 24,
+        height: 24,
+        xMin: -1,
+        xMax: 1,
+        yMin: -1,
+        yMax: 1,
+        background: '#fff',
+        axesColor: '#000',
+        gridColor: '#ccc',
+        lineColor: '#f00',
+        series: { lineColor: '#00f' },
+      },
+      () => 0.5
+    );
+
+    expect(normalized.series).toEqual([]);
+  });
+
+  test('falls back for invalid number and string fields', () => {
+    const normalized = normalizeGraphPlotPayload(
+      {
+        expression: '',
+        width: Number.NaN,
+        height: Number.POSITIVE_INFINITY,
+        xMin: Number.NaN,
+        xMax: Number.NaN,
+        yMin: Number.NaN,
+        yMax: Number.NaN,
+        background: '',
+        axesColor: '',
+        gridColor: '',
+        lineColor: '',
+      },
+      () => 0.5
+    );
+
+    expect(normalized).toMatchObject({
+      expression: 'Math.sin(x)',
+      background: '#faf8f4',
+      axesColor: '#111827',
+      gridColor: '#d1d5db',
+      lineColor: '#2563eb',
+    });
+    expect(normalized.width).toBeGreaterThan(0);
+    expect(normalized.height).toBeGreaterThan(0);
+  });
+
+  test('keeps a non-empty series list on the payload', () => {
+    const normalized = normalizeGraphPlotPayload(
+      {
+        expression: 'x',
+        width: 24,
+        height: 24,
+        xMin: -1,
+        xMax: 1,
+        yMin: -1,
+        yMax: 1,
+        background: '#fff',
+        axesColor: '#000',
+        gridColor: '#ccc',
+        lineColor: '#f00',
+        series: [{ lineColor: '#0f0', points: [{ x: 1, y: 2 }] }],
+      },
+      () => 0.5
+    );
+
+    expect(buildGraphPlotPayload(normalized).series).toEqual([
+      { lineColor: '#0f0', points: [{ x: 1, y: 2 }] },
+    ]);
+  });
+
   test('treats another invalid expression as producing no points', () => {
     const normalized = normalizeGraphPlotPayload(
       {
@@ -105,5 +181,16 @@ describe('graphPlotCore', () => {
     );
 
     expect(buildGraphPlotPayload(normalized).points).toEqual([]);
+  });
+
+  test('builds from fallback payload when JSON parsing fails', () => {
+    const getRandomNumber = jest.fn(() => 0.5);
+
+    const payload = buildGraphPlotFromJson('{', getRandomNumber);
+
+    expect(getRandomNumber).toHaveBeenCalledTimes(1);
+    expect(payload.type).toBe('graph-plot');
+    expect(payload.series).toBeUndefined();
+    expect(payload.points.length).toBeGreaterThan(0);
   });
 });
