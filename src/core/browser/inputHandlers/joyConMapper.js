@@ -433,7 +433,6 @@ function sameNumberArray(left, right) {
 function snapshotHidInputReport(event) {
   const bytes = Array.from(new Uint8Array(event.data.buffer));
   const buttons = bytes.length > 0 ? snapshotHidButtons(bytes[0]) : [];
-  /* c8 ignore next */
   const axes = bytes.length > 1 ? snapshotHidAxes(bytes.slice(1, 3)) : [];
   return { buttons, axes };
 }
@@ -481,7 +480,6 @@ function snapshotHidButtons(buttonByte) {
 function snapshotHidAxes(axisBytes) {
   return axisBytes.map(byte => {
     const normalized = Math.min(1, Math.max(-1, (byte - 128) / 128));
-    /* c8 ignore next */
     return Math.abs(normalized) < AXIS_THRESHOLD ? 0 : normalized;
   });
 }
