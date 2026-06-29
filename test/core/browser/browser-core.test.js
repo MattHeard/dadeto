@@ -55,6 +55,8 @@ describe('browser-core helpers', () => {
     );
     prefixedLoggers.logInfo('hello');
     expect(prefixedLoggers.logInfo).toEqual(expect.any(Function));
+    expect(prefixedLoggers.logError).toEqual(expect.any(Function));
+    expect(prefixedLoggers.logWarning).toEqual(expect.any(Function));
     expect(createPrefixedLogger(null, 'pfx')()).toBeUndefined();
   });
 
@@ -89,7 +91,13 @@ describe('browser-core helpers', () => {
       error: 'boom',
     });
     expect(returnErrorResultOrValue(null, () => 'fallback')).toBe('fallback');
-    expect(normalizeObjectOrFallback(null, () => ({ empty: true }), value => value)).toEqual({
+    expect(
+      normalizeObjectOrFallback(
+        null,
+        () => ({ empty: true }),
+        value => value
+      )
+    ).toEqual({
       empty: true,
     });
     expect(
@@ -157,6 +165,11 @@ describe('browser-core helpers', () => {
       removeItem: jest.fn(),
     };
     expect(getIdToken(storage)).toBe('token');
+    const originalSessionStorage = globalThis.sessionStorage;
+    globalThis.sessionStorage = {
+      getItem: jest.fn(() => 'session-token'),
+    };
+    expect(getIdToken()).toBe('session-token');
     const signOut = createGoogleSignOut({
       authSignOut: jest.fn(async () => {}),
       storage,
@@ -164,6 +177,7 @@ describe('browser-core helpers', () => {
     });
     await signOut();
     expect(storage.removeItem).toHaveBeenCalledWith('id_token');
+    globalThis.sessionStorage = originalSessionStorage;
   });
 
   test('stores, reads, and clears input values', () => {
@@ -208,12 +222,14 @@ describe('browser-core helpers', () => {
       a: { one: 1, two: 2 },
     });
     expect(deepMerge({ a: [1] }, { a: [2] })).toEqual({ a: [2] });
-    expect(createRemoveListener({
-      dom: { removeEventListener: jest.fn() },
-      el: {},
-      event: 'input',
-      handler: jest.fn(),
-    })).toEqual(expect.any(Function));
+    expect(
+      createRemoveListener({
+        dom: { removeEventListener: jest.fn() },
+        el: {},
+        event: 'input',
+        handler: jest.fn(),
+      })
+    ).toEqual(expect.any(Function));
     expect(areValidStrings('alpha', 'beta')).toBe(true);
   });
 
