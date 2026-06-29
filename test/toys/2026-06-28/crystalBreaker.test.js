@@ -942,6 +942,63 @@ describe('crystalBreaker', () => {
   });
 
   it('toggles pause and resumes from ready and running states', () => {
+    const readyStorage = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 1,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
+          orb: {
+            x: 60,
+            y: 103,
+            vx: 0,
+            vy: -2,
+            radius: 4,
+            stuckToPaddle: false,
+          },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 20,
+              y: 20,
+              width: 24,
+              height: 14,
+              hp: 1,
+              maxHp: 1,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+    runToy(JSON.stringify({ type: 'keydown', key: 'p' }), readyStorage);
+    expect(readyStorage.current.CRYS1.status).toBe('running');
+
     const runningStorage = {
       current: {
         CRYS1: {
