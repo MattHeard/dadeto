@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import {
   createRectShape,
   getStorageAccessor,
+  parseInput,
   parseObjectRecord,
   persistState,
   readPersistedState,
@@ -28,6 +29,12 @@ describe('toyPersistence', () => {
 
     persistState(setter, 'KEY', { value: 1 });
     expect(setter).toHaveBeenCalledWith({ KEY: { value: 1 } });
+
+    expect(
+      getStorageAccessor({
+        get: () => 'not a function',
+      })
+    ).toBeNull();
   });
 
   it('runs a toy with persisted state support', () => {
@@ -68,6 +75,45 @@ describe('toyPersistence', () => {
         }
       )
     ).toEqual({ value: 2 });
+  });
+
+  it('returns null when persistence is unavailable or malformed', () => {
+    const normalizeState = jest.fn(value =>
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? value
+        : null
+    );
+
+    expect(readPersistedState(null, 'KEY', normalizeState)).toBeNull();
+    expect(normalizeState).not.toHaveBeenCalled();
+    expect(readPersistedState(() => false, 'KEY', normalizeState)).toBeNull();
+    expect(normalizeState).not.toHaveBeenCalled();
+    expect(
+      readPersistedState(
+        () => ({ KEY: [1, 2, 3] }),
+        'KEY',
+        normalizeState
+      )
+    ).toBeNull();
+    expect(normalizeState).toHaveBeenCalledTimes(1);
+  });
+
+  it('persists serialized state when a serializer is provided', () => {
+    const storage = jest.fn();
+
+    persistState(storage, 'KEY', { value: 1 }, state => ({
+      wrapped: state,
+    }));
+
+    expect(storage).toHaveBeenCalledWith({
+      KEY: { wrapped: { value: 1 } },
+    });
+  });
+
+  it('parses nullish and blank input as missing', () => {
+    expect(parseObjectRecord(null)).toBeNull();
+    expect(parseObjectRecord('')).toBeNull();
+    expect(parseInput('   ')).toBeNull();
   });
 
   it('creates rectangle shapes', () => {

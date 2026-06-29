@@ -42,4 +42,12 @@ describe('inputValueStore', () => {
     expect(hasInputValue(element)).toBe(false);
     expect(getInputValue(element)).toBe('');
   });
+
+  it('treats undefined and nullish stored values as empty strings', () => {
+    const element = { value: 'live' };
+    setInputValue(element, undefined);
+    expect(getInputValue(element)).toBe('');
+    setInputValue(element, null);
+    expect(getInputValue(element)).toBe('');
+  });
 });
