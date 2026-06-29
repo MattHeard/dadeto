@@ -114,7 +114,7 @@ describe('textUtils', () => {
           sentenceCount: 2,
           longestSentence: { sentence: 'x', wordCount: 10 },
         })
-      ).toEqual(['1 words over. Cut 1 word.']);
+      ).toEqual(['1 word over. Cut 1 word.']);
 
       expect(
         generateFeedback({
@@ -124,7 +124,7 @@ describe('textUtils', () => {
           sentenceCount: 2,
           longestSentence: { sentence: 'x', wordCount: 1 },
         })
-      ).toEqual(['1 words under. Add 1 word.']);
+      ).toEqual(['1 word under. Add 1 word.']);
 
       expect(
         generateFeedback({

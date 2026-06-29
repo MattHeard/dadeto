@@ -1,5 +1,4 @@
 // @ts-nocheck
-/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns, no-ternary, complexity, no-unused-vars */
 import { parseJsonOrNull } from '../../../commonCore.js';
 import { normalizePositiveInteger } from '../../common.js';
 

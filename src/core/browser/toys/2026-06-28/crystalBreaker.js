@@ -1,5 +1,4 @@
 // @ts-nocheck
-/* eslint-disable no-ternary, complexity */
 import {
   createBackgroundShape,
   createRectShape,

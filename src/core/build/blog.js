@@ -139,7 +139,6 @@ export function createConsoleMessageLogger(consoleLike) {
  * @param {string} options.srcDir - Source directory.
  * @returns {Record<string, Function>} Copy helper functions.
  */
-// eslint-disable-next-line max-lines-per-function
 export function createCopyCore({
   console: defaultConsole,
   createFsAdapters,

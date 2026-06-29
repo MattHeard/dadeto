@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-returns, jsdoc/require-param-description, complexity, no-ternary */
 /**
  * Text analysis utilities for constrained writing.
  * Supports the 100-word blog post format.
@@ -7,8 +6,9 @@
 const TARGET_WORD_COUNT = 100;
 
 /**
- *
- * @param {unknown} text
+ * Count the words in a string-like value.
+ * @param {unknown} text Input text.
+ * @returns {number} Word count.
  */
 export function countWords(text) {
   if (!text || typeof text !== 'string') {
@@ -22,20 +22,25 @@ export function countWords(text) {
 }
 
 /**
- *
- * @param {unknown} text
+ * Count sentence-ending punctuation groups in a string-like value.
+ * @param {unknown} text Input text.
+ * @returns {number} Sentence count.
  */
 export function countSentences(text) {
   if (!text || typeof text !== 'string') {
     return 0;
   }
   const matches = text.match(/[.!?]+/g);
-  return matches ? matches.length : 0;
+  if (!matches) {
+    return 0;
+  }
+  return matches.length;
 }
 
 /**
- *
- * @param {unknown} text
+ * Compute average words per sentence for a string-like value.
+ * @param {unknown} text Input text.
+ * @returns {number} Average words per sentence.
  */
 export function averageWordsPerSentence(text) {
   const sentences = countSentences(text);
@@ -46,8 +51,9 @@ export function averageWordsPerSentence(text) {
 }
 
 /**
- *
- * @param {unknown} text
+ * Find the longest sentence in a string-like value.
+ * @param {unknown} text Input text.
+ * @returns {{ sentence: string, wordCount: number }} Longest sentence summary.
  */
 export function findLongestSentence(text) {
   if (!text || typeof text !== 'string') {
@@ -68,8 +74,17 @@ export function findLongestSentence(text) {
 }
 
 /**
- *
- * @param {unknown} text
+ * Analyze a text sample against the 100-word target.
+ * @param {unknown} text Input text.
+ * @returns {{
+ *   wordCount: number,
+ *   sentenceCount: number,
+ *   avgWordsPerSentence: number,
+ *   longestSentence: { sentence: string, wordCount: number },
+ *   target: number,
+ *   delta: number,
+ *   isExactly100: boolean,
+ * }} Text analysis summary.
  */
 export function analyzeText(text) {
   const wordCount = countWords(text);
@@ -90,14 +105,15 @@ export function analyzeText(text) {
 }
 
 /**
- *
+ * Generate feedback from a text analysis.
  * @param {{
  *   isExactly100: boolean,
  *   delta: number,
  *   avgWordsPerSentence: number,
  *   sentenceCount: number,
  *   longestSentence: { wordCount: number },
- * }} analysis
+ * }} analysis Text analysis summary.
+ * @returns {string[]} Feedback lines.
  */
 export function generateFeedback(analysis) {
   const feedback = [];
@@ -105,16 +121,10 @@ export function generateFeedback(analysis) {
   if (analysis.isExactly100) {
     feedback.push('Exactly 100 words! Ready for a title.');
   } else if (analysis.delta > 0) {
-    feedback.push(
-      `${String(analysis.delta)} words over. Cut ${analysis.delta} word${
-        analysis.delta === 1 ? '' : 's'
-      }.`
-    );
+    feedback.push(formatWordCountFeedback(analysis.delta, 'over', 'Cut'));
   } else {
     feedback.push(
-      `${String(Math.abs(analysis.delta))} words under. Add ${Math.abs(
-        analysis.delta
-      )} word${Math.abs(analysis.delta) === 1 ? '' : 's'}.`
+      formatWordCountFeedback(Math.abs(analysis.delta), 'under', 'Add')
     );
   }
 
@@ -144,8 +154,25 @@ export function generateFeedback(analysis) {
 }
 
 /**
- *
- * @param {unknown} title
+ * Format word-count feedback.
+ * @param {number} count Word delta.
+ * @param {string} direction Whether the text is over or under.
+ * @param {string} verb Suggested action verb.
+ * @returns {string} Feedback line.
+ */
+function formatWordCountFeedback(count, direction, verb) {
+  let wordSuffix = 's';
+  if (count === 1) {
+    wordSuffix = '';
+  }
+
+  return `${String(count)} word${wordSuffix} ${direction}. ${verb} ${count} word${wordSuffix}.`;
+}
+
+/**
+ * Analyze a title.
+ * @param {unknown} title Title candidate.
+ * @returns {{ wordCount: number, isValid: boolean }} Title analysis summary.
  */
 export function analyzeTitle(title) {
   const wordCount = countWords(title);

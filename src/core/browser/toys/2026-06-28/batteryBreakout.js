@@ -1,5 +1,4 @@
 // @ts-nocheck
-/* eslint-disable no-ternary, complexity, no-unused-vars */
 import { parseJsonOrNull } from '../../../commonCore.js';
 import { normalizePositiveInteger } from '../../common.js';
 
