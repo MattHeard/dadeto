@@ -201,49 +201,65 @@ function mergeSeedAndState(base, seed) {
  */
 function createSeedState(input, fallback) {
   const defaults = createSeedDefaults();
-  const width = normalizePositiveInteger(
-    input?.width,
-    defaults.width(fallback)
-  );
-  const height = normalizePositiveInteger(
-    input?.height,
-    defaults.height(fallback)
-  );
-  const paddleWidth = normalizePositiveInteger(
-    input?.paddleWidth,
-    defaults.paddleWidth
-  );
-  const paddleHeight = normalizePositiveInteger(
-    input?.paddleHeight,
-    defaults.paddleHeight
-  );
-  const paddleSpeed = normalizePositiveInteger(
-    input?.paddleSpeed,
-    defaults.paddleSpeed
-  );
-  const orbRadius = normalizePositiveInteger(
-    input?.orbRadius,
-    defaults.orbRadius
-  );
-  const orbSpeedX = normalizeNumber(input?.orbSpeedX, defaults.orbSpeedX);
-  const orbSpeedY = normalizeNumber(input?.orbSpeedY, defaults.orbSpeedY);
-  const layoutSeed = normalizePositiveInteger(
-    input?.layoutSeed,
-    defaults.layoutSeed(fallback)
-  );
+  const seed = normalizeSeedValues(input, fallback, defaults);
   return createState({
-    width,
-    height,
-    paddleWidth,
-    paddleHeight,
-    paddleSpeed,
-    orbRadius,
-    orbSpeedX,
-    orbSpeedY,
-    layoutSeed,
-    lives: normalizePositiveInteger(input?.lives, defaults.lives(fallback)),
-    panels: normalizePanels(width, height, layoutSeed),
+    width: seed.width,
+    height: seed.height,
+    paddleWidth: seed.paddleWidth,
+    paddleHeight: seed.paddleHeight,
+    paddleSpeed: seed.paddleSpeed,
+    orbRadius: seed.orbRadius,
+    orbSpeedX: seed.orbSpeedX,
+    orbSpeedY: seed.orbSpeedY,
+    layoutSeed: seed.layoutSeed,
+    lives: seed.lives,
+    panels: normalizePanels(seed.width, seed.height, seed.layoutSeed),
   });
+}
+
+/**
+ * Normalize seed values from input and fallback state.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @param {ReturnType<typeof createSeedDefaults>} defaults Seed defaults.
+ * @returns {{
+ *   width: number,
+ *   height: number,
+ *   paddleWidth: number,
+ *   paddleHeight: number,
+ *   paddleSpeed: number,
+ *   orbRadius: number,
+ *   orbSpeedX: number,
+ *   orbSpeedY: number,
+ *   layoutSeed: number,
+ *   lives: number,
+ * }} Normalized seed values.
+ */
+function normalizeSeedValues(input, fallback, defaults) {
+  return {
+    width: normalizePositiveInteger(input?.width, defaults.width(fallback)),
+    height: normalizePositiveInteger(input?.height, defaults.height(fallback)),
+    paddleWidth: normalizePositiveInteger(
+      input?.paddleWidth,
+      defaults.paddleWidth
+    ),
+    paddleHeight: normalizePositiveInteger(
+      input?.paddleHeight,
+      defaults.paddleHeight
+    ),
+    paddleSpeed: normalizePositiveInteger(
+      input?.paddleSpeed,
+      defaults.paddleSpeed
+    ),
+    orbRadius: normalizePositiveInteger(input?.orbRadius, defaults.orbRadius),
+    orbSpeedX: normalizeNumber(input?.orbSpeedX, defaults.orbSpeedX),
+    orbSpeedY: normalizeNumber(input?.orbSpeedY, defaults.orbSpeedY),
+    layoutSeed: normalizePositiveInteger(
+      input?.layoutSeed,
+      defaults.layoutSeed(fallback)
+    ),
+    lives: normalizePositiveInteger(input?.lives, defaults.lives(fallback)),
+  };
 }
 
 /**
@@ -725,14 +741,24 @@ function updateInputState(previous, input) {
     keyboard: nextKeyboard,
     gamepad: nextGamepad,
     actions: nextActions.actions,
-    edgeActions: {
-      left: nextActions.actions.left && !previousActions.left,
-      right: nextActions.actions.right && !previousActions.right,
-      launchPressed: nextActions.actions.launch && !previousActions.launch,
-      pausePressed: nextActions.actions.pause && !previousActions.pause,
-      resetPressed: nextActions.actions.reset && !previousActions.reset,
-    },
+    edgeActions: createEdgeActions(nextActions.actions, previousActions),
     previousActions,
+  };
+}
+
+/**
+ * Create edge actions from current and previous action states.
+ * @param {PaddleActions} actions Current actions.
+ * @param {PaddleActions} previousActions Previous actions.
+ * @returns {PaddleEdgeActions} Edge actions.
+ */
+function createEdgeActions(actions, previousActions) {
+  return {
+    left: actions.left && !previousActions.left,
+    right: actions.right && !previousActions.right,
+    launchPressed: actions.launch && !previousActions.launch,
+    pausePressed: actions.pause && !previousActions.pause,
+    resetPressed: actions.reset && !previousActions.reset,
   };
 }
 
@@ -746,10 +772,6 @@ function updateInputState(previous, input) {
 function deriveActions(input, keyboard, gamepad) {
   applyKeyboardInput(input, keyboard);
   applyGamepadInput(input, gamepad);
-  if (input?.type === 'capture' && input.capturing === false) {
-    return createActionsFromState(keyboard, gamepad);
-  }
-
   return createActionsFromState(keyboard, gamepad);
 }
 
