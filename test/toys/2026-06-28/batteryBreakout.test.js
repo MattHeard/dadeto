@@ -739,6 +739,70 @@ describe('batteryBreakout', () => {
     ]);
   });
 
+  it('normalizes structured persisted gamepad and paddle data', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          layoutSeed: 2,
+          input: {
+            keyboard: { ArrowLeft: true, ArrowRight: false },
+            gamepad: { buttons: [true, false], axes: [1, '0'] },
+            actions: {
+              moveLeft: true,
+              moveRight: false,
+              launchPressed: true,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: true,
+              launchPressed: false,
+              pausePressed: true,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 15, y: 120, width: 50, height: 7, speed: 5 },
+          orb: { x: 44, y: 37, vx: 0, vy: 3, radius: 4, stuckToPaddle: true },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.input.gamepad.buttons).toEqual([
+      true,
+      false,
+    ]);
+    expect(storageValue.current.BATT4.input.gamepad.axes).toEqual([1, 0]);
+    expect(storageValue.current.BATT4.input.actions.moveLeft).toBe(true);
+    expect(storageValue.current.BATT4.paddle.width).toBe(50);
+    expect(storageValue.current.BATT4.orb.radius).toBe(4);
+    expect(storageValue.current.BATT4.cells).toHaveLength(1);
+  });
+
   it('loses a life when the orb falls below the paddle lane', () => {
     const storageValue = {
       current: {
