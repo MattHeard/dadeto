@@ -1,5 +1,15 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { batteryBreakout } from '../../../src/core/browser/toys/2026-06-28/batteryBreakout.js';
+import {
+  advanceCellCooldowns,
+  applyGameplayInput,
+  batteryBreakout,
+  buildNextState,
+  reflectOrb,
+  resolveCells,
+  resolvePaddle,
+  shufflePositions,
+  updateInputState,
+} from '../../../src/core/browser/toys/2026-06-28/batteryBreakout.js';
 
 /**
  * Runs the battery breakout toy with a mocked storage accessor.
@@ -31,6 +41,244 @@ describe('batteryBreakout', () => {
       )
     ).toBe(false);
     expect(storageValue.current.BATT4.version).toBe(1);
+  });
+
+  it('uses the fallback seed when shuffling with a falsey seed', () => {
+    expect(shufflePositions(['a', 'b', 'c'], 0)).toEqual(['c', 'b', 'a']);
+  });
+
+  it('merges reset state when persisted data is missing', () => {
+    const next = buildNextState(null, { reset: true });
+
+    expect(next.status).toBe('ready');
+    expect(next.lives).toBeGreaterThan(0);
+  });
+
+  it('merges reset state when persisted data exists', () => {
+    const next = buildNextState(
+      {
+        version: 1,
+        width: 120,
+        height: 100,
+        frame: 3,
+        status: 'running',
+        score: 4,
+        lives: 2,
+        faults: 1,
+        input: {
+          keyboard: {},
+          gamepad: { buttons: [], axes: [] },
+          actions: {
+            moveLeft: false,
+            moveRight: false,
+            launchPressed: false,
+            pausePressed: false,
+            resetPressed: false,
+          },
+          previousActions: {
+            moveLeft: false,
+            moveRight: false,
+            launchPressed: false,
+            pausePressed: false,
+            resetPressed: false,
+          },
+        },
+        paddle: { x: 10, y: 20, width: 30, height: 6, speed: 4 },
+        orb: { x: 20, y: 20, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+        cells: [],
+      },
+      { reset: true }
+    );
+
+    expect(next.width).toBe(120);
+    expect(next.height).toBe(100);
+  });
+
+  it('creates a reset state when no persisted state exists', () => {
+    const next = buildNextState(null, { type: 'keydown', key: 'r' });
+
+    expect(next.status).toBe('ready');
+    expect(next.lives).toBeGreaterThan(0);
+  });
+
+  it('uses the reset layout seed fallback when persisted layout seed is missing', () => {
+    const next = buildNextState(
+      {
+        version: 1,
+        width: 120,
+        height: 100,
+        frame: 3,
+        status: 'running',
+        score: 4,
+        lives: 2,
+        faults: 1,
+        // layoutSeed intentionally omitted to exercise the fallback path.
+        input: {
+          keyboard: {},
+          gamepad: { buttons: [], axes: [] },
+          actions: {
+            moveLeft: false,
+            moveRight: false,
+            launchPressed: false,
+            pausePressed: false,
+            resetPressed: false,
+          },
+          previousActions: {
+            moveLeft: false,
+            moveRight: false,
+            launchPressed: false,
+            pausePressed: false,
+            resetPressed: false,
+          },
+        },
+        paddle: { x: 10, y: 20, width: 30, height: 6, speed: 4 },
+        orb: { x: 20, y: 20, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+        cells: [],
+      },
+      { type: 'keydown', key: 'r' }
+    );
+
+    expect(next.width).toBe(120);
+  });
+
+  it('uses keyboard fallback state when previous input is missing', () => {
+    const next = updateInputState(undefined, { type: 'keydown', key: 'a' });
+
+    expect(next.keyboard.a).toBe(true);
+  });
+
+  it('switches from paused back to running on a pause press', () => {
+    const state = { status: 'paused', orb: { stuckToPaddle: false }, paddle: { x: 0, y: 0, width: 0, height: 0, speed: 0 } };
+    applyGameplayInput(state, {
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: true, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
+
+    expect(state.status).toBe('running');
+  });
+
+  it('pauses from a running state on a pause press', () => {
+    const state = {
+      status: 'running',
+      orb: { stuckToPaddle: false },
+      paddle: { x: 0, y: 0, width: 0, height: 0, speed: 0 },
+    };
+    applyGameplayInput(state, {
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: true, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
+
+    expect(state.status).toBe('paused');
+  });
+
+  it('ignores pause presses from non-running states', () => {
+    const state = {
+      status: 'won',
+      orb: { stuckToPaddle: false },
+      paddle: { x: 0, y: 0, width: 0, height: 0, speed: 0 },
+    };
+    applyGameplayInput(state, {
+      actions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: true, resetPressed: false },
+      previousActions: { moveLeft: false, moveRight: false, launchPressed: false, pausePressed: false, resetPressed: false },
+    });
+
+    expect(state.status).toBe('won');
+  });
+
+  it('uses the fallback paddle width when the paddle is zero-width', () => {
+    const state = {
+      paddle: { x: 10, y: 20, width: 0, height: 6, speed: 4 },
+      orb: { x: 10, y: 24, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+    };
+
+    resolvePaddle(state);
+
+    expect(state.orb.vx).toBe(1);
+  });
+
+  it('falls back to the default paddle bounce speed when the centered hit clamps to zero', () => {
+    const state = {
+      paddle: { x: 10, y: 20, width: 20, height: 6, speed: 4 },
+      orb: { x: 20, y: 24, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+    };
+
+    resolvePaddle(state);
+
+    expect(state.orb.vx).toBe(1);
+  });
+
+  it('continues when a cell is already overcharged', () => {
+    const state = {
+      orb: { x: 10, y: 10, vx: 1, vy: 1, radius: 4 },
+      cells: [
+        {
+          id: 'cell-1',
+          x: 6,
+          y: 6,
+          width: 8,
+          height: 8,
+          charge: 4,
+          targetCharge: 2,
+          maxCharge: 3,
+          overchargeCooldown: 0,
+          state: 'overcharged',
+        },
+      ],
+      score: 0,
+      faults: 0,
+    };
+
+    resolveCells(state, new Set());
+
+    expect(state.cells[0].charge).toBeGreaterThanOrEqual(4);
+  });
+
+  it('marks an overcharged hit as overcharged and increments faults', () => {
+    const state = {
+      orb: { x: 10, y: 10, vx: 1, vy: 1, radius: 4 },
+      cells: [
+        {
+          id: 'cell-1',
+          x: 6,
+          y: 6,
+          width: 8,
+          height: 8,
+          charge: 3,
+          targetCharge: 2,
+          maxCharge: 3,
+          overchargeCooldown: 0,
+          state: 'charging',
+        },
+      ],
+      score: 0,
+      faults: 0,
+    };
+
+    resolveCells(state, new Set());
+
+    expect(state.cells[0].state).toBe('overcharged');
+    expect(state.faults).toBe(1);
+  });
+
+  it('reflects from the center of a cell on the x axis', () => {
+    const orb = { x: 10, y: 10, vx: 1, vy: 1, radius: 4 };
+    const cell = { x: 8, y: 0, width: 4, height: 20 };
+
+    reflectOrb({ orb }, cell);
+
+    expect(orb.x).toBeGreaterThan(cell.x + cell.width / 2);
+  });
+
+  it('advances cooldowns for overcharged cells', () => {
+    const state = {
+      cells: [
+        { state: 'overcharged', overchargeCooldown: 1, charge: 5, targetCharge: 2 },
+      ],
+    };
+
+    advanceCellCooldowns(state);
+
+    expect(state.cells[0].state).toBe('charging');
   });
 
   it('falls back when no storage accessor is available', () => {

@@ -94,4 +94,22 @@ describe('browserPresentersCore', () => {
     expect(parsePresenterJsonObject('{"ok":true}')).toEqual({ ok: true });
     expect(parsePresenterJsonObject('not json')).toBeNull();
   });
+
+  test('falls back when parsing returns an empty string-like value', () => {
+    const dom = createDom();
+    const fallback = jest.fn(() => ({ fallback: true }));
+    const render = jest.fn(() => ({ rendered: true }));
+
+    expect(
+      renderParsedPresenter({
+        inputString: '',
+        dom,
+        parse: () => '',
+        render,
+        createFallback: fallback,
+      })
+    ).toEqual({ fallback: true });
+    expect(fallback).toHaveBeenCalledWith('', dom);
+    expect(render).not.toHaveBeenCalled();
+  });
 });

@@ -64,7 +64,7 @@ export function createMainHandle({
 }) {
   return function handleMain() {
     const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
-    const memoryLens = createMemoryStorageLens();
+    const memoryLens = createMemoryStorageLens(new Map());
     const permanentLens = createLocalStorageLens({
       storage: storageObj,
       logError: dom.logError,

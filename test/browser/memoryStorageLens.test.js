@@ -3,7 +3,7 @@ import { createMemoryStorageLens } from '../../src/core/browser/memoryStorageLen
 
 describe('createMemoryStorageLens', () => {
   it('stores values in the default backing map', () => {
-    const lens = createMemoryStorageLens();
+    const lens = createMemoryStorageLens(new Map());
 
     lens.set('alpha', 123);
 
@@ -19,4 +19,5 @@ describe('createMemoryStorageLens', () => {
 
     expect(store.get('next')).toBe('item');
   });
+
 });

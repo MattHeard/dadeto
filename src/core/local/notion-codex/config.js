@@ -218,9 +218,10 @@ function normalizeIdleBackoff(value) {
  * @param {{ configPath?: string, repoRoot?: string, cwd?: () => string, pathModule?: { resolve: (first: string, ...parts: string[]) => string }, readFileImpl?: (filePath: string, encoding: 'utf8') => Promise<string> }} [options] Load options.
  * @returns {Promise<ReturnType<typeof normalizeNotionCodexConfig>>} Loaded config.
  */
-export async function loadNotionCodexConfig(options = {}) {
+export async function loadNotionCodexConfig(options) {
+  const resolvedOptions = options ?? {};
   return loadNormalizedLocalJsonConfig({
-    ...options,
+    ...resolvedOptions,
     configPathKey: 'configPath',
     defaultRelativePath: 'tracking/notion-codex.local.json',
     normalize: normalizeNotionCodexConfig,

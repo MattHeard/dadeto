@@ -79,6 +79,30 @@ describe('calculateUpdatedVisibility', () => {
 
     expect(result).toBe(0.25);
   });
+
+  it('calculates the next visibility for an unlocked variant', () => {
+    const result = calculateNextVisibility(
+      {
+        visibility: 0.5,
+        moderationRatingCount: 2,
+        moderatorReputationSum: 2,
+      },
+      false,
+      1
+    );
+
+    expect(result).toBeCloseTo((0.5 * 2 + 0 * 1) / 3);
+  });
+
+  it('handles undefined variant data when calculating next visibility', () => {
+    expect(calculateNextVisibility(undefined, true, 1)).toBe(1);
+  });
+
+  it('returns the locked visibility even when the variant data is empty', () => {
+    expect(
+      calculateNextVisibility({ visibilityLockedBy: ADMIN_UID }, false, 1)
+    ).toBe(0);
+  });
 });
 
 describe('createUpdateVariantVisibilityHandler', () => {
@@ -222,6 +246,35 @@ describe('createUpdateVariantVisibilityHandler', () => {
     await expect(handler({ data: () => null })).resolves.toBeNull();
   });
 
+  it('updates visibility with an omitted moderator id', async () => {
+    const variantData = {
+      visibility: 0.5,
+      moderationRatingCount: 1,
+      moderatorReputationSum: 1,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const db = createDb(variantRef, {});
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await expect(
+      handler(
+        createSnapshot({
+          variantId: 'variants/id',
+          isApproved: true,
+        })
+      )
+    ).resolves.toBeNull();
+
+    expect(variantRef.update).not.toHaveBeenCalled();
+  });
+
   it('updates visibility without a moderator id', async () => {
     const variantData = {
       visibility: 0.5,
@@ -324,6 +377,52 @@ describe('createUpdateVariantVisibilityHandler', () => {
       visibility: (1 * 1 + 0 * 2) / (1 + 2),
       moderatorRatingCount: 2,
       moderatorReputationSum: 3,
+    });
+  });
+
+  it('applies an admin lock when the moderator is the admin', async () => {
+    const variantData = {
+      visibility: 0.4,
+      moderationRatingCount: 1,
+      moderatorReputationSum: 1,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          path: 'stories/story-1/pages/page-1',
+          parent: {
+            parent: {
+              get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: () => ({
+                  rootPage: { path: 'stories/story-1/pages/page-1' },
+                }),
+              }),
+            },
+          },
+        },
+      },
+    };
+    const db = createDb(variantRef, {});
+    const handler = createUpdateVariantVisibilityHandler({ db });
+
+    await handler(
+      createSnapshot({
+        moderatorId: ADMIN_UID,
+        variantId: 'stories/story-1/pages/page-1/variants/root',
+        isApproved: true,
+      })
+    );
+
+    expect(variantRef.update).toHaveBeenCalledWith({
+      visibility: 1,
+      visibilityLockedBy: ADMIN_UID,
     });
   });
 

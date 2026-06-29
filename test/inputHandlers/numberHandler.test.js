@@ -109,6 +109,22 @@ describe('numberHandler', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  test('skips setting the number input value when it is falsey', () => {
+    const createdInput = {};
+    const dom = {
+      createElement: jest.fn(() => createdInput),
+      setType: jest.fn(),
+      setValue: jest.fn(),
+      addEventListener: jest.fn(),
+      getTargetValue: jest.fn(),
+    };
+    const onChange = jest.fn();
+
+    createNumberInput('', onChange, dom);
+
+    expect(dom.setValue).not.toHaveBeenCalledWith(createdInput, '');
+  });
+
   test('ensures a number input when one does not already exist', () => {
     const createdInput = {};
     const dom = {

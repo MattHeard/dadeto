@@ -648,7 +648,7 @@ function normalizeStatus(value) {
  * @param {string} state - state value
  * @returns {string} - result
  */
-function getCrystalFill(state) {
+export function getCrystalFill(state) {
   return (
     {
       fractured: '#8dd3ff',
@@ -662,7 +662,7 @@ function getCrystalFill(state) {
  * Resets the orb after a missed shot.
  * @param {object} state - state value
  */
-function resetOrbAfterLoss(state) {
+export function resetOrbAfterLoss(state) {
   state.lives = Math.max(0, state.lives - 1);
   state.combo = 0;
   state.status = state.lives === 0 ? 'lost' : 'ready';

@@ -17,7 +17,7 @@ import {
  * @returns {Map<string, unknown>} Deterministic toy environment.
  */
 function makeEnv(values) {
-  const memoryLens = createMemoryStorageLens();
+  const memoryLens = createMemoryStorageLens(new Map());
   let index = 0;
   const getRandomNumber = () => values[index++] ?? 0;
   return new Map([

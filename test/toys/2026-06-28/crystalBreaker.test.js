@@ -1,5 +1,9 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { crystalBreaker } from '../../../src/core/browser/toys/2026-06-28/crystalBreaker.js';
+import {
+  crystalBreaker,
+  getCrystalFill,
+  resetOrbAfterLoss,
+} from '../../../src/core/browser/toys/2026-06-28/crystalBreaker.js';
 
 /**
  * Runs the crystal breaker toy with a mocked storage accessor.
@@ -453,6 +457,26 @@ describe('crystalBreaker', () => {
 
     expect(storageValue.current.CRYS1.status).toBe('lost');
     expect(storageValue.current.CRYS1.lives).toBe(0);
+  });
+
+  it('falls back to the default fill color for an unknown crystal state', () => {
+    expect(getCrystalFill('unexpected')).toBe('#5eead4');
+  });
+
+  it('sets the state to ready when a life remains after a loss', () => {
+    const state = {
+      lives: 2,
+      combo: 7,
+      status: 'running',
+      paddle: { x: 10, width: 20, y: 50 },
+      orb: { stuckToPaddle: false, vx: 0, vy: 0, x: 0, y: 0, radius: 4 },
+    };
+
+    resetOrbAfterLoss(state);
+
+    expect(state.lives).toBe(1);
+    expect(state.status).toBe('ready');
+    expect(state.orb.stuckToPaddle).toBe(true);
   });
 
   it('bounces from the top edge and the paddle in one run', () => {

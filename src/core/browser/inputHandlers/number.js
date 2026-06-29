@@ -53,9 +53,7 @@ export const createNumberInput = (value, onChange, dom) => {
  * @returns {void}
  */
 const maybeSetNumberInputValue = (dom, input, value) => {
-  if (value) {
-    dom.setValue(input, value);
-  }
+  return value ? dom.setValue(input, value) : undefined;
 };
 
 /**

@@ -781,6 +781,24 @@ describe('createAdminTokenAction', () => {
       })
     ).toThrow(new TypeError('action must be a function'));
   });
+
+  it('shows the missing-token message when no token is available', async () => {
+    const showMessage = jest.fn();
+    const action = jest.fn();
+    const tokenAction = createAdminTokenAction({
+      googleAuth: { getIdToken: () => null },
+      getAdminEndpointsFn: jest.fn(),
+      fetchFn: jest.fn(),
+      showMessage,
+      missingTokenMessage: 'missing',
+      action,
+    });
+
+    await tokenAction();
+
+    expect(showMessage).toHaveBeenCalledWith('missing');
+    expect(action).not.toHaveBeenCalled();
+  });
 });
 
 describe('createTriggerStats additional branches', () => {

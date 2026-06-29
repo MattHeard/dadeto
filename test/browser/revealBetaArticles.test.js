@@ -32,4 +32,8 @@ describe('revealBetaArticles', () => {
     expect(dom.removeClass).not.toHaveBeenCalled();
     expect(dom.reveal).not.toHaveBeenCalled();
   });
+
+  test('skips all work when beta is not enabled and helpers are absent', () => {
+    revealBetaArticles({ hasBetaParam: () => false });
+  });
 });

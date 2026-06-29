@@ -234,6 +234,21 @@ describe('createUpdateTextInputValue', () => {
     );
   });
 
+  it('uses insertBefore when the DOM helper is missing', () => {
+    const element = {};
+    const container = { insertBefore: jest.fn() };
+    insertBeforeNextSibling({
+      container,
+      textInput: element,
+      element,
+      dom: {
+        getNextSibling: jest.fn(() => 'next'),
+      },
+    });
+
+    expect(container.insertBefore).toHaveBeenCalledWith(element, 'next');
+  });
+
   it('reveal and enable call both DOM helpers', () => {
     const dom = {
       reveal: jest.fn(),

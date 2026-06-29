@@ -575,7 +575,7 @@ function getNormalizedStorage(storage) {
  * @returns {import('./storageLens.js').StorageLens<unknown>} Memory lens instance.
  */
 function getMemoryLens(memoryLens) {
-  return memoryLens ?? createMemoryStorageLens();
+  return memoryLens ?? createMemoryStorageLens(new Map());
 }
 
 /**

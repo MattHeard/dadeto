@@ -101,7 +101,7 @@ function parseObjectRecord(value) {
  * @param {unknown} input Parameter.
  * @returns {unknown} Return value.
  */
-function buildNextState(persisted, input) {
+export function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
@@ -616,7 +616,7 @@ function buildCellPositions(width, height, cellWidth, cellHeight) {
  * @param {unknown} seed Parameter.
  * @returns {unknown} Return value.
  */
-function shufflePositions(positions, seed) {
+export function shufflePositions(positions, seed) {
   const items = positions.slice();
   let state = seed || 1;
   for (let i = items.length - 1; i > 0; i -= 1) {
@@ -633,7 +633,7 @@ function shufflePositions(positions, seed) {
  * @param {unknown} input Parameter.
  * @returns {unknown} Return value.
  */
-function updateInputState(previous, input) {
+export function updateInputState(previous, input) {
   const nextKeyboard = { ...(previous?.keyboard || {}) };
   const nextGamepad = normalizeGamepadState(previous?.gamepad);
   const actions = deriveActions(input, nextKeyboard, nextGamepad);
@@ -730,7 +730,7 @@ function isAxisRight(value) {
  * @param {unknown} state Parameter.
  * @param {unknown} inputState Parameter.
  */
-function applyGameplayInput(state, inputState) {
+export function applyGameplayInput(state, inputState) {
   movePaddle(state, inputState.actions);
   if (
     state.status === 'ready' &&
@@ -758,7 +758,7 @@ function applyGameplayInput(state, inputState) {
  * @param {unknown} state Parameter.
  * @param {unknown} actions Parameter.
  */
-function movePaddle(state, actions) {
+export function movePaddle(state, actions) {
   const delta = (actions.moveRight ? 1 : 0) - (actions.moveLeft ? 1 : 0);
   state.paddle.x = Math.round(
     clamp(
@@ -773,7 +773,7 @@ function movePaddle(state, actions) {
  * Step Simulation.
  * @param {unknown} state Parameter.
  */
-function stepSimulation(state) {
+export function stepSimulation(state) {
   if (state.orb.stuckToPaddle) return;
   const substeps = 3;
   const hitCells = new Set();
@@ -822,7 +822,7 @@ function resolveWalls(state) {
  * Resolve Paddle.
  * @param {unknown} state Parameter.
  */
-function resolvePaddle(state) {
+export function resolvePaddle(state) {
   const paddle = state.paddle;
   const orb = state.orb;
   const withinHorizontal =
@@ -845,7 +845,7 @@ function resolvePaddle(state) {
  * @param {unknown} state Parameter.
  * @param {unknown} hitCells Parameter.
  */
-function resolveCells(state, hitCells) {
+export function resolveCells(state, hitCells) {
   for (const cell of state.cells) {
     if (hitCells.has(cell.id)) {
       continue;
@@ -858,20 +858,18 @@ function resolveCells(state, hitCells) {
         cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
         continue;
       }
-      if (cell.state !== 'overcharged') {
-        cell.charge += 1;
-        if (cell.charge > cell.maxCharge) {
-          cell.state = 'overcharged';
-        } else if (cell.charge >= cell.targetCharge) {
-          cell.state = 'stable';
-        } else {
-          cell.state = 'charging';
-        }
-        if (cell.state === 'stable') state.score += 1;
-        if (cell.state === 'overcharged') {
-          cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
-          state.faults += 1;
-        }
+      cell.charge += 1;
+      if (cell.charge > cell.maxCharge) {
+        cell.state = 'overcharged';
+      } else if (cell.charge >= cell.targetCharge) {
+        cell.state = 'stable';
+      } else {
+        cell.state = 'charging';
+      }
+      if (cell.state === 'stable') state.score += 1;
+      if (cell.state === 'overcharged') {
+        cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
+        state.faults += 1;
       }
       break;
     }
@@ -882,7 +880,7 @@ function resolveCells(state, hitCells) {
  * Advance Cell Cooldowns.
  * @param {unknown} state Parameter.
  */
-function advanceCellCooldowns(state) {
+export function advanceCellCooldowns(state) {
   for (const cell of state.cells) {
     if (cell.state !== 'overcharged' || cell.overchargeCooldown <= 0) continue;
     cell.overchargeCooldown -= 1;
@@ -898,7 +896,7 @@ function advanceCellCooldowns(state) {
  * @param {unknown} state Parameter.
  * @param {unknown} cell Parameter.
  */
-function reflectOrb(state, cell) {
+export function reflectOrb(state, cell) {
   const orb = state.orb;
   const cx = cell.x + cell.width / 2;
   const cy = cell.y + cell.height / 2;

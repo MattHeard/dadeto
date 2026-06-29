@@ -625,7 +625,7 @@ function buildPanelPositions(width, height, panelWidth, panelHeight) {
  */
 function shufflePositions(positions, seed) {
   const items = positions.slice();
-  let state = seed || 1;
+  let state = Math.max(1, seed);
   for (let i = items.length - 1; i > 0; i -= 1) {
     state = (state * 1664525 + 1013904223) >>> 0;
     const j = state % (i + 1);
@@ -640,7 +640,7 @@ function shufflePositions(positions, seed) {
  * @param input
  */
 function updateInputState(previous, input) {
-  const nextKeyboard = { ...(previous?.keyboard || {}) };
+  const nextKeyboard = { ...previous?.keyboard };
   const nextGamepad = normalizeGamepadState(previous?.gamepad);
   const nextActions = deriveActions(input, nextKeyboard, nextGamepad);
   const previousActions = normalizeActions(previous?.actions);
@@ -831,9 +831,10 @@ function resolveWalls(state) {
  *
  * @param state
  */
-function resolvePaddle(state) {
+export function resolvePaddle(state) {
   const paddle = state.paddle;
   const orb = state.orb;
+  const halfWidth = Math.max(1, paddle.width / 2);
   const withinHorizontal =
     orb.x + orb.radius >= paddle.x &&
     orb.x - orb.radius <= paddle.x + paddle.width;
@@ -842,7 +843,7 @@ function resolvePaddle(state) {
     orb.y + orb.radius <= paddle.y + paddle.height + 6;
   if (orb.vy > 0 && withinHorizontal && withinVertical) {
     const hitOffset =
-      (orb.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2 || 1);
+      (orb.x - (paddle.x + halfWidth)) / halfWidth;
     orb.y = paddle.y - orb.radius - 1;
     orb.vy = -Math.abs(orb.vy);
     orb.vx = clamp(orb.vx + hitOffset * 2, -5, 5) || DEFAULT_ORB_SPEED_X;
@@ -888,7 +889,7 @@ function getPanelCollisionAxis(orb, panel) {
  * @param panel
  * @param collisionAxis
  */
-function separateOrbFromPanel(orb, panel, collisionAxis) {
+export function separateOrbFromPanel(orb, panel, collisionAxis) {
   const panelCenterX = panel.x + panel.width / 2;
   const panelCenterY = panel.y + panel.height / 2;
   const dx = orb.x - panelCenterX;
@@ -909,7 +910,7 @@ function separateOrbFromPanel(orb, panel, collisionAxis) {
  * @param orb
  * @param collisionAxis
  */
-function reflectOrbVelocityFromPanel(orb, collisionAxis) {
+export function reflectOrbVelocityFromPanel(orb, collisionAxis) {
   if (collisionAxis === 'x') {
     orb.vx = -orb.vx;
     return;

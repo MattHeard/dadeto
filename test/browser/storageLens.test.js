@@ -45,6 +45,18 @@ describe('focusLens', () => {
 
     expect(parentLens.set).toHaveBeenCalledWith('focus-key', 'explicit');
   });
+
+  it('uses the first setter argument when only a value is provided', () => {
+    const parentLens = {
+      get: jest.fn(),
+      set: jest.fn(),
+    };
+    const lens = focusLens(parentLens, 'focus-key');
+
+    lens.set('implicit');
+
+    expect(parentLens.set).toHaveBeenCalledWith('focus-key', 'implicit');
+  });
 });
 
 describe('mapLens', () => {

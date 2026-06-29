@@ -6,7 +6,7 @@ const ESCAPE_KEY = 'Escape';
  * @returns {boolean} True when the event is an Escape keydown.
  */
 function isEscapeKeydown(event) {
-  return event.type === 'keydown' && event.key === ESCAPE_KEY;
+  return event.type === 'keydown' ? event.key === ESCAPE_KEY : false;
 }
 
 export { ESCAPE_KEY, isEscapeKeydown };

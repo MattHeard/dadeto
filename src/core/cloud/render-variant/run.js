@@ -43,8 +43,9 @@ export function runRenderVariant(deps) {
     Storage,
     fetchFn,
     crypto,
-    console: consoleLike = globalThis.console,
+    console: consoleLike,
   } = typedDeps;
+  const resolvedConsole = consoleLike ?? globalThis.console;
 
   const renderState = /** @type {any} */ (createRenderVariantEntrypointState());
   const { render: resolveRenderVariant, db } = renderState;
@@ -96,7 +97,7 @@ export function runRenderVariant(deps) {
         createRenderer: createRenderVariant,
         crypto,
         consoleError: /** @type {(...args: any[]) => void} */ (
-          (...args) => consoleLike.error(...args)
+          (...args) => resolvedConsole.error(...args)
         ),
       })
     );

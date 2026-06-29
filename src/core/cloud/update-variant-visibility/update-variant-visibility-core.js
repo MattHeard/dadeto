@@ -482,7 +482,7 @@ async function applyVariantUpdate(db, payload, renderContents) {
   );
   await applyAdminLockIfNeeded(
     variantRef,
-    moderatorId ?? '',
+    moderatorId,
     payload.isApproved
   );
   await republishContentsIfNeeded({
@@ -507,17 +507,15 @@ export function calculateNextVisibility(
   isApproved,
   moderatorReputation
 ) {
+  const nextVariantData = variantData || {};
   const newStats = calculateNewStats(
-    variantData ?? {},
+    nextVariantData,
     getNewRating(isApproved),
     moderatorReputation
   );
-  /* c8 ignore next */
-  if (isVisibilityLockedByAdmin(variantData ?? {})) {
-    /* c8 ignore next */
-    return getSafeNumber(variantData ?? {}, 'visibility');
-  }
-  return newStats.visibility;
+  return isVisibilityLockedByAdmin(nextVariantData)
+    ? getSafeNumber(nextVariantData, 'visibility')
+    : newStats.visibility;
 }
 
 /**
