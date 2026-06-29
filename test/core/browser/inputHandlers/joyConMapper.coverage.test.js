@@ -33,6 +33,8 @@ const {
   initializeWebHidCapture,
   requestAndOpenJoyConDevices,
   attachHidDeviceListener,
+  openGrantedJoyConDevice,
+  handleJoyConMapperReset,
   snapshotHidInputReport,
   snapshotHidButtons,
   snapshotHidAxes,
@@ -683,6 +685,37 @@ describe('joyConMapper coverage helpers', () => {
     ).toHaveBeenCalledWith('disconnect', expect.any(Function));
   });
 
+  it('covers openGrantedJoyConDevice guards and non-opening branch', async () => {
+    const disposers = [];
+    const state = {
+      dom: createDom(),
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+      hidDevices: [],
+      hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+    };
+    const device = {
+      opened: true,
+      open: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
+
+    await openGrantedJoyConDevice(state, disposers, null);
+    await openGrantedJoyConDevice(state, disposers, device);
+
+    expect(device.open).not.toHaveBeenCalled();
+    expect(state.hidDevices).toContain(device);
+
+    await openGrantedJoyConDevice(state, disposers, device);
+    expect(state.hidDevices).toHaveLength(1);
+  });
+
   it('covers connect and disconnect event payload branches', async () => {
     const connectHandler = jest.fn();
     const disconnectHandler = jest.fn();
@@ -873,7 +906,9 @@ describe('joyConMapper coverage helpers', () => {
       getNextSibling: jest.fn(() => null),
       insertBefore: jest.fn(),
       setClassName: jest.fn(),
-      setTextContent: jest.fn(),
+      setTextContent: jest.fn((element, text) => {
+        element.textContent = text;
+      }),
       setValue: jest.fn(),
       removeAllChildren: jest.fn(),
       hide: jest.fn(),
@@ -884,7 +919,7 @@ describe('joyConMapper coverage helpers', () => {
       setInterval: jest.fn(() => 1),
       clearInterval: jest.fn(),
     };
-    const container = {};
+    const container = { closest: jest.fn(() => null) };
     const textInput = {};
 
     joyConMapperHandler(dom, container, textInput);
@@ -893,6 +928,40 @@ describe('joyConMapper coverage helpers', () => {
     );
     expect(resetButton).toBeDefined();
     await resetButton._handlers.click();
+  });
+
+  it('covers reset cleanup when the device list is missing or sparse', () => {
+    const dom = createDom();
+    const baseState = {
+      dom,
+      textInput: {},
+      autoSubmitCheckbox: { dispatchEvent: jest.fn() },
+      started: true,
+      currentIndex: 3,
+      currentControl: null,
+      previousSnapshot: null,
+      hidPendingSnapshot: { buttons: [], axes: [] },
+      hidPendingSnapshotCount: 2,
+      hidDevices: [null, { id: 'keep-me' }],
+      stored: { mappings: {}, skippedControls: [] },
+      list: {},
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+    };
+
+    handleJoyConMapperReset(baseState);
+    expect(baseState.hidDevices).toEqual([{ id: 'keep-me' }]);
+
+    const missingDevicesState = {
+      ...baseState,
+      hidDevices: undefined,
+    };
+    handleJoyConMapperReset(missingDevicesState);
+    expect(missingDevicesState.hidDevices).toEqual([]);
   });
 
   it('covers repeated snapshot stabilization', () => {

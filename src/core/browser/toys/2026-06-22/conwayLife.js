@@ -338,11 +338,13 @@ function toCanvasPayload(state) {
  * @returns {Record<string, unknown>} Background shape.
  */
 function createBackdropShape(width, height) {
-  let fill = '#111827';
-  if (LIFE_RENDER_MODE === 'toroidal') {
-    fill = '#0f172a';
-  }
-  return createRectShape({ x: 0, y: 0, width, height, fill });
+  return createRectShape({
+    x: 0,
+    y: 0,
+    width,
+    height,
+    fill: '#0f172a',
+  });
 }
 
 /**

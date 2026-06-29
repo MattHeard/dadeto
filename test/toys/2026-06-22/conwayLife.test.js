@@ -209,6 +209,48 @@ describe('conwayLife', () => {
     expect(payload.shapes).toHaveLength(6);
   });
 
+  it('falls back when wrapped storage contains a missing or empty record', () => {
+    const missingStorage = {
+      current: {
+        CONW1: null,
+      },
+    };
+    const emptyStorage = {
+      current: {
+        CONW1: {},
+      },
+    };
+
+    const missing = getCanvasPayload('{}', missingStorage);
+    const empty = getCanvasPayload('{}', emptyStorage);
+
+    expect(missing.payload.width).toBe(360);
+    expect(empty.payload.width).toBe(360);
+  });
+
+  it('normalizes wrapped storage when frames are collapsed below one', () => {
+    const storageValue = {
+      current: {
+        CONW1: {
+          width: 120,
+          height: 80,
+          cols: 6,
+          rows: 6,
+          tickSpeedMs: 16,
+          framesPerTick: 0,
+          framesUntilTick: 0,
+          generation: 2,
+          cells: [[1, 1]],
+        },
+      },
+    };
+
+    getCanvasPayload('{}', storageValue);
+
+    expect(storageValue.current.CONW1.framesPerTick).toBe(1);
+    expect(storageValue.current.CONW1.framesUntilTick).toBe(1);
+  });
+
   it('normalizes wrapped stored life payloads with collapsed counters', () => {
     const storageValue = {
       current: {
