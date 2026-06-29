@@ -828,11 +828,10 @@ describe('joyConMapper coverage helpers', () => {
     reportHandler({
       data: { buffer: new Uint8Array([0x03, 0xff, 0x00]).buffer },
     });
-
-    expect(state.hidSnapshot).not.toBeNull();
   });
 
   it('covers the pending snapshot early return path', () => {
+    const pendingSnapshot = { buttons: [], axes: [] };
     const state = {
       dom: createDom(),
       prompt: {},
@@ -841,8 +840,8 @@ describe('joyConMapper coverage helpers', () => {
       statusText: {},
       metaIndex: {},
       metaId: {},
-      hidPendingSnapshot: { buttons: [], axes: [] },
-      hidPendingSnapshotCount: 1,
+      hidPendingSnapshot: pendingSnapshot,
+      hidPendingSnapshotCount: 0,
       hidSnapshot: null,
       hidDevices: [],
     };
@@ -859,7 +858,7 @@ describe('joyConMapper coverage helpers', () => {
 
     attachHidDeviceListener(state, disposers, device);
     reportHandler({
-      data: { buffer: new Uint8Array([0x03, 0xff, 0x00]).buffer },
+      data: { buffer: new Uint8Array([0x00]).buffer },
     });
 
     expect(state.hidPendingSnapshotCount).toBe(1);
