@@ -620,6 +620,45 @@ describe('createUpdateVariantVisibilityHandler', () => {
     expect(renderContents).not.toHaveBeenCalled();
   });
 
+  it('skips republishing when the variant page cannot resolve a story root', async () => {
+    const variantData = {
+      visibility: 0.6,
+      moderationRatingCount: 1,
+      moderatorReputationSum: 1,
+    };
+    const variantRef = {
+      get: jest.fn().mockResolvedValue({
+        get: jest.fn(),
+        exists: true,
+        data: () => variantData,
+      }),
+      update: jest.fn().mockResolvedValue(undefined),
+      parent: {
+        parent: {
+          parent: null,
+        },
+      },
+    };
+    const db = createDb(variantRef, {
+      mod: { moderatorReputation: 1 },
+    });
+    const renderContents = jest.fn().mockResolvedValue(undefined);
+    const handler = createUpdateVariantVisibilityHandler({
+      db,
+      renderContents,
+    });
+
+    await handler(
+      createSnapshot({
+        moderatorId: 'mod',
+        variantId: 'stories/story-1/pages/page-1/variants/root',
+        isApproved: false,
+      })
+    );
+
+    expect(renderContents).not.toHaveBeenCalled();
+  });
+
   it('falls back to a default weight when moderator reputation is missing', async () => {
     const variantData = {
       visibility: 0.5,

@@ -127,7 +127,6 @@ export function findOverexposedExportViolations(deps) {
  * }} options Optional dependencies.
  * @returns {OverexposedExportsDeps & { stdout: { write: (text: string) => void }, stderr: { write: (text: string) => void } }} Normalized deps.
  */
-/* eslint-disable complexity */
 /**
  * @param {{
  *   readFileSync?: (filePath: string, encoding: 'utf8') => string,
@@ -148,19 +147,39 @@ export function findOverexposedExportViolations(deps) {
  * @returns {OverexposedExportsDeps & { stdout: { write: (text: string) => void }, stderr: { write: (text: string) => void } }} Normalized deps.
  */
 function normalizeOptions(options) {
+  const readFileSync = withDefault(options.readFileSync, () => '');
+  const readdirSync = withDefault(options.readdirSync, () => []);
+  const stdout = withDefault(options.stdout, DEFAULT_STDOUT);
+  const stderr = withDefault(options.stderr, DEFAULT_STDERR);
+  const rootDir = withDefault(options.rootDir, DEFAULT_ROOT_DIR);
+  const sourceRoot = withDefault(options.sourceRoot, DEFAULT_SOURCE_ROOT);
+  const configPath = withDefault(options.configPath, DEFAULT_CONFIG_PATH);
+  const parse = withDefault(options.parse, DEFAULT_PARSE);
+  const pathModule = withDefault(options.pathModule, createDefaultPathModule());
+
   return {
-    readFileSync: options.readFileSync ?? (() => ''),
-    readdirSync: options.readdirSync ?? (() => []),
-    stdout: options.stdout ?? DEFAULT_STDOUT,
-    stderr: options.stderr ?? DEFAULT_STDERR,
-    rootDir: options.rootDir ?? DEFAULT_ROOT_DIR,
-    sourceRoot: options.sourceRoot ?? DEFAULT_SOURCE_ROOT,
-    configPath: options.configPath ?? DEFAULT_CONFIG_PATH,
-    parse: options.parse ?? DEFAULT_PARSE,
-    pathModule: options.pathModule ?? createDefaultPathModule(),
+    readFileSync,
+    readdirSync,
+    stdout,
+    stderr,
+    rootDir,
+    sourceRoot,
+    configPath,
+    parse,
+    pathModule,
   };
 }
-/* eslint-enable complexity */
+
+/**
+ * Return a value or fallback when the value is missing.
+ * @template T
+ * @param {T | null | undefined} value Candidate value.
+ * @param {T} fallback Fallback value.
+ * @returns {T} Resolved value.
+ */
+function withDefault(value, fallback) {
+  return value ?? fallback;
+}
 
 /**
  * @param {OverexposedExportsDeps} deps Filesystem dependencies.
@@ -313,9 +332,8 @@ function analyzeSourceFile(deps, filePath) {
 
   /** @type {Array<{ source: string, exportName: string }>} */
   const importedCalls = [];
-  traverse(ast, current =>
-    handleCallExpression(current, imports, exports, ownCalls, importedCalls)
-  );
+  const callState = { imports, exports, ownCalls, importedCalls };
+  traverse(ast, current => handleCallExpression({ current, state: callState }));
 
   return { filePath, exports, ownCalls, importedCalls };
 }
@@ -428,55 +446,120 @@ function makeNamespaceCall(imported, exportName) {
 }
 
 /**
- * @param {import('estree').Node} current Current AST node.
- * @param {Map<string, { source: string, importedName: string, namespace: boolean }>} imports Import accumulator.
- * @param {Array<{ exportName: string, line: number, column: number }>} exports Export accumulator.
- * @param {Map<string, number>} ownCalls Own-call counts.
- * @param {Array<{ source: string, exportName: string }>} importedCalls Imported call records.
+ * @param {{
+ *   current: import('estree').Node,
+ *   state: {
+ *     imports: Map<string, { source: string, importedName: string, namespace: boolean }>,
+ *     exports: Array<{ exportName: string, line: number, column: number }>,
+ *     ownCalls: Map<string, number>,
+ *     importedCalls: Array<{ source: string, exportName: string }>,
+ *   },
+ * }} context Call-expression context.
  * @returns {void}
  */
-/* eslint-disable max-params, complexity */
-/**
- * @param {import('estree').Node} current Current AST node.
- * @param {Map<string, { source: string, importedName: string, namespace: boolean }>} imports Import accumulator.
- * @param {Array<{ exportName: string, line: number, column: number }>} exports Export accumulator.
- * @param {Map<string, number>} ownCalls Own-call counts.
- * @param {Array<{ source: string, exportName: string }>} importedCalls Imported call records.
- * @returns {void}
- */
-function handleCallExpression(
-  current,
-  imports,
-  exports,
-  ownCalls,
-  importedCalls
-) {
+function handleCallExpression(context) {
+  const { current, state } = context;
   if (current.type !== 'CallExpression') {
     return;
   }
 
   const callee = current.callee;
   if (callee.type === 'Identifier') {
-    if (imports.has(callee.name)) {
-      const imported = imports.get(callee.name);
-      if (!imported) {
-        return;
-      }
-      importedCalls.push(makeImportedCall(imported));
-    } else if (exports.some(exported => exported.exportName === callee.name)) {
-      ownCalls.set(callee.name, (ownCalls.get(callee.name) ?? 0) + 1);
-    }
+    handleIdentifierCall(createIdentifierCallContext(callee.name, state));
     return;
   }
 
-  if (isNamespaceCall(callee)) {
-    const imported = imports.get(callee.object.name);
-    if (imported?.namespace) {
-      importedCalls.push(makeNamespaceCall(imported, callee.property.name));
+  handleNamespaceCall(createNamespaceCallContext(callee, state));
+}
+
+/**
+ * Create an identifier-call context.
+ * @param {string} calleeName Identifier name.
+ * @param {{
+ *   imports: Map<string, { source: string, importedName: string, namespace: boolean }>,
+ *   exports: Array<{ exportName: string, line: number, column: number }>,
+ *   ownCalls: Map<string, number>,
+ *   importedCalls: Array<{ source: string, exportName: string }>,
+ * }} state Call state.
+ * @returns {{
+ *   calleeName: string,
+ *   imports: Map<string, { source: string, importedName: string, namespace: boolean }>,
+ *   exports: Array<{ exportName: string, line: number, column: number }>,
+ *   ownCalls: Map<string, number>,
+ *   importedCalls: Array<{ source: string, exportName: string }>,
+ * }} Identifier-call context.
+ */
+function createIdentifierCallContext(calleeName, state) {
+  return { calleeName, ...state };
+}
+
+/**
+ * Create a namespace-call context.
+ * @param {import('estree').Expression | import('estree').Super} callee Call target.
+ * @param {{
+ *   imports: Map<string, { source: string, importedName: string, namespace: boolean }>,
+ *   exports: Array<{ exportName: string, line: number, column: number }>,
+ *   ownCalls: Map<string, number>,
+ *   importedCalls: Array<{ source: string, exportName: string }>,
+ * }} state Call state.
+ * @returns {{
+ *   callee: import('estree').Expression | import('estree').Super,
+ *   imports: Map<string, { source: string, importedName: string, namespace: boolean }>,
+ *   importedCalls: Array<{ source: string, exportName: string }>,
+ * }} Namespace-call context.
+ */
+function createNamespaceCallContext(callee, state) {
+  return { callee, ...state };
+}
+
+/**
+ * Handle a call expression with an identifier callee.
+ * @param {{
+ *   calleeName: string,
+ *   imports: Map<string, { source: string, importedName: string, namespace: boolean }>,
+ *   exports: Array<{ exportName: string, line: number, column: number }>,
+ *   ownCalls: Map<string, number>,
+ *   importedCalls: Array<{ source: string, exportName: string }>,
+ * }} context Identifier-call context.
+ * @returns {void}
+ */
+function handleIdentifierCall(context) {
+  const { calleeName, imports, exports, ownCalls, importedCalls } = context;
+  if (imports.has(calleeName)) {
+    const imported = imports.get(calleeName);
+    if (!imported) {
+      return;
     }
+
+    importedCalls.push(makeImportedCall(imported));
+    return;
+  }
+
+  if (exports.some(exported => exported.exportName === calleeName)) {
+    ownCalls.set(calleeName, (ownCalls.get(calleeName) ?? 0) + 1);
   }
 }
-/* eslint-enable max-params, complexity */
+
+/**
+ * Handle a namespace call expression.
+ * @param {{
+ *   callee: import('estree').CallExpression['callee'],
+ *   imports: Map<string, { source: string, importedName: string, namespace: boolean }>,
+ *   importedCalls: Array<{ source: string, exportName: string }>,
+ * }} context Namespace-call context.
+ * @returns {void}
+ */
+function handleNamespaceCall(context) {
+  const { callee, imports, importedCalls } = context;
+  if (!isNamespaceCall(callee)) {
+    return;
+  }
+
+  const imported = imports.get(callee.object.name);
+  if (imported?.namespace) {
+    importedCalls.push(makeNamespaceCall(imported, callee.property.name));
+  }
+}
 
 /**
  * @param {import('estree').Expression | import('estree').Super} callee Call target.

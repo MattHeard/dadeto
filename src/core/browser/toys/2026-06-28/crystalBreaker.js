@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* eslint-disable no-ternary, complexity, no-unused-vars */
+/* eslint-disable no-ternary, complexity */
 import {
   createBackgroundShape,
   createRectShape,
@@ -26,7 +26,6 @@ const DEFAULT_ORB_RADIUS = 4;
 const DEFAULT_ORB_SPEED_X = 1.6;
 const DEFAULT_ORB_SPEED_Y = -2.4;
 const DEFAULT_LIVES = 3;
-const EDGE_THRESHOLD = 0.4;
 const HUD_HEIGHT = 24;
 
 /**
@@ -225,18 +224,28 @@ function normalizeState(value) {
  * @returns {object} - result
  */
 function normalizeInputState(value) {
+  const gamepad = normalizeGamepadState(value?.gamepad);
   return {
     keyboard: normalizeBooleanRecord(value?.keyboard),
-    gamepad: {
-      buttons: Array.isArray(value?.gamepad?.buttons)
-        ? value.gamepad.buttons.map(next => next === true)
-        : [],
-      axes: Array.isArray(value?.gamepad?.axes)
-        ? value.gamepad.axes.map(next => Number(next) || 0)
-        : [],
-    },
+    gamepad,
     actions: normalizeActions(value?.actions),
     previousActions: normalizeActions(value?.previousActions),
+  };
+}
+
+/**
+ * Normalizes gamepad values.
+ * @param {unknown} value - value value
+ * @returns {object} - result
+ */
+function normalizeGamepadState(value) {
+  return {
+    buttons: Array.isArray(value?.buttons)
+      ? value.buttons.map(next => next === true)
+      : [],
+    axes: Array.isArray(value?.axes)
+      ? value.axes.map(next => Number(next) || 0)
+      : [],
   };
 }
 
@@ -302,7 +311,7 @@ function resetPressed(inputState) {
  * @returns {object} - result
  */
 function normalizePaddle(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return {
       x: 156,
       y: 220,
@@ -310,6 +319,7 @@ function normalizePaddle(value) {
       height: DEFAULT_PADDLE_HEIGHT,
       speed: DEFAULT_PADDLE_SPEED,
     };
+  }
   return {
     x: normalizePositiveInteger(value.x, 156),
     y: normalizePositiveInteger(value.y, 220),
@@ -325,7 +335,7 @@ function normalizePaddle(value) {
  * @returns {object} - result
  */
 function normalizeOrb(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return {
       x: 180,
       y: 200,
@@ -334,6 +344,7 @@ function normalizeOrb(value) {
       radius: DEFAULT_ORB_RADIUS,
       stuckToPaddle: true,
     };
+  }
   return {
     x: Number(value.x) || 180,
     y: Number(value.y) || 200,

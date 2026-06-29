@@ -1,4 +1,3 @@
-/* eslint-disable no-ternary, max-statements, jsdoc/require-param-description */
 import * as browserCore from '../browser-core.js';
 import { createManagedFormShell } from './createDendriteHandler.js';
 
@@ -241,7 +240,11 @@ function initializeWebHidCapture(state, disposers) {
   }
 
   void hid.getDevices().then(
-    /** @param {HidDeviceLike[]} devices */ devices => {
+    /**
+     * @param {HidDeviceLike[]} devices
+     *   Devices currently exposed by the browser.
+     */
+    devices => {
       state.hidDevices = devices;
       devices.forEach(device => logHidDeviceEvent('available', device));
       devices.forEach(device =>
@@ -349,7 +352,10 @@ function attachHidDeviceListener(state, disposers, device) {
  */
 function updateHidSnapshot(state, snapshot) {
   const previous = state.hidPendingSnapshot;
-  const sameAsPending = previous ? sameHidSnapshot(previous, snapshot) : false;
+  let sameAsPending = false;
+  if (previous) {
+    sameAsPending = sameHidSnapshot(previous, snapshot);
+  }
 
   if (!sameAsPending) {
     state.hidPendingSnapshot = snapshot;
@@ -432,8 +438,18 @@ function sameNumberArray(left, right) {
  */
 function snapshotHidInputReport(event) {
   const bytes = Array.from(new Uint8Array(event.data.buffer));
-  const buttons = bytes.length > 0 ? snapshotHidButtons(bytes[0]) : [];
-  const axes = bytes.length > 1 ? snapshotHidAxes(bytes.slice(1, 3)) : [];
+  /** @type {ButtonSnapshot[]} */
+  let buttons = [];
+  if (bytes.length > 0) {
+    buttons = snapshotHidButtons(bytes[0]);
+  }
+
+  /** @type {number[]} */
+  let axes = [];
+  if (bytes.length > 1) {
+    axes = snapshotHidAxes(bytes.slice(1, 3));
+  }
+
   return { buttons, axes };
 }
 
@@ -464,10 +480,15 @@ function logHidReportEvent(device, event) {
  *   Button snapshots usable by the mapper.
  */
 function snapshotHidButtons(buttonByte) {
-  return [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80].map(mask => ({
-    pressed: Boolean(buttonByte & mask),
-    value: buttonByte & mask ? 1 : 0,
-  }));
+  return [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80].map(mask => {
+    const pressed = Boolean(buttonByte & mask);
+    let value = 0;
+    if (pressed) {
+      value = 1;
+    }
+
+    return { pressed, value };
+  });
 }
 
 /**
@@ -480,7 +501,11 @@ function snapshotHidButtons(buttonByte) {
 function snapshotHidAxes(axisBytes) {
   return axisBytes.map(byte => {
     const normalized = Math.min(1, Math.max(-1, (byte - 128) / 128));
-    return Math.abs(normalized) < AXIS_THRESHOLD ? 0 : normalized;
+    if (Math.abs(normalized) < AXIS_THRESHOLD) {
+      return 0;
+    }
+
+    return normalized;
   });
 }
 
@@ -2164,6 +2189,45 @@ export function joyConMapperHandler(dom, container, textInput) {
     metaIndex,
     metaId,
   });
+  initializeJoyConMapperRuntime({
+    dom,
+    textInput,
+    form,
+    disposers,
+    state,
+    startButton,
+    skipButton,
+    resetButton,
+  });
+}
+
+/**
+ * Wire the Joy-Con mapper runtime once the shell DOM exists.
+ * @param {{
+ *   dom: DOMHelpers,
+ *   textInput: HTMLInputElement,
+ *   form: HTMLElement & { _dispose?: () => void },
+ *   disposers: Array<() => void>,
+ *   state: MapperState,
+ *   startButton: HTMLButtonElement,
+ *   skipButton: HTMLButtonElement,
+ *   resetButton: HTMLButtonElement,
+ * }} runtime
+ *   Runtime objects for the mapper shell.
+ * @returns {void}
+ *   Completes the runtime setup.
+ */
+function initializeJoyConMapperRuntime(runtime) {
+  const {
+    dom,
+    textInput,
+    form,
+    disposers,
+    state,
+    startButton,
+    skipButton,
+    resetButton,
+  } = runtime;
   state.previousSnapshot = toGamepadSnapshot(currentControllerSnapshot(state));
   initializeWebHidCapture(state, disposers);
 
@@ -2192,6 +2256,5 @@ export function joyConMapperHandler(dom, container, textInput) {
   form._dispose = () => disposeAll(disposers);
 
   render(state);
-
   queueJoyConInitialSync(dom, textInput, state);
 }

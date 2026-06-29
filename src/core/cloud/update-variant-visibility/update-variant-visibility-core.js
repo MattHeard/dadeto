@@ -440,7 +440,6 @@ async function executeVariantUpdate(db, snapshot, renderContents) {
   return applyVariantUpdate(db, payload, renderContents);
 }
 
-/* eslint-disable complexity */
 /**
  * Apply the visibility update using the validated payload.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
@@ -455,19 +454,13 @@ async function applyVariantUpdate(db, payload, renderContents) {
   }
 
   const variantSnap = await variantRef.get();
-  const moderatorId = payload.moderatorId;
-  let moderatorReputation = 0;
-  if (moderatorId) {
-    moderatorReputation = await getModeratorReputation(db, moderatorId);
-  }
+  const moderatorReputation = await getModeratorReputationForPayload(
+    db,
+    payload.moderatorId
+  );
   const variantData = getValidVariantSnapshotData(variantSnap);
   const pageRef = getPageRefFromVariantRef(/** @type {any} */ (variantRef));
-  const storyRef = getStoryRefFromPageRef(pageRef);
-  let storySnap = null;
-  if (storyRef) {
-    storySnap = await storyRef.get();
-  }
-  const rootPageRef = storySnap?.data?.()?.rootPage ?? null;
+  const rootPageRef = await getRootPageRef(pageRef);
   const wasVisible = hasVisibleState(variantData, 0.5);
   await processVariantUpdate(
     variantSnap,
@@ -475,12 +468,16 @@ async function applyVariantUpdate(db, payload, renderContents) {
     payload.isApproved,
     moderatorReputation
   );
-  const nextVisibility = calculateNextVisibility(
-    variantData ?? {},
+  const nextVisibility = calculateNextVisibilityForPayload(
+    variantData,
     payload.isApproved,
     moderatorReputation
   );
-  await applyAdminLockIfNeeded(variantRef, moderatorId, payload.isApproved);
+  await applyAdminLockIfNeeded(
+    variantRef,
+    payload.moderatorId,
+    payload.isApproved
+  );
   await republishContentsIfNeeded({
     renderContents,
     pageRef,
@@ -490,7 +487,58 @@ async function applyVariantUpdate(db, payload, renderContents) {
   });
   return null;
 }
-/* eslint-enable complexity */
+
+/**
+ * Get the moderator reputation for a payload when one is provided.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore client.
+ * @param {string | undefined} moderatorId Moderator identifier.
+ * @returns {Promise<number>} Moderator reputation or zero.
+ */
+async function getModeratorReputationForPayload(db, moderatorId) {
+  if (!moderatorId) {
+    return 0;
+  }
+
+  return getModeratorReputation(db, moderatorId);
+}
+
+/**
+ * Resolve the root page reference for a variant page, if any.
+ * @param {import('firebase-admin/firestore').DocumentReference | null} pageRef Page reference.
+ * @returns {Promise<import('firebase-admin/firestore').DocumentReference | null>} Root page reference or null.
+ */
+async function getRootPageRef(pageRef) {
+  if (!pageRef) {
+    return null;
+  }
+
+  const storyRef = getStoryRefFromPageRef(pageRef);
+  if (!storyRef) {
+    return null;
+  }
+
+  const storySnap = await storyRef.get();
+  return storySnap?.data?.()?.rootPage ?? null;
+}
+
+/**
+ * Calculate the next visibility for a validated payload.
+ * @param {Record<string, unknown> | null | undefined} variantData Variant data.
+ * @param {boolean} isApproved Whether the rating is approved.
+ * @param {number} moderatorReputation Moderator reputation score.
+ * @returns {number} Next visibility score.
+ */
+function calculateNextVisibilityForPayload(
+  variantData,
+  isApproved,
+  moderatorReputation
+) {
+  return calculateNextVisibility(
+    variantData ?? {},
+    isApproved,
+    moderatorReputation
+  );
+}
 
 /**
  * @param {Record<string, unknown> | null | undefined} variantData Variant data.

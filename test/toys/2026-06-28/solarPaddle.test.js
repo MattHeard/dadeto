@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
 import { describe, expect, it, jest } from '@jest/globals';
 import {
   resolvePaddle,
@@ -7,9 +6,10 @@ import {
 } from '../../../src/core/browser/toys/2026-06-28/solarPaddle.js';
 
 /**
- *
- * @param input
- * @param storageValue
+ * Run the toy with a mock persistence store.
+ * @param {unknown} input Toy input.
+ * @param {{ current: Record<string, unknown> | null }} [storageValue] Storage snapshot.
+ * @returns {string} Serialized canvas payload.
  */
 function runToy(input, storageValue = { current: null }) {
   const setLocalPermanentData = jest.fn(next => {
