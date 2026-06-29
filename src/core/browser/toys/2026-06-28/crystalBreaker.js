@@ -472,19 +472,18 @@ function normalizeKeyName(key) {
  * @returns {void} - result
  */
 function applyGameplayInput(state, inputState) {
-  if (resetPressed(inputState)) {
-    state.status = 'ready';
-    return;
-  }
   if (
     inputState.actions.pausePressed &&
-    !inputState.previousActions.pausePressed
+    !inputState.previousActions.pausePressed &&
+    (state.status === 'paused' || state.status === 'ready')
   ) {
-    if (state.status === 'paused' || state.status === 'ready') {
-      state.status = 'running';
-    } else if (state.status === 'running') {
-      state.status = 'paused';
-    }
+    state.status = 'running';
+  } else if (
+    inputState.actions.pausePressed &&
+    !inputState.previousActions.pausePressed &&
+    state.status === 'running'
+  ) {
+    state.status = 'paused';
   }
   if (
     inputState.actions.launchPressed &&
@@ -549,15 +548,7 @@ function stepSimulation(state) {
     break;
   }
   if (state.orb.y - state.orb.radius > state.height) {
-    state.lives = Math.max(0, state.lives - 1);
-    state.combo = 0;
-    if (state.lives === 0) state.status = 'lost';
-    state.orb.stuckToPaddle = true;
-    state.orb.vx = DEFAULT_ORB_SPEED_X;
-    state.orb.vy = DEFAULT_ORB_SPEED_Y;
-    state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
-    state.orb.y = state.paddle.y - state.orb.radius - 1;
-    state.status = state.status === 'lost' ? 'lost' : 'ready';
+    resetOrbAfterLoss(state);
   }
   if (state.crystals.every(crystal => crystal.state === 'shattered'))
     state.status = 'won';
@@ -658,7 +649,26 @@ function normalizeStatus(value) {
  * @returns {string} - result
  */
 function getCrystalFill(state) {
-  if (state === 'fractured') return '#8dd3ff';
-  if (state === 'shattered') return '#4f46e5';
-  return '#5eead4';
+  return (
+    {
+      fractured: '#8dd3ff',
+      shattered: '#4f46e5',
+      whole: '#5eead4',
+    }[state] ?? '#5eead4'
+  );
+}
+
+/**
+ * Resets the orb after a missed shot.
+ * @param {object} state - state value
+ */
+function resetOrbAfterLoss(state) {
+  state.lives = Math.max(0, state.lives - 1);
+  state.combo = 0;
+  state.status = state.lives === 0 ? 'lost' : 'ready';
+  state.orb.stuckToPaddle = true;
+  state.orb.vx = DEFAULT_ORB_SPEED_X;
+  state.orb.vy = DEFAULT_ORB_SPEED_Y;
+  state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
+  state.orb.y = state.paddle.y - state.orb.radius - 1;
 }

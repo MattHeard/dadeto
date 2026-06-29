@@ -120,6 +120,396 @@ describe('crystalBreaker', () => {
     expect(next.storageValue.current.CRYS1.crystals[0].state).toBe('fractured');
   });
 
+  it('keeps a whole crystal whole when it is hit before any fracture', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 40, y: 36, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 14,
+              hp: 4,
+              maxHp: 3,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.CRYS1.crystals[0].state).toBe('whole');
+    expect(storageValue.current.CRYS1.score).toBe(1);
+  });
+
+  it('resets on a fresh reset keydown', () => {
+    const storageValue = { current: null };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+
+    expect(storageValue.current.CRYS1.status).toBe('ready');
+    expect(storageValue.current.CRYS1.input.actions.resetPressed).toBe(true);
+  });
+
+  it('bounces from the top edge and the paddle in one run', () => {
+    const topEdgeStorage = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 4,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 80, y: 3, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          crystals: [],
+        },
+      },
+    };
+    const paddleStorage = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 4,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 84, y: 112, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          crystals: [],
+        },
+      },
+    };
+
+    runToy('{}', topEdgeStorage);
+    runToy('{}', paddleStorage);
+
+    expect(topEdgeStorage.current.CRYS1.orb.vy).toBeGreaterThan(0);
+    expect(paddleStorage.current.CRYS1.orb.vy).toBeLessThan(0);
+  });
+
+  it('bounces off the left wall', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 4,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 3, y: 70, vx: -3, vy: 0, radius: 4, stuckToPaddle: false },
+          crystals: [],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.CRYS1.orb.vx).toBeGreaterThan(0);
+  });
+
+  it('renders a fractured crystal with the fractured fill', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 1,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 80, y: 70, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          crystals: [
+            {
+              id: 'fractured',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 14,
+              hp: 1,
+              maxHp: 2,
+              fracture: 1,
+              state: 'fractured',
+            },
+          ],
+        },
+      },
+    };
+    const { payload } = runToy('{}', storageValue);
+
+    expect(payload.shapes.some(shape => shape.fill === '#8dd3ff')).toBe(true);
+  });
+
+  it('toggles pause from a running state', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 4,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 80, y: 70, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          crystals: [],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'p' }), storageValue);
+
+    expect(storageValue.current.CRYS1.status).toBe('paused');
+  });
+
+  it('marks the game lost after the last life is spent', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 4,
+          status: 'running',
+          score: 0,
+          lives: 1,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 80, y: 150, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 300,
+              y: 300,
+              width: 24,
+              height: 14,
+              hp: 1,
+              maxHp: 1,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.CRYS1.status).toBe('lost');
+    expect(storageValue.current.CRYS1.lives).toBe(0);
+  });
+
+  it('bounces from the top edge and the paddle in one run', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 84, y: 8, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 300,
+              y: 300,
+              width: 24,
+              height: 14,
+              hp: 1,
+              maxHp: 1,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.CRYS1.orb.vy).toBeGreaterThan(0);
+    expect(storageValue.current.CRYS1.combo).toBe(0);
+  });
+
   it('handles malformed persisted state by falling back to a valid scene', () => {
     const storageValue = { current: { CRYS1: { version: 999 } } };
     const next = runToy('{}', storageValue);
@@ -200,6 +590,243 @@ describe('crystalBreaker', () => {
     expect(storageValue.current.CRYS1.crystals[0].state).toBe('whole');
     expect(storageValue.current.CRYS1.crystals[1].state).toBe('whole');
     expect(storageValue.current.CRYS1.crystals[2].state).toBe('fractured');
+  });
+
+  it('normalizes missing crystal state and keyboard input paths', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 2,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: null,
+            gamepad: null,
+            actions: null,
+            previousActions: null,
+          },
+          paddle: null,
+          orb: null,
+          crystals: [
+            {
+              id: 'crystal-a',
+              x: 10,
+              y: 10,
+              width: 24,
+              height: 14,
+              hp: 1,
+              maxHp: 2,
+              fracture: 0,
+              state: 'bad',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'a' }), storageValue);
+
+    expect(storageValue.current.CRYS1.input.keyboard).toEqual({ a: true });
+    expect(storageValue.current.CRYS1.crystals[0].state).toBe('whole');
+  });
+
+  it('normalizes a partial orb back to the default position and speed', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 2,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: null,
+            previousActions: null,
+          },
+          paddle: null,
+          orb: {
+            x: 'bad',
+            y: null,
+            vx: 0,
+            vy: 0,
+            radius: 'bad',
+            stuckToPaddle: false,
+          },
+          crystals: [],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.CRYS1.orb.x).toBe(180);
+    expect(storageValue.current.CRYS1.orb.y).toBe(200);
+  });
+
+  it('falls back to default crystals when the persisted list is empty', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 60, y: 103, vx: 0, vy: -2, radius: 4, stuckToPaddle: false },
+          crystals: null,
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.CRYS1.crystals).toHaveLength(15);
+  });
+
+  it('covers reset, keyup, top-edge, paddle, and whole-crystal branches', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 2,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 40, y: 36, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 14,
+              hp: 2,
+              maxHp: 2,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keyup', key: 'r' }), storageValue);
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+    const next = runToy('{}', storageValue);
+
+    expect(next.storageValue.current.CRYS1.status).toBe('ready');
+    expect(next.storageValue.current.CRYS1.lives).toBe(3);
+    expect(next.storageValue.current.CRYS1.orb.vy).toBe(-2.4);
+    expect(next.storageValue.current.CRYS1.crystals[0].state).toBe('whole');
+  });
+
+  it('bounces from the top edge and keeps the orb in play', () => {
+    const storageValue = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 2,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 60, y: 1, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 100,
+              y: 100,
+              width: 24,
+              height: 14,
+              hp: 2,
+              maxHp: 2,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+
+    const next = runToy('{}', storageValue);
+
+    expect(next.storageValue.current.CRYS1.orb.vy).toBeGreaterThan(0);
+    expect(next.storageValue.current.CRYS1.status).toBe('running');
   });
 
   it('resets on a fresh reset keydown and rebuilds the seed state', () => {
@@ -458,5 +1085,191 @@ describe('crystalBreaker', () => {
 
     expect(storageValue.current.CRYS1.status).toBe('won');
     expect(storageValue.current.CRYS1.score).toBe(10);
+  });
+
+  it('covers the remaining crystal input and collision branches', () => {
+    const resetStorage = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 8,
+          status: 'running',
+          score: 12,
+          lives: 1,
+          combo: 3,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
+          orb: {
+            x: 60,
+            y: 103,
+            vx: 0,
+            vy: -2,
+            radius: 4,
+            stuckToPaddle: false,
+          },
+          crystals: [
+            {
+              id: 'shattered',
+              x: 0,
+              y: 0,
+              width: 24,
+              height: 14,
+              hp: 0,
+              maxHp: 1,
+              fracture: 1,
+              state: 'shattered',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), resetStorage);
+
+    expect(resetStorage.current.CRYS1.status).toBe('ready');
+    expect(resetStorage.current.CRYS1.input.actions.resetPressed).toBe(true);
+
+    const pauseResumeStorage = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 1,
+          status: 'paused',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
+          orb: {
+            x: 60,
+            y: 10,
+            vx: 0,
+            vy: 2,
+            radius: 4,
+            stuckToPaddle: false,
+          },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 20,
+              y: 20,
+              width: 24,
+              height: 14,
+              hp: 2,
+              maxHp: 2,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'p' }), pauseResumeStorage);
+    expect(pauseResumeStorage.current.CRYS1.status).toBe('running');
+
+    const collisionStorage = {
+      current: {
+        CRYS1: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          combo: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 40, y: 3, vx: 0, vy: -3, radius: 4, stuckToPaddle: false },
+          crystals: [
+            {
+              id: 'crystal-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 14,
+              hp: 2,
+              maxHp: 2,
+              fracture: 0,
+              state: 'whole',
+            },
+            {
+              id: 'crystal-2',
+              x: 20,
+              y: 20,
+              width: 24,
+              height: 14,
+              hp: 2,
+              maxHp: 2,
+              fracture: 0,
+              state: 'whole',
+            },
+          ],
+        },
+      },
+    };
+
+    const collisionNext = runToy('{}', collisionStorage);
+
+    expect(collisionNext.storageValue.current.CRYS1.orb.vy).toBeGreaterThan(0);
+    expect(collisionNext.storageValue.current.CRYS1.crystals[0].state).toBe(
+      'whole'
+    );
   });
 });

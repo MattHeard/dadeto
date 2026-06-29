@@ -33,6 +33,23 @@ describe('batteryBreakout', () => {
     expect(storageValue.current.BATT4.version).toBe(1);
   });
 
+  it('falls back when no storage accessor is available', () => {
+    const payload = JSON.parse(
+      batteryBreakout(JSON.stringify({ width: 240, height: 160 }), {})
+    );
+
+    expect(payload.width).toBe(240);
+    expect(payload.shapes.some(shape => shape.type === 'circle')).toBe(true);
+  });
+
+  it('keeps the seeded layout stable when the layout seed is zero', () => {
+    const { storageValue } = runToy(
+      JSON.stringify({ width: 240, height: 160, layoutSeed: 0 })
+    );
+
+    expect(storageValue.current.BATT4.cells).toHaveLength(9);
+  });
+
   it('falls back when storage access is unavailable', () => {
     const payload = JSON.parse(batteryBreakout('{}', new Map()));
 
@@ -137,6 +154,229 @@ describe('batteryBreakout', () => {
       true,
       true,
     ]);
+  });
+
+  it('resets from persisted state on the first reset press', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 5,
+          status: 'running',
+          score: 7,
+          lives: 2,
+          faults: 1,
+          layoutSeed: 4,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 80, y: 70, vx: 1, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-a',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'charging',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+
+    expect(storageValue.current.BATT4.status).toBe('ready');
+  });
+
+  it('returns early from simulation when the orb is stuck to the paddle', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 5,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 90, y: 90, vx: 0, vy: 3, radius: 4, stuckToPaddle: true },
+          cells: [
+            {
+              id: 'cell-a',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'charging',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.frame).toBe(6);
+    expect(storageValue.current.BATT4.orb.y).toBeGreaterThan(90);
+  });
+
+  it('reflects from the side of a cell when the horizontal overlap is smaller', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 53, y: 37, vx: -3, vy: 1, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-a',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'charging',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.orb.vx).toBeGreaterThan(0);
+    expect(storageValue.current.BATT4.cells[0].charge).toBe(1);
+  });
+
+  it('reflects from the top of a cell when the vertical overlap is smaller', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 44, y: 36, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-a',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'charging',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.orb.vy).toBeLessThan(0);
   });
 
   it('falls back through the normalization branches for malformed state', () => {
@@ -447,6 +687,216 @@ describe('batteryBreakout', () => {
     expect(paddleNext.storageValue.current.BATT4.orb.vx).not.toBe(0);
   });
 
+  it('covers the remaining battery collision and reset branches', () => {
+    const chargingStorage = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 44, y: 37, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 3,
+              maxCharge: 5,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    const overchargedStorage = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 44, y: 37, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 1,
+              targetCharge: 3,
+              maxCharge: 3,
+              overchargeCooldown: 2,
+              state: 'overcharged',
+            },
+          ],
+        },
+      },
+    };
+
+    const horizontalCellStorage = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 54, y: 36, vx: 3, vy: 0, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 3,
+              maxCharge: 5,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    const resetStorage = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 3,
+          status: 'running',
+          score: 0,
+          lives: 2,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 60, y: 139, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', chargingStorage);
+    runToy('{}', overchargedStorage);
+    runToy('{}', horizontalCellStorage);
+    runToy('{}', resetStorage);
+
+    expect(chargingStorage.current.BATT4.cells[0].state).toBe('charging');
+    expect(overchargedStorage.current.BATT4.cells[0].charge).toBe(4);
+    expect(overchargedStorage.current.BATT4.cells[0].overchargeCooldown).toBe(
+      120
+    );
+    expect(horizontalCellStorage.current.BATT4.cells[0].state).toBe('charging');
+    expect(horizontalCellStorage.current.BATT4.orb.vx).toBeLessThan(0);
+    expect(resetStorage.current.BATT4.status).toBe('ready');
+    expect(resetStorage.current.BATT4.orb.stuckToPaddle).toBe(true);
+  });
+
   it('uses a staggered default cell layout', () => {
     const { storageValue } = runToy(
       JSON.stringify({ width: 240, height: 160 })
@@ -649,6 +1099,281 @@ describe('batteryBreakout', () => {
 
     expect(next.storageValue.current.BATT4.cells[0].state).toBe('stable');
     expect(next.storageValue.current.BATT4.orb.x).not.toBe(44);
+  });
+
+  it('normalizes missing gamepad buttons and zeroed orb coordinates', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          layoutSeed: 0,
+          input: {
+            keyboard: {},
+            gamepad: { axes: [0.5] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: -1, y: 120, width: 48, height: 6, speed: 4 },
+          orb: { x: 0, y: 0, vx: 0, vy: 3, radius: 4, stuckToPaddle: true },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.input.gamepad.buttons).toEqual([]);
+    expect(storageValue.current.BATT4.paddle.x).toBe(132);
+    expect(storageValue.current.BATT4.orb.x).toBe(156);
+    expect(storageValue.current.BATT4.orb.y).toBe(111);
+  });
+
+  it('normalizes missing gamepad axes back to an empty list', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [true, false] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 120, width: 48, height: 6, speed: 4 },
+          orb: { x: 90, y: 90, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.input.gamepad.axes).toEqual([]);
+  });
+
+  it('normalizes empty actions and previous actions back to false flags', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'ready',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          layoutSeed: 2,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [true], axes: [] },
+            actions: null,
+            previousActions: null,
+          },
+          paddle: { x: 90, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 90, y: 90, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.input.actions.moveLeft).toBe(false);
+    expect(storageValue.current.BATT4.input.previousActions.moveRight).toBe(
+      false
+    );
+  });
+
+  it('resets to a new seeded layout on r', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 0,
+          status: 'running',
+          score: 0,
+          lives: 3,
+          faults: 0,
+          layoutSeed: 4,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 90, y: 90, vx: 0, vy: 0, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+
+    expect(storageValue.current.BATT4.status).toBe('ready');
+    expect(storageValue.current.BATT4.orb.stuckToPaddle).toBe(true);
+  });
+
+  it('resets from persisted state and increments the layout seed', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 180,
+          height: 140,
+          frame: 8,
+          status: 'running',
+          score: 3,
+          lives: 2,
+          faults: 1,
+          layoutSeed: 7,
+          input: {
+            keyboard: {},
+            gamepad: { buttons: [], axes: [] },
+            actions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+            previousActions: {
+              moveLeft: false,
+              moveRight: false,
+              launchPressed: false,
+              pausePressed: false,
+              resetPressed: false,
+            },
+          },
+          paddle: { x: 40, y: 114, width: 48, height: 6, speed: 4 },
+          orb: { x: 60, y: 103, vx: 0, vy: -2, radius: 4, stuckToPaddle: false },
+          cells: [
+            {
+              id: 'cell-1',
+              x: 32,
+              y: 32,
+              width: 24,
+              height: 10,
+              charge: 0,
+              targetCharge: 2,
+              maxCharge: 3,
+              overchargeCooldown: 0,
+              state: 'empty',
+            },
+          ],
+        },
+      },
+    };
+
+    runToy(JSON.stringify({ type: 'keydown', key: 'r' }), storageValue);
+
+    expect(storageValue.current.BATT4.status).toBe('ready');
+    expect(storageValue.current.BATT4.cells).toHaveLength(9);
+    expect(storageValue.current.BATT4.orb.stuckToPaddle).toBe(true);
   });
 
   it('can push a stable cell into overcharged on a later hit', () => {

@@ -855,10 +855,7 @@ function resolvePaddle(state) {
  */
 function resolvePanels(state) {
   for (const panel of state.panels) {
-    if (panel.charge) {
-      continue;
-    }
-    if (circleIntersectsPanel(state.orb, panel)) {
+    if (!panel.charge && circleIntersectsPanel(state.orb, panel)) {
       const collisionAxis = getPanelCollisionAxis(state.orb, panel);
       separateOrbFromPanel(state.orb, panel, collisionAxis);
       panel.charge = true;
