@@ -658,6 +658,30 @@ function buildActionState(input, keyboard, normalizedKey) {
 }
 
 /**
+ * Check whether left movement is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @returns {boolean} Whether left movement is pressed.
+ */
+function isMoveLeftPressed(keyboard) {
+  return (
+    keyboard.arrowleft === true || keyboard.a === true || keyboard.left === true
+  );
+}
+
+/**
+ * Check whether right movement is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @returns {boolean} Whether right movement is pressed.
+ */
+function isMoveRightPressed(keyboard) {
+  return (
+    keyboard.arrowright === true ||
+    keyboard.d === true ||
+    keyboard.right === true
+  );
+}
+
+/**
  * Updates the input state from the latest event.
  * @param {object} previous - previous value
  * @param {object} input - input value
