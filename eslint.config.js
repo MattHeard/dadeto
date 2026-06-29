@@ -103,6 +103,15 @@ export default [
         'document',
         'localStorage',
       ],
+      'no-magic-numbers': [
+        'warn',
+        {
+          ignore: [-1, 0, 1],
+          ignoreArrayIndexes: true,
+          ignoreDefaultValues: true,
+          enforceConst: true,
+        },
+      ],
       'no-param-reassign': 'warn',
       'no-return-assign': 'warn',
       'prefer-const': 'warn',
