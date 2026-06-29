@@ -53,7 +53,10 @@ export function batteryBreakout(input, env) {
 function getStorageAccessor(env) {
   if (!env || typeof env.get !== 'function') return null;
   const setter = env.get('setLocalPermanentData');
-  return typeof setter === 'function' ? setter : null;
+  if (typeof setter === 'function') {
+    return setter;
+  }
+  return null;
 }
 
 /**
@@ -100,32 +103,71 @@ export function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
-  const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
+  const merged = buildMergedState(shouldReset, base, seed);
   const inputState = updateInputState(base.input, input);
-  if (
-    inputState.actions.resetPressed &&
-    !inputState.previousActions.resetPressed
-  ) {
-    const resetState = createSeedState(
-      {
-        ...input,
-        layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
-      },
-      persisted
-        ? {
-            width: persisted.width,
-            height: persisted.height,
-            layoutSeed: persisted.layoutSeed,
-          }
-        : undefined
-    );
-    resetState.input = inputState;
+  const resetState = maybeBuildResetState(persisted, input, inputState);
+  if (resetState) {
     return resetState;
   }
   const withInput = { ...merged, input: inputState, frame: base.frame + 1 };
   applyGameplayInput(withInput, inputState);
   if (withInput.status === 'running') stepSimulation(withInput);
   return withInput;
+}
+
+/**
+ * Build the merged state for the current step.
+ * @param {boolean} shouldReset Whether the state should reset.
+ * @param {unknown} base Base state.
+ * @param {unknown} seed Seed state.
+ * @returns {unknown} Merged state.
+ */
+function buildMergedState(shouldReset, base, seed) {
+  if (shouldReset) {
+    return seed;
+  }
+  return mergeSeedAndState(base, seed);
+}
+
+/**
+ * Build a reset state if reset was newly pressed.
+ * @param {unknown} persisted Persisted state.
+ * @param {unknown} input Input state.
+ * @param {unknown} inputState Derived input state.
+ * @returns {unknown} Reset state or null.
+ */
+function maybeBuildResetState(persisted, input, inputState) {
+  if (
+    !inputState.actions.resetPressed ||
+    inputState.previousActions.resetPressed
+  ) {
+    return null;
+  }
+  const resetState = createSeedState(
+    {
+      ...input,
+      layoutSeed: (persisted?.layoutSeed ?? 0) + 1,
+    },
+    buildResetSeedFallback(persisted)
+  );
+  resetState.input = inputState;
+  return resetState;
+}
+
+/**
+ * Build reset seed fallback values.
+ * @param {unknown} persisted Persisted state.
+ * @returns {unknown} Reset seed fallback values.
+ */
+function buildResetSeedFallback(persisted) {
+  if (!persisted) {
+    return undefined;
+  }
+  return {
+    width: persisted.width,
+    height: persisted.height,
+    layoutSeed: persisted.layoutSeed,
+  };
 }
 
 /**
@@ -209,23 +251,60 @@ function normalizeSeedValues(input, fallback) {
  */
 function normalizeSeedDimensions(input, fallback) {
   return {
-    width: normalizePositiveInteger(
-      input?.width,
-      fallback?.width ?? DEFAULT_WIDTH
-    ),
-    height: normalizePositiveInteger(
-      input?.height,
-      fallback?.height ?? DEFAULT_HEIGHT
-    ),
-    layoutSeed: normalizePositiveInteger(
-      input?.layoutSeed,
-      fallback?.layoutSeed ?? 1
-    ),
-    lives: normalizePositiveInteger(
-      input?.lives,
-      fallback?.lives ?? DEFAULT_LIVES
-    ),
+    width: normalizeSeedWidth(input, fallback),
+    height: normalizeSeedHeight(input, fallback),
+    layoutSeed: normalizeSeedLayoutSeed(input, fallback),
+    lives: normalizeSeedLives(input, fallback),
   };
+}
+
+/**
+ * Normalize seed width.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @returns {number} Normalized width.
+ */
+function normalizeSeedWidth(input, fallback) {
+  return normalizePositiveInteger(
+    input?.width,
+    fallback?.width ?? DEFAULT_WIDTH
+  );
+}
+
+/**
+ * Normalize seed height.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @returns {number} Normalized height.
+ */
+function normalizeSeedHeight(input, fallback) {
+  return normalizePositiveInteger(
+    input?.height,
+    fallback?.height ?? DEFAULT_HEIGHT
+  );
+}
+
+/**
+ * Normalize seed layout seed.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @returns {number} Normalized layout seed.
+ */
+function normalizeSeedLayoutSeed(input, fallback) {
+  return normalizePositiveInteger(input?.layoutSeed, fallback?.layoutSeed ?? 1);
+}
+
+/**
+ * Normalize seed lives.
+ * @param {unknown} input Input values.
+ * @param {unknown} fallback Fallback values.
+ * @returns {number} Normalized lives.
+ */
+function normalizeSeedLives(input, fallback) {
+  return normalizePositiveInteger(
+    input?.lives,
+    fallback?.lives ?? DEFAULT_LIVES
+  );
 }
 
 /**
@@ -365,9 +444,10 @@ function normalizeState(value) {
  * @returns {unknown} Return value.
  */
 function normalizeStatus(value) {
-  return ['ready', 'running', 'paused', 'won', 'lost'].includes(value)
-    ? value
-    : 'ready';
+  if (['ready', 'running', 'paused', 'won', 'lost'].includes(value)) {
+    return value;
+  }
+  return 'ready';
 }
 
 /**
@@ -402,16 +482,37 @@ function normalizeBooleanRecord(value) {
  * @returns {unknown} Return value.
  */
 function normalizeGamepadState(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return { buttons: [], axes: [] };
+  }
   return {
-    buttons: Array.isArray(value.buttons)
-      ? value.buttons.map(next => next === true)
-      : [],
-    axes: Array.isArray(value.axes)
-      ? value.axes.map(next => Number(next) || 0)
-      : [],
+    buttons: normalizeGamepadButtons(value.buttons),
+    axes: normalizeGamepadAxes(value.axes),
   };
+}
+
+/**
+ * Normalize gamepad buttons.
+ * @param {unknown} value Button values.
+ * @returns {boolean[]} Normalized buttons.
+ */
+function normalizeGamepadButtons(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map(next => next === true);
+}
+
+/**
+ * Normalize gamepad axes.
+ * @param {unknown} value Axis values.
+ * @returns {number[]} Normalized axes.
+ */
+function normalizeGamepadAxes(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map(next => Number(next) || 0);
 }
 
 /**
@@ -465,7 +566,10 @@ function normalizePaddle(value, height) {
  */
 function normalizeNonNegativeInteger(value, fallback) {
   const next = Number(value);
-  return Number.isFinite(next) && next >= 0 ? Math.round(next) : fallback;
+  if (Number.isFinite(next) && next >= 0) {
+    return Math.round(next);
+  }
+  return fallback;
 }
 
 /**
@@ -474,8 +578,9 @@ function normalizeNonNegativeInteger(value, fallback) {
  * @returns {unknown} Return value.
  */
 function normalizeOrb(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return createState(createSeedOptions()).orb;
+  }
   return {
     x: Number(value.x) || Math.round(DEFAULT_WIDTH / 2),
     y: Number(value.y) || 0,
@@ -494,7 +599,10 @@ function normalizeOrb(value) {
  */
 function normalizeNumber(value, fallback) {
   const next = Number(value);
-  return Number.isFinite(next) && next !== 0 ? next : fallback;
+  if (Number.isFinite(next) && next !== 0) {
+    return next;
+  }
+  return fallback;
 }
 
 /**
@@ -540,7 +648,7 @@ function normalizeCellsFromState(value) {
         DEFAULT_CELL_MAX
       );
       return {
-        id: typeof record.id === 'string' ? record.id : `cell-${index + 1}`,
+        id: getCellId(record.id, index),
         x: Number(record.x) || 0,
         y: Number(record.y) || 0,
         width: normalizePositiveInteger(record.width, 20),
@@ -564,6 +672,19 @@ function normalizeCellsFromState(value) {
 }
 
 /**
+ * Get a cell id.
+ * @param {unknown} value Cell id value.
+ * @param {number} index Cell index.
+ * @returns {string} Cell id.
+ */
+function getCellId(value, index) {
+  if (typeof value === 'string') {
+    return value;
+  }
+  return `cell-${index + 1}`;
+}
+
+/**
  * Normalize Cell State.
  * @param {{
  *   value: unknown,
@@ -577,12 +698,21 @@ function normalizeCellsFromState(value) {
 function normalizeCellState(options) {
   const { value, charge, targetCharge, maxCharge, overchargeCooldown } =
     options;
-  if (['empty', 'charging', 'stable', 'overcharged'].includes(value))
+  if (['empty', 'charging', 'stable', 'overcharged'].includes(value)) {
     return value;
-  if (normalizePositiveInteger(overchargeCooldown, 0) > 0) return 'overcharged';
-  if (charge > maxCharge) return 'overcharged';
-  if (charge >= targetCharge) return 'stable';
-  if (charge > 0) return 'charging';
+  }
+  if (normalizePositiveInteger(overchargeCooldown, 0) > 0) {
+    return 'overcharged';
+  }
+  if (charge > maxCharge) {
+    return 'overcharged';
+  }
+  if (charge >= targetCharge) {
+    return 'stable';
+  }
+  if (charge > 0) {
+    return 'charging';
+  }
   return 'empty';
 }
 
@@ -651,18 +781,42 @@ function buildCellPositions(width, height, cellWidth, cellHeight) {
 
       return {
         x: clamp(
-          x + rowOffset + (colIndex % 2 === 0 ? 0 : 5),
+          x + rowOffset + getCellColumnOffset(colIndex),
           CELL_LEFT,
           width - cellWidth - CELL_LEFT
         ),
         y: clamp(
-          y + (colIndex % 3 === 0 ? 0 : 2),
+          y + getCellRowOffset(colIndex),
           CELL_TOP,
           height - cellHeight - 60
         ),
       };
     })
   );
+}
+
+/**
+ * Get cell column offset.
+ * @param {number} colIndex Column index.
+ * @returns {number} Column offset.
+ */
+function getCellColumnOffset(colIndex) {
+  if (colIndex % 2 === 0) {
+    return 0;
+  }
+  return 5;
+}
+
+/**
+ * Get cell row offset.
+ * @param {number} colIndex Column index.
+ * @returns {number} Row offset.
+ */
+function getCellRowOffset(colIndex) {
+  if (colIndex % 3 === 0) {
+    return 0;
+  }
+  return 2;
 }
 
 /**
@@ -709,19 +863,43 @@ export function updateInputState(previous, input) {
  * @returns {unknown} Return value.
  */
 function deriveActions(input, keyboard, gamepad) {
-  if (input?.type === 'keydown' && typeof input.key === 'string')
-    keyboard[input.key] = true;
-  if (input?.type === 'keyup' && typeof input.key === 'string')
-    keyboard[input.key] = false;
-  if (input?.type === 'capture' && input.capturing === false)
+  applyKeyboardInput(input, keyboard);
+  applyGamepadInput(input, gamepad);
+  if (input?.type === 'capture' && input.capturing === false) {
     return createActionsFromState(keyboard, gamepad);
-  if (Array.isArray(input?.buttons))
-    gamepad.buttons = input.buttons.map(next => next === true);
-  if (Array.isArray(input?.axes))
-    gamepad.axes = input.axes.map(next => Number(next) || 0);
-  if (typeof input?.buttonIndex === 'number')
-    gamepad.buttons[input.buttonIndex] = input.pressed === true;
+  }
   return createActionsFromState(keyboard, gamepad);
+}
+
+/**
+ * Apply keyboard input to the tracked keyboard state.
+ * @param {unknown} input Input event.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ */
+function applyKeyboardInput(input, keyboard) {
+  if (input?.type === 'keydown' && typeof input.key === 'string') {
+    keyboard[input.key] = true;
+  }
+  if (input?.type === 'keyup' && typeof input.key === 'string') {
+    keyboard[input.key] = false;
+  }
+}
+
+/**
+ * Apply gamepad input to the tracked gamepad state.
+ * @param {unknown} input Input event.
+ * @param {{ buttons: boolean[], axes: number[] }} gamepad Gamepad state.
+ */
+function applyGamepadInput(input, gamepad) {
+  if (Array.isArray(input?.buttons)) {
+    gamepad.buttons = input.buttons.map(next => next === true);
+  }
+  if (Array.isArray(input?.axes)) {
+    gamepad.axes = input.axes.map(next => Number(next) || 0);
+  }
+  if (typeof input?.buttonIndex === 'number') {
+    gamepad.buttons[input.buttonIndex] = input.pressed === true;
+  }
 }
 
 /**
@@ -731,36 +909,81 @@ function deriveActions(input, keyboard, gamepad) {
  * @returns {unknown} Return value.
  */
 function createActionsFromState(keyboard, gamepad) {
-  const left = Boolean(
+  return {
+    actions: {
+      moveLeft: isMoveLeftPressed(keyboard, gamepad),
+      moveRight: isMoveRightPressed(keyboard, gamepad),
+      launchPressed: isLaunchPressed(keyboard, gamepad),
+      pausePressed: isPausePressed(keyboard, gamepad),
+      resetPressed: isResetPressed(keyboard, gamepad),
+    },
+  };
+}
+
+/**
+ * Check whether left movement is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {{ buttons: boolean[], axes: number[] }} gamepad Gamepad state.
+ * @returns {boolean} Whether left movement is pressed.
+ */
+function isMoveLeftPressed(keyboard, gamepad) {
+  return Boolean(
     keyboard.ArrowLeft ||
       keyboard.a ||
       keyboard.A ||
       isAxisLeft(gamepad.axes[0])
   );
-  const right = Boolean(
+}
+
+/**
+ * Check whether right movement is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {{ buttons: boolean[], axes: number[] }} gamepad Gamepad state.
+ * @returns {boolean} Whether right movement is pressed.
+ */
+function isMoveRightPressed(keyboard, gamepad) {
+  return Boolean(
     keyboard.ArrowRight ||
       keyboard.d ||
       keyboard.D ||
       isAxisRight(gamepad.axes[0])
   );
-  const launchPressed = Boolean(
+}
+
+/**
+ * Check whether launch is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {{ buttons: boolean[], axes: number[] }} gamepad Gamepad state.
+ * @returns {boolean} Whether launch is pressed.
+ */
+function isLaunchPressed(keyboard, gamepad) {
+  return Boolean(
     keyboard.Space || keyboard[' '] || keyboard.Button0 || gamepad.buttons[0]
   );
-  const pausePressed = Boolean(
+}
+
+/**
+ * Check whether pause is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {{ buttons: boolean[], axes: number[] }} gamepad Gamepad state.
+ * @returns {boolean} Whether pause is pressed.
+ */
+function isPausePressed(keyboard, gamepad) {
+  return Boolean(
     keyboard.p || keyboard.P || keyboard.Button9 || gamepad.buttons[9]
   );
-  const resetPressed = Boolean(
+}
+
+/**
+ * Check whether reset is pressed.
+ * @param {Record<string, boolean>} keyboard Keyboard state.
+ * @param {{ buttons: boolean[], axes: number[] }} gamepad Gamepad state.
+ * @returns {boolean} Whether reset is pressed.
+ */
+function isResetPressed(keyboard, gamepad) {
+  return Boolean(
     keyboard.r || keyboard.R || keyboard.Button8 || gamepad.buttons[8]
   );
-  return {
-    actions: {
-      moveLeft: left,
-      moveRight: right,
-      launchPressed,
-      pausePressed,
-      resetPressed,
-    },
-  };
 }
 
 /**
@@ -787,6 +1010,17 @@ function isAxisRight(value) {
  */
 export function applyGameplayInput(state, inputState) {
   movePaddle(state, inputState.actions);
+  handleLaunchInput(state, inputState);
+  handlePauseInput(state, inputState);
+  if (state.orb.stuckToPaddle) stickOrbToPaddle(state);
+}
+
+/**
+ * Handle launch input transitions.
+ * @param {unknown} state Game state.
+ * @param {unknown} inputState Input state.
+ */
+function handleLaunchInput(state, inputState) {
   if (
     state.status === 'ready' &&
     inputState.actions.launchPressed &&
@@ -795,17 +1029,27 @@ export function applyGameplayInput(state, inputState) {
     state.status = 'running';
     state.orb.stuckToPaddle = false;
   }
+}
+
+/**
+ * Handle pause input transitions.
+ * @param {unknown} state Game state.
+ * @param {unknown} inputState Input state.
+ */
+function handlePauseInput(state, inputState) {
   if (
-    inputState.actions.pausePressed &&
-    !inputState.previousActions.pausePressed
+    !inputState.actions.pausePressed ||
+    inputState.previousActions.pausePressed
   ) {
-    if (state.status === 'paused') {
-      state.status = 'running';
-    } else if (state.status === 'running') {
-      state.status = 'paused';
-    }
+    return;
   }
-  if (state.orb.stuckToPaddle) stickOrbToPaddle(state);
+  if (state.status === 'paused') {
+    state.status = 'running';
+    return;
+  }
+  if (state.status === 'running') {
+    state.status = 'paused';
+  }
 }
 
 /**
@@ -814,7 +1058,7 @@ export function applyGameplayInput(state, inputState) {
  * @param {unknown} actions Parameter.
  */
 export function movePaddle(state, actions) {
-  const delta = (actions.moveRight ? 1 : 0) - (actions.moveLeft ? 1 : 0);
+  const delta = Number(actions.moveRight) - Number(actions.moveLeft);
   state.paddle.x = Math.round(
     clamp(
       state.paddle.x + delta * state.paddle.speed,
@@ -908,26 +1152,46 @@ export function resolveCells(state, hitCells) {
     if (circleIntersectsCell(state.orb, cell)) {
       hitCells.add(cell.id);
       reflectOrb(state, cell);
-      if (cell.state === 'overcharged') {
-        cell.charge = Math.max(cell.charge, cell.maxCharge + 1);
-        cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
-        continue;
-      }
-      cell.charge += 1;
-      if (cell.charge > cell.maxCharge) {
-        cell.state = 'overcharged';
-      } else if (cell.charge >= cell.targetCharge) {
-        cell.state = 'stable';
-      } else {
-        cell.state = 'charging';
-      }
-      if (cell.state === 'stable') state.score += 1;
-      if (cell.state === 'overcharged') {
-        cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
-        state.faults += 1;
-      }
+      applyCellHit(state, cell);
       break;
     }
+  }
+}
+
+/**
+ * Apply a resolved cell hit.
+ * @param {unknown} state Game state.
+ * @param {unknown} cell Cell state.
+ */
+function applyCellHit(state, cell) {
+  if (cell.state === 'overcharged') {
+    cell.charge = Math.max(cell.charge, cell.maxCharge + 1);
+    cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
+    return;
+  }
+  cell.charge += 1;
+  updateCellStateAfterCharge(state, cell);
+}
+
+/**
+ * Update a cell after it has been charged.
+ * @param {unknown} state Game state.
+ * @param {unknown} cell Cell state.
+ */
+function updateCellStateAfterCharge(state, cell) {
+  if (cell.charge > cell.maxCharge) {
+    cell.state = 'overcharged';
+  } else if (cell.charge >= cell.targetCharge) {
+    cell.state = 'stable';
+  } else {
+    cell.state = 'charging';
+  }
+  if (cell.state === 'stable') {
+    state.score += 1;
+  }
+  if (cell.state === 'overcharged') {
+    cell.overchargeCooldown = DEFAULT_OVERCHARGE_COOLDOWN;
+    state.faults += 1;
   }
 }
 
