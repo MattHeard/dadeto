@@ -1,5 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { joyConMapperTestOnly } from '../../../../src/core/browser/inputHandlers/joyConMapper.js';
+import {
+  joyConMapperHandler,
+  joyConMapperTestOnly,
+} from '../../../../src/core/browser/inputHandlers/joyConMapper.js';
 
 const {
   createElement,
@@ -606,6 +609,15 @@ describe('joyConMapper coverage helpers', () => {
       buttons: [{ pressed: true, value: 0.8 }],
       axes: [0.1235],
     });
+    expect(
+      snapshotHidInputReport({
+        data: { buffer: new Uint8Array([]).buffer },
+      })
+    ).toEqual({
+      buttons: [],
+      axes: [],
+    });
+    expect(snapshotHidAxes([128, 129])).toEqual([0, 0]);
   });
 
   it('covers WebHID no-device and no-HID guards', () => {
@@ -794,7 +806,16 @@ describe('joyConMapper coverage helpers', () => {
     );
   });
 
-  it('covers repeated snapshot stabilization', () => {
+  it('opens granted devices and tracks them once', async () => {
+    const disposers = [];
+    const openedDevice = {
+      opened: false,
+      open: jest.fn(async () => {
+        openedDevice.opened = true;
+      }),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    };
     const state = {
       dom: createDom(),
       prompt: {},
@@ -803,7 +824,100 @@ describe('joyConMapper coverage helpers', () => {
       statusText: {},
       metaIndex: {},
       metaId: {},
+      hidDevices: [],
       hidPendingSnapshot: null,
+      hidPendingSnapshotCount: 0,
+    };
+
+    state.dom.globalThis.navigator = {
+      hid: {
+        requestDevice: jest.fn(async () => [openedDevice]),
+      },
+    };
+
+    await requestAndOpenJoyConDevices(state, disposers);
+    expect(openedDevice.open).toHaveBeenCalledTimes(1);
+    expect(state.hidDevices).toContain(openedDevice);
+  });
+
+  it('covers the reset branch through the rendered action button', async () => {
+    const elements = [];
+    const dom = {
+      globalThis: {
+        navigator: {
+          hid: {
+            getDevices: jest.fn(async () => []),
+          },
+        },
+      },
+      createElement: jest.fn((tag, options = {}) => {
+        const element = {
+          tagName: tag,
+          classList: { add: jest.fn(), toggle: jest.fn() },
+          _handlers: {},
+        };
+        if (options.text !== undefined) {
+          element.textContent = options.text;
+        }
+        if (options.className !== undefined) {
+          element.className = options.className;
+        }
+        elements.push(element);
+        return element;
+      }),
+      addEventListener: jest.fn((element, type, handler) => {
+        element._handlers[type] = handler;
+      }),
+      removeEventListener: jest.fn(),
+      appendChild: jest.fn(),
+      getNextSibling: jest.fn(() => null),
+      insertBefore: jest.fn(),
+      setClassName: jest.fn(),
+      setTextContent: jest.fn(),
+      setValue: jest.fn(),
+      removeAllChildren: jest.fn(),
+      hide: jest.fn(),
+      disable: jest.fn(),
+      requestAnimationFrame: jest.fn(callback => callback()),
+      getGamepads: jest.fn(() => []),
+      querySelector: jest.fn(),
+      setInterval: jest.fn(() => 1),
+      clearInterval: jest.fn(),
+    };
+    const container = {};
+    const textInput = {};
+
+    joyConMapperHandler(dom, container, textInput);
+    const resetButton = elements.find(
+      element => element.textContent === 'Reset Mapping'
+    );
+    expect(resetButton).toBeDefined();
+    await resetButton._handlers.click();
+  });
+
+  it('covers repeated snapshot stabilization', () => {
+    const pendingSnapshot = {
+      buttons: [
+        { pressed: false, value: 0 },
+        { pressed: false, value: 0 },
+        { pressed: false, value: 0 },
+        { pressed: false, value: 0 },
+        { pressed: false, value: 0 },
+        { pressed: false, value: 0 },
+        { pressed: false, value: 0 },
+        { pressed: false, value: 0 },
+      ],
+      axes: [],
+    };
+    const state = {
+      dom: createDom(),
+      prompt: {},
+      subprompt: {},
+      dot: { classList: { toggle: jest.fn() } },
+      statusText: {},
+      metaIndex: {},
+      metaId: {},
+      hidPendingSnapshot: pendingSnapshot,
       hidPendingSnapshotCount: 0,
       hidSnapshot: null,
       hidDevices: [],
@@ -821,13 +935,10 @@ describe('joyConMapper coverage helpers', () => {
 
     attachHidDeviceListener(state, disposers, device);
     reportHandler({
-      data: { buffer: new Uint8Array([0x03, 0xff, 0x00]).buffer },
+      data: { buffer: new Uint8Array([0x00]).buffer },
     });
-    state.hidPendingSnapshotCount = 1;
-    state.hidPendingSnapshot = state.hidSnapshot;
-    reportHandler({
-      data: { buffer: new Uint8Array([0x03, 0xff, 0x00]).buffer },
-    });
+    expect(state.hidPendingSnapshotCount).toBe(1);
+    expect(state.hidSnapshot).toBeNull();
   });
 
   it('covers the pending snapshot early return path', () => {

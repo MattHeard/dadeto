@@ -533,4 +533,40 @@ describe('batteryBreakout', () => {
     expect(next.storageValue.current.BATT4.orb.vx).toBeGreaterThan(0);
     expect(next.storageValue.current.BATT4.orb.vy).toBeGreaterThan(0);
   });
+
+  it('normalizes malformed stored values back to defaults', () => {
+    const storageValue = {
+      current: {
+        BATT4: {
+          version: 1,
+          width: 'bad',
+          height: null,
+          frame: 'bad',
+          status: 'bad',
+          score: 'bad',
+          lives: 'bad',
+          faults: 'bad',
+          input: {
+            keyboard: null,
+            gamepad: null,
+            actions: null,
+            previousActions: null,
+          },
+          paddle: null,
+          orb: null,
+          cells: null,
+        },
+      },
+    };
+
+    runToy('{}', storageValue);
+
+    expect(storageValue.current.BATT4.width).toBe(360);
+    expect(storageValue.current.BATT4.height).toBe(240);
+    expect(storageValue.current.BATT4.frame).toBeGreaterThan(0);
+    expect(storageValue.current.BATT4.status).toBe('ready');
+    expect(storageValue.current.BATT4.score).toBe(0);
+    expect(storageValue.current.BATT4.lives).toBe(3);
+    expect(storageValue.current.BATT4.faults).toBe(0);
+  });
 });
