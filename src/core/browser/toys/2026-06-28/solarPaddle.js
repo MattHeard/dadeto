@@ -756,25 +756,28 @@ function createActionsFromState(keyboard, gamepad) {
 }
 
 /**
- *
- * @param value
+ * Determine whether a value belongs on the left axis.
+ * @param {unknown} value Axis value.
+ * @returns {boolean} True when the value is leftward.
  */
 function isAxisLeft(value) {
   return Number(value) < -EDGE_THRESHOLD;
 }
 
 /**
- *
- * @param value
+ * Determine whether a value belongs on the right axis.
+ * @param {unknown} value Axis value.
+ * @returns {boolean} True when the value is rightward.
  */
 function isAxisRight(value) {
   return Number(value) > EDGE_THRESHOLD;
 }
 
 /**
- *
- * @param state
- * @param inputState
+ * Apply a gameplay input step to the current state.
+ * @param {PaddleState} state Current state.
+ * @param {PaddleInputState} inputState Current input state.
+ * @returns {void}
  */
 function applyGameplayInput(state, inputState) {
   movePaddle(state, inputState.actions);
@@ -793,9 +796,10 @@ function applyGameplayInput(state, inputState) {
 }
 
 /**
- *
- * @param state
- * @param actions
+ * Move the paddle according to current actions.
+ * @param {PaddleState} state Current state.
+ * @param {PaddleActions} actions Current actions.
+ * @returns {void}
  */
 function movePaddle(state, actions) {
   const delta = (actions.right ? 1 : 0) - (actions.left ? 1 : 0);
@@ -809,8 +813,9 @@ function movePaddle(state, actions) {
 }
 
 /**
- *
- * @param state
+ * Advance the simulation by one tick.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function stepSimulation(state) {
   if (!state.orb.stuckToPaddle) {
@@ -825,8 +830,9 @@ function stepSimulation(state) {
 }
 
 /**
- *
- * @param state
+ * Stick the orb to the paddle.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function stickOrbToPaddle(state) {
   state.orb.x = state.paddle.x + Math.round(state.paddle.width / 2);
@@ -834,8 +840,9 @@ function stickOrbToPaddle(state) {
 }
 
 /**
- *
- * @param state
+ * Resolve wall collisions.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 function resolveWalls(state) {
   if (state.orb.x - state.orb.radius <= 0) {
@@ -853,8 +860,9 @@ function resolveWalls(state) {
 }
 
 /**
- *
- * @param state
+ * Resolve paddle collisions.
+ * @param {PaddleState} state Current state.
+ * @returns {void}
  */
 export function resolvePaddle(state) {
   const paddle = state.paddle;
