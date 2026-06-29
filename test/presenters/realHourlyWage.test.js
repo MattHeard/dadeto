@@ -1,8 +1,16 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
+import {
+  createParagraphElement,
+} from '../../src/core/browser/presenters/browserPresentersCore.js';
 import {
   createRealHourlyWageReportElement,
   realHourlyWagePresenterTestOnly,
 } from '../../src/core/browser/presenters/realHourlyWage.js';
+import {
+  buildWhen,
+  normalizePositiveInteger,
+  withFallback,
+} from '../../src/core/browser/common.js';
 
 /**
  * Create a minimal DOM mock for presenter tests.
@@ -33,6 +41,26 @@ function createMockDom() {
 }
 
 describe('createRealHourlyWageReportElement', () => {
+  test('creates paragraph elements through the shared presenter helper', () => {
+    const dom = createMockDom();
+    const paragraph = createParagraphElement('Hello', dom);
+
+    expect(paragraph.tag).toBe('p');
+    expect(paragraph.textContent).toBe('Hello');
+  });
+
+  test('covers a few shared browser common helpers', () => {
+    const builder = jest.fn(() => 'built');
+    const transform = jest.fn(() => 'transformed');
+
+    expect(withFallback(true, transform, 'fallback')).toBe('transformed');
+    expect(withFallback(false, transform, 'fallback')).toBe('fallback');
+    expect(buildWhen(true, builder)).toBe('built');
+    expect(buildWhen(false, builder)).toBeNull();
+    expect(normalizePositiveInteger('2.2', 9)).toBe(2);
+    expect(normalizePositiveInteger('0', 9)).toBe(9);
+  });
+
   test('returns a fallback pre element when JSON is invalid', () => {
     const dom = createMockDom();
     const input = 'not json';
