@@ -268,7 +268,7 @@ resource "google_storage_bucket" "dendrite_static_nonprod" {
 }
 
 resource "google_storage_bucket" "dendrite_static_test" {
-  count = local.manage_project_level_resources ? 1 : 0
+  count = var.environment != "prod" && local.manage_project_level_resources ? 1 : 0
 
   name                        = local.test_static_site_bucket_name
   location                    = var.region
@@ -285,7 +285,7 @@ resource "google_storage_bucket" "dendrite_static_test" {
 }
 
 data "google_storage_bucket" "dendrite_static_test" {
-  count = local.playwright_enabled ? 1 : 0
+  count = var.environment == "prod" || local.playwright_enabled ? 1 : 0
 
   name = local.test_static_site_bucket_name
 }
