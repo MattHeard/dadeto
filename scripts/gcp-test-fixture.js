@@ -187,10 +187,10 @@ async function seedFirestore(db) {
     createdAt: new Date(),
   });
   batch.set(db.collection('payment-customers').doc('cus_e2e_checkout'), {
-    apiKeyUuid: 'api-key-e2e-checkout',
+    apiKeyUuid: '11111111-1111-1111-1111-111111111111',
   });
   batch.set(db.collection('payment-customers').doc('cus_e2e_mapping'), {
-    apiKeyUuid: 'api-key-e2e-mapping',
+    apiKeyUuid: '33333333-3333-4333-8333-333333333333',
   });
 
   await batch.commit();

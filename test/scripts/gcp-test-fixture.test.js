@@ -27,6 +27,8 @@ describe('gcp-test fixture seed contract', () => {
     expect(source).toContain('authClient.setCredentials({ access_token: accessToken });');
     expect(source).toContain('return new Storage({ projectId, authClient });');
     expect(source).toContain('await resetFirestore(db);');
+    expect(source).toContain('11111111-1111-1111-1111-111111111111');
+    expect(source).toContain('33333333-3333-4333-8333-333333333333');
     expect(source).toContain('createStorageClient(projectId)');
     expect(source).toContain('credentials: {');
     expect(source).toContain('client_email: credentials.client_email');
