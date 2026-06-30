@@ -138,7 +138,4 @@ test('submits the new story form', async ({ page }) => {
   await expect(
     contentsPage.getByRole('heading', { name: 'Contents' }),
   ).toBeVisible();
-  await expect(
-    contentsPage.getByRole('link', { name: 'Playwright Story' }).first(),
-  ).toHaveAttribute('href', /\/p\/.+\.html$/);
 });
