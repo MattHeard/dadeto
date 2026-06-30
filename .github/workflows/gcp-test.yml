@@ -275,16 +275,16 @@ jobs:
 
           upload_seed() {
             local attempt
-            for attempt in 1 2 3; do
+            for attempt in 1 2 3 4 5 6; do
               if gcloud storage cp /tmp/e2e-seed.json "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/seed.json"; then
                 return 0
               fi
 
-              if [ "$attempt" -eq 3 ]; then
+              if [ "$attempt" -eq 6 ]; then
                 return 1
               fi
 
-              sleep $((attempt * 5))
+              sleep $((attempt * 10))
             done
           }
 

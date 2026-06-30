@@ -15,6 +15,7 @@ describe('gcp-test workflow report handling', () => {
 
     expect(source).toContain('upload_seed()');
     expect(source).toContain('gcloud storage cp /tmp/e2e-seed.json');
-    expect(source).toContain('sleep $((attempt * 5))');
+    expect(source).toContain('for attempt in 1 2 3 4 5 6; do');
+    expect(source).toContain('sleep $((attempt * 10))');
   });
 });
