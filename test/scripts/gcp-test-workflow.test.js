@@ -13,9 +13,10 @@ describe('gcp-test workflow report handling', () => {
   it('retries the seed object upload before failing the run', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 
-    expect(source).toContain('upload_seed()');
-    expect(source).toContain('gcloud storage cp /tmp/e2e-seed.json');
-    expect(source).toContain('for attempt in 1 2 3 4 5 6; do');
-    expect(source).toContain('sleep $((attempt * 10))');
+    expect(source).toContain("node --input-type=module <<'EOF'");
+    expect(source).toContain("runtimeDepsRequire('@google-cloud/storage')");
+    expect(source).toContain(".file(`${environment}/seed.json`)");
+    expect(source).toContain('for (let attempt = 1; attempt <= 8; attempt += 1)');
+    expect(source).toContain('await new Promise(resolve => setTimeout(resolve, attempt * 15000));');
   });
 });

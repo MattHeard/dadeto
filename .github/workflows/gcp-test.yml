@@ -273,22 +273,45 @@ jobs:
 
           printf '%s\n' "$SEED_JSON" > /tmp/e2e-seed.json
 
-          upload_seed() {
-            local attempt
-            for attempt in 1 2 3 4 5 6; do
-              if gcloud storage cp /tmp/e2e-seed.json "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/seed.json"; then
-                return 0
-              fi
+          node --input-type=module <<'EOF'
+          import { createRequire } from 'node:module';
+          import { readFileSync } from 'node:fs';
 
-              if [ "$attempt" -eq 6 ]; then
-                return 1
-              fi
+          const runtimeDepsRequire = createRequire(
+            new URL('../src/cloud/runtime-deps/package.json', `file://${process.cwd()}/`)
+          );
+          const { Storage } = runtimeDepsRequire('@google-cloud/storage');
 
-              sleep $((attempt * 10))
-            done
+          const projectId = process.env.GOOGLE_PROJECT;
+          const bucketName = process.env.TEST_STATIC_BUCKET;
+          const environment = process.env.ENVIRONMENT;
+          const seedJson = readFileSync('/tmp/e2e-seed.json', 'utf8');
+          const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+          const storage = new Storage({
+            projectId,
+            credentials: {
+              client_email: credentials.client_email,
+              private_key: credentials.private_key,
+            },
+          });
+
+          for (let attempt = 1; attempt <= 8; attempt += 1) {
+            try {
+              await storage
+                .bucket(bucketName)
+                .file(`${environment}/seed.json`)
+                .save(seedJson, { resumable: false });
+              process.exitCode = 0;
+              break;
+            } catch (error) {
+              if (attempt === 8) {
+                throw error;
+              }
+
+              await new Promise(resolve => setTimeout(resolve, attempt * 15000));
+            }
           }
-
-          upload_seed
+          EOF
 
       - name: Wait for seeded pages
         if: success()
