@@ -22,6 +22,10 @@ describe('gcp-test fixture seed contract', () => {
   it('uses explicit service account credentials for the storage client when available', () => {
     const source = readFileSync('scripts/gcp-test-fixture.js', 'utf8');
 
+    expect(source).toContain("const { OAuth2Client } = runtimeDepsRequire('google-auth-library');");
+    expect(source).toContain('const accessToken = process.env.GOOGLE_OAUTH_ACCESS_TOKEN;');
+    expect(source).toContain('authClient.setCredentials({ access_token: accessToken });');
+    expect(source).toContain('return new Storage({ projectId, authClient });');
     expect(source).toContain('createStorageClient(projectId)');
     expect(source).toContain('credentials: {');
     expect(source).toContain('client_email: credentials.client_email');

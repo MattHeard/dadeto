@@ -13,6 +13,7 @@ const { cert, initializeApp } = runtimeDepsRequire('firebase-admin/app');
 const { getAuth } = runtimeDepsRequire('firebase-admin/auth');
 const { getFirestore } = runtimeDepsRequire('firebase-admin/firestore');
 const { Storage } = runtimeDepsRequire('@google-cloud/storage');
+const { OAuth2Client } = runtimeDepsRequire('google-auth-library');
 
 const DEFAULT_STORY_TITLE = 'E2E moderation fixture story';
 const DEFAULT_FIRST_CONTENT = 'The first seeded page invites the reader forward.';
@@ -61,6 +62,13 @@ function createFirebaseAppOptions(projectId) {
 }
 
 function createStorageClient(projectId) {
+  const accessToken = process.env.GOOGLE_OAUTH_ACCESS_TOKEN;
+  if (accessToken) {
+    const authClient = new OAuth2Client();
+    authClient.setCredentials({ access_token: accessToken });
+    return new Storage({ projectId, authClient });
+  }
+
   const credentials = parseOptionalJsonEnv('GOOGLE_CREDENTIALS_JSON');
   if (!credentials?.client_email || !credentials?.private_key) {
     return new Storage({ projectId });
