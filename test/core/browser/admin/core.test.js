@@ -1453,7 +1453,7 @@ describe('initAdmin', () => {
     return { doc, elements, signOutLink };
   };
 
-  it('wires handlers and auth listeners', () => {
+  it('wires handlers and auth listeners', async () => {
     const googleAuthModule = {
       getIdToken: jest.fn().mockReturnValue('token'),
       signOut: jest.fn(),
@@ -1481,6 +1481,7 @@ describe('initAdmin', () => {
       { currentUser: { uid: ADMIN_UID } },
       expect.any(Function)
     );
+    await new Promise(resolve => setTimeout(resolve, 0));
     expect(googleAuthModule.initGoogleSignIn).toHaveBeenCalledTimes(1);
     expect(elements.renderBtn.addEventListener).toHaveBeenCalledWith(
       'click',
@@ -1498,6 +1499,37 @@ describe('initAdmin', () => {
       'click',
       expect.any(Function)
     );
+  });
+
+  it('skips Google sign-in initialization when config disables it', async () => {
+    const googleAuthModule = {
+      getIdToken: jest.fn().mockReturnValue('token'),
+      signOut: jest.fn(),
+      initGoogleSignIn: jest.fn(),
+    };
+    const loadStaticConfig = jest.fn().mockResolvedValue({
+      disableGoogleSignIn: true,
+    });
+    const getAuthFn = jest
+      .fn()
+      .mockReturnValue({ currentUser: { uid: ADMIN_UID } });
+    const onAuthStateChangedFn = jest.fn((_, cb) => cb());
+    const { doc } = makeDoc();
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+
+    initAdmin({
+      googleAuthModule,
+      loadStaticConfigFn: loadStaticConfig,
+      getAuthFn,
+      onAuthStateChangedFn,
+      doc,
+      fetchFn: fetch,
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(loadStaticConfig).toHaveBeenCalledTimes(1);
+    expect(googleAuthModule.initGoogleSignIn).not.toHaveBeenCalled();
   });
 
   it('throws when initGoogleSignIn is missing', () => {

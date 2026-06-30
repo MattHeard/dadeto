@@ -195,6 +195,10 @@
 
         const { initGoogleSignIn, getIdToken, signOut, isAdmin } =
           await authPromise;
+        const configResponse = await fetch('/config.json', {
+          cache: 'no-store',
+        });
+        const config = configResponse.ok ? await configResponse.json() : {};
 
         function showSignedIn() {
           document.body.classList.add('authed');
@@ -210,7 +214,9 @@
           adminLinks.forEach(el => (el.style.display = 'none'));
         }
 
-        initGoogleSignIn({ onSignIn: showSignedIn });
+        if (config.disableGoogleSignIn !== true) {
+          initGoogleSignIn({ onSignIn: showSignedIn });
+        }
 
         signoutLinks.forEach(link => {
           link.addEventListener('click', async e => {

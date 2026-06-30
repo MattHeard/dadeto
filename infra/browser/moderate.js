@@ -297,24 +297,29 @@ const fetchJson = async (url, init) => {
 
 export const authedFetch = createAuthedFetch({ getIdToken, fetchJson });
 
-initGoogleSignIn({
-  onSignIn: () => {
-    document.body.classList.add('authed');
-    document
-      .querySelectorAll('#signinButton')
-      .forEach(el => (el.style.display = 'none'));
-    document
-      .querySelectorAll('#signoutWrap')
-      .forEach(el => (el.style.display = ''));
-    if (isAdmin()) {
-      document
-        .querySelectorAll('.admin-link')
-        .forEach(link => (link.style.display = ''));
-    }
-    wireSignOut();
-    loadVariant();
-  },
-});
+(async () => {
+  const config = await loadStaticConfig();
+  if (config.disableGoogleSignIn !== true) {
+    initGoogleSignIn({
+      onSignIn: () => {
+        document.body.classList.add('authed');
+        document
+          .querySelectorAll('#signinButton')
+          .forEach(el => (el.style.display = 'none'));
+        document
+          .querySelectorAll('#signoutWrap')
+          .forEach(el => (el.style.display = ''));
+        if (isAdmin()) {
+          document
+            .querySelectorAll('.admin-link')
+            .forEach(link => (link.style.display = ''));
+        }
+        wireSignOut();
+        loadVariant();
+      },
+    });
+  }
+})();
 
 if (getIdToken()) {
   document.body.classList.add('authed');
