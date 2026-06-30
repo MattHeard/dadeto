@@ -852,6 +852,7 @@ export function createFsAdapters(fsModule) {
  *   readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
  *   ensureDirectory: (target: string) => Promise<void>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
+ *   setCopiedFileTimestamp: (target: string) => Promise<void>,
  *   readFile: (filePath: string, encoding: 'utf8') => Promise<string>,
  *   writeFile: (filePath: string, content: string) => Promise<void>,
  * }} Promise-based filesystem adapter helpers.
@@ -883,7 +884,11 @@ export function createAsyncFsAdapters(fsPromisesModule) {
       }
 
       const stableTimestamp = new Date('2000-01-01T00:00:00.000Z');
-      await typedFsPromisesModule.utimes(target, stableTimestamp, stableTimestamp);
+      await typedFsPromisesModule.utimes(
+        target,
+        stableTimestamp,
+        stableTimestamp
+      );
     },
     async readFile(filePath, encoding) {
       return /** @type {Promise<string>} */ (

@@ -20,7 +20,20 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
  */
 
 /**
- * @typedef {{ copyFile: (source: string, destination: string) => Promise<void> }} CopyIo
+ * @typedef {{
+ *   copyFile: (source: string, destination: string) => Promise<void>,
+ *   setCopiedFileTimestamp?: (target: string) => Promise<void>,
+ *   source: string,
+ *   target: string,
+ *   messageLogger: CopyMessageLogger,
+ * }} CopyFileCopyOptions
+ */
+
+/**
+ * @typedef {{
+ *   copyFile: (source: string, destination: string) => Promise<void>,
+ *   setCopiedFileTimestamp?: (target: string) => Promise<void>,
+ * }} CopyIo
  */
 
 /**
@@ -299,21 +312,12 @@ export function createCopyToInfraCore({
 
   /**
    * Copy a file to the target location and report the action.
-   * @param {{
-   *   copyFile: (source: string, destination: string) => Promise<void>,
-   *   source: string,
-   *   target: string,
-   *   messageLogger: CopyMessageLogger,
-   * }} options Copy operation details.
+   * @param {CopyFileCopyOptions} options Copy operation details.
    * @returns {Promise<void>} Resolves when the file copy is complete.
    */
-  async function copyAndLogFile({
-    copyFile,
-    setCopiedFileTimestamp,
-    source,
-    target,
-    messageLogger,
-  }) {
+  async function copyAndLogFile(options) {
+    const { copyFile, setCopiedFileTimestamp, source, target, messageLogger } =
+      /** @type {CopyFileCopyOptions} */ (options);
     await copyFile(source, target);
     if (setCopiedFileTimestamp) {
       await setCopiedFileTimestamp(target);

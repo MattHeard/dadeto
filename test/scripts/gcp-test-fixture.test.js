@@ -22,9 +22,15 @@ describe('gcp-test fixture seed contract', () => {
   it('uses explicit service account credentials for the storage client when available', () => {
     const source = readFileSync('scripts/gcp-test-fixture.js', 'utf8');
 
-    expect(source).toContain("const { OAuth2Client } = runtimeDepsRequire('google-auth-library');");
-    expect(source).toContain('const accessToken = process.env.GOOGLE_OAUTH_ACCESS_TOKEN;');
-    expect(source).toContain('authClient.setCredentials({ access_token: accessToken });');
+    expect(source).toContain(
+      "const { OAuth2Client } = runtimeDepsRequire('google-auth-library');"
+    );
+    expect(source).toContain(
+      'const accessToken = process.env.GOOGLE_OAUTH_ACCESS_TOKEN;'
+    );
+    expect(source).toContain(
+      'authClient.setCredentials({ access_token: accessToken });'
+    );
     expect(source).toContain('return new Storage({ projectId, authClient });');
     expect(source).toContain('await resetFirestore(db);');
     expect(source).toContain('11111111-1111-1111-1111-111111111111');

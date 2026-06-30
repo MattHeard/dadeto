@@ -883,7 +883,11 @@ export function createAsyncFsAdapters(fsPromisesModule) {
       }
 
       const stableTimestamp = new Date('2000-01-01T00:00:00.000Z');
-      await typedFsPromisesModule.utimes(target, stableTimestamp, stableTimestamp);
+      await typedFsPromisesModule.utimes(
+        target,
+        stableTimestamp,
+        stableTimestamp
+      );
     },
     async readFile(filePath, encoding) {
       return /** @type {Promise<string>} */ (

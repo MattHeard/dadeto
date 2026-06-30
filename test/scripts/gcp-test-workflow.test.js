@@ -13,7 +13,9 @@ describe('gcp-test workflow report handling', () => {
   it('retries the seed object upload before failing the run', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 
-    expect(source).toContain('ACCESS_TOKEN="$(gcloud auth print-access-token)"');
+    expect(source).toContain(
+      'ACCESS_TOKEN="$(gcloud auth print-access-token)"'
+    );
     expect(source).toContain(
       'SEED_UPLOAD_URL="https://storage.googleapis.com/upload/storage/v1/b/${TEST_STATIC_BUCKET}/o?uploadType=media&name=${ENVIRONMENT}/seed.json"'
     );

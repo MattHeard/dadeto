@@ -2017,7 +2017,7 @@ export function initAdmin({
 
   (async () => {
     const config = await loadStaticConfigFn();
-    if (config?.disableGoogleSignIn === true) {
+    if (config?.disableGoogleSignIn) {
       return;
     }
 
@@ -2222,11 +2222,11 @@ export function initAdminApp({
     /** @type {GoogleSignInOptions | undefined} */ options
   ) => {
     const config = await loadStaticConfigFn();
-    if (config?.disableGoogleSignIn === true) {
+    if (config?.disableGoogleSignIn) {
       return;
     }
 
-    return getInitGoogleSignInHandler()(options);
+    await getInitGoogleSignInHandler()(options);
   };
 
   /** @type {(() => Promise<void>) | undefined} */
