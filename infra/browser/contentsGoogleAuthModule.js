@@ -1,5 +1,6 @@
 import { initGoogleSignIn, signOut } from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
+import { loadStaticConfig } from './loadStaticConfig.js';
 import { isAdminWithDeps } from './admin-core.js';
 
 const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
@@ -27,9 +28,14 @@ function showSignedOut() {
   adminLinks.forEach(el => (el.style.display = 'none'));
 }
 
-initGoogleSignIn({
-  onSignIn: showSignedIn,
-});
+(async () => {
+  const config = await loadStaticConfig();
+  if (config.disableGoogleSignIn !== true) {
+    initGoogleSignIn({
+      onSignIn: showSignedIn,
+    });
+  }
+})();
 
 signOutLinks.forEach(link => {
   link.addEventListener('click', async e => {
