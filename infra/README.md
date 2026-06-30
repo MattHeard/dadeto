@@ -42,6 +42,13 @@ that matches this value (default `"prod"`) manages those singleton resources,
 letting other environments create their own per-env assets without fighting over
 project-level state.
 
+Production-only error alerting is configured through Cloud Monitoring when
+`environment` is `prod` and `production_alert_email` is set. Terraform creates
+a log-based metric that matches `cloud_function` error logs from `prod-*`
+functions, a Google Cloud Monitoring email notification channel, and an alert
+policy that pages on the first matching error. Supply the alert recipient from
+the GitHub Actions secret `PRODUCTION_ALERT_EMAIL` via the prod workflow.
+
 ## Cloud Function sources
 
 Run `npm run build:cloud` before applying Terraform so that the generated Cloud Function directories under `infra/cloud-functions/` and the supporting admin scripts in `infra/*.js` are present. The CI workflows run this command automatically before Terraform steps.

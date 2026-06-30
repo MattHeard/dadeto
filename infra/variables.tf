@@ -112,6 +112,13 @@ variable "openai_api_key" {
   sensitive   = true
 }
 
+variable "production_alert_email" {
+  description = "Email address for production-only GCP error alerts"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "google_oauth_client_id" {
   description = "OAuth client ID for Google sign-in"
   type        = string

@@ -123,7 +123,7 @@ For full triage/autoloop details: `bd prime` and docs linked above.
 
 ## 2) Test-before-close is required
 
-- Run `npm test` before closing any bead.
+- Run `npm run check` before closing any bead.
 - Record the exact command + outcome in bead comments as closure evidence.
 - Keep branch coverage expectations at 100%; create/fix beads for gaps.
 
@@ -157,7 +157,7 @@ Use canonical procedures in:
 
 - `npm install`
 - `npm run build`
-- `npm test`
+- `npm run check`
 - `npm run lint`
 - `npm run start`
 

@@ -9,7 +9,7 @@ Every change (code, docs, config, or infra) is done only when all of the followi
 
 1. **Scope is bounded and explicit** (what changed and why).
 2. **Required evaluators are executed** for impacted subsystems.
-3. **`npm test` passes locally** (or failure is explicitly escalated with owning `bd` bead). `npm test` is the full repo gate: unit plus all e2e.
+3. **`npm run check` passes locally** (or failure is explicitly escalated with owning `bd` bead). `npm run check` is the default local aggregate gate for the repo.
 4. **Evidence is recorded** (exact command + outcome + artifact paths where applicable).
 5. **No untracked quality debt is introduced**; unresolved issues are tracked in `bd` before closure.
 6. **Branch is landed** (pull/rebase, sync, push, verify up-to-date status).
@@ -24,7 +24,7 @@ Use `npm run check:fast` when you want the same gate to stop on the first failur
 
 Keep subsystem-specific packaging commands such as `npm run build:cloud` and `npm run build:dendritestories-co-nz` separate from the default aggregate gate.
 
-1. `npm test`
+1. `npm run check`
 2. `npm run lint`
 3. `npm run build` (when build-relevant paths changed)
 4. subsystem checks (for example `npm run build:cloud`, `npm run build:dendritestories-co-nz`, `npm run duplication`, `npm run non-core-thin`)
@@ -36,7 +36,7 @@ Rationale: fail early on fast feedback, reserve cloud and long-running jobs for 
 
 Use the evaluator matrix as source of truth. At minimum:
 
-- **All changes:** `npm test`
+- **All changes:** `npm run check`
 - **JS/TS/CSS/MD/tooling changes:** `npm run lint`
 - **Build/output pipeline changes:** `npm run build`
 - **Cloud runtime/deploy packaging changes:** `npm run build:cloud`
