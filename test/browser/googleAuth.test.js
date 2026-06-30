@@ -1,4 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { readFileSync } from 'fs';
 
 let initGoogleSignIn;
 let signOut;
@@ -126,5 +127,15 @@ describe('googleAuth', () => {
     await initGoogleSignIn();
 
     expect(init).not.toHaveBeenCalled();
+  });
+
+  it('keeps the public browser bundle aligned with the internal origin guard', () => {
+    const publicBrowserGoogleAuth = readFileSync(
+      '/home/matt/dadeto/public/browser/googleAuth.js',
+      'utf8'
+    );
+
+    expect(publicBrowserGoogleAuth).toContain('isInternalPlaywrightOrigin');
+    expect(publicBrowserGoogleAuth).toContain('handle.initGoogleSignIn = options =>');
   });
 });

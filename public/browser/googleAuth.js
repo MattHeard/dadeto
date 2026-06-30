@@ -22,6 +22,20 @@ const handle = createGoogleAuthModule({
   credentialFactory: signInWithCredential,
 });
 
+function isInternalPlaywrightOrigin(globalScope) {
+  const hostname = globalScope?.location?.hostname;
+  return typeof hostname === 'string' && /^10\.132\.0\.\d+$/.test(hostname);
+}
+
+const originalInitGoogleSignIn = handle.initGoogleSignIn;
+handle.initGoogleSignIn = options => {
+  if (isInternalPlaywrightOrigin(globalThis)) {
+    return;
+  }
+
+  return originalInitGoogleSignIn(options);
+};
+
 export { handle };
 export const { initGoogleSignIn, signOut } = handle;
 
