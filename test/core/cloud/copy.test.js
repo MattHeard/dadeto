@@ -64,6 +64,26 @@ describe('createCopyToInfraCore', () => {
       );
     });
 
+    it('stamps copied files with a stable timestamp when supported', async () => {
+      const io = {
+        copyFile: jest.fn().mockResolvedValue(undefined),
+        setCopiedFileTimestamp: jest.fn().mockResolvedValue(undefined),
+      };
+      const logger = { info: jest.fn() };
+
+      await core.copyFileToTarget({
+        io,
+        sourceDir: posix.join(projectRoot, 'src'),
+        targetDir: posix.join(projectRoot, 'infra'),
+        name: 'index.js',
+        messageLogger: logger,
+      });
+
+      expect(io.setCopiedFileTimestamp).toHaveBeenCalledWith(
+        posix.join(projectRoot, 'infra/index.js')
+      );
+    });
+
     it('copies allowed files from a directory', async () => {
       const entries = [
         createDirent('index.js'),

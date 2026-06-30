@@ -877,6 +877,14 @@ export function createAsyncFsAdapters(fsPromisesModule) {
     async copyFile(source, destination) {
       await typedFsPromisesModule.copyFile(source, destination);
     },
+    async setCopiedFileTimestamp(target) {
+      if (typeof typedFsPromisesModule.utimes !== 'function') {
+        return;
+      }
+
+      const stableTimestamp = new Date('2000-01-01T00:00:00.000Z');
+      await typedFsPromisesModule.utimes(target, stableTimestamp, stableTimestamp);
+    },
     async readFile(filePath, encoding) {
       return /** @type {Promise<string>} */ (
         typedFsPromisesModule.readFile(filePath, encoding)

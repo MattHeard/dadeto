@@ -15,6 +15,7 @@ export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
  *   ensureDirectory: (target: string) => Promise<void>,
  *   readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
+ *   setCopiedFileTimestamp?: (target: string) => Promise<void>,
  * }} CopyAsyncIo
  */
 
@@ -137,6 +138,7 @@ export function createCopyToInfraCore({
     const destinationPath = join(targetDir, name);
     await copyAndLogFile({
       copyFile: io.copyFile,
+      setCopiedFileTimestamp: io.setCopiedFileTimestamp,
       source: sourcePath,
       target: destinationPath,
       messageLogger,
@@ -305,8 +307,17 @@ export function createCopyToInfraCore({
    * }} options Copy operation details.
    * @returns {Promise<void>} Resolves when the file copy is complete.
    */
-  async function copyAndLogFile({ copyFile, source, target, messageLogger }) {
+  async function copyAndLogFile({
+    copyFile,
+    setCopiedFileTimestamp,
+    source,
+    target,
+    messageLogger,
+  }) {
     await copyFile(source, target);
+    if (setCopiedFileTimestamp) {
+      await setCopiedFileTimestamp(target);
+    }
     messageLogger.info(
       buildCopyLogMessage({
         formatPathForLog,

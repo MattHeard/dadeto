@@ -1,6 +1,11 @@
 import { createDocumentHandle } from '../core/browser/document.js';
 
-const handle = createDocumentHandle();
+const handle = createDocumentHandle({
+  documentObj: document,
+  windowObj: window,
+  globalThisObj: globalThis,
+  navigatorObj: navigator,
+});
 
 export const {
   getElementById, querySelector, querySelectorAll, addClass, removeClass,

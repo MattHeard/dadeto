@@ -325,8 +325,12 @@ describe('commonCore helpers', () => {
 
   test('filesystem adapters read, create, and copy files', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dadeto-core-'));
+    const utimes = jest.fn().mockResolvedValue(undefined);
     const syncAdapters = createFsAdapters(fs);
-    const asyncAdapters = createAsyncFsAdapters(fsPromises);
+    const asyncAdapters = createAsyncFsAdapters({
+      ...fsPromises,
+      utimes,
+    });
 
     try {
       const nestedDir = path.join(root, 'nested');
@@ -370,12 +374,27 @@ describe('commonCore helpers', () => {
       const asyncCopy = path.join(root, 'async-copy.txt');
       await asyncAdapters.copyFile(sourceFile, asyncCopy);
       expect(await fsPromises.readFile(asyncCopy, 'utf8')).toBe('hello');
+      await asyncAdapters.setCopiedFileTimestamp(asyncCopy);
+      expect(utimes).toHaveBeenCalledWith(
+        asyncCopy,
+        new Date('2000-01-01T00:00:00.000Z'),
+        new Date('2000-01-01T00:00:00.000Z')
+      );
 
       const textFile = path.join(root, 'value.txt');
       await asyncAdapters.writeFile(textFile, 'world');
       await expect(asyncAdapters.readFile(textFile, 'utf8')).resolves.toBe(
         'world'
       );
+
+      const noTimestampAdapters = createAsyncFsAdapters({
+        readdir: fsPromises.readdir,
+        mkdir: fsPromises.mkdir,
+        copyFile: fsPromises.copyFile,
+        readFile: fsPromises.readFile,
+        writeFile: fsPromises.writeFile,
+      });
+      await noTimestampAdapters.setCopiedFileTimestamp(asyncCopy);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
