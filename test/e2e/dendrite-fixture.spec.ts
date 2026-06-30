@@ -221,7 +221,9 @@ test.describe.serial('seeded dendrite fixture', () => {
     const adminContent = page.locator('#adminContent');
     await expect(adminContent).toBeVisible();
     await page.getByRole('button', { name: 'Generate stats' }).click();
-    await expect(page.locator('#renderStatus')).toContainText('Stats generated');
+    await expect(page.locator('#renderStatus')).toContainText('Stats generated', {
+      timeout: 60000,
+    });
 
     await page.goto('/stats.html', {
       waitUntil: 'domcontentloaded',

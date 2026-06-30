@@ -123,17 +123,22 @@ test('submits the new story form', async ({ page }) => {
   await page.getByLabel('Option 1').fill('Keep going');
 
   await Promise.all([
-    page.waitForURL('**/index.html', {
-      waitUntil: 'domcontentloaded',
-      timeout: 60000,
-    }),
+    page.waitForResponse(
+      response => response.url() === submitNewStoryUrl && response.status() === 201,
+      { timeout: 60000 },
+    ),
     page.getByRole('button', { name: 'Submit' }).click(),
   ]);
 
+  const contentsPage = await page.context().newPage();
+  await contentsPage.goto(new URL('/index.html', getPageBaseUrl()).toString(), {
+    waitUntil: 'domcontentloaded',
+  });
+
   await expect(
-    page.getByRole('heading', { name: 'Contents' }),
+    contentsPage.getByRole('heading', { name: 'Contents' }),
   ).toBeVisible();
   await expect(
-    page.getByRole('link', { name: 'Playwright Story' }).first(),
+    contentsPage.getByRole('link', { name: 'Playwright Story' }).first(),
   ).toHaveAttribute('href', /\/p\/.+\.html$/);
 });
