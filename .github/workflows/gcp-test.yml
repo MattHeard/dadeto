@@ -273,45 +273,25 @@ jobs:
 
           printf '%s\n' "$SEED_JSON" > /tmp/e2e-seed.json
 
-          node --input-type=module <<'EOF'
-          import { createRequire } from 'node:module';
-          import { readFileSync } from 'node:fs';
+          ACCESS_TOKEN="$(gcloud auth print-access-token)"
+          SEED_UPLOAD_URL="https://storage.googleapis.com/upload/storage/v1/b/${TEST_STATIC_BUCKET}/o?uploadType=media&name=${ENVIRONMENT}/seed.json"
 
-          const runtimeDepsRequire = createRequire(
-            new URL('../src/cloud/runtime-deps/package.json', `file://${process.cwd()}/`)
-          );
-          const { Storage } = runtimeDepsRequire('@google-cloud/storage');
+          for attempt in $(seq 1 8); do
+            if curl --fail --silent --show-error \
+              --request POST \
+              --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+              --header "Content-Type: application/json" \
+              --data-binary @/tmp/e2e-seed.json \
+              "${SEED_UPLOAD_URL}"; then
+              break
+            fi
 
-          const projectId = process.env.GOOGLE_PROJECT;
-          const bucketName = process.env.TEST_STATIC_BUCKET;
-          const environment = process.env.ENVIRONMENT;
-          const seedJson = readFileSync('/tmp/e2e-seed.json', 'utf8');
-          const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
-          const storage = new Storage({
-            projectId,
-            credentials: {
-              client_email: credentials.client_email,
-              private_key: credentials.private_key,
-            },
-          });
+            if [ "${attempt}" -eq 8 ]; then
+              exit 1
+            fi
 
-          for (let attempt = 1; attempt <= 8; attempt += 1) {
-            try {
-              await storage
-                .bucket(bucketName)
-                .file(`${environment}/seed.json`)
-                .save(seedJson, { resumable: false });
-              process.exitCode = 0;
-              break;
-            } catch (error) {
-              if (attempt === 8) {
-                throw error;
-              }
-
-              await new Promise(resolve => setTimeout(resolve, attempt * 15000));
-            }
-          }
-          EOF
+            sleep "$((attempt * 15))"
+          done
 
       - name: Wait for seeded pages
         if: success()
