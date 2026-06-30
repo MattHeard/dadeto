@@ -45,6 +45,22 @@ describe('createVerifyAdmin error responses', () => {
     expect(sendUnauthorized).toHaveBeenCalledWith({}, 'Invalid token');
   });
 
+  test('sends forbidden when the decoded token is not an admin', async () => {
+    const sendUnauthorized = jest.fn();
+    const sendForbidden = jest.fn();
+    const handler = createVerifyAdmin({
+      verifyToken: () => Promise.resolve({ uid: 'user-123' }),
+      isAdminUid: () => false,
+      sendUnauthorized,
+      sendForbidden,
+    });
+
+    await handler(req, {});
+
+    expect(sendUnauthorized).not.toHaveBeenCalled();
+    expect(sendForbidden).toHaveBeenCalledWith({});
+  });
+
   test('resolveErrorMessageWithDefault returns provided string', () => {
     expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('boom')).toBe(
       'boom'

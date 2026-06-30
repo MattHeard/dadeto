@@ -198,6 +198,28 @@ describe('cloud-core', () => {
 
       expect(getAuthHeader(req)).toBe('Bearer bound-token');
     });
+
+    test('returns an empty string when the request has no headers bag', () => {
+      const req = {
+        get() {
+          return this.headers.authorization;
+        },
+      };
+
+      expect(getAuthHeader(req)).toBe('');
+      expect(getAuthHeader({})).toBe('');
+      expect(getAuthHeader()).toBe('');
+    });
+
+    test('handles callable request objects that are not plain objects', () => {
+      function req() {}
+      req.get = function get(name) {
+        return this.headers[name.toLowerCase()];
+      };
+      req.headers = { authorization: 'Bearer function-token' };
+
+      expect(getAuthHeader(req)).toBe('');
+    });
   });
 
   describe('whenBodyPresent', () => {

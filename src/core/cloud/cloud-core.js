@@ -765,7 +765,15 @@ function callAuthorizationGetter(getter, req) {
     return undefined;
   }
 
-  return getter.call(req, 'Authorization');
+  const receiver = {};
+  if (isObject(req)) {
+    Object.assign(receiver, req);
+  }
+  if (!isObject(receiver.headers)) {
+    receiver.headers = {};
+  }
+
+  return getter.call(receiver, 'Authorization');
 }
 
 /**
