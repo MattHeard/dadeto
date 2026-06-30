@@ -104,7 +104,7 @@ export default [
         'localStorage',
       ],
       'no-magic-numbers': [
-        'warn',
+        'error',
         {
           ignore: [-1, 0, 1],
           ignoreArrayIndexes: true,
