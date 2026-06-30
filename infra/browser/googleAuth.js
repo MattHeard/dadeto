@@ -3,7 +3,6 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
-import { loadStaticConfig } from './loadStaticConfig.js';
 import { createGoogleAuthModule } from './admin-core.js';
 
 const googleAuthModule = createGoogleAuthModule({
@@ -15,13 +14,13 @@ const googleAuthModule = createGoogleAuthModule({
   credentialFactory: signInWithCredential,
 });
 
-const shouldDisableGoogleSignIn = async () => {
-  const config = await loadStaticConfig();
-  return config.disableGoogleSignIn === true;
-};
+function isInternalPlaywrightOrigin(globalScope) {
+  const hostname = globalScope?.location?.hostname;
+  return typeof hostname === 'string' && /^10\.132\.0\.\d+$/.test(hostname);
+}
 
 export const initGoogleSignIn = async options => {
-  if (await shouldDisableGoogleSignIn()) {
+  if (isInternalPlaywrightOrigin(globalThis)) {
     return;
   }
 

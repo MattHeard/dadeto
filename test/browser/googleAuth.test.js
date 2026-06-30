@@ -25,6 +25,12 @@ describe('googleAuth', () => {
     sessionStorage.clear();
     global.window = { google: undefined };
     global.google = undefined;
+    global.location = { hostname: 'localhost' };
+    globalThis.location = global.location;
+    global.window.matchMedia = jest.fn().mockReturnValue({
+      matches: false,
+      addEventListener: jest.fn(),
+    });
     const el = { innerHTML: '' };
     global.document = {
       getElementById: jest.fn().mockReturnValue(el),
@@ -102,5 +108,23 @@ describe('googleAuth', () => {
       expect.any(Object),
       expect.objectContaining({ theme: 'filled_black' })
     );
+  });
+
+  it('skips Google sign-in on the internal Playwright origin', async () => {
+    const init = jest.fn();
+    global.location = { hostname: '10.132.0.54' };
+    globalThis.location = global.location;
+    global.window.matchMedia = jest.fn().mockReturnValue({
+      matches: false,
+      addEventListener: jest.fn(),
+    });
+    global.window.google = {
+      accounts: { id: { initialize: init, renderButton: jest.fn() } },
+    };
+    global.google = global.window.google;
+
+    await initGoogleSignIn();
+
+    expect(init).not.toHaveBeenCalled();
   });
 });
