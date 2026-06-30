@@ -131,6 +131,8 @@ async function exchangeCustomToken(apiKey, customToken) {
 }
 
 async function seedFirestore(db) {
+  await resetFirestore(db);
+
   const {
     storyRef,
     firstPageRef,
@@ -192,6 +194,48 @@ async function seedFirestore(db) {
   });
 
   await batch.commit();
+}
+
+/**
+ * Delete every document in the database before seeding.
+ * @param {import('firebase-admin/firestore').Firestore} db Firestore database.
+ * @returns {Promise<void>} Resolves after all known documents are deleted.
+ */
+async function resetFirestore(db) {
+  await deleteCollections(await db.listCollections());
+}
+
+/**
+ * Recursively delete the contents of multiple collections.
+ * @param {Array<{ listDocuments: () => Promise<Array<{ delete: () => Promise<void>, listCollections: () => Promise<Array<unknown>> }>> }>} collections Firestore collections.
+ * @returns {Promise<void>} Resolves after the collections are empty.
+ */
+async function deleteCollections(collections) {
+  for (const collection of collections) {
+    await deleteCollection(collection);
+  }
+}
+
+/**
+ * Recursively delete all documents and subcollections in a collection.
+ * @param {{ listDocuments: () => Promise<Array<{ delete: () => Promise<void>, listCollections: () => Promise<Array<unknown>> }>> }} collection Firestore collection.
+ * @returns {Promise<void>} Resolves after the collection has been cleared.
+ */
+async function deleteCollection(collection) {
+  const docs = await collection.listDocuments();
+  for (const doc of docs) {
+    await deleteDocument(doc);
+  }
+}
+
+/**
+ * Recursively delete a document and all of its subcollections.
+ * @param {{ delete: () => Promise<void>, listCollections: () => Promise<Array<unknown>> }} doc Firestore document.
+ * @returns {Promise<void>} Resolves after the document tree is deleted.
+ */
+async function deleteDocument(doc) {
+  await deleteCollections(await doc.listCollections());
+  await doc.delete();
 }
 
 async function renderSeededContents({

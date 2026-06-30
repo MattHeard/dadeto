@@ -26,6 +26,7 @@ describe('gcp-test fixture seed contract', () => {
     expect(source).toContain('const accessToken = process.env.GOOGLE_OAUTH_ACCESS_TOKEN;');
     expect(source).toContain('authClient.setCredentials({ access_token: accessToken });');
     expect(source).toContain('return new Storage({ projectId, authClient });');
+    expect(source).toContain('await resetFirestore(db);');
     expect(source).toContain('createStorageClient(projectId)');
     expect(source).toContain('credentials: {');
     expect(source).toContain('client_email: credentials.client_email');
