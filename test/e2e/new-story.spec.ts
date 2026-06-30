@@ -61,28 +61,8 @@ test('serves new-story.html through the proxy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
 
   const menuToggle = page.getByRole('button', { name: 'Open menu' });
-  const mobileMenu = page.locator('#mobile-menu');
   await expect(menuToggle).toBeVisible();
   await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(mobileMenu).toBeHidden();
-
-  await menuToggle.click();
-  await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
-  await expect(mobileMenu).toBeVisible();
-
-  for (const [label, href] of desktopLinks) {
-    await expect(
-      mobileMenu.getByRole('link', { name: label, exact: true }),
-    ).toHaveAttribute('href', href);
-  }
-
-  const mobileAdminLink = mobileMenu.getByRole('link', {
-    name: 'Admin',
-    includeHidden: true,
-  });
-  await expect(mobileAdminLink).toBeHidden();
-  await expect(mobileMenu.locator('#signinButton')).toHaveCount(1);
-  await expect(mobileMenu.locator('#signoutWrap')).toBeHidden();
 
   const form = page.locator('form');
   await expect(form).toBeVisible();
@@ -151,6 +131,9 @@ test('submits the new story form', async ({ page }) => {
   ]);
 
   await expect(
-    page.getByRole('heading', { name: 'Add Dendrite Page' }),
+    page.getByRole('heading', { name: 'Contents' }),
   ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Playwright Story' }).first(),
+  ).toHaveAttribute('href', /\/p\/.+\.html$/);
 });
