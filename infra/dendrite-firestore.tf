@@ -62,25 +62,6 @@ resource "google_firestore_index" "variants_moderation_rand" {
   depends_on = [google_firestore_database.database]
 }
 
-# Supports: querying variants by moderatorReputationSum alone
-resource "google_firestore_field" "variants_moderation" {
-  count      = local.manage_firestore_indexes ? 1 : 0
-  provider   = google-beta
-  project    = var.project_id
-  database   = var.database_id
-  collection = "variants"
-  field      = "moderatorReputationSum"
-
-  index_config {
-    indexes {
-      order       = "ASCENDING"
-      query_scope = "COLLECTION_GROUP"
-    }
-  }
-
-  depends_on = [google_firestore_database.database]
-}
-
 resource "google_firestore_index" "ratings_by_variant" {
   count       = local.manage_firestore_indexes ? 1 : 0
   project     = var.project_id
@@ -95,24 +76,6 @@ resource "google_firestore_index" "ratings_by_variant" {
   fields {
     field_path = "ratedAt"
     order      = "DESCENDING"
-  }
-
-  depends_on = [google_firestore_database.database]
-}
-
-resource "google_firestore_field" "pages_number_global" {
-  count      = local.manage_firestore_indexes ? 1 : 0
-  provider   = google-beta
-  project    = var.project_id
-  database   = var.database_id
-  collection = "pages"
-  field      = "number"
-
-  index_config {
-    indexes {
-      order       = "ASCENDING"
-      query_scope = "COLLECTION_GROUP"
-    }
   }
 
   depends_on = [google_firestore_database.database]
