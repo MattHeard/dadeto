@@ -53,6 +53,12 @@ EOT
     }
   }
 
+  alert_strategy {
+    notification_rate_limit {
+      period = "300s"
+    }
+  }
+
   notification_channels = [
     google_monitoring_notification_channel.production_email[0].name,
   ]

@@ -212,6 +212,9 @@ describe('cloud-core', () => {
     });
 
     test('handles callable request objects that are not plain objects', () => {
+      /**
+       *
+       */
       function req() {}
       req.get = function get(name) {
         return this.headers[name.toLowerCase()];
