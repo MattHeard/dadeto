@@ -1,10 +1,9 @@
 locals {
-  playwright_job_name          = "pw-e2e-${var.environment}"
-  reports_bucket_name          = "${var.project_id}-${var.region}-e2e-reports"
-  report_prefix                = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
-  gcs_proxy_name               = "${var.environment}-gcs-proxy"
-  gcs_proxy_uri                = local.playwright_enabled ? format("http://%s", google_compute_address.gcs_proxy_ilb_ip[0].address) : null
-  playwright_proxy_subnet_name = trimspace(var.github_run_id) != "" ? "${var.environment}-${var.github_run_id}-playwright-proxy" : "${var.environment}-playwright-proxy"
+  playwright_job_name = "pw-e2e-${var.environment}"
+  reports_bucket_name = "${var.project_id}-${var.region}-e2e-reports"
+  report_prefix       = trimspace(var.github_run_id) != "" ? "${var.environment}/${var.github_run_id}" : var.environment
+  gcs_proxy_name      = "${var.environment}-gcs-proxy"
+  gcs_proxy_uri       = local.playwright_enabled ? format("http://%s", google_compute_address.gcs_proxy_ilb_ip[0].address) : null
 }
 
 data "google_compute_network" "playwright" {
@@ -22,21 +21,12 @@ data "google_compute_subnetwork" "playwright" {
   project = var.project_id
 }
 
-resource "google_compute_subnetwork" "playwright_proxy_only" {
+data "google_compute_subnetwork" "playwright_proxy_only" {
   count = local.playwright_enabled ? 1 : 0
 
-  name          = local.playwright_proxy_subnet_name
-  region        = var.region
-  network       = data.google_compute_network.playwright[0].id
-  ip_cidr_range = var.playwright_proxy_subnet_cidr
-  purpose       = "REGIONAL_MANAGED_PROXY"
-  role          = "ACTIVE"
-
-  depends_on = [
-    google_project_service.compute,
-    google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
-    google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-  ]
+  name    = var.playwright_proxy_subnetwork_name
+  region  = var.region
+  project = var.project_id
 }
 
 resource "google_service_account" "playwright" {
@@ -112,7 +102,7 @@ resource "google_cloud_run_v2_service" "gcs_proxy" {
   depends_on = [
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-    google_compute_subnetwork.playwright_proxy_only,
+    data.google_compute_subnetwork.playwright_proxy_only,
   ]
 }
 
@@ -178,7 +168,7 @@ resource "google_compute_address" "gcs_proxy_ilb_ip" {
   depends_on = [
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-    google_compute_subnetwork.playwright_proxy_only,
+    data.google_compute_subnetwork.playwright_proxy_only,
   ]
 }
 
@@ -198,7 +188,7 @@ resource "google_compute_forwarding_rule" "gcs_proxy_ilb_fw" {
   depends_on = [
     google_project_iam_member.terraform_service_account_network_roles["terraform_security_admin"],
     google_project_iam_member.terraform_service_account_network_roles["terraform_network_admin"],
-    google_compute_subnetwork.playwright_proxy_only,
+    data.google_compute_subnetwork.playwright_proxy_only,
   ]
 }
 

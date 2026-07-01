@@ -157,6 +157,29 @@ jobs:
             --web-error-page=404.html \
             --uniform-bucket-level-access
 
+      - name: Ensure shared Playwright proxy subnet
+        run: |
+          set -euo pipefail
+          PROXY_SUBNET="$(gcloud compute networks subnets list \
+            --project="${GOOGLE_PROJECT}" \
+            --regions="${REGION}" \
+            --filter='network:default AND purpose=REGIONAL_MANAGED_PROXY' \
+            --format='value(name)' \
+            --limit=1)"
+
+          if [ -z "${PROXY_SUBNET}" ]; then
+            PROXY_SUBNET="playwright-proxy"
+            gcloud compute networks subnets create "${PROXY_SUBNET}" \
+              --project="${GOOGLE_PROJECT}" \
+              --region="${REGION}" \
+              --network=default \
+              --purpose=REGIONAL_MANAGED_PROXY \
+              --role=ACTIVE \
+              --range="${TF_VAR_playwright_proxy_subnet_cidr:-10.10.0.0/23}"
+          fi
+
+          echo "TF_VAR_playwright_proxy_subnetwork_name=${PROXY_SUBNET}" >> "$GITHUB_ENV"
+
       - name: Build and push Playwright image
         working-directory: .
         env:

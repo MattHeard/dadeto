@@ -66,13 +66,10 @@ defined in `backend.tf` and expects a bucket named `terraform-state-irien-465710
 
 ## Playwright managed proxy subnet
 
-Ephemeral `t-` environments provision a regional managed proxy subnet that backs
-the Cloud Run GCS proxy used during Playwright runs. Configure the subnet's CIDR
-range with the `playwright_proxy_subnet_cidr` variable (defaults to
-`10.10.0.0/23`). Select a range that does not overlap existing custom subnets
-and that lives outside the auto-mode `10.128.0.0/9` block so the managed proxy
-does not collide with the default network's allocations. The Playwright Cloud
-Run job uses a direct VPC network interface on the selected subnet, avoiding a
-separate Serverless VPC Access connector and its dedicated `/28` block. The
-managed proxy subnet is named per workflow run when `github_run_id` is set so
-concurrent or repeated test runs do not collide on a shared subnet name.
+Ephemeral `t-` environments reuse a shared regional managed proxy subnet that
+backs the Cloud Run GCS proxy used during Playwright runs. The workflow discovers
+an existing proxy subnet in the default network and exposes its name to
+Terraform through `playwright_proxy_subnetwork_name`; if no proxy subnet exists
+yet, the workflow creates one once and reuses it on future runs. The Cloud Run
+job uses a direct VPC network interface on that subnet, avoiding a separate
+Serverless VPC Access connector and its dedicated `/28` block.

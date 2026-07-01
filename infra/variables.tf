@@ -21,6 +21,12 @@ variable "playwright_network_name" {
   default     = "default"
 }
 
+variable "playwright_proxy_subnetwork_name" {
+  description = "Regional managed proxy subnetwork name used by Playwright resources"
+  type        = string
+  default     = ""
+}
+
 variable "playwright_subnetwork_name" {
   description = "Subnetwork name in the selected VPC for Playwright traffic"
   type        = string
