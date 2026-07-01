@@ -4,6 +4,7 @@ import {
   createFetchCredit,
   createFetchCreditEvents,
   applyResponseHeaders,
+  createDb,
   createGetApiKeyCreditV2ExpressHandle,
   createGetApiKeyCreditV2Handler,
 } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
@@ -156,6 +157,36 @@ describe('createFetchCreditEvents', () => {
         balanceAfter: 8,
       },
     ]);
+  });
+});
+
+describe('createDb', () => {
+  it('uses the configured database id when present', () => {
+    const FirestoreCtor = jest
+      .fn()
+      .mockImplementation(options => ({ options }));
+
+    const db = createDb(FirestoreCtor, {
+      DATABASE_ID: 'test-database',
+    });
+
+    expect(db.options).toEqual({ databaseId: 'test-database' });
+    expect(FirestoreCtor).toHaveBeenCalledTimes(1);
+    expect(FirestoreCtor).toHaveBeenCalledWith({ databaseId: 'test-database' });
+  });
+
+  it('falls back to the default database when the id is blank', () => {
+    const FirestoreCtor = jest
+      .fn()
+      .mockImplementation(options => ({ options }));
+
+    const db = createDb(FirestoreCtor, {
+      DATABASE_ID: '   ',
+    });
+
+    expect(db.options).toBeUndefined();
+    expect(FirestoreCtor).toHaveBeenCalledTimes(1);
+    expect(FirestoreCtor).toHaveBeenCalledWith();
   });
 });
 

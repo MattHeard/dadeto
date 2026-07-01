@@ -24,7 +24,7 @@ export function createPaymentWebhookIndexHandler({
   firestore,
   env = process.env,
 }) {
-  const db = createDb(firestore);
+  const db = createDb(firestore, env);
   const handleRequest = createPaymentWebhookHandler({
     fetchCredit: createFetchCredit(/** @type {any} */ (db)),
     applyCreditEvent: createApplyCreditEvent(/** @type {any} */ (db)),
