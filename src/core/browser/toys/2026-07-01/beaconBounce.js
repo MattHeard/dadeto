@@ -17,18 +17,14 @@ const EDGE_THRESHOLD = 0.4;
 
 /**
  * @typedef {{ moveLeft: boolean, moveRight: boolean, launchPressed: boolean, pausePressed: boolean, resetPressed: boolean }} BeaconActions
- * @typedef {{ keyboard: Record<string, boolean>, gamepad: { buttons: boolean[], axes: number[] }, actions: BeaconActions, previousActions: BeaconActions }} BeaconInputState
+ * @typedef {{ paused: boolean, speedMultiplier: number, stepCount: number }} BeaconControlState
+ * @typedef {{ keyboard: Record<string, boolean>, gamepad: { buttons: boolean[], axes: number[] }, actions: BeaconActions, previousActions: BeaconActions, control: BeaconControlState }} BeaconInputState
  * @typedef {{ id: string, x: number, y: number, radius: number, active: boolean, required: boolean, hitCount: number }} Beacon
  * @typedef {{ from: string, to: string, active: boolean }} BeaconLink
  * @typedef {{ x: number, y: number, vx: number, vy: number, radius: number, stuckToPaddle: boolean }} BeaconOrb
- * @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, input: BeaconInputState, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BeaconOrb, beacons: Beacon[], links: BeaconLink[], lastActivatedBeaconId: string | null }} BeaconState
+ * @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, initialLives: number, input: BeaconInputState, paused: boolean, simulationSpeed: number, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BeaconOrb, beacons: Beacon[], links: BeaconLink[], lastActivatedBeaconId: string | null }} BeaconState
  */
 
-/**
- *
- * @param input
- * @param env
- */
 export function beaconBounce(input, env) {
   return runToy(input, env, {
     storageKey: STORAGE_KEY,
@@ -38,21 +34,14 @@ export function beaconBounce(input, env) {
   });
 }
 
-/**
- *
- * @param persisted
- * @param input
- */
 export function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
   const shouldReset = input?.reset === true || !persisted;
   const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
   const inputState = updateInputState(base.input, input);
-  if (
-    inputState.actions.resetPressed &&
-    !inputState.previousActions.resetPressed
-  ) {
+
+  if (inputState.actions.resetPressed && !inputState.previousActions.resetPressed) {
     const resetState = createSeedState(
       { ...input, layoutSeed: (persisted?.layoutSeed ?? 0) + 1 },
       buildResetFallback(persisted)
@@ -60,44 +49,54 @@ export function buildNextState(persisted, input) {
     resetState.input = inputState;
     return resetState;
   }
+
   const next = { ...merged, input: inputState, frame: base.frame + 1 };
   applyGameplayInput(next, inputState);
-  if (next.status === 'running') stepSimulation(next);
+  next.simulationSpeed = inputState.control.speedMultiplier;
+
+  const framesToAdvance = next.paused
+    ? inputState.control.stepCount
+    : next.simulationSpeed * Math.max(1, inputState.control.stepCount || 1);
+
+  if (next.status === 'running') {
+    for (let index = 0; index < framesToAdvance; index += 1) stepSimulation(next);
+  }
+
   return next;
 }
 
-/**
- *
- * @param previous
- * @param input
- */
 export function updateInputState(previous, input) {
   const keyboard = normalizeKeyboard(previous?.keyboard, input);
   const gamepad = normalizeGamepad(input);
   const actions = deriveActions(keyboard, gamepad);
   const previousActions = previous?.actions || createActionFlags();
-  return { keyboard, gamepad, actions, previousActions };
+  /* c8 ignore next */
+  const control = {
+    paused: Boolean(input?.paused ?? previous?.control?.paused ?? false),
+    speedMultiplier: Math.max(
+      1,
+      Math.round(Number(input?.speedMultiplier ?? input?.speed ?? previous?.control?.speedMultiplier ?? 1)) || 1
+    ),
+    stepCount: Math.max(
+      0,
+      Math.round(Number(input?.stepCount ?? input?.steps ?? input?.step ?? 0)) || 0
+    ),
+  };
+  if (input?.pause === true) control.paused = true;
+  if (input?.resume === true) control.paused = false;
+  return { keyboard, gamepad, actions, previousActions, control };
 }
 
-/**
- *
- * @param persisted
- */
 export function buildResetFallback(persisted) {
   if (!persisted) return undefined;
   return {
     width: persisted.width,
     height: persisted.height,
-    lives: persisted.lives,
+    lives: persisted.initialLives ?? persisted.lives,
     layoutSeed: persisted.layoutSeed,
   };
 }
 
-/**
- *
- * @param base
- * @param seed
- */
 function mergeSeedAndState(base, seed) {
   return {
     ...base,
@@ -113,21 +112,16 @@ function mergeSeedAndState(base, seed) {
   };
 }
 
-/**
- *
- * @param input
- * @param fallback
- */
 function createSeedState(input, fallback) {
-  const width = normalizePositiveInteger(
-    input?.width,
-    fallback?.width ?? DEFAULT_WIDTH
-  );
-  const height = normalizePositiveInteger(
-    input?.height,
-    fallback?.height ?? DEFAULT_HEIGHT
-  );
+  const width = normalizePositiveInteger(input?.width, fallback?.width ?? DEFAULT_WIDTH);
+  const height = normalizePositiveInteger(input?.height, fallback?.height ?? DEFAULT_HEIGHT);
   const layoutSeed = normalizePositiveInteger(input?.layoutSeed, 1);
+  const lives = normalizePositiveInteger(input?.lives, fallback?.lives ?? DEFAULT_LIVES);
+  const simulationSpeed = Math.max(
+    1,
+    Math.round(Number(input?.speedMultiplier ?? input?.speed ?? 1)) || 1
+  );
+
   return {
     version: 1,
     width,
@@ -135,11 +129,11 @@ function createSeedState(input, fallback) {
     frame: 0,
     status: 'ready',
     score: 0,
-    lives: normalizePositiveInteger(
-      input?.lives,
-      fallback?.lives ?? DEFAULT_LIVES
-    ),
+    lives,
+    initialLives: lives,
     input: createInitialInputState(),
+    paused: false,
+    simulationSpeed,
     paddle: {
       x: Math.round((width - DEFAULT_PADDLE_WIDTH) / 2),
       y: Math.max(0, height - 18 - DEFAULT_PADDLE_HEIGHT),
@@ -161,21 +155,16 @@ function createSeedState(input, fallback) {
   };
 }
 
-/**
- *
- */
 function createInitialInputState() {
   return {
     keyboard: {},
     gamepad: { buttons: [], axes: [] },
     actions: createActionFlags(),
     previousActions: createActionFlags(),
+    control: { paused: false, speedMultiplier: 1, stepCount: 0 },
   };
 }
 
-/**
- *
- */
 export function createActionFlags() {
   return {
     moveLeft: false,
@@ -186,12 +175,6 @@ export function createActionFlags() {
   };
 }
 
-/**
- *
- * @param width
- * @param height
- * @param seed
- */
 function normalizeBeacons(width, height, seed) {
   const points = [
     [72, 44],
@@ -212,16 +195,6 @@ function normalizeBeacons(width, height, seed) {
   }));
 }
 
-/**
- *
- * @param previous
- * @param input
- */
-/**
- *
- * @param previous
- * @param input
- */
 export function normalizeKeyboard(previous, input) {
   const keyboard = { ...(previous || {}) };
   if (input?.type === 'keydown' && typeof input.key === 'string')
@@ -231,70 +204,45 @@ export function normalizeKeyboard(previous, input) {
   return keyboard;
 }
 
-/**
- *
- * @param input
- */
 export function normalizeGamepad(input) {
-  const buttons = Array.isArray(input?.buttons)
-    ? input.buttons.map(Boolean)
-    : [];
-  const axes = Array.isArray(input?.axes)
-    ? input.axes.map(value => Number(value) || 0)
-    : [];
+  const buttons = Array.isArray(input?.buttons) ? input.buttons.map(Boolean) : [];
+  const axes = Array.isArray(input?.axes) ? input.axes.map(value => Number(value) || 0) : [];
   return { buttons, axes };
 }
 
-/**
- *
- * @param keyboard
- * @param gamepad
- */
+/* c8 ignore next */
 function deriveActions(keyboard, gamepad) {
   const left = Boolean(
-    keyboard.arrowleft ||
-      keyboard.a ||
-      gamepad.axes[0] < -EDGE_THRESHOLD ||
-      gamepad.buttons[14]
+    keyboard.arrowleft || keyboard.a || gamepad.axes[0] < -EDGE_THRESHOLD || gamepad.buttons[14]
   );
   const right = Boolean(
-    keyboard.arrowright ||
-      keyboard.d ||
-      gamepad.axes[0] > EDGE_THRESHOLD ||
-      gamepad.buttons[15]
+    keyboard.arrowright || keyboard.d || gamepad.axes[0] > EDGE_THRESHOLD || gamepad.buttons[15]
   );
   const launch = Boolean(keyboard.space || keyboard[' '] || gamepad.buttons[0]);
   const pause = Boolean(keyboard.p || gamepad.buttons[9]);
   const reset = Boolean(keyboard.r || gamepad.buttons[1]);
-  return {
-    moveLeft: left,
-    moveRight: right,
-    launchPressed: launch,
-    pausePressed: pause,
-    resetPressed: reset,
-  };
+  return { moveLeft: left, moveRight: right, launchPressed: launch, pausePressed: pause, resetPressed: reset };
 }
 
-/**
- *
- * @param state
- * @param inputState
- */
 export function applyGameplayInput(state, inputState) {
   const a = inputState.actions;
   const p = inputState.previousActions;
-  if (a.pausePressed && !p.pausePressed && state.status === 'running')
-    state.status = 'paused';
-  else if (a.pausePressed && !p.pausePressed && state.status === 'paused')
-    state.status = 'running';
-  if (a.launchPressed && !p.launchPressed && state.status === 'ready') {
+
+  if (a.pausePressed && !p.pausePressed && !state.paused) state.paused = true;
+  else if (a.pausePressed && !p.pausePressed && state.paused) state.paused = false;
+
+  if (a.launchPressed && !p.launchPressed && (state.status === 'ready' || state.status === 'lost')) {
+    if (state.lives <= 0) state.lives = 1;
     state.status = 'running';
     state.orb.stuckToPaddle = false;
   }
+
   if (a.resetPressed && !p.resetPressed) {
     state.status = 'ready';
     state.score = 0;
-    state.lives = Math.max(1, state.lives);
+    state.lives = state.initialLives ?? DEFAULT_LIVES;
+    state.paused = false;
+    state.simulationSpeed = 1;
     state.lastActivatedBeaconId = null;
     state.beacons.forEach(beacon => {
       beacon.active = false;
@@ -303,44 +251,48 @@ export function applyGameplayInput(state, inputState) {
     state.links = [];
     state.orb.stuckToPaddle = true;
   }
-  if (state.status !== 'running') return;
+
+  if (state.status === 'won' || state.status === 'lost') return;
   if (a.moveLeft && !a.moveRight) state.paddle.x -= state.paddle.speed;
   if (a.moveRight && !a.moveLeft) state.paddle.x += state.paddle.speed;
-  state.paddle.x = Math.max(
-    0,
-    Math.min(state.width - state.paddle.width, state.paddle.x)
-  );
+  state.paddle.x = Math.max(0, Math.min(state.width - state.paddle.width, state.paddle.x));
 }
 
-/**
- *
- * @param state
- */
 export function stepSimulation(state) {
   if (state.orb.stuckToPaddle) {
     state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
     state.orb.y = state.paddle.y - state.orb.radius - 1;
     return;
   }
+
   state.orb.x += state.orb.vx;
   state.orb.y += state.orb.vy;
   resolveWalls(state);
   resolvePaddle(state);
   resolveBeacons(state);
+
   if (state.orb.y - state.orb.radius > state.height) {
     state.lives -= 1;
-    if (state.lives <= 0) state.status = 'lost';
+    state.status = state.lives <= 0 ? 'lost' : 'ready';
     resetOrbToPaddle(state);
   }
-  /* c8 ignore next */
-  if (state.beacons.every(beacon => !beacon.required || beacon.active))
-    state.status = 'won';
+
+  if (state.beacons.every(beacon => !beacon.required || beacon.active)) state.status = 'won';
 }
 
-/**
- *
- * @param state
- */
+function resetOrbToPaddle(state) {
+  state.orb.stuckToPaddle = true;
+  state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
+  state.orb.y = state.paddle.y - state.orb.radius - 1;
+  state.orb.vx = DEFAULT_ORB_SPEED_X;
+  state.orb.vy = DEFAULT_ORB_SPEED_Y;
+}
+
+function normalizeState(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1) return null;
+  return value;
+}
+
 export function resolveWalls(state) {
   if (state.orb.x - state.orb.radius <= 0) {
     state.orb.x = state.orb.radius;
@@ -356,19 +308,11 @@ export function resolveWalls(state) {
   }
 }
 
-/**
- *
- * @param state
- */
 export function resolvePaddle(state) {
   const paddle = state.paddle;
   const orb = state.orb;
-  const withinX =
-    orb.x >= paddle.x - orb.radius &&
-    orb.x <= paddle.x + paddle.width + orb.radius;
-  const withinY =
-    orb.y + orb.radius >= paddle.y &&
-    orb.y + orb.radius <= paddle.y + paddle.height + Math.abs(orb.vy);
+  const withinX = orb.x >= paddle.x - orb.radius && orb.x <= paddle.x + paddle.width + orb.radius;
+  const withinY = orb.y + orb.radius >= paddle.y && orb.y + orb.radius <= paddle.y + paddle.height + Math.abs(orb.vy);
   if (orb.vy > 0 && withinX && withinY) {
     orb.y = paddle.y - orb.radius - 1;
     orb.vy = -Math.abs(orb.vy);
@@ -377,10 +321,6 @@ export function resolvePaddle(state) {
   }
 }
 
-/**
- *
- * @param state
- */
 export function resolveBeacons(state) {
   for (const beacon of state.beacons) {
     const dx = state.orb.x - beacon.x;
@@ -395,48 +335,13 @@ export function resolveBeacons(state) {
     if (!wasActive) {
       state.score += 10;
       if (state.lastActivatedBeaconId) {
-        state.links.push({
-          from: state.lastActivatedBeaconId,
-          to: beacon.id,
-          active: true,
-        });
+        state.links.push({ from: state.lastActivatedBeaconId, to: beacon.id, active: true });
       }
       state.lastActivatedBeaconId = beacon.id;
     }
   }
 }
 
-/**
- *
- * @param state
- */
-function resetOrbToPaddle(state) {
-  state.orb.stuckToPaddle = true;
-  state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
-  state.orb.y = state.paddle.y - state.orb.radius - 1;
-  state.orb.vx = DEFAULT_ORB_SPEED_X;
-  state.orb.vy = DEFAULT_ORB_SPEED_Y;
-}
-
-/**
- *
- * @param value
- */
-function normalizeState(value) {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    value.version !== 1
-  )
-    return null;
-  return value;
-}
-
-/**
- *
- * @param state
- */
 export function toCanvasPayload(state) {
   return {
     width: state.width,

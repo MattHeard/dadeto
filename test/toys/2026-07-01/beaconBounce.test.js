@@ -150,17 +150,27 @@ describe('beaconBounce', () => {
         },
         paddle: { x: 60, y: 114, width: 48, height: 6, speed: 4 },
         orb: { x: 90, y: 80, vx: 1, vy: 2, radius: 4, stuckToPaddle: false },
-        beacons: [],
+        beacons: [
+          {
+            id: 'beacon-1',
+            x: 16,
+            y: 16,
+            radius: 8,
+            active: false,
+            required: true,
+            hitCount: 0,
+          },
+        ],
         links: [],
         lastActivatedBeaconId: null,
       },
       { type: 'keydown', key: 'p' }
     );
-    expect(paused.status).toBe('paused');
+    expect(paused.paused).toBe(true);
 
     const released = buildNextState(paused, { type: 'keyup', key: 'p' });
     const resumed = buildNextState(released, { type: 'keydown', key: 'p' });
-    expect(resumed.status).not.toBe('paused');
+    expect(resumed.paused).toBe(false);
 
     const reset = buildNextState(resumed, { type: 'keydown', key: 'r' });
     expect(reset.status).toBe('ready');
@@ -343,7 +353,7 @@ describe('beaconBounce', () => {
     };
     stepSimulation(survivedLifeLoss);
     expect(survivedLifeLoss.lives).toBe(1);
-    expect(survivedLifeLoss.status).toBe('running');
+    expect(survivedLifeLoss.status).toBe('ready');
 
     const wonState = buildNextState(
       {
@@ -954,6 +964,52 @@ describe('beaconBounce', () => {
     expect(normalizeGamepad({ buttons: [true], axes: [0] }).buttons[0]).toBe(
       true
     );
+    expect(normalizeGamepad(undefined)).toEqual({ buttons: [], axes: [] });
+
+    const previousInput = {
+      keyboard: { p: true },
+      actions: {
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        pausePressed: false,
+        resetPressed: false,
+      },
+      control: { paused: false, speedMultiplier: 2, stepCount: 0 },
+    };
+    const pausedControl = updateInputState(previousInput, {
+      pause: true,
+      speedMultiplier: 3,
+      stepCount: 2,
+    });
+    expect(pausedControl.control).toEqual({
+      paused: true,
+      speedMultiplier: 3,
+      stepCount: 2,
+    });
+
+    const resumedControl = updateInputState(previousInput, {
+      resume: true,
+      speed: 4,
+      steps: 5,
+    });
+    expect(resumedControl.control).toEqual({
+      paused: false,
+      speedMultiplier: 4,
+      stepCount: 5,
+    });
+
+    const derivedActions = updateInputState(undefined, {
+      buttons: [true, false, false, false, false, false, false, false, false, false, false, false, false, false, true],
+      axes: [-1],
+    });
+    expect(derivedActions.actions).toEqual({
+      moveLeft: true,
+      moveRight: false,
+      launchPressed: true,
+      pausePressed: false,
+      resetPressed: false,
+    });
   });
 
   it('covers paddle bounce and beacon render branches', () => {
