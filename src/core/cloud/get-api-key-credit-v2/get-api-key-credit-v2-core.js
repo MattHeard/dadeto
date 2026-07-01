@@ -226,6 +226,55 @@ export function createGetApiKeyCreditV2Handler(deps) {
 }
 
 /**
+ * Create the Express-style handler for the API key credit endpoint.
+ * @param {{ db: CreditFirestore }} deps Runtime dependencies.
+ * @returns {(req: unknown, res: { set: (name: string, value: string) => void, status: (status: number) => { json: (body: unknown) => void, send: (body: unknown) => void } }) => Promise<void>} Express handler.
+ */
+export function createGetApiKeyCreditV2ExpressHandle({ db }) {
+  const handleRequest = createGetApiKeyCreditV2Handler({
+    fetchCredit: createFetchCredit(db),
+    fetchCreditEvents: createFetchCreditEvents(db),
+    applyCreditEvent: createApplyCreditEvent(db),
+    getUuid: extractUuid,
+    logError: error => console.error(error),
+  });
+
+  return async function handle(req, res) {
+    const { status, body, headers } = await handleRequest(
+      /** @type {{ method?: string, body?: unknown } & Record<string, unknown>} */ (
+        req
+      )
+    );
+
+    applyResponseHeaders(res, headers);
+
+    if (body && typeof body === 'object') {
+      return res.status(status).json(body);
+    }
+
+    return res.status(status).send(body);
+  };
+}
+
+/**
+ * Apply response headers to an Express response object.
+ * @param {{ set: (name: string, value: string) => void }} res Response object.
+ * @param {Record<string, string | undefined> | undefined} headers Response headers.
+ * @returns {void}
+ */
+export function applyResponseHeaders(res, headers) {
+  if (!headers) {
+    return;
+  }
+
+  Object.entries(headers).forEach(([key, value]) => {
+    if (typeof value !== 'undefined') {
+      res.set(key, value);
+    }
+  });
+}
+
+/**
  * @typedef {{
  *   fetchCredit: (uuid: string) => Promise<number | null>,
  *   fetchCreditEvents: (uuid: string) => Promise<Array<CreditLedgerEvent>>,

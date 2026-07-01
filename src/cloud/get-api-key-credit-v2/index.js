@@ -1,49 +1,16 @@
-import { Firestore } from './get-api-key-credit-v2-gcf.js';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+import { initializeApp } from 'firebase-admin/app';
+import { createFirebaseAppManager } from '../common-gcf.js';
 import { getFirestoreInstance } from '../firestore.js';
 import {
-  createApplyCreditEvent,
-  createDb,
-  createFetchCredit,
-  createFetchCreditEvents,
-  createGetApiKeyCreditV2Handler,
-  extractUuid,
+  createGetApiKeyCreditV2ExpressHandle,
 } from './get-api-key-credit-v2-core.js';
 
-const db = createDb(getFirestoreInstance({ getFirestoreFn: Firestore }));
-
-export const fetchCredit = createFetchCredit(db);
-export const fetchCreditEvents = createFetchCreditEvents(db);
-export const applyCreditEvent = createApplyCreditEvent(db);
-
-const handleRequest = createGetApiKeyCreditV2Handler({
-  fetchCredit,
-  fetchCreditEvents,
-  applyCreditEvent,
-  getUuid: extractUuid,
-  logError: error => console.error(error),
+const db = getFirestoreInstance({
+  ensureAppFn: createFirebaseAppManager(initializeApp).ensureFirebaseApp,
+  getFirestoreFn: getAdminFirestore,
 });
 
-export async function handle(req, res) {
-  const { status, body, headers } = await handleRequest(req);
+const handle = createGetApiKeyCreditV2ExpressHandle({ db });
 
-  if (headers) {
-    Object.entries(headers).forEach(([key, value]) => {
-      if (typeof value !== 'undefined') {
-        res.set(key, value);
-      }
-    });
-  }
-
-  if (body && typeof body === 'object') {
-    return res.status(status).json(body);
-  }
-
-  return res.status(status).send(body);
-}
-
-export {
-  createApplyCreditEvent,
-  createFetchCreditEvents,
-  extractUuid,
-  createDb,
-} from './get-api-key-credit-v2-core.js';
+export { handle };

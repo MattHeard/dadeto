@@ -3,6 +3,8 @@ import {
   createApplyCreditEvent,
   createFetchCredit,
   createFetchCreditEvents,
+  applyResponseHeaders,
+  createGetApiKeyCreditV2ExpressHandle,
   createGetApiKeyCreditV2Handler,
 } from '../../../../src/core/cloud/get-api-key-credit-v2/get-api-key-credit-v2-core.js';
 import * as coreShim from '../../../../src/core/get-api-key-credit-v2.js';
@@ -568,6 +570,132 @@ describe('createGetApiKeyCreditV2Handler', () => {
         applyCreditEvent: async () => ({ status: 200, body: {} }),
       })
     ).toThrow('fetchCreditEvents must be a function');
+  });
+});
+
+describe('createGetApiKeyCreditV2ExpressHandle', () => {
+  it('writes JSON responses and forwards headers', async () => {
+    const handle = createGetApiKeyCreditV2ExpressHandle({
+      db: createFakeFirestore(),
+    });
+    const res = {
+      headers: [],
+      set(name, value) {
+        this.headers.push([name, value]);
+      },
+      status(status) {
+        this.statusCode = status;
+        return this;
+      },
+      json(body) {
+        this.body = body;
+      },
+      send(body) {
+        this.body = body;
+      },
+    };
+
+    await handle(
+      {
+        method: 'GET',
+        path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit/events',
+      },
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ events: [] });
+    expect(res.headers).toEqual([]);
+  });
+
+  it('forwards headers for validation errors', async () => {
+    const handle = createGetApiKeyCreditV2ExpressHandle({
+      db: createFakeFirestore(),
+    });
+    const res = {
+      headers: [],
+      set(name, value) {
+        this.headers.push([name, value]);
+      },
+      status(status) {
+        this.statusCode = status;
+        return this;
+      },
+      json(body) {
+        this.body = body;
+      },
+      send(body) {
+        this.body = body;
+      },
+    };
+
+    await handle(
+      {
+        method: 'DELETE',
+        path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+      },
+      res
+    );
+
+    expect(res.statusCode).toBe(405);
+    expect(res.headers).toEqual([['Allow', 'GET, POST']]);
+    expect(res.body).toBe('Method Not Allowed');
+  });
+
+  it('logs and returns internal errors from the data path', async () => {
+    const database = {
+      collection() {
+        throw new Error('boom');
+      },
+    };
+    const originalError = console.error;
+    const error = jest.fn();
+    console.error = error;
+
+    try {
+      const handle = createGetApiKeyCreditV2ExpressHandle({ db: database });
+      const res = {
+        set() {},
+        status(status) {
+          this.statusCode = status;
+          return this;
+        },
+        json(body) {
+          this.body = body;
+        },
+        send(body) {
+          this.body = body;
+        },
+      };
+
+      await handle(
+        {
+          method: 'GET',
+          path: '/api-keys/123e4567-e89b-12d3-a456-426614174000/credit',
+        },
+        res
+      );
+
+      expect(error).toHaveBeenCalled();
+      expect(res.statusCode).toBe(500);
+      expect(res.body).toBe('Internal error');
+    } finally {
+      console.error = originalError;
+    }
+  });
+});
+
+describe('applyResponseHeaders', () => {
+  it('skips undefined headers', () => {
+    const res = { set: jest.fn() };
+
+    applyResponseHeaders(res, {
+      'X-Defined': 'value',
+      'X-Undefined': undefined,
+    });
+
+    expect(res.set).toHaveBeenCalledTimes(1);
+    expect(res.set).toHaveBeenCalledWith('X-Defined', 'value');
   });
 });
 
