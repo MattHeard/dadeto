@@ -16,6 +16,7 @@ describe('gcp-test fixture seed contract', () => {
 
     expect(source).toContain('retryTransientSeedStep');
     expect(source).toContain('Premature close');
+    expect(source).toContain('code === 5');
     expect(source).toContain('TRANSIENT_SEED_ATTEMPTS');
   });
 

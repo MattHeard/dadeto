@@ -317,7 +317,9 @@ async function retryTransientSeedStep(stepFn) {
  */
 function isTransientSeedError(error) {
   const message = error instanceof Error ? error.message : String(error);
+  const code = typeof error === 'object' && error !== null ? error.code : undefined;
   return (
+    code === 5 ||
     message.includes('Premature close') ||
     message.includes('ERR_STREAM_PREMATURE_CLOSE') ||
     message.includes('ECONNRESET') ||
