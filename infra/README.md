@@ -32,7 +32,7 @@ per-environment Identity Platform tenant so that client and backend runtimes can
 connect to the correct datastore without manual configuration.
 
 Production uses a named Firestore database instead of the shared `(default)`
-database. The production workflow sets `database_id` to `prod-dendrite`, while
+database. The production workflow sets `database_id` to `production`, while
 `t-*` test runs continue to use their generated per-run database ids.
 
 Identity Platform supports multi-environment isolation via tenants. Terraform
