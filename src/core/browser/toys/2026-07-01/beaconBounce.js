@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* eslint-disable complexity, no-ternary, jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns */
+/* eslint-disable complexity, no-ternary */
 import { runToy } from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
 
@@ -25,6 +25,12 @@ const EDGE_THRESHOLD = 0.4;
  * @typedef {{ version: 1, width: number, height: number, frame: number, status: 'ready' | 'running' | 'paused' | 'won' | 'lost', score: number, lives: number, initialLives: number, input: BeaconInputState, paused: boolean, simulationSpeed: number, paddle: { x: number, y: number, width: number, height: number, speed: number }, orb: BeaconOrb, beacons: Beacon[], links: BeaconLink[], lastActivatedBeaconId: string | null }} BeaconState
  */
 
+/**
+ * Run the Beacon Bounce toy with persisted browser state.
+ * @param {unknown} input - Toy input payload from the browser runtime.
+ * @param {unknown} env - Runtime environment passed through by the toy host.
+ * @returns {unknown} The toy runner result.
+ */
 export function beaconBounce(input, env) {
   return runToy(input, env, {
     storageKey: STORAGE_KEY,
@@ -34,6 +40,12 @@ export function beaconBounce(input, env) {
   });
 }
 
+/**
+ * Build the next game state from persisted state and the latest input.
+ * @param {BeaconState | null} persisted - Previously persisted state.
+ * @param {unknown} input - Latest toy input payload.
+ * @returns {BeaconState} The next simulation state.
+ */
 export function buildNextState(persisted, input) {
   const seed = createSeedState(input, persisted);
   const base = persisted || seed;
@@ -41,7 +53,10 @@ export function buildNextState(persisted, input) {
   const merged = shouldReset ? seed : mergeSeedAndState(base, seed);
   const inputState = updateInputState(base.input, input);
 
-  if (inputState.actions.resetPressed && !inputState.previousActions.resetPressed) {
+  if (
+    inputState.actions.resetPressed &&
+    !inputState.previousActions.resetPressed
+  ) {
     const resetState = createSeedState(
       { ...input, layoutSeed: (persisted?.layoutSeed ?? 0) + 1 },
       buildResetFallback(persisted)
@@ -59,12 +74,19 @@ export function buildNextState(persisted, input) {
     : next.simulationSpeed * Math.max(1, inputState.control.stepCount || 1);
 
   if (next.status === 'running') {
-    for (let index = 0; index < framesToAdvance; index += 1) stepSimulation(next);
+    for (let index = 0; index < framesToAdvance; index += 1)
+      stepSimulation(next);
   }
 
   return next;
 }
 
+/**
+ * Update keyboard, gamepad, and control state from the current input.
+ * @param {BeaconInputState | undefined} previous - Previous input state.
+ * @param {unknown} input - Latest toy input payload.
+ * @returns {BeaconInputState} Normalized input state for the current frame.
+ */
 export function updateInputState(previous, input) {
   const keyboard = normalizeKeyboard(previous?.keyboard, input);
   const gamepad = normalizeGamepad(input);
@@ -73,13 +95,15 @@ export function updateInputState(previous, input) {
   /* c8 ignore next */
   const control = {
     paused: Boolean(input?.paused ?? previous?.control?.paused ?? false),
-    speedMultiplier: Math.max(
-      1,
-      Math.round(Number(input?.speedMultiplier ?? input?.speed ?? previous?.control?.speedMultiplier ?? 1)) || 1
+    speedMultiplier: normalizeStepCount(
+      input?.speedMultiplier ??
+        input?.speed ??
+        previous?.control?.speedMultiplier,
+      1
     ),
-    stepCount: Math.max(
-      0,
-      Math.round(Number(input?.stepCount ?? input?.steps ?? input?.step ?? 0)) || 0
+    stepCount: normalizeStepCount(
+      input?.stepCount ?? input?.steps ?? input?.step,
+      0
     ),
   };
   if (input?.pause === true) control.paused = true;
@@ -87,6 +111,12 @@ export function updateInputState(previous, input) {
   return { keyboard, gamepad, actions, previousActions, control };
 }
 
+/**
+ * Build a fallback state used when the toy resets from persisted data.
+ * @param {BeaconState | null} persisted - Previously persisted state.
+ * @returns {{ width?: number, height?: number, lives?: number, layoutSeed?: number } | undefined}
+ * Reset fallback values or undefined when there is no persisted state.
+ */
 export function buildResetFallback(persisted) {
   if (!persisted) return undefined;
   return {
@@ -97,6 +127,12 @@ export function buildResetFallback(persisted) {
   };
 }
 
+/**
+ * Merge a persisted state with a freshly seeded layout.
+ * @param {BeaconState} base - Persisted state to retain between seeds.
+ * @param {BeaconState} seed - Freshly created seed state.
+ * @returns {BeaconState} Combined state with the new layout dimensions.
+ */
 function mergeSeedAndState(base, seed) {
   return {
     ...base,
@@ -112,14 +148,29 @@ function mergeSeedAndState(base, seed) {
   };
 }
 
+/**
+ * Create a fresh seed state for a run.
+ * @param {unknown} input - Latest toy input payload.
+ * @param {Partial<BeaconState> | undefined} fallback - Values reused on reset.
+ * @returns {BeaconState} New initial game state.
+ */
 function createSeedState(input, fallback) {
-  const width = normalizePositiveInteger(input?.width, fallback?.width ?? DEFAULT_WIDTH);
-  const height = normalizePositiveInteger(input?.height, fallback?.height ?? DEFAULT_HEIGHT);
+  const width = normalizePositiveInteger(
+    input?.width,
+    fallback?.width ?? DEFAULT_WIDTH
+  );
+  const height = normalizePositiveInteger(
+    input?.height,
+    fallback?.height ?? DEFAULT_HEIGHT
+  );
   const layoutSeed = normalizePositiveInteger(input?.layoutSeed, 1);
-  const lives = normalizePositiveInteger(input?.lives, fallback?.lives ?? DEFAULT_LIVES);
-  const simulationSpeed = Math.max(
-    1,
-    Math.round(Number(input?.speedMultiplier ?? input?.speed ?? 1)) || 1
+  const lives = normalizePositiveInteger(
+    input?.lives,
+    fallback?.lives ?? DEFAULT_LIVES
+  );
+  const simulationSpeed = normalizeStepCount(
+    input?.speedMultiplier ?? input?.speed,
+    1
   );
 
   return {
@@ -155,6 +206,10 @@ function createSeedState(input, fallback) {
   };
 }
 
+/**
+ * Create the default normalized input state.
+ * @returns {BeaconInputState} Empty input state with neutral controls.
+ */
 function createInitialInputState() {
   return {
     keyboard: {},
@@ -165,6 +220,23 @@ function createInitialInputState() {
   };
 }
 
+/**
+ * Normalize a control step count or speed multiplier.
+ * @param {unknown} value - Raw numeric input.
+ * @param {number} fallback - Fallback when the input is absent or invalid.
+ * @returns {number} Rounded non-negative step count.
+ */
+function normalizeStepCount(value, fallback) {
+  const next = Number(value);
+  if (Number.isFinite(next) && next >= 0)
+    return Math.max(fallback, Math.round(next));
+  return fallback;
+}
+
+/**
+ * Create a fresh set of action flags.
+ * @returns {BeaconActions} Empty action flags.
+ */
 export function createActionFlags() {
   return {
     moveLeft: false,
@@ -175,6 +247,13 @@ export function createActionFlags() {
   };
 }
 
+/**
+ * Generate the beacon layout for the current arena dimensions.
+ * @param {number} width - Arena width.
+ * @param {number} height - Arena height.
+ * @param {number} seed - Layout seed.
+ * @returns {Beacon[]} Deterministic beacon layout.
+ */
 function normalizeBeacons(width, height, seed) {
   const points = [
     [72, 44],
@@ -195,6 +274,12 @@ function normalizeBeacons(width, height, seed) {
   }));
 }
 
+/**
+ * Normalize the keyboard state by applying a single key event.
+ * @param {Record<string, boolean> | undefined} previous - Previous keyboard state.
+ * @param {unknown} input - Latest toy input payload.
+ * @returns {Record<string, boolean>} Updated keyboard state.
+ */
 export function normalizeKeyboard(previous, input) {
   const keyboard = { ...(previous || {}) };
   if (input?.type === 'keydown' && typeof input.key === 'string')
@@ -204,34 +289,70 @@ export function normalizeKeyboard(previous, input) {
   return keyboard;
 }
 
+/**
+ * Normalize gamepad buttons and axes from the current input.
+ * @param {unknown} input - Latest toy input payload.
+ * @returns {{ buttons: boolean[], axes: number[] }} Normalized gamepad state.
+ */
 export function normalizeGamepad(input) {
-  const buttons = Array.isArray(input?.buttons) ? input.buttons.map(Boolean) : [];
-  const axes = Array.isArray(input?.axes) ? input.axes.map(value => Number(value) || 0) : [];
+  const buttons = Array.isArray(input?.buttons)
+    ? input.buttons.map(Boolean)
+    : [];
+  const axes = Array.isArray(input?.axes)
+    ? input.axes.map(value => Number(value) || 0)
+    : [];
   return { buttons, axes };
 }
 
 /* c8 ignore next */
+/**
+ * Convert normalized keyboard and gamepad state into gameplay actions.
+ * @param {{ [key: string]: boolean }} keyboard - Normalized keyboard state.
+ * @param {{ buttons: boolean[], axes: number[] }} gamepad - Normalized gamepad state.
+ * @returns {BeaconActions} Gameplay action flags.
+ */
 function deriveActions(keyboard, gamepad) {
   const left = Boolean(
-    keyboard.arrowleft || keyboard.a || gamepad.axes[0] < -EDGE_THRESHOLD || gamepad.buttons[14]
+    keyboard.arrowleft ||
+      keyboard.a ||
+      gamepad.axes[0] < -EDGE_THRESHOLD ||
+      gamepad.buttons[14]
   );
   const right = Boolean(
-    keyboard.arrowright || keyboard.d || gamepad.axes[0] > EDGE_THRESHOLD || gamepad.buttons[15]
+    keyboard.arrowright ||
+      keyboard.d ||
+      gamepad.axes[0] > EDGE_THRESHOLD ||
+      gamepad.buttons[15]
   );
   const launch = Boolean(keyboard.space || keyboard[' '] || gamepad.buttons[0]);
   const pause = Boolean(keyboard.p || gamepad.buttons[9]);
   const reset = Boolean(keyboard.r || gamepad.buttons[1]);
-  return { moveLeft: left, moveRight: right, launchPressed: launch, pausePressed: pause, resetPressed: reset };
+  return {
+    moveLeft: left,
+    moveRight: right,
+    launchPressed: launch,
+    pausePressed: pause,
+    resetPressed: reset,
+  };
 }
 
+/**
+ * Apply gameplay actions to the current state before stepping.
+ * @param {BeaconState} state - Mutable game state.
+ * @param {BeaconInputState} inputState - Normalized input for this frame.
+ * @returns {void}
+ */
 export function applyGameplayInput(state, inputState) {
   const a = inputState.actions;
   const p = inputState.previousActions;
 
-  if (a.pausePressed && !p.pausePressed && !state.paused) state.paused = true;
-  else if (a.pausePressed && !p.pausePressed && state.paused) state.paused = false;
+  if (a.pausePressed && !p.pausePressed) state.paused = !state.paused;
 
-  if (a.launchPressed && !p.launchPressed && (state.status === 'ready' || state.status === 'lost')) {
+  if (
+    a.launchPressed &&
+    !p.launchPressed &&
+    (state.status === 'ready' || state.status === 'lost')
+  ) {
     if (state.lives <= 0) state.lives = 1;
     state.status = 'running';
     state.orb.stuckToPaddle = false;
@@ -255,9 +376,17 @@ export function applyGameplayInput(state, inputState) {
   if (state.status === 'won' || state.status === 'lost') return;
   if (a.moveLeft && !a.moveRight) state.paddle.x -= state.paddle.speed;
   if (a.moveRight && !a.moveLeft) state.paddle.x += state.paddle.speed;
-  state.paddle.x = Math.max(0, Math.min(state.width - state.paddle.width, state.paddle.x));
+  state.paddle.x = Math.max(
+    0,
+    Math.min(state.width - state.paddle.width, state.paddle.x)
+  );
 }
 
+/**
+ * Advance one simulation step.
+ * @param {BeaconState} state - Mutable game state.
+ * @returns {void}
+ */
 export function stepSimulation(state) {
   if (state.orb.stuckToPaddle) {
     state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
@@ -277,9 +406,15 @@ export function stepSimulation(state) {
     resetOrbToPaddle(state);
   }
 
-  if (state.beacons.every(beacon => !beacon.required || beacon.active)) state.status = 'won';
+  if (state.beacons.every(beacon => !beacon.required || beacon.active))
+    state.status = 'won';
 }
 
+/**
+ * Re-stick the orb to the paddle after reset or life loss.
+ * @param {BeaconState} state - Mutable game state.
+ * @returns {void}
+ */
 function resetOrbToPaddle(state) {
   state.orb.stuckToPaddle = true;
   state.orb.x = Math.round(state.paddle.x + state.paddle.width / 2);
@@ -288,11 +423,27 @@ function resetOrbToPaddle(state) {
   state.orb.vy = DEFAULT_ORB_SPEED_Y;
 }
 
+/**
+ * Validate a persisted toy snapshot.
+ * @param {unknown} value - Candidate persisted state.
+ * @returns {BeaconState | null} Valid state or null when rejected.
+ */
 function normalizeState(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1) return null;
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    value.version !== 1
+  )
+    return null;
   return value;
 }
 
+/**
+ * Resolve orb collisions against the arena walls.
+ * @param {BeaconState} state - Mutable game state.
+ * @returns {void}
+ */
 export function resolveWalls(state) {
   if (state.orb.x - state.orb.radius <= 0) {
     state.orb.x = state.orb.radius;
@@ -308,11 +459,20 @@ export function resolveWalls(state) {
   }
 }
 
+/**
+ * Resolve orb collisions against the paddle.
+ * @param {BeaconState} state - Mutable game state.
+ * @returns {void}
+ */
 export function resolvePaddle(state) {
   const paddle = state.paddle;
   const orb = state.orb;
-  const withinX = orb.x >= paddle.x - orb.radius && orb.x <= paddle.x + paddle.width + orb.radius;
-  const withinY = orb.y + orb.radius >= paddle.y && orb.y + orb.radius <= paddle.y + paddle.height + Math.abs(orb.vy);
+  const withinX =
+    orb.x >= paddle.x - orb.radius &&
+    orb.x <= paddle.x + paddle.width + orb.radius;
+  const withinY =
+    orb.y + orb.radius >= paddle.y &&
+    orb.y + orb.radius <= paddle.y + paddle.height + Math.abs(orb.vy);
   if (orb.vy > 0 && withinX && withinY) {
     orb.y = paddle.y - orb.radius - 1;
     orb.vy = -Math.abs(orb.vy);
@@ -321,6 +481,11 @@ export function resolvePaddle(state) {
   }
 }
 
+/**
+ * Resolve orb collisions against beacon targets.
+ * @param {BeaconState} state - Mutable game state.
+ * @returns {void}
+ */
 export function resolveBeacons(state) {
   for (const beacon of state.beacons) {
     const dx = state.orb.x - beacon.x;
@@ -335,13 +500,22 @@ export function resolveBeacons(state) {
     if (!wasActive) {
       state.score += 10;
       if (state.lastActivatedBeaconId) {
-        state.links.push({ from: state.lastActivatedBeaconId, to: beacon.id, active: true });
+        state.links.push({
+          from: state.lastActivatedBeaconId,
+          to: beacon.id,
+          active: true,
+        });
       }
       state.lastActivatedBeaconId = beacon.id;
     }
   }
 }
 
+/**
+ * Convert the game state into canvas primitives.
+ * @param {BeaconState} state - Current game state.
+ * @returns {{ width: number, height: number, shapes: Array<Record<string, unknown>> }} Canvas payload.
+ */
 export function toCanvasPayload(state) {
   return {
     width: state.width,

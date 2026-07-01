@@ -1000,7 +1000,23 @@ describe('beaconBounce', () => {
     });
 
     const derivedActions = updateInputState(undefined, {
-      buttons: [true, false, false, false, false, false, false, false, false, false, false, false, false, false, true],
+      buttons: [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+      ],
       axes: [-1],
     });
     expect(derivedActions.actions).toEqual({
@@ -1010,6 +1026,90 @@ describe('beaconBounce', () => {
       pausePressed: false,
       resetPressed: false,
     });
+
+    const heldPause = {
+      status: 'running',
+      paused: false,
+      width: 120,
+      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+      beacons: [],
+      links: [],
+      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+      initialLives: 3,
+    };
+    applyGameplayInput(heldPause, {
+      actions: {
+        pausePressed: true,
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        resetPressed: false,
+      },
+      previousActions: {
+        pausePressed: true,
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: false,
+        resetPressed: false,
+      },
+    });
+    expect(heldPause.paused).toBe(false);
+
+    const wonLocked = {
+      status: 'won',
+      paused: false,
+      width: 120,
+      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+      beacons: [],
+      links: [],
+      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+      initialLives: 3,
+    };
+    applyGameplayInput(wonLocked, {
+      actions: {
+        pausePressed: false,
+        moveLeft: true,
+        moveRight: false,
+        launchPressed: false,
+        resetPressed: false,
+      },
+      previousActions: createActionFlags(),
+    });
+    expect(wonLocked.paddle.x).toBe(20);
+
+    const relaunchFromLost = {
+      status: 'lost',
+      paused: false,
+      width: 120,
+      paddle: { x: 20, y: 30, width: 40, height: 6, speed: 4 },
+      beacons: [
+        {
+          id: 'beacon-1',
+          x: 16,
+          y: 16,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
+      links: [],
+      orb: { x: 0, y: 0, vx: 0, vy: 0, radius: 4, stuckToPaddle: true },
+      initialLives: 3,
+      lives: 0,
+    };
+    applyGameplayInput(relaunchFromLost, {
+      actions: {
+        pausePressed: false,
+        moveLeft: false,
+        moveRight: false,
+        launchPressed: true,
+        resetPressed: false,
+      },
+      previousActions: createActionFlags(),
+    });
+    expect(relaunchFromLost.lives).toBe(1);
+    expect(relaunchFromLost.status).toBe('running');
   });
 
   it('covers paddle bounce and beacon render branches', () => {
