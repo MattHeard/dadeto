@@ -1,4 +1,5 @@
 import { Firestore } from './get-api-key-credit-v2-gcf.js';
+import { getFirestoreInstance } from '../firestore.js';
 import {
   createApplyCreditEvent,
   createDb,
@@ -8,7 +9,7 @@ import {
   extractUuid,
 } from './get-api-key-credit-v2-core.js';
 
-const db = createDb(Firestore);
+const db = createDb(getFirestoreInstance({ getFirestoreFn: Firestore }));
 
 export const fetchCredit = createFetchCredit(db);
 export const fetchCreditEvents = createFetchCreditEvents(db);
