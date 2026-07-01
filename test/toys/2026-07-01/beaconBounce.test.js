@@ -322,6 +322,29 @@ describe('beaconBounce', () => {
     stepSimulation(explicitLost);
     expect(explicitLost.status).toBe('lost');
 
+    const survivedLifeLoss = {
+      status: 'running',
+      lives: 2,
+      width: 120,
+      height: 80,
+      orb: { x: 20, y: 100, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+      beacons: [
+        {
+          id: 'beacon-1',
+          x: 10,
+          y: 10,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
+    };
+    stepSimulation(survivedLifeLoss);
+    expect(survivedLifeLoss.lives).toBe(1);
+    expect(survivedLifeLoss.status).toBe('running');
+
     const wonState = buildNextState(
       {
         version: 1,
@@ -368,6 +391,35 @@ describe('beaconBounce', () => {
       {}
     );
     expect(wonState.status).toBe('won');
+  });
+
+  it('marks the game lost when the final life drops below zero', () => {
+    const state = {
+      status: 'running',
+      lives: 1,
+      width: 120,
+      height: 80,
+      orb: { x: 20, y: 100, vx: 0, vy: 3, radius: 4, stuckToPaddle: false },
+      paddle: { x: 0, y: 0, width: 10, height: 4, speed: 2 },
+      beacons: [
+        {
+          id: 'beacon-1',
+          x: 10,
+          y: 10,
+          radius: 8,
+          active: false,
+          required: true,
+          hitCount: 0,
+        },
+      ],
+      links: [],
+    };
+
+    stepSimulation(state);
+
+    expect(state.lives).toBe(0);
+    expect(state.status).toBe('lost');
+    expect(state.orb.stuckToPaddle).toBe(true);
   });
 
   it('parses gamepad input and supports malformed storage defensively', () => {
