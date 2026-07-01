@@ -23,4 +23,15 @@ describe('gcp-test workflow report handling', () => {
     expect(source).toContain('--data-binary @/tmp/e2e-seed.json');
     expect(source).toContain('sleep "$((attempt * 15))"');
   });
+
+  it('binds the workflow database id to the generated test environment', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+
+    expect(source).toContain(
+      'echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"'
+    );
+    expect(source).toContain(
+      'terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"'
+    );
+  });
 });

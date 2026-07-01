@@ -380,7 +380,10 @@ describe('beaconBounce', () => {
   });
 
   it('covers input state fallbacks and both movement directions', () => {
-    const emptyInput = updateInputState(undefined, { type: 'keydown', key: 'a' });
+    const emptyInput = updateInputState(undefined, {
+      type: 'keydown',
+      key: 'a',
+    });
     expect(emptyInput.previousActions).toEqual({
       moveLeft: false,
       moveRight: false,
