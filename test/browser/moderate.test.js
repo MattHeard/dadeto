@@ -40,8 +40,20 @@ describe('authedFetch', () => {
       getElementById: jest.fn(),
       querySelectorAll: jest.fn().mockReturnValue([el]),
     };
-    global.fetch = jest.fn();
+    global.fetch = jest.fn(async input => {
+      if (input === '/config.json') {
+        return {
+          ok: true,
+          json: async () => ({ disableGoogleSignIn: true }),
+        };
+      }
+      throw new Error(`unexpected fetch: ${input}`);
+    });
     ({ authedFetch } = await import('../../src/browser/moderate.js'));
+  });
+
+  it('skips google sign-in when static config disables it', () => {
+    expect(global.window.google.accounts.id.initialize).not.toHaveBeenCalled();
   });
 
   it('throws when not signed in', async () => {

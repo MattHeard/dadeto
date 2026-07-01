@@ -374,26 +374,28 @@ export function createModerateHandle(deps = {}) {
   moderateSessionStorage = deps.sessionStorageObj;
   moderateGlobalObject = deps.globalObject;
 
-  return function handleModerate() {
-    initGoogleSignIn({
-      onSignIn: () => {
-        moderateDocument.body.classList.add('authed');
-        moderateDocument
-          .querySelectorAll('#signinButton')
-          .forEach(el => (el.style.display = 'none'));
-        moderateDocument
-          .querySelectorAll('#signoutWrap')
-          .forEach(el => (el.style.display = ''));
-        if (isAdmin()) {
+  return async function handleModerate() {
+    const config = await loadStaticConfig();
+    if (config.disableGoogleSignIn !== true) {
+      initGoogleSignIn({
+        onSignIn: () => {
+          moderateDocument.body.classList.add('authed');
           moderateDocument
-            .querySelectorAll('.admin-link')
-            .forEach(link => (link.style.display = ''));
-        }
-        wireSignOut();
-        loadVariant();
-      },
-    });
-
+            .querySelectorAll('#signinButton')
+            .forEach(el => (el.style.display = 'none'));
+          moderateDocument
+            .querySelectorAll('#signoutWrap')
+            .forEach(el => (el.style.display = ''));
+          if (isAdmin()) {
+            moderateDocument
+              .querySelectorAll('.admin-link')
+              .forEach(link => (link.style.display = ''));
+          }
+          wireSignOut();
+          loadVariant();
+        },
+      });
+    }
     if (getIdToken()) {
       moderateDocument.body.classList.add('authed');
       moderateDocument
