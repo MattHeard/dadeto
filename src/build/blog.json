@@ -1,6 +1,35 @@
 {
   "posts": [
     {
+      "key": "BEAC1",
+      "title": "Beacon Bounce",
+      "publicationDate": "2026-07-01",
+      "release": "public",
+      "content": [
+        "An original beacon-network paddle toy that activates station nodes, links them together, and persists state across submits.",
+        "Redirect the orb between beacons, build a visible activation chain, and win by lighting the full network without borrowing a brick-wall layout.",
+        {
+          "type": "manual",
+          "id": "BEAC1-manual",
+          "title": "User manual",
+          "markdown": "# BEAC1 — Beacon Bounce\n\n## What this toy does\n\nBeacon Bounce is an original station-network activation toy. You steer a signal deflector, launch an energy orb, and activate beacons while the toy persists state across submits.\n\nThe toy is deterministic, frame-stepped, and safe for repeated auto-submit calls.\n\n## Input format\n\nPaste a JSON object with any of these optional fields:\n\n- `width`\n- `height`\n- `paddleWidth`\n- `paddleHeight`\n- `paddleSpeed`\n- `orbRadius`\n- `lives`\n- `reset`\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"paddleWidth\": 48,\n  \"paddleHeight\": 6,\n  \"paddleSpeed\": 4,\n  \"orbRadius\": 4,\n  \"lives\": 3\n}\n```\n\n## Defaults\n\nIf input is empty or malformed, the toy falls back to a deterministic beacon layout.\n\n## Storage behavior\n\nThe toy stores its state under the `BEAC1` local-storage key. The persisted state includes:\n\n- canvas dimensions\n- score\n- lives\n- paddle position\n- orb position and velocity\n- beacon activation state\n- activation links\n- held and edge-triggered input state\n\nThat means a refresh resumes the same game instead of starting over.\n\n## Input behavior\n\nThe toy handles keyboard input directly and can also map generic gamepad-style raw input inside the toy.\n\n- ArrowLeft / A: move left\n- ArrowRight / D: move right\n- Space: launch orb\n- P: pause or resume\n- R: reset\n\nHeld movement updates every submit frame. Launch, pause, and reset only trigger on a rising edge.\n\n## Output\n\nThe toy returns a canvas payload:\n\n```json\n{\n  \"width\": 360,\n  \"height\": 240,\n  \"shapes\": []\n}\n```\n\nThe payload uses circles for beacons and the orb, lines for activation links, a rectangle for the deflector, and a small text HUD for score, lives, and status.\n\n## How to use it\n\n1. Submit empty input to see the default beacon field.\n2. Hold left or right to move the deflector.\n3. Press Space to launch the orb.\n4. Press P to pause or resume.\n5. Press R to reset.\n\n## Tips\n\n- Try to activate beacons in a chain to watch the links appear.\n- The default beacon topology is original and intentionally not a plain brick wall.\n- This toy is meant to demonstrate network-activation gameplay, not to clone a specific commercial game.\n"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-07-01/beaconBounce.js",
+        "functionName": "beaconBounce",
+        "defaultInputMethod": "keyboard-capture",
+        "defaultOutputMethod": "canvas-2d"
+      },
+      "tags": [
+        "toy",
+        "canvas",
+        "game",
+        "storage",
+        "html"
+      ]
+    },
+    {
       "key": "CRYS1",
       "title": "Crystal Breaker",
       "publicationDate": "2026-06-28",
