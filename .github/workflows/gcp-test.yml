@@ -490,8 +490,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          terraform refresh -lock-timeout=5m -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
-          terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
+          terraform destroy -refresh=false -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
 
       - name: Cleanup test static prefix
         if: always() && steps.terraform_init.outcome == 'success'
@@ -582,8 +581,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          terraform refresh -lock-timeout=5m -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
-          terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
+          terraform destroy -refresh=false -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
 
       - name: Cleanup test static prefix
         if: always()

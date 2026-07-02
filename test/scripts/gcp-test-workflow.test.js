@@ -31,7 +31,7 @@ describe('gcp-test workflow report handling', () => {
       'echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"'
     );
     expect(source).toContain(
-      'terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"'
+      'terraform destroy -refresh=false -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"'
     );
   });
 
