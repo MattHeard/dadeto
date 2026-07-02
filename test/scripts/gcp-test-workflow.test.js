@@ -34,4 +34,24 @@ describe('gcp-test workflow report handling', () => {
       'terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"'
     );
   });
+
+  it('runs teardown in a separate always-on cleanup job', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+
+    expect(source).toContain('cleanup:');
+    expect(source).toContain(
+      'environment: ${{ steps.environment.outputs.environment }}'
+    );
+    expect(source).toContain(
+      'needs:\n      - schedule_gate\n      - terraform'
+    );
+    expect(source).toContain(
+      "ENVIRONMENT='${{ needs.terraform.outputs.environment }}'"
+    );
+    expect(source).toContain(
+      "if: always() && needs.schedule_gate.outputs.should_run == 'true'"
+    );
+    expect(source).toContain('Terraform Destroy');
+    expect(source).toContain('Cleanup test static prefix');
+  });
 });

@@ -63,6 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: schedule_gate
     if: needs.schedule_gate.outputs.should_run == 'true'
+    outputs:
+      environment: ${{ steps.environment.outputs.environment }}
     permissions:
       contents: write
       actions: write
@@ -493,6 +495,98 @@ jobs:
 
       - name: Cleanup test static prefix
         if: always() && steps.terraform_init.outcome == 'success'
+        run: |
+          set -euo pipefail
+          TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
+          gcloud storage rm --recursive "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/**" || true
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs:
+      - schedule_gate
+      - terraform
+    if: always() && needs.schedule_gate.outputs.should_run == 'true'
+    permissions:
+      contents: read
+      actions: read
+    defaults:
+      run:
+        working-directory: infra
+    env:
+      REGION: europe-west1
+      GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      CLOUDSDK_CORE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      TF_VAR_google_oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+      TF_VAR_google_oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+      TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Restore environment id
+        run: |
+          set -euo pipefail
+          ENVIRONMENT='${{ needs.terraform.outputs.environment }}'
+          if [ -z "$ENVIRONMENT" ] || [ "$ENVIRONMENT" = "null" ]; then
+            echo "Missing cleanup environment id"
+            exit 1
+          fi
+          echo "ENVIRONMENT=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_environment=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_create_default_firestore_database=false" >> "$GITHUB_ENV"
+          echo "TF_VAR_github_run_id=$GITHUB_RUN_ID" >> "$GITHUB_ENV"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Set up Google Cloud auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GOOGLE_PROJECT }}
+          install_components: alpha
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      - name: Cache Terraform plugin dir
+        uses: actions/cache@v5
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: tf-plugins-${{ runner.os }}-${{ hashFiles('infra/**/.terraform.lock.hcl') }}
+
+      - name: Terraform environment configuration
+        run: |
+          plugin_cache_dir="${HOME}/.terraform.d/plugin-cache"
+          mkdir -p "$plugin_cache_dir"
+          printf 'plugin_cache_dir = "%s"\n' "$plugin_cache_dir" > ~/.terraformrc
+
+      - name: Terraform Init
+        run: terraform init -reconfigure -backend-config="prefix=terraform/test/${{ github.run_id }}-${ENVIRONMENT}"
+
+      - name: Terraform Destroy
+        if: always()
+        run: |
+          set -euo pipefail
+
+          terraform refresh -lock-timeout=5m -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
+          terraform destroy -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}" -var="create_default_firestore_database=false"
+
+      - name: Cleanup test static prefix
+        if: always()
         run: |
           set -euo pipefail
           TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
