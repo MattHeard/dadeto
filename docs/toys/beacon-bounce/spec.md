@@ -7,7 +7,7 @@
 
 ## Problem Statement
 - Provide an original frame-stepped paddle toy where the core objective is beacon activation and link formation rather than block clearing.
-- Exercise the existing keyboard-capture and gamepad-style input paths while keeping the toy deterministic and storage-backed.
+- Exercise the existing keyboard-capture, mobile-button, and gamepad-style input paths while keeping the toy deterministic and storage-backed.
 
 ## Boundary
 - Keeps the toy synchronous and one-frame-per-invocation.

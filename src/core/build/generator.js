@@ -1072,6 +1072,7 @@ const INPUT_METHODS = [
   'dendrite-page',
   'moderator-ratings',
   'keyboard-capture',
+  'mobile-controls',
   'gamepad-capture',
   'gamepad-button-mapper',
 ];

@@ -2009,13 +2009,20 @@ export function initAdmin({
 
   createWireSignOut(doc, googleAuthModule)();
   onAuthStateChangedFn(getAuthFn(), checkAccess);
-  if (typeof googleAuthModule.initGoogleSignIn === 'function') {
-    googleAuthModule.initGoogleSignIn();
-  } else {
+  if (typeof googleAuthModule.initGoogleSignIn !== 'function') {
     throw new TypeError(
       'googleAuthModule must provide an initGoogleSignIn function'
     );
   }
+
+  (async () => {
+    const config = await loadStaticConfigFn();
+    if (config?.disableGoogleSignIn) {
+      return;
+    }
+
+    googleAuthModule.initGoogleSignIn();
+  })();
 }
 
 /**
@@ -2211,9 +2218,16 @@ export function initAdminApp({
     return initGoogleSignInHandler;
   };
 
-  const initGoogleSignIn = (
+  const initGoogleSignIn = async (
     /** @type {GoogleSignInOptions | undefined} */ options
-  ) => getInitGoogleSignInHandler()(options);
+  ) => {
+    const config = await loadStaticConfigFn();
+    if (config?.disableGoogleSignIn) {
+      return;
+    }
+
+    await getInitGoogleSignInHandler()(options);
+  };
 
   /** @type {(() => Promise<void>) | undefined} */
   let signOutHandler;

@@ -18,7 +18,7 @@
       "toy": {
         "modulePath": "/core/browser/toys/2026-07-01/beaconBounce.js",
         "functionName": "beaconBounce",
-        "defaultInputMethod": "keyboard-capture",
+        "defaultInputMethod": "mobile-controls",
         "defaultOutputMethod": "canvas-2d"
       },
       "tags": [

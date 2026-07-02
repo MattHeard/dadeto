@@ -154,6 +154,10 @@ describe('TOY_UI_SECTIONS integration', () => {
       'file',
       'number',
       'kv',
+      'keyboard-capture',
+      'mobile-controls',
+      'gamepad-capture',
+      'gamepad-button-mapper',
       'dendrite-story',
       'dendrite-page',
     ];

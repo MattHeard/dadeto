@@ -660,6 +660,234 @@
       </div>
       <article
         class="entry tag-toy tag-canvas tag-game tag-storage tag-html"
+        id="BEAC1"
+      >
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">BEAC1</div>
+        <div class="value">
+          <h2><a href="#BEAC1">Beacon Bounce</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">1 Jul 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-canvas">canvas</a>,
+          <a class="tag-game">game</a>, <a class="tag-storage">storage</a>,
+          <a class="tag-html">html</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          An original beacon-network paddle toy that activates station nodes,
+          links them together, and persists state across submits.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Redirect the orb between beacons, build a visible activation chain,
+          and win by lighting the full network without borrowing a brick-wall
+          layout.
+        </p>
+        <div class="key">man</div>
+        <div class="manual" id="BEAC1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="BEAC1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="BEAC1-manual-body"
+            hidden
+          >
+# BEAC1 — Beacon Bounce
+
+## What this toy does
+
+Beacon Bounce is an original station-network activation toy. You steer a signal deflector, launch an energy orb, and activate beacons while the toy persists state across submits.
+
+The toy is deterministic, frame-stepped, and safe for repeated auto-submit calls.
+
+## Input format
+
+Paste a JSON object with any of these optional fields:
+
+- `width`
+- `height`
+- `paddleWidth`
+- `paddleHeight`
+- `paddleSpeed`
+- `orbRadius`
+- `lives`
+- `reset`
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 240,
+  &quot;paddleWidth&quot;: 48,
+  &quot;paddleHeight&quot;: 6,
+  &quot;paddleSpeed&quot;: 4,
+  &quot;orbRadius&quot;: 4,
+  &quot;lives&quot;: 3
+}
+```
+
+## Defaults
+
+If input is empty or malformed, the toy falls back to a deterministic beacon layout.
+
+## Storage behavior
+
+The toy stores its state under the `BEAC1` local-storage key. The persisted state includes:
+
+- canvas dimensions
+- score
+- lives
+- paddle position
+- orb position and velocity
+- beacon activation state
+- activation links
+- held and edge-triggered input state
+
+That means a refresh resumes the same game instead of starting over.
+
+## Input behavior
+
+The toy handles keyboard input directly and can also map generic gamepad-style raw input inside the toy.
+
+- ArrowLeft / A: move left
+- ArrowRight / D: move right
+- Space: launch orb
+- P: pause or resume
+- R: reset
+
+Held movement updates every submit frame. Launch, pause, and reset only trigger on a rising edge.
+
+## Output
+
+The toy returns a canvas payload:
+
+```json
+{
+  &quot;width&quot;: 360,
+  &quot;height&quot;: 240,
+  &quot;shapes&quot;: []
+}
+```
+
+The payload uses circles for beacons and the orb, lines for activation links, a rectangle for the deflector, and a small text HUD for score, lives, and status.
+
+## How to use it
+
+1. Submit empty input to see the default beacon field.
+2. Hold left or right to move the deflector.
+3. Press Space to launch the orb.
+4. Press P to pause or resume.
+5. Press R to reset.
+
+## Tips
+
+- Try to activate beacons in a chain to watch the links appear.
+- The default beacon topology is original and intentionally not a plain brick wall.
+- This toy is meant to demonstrate network-activation gameplay, not to clone a specific commercial game.
+</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('BEAC1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea">textarea</option>
+            <option value="life-seed">life-seed</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls" selected>mobile-controls</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" disabled />
+            Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="canvas-2d" selected>canvas-2d</option>
+            <option value="graph-2d">graph-2d</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'BEAC1',
+            '/core/browser/toys/2026-07-01/beaconBounce.js',
+            'beaconBounce'
+          );
+        </script>
+      </article>
+      <article
+        class="entry tag-toy tag-canvas tag-game tag-storage tag-html"
         id="CRYS1"
       >
         <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
@@ -838,6 +1066,7 @@ The payload uses rectangles for the crystal clusters and paddle, a circle for th
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture" selected>keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -1065,6 +1294,7 @@ The payload uses rectangles for the battery cells and paddle, a circle for the o
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture" selected>keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -1293,6 +1523,7 @@ The payload uses rectangles for the station frame, panels, deflector, and progre
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture" selected>keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -1552,6 +1783,7 @@ Adjust `cols`, `rows`, `width`, and `height` so the cell aspect ratio is closer 
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -1839,6 +2071,7 @@ Pairs are counted once per change set. Repeating the same file path inside a sin
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -2111,6 +2344,7 @@ That is expected. The toy emits a canvas-presenter payload, and the presenter re
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -2442,6 +2676,7 @@ The toy only reads the exact field names documented above. For example, `feedbac
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -2761,6 +2996,7 @@ The graph presenter renders the three series as lines.
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -3105,6 +3341,7 @@ Increase `width`. The toy samples more points on wider graphs.</pre
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -3371,6 +3608,7 @@ Increase `width` and `height`. The generated positions and sizes scale with the 
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -3728,6 +3966,7 @@ You tried to write an object-like key inside an array. Array paths must use nume
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -4045,6 +4284,7 @@ That is expected for MEMO2. Use MEMO1 if you want the object preserved as a sing
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -4381,6 +4621,7 @@ That is expected in MEMO1. Use MEMO2 for key-value-pair projection.</pre
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -4732,6 +4973,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -4830,6 +5072,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -4927,6 +5170,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5024,6 +5268,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5122,6 +5367,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5219,6 +5465,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5320,6 +5567,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5417,6 +5665,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper" selected>
               gamepad-button-mapper
@@ -5510,6 +5759,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture" selected>keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5606,6 +5856,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5699,6 +5950,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5793,6 +6045,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -5889,6 +6142,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6101,6 +6355,7 @@ Mute toggles the local microphone track. If the session already received audio b
               moderator-ratings
             </option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6193,6 +6448,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6281,6 +6537,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6364,6 +6621,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6455,6 +6713,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6543,6 +6802,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6633,6 +6893,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6721,6 +6982,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -6809,6 +7071,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7166,6 +7429,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7254,6 +7518,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7437,6 +7702,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7531,6 +7797,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7628,6 +7895,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7725,6 +7993,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7813,6 +8082,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -7937,6 +8207,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8025,6 +8296,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8154,6 +8426,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8245,6 +8518,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8333,6 +8607,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8421,6 +8696,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8509,6 +8785,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8608,6 +8885,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8698,6 +8976,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8797,6 +9076,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -8893,6 +9173,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper
@@ -9224,6 +9505,7 @@ Mute toggles the local microphone track. If the session already received audio b
             <option value="dendrite-page">dendrite-page</option>
             <option value="moderator-ratings">moderator-ratings</option>
             <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
             <option value="gamepad-capture">gamepad-capture</option>
             <option value="gamepad-button-mapper">
               gamepad-button-mapper

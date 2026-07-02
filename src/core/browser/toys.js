@@ -7,6 +7,7 @@ import { fileHandler } from './inputHandlers/file.js';
 import { numberHandler } from './inputHandlers/number.js';
 import { moderatorRatingsHandler } from './inputHandlers/moderatorRatings.js';
 import { keyboardCaptureHandler } from './inputHandlers/keyboardCapture.js';
+import { mobileControlsHandler } from './inputHandlers/mobileControls.js';
 import { gamepadCaptureHandler } from './inputHandlers/gamepadCapture.js';
 import { joyConMapperHandler } from './inputHandlers/joyConMapper.js';
 import { createCanvasDoodleElement } from './presenters/canvasDoodle.js';
@@ -278,6 +279,7 @@ const inputHandlersMap = {
   'dendrite-page': dendritePageHandler,
   'moderator-ratings': moderatorRatingsHandler,
   'keyboard-capture': keyboardCaptureHandler,
+  'mobile-controls': mobileControlsHandler,
   'gamepad-capture': gamepadCaptureHandler,
   'gamepad-button-mapper': joyConMapperHandler,
   default: defaultHandler,
