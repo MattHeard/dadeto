@@ -538,6 +538,13 @@ const STYLES = String.raw`
     min-width: 12ch;
   }
 
+  .mobile-controls-grid button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
   .realtime-voice-status {
     color: var(--terminal-success);
     font-weight: bold;

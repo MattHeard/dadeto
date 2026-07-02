@@ -234,7 +234,11 @@ describe('createTriggerStats', () => {
     expect(getAdminEndpoints).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(statsUrl, {
       method: 'POST',
-      headers: { Authorization: 'Bearer token' },
+      headers: {
+        Authorization: 'Bearer token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id_token: 'token' }),
     });
     expect(showMessage).toHaveBeenCalledWith('Stats generated');
   });

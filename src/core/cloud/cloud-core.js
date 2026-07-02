@@ -844,7 +844,29 @@ function defaultInvalidTokenMessage(error) {
  */
 function extractTokenFromRequest(req) {
   const authHeader = getAuthHeader(req);
-  return getBearerTokenFromMatch(matchAuthHeader(authHeader));
+  const headerToken = getBearerTokenFromMatch(matchAuthHeader(authHeader));
+  if (headerToken) {
+    return headerToken;
+  }
+
+  return getTokenFromRequestBody(req);
+}
+
+/**
+ * Extract a token from the request body when the Authorization header is unavailable.
+ * @param {NativeHttpRequest} req Incoming HTTP request.
+ * @returns {string} Request-body token or an empty string when missing.
+ */
+function getTokenFromRequestBody(req) {
+  if (!isObject(req?.body)) {
+    return '';
+  }
+
+  const body = /** @type {{ id_token?: unknown }} */ (req.body);
+  if (typeof body.id_token === 'string') {
+    return body.id_token;
+  }
+  return '';
 }
 
 /**

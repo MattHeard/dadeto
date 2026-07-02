@@ -114,7 +114,9 @@ function wireButton(options) {
 function buildMobileControlsFormContext(options) {
   const { dom, button, cleanupFns, form, textInput, container } = options;
   const autoSubmitCheckbox = /** @type {HTMLInputElement | null} */ (
-    /** @type {unknown} */ (dom.querySelector(container, '.auto-submit-checkbox'))
+    /** @type {unknown} */ (
+      dom.querySelector(container, '.auto-submit-checkbox')
+    )
   );
 
   dom.setTextContent(button, 'Controls');

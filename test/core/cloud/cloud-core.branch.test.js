@@ -61,6 +61,40 @@ describe('createVerifyAdmin error responses', () => {
     expect(sendForbidden).toHaveBeenCalledWith({});
   });
 
+  test('falls back to an id_token body field when Authorization is absent', async () => {
+    const verifyToken = jest.fn().mockResolvedValue({ uid: 'user-123' });
+    const { handler, sendUnauthorized, sendForbidden } = buildEnv(verifyToken);
+
+    await handler(
+      {
+        get: () => null,
+        body: { id_token: 'body-token' },
+      },
+      {}
+    );
+
+    expect(verifyToken).toHaveBeenCalledWith('body-token');
+    expect(sendUnauthorized).not.toHaveBeenCalled();
+    expect(sendForbidden).not.toHaveBeenCalled();
+  });
+
+  test('ignores a non-string id_token body field when Authorization is absent', async () => {
+    const verifyToken = jest.fn().mockResolvedValue({ uid: 'user-123' });
+    const { handler, sendUnauthorized, sendForbidden } = buildEnv(verifyToken);
+
+    await handler(
+      {
+        get: () => null,
+        body: { id_token: 42 },
+      },
+      {}
+    );
+
+    expect(verifyToken).not.toHaveBeenCalled();
+    expect(sendUnauthorized).toHaveBeenCalledWith({}, 'Missing token');
+    expect(sendForbidden).not.toHaveBeenCalled();
+  });
+
   test('resolveErrorMessageWithDefault returns provided string', () => {
     expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('boom')).toBe(
       'boom'

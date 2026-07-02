@@ -1509,7 +1509,11 @@ export function createTriggerStats({
         );
         const response = await fetch(endpoints.generateStatsUrl, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ['id_token']: token }),
         });
         assertStatsResponseOk(response);
         report('Stats generated');

@@ -111,4 +111,69 @@ describe('mobileControlsHandler', () => {
       key: ' ',
     });
   });
+
+  it('ignores a release when the control was never pressed', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+
+    mobileControlsHandler(dom, container, textInput);
+
+    const form = container._children[0];
+    const controlWrap = form._children[1];
+    const pauseButton = controlWrap._children[3];
+
+    pauseButton._listeners.pointerup({ preventDefault: jest.fn() });
+
+    expect(readStoredOrElementValue(textInput)).toBe('');
+    expect(pauseButton.setAttribute).toHaveBeenCalledWith(
+      'aria-pressed',
+      'false'
+    );
+  });
+
+  it('marks the mobile control buttons as non-selectable and cleans up listeners', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+
+    mobileControlsHandler(dom, container, textInput);
+
+    const form = container._children[0];
+    const controlWrap = form._children[1];
+    const launchButton = controlWrap._children[2];
+
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      launchButton,
+      'pointerleave',
+      expect.any(Function)
+    );
+    expect(dom.addEventListener).toHaveBeenCalledWith(
+      launchButton,
+      'lostpointercapture',
+      expect.any(Function)
+    );
+
+    expect(typeof form._dispose).toBe('function');
+    form._dispose();
+
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      launchButton,
+      'pointerleave',
+      expect.any(Function)
+    );
+    expect(dom.removeEventListener).toHaveBeenCalledWith(
+      launchButton,
+      'lostpointercapture',
+      expect.any(Function)
+    );
+  });
 });

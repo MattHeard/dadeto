@@ -15,6 +15,10 @@ describe('styles constant', () => {
     expect(css).not.toContain('input[type="file"]');
     expect(css).toContain('input[type="checkbox"]');
     expect(css).toContain('accent-color: var(--terminal-accent)');
+    expect(css).toContain('.mobile-controls-grid button');
+    expect(css).toContain('-webkit-user-select: none');
+    expect(css).toContain('user-select: none');
+    expect(css).toContain('touch-action: manipulation');
   });
 
   test('defines character-grid terminal sizing and media containment', () => {
