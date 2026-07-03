@@ -29,9 +29,9 @@ resource "google_compute_backend_bucket" "dendrite_static" {
   bucket_name = local.dendrite_static_bucket_name
   enable_cdn  = true
 
-  # Set COOP header to isolate browsing context group
+  # Keep Google sign-in popups working while still isolating the browsing context group.
   custom_response_headers = [
-    "Cross-Origin-Opener-Policy: restrict-properties",
+    "Cross-Origin-Opener-Policy: same-origin-allow-popups",
   ]
 
   depends_on = [google_project_service.compute]
