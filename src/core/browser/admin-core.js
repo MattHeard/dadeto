@@ -1260,25 +1260,47 @@ function hasRenderButtonMethod(accountsId) {
  * @param {{ credential: string }} param0 - Payload containing the Google credential.
  * @param {{
  *   credentialFactory: (credential: string) => unknown,
- *   signInWithCredential: (auth: FirebaseAuthInstance, credential: unknown) => Promise<void> | void,
+ *   signInWithCredential: (
+ *     auth: FirebaseAuthInstance,
+ *     credential: unknown
+ *   ) => Promise<{ user?: FirebaseAuthUser | null | undefined } | void> | { user?: FirebaseAuthUser | null | undefined } | void,
  *   auth: FirebaseAuthInstance,
  *   storage: { setItem: (key: string, value: string) => void },
  *   onSignIn?: (token: string) => void,
  * }} context - Collaborators required to complete the sign-in.
  * @returns {Promise<void>} Resolves once the credential has been processed.
  */
-async function handleCredentialSignIn(
+export async function handleCredentialSignIn(
   { credential },
   { credentialFactory, signInWithCredential, auth, storage, onSignIn }
 ) {
   const firebaseCredential = credentialFactory(credential);
-  await signInWithCredential(auth, firebaseCredential);
-
-  const currentUser = auth.currentUser;
+  const signInResult = await signInWithCredential(auth, firebaseCredential);
+  const currentUser = resolveCurrentUser(
+    /** @type {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} */ (
+      signInResult
+    ),
+    auth
+  );
   const getIdToken = resolveGetIdToken(currentUser);
   const idToken = await getIdToken();
   storage.setItem('id_token', idToken);
   onSignIn?.(idToken);
+}
+
+/**
+ * Resolve the authenticated user from the sign-in result or auth state.
+ * @param {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} signInResult
+ *   Firebase sign-in result.
+ * @param {FirebaseAuthInstance} auth Current auth client.
+ * @returns {FirebaseAuthUser | null | undefined} Authenticated user when available.
+ */
+function resolveCurrentUser(signInResult, auth) {
+  if (signInResult?.user) {
+    return signInResult.user;
+  }
+
+  return auth.currentUser;
 }
 
 /**
