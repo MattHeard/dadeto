@@ -1284,7 +1284,11 @@ export async function handleCredentialSignIn(
     signInResult = await signInWithCredential(auth, firebaseCredential);
   } catch (error) {
     console.debug('Firebase sign-in error', error);
-    throw error;
+    await Promise.resolve();
+    signInResult = auth.currentUser ? { user: auth.currentUser } : undefined;
+    if (!signInResult) {
+      throw error;
+    }
   }
   console.debug('Firebase sign-in raw result', signInResult);
   console.debug('Firebase sign-in result', {
