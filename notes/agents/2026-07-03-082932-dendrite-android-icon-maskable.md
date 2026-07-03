@@ -1,0 +1,4 @@
+- Unexpected hurdle: the installed Android launcher icon looked blurry even though the install prompt and manifest already referenced 192px and 512px PNGs.
+- Diagnosis path: checked the manifest copies, confirmed the PNG dimensions were present, and found the launcher path was missing a maskable icon hint.
+- Chosen fix: marked the 512x512 manifest entry as `purpose: "any maskable"` in the source, public, and infra browser manifests so Android can use the launcher asset as a maskable PWA icon.
+- Next-time guidance: when Chrome-on-Android app-tray art looks soft, inspect the manifest `purpose` field before chasing raster size alone.
