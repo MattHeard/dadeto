@@ -1280,11 +1280,17 @@ export async function handleCredentialSignIn(
     credentialType: typeof firebaseCredential,
   });
   const signInResult = await signInWithCredential(auth, firebaseCredential);
+  console.debug('Firebase sign-in raw result', signInResult);
   console.debug('Firebase sign-in result', {
     hasResult: Boolean(signInResult),
     resultType: typeof signInResult,
     hasResultUser: Boolean(signInResult?.user),
     hasAuthCurrentUser: Boolean(auth.currentUser),
+  });
+  await Promise.resolve();
+  console.debug('Firebase auth snapshot after sign-in tick', {
+    hasAuthCurrentUser: Boolean(auth.currentUser),
+    currentUserType: typeof auth.currentUser,
   });
   const currentUser = resolveCurrentUser(
     /** @type {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} */ (
