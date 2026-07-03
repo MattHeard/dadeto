@@ -92,6 +92,17 @@ jobs:
       - name: Remove stale Firestore field state
         run: terraform state rm google_firestore_field.pages_all || true
 
+      - name: Import existing Firestore database
+        run: |
+          database_resource="google_firestore_database.database[0]"
+          database_path="projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}"
+
+          if gcloud firestore databases describe "${TF_VAR_database_id}" --project="${GOOGLE_PROJECT}" --format="value(name)" >/dev/null 2>&1; then
+            if ! terraform state list | grep -Fxq "${database_resource}"; then
+              terraform import -lock-timeout=5m "${database_resource}" "${database_path}"
+            fi
+          fi
+
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
 
