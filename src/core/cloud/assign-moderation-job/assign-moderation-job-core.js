@@ -800,6 +800,7 @@ export function createRunVariantQuery(database) {
       resolveSnapshotDocs(moderationRatingsSnap)
         .map(doc => doc.data()?.variantId)
         .filter(value => typeof value === 'string')
+        .map(value => value.replace(/^\//, ''))
     );
 
     return resolveSnapshotDocs(variantSnap)

@@ -142,6 +142,50 @@ describe('assignModerationJobTestUtils', () => {
     ]);
   });
 
+  test('createRunVariantQuery ignores moderated variant ids stored with a leading slash', async () => {
+    const candidates = [
+      fireStoreDoc('variants/a', 0.9),
+      fireStoreDoc('variants/b', 0.8),
+    ];
+    const db = {
+      collectionGroup: jest.fn(name => {
+        expect(name).toBe('variants');
+        return {
+          async get() {
+            return {
+              docs: candidates,
+            };
+          },
+        };
+      }),
+      collection: jest.fn(name => {
+        expect(name).toBe('moderationRatings');
+        return {
+          where() {
+            return {
+              async get() {
+                return {
+                  docs: [
+                    {
+                      data: () => ({ variantId: '/variants/a' }),
+                    },
+                  ],
+                };
+              },
+            };
+          },
+        };
+      }),
+    };
+
+    const fetchVariantSnapshots = createRunVariantQuery(db);
+    const result = await fetchVariantSnapshots('mod-1');
+
+    expect(result.map(entry => entry.variantDoc.ref.path)).toEqual([
+      'variants/b',
+    ]);
+  });
+
   test('createRunVariantQuery requires collectionGroup support', () => {
     expect(() => createRunVariantQuery({})).toThrow(
       'collectionGroup(variants) is required for moderation assignment'
