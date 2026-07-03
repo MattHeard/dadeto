@@ -11,6 +11,7 @@ import { normalizeExpressRequest } from './request-normalization.js';
 
 /** @typedef {import('../../../types/native-http').NativeHttpRequest} NativeHttpRequest */
 /** @typedef {import('../../../types/native-http').NativeHttpResponse} NativeHttpResponse */
+/** @typedef {{ get?: (name: string) => string | null | undefined, headers?: unknown }} RequestLike */
 
 /**
  * Determine whether a raw option candidate is present.
@@ -131,17 +132,17 @@ export function getAuthorizationFromHeaders(headers) {
 
 /**
  * Read the getter function from a request-like object.
- * @param {{ get?: (name: string) => string | null | undefined } | undefined} request Request-like value.
+ * @param {RequestLike | undefined} request Request-like value.
  * @returns {((name: string) => string | null | undefined) | undefined} Header getter.
  */
 function getRequestGetter(request) {
-  return request && request.get;
+  return normalizeExpressRequest(request).get;
 }
 
 /**
  * Read the headers bag from a request-like object.
- * @param {{ headers?: Record<string, unknown> | null | undefined } | undefined} request Request-like value.
- * @returns {Record<string, unknown> | null | undefined} Raw headers bag.
+ * @param {RequestLike | undefined} request Request-like value.
+ * @returns {unknown} Raw headers bag.
  */
 function getRequestHeaders(request) {
   return request && request.headers;
@@ -149,7 +150,7 @@ function getRequestHeaders(request) {
 
 /**
  * Resolve an Authorization header from a heterogeneous request shape.
- * @param {{ get?: (name: string) => string | null | undefined, headers?: Record<string, unknown> | null | undefined } | undefined} request Request-like value.
+ * @param {RequestLike | undefined} request Request-like value.
  * @returns {string | null} Authorization header value or null when unavailable.
  */
 export function getAuthorizationHeader(request) {

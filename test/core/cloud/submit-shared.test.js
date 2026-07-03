@@ -98,5 +98,16 @@ describe('submit-shared', () => {
         getAuthorizationHeader({ get: null, headers: undefined })
       ).toBeNull();
     });
+
+    test('binds the request getter before reading headers', () => {
+      const request = {
+        headers: { Authorization: 'Bearer bag' },
+        get(name) {
+          return this.headers?.[name] ?? null;
+        },
+      };
+
+      expect(getAuthorizationHeader(request)).toBe('Bearer bag');
+    });
   });
 });
