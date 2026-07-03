@@ -1283,6 +1283,7 @@ export async function handleCredentialSignIn(
     ),
     auth
   );
+  console.debug('Resolved Firebase current user', currentUser);
   const getIdToken = resolveGetIdToken(currentUser);
   const idToken = await getIdToken();
   storage.setItem('id_token', idToken);
