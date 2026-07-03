@@ -1275,15 +1275,27 @@ export async function handleCredentialSignIn(
   { credentialFactory, signInWithCredential, auth, storage, onSignIn }
 ) {
   const firebaseCredential = credentialFactory(credential);
+  console.debug('Firebase sign-in start', {
+    hasAuthCurrentUser: Boolean(auth.currentUser),
+    credentialType: typeof firebaseCredential,
+  });
   const signInResult = await signInWithCredential(auth, firebaseCredential);
-  console.debug('Firebase sign-in result', signInResult, auth.currentUser);
+  console.debug('Firebase sign-in result', {
+    hasResult: Boolean(signInResult),
+    resultType: typeof signInResult,
+    hasResultUser: Boolean(signInResult?.user),
+    hasAuthCurrentUser: Boolean(auth.currentUser),
+  });
   const currentUser = resolveCurrentUser(
     /** @type {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} */ (
       signInResult
     ),
     auth
   );
-  console.debug('Resolved Firebase current user', currentUser);
+  console.debug('Resolved Firebase current user', {
+    hasCurrentUser: Boolean(currentUser),
+    hasGetIdToken: Boolean(currentUser?.getIdToken),
+  });
   const getIdToken = resolveGetIdToken(currentUser);
   const idToken = await getIdToken();
   storage.setItem('id_token', idToken);
