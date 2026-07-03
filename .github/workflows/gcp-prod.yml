@@ -101,6 +101,19 @@ jobs:
             terraform import -lock-timeout=5m "${database_resource}" "${database_path}"
           fi
 
+          import_if_missing() {
+            resource_name="$1"
+            resource_id="$2"
+
+            if ! terraform state list | grep -Fxq "$resource_name"; then
+              terraform import -lock-timeout=5m "$resource_name" "$resource_id"
+            fi
+          }
+
+          import_if_missing "google_firestore_index.variants_author_created[0]" "projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}/collectionGroups/variants/indexes/CICAgJiUpoMK"
+          import_if_missing "google_firestore_index.variants_moderation_rand[0]" "projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}/collectionGroups/variants/indexes/CICAgJjF9oIK"
+          import_if_missing "google_firestore_index.ratings_by_variant[0]" "projects/${GOOGLE_PROJECT}/databases/${TF_VAR_database_id}/collectionGroups/moderationRatings/indexes/CICAgOjXh4EK"
+
       - name: Terraform Plan
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
 
