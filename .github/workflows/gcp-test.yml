@@ -7,8 +7,8 @@ on:
 
 concurrency:
   group: gcp-test-${{ github.ref }}
-  cancel-in-progress: false
-  # Queue runs so the Terraform destroy step can complete before the next execution.
+  cancel-in-progress: true
+  # Prefer the newest run so stale queued or in-progress runs do not block fresh commits.
 
 jobs:
   schedule_gate:
