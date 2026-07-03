@@ -1279,7 +1279,13 @@ export async function handleCredentialSignIn(
     hasAuthCurrentUser: Boolean(auth.currentUser),
     credentialType: typeof firebaseCredential,
   });
-  const signInResult = await signInWithCredential(auth, firebaseCredential);
+  let signInResult;
+  try {
+    signInResult = await signInWithCredential(auth, firebaseCredential);
+  } catch (error) {
+    console.debug('Firebase sign-in error', error);
+    throw error;
+  }
   console.debug('Firebase sign-in raw result', signInResult);
   console.debug('Firebase sign-in result', {
     hasResult: Boolean(signInResult),
