@@ -1276,6 +1276,7 @@ export async function handleCredentialSignIn(
 ) {
   const firebaseCredential = credentialFactory(credential);
   const signInResult = await signInWithCredential(auth, firebaseCredential);
+  console.debug('Firebase sign-in result', signInResult, auth.currentUser);
   const currentUser = resolveCurrentUser(
     /** @type {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} */ (
       signInResult
@@ -1491,8 +1492,11 @@ function initializeGoogleSignIn(accountsId, options) {
   accountsId.initialize({
     ['client_id']:
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-    callback: (/** @type {any} */ cred) =>
-      handleCredentialSignIn(cred, options),
+    callback: (/** @type {any} */ cred) => {
+      console.debug('Google Identity callback payload', cred);
+
+      return handleCredentialSignIn(cred, options);
+    },
     ['ux_mode']: 'popup',
   });
 }
