@@ -1,5 +1,5 @@
 /**
- * @typedef {(data: unknown, url?: string) => boolean} SendBeaconFn
+ * @typedef {(url: string, data: Blob | ArrayBuffer | Uint8Array | string | FormData | URLSearchParams) => boolean} SendBeaconFn
  * @typedef {() => string | undefined} StringGetter
  * @typedef {() => number} NowGetter
  * @typedef {(payload: Record<string, unknown>) => void} BeaconReporter
