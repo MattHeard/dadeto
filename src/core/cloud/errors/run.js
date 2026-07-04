@@ -1,9 +1,9 @@
 import {
   createCorsOptions,
   createCorsOriginHandler,
-  createErrorBeaconHandler,
   resolveAllowedOrigins,
 } from '../cloud-core.js';
+import { createErrorBeaconHandler } from './errors-core.js';
 
 /**
  * Build the Cloud Function handler for browser error beacons.

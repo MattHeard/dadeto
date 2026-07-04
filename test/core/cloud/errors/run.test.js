@@ -23,7 +23,11 @@ describe('createErrorBeaconRun', () => {
     const { handle } = createErrorBeaconRun({
       express,
       cors,
-      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      getEnvironmentVariables: () => ({
+        GCLOUD_PROJECT: 'proj',
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
       fetchFn,
     });
 
@@ -31,7 +35,10 @@ describe('createErrorBeaconRun', () => {
     expect(express.json).toHaveBeenCalledWith({
       type: ['application/json', 'application/*+json'],
     });
-    expect(cors).toHaveBeenCalledWith({ origin: true });
+    expect(cors).toHaveBeenCalledWith({
+      methods: ['POST'],
+      origin: expect.any(Function),
+    });
     expect(use).toHaveBeenCalledTimes(2);
     expect(post).toHaveBeenCalledTimes(2);
     expect(handle).toEqual({ use, post });
@@ -58,7 +65,11 @@ describe('createErrorBeaconRun', () => {
     createErrorBeaconRun({
       express,
       cors,
-      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      getEnvironmentVariables: () => ({
+        GCLOUD_PROJECT: 'proj',
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
       fetchFn,
     });
 
@@ -95,7 +106,11 @@ describe('createErrorBeaconRun', () => {
     createErrorBeaconRun({
       express,
       cors,
-      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      getEnvironmentVariables: () => ({
+        GCLOUD_PROJECT: 'proj',
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
       fetchFn,
     });
 
@@ -126,7 +141,11 @@ describe('createErrorBeaconRun', () => {
     createErrorBeaconRun({
       express,
       cors,
-      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      getEnvironmentVariables: () => ({
+        GCLOUD_PROJECT: 'proj',
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
       fetchFn,
     });
 
@@ -159,7 +178,11 @@ describe('createErrorBeaconRun', () => {
     createErrorBeaconRun({
       express,
       cors,
-      getEnvironmentVariables: () => ({ GOOGLE_CLOUD_PROJECT: 'proj' }),
+      getEnvironmentVariables: () => ({
+        GOOGLE_CLOUD_PROJECT: 'proj',
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
       fetchFn,
     });
 
@@ -194,7 +217,11 @@ describe('createErrorBeaconRun', () => {
     createErrorBeaconRun({
       express,
       cors,
-      getEnvironmentVariables: () => ({ GOOGLE_CLOUD_PROJECT: 'proj' }),
+      getEnvironmentVariables: () => ({
+        GOOGLE_CLOUD_PROJECT: 'proj',
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
       fetchFn,
     });
 
@@ -228,7 +255,10 @@ describe('createErrorBeaconRun', () => {
     createErrorBeaconRun({
       express,
       cors,
-      getEnvironmentVariables: () => ({}),
+      getEnvironmentVariables: () => ({
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
       fetchFn,
     });
 

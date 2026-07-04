@@ -852,6 +852,7 @@ export function createFsAdapters(fsModule) {
  *   readDirEntries: (dir: string) => Promise<import('fs').Dirent[]>,
  *   ensureDirectory: (target: string) => Promise<void>,
  *   copyFile: (source: string, destination: string) => Promise<void>,
+ *   setCopiedFileTimestamp: (target: string) => Promise<void>,
  *   readFile: (filePath: string, encoding: 'utf8') => Promise<string>,
  *   writeFile: (filePath: string, content: string) => Promise<void>,
  * }} Promise-based filesystem adapter helpers.
