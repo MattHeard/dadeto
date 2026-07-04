@@ -83,4 +83,53 @@ describe('handleCredentialSignIn', () => {
     expect(storage.setItem).toHaveBeenCalledWith('id_token', 'auth-token');
     expect(onSignIn).toHaveBeenCalledWith('auth-token');
   });
+
+  it('falls back to auth.currentUser when sign-in throws after mutating auth state', async () => {
+    const getIdToken = jest.fn().mockResolvedValue('fallback-token');
+    const signInWithCredential = jest.fn(async auth => {
+      auth.currentUser = { getIdToken };
+      throw new Error('sign-in failed');
+    });
+    const storage = {
+      setItem: jest.fn(),
+    };
+    const auth = { currentUser: null };
+
+    await handleCredentialSignIn(
+      { credential: 'token-123' },
+      {
+        credentialFactory: token => `cred:${token}`,
+        signInWithCredential,
+        auth,
+        storage,
+      }
+    );
+
+    expect(signInWithCredential).toHaveBeenCalled();
+    expect(getIdToken).toHaveBeenCalled();
+    expect(storage.setItem).toHaveBeenCalledWith('id_token', 'fallback-token');
+  });
+
+  it('rethrows when sign-in fails and auth.currentUser is unavailable', async () => {
+    const signInWithCredential = jest.fn().mockRejectedValue(new Error('boom'));
+    const storage = {
+      setItem: jest.fn(),
+    };
+    const auth = { currentUser: null };
+
+    await expect(
+      handleCredentialSignIn(
+        { credential: 'token-123' },
+        {
+          credentialFactory: token => `cred:${token}`,
+          signInWithCredential,
+          auth,
+          storage,
+        }
+      )
+    ).rejects.toThrow('boom');
+
+    expect(signInWithCredential).toHaveBeenCalled();
+    expect(storage.setItem).not.toHaveBeenCalled();
+  });
 });
