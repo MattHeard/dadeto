@@ -50,6 +50,8 @@ describe('PAGE_HTML', () => {
     );
     expect(contentsGoogleAuthModule).toContain('import {');
     expect(contentsGoogleAuthModule).toContain('createGoogleAuthStatusHandle');
+    expect(contentsGoogleAuthModule).toContain('createErrorBeaconHandlers');
+    expect(contentsGoogleAuthModule).toContain('createErrorBeaconReporter');
     expect(contentsGoogleAuthModule).toContain('handle();');
     expect(contentsGoogleAuthModule).toContain("from './googleAuth.js'");
     expect(contentsMenuToggleModule).toContain('createMobileMenuToggleHandle');
