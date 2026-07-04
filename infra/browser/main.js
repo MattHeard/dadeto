@@ -1,6 +1,7 @@
 import { setupAudio } from './audio-controls.js';
 import { handleTagLinks } from './tags.js';
 import { createBlogDataController, getEncodeBase64 } from './data.js';
+import { loadStaticConfig } from './loadStaticConfig.js';
 import {
   createOutputDropdownHandler,
   createInputDropdownHandler,
@@ -26,6 +27,10 @@ import {
 import { revealBetaArticles } from './beta.js';
 import { createMemoryStorageLens } from '../core/browser/memoryStorageLens.js';
 import { createLocalStorageLens } from '../core/browser/localStorageLens.js';
+import {
+  createErrorBeaconHandlers,
+  createErrorBeaconReporter,
+} from '../core/browser/error-beacon.js';
 
 const globalState = {
   blog: null, // Holds the fetched blog data
@@ -34,6 +39,10 @@ const globalState = {
   blogFetchPromise: null, // Tracks the ongoing fetch promise
   temporary: {}, // Holds data managed by toys like setTemporary
 };
+
+const errorBeaconUrlPromise = loadStaticConfig()
+  .then(config => config.errorBeaconUrl || '')
+  .catch(() => '');
 
 /**
  * @module main
@@ -100,6 +109,24 @@ const env = {
   getUuid,
 };
 
+const errorBeaconHandlers = createErrorBeaconHandlers({
+  reportBeacon: payload =>
+    errorBeaconUrlPromise.then(url => {
+      if (!url) {
+        return;
+      }
+
+      createErrorBeaconReporter(
+        globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
+        url
+      )(payload);
+    }),
+  getUrl: () => globalThis.location?.href ?? '',
+  getUserAgent: () => globalThis.navigator?.userAgent ?? '',
+  getNow: () => Date.now(),
+  logError: dom.logError,
+});
+
 // --- Interactive Components ---
 
 initializeVisibleComponents(
@@ -149,3 +176,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   revealBetaArticles(dom);
 });
+
+window.addEventListener('error', errorBeaconHandlers.handleWindowError);
+window.addEventListener(
+  'unhandledrejection',
+  errorBeaconHandlers.handleUnhandledRejection
+);

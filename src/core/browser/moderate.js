@@ -18,6 +18,7 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+import * as errorBeacon from './error-beacon.js';
 
 setupFirebase(initializeApp);
 
@@ -71,6 +72,20 @@ const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   DEFAULT_MODERATION_ENDPOINTS,
   console
 );
+
+const errorBeaconHandlers = errorBeacon.createErrorBeaconHandlers({
+  reportBeacon: errorBeacon.createErrorBeaconReporter(
+    () =>
+      moderateGlobalObject?.navigator?.sendBeacon?.bind(
+        moderateGlobalObject.navigator
+      ),
+    '/errors'
+  ),
+  getUrl: () => moderateGlobalObject?.location?.href ?? '',
+  getUserAgent: () => moderateGlobalObject?.navigator?.userAgent ?? '',
+  getNow: () => Date.now(),
+  logError: console.error.bind(console),
+});
 
 /**
  * Enable or disable moderation action buttons.
@@ -198,7 +213,7 @@ async function retryLoadVariant() {
     await assignJob();
     await loadVariant(true);
   } catch (innerErr) {
-    console.error(innerErr);
+    errorBeaconHandlers.logError(innerErr);
   }
 }
 

@@ -1096,10 +1096,22 @@ data "archive_file" "generate_stats_src" {
   output_path = "${path.module}/build/generate-stats.zip"
 }
 
+data "archive_file" "errors_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/errors"
+  output_path = "${path.module}/build/errors.zip"
+}
+
 resource "google_storage_bucket_object" "generate_stats" {
   name   = "${var.environment}-generate-stats-${data.archive_file.generate_stats_src.output_sha256}.zip"
   bucket = google_storage_bucket.gcf_source_bucket.name
   source = data.archive_file.generate_stats_src.output_path
+}
+
+resource "google_storage_bucket_object" "errors" {
+  name   = "${var.environment}-errors-${data.archive_file.errors_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.errors_src.output_path
 }
 
 resource "google_cloudfunctions_function" "generate_stats" {
@@ -1123,6 +1135,27 @@ resource "google_cloudfunctions_function" "generate_stats" {
   ]
 }
 
+resource "google_cloudfunctions_function" "errors" {
+  name                         = "${var.environment}-errors"
+  runtime                      = var.cloud_functions_runtime
+  entry_point                  = "handle"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.errors.name
+  trigger_http                 = true
+  https_trigger_security_level = var.https_security_level
+  service_account_email        = local.cloud_function_runtime_service_account_email
+  region                       = var.region
+
+  environment_variables = local.cloud_function_environment
+
+  depends_on = [
+    google_project_service.project_level,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+    google_service_account_iam_member.terraform_can_impersonate_default_compute,
+  ]
+}
+
 resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
   project        = var.project_id
   region         = var.region
@@ -1131,6 +1164,18 @@ resource "google_cloudfunctions_function_iam_member" "generate_stats_invoker" {
   member         = local.all_users_member
   depends_on = [
     google_cloudfunctions_function.generate_stats,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "errors_invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.errors.name
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
+  depends_on = [
+    google_cloudfunctions_function.errors,
     google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }

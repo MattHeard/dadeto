@@ -17,6 +17,10 @@ import {
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+import {
+  createErrorBeaconHandlers,
+  createErrorBeaconReporter,
+} from '../core/browser/error-beacon.js';
 
 setupFirebase(initializeApp);
 
@@ -56,6 +60,28 @@ const getModerationEndpoints = createGetModerationEndpointsFromStaticConfig(
   DEFAULT_MODERATION_ENDPOINTS,
   console
 );
+
+const errorBeaconUrlPromise = loadStaticConfig()
+  .then(config => config.errorBeaconUrl || '')
+  .catch(() => '');
+
+const errorBeaconHandlers = createErrorBeaconHandlers({
+  reportBeacon: payload =>
+    errorBeaconUrlPromise.then(url => {
+      if (!url) {
+        return;
+      }
+
+      createErrorBeaconReporter(
+        globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
+        url
+      )(payload);
+    }),
+  getUrl: () => globalThis.location?.href ?? '',
+  getUserAgent: () => globalThis.navigator?.userAgent ?? '',
+  getNow: () => Date.now(),
+  logError: console.error.bind(console),
+});
 
 /**
  * Enable or disable moderation action buttons.
@@ -179,7 +205,7 @@ async function retryLoadVariant() {
     await assignJob();
     await loadVariant(true);
   } catch (innerErr) {
-    console.error(innerErr);
+    errorBeaconHandlers.logError(innerErr);
   }
 }
 
@@ -245,7 +271,7 @@ async function loadVariant(retried = false) {
     if (shouldRetryLoad(err, retried)) {
       await retryLoadVariant();
     } else {
-      console.error(err);
+      errorBeaconHandlers.logError(err);
     }
   } finally {
     stopFetching();
@@ -273,7 +299,7 @@ async function submitRating(isApproved) {
     await loadVariant();
   } catch (err) {
     stopSaving();
-    console.error(err);
+    errorBeaconHandlers.logError(err);
     alert("Sorry, that didn't work. See console for details.");
     if (approve) approve.disabled = false;
     if (reject) reject.disabled = false;
@@ -337,3 +363,9 @@ if (getIdToken()) {
   wireSignOut();
   loadVariant();
 }
+
+globalThis.addEventListener('error', errorBeaconHandlers.handleWindowError);
+globalThis.addEventListener(
+  'unhandledrejection',
+  errorBeaconHandlers.handleUnhandledRejection
+);

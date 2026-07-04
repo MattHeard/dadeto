@@ -1,0 +1,275 @@
+import { jest } from '@jest/globals';
+import { createErrorBeaconRun } from '../../../../src/core/cloud/errors/run.js';
+
+describe('createErrorBeaconRun', () => {
+  it('wires the express app and POST handler', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
+
+    const { handle } = createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      fetchFn,
+    });
+
+    expect(express).toHaveBeenCalledTimes(1);
+    expect(express.json).toHaveBeenCalledWith({
+      type: ['application/json', 'application/*+json'],
+    });
+    expect(cors).toHaveBeenCalledWith({ origin: true });
+    expect(use).toHaveBeenCalledTimes(2);
+    expect(post).toHaveBeenCalledTimes(2);
+    expect(handle).toEqual({ use, post });
+  });
+
+  it('responds 204 after a successful error report', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(response.statusCode).toBe(204);
+  });
+
+  it('returns 500 when Error Reporting rejects the payload', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({}),
+      });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(response.statusCode).toBe(500);
+  });
+
+  it('returns 500 when metadata token lookup fails', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({}),
+    });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({ GCLOUD_PROJECT: 'proj' }),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(response.statusCode).toBe(500);
+  });
+
+  it('uses fallback project environment variables and an empty access token', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: '' }),
+      })
+      .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({ GOOGLE_CLOUD_PROJECT: 'proj' }),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(fetchFn.mock.calls[1][0]).toContain('/projects/proj/events:report');
+    expect(fetchFn.mock.calls[1][1].headers.Authorization).toBe('Bearer ');
+    expect(response.statusCode).toBe(204);
+  });
+
+  it('uses the Google Cloud project fallback variable when earlier names are absent', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({ GOOGLE_CLOUD_PROJECT: 'proj' }),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(fetchFn.mock.calls[1][0]).toContain('/projects/proj/events:report');
+    expect(response.statusCode).toBe(204);
+  });
+
+  it('falls back to an empty project id when no environment variables are present', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      getEnvironmentVariables: () => ({}),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(fetchFn.mock.calls[1][0]).toContain('/projects//events:report');
+    expect(response.statusCode).toBe(204);
+  });
+});
+
+/**
+ * Create a minimal response double for the handler tests.
+ * @returns {{ statusCode: number, jsonBody: unknown, ended: boolean, body?: string, api: { status: (code: number) => { json: (body: Record<string, unknown>) => void, send: (body: string) => void, end: () => void } } }} Response double.
+ */
+function createResponse() {
+  const response = {
+    statusCode: 0,
+    jsonBody: null,
+    ended: false,
+    api: null,
+  };
+
+  response.api = {
+    status(code) {
+      response.statusCode = code;
+      return {
+        json(body) {
+          response.jsonBody = body;
+        },
+        send(body) {
+          response.body = body;
+        },
+        end() {
+          response.ended = true;
+        },
+      };
+    },
+  };
+
+  return response;
+}

@@ -29,6 +29,10 @@ import {
   getInteractiveComponents,
   reveal,
 } from './document.js';
+import {
+  createErrorBeaconHandlers,
+  createErrorBeaconReporter,
+} from './error-beacon.js';
 import { revealBetaArticles } from './beta.js';
 import { createMemoryStorageLens } from './memoryStorageLens.js';
 import { createLocalStorageLens } from './localStorageLens.js';
@@ -63,11 +67,27 @@ export function createMainHandle({
   storageObj,
 }) {
   return function handleMain() {
-    const loggers = { logInfo: log, logError: dom.logError, logWarning: warn };
+    const beaconEndpoint = '/errors';
+    const beaconReporter = createErrorBeaconReporter(
+      windowObj.navigator?.sendBeacon?.bind(windowObj.navigator),
+      beaconEndpoint
+    );
+    const errorHandlers = createErrorBeaconHandlers({
+      reportBeacon: beaconReporter,
+      getUrl: () => windowObj.location?.href ?? '',
+      getUserAgent: () => windowObj.navigator?.userAgent ?? '',
+      getNow: () => Date.now(),
+      logError: dom.logError,
+    });
+    const loggers = {
+      logInfo: log,
+      logError: errorHandlers.logError,
+      logWarning: warn,
+    };
     const memoryLens = createMemoryStorageLens(new Map());
     const permanentLens = createLocalStorageLens({
       storage: storageObj,
-      logError: dom.logError,
+      logError: errorHandlers.logError,
     });
 
     const createBlogDependencies = () => ({
@@ -208,5 +228,11 @@ export function createMainHandle({
         toggleToyFocusMode(button, dom);
       });
     });
+
+    windowObj.addEventListener('error', errorHandlers.handleWindowError);
+    windowObj.addEventListener(
+      'unhandledrejection',
+      errorHandlers.handleUnhandledRejection
+    );
   };
 }

@@ -320,11 +320,32 @@ export function normalizeStaticObjectPrefix(value) {
  * @returns {string} Trimmed prefix or an empty string for non-string values.
  */
 function trimStaticObjectPrefix(value) {
-  if (typeof value !== 'string') {
-    return '';
+  switch (typeof value) {
+    case 'string':
+      return trimSlashes(value);
+    default:
+      return '';
+  }
+}
+
+/**
+ * Strip slashes from both ends of a string.
+ * @param {string} value String to normalize.
+ * @returns {string} Trimmed string.
+ */
+function trimSlashes(value) {
+  let start = 0;
+  let end = value.length;
+
+  while (start < end && value.charCodeAt(start) === 47) {
+    start += 1;
   }
 
-  return value.replace(/^\/+|\/+$/g, '');
+  while (end > start && value.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+
+  return value.slice(start, end);
 }
 
 /**
