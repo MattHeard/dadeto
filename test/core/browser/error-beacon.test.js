@@ -287,20 +287,28 @@ describe('createErrorBeaconHandlers', () => {
 });
 
 describe('createErrorBeaconReporter', () => {
-  it('no-ops when sendBeacon is unavailable', () => {
+  it('no-ops when fetch is unavailable', () => {
     const reporter = createErrorBeaconReporter(undefined, '/errors');
     expect(() => reporter({ message: 'boom' })).not.toThrow();
   });
 
-  it('sends a JSON blob when sendBeacon exists', () => {
-    const sendBeacon = jest.fn(() => true);
-    const reporter = createErrorBeaconReporter(sendBeacon, '/errors');
+  it('posts JSON with credentials omitted when fetch exists', async () => {
+    const fetchFn = jest.fn(() => Promise.resolve({ ok: true }));
+    const reporter = createErrorBeaconReporter(fetchFn, '/errors');
 
     reporter({ message: 'boom' });
 
-    expect(sendBeacon).toHaveBeenCalledTimes(1);
-    expect(sendBeacon.mock.calls[0][0]).toBe('/errors');
-    expect(sendBeacon.mock.calls[0][1]).toBeInstanceOf(Blob);
-    expect(sendBeacon.mock.calls[0][1].type).toBe('application/json');
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn.mock.calls[0][0]).toBe('/errors');
+    expect(fetchFn.mock.calls[0][1]).toMatchObject({
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'omit',
+      keepalive: true,
+    });
+    expect(fetchFn.mock.calls[0][1].headers).toMatchObject({
+      'Content-Type': 'application/json',
+    });
+    expect(fetchFn.mock.calls[0][1].body).toBe(JSON.stringify({ message: 'boom' }));
   });
 });

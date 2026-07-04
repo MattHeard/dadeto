@@ -1,5 +1,5 @@
 /**
- * @typedef {(url: string, data: Blob | ArrayBuffer | Uint8Array | string | FormData | URLSearchParams) => boolean} SendBeaconFn
+ * @typedef {(url: string, init?: { method?: string, headers?: Record<string, string>, body?: string, mode?: string, credentials?: string, keepalive?: boolean }) => Promise<unknown>} FetchFn
  * @typedef {() => string | undefined} StringGetter
  * @typedef {() => number} NowGetter
  * @typedef {(payload: Record<string, unknown>) => void} BeaconReporter
@@ -123,18 +123,26 @@ export function normalizeErrorPayload(input) {
 
 /**
  * Create a best-effort beacon sender.
- * @param {SendBeaconFn | undefined} sendBeaconFn Navigator beacon function.
+ * @param {FetchFn | undefined} fetchFn Fetch function.
  * @param {string} endpointUrl Beacon endpoint.
  * @returns {BeaconReporter} Beacon reporter.
  */
-export function createErrorBeaconReporter(sendBeaconFn, endpointUrl) {
+export function createErrorBeaconReporter(fetchFn, endpointUrl) {
   return payload => {
-    if (typeof sendBeaconFn !== 'function') {
+    if (typeof fetchFn !== 'function') {
       return;
     }
 
-    const body = JSON.stringify(payload);
-    sendBeaconFn(endpointUrl, new Blob([body], { type: 'application/json' }));
+    fetchFn(endpointUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      mode: 'cors',
+      credentials: 'omit',
+      keepalive: true,
+    }).catch(() => {});
   };
 }
 

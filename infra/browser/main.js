@@ -117,7 +117,7 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
       }
 
       createErrorBeaconReporter(
-        globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
+        globalThis.fetch?.bind(globalThis),
         url
       )(payload);
     }),
