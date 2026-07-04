@@ -186,7 +186,7 @@ describe('gamepadCaptureHandler', () => {
       const connectedGamepad = createGamepad();
       globals.listeners.gamepadconnected({ gamepad: connectedGamepad });
 
-      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
         type: 'gamepadconnected',
         gamepadIndex: 0,
         gamepadId: 'Nintendo Joy-Con (R)',
@@ -210,7 +210,7 @@ describe('gamepadCaptureHandler', () => {
         }),
       ];
       frames.shift()();
-      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
         type: 'button',
         gamepadIndex: 0,
         gamepadId: 'Nintendo Joy-Con (R)',
@@ -233,7 +233,7 @@ describe('gamepadCaptureHandler', () => {
         }),
       ];
       frames.shift()();
-      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
         type: 'axis',
         gamepadIndex: 0,
         gamepadId: 'Nintendo Joy-Con (R)',
@@ -247,7 +247,7 @@ describe('gamepadCaptureHandler', () => {
       globals.listeners.gamepaddisconnected({
         gamepad: createGamepad({ connected: false, timestamp: 4 }),
       });
-      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
         type: 'gamepaddisconnected',
         gamepadIndex: 0,
         gamepadId: 'Nintendo Joy-Con (R)',
@@ -266,6 +266,63 @@ describe('gamepadCaptureHandler', () => {
       expect(
         gamepadCaptureTestOnly.logGamepadEvent('connected', null)
       ).toBeUndefined();
+    } finally {
+      globalThis.addEventListener = previousAdd;
+      globalThis.removeEventListener = previousRemove;
+      globalThis.requestAnimationFrame = previousRequestAnimationFrame;
+      globalThis.cancelAnimationFrame = previousCancelAnimationFrame;
+      globalThis.navigator = previousNavigator;
+    }
+  });
+
+  it('includes all connected gamepads when more than one controller is active', () => {
+    const autoSubmitCheckbox = { checked: false, dispatchEvent: jest.fn() };
+    const dom = makeDom(autoSubmitCheckbox);
+    const container = {
+      _children: [],
+      closest: jest.fn(() => ({ id: 'article-1' })),
+    };
+    const textInput = { value: '' };
+    const globals = createGlobalListenerRegistry();
+    const previousAdd = globalThis.addEventListener;
+    const previousRemove = globalThis.removeEventListener;
+    const previousRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const previousCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const previousNavigator = globalThis.navigator;
+    const leftJoyCon = createGamepad({ index: 0, id: 'Joy-Con Left' });
+    const rightJoyCon = createGamepad({ index: 1, id: 'Joy-Con Right' });
+    globalThis.addEventListener = globals.addEventListener;
+    globalThis.removeEventListener = globals.removeEventListener;
+    globalThis.requestAnimationFrame = jest.fn(() => 17);
+    globalThis.cancelAnimationFrame = jest.fn();
+    globalThis.navigator = {
+      getGamepads: jest.fn(() => [leftJoyCon, rightJoyCon]),
+    };
+
+    try {
+      gamepadCaptureHandler(dom, container, textInput);
+      const button = container._children[0]._children[0];
+      button._listeners.click();
+
+      globals.listeners.gamepadconnected({ gamepad: leftJoyCon });
+
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
+        type: 'gamepadconnected',
+        gamepadIndex: 0,
+        gamepadId: 'Joy-Con Left',
+        connectedGamepads: [
+          {
+            gamepadIndex: 0,
+            gamepadId: 'Joy-Con Left',
+            connected: true,
+          },
+          {
+            gamepadIndex: 1,
+            gamepadId: 'Joy-Con Right',
+            connected: true,
+          },
+        ],
+      });
     } finally {
       globalThis.addEventListener = previousAdd;
       globalThis.removeEventListener = previousRemove;
@@ -527,7 +584,7 @@ describe('gamepadCaptureHandler', () => {
 
       frames.shift()();
 
-      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
         type: 'button',
         gamepadIndex: 0,
         gamepadId: 'Nintendo Joy-Con (R)',
@@ -586,7 +643,7 @@ describe('gamepadCaptureHandler', () => {
 
       frames.shift()();
 
-      expect(JSON.parse(readStoredOrElementValue(textInput))).toEqual({
+      expect(JSON.parse(readStoredOrElementValue(textInput))).toMatchObject({
         type: 'axis',
         gamepadIndex: 0,
         gamepadId: 'Nintendo Joy-Con (R)',

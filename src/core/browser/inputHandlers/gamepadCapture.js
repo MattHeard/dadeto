@@ -59,25 +59,26 @@ function snapshotButton(button) {
  * @returns {GamepadSnapshot} Snapshot used for diffing future polls.
  */
 function snapshotGamepad(gamepad) {
-  return {
-    buttons: Array.from(gamepad.buttons, snapshotButton),
-    axes: Array.from(gamepad.axes, normalizeAxisValue),
-  };
+  return buildGamepadState(gamepad);
 }
 
 /**
  * Build the common metadata shared by all emitted gamepad events.
  * @param {Gamepad} gamepad - Browser gamepad object.
+ * @param {HandlerOptions} options - Shared handler dependencies.
  * @returns {Record<string, unknown>} Shared metadata fields.
  */
-function buildGamepadMetadata(gamepad) {
-  return {
-    gamepadIndex: gamepad.index,
-    gamepadId: gamepad.id,
-    mapping: gamepad.mapping,
-    connected: gamepad.connected,
-    timestamp: gamepad.timestamp,
+function buildGamepadMetadata(gamepad, options) {
+  const connectedGamepads = buildConnectedGamepadSummaries(options);
+  const metadata = {
+    ...buildGamepadCoreMetadata(gamepad),
   };
+
+  if (connectedGamepads.length > 1) {
+    metadata.connectedGamepads = connectedGamepads;
+  }
+
+  return metadata;
 }
 
 /**
@@ -104,27 +105,79 @@ function getEventGamepad(event) {
  * @param {{
  *   type: string,
  *   fields: Record<string, unknown>,
+ *   handlerOptions: HandlerOptions,
  * }} options - Payload builder settings.
  * @returns {Record<string, unknown>} Serialized payload data.
  */
 function buildGamepadPayload(gamepad, options) {
-  const { type, fields } = options;
+  const { type, fields, handlerOptions } = options;
   return browserCore.deepMerge(
     {
       type,
-      ...buildGamepadMetadata(gamepad),
+      ...buildGamepadMetadata(gamepad, handlerOptions),
     },
     fields
   );
 }
 
 /**
+ * Summarize all currently connected gamepads for payload consumers.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @returns {Array<Record<string, unknown>>} Connected pad summaries.
+ */
+function buildConnectedGamepadSummaries(options) {
+  return getConnectedGamepads(options.dom).map(gamepad =>
+    buildGamepadSummary(gamepad)
+  );
+}
+
+/**
+ * Summarize a connected gamepad in a serializable shape.
+ * @param {Gamepad} gamepad - Connected gamepad.
+ * @returns {Record<string, unknown>} Serializable connected pad summary.
+ */
+function buildGamepadSummary(gamepad) {
+  return {
+    ...buildGamepadCoreMetadata(gamepad),
+    ...buildGamepadState(gamepad),
+  };
+}
+
+/**
+ * Summarize the metadata shared by all gamepad payloads.
+ * @param {Gamepad} gamepad - Browser gamepad object.
+ * @returns {Record<string, unknown>} Core metadata fields.
+ */
+function buildGamepadCoreMetadata(gamepad) {
+  return {
+    gamepadIndex: gamepad.index,
+    gamepadId: gamepad.id,
+    mapping: gamepad.mapping,
+    connected: gamepad.connected,
+    timestamp: gamepad.timestamp,
+  };
+}
+
+/**
+ * Build the serializable button/axis state for a gamepad.
+ * @param {Gamepad} gamepad - Browser gamepad object.
+ * @returns {{ buttons: ButtonSnapshot[], axes: number[] }} Snapshot state.
+ */
+function buildGamepadState(gamepad) {
+  return {
+    buttons: Array.from(gamepad.buttons, snapshotButton),
+    axes: Array.from(gamepad.axes, normalizeAxisValue),
+  };
+}
+
+/**
  * Build a connection-style payload from a browser gamepad event.
+ * @param {HandlerOptions} handlerOptions - Shared handler dependencies.
  * @param {GamepadEvent | { gamepad?: Gamepad }} event - Connection or disconnection event.
  * @param {string} type - Payload type to emit.
  * @returns {Record<string, unknown> | null} Serialized payload data when a gamepad exists.
  */
-function buildConnectionPayload(event, type) {
+function buildConnectionPayload(handlerOptions, event, type) {
   const gamepad = getEventGamepad(event);
   if (gamepad === null) {
     return null;
@@ -132,6 +185,7 @@ function buildConnectionPayload(event, type) {
 
   return buildGamepadPayload(gamepad, {
     type,
+    handlerOptions,
     fields: buildConnectionFields(gamepad),
   });
 }
@@ -319,13 +373,15 @@ function getPreviousButtons(previousSnapshot) {
  * Build a button payload when any button changed.
  * @param {Gamepad} gamepad - Browser gamepad object.
  * @param {GamepadSnapshot | undefined} previousSnapshot - Previous polled snapshot.
+ * @param {HandlerOptions} handlerOptions - Shared handler dependencies.
  * @returns {Record<string, unknown> | null} Button event payload when a button changed.
  */
-function getButtonPayload(gamepad, previousSnapshot) {
+function getButtonPayload(gamepad, previousSnapshot, handlerOptions) {
   return buildChangedPayload({
     gamepad,
     previousSnapshot,
     type: 'button',
+    handlerOptions,
     findChangedIndex: findChangedButtonIndex,
     buildFields: changedIndex => {
       const button = gamepad.buttons[changedIndex];
@@ -378,13 +434,15 @@ function getPreviousAxes(previousSnapshot) {
  * Build an axis payload when any axis changed.
  * @param {Gamepad} gamepad - Browser gamepad object.
  * @param {GamepadSnapshot | undefined} previousSnapshot - Previous polled snapshot.
+ * @param {HandlerOptions} handlerOptions - Shared handler dependencies.
  * @returns {Record<string, unknown> | null} Axis event payload when an axis changed.
  */
-function getAxisPayload(gamepad, previousSnapshot) {
+function getAxisPayload(gamepad, previousSnapshot, handlerOptions) {
   return buildChangedPayload({
     gamepad,
     previousSnapshot,
     type: 'axis',
+    handlerOptions,
     findChangedIndex: findChangedAxisIndex,
     buildFields: changedIndex => ({
       axisIndex: changedIndex,
@@ -399,18 +457,26 @@ function getAxisPayload(gamepad, previousSnapshot) {
  *   gamepad: Gamepad,
  *   previousSnapshot: GamepadSnapshot | undefined,
  *   type: string,
+ *   handlerOptions: HandlerOptions,
  *   findChangedIndex: (gamepad: Gamepad, previousSnapshot: GamepadSnapshot | undefined) => number,
  *   buildFields: (changedIndex: number) => Record<string, unknown>,
  * }} options Payload builder settings.
  * @returns {Record<string, unknown> | null} Payload when a change was detected.
  */
 function buildChangedPayload(options) {
-  const { gamepad, previousSnapshot, type, findChangedIndex, buildFields } =
-    options;
+  const {
+    gamepad,
+    previousSnapshot,
+    type,
+    findChangedIndex,
+    buildFields,
+    handlerOptions,
+  } = options;
   const changedIndex = findChangedIndex(gamepad, previousSnapshot);
   return whenOrNull(changedIndex !== -1, () =>
     buildGamepadPayload(gamepad, {
       type,
+      handlerOptions,
       fields: buildFields(changedIndex),
     })
   );
@@ -429,8 +495,8 @@ function pollGamepads(options) {
   getConnectedGamepads(options.dom).forEach(gamepad => {
     const previousSnapshot = options.state.snapshots[gamepad.index];
     const payload =
-      getButtonPayload(gamepad, previousSnapshot) ??
-      getAxisPayload(gamepad, previousSnapshot);
+      getButtonPayload(gamepad, previousSnapshot, options) ??
+      getAxisPayload(gamepad, previousSnapshot, options);
     options.state.snapshots[gamepad.index] = snapshotGamepad(gamepad);
     whenNotNullish(payload, presentPayload => {
       syncToyPayload(
@@ -568,15 +634,11 @@ function createConnectionHandler(options) {
  * @returns {void}
  */
 function handleConnectionEvent(options, event) {
-  whenNotNullish(getHandledConnectionPayload(options.state, event), payload => {
-    const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
-    logGamepadEvent('connected', gamepad);
-    storeSnapshot(options.state, gamepad);
-    syncToyPayload(
-      createCaptureToyInput(options),
-      /** @type {Record<string, unknown>} */ (payload)
-    );
-    queuePoll(options);
+  handleGamepadLifecycleEvent(options, event, {
+    type: GAMEPAD_CONNECTED_EVENT,
+    status: 'connected',
+    applyLifecycle: gamepad => storeSnapshot(options.state, gamepad),
+    shouldQueuePoll: true,
   });
 }
 
@@ -596,50 +658,54 @@ function createDisconnectHandler(options) {
  * @returns {void}
  */
 function handleDisconnectEvent(options, event) {
-  whenNotNullish(
-    getHandledDisconnectionPayload(options.state, event),
-    payload => {
-      const gamepad = getEventGamepad(event);
-      logGamepadEvent('disconnected', gamepad);
-      removeSnapshot(options.state, gamepad);
-      syncToyPayload(
-        createCaptureToyInput(options),
-        /** @type {Record<string, unknown>} */ (payload)
-      );
-    }
+  handleGamepadLifecycleEvent(options, event, {
+    type: GAMEPAD_DISCONNECTED_EVENT,
+    status: 'disconnected',
+    applyLifecycle: gamepad => removeSnapshot(options.state, gamepad),
+    shouldQueuePoll: false,
+  });
+}
+
+/**
+ * Handle a gamepad lifecycle event with shared payload wiring.
+ * @param {HandlerOptions} options - Shared handler dependencies.
+ * @param {GamepadEvent | { gamepad?: Gamepad }} event - Gamepad event.
+ * @param {{
+ *   type: string,
+ *   status: 'connected' | 'disconnected',
+ *   applyLifecycle: (gamepad: Gamepad) => void,
+ *   shouldQueuePoll: boolean,
+ * }} config - Lifecycle action settings.
+ * @returns {void}
+ */
+function handleGamepadLifecycleEvent(options, event, config) {
+  const payload = getHandledGamepadPayload(options, event, config.type);
+  if (!payload) {
+    return;
+  }
+
+  const gamepad = /** @type {Gamepad} */ (getEventGamepad(event));
+  logGamepadEvent(config.status, gamepad);
+  config.applyLifecycle(gamepad);
+  syncToyPayload(
+    createCaptureToyInput(options),
+    /** @type {Record<string, unknown>} */ (payload)
   );
-}
-
-/**
- * Build a handled connection payload only when capture is active.
- * @param {CaptureState} state - Mutable handler state.
- * @param {GamepadEvent | { gamepad?: Gamepad }} event - Connection event.
- * @returns {Record<string, unknown> | null} Payload ready for syncing.
- */
-function getHandledConnectionPayload(state, event) {
-  return getHandledGamepadPayload(state, event, GAMEPAD_CONNECTED_EVENT);
-}
-
-/**
- * Build a handled disconnection payload only when capture is active.
- * @param {CaptureState} state - Mutable handler state.
- * @param {GamepadEvent | { gamepad?: Gamepad }} event - Disconnection event.
- * @returns {Record<string, unknown> | null} Payload ready for syncing.
- */
-function getHandledDisconnectionPayload(state, event) {
-  return getHandledGamepadPayload(state, event, GAMEPAD_DISCONNECTED_EVENT);
+  if (config.shouldQueuePoll) {
+    queuePoll(options);
+  }
 }
 
 /**
  * Build a handled gamepad payload only when capture is active.
- * @param {CaptureState} state - Mutable handler state.
+ * @param {HandlerOptions} options - Shared handler dependencies.
  * @param {GamepadEvent | { gamepad?: Gamepad }} event - Gamepad event.
  * @param {string} type - Event type to embed in the payload.
  * @returns {Record<string, unknown> | null} Payload ready for syncing.
  */
-function getHandledGamepadPayload(state, event, type) {
-  return whenOrNull(shouldHandleConnectionEvent(state), () =>
-    buildConnectionPayload(event, type)
+function getHandledGamepadPayload(options, event, type) {
+  return whenOrNull(shouldHandleConnectionEvent(options.state), () =>
+    buildConnectionPayload(options, event, type)
   );
 }
 
