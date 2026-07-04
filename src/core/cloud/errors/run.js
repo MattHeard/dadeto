@@ -1,4 +1,9 @@
-import { createErrorBeaconHandler } from './errors-core.js';
+import {
+  createCorsOptions,
+  createCorsOriginHandler,
+  createErrorBeaconHandler,
+  resolveAllowedOrigins,
+} from '../cloud-core.js';
 
 /**
  * Build the Cloud Function handler for browser error beacons.
@@ -15,7 +20,13 @@ export function createErrorBeaconRun(deps) {
   /** @type {any} */ (app).use(
     deps.express.json({ type: ['application/json', 'application/*+json'] })
   );
-  /** @type {any} */ (app).use(deps.cors({ origin: true }));
+  const corsOptions = createCorsOptions(
+    createCorsOriginHandler(
+      resolveAllowedOrigins,
+      resolveAllowedOrigins(deps.getEnvironmentVariables())
+    )
+  );
+  /** @type {any} */ (app).use(deps.cors(corsOptions));
 
   const env = deps.getEnvironmentVariables();
   const projectId =
