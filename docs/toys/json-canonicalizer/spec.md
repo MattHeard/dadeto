@@ -1,7 +1,7 @@
 # Toy Spec: JSON Canonicalizer
 
 ## Summary
-- Toy name: JSON Canonicalizer (`JCAN1`)
+- Toy name: JSON Canonicalizer (`JSON1`)
 - Blog key: `JSON1`
 - Owner: Dadeto browser toys
 - Last updated: 2026-07-04
