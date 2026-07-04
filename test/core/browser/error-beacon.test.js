@@ -299,8 +299,8 @@ describe('createErrorBeaconReporter', () => {
     reporter({ message: 'boom' });
 
     expect(sendBeacon).toHaveBeenCalledTimes(1);
-    expect(sendBeacon.mock.calls[0][1]).toBe('/errors');
-    expect(sendBeacon.mock.calls[0][0]).toBeInstanceOf(Blob);
-    expect(sendBeacon.mock.calls[0][0].type).toBe('application/json');
+    expect(sendBeacon.mock.calls[0][0]).toBe('/errors');
+    expect(sendBeacon.mock.calls[0][1]).toBeInstanceOf(Blob);
+    expect(sendBeacon.mock.calls[0][1].type).toBe('application/json');
   });
 });
