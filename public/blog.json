@@ -1,6 +1,33 @@
 {
   "posts": [
     {
+      "key": "JSON1",
+      "title": "JSON Canonicalizer",
+      "publicationDate": "2026-07-04",
+      "release": "public",
+      "content": [
+        "Accepts any valid JSON value and returns stable, pretty-printed JSON with deterministic key ordering.",
+        "Object keys are sorted recursively, arrays keep their original order, and malformed JSON returns a structured error.",
+        {
+          "type": "manual",
+          "id": "JSON1-manual",
+          "title": "User manual",
+          "markdown": "# JSON1 — JSON Canonicalizer\n\n## What this toy does\n\nJSON Canonicalizer accepts any valid JSON value and returns a stable, pretty-printed JSON string. Object keys are sorted recursively so equivalent JSON values always render the same way.\n\n## Input format\n\nPaste any valid JSON value, including objects, arrays, strings, numbers, booleans, or null.\n\n## Defaults\n\nIf the input is malformed JSON, the toy returns a structured error instead of throwing.\n\n## Output\n\nThe toy returns pretty-printed canonical JSON with a fixed two-space indent. Arrays keep their original order and scalar values are preserved.\n\n## How to use it\n\n1. Paste a JSON value into the toy.\n2. Submit it.\n3. Compare the result with another equivalent JSON value to see that object keys are now deterministic.\n\n## Tips\n\n- This toy is useful when you want a stable JSON representation for diffs or comparisons.\n- The canonicalizer does not change array order or transform scalar values.\n- Non-JSON syntax such as comments or trailing commas is out of scope.\n"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-07-04/jsonCanonicalizer.js",
+        "functionName": "jsonCanonicalizer",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "json",
+        "text"
+      ]
+    },
+    {
       "key": "BEAC1",
       "title": "Beacon Bounce",
       "publicationDate": "2026-07-01",
