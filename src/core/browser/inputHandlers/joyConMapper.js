@@ -6,7 +6,7 @@ import { createManagedFormShell } from './createDendriteHandler.js';
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} GamepadSnapshot */
 /** @typedef {{ buttons: ButtonSnapshot[], axes: number[] }} HidSnapshot */
 /** @typedef {{ device?: HidDeviceLike }} HidConnectEventLike */
-/** @typedef {{ data: { buffer: ArrayBuffer } }} HidInputReportEventLike */
+/** @typedef {{ data: { buffer: ArrayBuffer }, reportId?: number }} HidInputReportEventLike */
 /**
  * @typedef {{
  *   vendorId?: number,
@@ -438,19 +438,84 @@ function sameNumberArray(left, right) {
  */
 function snapshotHidInputReport(event) {
   const bytes = Array.from(new Uint8Array(event.data.buffer));
-  /** @type {ButtonSnapshot[]} */
-  let buttons = [];
-  if (bytes.length > 0) {
-    buttons = snapshotHidButtons(bytes[0]);
+  if (bytes.length === 0) {
+    return { buttons: [], axes: [] };
   }
 
-  /** @type {number[]} */
-  let axes = [];
-  if (bytes.length > 1) {
-    axes = snapshotHidAxes(bytes.slice(1, 3));
+  const isStandardJoyConReport = isStandardJoyConReportBytes(event, bytes);
+  const buttonBytes = readJoyConButtonBytes(bytes, isStandardJoyConReport);
+  const hatByte = readJoyConHatByte(bytes, isStandardJoyConReport);
+
+  return {
+    buttons: snapshotHidButtons(buttonBytes),
+    axes: readJoyConAxes(hatByte),
+  };
+}
+
+/**
+ * Determine whether a report matches the standard Joy-Con layout.
+ * @param {HidInputReportEventLike} event
+ *   Input report emitted by a HID device.
+ * @param {number[]} bytes
+ *   Raw report bytes.
+ * @returns {boolean}
+ *   True when the report uses the Joy-Con normal input layout.
+ */
+function isStandardJoyConReportBytes(event, bytes) {
+  return (event.reportId ?? bytes[0]) === 0x3f && bytes.length >= 4;
+}
+
+/**
+ * Read button bytes from a Joy-Con report.
+ * @param {number[]} bytes
+ *   Raw report bytes.
+ * @param {boolean} isStandardJoyConReport
+ *   Whether the report uses the standard Joy-Con layout.
+ * @returns {number[]}
+ *   Button bytes to decode.
+ */
+function readJoyConButtonBytes(bytes, isStandardJoyConReport) {
+  if (isStandardJoyConReport) {
+    return bytes.slice(1, 3);
   }
 
-  return { buttons, axes };
+  return bytes.slice(0, Math.min(2, bytes.length));
+}
+
+/**
+ * Read the Joy-Con hat byte from a report.
+ * @param {number[]} bytes
+ *   Raw report bytes.
+ * @param {boolean} isStandardJoyConReport
+ *   Whether the report uses the standard Joy-Con layout.
+ * @returns {number | null}
+ *   Hat byte when available.
+ */
+function readJoyConHatByte(bytes, isStandardJoyConReport) {
+  if (isStandardJoyConReport) {
+    return bytes[3];
+  }
+
+  if (bytes.length <= 2) {
+    return null;
+  }
+
+  return bytes[2];
+}
+
+/**
+ * Convert an optional Joy-Con hat byte into axes.
+ * @param {number | null} hatByte
+ *   Hat byte when available.
+ * @returns {number[]}
+ *   Axis values to emit.
+ */
+function readJoyConAxes(hatByte) {
+  if (hatByte === null) {
+    return [];
+  }
+
+  return snapshotHidAxes(hatByte);
 }
 
 /**
@@ -473,40 +538,75 @@ function logHidReportEvent(device, event) {
 }
 
 /**
- * Decode a single HID byte into up to eight button snapshots.
- * @param {number} buttonByte
- *   Bitfield from a HID report.
+ * Decode one or more HID bytes into button snapshots.
+ * @param {number[]} buttonBytes
+ *   Bitfields from a HID report.
  * @returns {ButtonSnapshot[]}
  *   Button snapshots usable by the mapper.
  */
-function snapshotHidButtons(buttonByte) {
-  return [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80].map(mask => {
-    const pressed = Boolean(buttonByte & mask);
-    let value = 0;
-    if (pressed) {
-      value = 1;
-    }
+function snapshotHidButtons(buttonBytes) {
+  const masks = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80];
+  return buttonBytes.flatMap(buttonByte =>
+    masks.map(mask => {
+      const pressed = Boolean(buttonByte & mask);
+      let value = 0;
+      if (pressed) {
+        value = 1;
+      }
 
-    return { pressed, value };
-  });
+      return { pressed, value };
+    })
+  );
 }
 
 /**
- * Decode HID axis bytes into normalized axis values.
- * @param {number[]} axisBytes
- *   Raw axis bytes from a HID report.
+ * Decode the Joy-Con hat byte into normalized axis values.
+ * @param {number} hatByte
+ *   Discrete hat direction byte from a HID report.
  * @returns {number[]}
  *   Axis values normalized to the range used by the mapper.
  */
-function snapshotHidAxes(axisBytes) {
-  return axisBytes.map(byte => {
-    const normalized = Math.min(1, Math.max(-1, (byte - 128) / 128));
-    if (Math.abs(normalized) < AXIS_THRESHOLD) {
-      return 0;
-    }
+function snapshotHidAxes(hatByte) {
+  const hat = hatByte & 0x0f;
+  return [resolveHatXAxis(hat), resolveHatYAxis(hat)];
+}
 
-    return normalized;
-  });
+/**
+ * Resolve the horizontal Joy-Con hat axis.
+ * @param {number} hat
+ *   Normalized hat value.
+ * @returns {number}
+ *   Axis value in the range -1 to 1.
+ */
+function resolveHatXAxis(hat) {
+  if (hat === 5 || hat === 6 || hat === 7) {
+    return -1;
+  }
+
+  if (hat === 1 || hat === 2 || hat === 3) {
+    return 1;
+  }
+
+  return 0;
+}
+
+/**
+ * Resolve the vertical Joy-Con hat axis.
+ * @param {number} hat
+ *   Normalized hat value.
+ * @returns {number}
+ *   Axis value in the range -1 to 1.
+ */
+function resolveHatYAxis(hat) {
+  if (hat === 0 || hat === 1 || hat === 7) {
+    return -1;
+  }
+
+  if (hat === 3 || hat === 4 || hat === 5) {
+    return 1;
+  }
+
+  return 0;
 }
 
 /**

@@ -456,11 +456,12 @@ describe('joyConMapper coverage helpers', () => {
     expect(disposers).toHaveLength(2);
 
     const report = {
-      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+      reportId: 0x3f,
+      data: new DataView(Uint8Array.from([0x3f, 0x03, 0x00, 0x02]).buffer),
     };
     expect(snapshotHidInputReport(report)).toEqual({
-      buttons: snapshotHidButtons(0x03),
-      axes: snapshotHidAxes([255, 0]),
+      buttons: snapshotHidButtons([0x03, 0x00]),
+      axes: snapshotHidAxes(0x02),
     });
 
     device._handler(report);
@@ -469,8 +470,8 @@ describe('joyConMapper coverage helpers', () => {
 
     device._handler(report);
     expect(state.hidSnapshot).toEqual({
-      buttons: snapshotHidButtons(0x03),
-      axes: snapshotHidAxes([255, 0]),
+      buttons: snapshotHidButtons([0x03, 0x00]),
+      axes: snapshotHidAxes(0x02),
     });
   });
 
@@ -549,15 +550,17 @@ describe('joyConMapper coverage helpers', () => {
 
     attachHidDeviceListener(state, disposers, device);
     device._handler({
-      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+      reportId: 0x3f,
+      data: new DataView(Uint8Array.from([0x3f, 0x03, 0x00, 0x02]).buffer),
     });
     device._handler({
-      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+      reportId: 0x3f,
+      data: new DataView(Uint8Array.from([0x3f, 0x03, 0x00, 0x02]).buffer),
     });
 
     expect(state.hidSnapshot).toEqual({
-      buttons: snapshotHidButtons(0x03),
-      axes: snapshotHidAxes([255, 0]),
+      buttons: snapshotHidButtons([0x03, 0x00]),
+      axes: snapshotHidAxes(0x02),
     });
   });
 
@@ -581,7 +584,8 @@ describe('joyConMapper coverage helpers', () => {
 
     attachHidDeviceListener(state, disposers, device);
     const report = {
-      data: new DataView(Uint8Array.from([0x03, 255, 0]).buffer),
+      reportId: 0x3f,
+      data: new DataView(Uint8Array.from([0x3f, 0x03, 0x00, 0x02]).buffer),
     };
 
     device._handler(report);
@@ -590,8 +594,8 @@ describe('joyConMapper coverage helpers', () => {
 
     device._handler(report);
     expect(state.hidSnapshot).toEqual({
-      buttons: snapshotHidButtons(0x03),
-      axes: snapshotHidAxes([255, 0]),
+      buttons: snapshotHidButtons([0x03, 0x00]),
+      axes: snapshotHidAxes(0x02),
     });
   });
 
@@ -619,7 +623,19 @@ describe('joyConMapper coverage helpers', () => {
       buttons: [],
       axes: [],
     });
-    expect(snapshotHidAxes([128, 129])).toEqual([0, 0]);
+    expect(snapshotHidAxes(8)).toEqual([0, 0]);
+    expect(snapshotHidAxes(2)).toEqual([1, 0]);
+    expect(snapshotHidAxes(4)).toEqual([0, 1]);
+    expect(snapshotHidAxes(6)).toEqual([-1, 0]);
+    expect(snapshotHidAxes(7)).toEqual([-1, -1]);
+    expect(
+      snapshotHidInputReport({
+        data: { buffer: new Uint8Array([0x01, 0x02, 0x04]).buffer },
+      })
+    ).toEqual({
+      buttons: snapshotHidButtons([0x01, 0x02]),
+      axes: snapshotHidAxes(0x04),
+    });
   });
 
   it('covers WebHID no-device and no-HID guards', () => {
