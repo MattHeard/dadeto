@@ -10,7 +10,7 @@ import { isAdminWithDeps } from './admin-core.js';
 const errorBeaconHandlers = createErrorBeaconHandlers({
   reportBeacon: createErrorBeaconReporter(
     globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
-    '/errors'
+    '/prod-errors'
   ),
   getUrl: () => globalThis.location?.href ?? '',
   getUserAgent: () => globalThis.navigator?.userAgent ?? '',

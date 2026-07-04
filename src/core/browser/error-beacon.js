@@ -134,7 +134,7 @@ export function createErrorBeaconReporter(sendBeaconFn, endpointUrl) {
     }
 
     const body = JSON.stringify(payload);
-    sendBeaconFn(new Blob([body], { type: 'application/json' }), endpointUrl);
+    sendBeaconFn(endpointUrl, new Blob([body], { type: 'application/json' }));
   };
 }
 
