@@ -1,0 +1,14 @@
+{
+  "family": "DADETO Sarasa",
+  "source": "Sarasa Gothic",
+  "variant": "Sarasa Fixed SC",
+  "version": "v1.0.40",
+  "files": {
+    "regular": "/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-regular.woff2",
+    "bold": "/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-bold.woff2"
+  },
+  "cellModel": {
+    "latin": "0.5em",
+    "cjk": "1em"
+  }
+}

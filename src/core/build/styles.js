@@ -7,6 +7,22 @@ export function styles() {
 }
 
 const STYLES = String.raw`
+  @font-face {
+    font-family: "DADETO Sarasa";
+    src: url("/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "DADETO Sarasa";
+    src: url("/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
   :root {
     color-scheme: dark;
     --bg: #121212;
@@ -26,7 +42,7 @@ const STYLES = String.raw`
     --cell-h: 18px;
     --cols: 80;
     --rows: 24;
-    --font-stack: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-stack: "DADETO Sarasa", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
 
   * {

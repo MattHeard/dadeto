@@ -715,6 +715,7 @@ export function createCopyCore({
       ['copyBrowserTrees', copyBrowserTrees],
       ['copyCoreRootFiles', copyCoreRootFiles],
       ['copyCoreConstants', copyCoreConstants],
+      ['copyStaticContentTrees', copyStaticContentTrees],
       ['copyBlogJson', copyBlogJson],
       ['copyPlannedDirectoryTrees', copyPlannedDirectoryTrees],
       ['copyDirectoryTreeIfExists', copyDirectoryTreeIfExists],
