@@ -1231,7 +1231,7 @@ export function createApplyCorsHeaders({ allowedOrigins }) {
  * @returns {unknown} Origin header string, when present.
  */
 function resolveOriginHeader(req) {
-  return callHeaderGetter(req?.get, 'Origin');
+  return callHeaderGetter(req?.get, req, 'Origin');
 }
 
 /**
@@ -1412,12 +1412,12 @@ function getAuthorizationHeaderFromGetter(req) {
   const getter = /** @type {((name: string) => unknown) | undefined} */ (
     req.get
   );
-  const authorizationHeader = callHeaderGetter(getter, 'Authorization');
+  const authorizationHeader = callHeaderGetter(getter, req, 'Authorization');
   if (isDefined(authorizationHeader)) {
     return authorizationHeader;
   }
 
-  return callHeaderGetter(getter, 'authorization');
+  return callHeaderGetter(getter, req, 'authorization');
 }
 
 /**
@@ -1448,15 +1448,16 @@ export function resolveAuthorizationHeader(req) {
 /**
  * Safely invoke a header getter when a function is provided.
  * @param {(((name: string) => unknown) | undefined)} getter Header getter helper.
+ * @param {unknown} receiver Object that owns the getter.
  * @param {string} key Header name to read.
  * @returns {unknown} Header value when available.
  */
-function callHeaderGetter(getter, key) {
+function callHeaderGetter(getter, receiver, key) {
   if (typeof getter !== 'function') {
     return undefined;
   }
 
-  return getter(key);
+  return getter.call(receiver, key);
 }
 
 /**

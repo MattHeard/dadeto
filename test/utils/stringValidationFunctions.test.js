@@ -15,4 +15,9 @@ describe('isValidString', () => {
       expect(isValidString(v)).toBe(false);
     }
   });
+
+  test('treats string objects and undefined values consistently', () => {
+    expect(isValidString(new String('wrapped'))).toBe(false);
+    expect(isValidString(undefined)).toBe(false);
+  });
 });
