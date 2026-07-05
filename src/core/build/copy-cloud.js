@@ -188,6 +188,7 @@ export async function createCopyCloudHandle(deps) {
 
   const cloudCoreSource = join(srcCoreCloudDir, 'cloud-core.js');
   const commonCoreSource = join(srcCoreDir, 'commonCore.js');
+  const errorReportingSource = join(srcCoreDir, 'error-reporting.js');
   const paymentWebhookCoreSource = join(srcCoreDir, 'payment-webhook-core.js');
   const expressAppSource = join(srcCoreDir, 'express-app.js');
 
@@ -484,6 +485,10 @@ export async function createCopyCloudHandle(deps) {
       target: join(infraDir, 'core', 'commonCore.js'),
     },
     {
+      source: errorReportingSource,
+      target: join(infraDir, 'core', 'error-reporting.js'),
+    },
+    {
       source: expressAppSource,
       target: join(infraDir, 'core', 'express-app.js'),
     },
@@ -502,6 +507,10 @@ export async function createCopyCloudHandle(deps) {
     {
       source: join(srcCloudDir, 'firebase-functions.js'),
       target: join(infraFunctionsDir, 'firebase-functions.js'),
+    },
+    {
+      source: errorReportingSource,
+      target: join(infraFunctionsDir, 'errors', 'core', 'error-reporting.js'),
     },
     ...firebaseFunctionsCopies,
     {
