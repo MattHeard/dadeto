@@ -69,6 +69,35 @@ describe('buildReportedErrorEvent', () => {
       },
     });
   });
+
+  it('omits invalid line and column numbers and tolerates missing build versions', () => {
+    const event = buildReportedErrorEvent(
+      {
+        message: 'boom',
+        stack: 'stack',
+        url: 'https://example.test/page?token=secret#frag',
+        source: 'console.error',
+        lineNumber: '0',
+        columnNumber: '-1',
+      },
+      '   ',
+      () => '2026-07-04T00:00:00.000Z'
+    );
+
+    expect(event).toMatchObject({
+      message: 'boom\nstack',
+      serviceContext: { service: 'prod-client-js' },
+      context: {
+        reportLocation: {
+          filePath: 'https://example.test/page',
+          functionName: 'console.error',
+        },
+      },
+    });
+    expect(event.serviceContext).not.toHaveProperty('version');
+    expect(event.context.reportLocation).not.toHaveProperty('lineNumber');
+    expect(event.context.reportLocation).not.toHaveProperty('columnNumber');
+  });
 });
 
 describe('createErrorBeaconHandler', () => {

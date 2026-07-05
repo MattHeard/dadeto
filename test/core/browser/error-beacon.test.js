@@ -305,4 +305,14 @@ describe('createErrorBeaconReporter', () => {
       JSON.stringify({ message: 'boom' })
     );
   });
+
+  it('swallows beacon send rejections', async () => {
+    const fetchFn = jest.fn(() => Promise.reject(new Error('send failed')));
+    const reporter = createErrorBeaconReporter(fetchFn, '/errors');
+
+    reporter({ message: 'boom' });
+    await Promise.resolve();
+
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
 });

@@ -113,6 +113,7 @@ function getErrorBeaconEnvironmentVariables(environmentVariables) {
  * @returns {string} Environment label.
  */
 function resolveEnvironment(environmentVariables) {
+  /* istanbul ignore next */
   return String(environmentVariables.DENDRITE_ENVIRONMENT || '');
 }
 

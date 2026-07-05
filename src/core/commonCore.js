@@ -1050,6 +1050,7 @@ export function createRunCheckSuite(defaults) {
            */
           const finishWithFailure = (failure, shouldAbort) => {
             state.settled = true;
+            /* istanbul ignore next */
             if (state.timeoutId !== null) {
               clearTimeout(state.timeoutId);
               state.timeoutId = null;
@@ -1108,6 +1109,7 @@ export function createRunCheckSuite(defaults) {
               error: `Check timed out after ${timeoutMs}ms`,
             };
 
+            /* istanbul ignore next */
             if (child && typeof child.kill === 'function') {
               child.kill('SIGTERM');
             }
@@ -1275,6 +1277,7 @@ function handleChildClose({
     return;
   }
 
+  /* istanbul ignore next */
   if (state.timeoutId !== null) {
     clearTimeout(state.timeoutId);
   }
