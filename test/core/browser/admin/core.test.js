@@ -692,15 +692,18 @@ describe('executeTriggerRender', () => {
     const getAdminEndpoints = jest.fn().mockResolvedValue({});
     const fetch = jest.fn().mockRejectedValue(new Error('boom'));
     const showMessage = jest.fn();
+    const reportError = jest.fn();
 
     await executeTriggerRender({
       getAdminEndpoints,
       fetchFn: fetch,
       token: 'token',
       showMessage,
+      reportError,
     });
 
     expect(showMessage).toHaveBeenCalledWith('Render failed: boom');
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
   });
 
   it('reports non-error throw values using their string form', async () => {
@@ -725,17 +728,20 @@ describe('createTriggerRender additional branches', () => {
     const getAdminEndpoints = jest.fn().mockResolvedValue({});
     const fetch = jest.fn().mockRejectedValue(new Error('explode'));
     const showMessage = jest.fn();
+    const reportError = jest.fn();
 
     const triggerRender = createTriggerRender({
       googleAuth,
       getAdminEndpointsFn: getAdminEndpoints,
       fetchFn: fetch,
       showMessage,
+      reportError,
     });
 
     await triggerRender();
 
     expect(showMessage).toHaveBeenCalledWith('Render failed: explode');
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
   });
 
   it('throws when getAdminEndpointsFn is not a function', () => {

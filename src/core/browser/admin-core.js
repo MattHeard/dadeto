@@ -618,6 +618,7 @@ export async function executeTriggerRender({
   fetchFn,
   token,
   showMessage,
+  reportError = () => {},
 }) {
   return executeTriggerRenderCore({
     getAdminEndpoints,
@@ -625,6 +626,7 @@ export async function executeTriggerRender({
     token,
     showMessage,
   }).catch(e => {
+    reportError(e);
     showMessage(`Render failed: ${renderErrorMessage(e)}`);
   });
 }
@@ -674,6 +676,7 @@ function renderErrorMessage(error) {
  *   getAdminEndpointsFn: () => Promise<{ triggerRenderContentsUrl: string }>,
  *   fetchFn: FetchFn,
  *   showMessage: (text: string) => void,
+ *   reportError?: (error: unknown) => void,
  * }} options - Dependencies used during trigger render execution.
  * @returns {() => Promise<void>} Function that triggers render when invoked.
  */
@@ -682,6 +685,7 @@ export function createTriggerRender({
   getAdminEndpointsFn,
   fetchFn,
   showMessage,
+  reportError = () => {},
 }) {
   return createAdminTokenAction({
     googleAuth,
@@ -702,6 +706,7 @@ export function createTriggerRender({
         fetchFn: fetch,
         token,
         showMessage: report,
+        reportError,
       }),
   });
 }
@@ -1996,6 +2001,7 @@ function renderStatusParagraph(statusParagraph, text) {
  *   onAuthStateChangedFn: (auth: FirebaseAuthInstance | null | undefined, callback: () => void) => void,
  *   doc: Document,
  *   fetchFn: FetchFn,
+ *   reportError?: (error: unknown) => void,
  * }} options - Dependencies required for admin initialization.
  * @returns {void}
  */
@@ -2006,6 +2012,7 @@ export function initAdmin({
   onAuthStateChangedFn,
   doc,
   fetchFn,
+  reportError = () => {},
 }) {
   validateInitAdminDeps({
     googleAuthModule,
@@ -2026,6 +2033,7 @@ export function initAdmin({
     getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
     showMessage,
+    reportError,
   });
 
   const triggerStats = createTriggerStats({
@@ -2223,6 +2231,7 @@ export function setupFirebase(initApp) {
  * @param {typeof globalThis} deps.globalThisObj - Global scope used for Google APIs and DOM helpers.
  * @param {Document} deps.documentObj - Document object containing the admin UI.
  * @param {FetchFn} deps.fetchObj - Fetch-like function for HTTP requests.
+ * @param {(error: unknown) => void} [deps.reportError] - Optional reporter for admin fetch failures.
  * @param {(handlers: { initGoogleSignIn: (options?: GoogleSignInOptions) => void, signOut: () => Promise<void> }) => void} [deps.onHandlersReady] - Optional hook for tests to access memoized handlers.
  */
 export function initAdminApp({
@@ -2237,6 +2246,7 @@ export function initAdminApp({
   globalThisObj,
   documentObj,
   fetchObj,
+  reportError = () => {},
   onHandlersReady,
 }) {
   setupFirebase(initializeAppFn);
@@ -2297,6 +2307,7 @@ export function initAdminApp({
     onAuthStateChangedFn,
     doc: documentObj,
     fetchFn: fetchObj,
+    reportError,
   });
 }
 
