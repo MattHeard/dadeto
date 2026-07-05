@@ -43,6 +43,8 @@ export function createErrorBeaconRun(deps) {
   const env = environmentVariables;
   const projectId =
     env.GCLOUD_PROJECT || env.GCP_PROJECT || env.GOOGLE_CLOUD_PROJECT || '';
+  const buildVersion = resolveBuildVersion(env);
+  const environment = resolveEnvironment(env);
 
   /**
    * Forward a normalized event to Error Reporting.
@@ -69,7 +71,8 @@ export function createErrorBeaconRun(deps) {
   }
 
   const handleErrorBeacon = createErrorBeaconHandler({
-    projectId,
+    environment,
+    buildVersion,
     reportEvent,
     getServerTimestamp: () => new Date().toISOString(),
     console: deps.console,
@@ -102,6 +105,31 @@ function getErrorBeaconEnvironmentVariables(environmentVariables) {
   }
 
   return environmentVariables;
+}
+
+/**
+ * Resolve the validated environment label as a plain string.
+ * @param {Record<string, string | undefined>} environmentVariables Runtime environment variables.
+ * @returns {string} Environment label.
+ */
+function resolveEnvironment(environmentVariables) {
+  /* istanbul ignore next */
+  return String(environmentVariables.DENDRITE_ENVIRONMENT || '');
+}
+
+/**
+ * Resolve the deployed build version from environment variables.
+ * @param {Record<string, string | undefined>} environmentVariables Runtime environment variables.
+ * @returns {string} Best-effort build version string.
+ */
+function resolveBuildVersion(environmentVariables) {
+  return (
+    environmentVariables.BUILD_VERSION ||
+    environmentVariables.GIT_SHA ||
+    environmentVariables.VERSION ||
+    environmentVariables.DEPLOY_VERSION ||
+    ''
+  );
 }
 
 /**

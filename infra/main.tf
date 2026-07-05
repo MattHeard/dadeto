@@ -62,6 +62,7 @@ locals {
     run              = "run.googleapis.com"
     artifactregistry = "artifactregistry.googleapis.com"
     eventarc         = "eventarc.googleapis.com"
+    errorreporting   = "errorreporting.googleapis.com"
   }
   terraform_networking_roles = {
     terraform_security_admin = "roles/compute.securityAdmin"
@@ -441,6 +442,16 @@ resource "google_project_iam_member" "runtime_loadbalancer_admin" {
   depends_on = [google_service_account.cloud_function_runtime]
 }
 
+resource "google_project_iam_member" "runtime_error_reporting_writer" {
+  project = var.project_id
+  role    = "roles/errorreporting.writer"
+  member  = local.cloud_function_runtime_service_account_member
+
+  depends_on = [
+    google_service_account.cloud_function_runtime,
+  ]
+}
+
 locals {
   cloud_function_runtime_sa_suffix = "cfrt"
   cloud_function_runtime_raw_id    = "sa-${var.environment}-${local.cloud_function_runtime_sa_suffix}"
@@ -516,6 +527,7 @@ resource "google_cloudfunctions_function" "get_api_key_credit" {
     google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
+    google_project_iam_member.runtime_error_reporting_writer,
   ]
 }
 
@@ -577,6 +589,7 @@ resource "google_cloudfunctions_function" "submit_new_story" {
     google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
     google_service_account_iam_member.terraform_can_impersonate_runtime,
     google_service_account_iam_member.terraform_can_impersonate_default_compute,
+    google_project_iam_member.runtime_error_reporting_writer,
   ]
 }
 

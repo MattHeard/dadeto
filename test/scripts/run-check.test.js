@@ -286,6 +286,40 @@ describe('runCheckSuite', () => {
     }
   });
 
+  it('times out a child without a kill function', async () => {
+    jest.useFakeTimers();
+    const child = { ...createChild(), kill: undefined };
+    const { spawnImpl } = createSpawnStub([child]);
+    const stdout = createWriter();
+    const stderr = createWriter();
+
+    try {
+      const suitePromise = runCheckSuite({
+        commands: [{ name: 'alpha', command: 'alpha', args: [] }],
+        spawnImpl,
+        stdout,
+        stderr,
+        now: () => 2000,
+      });
+
+      await jest.advanceTimersByTimeAsync(30 * 60 * 1000);
+      const result = await suitePromise;
+
+      expect(result.exitCode).toBe(1);
+      expect(parseEvents(stderr.chunks)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'check-failure',
+            name: 'alpha',
+            error: 'Check timed out after 1800000ms',
+          }),
+        ])
+      );
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('ignores a timeout callback after the child already settled', async () => {
     jest.useFakeTimers();
     const child = createChild();

@@ -27,6 +27,7 @@ describe('createErrorBeaconRun', () => {
         GCLOUD_PROJECT: 'proj',
         DENDRITE_ENVIRONMENT: 't-123',
         PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+        BUILD_VERSION: 'build-123',
       }),
       fetchFn,
     });
@@ -69,6 +70,7 @@ describe('createErrorBeaconRun', () => {
         GCLOUD_PROJECT: 'proj',
         DENDRITE_ENVIRONMENT: 't-123',
         PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+        BUILD_VERSION: 'build-123',
       }),
       fetchFn,
     });
@@ -79,7 +81,7 @@ describe('createErrorBeaconRun', () => {
     await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
 
     expect(JSON.parse(fetchFn.mock.calls[1][1].body)).toEqual({
-      serviceContext: { service: 'proj' },
+      serviceContext: { service: 't-123-client-js', version: 'build-123' },
       message: 'boom',
       context: expect.any(Object),
       eventTime: expect.any(String),
@@ -168,7 +170,10 @@ describe('createErrorBeaconRun', () => {
 
     await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
 
-    expect(console.error).toHaveBeenCalledWith(expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      'Error Reporting API forwarding failed',
+      expect.any(Error)
+    );
     expect(response.statusCode).toBe(500);
   });
 
@@ -345,7 +350,7 @@ describe('createErrorBeaconRun', () => {
     ).toThrow(/DENDRITE_ENVIRONMENT is required for the errors function/);
   });
 
-  it('throws when the error beacon environment label is invalid', () => {
+  it('throws when the error beacon environment label is not prod or t-*', () => {
     const post = jest.fn();
     const use = jest.fn();
     const express = Object.assign(
@@ -363,12 +368,12 @@ describe('createErrorBeaconRun', () => {
         cors,
         getEnvironmentVariables: () => ({
           GCLOUD_PROJECT: 'proj',
-          DENDRITE_ENVIRONMENT: 'staging',
+          DENDRITE_ENVIRONMENT: 'dev',
           PLAYWRIGHT_ORIGIN: 'https://playwright.example',
         }),
         fetchFn,
       })
-    ).toThrow('DENDRITE_ENVIRONMENT must be prod or t-*. Received staging.');
+    ).toThrow(/DENDRITE_ENVIRONMENT must be prod or t-\*\. Received dev\./);
   });
 });
 

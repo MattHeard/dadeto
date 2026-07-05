@@ -4,6 +4,7 @@ import {
   createErrorBeaconReporter,
   normalizeErrorPayload,
 } from '../../../src/core/browser/error-beacon.js';
+import { sanitizeUrl } from '../../../src/core/error-reporting.js';
 
 describe('normalizeErrorPayload', () => {
   it('returns null for nullish errors', () => {
@@ -12,7 +13,6 @@ describe('normalizeErrorPayload', () => {
         error: null,
         source: 'console.error',
         getUrl: () => '',
-        getUserAgent: () => '',
         getNow: () => 0,
       })
     ).toBeNull();
@@ -24,7 +24,6 @@ describe('normalizeErrorPayload', () => {
         error: undefined,
         source: 'console.error',
         getUrl: () => '',
-        getUserAgent: () => '',
         getNow: () => 0,
       })
     ).toBeNull();
@@ -35,7 +34,6 @@ describe('normalizeErrorPayload', () => {
       error: { foo: 'bar' },
       source: 'console.error',
       getUrl: () => 'https://example.test/page',
-      getUserAgent: () => 'Mozilla/5.0',
       getNow: () => 1234,
     });
 
@@ -51,7 +49,6 @@ describe('normalizeErrorPayload', () => {
       error: 123,
       source: 'console.error',
       getUrl: () => '',
-      getUserAgent: () => '',
       getNow: () => 1234,
     });
 
@@ -66,31 +63,30 @@ describe('normalizeErrorPayload', () => {
       error: circular,
       source: 'console.error',
       getUrl: () => '',
-      getUserAgent: () => '',
       getNow: () => 1234,
     });
 
     expect(payload.message).toBe('[object Object]');
   });
 
-  it('includes message, stack, URL, user agent, and dedupe key', () => {
+  it('includes message, stack, URL, and dedupe key', () => {
     const payload = normalizeErrorPayload({
       error: new Error('boom'),
       source: 'console.error',
-      getUrl: () => 'https://example.test/page',
-      getUserAgent: () => 'Mozilla/5.0',
+      getUrl: () => 'https://example.test/page?token=secret#frag',
       getNow: () => 1234,
     });
 
     expect(payload).toMatchObject({
       message: 'boom',
       url: 'https://example.test/page',
-      userAgent: 'Mozilla/5.0',
       clientTimestamp: new Date(1234).toISOString(),
       source: 'console.error',
     });
     expect(payload.dedupeKey).toContain('boom\u0000Error: boom');
-    expect(payload.dedupeKey).toContain('https://example.test/page');
+    expect(payload.dedupeKey).toContain(
+      'https://example.test/page?token=secret#frag'
+    );
     expect(payload.stack).toContain('Error: boom');
   });
 
@@ -101,7 +97,6 @@ describe('normalizeErrorPayload', () => {
       error: err,
       source: 'window.error',
       getUrl: () => '',
-      getUserAgent: () => '',
       getNow: () => 0,
     });
 
@@ -115,13 +110,11 @@ describe('normalizeErrorPayload', () => {
       error: err,
       source: 'window.error',
       getUrl: () => undefined,
-      getUserAgent: () => undefined,
       getNow: () => 0,
     });
 
     expect(payload.message).toBe('Error');
     expect(payload.url).toBe('');
-    expect(payload.userAgent).toBe('');
   });
 
   it('reads a stack from a stack-like object', () => {
@@ -129,11 +122,17 @@ describe('normalizeErrorPayload', () => {
       error: { stack: 'stack trace', message: 'hi' },
       source: 'window.error',
       getUrl: () => '',
-      getUserAgent: () => '',
       getNow: () => 0,
     });
 
     expect(payload.stack).toBe('stack trace');
+  });
+
+  it('sanitizes URLs before reporting', () => {
+    expect(sanitizeUrl('https://example.com/page.html?token=secret#frag')).toBe(
+      'https://example.com/page.html'
+    );
+    expect(sanitizeUrl('not a url')).toBe('');
   });
 });
 
@@ -144,7 +143,6 @@ describe('createErrorBeaconHandlers', () => {
     const handlers = createErrorBeaconHandlers({
       reportBeacon,
       getUrl: () => 'https://example.test/page',
-      getUserAgent: () => 'Mozilla/5.0',
       getNow: () => 1234,
       logError,
     });
@@ -166,7 +164,6 @@ describe('createErrorBeaconHandlers', () => {
     const handlers = createErrorBeaconHandlers({
       reportBeacon,
       getUrl: () => 'https://example.test/page',
-      getUserAgent: () => 'Mozilla/5.0',
       getNow: () => 1234,
     });
 
@@ -192,7 +189,6 @@ describe('createErrorBeaconHandlers', () => {
     const handlers = createErrorBeaconHandlers({
       reportBeacon,
       getUrl: () => 'https://example.test/page',
-      getUserAgent: () => 'Mozilla/5.0',
       getNow: () => 1234,
     });
 
@@ -215,7 +211,6 @@ describe('createErrorBeaconHandlers', () => {
     const handlers = createErrorBeaconHandlers({
       reportBeacon,
       getUrl: () => 'https://example.test/page',
-      getUserAgent: () => 'Mozilla/5.0',
       getNow: () => 1234,
     });
 
@@ -238,7 +233,6 @@ describe('createErrorBeaconHandlers', () => {
     const handlers = createErrorBeaconHandlers({
       reportBeacon,
       getUrl: () => '',
-      getUserAgent: () => '',
       getNow: () => 0,
       logError: jest.fn(),
     });
@@ -254,7 +248,6 @@ describe('createErrorBeaconHandlers', () => {
     const handlers = createErrorBeaconHandlers({
       reportBeacon,
       getUrl: () => 'https://example.test/page',
-      getUserAgent: () => 'Mozilla/5.0',
       getNow: () => 1234,
     });
     const error = new Error('dup');
@@ -276,7 +269,6 @@ describe('createErrorBeaconHandlers', () => {
     const handlers = createErrorBeaconHandlers({
       reportBeacon,
       getUrl: () => '',
-      getUserAgent: () => '',
       getNow: () => 0,
     });
 
@@ -312,5 +304,15 @@ describe('createErrorBeaconReporter', () => {
     expect(fetchFn.mock.calls[0][1].body).toBe(
       JSON.stringify({ message: 'boom' })
     );
+  });
+
+  it('swallows beacon send rejections', async () => {
+    const fetchFn = jest.fn(() => Promise.reject(new Error('send failed')));
+    const reporter = createErrorBeaconReporter(fetchFn, '/errors');
+
+    reporter({ message: 'boom' });
+    await Promise.resolve();
+
+    expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 });
