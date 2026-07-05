@@ -742,6 +742,30 @@ describe('createCopyCore', () => {
       expect(logger.warn).not.toHaveBeenCalled();
     });
 
+    it('copies browser assets into the public root', () => {
+      const io = {
+        directoryExists: jest.fn().mockReturnValue(true),
+        createDirectory: jest.fn(),
+        copyFile: jest.fn(),
+        readDirEntries: jest.fn().mockReturnValue([]),
+      };
+      const logger = { info: jest.fn(), warn: jest.fn() };
+
+      core.copyStaticContentTrees(directories, {
+        io,
+        messageLogger: logger,
+        copyFile: io.copyFile,
+      });
+
+      expect(io.directoryExists).toHaveBeenCalledWith(
+        directories.srcBrowserAssetsDir
+      );
+      expect(io.copyFile).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(
+        'Browser assets copied successfully!'
+      );
+    });
+
     it('copies root-level core scripts', () => {
       const entries = [
         createFileEntry('keep.js'),

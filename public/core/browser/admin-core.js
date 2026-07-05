@@ -245,13 +245,12 @@ export function createSignOutHandlerFactory(getAuthFn, globalScope) {
  */
 /**
  * Build the function used to hand credentials to Firebase.
- * @param {(token: string) => unknown} credentialFactory - Converts raw tokens into Firebase credentials.
+ * @param {(auth: unknown, credential: unknown) => unknown} credentialFactory - Firebase sign-in helper.
  * @returns {(auth: unknown, credential: unknown) => void | Promise<void>} Function that passes credentials to Firebase.
  */
 export function buildSignInCredential(credentialFactory) {
   return (auth, cred) => {
-    const result = credentialFactory(/** @type {string} */ (cred));
-    return /** @type {void | Promise<void>} */ (result);
+    return /** @type {void | Promise<void>} */ (credentialFactory(auth, cred));
   };
 }
 
@@ -263,7 +262,7 @@ export function buildSignInCredential(credentialFactory) {
  *   consoleObj: { error?: (message: string) => void },
  *   globalScope: Window & typeof globalThis,
  *   Provider: { credential?: (token: string) => string },
- *   credentialFactory: (token: string) => unknown,
+ *   credentialFactory: (auth: unknown, credential: unknown) => unknown,
  * }} deps - Dependencies required to construct the auth module.
  * @returns {{
  *   initGoogleSignIn: (options?: GoogleSignInOptions) => void | Promise<void>,
@@ -1260,25 +1259,59 @@ function hasRenderButtonMethod(accountsId) {
  * @param {{ credential: string }} param0 - Payload containing the Google credential.
  * @param {{
  *   credentialFactory: (credential: string) => unknown,
- *   signInWithCredential: (auth: FirebaseAuthInstance, credential: unknown) => Promise<void> | void,
+ *   signInWithCredential: (
+ *     auth: FirebaseAuthInstance,
+ *     credential: unknown
+ *   ) => Promise<{ user?: FirebaseAuthUser | null | undefined } | void> | { user?: FirebaseAuthUser | null | undefined } | void,
  *   auth: FirebaseAuthInstance,
  *   storage: { setItem: (key: string, value: string) => void },
  *   onSignIn?: (token: string) => void,
  * }} context - Collaborators required to complete the sign-in.
  * @returns {Promise<void>} Resolves once the credential has been processed.
  */
-async function handleCredentialSignIn(
+export async function handleCredentialSignIn(
   { credential },
   { credentialFactory, signInWithCredential, auth, storage, onSignIn }
 ) {
   const firebaseCredential = credentialFactory(credential);
-  await signInWithCredential(auth, firebaseCredential);
-
-  const currentUser = auth.currentUser;
+  let signInResult;
+  try {
+    signInResult = await signInWithCredential(auth, firebaseCredential);
+  } catch (error) {
+    await Promise.resolve();
+    if (auth.currentUser) {
+      signInResult = { user: auth.currentUser };
+    }
+    if (!signInResult) {
+      throw error;
+    }
+  }
+  await Promise.resolve();
+  const currentUser = resolveCurrentUser(
+    /** @type {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} */ (
+      signInResult
+    ),
+    auth
+  );
   const getIdToken = resolveGetIdToken(currentUser);
   const idToken = await getIdToken();
   storage.setItem('id_token', idToken);
   onSignIn?.(idToken);
+}
+
+/**
+ * Resolve the authenticated user from the sign-in result or auth state.
+ * @param {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} signInResult
+ *   Firebase sign-in result.
+ * @param {FirebaseAuthInstance} auth Current auth client.
+ * @returns {FirebaseAuthUser | null | undefined} Authenticated user when available.
+ */
+function resolveCurrentUser(signInResult, auth) {
+  if (signInResult?.user) {
+    return signInResult.user;
+  }
+
+  return auth.currentUser;
 }
 
 /**
@@ -1469,8 +1502,11 @@ function initializeGoogleSignIn(accountsId, options) {
   accountsId.initialize({
     ['client_id']:
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-    callback: (/** @type {any} */ cred) =>
-      handleCredentialSignIn(cred, options),
+    callback: (/** @type {any} */ cred) => {
+      return handleCredentialSignIn(cred, options).catch(error => {
+        console.error('Google sign-in failed', error);
+      });
+    },
     ['ux_mode']: 'popup',
   });
 }
@@ -1509,7 +1545,11 @@ export function createTriggerStats({
         );
         const response = await fetch(endpoints.generateStatsUrl, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ['id_token']: token }),
         });
         assertStatsResponseOk(response);
         report('Stats generated');

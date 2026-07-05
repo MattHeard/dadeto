@@ -28,6 +28,24 @@
     />
     <link rel="manifest" href="/site.webmanifest" />
     <style>
+      @font-face {
+        font-family: 'DADETO Sarasa';
+        src: url('/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-regular.woff2')
+          format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'DADETO Sarasa';
+        src: url('/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-bold.woff2')
+          format('woff2');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
       :root {
         color-scheme: dark;
         --bg: #121212;
@@ -52,8 +70,8 @@
         --cols: 80;
         --rows: 24;
         --font-stack:
-          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          'Liberation Mono', 'Courier New', monospace;
+          'DADETO Sarasa', ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, 'Liberation Mono', 'Courier New', monospace;
       }
 
       * {
@@ -574,6 +592,13 @@
         min-width: 12ch;
       }
 
+      .mobile-controls-grid button {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        touch-action: manipulation;
+      }
+
       .realtime-voice-status {
         color: var(--terminal-success);
         font-weight: bold;
@@ -658,6 +683,166 @@
           <a class="filter-button" data-filter="toys">toys</a>
         </p>
       </div>
+      <article class="entry tag-toy tag-json tag-text" id="JSON1">
+        <div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div>
+        <div class="value full-width">
+          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <div class="key article-title">JSON1</div>
+        <div class="value">
+          <h2><a href="#JSON1">JSON Canonicalizer</a></h2>
+        </div>
+        <div class="key">pubAt</div>
+        <p class="value metadata">4 Jul 2026</p>
+        <div class="key">tags</div>
+        <p class="value metadata">
+          <a class="tag-toy">toy</a>, <a class="tag-json">json</a>,
+          <a class="tag-text">text</a>
+        </p>
+        <div class="key">text</div>
+        <p class="value">
+          Accepts any valid JSON value and returns stable, pretty-printed JSON
+          with deterministic key ordering.
+        </p>
+        <div class="key"></div>
+        <p class="value">
+          Object keys are sorted recursively, arrays keep their original order,
+          and malformed JSON returns a structured error.
+        </p>
+        <div class="key">man</div>
+        <div class="manual" id="JSON1-manual">
+          <p class="manual-toggle">
+            User manual
+            <span class="manual-toggle-menu"
+              >(<button
+                type="button"
+                class="manual-link"
+                data-manual-toggle
+                aria-controls="JSON1-manual-body"
+                aria-expanded="false"
+              >
+                show</button
+              >)</span
+            >
+          </p>
+          <pre
+            class="manual-body manual-markdown"
+            id="JSON1-manual-body"
+            hidden
+          >
+# JSON1 — JSON Canonicalizer
+
+## What this toy does
+
+JSON Canonicalizer accepts any valid JSON value and returns a stable, pretty-printed JSON string. Object keys are sorted recursively so equivalent JSON values always render the same way.
+
+## Input format
+
+Paste any valid JSON value, including objects, arrays, strings, numbers, booleans, or null.
+
+## Defaults
+
+If the input is malformed JSON, the toy returns a structured error instead of throwing.
+
+## Output
+
+The toy returns pretty-printed canonical JSON with a fixed two-space indent. Arrays keep their original order and scalar values are preserved.
+
+## How to use it
+
+1. Paste a JSON value into the toy.
+2. Submit it.
+3. Compare the result with another equivalent JSON value to see that object keys are now deterministic.
+
+## Tips
+
+- This toy is useful when you want a stable JSON representation for diffs or comparisons.
+- The canonicalizer does not change array order or transform scalar values.
+- Non-JSON syntax such as comments or trailing commas is out of scope.
+</pre
+          >
+          <script type="module">
+            const manual = document.getElementById('JSON1-manual');
+            if (manual) {
+              const body = manual.querySelector('.manual-body');
+              const toggle = manual.querySelector('[data-manual-toggle]');
+              if (body && toggle) {
+                const setOpen = open => {
+                  body.hidden = !open;
+                  toggle.textContent = open ? 'hide' : 'show';
+                  toggle.setAttribute('aria-expanded', String(open));
+                };
+                setOpen(false);
+                toggle.addEventListener('click', event => {
+                  event.preventDefault();
+                  setOpen(body.hidden);
+                });
+              }
+            }
+          </script>
+        </div>
+        <div class="key">in</div>
+        <div class="value">
+          <select class="input">
+            <option value="text">text</option>
+            <option value="textarea" selected>textarea</option>
+            <option value="life-seed">life-seed</option>
+            <option value="file">file</option>
+            <option value="number">number</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="kv">kv</option>
+            <option value="blog-key">blog-key</option>
+            <option value="dendrite-story">dendrite-story</option>
+            <option value="dendrite-page">dendrite-page</option>
+            <option value="moderator-ratings">moderator-ratings</option>
+            <option value="keyboard-capture">keyboard-capture</option>
+            <option value="mobile-controls">mobile-controls</option>
+            <option value="gamepad-capture">gamepad-capture</option>
+            <option value="gamepad-button-mapper">
+              gamepad-button-mapper
+            </option></select
+          ><input type="text" disabled />
+        </div>
+        <div class="key"></div>
+        <div class="value">
+          <button type="button" class="toy-focus-toggle">Focus mode</button
+          ><button type="submit" disabled>Submit</button
+          ><label class="auto-submit-label"
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
+          >
+        </div>
+        <div class="key">out</div>
+        <div class="value">
+          <select class="output">
+            <option value="text">text</option>
+            <option value="pre">pre</option>
+            <option value="copy-to-clipboard">copy-to-clipboard</option>
+            <option value="canvas-2d">canvas-2d</option>
+            <option value="graph-2d">graph-2d</option>
+            <option value="ledger-ingest">ledger-ingest</option>
+            <option value="real-hourly-wage">real-hourly-wage</option>
+            <option value="joycon-mapping">joycon-mapping</option>
+            <option value="realtime-voice">realtime-voice</option>
+            <option value="tic-tac-toe">tic-tac-toe</option>
+            <option value="battleship-solitaire-fleet">
+              battleship-solitaire-fleet
+            </option>
+            <option value="battleship-solitaire-clues-presenter">
+              battleship-solitaire-clues-presenter
+            </option>
+          </select>
+          <div class="output warning">
+            <p>This toy requires Javascript to run.</p>
+          </div>
+        </div>
+        <script type="module">
+          window.addComponent(
+            'JSON1',
+            '/core/browser/toys/2026-07-04/jsonCanonicalizer.js',
+            'jsonCanonicalizer'
+          );
+        </script>
+      </article>
       <article
         class="entry tag-toy tag-canvas tag-game tag-storage tag-html"
         id="BEAC1"
@@ -850,8 +1035,7 @@ The payload uses circles for beacons and the orb, lines for activation links, a 
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -1078,8 +1262,7 @@ The payload uses rectangles for the crystal clusters and paddle, a circle for th
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -1306,8 +1489,7 @@ The payload uses rectangles for the battery cells and paddle, a circle for the o
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -1535,8 +1717,7 @@ The payload uses rectangles for the station frame, panels, deflector, and progre
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -1795,8 +1976,7 @@ Adjust `cols`, `rows`, `width`, and `height` so the cell aspect ratio is closer 
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -2083,8 +2263,7 @@ Pairs are counted once per change set. Repeating the same file path inside a sin
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -2356,8 +2535,7 @@ That is expected. The toy emits a canvas-presenter payload, and the presenter re
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -2688,8 +2866,7 @@ The toy only reads the exact field names documented above. For example, `feedbac
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -3008,8 +3185,7 @@ The graph presenter renders the three series as lines.
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -3353,8 +3529,7 @@ Increase `width`. The toy samples more points on wider graphs.</pre
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -3620,8 +3795,7 @@ Increase `width` and `height`. The generated positions and sizes scale with the 
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -3978,8 +4152,7 @@ You tried to write an object-like key inside an array. Array paths must use nume
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -4296,8 +4469,7 @@ That is expected for MEMO2. Use MEMO1 if you want the object preserved as a sing
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -4633,8 +4805,7 @@ That is expected in MEMO1. Use MEMO2 for key-value-pair projection.</pre
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -4985,8 +5156,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5084,8 +5254,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5182,8 +5351,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5280,8 +5448,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5379,8 +5546,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5477,8 +5643,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5579,8 +5744,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5677,8 +5841,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5771,8 +5934,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5868,8 +6030,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -5962,8 +6123,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6057,8 +6217,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6154,8 +6313,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6367,8 +6525,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6460,8 +6617,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6549,8 +6705,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6633,8 +6788,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6725,8 +6879,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6814,8 +6967,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6905,8 +7057,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -6994,8 +7145,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -7083,8 +7233,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -7441,8 +7590,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -7530,8 +7678,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -7714,8 +7861,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -7809,8 +7955,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -7907,8 +8052,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8005,8 +8149,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8094,8 +8237,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8219,8 +8361,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8308,8 +8449,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8438,8 +8578,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8530,8 +8669,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8619,8 +8757,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8708,8 +8845,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8797,8 +8933,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8897,8 +9032,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -8988,8 +9122,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -9088,8 +9221,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -9185,8 +9317,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>
@@ -9517,8 +9648,7 @@ Mute toggles the local microphone track. If the session already received audio b
           <button type="button" class="toy-focus-toggle">Focus mode</button
           ><button type="submit" disabled>Submit</button
           ><label class="auto-submit-label"
-            ><input type="checkbox" class="auto-submit-checkbox" disabled />
-            Auto</label
+            ><input type="checkbox" class="auto-submit-checkbox" /> Auto</label
           >
         </div>
         <div class="key">out</div>

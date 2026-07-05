@@ -23,6 +23,10 @@ describe('styles constant', () => {
 
   test('defines character-grid terminal sizing and media containment', () => {
     const css = styles();
+    expect(css).toContain('@font-face');
+    expect(css).toContain('font-family: "DADETO Sarasa"');
+    expect(css).toContain('/fonts/sarasa-gothic/v1.0.40/');
+    expect(css).toContain('"DADETO Sarasa", ui-monospace');
     expect(css).toContain('--cell-w: 9.64px');
     expect(css).toContain('--cell-h: 18px');
     expect(css).toContain(
