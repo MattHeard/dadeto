@@ -245,13 +245,12 @@ export function createSignOutHandlerFactory(getAuthFn, globalScope) {
  */
 /**
  * Build the function used to hand credentials to Firebase.
- * @param {(token: string) => unknown} credentialFactory - Converts raw tokens into Firebase credentials.
+ * @param {(auth: unknown, credential: unknown) => unknown} credentialFactory - Firebase sign-in helper.
  * @returns {(auth: unknown, credential: unknown) => void | Promise<void>} Function that passes credentials to Firebase.
  */
 export function buildSignInCredential(credentialFactory) {
   return (auth, cred) => {
-    const result = credentialFactory(/** @type {string} */ (cred));
-    return /** @type {void | Promise<void>} */ (result);
+    return /** @type {void | Promise<void>} */ (credentialFactory(auth, cred));
   };
 }
 
@@ -263,7 +262,7 @@ export function buildSignInCredential(credentialFactory) {
  *   consoleObj: { error?: (message: string) => void },
  *   globalScope: Window & typeof globalThis,
  *   Provider: { credential?: (token: string) => string },
- *   credentialFactory: (token: string) => unknown,
+ *   credentialFactory: (auth: unknown, credential: unknown) => unknown,
  * }} deps - Dependencies required to construct the auth module.
  * @returns {{
  *   initGoogleSignIn: (options?: GoogleSignInOptions) => void | Promise<void>,

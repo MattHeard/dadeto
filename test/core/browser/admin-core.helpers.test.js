@@ -7,14 +7,18 @@ import {
 } from '../../../src/core/browser/admin-core.js';
 
 describe('buildSignInCredential', () => {
-  it('calls the credential factory and returns its value', () => {
-    const credentialFactory = jest.fn(token => `cred:${token}`);
+  it('passes auth and credential through to the wrapped signer', () => {
+    const credentialFactory = jest.fn((auth, credential) => ({
+      auth,
+      credential,
+    }));
     const handler = buildSignInCredential(credentialFactory);
 
-    const result = handler({}, 'token-123');
+    const auth = { uid: 'user-1' };
+    const result = handler(auth, 'token-123');
 
-    expect(credentialFactory).toHaveBeenCalledWith('token-123');
-    expect(result).toBe('cred:token-123');
+    expect(credentialFactory).toHaveBeenCalledWith(auth, 'token-123');
+    expect(result).toEqual({ auth, credential: 'token-123' });
   });
 });
 
