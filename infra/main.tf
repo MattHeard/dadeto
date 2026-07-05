@@ -62,7 +62,6 @@ locals {
     run              = "run.googleapis.com"
     artifactregistry = "artifactregistry.googleapis.com"
     eventarc         = "eventarc.googleapis.com"
-    errorreporting   = "errorreporting.googleapis.com"
   }
   terraform_networking_roles = {
     terraform_security_admin = "roles/compute.securityAdmin"
