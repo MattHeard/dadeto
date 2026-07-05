@@ -1136,51 +1136,28 @@ export function createRunCheckSuite(defaults) {
              * @param {any} exitCode Exit code reported by the child process.
              * @param {any} signal Process signal reported by the child process.
              */ (exitCode, signal) => {
-              activeChildren.delete(command.name);
-
-              if (settled) {
-                resolve(undefined);
-                return;
-              }
-
-              if (timeoutId !== null) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-              }
-
-              if (
-                aborted &&
-                failFast &&
-                failures.length > 0 &&
-                failures[0].name !== command.name
-              ) {
-                settled = true;
-                resolve(undefined);
-                return;
-              }
-
-              const durationMs = Math.max(0, now() - startedAt);
-              if (exitCode === 0 && signal === null) {
-                settled = true;
-                emitEvent(stderr, {
-                  type: 'check-success',
-                  name: command.name,
-                  command: renderCommand(command),
-                  exitCode,
-                  signal,
-                  durationMs,
-                });
-              } else {
-                const failure = {
-                  name: command.name,
-                  command: renderCommand(command),
-                  exitCode,
-                  signal,
-                  durationMs,
-                };
-                finishWithFailure(failure, true);
-              }
-              resolve(undefined);
+              const result = handleChildClose(
+                {
+                  command,
+                  activeChildren,
+                  settled,
+                  timeoutId,
+                  aborted,
+                  failFast,
+                  failures,
+                  resolve,
+                  now,
+                  startedAt,
+                  renderCommand,
+                  emitEvent,
+                  stderr,
+                  finishWithFailure,
+                },
+                exitCode,
+                signal
+              );
+              settled = result.settled;
+              timeoutId = result.timeoutId;
             }
           );
         });
@@ -1209,6 +1186,120 @@ export function createRunCheckSuite(defaults) {
 
     return { exitCode, failures };
   };
+}
+
+/**
+ * Handle child process close events for the check runner.
+ * @param {{
+ *   command: CheckCommand,
+ *   activeChildren: Map<string, unknown>,
+ *   settled: boolean,
+ *   timeoutId: ReturnType<typeof setTimeout> | null,
+ *   aborted: boolean,
+ *   failFast: boolean,
+ *   failures: Array<{ name: string }>,
+ *   resolve: (value: undefined) => void,
+ *   now: () => number,
+ *   startedAt: number,
+ *   renderCommand: (command: CheckCommand) => string,
+ *   emitEvent: (stream: { write: (line: string) => void }, event: CheckEvent) => void,
+ *   stderr: { write: (line: string) => void },
+ *   finishWithFailure: (failure: CheckFailure, shouldAbort: boolean) => void,
+ * }} deps Close-handler dependencies.
+ * @param {any} exitCode Exit code reported by the child process.
+ * @param {any} signal Process signal reported by the child process.
+ * @returns {{ settled: boolean, timeoutId: ReturnType<typeof setTimeout> | null }} Updated close-state snapshot.
+ */
+function handleChildClose(
+  {
+    command,
+    activeChildren,
+    settled,
+    timeoutId,
+    aborted,
+    failFast,
+    failures,
+    resolve,
+    now,
+    startedAt,
+    renderCommand,
+    emitEvent,
+    stderr,
+    finishWithFailure,
+  },
+  exitCode,
+  signal
+) {
+  activeChildren.delete(command.name);
+
+  if (settled) {
+    resolve(undefined);
+    return { settled, timeoutId };
+  }
+
+  timeoutId = clearChildTimeout(timeoutId);
+
+  if (shouldIgnoreClosedChild(aborted, failFast, failures, command.name)) {
+    settled = true;
+    resolve(undefined);
+    return { settled, timeoutId };
+  }
+
+  const durationMs = Math.max(0, now() - startedAt);
+  if (exitCode === 0 && signal === null) {
+    settled = true;
+    emitEvent(stderr, {
+      type: 'check-success',
+      name: command.name,
+      command: renderCommand(command),
+      exitCode,
+      signal,
+      durationMs,
+    });
+  } else {
+    finishWithFailure(
+      {
+        name: command.name,
+        command: renderCommand(command),
+        exitCode,
+        signal,
+        durationMs,
+      },
+      true
+    );
+  }
+  resolve(undefined);
+  return { settled, timeoutId };
+}
+
+/**
+ * Clear a timeout handle when one is active.
+ * @param {ReturnType<typeof setTimeout> | null} timeoutHandle Timeout handle.
+ * @returns {ReturnType<typeof setTimeout> | null} Cleared timeout handle.
+ */
+function clearChildTimeout(timeoutHandle) {
+  if (timeoutHandle !== null) {
+    clearTimeout(timeoutHandle);
+  }
+
+  return null;
+}
+
+/**
+ * Check whether a closed child should be ignored because fail-fast already aborted the suite.
+ * @param {boolean} aborted Whether fail-fast has already aborted the suite.
+ * @param {boolean} failFast Whether fail-fast mode is enabled.
+ * @param {Array<{ name: string }>} failures Recorded failures.
+ * @param {string} commandName Current command name.
+ * @returns {boolean} True when the close event should be ignored.
+ */
+function shouldIgnoreClosedChild(aborted, failFast, failures, commandName) {
+  return (
+    aborted &&
+    failFast &&
+    failures.length > 0 &&
+    failures[0].name !== commandName
+  );
 }
 
 /**

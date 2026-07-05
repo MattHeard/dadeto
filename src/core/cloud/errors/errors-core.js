@@ -67,6 +67,22 @@ function normalizeText(value) {
 }
 
 /**
+ * Resolve a human-readable error message for the beacon response.
+ * @param {unknown} error Caught error.
+ * @returns {string} Response message.
+ */
+function resolveServerErrorMessage(error) {
+  if (error instanceof Error) {
+    const resolvedMessage = error.message;
+    if (typeof resolvedMessage === 'string' && resolvedMessage.length > 0) {
+      return resolvedMessage;
+    }
+  }
+
+  return 'Unknown server error';
+}
+
+/**
  * Create a request handler that forwards browser error beacons to Error Reporting.
  * @param {{
  *   projectId: string,
@@ -103,15 +119,8 @@ export function createErrorBeaconHandler({
       response.status(204).end();
     } catch (error) {
       consoleLike?.error?.(error);
-      let message = 'Unknown server error';
-      if (error instanceof Error) {
-        const resolvedMessage = error.message;
-        if (typeof resolvedMessage === 'string' && resolvedMessage.length > 0) {
-          message = resolvedMessage;
-        }
-      }
       response.status(500).json({
-        error: message,
+        error: resolveServerErrorMessage(error),
       });
     }
   };

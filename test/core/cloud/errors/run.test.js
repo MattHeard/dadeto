@@ -344,6 +344,32 @@ describe('createErrorBeaconRun', () => {
       })
     ).toThrow(/DENDRITE_ENVIRONMENT is required for the errors function/);
   });
+
+  it('throws when the error beacon environment label is invalid', () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest.fn();
+
+    expect(() =>
+      createErrorBeaconRun({
+        express,
+        cors,
+        getEnvironmentVariables: () => ({
+          GCLOUD_PROJECT: 'proj',
+          DENDRITE_ENVIRONMENT: 'staging',
+          PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+        }),
+        fetchFn,
+      })
+    ).toThrow('DENDRITE_ENVIRONMENT must be prod or t-*. Received staging.');
+  });
 });
 
 /**
