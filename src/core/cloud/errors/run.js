@@ -7,12 +7,16 @@ import {
 import { createErrorBeaconHandler } from './errors-core.js';
 
 /**
+ * @typedef {{ debug?: (...args: unknown[]) => void, error?: (...args: unknown[]) => void }} ErrorBeaconConsole
+ */
+
+/**
  * Build the Cloud Function handler for browser error beacons.
  * @param {{
  *   express: any,
  *   cors: any,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   console?: Pick<Console, 'debug'>,
+ *   console?: ErrorBeaconConsole,
  *   fetchFn: typeof fetch,
  * }} deps Runtime dependencies.
  * @returns {{ handle: import('express').Express }} Cloud Function handle wrapper.
@@ -55,7 +59,7 @@ export function createErrorBeaconRun(deps) {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ event }),
+        body: JSON.stringify(event),
       }
     );
 

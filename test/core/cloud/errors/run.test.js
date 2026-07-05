@@ -78,6 +78,12 @@ describe('createErrorBeaconRun', () => {
 
     await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
 
+    expect(JSON.parse(fetchFn.mock.calls[1][1].body)).toEqual({
+      serviceContext: { service: 'proj' },
+      message: 'boom',
+      context: expect.any(Object),
+      eventTime: expect.any(String),
+    });
     expect(response.statusCode).toBe(204);
   });
 
@@ -162,9 +168,7 @@ describe('createErrorBeaconRun', () => {
 
     await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
 
-    expect(console.error).toHaveBeenCalledWith(
-      expect.any(Error)
-    );
+    expect(console.error).toHaveBeenCalledWith(expect.any(Error));
     expect(response.statusCode).toBe(500);
   });
 

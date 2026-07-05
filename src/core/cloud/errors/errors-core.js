@@ -5,6 +5,10 @@ import { assertFunction, isNonNullObject } from '../../commonCore.js';
  */
 
 /**
+ * @typedef {{ error?: (...args: unknown[]) => void }} ErrorLogger
+ */
+
+/**
  * Validate a browser beacon payload.
  * @param {unknown} body Request payload.
  * @returns {body is ErrorBeaconPayload} True when the payload is a plain object.
@@ -68,7 +72,7 @@ function normalizeText(value) {
  *   projectId: string,
  *   reportEvent: (event: Record<string, unknown>) => Promise<void>,
  *   getServerTimestamp: () => string,
- *   console?: Pick<Console, 'error'>,
+ *   console?: ErrorLogger,
  * }} deps Dependencies.
  * @returns {(request: { method?: string, body?: unknown }, response: { status: (code: number) => { json: (body: Record<string, unknown>) => void, send: (body: string) => void, end: () => void } }) => Promise<void>} Request handler.
  */
