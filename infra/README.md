@@ -43,8 +43,9 @@ tenant. Customize the allowed callback domains with
 enablement, the global Identity Platform configuration, and shared IAM bindings
 are guarded by the `project_level_environment` variable. Only the environment
 that matches this value (default `"prod"`) manages those singleton resources,
-letting other environments create their own per-env assets without fighting over
-project-level state.
+letting other environments create their own per-env assets without fighting
+over project-level state. The Terraform `environment` input is required and
+must be set explicitly to either `prod` or `t-*`.
 
 Production-only error alerting is configured through Cloud Monitoring when
 `environment` is `prod` and `production_alert_email` is set. Terraform creates

@@ -156,11 +156,7 @@ export function runGenerateStats(deps) {
   );
   const handleRequest = generateStatsCore.handleRequest;
 
-  let environmentForOrigins = { DENDRITE_ENVIRONMENT: 'dev' };
-  if (env && env.DENDRITE_ENVIRONMENT) {
-    environmentForOrigins = env;
-  }
-  const allowedOrigins = getAllowedOrigins(environmentForOrigins);
+  const allowedOrigins = getAllowedOrigins(env);
   const createApp = () => express();
   const appDeps = {
     createApp,

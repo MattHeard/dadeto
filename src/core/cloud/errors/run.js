@@ -1,6 +1,7 @@
 import {
   createCorsOptions,
   createCorsOriginHandler,
+  isAllowedOrigin,
   resolveAllowedOrigins,
 } from '../cloud-core.js';
 import { createErrorBeaconHandler } from './errors-core.js';
@@ -9,9 +10,10 @@ import { createErrorBeaconHandler } from './errors-core.js';
  * Build the Cloud Function handler for browser error beacons.
  * @param {{
  *   express: any,
- *   cors: any,
- *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   fetchFn: typeof fetch,
+  *   cors: any,
+  *   getEnvironmentVariables: () => Record<string, string | undefined>,
+ *   console?: Pick<Console, 'debug'>,
+  *   fetchFn: typeof fetch,
  * }} deps Runtime dependencies.
  * @returns {{ handle: import('express').Express }} Cloud Function handle wrapper.
  */
@@ -20,15 +22,21 @@ export function createErrorBeaconRun(deps) {
   /** @type {any} */ (app).use(
     deps.express.json({ type: ['application/json', 'application/*+json'] })
   );
+  const environmentVariables = getErrorBeaconEnvironmentVariables(
+    deps.getEnvironmentVariables()
+  );
+  deps.console?.debug?.('error beacon environment', {
+    DENDRITE_ENVIRONMENT: environmentVariables.DENDRITE_ENVIRONMENT,
+  });
   const corsOptions = createCorsOptions(
     createCorsOriginHandler(
-      resolveAllowedOrigins,
-      resolveAllowedOrigins(deps.getEnvironmentVariables())
+      isAllowedOrigin,
+      resolveAllowedOrigins(environmentVariables)
     )
   );
   /** @type {any} */ (app).use(deps.cors(corsOptions));
 
-  const env = deps.getEnvironmentVariables();
+  const env = environmentVariables;
   const projectId =
     env.GCLOUD_PROJECT || env.GCP_PROJECT || env.GOOGLE_CLOUD_PROJECT || '';
 
@@ -66,6 +74,29 @@ export function createErrorBeaconRun(deps) {
   /** @type {any} */ (app).post('/errors', handleErrorBeacon);
 
   return { handle: app };
+}
+
+/**
+ * Validate the error beacon environment before wiring CORS.
+ * @param {Record<string, string | undefined>} environmentVariables Runtime environment variables.
+ * @returns {Record<string, string | undefined>} Environment variables when the environment label is valid.
+ */
+function getErrorBeaconEnvironmentVariables(environmentVariables) {
+  const environment = environmentVariables?.DENDRITE_ENVIRONMENT;
+
+  if (typeof environment !== 'string' || environment.trim().length === 0) {
+    throw new Error(
+      'DENDRITE_ENVIRONMENT is required for the errors function and must be prod or t-*.'
+    );
+  }
+
+  if (environment !== 'prod' && !environment.startsWith('t-')) {
+    throw new Error(
+      `DENDRITE_ENVIRONMENT must be prod or t-*. Received ${environment}.`
+    );
+  }
+
+  return environmentVariables;
 }
 
 /**

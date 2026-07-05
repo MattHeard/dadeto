@@ -64,6 +64,7 @@ async function loadModule({
   const fetchFn = jest.fn();
   const getFirestore = jest.fn(() => firestoreResult);
   const crypto = { randomUUID: jest.fn(() => 'uuid') };
+  const console = { debug: jest.fn(), error: jest.fn(), warn: jest.fn() };
   const deps = {
     db: firestoreResult,
     auth,
@@ -71,7 +72,7 @@ async function loadModule({
     fetchFn,
     env: environment,
     cryptoModule: crypto,
-    console: globalThis.console,
+    console,
     functions,
     express,
     cors,
@@ -277,11 +278,23 @@ describe('generate-stats run', () => {
     expect(typeof result.handleRequest).toBe('function');
   });
 
+  it('requires the runtime environment label when wiring origins', async () => {
+    const { mod, deps } = await loadModule({
+      environment: {
+        DATABASE_ID: 'custom-db',
+      },
+    });
+
+    expect(() => mod.runGenerateStats(deps)).toThrow(
+      'DENDRITE_ENVIRONMENT is required to resolve allowed origins.'
+    );
+  });
+
   it('builds the cloud handle from runtime dependencies', async () => {
     const { mod, functions, express, cors, onRequest, getFirestore } =
       await loadModule({
         environment: {
-          DENDRITE_ENVIRONMENT: 'dev',
+          DENDRITE_ENVIRONMENT: 't-123',
         },
       });
     const Storage = jest.fn(function Storage() {
@@ -317,7 +330,11 @@ describe('generate-stats run', () => {
   });
 
   it('uses the global console when none is provided', async () => {
-    const { mod, deps } = await loadModule();
+    const { mod, deps } = await loadModule({
+      environment: {
+        DENDRITE_ENVIRONMENT: 't-123',
+      },
+    });
 
     expect(() =>
       mod.runGenerateStats({ ...deps, console: undefined })

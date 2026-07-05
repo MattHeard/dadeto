@@ -58,7 +58,7 @@ describe('mark-variant-dirty core helpers', () => {
 
     it('throws when the environment config is missing', () => {
       expect(() => getAllowedOrigins()).toThrow(
-        /Unsupported environment label/
+        /DENDRITE_ENVIRONMENT is required to resolve allowed origins/
       );
     });
   });

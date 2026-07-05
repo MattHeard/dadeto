@@ -5,6 +5,7 @@ const { handle } = createErrorBeaconRun({
   express,
   cors,
   getEnvironmentVariables,
+  console,
   fetchFn: (...args) => globalThis.fetch(...args),
 });
 

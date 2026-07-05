@@ -75,9 +75,13 @@ variable "https_security_level" {
 }
 
 variable "environment" {
-  description = "Deployment environment identifier, e.g. prod, e2e"
+  description = "Deployment environment identifier, either prod or t-*"
   type        = string
-  default     = "prod" # keeps prod plans = zero-diff
+
+  validation {
+    condition     = var.environment == "prod" || startswith(var.environment, "t-")
+    error_message = "environment must be prod or start with t-."
+  }
 }
 
 variable "github_run_id" {

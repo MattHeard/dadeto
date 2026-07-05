@@ -34,7 +34,7 @@ describe('getAllowedOrigins', () => {
       getAllowedOrigins({ DENDRITE_ENVIRONMENT: 'staging' })
     ).toThrow(/Unsupported environment label/);
     expect(() => getAllowedOrigins(undefined)).toThrow(
-      /Unsupported environment label/
+      /DENDRITE_ENVIRONMENT is required to resolve allowed origins/
     );
   });
 });

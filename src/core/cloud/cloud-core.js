@@ -239,6 +239,14 @@ export function resolveAllowedOrigins(environmentVariables) {
     environmentVariables,
     'DENDRITE_ENVIRONMENT'
   );
+  globalThis.console?.debug?.('resolveAllowedOrigins environment', {
+    DENDRITE_ENVIRONMENT: environment,
+  });
+  if (typeof environment !== 'string' || environment.trim().length === 0) {
+    throw new Error(
+      'DENDRITE_ENVIRONMENT is required to resolve allowed origins.'
+    );
+  }
   if (environment === 'dev') {
     return productionOrigins;
   }

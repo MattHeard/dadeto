@@ -28,6 +28,14 @@ import {
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'debug').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test('should export DEFAULT_BUCKET_NAME', () => {
     expect(DEFAULT_BUCKET_NAME).toBe('www.dendritestories.co.nz');
   });

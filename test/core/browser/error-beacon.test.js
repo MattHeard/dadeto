@@ -309,6 +309,8 @@ describe('createErrorBeaconReporter', () => {
     expect(fetchFn.mock.calls[0][1].headers).toMatchObject({
       'Content-Type': 'application/json',
     });
-    expect(fetchFn.mock.calls[0][1].body).toBe(JSON.stringify({ message: 'boom' }));
+    expect(fetchFn.mock.calls[0][1].body).toBe(
+      JSON.stringify({ message: 'boom' })
+    );
   });
 });

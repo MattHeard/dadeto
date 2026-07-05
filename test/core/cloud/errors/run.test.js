@@ -270,6 +270,30 @@ describe('createErrorBeaconRun', () => {
     expect(fetchFn.mock.calls[1][0]).toContain('/projects//events:report');
     expect(response.statusCode).toBe(204);
   });
+
+  it('throws when the error beacon environment label is missing', () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest.fn();
+
+    expect(() =>
+      createErrorBeaconRun({
+        express,
+        cors,
+        getEnvironmentVariables: () => ({
+          GCLOUD_PROJECT: 'proj',
+        }),
+        fetchFn,
+      })
+    ).toThrow(/DENDRITE_ENVIRONMENT is required for the errors function/);
+  });
 });
 
 /**
