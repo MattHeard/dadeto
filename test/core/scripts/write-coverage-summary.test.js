@@ -115,4 +115,51 @@ describe('write coverage summary', () => {
       )}\n`
     );
   });
+
+  test('throws a clear error when coverage output is missing', () => {
+    const missingFileError = new Error('missing');
+    missingFileError.code = 'ENOENT';
+
+    const readFile = jest.fn(() => {
+      throw missingFileError;
+    });
+    const writeFile = jest.fn();
+    const createCoverageMap = jest.fn();
+
+    const handle = createWriteCoverageSummaryHandle({
+      readFile,
+      writeFile,
+      createCoverageMap,
+      coverageFinalPath: 'reports/coverage/coverage-final.json',
+      coverageSummaryPath: 'reports/coverage/coverage-summary.json',
+    });
+
+    expect(handle).toThrow(
+      'Coverage summary could not find reports/coverage/coverage-final.json'
+    );
+    expect(createCoverageMap).not.toHaveBeenCalled();
+    expect(writeFile).not.toHaveBeenCalled();
+  });
+
+  test('rethrows unexpected read errors unchanged', () => {
+    const readFileError = new Error('permission denied');
+
+    const readFile = jest.fn(() => {
+      throw readFileError;
+    });
+    const writeFile = jest.fn();
+    const createCoverageMap = jest.fn();
+
+    const handle = createWriteCoverageSummaryHandle({
+      readFile,
+      writeFile,
+      createCoverageMap,
+      coverageFinalPath: 'reports/coverage/coverage-final.json',
+      coverageSummaryPath: 'reports/coverage/coverage-summary.json',
+    });
+
+    expect(handle).toThrow(readFileError);
+    expect(createCoverageMap).not.toHaveBeenCalled();
+    expect(writeFile).not.toHaveBeenCalled();
+  });
 });

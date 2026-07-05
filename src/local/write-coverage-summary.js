@@ -9,6 +9,8 @@ const coverageDir = path.resolve('reports/coverage');
 const coverageFinalPath = path.join(coverageDir, 'coverage-final.json');
 const coverageSummaryPath = path.join(coverageDir, 'coverage-summary.json');
 
+fs.mkdirSync(coverageDir, { recursive: true });
+
 const handle = createWriteCoverageSummaryHandle({
   readFile: fs.readFileSync,
   writeFile: fs.writeFileSync,

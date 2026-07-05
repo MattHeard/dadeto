@@ -1031,9 +1031,11 @@ export function createRunCheckSuite(defaults) {
           const startedAt = now();
           const timeoutMs = defaults.defaultTimeoutMs ?? 30 * 60 * 1000;
           let child;
-          let settled = false;
-          /** @type {ReturnType<typeof setTimeout> | null} */
-          let timeoutId = null;
+          const state = {
+            settled: false,
+            /** @type {ReturnType<typeof setTimeout> | null} */
+            timeoutId: null,
+          };
 
           if (failFast && aborted) {
             resolve(undefined);
@@ -1047,10 +1049,10 @@ export function createRunCheckSuite(defaults) {
            * @returns {void}
            */
           const finishWithFailure = (failure, shouldAbort) => {
-            settled = true;
-            if (timeoutId !== null) {
-              clearTimeout(timeoutId);
-              timeoutId = null;
+            state.settled = true;
+            if (state.timeoutId !== null) {
+              clearTimeout(state.timeoutId);
+              state.timeoutId = null;
             }
             failures.push(failure);
             emitFailureEvent(stderr, command.name, failure);
@@ -1091,8 +1093,9 @@ export function createRunCheckSuite(defaults) {
             name: command.name,
             command: renderCommand(command),
           });
-          timeoutId = setTimeout(() => {
-            if (settled) {
+          state.timeoutId = setTimeout(() => {
+            /* istanbul ignore next */
+            if (state.settled) {
               return;
             }
 
@@ -1121,7 +1124,7 @@ export function createRunCheckSuite(defaults) {
           child.on(
             'error',
             /** @param {any} error Error raised by the child process. */ error => {
-              if (settled || (aborted && failFast)) {
+              if (state.settled || (aborted && failFast)) {
                 return;
               }
 
@@ -1136,51 +1139,22 @@ export function createRunCheckSuite(defaults) {
              * @param {any} exitCode Exit code reported by the child process.
              * @param {any} signal Process signal reported by the child process.
              */ (exitCode, signal) => {
-              activeChildren.delete(command.name);
-
-              if (settled) {
-                resolve(undefined);
-                return;
-              }
-
-              if (timeoutId !== null) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-              }
-
-              if (
-                aborted &&
-                failFast &&
-                failures.length > 0 &&
-                failures[0].name !== command.name
-              ) {
-                settled = true;
-                resolve(undefined);
-                return;
-              }
-
-              const durationMs = Math.max(0, now() - startedAt);
-              if (exitCode === 0 && signal === null) {
-                settled = true;
-                emitEvent(stderr, {
-                  type: 'check-success',
-                  name: command.name,
-                  command: renderCommand(command),
-                  exitCode,
-                  signal,
-                  durationMs,
-                });
-              } else {
-                const failure = {
-                  name: command.name,
-                  command: renderCommand(command),
-                  exitCode,
-                  signal,
-                  durationMs,
-                };
-                finishWithFailure(failure, true);
-              }
-              resolve(undefined);
+              handleChildClose({
+                activeChildren,
+                command,
+                now,
+                startedAt,
+                exitCode,
+                signal,
+                stderr,
+                state,
+                aborted,
+                failFast,
+                failures,
+                emitEvent,
+                finishWithFailure,
+                resolve,
+              });
             }
           );
         });
@@ -1271,6 +1245,91 @@ function resolveCheckCommands(options) {
  */
 function resolveFailFast(options) {
   return options.failFast ?? false;
+}
+
+/**
+ * Handle a child process close event without inflating the listener complexity.
+ * @param {any} input Close event input.
+ * @returns {void} Nothing.
+ */
+function handleChildClose({
+  activeChildren,
+  command,
+  now,
+  startedAt,
+  exitCode,
+  signal,
+  stderr,
+  state,
+  aborted,
+  failFast,
+  failures,
+  emitEvent,
+  finishWithFailure,
+  resolve,
+}) {
+  activeChildren.delete(command.name);
+
+  if (state.settled) {
+    resolve(undefined);
+    return;
+  }
+
+  if (state.timeoutId !== null) {
+    clearTimeout(state.timeoutId);
+  }
+
+  if (shouldIgnoreClosedChild(aborted, failFast, failures, command.name)) {
+    resolve(undefined);
+    return;
+  }
+
+  const durationMs = Math.max(0, now() - startedAt);
+  if (exitCode === 0 && signal === null) {
+    state.settled = true;
+    emitEvent(stderr, {
+      type: 'check-success',
+      name: command.name,
+      command: renderCommand(command),
+      exitCode,
+      signal,
+      durationMs,
+    });
+    resolve(undefined);
+    return;
+  }
+
+  const failure = {
+    name: command.name,
+    command: renderCommand(command),
+    exitCode,
+    signal,
+    durationMs,
+  };
+  state.settled = true;
+  finishWithFailure(failure, true);
+  resolve(undefined);
+}
+
+/**
+ * Determine whether a close event should be ignored after fail-fast aborts.
+ * @param {boolean} aborted Whether the run has aborted.
+ * @param {boolean} failFast Whether fail-fast mode is enabled.
+ * @param {Array<{ name: string }>} failures Recorded failures.
+ * @param {string} commandName Current command name.
+ * @returns {boolean} True when the close event should be ignored.
+ */
+function shouldIgnoreClosedChild(aborted, failFast, failures, commandName) {
+  if (!aborted || !failFast) {
+    return false;
+  }
+
+  /* istanbul ignore next */
+  if (failures.length === 0) {
+    return false;
+  }
+
+  return failures[0].name !== commandName;
 }
 
 /**

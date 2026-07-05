@@ -1,3 +1,5 @@
+import { sanitizeUrl } from '../error-reporting.js';
+
 /**
  * @typedef {(url: string, init?: { method?: string, headers?: Record<string, string>, body?: string, mode?: string, credentials?: string, keepalive?: boolean }) => Promise<unknown>} FetchFn
  * @typedef {() => string | undefined} StringGetter
@@ -94,13 +96,12 @@ function toStack(value) {
  *   error: unknown,
  *   source: string,
  *   getUrl: StringGetter,
- *   getUserAgent: StringGetter,
  *   getNow: NowGetter,
  * }} input Normalization inputs.
  * @returns {Record<string, unknown> | null} Normalized payload or null when unusable.
  */
 export function normalizeErrorPayload(input) {
-  const { error, source, getUrl, getUserAgent, getNow } = input;
+  const { error, source, getUrl, getNow } = input;
   if (error === null || error === undefined) {
     return null;
   }
@@ -113,8 +114,7 @@ export function normalizeErrorPayload(input) {
   return {
     message,
     stack,
-    url: url ?? '',
-    userAgent: getUserAgent() ?? '',
+    url: sanitizeUrl(url ?? ''),
     clientTimestamp: new Date(getNow()).toISOString(),
     source,
     dedupeKey,
@@ -151,7 +151,6 @@ export function createErrorBeaconReporter(fetchFn, endpointUrl) {
  * @param {{
  *   reportBeacon: BeaconReporter,
  *   getUrl: StringGetter,
- *   getUserAgent: StringGetter,
  *   getNow: NowGetter,
  *   logError?: (...args: unknown[]) => void,
  * }} deps Dependencies.
@@ -164,7 +163,6 @@ export function createErrorBeaconReporter(fetchFn, endpointUrl) {
 export function createErrorBeaconHandlers({
   reportBeacon,
   getUrl,
-  getUserAgent,
   getNow,
   logError = () => {},
 }) {
@@ -181,7 +179,6 @@ export function createErrorBeaconHandlers({
       error,
       source,
       getUrl,
-      getUserAgent,
       getNow,
     });
     if (!payload) {

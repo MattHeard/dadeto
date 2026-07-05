@@ -20,22 +20,26 @@ describe('buildReportedErrorEvent', () => {
       {
         message: 'boom',
         stack: 'stack',
-        url: 'https://example.test/page',
-        userAgent: 'Mozilla/5.0',
+        url: 'https://example.test/page?token=secret#frag',
         source: 'console.error',
+        lineNumber: '42',
+        columnNumber: '7',
       },
-      'proj',
-      () => '2026-07-04T00:00:00.000Z'
+      't-123',
+      () => '2026-07-04T00:00:00.000Z',
+      'build-123'
     );
 
     expect(event).toMatchObject({
       message: 'boom\nstack',
-      serviceContext: { service: 'proj' },
+      serviceContext: { service: 't-123-client-js', version: 'build-123' },
       eventTime: '2026-07-04T00:00:00.000Z',
       context: {
         reportLocation: {
           filePath: 'https://example.test/page',
           functionName: 'console.error',
+          lineNumber: 42,
+          columnNumber: 7,
         },
       },
     });
@@ -47,22 +51,21 @@ describe('buildReportedErrorEvent', () => {
         message: '   ',
         stack: '',
         url: '   ',
-        userAgent: '   ',
         source: '   ',
       },
-      'proj',
-      () => '2026-07-04T00:00:00.000Z'
+      'prod',
+      () => '2026-07-04T00:00:00.000Z',
+      ''
     );
 
     expect(event).toMatchObject({
       message: 'browser error beacon',
-      serviceContext: { service: 'proj' },
+      serviceContext: { service: 'prod-client-js' },
       context: {
         reportLocation: {
           filePath: 'browser',
           functionName: 'browser',
         },
-        user: undefined,
       },
     });
   });
@@ -72,7 +75,8 @@ describe('createErrorBeaconHandler', () => {
   it('returns 204 after forwarding a valid payload', async () => {
     const reportEvent = jest.fn().mockResolvedValue(undefined);
     const handler = createErrorBeaconHandler({
-      projectId: 'proj',
+      environment: 'prod',
+      buildVersion: 'build-123',
       reportEvent,
       getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
     });
@@ -81,13 +85,17 @@ describe('createErrorBeaconHandler', () => {
     await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
 
     expect(reportEvent).toHaveBeenCalledTimes(1);
+    expect(reportEvent.mock.calls[0][0]).toMatchObject({
+      serviceContext: { service: 'prod-client-js', version: 'build-123' },
+    });
     expect(response.statusCode).toBe(204);
     expect(response.ended).toBe(true);
   });
 
   it('rejects non-object payloads', async () => {
     const handler = createErrorBeaconHandler({
-      projectId: 'proj',
+      environment: 'prod',
+      buildVersion: 'build-123',
       reportEvent: jest.fn(),
       getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
     });
@@ -103,7 +111,8 @@ describe('createErrorBeaconHandler', () => {
 
   it('reports failures as 500', async () => {
     const handler = createErrorBeaconHandler({
-      projectId: 'proj',
+      environment: 'prod',
+      buildVersion: 'build-123',
       reportEvent: jest.fn().mockRejectedValue(new Error('fail')),
       getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
     });
@@ -117,7 +126,8 @@ describe('createErrorBeaconHandler', () => {
 
   it('reports a generic 500 when the rejection is not an Error', async () => {
     const handler = createErrorBeaconHandler({
-      projectId: 'proj',
+      environment: 'prod',
+      buildVersion: 'build-123',
       reportEvent: jest.fn().mockRejectedValue('boom'),
       getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
     });
@@ -132,7 +142,8 @@ describe('createErrorBeaconHandler', () => {
   it('reports a generic 500 when the Error message is empty', async () => {
     const error = new Error('');
     const handler = createErrorBeaconHandler({
-      projectId: 'proj',
+      environment: 'prod',
+      buildVersion: 'build-123',
       reportEvent: jest.fn().mockRejectedValue(error),
       getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
     });
@@ -146,7 +157,8 @@ describe('createErrorBeaconHandler', () => {
 
   it('rejects unsupported methods with 405', async () => {
     const handler = createErrorBeaconHandler({
-      projectId: 'proj',
+      environment: 'prod',
+      buildVersion: 'build-123',
       reportEvent: jest.fn(),
       getServerTimestamp: () => '2026-07-04T00:00:00.000Z',
     });

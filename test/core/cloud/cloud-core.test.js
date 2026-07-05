@@ -4,6 +4,7 @@ import {
   assertFunction,
   createCorsOptionsValue,
   buildErrorResult,
+  classifyDeploymentEnvironment,
   normalizeValueWithLimit,
   getHeaderFromGetter,
   getNumericValueOrZero,
@@ -140,6 +141,12 @@ describe('cloud-core', () => {
       expect(() =>
         resolveAllowedOrigins({ DENDRITE_ENVIRONMENT: 'stage' })
       ).toThrow(/Unsupported environment label/);
+    });
+
+    test('formats unknown environment labels as unknown in classification errors', () => {
+      expect(() => classifyDeploymentEnvironment(null)).toThrow(
+        'Unsupported environment label: unknown'
+      );
     });
   });
 
