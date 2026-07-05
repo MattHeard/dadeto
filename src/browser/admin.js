@@ -1,12 +1,26 @@
 import { loadStaticConfig } from './loadStaticConfig.js';
 import { createInitAdminAppHandle } from '../core/browser/admin-core.js';
 import {
+  createErrorBeaconHandlers,
+  createErrorBeaconReporter,
+} from '../core/browser/error-beacon.js';
+import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+
+const errorBeaconHandlers = createErrorBeaconHandlers({
+  reportBeacon: createErrorBeaconReporter(
+    globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
+    '/prod-errors'
+  ),
+  getUrl: () => globalThis.location?.href ?? '',
+  getNow: () => Date.now(),
+  logError: console.error.bind(console),
+});
 
 const handle = createInitAdminAppHandle({
   loadStaticConfigFn: loadStaticConfig,
@@ -20,6 +34,7 @@ const handle = createInitAdminAppHandle({
   globalThisObj: globalThis,
   documentObj: document,
   fetchObj: fetch,
+  reportError: errorBeaconHandlers.logError,
 });
 
 handle();
