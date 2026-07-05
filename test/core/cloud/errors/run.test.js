@@ -122,6 +122,52 @@ describe('createErrorBeaconRun', () => {
     expect(response.statusCode).toBe(500);
   });
 
+  it('logs caught error stacks before returning 500', async () => {
+    const post = jest.fn();
+    const use = jest.fn();
+    const console = { error: jest.fn() };
+    const express = Object.assign(
+      jest.fn(() => ({ use, post })),
+      {
+        json: jest.fn(() => 'json-middleware'),
+      }
+    );
+    const cors = jest.fn(() => 'cors-middleware');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({}),
+      });
+
+    createErrorBeaconRun({
+      express,
+      cors,
+      console,
+      getEnvironmentVariables: () => ({
+        GCLOUD_PROJECT: 'proj',
+        DENDRITE_ENVIRONMENT: 't-123',
+        PLAYWRIGHT_ORIGIN: 'https://playwright.example',
+      }),
+      fetchFn,
+    });
+
+    const handler = post.mock.calls[0][1];
+    const response = createResponse();
+
+    await handler({ method: 'POST', body: { message: 'boom' } }, response.api);
+
+    expect(console.error).toHaveBeenCalledWith(
+      expect.any(Error)
+    );
+    expect(response.statusCode).toBe(500);
+  });
+
   it('returns 500 when metadata token lookup fails', async () => {
     const post = jest.fn();
     const use = jest.fn();

@@ -68,6 +68,7 @@ function normalizeText(value) {
  *   projectId: string,
  *   reportEvent: (event: Record<string, unknown>) => Promise<void>,
  *   getServerTimestamp: () => string,
+ *   console?: Pick<Console, 'error'>,
  * }} deps Dependencies.
  * @returns {(request: { method?: string, body?: unknown }, response: { status: (code: number) => { json: (body: Record<string, unknown>) => void, send: (body: string) => void, end: () => void } }) => Promise<void>} Request handler.
  */
@@ -75,6 +76,7 @@ export function createErrorBeaconHandler({
   projectId,
   reportEvent,
   getServerTimestamp,
+  console: consoleLike,
 }) {
   assertFunction(reportEvent, 'reportEvent');
   assertFunction(getServerTimestamp, 'getServerTimestamp');
@@ -96,6 +98,7 @@ export function createErrorBeaconHandler({
       );
       response.status(204).end();
     } catch (error) {
+      consoleLike?.error?.(error);
       let message = 'Unknown server error';
       if (error instanceof Error) {
         const resolvedMessage = error.message;

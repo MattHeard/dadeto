@@ -68,6 +68,7 @@ export function createErrorBeaconRun(deps) {
     projectId,
     reportEvent,
     getServerTimestamp: () => new Date().toISOString(),
+    console: deps.console,
   });
 
   /** @type {any} */ (app).post('/', handleErrorBeacon);
