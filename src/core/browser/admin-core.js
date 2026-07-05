@@ -1526,7 +1526,9 @@ function initializeGoogleSignIn(accountsId, options) {
     callback: (/** @type {any} */ cred) => {
       console.debug('Google Identity callback payload', cred);
 
-      return handleCredentialSignIn(cred, options);
+      return handleCredentialSignIn(cred, options).catch(error => {
+        console.error('Google sign-in failed', error);
+      });
     },
     ['ux_mode']: 'popup',
   });

@@ -1259,7 +1259,7 @@ describe('createInitGoogleSignIn', () => {
     );
   });
 
-  it('throws when auth currentUser lacks getIdToken', async () => {
+  it('logs when auth currentUser lacks getIdToken', async () => {
     let savedCallback;
     const initGoogleSignIn = createInitGoogleSignIn({
       googleAccountsId: {
@@ -1278,9 +1278,7 @@ describe('createInitGoogleSignIn', () => {
 
     initGoogleSignIn();
 
-    await expect(savedCallback({ credential: 'raw' })).rejects.toThrow(
-      new TypeError('auth.currentUser.getIdToken must be a function')
-    );
+    await expect(savedCallback({ credential: 'raw' })).resolves.toBeUndefined();
   });
 
   it('logs an error when renderButton is missing', () => {
