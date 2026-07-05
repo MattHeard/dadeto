@@ -20,6 +20,7 @@ import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
  * @property {FetchFn} fetchFn - Fetch-like network caller.
  * @property {string} token - ID token attached to the Authorization header.
  * @property {(text: string) => void} showMessage - Callback to surface status messages.
+ * @property {(error: unknown) => void} [reportError] - Optional error beacon reporter for fetch failures.
  */
 
 /**

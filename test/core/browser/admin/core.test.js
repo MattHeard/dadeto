@@ -177,6 +177,29 @@ describe('createTriggerRender', () => {
     expect(showMessage).toHaveBeenCalledWith('Render triggered');
   });
 
+  it('reports fetch failures through the supplied error reporter', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ triggerRenderContentsUrl: renderUrl });
+    const fetch = jest.fn().mockRejectedValue(new Error('boom'));
+    const showMessage = jest.fn();
+    const reportError = jest.fn();
+
+    const triggerRender = createTriggerRender({
+      googleAuth,
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+      reportError,
+    });
+
+    await triggerRender();
+
+    expect(reportError).toHaveBeenCalledWith(new Error('boom'));
+    expect(showMessage).toHaveBeenCalledWith('Render failed: boom');
+  });
+
   it('reports failure when no token is available', async () => {
     const googleAuth = { getIdToken: jest.fn().mockReturnValue(null) };
     const getAdminEndpoints = jest.fn();
