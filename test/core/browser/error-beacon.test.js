@@ -280,18 +280,18 @@ describe('createErrorBeaconHandlers', () => {
 
 describe('createErrorBeaconReporter', () => {
   it('no-ops when fetch is unavailable', () => {
-    const reporter = createErrorBeaconReporter(undefined, '/errors');
+    const reporter = createErrorBeaconReporter(undefined, '/prod-errors');
     expect(() => reporter({ message: 'boom' })).not.toThrow();
   });
 
   it('posts JSON with credentials omitted when fetch exists', async () => {
     const fetchFn = jest.fn(() => Promise.resolve({ ok: true }));
-    const reporter = createErrorBeaconReporter(fetchFn, '/errors');
+    const reporter = createErrorBeaconReporter(fetchFn, '/prod-errors');
 
     reporter({ message: 'boom' });
 
     expect(fetchFn).toHaveBeenCalledTimes(1);
-    expect(fetchFn.mock.calls[0][0]).toBe('/errors');
+    expect(fetchFn.mock.calls[0][0]).toBe('/prod-errors');
     expect(fetchFn.mock.calls[0][1]).toMatchObject({
       method: 'POST',
       mode: 'cors',
@@ -308,7 +308,7 @@ describe('createErrorBeaconReporter', () => {
 
   it('swallows beacon send rejections', async () => {
     const fetchFn = jest.fn(() => Promise.reject(new Error('send failed')));
-    const reporter = createErrorBeaconReporter(fetchFn, '/errors');
+    const reporter = createErrorBeaconReporter(fetchFn, '/prod-errors');
 
     reporter({ message: 'boom' });
     await Promise.resolve();

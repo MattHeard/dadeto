@@ -1274,15 +1274,10 @@ export async function handleCredentialSignIn(
   { credentialFactory, signInWithCredential, auth, storage, onSignIn }
 ) {
   const firebaseCredential = credentialFactory(credential);
-  console.debug('Firebase sign-in start', {
-    hasAuthCurrentUser: Boolean(auth.currentUser),
-    credentialType: typeof firebaseCredential,
-  });
   let signInResult;
   try {
     signInResult = await signInWithCredential(auth, firebaseCredential);
   } catch (error) {
-    console.debug('Firebase sign-in error', error);
     await Promise.resolve();
     if (auth.currentUser) {
       signInResult = { user: auth.currentUser };
@@ -1291,28 +1286,13 @@ export async function handleCredentialSignIn(
       throw error;
     }
   }
-  console.debug('Firebase sign-in raw result', signInResult);
-  console.debug('Firebase sign-in result', {
-    hasResult: Boolean(signInResult),
-    resultType: typeof signInResult,
-    hasResultUser: Boolean(signInResult?.user),
-    hasAuthCurrentUser: Boolean(auth.currentUser),
-  });
   await Promise.resolve();
-  console.debug('Firebase auth snapshot after sign-in tick', {
-    hasAuthCurrentUser: Boolean(auth.currentUser),
-    currentUserType: typeof auth.currentUser,
-  });
   const currentUser = resolveCurrentUser(
     /** @type {{ user?: FirebaseAuthUser | null | undefined } | null | undefined} */ (
       signInResult
     ),
     auth
   );
-  console.debug('Resolved Firebase current user', {
-    hasCurrentUser: Boolean(currentUser),
-    hasGetIdToken: Boolean(currentUser?.getIdToken),
-  });
   const getIdToken = resolveGetIdToken(currentUser);
   const idToken = await getIdToken();
   storage.setItem('id_token', idToken);
@@ -1523,8 +1503,6 @@ function initializeGoogleSignIn(accountsId, options) {
     ['client_id']:
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
     callback: (/** @type {any} */ cred) => {
-      console.debug('Google Identity callback payload', cred);
-
       return handleCredentialSignIn(cred, options).catch(error => {
         console.error('Google sign-in failed', error);
       });

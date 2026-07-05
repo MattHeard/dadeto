@@ -67,7 +67,7 @@ export function createMainHandle({
   storageObj,
 }) {
   return function handleMain() {
-    const beaconEndpoint = '/errors';
+    const beaconEndpoint = '/prod-errors';
     const beaconReporter = createErrorBeaconReporter(
       windowObj.navigator?.sendBeacon?.bind(windowObj.navigator),
       beaconEndpoint
