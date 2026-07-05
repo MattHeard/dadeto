@@ -10,10 +10,10 @@ import { createErrorBeaconHandler } from './errors-core.js';
  * Build the Cloud Function handler for browser error beacons.
  * @param {{
  *   express: any,
-  *   cors: any,
-  *   getEnvironmentVariables: () => Record<string, string | undefined>,
+ *   cors: any,
+ *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   console?: Pick<Console, 'debug'>,
-  *   fetchFn: typeof fetch,
+ *   fetchFn: typeof fetch,
  * }} deps Runtime dependencies.
  * @returns {{ handle: import('express').Express }} Cloud Function handle wrapper.
  */

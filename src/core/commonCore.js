@@ -991,6 +991,7 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  *   defaultStdout: { write: (text: string) => void },
  *   defaultStderr: { write: (text: string) => void },
  *   defaultNow: () => number,
+ *   defaultTimeoutMs?: number,
  * }} defaults Default platform dependencies.
  * @returns {(options?: {
  *   commands?: CheckCommand[],
@@ -1028,8 +1029,11 @@ export function createRunCheckSuite(defaults) {
       commands.map(command => {
         return new Promise(resolve => {
           const startedAt = now();
+          const timeoutMs = defaults.defaultTimeoutMs ?? 30 * 60 * 1000;
           let child;
           let settled = false;
+          /** @type {ReturnType<typeof setTimeout> | null} */
+          let timeoutId = null;
 
           if (failFast && aborted) {
             resolve(undefined);
@@ -1044,6 +1048,10 @@ export function createRunCheckSuite(defaults) {
            */
           const finishWithFailure = (failure, shouldAbort) => {
             settled = true;
+            if (timeoutId !== null) {
+              clearTimeout(timeoutId);
+              timeoutId = null;
+            }
             failures.push(failure);
             emitFailureEvent(stderr, command.name, failure);
 
@@ -1083,6 +1091,26 @@ export function createRunCheckSuite(defaults) {
             name: command.name,
             command: renderCommand(command),
           });
+          timeoutId = setTimeout(() => {
+            if (settled) {
+              return;
+            }
+
+            const failure = {
+              name: command.name,
+              command: renderCommand(command),
+              exitCode: null,
+              signal: 'SIGTERM',
+              durationMs: Math.max(0, now() - startedAt),
+              error: `Check timed out after ${timeoutMs}ms`,
+            };
+
+            if (child && typeof child.kill === 'function') {
+              child.kill('SIGTERM');
+            }
+
+            finishWithFailure(failure, true);
+          }, timeoutMs);
           forwardStreamLines(child.stdout, line =>
             stdout.write(`[${command.name}][stdout] ${line}\n`)
           );
@@ -1113,6 +1141,11 @@ export function createRunCheckSuite(defaults) {
               if (settled) {
                 resolve(undefined);
                 return;
+              }
+
+              if (timeoutId !== null) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
               }
 
               if (

@@ -243,6 +243,49 @@ describe('runCheckSuite', () => {
     );
   });
 
+  it('times out a child that never closes', async () => {
+    jest.useFakeTimers();
+    const child = createChild();
+    const { spawnImpl } = createSpawnStub([child]);
+    const stdout = createWriter();
+    const stderr = createWriter();
+
+    try {
+      const suitePromise = runCheckSuite({
+        commands: [{ name: 'alpha', command: 'alpha', args: [] }],
+        spawnImpl,
+        stdout,
+        stderr,
+        now: () => 1000,
+      });
+
+      await jest.advanceTimersByTimeAsync(30 * 60 * 1000);
+      const result = await suitePromise;
+
+      expect(result.exitCode).toBe(1);
+      expect(child.kill).toHaveBeenCalledWith('SIGTERM');
+      expect(parseEvents(stderr.chunks)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'check-start',
+            name: 'alpha',
+          }),
+          expect.objectContaining({
+            type: 'check-failure',
+            name: 'alpha',
+            error: 'Check timed out after 1800000ms',
+          }),
+          expect.objectContaining({
+            type: 'check-summary',
+            status: 'failed',
+          }),
+        ])
+      );
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('streams each failure and reports all failures by default', async () => {
     const children = [createChild(), createChild()];
     const { spawnImpl, calls } = createSpawnStub(children);
