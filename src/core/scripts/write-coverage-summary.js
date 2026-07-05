@@ -24,7 +24,20 @@ export function createWriteCoverageSummaryHandle({
   coverageSummaryPath = DEFAULT_COVERAGE_SUMMARY_PATH,
 }) {
   return () => {
-    const rawCoverage = JSON.parse(readFile(coverageFinalPath, 'utf8'));
+    let rawCoverage;
+
+    try {
+      rawCoverage = JSON.parse(readFile(coverageFinalPath, 'utf8'));
+    } catch (error) {
+      if (error && typeof error === 'object' && error.code === 'ENOENT') {
+        throw new Error(
+          `Coverage summary could not find ${coverageFinalPath}. Jest likely failed to write coverage output before this post-test step ran.`
+        );
+      }
+
+      throw error;
+    }
+
     const coverageMap = createCoverageMap(rawCoverage);
     const summary = buildCoverageSummary(coverageMap);
 
