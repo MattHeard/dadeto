@@ -8,6 +8,8 @@ import {
   createTriggerRender,
   createTriggerStats,
   createRegenerateVariant,
+  createDisableAutoSelect,
+  initAdminApp,
   bindTriggerRenderClick,
   bindTriggerStatsClick,
   bindRegenerateVariantSubmit,
@@ -51,6 +53,35 @@ describe('createGetAdminEndpoints', () => {
   it('throws when the provided factory is not a function', () => {
     const getAdminEndpoints = createGetAdminEndpoints(null);
     expect(() => getAdminEndpoints()).toThrow(TypeError);
+  });
+});
+
+describe('createDisableAutoSelect', () => {
+  it('calls the nested helper when present', () => {
+    const disableAutoSelect = jest.fn();
+    const globalScope = {
+      google: {
+        accounts: {
+          id: {
+            disableAutoSelect,
+          },
+        },
+      },
+    };
+
+    const disable = createDisableAutoSelect(globalScope);
+
+    disable();
+
+    expect(disableAutoSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns a no-op when the helper is missing or the scope is not traversable', () => {
+    const missingHelper = createDisableAutoSelect({});
+    const nullScope = createDisableAutoSelect(null);
+
+    expect(() => missingHelper()).not.toThrow();
+    expect(() => nullScope()).not.toThrow();
   });
 });
 
@@ -229,6 +260,26 @@ describe('createTriggerRender', () => {
         showMessage: jest.fn(),
       })
     ).toThrow(new TypeError('googleAuth.getIdToken must be a function'));
+  });
+
+  it('uses the default reportError handler when one is not provided', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ triggerRenderContentsUrl: renderUrl });
+    const fetch = jest.fn().mockRejectedValue(new Error('boom'));
+    const showMessage = jest.fn();
+
+    const triggerRender = createTriggerRender({
+      googleAuth,
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+    });
+
+    await triggerRender();
+
+    expect(showMessage).toHaveBeenCalledWith('Render failed: boom');
   });
 });
 
@@ -798,6 +849,109 @@ describe('createTriggerRender additional branches', () => {
         showMessage: null,
       })
     ).toThrow(new TypeError('showMessage must be a function'));
+  });
+});
+
+describe('initAdminApp', () => {
+  it('reports failed trigger renders through the default reporter', async () => {
+    const loadStaticConfigFn = jest
+      .fn()
+      .mockResolvedValue({ disableGoogleSignIn: true });
+    const getAuthFn = jest.fn(() => ({
+      currentUser: {
+        uid: ADMIN_UID,
+        getIdToken: jest.fn().mockReturnValue('token'),
+      },
+    }));
+    const GoogleAuthProviderFn = jest.fn(() => ({
+      credential: jest.fn(),
+    }));
+    const onAuthStateChangedFn = jest.fn((_, callback) => callback());
+    const signInWithCredentialFn = jest.fn();
+    const initializeAppFn = jest.fn();
+    const sessionStorageObj = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+    };
+    const consoleObj = { error: jest.fn() };
+    const globalThisObj = {
+      addEventListener: jest.fn(),
+      navigator: {},
+    };
+    const elements = {
+      renderBtn: { addEventListener: jest.fn() },
+      statsBtn: { addEventListener: jest.fn() },
+      regenForm: { addEventListener: jest.fn() },
+      signOutLink: { addEventListener: jest.fn() },
+      signInButton: { style: {} },
+      signOutWrap: { style: {} },
+      adminLink: { style: {} },
+      statusParagraph: { innerHTML: '' },
+    };
+    const documentObj = {
+      getElementById: id => {
+        switch (id) {
+          case 'renderBtn':
+            return elements.renderBtn;
+          case 'statsBtn':
+            return elements.statsBtn;
+          case 'regenForm':
+            return elements.regenForm;
+          case 'signoutLink':
+            return elements.signOutLink;
+          case 'signinButton':
+            return elements.signInButton;
+          case 'signoutWrap':
+            return elements.signOutWrap;
+          case 'adminLink':
+            return elements.adminLink;
+          case 'statusParagraph':
+            return elements.statusParagraph;
+          default:
+            return null;
+        }
+      },
+      querySelectorAll: jest.fn(() => []),
+      body: {},
+    };
+    const fetchObj = jest.fn().mockRejectedValue(new Error('boom'));
+    const onHandlersReady = jest.fn();
+    const originalSessionStorage = globalThis.sessionStorage;
+    globalThis.sessionStorage = {
+      getItem: jest.fn(() => 'token'),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+    };
+
+    try {
+      initAdminApp({
+        loadStaticConfigFn,
+        getAuthFn,
+        GoogleAuthProviderFn,
+        onAuthStateChangedFn,
+        signInWithCredentialFn,
+        initializeAppFn,
+        sessionStorageObj,
+        consoleObj,
+        globalThisObj,
+        documentObj,
+        fetchObj,
+        reportError: undefined,
+        onHandlersReady,
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(initializeAppFn).toHaveBeenCalledTimes(1);
+      expect(onHandlersReady).toHaveBeenCalledTimes(1);
+      const renderClick = elements.renderBtn.addEventListener.mock.calls.find(
+        ([event]) => event === 'click'
+      )?.[1];
+      await renderClick();
+    } finally {
+      globalThis.sessionStorage = originalSessionStorage;
+    }
   });
 });
 
@@ -1505,6 +1659,7 @@ describe('initAdmin', () => {
       onAuthStateChangedFn,
       doc,
       fetchFn: fetch,
+      reportError: undefined,
     });
 
     expect(getAuthFn).toHaveBeenCalledTimes(2);
@@ -1561,6 +1716,40 @@ describe('initAdmin', () => {
 
     expect(loadStaticConfig).toHaveBeenCalledTimes(1);
     expect(googleAuthModule.initGoogleSignIn).not.toHaveBeenCalled();
+  });
+
+  it('reports failed renders through the default reporter', async () => {
+    const googleAuthModule = {
+      getIdToken: jest.fn().mockReturnValue('token'),
+      signOut: jest.fn(),
+      initGoogleSignIn: jest.fn(),
+    };
+    const loadStaticConfig = jest.fn().mockResolvedValue({});
+    const getAuthFn = jest
+      .fn()
+      .mockReturnValue({ currentUser: { uid: ADMIN_UID } });
+    const onAuthStateChangedFn = jest.fn((_, cb) => cb());
+    const { doc, elements } = makeDoc();
+    const fetch = jest.fn().mockRejectedValue(new Error('boom'));
+
+    initAdmin({
+      googleAuthModule,
+      loadStaticConfigFn: loadStaticConfig,
+      getAuthFn,
+      onAuthStateChangedFn,
+      doc,
+      fetchFn: fetch,
+      reportError: undefined,
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const renderClick = elements.renderBtn.addEventListener.mock.calls.find(
+      ([event]) => event === 'click'
+    )?.[1];
+    await renderClick();
+
+    expect(googleAuthModule.initGoogleSignIn).toHaveBeenCalledTimes(1);
   });
 
   it('throws when initGoogleSignIn is missing', () => {
