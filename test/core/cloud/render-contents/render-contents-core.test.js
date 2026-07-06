@@ -683,6 +683,17 @@ describe('resolveAuthorizationHeader', () => {
     expect(req.get).toHaveBeenCalledWith('Authorization');
   });
 
+  it('keeps request getters bound when resolving authorization', () => {
+    const req = {
+      headers: { authorization: 'Bearer bound' },
+      get(name) {
+        return this.headers[name.toLowerCase()];
+      },
+    };
+
+    expect(resolveAuthorizationHeader(req)).toBe('Bearer bound');
+  });
+
   it('supports missing headers by returning an empty string', () => {
     const req = {
       get: jest.fn(() => undefined),
@@ -843,7 +854,12 @@ describe('createApplyCorsHeaders', () => {
 
   it('allows configured origins and varies header', () => {
     const res = { set: jest.fn() };
-    const req = { get: jest.fn().mockReturnValue('https://allowed') };
+    const req = {
+      headers: { origin: 'https://allowed' },
+      get(name) {
+        return this.headers[name.toLowerCase()];
+      },
+    };
     const apply = createApplyCorsHeaders({
       allowedOrigins: ['https://allowed'],
     });
@@ -858,7 +874,12 @@ describe('createApplyCorsHeaders', () => {
 
   it('rejects unknown origins', () => {
     const res = { set: jest.fn() };
-    const req = { get: jest.fn().mockReturnValue('https://denied') };
+    const req = {
+      headers: { origin: 'https://denied' },
+      get(name) {
+        return this.headers[name.toLowerCase()];
+      },
+    };
     const apply = createApplyCorsHeaders({
       allowedOrigins: ['https://allowed'],
     });
@@ -869,7 +890,12 @@ describe('createApplyCorsHeaders', () => {
 
   it('respects only array inputs for allowed origins', () => {
     const res = { set: jest.fn() };
-    const req = { get: jest.fn().mockReturnValue('https://allowed') };
+    const req = {
+      headers: { origin: 'https://allowed' },
+      get(name) {
+        return this.headers[name.toLowerCase()];
+      },
+    };
     const apply = createApplyCorsHeaders({
       allowedOrigins: 'https://allowed',
     });
@@ -877,6 +903,25 @@ describe('createApplyCorsHeaders', () => {
     expect(apply(req, res)).toBe(false);
     expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'null');
     expect(res.set).toHaveBeenCalledWith('Vary', 'Origin');
+  });
+
+  it('keeps request getters bound to the request object', () => {
+    const res = { set: jest.fn() };
+    const req = {
+      headers: { origin: 'https://allowed' },
+      get(name) {
+        return this.headers[name.toLowerCase()];
+      },
+    };
+    const apply = createApplyCorsHeaders({
+      allowedOrigins: ['https://allowed'],
+    });
+
+    expect(() => apply(req, res)).not.toThrow();
+    expect(res.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Origin',
+      'https://allowed'
+    );
   });
 });
 
