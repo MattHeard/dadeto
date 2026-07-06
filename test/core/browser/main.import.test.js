@@ -13,5 +13,9 @@ describe('core browser main import', () => {
     const source = await readFile('src/core/browser/main.js', 'utf8');
 
     expect(source).toContain("const beaconEndpoint = '/prod-errors';");
+    expect(source).toContain(
+      'windowObj.console.error = errorHandlers.logError;'
+    );
+    expect(source).toContain('windowObj.fetch?.bind(windowObj)');
   });
 });

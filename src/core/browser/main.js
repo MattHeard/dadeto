@@ -69,7 +69,7 @@ export function createMainHandle({
   return function handleMain() {
     const beaconEndpoint = '/prod-errors';
     const beaconReporter = createErrorBeaconReporter(
-      windowObj.navigator?.sendBeacon?.bind(windowObj.navigator),
+      windowObj.fetch?.bind(windowObj),
       beaconEndpoint
     );
     const errorHandlers = createErrorBeaconHandlers({
@@ -79,6 +79,7 @@ export function createMainHandle({
       getNow: () => Date.now(),
       logError: dom.logError,
     });
+    windowObj.console.error = errorHandlers.logError;
     const loggers = {
       logInfo: log,
       logError: errorHandlers.logError,
