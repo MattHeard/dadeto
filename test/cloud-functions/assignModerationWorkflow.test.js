@@ -124,10 +124,13 @@ describe('createAssignModerationWorkflow', () => {
     expect(selectVariantDoc).toHaveBeenCalledWith({ snapshot: true });
     expect(createModeratorRef).toHaveBeenCalledWith('moderator-2');
     expect(now).toHaveBeenCalledTimes(1);
-    expect(set).toHaveBeenCalledWith({
-      variant: variantDoc.ref,
-      createdAt: 'timestamp',
-    });
+    expect(set).toHaveBeenCalledWith(
+      {
+        variant: variantDoc.ref,
+        createdAt: 'timestamp',
+      },
+      { merge: true }
+    );
     expect(response).toEqual({ status: 201, body: '' });
   });
 });

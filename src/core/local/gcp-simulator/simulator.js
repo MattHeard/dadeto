@@ -1061,10 +1061,13 @@ async function handleAssignModerationJob(
     return { status: 404, body: 'Variant not found' };
   }
 
-  await deps.db.collection('moderators').doc(uid).set({
-    variant: chosen.ref.path,
-    createdAt: new Date(),
-  });
+  await deps.db.collection('moderators').doc(uid).set(
+    {
+      variant: chosen.ref.path,
+      createdAt: new Date(),
+    },
+    { merge: true }
+  );
 
   return { status: 201, body: { ok: true } };
 }

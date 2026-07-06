@@ -235,7 +235,7 @@ function compareModeratorReputations(left, right) {
 
 /**
  * Seed moderator reputation documents with the latest cached scores.
- * @param {{ collection: (name: string) => { doc: (id: string) => { set: (data: Record<string, unknown>) => Promise<void> } } }} db Firestore-like database.
+ * @param {{ collection: (name: string) => { doc: (id: string) => { set: (data: Record<string, unknown>, options?: { merge?: boolean }) => Promise<void> } } }} db Firestore-like database.
  * @param {ModeratorReputationRecord[]} reputations Cached reputations to persist.
  * @param {{ updatedAt: unknown }} metadata Shared metadata for the write.
  * @returns {Promise<void>} Promise resolving when all reputation writes complete.
@@ -243,10 +243,13 @@ function compareModeratorReputations(left, right) {
 export async function writeModeratorReputations(db, reputations, metadata) {
   await Promise.all(
     reputations.map(record =>
-      db.collection('moderators').doc(record.moderatorId).set({
-        moderatorReputation: record.reputation,
-        moderatorReputationUpdatedAt: metadata.updatedAt,
-      })
+      db.collection('moderators').doc(record.moderatorId).set(
+        {
+          moderatorReputation: record.reputation,
+          moderatorReputationUpdatedAt: metadata.updatedAt,
+        },
+        { merge: true }
+      )
     )
   );
 }

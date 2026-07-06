@@ -782,10 +782,13 @@ describe('createAssignModerationWorkflow', () => {
     expect(deps.fetchVariantSnapshot).toHaveBeenCalledWith(0.25);
     expect(deps.selectVariantDoc).toHaveBeenCalledWith('snapshot');
     expect(deps.createModeratorRef).toHaveBeenCalledWith('mod');
-    expect(deps.set).toHaveBeenCalledWith({
-      variant: 'doc-ref',
-      createdAt: 'now',
-    });
+    expect(deps.set).toHaveBeenCalledWith(
+      {
+        variant: 'doc-ref',
+        createdAt: 'now',
+      },
+      { merge: true }
+    );
   });
 
   test('rejects unexpected errors from the workflow', async () => {

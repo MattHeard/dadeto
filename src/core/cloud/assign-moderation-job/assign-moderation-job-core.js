@@ -1436,10 +1436,13 @@ async function persistAssignment(deps, data) {
   const { userRecord, variantDoc } = data;
   const moderatorRef = createModeratorRef(userRecord.uid);
   const createdAt = now();
-  await /** @type {any} */ (moderatorRef).set({
-    variant: /** @type {any} */ (variantDoc).ref,
-    createdAt,
-  });
+  await /** @type {any} */ (moderatorRef).set(
+    {
+      variant: /** @type {any} */ (variantDoc).ref,
+      createdAt,
+    },
+    { merge: true }
+  );
 }
 
 /**
