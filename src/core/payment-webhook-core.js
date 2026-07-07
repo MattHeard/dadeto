@@ -115,9 +115,9 @@ function resolvePaymentWebhookDependencies(deps) {
     getPaymentEvent = async request => extractPaymentEvent(request),
   } = typedDeps;
 
-  assertWebhookDependency(fetchCredit, 'fetchCredit');
-  assertWebhookDependency(applyCreditEvent, 'applyCreditEvent');
-  assertWebhookDependency(resolveApiKeyUuid, 'resolveApiKeyUuid');
+  requireWebhookDependency(fetchCredit, 'fetchCredit');
+  requireWebhookDependency(applyCreditEvent, 'applyCreditEvent');
+  requireWebhookDependency(resolveApiKeyUuid, 'resolveApiKeyUuid');
 
   return {
     fetchCredit: toCallable(fetchCredit),
@@ -414,7 +414,7 @@ export function safeEqual(actual, expected) {
  * @param {string} name Dependency name.
  * @returns {void}
  */
-function assertWebhookDependency(dependency, name) {
+function requireWebhookDependency(dependency, name) {
   if (typeof dependency !== 'function') {
     throw new TypeError(`${name} must be a function`);
   }

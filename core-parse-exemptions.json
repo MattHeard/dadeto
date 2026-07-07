@@ -80,7 +80,6 @@
     "src/core/local/config-utils.js": "baseline exemption for pre-existing parse/validate policy debt",
     "src/core/local/documentStore.js": "baseline exemption for pre-existing parse/validate policy debt",
     "src/core/local/symphony/launch.js": "baseline exemption for pre-existing parse/validate policy debt",
-    "src/core/payment-webhook-core.js": "baseline exemption for pre-existing parse/validate policy debt",
     "src/core/realtime/openaiRealtimeCalls.js": "baseline exemption for pre-existing parse/validate policy debt",
     "src/core/scripts/check-core-parse.js": "baseline exemption for pre-existing parse/validate policy debt"
   }

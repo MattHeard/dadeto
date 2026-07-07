@@ -107,12 +107,12 @@ describe('createCheckCoreParseHandle', () => {
     const fsModule = createFs({
       '/repo/core-parse-exemptions.json': JSON.stringify({
         exemptions: {
-          'src/core/payment-webhook-core.js': 'baseline',
+          'src/core/browser/admin-core.js': 'baseline',
         },
       }),
       '/repo/src/core/index.js':
         'export function createMainHandle() { return parseRequest(); }',
-      '/repo/src/core/payment-webhook-core.js':
+      '/repo/src/core/browser/admin-core.js':
         'function validatePayload(payload) { return payload; }',
     });
     const stdout = createWriter();
@@ -167,7 +167,7 @@ describe('createCheckCoreParseHandle', () => {
   test('reads object-shaped exemption payloads', () => {
     const fsModule = createFs({
       '/repo/core-parse-exemptions.json': JSON.stringify({
-        exemptions: { 'src/core/payment-webhook-core.js': 'baseline' },
+        exemptions: { 'src/core/browser/admin-core.js': 'baseline' },
       }),
     });
 
@@ -180,7 +180,7 @@ describe('createCheckCoreParseHandle', () => {
       configPath: 'core-parse-exemptions.json',
     });
 
-    expect([...exemptions]).toEqual(['src/core/payment-webhook-core.js']);
+    expect([...exemptions]).toEqual(['src/core/browser/admin-core.js']);
   });
 
   test('ignores non-JavaScript files during the directory walk', () => {
