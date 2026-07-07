@@ -39,7 +39,7 @@ const STYLES = String.raw`
     --terminal-success: #00ff00;
     --terminal-error: #ff0000;
     --cell-w: 9.64px;
-    --cell-h: 18px;
+    --cell-h: 24px;
     --cols: 80;
     --rows: 24;
     --font-stack: "DADETO Sarasa", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
