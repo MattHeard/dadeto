@@ -1,6 +1,8 @@
+import { execFileSync } from 'node:child_process';
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 import { useDefaultValue } from './gate-utils.js';
 import { readExemptions } from './read-exemptions.js';
+import { pathToFileURL } from 'node:url';
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
@@ -30,45 +32,6 @@ const DEFAULT_FS_MODULE = {
 
 const BOUNDARY_FILE_PATTERN =
   /(?:^|\/)(?:index|main)\.js$|(?:^|\/)(?:browser|cloud|local|scripts|build)\//;
-const VALIDATION_HELPER_NAME_PATTERN =
-  /(?:^|[^A-Za-z0-9_])(validate|isValid|assert|ensure)[A-Z0-9_]/;
-const RAW_INPUT_PATTERNS = [
-  {
-    label: 'request.body access',
-    pattern: /\brequest\.body\b|\breq\.body\b|\bctx\.body\b/,
-  },
-  { label: 'event.body access', pattern: /\bevent\.body\b/ },
-  { label: 'event.data access', pattern: /\bevent\.data\b/ },
-  {
-    label: 'process.env access',
-    pattern: /\bprocess\.env\.[A-Za-z_$][A-Za-z0-9_$]*/,
-  },
-  {
-    label: 'localStorage access',
-    pattern: /\blocalStorage\.(?:getItem|setItem|removeItem|clear)\s*\(/,
-  },
-  { label: 'URLSearchParams', pattern: /new\s+URLSearchParams\s*\(/ },
-  {
-    label: 'JSON.parse on raw input',
-    pattern:
-      /JSON\.parse\s*\(\s*(?:raw|input|payload|event(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*|request(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*|body|data|params)\b/,
-  },
-  {
-    label: 'raw in-check',
-    pattern:
-      /(?:raw|input|payload|event|request|body|data|params)\s+in\s+[A-Za-z_$][A-Za-z0-9_$]*/,
-  },
-  {
-    label: 'raw typeof check',
-    pattern:
-      /typeof\s+(?:raw|input|payload|event(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*|request(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*|body|data|params)\b/,
-  },
-  {
-    label: 'raw Array.isArray check',
-    pattern:
-      /Array\.isArray\s*\(\s*(?:raw|input|payload|event(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*|request(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*|body|data|params)\b/,
-  },
-];
 
 /**
  * @param {...string} segments Path segments.
@@ -171,36 +134,6 @@ function walk(dirPath, deps) {
 }
 
 /**
- * @param {string} source Source text.
- * @returns {string[]} Helper names found in the source.
- */
-function extractValidationHelperNames(source) {
-  const names = [];
-  const regex =
-    /(?:^|\n)\s*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][A-Za-z0-9_$]*|(?:validate|isValid|assert|ensure)[A-Z0-9_$][A-Za-z0-9_$]*)|(?:^|\n)\s*(?:export\s+)?const\s+([A-Za-z_$][A-Za-z0-9_$]*|(?:validate|isValid|assert|ensure)[A-Z0-9_$][A-Za-z0-9_$]*)\s*=/g;
-  let match;
-  while ((match = regex.exec(source))) {
-    const name = match[1] || match[2];
-    if (VALIDATION_HELPER_NAME_PATTERN.test(name)) {
-      names.push(name);
-    }
-  }
-  return names;
-}
-
-/**
- * @param {string} source Source text.
- * @returns {Array<{ label: string }>} Raw-input interpretation markers.
- */
-function extractRawInputMarkers(source) {
-  return RAW_INPUT_PATTERNS.filter(({ pattern }) => pattern.test(source)).map(
-    ({ label }) => ({
-      label,
-    })
-  );
-}
-
-/**
  * @param {{ filePath: string, name: string }[]} violations Violations to render.
  * @returns {string[]} Human-readable failure lines.
  */
@@ -212,13 +145,13 @@ function formatValidationFailures(violations) {
 }
 
 /**
- * @param {{ filePath: string, label: string }[]} violations Violations to render.
+ * @param {{ filePath: string, name: string }[]} violations Violations to render.
  * @returns {string[]} Human-readable failure lines.
  */
 function formatRawInputFailures(violations) {
   return violations.map(
-    ({ filePath, label }) =>
-      `${filePath} contains raw-input interpretation (${label}); keep boundary parsing out of core.`
+    ({ filePath, name }) =>
+      `${filePath} contains parser function ${name}; keep parse logic in boundary modules.`
   );
 }
 
@@ -273,9 +206,7 @@ function findViolationsInCore(deps, extractViolationsFromSource) {
  * @returns {Array<{ filePath: string, name: string }>} Validation helper violations.
  */
 function findValidationViolations(deps) {
-  return findViolationsInCore(deps, source =>
-    extractValidationHelperNames(source).map(name => ({ name }))
-  );
+  return findClassifierViolations(deps, isValidatorOnlyFunction);
 }
 
 /**
@@ -291,10 +222,77 @@ function findValidationViolations(deps) {
  *   sourceRoot: string,
  *   configPath: string,
  * }} deps Parse-boundary gate dependencies.
- * @returns {Array<{ filePath: string, label: string }>} Raw-input violations.
+ * @returns {Array<{ filePath: string, name: string }>} Raw-input violations.
  */
 function findRawInputViolations(deps) {
-  return findViolationsInCore(deps, source => extractRawInputMarkers(source));
+  return findClassifierViolations(deps, isParserFunction);
+}
+
+/**
+ * @param {{
+ *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, readFileSync: (filePath: string, encoding: 'utf8') => string },
+ *   pathModule: {
+ *     join: (...segments: string[]) => string,
+ *     resolve: (...segments: string[]) => string,
+ *     relative: (from: string, to: string) => string,
+ *     sep: string,
+ *   },
+ *   rootDir: string,
+ *   sourceRoot: string,
+ *   configPath: string,
+ * }} deps Parse gate dependencies.
+ * @param {(fn: { name: string, labels: string[] }) => boolean} predicate Function classifier predicate.
+ * @returns {Array<{ filePath: string, name: string }>} Violations.
+ */
+function findClassifierViolations(deps, predicate) {
+  return findViolationsInCore(deps, source => {
+    const functions = classifyCoreFunctions(deps, source);
+    return functions.filter(predicate).map(fn => ({ name: fn.name }));
+  });
+}
+
+/**
+ * @param {{ name: string, labels: string[] }} fn Classified function.
+ * @returns {boolean} True when the function is validator-only.
+ */
+function isValidatorOnlyFunction(fn) {
+  return fn.labels.includes('validator') && !fn.labels.includes('parser');
+}
+
+/**
+ * @param {{ name: string, labels: string[] }} fn Classified function.
+ * @returns {boolean} True when the function is parser-labeled.
+ */
+function isParserFunction(fn) {
+  return fn.labels.includes('parser');
+}
+
+/**
+ * @param {{
+ *   pathModule: { resolve: (...segments: string[]) => string },
+ * }} deps Classifier dependencies.
+ * @param {string} _source File source.
+ * @returns {Array<{ name: string, labels: string[] }>} Classified functions.
+ */
+function classifyCoreFunctions(deps, _source) {
+  const classifierPath = deps.pathModule.resolve(
+    process.cwd(),
+    'classify-functions.js'
+  );
+  const classifierUrl = pathToFileURL(classifierPath).href;
+  const output = execFileSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      `import { classifyFunctionsFromSource } from ${JSON.stringify(classifierUrl)};\nlet source = '';\nprocess.stdin.setEncoding('utf8');\nprocess.stdin.on('data', chunk => { source += chunk; });\nprocess.stdin.on('end', () => {\n  process.stdout.write(JSON.stringify({ functions: classifyFunctionsFromSource(source) }));\n});`,
+    ],
+    {
+      encoding: 'utf8',
+      input: _source,
+    }
+  );
+  return JSON.parse(output).functions;
 }
 
 /**
@@ -381,8 +379,6 @@ export const checkCoreParseTestUtils = {
   normalizeOptions,
   readExemptions: readExemptionsFromFsModule,
   defaultPathModule: DEFAULT_PATH_MODULE,
-  extractValidationHelperNames,
-  extractRawInputMarkers,
   findValidationViolations,
   findRawInputViolations,
 };

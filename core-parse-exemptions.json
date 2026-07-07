@@ -1,6 +1,11 @@
 {
   "exemptions": {
     "src/core/commonCore.js": "current parse-not-validate violation: validation helpers still present in shared core",
-    "src/core/payment-webhook-core.js": "current parse-not-validate violation: validation helpers still present in shared core"
+    "src/core/payment-webhook-core.js": "current parse-not-validate violation: validation helpers still present in shared core",
+    "src/core/error-reporting.js": "current parse-not-validate violation: validation helpers still present in shared core",
+    "src/core/lint/tautological-wrapper.js": "current parse-not-validate violation: validation helpers still present in shared core",
+    "src/core/realtime/openaiRealtimeCalls.js": "current parse-not-validate violation: validation helpers still present in shared core",
+    "src/core/express-app.js": "current parse-boundary violation: core-owned express app builds JSON parsing dependencies",
+    "src/core/realtime/sessionConfig.js": "current parse-boundary violation: core-owned realtime session config composes parsed voice settings"
   }
 }

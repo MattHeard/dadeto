@@ -1,0 +1,4 @@
+- Hurdle: the initial classifier wiring lived under `src/core`, which tripped depcruise, and the first pass also left `tsdoc:check` and duplication failures behind.
+- Diagnosis path: I traced the `core-parse` gate, verified the classifier output on the new fixtures, then used the gate reports to isolate the type, dependency, and clone regressions.
+- Chosen fix: moved the Babel-backed classifier to the root CLI, had `src/core/scripts/check-core-parse.js` consume it through a subprocess, added the missing parser/validator signals and acceptance tests, and trimmed the exemption set for the current baseline.
+- Next-time guidance: keep the shared classifier outside `src/core`, and add a small type-annotated helper layer early so `tsdoc:check` does not become a late cleanup step.

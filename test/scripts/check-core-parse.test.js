@@ -189,11 +189,10 @@ describe('parse gates', () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.violations).toEqual([
-      { filePath: 'src/core/payment-webhook-core.js', name: 'validatePayload' },
       { filePath: 'src/core/payment-webhook-core.js', name: 'isValidPayload' },
     ]);
     expect(stdout.chunks.join('')).toContain(
-      'contains validation helper validatePayload'
+      'contains validation helper isValidPayload'
     );
   });
 
@@ -214,18 +213,29 @@ describe('parse gates', () => {
       expect.arrayContaining([
         {
           filePath: 'src/core/payment-webhook-core.js',
-          label: 'request.body access',
-        },
-        {
-          filePath: 'src/core/payment-webhook-core.js',
-          label: 'process.env access',
-        },
-        {
-          filePath: 'src/core/payment-webhook-core.js',
-          label: 'URLSearchParams',
+          name: 'parsePaymentWebhookEvent',
         },
       ])
     );
-    expect(stdout.chunks.join('')).toContain('raw-input interpretation');
+    expect(stdout.chunks.join('')).toContain(
+      'parser function parsePaymentWebhookEvent'
+    );
+  });
+
+  test('parse-not-validate fails on validator-only functions outside boundary modules', () => {
+    const fsModule = createFs({
+      '/repo/src/core/index.js':
+        'export function createMainHandle() { return parseRequest(); }',
+      '/repo/src/core/payment-webhook-core.js':
+        'export function validatePayload(payload) {\n  if (payload == null) {\n    throw new Error("missing");\n  }\n  return payload;\n}',
+    });
+    const result = createCheckParseNotValidateHandle(
+      createOptions({ fsModule })
+    )();
+
+    expect(result.exitCode).toBe(1);
+    expect(result.violations).toEqual([
+      { filePath: 'src/core/payment-webhook-core.js', name: 'validatePayload' },
+    ]);
   });
 });
