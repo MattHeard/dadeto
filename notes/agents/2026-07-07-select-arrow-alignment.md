@@ -1,0 +1,4 @@
+- Unexpected hurdle: wrapping select controls changed several tests and one DOM mock path assumed the select stayed the immediate child of `.value`.
+- Diagnosis path: I traced all select renderers through generator output, browser toy initialization, and moderator ratings, then re-ran the focused browser/generator tests to see which fixtures still assumed the old markup.
+- Chosen fix: add a shared `.select-wrapper` around every select, switch selects to `appearance: none` with monospace-friendly left padding, and keep the custom arrow in wrapper CSS instead of native select chrome.
+- Next-time guidance: when changing shared generated markup, update the markup fixtures and selector-lookup tests in the same loop so the first failing suite points at real behavior rather than stale expectations.

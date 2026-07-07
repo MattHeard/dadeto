@@ -72,17 +72,17 @@ describe('toys', () => {
       };
       const mockDropdown = {
         value: 'text',
+        closest: jest.fn(() => mockArticle),
         parentNode: {
           querySelector: () => mockParent,
         },
-        closest: jest.fn(() => mockArticle),
       };
       const mockGetData = jest.fn(() => ({
         output: { 'post-123': 'mockOutput' },
       }));
 
       const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
+        querySelector: jest.fn(() => mockParent),
         removeAllChildren: node => {
           while (node.firstChild) {
             node.removeChild(node.firstChild);
@@ -101,7 +101,6 @@ describe('toys', () => {
       const mockArticle = { id: 'article-1' };
       const dropdown = {
         value: 'text',
-        parentNode: { querySelector: () => ({}) },
         closest: jest.fn(() => mockArticle),
       };
       const getData = jest.fn(() => ({ output: {} }));
@@ -120,10 +119,14 @@ describe('toys', () => {
 
     it('does not throw when output object is missing', () => {
       const parent = { child: null, querySelector: jest.fn(() => parent) };
+      const valueContainer = { querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'text',
-        closest: jest.fn(() => ({ id: 'post-missing' })),
-        parentNode: parent,
+        closest: jest.fn(() => ({
+          id: 'post-missing',
+          querySelector: valueContainer.querySelector,
+        })),
+        parentNode: valueContainer,
       };
       const dom = {
         querySelector: jest.fn((el, selector) => el.querySelector(selector)),
@@ -174,7 +177,7 @@ describe('toys', () => {
 
       // Verify the output container was found
       expect(dom.querySelector).toHaveBeenCalledWith(
-        dropdown.parentNode,
+        dropdown.closest.mock.results[0].value,
         'div.output'
       );
 
@@ -189,14 +192,15 @@ describe('toys', () => {
     it('sets the output text when output exists for the post', () => {
       const parent = { child: null, querySelector: jest.fn() };
       parent.querySelector.mockReturnValue(parent);
+      const valueContainer = { querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'text',
         closest: jest.fn(() => ({ id: 'post-1' })),
-        parentNode: parent,
+        parentNode: valueContainer,
       };
       const getData = jest.fn(() => ({ output: { 'post-1': 'stored' } }));
       const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
+        querySelector: jest.fn(() => parent),
         removeAllChildren: jest.fn(p => {
           p.child = null;
         }),
@@ -217,14 +221,15 @@ describe('toys', () => {
     it('defaults to empty text when no output exists for the post', () => {
       const parent = { child: null, querySelector: jest.fn() };
       parent.querySelector.mockReturnValue(parent);
+      const valueContainer = { querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'text',
         closest: jest.fn(() => ({ id: 'post-2' })),
-        parentNode: parent,
+        parentNode: valueContainer,
       };
       const getData = jest.fn(() => ({ output: {} }));
       const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
+        querySelector: jest.fn(() => parent),
         removeAllChildren: jest.fn(p => {
           p.child = null;
         }),
@@ -245,14 +250,15 @@ describe('toys', () => {
     it('defaults to empty text when output is undefined', () => {
       const parent = { child: null, querySelector: jest.fn() };
       parent.querySelector.mockReturnValue(parent);
+      const valueContainer = { querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'text',
         closest: jest.fn(() => ({ id: 'post-undef' })),
-        parentNode: parent,
+        parentNode: valueContainer,
       };
       const getData = jest.fn(() => ({}));
       const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
+        querySelector: jest.fn(() => parent),
         removeAllChildren: jest.fn(p => {
           p.child = null;
         }),
@@ -272,14 +278,15 @@ describe('toys', () => {
     it('uses the closest article id to look up and display output', () => {
       const parent = { child: null, querySelector: jest.fn() };
       parent.querySelector.mockReturnValue(parent);
+      const valueContainer = { querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'text',
         closest: jest.fn(() => ({ id: 'post-42' })),
-        parentNode: parent,
+        parentNode: valueContainer,
       };
       const getData = jest.fn(() => ({ output: { 'post-42': 'answer' } }));
       const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
+        querySelector: jest.fn(() => parent),
         removeAllChildren: jest.fn(p => {
           p.child = null;
         }),
@@ -300,14 +307,15 @@ describe('toys', () => {
 
     it('creates empty output when data.output is missing', () => {
       const parent = { child: null, querySelector: jest.fn(() => parent) };
+      const valueContainer = { querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'text',
         closest: jest.fn(() => ({ id: 'post-missing' })),
-        parentNode: parent,
+        parentNode: valueContainer,
       };
       const getData = jest.fn(() => ({}));
       const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
+        querySelector: jest.fn(() => parent),
         removeAllChildren: jest.fn(p => {
           p.child = null;
         }),
@@ -329,14 +337,15 @@ describe('toys', () => {
 
     it('uses the pre presenter when dropdown value is "pre"', () => {
       const parent = { child: null, querySelector: jest.fn(() => parent) };
+      const valueContainer = { querySelector: jest.fn(() => parent) };
       const dropdown = {
         value: 'pre',
         closest: jest.fn(() => ({ id: 'post-pre' })),
-        parentNode: parent,
+        parentNode: valueContainer,
       };
       const getData = jest.fn(() => ({ output: { 'post-pre': 'hello' } }));
       const dom = {
-        querySelector: (el, selector) => el.querySelector(selector),
+        querySelector: jest.fn(() => parent),
         removeAllChildren: jest.fn(p => {
           p.child = null;
         }),

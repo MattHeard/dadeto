@@ -56,6 +56,19 @@ const defaultRatingEntry = {
 const createDefaultRatingEntry = () => ({ ...defaultRatingEntry });
 
 /**
+ * Wrap a select control so the visual arrow can live outside native select rendering.
+ * @param {DOMHelpers} dom - DOM utilities.
+ * @param {HTMLElement} select - Select element to wrap.
+ * @returns {HTMLElement} Wrapper element containing the select.
+ */
+const wrapSelectControl = (dom, select) => {
+  const wrapper = dom.createElement('span');
+  wrapper.className = 'select-wrapper';
+  dom.appendChild(wrapper, select);
+  return wrapper;
+};
+
+/**
  * Normalize a rating entry into the schema that the toy expects.
  * @param {unknown} entry Value parsed from the hidden input.
  * @returns {{moderatorId: string, variantId: string, ratedAt: string, isApproved: boolean}} Normalized entry.
@@ -111,7 +124,7 @@ const buildFieldInput = ({ dom, placeholder, value, onChange, cleanupFns }) => {
 /**
  * Build the approved/rejected toggle control.
  * @param {{ dom: DOMHelpers, initialValue: boolean, onChange: (value: boolean) => void, cleanupFns: CleanupFn[] }} options - Toggle configuration.
- * @returns {HTMLSelectElement} Initialized select element.
+ * @returns {HTMLElement} Wrapper containing the initialized select element.
  */
 const buildApproveToggle = ({ dom, initialValue, onChange, cleanupFns }) => {
   const select = /** @type {HTMLSelectElement} */ (dom.createElement('select'));
@@ -139,7 +152,7 @@ const buildApproveToggle = ({ dom, initialValue, onChange, cleanupFns }) => {
   cleanupFns.push(() =>
     dom.removeEventListener(select, 'change', handleChange)
   );
-  return select;
+  return wrapSelectControl(dom, select);
 };
 
 /**

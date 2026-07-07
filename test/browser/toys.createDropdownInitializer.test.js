@@ -25,10 +25,10 @@ describe('createDropdownInitializer', () => {
     // Verify querySelectorAll was called with the correct selectors
     expect(dom.querySelectorAll).toHaveBeenCalledTimes(2);
     expect(dom.querySelectorAll).toHaveBeenCalledWith(
-      'article.entry .value > select.output'
+      'article.entry .value select.output'
     );
     expect(dom.querySelectorAll).toHaveBeenCalledWith(
-      'article.entry .value > select.input'
+      'article.entry .value select.input'
     );
 
     // Verify no event listeners were added since the NodeList is empty

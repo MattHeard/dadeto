@@ -8,11 +8,11 @@ describe('handleDropdownChange null output', () => {
     const dropdown = {
       value: 'text',
       closest: jest.fn(() => ({ id: 'null-post' })),
-      parentNode: parent,
+      parentNode: { querySelector: jest.fn(() => parent) },
     };
     const getData = jest.fn(() => ({ output: null }));
     const dom = {
-      querySelector: (el, selector) => el.querySelector(selector),
+      querySelector: jest.fn(() => parent),
       removeAllChildren: jest.fn(p => {
         p.child = null;
       }),
