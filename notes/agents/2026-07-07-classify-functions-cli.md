@@ -1,0 +1,4 @@
+- Unexpected hurdle: the first cut depended on `@babel/parser` being available, but this workspace had no installed dependencies yet and the initial AST walk also treated arithmetic returns as validator signals.
+- Diagnosis path: I verified the missing package state, installed the workspace deps, then exercised a minimal exported-function fixture to inspect the emitted signal and location metadata.
+- Chosen fix: added the parser dependency to `package.json`, implemented the CLI with Babel parsing plus a bounded AST walk, and tightened the boolean-predicate rule so only comparison/logical/negation/Boolean returns count.
+- Next-time guidance: keep one tiny CLI fixture that includes an exported function and a plain arithmetic return so parser availability and false-positive regressions show up immediately.
