@@ -59,6 +59,30 @@ export function assertPresent(value) {
   }
 }
 
+export function parseProfile(input) {
+  return input.map(item => parseItem(item));
+}
+
+export function parseKind(raw) {
+  return raw.status === 'published' ? PUBLISHED : DRAFT;
+}
+
+export function parseUserId(raw) {
+  return new UserId(raw.id);
+}
+
+export function hasId(object) {
+  return 'id' in object;
+}
+
+export function hasOwnId(object) {
+  return Object.prototype.hasOwnProperty.call(object, 'id');
+}
+
+export function isUnset(value) {
+  return null === value || undefined !== value;
+}
+
 function outer(value) {
   function inner(raw) {
     return Number(raw);
@@ -75,6 +99,12 @@ function outer(value) {
       'isAdult',
       'parseCount',
       'assertPresent',
+      'parseProfile',
+      'parseKind',
+      'parseUserId',
+      'hasId',
+      'hasOwnId',
+      'isUnset',
       'outer',
       'inner',
     ]);
@@ -93,6 +123,24 @@ function outer(value) {
     expect(
       output.functions.find(fn => fn.name === 'assertPresent').labels
     ).toEqual(['validator']);
+    expect(
+      output.functions.find(fn => fn.name === 'parseProfile').labels
+    ).toEqual(['parser']);
+    expect(output.functions.find(fn => fn.name === 'parseKind').labels).toEqual(
+      [['parser']][0]
+    );
+    expect(
+      output.functions.find(fn => fn.name === 'parseUserId').labels
+    ).toEqual(['parser']);
+    expect(output.functions.find(fn => fn.name === 'hasId').labels).toEqual([
+      'validator',
+    ]);
+    expect(output.functions.find(fn => fn.name === 'hasOwnId').labels).toEqual([
+      'validator',
+    ]);
+    expect(output.functions.find(fn => fn.name === 'isUnset').labels).toEqual([
+      'validator',
+    ]);
     expect(output.functions.find(fn => fn.name === 'outer').labels).toEqual([]);
     expect(output.functions.find(fn => fn.name === 'inner').labels).toEqual([
       'parser',
@@ -110,5 +158,22 @@ function outer(value) {
         }
       )
     ).toThrow(/Could not read file/);
+  });
+
+  it('prints a parse error for invalid syntax', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'classify-functions-'));
+    const filePath = path.join(dir, 'broken.js');
+    fs.writeFileSync(filePath, 'export function broken( {');
+
+    expect(() =>
+      execFileSync(
+        process.execPath,
+        [path.resolve('classify-functions.js'), filePath],
+        {
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+        }
+      )
+    ).toThrow(/parse_error/);
   });
 });
