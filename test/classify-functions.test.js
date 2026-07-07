@@ -111,4 +111,27 @@ function outer(value) {
       )
     ).toThrow(/Could not read file/);
   });
+
+  it('recognizes additional parser and validator signals from the review', () => {
+    const { output } = runClassifier(`
+function extra(raw, object, value) {
+  if ('id' in object) {
+    return raw.status === 'published' ? PUBLISHED : DRAFT;
+  }
+
+  if (null === value || Object.prototype.hasOwnProperty.call(object, 'name')) {
+    return input.map(item => parseItem(item));
+  }
+
+  return new UserId(raw.id);
+}
+`);
+
+    const extra = output.functions[0];
+    expect(extra.labels).toEqual(['parser', 'validator']);
+    expect(extra.signals.map(signal => signal.kind)).toEqual([
+      'property_presence_check',
+      'maps_external_value_to_internal_value',
+    ]);
+  });
 });

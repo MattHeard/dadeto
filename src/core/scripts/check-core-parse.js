@@ -29,7 +29,7 @@ const DEFAULT_FS_MODULE = {
 };
 
 const BOUNDARY_FILE_PATTERN =
-  /(?:^|\/)(?:index|main)\.js$|(?:^|\/)(?:browser|cloud|local|scripts|build)\//;
+  /(?:^|\/)(?:index|main)\.js$|(?:^|\/)(?:browser|cloud|local|scripts|build)\/|(?:^|\/)parse[^/]*\.js$/;
 const VALIDATION_HELPER_NAME_PATTERN =
   /(?:^|[^A-Za-z0-9_])(validate|isValid|assert|ensure)[A-Z0-9_]/;
 const RAW_INPUT_PATTERNS = [
@@ -113,6 +113,36 @@ function normalizeOptions(options = {}) {
 }
 
 /**
+ * @param {string} source Source text.
+ * @returns {string[]} Helper names found in the source.
+ */
+function extractValidationHelperNames(source) {
+  const names = [];
+  const regex =
+    /(?:^|\n)\s*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][A-Za-z0-9_$]*|(?:validate|isValid|assert|ensure)[A-Z0-9_$][A-Za-z0-9_$]*)|(?:^|\n)\s*(?:export\s+)?const\s+([A-Za-z_$][A-Za-z0-9_$]*|(?:validate|isValid|assert|ensure)[A-Z0-9_$][A-Za-z0-9_$]*)\s*=/g;
+  let match;
+  while ((match = regex.exec(source))) {
+    const name = match[1] || match[2];
+    if (VALIDATION_HELPER_NAME_PATTERN.test(name)) {
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+/**
+ * @param {string} source Source text.
+ * @returns {Array<{ label: string }>} Raw-input interpretation markers.
+ */
+function extractRawInputMarkers(source) {
+  return RAW_INPUT_PATTERNS.filter(({ pattern }) => pattern.test(source)).map(
+    ({ label }) => ({
+      label,
+    })
+  );
+}
+
+/**
  * @param {{
  *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string },
  *   pathModule: { resolve: (...segments: string[]) => string },
@@ -168,36 +198,6 @@ function walk(dirPath, deps) {
     }
     return [];
   });
-}
-
-/**
- * @param {string} source Source text.
- * @returns {string[]} Helper names found in the source.
- */
-function extractValidationHelperNames(source) {
-  const names = [];
-  const regex =
-    /(?:^|\n)\s*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][A-Za-z0-9_$]*|(?:validate|isValid|assert|ensure)[A-Z0-9_$][A-Za-z0-9_$]*)|(?:^|\n)\s*(?:export\s+)?const\s+([A-Za-z_$][A-Za-z0-9_$]*|(?:validate|isValid|assert|ensure)[A-Z0-9_$][A-Za-z0-9_$]*)\s*=/g;
-  let match;
-  while ((match = regex.exec(source))) {
-    const name = match[1] || match[2];
-    if (VALIDATION_HELPER_NAME_PATTERN.test(name)) {
-      names.push(name);
-    }
-  }
-  return names;
-}
-
-/**
- * @param {string} source Source text.
- * @returns {Array<{ label: string }>} Raw-input interpretation markers.
- */
-function extractRawInputMarkers(source) {
-  return RAW_INPUT_PATTERNS.filter(({ pattern }) => pattern.test(source)).map(
-    ({ label }) => ({
-      label,
-    })
-  );
 }
 
 /**
@@ -381,8 +381,6 @@ export const checkCoreParseTestUtils = {
   normalizeOptions,
   readExemptions: readExemptionsFromFsModule,
   defaultPathModule: DEFAULT_PATH_MODULE,
-  extractValidationHelperNames,
-  extractRawInputMarkers,
   findValidationViolations,
   findRawInputViolations,
 };

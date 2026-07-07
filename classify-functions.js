@@ -238,11 +238,11 @@ function isNestedFunctionLike(node) {
   );
 }
 
-function classifySignal(node, functionNode) {
-  if (isParserSignal(node, functionNode)) {
+function classifySignal(node) {
+  if (isParserSignal(node)) {
     return toSignal(node, 'parser', parserSignalKind(node), describeNode(node));
   }
-  if (isValidatorSignal(node, functionNode)) {
+  if (isValidatorSignal(node)) {
     return toSignal(node, 'validator', validatorSignalKind(node), describeNode(node));
   }
   return null;
@@ -269,7 +269,10 @@ function parserSignalKind(node) {
     ) {
       return 'primitive_coercion';
     }
-    if (['Date.parse', 'schema.parse', 'schema.safeParse', 'parser.parse'].includes(callee) || callee.endsWith('.parse') || callee.endsWith('.safeParse')) {
+    if (callee === 'Date.parse') {
+      return 'date_or_url_construction';
+    }
+    if (callee.endsWith('.parse') || callee.endsWith('.safeParse')) {
       return 'schema_parse_call';
     }
     if (callee === 'Boolean') {
@@ -288,6 +291,18 @@ function parserSignalKind(node) {
   if (node.type === 'ReturnStatement' && node.argument?.type === 'ObjectExpression') {
     return 'returns_object_literal_from_input';
   }
+  if (node.type === 'ReturnStatement' && node.argument?.type === 'ConditionalExpression') {
+    return 'maps_external_value_to_internal_value';
+  }
+  if (
+    node.type === 'CallExpression' &&
+    node.callee.type === 'MemberExpression' &&
+    !node.callee.computed &&
+    node.callee.property.type === 'Identifier' &&
+    node.callee.property.name === 'map'
+  ) {
+    return 'returns_array_map_from_input';
+  }
   return 'parser';
 }
 
@@ -299,10 +314,16 @@ function validatorSignalKind(node) {
     if (node.operator === 'instanceof') {
       return 'instanceof_check';
     }
+    if (node.operator === 'in') {
+      return 'property_presence_check';
+    }
     if (['>', '>=', '<', '<='].includes(node.operator)) {
       return 'range_or_comparison_check';
     }
-    if (['==', '===', '!=', '!=='].includes(node.operator) && isNullish(node.right)) {
+    if (
+      ['==', '===', '!=', '!=='].includes(node.operator) &&
+      (isNullish(node.right) || isNullish(node.left))
+    ) {
       return 'null_or_undefined_check';
     }
   }
@@ -311,7 +332,12 @@ function validatorSignalKind(node) {
     if (callee === 'Array.isArray') {
       return 'array_is_array_check';
     }
-    if (callee === 'Object.hasOwn' || callee.endsWith('.hasOwnProperty') || callee === 'hasOwnProperty.call') {
+    if (
+      callee === 'Object.hasOwn' ||
+      callee === 'Object.prototype.hasOwnProperty.call' ||
+      callee.endsWith('.hasOwnProperty') ||
+      callee === 'hasOwnProperty.call'
+    ) {
       return 'property_presence_check';
     }
     if (callee === 'Boolean') {
@@ -339,7 +365,7 @@ function validatorSignalKind(node) {
   return 'validator';
 }
 
-function isParserSignal(node, functionNode) {
+function isParserSignal(node) {
   if (node.type === 'CallExpression') {
     const callee = getCalleeName(node.callee);
     if (
@@ -359,7 +385,19 @@ function isParserSignal(node, functionNode) {
   if (node.type === 'ReturnStatement' && node.argument?.type === 'ObjectExpression') {
     return true;
   }
+  if (node.type === 'ReturnStatement' && node.argument?.type === 'ConditionalExpression') {
+    return true;
+  }
   if (node.type === 'ReturnStatement' && node.argument?.type === 'ArrayExpression') {
+    return true;
+  }
+  if (
+    node.type === 'CallExpression' &&
+    node.callee.type === 'MemberExpression' &&
+    !node.callee.computed &&
+    node.callee.property.type === 'Identifier' &&
+    node.callee.property.name === 'map'
+  ) {
     return true;
   }
   return false;
@@ -373,7 +411,13 @@ function isValidatorSignal(node) {
     if (['instanceof', '>', '>=', '<', '<='].includes(node.operator)) {
       return true;
     }
+    if (node.operator === 'in') {
+      return true;
+    }
     if (['==', '===', '!=', '!=='].includes(node.operator) && isNullish(node.right)) {
+      return true;
+    }
+    if (['==', '===', '!=', '!=='].includes(node.operator) && isNullish(node.left)) {
       return true;
     }
   }
@@ -382,6 +426,7 @@ function isValidatorSignal(node) {
     return (
       callee === 'Array.isArray' ||
       callee === 'Object.hasOwn' ||
+      callee === 'Object.prototype.hasOwnProperty.call' ||
       callee.endsWith('.hasOwnProperty') ||
       callee === 'hasOwnProperty.call' ||
       callee.endsWith('.test') ||
@@ -416,8 +461,7 @@ function isBooleanishExpression(node) {
         node.operator
       )) ||
     node.type === 'LogicalExpression' ||
-    (node.type === 'UnaryExpression' &&
-      ['!', '!!'].includes(node.operator)) ||
+    (node.type === 'UnaryExpression' && node.operator === '!') ||
     (node.type === 'CallExpression' && getCalleeName(node.callee) === 'Boolean')
   );
 }
@@ -450,6 +494,9 @@ function getCalleeName(node) {
     const objectName = getCalleeName(node.object);
     const propertyName = getCalleeName(node.property);
     return `${objectName}.${propertyName}`;
+  }
+  if (node.type === 'PrivateName') {
+    return node.id.name;
   }
   return '<unknown>';
 }
