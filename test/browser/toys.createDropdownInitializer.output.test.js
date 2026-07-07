@@ -8,8 +8,8 @@ describe('createDropdownInitializer output init', () => {
       querySelectorAll: jest.fn(
         selector =>
           ({
-            'article.entry .value > select.output': [dropdown],
-            'article.entry .value > select.input': [],
+            'article.entry .value select.output': [dropdown],
+            'article.entry .value select.input': [],
           })[selector] || []
       ),
       addEventListener: jest.fn(),

@@ -1024,7 +1024,7 @@ function buildSelect(selectClass, entries, selectedValue) {
       return `<option value="${value}"${selected}>${label}</option>`;
     })
     .join('');
-  return `<select class="${selectClass}">${options}</select>`;
+  return `<span class="select-wrapper"><select class="${selectClass}">${options}</select></span>`;
 }
 
 /**
@@ -1113,7 +1113,7 @@ function buildToyInputDropdown(defaultMethod) {
   const options = INPUT_METHODS.map(method =>
     buildOption(method, selectedMethod)
   ).join('');
-  return `<select class="input">${options}</select><input type="text" disabled>`;
+  return `<span class="select-wrapper"><select class="input">${options}</select></span><input type="text" disabled>`;
 }
 
 const TOY_UI_SECTIONS_CONFIG = [

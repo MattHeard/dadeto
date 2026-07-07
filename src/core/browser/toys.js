@@ -299,6 +299,20 @@ export const createInputDropdownHandler = dom => {
 };
 
 /**
+ * Wrap a select control in a visual container that owns the custom arrow.
+ * @param {object} options - Configuration options.
+ * @param {object} options.dom - DOM helper utilities.
+ * @param {HTMLElement} options.selectEl - The select element to wrap.
+ * @returns {HTMLElement} The wrapper element containing the select.
+ */
+const wrapSelectControl = ({ dom, selectEl }) => {
+  const wrapper = dom.createElement('span');
+  wrapper.className = 'select-wrapper';
+  dom.appendChild(wrapper, selectEl);
+  return wrapper;
+};
+
+/**
  * Creates a component initializer function for setting up intersection observers.
  * @param {Function} getElement - Function to get an element by ID
  * @param {Function} logWarning - Function to log warnings
@@ -355,11 +369,16 @@ function getDropdownPostId(dropdown) {
 export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
-  const parent = dom.querySelector(dropdown.parentNode, 'div.output');
+  const valueContainer = dropdown.closest('.value');
+  const parent = valueContainer
+    ? dom.querySelector(valueContainer, 'div.output')
+    : null;
   const { output } = getData();
   const content = outputForPostId(output, postId);
 
-  setTextContent({ presenterKey: selectedValue, content }, dom, parent);
+  if (parent) {
+    setTextContent({ presenterKey: selectedValue, content }, dom, parent);
+  }
 }
 
 /**
@@ -994,7 +1013,7 @@ export const createTypeElement = ({
   });
   disposers.push(removeChangeListener);
 
-  return selectEl;
+  return wrapSelectControl({ dom, selectEl });
 };
 
 /**
@@ -1761,7 +1780,7 @@ export const createDropdownInitializer = (
 ) => {
   return () => {
     const outputDropdowns = Array.from(
-      dom.querySelectorAll('article.entry .value > select.output')
+      dom.querySelectorAll('article.entry .value select.output')
     );
     outputDropdowns.forEach(dropdown => {
       onOutputChange({ currentTarget: dropdown });
@@ -1770,7 +1789,7 @@ export const createDropdownInitializer = (
 
     // Add event listeners to toy input dropdowns
     const inputDropdowns = Array.from(
-      dom.querySelectorAll('article.entry .value > select.input')
+      dom.querySelectorAll('article.entry .value select.input')
     );
     inputDropdowns.forEach(dropdown => {
       onInputChange({ currentTarget: dropdown });

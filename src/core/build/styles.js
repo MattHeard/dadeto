@@ -478,6 +478,14 @@ const STYLES = String.raw`
     accent-color: var(--terminal-accent);
   }
 
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-left: calc(1ch - 1px);
+    padding-right: 2.5ch;
+    background-image: none;
+  }
+
   input:not([type="file"]):not([type="checkbox"]):focus,
   textarea:focus,
   select:focus {
@@ -491,6 +499,30 @@ const STYLES = String.raw`
     width: auto;
     max-width: 100%;
     margin-right: 1ch;
+  }
+
+  .select-wrapper {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .select-wrapper::after {
+    content: "▾";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.75ch;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    color: inherit;
+    opacity: 0.8;
+    font-size: 0.8em;
+  }
+
+  .select-wrapper > select {
+    display: block;
+    inline-size: 100%;
   }
 
   input[type="checkbox"] {
