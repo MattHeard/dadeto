@@ -7,6 +7,7 @@ describe('createKeyValueRow DOM appends', () => {
     const keyInput = {};
     const valueInput = {};
     const typeSelect = {};
+    const typeWrapper = {};
     const toggleBtn = {};
     const button = {};
     const option1 = {};
@@ -26,6 +27,7 @@ describe('createKeyValueRow DOM appends', () => {
         .mockReturnValueOnce(option2)
         .mockReturnValueOnce(option3)
         .mockReturnValueOnce(option4)
+        .mockReturnValueOnce(typeWrapper)
         .mockReturnValueOnce(toggleBtn)
         .mockReturnValueOnce(button),
       setClassName: jest.fn(),
@@ -58,12 +60,13 @@ describe('createKeyValueRow DOM appends', () => {
     expect(dom.appendChild).toHaveBeenNthCalledWith(2, typeSelect, option2);
     expect(dom.appendChild).toHaveBeenNthCalledWith(3, typeSelect, option3);
     expect(dom.appendChild).toHaveBeenNthCalledWith(4, typeSelect, option4);
+    expect(dom.appendChild).toHaveBeenNthCalledWith(5, typeWrapper, typeSelect);
     // Row children
-    expect(dom.appendChild).toHaveBeenNthCalledWith(5, rowEl, keyInput);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(6, rowEl, valueInput);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(7, rowEl, toggleBtn);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(8, rowEl, typeSelect);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(9, rowEl, button);
-    expect(dom.appendChild).toHaveBeenNthCalledWith(10, container, rowEl);
+    expect(dom.appendChild).toHaveBeenNthCalledWith(6, rowEl, keyInput);
+    expect(dom.appendChild).toHaveBeenNthCalledWith(7, rowEl, valueInput);
+    expect(dom.appendChild).toHaveBeenNthCalledWith(8, rowEl, toggleBtn);
+    expect(dom.appendChild).toHaveBeenNthCalledWith(9, rowEl, typeWrapper);
+    expect(dom.appendChild).toHaveBeenNthCalledWith(10, rowEl, button);
+    expect(dom.appendChild).toHaveBeenNthCalledWith(11, container, rowEl);
   });
 });

@@ -307,7 +307,7 @@ export const createInputDropdownHandler = dom => {
  */
 const wrapSelectControl = ({ dom, selectEl }) => {
   const wrapper = dom.createElement('span');
-  wrapper.className = 'select-wrapper';
+  dom.setClassName(wrapper, 'select-wrapper');
   dom.appendChild(wrapper, selectEl);
   return wrapper;
 };
@@ -370,9 +370,10 @@ export function handleDropdownChange(dropdown, getData, dom) {
   const postId = getDropdownPostId(dropdown);
   const selectedValue = dropdown.value;
   const valueContainer = dropdown.closest('.value');
-  const parent = valueContainer
-    ? dom.querySelector(valueContainer, 'div.output')
-    : null;
+  let parent = null;
+  if (valueContainer) {
+    parent = dom.querySelector(valueContainer, 'div.output');
+  }
   const { output } = getData();
   const content = outputForPostId(output, postId);
 

@@ -21,6 +21,7 @@ const makeDom = () => ({
   getDataAttribute: jest.fn(),
   getValue: jest.fn(),
   createRemoveListener: jest.fn(() => jest.fn()),
+  setClassName: jest.fn(),
 });
 
 describe('createTypeToggleButton', () => {
