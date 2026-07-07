@@ -28,7 +28,7 @@ describe('styles constant', () => {
     expect(css).toContain('/fonts/sarasa-gothic/v1.0.40/');
     expect(css).toContain('"DADETO Sarasa", ui-monospace');
     expect(css).toContain('--cell-w: 9.64px');
-    expect(css).toContain('--cell-h: 18px');
+    expect(css).toContain('--cell-h: 24px');
     expect(css).toContain(
       'width: min(100%, calc(var(--cols) * var(--cell-w)))'
     );
