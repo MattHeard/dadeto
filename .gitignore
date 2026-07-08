@@ -20,6 +20,7 @@ yarn-error.log*
 dist/
 build/
 public/
+# public/ is generated output and should stay untracked.
 !src/build/
 !src/core/build/
 
