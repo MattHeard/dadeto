@@ -28,6 +28,33 @@
       ]
     },
     {
+      "key": "JSON2",
+      "title": "JSON Parse Error Explainer",
+      "publicationDate": "2026-07-04",
+      "release": "public",
+      "content": [
+        "Accepts malformed JSON and returns a structured error object instead of throwing.",
+        "Surfaces an approximate failure location plus the original input length so users can diagnose where parsing broke.",
+        {
+          "type": "manual",
+          "id": "JSON2-manual",
+          "title": "User manual",
+          "markdown": "# JSON2 — JSON Parse Error Explainer\n\n## What this toy does\n\nJSON Parse Error Explainer accepts JSON text and returns the parsed value when the input is valid. When the input is malformed, it returns a structured error object instead of throwing.\n\n## Input format\n\nPaste any JSON text, valid or malformed.\n\n## Defaults\n\nIf the input cannot be parsed, the toy returns an error payload with:\n\n- a message string\n- an approximate failure location\n- the original input length\n\n## Output\n\nThe toy returns a JSON object with either:\n\n- `ok: true` and a parsed `value`, or\n- `ok: false` and an `error` object with parse diagnostics\n\n## How to use it\n\n1. Paste JSON text into the toy.\n2. Submit it.\n3. If parsing fails, inspect the approximate failure location and original input length to narrow down the problem.\n\n## Tips\n\n- This toy is useful for pasted JSON that may contain truncation, stray commas, or other syntax errors.\n- The location data is approximate, not a formal parser trace.\n- The toy stays synchronous and does not mutate the input string.\n"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-07-04/jsonParseErrorExplainer.js",
+        "functionName": "jsonParseErrorExplainer",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "json",
+        "text"
+      ]
+    },
+    {
       "key": "BEAC1",
       "title": "Beacon Bounce",
       "publicationDate": "2026-07-01",
