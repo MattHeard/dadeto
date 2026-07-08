@@ -137,7 +137,7 @@ describe('googleAuth', () => {
 
     expect(publicBrowserGoogleAuth).toContain('isInternalPlaywrightOrigin');
     expect(publicBrowserGoogleAuth).toContain(
-      'handle.initGoogleSignIn = options =>'
+      'export const initGoogleSignIn = handle.initGoogleSignIn;'
     );
   });
 });
