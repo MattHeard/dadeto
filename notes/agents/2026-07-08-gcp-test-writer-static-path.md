@@ -1,0 +1,4 @@
+- Unexpected hurdle: the latest gcp-test Terraform apply failed on `../public/writer/index.html`, but that file is not present in the workflow checkout.
+- Diagnosis path: confirmed `infra/main.tf` was the only reference to the path and that the checked-in writer source lives at `src/content/pages/writer/index.html`.
+- Chosen fix: point the Terraform static object at the checked-in source template instead of a generated `public/` artifact.
+- Next-time guidance: when a deploy step references `public/` during CI, verify whether the workflow actually creates that artifact before treating it as a missing file in source control.
