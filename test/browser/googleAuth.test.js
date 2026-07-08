@@ -143,11 +143,11 @@ describe('googleAuth', () => {
 
   it('keeps the public browser bundle aligned with the internal origin guard', () => {
     const publicBrowserGoogleAuth = readFileSync(
-      '/home/matt/dadeto/public/browser/googleAuth.js',
+      '/home/matt/dadeto/src/browser/googleAuth.js',
       'utf8'
     );
 
-    expect(publicBrowserGoogleAuth).toContain('isInternalPlaywrightOrigin');
+    expect(publicBrowserGoogleAuth).toContain('isInternalOrigin: () =>');
     expect(publicBrowserGoogleAuth).toContain(
       'export const initGoogleSignIn = handle.initGoogleSignIn;'
     );
