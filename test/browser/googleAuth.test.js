@@ -1,11 +1,15 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 
 let initGoogleSignIn;
 let signOut;
 let getIdToken;
 let isAdmin;
 let getAuthorUuid;
+const publicBrowserGoogleAuthPath = fileURLToPath(
+  new URL('../../src/browser/googleAuth.js', import.meta.url)
+);
 
 describe('googleAuth', () => {
   beforeEach(async () => {
@@ -141,15 +145,18 @@ describe('googleAuth', () => {
     expect(init).not.toHaveBeenCalled();
   });
 
-  it('keeps the public browser bundle aligned with the internal origin guard', () => {
+  it('keeps the browser auth entrypoint aligned with the internal origin guard', () => {
     const publicBrowserGoogleAuth = readFileSync(
-      '/home/matt/dadeto/src/browser/googleAuth.js',
+      publicBrowserGoogleAuthPath,
       'utf8'
     );
 
     expect(publicBrowserGoogleAuth).toContain('isInternalOrigin: () =>');
     expect(publicBrowserGoogleAuth).toContain(
-      'export const initGoogleSignIn = handle.initGoogleSignIn;'
+      'if (isInternalPlaywrightOrigin(globalThis))'
+    );
+    expect(publicBrowserGoogleAuth).toContain(
+      'return handle.initGoogleSignIn(options);'
     );
     expect(publicBrowserGoogleAuth).toContain('installAuthorUuidCaching');
   });
