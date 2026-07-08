@@ -20,6 +20,7 @@ describe('createGoogleAuthStatusHandle', () => {
   it('shows signed-in controls immediately when an id token exists', () => {
     const signInButton = createElement();
     const signOutWrap = createElement();
+    const profileLink = createElement();
     const adminLink = createElement();
     const initGoogleSignInFn = jest.fn();
     const handle = createGoogleAuthStatusHandle({
@@ -31,6 +32,9 @@ describe('createGoogleAuthStatusHandle', () => {
           if (selector === '#signoutWrap') {
             return [signOutWrap];
           }
+          if (selector === '#profileLink') {
+            return [profileLink];
+          }
           if (selector === '.admin-link') {
             return [adminLink];
           }
@@ -38,6 +42,7 @@ describe('createGoogleAuthStatusHandle', () => {
         }),
       },
       initGoogleSignInFn,
+      getAuthorUuidFn: jest.fn().mockReturnValue('author-1'),
       signOutFn: jest.fn(),
       getIdTokenFn: jest.fn().mockReturnValue('token'),
       isAdminFn: jest.fn().mockReturnValue(true),
@@ -50,12 +55,15 @@ describe('createGoogleAuthStatusHandle', () => {
     });
     expect(signInButton.style.display).toBe('none');
     expect(signOutWrap.style.display).toBe('');
+    expect(profileLink.style.display).toBe('');
+    expect(profileLink.href).toContain('/a/author-1.html');
     expect(adminLink.style.display).toBe('');
   });
 
   it('wires sign-in callback and sign-out link display updates', async () => {
     const signInButton = createElement();
     const signOutWrap = createElement();
+    const profileLink = createElement();
     const signOutLink = createElement();
     const adminLink = createElement();
     let onSignIn;
@@ -69,6 +77,9 @@ describe('createGoogleAuthStatusHandle', () => {
           if (selector === '#signoutWrap') {
             return [signOutWrap];
           }
+          if (selector === '#profileLink') {
+            return [profileLink];
+          }
           if (selector === '#signoutLink') {
             return [signOutLink];
           }
@@ -81,6 +92,7 @@ describe('createGoogleAuthStatusHandle', () => {
       initGoogleSignInFn: options => {
         onSignIn = options.onSignIn;
       },
+      getAuthorUuidFn: jest.fn().mockReturnValue('author-2'),
       signOutFn,
       getIdTokenFn: jest.fn().mockReturnValue(null),
       isAdminFn: jest.fn().mockReturnValue(false),
@@ -91,6 +103,8 @@ describe('createGoogleAuthStatusHandle', () => {
 
     expect(signInButton.style.display).toBe('none');
     expect(signOutWrap.style.display).toBe('');
+    expect(profileLink.style.display).toBe('');
+    expect(profileLink.href).toContain('/a/author-2.html');
     expect(adminLink.style.display).toBeUndefined();
 
     const event = { preventDefault: jest.fn() };
@@ -100,6 +114,7 @@ describe('createGoogleAuthStatusHandle', () => {
     expect(signOutFn).toHaveBeenCalled();
     expect(signInButton.style.display).toBe('');
     expect(signOutWrap.style.display).toBe('none');
+    expect(profileLink.style.display).toBe('none');
     expect(adminLink.style.display).toBe('none');
   });
 });

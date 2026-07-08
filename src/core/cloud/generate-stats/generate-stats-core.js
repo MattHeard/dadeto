@@ -45,6 +45,7 @@ const SITE_HEADER_HTML = `  <body>
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
         <a href="/stats.html">Stats</a>
+        <a id="profileLink" href="#" style="display:none">Me</a>
         <a href="/about.html">About</a>
         <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
         <div id="signinButton"></div>
@@ -71,6 +72,7 @@ const SITE_HEADER_HTML = `  <body>
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
+            <a id="profileLink" href="#" style="display:none">Me</a>
             <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
           </div>
 

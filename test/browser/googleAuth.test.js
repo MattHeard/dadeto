@@ -5,6 +5,7 @@ let initGoogleSignIn;
 let signOut;
 let getIdToken;
 let isAdmin;
+let getAuthorUuid;
 
 describe('googleAuth', () => {
   beforeEach(async () => {
@@ -32,15 +33,18 @@ describe('googleAuth', () => {
       matches: false,
       addEventListener: jest.fn(),
     });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ getAuthorUuidUrl: '/author-uuid' }),
+    });
     const el = { innerHTML: '' };
     global.document = {
       getElementById: jest.fn().mockReturnValue(el),
       querySelectorAll: jest.fn().mockReturnValue([el]),
     };
     global.atob = str => Buffer.from(str, 'base64').toString('binary');
-    ({ initGoogleSignIn, signOut, getIdToken, isAdmin } = await import(
-      '../../src/browser/googleAuth.js'
-    ));
+    ({ initGoogleSignIn, signOut, getIdToken, isAdmin, getAuthorUuid } =
+      await import('../../src/browser/googleAuth.js'));
   });
 
   it('logs an error when google object is missing', () => {
@@ -56,9 +60,17 @@ describe('googleAuth', () => {
     global.window.google = { accounts: { id: { disableAutoSelect } } };
     global.google = global.window.google;
     sessionStorage.setItem('id_token', 'tok');
+    sessionStorage.setItem('author_uuid', 'author-1');
     await signOut();
     expect(sessionStorage.getItem('id_token')).toBeNull();
+    expect(sessionStorage.getItem('author_uuid')).toBeNull();
     expect(disableAutoSelect).toHaveBeenCalled();
+  });
+
+  it('exports the cached author uuid helper used by header links', () => {
+    sessionStorage.setItem('author_uuid', 'author-1');
+
+    expect(getAuthorUuid()).toBe('author-1');
   });
 
   it('exports the cached ID token helper used by static pages', () => {
@@ -139,5 +151,6 @@ describe('googleAuth', () => {
     expect(publicBrowserGoogleAuth).toContain(
       'export const initGoogleSignIn = handle.initGoogleSignIn;'
     );
+    expect(publicBrowserGoogleAuth).toContain('installAuthorUuidCaching');
   });
 });

@@ -66,6 +66,7 @@ const SIMULATOR_ROUTES = [
   createGetRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
   createGetRoute('/api-keys/:uuid/credit/events', 'getApiKeyCreditV2'),
   createPostRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
+  createGetRoute('/__sim/get-author-uuid-v2', 'getAuthorUuid'),
   createGetRoute('/__sim/get-moderation-variant', 'getModerationVariant'),
   createPostRoute('/__sim/assign-moderation-job', 'assignModerationJob'),
   createPostRoute('/__sim/submit-moderation-rating', 'submitModerationRating'),

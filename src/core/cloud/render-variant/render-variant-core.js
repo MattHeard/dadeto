@@ -163,6 +163,7 @@ const HEADER_NAV_HTML = `
         <a href="/new-story.html">New story</a>
         <a href="/mod.html">Moderate</a>
         <a href="/stats.html">Stats</a>
+        <a id="profileLink" href="#" style="display:none">Me</a>
         <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
         <div id="signinButton"></div>
         <div id="signoutWrap" style="display:none">
@@ -189,6 +190,7 @@ const MOBILE_MENU_HTML = `
             <h3>Moderation</h3>
             <a href="/mod.html">Moderate</a>
             <a href="/stats.html">Stats</a>
+            <a id="profileLink" href="#" style="display:none">Me</a>
             <a class="admin-link" href="/admin.html" style="display:none">Admin</a>
           </div>
 

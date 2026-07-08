@@ -182,7 +182,7 @@ function createManualPage() {
  * @returns {string} HTML markup.
  */
 function createModerationPage() {
-  return `<h1>Moderate a story page</h1><p>Please contribute to keeping Dendrite</p><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div><div id="pageContent" style="display:none"></div><div id="actions"><button id="approveBtn" disabled>Approve</button><button id="rejectBtn" disabled>Reject</button></div><div id="fetching">Fetching...</div><script>const setText=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};(async()=>{const seed=await fetch('/seed.json').then(r=>r.json());await fetch('/config.json').then(r=>r.json());if(sessionStorage.getItem('id_token')){document.body.classList.add('authed');const signoutWrap=document.getElementById('signoutWrap');if(signoutWrap)signoutWrap.style.display='';document.querySelectorAll('#signinButton').forEach(el=>el.style.display='none');const pageContent=document.getElementById('pageContent');if(pageContent)pageContent.style.display='';setText('pageContent',seed.moderation.firstContent);const approve=document.getElementById('approveBtn');const reject=document.getElementById('rejectBtn');if(approve)approve.disabled=false;if(reject)reject.disabled=false;approve?.addEventListener('click',()=>setText('pageContent',seed.moderation.secondContent));reject?.addEventListener('click',()=>setText('pageContent',seed.moderation.secondContent));}})().catch(()=>{});</script>`;
+  return `<h1>Moderate a story page</h1><p>Please contribute to keeping Dendrite</p><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div><a id="profileLink" href="#" style="display:none">Me</a><div id="pageContent" style="display:none"></div><div id="actions"><button id="approveBtn" disabled>Approve</button><button id="rejectBtn" disabled>Reject</button></div><div id="fetching">Fetching...</div><script>const setText=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};(async()=>{const seed=await fetch('/seed.json').then(r=>r.json());await fetch('/config.json').then(r=>r.json());if(sessionStorage.getItem('id_token')){document.body.classList.add('authed');const signoutWrap=document.getElementById('signoutWrap');if(signoutWrap)signoutWrap.style.display='';document.querySelectorAll('#signinButton').forEach(el=>el.style.display='none');const pageContent=document.getElementById('pageContent');if(pageContent)pageContent.style.display='';setText('pageContent',seed.moderation.firstContent);const approve=document.getElementById('approveBtn');const reject=document.getElementById('rejectBtn');if(approve)approve.disabled=false;if(reject)reject.disabled=false;approve?.addEventListener('click',()=>setText('pageContent',seed.moderation.secondContent));reject?.addEventListener('click',()=>setText('pageContent',seed.moderation.secondContent));}})().catch(()=>{});</script>`;
 }
 
 /**
@@ -202,6 +202,7 @@ function createConfigRoute() {
       markVariantDirtyUrl: `${apiBaseUrl}/__sim/mark-variant-dirty`,
       generateStatsUrl: `${apiBaseUrl}/__sim/generate-stats`,
       paymentWebhookUrl: `${apiBaseUrl}/__sim/payment-webhook`,
+      getAuthorUuidUrl: `${apiBaseUrl}/__sim/get-author-uuid-v2`,
     });
   };
 }

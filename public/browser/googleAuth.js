@@ -9,37 +9,37 @@ import {
   isAdminWithDeps,
   setupFirebase,
 } from '../core/browser/admin-core.js';
+import { createLoadStaticConfig } from '../core/browser/load-static-config-core.js';
+import {
+  getCachedAuthorUuid,
+  installAuthorUuidCaching,
+  setCachedAuthorUuid,
+} from '../core/browser/google-auth-cache.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 
 setupFirebase(initializeApp);
-
-const handle = createGoogleAuthModule({
-  getAuthFn: getAuth,
-  storage: sessionStorage,
-  consoleObj: console,
-  globalScope: globalThis,
-  Provider: GoogleAuthProvider,
-  credentialFactory: signInWithCredential,
-});
-
-function isInternalPlaywrightOrigin(globalScope) {
-  const hostname = globalScope?.location?.hostname;
-  return typeof hostname === 'string' && /^10\.132\.0\.\d+$/.test(hostname);
-}
-
-const originalInitGoogleSignIn = handle.initGoogleSignIn;
-handle.initGoogleSignIn = options => {
-  if (isInternalPlaywrightOrigin(globalThis)) {
-    return;
+const handle = installAuthorUuidCaching(
+  createGoogleAuthModule({
+    getAuthFn: getAuth,
+    storage: sessionStorage,
+    consoleObj: console,
+    globalScope: globalThis,
+    Provider: GoogleAuthProvider,
+    credentialFactory: signInWithCredential,
+  }),
+  {
+    fetchFn: globalThis.fetch.bind(globalThis),
+    getAuthorUuidUrl: createLoadStaticConfig({
+      fetchFn: globalThis.fetch.bind(globalThis),
+      warn: console.warn.bind(console),
+    })().then(config => config.getAuthorUuidUrl || ''),
+    isInternalOrigin: isInternalPlaywrightOrigin,
   }
-
-  return originalInitGoogleSignIn(options);
-};
+);
 
 export { handle };
-export const { initGoogleSignIn, signOut } = handle;
-
-const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
-
-export { isAdmin };
+export const initGoogleSignIn = handle.initGoogleSignIn;
+export async function signOut() { await handle.signOut(); setCachedAuthorUuid(sessionStorage, null); }
+export const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
+export const getAuthorUuid = () => getCachedAuthorUuid(sessionStorage);
 export { getIdToken };

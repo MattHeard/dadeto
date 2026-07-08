@@ -112,6 +112,7 @@ function createSimulatorConfig(baseUrl, bucketName, projectId) {
     markVariantDirtyUrl: `${baseUrl}/__sim/mark-variant-dirty`,
     generateStatsUrl: `${baseUrl}/__sim/generate-stats`,
     paymentWebhookUrl: `${baseUrl}/__sim/payment-webhook`,
+    getAuthorUuidUrl: `${baseUrl}/__sim/get-author-uuid-v2`,
     bucketName,
     projectId,
   };
@@ -357,6 +358,15 @@ async function buildSimulatorState(/** @type {any} */ config) {
     db,
   });
   const submitNewStory = createSubmitNewStoryResponder(submitNewStoryConfig);
+  const getAuthorUuid = request =>
+    handleGetAuthorUuid(
+      {
+        db,
+        verifyIdToken: authVerifiers.verifySimulatorIdToken,
+        randomUUID,
+      },
+      request
+    );
   const getApiKeyCreditV2 = createGetApiKeyCreditV2Handler({
     fetchCredit: createFetchCredit(db),
     fetchCreditEvents: createFetchCreditEvents(db),
@@ -437,6 +447,7 @@ async function buildSimulatorState(/** @type {any} */ config) {
       submitNewStory,
       submitNewPage,
       getApiKeyCreditV2,
+      getAuthorUuid,
       paymentWebhook,
       db,
       fieldValue,
@@ -907,7 +918,7 @@ function createGetSeedManifest(/** @type {any} */ bucketName) {
 
 /**
  * Build the simulator routes.
- * @param {{ submitNewStory: Function, submitNewPage: Function, getApiKeyCreditV2: Function, db: ReturnType<typeof createDb>, fieldValue: unknown, renderContents: Function, generateStatsCore: { generate: Function } }} deps Route dependencies.
+ * @param {{ submitNewStory: Function, submitNewPage: Function, getApiKeyCreditV2: Function, getAuthorUuid: Function, db: ReturnType<typeof createDb>, fieldValue: unknown, renderContents: Function, generateStatsCore: { generate: Function } }} deps Route dependencies.
  * @returns {Record<string, (request: unknown) => Promise<{ status: number, body?: unknown }>>} Route map.
  */
 function createRoutes(/** @type {any} */ deps) {
@@ -915,6 +926,7 @@ function createRoutes(/** @type {any} */ deps) {
     submitNewStory: request => handleSubmitNewStory(deps, request),
     submitNewPage: request => handleSubmitNewPage(deps, request),
     getApiKeyCreditV2: request => handleGetApiKeyCreditV2(deps, request),
+    getAuthorUuid: request => deps.getAuthorUuid(request),
     paymentWebhook: request => handlePaymentWebhook(deps, request),
     getModerationVariant: request => handleGetModerationVariant(deps, request),
     assignModerationJob: request => handleAssignModerationJob(deps, request),
@@ -993,6 +1005,87 @@ async function handleGetApiKeyCreditV2(
   /** @type {any} */ request
 ) {
   return deps.getApiKeyCreditV2(request);
+}
+
+/**
+ * Extract the bearer token from a request.
+ * @param {unknown} request Incoming request object.
+ * @returns {string | null} Bearer token or null.
+ */
+function extractBearerToken(request) {
+  const header = getAuthorizationHeader(request);
+  if (typeof header !== 'string') {
+    return null;
+  }
+
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (!match) {
+    return null;
+  }
+
+  return match[1];
+}
+
+/**
+ * Read the requested author uuid from the existing document data.
+ * @param {Record<string, unknown> | undefined} data Document data.
+ * @returns {string | null} Cached author uuid or null.
+ */
+function readAuthorUuid(data) {
+  if (typeof data?.uuid === 'string' && data.uuid) {
+    return data.uuid;
+  }
+
+  return null;
+}
+
+/**
+ * Read a uid from a decoded token payload.
+ * @param {{ uid?: string | null }} decoded Decoded token payload.
+ * @returns {string | null} Verified uid or null.
+ */
+function readVerifiedUid(decoded) {
+  return decoded.uid;
+}
+
+/**
+ * Resolve or create the simulator author uuid.
+ * @param {{ db: ReturnType<typeof createDb>, verifyIdToken: (token: string) => Promise<{ uid?: string | null }>, randomUUID: () => string }} deps Simulator dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function resolveAuthorUuidInSimulator(deps, request) {
+  const bearer = extractBearerToken(request);
+  if (!bearer) {
+    return { status: 401, body: 'Invalid or expired token' };
+  }
+
+  const decoded = await deps.verifyIdToken(bearer);
+  const uid = readVerifiedUid(decoded);
+
+  const authorRef = deps.db.collection('authors').doc(uid);
+  const snap = await authorRef.get();
+  const cachedUuid = readAuthorUuid(snap.data());
+  if (cachedUuid) {
+    return { status: 200, body: { uuid: cachedUuid } };
+  }
+
+  const uuid = deps.randomUUID();
+  await authorRef.set({ uuid }, { merge: true });
+  return { status: 200, body: { uuid } };
+}
+
+/**
+ * Run the author uuid route handler.
+ * @param {{ db: ReturnType<typeof createDb>, verifyIdToken: (token: string) => Promise<{ uid?: string | null }>, randomUUID: () => string }} deps Route dependencies.
+ * @param {unknown} request Incoming request object.
+ * @returns {Promise<{ status: number, body?: unknown }>} Route response.
+ */
+async function handleGetAuthorUuid(
+  /** @type {any} */ deps,
+  /** @type {any} */ request
+) {
+  return resolveAuthorUuidInSimulator(deps, request);
 }
 
 /**

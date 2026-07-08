@@ -745,4 +745,63 @@ describe('local gcp simulator', () => {
       await localSimulator.clear();
     }
   });
+
+  it('returns and reuses the author uuid for a verified user', async () => {
+    const authorSimulator = await createLocalGcpSimulator({
+      baseUrl: 'http://127.0.0.1:4325',
+      publicDir: path.resolve('public'),
+    });
+
+    try {
+      const request = {
+        headers: { authorization: 'Bearer local-admin-token' },
+        get: name =>
+          name.toLowerCase() === 'authorization'
+            ? 'Bearer local-admin-token'
+            : null,
+      };
+
+      const first = await authorSimulator.routes.getAuthorUuid(request);
+      expect(first.status).toBe(200);
+      expect(first.body).toHaveProperty('uuid');
+
+      const authorDoc = authorSimulator.db.collection('authors').doc(ADMIN_UID);
+      const cached = await authorDoc.get();
+      expect(cached.data()).toMatchObject({
+        uuid: expect.any(String),
+      });
+
+      const second = await authorSimulator.routes.getAuthorUuid(request);
+      expect(second).toEqual(first);
+    } finally {
+      await authorSimulator.clear();
+    }
+  });
+
+  it('rejects missing or malformed author uuid requests', async () => {
+    const authorSimulator = await createLocalGcpSimulator({
+      baseUrl: 'http://127.0.0.1:4326',
+      publicDir: path.resolve('public'),
+    });
+
+    try {
+      await expect(authorSimulator.routes.getAuthorUuid({})).resolves.toEqual({
+        status: 401,
+        body: 'Invalid or expired token',
+      });
+
+      const malformed = await authorSimulator.routes.getAuthorUuid({
+        headers: { authorization: 'token-only' },
+        get: name =>
+          name.toLowerCase() === 'authorization' ? 'token-only' : null,
+      });
+
+      expect(malformed).toEqual({
+        status: 401,
+        body: 'Invalid or expired token',
+      });
+    } finally {
+      await authorSimulator.clear();
+    }
+  });
 });
