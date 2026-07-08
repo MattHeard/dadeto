@@ -1,4 +1,4 @@
-import { functions, express, cors, getEnvironmentVariables } from './realtime-call-gcf.js';
+import { onRequest, express, cors, getEnvironmentVariables } from './realtime-call-v2-gcf.js';
 import { getAllowedOrigins } from '../cors-config.js';
 import {
   exchangeRealtimeCallSdp as exchangeRealtimeCallSdpCore,
@@ -41,4 +41,4 @@ function handleRealtimeCallError(error, _req, res) {
 
 const environmentVariables = getEnvironmentVariables();
 export const realtimeCallApp = createRealtimeCallApp({ exchangeRealtimeCallSdp, allowedOrigins: getAllowedOrigins(environmentVariables) });
-export const handle = functions.region('europe-west1').https.onRequest(realtimeCallApp);
+export const handle = onRequest({ region: 'europe-west1' }, realtimeCallApp);

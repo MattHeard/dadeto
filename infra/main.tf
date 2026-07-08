@@ -651,21 +651,31 @@ resource "google_storage_bucket_object" "realtime_call" {
   source = data.archive_file.realtime_call_src.output_path
 }
 
-resource "google_cloudfunctions_function" "realtime_call" {
-  name                         = "${var.environment}-realtime-call"
-  runtime                      = var.cloud_functions_runtime
-  entry_point                  = "handle"
-  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
-  source_archive_object        = google_storage_bucket_object.realtime_call.name
-  trigger_http                 = true
-  https_trigger_security_level = var.https_security_level
-  service_account_email        = local.cloud_function_runtime_service_account_email
-  region                       = var.region
+resource "google_cloudfunctions2_function" "realtime_call" {
+  name     = "${var.environment}-realtime-call"
+  location = var.region
 
-  environment_variables = merge(
-    local.cloud_function_environment,
-    { OPENAI_API_KEY = var.openai_api_key },
-  )
+  build_config {
+    runtime     = "nodejs22"
+    entry_point = "handle"
+    source {
+      storage_source {
+        bucket = google_storage_bucket.gcf_source_bucket.name
+        object = google_storage_bucket_object.realtime_call.name
+      }
+    }
+  }
+
+  service_config {
+    available_memory      = "256M"
+    timeout_seconds       = 10
+    max_instance_count    = 20
+    service_account_email = local.cloud_function_runtime_service_account_email
+    environment_variables = merge(
+      local.cloud_function_environment,
+      { OPENAI_API_KEY = var.openai_api_key },
+    )
+  }
 
   depends_on = [
     google_project_service.project_level,
@@ -675,14 +685,14 @@ resource "google_cloudfunctions_function" "realtime_call" {
   ]
 }
 
-resource "google_cloudfunctions_function_iam_member" "realtime_call_invoker" {
-  project        = var.project_id
-  region         = var.region
-  cloud_function = google_cloudfunctions_function.realtime_call.name
-  role           = local.cloud_functions_invoker_role
-  member         = local.all_users_member
+resource "google_cloud_run_service_iam_member" "realtime_call_invoker" {
+  location = google_cloudfunctions2_function.realtime_call.location
+  service  = google_cloudfunctions2_function.realtime_call.name
+  role     = "roles/run.invoker"
+  member   = local.all_users_member
+
   depends_on = [
-    google_cloudfunctions_function.realtime_call,
+    google_cloudfunctions2_function.realtime_call,
     google_project_iam_member.terraform_service_account_roles["terraform_cloudfunctions_viewer"],
   ]
 }
