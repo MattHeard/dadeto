@@ -101,7 +101,7 @@ locals {
     }
     dendrite_writer_index = {
       name         = "writer/index.html"
-      source       = "${path.module}/../public/writer/index.html"
+      source       = "${path.module}/../src/content/pages/writer/index.html"
       content_type = "text/html"
     }
     dendrite_new_page = {
