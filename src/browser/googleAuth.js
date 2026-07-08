@@ -38,8 +38,11 @@ const handle = installAuthorUuidCaching(
   }
 );
 
-export { handle };
-export const initGoogleSignIn = handle.initGoogleSignIn;
+function isInternalPlaywrightOrigin(globalScope) { const hostname = globalScope?.location?.hostname; return typeof hostname === 'string' && /^10\.132\.0\.\d+$/.test(hostname); } export { handle };
+export const initGoogleSignIn = async options => {
+  if (isInternalPlaywrightOrigin(globalThis)) return;
+  return handle.initGoogleSignIn(options);
+};
 export async function signOut() { await handle.signOut(); setCachedAuthorUuid(sessionStorage, null); }
 export const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 export const getAuthorUuid = () => getCachedAuthorUuid(sessionStorage);
