@@ -160,4 +160,13 @@ describe('googleAuth', () => {
     );
     expect(publicBrowserGoogleAuth).toContain('installAuthorUuidCaching');
   });
+
+  it('keeps the installed author UUID loader callable for credential callbacks', () => {
+    const source = readFileSync(publicBrowserGoogleAuthPath, 'utf8');
+
+    expect(source).toContain('getAuthorUuidUrl: () =>');
+    expect(source).toContain(
+      "loadStaticConfig().then(config => config.getAuthorUuidUrl || '')"
+    );
+  });
 });

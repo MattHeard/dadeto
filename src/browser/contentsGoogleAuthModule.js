@@ -35,8 +35,7 @@ globalThis.addEventListener('unhandledrejection', errorBeaconHandlers.handleUnha
 
 const handle = createGoogleAuthStatusHandle({
   documentObj: document,
-  initGoogleSignInFn: options =>
-    initGoogleSignIn({ ...options, reportError: errorBeaconHandlers.logError }),
+  initGoogleSignInFn: options => loadStaticConfig().then(config => config.disableGoogleSignIn !== true ? initGoogleSignIn({ ...options, reportError: errorBeaconHandlers.logError }) : undefined),
   getAuthorUuidFn: getAuthorUuid,
   signOutFn: signOut,
   getIdTokenFn: getIdToken,

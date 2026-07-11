@@ -18,6 +18,7 @@ import {
 import { getIdToken } from '../core/browser/browser-core.js';
 
 setupFirebase(initializeApp);
+const loadStaticConfig = createLoadStaticConfig({ fetchFn: globalThis.fetch.bind(globalThis), warn: console.warn.bind(console) });
 const handle = installAuthorUuidCaching(
   createGoogleAuthModule({
     getAuthFn: getAuth,
@@ -29,10 +30,8 @@ const handle = installAuthorUuidCaching(
   }),
   {
     fetchFn: globalThis.fetch.bind(globalThis),
-    getAuthorUuidUrl: createLoadStaticConfig({
-      fetchFn: globalThis.fetch.bind(globalThis),
-      warn: console.warn.bind(console),
-    })().then(config => config.getAuthorUuidUrl || ''),
+    getAuthorUuidUrl: () =>
+      loadStaticConfig().then(config => config.getAuthorUuidUrl || ''),
     isInternalOrigin: () =>
       /^10\.132\.0\.\d+$/.test(globalThis?.location?.hostname || ''),
   }
