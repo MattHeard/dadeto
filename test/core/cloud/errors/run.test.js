@@ -34,7 +34,7 @@ describe('createErrorBeaconRun', () => {
 
     expect(express).toHaveBeenCalledTimes(1);
     expect(express.json).toHaveBeenCalledWith({
-      type: ['application/json', 'application/*+json'],
+      type: ['application/json', 'application/*+json', 'text/plain'],
     });
     expect(cors).toHaveBeenCalledWith({
       methods: ['POST'],

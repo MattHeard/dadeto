@@ -24,7 +24,9 @@ import { createErrorBeaconHandler } from './errors-core.js';
 export function createErrorBeaconRun(deps) {
   const app = deps.express();
   /** @type {any} */ (app).use(
-    deps.express.json({ type: ['application/json', 'application/*+json'] })
+    deps.express.json({
+      type: ['application/json', 'application/*+json', 'text/plain'],
+    })
   );
   const environmentVariables = getErrorBeaconEnvironmentVariables(
     deps.getEnvironmentVariables()

@@ -319,35 +319,27 @@ describe('createErrorBeaconReporter', () => {
 });
 
 describe('createErrorBeaconSendBeaconReporter', () => {
-  it('sends JSON as an application/json Blob', () => {
+  it('sends JSON as a simple text body to avoid a CORS preflight', () => {
     const sendBeacon = jest.fn(() => true);
-    const createBlob = jest.fn((parts, options) => ({ parts, options }));
     const reporter = createErrorBeaconSendBeaconReporter(
       sendBeacon,
-      '/prod-errors',
-      createBlob
+      '/prod-errors'
     );
 
     reporter({ message: 'boom' });
 
-    expect(createBlob).toHaveBeenCalledWith(['{"message":"boom"}'], {
-      type: 'application/json',
-    });
-    expect(sendBeacon).toHaveBeenCalledWith('/prod-errors', {
-      parts: ['{"message":"boom"}'],
-      options: { type: 'application/json' },
-    });
+    expect(sendBeacon).toHaveBeenCalledWith(
+      '/prod-errors',
+      '{"message":"boom"}'
+    );
   });
 
   it('no-ops when sendBeacon is unavailable', () => {
-    const createBlob = jest.fn();
     const reporter = createErrorBeaconSendBeaconReporter(
       undefined,
-      '/prod-errors',
-      createBlob
+      '/prod-errors'
     );
 
     expect(() => reporter({ message: 'boom' })).not.toThrow();
-    expect(createBlob).not.toHaveBeenCalled();
   });
 });
