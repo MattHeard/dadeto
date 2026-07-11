@@ -12,15 +12,6 @@ const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
   .catch(() => '');
 
-const handle = createGoogleAuthStatusHandle({
-  documentObj: document,
-  initGoogleSignInFn: initGoogleSignIn,
-  getAuthorUuidFn: getAuthorUuid,
-  signOutFn: signOut,
-  getIdTokenFn: getIdToken,
-  isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
-});
-
 const errorBeaconHandlers = createErrorBeaconHandlers({
   reportBeacon: payload =>
     errorBeaconUrlPromise.then(url => {
@@ -41,5 +32,15 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
 
 globalThis.addEventListener('error', errorBeaconHandlers.handleWindowError);
 globalThis.addEventListener('unhandledrejection', errorBeaconHandlers.handleUnhandledRejection);
+
+const handle = createGoogleAuthStatusHandle({
+  documentObj: document,
+  initGoogleSignInFn: options =>
+    initGoogleSignIn({ ...options, reportError: errorBeaconHandlers.logError }),
+  getAuthorUuidFn: getAuthorUuid,
+  signOutFn: signOut,
+  getIdTokenFn: getIdToken,
+  isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
+});
 
 handle();

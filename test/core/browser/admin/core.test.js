@@ -1464,6 +1464,31 @@ describe('createInitGoogleSignIn', () => {
     await expect(savedCallback({ credential: 'raw' })).resolves.toBeUndefined();
   });
 
+  it('reports handled sign-in failures to the error beacon', async () => {
+    let savedCallback;
+    const reportError = jest.fn();
+    const error = new TypeError('getAuthorUuidUrl is not a function');
+    const initGoogleSignIn = createInitGoogleSignIn({
+      googleAccountsId: {
+        initialize: ({ callback }) => {
+          savedCallback = callback;
+        },
+        renderButton: jest.fn(),
+      },
+      credentialFactory: jest.fn(cred => cred),
+      signInWithCredential: jest.fn().mockRejectedValue(error),
+      auth: { currentUser: null },
+      storage: { setItem: jest.fn() },
+      matchMedia: jest.fn().mockReturnValue({}),
+      querySelectorAll: jest.fn().mockReturnValue([]),
+    });
+
+    initGoogleSignIn({ reportError });
+    await savedCallback({ credential: 'raw' });
+
+    expect(reportError).toHaveBeenCalledWith(error);
+  });
+
   it('logs an error when renderButton is missing', () => {
     const error = jest.fn();
     const init = createInitGoogleSignIn({

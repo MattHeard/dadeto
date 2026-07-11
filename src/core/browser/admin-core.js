@@ -26,6 +26,7 @@ import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
 /**
  * @typedef {object} GoogleSignInOptions
  * @property {(token: string) => void} [onSignIn] - Callback invoked once a token is available.
+ * @property {(error: unknown) => void} [reportError] - Optional error beacon reporter.
  */
 
 /**
@@ -1428,7 +1429,7 @@ function renderSignInButton(element, accountsId, theme) {
 export function createInitGoogleSignIn(deps) {
   const normalizedDeps = normalizeGoogleSignInDeps(deps);
 
-  return function initGoogleSignIn({ onSignIn } = {}) {
+  return function initGoogleSignIn({ onSignIn, reportError } = {}) {
     return initGoogleSignInCore(
       /**
          @type {{
@@ -1446,7 +1447,8 @@ export function createInitGoogleSignIn(deps) {
         querySelectorAll: (selector: string) => NodeList,
         safeLogger: { error?: (message: string) => void },
       }} */ normalizedDeps,
-      onSignIn
+      onSignIn,
+      reportError
     );
   };
 }
@@ -1455,9 +1457,10 @@ export function createInitGoogleSignIn(deps) {
  * Wire the Google Identity button renderer with the normalized dependencies.
  * @param {NormalizedGoogleSignInDeps} deps - Normalized Google sign-in dependencies.
  * @param {(token: string) => void | undefined} [onSignIn] - Optional callback invoked with the obtained ID token.
+ * @param {(error: unknown) => void | undefined} [reportError] - Optional error beacon reporter.
  * @returns {void}
  */
-function initGoogleSignInCore(deps, onSignIn) {
+function initGoogleSignInCore(deps, onSignIn, reportError) {
   const {
     resolveGoogleAccountsId,
     credentialFactory,
@@ -1478,6 +1481,7 @@ function initGoogleSignInCore(deps, onSignIn) {
       auth,
       storage,
       onSignIn,
+      reportError,
     });
 
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
@@ -1501,6 +1505,7 @@ function initGoogleSignInCore(deps, onSignIn) {
  *   auth: FirebaseAuthInstance,
  *   storage: { setItem: (key: string, value: string) => void },
  *   onSignIn?: (token: string) => void,
+ *   reportError?: (error: unknown) => void,
  * }} options - Dependencies for acquiring and storing the ID token.
  * @returns {void}
  */
@@ -1510,6 +1515,7 @@ function initializeGoogleSignIn(accountsId, options) {
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
     callback: (/** @type {any} */ cred) => {
       return handleCredentialSignIn(cred, options).catch(error => {
+        options.reportError?.(error);
         console.error('Google sign-in failed', error);
       });
     },
