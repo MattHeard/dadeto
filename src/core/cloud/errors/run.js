@@ -25,9 +25,10 @@ export function createErrorBeaconRun(deps) {
   const app = deps.express();
   /** @type {any} */ (app).use(
     deps.express.json({
-      type: ['application/json', 'application/*+json', 'text/plain'],
+      type: ['application/json', 'application/*+json'],
     })
   );
+  /** @type {any} */ (app).use(deps.express.text({ type: 'text/plain' }));
   const environmentVariables = getErrorBeaconEnvironmentVariables(
     deps.getEnvironmentVariables()
   );
@@ -72,13 +73,27 @@ export function createErrorBeaconRun(deps) {
     }
   }
 
-  const handleErrorBeacon = createErrorBeaconHandler({
+  const handleParsedErrorBeacon = createErrorBeaconHandler({
     environment,
     buildVersion,
     reportEvent,
     getServerTimestamp: () => new Date().toISOString(),
     console: deps.console,
   });
+
+  const handleErrorBeacon = async (
+    /** @type {any} */ request,
+    /** @type {any} */ response
+  ) => {
+    if (typeof request.body === 'string') {
+      try {
+        request.body = JSON.parse(request.body);
+      } catch {
+        request.body = undefined;
+      }
+    }
+    await handleParsedErrorBeacon(request, response);
+  };
 
   /** @type {any} */ (app).post('/', handleErrorBeacon);
   /** @type {any} */ (app).post('/errors', handleErrorBeacon);

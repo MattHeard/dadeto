@@ -9,6 +9,8 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -34,13 +36,13 @@ describe('createErrorBeaconRun', () => {
 
     expect(express).toHaveBeenCalledTimes(1);
     expect(express.json).toHaveBeenCalledWith({
-      type: ['application/json', 'application/*+json', 'text/plain'],
+      type: ['application/json', 'application/*+json'],
     });
     expect(cors).toHaveBeenCalledWith({
       methods: ['POST'],
       origin: expect.any(Function),
     });
-    expect(use).toHaveBeenCalledTimes(2);
+    expect(use).toHaveBeenCalledTimes(3);
     expect(post).toHaveBeenCalledTimes(2);
     expect(handle).toEqual({ use, post });
   });
@@ -52,6 +54,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -96,6 +99,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -138,6 +142,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -184,6 +189,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -219,6 +225,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -258,6 +265,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -296,6 +304,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -333,6 +342,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
@@ -357,6 +367,7 @@ describe('createErrorBeaconRun', () => {
       jest.fn(() => ({ use, post })),
       {
         json: jest.fn(() => 'json-middleware'),
+        text: jest.fn(() => 'text-middleware'),
       }
     );
     const cors = jest.fn(() => 'cors-middleware');
