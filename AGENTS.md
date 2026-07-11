@@ -161,6 +161,14 @@ Use canonical procedures in:
 - `npm run lint`
 - `npm run start`
 
+If a command reports a missing executable, package, or `node_modules` dependency,
+run `npm install` in the worktree and rerun the command before treating the
+failure as a code or configuration regression.
+
+The unit coverage runner uses bounded serial shards by default. Set
+`DADETO_COVERAGE_SHARD_SIZE` to tune the maximum number of test files per
+coverage process; lower values reduce peak memory and increase runtime.
+
 Prefer repo docs for command intent and troubleshooting over duplicating long instructions here.
 
 ## Coding and review expectations
