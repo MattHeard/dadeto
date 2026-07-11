@@ -579,35 +579,45 @@ function formatTriggerRenderFailureMessage({ status, statusText, body }) {
  * Report a trigger render failure to the provided messenger.
  * @param {Response|null|undefined} res Response returned by the trigger render request.
  * @param {(text: string) => void} showMessage Callback used to surface status messages.
+ * @param {(error: unknown) => void} [reportError] Optional error beacon reporter.
  * @returns {Promise<void>} Resolves after the failure has been reported.
  */
-async function reportTriggerRenderFailure(res, showMessage) {
+async function reportTriggerRenderFailure(
+  res,
+  showMessage,
+  reportError = () => {}
+) {
   const status = resolveTriggerRenderStatus(res);
   const statusText = resolveTriggerRenderStatusText(res);
   const body = await readTriggerRenderBody(res);
 
-  showMessage(
-    formatTriggerRenderFailureMessage({
-      status,
-      statusText,
-      body,
-    })
-  );
+  const message = formatTriggerRenderFailureMessage({
+    status,
+    statusText,
+    body,
+  });
+  reportError(new Error(message));
+  showMessage(message);
 }
 
 /**
  * Report the outcome of a trigger render request using the provided messenger.
  * @param {Response|null|undefined} res Response returned by the trigger render request.
  * @param {(text: string) => void} showMessage Callback to surface status messages.
+ * @param {(error: unknown) => void} [reportError] Optional error beacon reporter.
  * @returns {Promise<void>} Resolves after the trigger render result has been surfaced.
  */
-export async function announceTriggerRenderResult(res, showMessage) {
+export async function announceTriggerRenderResult(
+  res,
+  showMessage,
+  reportError = () => {}
+) {
   if (isResponseOk(res)) {
     showMessage('Render triggered');
     return;
   }
 
-  await reportTriggerRenderFailure(res, showMessage);
+  await reportTriggerRenderFailure(res, showMessage, reportError);
 }
 
 /**
@@ -627,6 +637,7 @@ export async function executeTriggerRender({
     fetchFn,
     token,
     showMessage,
+    reportError,
   }).catch(e => {
     reportError(e);
     showMessage(`Render failed: ${renderErrorMessage(e)}`);
@@ -640,6 +651,7 @@ export async function executeTriggerRender({
  *   fetchFn: FetchFn,
  *   token: string,
  *   showMessage: (text: string) => void,
+ *   reportError?: (error: unknown) => void,
  * }} params - Dependencies required for executing the render flow.
  * @returns {Promise<void>} Resolves when reporting the outcome completes.
  */
@@ -648,6 +660,7 @@ async function executeTriggerRenderCore({
   fetchFn,
   token,
   showMessage,
+  reportError,
 }) {
   const res = await postTriggerRenderContents(
     getAdminEndpoints,
@@ -655,7 +668,7 @@ async function executeTriggerRenderCore({
     token
   );
 
-  await announceTriggerRenderResult(res, showMessage);
+  await announceTriggerRenderResult(res, showMessage, reportError);
 }
 
 /**
@@ -1530,6 +1543,7 @@ function initializeGoogleSignIn(accountsId, options) {
  *   getAdminEndpointsFn: () => Promise<{ generateStatsUrl: string }>,
  *   fetchFn: FetchFn,
  *   showMessage: (text: string) => void,
+ *   reportError?: (error: unknown) => void,
  * }} options - Dependencies used during stats generation.
  * @returns {() => Promise<void>} Function that triggers stats generation when invoked.
  */
@@ -1538,6 +1552,7 @@ export function createTriggerStats({
   getAdminEndpointsFn,
   fetchFn,
   showMessage,
+  reportError = () => {},
 }) {
   return createAdminTokenAction({
     googleAuth,
@@ -1565,7 +1580,8 @@ export function createTriggerStats({
         });
         assertStatsResponseOk(response);
         report('Stats generated');
-      } catch {
+      } catch (error) {
+        reportError(error);
         report('Stats generation failed');
       }
     },
@@ -2057,6 +2073,7 @@ export function initAdmin({
     getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
     showMessage,
+    reportError,
   });
 
   const regenerateVariant = createRegenerateVariant({

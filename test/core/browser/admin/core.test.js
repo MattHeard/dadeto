@@ -359,6 +359,29 @@ describe('createTriggerStats', () => {
     expect(showMessage).toHaveBeenCalledWith('Stats generation failed');
   });
 
+  it('beacons non-ok endpoint responses', async () => {
+    const googleAuth = { getIdToken: jest.fn().mockReturnValue('token') };
+    const getAdminEndpoints = jest
+      .fn()
+      .mockResolvedValue({ generateStatsUrl: statsUrl });
+    const fetch = jest.fn().mockResolvedValue({ ok: false, status: 401 });
+    const showMessage = jest.fn();
+    const reportError = jest.fn();
+
+    const triggerStats = createTriggerStats({
+      googleAuth,
+      getAdminEndpointsFn: getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage,
+      reportError,
+    });
+
+    await triggerStats();
+
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
+    expect(showMessage).toHaveBeenCalledWith('Stats generation failed');
+  });
+
   it('throws when googleAuth is missing getIdToken', () => {
     expect(() =>
       createTriggerStats({
@@ -716,6 +739,22 @@ describe('announceTriggerRenderResult', () => {
     );
 
     expect(showMessage).toHaveBeenCalledWith('Render failed: 503 Unavailable');
+  });
+
+  it('beacons non-ok render responses', async () => {
+    const showMessage = jest.fn();
+    const reportError = jest.fn();
+
+    await announceTriggerRenderResult(
+      { ok: false, status: 401, statusText: 'Unauthorized' },
+      showMessage,
+      reportError
+    );
+
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
+    expect(showMessage).toHaveBeenCalledWith(
+      'Render failed: 401 Unauthorized'
+    );
   });
 
   it('handles empty body strings when announcing failures', async () => {
