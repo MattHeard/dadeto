@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import {
   createErrorBeaconHandlers,
   createErrorBeaconReporter,
+  createErrorBeaconSendBeaconReporter,
   normalizeErrorPayload,
 } from '../../../src/core/browser/error-beacon.js';
 import { sanitizeUrl } from '../../../src/core/error-reporting.js';
@@ -314,5 +315,39 @@ describe('createErrorBeaconReporter', () => {
     await Promise.resolve();
 
     expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('createErrorBeaconSendBeaconReporter', () => {
+  it('sends JSON as an application/json Blob', () => {
+    const sendBeacon = jest.fn(() => true);
+    const createBlob = jest.fn((parts, options) => ({ parts, options }));
+    const reporter = createErrorBeaconSendBeaconReporter(
+      sendBeacon,
+      '/prod-errors',
+      createBlob
+    );
+
+    reporter({ message: 'boom' });
+
+    expect(createBlob).toHaveBeenCalledWith(['{"message":"boom"}'], {
+      type: 'application/json',
+    });
+    expect(sendBeacon).toHaveBeenCalledWith('/prod-errors', {
+      parts: ['{"message":"boom"}'],
+      options: { type: 'application/json' },
+    });
+  });
+
+  it('no-ops when sendBeacon is unavailable', () => {
+    const createBlob = jest.fn();
+    const reporter = createErrorBeaconSendBeaconReporter(
+      undefined,
+      '/prod-errors',
+      createBlob
+    );
+
+    expect(() => reporter({ message: 'boom' })).not.toThrow();
+    expect(createBlob).not.toHaveBeenCalled();
   });
 });

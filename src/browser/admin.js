@@ -2,7 +2,7 @@ import { loadStaticConfig } from './loadStaticConfig.js';
 import { createInitAdminAppHandle } from '../core/browser/admin-core.js';
 import {
   createErrorBeaconHandlers,
-  createErrorBeaconReporter,
+  createErrorBeaconSendBeaconReporter,
 } from '../core/browser/error-beacon.js';
 import {
   getAuth,
@@ -13,7 +13,7 @@ import {
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 
 const errorBeaconHandlers = createErrorBeaconHandlers({
-  reportBeacon: createErrorBeaconReporter(
+  reportBeacon: createErrorBeaconSendBeaconReporter(
     globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
     '/prod-errors'
   ),
