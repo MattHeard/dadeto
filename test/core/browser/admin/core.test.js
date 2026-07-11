@@ -1164,6 +1164,7 @@ describe('createRegenerateVariant additional branches', () => {
     const input = { value: '5Zz' };
     const doc = { getElementById: jest.fn().mockReturnValue(input) };
     const showMessage = jest.fn();
+    const reportError = jest.fn();
     const getAdminEndpoints = jest
       .fn()
       .mockResolvedValue({ markVariantDirtyUrl });
@@ -1175,11 +1176,13 @@ describe('createRegenerateVariant additional branches', () => {
       showMessage,
       getAdminEndpointsFn: getAdminEndpoints,
       fetchFn: fetch,
+      reportError,
     });
 
     await regenerateVariant({ preventDefault: jest.fn() });
 
     expect(showMessage).toHaveBeenCalledWith('Regeneration failed');
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
   });
 
   it('throws when provided document is invalid', () => {

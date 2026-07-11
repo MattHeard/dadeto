@@ -1591,6 +1591,7 @@ function assertStatsResponseOk(response) {
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
  *   fetchFn: FetchFn,
+ *   reportError?: (error: unknown) => void,
  * }} options - Dependencies for the regenerate workflow.
  * @returns {(event: Event) => Promise<void>} Function that triggers variant regeneration when invoked.
  */
@@ -1639,6 +1640,7 @@ function isValidAuth(googleAuth) {
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
  *   fetchFn: FetchFn,
+ *   reportError?: (error: unknown) => void,
  * }} deps - Dependencies required for regenerating a variant.
  * @returns {void}
  */
@@ -1664,6 +1666,7 @@ function validateRegenerateVariantDeps({
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
  *   fetchFn: FetchFn,
+ *   reportError?: (error: unknown) => void,
  * }} options - Dependencies needed to trigger regeneration.
  * @returns {(event: Event) => Promise<void>} Handler that reads the input, builds the payload, and submits the request.
  */
@@ -1673,6 +1676,7 @@ function createRegenerateVariantHandler({
   showMessage,
   getAdminEndpointsFn,
   fetchFn,
+  reportError,
 }) {
   return async function regenerateVariant(event) {
     preventDefaultEvent(event);
@@ -1682,6 +1686,7 @@ function createRegenerateVariantHandler({
       fetchFn,
       getAdminEndpointsFn,
       showMessage,
+      reportError,
     });
   };
 }
@@ -1786,6 +1791,7 @@ function preventDefaultEvent(event) {
  *   fetchFn: FetchFn,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
  *   showMessage: (text: string) => void,
+ *   reportError?: (error: unknown) => void,
  * }} deps - Dependencies required to execute the regeneration request.
  * @returns {Promise<void>}
  */
@@ -1821,6 +1827,7 @@ function getPageVariantFromDoc(doc) {
  *   token: string,
  *   pageVariant: { page: number, variant: string },
  *   showMessage: (text: string) => void,
+ *   reportError?: (error: unknown) => void,
  * }} options - Dependencies and payload for the regeneration flow.
  * @returns {Promise<void>} Resolves once the request has been attempted.
  */
@@ -1830,6 +1837,7 @@ async function performRegeneration({
   token,
   pageVariant,
   showMessage,
+  reportError = () => {},
 }) {
   try {
     await sendRegenerateVariantRequest({
@@ -1839,7 +1847,8 @@ async function performRegeneration({
       pageVariant,
     });
     showMessage('Regeneration triggered');
-  } catch {
+  } catch (error) {
+    reportError(error);
     showMessage('Regeneration failed');
   }
 }
@@ -2056,6 +2065,7 @@ export function initAdmin({
     showMessage,
     getAdminEndpointsFn: getAdminEndpoints,
     fetchFn,
+    reportError,
   });
 
   bindTriggerRenderClick(doc, triggerRender);
