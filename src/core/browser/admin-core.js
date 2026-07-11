@@ -32,7 +32,7 @@ import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
 /**
  * @typedef {object} FirebaseAuthUser
  * @property {string} [uid] - Unique identifier assigned to the user.
- * @property {() => Promise<string> | string | null | undefined} [getIdToken] - Function returning an ID token.
+ * @property {(forceRefresh?: boolean) => Promise<string> | string | null | undefined} [getIdToken] - Function returning an ID token.
  */
 /**
  * @typedef {object} FirebaseAuthInstance
@@ -54,7 +54,7 @@ import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
  * @typedef {object} GoogleAuthModule
  * @property {(options?: GoogleSignInOptions) => void | Promise<void>} initGoogleSignIn - Initializes the Google sign-in flow.
  * @property {() => Promise<void>} signOut - Sign-out handler for Google auth.
- * @property {() => string | null | undefined} getIdToken - Returns the cached ID token.
+ * @property {() => Promise<string> | string | null | undefined} getIdToken - Returns an ID token.
  */
 
 /**
@@ -269,6 +269,7 @@ export function buildSignInCredential(credentialFactory) {
  * @returns {{
  *   initGoogleSignIn: (options?: GoogleSignInOptions) => void | Promise<void>,
  *   signOut: () => void,
+ *   getIdToken: () => Promise<string> | string | null,
  * }} Auth helpers wired to the provided dependencies.
  */
 export function createGoogleAuthModule(deps) {
@@ -299,7 +300,16 @@ export function createGoogleAuthModule(deps) {
     await getSignOutHandler()();
   };
 
-  return { initGoogleSignIn, signOut };
+  const getIdToken = async () => {
+    const auth = getAuthFn();
+    const currentUser = auth?.currentUser;
+    if (currentUser?.getIdToken) {
+      return /** @type {(forceRefresh?: boolean) => Promise<string>} */ (currentUser.getIdToken)(true);
+    }
+    return storage.getItem('id_token') || '';
+  };
+
+  return { initGoogleSignIn, signOut, getIdToken };
 }
 
 /**
@@ -687,7 +697,7 @@ function renderErrorMessage(error) {
 /**
  * Create a trigger render handler with the supplied dependencies.
  * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   googleAuth: { getIdToken: () => Promise<string> | string | null | undefined },
  *   getAdminEndpointsFn: () => Promise<{ triggerRenderContentsUrl: string }>,
  *   fetchFn: FetchFn,
  *   showMessage: (text: string) => void,
@@ -1539,7 +1549,7 @@ function initializeGoogleSignIn(accountsId, options) {
 /**
  * Create a trigger stats handler with the supplied dependencies.
  * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   googleAuth: { getIdToken: () => Promise<string> | string | null | undefined },
  *   getAdminEndpointsFn: () => Promise<{ generateStatsUrl: string }>,
  *   fetchFn: FetchFn,
  *   showMessage: (text: string) => void,
@@ -1602,7 +1612,7 @@ function assertStatsResponseOk(response) {
 /**
  * Create a regenerate variant handler with the supplied dependencies.
  * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   googleAuth: { getIdToken: () => Promise<string> | string | null | undefined },
  *   doc: Document,
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
@@ -1618,7 +1628,7 @@ export function createRegenerateVariant(options) {
 
 /**
  * Check whether the provided auth helper exposes `getIdToken`.
- * @param {{ getIdToken?: () => string | null | undefined } | undefined | null} googleAuth - Candidate auth helper.
+ * @param {{ getIdToken?: () => Promise<string> | string | null | undefined } | undefined | null} googleAuth - Candidate auth helper.
  * @returns {boolean} True when `getIdToken` is callable.
  */
 function hasGetIdToken(googleAuth) {
@@ -1627,7 +1637,7 @@ function hasGetIdToken(googleAuth) {
 
 /**
  * Validate the Google auth helper exposes `getIdToken`.
- * @param {{ getIdToken?: () => string | null | undefined } | undefined | null} googleAuth - Auth helper provided by Google.
+ * @param {{ getIdToken?: () => Promise<string> | string | null | undefined } | undefined | null} googleAuth - Auth helper provided by Google.
  * @returns {void}
  */
 function ensureGoogleAuth(googleAuth) {
@@ -1651,7 +1661,7 @@ function isValidAuth(googleAuth) {
 /**
  * Validate dependencies before producing the regenerate variant handler.
  * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   googleAuth: { getIdToken: () => Promise<string> | string | null | undefined },
  *   doc: Document,
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
@@ -1677,7 +1687,7 @@ function validateRegenerateVariantDeps({
 /**
  * Build the actual regenerate variant handler after validation.
  * @param {{
- *   googleAuth: { getIdToken: () => string | null | undefined },
+ *   googleAuth: { getIdToken: () => Promise<string> | string | null | undefined },
  *   doc: Document,
  *   showMessage: (text: string) => void,
  *   getAdminEndpointsFn: () => Promise<{ markVariantDirtyUrl: string }>,
@@ -1697,7 +1707,7 @@ function createRegenerateVariantHandler({
   return async function regenerateVariant(event) {
     preventDefaultEvent(event);
 
-    const payload = resolveRegenerationPayload(doc, showMessage, googleAuth);
+    const payload = await resolveRegenerationPayload(doc, showMessage, googleAuth);
     await performRegenerationWhenReady(payload, {
       fetchFn,
       getAdminEndpointsFn,
@@ -1727,30 +1737,30 @@ function resolveValidPageVariant(doc, showMessage) {
  * Resolve the ID token and page/variant pair for regeneration.
  * @param {Document} doc - Document holding the regeneration input.
  * @param {(text: string) => void} showMessage - Reporter for invalid input.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Auth helper that supplies the token.
+ * @param {{ getIdToken: () => Promise<string> | string | null | undefined }} googleAuth - Auth helper that supplies the token.
  * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null} Structured payload or null when a dependency is missing.
  */
 /**
  * Get token safely.
  * @param {object} googleAuth Auth.
- * @returns {string | null} Token.
+ * @returns {Promise<string | null>} Token.
  */
-function getTokenSafely(googleAuth) {
-  const auth = /** @type {{ getIdToken: () => string | null | undefined }} */ (
+async function getTokenSafely(googleAuth) {
+  const auth = /** @type {{ getIdToken: () => Promise<string> | string | null | undefined }} */ (
     googleAuth
   );
-  return auth.getIdToken() || null;
+  return (await auth.getIdToken()) || null;
 }
 
 /**
  * Assemble the token and page/variant pair when both pieces are available.
  * @param {Document} doc - Document containing the regeneration form.
  * @param {(text: string) => void} showMessage - Reporter for validation errors.
- * @param {{ getIdToken: () => string | null | undefined }} googleAuth - Auth helper that supplies the ID token.
- * @returns {{ token: string, pageVariant: { page: number, variant: string } } | null} Payload when ready, otherwise null.
+ * @param {{ getIdToken: () => Promise<string> | string | null | undefined }} googleAuth - Auth helper that supplies the ID token.
+ * @returns {Promise<{ token: string, pageVariant: { page: number, variant: string } } | null>} Payload when ready, otherwise null.
  */
-function resolveRegenerationPayload(doc, showMessage, googleAuth) {
-  const token = getTokenSafely(googleAuth);
+async function resolveRegenerationPayload(doc, showMessage, googleAuth) {
+  const token = await getTokenSafely(googleAuth);
   if (!token) {
     return null;
   }

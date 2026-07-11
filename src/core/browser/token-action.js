@@ -2,7 +2,7 @@ import { ensureFunction } from './browser-core.js';
 
 /**
  * @typedef {object} GoogleAuthLike
- * @property {() => (string | null | undefined)} getIdToken Returns the cached Google ID token if one exists.
+ * @property {() => Promise<string> | string | null | undefined} getIdToken Returns a current Google ID token if one exists.
  */
 
 /**
@@ -72,7 +72,7 @@ function ensureGoogleAuth(googleAuth) {
  */
 function buildAdminTokenAction(options) {
   return async function adminTokenAction() {
-    const token = options.googleAuth.getIdToken();
+    const token = await options.googleAuth.getIdToken();
     if (!token) {
       options.showMessage(options.missingTokenMessage);
       return;
