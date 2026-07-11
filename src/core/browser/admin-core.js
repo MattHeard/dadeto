@@ -1,6 +1,6 @@
 import { ADMIN_UID } from '../commonCore.js';
 import { createAdminTokenAction } from './token-action.js';
-import { createGoogleSignOut, getIdToken } from '../browser/browser-core.js';
+import { createGoogleSignOut, getIdToken as getCachedIdToken } from '../browser/browser-core.js';
 
 /**
  * @typedef {object} FetchRequestOptions
@@ -320,7 +320,7 @@ export function createGoogleAuthModule(deps) {
  * @returns {boolean} True when the stored token belongs to the admin UID.
  */
 export function isAdminWithDeps(storage, jsonParser, decodeBase64) {
-  const token = getIdToken(storage);
+  const token = getCachedIdToken(storage);
   return Boolean(token && isAdminToken(token, jsonParser, decodeBase64));
 }
 
@@ -2334,6 +2334,19 @@ export function initAdminApp({
   };
 
   const signOut = () => getSignOutHandler()();
+
+  /**
+   * Return a fresh Firebase ID token for protected admin requests.
+   * @returns {Promise<string>} Current token, or an empty string when signed out.
+   */
+  const getIdToken = async () => {
+    const auth = getAuthFn();
+    const currentUser = auth?.currentUser;
+    if (currentUser?.getIdToken) {
+      return (await currentUser.getIdToken(true)) || '';
+    }
+    return getCachedIdToken(sessionStorageObj) || '';
+  };
 
   /** @type {GoogleAuthModule} */
   const googleAuth = {
