@@ -12,11 +12,22 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 
+const errorBeaconUrlPromise = loadStaticConfig()
+  .then(config => config.errorBeaconUrl || '')
+  .catch(() => '');
+
 const errorBeaconHandlers = createErrorBeaconHandlers({
-  reportBeacon: createErrorBeaconSendBeaconReporter(
-    globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
-    '/prod-errors'
-  ),
+  reportBeacon: payload =>
+    errorBeaconUrlPromise.then(url => {
+      if (!url) {
+        return;
+      }
+
+      createErrorBeaconSendBeaconReporter(
+        globalThis.navigator?.sendBeacon?.bind(globalThis.navigator),
+        url
+      )(payload);
+    }),
   getUrl: () => globalThis.location?.href ?? '',
   getNow: () => Date.now(),
   logError: console.error.bind(console),
