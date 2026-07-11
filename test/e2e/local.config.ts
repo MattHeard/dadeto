@@ -3,6 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './local',
   testMatch: ['**/*.spec.ts'],
+  workers: 1,
   projects: [
     {
       name: 'chromium',

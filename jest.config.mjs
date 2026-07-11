@@ -34,7 +34,7 @@ const config = {
     '<rootDir>/src/local/gcp-simulator/server.js',
     '<rootDir>/src/core/scripts/check-overexposed-exports.js',
   ],
-  collectCoverageFrom: [
+  collectCoverageFrom: process.env.DADETO_COVERAGE_SHARD ? [] : [
     'src/core/**/*.js',
     '!src/core/browser/document.js',
     '!src/core/browser/main.js',

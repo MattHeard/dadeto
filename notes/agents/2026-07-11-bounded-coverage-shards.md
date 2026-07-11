@@ -1,0 +1,4 @@
+- Unexpected hurdle: forcing Jest fully in-band reduced worker pressure but caused the long-lived coverage process to exceed its heap limit.
+- Diagnosis path: separate Jest processes were needed, but each shard also had to avoid the repository-wide `collectCoverageFrom` list; absolute Jest coverage paths and the existing src/core exclusions required normalization.
+- Chosen fix: run deterministic test-file shards serially with one Jest worker, collect only loaded files, merge coverage records through a file-backed store, synthesize zero-coverage records for absent configured source files, and emit the existing JSON artifacts.
+- Next-time guidance: use `DADETO_COVERAGE_SHARD_SIZE=100` for faster capable machines; keep the default 24 on lorandil when peak memory matters more than elapsed time.
