@@ -431,11 +431,11 @@ function extractVariantName(variantData) {
 }
 
 /**
- * Create a helper that adapts Firestore snapshots into the removeVariantHtml payload.
- * @param {(payload?: RemoveVariantHtmlPayload) => Promise<null>} removeVariantHtml Remove helper produced by createRemoveVariantHtml.
- * @returns {(snapshot: { id: string, data?: () => *, ref?: { parent?: { parent?: * } } }) => Promise<null>} Snapshot adapter.
+ * @param {(payload?: RemoveVariantHtmlPayload) => Promise<null>} removeVariantHtml Snapshot removal helper.
+ * @param {{ doc?: (path: string) => * } | undefined} [db] Firestore client for the configured database.
+ * @returns {(snapshot: *) => Promise<null>} Snapshot adapter.
  */
-export function createRemoveVariantHtmlForSnapshot(removeVariantHtml) {
+export function createRemoveVariantHtmlForSnapshot(removeVariantHtml, db) {
   assertFunction(removeVariantHtml, 'removeVariantHtml');
 
   return function removeVariantHtmlForSnapshot(snapshot) {
@@ -443,20 +443,21 @@ export function createRemoveVariantHtmlForSnapshot(removeVariantHtml) {
       return removeVariantHtml();
     }
 
-    return removeVariantHtml(buildRemovePayload(snapshot));
+    return removeVariantHtml(buildRemovePayload(snapshot, db));
   };
 }
 
 /**
  * Build removal payload.
- * @param {{ id?: string, data?: () => *, ref?: { parent?: { parent?: * } } }} snapshot Snapshot.
+ * @param {{ id?: string, data?: () => *, ref?: { path?: string, parent?: { parent?: * } } }} snapshot Snapshot.
+ * @param {{ doc?: (path: string) => * } | undefined} db Firestore client for the configured database.
  * @returns {{ variantId: string | null, variantData: *, pageRef: * }} Payload.
  */
-function buildRemovePayload(snapshot) {
+function buildRemovePayload(snapshot, db) {
   return {
     variantId: snapshot.id ?? null,
     variantData: extractSnapshotData(snapshot),
-    pageRef: resolvePageRef(snapshot),
+    pageRef: resolvePageRef(snapshot, db),
   };
 }
 
@@ -476,12 +477,21 @@ function extractSnapshotData(snapshot) {
 
 /**
  * Resolve page reference from snapshot.
- * @param {{ ref?: { parent?: { parent?: * } } }} snapshot Snapshot.
+ * @param {{ ref?: { path?: string, parent?: { parent?: * } } }} snapshot Snapshot.
+ * @param {{ doc?: (path: string) => * } | undefined} db Firestore client for the configured database.
  * @returns {*} Page ref or null.
  */
-function resolvePageRef(snapshot) {
-  const ref = snapshot?.ref;
-  return resolveParentPageRef(ref);
+function resolvePageRef(snapshot, db) {
+  const snapshotPath = snapshot?.ref?.path;
+  if (typeof snapshotPath === 'string' && typeof db?.doc === 'function') {
+    const pathSegments = snapshotPath.split('/');
+    if (pathSegments.length >= 6) {
+      const pagePath = pathSegments.slice(0, -2).join('/');
+      return db.doc(pagePath);
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -622,6 +632,7 @@ export function createHandleVariantVisibilityChange(options) {
  *       },
  *     },
  *   },
+ *   db: { doc: (path: string) => { get: () => Promise<*> } },
  *   environmentVariables: Record<string, string | undefined>,
  *   defaultBucketName?: string,
  *   visibilityThreshold?: number,
@@ -647,8 +658,10 @@ export function createHideVariantHtmlCore(deps) {
     deleteRenderedFile,
   });
 
-  const removeVariantHtmlForSnapshot =
-    createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+  const removeVariantHtmlForSnapshot = createRemoveVariantHtmlForSnapshot(
+    removeVariantHtml,
+    deps.db
+  );
 
   const handleVariantVisibilityChange = createHandleVariantVisibilityChange({
     removeVariantHtmlForSnapshot,
@@ -671,7 +684,6 @@ export function createHideVariantHtmlCore(deps) {
 }
 
 /**
- * Build a page loader for the hide-variant-html workflow.
  * @param {{ pageRef?: { get?: () => Promise<{ exists?: boolean, data?: () => unknown }> } }} payload Loader payload.
  * @returns {Promise<{ page: unknown } | null>} Loaded page payload or null.
  */

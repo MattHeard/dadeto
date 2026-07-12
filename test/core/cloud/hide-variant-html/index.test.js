@@ -12,12 +12,20 @@ describe('createHideVariantHtmlCore', () => {
       file: () => ({ delete: storageFileDelete }),
     }));
     const Storage = jest.fn(() => ({ bucket: storageBucket }));
+    const pageRef = {
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ number: 12 }),
+      }),
+    };
+    const db = { doc: jest.fn(() => pageRef) };
 
     const { hideVariantHtml, handleVariantVisibilityChange } =
       createHideVariantHtmlCore({
         initializeApp,
         functions: { region },
         Storage,
+        db,
         environmentVariables: {},
       });
 
@@ -32,19 +40,14 @@ describe('createHideVariantHtmlCore', () => {
     expect(handleVariantVisibilityChange).toEqual(expect.any(Function));
 
     const handler = onWrite.mock.calls[0][0];
-    const pageRef = {
-      get: jest.fn().mockResolvedValue({
-        exists: true,
-        data: () => ({ number: 12 }),
-      }),
-    };
-
     await expect(
       handler({
         before: {
           id: 'variant-a',
           data: () => ({ name: '-variant-a' }),
-          ref: { parent: { parent: pageRef } },
+          ref: {
+            path: 'stories/story-1/pages/page-2/variants/variant-a',
+          },
         },
         after: { exists: false },
       })

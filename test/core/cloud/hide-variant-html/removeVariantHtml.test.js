@@ -309,13 +309,14 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
 
   it('adapts snapshot data and forwards it to removeVariantHtml', async () => {
     const removeVariantHtml = jest.fn().mockResolvedValue(null);
-    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+    const pageRef = { get: jest.fn() };
+    const db = { doc: jest.fn(() => pageRef) };
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml, db);
     const variantData = { visibility: 0.2 };
-    const pageRef = { parent: { parent: { id: 'pageRef' } } };
     const snapshot = {
       id: 'variant-123',
       data: () => variantData,
-      ref: pageRef,
+      ref: { path: 'stories/story-1/pages/page-2/variants/variant-123' },
     };
 
     await expect(adapter(snapshot)).resolves.toBeNull();
@@ -323,8 +324,9 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
     expect(removeVariantHtml).toHaveBeenCalledWith({
       variantId: 'variant-123',
       variantData,
-      pageRef: pageRef.parent.parent,
+      pageRef,
     });
+    expect(db.doc).toHaveBeenCalledWith('stories/story-1/pages/page-2');
   });
 
   it('leaves variant data undefined when snapshot data is not a function', async () => {
@@ -345,9 +347,34 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
     });
   });
 
+  it('does not reconstruct a page reference from a malformed snapshot path', async () => {
+    const removeVariantHtml = jest.fn().mockResolvedValue(null);
+    const doc = jest.fn();
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml, {
+      doc,
+    });
+
+    await expect(
+      adapter({
+        id: 'variant-malformed-path',
+        data: () => ({ name: 'delta' }),
+        ref: { path: 'stories/story-1/variants/variant-malformed-path' },
+      })
+    ).resolves.toBeNull();
+
+    expect(doc).not.toHaveBeenCalled();
+    expect(removeVariantHtml).toHaveBeenCalledWith({
+      variantId: 'variant-malformed-path',
+      variantData: { name: 'delta' },
+      pageRef: null,
+    });
+  });
+
   it('normalizes missing snapshot identifiers to null', async () => {
     const removeVariantHtml = jest.fn().mockResolvedValue(null);
-    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml);
+    const adapter = createRemoveVariantHtmlForSnapshot(removeVariantHtml, {
+      doc: jest.fn(),
+    });
     const snapshot = {
       data: () => ({ name: 'delta' }),
       ref: { parent: { parent: { id: 'pageRef' } } },
@@ -358,7 +385,7 @@ describe('createRemoveVariantHtmlForSnapshot', () => {
     expect(removeVariantHtml).toHaveBeenCalledWith({
       variantId: null,
       variantData: { name: 'delta' },
-      pageRef: snapshot.ref.parent.parent,
+      pageRef: null,
     });
   });
 });

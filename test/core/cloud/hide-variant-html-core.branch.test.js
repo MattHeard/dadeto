@@ -26,4 +26,15 @@ describe('hideVariantHtmlTestUtils', () => {
   test('extractGrandparentRef returns null when invalid', () => {
     expect(hideVariantHtmlTestUtils.extractGrandparentRef(null)).toBeNull();
   });
+
+  test('handles a complete legacy reference chain for helper coverage', () => {
+    const pageRef = { id: 'page-ref' };
+    const ref = { parent: { parent: pageRef } };
+
+    expect(hideVariantHtmlTestUtils.hasValidGrandparentChain(ref)).toBe(true);
+    expect(hideVariantHtmlTestUtils.hasParentWithGrandparent(ref)).toBe(true);
+    expect(hideVariantHtmlTestUtils.hasGrandparent(ref)).toBe(true);
+    expect(hideVariantHtmlTestUtils.extractGrandparentRef(ref)).toBe(pageRef);
+    expect(hideVariantHtmlTestUtils.resolveParentPageRef(ref)).toBe(pageRef);
+  });
 });
