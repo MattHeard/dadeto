@@ -1207,7 +1207,11 @@ describe('createRegenerateVariant additional branches', () => {
     const getAdminEndpoints = jest
       .fn()
       .mockResolvedValue({ markVariantDirtyUrl });
-    const fetch = jest.fn().mockResolvedValue({ ok: false });
+    const fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: jest.fn().mockResolvedValue('Malformed Authorization header'),
+    });
 
     const regenerateVariant = createRegenerateVariant({
       googleAuth,
@@ -1221,7 +1225,9 @@ describe('createRegenerateVariant additional branches', () => {
     await regenerateVariant({ preventDefault: jest.fn() });
 
     expect(showMessage).toHaveBeenCalledWith('Regeneration failed');
-    expect(reportError).toHaveBeenCalledWith(expect.any(Error));
+    expect(reportError).toHaveBeenCalledWith(
+      new Error('HTTP 401: Malformed Authorization header')
+    );
   });
 
   it('throws when provided document is invalid', () => {

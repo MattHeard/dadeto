@@ -904,6 +904,7 @@ function getBearerTokenFromMatch(match) {
  *   isAdminUid: (decoded: import('firebase-admin/auth').DecodedIdToken) => boolean,
  *   sendUnauthorized: (res: NativeHttpResponse, message: string) => void,
  *   sendForbidden: (res: NativeHttpResponse) => void,
+ *   logger?: { warn?: (message: string, details?: object) => void },
  *   res: NativeHttpResponse,
  * }} deps Dependencies for validating the token and sending HTTP errors.
  * @returns {Promise<boolean>} True when the token is authorized for an admin request.
@@ -914,6 +915,7 @@ async function authorizeAdminToken(deps) {
   const isAdminUid = deps.isAdminUid;
   const sendUnauthorized = deps.sendUnauthorized;
   const sendForbidden = deps.sendForbidden;
+  const logger = deps.logger;
   const res = deps.res;
   try {
     const decoded = await verifyToken(token);
@@ -925,6 +927,10 @@ async function authorizeAdminToken(deps) {
     });
   } catch (error) {
     const message = defaultInvalidTokenMessage(error);
+    logger?.warn?.('Admin auth rejected: token verification failed', {
+      code: error?.code,
+      message,
+    });
     sendUnauthorized(res, message);
     return false;
   }
@@ -956,6 +962,7 @@ function ensureAdminIdentity({ decoded, isAdminUid, sendForbidden, res }) {
  * @param {(decoded: import('firebase-admin/auth').DecodedIdToken) => boolean} deps.isAdminUid Admin UID checker.
  * @param {(res: NativeHttpResponse, message: string) => void} deps.sendUnauthorized Sends 401 responses.
  * @param {(res: NativeHttpResponse) => void} deps.sendForbidden Sends 403 responses.
+ * @param {{ warn?: (message: string, details?: object) => void }} [deps.logger] Rejection logger.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Express middleware that authenticates the admin request and reports success.
  */
 export function createVerifyAdmin({
@@ -963,29 +970,37 @@ export function createVerifyAdmin({
   isAdminUid,
   sendUnauthorized,
   sendForbidden,
+  logger = globalThis.console,
 }) {
   return async function verifyAdmin(req, res) {
     const authHeader = getAuthHeader(req);
     const authMatch = matchAuthHeader(authHeader);
     if (authHeader && !authMatch) {
+      logger.warn?.('Admin auth rejected: malformed Authorization header');
       sendUnauthorized(res, defaultMalformedAuthorizationMessage);
       return false;
     }
 
     const token = authMatch?.[1] || getTokenFromRequestBody(req);
     if (!token) {
+      logger.warn?.('Admin auth rejected: missing token');
       sendUnauthorized(res, defaultMissingTokenMessage);
       return false;
     }
 
-    return authorizeAdminToken({
+    const authorized = await authorizeAdminToken({
       token,
       verifyToken,
       isAdminUid,
       sendUnauthorized,
       sendForbidden,
+      logger,
       res,
     });
+    if (!authorized) {
+      logger.warn?.('Admin auth rejected: token was valid but not an admin');
+    }
+    return authorized;
   };
 }
 
