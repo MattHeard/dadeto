@@ -771,7 +771,33 @@ export function createResponse(status, body) {
  * @returns {string} Authorization header or an empty string.
  */
 export function getAuthHeader(req) {
-  return ensureString(resolveAuthorizationHeader(req));
+  return ensureString(
+    resolveAuthorizationHeader(req) ??
+      resolveAuthorizationHeaderFromHeaders(req)
+  );
+}
+
+/**
+ * Resolve Authorization directly from the request headers bag.
+ * @param {NativeHttpRequest | undefined} req Incoming request.
+ * @returns {unknown} Header value or undefined.
+ */
+function resolveAuthorizationHeaderFromHeaders(req) {
+  if (!isObject(req)) {
+    return undefined;
+  }
+
+  const request = /** @type {NativeHttpRequest} */ (req || {});
+  const headers = request.headers;
+  if (!isObject(headers)) {
+    return undefined;
+  }
+
+  const normalizedHeaders =
+    /** @type {{ Authorization?: unknown, authorization?: unknown }} */ (
+      headers
+    );
+  return normalizedHeaders.Authorization ?? normalizedHeaders.authorization;
 }
 
 /**

@@ -226,6 +226,15 @@ describe('cloud-core', () => {
       expect(getAuthHeader()).toBe('');
     });
 
+    test('falls back to the raw headers bag when the getter omits Authorization', () => {
+      const req = {
+        headers: { authorization: 'Bearer header-token' },
+        get: jest.fn().mockReturnValue(undefined),
+      };
+
+      expect(getAuthHeader(req)).toBe('Bearer header-token');
+    });
+
     test('handles callable request objects that are not plain objects', () => {
       /**
        *
