@@ -3055,15 +3055,47 @@ async function saveAltsHtml(deps) {
  * Resolve pending name.
  * @param {VariantDocument} variant Variant.
  * @param {RenderContext | undefined} context Context.
+ * @param snap
  * @returns {string | undefined} Pending name.
  */
-function resolvePendingName(variant, context) {
+function resolvePendingName(variant, context, snap) {
   const params = resolvePendingParams(context);
   if (variant.incomingOption) {
-    return resolvePendingVariantId(params);
+    return resolvePendingVariantId(params) ?? resolveVariantIdFromPath(snap);
   }
 
-  return resolvePendingStoryId(params);
+  return resolvePendingStoryId(params) ?? resolveStoryIdFromPath(snap);
+}
+
+/**
+ * Resolve the story id from a Firestore variant document path.
+ * @param {VariantSnapshot | undefined} snap Variant snapshot.
+ * @returns {string | undefined} Story id when present.
+ */
+function resolveStoryIdFromPath(snap) {
+  const path = snap?.ref?.path;
+  if (typeof path !== 'string') {
+    return undefined;
+  }
+
+  const parts = path.split('/');
+  const storiesIndex = parts.indexOf('stories');
+  return storiesIndex >= 0 ? parts[storiesIndex + 1] : undefined;
+}
+
+/**
+ * Resolve the variant id from a Firestore variant document path.
+ * @param {VariantSnapshot | undefined} snap Variant snapshot.
+ * @returns {string | undefined} Variant id when present.
+ */
+function resolveVariantIdFromPath(snap) {
+  const path = snap?.ref?.path;
+  if (typeof path !== 'string') {
+    return undefined;
+  }
+
+  const parts = path.split('/');
+  return parts.length >= 2 ? parts.at(-1) : undefined;
 }
 
 /**
@@ -3146,8 +3178,10 @@ async function persistRenderPlan({
   await saveReverseLinkRecords({ snap, db, reverseLinks });
   const altsPath = await saveAltsHtml({ snap, db, bucket, page });
 
-  const pendingName = resolvePendingName(variant, context);
-  await savePendingFile(bucket, pendingName, filePath);
+  const pendingName = resolvePendingName(variant, context, snap);
+  if (pendingName) {
+    await savePendingFile(bucket, pendingName, filePath);
+  }
 
   const paths = buildInvalidationPaths(altsPath, filePath, parentUrl);
   await invalidatePaths(paths);
