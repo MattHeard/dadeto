@@ -4,21 +4,13 @@ import {
   createErrorBeaconReporter,
 } from '../core/browser/error-beacon.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
-import { initGoogleSignIn, signOut } from './googleAuth.js';
+import { getAuthorUuid, initGoogleSignIn, signOut } from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
 
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
   .catch(() => '');
-
-const handle = createGoogleAuthStatusHandle({
-  documentObj: document,
-  initGoogleSignInFn: initGoogleSignIn,
-  signOutFn: signOut,
-  getIdTokenFn: getIdToken,
-  isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
-});
 
 const errorBeaconHandlers = createErrorBeaconHandlers({
   reportBeacon: payload =>
@@ -40,5 +32,14 @@ const errorBeaconHandlers = createErrorBeaconHandlers({
 
 globalThis.addEventListener('error', errorBeaconHandlers.handleWindowError);
 globalThis.addEventListener('unhandledrejection', errorBeaconHandlers.handleUnhandledRejection);
+
+const handle = createGoogleAuthStatusHandle({
+  documentObj: document,
+  initGoogleSignInFn: options => loadStaticConfig().then(config => config.disableGoogleSignIn !== true ? initGoogleSignIn({ ...options, reportError: errorBeaconHandlers.logError }) : undefined),
+  getAuthorUuidFn: getAuthorUuid,
+  signOutFn: signOut,
+  getIdTokenFn: getIdToken,
+  isAdminFn: () => isAdminWithDeps(sessionStorage, JSON, atob),
+});
 
 handle();
