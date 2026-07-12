@@ -600,6 +600,7 @@ function resolveTargetPageFromOption(optionData) {
  * @returns {Promise<{
  *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
  *   pageNumber: number | null,
+ *   preserveVariantDirty: boolean,
  * }>} Resolved context.
  */
 async function resolveIncomingOptionPageContext({
@@ -633,7 +634,7 @@ async function resolveIncomingOptionPageContext({
 /**
  * Resolve an existing page reference from a target page selection.
  * @param {import('firebase-admin/firestore').DocumentReference | null | undefined} targetPage The referenced page.
- * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null }>}
+ * @returns {Promise<null | { pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null, preserveVariantDirty: boolean }>}
  * Resolved context or null when no existing page is found.
  */
 async function resolveExistingPageContext(targetPage) {
@@ -685,7 +686,7 @@ function extractPageNumberFromSnapshot(snapshot) {
  * Build the context object from an existing page snapshot.
  * @param {import('firebase-admin/firestore').DocumentSnapshot | null} existingPageSnap Snapshot to inspect.
  * @param {import('firebase-admin/firestore').DocumentReference} targetPage Page reference.
- * @returns {{ pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null } | null}
+ * @returns {{ pageDocRef: import('firebase-admin/firestore').DocumentReference, pageNumber: number | null, preserveVariantDirty: boolean } | null}
  * Context object when the snapshot represents an existing page.
  */
 function buildExistingPageContext(existingPageSnap, targetPage) {
@@ -739,6 +740,7 @@ async function safeGetPage(targetPage) {
  * @returns {Promise<{
  *   pageDocRef: import('firebase-admin/firestore').DocumentReference,
  *   pageNumber: number,
+ *   preserveVariantDirty: boolean,
  * }>} Newly created page context.
  */
 async function createPageContext({
@@ -835,6 +837,7 @@ async function resolveDirectPageContext({ db, directPageNumber, snapshot }) {
     storyRef: extractStoryRefFromPage(pageDocRef),
     variantRef: null,
     pageNumber: directPageNumber,
+    preserveVariantDirty: false,
   };
 }
 
