@@ -190,7 +190,18 @@ function generateCandidateNumber(random, depth) {
  */
 async function performPageNumberLookup(db, random, depth) {
   assertRandom(random);
-  return generateCandidateNumber(random, depth);
+  const candidate = generateCandidateNumber(random, depth);
+  const existing = await db
+    .collectionGroup('pages')
+    .where('number', '==', candidate)
+    .limit(1)
+    .get();
+
+  if (existing.empty) {
+    return candidate;
+  }
+
+  return findAvailablePageNumber(db, random, depth + 1);
 }
 
 /**
