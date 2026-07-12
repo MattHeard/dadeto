@@ -24,24 +24,41 @@ describe('incrementVariantName', () => {
 describe('findAvailablePageNumber', () => {
   it('returns the candidate when no pages exist', async () => {
     const random = jest.fn(() => 0.4); // candidate becomes 1
+    const db = {
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ empty: true }),
+          })),
+        })),
+      })),
+    };
 
-    await expect(
-      findAvailablePageNumber({} /* db unused */, random)
-    ).resolves.toBe(1);
+    await expect(findAvailablePageNumber(db, random)).resolves.toBe(1);
   });
 
   it('recurses when the candidate already exists', async () => {
-    const random = jest.fn().mockReturnValue(0.7);
+    const random = jest.fn().mockReturnValueOnce(0.7).mockReturnValue(0.9);
+    const get = jest
+      .fn()
+      .mockResolvedValueOnce({ empty: false })
+      .mockResolvedValueOnce({ empty: true });
+    const db = {
+      collectionGroup: jest.fn(() => ({
+        where: jest.fn(() => ({
+          limit: jest.fn(() => ({ get })),
+        })),
+      })),
+    };
 
-    await expect(
-      findAvailablePageNumber({} /* db unused */, random)
-    ).resolves.toBe(1);
+    await expect(findAvailablePageNumber(db, random)).resolves.toBe(2);
+    expect(get).toHaveBeenCalledTimes(2);
   });
 
   it('fails fast when a random generator is missing', async () => {
-    await expect(
-      findAvailablePageNumber({} /* db never used */, 'not-a-function')
-    ).rejects.toThrow('random must be a function');
+    await expect(findAvailablePageNumber({}, 'not-a-function')).rejects.toThrow(
+      'random must be a function'
+    );
   });
 });
 

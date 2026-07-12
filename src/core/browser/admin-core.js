@@ -1961,11 +1961,15 @@ function isResponseOk(res) {
 /**
  * Ensure the response from the regeneration request succeeded.
  * @param {Response | null | undefined} res - Response returned from the fetch call.
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function ensureResponseOk(res) {
+async function ensureResponseOk(res) {
   if (!isResponseOk(res)) {
-    throw new Error('fail');
+    const status = res?.status ?? 'unknown';
+    const body =
+      typeof res?.text === 'function' ? (await res.text()).trim() : '';
+    const detail = body ? `: ${body.slice(0, 300)}` : '';
+    throw new Error(`HTTP ${status}${detail}`);
   }
 }
 
@@ -1995,7 +1999,7 @@ async function sendRegenerateVariantRequest({
     body: JSON.stringify(pageVariant),
   });
 
-  ensureResponseOk(res);
+  await ensureResponseOk(res);
 }
 
 /**
