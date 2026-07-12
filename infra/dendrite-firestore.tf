@@ -82,16 +82,18 @@ resource "google_firestore_index" "ratings_by_variant" {
 }
 
 # Supports collection-group lookups for pages by page number.
-resource "google_firestore_index" "pages_number" {
-  count       = local.manage_firestore_indexes ? 1 : 0
-  project     = var.project_id
-  database    = var.database_id
-  collection  = "pages"
-  query_scope = "COLLECTION_GROUP"
+resource "google_firestore_field" "pages_number" {
+  count      = local.manage_firestore_indexes ? 1 : 0
+  project    = var.project_id
+  database   = var.database_id
+  collection = "pages"
+  field      = "number"
 
-  fields {
-    field_path = "number"
-    order      = "ASCENDING"
+  index_config {
+    indexes {
+      order       = "ASCENDING"
+      query_scope = "COLLECTION_GROUP"
+    }
   }
 
   depends_on = [google_firestore_database.database]
