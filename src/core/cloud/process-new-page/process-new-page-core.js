@@ -16,6 +16,7 @@
  * @property {import('firebase-admin/firestore').DocumentReference} storyRef Reference to story document.
  * @property {import('firebase-admin/firestore').DocumentReference | null} variantRef Reference to variant document.
  * @property {number | null} pageNumber The page number assigned, if available.
+ * @property {boolean} preserveVariantDirty Whether a source variant dirty marker must be preserved.
  */
 
 /**
@@ -698,6 +699,7 @@ function buildExistingPageContext(existingPageSnap, targetPage) {
   return {
     pageDocRef: targetPage,
     pageNumber,
+    preserveVariantDirty: false,
   };
 }
 
@@ -767,7 +769,11 @@ async function createPageContext({
     batch.update(sourceVariantRef, { dirty: true });
   }
 
-  return { pageDocRef, pageNumber: nextPageNumber };
+  return {
+    pageDocRef,
+    pageNumber: nextPageNumber,
+    preserveVariantDirty: true,
+  };
 }
 
 /**
@@ -1248,6 +1254,7 @@ function ensurePageContextReferences({ pageDocRef, storyRef }) {
  * @param {import('firebase-admin/firestore').DocumentReference} params.pageDocRef Page document reference.
  * @param {import('firebase-admin/firestore').DocumentReference} params.storyRef Story document reference.
  * @param {import('firebase-admin/firestore').DocumentReference | null} params.variantRef Existing variant reference that may need cleanup.
+ * @param {boolean} params.preserveVariantDirty Whether to preserve a dirty marker queued for the source variant.
  * @param {object} params.submission Submission payload to persist.
  * @param {() => string} params.randomUUID UUID generator for new documents.
  * @param {() => number} params.random Random source for variant rand.
@@ -1265,6 +1272,7 @@ async function finalizeSubmission({
   pageDocRef,
   storyRef,
   variantRef,
+  preserveVariantDirty,
   submission,
   randomUUID,
   random,
@@ -1290,7 +1298,9 @@ async function finalizeSubmission({
     variantCount: fieldValue.increment(1),
   });
 
-  queueVariantDirtyReset(batch, variantRef);
+  if (!preserveVariantDirty) {
+    queueVariantDirtyReset(batch, variantRef);
+  }
 
   batch.update(/** @type {any} */ (snapshot).ref, { processed: true });
   await ensureAuthorRecordExists({ db, batch, submission, randomUUID });
@@ -1429,7 +1439,7 @@ async function processSubmissionWithContext({
     return null;
   }
 
-  const { pageDocRef, storyRef, variantRef } = pageContext;
+  const { pageDocRef, storyRef, variantRef, preserveVariantDirty } = pageContext;
   const { pageDocRef: ensuredPageDocRef, storyRef: ensuredStoryRef } =
     ensurePageContextReferences({ pageDocRef, storyRef });
 
@@ -1444,6 +1454,7 @@ async function processSubmissionWithContext({
         ensuredStoryRef
       ),
     variantRef,
+    preserveVariantDirty,
     submission,
     randomUUID,
     random,

@@ -851,6 +851,7 @@ describe('createProcessNewPageHandler', () => {
       targetPage: expect.objectContaining({ id: 'generated' }),
     });
     expect(batch.update).toHaveBeenCalledWith(variantDoc, { dirty: true });
+    expect(batch.update).not.toHaveBeenCalledWith(variantDoc, { dirty: null });
     expect(createdPages).toHaveLength(1);
   });
 
