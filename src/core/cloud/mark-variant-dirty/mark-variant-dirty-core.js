@@ -297,7 +297,7 @@ async function findVariantRefFromPage(helpers, pageRef, variantName) {
  * @returns {Promise<void>} Promise resolving when update completes.
  */
 export function updateVariantDirty(variantRef) {
-  return variantRef.update({ dirty: null });
+  return variantRef.update({ dirty: true });
 }
 
 /**
