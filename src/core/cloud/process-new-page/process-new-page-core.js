@@ -1439,7 +1439,8 @@ async function processSubmissionWithContext({
     return null;
   }
 
-  const { pageDocRef, storyRef, variantRef, preserveVariantDirty } = pageContext;
+  const { pageDocRef, storyRef, variantRef, preserveVariantDirty } =
+    pageContext;
   const { pageDocRef: ensuredPageDocRef, storyRef: ensuredStoryRef } =
     ensurePageContextReferences({ pageDocRef, storyRef });
 

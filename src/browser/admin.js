@@ -15,7 +15,6 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebas
 const errorBeaconUrlPromise = loadStaticConfig()
   .then(config => config.errorBeaconUrl || '')
   .catch(() => '');
-
 const errorBeaconHandlers = createErrorBeaconHandlers({
   reportBeacon: payload =>
     errorBeaconUrlPromise.then(url => {
@@ -47,5 +46,4 @@ const handle = createInitAdminAppHandle({
   fetchObj: fetch,
   reportError: errorBeaconHandlers.logError,
 });
-
 handle();

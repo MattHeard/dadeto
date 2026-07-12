@@ -152,10 +152,7 @@ export function createErrorBeaconReporter(fetchFn, endpointUrl) {
  * @param {string} endpointUrl Beacon endpoint.
  * @returns {BeaconReporter} Beacon reporter.
  */
-export function createErrorBeaconSendBeaconReporter(
-  sendBeaconFn,
-  endpointUrl
-) {
+export function createErrorBeaconSendBeaconReporter(sendBeaconFn, endpointUrl) {
   return payload => {
     if (typeof sendBeaconFn !== 'function') {
       return;

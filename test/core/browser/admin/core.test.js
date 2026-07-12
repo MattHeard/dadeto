@@ -752,9 +752,7 @@ describe('announceTriggerRenderResult', () => {
     );
 
     expect(reportError).toHaveBeenCalledWith(expect.any(Error));
-    expect(showMessage).toHaveBeenCalledWith(
-      'Render failed: 401 Unauthorized'
-    );
+    expect(showMessage).toHaveBeenCalledWith('Render failed: 401 Unauthorized');
   });
 
   it('handles empty body strings when announcing failures', async () => {
