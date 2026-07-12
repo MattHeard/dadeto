@@ -762,6 +762,11 @@ async function createPageContext({
 
   batch.update(optionRef, { targetPage: pageDocRef });
 
+  const sourceVariantRef = extractVariantRefFromOption(optionRef);
+  if (sourceVariantRef) {
+    batch.update(sourceVariantRef, { dirty: true });
+  }
+
   return { pageDocRef, pageNumber: nextPageNumber };
 }
 

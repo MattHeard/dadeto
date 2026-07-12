@@ -850,6 +850,7 @@ describe('createProcessNewPageHandler', () => {
     expect(batch.update).toHaveBeenCalledWith(optionRef, {
       targetPage: expect.objectContaining({ id: 'generated' }),
     });
+    expect(batch.update).toHaveBeenCalledWith(variantDoc, { dirty: true });
     expect(createdPages).toHaveLength(1);
   });
 
