@@ -830,6 +830,7 @@ export function matchBearerToken(header) {
 }
 
 const defaultMissingTokenMessage = 'Missing token';
+const defaultMalformedAuthorizationMessage = 'Malformed Authorization header';
 
 export const isObject = isNonNullObject;
 
@@ -864,21 +865,6 @@ function defaultInvalidTokenMessage(error) {
   if (!hasMessageProperty(error)) return 'Invalid token';
   const messageStr = extractErrorMessage(error);
   return resolveErrorMessageWithDefault(messageStr);
-}
-
-/**
- * Extract the bearer token string from the request.
- * @param {NativeHttpRequest} req Incoming HTTP request.
- * @returns {string} Bearer token string or an empty string when missing.
- */
-function extractTokenFromRequest(req) {
-  const authHeader = getAuthHeader(req);
-  const headerToken = getBearerTokenFromMatch(matchAuthHeader(authHeader));
-  if (headerToken) {
-    return headerToken;
-  }
-
-  return getTokenFromRequestBody(req);
 }
 
 /**
@@ -979,7 +965,14 @@ export function createVerifyAdmin({
   sendForbidden,
 }) {
   return async function verifyAdmin(req, res) {
-    const token = extractTokenFromRequest(req);
+    const authHeader = getAuthHeader(req);
+    const authMatch = matchAuthHeader(authHeader);
+    if (authHeader && !authMatch) {
+      sendUnauthorized(res, defaultMalformedAuthorizationMessage);
+      return false;
+    }
+
+    const token = authMatch?.[1] || getTokenFromRequestBody(req);
     if (!token) {
       sendUnauthorized(res, defaultMissingTokenMessage);
       return false;

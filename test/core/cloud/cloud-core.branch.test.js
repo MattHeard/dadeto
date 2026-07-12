@@ -95,6 +95,19 @@ describe('createVerifyAdmin error responses', () => {
     expect(sendForbidden).not.toHaveBeenCalled();
   });
 
+  test('distinguishes a malformed Authorization header', async () => {
+    const verifyToken = jest.fn();
+    const { handler, sendUnauthorized } = buildEnv(verifyToken);
+
+    await handler({ get: () => 'Token not-a-bearer-token' }, {});
+
+    expect(verifyToken).not.toHaveBeenCalled();
+    expect(sendUnauthorized).toHaveBeenCalledWith(
+      {},
+      'Malformed Authorization header'
+    );
+  });
+
   test('resolveErrorMessageWithDefault returns provided string', () => {
     expect(cloudCoreTestUtils.resolveErrorMessageWithDefault('boom')).toBe(
       'boom'

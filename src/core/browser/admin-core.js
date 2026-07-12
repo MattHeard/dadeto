@@ -1,6 +1,9 @@
 import { ADMIN_UID } from '../commonCore.js';
 import { createAdminTokenAction } from './token-action.js';
-import { createGoogleSignOut, getIdToken as getCachedIdToken } from '../browser/browser-core.js';
+import {
+  createGoogleSignOut,
+  getIdToken as getCachedIdToken,
+} from '../browser/browser-core.js';
 
 /**
  * @typedef {object} FetchRequestOptions
@@ -304,7 +307,9 @@ export function createGoogleAuthModule(deps) {
     const auth = getAuthFn();
     const currentUser = auth?.currentUser;
     if (currentUser?.getIdToken) {
-      return /** @type {(forceRefresh?: boolean) => Promise<string>} */ (currentUser.getIdToken)(true);
+      return /** @type {(forceRefresh?: boolean) => Promise<string>} */ (
+        currentUser.getIdToken
+      )(true);
     }
     return storage.getItem('id_token') || '';
   };
@@ -1707,7 +1712,11 @@ function createRegenerateVariantHandler({
   return async function regenerateVariant(event) {
     preventDefaultEvent(event);
 
-    const payload = await resolveRegenerationPayload(doc, showMessage, googleAuth);
+    const payload = await resolveRegenerationPayload(
+      doc,
+      showMessage,
+      googleAuth
+    );
     await performRegenerationWhenReady(payload, {
       fetchFn,
       getAdminEndpointsFn,
@@ -1746,9 +1755,10 @@ function resolveValidPageVariant(doc, showMessage) {
  * @returns {Promise<string | null>} Token.
  */
 async function getTokenSafely(googleAuth) {
-  const auth = /** @type {{ getIdToken: () => Promise<string> | string | null | undefined }} */ (
-    googleAuth
-  );
+  const auth =
+    /** @type {{ getIdToken: () => Promise<string> | string | null | undefined }} */ (
+      googleAuth
+    );
   return (await auth.getIdToken()) || null;
 }
 
