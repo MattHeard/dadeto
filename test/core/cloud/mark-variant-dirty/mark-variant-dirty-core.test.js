@@ -399,7 +399,7 @@ describe('mark-variant-dirty core helpers', () => {
         markVariantDirtyImpl(9, 'variant-b', { db: {}, firebase })
       ).resolves.toBe(true);
 
-      expect(variantRef.update).toHaveBeenCalledWith({ dirty: null });
+      expect(variantRef.update).toHaveBeenCalledWith({ dirty: true });
     });
   });
 
