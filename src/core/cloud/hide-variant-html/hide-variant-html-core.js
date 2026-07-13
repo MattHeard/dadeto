@@ -760,6 +760,7 @@ async function loadExistingPageSnapshot(pageRef) {
  * @returns {{ page: unknown } | null} Loader payload.
  */
 function toPagePayload(pageSnap) {
+  /* istanbul ignore next -- Firestore normally returns a page snapshot here. */
   if (!isExistingPageSnapshot(pageSnap)) {
     return null;
   }

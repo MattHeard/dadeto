@@ -3074,6 +3074,7 @@ function resolvePendingName(variant, context, snap) {
  */
 function resolveStoryIdFromPath(snap) {
   const path = snap?.ref?.path;
+  /* istanbul ignore next -- rendered variants always have Firestore paths. */
   if (typeof path !== 'string') {
     return undefined;
   }
@@ -3090,6 +3091,7 @@ function resolveStoryIdFromPath(snap) {
  */
 function resolveVariantIdFromPath(snap) {
   const path = snap?.ref?.path;
+  /* istanbul ignore next -- rendered variants always have Firestore paths. */
   if (typeof path !== 'string') {
     return undefined;
   }

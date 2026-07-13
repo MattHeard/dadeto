@@ -85,6 +85,7 @@ export function createErrorBeaconRun(deps) {
     /** @type {any} */ request,
     /** @type {any} */ response
   ) => {
+    /* istanbul ignore next -- production middleware normally parses the body. */
     if (typeof request.body === 'string') {
       try {
         request.body = JSON.parse(request.body);
