@@ -98,4 +98,22 @@ describe('fileHandler', () => {
     );
     expect(readStoredOrElementValue(textInput)).toBe('');
   });
+
+  it('ignores a change event when the file list is unavailable', async () => {
+    const dom = makeDom();
+    const container = { _children: [] };
+    const textInput = { value: '' };
+
+    fileHandler(dom, container, textInput);
+    const fileInput = dom.createElement.mock.results[0].value;
+
+    await fileInput._listeners.change({
+      currentTarget: fileInput,
+    });
+
+    expect(dom.setValue).not.toHaveBeenCalledWith(
+      textInput,
+      expect.any(String)
+    );
+  });
 });
