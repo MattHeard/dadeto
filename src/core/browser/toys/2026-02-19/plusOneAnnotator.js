@@ -61,7 +61,7 @@ function getTokens(sentence) {
 function buildKnownWordSet(knownWords) {
   const lines = knownWords.split(/\r?\n/);
   const acc = new Set();
-  lines.map(normalizeToken).filter(Boolean).forEach(normalised => {
+  lines.map(normalizeToken).forEach(normalised => {
     acc.add(normalised);
   });
 
