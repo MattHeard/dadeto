@@ -51,6 +51,10 @@ describe('fileHandler', () => {
 
     expect(dom.hide).toHaveBeenCalledWith(textInput);
     expect(dom.disable).toHaveBeenCalledWith(textInput);
+    expect(dom.querySelector).toHaveBeenCalledWith(
+      container,
+      'input[type="file"]'
+    );
     expect(dom.createElement).toHaveBeenCalledWith('input');
 
     const fileInput = dom.createElement.mock.results[0].value;
