@@ -68,4 +68,10 @@ describe('plusOneAnnotatorToy', () => {
     expect(result.tokens).toEqual([]);
     expect(result.unknownCount).toBe(0);
   });
+
+  it('does not emit empty tokens for punctuation-only sentences', () => {
+    const result = runToy({ sentence: '!!!', knownWords: '' });
+
+    expect(result.tokens).toEqual([]);
+  });
 });
