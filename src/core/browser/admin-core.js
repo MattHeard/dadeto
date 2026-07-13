@@ -1966,9 +1966,14 @@ function isResponseOk(res) {
 async function ensureResponseOk(res) {
   if (!isResponseOk(res)) {
     const status = res?.status ?? 'unknown';
-    const body =
-      typeof res?.text === 'function' ? (await res.text()).trim() : '';
-    const detail = body ? `: ${body.slice(0, 300)}` : '';
+    let body = '';
+    if (typeof res?.text === 'function') {
+      body = (await res.text()).trim();
+    }
+    let detail = '';
+    if (body) {
+      detail = `: ${body.slice(0, 300)}`;
+    }
     throw new Error(`HTTP ${status}${detail}`);
   }
 }
