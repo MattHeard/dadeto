@@ -787,7 +787,7 @@ function resolveAuthorizationHeaderFromHeaders(req) {
     return undefined;
   }
 
-  const request = /** @type {NativeHttpRequest} */ (req || {});
+  const request = /** @type {NativeHttpRequest} */ (req);
   const headers = request.headers;
   if (!isObject(headers)) {
     return undefined;
