@@ -92,10 +92,7 @@ describe('fileHandler', () => {
       currentTarget: fileInput,
     });
 
-    expect(dom.setValue).not.toHaveBeenCalledWith(
-      textInput,
-      expect.any(String)
-    );
+    expect(dom.setValue).not.toHaveBeenCalled();
     expect(readStoredOrElementValue(textInput)).toBe('');
   });
 
