@@ -24,7 +24,7 @@
  */
 
 import { isObject } from '../common.js';
-import { safeParseJson, getFirstErrorMessage } from '../browser-core.js';
+import { safeParseJson } from '../browser-core.js';
 import { createPreFromContent } from './browserPresentersCore.js';
 
 /** @typedef {import('./browserPresentersCore.js').PresenterDOMHelpers} BattleshipPresenterDOMHelpers */
@@ -80,32 +80,26 @@ function getClueArrays(obj) {
   ];
 }
 
-/** @type {Array<[(obj: BattleshipClueCandidate) => boolean, string]>} */
+/** @type {Array<(obj: BattleshipClueCandidate) => boolean>} */
 const VALIDATION_CHECKS = [
-  [o => !isObject(o), 'Invalid JSON object'],
-  [o => !hasValidClueArrays(o), 'Missing rowClues or colClues array'],
-  [
-    o => hasValidClueArrays(o) && getClueArrays(o).some(hasNonNumberValues),
-    'Clue values must be numbers',
-  ],
-  [
-    o => hasValidClueArrays(o) && getClueArrays(o).some(isEmpty),
-    'rowClues and colClues must be non-empty',
-  ],
+  o => !isObject(o),
+  o => !hasValidClueArrays(o),
+  o => hasValidClueArrays(o) && getClueArrays(o).some(hasNonNumberValues),
+  o => hasValidClueArrays(o) && getClueArrays(o).some(isEmpty),
 ];
 
 /* eslint complexity: ["warn", 4] */
 /**
  * Return a validation error message for the clue object if any rule fails.
  * @param {BattleshipClueCandidate | unknown} obj - Parsed clue candidate that may still require the correct clue arrays.
- * @returns {string} Error message when validation fails, otherwise an empty string for a valid clue → used by INVALID_CLUE_CHECKS.
+ * @returns {boolean} Whether validation fails.
  */
 function findValidationError(obj) {
   if (!isObject(obj)) {
-    return 'Invalid object';
+    return true;
   }
   const candidate = /** @type {BattleshipClueCandidate} */ (obj);
-  return getFirstErrorMessage(VALIDATION_CHECKS, candidate);
+  return VALIDATION_CHECKS.some(check => check(candidate));
 }
 
 /**
