@@ -28,6 +28,7 @@ describe('plusOneAnnotatorToy', () => {
     const result = runToy({ sentence: 'Ich gehe', knownWords: 'ich\ngehe' });
 
     expect(result.unknownCount).toBe(0);
+    expect(result.unknownTokens).toEqual([]);
     expect(result.isPlusOne).toBe(false);
   });
 
