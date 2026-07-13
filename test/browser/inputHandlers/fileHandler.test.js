@@ -46,15 +46,23 @@ describe('fileHandler', () => {
     const dom = makeDom();
     const container = { _children: [] };
     const textInput = { value: '' };
+    dom.querySelector.mockImplementation((queriedContainer, selector) => {
+      expect(queriedContainer).toBe(container);
+      if (selector !== 'input[type="file"]') {
+        expect(selector).not.toBe('');
+        return null;
+      }
+      return null;
+    });
 
     fileHandler(dom, container, textInput);
-
-    expect(dom.hide).toHaveBeenCalledWith(textInput);
-    expect(dom.disable).toHaveBeenCalledWith(textInput);
     expect(dom.querySelector).toHaveBeenCalledWith(
       container,
       'input[type="file"]'
     );
+
+    expect(dom.hide).toHaveBeenCalledWith(textInput);
+    expect(dom.disable).toHaveBeenCalledWith(textInput);
     expect(dom.createElement).toHaveBeenCalledWith('input');
 
     const fileInput = dom.createElement.mock.results[0].value;
