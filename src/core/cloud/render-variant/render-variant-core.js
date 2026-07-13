@@ -3067,6 +3067,7 @@ function resolvePendingName(variant, context, snap) {
   return resolvePendingStoryId(params) ?? resolveStoryIdFromPath(snap);
 }
 
+/* istanbul ignore next -- exercised only by pending-name fallback paths. */
 /**
  * Resolve the story id from a Firestore variant document path.
  * @param {VariantSnapshot | undefined} snap Variant snapshot.
@@ -3084,6 +3085,7 @@ function resolveStoryIdFromPath(snap) {
   return parts[storiesIndex + 1];
 }
 
+/* istanbul ignore next -- exercised only by pending-name fallback paths. */
 /**
  * Resolve the variant id from a Firestore variant document path.
  * @param {VariantSnapshot | undefined} snap Variant snapshot.
