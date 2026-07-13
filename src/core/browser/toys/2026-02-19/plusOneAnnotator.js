@@ -59,8 +59,7 @@ function getTokens(sentence) {
  * @returns {Set<string>} Known-word set.
  */
 function buildKnownWordSet(knownWords) {
-  const lines =
-    buildWhen(knownWords.length > 0, () => knownWords.split(/\r?\n/)) ?? [];
+  const lines = knownWords.split(/\r?\n/);
   const acc = new Set();
   lines.forEach(line => {
     const normalised = normalizeToken(line);

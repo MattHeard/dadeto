@@ -13,6 +13,12 @@ describe('plusOneAnnotator fallback handling', () => {
     expect(parsed.unknownCount).toBe(parsed.tokens.length);
   });
 
+  test('does not invent an extra known word from the known-word list', () => {
+    const payload = JSON.stringify({ sentence: 'Stryker', knownWords: 'Hallo' });
+    const parsed = JSON.parse(plusOneAnnotatorToy(payload, new Map()));
+    expect(parsed.unknownTokens).toEqual(['stryker']);
+  });
+
   test('ignores known words that normalize to empty strings', () => {
     const payload = JSON.stringify({ sentence: 'Hallo', knownWords: '!!!' });
     const parsed = JSON.parse(plusOneAnnotatorToy(payload, new Map()));
