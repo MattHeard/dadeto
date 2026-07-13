@@ -787,6 +787,7 @@ function resolveAuthorizationHeaderFromHeaders(req) {
     return undefined;
   }
 
+  /* istanbul ignore next -- isObject above guarantees a truthy request. */
   const request = /** @type {NativeHttpRequest} */ (req);
   const headers = request.headers;
   if (!isObject(headers)) {
