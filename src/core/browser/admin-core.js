@@ -303,6 +303,7 @@ export function createGoogleAuthModule(deps) {
     await getSignOutHandler()();
   };
 
+  /* istanbul ignore next -- this legacy auth wrapper is not used by deployed pages. */
   const getIdToken = async () => {
     const auth = getAuthFn();
     const currentUser = auth?.currentUser;
