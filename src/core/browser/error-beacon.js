@@ -148,7 +148,7 @@ export function createErrorBeaconReporter(fetchFn, endpointUrl) {
 
 /**
  * Create a best-effort navigator.sendBeacon reporter.
- * @param {((url: string, data?: BodyInit | null) => boolean) | undefined} sendBeaconFn Beacon transport.
+ * @param {((url: string, data?: unknown) => boolean) | undefined} sendBeaconFn Beacon transport.
  * @param {string} endpointUrl Beacon endpoint.
  * @returns {BeaconReporter} Beacon reporter.
  */

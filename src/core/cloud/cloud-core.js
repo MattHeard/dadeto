@@ -911,18 +911,6 @@ function getTokenFromRequestBody(req) {
 }
 
 /**
- * Pull the bearer token out of the regex match info if it exists.
- * @param {string[] | null} match Result of `matchAuthHeader`.
- * @returns {string} Extracted bearer token or empty string when absent.
- */
-function getBearerTokenFromMatch(match) {
-  if (!match) {
-    return '';
-  }
-  return match[1];
-}
-
-/**
  * Ensure the provided token belongs to an administrator and report errors.
  * @param {{
  *   token: string,
@@ -1013,8 +1001,7 @@ export function createVerifyAdmin({
       sendUnauthorized(res, defaultMissingTokenMessage);
       return false;
     }
-
-    const authorized = await authorizeAdminToken({
+    return authorizeAdminToken({
       token,
       verifyToken,
       isAdminUid,
@@ -1023,10 +1010,6 @@ export function createVerifyAdmin({
       logger,
       res,
     });
-    if (!authorized) {
-      logger.warn?.('Admin auth rejected: token was valid but not an admin');
-    }
-    return authorized;
   };
 }
 

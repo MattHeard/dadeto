@@ -3055,7 +3055,7 @@ async function saveAltsHtml(deps) {
  * Resolve pending name.
  * @param {VariantDocument} variant Variant.
  * @param {RenderContext | undefined} context Context.
- * @param snap
+ * @param {VariantSnapshot | undefined} snap Variant snapshot.
  * @returns {string | undefined} Pending name.
  */
 function resolvePendingName(variant, context, snap) {
@@ -3080,7 +3080,7 @@ function resolveStoryIdFromPath(snap) {
 
   const parts = path.split('/');
   const storiesIndex = parts.indexOf('stories');
-  return storiesIndex >= 0 ? parts[storiesIndex + 1] : undefined;
+  return parts[storiesIndex + 1];
 }
 
 /**
@@ -3095,7 +3095,7 @@ function resolveVariantIdFromPath(snap) {
   }
 
   const parts = path.split('/');
-  return parts.length >= 2 ? parts.at(-1) : undefined;
+  return parts.at(-1);
 }
 
 /**
