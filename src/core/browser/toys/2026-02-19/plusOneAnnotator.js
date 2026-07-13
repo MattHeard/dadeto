@@ -41,7 +41,7 @@ function parseToyInput(input) {
  * @returns {string[]} Normalised tokens.
  */
 function getTokens(sentence) {
-  return sentence.split(/\s+/).map(normalizeToken).filter(Boolean);
+  return (sentence.match(/\S+/g) ?? []).map(normalizeToken).filter(Boolean);
 }
 
 /**
