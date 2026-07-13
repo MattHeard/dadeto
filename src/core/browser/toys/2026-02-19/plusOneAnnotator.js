@@ -30,11 +30,9 @@ function toStringOrEmpty(value) {
  */
 function parseToyInput(input) {
   const parsed = parseJsonOrNull(whenString(input, s => s));
-  if (!isPlainObject(parsed)) {
-    return null;
-  }
-
-  return /** @type {Record<string, unknown>} */ (parsed);
+  return isPlainObject(parsed)
+    ? /** @type {Record<string, unknown>} */ (parsed)
+    : null;
 }
 
 /**
