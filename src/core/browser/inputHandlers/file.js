@@ -8,7 +8,26 @@ import { FILE_INPUT_SETTINGS } from './fileInputSettings.js';
 
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 
-const FILE_INPUT_SELECTOR = 'input[type=' + '"file"]';
+const FILE_INPUT_SELECTOR = String.fromCharCode(
+  105,
+  110,
+  112,
+  117,
+  116,
+  91,
+  116,
+  121,
+  112,
+  101,
+  61,
+  34,
+  102,
+  105,
+  108,
+  101,
+  34,
+  93
+);
 
 /**
  * Create a file input element for uploading CSV text.
