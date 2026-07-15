@@ -59,16 +59,14 @@ export async function fetchAuthorUuidFromApi(fetchFn, url, token) {
 
 /**
  * Refresh and cache the author uuid for an already authenticated session.
- * @param root0
- * @param root0.storage
- * @param root0.fetchFn
- * @param root0.getAuthorUuidUrl
+ * @param {object} deps Refresh dependencies.
+ * @param {StorageLike} [deps.storage] Storage containing the ID token.
+ * @param {typeof fetch} deps.fetchFn Fetch helper.
+ * @param {() => Promise<string>} deps.getAuthorUuidUrl Configured endpoint resolver.
+ * @returns {Promise<string | null>} Cached or refreshed uuid.
  */
-export async function refreshCachedAuthorUuid({
-  storage = sessionStorage,
-  fetchFn,
-  getAuthorUuidUrl,
-}) {
+export async function refreshCachedAuthorUuid(deps) {
+  const { storage = sessionStorage, fetchFn, getAuthorUuidUrl } = deps;
   const token = storage.getItem('id_token');
   if (!token || getCachedAuthorUuid(storage)) {
     return getCachedAuthorUuid(storage);
