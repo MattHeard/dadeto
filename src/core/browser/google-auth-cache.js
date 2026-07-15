@@ -58,6 +58,27 @@ export async function fetchAuthorUuidFromApi(fetchFn, url, token) {
 }
 
 /**
+ * Refresh and cache the author uuid for an already authenticated session.
+ * @param {object} deps Refresh dependencies.
+ * @param {StorageLike} [deps.storage] Storage containing the ID token.
+ * @param {typeof fetch} deps.fetchFn Fetch helper.
+ * @param {() => Promise<string>} deps.getAuthorUuidUrl Configured endpoint resolver.
+ * @returns {Promise<string | null>} Cached or refreshed uuid.
+ */
+export async function refreshCachedAuthorUuid(deps) {
+  const { storage = sessionStorage, fetchFn, getAuthorUuidUrl } = deps;
+  const token = storage.getItem('id_token');
+  if (!token || getCachedAuthorUuid(storage)) {
+    return getCachedAuthorUuid(storage);
+  }
+  const uuid = await getAuthorUuidUrl().then(url =>
+    fetchAuthorUuidFromApi(fetchFn, url, token)
+  );
+  setCachedAuthorUuid(storage, uuid);
+  return uuid;
+}
+
+/**
  * Attach author-uuid caching behavior to an auth module.
  * @param {{ initGoogleSignIn: (options?: { onSignIn?: (token: string) => void | Promise<void> }) => void | Promise<void>, signOut: () => Promise<void> }} handle Auth module.
  * @param {{ storage?: StorageLike, fetchFn: typeof fetch, getAuthorUuidUrl: () => Promise<string>, isInternalOrigin: () => boolean }} deps Caching dependencies.
