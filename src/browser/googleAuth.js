@@ -14,9 +14,9 @@ import {
   getCachedAuthorUuid,
   installAuthorUuidCaching,
   setCachedAuthorUuid,
+  refreshCachedAuthorUuid,
 } from '../core/browser/google-auth-cache.js';
 import { getIdToken } from '../core/browser/browser-core.js';
-
 setupFirebase(initializeApp);
 const loadStaticConfig = createLoadStaticConfig({ fetchFn: globalThis.fetch.bind(globalThis), warn: console.warn.bind(console) });
 const handle = installAuthorUuidCaching(
@@ -45,4 +45,5 @@ export const initGoogleSignIn = async options => {
 export async function signOut() { await handle.signOut(); setCachedAuthorUuid(sessionStorage, null); }
 export const isAdmin = () => isAdminWithDeps(sessionStorage, JSON, atob);
 export const getAuthorUuid = () => getCachedAuthorUuid(sessionStorage);
+export const refreshAuthorUuid = () => refreshCachedAuthorUuid({ storage: sessionStorage, fetchFn: globalThis.fetch.bind(globalThis), getAuthorUuidUrl: () => loadStaticConfig().then(config => config.getAuthorUuidUrl || '') });
 export { getIdToken };

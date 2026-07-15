@@ -4,7 +4,7 @@ import {
   createErrorBeaconReporter,
 } from '../core/browser/error-beacon.js';
 import { loadStaticConfig } from './loadStaticConfig.js';
-import { initGoogleSignIn, signOut } from './googleAuth.js';
+import { getAuthorUuid, initGoogleSignIn, refreshAuthorUuid, signOut } from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
 
@@ -18,6 +18,7 @@ const signInButtons = document.querySelectorAll('#signinButton');
 const signOutWraps = document.querySelectorAll('#signoutWrap');
 const signOutLinks = document.querySelectorAll('#signoutLink');
 const adminLinks = document.querySelectorAll('.admin-link');
+const profileLinks = document.querySelectorAll('#profileLink');
 
 const errorBeaconHandlers = createErrorBeaconHandlers({
   reportBeacon: payload =>
@@ -44,6 +45,11 @@ function showSignedIn() {
   signInButtons.forEach(el => (el.style.display = 'none'));
   signOutWraps.forEach(el => (el.style.display = ''));
   if (isAdmin()) adminLinks.forEach(el => (el.style.display = ''));
+  const uuid = getAuthorUuid();
+  profileLinks.forEach(link => {
+    link.href = uuid ? `/a/${uuid}.html` : '#';
+    link.style.display = uuid ? '' : 'none';
+  });
 }
 
 /**
@@ -53,6 +59,7 @@ function showSignedOut() {
   signInButtons.forEach(el => (el.style.display = ''));
   signOutWraps.forEach(el => (el.style.display = 'none'));
   adminLinks.forEach(el => (el.style.display = 'none'));
+  profileLinks.forEach(link => { link.href = '#'; link.style.display = 'none'; });
 }
 
 globalThis.addEventListener('error', errorBeaconHandlers.handleWindowError);
@@ -80,4 +87,5 @@ signOutLinks.forEach(link => {
 
 if (getIdToken()) {
   showSignedIn();
+  refreshAuthorUuid().then(showSignedIn);
 }

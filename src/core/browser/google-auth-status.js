@@ -4,6 +4,7 @@
  *   documentObj: Document,
  *   initGoogleSignInFn: (options: {onSignIn: () => void}) => void,
  *   getAuthorUuidFn: () => string | null,
+ *   refreshAuthorUuidFn?: () => string | null | Promise<string | null>,
  *   signOutFn: () => Promise<unknown>,
  *   getIdTokenFn: () => string | null,
  *   isAdminFn: () => boolean,
@@ -14,6 +15,7 @@ export function createGoogleAuthStatusHandle({
   documentObj,
   initGoogleSignInFn,
   getAuthorUuidFn,
+  refreshAuthorUuidFn,
   signOutFn,
   getIdTokenFn,
   isAdminFn,
@@ -61,6 +63,7 @@ export function createGoogleAuthStatusHandle({
 
     if (getIdTokenFn()) {
       showSignedIn();
+      Promise.resolve(refreshAuthorUuidFn?.()).then(() => showSignedIn());
     }
   };
 }
