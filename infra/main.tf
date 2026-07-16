@@ -88,6 +88,21 @@ locals {
     "eventarc",
   ]
   static_site_objects = {
+    dendrite_site_manifest = {
+      name         = "site.webmanifest"
+      source       = "${path.module}/browser/assets/site.webmanifest"
+      content_type = "application/manifest+json"
+    }
+    dendrite_android_chrome_192 = {
+      name         = "android-chrome-192x192.png"
+      source       = "${path.module}/browser/assets/android-chrome-192x192.png"
+      content_type = "image/png"
+    }
+    dendrite_android_chrome_512 = {
+      name         = "android-chrome-512x512.png"
+      source       = "${path.module}/browser/assets/android-chrome-512x512.png"
+      content_type = "image/png"
+    }
     dendrite_404 = {
       name          = "404.html"
       source        = "${path.module}/404.html"

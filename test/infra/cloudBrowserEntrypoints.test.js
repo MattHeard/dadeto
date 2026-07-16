@@ -63,6 +63,34 @@ describe('cloud browser entrypoints', () => {
     }
   });
 
+  it('uploads PWA assets at the root paths used by Dendrite HTML', async () => {
+    const mainTf = await readFile('infra/main.tf', 'utf8');
+
+    for (const [name, source, contentType] of [
+      [
+        'site.webmanifest',
+        'browser/assets/site.webmanifest',
+        'application/manifest+json',
+      ],
+      [
+        'android-chrome-192x192.png',
+        'browser/assets/android-chrome-192x192.png',
+        'image/png',
+      ],
+      [
+        'android-chrome-512x512.png',
+        'browser/assets/android-chrome-512x512.png',
+        'image/png',
+      ],
+    ]) {
+      expect(mainTf).toContain(`name         = "${name}"`);
+      expect(mainTf).toContain(
+        `source       = "${'${path.module}'}/${source}"`
+      );
+      expect(mainTf).toContain(`content_type = "${contentType}"`);
+    }
+  });
+
   it('targets the v2 API key function at the exported handle entrypoint', async () => {
     const functionsV2Tf = await readFile('infra/functions-v2.tf', 'utf8');
 
