@@ -314,6 +314,11 @@ describe('buildHtml', () => {
     expect(html).toContain('<link rel="icon" href="/favicon.ico" />');
   });
 
+  test('includes the PWA manifest link', () => {
+    const html = buildHtml(makeInput({ content: 'content' }));
+    expect(html).toContain('<link rel="manifest" href="/site.webmanifest" />');
+  });
+
   test('renders brand without leading whitespace', () => {
     const html = buildHtml(makeInput({ content: 'content' }));
     expect(html).toMatch(

@@ -155,6 +155,7 @@ const HEAD_HTML = `  <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dendrite</title>
     <link rel="icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"

@@ -612,6 +612,7 @@ function buildHeadElement(headTitle) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${headTitle}</title>
     <link rel="icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
@@ -735,6 +736,7 @@ export function buildAltsHtml(pageNumber, variants) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dendrite</title>
     <link rel="icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
@@ -2048,7 +2050,7 @@ async function writeAuthorLandingPage(variant, file) {
   const authorName = deriveAuthorName(variant);
   const authorHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite - ${escapeHtml(
     authorName
-  )}</title><link rel="icon" href="/favicon.ico" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(
+  )}</title><link rel="icon" href="/favicon.ico" /><link rel="manifest" href="/site.webmanifest" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(
     authorName
   )}</h1></main></body></html>`;
 

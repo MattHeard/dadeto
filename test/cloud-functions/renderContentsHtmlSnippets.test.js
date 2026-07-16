@@ -73,4 +73,9 @@ describe('PAGE_HTML', () => {
     const html = PAGE_HTML('');
     expect(html).toContain('<link rel="icon" href="/favicon.ico" />');
   });
+
+  test('includes the PWA manifest link', () => {
+    const html = PAGE_HTML('');
+    expect(html).toContain('<link rel="manifest" href="/site.webmanifest" />');
+  });
 });

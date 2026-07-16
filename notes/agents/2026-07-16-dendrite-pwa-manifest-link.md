@@ -1,0 +1,4 @@
+- Unexpected hurdle: the low-resolution icon was produced by cloud-generated Dendrite HTML, not the static homepage.
+- Diagnosis path: traced the contents and variant HTML builders; they emitted only the 16/32px favicon while the existing manifest held the 512px icon.
+- Chosen fix: add `/site.webmanifest` links to the render-contents and render-variant HTML builders and assert the cloud HTML output.
+- Next-time guidance: verify the generated HTML path for installed pages before changing static PWA assets.
