@@ -260,6 +260,17 @@ h1 {
   text-wrap: balance;
 }
 
+#topStories {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+#topStories svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 /* Contents list */
 ol.contents {
   margin: 0;
