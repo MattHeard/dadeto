@@ -1218,6 +1218,7 @@ resource "google_cloudfunctions_function_iam_member" "errors_invoker" {
 }
 
 resource "google_cloud_scheduler_job" "generate_stats_daily" {
+  count     = var.environment == "prod" ? 1 : 0
   name      = "${var.environment}-generate-stats-daily"
   schedule  = "0 0 * * *"
   time_zone = "UTC"
