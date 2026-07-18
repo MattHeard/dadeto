@@ -13,6 +13,7 @@ import {
   resolveStaticObjectPrefix,
   sendOkResponse,
 } from '../cloud-core.js';
+import { renderHtmlTemplate } from '../html-template.js';
 import { runWithFailureAndThen } from '../response-utils.js';
 export { isDuplicateAppError };
 
@@ -126,21 +127,26 @@ export { productionOrigins } from '../cloud-core.js';
 export function buildHtml(...args) {
   const [storyCount, pageCount, unmoderatedCount, topStories] = args;
   const resolvedTopStories = topStories ?? [];
-  return `${STATS_PAGE_HEAD}
-${SITE_HEADER_HTML}
-    <main>
+  const main = `    <main>
       <h1>Stats</h1>
       <p>Number of stories: ${storyCount}</p>
       <p>Number of pages: ${pageCount}</p>
       <p>Number of unmoderated pages: ${unmoderatedCount}</p>
       <div id="topStories"></div>
-    </main>
-${GOOGLE_CLIENT_SCRIPT}
-${D3_SCRIPT}
-${D3_SANKEY_SCRIPT}
-${GOOGLE_AUTH_MODULE_SCRIPT}
-${buildTopStoriesScript(JSON.stringify(resolvedTopStories))}
-${MENU_SCRIPT}`;
+    </main>`;
+  return renderHtmlTemplate(new URL('./stats-page.html', import.meta.url), {
+    head: STATS_PAGE_HEAD,
+    header: SITE_HEADER_HTML,
+    main,
+    scripts: [
+      GOOGLE_CLIENT_SCRIPT,
+      D3_SCRIPT,
+      D3_SANKEY_SCRIPT,
+      GOOGLE_AUTH_MODULE_SCRIPT,
+      buildTopStoriesScript(JSON.stringify(resolvedTopStories)),
+      MENU_SCRIPT,
+    ].join('\n'),
+  });
 }
 
 const DEFAULT_URL_MAP = 'prod-dendrite-url-map';

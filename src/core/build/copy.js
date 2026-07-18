@@ -4,7 +4,7 @@ import {
   runMappedEntries,
 } from '../commonCore.js';
 
-export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json'];
+export const DEFAULT_COPYABLE_EXTENSIONS = ['.js', '.json', '.html'];
 
 /**
  * @typedef {{ info: (message: string) => void }} CopyMessageLogger

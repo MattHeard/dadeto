@@ -7,6 +7,7 @@ import {
   resolveStaticObjectPrefix,
   sendOkResponse,
 } from '../cloud-core.js';
+import { renderHtmlTemplate } from '../html-template.js';
 import { assertFunction } from '../../commonCore.js';
 export {
   DEFAULT_BUCKET_NAME,
@@ -240,19 +241,18 @@ const MENU_TOGGLE_SCRIPT = `    <script type="module" src="./contentsMenuToggle.
  * @param {string} list Pre-rendered ordered list markup.
  * @returns {string} Page HTML string.
  */
-export const PAGE_HTML = list => `<!doctype html>
-<html lang="en">
-${HEAD_HTML}
-  <body>
-${HEADER_HTML}
-
-${MOBILE_MENU_HTML}
-${MAIN_HTML(list)}
-${GOOGLE_AUTH_CLIENT_SCRIPT}
-${GOOGLE_AUTH_MODULE_SCRIPT}
-${MENU_TOGGLE_SCRIPT}
-  </body>
-</html>`;
+export const PAGE_HTML = list =>
+  renderHtmlTemplate(new URL('./contents-page.html', import.meta.url), {
+    head: HEAD_HTML,
+    header: HEADER_HTML,
+    mobileMenu: MOBILE_MENU_HTML,
+    main: MAIN_HTML(list),
+    scripts: [
+      GOOGLE_AUTH_CLIENT_SCRIPT,
+      GOOGLE_AUTH_MODULE_SCRIPT,
+      MENU_TOGGLE_SCRIPT,
+    ].join('\n'),
+  });
 
 /**
  * Build an HTML document for the provided story summaries.

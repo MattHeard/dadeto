@@ -5,6 +5,7 @@ import {
   normalizeStaticObjectPrefix,
   prefixStaticObjectPath,
 } from '../cloud-core.js';
+import { renderHtmlTemplate } from '../html-template.js';
 import { assertFunction } from '../../commonCore.js';
 
 export {
@@ -704,11 +705,10 @@ export function buildHtml(buildHtmlInput) {
   const mainContent = buildMainContent(resolvedParams);
   const headElement = buildHeadElement(headTitle);
   const bodyElement = buildBodyElement(mainContent);
-  return `<!doctype html>
-<html lang="en">
-${headElement}
-${bodyElement}
-</html>`;
+  return renderHtmlTemplate(new URL('./variant-page.html', import.meta.url), {
+    headElement,
+    bodyElement,
+  });
 }
 
 /**
@@ -729,22 +729,7 @@ export function buildAltsHtml(pageNumber, variants) {
       )}</a></li>`;
     })
     .join('');
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dendrite</title>
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css"
-    />
-    <link rel="stylesheet" href="/dendrite.css" />
-  </head>
-  <body>
-    <header class="site-header">
+  const bodyContent = `    <header class="site-header">
       <a class="brand" href="/">
         <img src="/img/logo.png" alt="Dendrite logo" />
         Dendrite
@@ -864,8 +849,10 @@ export function buildAltsHtml(pageNumber, variants) {
         });
       })();
     </script>
-  </body>
-</html>`;
+  </body>`;
+  return renderHtmlTemplate(new URL('./alts-page.html', import.meta.url), {
+    bodyContent,
+  });
 }
 /**
  *
@@ -2048,11 +2035,12 @@ async function resolveAuthorFile({ variant, db, bucket }) {
  */
 async function writeAuthorLandingPage(variant, file) {
   const authorName = deriveAuthorName(variant);
-  const authorHtml = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Dendrite - ${escapeHtml(
-    authorName
-  )}</title><link rel="icon" href="/favicon.ico" /><link rel="manifest" href="/site.webmanifest" /><link rel="stylesheet" href="/dendrite.css" /></head><body><main><h1>${escapeHtml(
-    authorName
-  )}</h1></main></body></html>`;
+  const authorHtml = renderHtmlTemplate(
+    new URL('./author-page.html', import.meta.url),
+    {
+      authorName: escapeHtml(authorName),
+    }
+  );
 
   await file.save(authorHtml, { contentType: 'text/html' });
 }
