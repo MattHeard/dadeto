@@ -23,7 +23,8 @@ when you need to change their markup.
 
 Other HTML assets that appear on the live site are produced by Cloud Functions
 in `infra/cloud-functions/`. The `render-contents` function writes `index.html`
-and `contents/{page}.html`, `render-variant` renders story and author pages
-under `p/*.html` and `a/*.html`, and `generate-stats` produces `stats.html`.
+and `contents/{page}.html`, `render-variant` renders story pages under
+`p/*.html`, `render-author` renders author pages under `a/*.html`, and
+`generate-stats` produces `stats.html`.
 Do not try to add or edit those generated files in Terraform; instead adjust
 the corresponding Cloud Function implementation.

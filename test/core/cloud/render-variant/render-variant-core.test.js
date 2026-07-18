@@ -936,32 +936,26 @@ describe('extractStoryRef', () => {
 
 describe('resolveAuthorMetadata', () => {
   it('creates a landing page when the author uuid is missing from storage', async () => {
-    const authorFile = {
-      exists: jest.fn().mockResolvedValue([false]),
-      save: jest.fn().mockResolvedValue(undefined),
-    };
-    const bucket = {
-      file: jest.fn(() => authorFile),
-    };
-
     const authorSnap = {
       exists: true,
       data: () => ({ uuid: 'writer-1' }),
     };
+    const authorUpdate = jest.fn().mockResolvedValue(undefined);
 
     const db = {
-      doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue(authorSnap) })),
+      doc: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue(authorSnap),
+        update: authorUpdate,
+      })),
     };
 
     const result = await resolveAuthorMetadata({
       variant: { authorId: 'author-1', authorName: 'Writer' },
       db,
-      bucket,
       consoleError: jest.fn(),
     });
 
-    expect(bucket.file).toHaveBeenCalledWith('a/writer-1.html');
-    expect(authorFile.save).toHaveBeenCalled();
+    expect(authorUpdate).toHaveBeenCalledWith({ name: 'Writer', dirty: true });
     expect(result).toEqual({
       authorName: 'Writer',
       authorUrl: '/a/writer-1.html',
@@ -969,31 +963,26 @@ describe('resolveAuthorMetadata', () => {
   });
 
   it('reuses the existing author file when present', async () => {
-    const authorFile = {
-      exists: jest.fn().mockResolvedValue([true]),
-      save: jest.fn().mockResolvedValue(undefined),
-    };
-    const bucket = {
-      file: jest.fn(() => authorFile),
-    };
-
     const authorSnap = {
       exists: true,
       data: () => ({ uuid: 'writer-2' }),
     };
+    const authorUpdate = jest.fn().mockResolvedValue(undefined);
 
     const db = {
-      doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue(authorSnap) })),
+      doc: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue(authorSnap),
+        update: authorUpdate,
+      })),
     };
 
     const result = await resolveAuthorMetadata({
       variant: { authorId: 'author-2', authorName: 'Second' },
       db,
-      bucket,
       consoleError: jest.fn(),
     });
 
-    expect(authorFile.save).not.toHaveBeenCalled();
+    expect(authorUpdate).toHaveBeenCalledWith({ name: 'Second', dirty: true });
     expect(result).toEqual({
       authorName: 'Second',
       authorUrl: '/a/writer-2.html',
@@ -1324,6 +1313,7 @@ describe('createRenderVariant', () => {
         exists: true,
         data: () => ({ uuid: 'auth-uuid' }),
       }),
+      update: jest.fn().mockResolvedValue(undefined),
     };
 
     const targetVariantDocs = [
@@ -1498,7 +1488,10 @@ describe('createRenderVariant', () => {
     expect(bucketFile).toHaveBeenCalledWith(
       't-example/pending/variant-xyz.json'
     );
-    expect(authorFile.save).toHaveBeenCalled();
+    expect(authorRef.update).toHaveBeenCalledWith({
+      name: 'Author Name',
+      dirty: true,
+    });
     expect(variantFile.save).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
@@ -2172,6 +2165,7 @@ describe('createRenderVariant', () => {
             get: jest
               .fn()
               .mockResolvedValue({ exists: true, data: () => ({}) }),
+            update: jest.fn().mockResolvedValue(undefined),
           };
         }
         return { get: jest.fn() };

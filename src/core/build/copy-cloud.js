@@ -78,6 +78,7 @@ export async function createCopyCloudHandle(deps) {
     'render-contents',
     'realtime-call',
     'render-variant',
+    'render-author',
     'report-for-moderation',
     'submit-moderation-rating',
     'submit-new-page',

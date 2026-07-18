@@ -1910,46 +1910,31 @@ function deriveAuthorName(variant) {
 }
 
 /**
- * Resolve author metadata for the rendered variant, creating landing pages if needed.
+ * Resolve author metadata for the rendered variant and mark its author dirty.
  * @param {AuthorLookupDeps} options Inputs for author lookup.
  * @returns {Promise<{ authorName: string; authorUrl?: string }>} Author metadata for templates.
  */
-async function resolveAuthorMetadata({ variant, db, bucket, consoleError }) {
+async function resolveAuthorMetadata({ variant, db, consoleError }) {
   const authorName = deriveAuthorName(variant);
   const authorUrl = await resolveAuthorUrl({
     variant,
     db,
-    bucket,
     consoleError,
   });
   return { authorName, authorUrl };
 }
 
 /**
- * Ensure an author landing page exists and return its public URL.
+ * Mark the author document dirty and return its public URL.
  * @param {AuthorLookupDeps} options Inputs for creating or reusing an author page.
  * @returns {Promise<string | undefined>} URL of the author page, if one exists.
  */
-async function resolveAuthorUrl({ variant, db, bucket, consoleError }) {
+async function resolveAuthorUrl({ variant, db, consoleError }) {
   if (!variant.authorId) {
     return undefined;
   }
 
-  return lookupAuthorUrl({ variant, db, bucket, consoleError });
-}
-
-/**
- * Write author page if needed.
- * @param {{authorPath: string, file: any, exists: boolean}} authorFile Author file data.
- * @param {object} variant Variant.
- * @returns {Promise<string>} Author path.
- */
-async function writeAuthorPageIfNeeded(authorFile, variant) {
-  const { authorPath, file, exists } = authorFile;
-  if (!exists) {
-    await writeAuthorLandingPage(variant, file);
-  }
-  return `/${authorPath}`;
+  return lookupAuthorUrl({ variant, db, consoleError });
 }
 
 /**
@@ -1957,9 +1942,9 @@ async function writeAuthorPageIfNeeded(authorFile, variant) {
  * @param {AuthorLookupDeps} options Dependencies for author lookup.
  * @returns {Promise<string | undefined>} Author URL when the lookup succeeds.
  */
-async function lookupAuthorUrl({ variant, db, bucket, consoleError }) {
+async function lookupAuthorUrl({ variant, db, consoleError }) {
   try {
-    return await performAuthorLookup({ variant, db, bucket });
+    return await markAuthorDirty({ variant, db });
   } catch (error) {
     handleAuthorLookupError(error, consoleError);
     return undefined;
@@ -1989,17 +1974,16 @@ function logAuthorLookupError(error, consoleError) {
 }
 
 /**
- * Perform author lookup.
+ * Mark an author document dirty for the author renderer.
  * @param {AuthorLookupDeps} root0 Dependencies.
  * @returns {Promise<string|undefined>} Author URL.
  */
-async function performAuthorLookup({ variant, db, bucket }) {
-  const authorFile = await resolveAuthorFile({
-    variant,
-    db,
-    bucket,
-  });
-  return writeAuthorPageIfNeeded(authorFile, variant);
+async function markAuthorDirty({ variant, db }) {
+  const authorRef = resolveAuthorRef(db, variant.authorId);
+  const authorSnap = await authorRef.get();
+  const { uuid } = authorSnap.data();
+  await authorRef.update({ name: deriveAuthorName(variant), dirty: true });
+  return `/a/${uuid}.html`;
 }
 
 /**
@@ -2010,39 +1994,6 @@ async function performAuthorLookup({ variant, db, bucket }) {
  */
 function resolveAuthorRef(db, authorId) {
   return db.doc(`authors/${authorId}`);
-}
-
-/**
- * Resolve the bucket file used to persist the author's landing page.
- * @param {AuthorLookupDeps} options Dependencies for author file resolution.
- * @returns {Promise<{ authorPath: string, file: StorageFileLike, exists: boolean }>} Metadata used to write the landing page.
- */
-async function resolveAuthorFile({ variant, db, bucket }) {
-  const authorRef = resolveAuthorRef(db, variant.authorId);
-  const authorSnap = await authorRef.get();
-  const { uuid } = authorSnap.data();
-  const authorPath = `a/${uuid}.html`;
-  const file = bucket.file(authorPath);
-  const [exists] = await file.exists();
-  return { authorPath, file, exists };
-}
-
-/**
- * Write the author landing page HTML to storage.
- * @param {{ name?: string }} variant Variant metadata.
- * @param {{ save: (content: string, options: { contentType: string }) => Promise<unknown> }} file Cloud storage file handle.
- * @returns {Promise<void>} Promise resolved after writing the file.
- */
-async function writeAuthorLandingPage(variant, file) {
-  const authorName = deriveAuthorName(variant);
-  const authorHtml = renderHtmlTemplate(
-    new URL('./author-page.html', import.meta.url),
-    {
-      authorName: escapeHtml(authorName),
-    }
-  );
-
-  await file.save(authorHtml, { contentType: 'text/html' });
 }
 
 /**

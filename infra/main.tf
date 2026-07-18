@@ -1045,6 +1045,42 @@ resource "google_cloudfunctions_function" "render_variant" {
   ]
 }
 
+data "archive_file" "render_author_src" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud-functions/render-author"
+  output_path = "${path.module}/build/render-author.zip"
+}
+
+resource "google_storage_bucket_object" "render_author" {
+  name   = "${var.environment}-render-author-${data.archive_file.render_author_src.output_sha256}.zip"
+  bucket = google_storage_bucket.gcf_source_bucket.name
+  source = data.archive_file.render_author_src.output_path
+}
+
+resource "google_cloudfunctions_function" "render_author" {
+  name        = "${var.environment}-render-author"
+  runtime     = var.cloud_functions_runtime
+  region      = var.region
+  entry_point = "handle"
+
+  source_archive_bucket = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object = google_storage_bucket_object.render_author.name
+
+  service_account_email = local.cloud_function_runtime_service_account_email
+  environment_variables = local.cloud_function_environment
+
+  event_trigger {
+    event_type = "providers/cloud.firestore/eventTypes/document.write"
+    resource   = "${local.firestore_documents_path}/authors/{authorId}"
+  }
+
+  depends_on = [
+    google_project_service.project_level,
+    google_project_iam_member.terraform_service_account_roles["cloudfunctions_access"],
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+  ]
+}
+
 data "archive_file" "hide_variant_html_src" {
   type        = "zip"
   source_dir  = "${path.module}/cloud-functions/hide-variant-html"
