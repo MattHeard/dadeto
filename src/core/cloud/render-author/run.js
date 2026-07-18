@@ -12,6 +12,7 @@ export function runRenderAuthor(deps) {
   const bucket = new Storage().bucket(process.env.STATIC_BUCKET_NAME);
   const renderAuthor = createRenderAuthorHandler({
     bucket,
+    db: getFirestoreInstance(),
     deleteField: () => FieldValue.delete(),
   });
   return {
