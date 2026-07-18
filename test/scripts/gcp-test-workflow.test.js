@@ -1,6 +1,14 @@
 import { readFileSync } from 'node:fs';
 
 describe('gcp-test workflow report handling', () => {
+  it('does not provision the daily stats scheduler for test environments', () => {
+    const source = readFileSync('infra/main.tf', 'utf8');
+
+    expect(source).toContain(
+      'count     = var.environment == "prod" ? 1 : 0'
+    );
+  });
+
   it('downloads the cloud-generated Playwright report before artifact upload', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 
