@@ -15,7 +15,7 @@
     "render:template": "node scripts/render-html-template.js",
     "serve:template-acceptance": "node scripts/serve-template-acceptance.js",
     "gh:watch": "node scripts/watch-gh-run.js",
-    "test-watch": "node --experimental-vm-modules ./node_modules/.bin/jest --watchAll",
+    "test-watch": "node scripts/run-jest.js --watchAll",
     "tcr": "./tcr.sh",
     "build-and-tcr": "npm run build:browser && npm run tcr",
     "mutant:all": "node --experimental-vm-modules ./node_modules/.bin/stryker run",

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
+import { acquireJestSlot } from './jest-pool.js';
 import {
   addUncoveredFiles,
   mergeCoverageFragment,
@@ -27,6 +28,7 @@ fs.rmSync(coverageRoot, { recursive: true, force: true });
 fs.mkdirSync(shardRoot, { recursive: true });
 fs.mkdirSync(storeRoot, { recursive: true });
 
+const release = await acquireSlot();
 try {
   for (const [index, shard] of shards.entries()) {
     const shardDir = path.join(shardRoot, String(index));
@@ -49,7 +51,12 @@ try {
   );
   enforceCoverageThreshold();
 } finally {
+  release();
   fs.rmSync(coverageRoot, { recursive: true, force: true });
+}
+
+async function acquireSlot() {
+  return acquireJestSlot({ command: 'jest coverage workload' });
 }
 
 function listTestFiles() {
