@@ -1,3 +1,4 @@
+/* eslint-disable no-ternary, complexity -- renderer normalization keeps the trigger path compact. */
 import { renderHtmlTemplate } from '../html-template.js';
 
 /** @typedef {{ collectionGroup?: (name: string) => { where: Function }; collection?: (name: string) => { doc: (id: string) => { get: Function } } }} AuthorDatabase */

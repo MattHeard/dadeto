@@ -8,6 +8,7 @@ import {
   findVariantsSnap,
   getAllowedOrigins,
   markVariantDirtyImpl,
+  markAuthorDirtyImpl,
   parseMarkVariantRequestBody,
   refFromSnap,
   sendForbidden,
@@ -71,6 +72,8 @@ export function runMarkVariantDirty(deps) {
    */
   const markVariantDirtyAction = (pageNumber, variantName) =>
     markVariantDirtyImpl(pageNumber, variantName, markVariantDirtyDeps);
+  const markAuthorDirtyAction = (/** @type {string} */ authorId) =>
+    markAuthorDirtyImpl(authorId, markVariantDirtyDeps);
 
   const verifyAdmin = createVerifyAdmin({
     verifyToken: token =>
@@ -92,6 +95,7 @@ export function runMarkVariantDirty(deps) {
   }} */ ({
       verifyAdmin,
       markVariantDirty: markVariantDirtyAction,
+      markAuthorDirty: markAuthorDirtyAction,
       parseRequestBody: parseMarkVariantRequestBody,
       allowedMethod: 'POST',
     })

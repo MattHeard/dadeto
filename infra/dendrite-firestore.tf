@@ -28,7 +28,7 @@ resource "google_firestore_index" "variants_author_created" {
   project     = var.project_id
   database    = var.database_id
   collection  = "variants"
-  query_scope = "COLLECTION"
+  query_scope = "COLLECTION_GROUP"
 
   fields {
     field_path = "authorId"

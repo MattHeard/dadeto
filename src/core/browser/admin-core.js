@@ -2124,7 +2124,32 @@ export function initAdmin({
   bindTriggerRenderClick(doc, triggerRender);
   bindTriggerStatsClick(doc, triggerStats);
   bindRegenerateVariantSubmit(doc, regenerateVariant);
-
+  const authorForm = doc.getElementById('regenAuthorForm');
+  authorForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const input = /** @type {HTMLInputElement | null} */ (
+      doc.getElementById('regenAuthorInput')
+    );
+    const authorId = input?.value.trim();
+    const token = await googleAuthModule.getIdToken();
+    if (!authorId || !token) return;
+    try {
+      const endpoints = await getAdminEndpoints();
+      const response = await fetchFn(endpoints.markVariantDirtyUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ authorId }),
+      });
+      await ensureResponseOk(response);
+      showMessage('Author regeneration triggered');
+    } catch (error) {
+      reportError(error);
+      showMessage('Author regeneration failed');
+    }
+  });
   createWireSignOut(doc, googleAuthModule)();
   onAuthStateChangedFn(getAuthFn(), checkAccess);
   if (typeof googleAuthModule.initGoogleSignIn !== 'function') {

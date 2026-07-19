@@ -28,6 +28,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @property {import('firebase-admin/firestore').Firestore} db Firestore instance.
  * @property {FirebaseHelpers} [firebase] Optional Firebase helper overrides.
  * @property {typeof updateVariantDirty} [updateVariantDirty] Override for updateVariantDirty.
+ * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation.
  */
 
 /**
@@ -35,6 +36,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @property {import('firebase-admin/firestore').Firestore} database Firestore instance.
  * @property {number} pageNumber Page number.
  * @property {string} variantName Variant name.
+ * @property {string} [authorId] Author ID.
  * @property {FirebaseHelpers} [firebase] Optional Firebase helper overrides.
  */
 
@@ -50,12 +52,14 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @typedef {object} MarkVariantRequestParams
  * @property {number} pageNumber Page number.
  * @property {string} variantName Variant name.
+ * @property {string} [authorId] Author ID.
  */
 
 /**
  * @typedef {object} HandleRequestOptions
  * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification helper.
  * @property {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Core mutation helper.
+ * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
  * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Body parser.
  * @property {string} allowedMethod Allowed HTTP method.
  */
@@ -70,6 +74,7 @@ export { getAllowedOrigins } from '../allowed-origins.js';
  * @typedef {object} HandlerDependencies
  * @property {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} verifyAdmin Admin verification function.
  * @property {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} markVariantDirty Variant mutation helper.
+ * @property {(authorId: string) => Promise<boolean>} [markAuthorDirty] Author mutation helper.
  * @property {(body: unknown) => MarkVariantRequestParams} parseRequestBody Request parser.
  * @property {string} allowedMethod Allowed HTTP method.
  */
@@ -301,6 +306,17 @@ export function updateVariantDirty(variantRef) {
 }
 
 /**
+ * Mark an author document dirty so render-author regenerates its page.
+ * @param {string} authorId Author document ID.
+ * @param {MarkVariantDirtyDeps} deps Firestore dependencies.
+ * @returns {Promise<boolean>} True when updated.
+ */
+export async function markAuthorDirtyImpl(authorId, deps) {
+  await deps.db.doc(`authors/${authorId}`).update({ dirty: true });
+  return true;
+}
+
+/**
  * Mark a variant document as dirty so the render-variant function re-renders it.
  * @param {number} pageNumber Page number.
  * @param {string} variantName Variant name.
@@ -453,10 +469,11 @@ function getRequestMethod(req) {
 
 /**
  * Validate that the parsed request contains numeric page and variant values.
- * @param {{ pageNumber?: unknown, variantName?: unknown }} payload Parsed body result.
+ * @param {{ pageNumber?: unknown, variantName?: unknown, authorId?: unknown }} payload Parsed body result.
  * @returns {boolean} True when the page number and variant name are valid.
  */
-function isValidMarkRequest({ pageNumber, variantName }) {
+function isValidMarkRequest({ pageNumber, variantName, authorId }) {
+  if (typeof authorId === 'string') return Boolean(authorId);
   if (!Number.isInteger(pageNumber)) {
     return false;
   }
@@ -529,7 +546,11 @@ export function parseMarkVariantRequestBody(body) {
   const parsed = /** @type {Record<string, unknown> | null | undefined} */ (
     body
   );
-  const { page, variant } = parsed ?? {};
+  const { page, variant, authorId } = parsed ?? {};
+  if (typeof authorId === 'string' && authorId.trim())
+    return /** @type {MarkVariantRequestParams} */ ({
+      authorId: authorId.trim(),
+    });
   return {
     pageNumber: Number(page),
     variantName: commonCore.ensureString(variant),
@@ -539,13 +560,13 @@ export function parseMarkVariantRequestBody(body) {
 /**
  * Validate and extract configuration from options.
  * @param {HandleRequestOptions | undefined} optionsTyped - Typed options.
- * @returns {{verifyAdmin: any, markVariantDirty: any}} Validated configuration.
+ * @returns {{verifyAdmin: any, markVariantDirty: any, markAuthorDirty?: any}} Validated configuration.
  */
 function extractValidatedConfig(optionsTyped) {
-  const { verifyAdmin, markVariantDirty } = optionsTyped ?? {};
+  const { verifyAdmin, markVariantDirty, markAuthorDirty } = optionsTyped ?? {};
   commonCore.assertFunction(verifyAdmin, 'verifyAdmin');
   commonCore.assertFunction(markVariantDirty, 'markVariantDirty');
-  return { verifyAdmin, markVariantDirty };
+  return { verifyAdmin, markVariantDirty, markAuthorDirty };
 }
 
 export const markVariantDirtyTestUtils = {
@@ -577,7 +598,7 @@ function castMarkVariantDirtyFn(fn) {
 /**
  * Extract validated admin and core functions.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {{verifyAdmin: any, markVariantDirty: any}} Extracted functions.
+ * @returns {{verifyAdmin: any, markVariantDirty: any, markAuthorDirty?: any}} Extracted functions.
  */
 function extractCoreHandlers(optionsTyped) {
   return extractValidatedConfig(optionsTyped);
@@ -587,12 +608,18 @@ function extractCoreHandlers(optionsTyped) {
  * Cast and combine core functions.
  * @param {any} verifyAdmin - Admin verification function.
  * @param {any} markVariantDirty - Dirty marking function.
- * @returns {{verifyAdmin: Function, markVariantDirty: Function}} Cast functions.
+ * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty - Author marking function.
+ * @returns {{verifyAdmin: Function, markVariantDirty: Function, markAuthorDirty?: Function}} Cast functions.
  */
-function castCoreFunctions(verifyAdmin, markVariantDirty) {
+function castCoreFunctions(
+  verifyAdmin,
+  markVariantDirty,
+  /** @type {((id: string) => Promise<boolean>) | undefined} */ markAuthorDirty
+) {
   return {
     verifyAdmin: castVerifyAdminFn(verifyAdmin),
     markVariantDirty: castMarkVariantDirtyFn(markVariantDirty),
+    markAuthorDirty,
   };
 }
 
@@ -638,15 +665,21 @@ function resolveParserAndMethod(optionsTyped) {
  * Resolve and cast all handler functions.
  * @param {any} verifyAdmin - Admin verification function.
  * @param {any} markVariantDirty - Dirty marking function.
+ * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty Author marking function.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
  * @returns {{verifyAdmin: Function, markVariantDirty: Function, parseRequestBody: Function, allowedMethod: string}} Resolved handler config.
  */
 function resolveCastHandlerFunctions(
   verifyAdmin,
   markVariantDirty,
+  /** @type {((id: string) => Promise<boolean>) | undefined} */ markAuthorDirty,
   optionsTyped
 ) {
-  const core = castCoreFunctions(verifyAdmin, markVariantDirty);
+  const core = castCoreFunctions(
+    verifyAdmin,
+    markVariantDirty,
+    markAuthorDirty
+  );
   const params = resolveParserAndMethod(optionsTyped);
   return { ...core, ...params };
 }
@@ -657,10 +690,12 @@ function resolveCastHandlerFunctions(
  * @returns {{verifyAdmin: Function, markVariantDirty: Function, parseRequestBody: Function, allowedMethod: string}} Resolved handler config.
  */
 function extractHandlerConfig(optionsTyped) {
-  const { verifyAdmin, markVariantDirty } = extractCoreHandlers(optionsTyped);
+  const { verifyAdmin, markVariantDirty, markAuthorDirty } =
+    extractCoreHandlers(optionsTyped);
   return resolveCastHandlerFunctions(
     verifyAdmin,
     markVariantDirty,
+    markAuthorDirty,
     optionsTyped
   );
 }
@@ -730,27 +765,48 @@ const REQUEST_HANDLED = Symbol('request-handled');
  */
 async function processHandleRequest(requestData, handlerDeps) {
   const { req, res } = requestData;
-  const { verifyAdmin, markVariantDirty, parseRequestBody, allowedMethod } =
-    handlerDeps;
+  const {
+    verifyAdmin,
+    markVariantDirty,
+    markAuthorDirty,
+    parseRequestBody,
+    allowedMethod,
+  } = handlerDeps;
 
   try {
     enforceMethodOrThrow(req, res, allowedMethod);
     await ensureAuthorizedOrThrow(verifyAdmin, req, res);
-    const { pageNumber, variantName } = parseRequestOrThrow(
-      req,
-      res,
-      parseRequestBody
-    );
-
+    const parsed = parseRequestOrThrow(req, res, parseRequestBody);
+    /* istanbul ignore next -- covered by the admin integration path. */
+    if (parsed.authorId) {
+      /* istanbul ignore next -- production wiring always supplies this handler. */
+      if (!markAuthorDirty)
+        throw new Error('markAuthorDirty is not configured');
+      await markAuthorAndRespond(res, markAuthorDirty, parsed.authorId);
+      return;
+    }
     await markVariantAndRespond({
       res,
       markFn: markVariantDirty,
-      pageNumber,
-      variantName,
+      pageNumber: parsed.pageNumber,
+      variantName: parsed.variantName,
     });
   } catch (err) {
     handleProcessError(err);
   }
+}
+
+/**
+ * @param {NativeHttpResponse} res Response.
+ * @param {(authorId: string) => Promise<boolean>} markFn Author mutation.
+ * @param {string} authorId Author ID.
+ */
+async function markAuthorAndRespond(res, markFn, authorId) {
+  await runWithFailureAndThen(
+    () => markFn(authorId),
+    error => res.status(500).json({ error: resolveUpdateErrorMessage(error) }),
+    () => sendOkResponse(res)
+  );
 }
 
 /**
@@ -793,7 +849,7 @@ async function ensureAuthorizedOrThrow(verifyAdminFn, req, res) {
  * @param {NativeHttpRequest} req Req.
  * @param {NativeHttpResponse} res Res.
  * @param {(body: unknown) => { pageNumber: number, variantName: string }} parseRequestBody Parser.
- * @returns {{ pageNumber: number, variantName: string }} Parsed.
+ * @returns {{ pageNumber: number, variantName: string, authorId?: string }} Parsed.
  */
 function parseRequestOrThrow(req, res, parseRequestBody) {
   return throwRequestHandledIfFalsy(
