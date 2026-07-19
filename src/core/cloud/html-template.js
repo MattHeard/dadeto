@@ -8,8 +8,5 @@ import { readFileSync } from 'node:fs';
  */
 export function renderHtmlTemplate(templateUrl, values) {
   const template = readFileSync(templateUrl, 'utf8');
-  return template.replace(
-    /\{\{([a-zA-Z0-9_]+)\}\}/g,
-    (_, key) => values[key]
-  );
+  return template.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (_, key) => values[key]);
 }

@@ -3,6 +3,7 @@ import {
   fetchAuthorUuidFromApi,
   getCachedAuthorUuid,
   installAuthorUuidCaching,
+  refreshCachedAuthorUuid,
   setCachedAuthorUuid,
 } from '../../../src/core/browser/google-auth-cache.js';
 
@@ -72,6 +73,53 @@ describe('google-auth-cache', () => {
     fetchFn.mockRejectedValueOnce(new Error('network'));
     await expect(
       fetchAuthorUuidFromApi(fetchFn, '/author', 'token')
+    ).resolves.toBeNull();
+  });
+
+  it('refreshes an uncached author uuid and reuses cached or absent tokens', async () => {
+    const storage = createStorage();
+    const fetchFn = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ uuid: 'author-refresh' }),
+    });
+    storage.setItem('id_token', 'token');
+    await expect(
+      refreshCachedAuthorUuid({
+        storage,
+        fetchFn,
+        getAuthorUuidUrl: jest.fn().mockResolvedValue('/author'),
+      })
+    ).resolves.toBe('author-refresh');
+
+    await expect(
+      refreshCachedAuthorUuid({
+        storage,
+        fetchFn,
+        getAuthorUuidUrl: jest.fn(),
+      })
+    ).resolves.toBe('author-refresh');
+
+    const previousSessionStorage = globalThis.sessionStorage;
+    globalThis.sessionStorage = storage;
+    try {
+      await expect(
+        refreshCachedAuthorUuid({
+          fetchFn,
+          getAuthorUuidUrl: jest.fn(),
+        })
+      ).resolves.toBe('author-refresh');
+    } finally {
+      globalThis.sessionStorage = previousSessionStorage;
+    }
+
+    storage.removeItem('id_token');
+    storage.removeItem('author_uuid');
+    await expect(
+      refreshCachedAuthorUuid({
+        storage,
+        fetchFn,
+        getAuthorUuidUrl: jest.fn(),
+      })
     ).resolves.toBeNull();
   });
 

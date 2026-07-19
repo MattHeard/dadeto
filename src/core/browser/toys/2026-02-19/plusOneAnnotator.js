@@ -22,17 +22,13 @@ function toStringOrEmpty(value) {
  * @param {unknown} input - Raw input argument provided to the toy.
  * @returns {Record<string, unknown> | null} Parsed object or null when parsing fails.
  */
-/**
- * Parse the toy input JSON into a payload.
- * @param {unknown} input - Raw input argument provided to the toy.
- * @returns {Record<string, unknown> | null} Parsed object or null when parsing fails.
- */
 function parseToyInput(input) {
   const parsed = parseJsonOrNull(whenString(input, s => s) ?? '');
-  if (!isPlainObject(parsed)) {
-    return null;
+  if (isPlainObject(parsed)) {
+    return /** @type {Record<string, unknown>} */ (parsed);
   }
-  return /** @type {Record<string, unknown>} */ (parsed);
+
+  return null;
 }
 
 /**

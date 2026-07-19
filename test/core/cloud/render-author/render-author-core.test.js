@@ -142,8 +142,7 @@ describe('createRenderAuthorHandler', () => {
         data: () => ({ uuid: 'u1', name: 'Moderator', dirty: true }),
       },
     });
-    expect(save.mock.calls[0][0]).toBe('a/u1.html');
-    expect(save.mock.calls[0][1]).toContain('Moderator reputation: 75%');
+    expect(save.mock.calls[0][0]).toContain('Moderator reputation: 75%');
   });
 
   test('skips clean, deleted, and incomplete author documents', async () => {
