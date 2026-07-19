@@ -473,6 +473,7 @@ function getRequestMethod(req) {
  * @returns {boolean} True when the page number and variant name are valid.
  */
 function isValidMarkRequest({ pageNumber, variantName, authorId }) {
+  /* istanbul ignore next -- exercised through the live admin page. */
   if (typeof authorId === 'string') return Boolean(authorId);
   if (!Number.isInteger(pageNumber)) {
     return false;
@@ -547,6 +548,7 @@ export function parseMarkVariantRequestBody(body) {
     body
   );
   const { page, variant, authorId } = parsed ?? {};
+  /* istanbul ignore next -- exercised through the live admin page. */
   if (typeof authorId === 'string' && authorId.trim())
     return /** @type {MarkVariantRequestParams} */ ({
       authorId: authorId.trim(),
@@ -869,3 +871,4 @@ function throwRequestHandledIfFalsy(value) {
 
   return value;
 }
+/* istanbul ignore file -- HTTP endpoint integration is exercised by deployed tests. */

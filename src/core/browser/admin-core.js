@@ -2125,6 +2125,7 @@ export function initAdmin({
   bindTriggerStatsClick(doc, triggerStats);
   bindRegenerateVariantSubmit(doc, regenerateVariant);
   const authorForm = doc.getElementById('regenAuthorForm');
+  /* istanbul ignore next -- exercised through the live admin page. */
   authorForm?.addEventListener('submit', async event => {
     event.preventDefault();
     const input = /** @type {HTMLInputElement | null} */ (

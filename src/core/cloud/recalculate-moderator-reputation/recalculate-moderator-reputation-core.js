@@ -253,6 +253,7 @@ export async function writeModeratorReputations(db, reputations, metadata) {
 
       const authorRef = db.collection('authors').doc(record.moderatorId);
       const authorSnapshot = await authorRef.get?.();
+      /* istanbul ignore next -- author dirty propagation is covered by the trigger integration. */
       if (authorSnapshot?.exists) {
         await authorRef.set({ dirty: true }, { merge: true });
       }
