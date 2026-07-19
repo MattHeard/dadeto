@@ -5,6 +5,15 @@ import {
 } from '../../../../src/core/cloud/render-author/render-author-core.js';
 
 describe('renderAuthorPage', () => {
+  test('handles missing optional author and variant fields', () => {
+    const result = renderAuthorPage({ uuid: 'u-missing' }, [
+      { pageNumber: 1 },
+      { pageNumber: 1, name: 'named' },
+      { pageNumber: 1 },
+    ]);
+    expect(result.html).toContain('/p/1.html');
+  });
+
   test('renders the escaped author page path and html', () => {
     const result = renderAuthorPage({ uuid: 'u1', name: '<Writer>' }, [
       { pageNumber: 10, name: 'b', content: 'ten variant words here' },
@@ -79,6 +88,17 @@ describe('createRenderAuthorHandler', () => {
               visibility: 0,
               content: 'hidden text',
             }),
+          },
+          {
+            ref: { parent: { parent: pageRef } },
+            data: () => ({ authorId: 'author', name: 42 }),
+          },
+          {
+            data: () => ({ authorId: 'author', name: 'missing-parent' }),
+          },
+          {
+            ref: { parent: { parent: pageRef } },
+            data: () => ({ authorId: 'author', name: 'no-content' }),
           },
         ],
       }),

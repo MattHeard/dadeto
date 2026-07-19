@@ -63,7 +63,11 @@ function syncTextInput(textInput, dom, content) {
  */
 function readSelectedFileText(fileInput) {
   const selectedFile = fileInput.files && fileInput.files[0];
-  return selectedFile ? selectedFile.text() : Promise.resolve(null);
+  if (selectedFile) {
+    return selectedFile.text();
+  }
+
+  return Promise.resolve(null);
 }
 
 /**

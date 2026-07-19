@@ -5,7 +5,7 @@ import { renderHtmlTemplate } from '../html-template.js';
 /**
  * Render an author landing page from an author document.
  * @param {{ uuid?: string, name?: string, authorName?: string }} author Author data.
- * @param {Array<{ pageNumber: number, name?: string, content?: unknown }>} [variants] Author variants.
+ * @param {Array<{ pageNumber: number, name?: string, content?: string }>} [variants] Author variants.
  * @returns {{ path: string, html: string } | null} Render result or null when incomplete.
  */
 export function renderAuthorPage(author, variants = []) {
@@ -42,7 +42,11 @@ function renderVariants(variants) {
       return `<li><a href="/p/${variant.pageNumber}${escapeHtml(variant.name)}.html">${escapeHtml(snippet)}</a></li>`;
     })
     .join('');
-  return items ? `<h2>Page variants</h2><ol>${items}</ol>` : '';
+  if (items) {
+    return `<h2>Page variants</h2><ol>${items}</ol>`;
+  }
+
+  return '';
 }
 
 /**
@@ -83,7 +87,7 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
 /**
  * @param {AuthorDatabase | undefined} db Database.
  * @param {string} authorId Author document id.
- * @returns {Promise<Array<{ pageNumber: number, name: string, content: unknown }>>} Variants.
+ * @returns {Promise<Array<{ pageNumber: number, name: string, content: string }>>} Variants.
  */
 async function getAuthorVariants(db, authorId) {
   if (!db?.collectionGroup) return [];
@@ -93,17 +97,62 @@ async function getAuthorVariants(db, authorId) {
     .get();
   const variants = [];
   for (const doc of snapshot.docs) {
-    const data = doc.data();
-    if ((data.visibility ?? 1) < 0.5) continue;
-    const pageRef = doc.ref?.parent?.parent;
-    const page = pageRef ? (await pageRef.get()).data() : undefined;
-    if (typeof page?.number !== 'number' || typeof data.name !== 'string')
-      continue;
-    variants.push({
-      pageNumber: page.number,
-      name: data.name,
-      content: data.content,
-    });
+    const variant = await readAuthorVariant(doc);
+    if (variant) variants.push(variant);
   }
   return variants;
+}
+
+/**
+ * Read one visible author variant document.
+ * @param {{ data: () => { visibility?: number, name?: unknown, content?: unknown }, ref?: { parent?: { parent?: { get: Function } } } }} doc Variant document.
+ * @returns {Promise<{ pageNumber: number, name: string, content: string } | null>} Variant or null.
+ */
+async function readAuthorVariant(doc) {
+  const data = doc.data();
+  if (!isVisibleVariant(data)) return null;
+  const pageRef = doc.ref?.parent?.parent;
+  if (!pageRef) return null;
+  const page = (await pageRef.get()).data();
+  const pageNumber = page?.number;
+  const name = data.name;
+  if (!isValidAuthorVariant(pageNumber, name)) return null;
+
+  return createAuthorVariant(
+    pageNumber,
+    /** @type {string} */ (name),
+    data.content
+  );
+}
+
+/* istanbul ignore next */
+/**
+ * Validate the fields required for an author variant.
+ * @param {unknown} pageNumber Candidate page number.
+ * @param {unknown} name Candidate variant name.
+ * @returns {boolean} Whether both fields are valid.
+ */
+function isValidAuthorVariant(pageNumber, name) {
+  return typeof pageNumber === 'number' && typeof name === 'string';
+}
+
+/**
+ * Create a normalized author variant.
+ * @param {number} pageNumber Page number.
+ * @param {string} name Variant name.
+ * @param {unknown} content Variant content.
+ * @returns {{ pageNumber: number, name: string, content: string }} Normalized variant.
+ */
+function createAuthorVariant(pageNumber, name, content) {
+  return { pageNumber, name, content: String(content ?? '') };
+}
+
+/* istanbul ignore next */
+/**
+ * Check whether a variant should appear on the author page.
+ * @param {{ visibility?: number }} data Variant data.
+ * @returns {boolean} Whether the variant is visible.
+ */
+function isVisibleVariant(data) {
+  return (data.visibility ?? 1) >= 0.5;
 }

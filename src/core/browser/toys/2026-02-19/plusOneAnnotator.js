@@ -1,6 +1,5 @@
 import { normalizeToken } from './germanTokenizer.js';
 import { whenString } from '../../../commonCore.js';
-import { buildWhen } from '../../common.js';
 import { parseJsonOrNull } from '../../jsonUtils.js';
 import { isPlainObject } from '../browserToysCore.js';
 
@@ -23,16 +22,13 @@ function toStringOrEmpty(value) {
  * @param {unknown} input - Raw input argument provided to the toy.
  * @returns {Record<string, unknown> | null} Parsed object or null when parsing fails.
  */
-/**
- * Parse the toy input JSON into a payload.
- * @param {unknown} input - Raw input argument provided to the toy.
- * @returns {Record<string, unknown> | null} Parsed object or null when parsing fails.
- */
 function parseToyInput(input) {
-  const parsed = parseJsonOrNull(whenString(input, s => s));
-  return isPlainObject(parsed)
-    ? /** @type {Record<string, unknown>} */ (parsed)
-    : null;
+  const parsed = parseJsonOrNull(whenString(input, s => s) ?? '');
+  if (isPlainObject(parsed)) {
+    return /** @type {Record<string, unknown>} */ (parsed);
+  }
+
+  return null;
 }
 
 /**
