@@ -26,6 +26,7 @@ import {
   stringOrNull,
   trimmedStringOrNull,
   whenPredicateValue,
+  createFirestoreDocumentOnWriteTrigger,
 } from '../../../src/core/cloud/cloud-core.js';
 
 describe('cloud-core', () => {
@@ -35,6 +36,33 @@ describe('cloud-core', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  test('binds document triggers to the requested Firestore database', async () => {
+    const onWrite = jest.fn(handler => handler);
+    const document = jest.fn(() => ({ onWrite }));
+    const defaultFirestore = { document };
+    const databaseFirestore = { document: jest.fn(() => ({ onWrite })) };
+    const database = jest.fn(() => databaseFirestore);
+    const region = jest.fn(() => ({
+      firestore: { ...defaultFirestore, database },
+    }));
+    const handler = jest.fn().mockResolvedValue(null);
+
+    const trigger = createFirestoreDocumentOnWriteTrigger({
+      functions: { region },
+      region: 'europe-west1',
+      documentPath: 'authors/{authorId}',
+      database: 'production-db',
+      handler,
+    });
+
+    expect(database).toHaveBeenCalledWith('production-db');
+    expect(databaseFirestore.document).toHaveBeenCalledWith(
+      'authors/{authorId}'
+    );
+    expect(defaultFirestore.document).not.toHaveBeenCalled();
+    expect(trigger).toEqual(expect.any(Function));
   });
 
   test('should export DEFAULT_BUCKET_NAME', () => {

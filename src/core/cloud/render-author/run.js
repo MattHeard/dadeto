@@ -20,6 +20,7 @@ export function runRenderAuthor(deps) {
       functions,
       region: 'europe-west1',
       documentPath: 'authors/{authorId}',
+      database: process.env.DATABASE_ID,
       handler: change => renderAuthor(change),
     }),
   };
