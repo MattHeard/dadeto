@@ -319,9 +319,9 @@ export async function markAuthorDirtyImpl(authorId, deps) {
     .get();
   const author = snapshot.docs[0];
   if (!author) return false;
-  await /** @type {any} */ (/** @type {any} */ (author).ref).update({
-    dirty: true,
-  });
+  const authorRef = /** @type {any} */ (author).ref;
+  await authorRef.update({ dirty: false });
+  await authorRef.update({ dirty: true });
   return true;
 }
 
