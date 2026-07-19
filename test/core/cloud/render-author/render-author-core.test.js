@@ -28,6 +28,16 @@ describe('renderAuthorPage', () => {
     ).toContain('Legacy');
     expect(renderAuthorPage(null)).toBeNull();
   });
+
+  test('renders a rounded moderator reputation percentage', () => {
+    const result = renderAuthorPage({ uuid: 'u3', name: 'Moderator' }, [], 75);
+    expect(result.html).toContain('Moderator reputation: 75%');
+  });
+
+  test('omits moderator reputation when it is unavailable', () => {
+    const result = renderAuthorPage({ uuid: 'u4', name: 'Author' });
+    expect(result.html).not.toContain('Moderator reputation:');
+  });
 });
 
 describe('createRenderAuthorHandler', () => {
@@ -99,6 +109,41 @@ describe('createRenderAuthorHandler', () => {
     });
     expect(save.mock.calls[0][0]).toContain('/p/3a.html');
     expect(save.mock.calls[0][0]).not.toContain('hidden text');
+  });
+
+  test('loads and rounds the matching moderator reputation', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const handler = createRenderAuthorHandler({
+      bucket: { file: jest.fn(() => ({ save })) },
+      db: {
+        collectionGroup: jest.fn(() => ({
+          where: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ docs: [] }),
+          })),
+        })),
+        collection: jest.fn(name =>
+          name === 'moderators'
+            ? {
+                doc: jest.fn(() => ({
+                  get: jest.fn().mockResolvedValue({
+                    data: () => ({ moderatorReputation: 0.746 }),
+                  }),
+                })),
+              }
+            : { doc: jest.fn() }
+        ),
+      },
+      deleteField: jest.fn(),
+    });
+    await handler({
+      after: {
+        exists: true,
+        ref: { id: 'author', update: jest.fn() },
+        data: () => ({ uuid: 'u1', name: 'Moderator', dirty: true }),
+      },
+    });
+    expect(save.mock.calls[0][0]).toBe('a/u1.html');
+    expect(save.mock.calls[0][1]).toContain('Moderator reputation: 75%');
   });
 
   test('skips clean, deleted, and incomplete author documents', async () => {

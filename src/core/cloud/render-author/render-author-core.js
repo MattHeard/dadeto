@@ -1,14 +1,15 @@
 import { renderHtmlTemplate } from '../html-template.js';
 
-/** @typedef {{ collectionGroup?: (name: string) => { where: Function } }} AuthorDatabase */
+/** @typedef {{ collectionGroup?: (name: string) => { where: Function }; collection?: (name: string) => { doc: (id: string) => { get: Function } } }} AuthorDatabase */
 
 /**
  * Render an author landing page from an author document.
  * @param {{ uuid?: string, name?: string, authorName?: string }} author Author data.
  * @param {Array<{ pageNumber: number, name?: string, content?: unknown }>} [variants] Author variants.
+ * @param {number | undefined} [moderatorReputation] Rounded moderator reputation percentage.
  * @returns {{ path: string, html: string } | null} Render result or null when incomplete.
  */
-export function renderAuthorPage(author, variants = []) {
+export function renderAuthorPage(author, variants = [], moderatorReputation) {
   if (!author?.uuid) {
     return null;
   }
@@ -17,14 +18,26 @@ export function renderAuthorPage(author, variants = []) {
     path: `a/${author.uuid}.html`,
     html: renderHtmlTemplate(new URL('./author-page.html', import.meta.url), {
       authorName: escapeHtml(authorName),
+      moderatorReputation: renderModeratorReputation(moderatorReputation),
       variants: renderVariants(variants),
     }),
   };
 }
 
 /**
+ * @param {number | undefined} reputation Rounded reputation percentage.
+ * @returns {string} Optional reputation markup.
+ */
+function renderModeratorReputation(reputation) {
+  if (typeof reputation !== 'number' || !Number.isFinite(reputation)) {
+    return '';
+  }
+  return `<p>Moderator reputation: ${reputation}%</p>`;
+}
+
+/**
  * Render author variant links using the same five-word snippet as the alts page.
- * @param {Array<{ pageNumber: number, name?: string, content?: string }>} variants Variants.
+ * @param {Array<{ pageNumber: number, name?: string, content?: unknown }>} variants Variants.
  * @returns {string} Variant list HTML.
  */
 function renderVariants(variants) {
@@ -70,7 +83,11 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
     const data = change.after.data();
     if (!data.dirty) return null;
     const variants = await getAuthorVariants(db, change.after.ref.id);
-    const rendered = renderAuthorPage(data, variants);
+    const moderatorReputation = await getModeratorReputation(
+      db,
+      change.after.ref.id
+    );
+    const rendered = renderAuthorPage(data, variants, moderatorReputation);
     if (!rendered) return null;
     await bucket.file(rendered.path).save(rendered.html, {
       contentType: 'text/html',
@@ -78,6 +95,20 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
     await change.after.ref.update({ dirty: deleteField() });
     return null;
   };
+}
+
+/**
+ * @param {AuthorDatabase | undefined} db Database.
+ * @param {string} moderatorId Moderator document id.
+ * @returns {Promise<number | undefined>} Rounded reputation percentage.
+ */
+async function getModeratorReputation(db, moderatorId) {
+  if (!db?.collection) return undefined;
+  const snapshot = await db.collection('moderators').doc(moderatorId).get();
+  const reputation = snapshot?.data?.()?.moderatorReputation;
+  return typeof reputation === 'number' && Number.isFinite(reputation)
+    ? Math.round(reputation * 100)
+    : undefined;
 }
 
 /**
