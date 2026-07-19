@@ -1,0 +1,113 @@
+@startuml Dendrite_GCP_Infrastructure
+title Dendrite GCP Infrastructure (generated from infra/ and src/cloud/)
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+package "Cloud Functions" {
+  component "assign_moderation_job" as fn_assign_moderation_job <<Cloud Function>>
+  component "errors" as fn_errors <<Cloud Function>>
+  component "generate_stats" as fn_generate_stats <<Cloud Function>>
+  component "get_api_key_credit" as fn_get_api_key_credit <<Cloud Function>>
+  component "get_api_key_credit_v2" as fn_get_api_key_credit_v2 <<Cloud Function>>
+  component "get_moderation_variant" as fn_get_moderation_variant <<Cloud Function>>
+  component "hide_variant_html" as fn_hide_variant_html <<Cloud Function>>
+  component "mark_variant_dirty" as fn_mark_variant_dirty <<Cloud Function>>
+  component "payment_webhook" as fn_payment_webhook <<Cloud Function>>
+  component "process_new_page" as fn_process_new_page <<Cloud Function>>
+  component "process_new_story" as fn_process_new_story <<Cloud Function>>
+  component "prod_update_variant_visibility" as fn_prod_update_variant_visibility <<Cloud Function>>
+  component "realtime_call" as fn_realtime_call <<Cloud Function>>
+  component "render_author" as fn_render_author <<Cloud Function>>
+  component "render_contents" as fn_render_contents <<Cloud Function>>
+  component "render_variant" as fn_render_variant <<Cloud Function>>
+  component "report_for_moderation" as fn_report_for_moderation <<Cloud Function>>
+  component "submit_moderation_rating" as fn_submit_moderation_rating <<Cloud Function>>
+  component "submit_new_page" as fn_submit_new_page <<Cloud Function>>
+  component "submit_new_story" as fn_submit_new_story <<Cloud Function>>
+  component "trigger_render_contents" as fn_trigger_render_contents <<Cloud Function>>
+}
+
+package "Firestore document types detected in src/" {
+  database "api-key-credit" as db_api_key_credit <<Document type>>
+  database "api-key-ledger" as db_api_key_ledger <<Document type>>
+  database "authors" as db_authors <<Document type>>
+  database "events" as db_events <<Document type>>
+  database "moderationRatings" as db_moderationRatings <<Document type>>
+  database "moderationReports" as db_moderationReports <<Document type>>
+  database "moderators" as db_moderators <<Document type>>
+  database "options" as db_options <<Document type>>
+  database "pageFormSubmissions" as db_pageFormSubmissions <<Document type>>
+  database "pages" as db_pages <<Document type>>
+  database "payment-customers" as db_payment_customers <<Document type>>
+  database "payment-events" as db_payment_events <<Document type>>
+  database "reverse-links" as db_reverse_links <<Document type>>
+  database "stories" as db_stories <<Document type>>
+  database "storyFormSubmissions" as db_storyFormSubmissions <<Document type>>
+  database "storyStats" as db_storyStats <<Document type>>
+  database "variants" as db_variants <<Document type>>
+}
+
+package "Cloud Storage" {
+  folder "dendrite_static_nonprod" as bucket_dendrite_static_nonprod <<Bucket>>
+  folder "dendrite_static_prod" as bucket_dendrite_static_prod <<Bucket>>
+  folder "dendrite_static_test" as bucket_dendrite_static_test <<Bucket>>
+  folder "e2e_reports" as bucket_e2e_reports <<Bucket>>
+  folder "gcf_source_bucket" as bucket_gcf_source_bucket <<Bucket>>
+}
+
+package "Triggers" {
+  component "generate_stats_daily" as scheduler_generate_stats_daily <<Cloud Scheduler>>
+}
+
+' Terraform scheduler targets
+scheduler_generate_stats_daily --> fn_generate_stats : invokes
+
+' Source-derived Firestore and Storage dependencies
+fn_assign_moderation_job --> db_moderators : reads/writes
+fn_assign_moderation_job --> db_variants : reads/writes
+fn_assign_moderation_job --> db_moderationRatings : reads/writes
+fn_generate_stats --> db_stories : reads/writes
+fn_generate_stats --> db_pages : reads/writes
+fn_generate_stats --> db_variants : reads/writes
+fn_generate_stats --> db_storyStats : reads/writes
+fn_generate_stats --> bucket_dendrite_static_nonprod : reads/writes
+fn_get_api_key_credit --> db_api_key_credit : reads/writes
+fn_get_api_key_credit_v2 --> db_api_key_credit : reads/writes
+fn_get_api_key_credit_v2 --> db_api_key_ledger : reads/writes
+fn_get_api_key_credit_v2 --> db_events : reads/writes
+fn_get_moderation_variant --> db_moderators : reads/writes
+fn_get_moderation_variant --> db_options : reads/writes
+fn_hide_variant_html --> bucket_dendrite_static_nonprod : reads/writes
+fn_payment_webhook --> db_payment_customers : reads/writes
+fn_payment_webhook --> db_payment_events : reads/writes
+fn_process_new_page --> db_pages : reads/writes
+fn_process_new_page --> db_variants : reads/writes
+fn_process_new_page --> db_options : reads/writes
+fn_process_new_story --> db_pages : reads/writes
+fn_process_new_story --> db_variants : reads/writes
+fn_process_new_story --> db_options : reads/writes
+fn_render_author --> db_moderators : reads/writes
+fn_render_author --> db_variants : reads/writes
+fn_render_author --> bucket_dendrite_static_nonprod : reads/writes
+fn_render_contents --> db_storyStats : reads/writes
+fn_render_contents --> db_stories : reads/writes
+fn_render_contents --> db_variants : reads/writes
+fn_render_contents --> bucket_dendrite_static_nonprod : reads/writes
+fn_render_variant --> db_variants : reads/writes
+fn_render_variant --> db_options : reads/writes
+fn_render_variant --> db_reverse_links : reads/writes
+fn_render_variant --> bucket_dendrite_static_nonprod : reads/writes
+fn_report_for_moderation --> db_moderationReports : reads/writes
+fn_submit_moderation_rating --> db_moderators : reads/writes
+fn_submit_moderation_rating --> db_moderationRatings : reads/writes
+fn_submit_new_page --> db_pageFormSubmissions : reads/writes
+fn_submit_new_page --> db_options : reads/writes
+fn_submit_new_page --> db_variants : reads/writes
+fn_submit_new_story --> db_storyFormSubmissions : reads/writes
+
+note bottom
+  Terraform resources are authoritative for deployed components.\n  Firestore and Storage edges are inferred from recognizable source calls.
+end note
+
+@enduml

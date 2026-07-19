@@ -12,6 +12,7 @@
     "test:e2e:cloud": "node scripts/run-e2e.js --suite cloud",
     "test:e2e:local": "npm run build && node scripts/run-e2e.js --suite local",
     "generate": "node src/build/generate.js",
+    "generate:gcp-diagram": "node scripts/generate-gcp-architecture-diagram.js",
     "render:template": "node scripts/render-html-template.js",
     "serve:template-acceptance": "node scripts/serve-template-acceptance.js",
     "gh:watch": "node scripts/watch-gh-run.js",
