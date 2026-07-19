@@ -312,7 +312,16 @@ export function updateVariantDirty(variantRef) {
  * @returns {Promise<boolean>} True when updated.
  */
 export async function markAuthorDirtyImpl(authorId, deps) {
-  await deps.db.doc(`authors/${authorId}`).update({ dirty: true });
+  const snapshot = await deps.db
+    .collection('authors')
+    .where('uuid', '==', authorId)
+    .limit(1)
+    .get();
+  const author = snapshot.docs[0];
+  if (!author) return false;
+  await /** @type {any} */ (/** @type {any} */ (author).ref).update({
+    dirty: true,
+  });
   return true;
 }
 
@@ -807,7 +816,13 @@ async function markAuthorAndRespond(res, markFn, authorId) {
   await runWithFailureAndThen(
     () => markFn(authorId),
     error => res.status(500).json({ error: resolveUpdateErrorMessage(error) }),
-    () => sendOkResponse(res)
+    value => {
+      if (!value) {
+        res.status(404).json({ error: 'Author not found' });
+        return;
+      }
+      sendOkResponse(res);
+    }
   );
 }
 
