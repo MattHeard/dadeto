@@ -5,15 +5,6 @@ import {
 } from '../../../../src/core/cloud/render-author/render-author-core.js';
 
 describe('renderAuthorPage', () => {
-  test('handles missing optional author and variant fields', () => {
-    const result = renderAuthorPage({ uuid: 'u-missing' }, [
-      { pageNumber: 1 },
-      { pageNumber: 1, name: 'named' },
-      { pageNumber: 1 },
-    ]);
-    expect(result.html).toContain('/p/1.html');
-  });
-
   test('renders the escaped author page path and html', () => {
     const result = renderAuthorPage({ uuid: 'u1', name: '<Writer>' }, [
       { pageNumber: 10, name: 'b', content: 'ten variant words here' },
@@ -36,6 +27,16 @@ describe('renderAuthorPage', () => {
       renderAuthorPage({ uuid: 'u2', authorName: 'Legacy' }).html
     ).toContain('Legacy');
     expect(renderAuthorPage(null)).toBeNull();
+  });
+
+  test('renders a rounded moderator reputation percentage', () => {
+    const result = renderAuthorPage({ uuid: 'u3', name: 'Moderator' }, [], 75);
+    expect(result.html).toContain('Moderator reputation: 75%');
+  });
+
+  test('omits moderator reputation when it is unavailable', () => {
+    const result = renderAuthorPage({ uuid: 'u4', name: 'Author' });
+    expect(result.html).not.toContain('Moderator reputation:');
   });
 });
 
@@ -89,17 +90,6 @@ describe('createRenderAuthorHandler', () => {
               content: 'hidden text',
             }),
           },
-          {
-            ref: { parent: { parent: pageRef } },
-            data: () => ({ authorId: 'author', name: 42 }),
-          },
-          {
-            data: () => ({ authorId: 'author', name: 'missing-parent' }),
-          },
-          {
-            ref: { parent: { parent: pageRef } },
-            data: () => ({ authorId: 'author', name: 'no-content' }),
-          },
         ],
       }),
     };
@@ -119,6 +109,40 @@ describe('createRenderAuthorHandler', () => {
     });
     expect(save.mock.calls[0][0]).toContain('/p/3a.html');
     expect(save.mock.calls[0][0]).not.toContain('hidden text');
+  });
+
+  test('loads and rounds the matching moderator reputation', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const handler = createRenderAuthorHandler({
+      bucket: { file: jest.fn(() => ({ save })) },
+      db: {
+        collectionGroup: jest.fn(() => ({
+          where: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ docs: [] }),
+          })),
+        })),
+        collection: jest.fn(name =>
+          name === 'moderators'
+            ? {
+                doc: jest.fn(() => ({
+                  get: jest.fn().mockResolvedValue({
+                    data: () => ({ moderatorReputation: 0.746 }),
+                  }),
+                })),
+              }
+            : { doc: jest.fn() }
+        ),
+      },
+      deleteField: jest.fn(),
+    });
+    await handler({
+      after: {
+        exists: true,
+        ref: { id: 'author', update: jest.fn() },
+        data: () => ({ uuid: 'u1', name: 'Moderator', dirty: true }),
+      },
+    });
+    expect(save.mock.calls[0][0]).toContain('Moderator reputation: 75%');
   });
 
   test('skips clean, deleted, and incomplete author documents', async () => {

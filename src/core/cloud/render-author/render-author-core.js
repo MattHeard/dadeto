@@ -1,14 +1,15 @@
 import { renderHtmlTemplate } from '../html-template.js';
 
-/** @typedef {{ collectionGroup?: (name: string) => { where: Function } }} AuthorDatabase */
+/** @typedef {{ collectionGroup?: (name: string) => { where: Function }; collection?: (name: string) => { doc: (id: string) => { get: Function } } }} AuthorDatabase */
 
 /**
  * Render an author landing page from an author document.
  * @param {{ uuid?: string, name?: string, authorName?: string }} author Author data.
- * @param {Array<{ pageNumber: number, name?: string, content?: string }>} [variants] Author variants.
+ * @param {Array<{ pageNumber: number, name?: string, content?: unknown }>} [variants] Author variants.
+ * @param {number | undefined} [moderatorReputation] Rounded moderator reputation percentage.
  * @returns {{ path: string, html: string } | null} Render result or null when incomplete.
  */
-export function renderAuthorPage(author, variants = []) {
+export function renderAuthorPage(author, variants = [], moderatorReputation) {
   if (!author?.uuid) {
     return null;
   }
@@ -17,14 +18,26 @@ export function renderAuthorPage(author, variants = []) {
     path: `a/${author.uuid}.html`,
     html: renderHtmlTemplate(new URL('./author-page.html', import.meta.url), {
       authorName: escapeHtml(authorName),
+      moderatorReputation: renderModeratorReputation(moderatorReputation),
       variants: renderVariants(variants),
     }),
   };
 }
 
 /**
+ * @param {number | undefined} reputation Rounded reputation percentage.
+ * @returns {string} Optional reputation markup.
+ */
+function renderModeratorReputation(reputation) {
+  if (typeof reputation !== 'number' || !Number.isFinite(reputation)) {
+    return '';
+  }
+  return `<p>Moderator reputation: ${reputation}%</p>`;
+}
+
+/**
  * Render author variant links using the same five-word snippet as the alts page.
- * @param {Array<{ pageNumber: number, name?: string, content?: string }>} variants Variants.
+ * @param {Array<{ pageNumber: number, name?: string, content?: unknown }>} variants Variants.
  * @returns {string} Variant list HTML.
  */
 function renderVariants(variants) {
@@ -42,11 +55,7 @@ function renderVariants(variants) {
       return `<li><a href="/p/${variant.pageNumber}${escapeHtml(variant.name)}.html">${escapeHtml(snippet)}</a></li>`;
     })
     .join('');
-  if (items) {
-    return `<h2>Page variants</h2><ol>${items}</ol>`;
-  }
-
-  return '';
+  return items ? `<h2>Page variants</h2><ol>${items}</ol>` : '';
 }
 
 /**
@@ -74,7 +83,11 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
     const data = change.after.data();
     if (!data.dirty) return null;
     const variants = await getAuthorVariants(db, change.after.ref.id);
-    const rendered = renderAuthorPage(data, variants);
+    const moderatorReputation = await getModeratorReputation(
+      db,
+      change.after.ref.id
+    );
+    const rendered = renderAuthorPage(data, variants, moderatorReputation);
     if (!rendered) return null;
     await bucket.file(rendered.path).save(rendered.html, {
       contentType: 'text/html',
@@ -86,8 +99,22 @@ export function createRenderAuthorHandler({ bucket, db, deleteField }) {
 
 /**
  * @param {AuthorDatabase | undefined} db Database.
+ * @param {string} moderatorId Moderator document id.
+ * @returns {Promise<number | undefined>} Rounded reputation percentage.
+ */
+async function getModeratorReputation(db, moderatorId) {
+  if (!db?.collection) return undefined;
+  const snapshot = await db.collection('moderators').doc(moderatorId).get();
+  const reputation = snapshot?.data?.()?.moderatorReputation;
+  return typeof reputation === 'number' && Number.isFinite(reputation)
+    ? Math.round(reputation * 100)
+    : undefined;
+}
+
+/**
+ * @param {AuthorDatabase | undefined} db Database.
  * @param {string} authorId Author document id.
- * @returns {Promise<Array<{ pageNumber: number, name: string, content: string }>>} Variants.
+ * @returns {Promise<Array<{ pageNumber: number, name: string, content: unknown }>>} Variants.
  */
 async function getAuthorVariants(db, authorId) {
   if (!db?.collectionGroup) return [];
@@ -97,62 +124,17 @@ async function getAuthorVariants(db, authorId) {
     .get();
   const variants = [];
   for (const doc of snapshot.docs) {
-    const variant = await readAuthorVariant(doc);
-    if (variant) variants.push(variant);
+    const data = doc.data();
+    if ((data.visibility ?? 1) < 0.5) continue;
+    const pageRef = doc.ref?.parent?.parent;
+    const page = pageRef ? (await pageRef.get()).data() : undefined;
+    if (typeof page?.number !== 'number' || typeof data.name !== 'string')
+      continue;
+    variants.push({
+      pageNumber: page.number,
+      name: data.name,
+      content: data.content,
+    });
   }
   return variants;
-}
-
-/**
- * Read one visible author variant document.
- * @param {{ data: () => { visibility?: number, name?: unknown, content?: unknown }, ref?: { parent?: { parent?: { get: Function } } } }} doc Variant document.
- * @returns {Promise<{ pageNumber: number, name: string, content: string } | null>} Variant or null.
- */
-async function readAuthorVariant(doc) {
-  const data = doc.data();
-  if (!isVisibleVariant(data)) return null;
-  const pageRef = doc.ref?.parent?.parent;
-  if (!pageRef) return null;
-  const page = (await pageRef.get()).data();
-  const pageNumber = page?.number;
-  const name = data.name;
-  if (!isValidAuthorVariant(pageNumber, name)) return null;
-
-  return createAuthorVariant(
-    pageNumber,
-    /** @type {string} */ (name),
-    data.content
-  );
-}
-
-/* istanbul ignore next */
-/**
- * Validate the fields required for an author variant.
- * @param {unknown} pageNumber Candidate page number.
- * @param {unknown} name Candidate variant name.
- * @returns {boolean} Whether both fields are valid.
- */
-function isValidAuthorVariant(pageNumber, name) {
-  return typeof pageNumber === 'number' && typeof name === 'string';
-}
-
-/**
- * Create a normalized author variant.
- * @param {number} pageNumber Page number.
- * @param {string} name Variant name.
- * @param {unknown} content Variant content.
- * @returns {{ pageNumber: number, name: string, content: string }} Normalized variant.
- */
-function createAuthorVariant(pageNumber, name, content) {
-  return { pageNumber, name, content: String(content ?? '') };
-}
-
-/* istanbul ignore next */
-/**
- * Check whether a variant should appear on the author page.
- * @param {{ visibility?: number }} data Variant data.
- * @returns {boolean} Whether the variant is visible.
- */
-function isVisibleVariant(data) {
-  return (data.visibility ?? 1) >= 0.5;
 }

@@ -235,22 +235,28 @@ function compareModeratorReputations(left, right) {
 
 /**
  * Seed moderator reputation documents with the latest cached scores.
- * @param {{ collection: (name: string) => { doc: (id: string) => { set: (data: Record<string, unknown>, options?: { merge?: boolean }) => Promise<void> } } }} db Firestore-like database.
+ * @param {{ collection: (name: string) => { doc: (id: string) => { get?: () => Promise<{ exists?: boolean }>; set: (data: Record<string, unknown>, options?: { merge?: boolean }) => Promise<void> } } }} db Firestore-like database.
  * @param {ModeratorReputationRecord[]} reputations Cached reputations to persist.
  * @param {{ updatedAt: unknown }} metadata Shared metadata for the write.
  * @returns {Promise<void>} Promise resolving when all reputation writes complete.
  */
 export async function writeModeratorReputations(db, reputations, metadata) {
   await Promise.all(
-    reputations.map(record =>
-      db.collection('moderators').doc(record.moderatorId).set(
+    reputations.map(async record => {
+      await db.collection('moderators').doc(record.moderatorId).set(
         {
           moderatorReputation: record.reputation,
           moderatorReputationUpdatedAt: metadata.updatedAt,
         },
         { merge: true }
-      )
-    )
+      );
+
+      const authorRef = db.collection('authors').doc(record.moderatorId);
+      const authorSnapshot = await authorRef.get?.();
+      if (authorSnapshot?.exists) {
+        await authorRef.set({ dirty: true }, { merge: true });
+      }
+    })
   );
 }
 
