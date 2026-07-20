@@ -102,6 +102,22 @@ describe('submit-new-story core', () => {
       });
     });
 
+    it('defaults an empty author to ???', async () => {
+      const saveSubmission = jest.fn().mockResolvedValue();
+      const responder = createSubmitNewStoryResponder(
+        createDependencies({ saveSubmission })
+      );
+
+      const response = await responder({
+        method: 'POST',
+        body: { title: 'Story', content: 'Body', author: '   ' },
+        headers: { Authorization: 'Bearer token' },
+      });
+
+      expect(response.body.author).toBe('???');
+      expect(saveSubmission.mock.calls[0][1].author).toBe('???');
+    });
+
     it('ignores invalid auth tokens when resolving the author id', async () => {
       const verifyIdToken = jest.fn().mockRejectedValue(new Error('boom'));
       const saveSubmission = jest.fn().mockResolvedValue();

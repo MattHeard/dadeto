@@ -325,6 +325,21 @@ describe('createHandleSubmit', () => {
     });
   });
 
+  it('defaults an empty author to ???', async () => {
+    const deps = baseDeps();
+    deps.findExistingPage.mockResolvedValue('/pages/7');
+    const handler = createHandleSubmit(deps);
+
+    const result = await handler(
+      createRequest(
+        { page: '7', content: 'Story', author: '   ' },
+        { Authorization: 'Bearer token-123' }
+      )
+    );
+
+    expect(result.body.author).toBe('???');
+  });
+
   it('bridges submit results to the HTTP response', async () => {
     const handleSubmitCore = jest.fn().mockResolvedValue({
       status: 202,

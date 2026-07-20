@@ -242,7 +242,7 @@ function normalizeSubmissionData(body) {
   const content = normalizeSubmissionContent(
     /** @type {string} */ (body.content)
   );
-  const author = normalizeAuthor(body.author ?? '???');
+  const author = normalizeAuthor(body.author ?? '') || '???';
   const options = collectSubmissionOptions(body, 120);
 
   return { title, content, author, options };

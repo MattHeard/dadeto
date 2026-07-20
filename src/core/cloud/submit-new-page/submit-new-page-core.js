@@ -364,7 +364,7 @@ function getRawContent(body) {
  * @returns {string} Raw author.
  */
 function getRawAuthor(body) {
-  return String(body.author || '???');
+  return normalizeSubmittedAuthor(body.author ?? '') || '???';
 }
 
 /**
