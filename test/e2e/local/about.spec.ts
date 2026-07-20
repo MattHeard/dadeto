@@ -14,5 +14,7 @@ test('serves about.html with contributor information', async ({ page }) => {
   await expect(
     page.getByRole('link', { name: 'reddit.com/r/DendriteStories' }),
   ).toHaveAttribute('href', 'https://reddit.com/r/DendriteStories');
-  await expect(page.locator('main')).toContainText('Dendrite is an online, choose-your-own-adventure book');
+  await expect(page.locator('main')).toContainText(
+    'Dendrite is an online adventure book that you can both read and write.',
+  );
 });

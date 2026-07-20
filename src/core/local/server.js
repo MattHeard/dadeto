@@ -158,7 +158,7 @@ function createNotFoundPage() {
  * @returns {string} HTML markup.
  */
 function createAboutPage() {
-  return `<h1>About</h1><h2>Discuss Dendrite with us at:</h2><a href="https://reddit.com/r/DendriteStories">reddit.com/r/DendriteStories</a><p>Dendrite is an online, choose-your-own-adventure book</p>`;
+  return `<h1>About</h1><h2>Discuss Dendrite with us at:</h2><a href="https://reddit.com/r/DendriteStories">reddit.com/r/DendriteStories</a><p>Dendrite is an online adventure book that you can both read and write.</p>`;
 }
 
 /**
