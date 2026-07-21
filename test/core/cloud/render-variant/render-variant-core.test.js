@@ -2674,6 +2674,37 @@ describe('createRenderVariant', () => {
 });
 
 describe('createHandleVariantWrite', () => {
+  it('propagates a visibility-only change when the stored sum is still old', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const childUpdate = jest.fn().mockResolvedValue(undefined);
+    const childRef = {
+      path: 'stories/s/pages/child/variants/a',
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ visibility: 0.8, treeVisibilitySum: 1 }),
+      }),
+      update: childUpdate,
+    };
+    const db = { doc: jest.fn(() => childRef) };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => null,
+      db,
+    });
+    await handler({
+      before: {
+        exists: true,
+        data: () => ({ visibility: 0.8, treeVisibilitySum: 1 }),
+      },
+      after: {
+        exists: true,
+        ref: { path: childRef.path },
+        data: () => ({ visibility: 0.9, treeVisibilitySum: 1 }),
+      },
+    });
+    expect(childUpdate).toHaveBeenCalledWith({ treeVisibilitySum: 1.1 });
+  });
+
   it('renders dirty variants and clears the flag', async () => {
     const renderVariant = jest.fn().mockResolvedValue(null);
     const getDeleteSentinel = jest.fn(() => 'sentinel');

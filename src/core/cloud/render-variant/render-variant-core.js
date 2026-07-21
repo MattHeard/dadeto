@@ -57,10 +57,16 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
   ) {
     return;
   }
-  const previous =
-    beforeData.treeVisibilitySum ?? resolveVariantVisibility(beforeData);
+  const previous = change.before?.exists
+    ? (beforeData.treeVisibilitySum ?? resolveVariantVisibility(beforeData))
+    : 0;
+  const storedCurrent = afterData.treeVisibilitySum;
+  const visibilityDelta =
+    resolveVariantVisibility(afterData) - resolveVariantVisibility(beforeData);
   const current =
-    afterData.treeVisibilitySum ?? resolveVariantVisibility(afterData);
+    storedCurrent !== undefined && storedCurrent !== previous
+      ? storedCurrent
+      : previous + visibilityDelta;
   const delta = current - previous;
   if (delta === 0) return;
   let ref = variantRef;
