@@ -10,7 +10,7 @@ import {
   getEnvironmentVariables,
 } from './render-variant-gcf.js';
 import { runRenderVariant } from '../../core/cloud/render-variant/run.js';
-import { regenerateDirtyTreeWeightVariants } from '../../core/cloud/tree-visibility/tree-visibility-regeneration-core.js';
+import { createTreeVisibilityRegenerationHandles } from '../../core/cloud/tree-visibility/run.js';
 
 const { renderVariant: handle, render } = runRenderVariant({
   initializeApp,
@@ -26,27 +26,11 @@ const { renderVariant: handle, render } = runRenderVariant({
 
 export { handle, render };
 
-export const regenerateTreeWeights = functions
-  .region('europe-west1')
-  .pubsub.schedule('every 24 hours')
-  .onRun(async () => {
-    const db = getFirestoreInstance();
-    await regenerateDirtyTreeWeightVariants({
-      db,
-      renderVariant: render,
-      consoleError: (...args) => console.error(...args),
-    });
-    return null;
-  });
+const regenerationHandles = createTreeVisibilityRegenerationHandles({
+  functions,
+  getFirestoreInstance,
+  render,
+});
 
-export const regenerateTreeWeightsHttp = functions
-  .region('europe-west1')
-  .https.onRequest(async (_request, response) => {
-    const db = getFirestoreInstance();
-    const result = await regenerateDirtyTreeWeightVariants({
-      db,
-      renderVariant: render,
-      consoleError: (...args) => console.error(...args),
-    });
-    response.status(200).json(result);
-  });
+export const regenerateTreeWeights = regenerationHandles.scheduled;
+export const regenerateTreeWeightsHttp = regenerationHandles.http;
