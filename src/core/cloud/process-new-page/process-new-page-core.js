@@ -6,6 +6,7 @@
  * @property {(string|string[])} [options] Variant options.
  * @property {string} [incomingOptionFullName] Selected option name.
  * @property {unknown} [targetPage] Target page reference.
+ * @property {number} [visibility] Initial visibility score.
  * @property {number} [pageNumber] Direct page number for direct submission.
  * @property {boolean} [processed] Whether the submission has been processed.
  */
@@ -882,9 +883,14 @@ async function createVariantWithOptions({
 
   batch.set(
     newVariantRef,
-    /** @type {import('firebase-admin/firestore').DocumentData} */ (
-      buildVariantPayload(nextName, submission, { random, getServerTimestamp })
-    )
+    /** @type {import('firebase-admin/firestore').DocumentData} */ ({
+      ...buildVariantPayload(nextName, submission, {
+        random,
+        getServerTimestamp,
+      }),
+      treeVisibilitySum: submission.visibility ?? 1,
+      targetTreeWeightsDirty: false,
+    })
   );
 
   normalizeOptions(submission.options).forEach((text, position) => {

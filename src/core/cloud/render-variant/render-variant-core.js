@@ -1,4 +1,5 @@
 // @ts-nocheck
+/* eslint-disable no-ternary, complexity -- tree propagation keeps Firestore trigger handling atomic. */
 
 import {
   DEFAULT_BUCKET_NAME,
@@ -7,6 +8,11 @@ import {
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
 import { assertFunction } from '../../commonCore.js';
+import {
+  addTreeVisibilityDelta,
+  changedByTreeWeightThreshold,
+  resolveVariantVisibility,
+} from '../tree-visibility/tree-visibility-core.js';
 
 export {
   DEFAULT_BUCKET_NAME,
@@ -23,6 +29,71 @@ export const VISIBILITY_THRESHOLD = 0.5;
  */
 export function resolveVisibilityThreshold(visibilityThreshold) {
   return visibilityThreshold ?? VISIBILITY_THRESHOLD;
+}
+
+/**
+ * Update the changed variant and its incoming-option ancestors without rendering them.
+ * @param {{change: any, db: FirestoreLike}} options Change and tenant database.
+ * @returns {Promise<void>} Promise.
+ */
+async function updateTreeVisibilityForVariantChange({ change, db }) {
+  const after = change.after;
+  const afterData = after.data?.() ?? {};
+  const beforeData = change.before?.exists
+    ? (change.before.data?.() ?? {})
+    : {};
+  const variantRef = resolveTenantDocumentRef(after, db);
+  if (
+    !variantRef ||
+    typeof variantRef.get !== 'function' ||
+    typeof variantRef.update !== 'function'
+  ) {
+    return;
+  }
+  if (
+    afterData.treeVisibilitySum === undefined &&
+    afterData.visibility === undefined &&
+    change.before?.exists
+  ) {
+    return;
+  }
+  const previous =
+    beforeData.treeVisibilitySum ?? resolveVariantVisibility(beforeData);
+  const current =
+    afterData.treeVisibilitySum ?? resolveVariantVisibility(afterData);
+  const delta = current - previous;
+  if (delta === 0) return;
+  let ref = variantRef;
+  let data = afterData;
+  let nextSum = current;
+  while (ref) {
+    const parent = resolveIncomingParentRef(data, db);
+    const snapshot = await ref.get();
+    if (!snapshot?.exists) return;
+    const stored = snapshot.data?.() ?? {};
+    const oldSum = stored.treeVisibilitySum ?? resolveVariantVisibility(stored);
+    if (changedByTreeWeightThreshold(oldSum, nextSum) && parent) {
+      await parent.update({ targetTreeWeightsDirty: true });
+    }
+    await ref.update({ treeVisibilitySum: nextSum });
+    ref = parent;
+    if (!ref) return;
+    const parentSnap = await ref.get();
+    data = parentSnap?.data?.() ?? {};
+    nextSum = addTreeVisibilityDelta(data, delta);
+  }
+}
+
+/**
+ * Resolve the incoming-option parent variant reference.
+ * @param {Record<string, any>} data Variant data.
+ * @param {FirestoreLike} db Firestore client.
+ * @returns {any|null} Parent variant reference.
+ */
+function resolveIncomingParentRef(data, db) {
+  if (!data.incomingOption || !db?.doc) return null;
+  const optionRef = db.doc(data.incomingOption);
+  return getAncestorRef(optionRef, 2);
 }
 
 /**
@@ -1518,7 +1589,7 @@ function buildTargetMetadata(targetPageNumber, visible) {
   const targetVariantName = visible[0].data().name;
   const targetVariants = visible.map(doc => ({
     name: doc.data().name,
-    weight: doc.data().visibility ?? 1,
+    weight: doc.data().treeVisibilitySum ?? doc.data().visibility ?? 1,
   }));
 
   return {
@@ -3130,6 +3201,10 @@ async function persistRenderPlan({
 
   const paths = buildInvalidationPaths(altsPath, filePath, parentUrl);
   await invalidatePaths(paths);
+  const variantRef = resolveTenantDocumentRef(snap, db);
+  if (variantRef && typeof variantRef.update === 'function') {
+    await variantRef.update({ targetTreeWeightsDirty: false });
+  }
 }
 
 /**
@@ -3240,6 +3315,7 @@ export function createHandleVariantWrite({
     if (!change.after.exists) {
       return null;
     }
+    await updateTreeVisibilityForVariantChange({ change, db });
     return processExistingVariant(change, context);
   };
 
