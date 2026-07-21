@@ -50,7 +50,9 @@ export async function migrateTreeVisibilitySums({
     const sum =
       /** @type {number} */ (variant.data?.visibility ?? 1) +
       descendantSums.reduce((total, childSum) => total + childSum, 0);
-    const update = { treeVisibilitySum: sum };
+    const update = /** @type {Record<string, unknown>} */ ({
+      treeVisibilitySum: sum,
+    });
     if (children.length) update.targetTreeWeightsDirty = true;
     await writeVariant(variant, update);
     written += 1;

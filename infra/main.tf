@@ -1045,6 +1045,50 @@ resource "google_cloudfunctions_function" "render_variant" {
   ]
 }
 
+resource "google_cloudfunctions_function" "render_tree_weights" {
+  count                        = var.environment == "prod" ? 1 : 0
+  name                         = "${var.environment}-render-tree-weights"
+  runtime                      = var.cloud_functions_runtime
+  region                       = var.region
+  entry_point                  = "regenerateTreeWeightsHttp"
+  source_archive_bucket        = google_storage_bucket.gcf_source_bucket.name
+  source_archive_object        = google_storage_bucket_object.render_variant.name
+  service_account_email        = local.cloud_function_runtime_service_account_email
+  environment_variables        = local.cloud_function_environment
+  https_trigger_security_level = "SECURE_ALWAYS"
+  depends_on = [
+    google_project_service.project_level,
+    google_cloudfunctions_function.render_variant,
+    google_service_account_iam_member.terraform_can_impersonate_runtime,
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_member" "render_tree_weights_invoker" {
+  count          = var.environment == "prod" ? 1 : 0
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.render_tree_weights[0].name
+  role           = local.cloud_functions_invoker_role
+  member         = local.all_users_member
+  depends_on     = [google_cloudfunctions_function.render_tree_weights]
+}
+
+resource "google_cloud_scheduler_job" "render_tree_weights_daily" {
+  count     = var.environment == "prod" ? 1 : 0
+  name      = "${var.environment}-render-tree-weights-daily"
+  schedule  = "0 1 * * *"
+  time_zone = "UTC"
+  http_target {
+    http_method = "POST"
+    uri         = google_cloudfunctions_function.render_tree_weights[0].https_trigger_url
+  }
+  depends_on = [
+    google_cloudfunctions_function.render_tree_weights,
+    google_cloudfunctions_function_iam_member.render_tree_weights_invoker,
+    google_project_iam_member.terraform_service_account_roles["terraform_cloudscheduler_admin"],
+  ]
+}
+
 data "archive_file" "render_author_src" {
   type        = "zip"
   source_dir  = "${path.module}/cloud-functions/render-author"

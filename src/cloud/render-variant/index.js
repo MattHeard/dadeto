@@ -38,3 +38,15 @@ export const regenerateTreeWeights = functions
     });
     return null;
   });
+
+export const regenerateTreeWeightsHttp = functions
+  .region('europe-west1')
+  .https.onRequest(async (_request, response) => {
+    const db = getFirestoreInstance();
+    const result = await regenerateDirtyTreeWeightVariants({
+      db,
+      renderVariant: render,
+      consoleError: (...args) => console.error(...args),
+    });
+    response.status(200).json(result);
+  });
