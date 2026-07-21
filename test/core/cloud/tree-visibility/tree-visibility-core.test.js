@@ -10,17 +10,21 @@ import {
 describe('tree visibility', () => {
   test('defaults missing visibility to one', () => {
     expect(resolveVariantVisibility({})).toBe(1);
+    expect(resolveVariantVisibility()).toBe(1);
     expect(calculateTreeVisibilitySum(0.7)).toBe(0.7);
+    expect(calculateTreeVisibilitySum(0.7, undefined)).toBe(0.7);
   });
 
   test('includes the root and all descendant variant sums', () => {
-    expect(calculateTreeVisibilitySum(0.8, [0.7, 0.5])).toBe(2);
+    expect(calculateTreeVisibilitySum(0.8, [0.7, 0.5, null])).toBe(2);
     expect(calculateTreeVisibilitySum(undefined, [0.2, 0.3])).toBe(1.5);
   });
 
   test('calculates visibility deltas with defaults', () => {
     expect(getVisibilityDelta({}, { visibility: 0.4 })).toBe(-0.6);
+    expect(getVisibilityDelta()).toBe(0);
     expect(addTreeVisibilityDelta({ treeVisibilitySum: 2 }, 0.5)).toBe(2.5);
+    expect(addTreeVisibilityDelta({ visibility: 0.5 }, 0.5)).toBe(1);
   });
 
   test('uses the exact five percent threshold', () => {

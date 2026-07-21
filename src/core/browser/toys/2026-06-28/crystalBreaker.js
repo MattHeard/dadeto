@@ -1,9 +1,5 @@
 // @ts-nocheck
-import {
-  createBackgroundShape,
-  createRectShape,
-  runToy,
-} from '../toyPersistence.js';
+import { createBackgroundShape, runToy } from '../toyPersistence.js';
 import { normalizePositiveInteger } from '../../common.js';
 
 /**
@@ -264,7 +260,7 @@ function createInitialInputState() {
  * Creates a HUD text shape.
  * @param {number} x - x value
  * @param {string} text - text value
- * @returns {ReturnType<typeof createRectShape>} - result
+ * @returns {object} - result
  */
 function createHudTextShape(x, text) {
   return {

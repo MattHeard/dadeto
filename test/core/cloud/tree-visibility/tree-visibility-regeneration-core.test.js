@@ -26,6 +26,32 @@ test('regenerates only dirty variants and continues after failures', async () =>
   expect(consoleError).toHaveBeenCalled();
 });
 
+test('uses the default error logger and tolerates a missing docs array', async () => {
+  const result = await regenerateDirtyTreeWeightVariants({
+    db: {
+      collectionGroup: () => ({
+        where: () => ({
+          get: async () => ({ docs: [{ ref: { path: 'bad' } }, {}] }),
+        }),
+      }),
+    },
+    renderVariant: async () => {
+      throw new Error('expected test failure');
+    },
+  });
+  expect(result).toEqual({ processed: 0, failed: 2 });
+
+  const emptyResult = await regenerateDirtyTreeWeightVariants({
+    db: {
+      collectionGroup: () => ({
+        where: () => ({ get: async () => ({}) }),
+      }),
+    },
+    renderVariant: async () => {},
+  });
+  expect(emptyResult).toEqual({ processed: 0, failed: 0 });
+});
+
 test('migration calculates sums bottom-up and is rerunnable', async () => {
   const leaf = { data: { visibility: 0.5 } };
   const root = { data: { visibility: 0.8 } };
@@ -42,4 +68,15 @@ test('migration calculates sums bottom-up and is rerunnable', async () => {
     [leaf, { treeVisibilitySum: 0.5 }],
     [root, { treeVisibilitySum: 1.3, targetTreeWeightsDirty: true }],
   ]);
+});
+
+test('defaults missing variant visibility during migration', async () => {
+  const variant = {};
+  const writes = [];
+  await migrateTreeVisibilitySums({
+    stories: [{ id: 'story' }],
+    readChildren: async node => (node.id === 'story' ? [variant] : []),
+    writeVariant: async (_variant, data) => writes.push(data),
+  });
+  expect(writes).toEqual([{ treeVisibilitySum: 1 }]);
 });

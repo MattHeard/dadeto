@@ -2674,6 +2674,75 @@ describe('createRenderVariant', () => {
 });
 
 describe('createHandleVariantWrite', () => {
+  it('handles missing change data and missing stored snapshots', async () => {
+    const renderVariant = jest.fn().mockResolvedValue(null);
+    const missingRef = {
+      path: 'stories/s/pages/p/variants/v',
+      get: jest.fn().mockResolvedValue({ exists: false }),
+      update: jest.fn(),
+    };
+    const db = { doc: jest.fn(() => missingRef) };
+    const handler = createHandleVariantWrite({
+      renderVariant,
+      getDeleteSentinel: () => null,
+      db,
+    });
+    await handler({
+      before: {
+        exists: true,
+        data: jest.fn().mockReturnValueOnce(undefined).mockReturnValue({}),
+      },
+      after: {
+        exists: true,
+        ref: { path: missingRef.path },
+        data: jest.fn().mockReturnValueOnce(undefined).mockReturnValue({}),
+      },
+    });
+    await handler({
+      before: { exists: false, data: () => ({}) },
+      after: {
+        exists: true,
+        ref: { path: missingRef.path },
+        data: () => ({ visibility: 2 }),
+      },
+    });
+    expect(renderVariant).toHaveBeenCalledTimes(1);
+    expect(missingRef.update).not.toHaveBeenCalled();
+  });
+
+  it('marks an incoming parent dirty when a visibility threshold changes', async () => {
+    const parentUpdate = jest.fn().mockResolvedValue(undefined);
+    const variantUpdate = jest.fn().mockResolvedValue(undefined);
+    const parentRef = {
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => undefined }),
+      update: parentUpdate,
+    };
+    const optionRef = { parent: { parent: parentRef } };
+    const variantRef = {
+      path: 'stories/s/pages/p/variants/v',
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => undefined }),
+      update: variantUpdate,
+    };
+    const db = {
+      doc: jest.fn(path => (path === 'option' ? optionRef : variantRef)),
+    };
+    const handler = createHandleVariantWrite({
+      renderVariant: jest.fn().mockResolvedValue(null),
+      getDeleteSentinel: () => null,
+      db,
+    });
+    await handler({
+      before: { exists: true, data: () => ({ visibility: 1 }) },
+      after: {
+        exists: true,
+        ref: { path: variantRef.path },
+        data: () => ({ visibility: 2, incomingOption: 'option' }),
+      },
+    });
+    expect(parentUpdate).toHaveBeenCalledWith({ targetTreeWeightsDirty: true });
+    expect(variantUpdate).toHaveBeenCalled();
+  });
+
   it('propagates a visibility-only change when the stored sum is still old', async () => {
     const renderVariant = jest.fn().mockResolvedValue(null);
     const childUpdate = jest.fn().mockResolvedValue(undefined);

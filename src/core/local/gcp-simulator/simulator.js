@@ -197,27 +197,42 @@ function createDb(onCommit) {
  * @returns {(records: Array<{ path: string, before?: unknown, after?: unknown }>) => Promise<void>} Dispatch function.
  */
 function createDispatchCommittedWrites(deps) {
+  const activePathDepths = new Map();
   return async (/** @type {any} */ records) => {
     for (const record of records) {
-      const snapshots = deps.createSnapshots(
-        record.path,
-        record.before,
-        record.after
-      );
-      const isCreate = !record.before && record.after;
-      const isWrite = Boolean(record.before || record.after);
+      const depth = activePathDepths.get(record.path) ?? 0;
+      if (depth >= 3) {
+        continue;
+      }
 
-      for (const trigger of deps.triggerRegistry) {
-        if (
-          !deps.shouldDispatchTrigger(trigger, record.path, isCreate, isWrite)
-        ) {
-          continue;
+      activePathDepths.set(record.path, depth + 1);
+      try {
+        const snapshots = deps.createSnapshots(
+          record.path,
+          record.before,
+          record.after
+        );
+        const isCreate = !record.before && record.after;
+        const isWrite = Boolean(record.before || record.after);
+
+        for (const trigger of deps.triggerRegistry) {
+          if (
+            !deps.shouldDispatchTrigger(trigger, record.path, isCreate, isWrite)
+          ) {
+            continue;
+          }
+
+          const context = {
+            params: deps.extractParams(trigger.pathPattern, record.path),
+          };
+          await deps.dispatchTrigger(trigger, snapshots, context);
         }
-
-        const context = {
-          params: deps.extractParams(trigger.pathPattern, record.path),
-        };
-        await deps.dispatchTrigger(trigger, snapshots, context);
+      } finally {
+        if (depth === 0) {
+          activePathDepths.delete(record.path);
+        } else {
+          activePathDepths.set(record.path, depth);
+        }
       }
     }
   };

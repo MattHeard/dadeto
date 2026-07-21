@@ -44,3 +44,37 @@ test('propagates a delta through every ancestor and marks changed parents', asyn
   ]);
   expect(dirty).toEqual(['child', 'parent']);
 });
+
+test('stops when a referenced snapshot is missing', async () => {
+  const ref = { get: async () => ({ exists: false }) };
+  await expect(
+    propagateTreeVisibilityDelta({
+      variantRef: ref,
+      delta: 1,
+      getParentVariantRef: async () => null,
+      updateVariant: async () => {},
+      markParentDirty: async () => {},
+    })
+  ).resolves.toBeUndefined();
+});
+
+test('defaults missing snapshot data while propagating', async () => {
+  const ref = {
+    calls: 0,
+    async get() {
+      this.calls += 1;
+      return this.calls === 1
+        ? { exists: true, data: () => undefined }
+        : { exists: false };
+    },
+  };
+  const updates = [];
+  await propagateTreeVisibilityDelta({
+    variantRef: ref,
+    delta: 1,
+    getParentVariantRef: async () => null,
+    updateVariant: async (_ref, data) => updates.push(data),
+    markParentDirty: async () => {},
+  });
+  expect(updates).toEqual([{ treeVisibilitySum: 2 }]);
+});

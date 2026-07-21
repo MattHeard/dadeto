@@ -33,3 +33,22 @@ test('builds daily and HTTP regeneration entrypoints', async () => {
   expect(getFirestoreInstance).toHaveBeenCalledTimes(2);
   expect(functions.region).toHaveBeenCalledTimes(2);
 });
+
+test('uses the default console error handler', () => {
+  const functions = {
+    region: () => ({
+      pubsub: { schedule: () => ({ onRun: fn => ({ fn }) }) },
+      https: { onRequest: fn => ({ fn }) },
+    }),
+  };
+  const handles = createTreeVisibilityRegenerationHandles({
+    functions,
+    getFirestoreInstance: () => ({
+      collectionGroup: () => ({
+        where: () => ({ get: async () => ({ docs: [] }) }),
+      }),
+    }),
+    render: async () => {},
+  });
+  expect(handles).toHaveProperty('http');
+});

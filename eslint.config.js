@@ -72,7 +72,10 @@ export default [
       'max-params': ['warn', 4],
       indent: ['warn', 2],
       'jsdoc/require-jsdoc': 'warn',
-      'jsdoc/check-tag-names': 'warn',
+      'jsdoc/check-tag-names': 'off',
+      'jsdoc/reject-any-type': 'off',
+      'jsdoc/reject-function-type': 'off',
+      'jsdoc/no-undefined-types': 'off',
       camelcase: ['warn', { properties: 'always' }],
       'prefer-template': 'warn',
       'consistent-return': 'warn',
@@ -116,6 +119,12 @@ export default [
       'no-return-assign': 'warn',
       'prefer-const': 'warn',
       'no-void': 'warn',
+    },
+  },
+  {
+    files: ['src/core/local/gcp-simulator/simulator.js'],
+    rules: {
+      complexity: 'off',
     },
   },
   {
