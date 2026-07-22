@@ -1056,6 +1056,7 @@ resource "google_cloudfunctions_function" "render_tree_weights" {
   source_archive_object        = google_storage_bucket_object.render_variant.name
   service_account_email        = local.cloud_function_runtime_service_account_email
   environment_variables        = local.cloud_function_environment
+  trigger_http                 = true
   https_trigger_security_level = "SECURE_ALWAYS"
   depends_on = [
     google_project_service.project_level,
@@ -1064,13 +1065,26 @@ resource "google_cloudfunctions_function" "render_tree_weights" {
   ]
 }
 
+resource "google_service_account" "render_tree_weights_scheduler" {
+  count        = var.environment == "prod" ? 1 : 0
+  account_id   = "render-tree-weights-job"
+  display_name = "Render tree weights scheduler"
+}
+
+resource "google_service_account_iam_member" "terraform_can_use_render_tree_weights_scheduler" {
+  count              = var.environment == "prod" ? 1 : 0
+  service_account_id = google_service_account.render_tree_weights_scheduler[0].name
+  role               = "roles/iam.serviceAccountUser"
+  member             = local.terraform_service_account_member
+}
+
 resource "google_cloudfunctions_function_iam_member" "render_tree_weights_invoker" {
   count          = var.environment == "prod" ? 1 : 0
   project        = var.project_id
   region         = var.region
   cloud_function = google_cloudfunctions_function.render_tree_weights[0].name
   role           = local.cloud_functions_invoker_role
-  member         = local.all_users_member
+  member         = "serviceAccount:${google_service_account.render_tree_weights_scheduler[0].email}"
   depends_on     = [google_cloudfunctions_function.render_tree_weights]
 }
 
@@ -1082,10 +1096,15 @@ resource "google_cloud_scheduler_job" "render_tree_weights_daily" {
   http_target {
     http_method = "POST"
     uri         = google_cloudfunctions_function.render_tree_weights[0].https_trigger_url
+    oidc_token {
+      service_account_email = google_service_account.render_tree_weights_scheduler[0].email
+      audience              = google_cloudfunctions_function.render_tree_weights[0].https_trigger_url
+    }
   }
   depends_on = [
     google_cloudfunctions_function.render_tree_weights,
     google_cloudfunctions_function_iam_member.render_tree_weights_invoker,
+    google_service_account_iam_member.terraform_can_use_render_tree_weights_scheduler,
     google_project_iam_member.terraform_service_account_roles["terraform_cloudscheduler_admin"],
   ]
 }
