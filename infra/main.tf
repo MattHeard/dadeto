@@ -1056,6 +1056,7 @@ resource "google_cloudfunctions_function" "render_tree_weights" {
   source_archive_object        = google_storage_bucket_object.render_variant.name
   service_account_email        = local.cloud_function_runtime_service_account_email
   environment_variables        = local.cloud_function_environment
+  trigger_http                 = true
   https_trigger_security_level = "SECURE_ALWAYS"
   depends_on = [
     google_project_service.project_level,

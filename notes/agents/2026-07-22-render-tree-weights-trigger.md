@@ -1,0 +1,8 @@
+# Render tree weights HTTP trigger
+
+- **Loop contract:** The scheduled tree-weight Cloud Function must declare the HTTP trigger required by the Terraform Google provider; acceptance is a focused static policy test, `terraform validate`, and the repository quality gate.
+- **Unexpected hurdle:** The required `bd` executable is unavailable in this environment, so the loop contract and evidence could not be recorded in the owning bead.
+- **Diagnosis path:** Compared `render_tree_weights` with the repository's other HTTP Cloud Functions. It configured HTTP-only properties and a scheduler URL but omitted `trigger_http = true`, causing provider validation to reject creation.
+- **Chosen fix:** Declare the function as HTTP-triggered and add a source-level regression test scoped to the `render_tree_weights` resource block.
+- **Evidence:** `npx jest test/infra/cloudBrowserEntrypoints.test.js --runInBand --coverage=false`, `terraform fmt -check -recursive infra`, `terraform -chdir=infra validate`, and `npm run build:cloud` passed. `npm run check` reached passing lint, dependency, parse, duplication, entrypoint, thin-file, export, and TSDoc checks, but could not pass because the pre-existing dependency audit reports eight high-severity transitive advisories and both tests in `test/core/local/gcp-simulator/payment-webhook-route.test.js` time out under the repository's Node 24 runtime; the stalled aggregate process was stopped after those failures were captured.
+- **Next-time guidance:** When adding a first-generation Cloud Function, always pair `https_trigger_security_level` or `https_trigger_url` use with `trigger_http = true`, unless the resource has an explicit `event_trigger` block.

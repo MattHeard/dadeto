@@ -3,6 +3,18 @@ import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from '@jest/globals';
 
 describe('cloud browser entrypoints', () => {
+  it('configures the scheduled tree weight function with an HTTP trigger', async () => {
+    const mainTf = await readFile('infra/main.tf', 'utf8');
+    const renderTreeWeights = mainTf.match(
+      /resource "google_cloudfunctions_function" "render_tree_weights" {[\s\S]*?\n}/
+    );
+
+    expect(renderTreeWeights).not.toBeNull();
+    expect(renderTreeWeights[0]).toContain(
+      'trigger_http                 = true'
+    );
+  });
+
   it('targets the exported cloud function handles used by src/cloud entrypoints', async () => {
     const mainTf = await readFile('infra/main.tf', 'utf8');
 
