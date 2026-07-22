@@ -1,5 +1,5 @@
 locals {
-  codex_vm_enabled = var.codex_vm_enabled && var.environment == "prod"
+  codex_vm_enabled = var.codex_vm_enabled && var.environment == "prod" && var.codex_admin_member != ""
   codex_vm_tag     = "codex-vm"
 }
 
@@ -129,13 +129,6 @@ resource "google_compute_instance" "codex_vm" {
     enable_secure_boot          = true
     enable_vtpm                 = true
     enable_integrity_monitoring = true
-  }
-
-  lifecycle {
-    precondition {
-      condition     = var.codex_admin_member != ""
-      error_message = "codex_admin_member must be configured when the Codex VM is enabled in production."
-    }
   }
 
   depends_on = [

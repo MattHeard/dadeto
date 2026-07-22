@@ -20,12 +20,20 @@ describe('Codex VM Terraform policy', () => {
     expect(codexVm).not.toMatch(/for_each\s*=\s*var\.codex_vm_enabled/);
 
     const workflow = readFileSync('.github/workflows/gcp-prod.yml', 'utf8');
-    expect(workflow).toContain("TF_VAR_codex_vm_enabled: 'true'");
+    expect(workflow).toContain(
+      "TF_VAR_codex_vm_enabled: ${{ secrets.CODEX_ADMIN_MEMBER != '' }}"
+    );
     expect(workflow).toContain(
       'TF_VAR_codex_admin_member: ${{ secrets.CODEX_ADMIN_MEMBER }}'
     );
     expect(readFileSync('infra/prod.auto.tfvars', 'utf8')).not.toContain(
       'codex_vm_enabled'
+    );
+  });
+
+  it('does not create IAM resources without an administrator member', () => {
+    expect(codexVm).toContain(
+      'var.environment == "prod" && var.codex_admin_member != ""'
     );
   });
 

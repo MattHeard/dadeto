@@ -25,7 +25,7 @@ jobs:
       TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
       TF_VAR_production_alert_email: ${{ secrets.PRODUCTION_ALERT_EMAIL }}
       TF_VAR_create_default_firestore_database: 'false'
-      TF_VAR_codex_vm_enabled: 'true'
+      TF_VAR_codex_vm_enabled: ${{ secrets.CODEX_ADMIN_MEMBER != '' }}
       TF_VAR_codex_admin_member: ${{ secrets.CODEX_ADMIN_MEMBER }}
 
     steps:
