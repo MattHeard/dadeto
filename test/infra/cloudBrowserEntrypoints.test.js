@@ -15,6 +15,30 @@ describe('cloud browser entrypoints', () => {
     );
   });
 
+  it('limits scheduled tree weight invocation to an OIDC-authenticated service account', async () => {
+    const mainTf = await readFile('infra/main.tf', 'utf8');
+    const invoker = mainTf.match(
+      /resource "google_cloudfunctions_function_iam_member" "render_tree_weights_invoker" {[\s\S]*?\n}/
+    );
+    const scheduler = mainTf.match(
+      /resource "google_cloud_scheduler_job" "render_tree_weights_daily" {[\s\S]*?\n}\n/
+    );
+
+    expect(invoker).not.toBeNull();
+    expect(invoker[0]).toContain(
+      'member         = "serviceAccount:${google_service_account.render_tree_weights_scheduler[0].email}"'
+    );
+    expect(invoker[0]).not.toContain('local.all_users_member');
+    expect(scheduler).not.toBeNull();
+    expect(scheduler[0]).toContain('oidc_token {');
+    expect(scheduler[0]).toContain(
+      'service_account_email = google_service_account.render_tree_weights_scheduler[0].email'
+    );
+    expect(scheduler[0]).toContain(
+      'audience              = google_cloudfunctions_function.render_tree_weights[0].https_trigger_url'
+    );
+  });
+
   it('targets the exported cloud function handles used by src/cloud entrypoints', async () => {
     const mainTf = await readFile('infra/main.tf', 'utf8');
 
