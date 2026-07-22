@@ -68,17 +68,18 @@ locals {
     terraform_network_admin  = "roles/compute.networkAdmin"
   }
   terraform_service_account_roles = {
-    firestore_access                = "roles/datastore.user"
-    cloudfunctions_access           = "roles/cloudfunctions.developer"
-    terraform_cloudfunctions_viewer = "roles/cloudfunctions.viewer"
-    terraform_set_iam_policy        = "roles/cloudfunctions.admin"
-    terraform_create_sa             = "roles/iam.serviceAccountAdmin"
-    terraform_cloudscheduler_admin  = "roles/cloudscheduler.admin"
-    monitoring_editor               = "roles/monitoring.editor"
-    monitoring_channel_editor       = "roles/monitoring.notificationChannelEditor"
-    logging_config_writer           = "roles/logging.configWriter"
-    ci_firebaserules_admin          = "roles/firebaserules.admin"
-    terraform_loadbalancer_admin    = "roles/compute.loadBalancerAdmin"
+    firestore_access                 = "roles/datastore.user"
+    cloudfunctions_access            = "roles/cloudfunctions.developer"
+    terraform_cloudfunctions_viewer  = "roles/cloudfunctions.viewer"
+    terraform_set_iam_policy         = "roles/cloudfunctions.admin"
+    terraform_create_sa              = "roles/iam.serviceAccountAdmin"
+    terraform_cloudscheduler_admin   = "roles/cloudscheduler.admin"
+    monitoring_editor                = "roles/monitoring.editor"
+    monitoring_channel_editor        = "roles/monitoring.notificationChannelEditor"
+    logging_config_writer            = "roles/logging.configWriter"
+    ci_firebaserules_admin           = "roles/firebaserules.admin"
+    terraform_loadbalancer_admin     = "roles/compute.loadBalancerAdmin"
+    terraform_compute_instance_admin = "roles/compute.instanceAdmin.v1"
   }
   cloud_function_service_keys = [
     "cloudfunctions",

@@ -96,6 +96,46 @@ variable "enable_lb" {
   default     = true
 }
 
+variable "codex_vm_enabled" {
+  description = "Whether to provision the production Codex administration VM"
+  type        = bool
+  default     = false
+}
+
+variable "codex_vm_zone" {
+  description = "Compute Engine zone for the Codex administration VM"
+  type        = string
+  default     = "europe-west1-b"
+}
+
+variable "codex_vm_machine_type" {
+  description = "Machine type for the Codex administration VM"
+  type        = string
+  default     = "e2-small"
+}
+
+variable "codex_vm_disk_size_gb" {
+  description = "Boot disk size in GiB for the Codex administration VM"
+  type        = number
+  default     = 20
+
+  validation {
+    condition     = var.codex_vm_disk_size_gb >= 10
+    error_message = "codex_vm_disk_size_gb must be at least 10 GiB."
+  }
+}
+
+variable "codex_admin_member" {
+  description = "IAM user or group permitted to administer the Codex VM"
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.codex_admin_member == "" || can(regex("^(user|group):[^@\\s]+@[^@\\s]+$", var.codex_admin_member))
+    error_message = "codex_admin_member must be empty or an IAM member beginning with user: or group:."
+  }
+}
+
 variable "project_level_environment" {
   description = "Environment that manages project-level singleton resources"
   type        = string

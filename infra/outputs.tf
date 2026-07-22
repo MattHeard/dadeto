@@ -44,3 +44,18 @@ output "lb_ip" {
   description = "Global LB IPv4"
   value       = local.enable_lb ? google_compute_global_address.dendrite[0].address : null
 }
+
+output "codex_vm_name" {
+  description = "Name of the production Codex administration VM"
+  value       = local.codex_vm_enabled ? google_compute_instance.codex_vm[0].name : null
+}
+
+output "codex_vm_zone" {
+  description = "Zone of the production Codex administration VM"
+  value       = local.codex_vm_enabled ? google_compute_instance.codex_vm[0].zone : null
+}
+
+output "codex_vm_internal_ip" {
+  description = "Internal IP address of the production Codex administration VM"
+  value       = local.codex_vm_enabled ? google_compute_instance.codex_vm[0].network_interface[0].network_ip : null
+}
