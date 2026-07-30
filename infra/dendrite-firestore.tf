@@ -42,6 +42,21 @@ resource "google_firestore_index" "variants_author_created" {
   depends_on = [google_firestore_database.database]
 }
 
+resource "google_firestore_index" "variants_tree_weights_dirty" {
+  count       = local.manage_firestore_indexes ? 1 : 0
+  project     = var.project_id
+  database    = var.database_id
+  collection  = "variants"
+  query_scope = "COLLECTION_GROUP"
+
+  fields {
+    field_path = "targetTreeWeightsDirty"
+    order      = "ASCENDING"
+  }
+
+  depends_on = [google_firestore_database.database]
+}
+
 # Supports: variants where moderatorReputationSum == 0 and rand >= n
 resource "google_firestore_index" "variants_moderation_rand" {
   count       = local.manage_firestore_indexes ? 1 : 0
