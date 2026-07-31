@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>src/core function dependency graph</title>
+<style>
+body { margin: 0; font: 14px system-ui, sans-serif; background: #10141c; color: #e8edf5; }
+header { padding: 16px 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+input { min-width: 280px; padding: 8px; border-radius: 6px; border: 1px solid #566174; background: #1b2230; color: inherit; }
+#meta { color: #aeb9ca; } svg { width: 100vw; height: calc(100vh - 70px); display: block; background: #151b25; }
+line { stroke: #566174; stroke-opacity: .45; } circle { stroke: #10141c; stroke-width: 1.5; cursor: pointer; }
+text { fill: #e8edf5; font-size: 11px; pointer-events: none; } .dim { opacity: .08; }
+</style>
+<header><input id="search" placeholder="Filter functions or files"><span id="meta">Loading graph…</span></header>
+<svg id="graph" role="img" aria-label="Function dependency graph"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script>
+const svg = d3.select('#graph'), width = innerWidth, height = innerHeight - 70;
+fetch('../reports/function-dependency-graph.json').then(r => r.json()).then(data => {
+  const byId = new Map(data.nodes.map(n => [n.id, n]));
+  const links = data.edges.map(e => ({...e, source: byId.get(e.source), target: byId.get(e.target)}));
+  const groups = [...new Set(data.nodes.map(n => n.file.split('/').slice(0, -1).join('/')))];
+  const color = d3.scaleOrdinal(groups, d3.schemeTableau10);
+  document.querySelector('#meta').textContent = `${data.nodes.length} functions · ${data.edges.length} direct edges · ${data.ignoredCalls.length} injected calls excluded`;
+  const simulation = d3.forceSimulation(data.nodes).force('link', d3.forceLink(links).id(d => d.id).distance(55)).force('charge', d3.forceManyBody().strength(-55)).force('center', d3.forceCenter(width / 2, height / 2));
+  const line = svg.selectAll('line').data(links).join('line');
+  const node = svg.selectAll('g').data(data.nodes).join('g').call(d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended));
+  node.append('circle').attr('r', d => Math.max(4, Math.min(11, 4 + d.name.length / 12))).attr('fill', d => color(d.file.split('/').slice(0, -1).join('/')));
+  node.append('text').attr('x', 8).attr('y', 4).text(d => d.name);
+  node.on('click', (_, selected) => { const ids = new Set([selected.id]); links.forEach(l => { if (l.source.id === selected.id) ids.add(l.target.id); if (l.target.id === selected.id) ids.add(l.source.id); }); node.classed('dim', d => !ids.has(d.id)); line.classed('dim', l => l.source.id !== selected.id && l.target.id !== selected.id); });
+  document.querySelector('#search').oninput = event => { const q = event.target.value.toLowerCase(); node.classed('dim', d => q && !`${d.name} ${d.file}`.toLowerCase().includes(q)); };
+  simulation.on('tick', () => { line.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y); node.attr('transform', d => `translate(${d.x},${d.y})`); });
+  function dragstarted(e) { if (!e.active) simulation.alphaTarget(.3).restart(); e.subject.fx = e.subject.x; e.subject.fy = e.subject.y; }
+  function dragged(e) { e.subject.fx = e.x; e.subject.fy = e.y; }
+  function dragended(e) { if (!e.active) simulation.alphaTarget(0); e.subject.fx = null; e.subject.fy = null; }
+}).catch(error => { document.querySelector('#meta').textContent = `Run the graph generator first: ${error.message}`; });
+</script>
