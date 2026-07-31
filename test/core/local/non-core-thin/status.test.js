@@ -140,6 +140,33 @@ describe('non-core thin status', () => {
     });
   });
 
+  test('skips dependency directories while scanning non-core files', () => {
+    const status = getNonCoreThinStatus({
+      fsModule: {
+        readFileSync: filePath =>
+          filePath.endsWith('non-core-thin-exemptions.json')
+            ? JSON.stringify({ maxLines: 50, exemptions: {} })
+            : [
+                "import { createHandle } from './app-core.js';",
+                'const handle = createHandle();',
+                'export { handle };',
+              ].join('\n'),
+        readdirSync: () => [
+          { name: 'node_modules', isDirectory: () => true, isFile: () => false },
+          { name: 'app.js', isDirectory: () => false, isFile: () => true },
+        ],
+      },
+      pathModule: path,
+      repoRoot: '/repo',
+      srcDir: '/repo/src',
+      configPath: 'non-core-thin-exemptions.json',
+    });
+
+    expect(status.fileCount).toBe(1);
+    expect(status.violations).toEqual([]);
+    expect(status.patternViolations).toEqual([]);
+  });
+
   test('reports wrapper shape violations separately from size violations', () => {
     expect(
       nonCoreThinStatusTestOnly.getWrapperPatternViolationsForSource(

@@ -268,7 +268,9 @@ function shouldSkipDirectory(fullPath, coreDir) {
  */
 function shouldIncludeDirectory(dir, entry, coreDir) {
   return (
-    entry.isDirectory() && !shouldSkipDirectory(`${dir}/${entry.name}`, coreDir)
+    entry.isDirectory() &&
+    entry.name !== 'node_modules' &&
+    !shouldSkipDirectory(`${dir}/${entry.name}`, coreDir)
   );
 }
 

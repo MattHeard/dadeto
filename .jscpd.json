@@ -2,7 +2,7 @@
   "path": ["src/core"],
   "mode": "strict",
   "minTokens": 19,
-  "ignore": ["**/src/core/local/gcp-simulator/fake-firestore.js"],
+  "ignore": [],
   "reporters": ["html", "json"],
   "output": "reports/duplication"
 }

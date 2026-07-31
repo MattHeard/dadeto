@@ -87,37 +87,20 @@ export function createFakeFirestore({ onCommit } = /** @type {any} */ ({})) {
     }
 
     __getCollectionDocuments(/** @type {any} */ collectionSegments) {
-      const docs = [];
-      for (const [path, data] of state.entries()) {
+      return collectDocuments(state, path => {
         const segments = splitPath(path);
-        if (segments.length !== collectionSegments.length + 1) {
-          continue;
-        }
-
-        if (!matchesPrefix(segments, collectionSegments)) {
-          continue;
-        }
-
-        docs.push({ path, data: cloneDocument(data) });
-      }
-      return docs;
+        return (
+          segments.length === collectionSegments.length + 1 &&
+          matchesPrefix(segments, collectionSegments)
+        );
+      });
     }
 
     __getCollectionGroupDocuments(/** @type {any} */ collectionId) {
-      const docs = [];
-      for (const [path, data] of state.entries()) {
+      return collectDocuments(state, path => {
         const segments = splitPath(path);
-        if (segments.length % 2 !== 0) {
-          continue;
-        }
-
-        if (!containsCollectionId(segments, collectionId)) {
-          continue;
-        }
-
-        docs.push({ path, data: cloneDocument(data) });
-      }
-      return docs;
+        return segments.length % 2 === 0 && containsCollectionId(segments, collectionId);
+      });
     }
 
     __resolveDocumentSnapshot(/** @type {any} */ path) {
@@ -195,6 +178,28 @@ export const fakeFirestoreTestUtils = {
   cloneDocument,
 };
 
+/**
+ * Collect cloned documents matching a path predicate.
+ * @param {Map<string, unknown>} state In-memory document state.
+ * @param {(path: string) => boolean} matchesPath Collection path predicate.
+ * @returns {Array<{path: string, data: unknown}>} Matching document records.
+ */
+function collectDocuments(state, matchesPath) {
+  const docs = [];
+  for (const [path, data] of state.entries()) {
+    if (matchesPath(path)) {
+      docs.push({ path, data: cloneDocument(data) });
+    }
+  }
+  return docs;
+}
+
+function buildQuerySnapshot(db, docs) {
+  return new FakeQuerySnapshot(
+    docs.map(({ path, data }) => buildDocumentSnapshot(db, path, data))
+  );
+}
+
 class FakeWriteBatch {
   constructor(/** @type {any} */ db) {
     this.db = db;
@@ -202,29 +207,17 @@ class FakeWriteBatch {
   }
 
   set(/** @type {any} */ ref, /** @type {any} */ data) {
-    this.operations.push({
-      path: ref.path,
-      nextData: cloneDocument(data),
-      mode: 'set',
-    });
+    queueWriteOperation(this.operations, ref, data, 'set');
     return this;
   }
 
   update(/** @type {any} */ ref, /** @type {any} */ data) {
-    this.operations.push({
-      path: ref.path,
-      nextData: cloneDocument(data),
-      mode: 'update',
-    });
+    queueWriteOperation(this.operations, ref, data, 'update');
     return this;
   }
 
   delete(/** @type {any} */ ref) {
-    this.operations.push({
-      path: ref.path,
-      nextData: undefined,
-      mode: 'delete',
-    });
+    queueWriteOperation(this.operations, ref, undefined, 'delete');
     return this;
   }
 
@@ -233,42 +226,26 @@ class FakeWriteBatch {
   }
 }
 
-class FakeTransaction {
-  constructor(db) {
-    this.db = db;
-    this.operations = [];
-  }
-
+class FakeTransaction extends FakeWriteBatch {
   async get(ref) {
     return ref.get();
   }
+}
 
-  set(ref, data) {
-    this.operations.push({
-      path: ref.path,
-      nextData: cloneDocument(data),
-      mode: 'set',
-    });
-    return this;
-  }
-
-  update(ref, data) {
-    this.operations.push({
-      path: ref.path,
-      nextData: cloneDocument(data),
-      mode: 'update',
-    });
-    return this;
-  }
-
-  delete(ref) {
-    this.operations.push({
-      path: ref.path,
-      nextData: undefined,
-      mode: 'delete',
-    });
-    return this;
-  }
+/**
+ * Queue a normalized write operation for a batch or transaction.
+ * @param {Array<{path: string, nextData?: unknown, mode: 'set'|'update'|'delete'}>} operations Operation queue.
+ * @param {{path: string}} ref Document reference.
+ * @param {unknown} data Incoming document data.
+ * @param {'set'|'update'|'delete'} mode Write mode.
+ * @returns {void}
+ */
+function queueWriteOperation(operations, ref, data, mode) {
+  operations.push({
+    path: ref.path,
+    nextData: data === undefined ? undefined : cloneDocument(data),
+    mode,
+  });
 }
 
 class FakeCollectionReference {
@@ -291,17 +268,11 @@ class FakeCollectionReference {
   }
 
   async get() {
-    const docs = this.db.__getCollectionDocuments(this.collectionSegments);
-    return new FakeQuerySnapshot(
-      docs.map(({ path, data }) => buildDocumentSnapshot(this.db, path, data))
-    );
+    return buildQuerySnapshot(this.db, this.db.__getCollectionDocuments(this.collectionSegments));
   }
 
   count() {
-    return new FakeQuery(this.db, {
-      kind: 'collection',
-      collectionSegments: this.collectionSegments,
-    }).count();
+    return createCollectionQuery(this.db, this.collectionSegments).count();
   }
 
   where(
@@ -309,17 +280,11 @@ class FakeCollectionReference {
     /** @type {any} */ op,
     /** @type {any} */ value
   ) {
-    return new FakeQuery(this.db, {
-      kind: 'collection',
-      collectionSegments: this.collectionSegments,
-    }).where(field, op, value);
+    return createCollectionQuery(this.db, this.collectionSegments).where(field, op, value);
   }
 
   orderBy(/** @type {any} */ field, /** @type {any} */ direction) {
-    return new FakeQuery(this.db, {
-      kind: 'collection',
-      collectionSegments: this.collectionSegments,
-    }).orderBy(field, direction);
+    return createCollectionQuery(this.db, this.collectionSegments).orderBy(field, direction);
   }
 }
 
@@ -355,6 +320,10 @@ class FakeDocumentReference {
   async delete() {
     await this.db.__writeDocument(this.path, undefined, 'delete');
   }
+}
+
+function createCollectionQuery(db, collectionSegments) {
+  return new FakeQuery(db, { kind: 'collection', collectionSegments });
 }
 
 class FakeQuery {
@@ -401,10 +370,7 @@ class FakeQuery {
   }
 
   async get() {
-    const docs = this.resolveDocuments();
-    return new FakeQuerySnapshot(
-      docs.map(({ path, data }) => buildDocumentSnapshot(this.db, path, data))
-    );
+    return buildQuerySnapshot(this.db, this.resolveDocuments());
   }
 
   resolveDocuments() {
@@ -593,23 +559,7 @@ function applyFieldPatch(target, key, value) {
  * @returns {unknown} Resolved field value.
  */
 function resolveFieldValue(current, value) {
-  if (value === DELETE_FIELD) {
-    return DELETE_FIELD;
-  }
-
-  if (value instanceof IncrementValue) {
-    let base = 0;
-    if (typeof current === 'number') {
-      base = current;
-    }
-    return base + value.amount;
-  }
-
-  if (value instanceof ServerTimestampValue) {
-    return value.value;
-  }
-
-  return normalizeWrittenValue(value);
+  return normalizeWrittenValue(value, current);
 }
 
 /**
@@ -617,9 +567,10 @@ function resolveFieldValue(current, value) {
  * @param {unknown} value - Value to normalize.
  * @returns {unknown} Normalized value.
  */
-function normalizeWrittenValue(value) {
-  if (value === DELETE_FIELD) {
-    return DELETE_FIELD;
+function normalizeWrittenValue(value, current) {
+  const specialValue = resolveSpecialWriteValue(value);
+  if (specialValue !== undefined) {
+    return specialValue;
   }
 
   if (Array.isArray(value)) {
@@ -627,11 +578,7 @@ function normalizeWrittenValue(value) {
   }
 
   if (value instanceof IncrementValue) {
-    return value.amount;
-  }
-
-  if (value instanceof ServerTimestampValue) {
-    return value.value;
+    return (typeof current === 'number' ? current : 0) + value.amount;
   }
 
   if (!isPlainObject(value)) {
@@ -639,6 +586,23 @@ function normalizeWrittenValue(value) {
   }
 
   return normalizeWrittenObject(value);
+}
+
+/**
+ * Resolve write sentinels that have the same meaning in every write path.
+ * @param {unknown} value Candidate write value.
+ * @returns {unknown} Resolved sentinel value, or undefined when ordinary handling applies.
+ */
+function resolveSpecialWriteValue(value) {
+  if (value === DELETE_FIELD) {
+    return DELETE_FIELD;
+  }
+
+  if (value instanceof ServerTimestampValue) {
+    return value.value;
+  }
+
+  return undefined;
 }
 
 /**
@@ -863,9 +827,13 @@ function cloneDocument(value) {
     return value;
   }
 
+  return mapObjectValues(value, cloneDocument);
+}
+
+function mapObjectValues(value, mapper) {
   const output = {};
   for (const [key, nested] of Object.entries(value)) {
-    output[key] = cloneDocument(nested);
+    output[key] = mapper(nested);
   }
   return output;
 }

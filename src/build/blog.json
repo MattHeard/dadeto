@@ -1,6 +1,31 @@
 {
   "posts": [
     {
+      "key": "LEDG5",
+      "title": "Ledger Balance",
+      "publicationDate": "2026-07-30",
+      "release": "public",
+      "content": [
+        "Accepts a ledger of signed transactions and returns the balance by summing their amounts.",
+        "Pass an array of transaction objects such as [{\"amount\": 12}, {\"amount\": -5}] to calculate the current balance.",
+        "The calculation is pure and does not mutate the ledger, making it a small reusable billing primitive."
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-07-30/ledgerBalance.js",
+        "functionName": "ledgerBalance",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "textarea"
+      },
+      "tags": [
+        "toy",
+        "ledger",
+        "finance",
+        "balance",
+        "calculation",
+        "json"
+      ]
+    },
+    {
       "key": "JSON1",
       "title": "JSON Canonicalizer",
       "publicationDate": "2026-07-04",
