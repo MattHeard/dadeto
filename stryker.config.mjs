@@ -5,6 +5,10 @@ const jestExcludes = (jestConfig.collectCoverageFrom || [])
   .map(p => p.slice(1));
 
 export default {
+  plugins: [
+    '@stryker-mutator/jest-runner',
+    './src/local/stryker-survivor-reporter.js',
+  ],
   concurrency: 1,
   mutate: [
     'src/core/**/*.js',
@@ -20,7 +24,7 @@ export default {
     '--max-old-space-size=2048',
   ],
   coverageAnalysis: 'perTest',
-  reporters: ['json', 'progress'],
+  reporters: ['json', 'progress', 'survivor'],
   jest: {
     configFile: 'jest.config.mjs',
   },
