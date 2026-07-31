@@ -1,6 +1,5 @@
 /**
  * Return the signed balance represented by a ledger of transactions.
- *
  * @param {Array<{amount: number}>} transactions Ledger transactions.
  * @returns {number} Sum of the transaction amounts.
  */
