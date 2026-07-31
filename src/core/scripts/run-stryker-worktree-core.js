@@ -55,11 +55,15 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   const noDaemonEnv = {
     BEADS_NO_DAEMON: '1',
   };
+  const reusedWorktreePath = processModule.env.STRYKER_REUSE_WORKTREE_PATH;
 
   return async () => {
-    await fsModule.mkdir(worktreeParent, { recursive: true });
+    if (!reusedWorktreePath) {
+      await fsModule.mkdir(worktreeParent, { recursive: true });
+    }
 
-    const worktreePath = await fsModule.mkdtemp(worktreePrefix);
+    const worktreePath =
+      reusedWorktreePath || (await fsModule.mkdtemp(worktreePrefix));
     const reportSource = pathModule.join(worktreePath, 'reports/mutation');
     const reportTarget = pathModule.join(mainRoot, 'reports/mutation');
     const machineLogPath = pathModule.join(reportTarget, 'worktree-run.jsonl');
@@ -73,18 +77,23 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     });
 
     try {
-      for (const step of [
-        {
-          command: 'git',
-          args: ['worktree', 'add', '--detach', worktreePath],
-          cwd: mainRoot,
-        },
-        {
-          command: 'npm',
-          args: ['install'],
-          cwd: worktreePath,
-        },
-      ]) {
+      /** @type {Array<{command: string, args: string[], cwd: string}>} */
+      let setupSteps = [];
+      if (!reusedWorktreePath) {
+        setupSteps = [
+          {
+            command: 'git',
+            args: ['worktree', 'add', '--detach', worktreePath],
+            cwd: mainRoot,
+          },
+          {
+            command: 'npm',
+            args: ['install'],
+            cwd: worktreePath,
+          },
+        ];
+      }
+      for (const step of setupSteps) {
         await runLoggedCommandStep(
           {
             fsModule,
@@ -145,17 +154,19 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         type: 'cleanup-start',
         worktreePath,
       });
-      await runCommand({
-        spawnImpl,
-        command: 'git',
-        args: ['worktree', 'remove', '--force', worktreePath],
-        cwd: mainRoot,
-        allowFailure: true,
-        env: buildChildEnv(processModule.env, noDaemonEnv),
-      }).catch(() => {});
-      await fsModule
-        .rm(worktreePath, { recursive: true, force: true })
-        .catch(() => {});
+      if (!reusedWorktreePath) {
+        await runCommand({
+          spawnImpl,
+          command: 'git',
+          args: ['worktree', 'remove', '--force', worktreePath],
+          cwd: mainRoot,
+          allowFailure: true,
+          env: buildChildEnv(processModule.env, noDaemonEnv),
+        }).catch(() => {});
+        await fsModule
+          .rm(worktreePath, { recursive: true, force: true })
+          .catch(() => {});
+      }
       await writeMachineLog(fsModule, machineLogPath, {
         type: 'cleanup-complete',
         worktreePath,

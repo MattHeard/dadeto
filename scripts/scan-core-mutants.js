@@ -1,131 +1,309 @@
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
-const root = path.resolve('.');
-const statePath = path.join(root, 'reports/mutation/core-file-scan.jsonl');
-const survivorListPath = path.join(
-  root,
-  'reports/mutation/core-files-with-surviving-mutants.json'
-);
-const mutationReportPath = path.join(root, 'reports/mutation/mutation.json');
-const perFileTimeoutMs = Number(process.env.CORE_MUTANT_TIMEOUT_MS || 120000);
+const DEFAULT_TIMEOUT_MS = 60 * 60 * 1000;
+const ROOT = path.resolve('.');
 
-async function filesUnder(directory) {
-  const entries = await (await import('node:fs/promises')).readdir(directory, {
-    withFileTypes: true,
-  });
+/**
+ * @typedef {{ file: string, status?: string, survivingMutants?: number | null }} ScanRecord
+ */
+
+/**
+ * Enumerate JavaScript mutation targets in stable order.
+ * @param {string} directory Directory to scan.
+ * @param {{ readdir: Function }} fsModule Filesystem dependency.
+ * @returns {Promise<string[]>} Relative file paths.
+ */
+export async function enumerateMutationTargets(directory, fsModule) {
+  const entries = await fsModule.readdir(directory, { withFileTypes: true });
   const result = [];
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) result.push(...(await filesUnder(fullPath)));
-    else if (/\.(?:js|mjs)$/.test(entry.name)) result.push(fullPath);
+    if (entry.isDirectory()) {
+      result.push(...(await enumerateMutationTargets(fullPath, fsModule)));
+    } else if (/\.(?:js|mjs)$/.test(entry.name)) {
+      result.push(fullPath);
+    }
   }
   return result.sort();
 }
 
-async function latestResults() {
+/**
+ * Read the latest terminal state for each file.
+ * @param {string} statePath JSONL state path.
+ * @param {{ readFile: Function }} fsModule Filesystem dependency.
+ * @returns {Promise<Map<string, ScanRecord>>} Latest records.
+ */
+export async function readLatestState(statePath, fsModule) {
   try {
-    const lines = (await readFile(statePath, 'utf8')).trim().split('\n');
+    const text = await fsModule.readFile(statePath, 'utf8');
     return new Map(
-      lines.filter(Boolean).map(line => {
-        const record = JSON.parse(line);
-        return [record.file, record];
-      })
+      text
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .map(line => JSON.parse(line))
+        .map(record => [record.file, record])
     );
   } catch {
     return new Map();
   }
 }
 
-async function record(value) {
-  await appendFile(statePath, `${JSON.stringify(value)}\n`);
+/**
+ * Count confirmed survivors in a report for exactly one target file.
+ * @param {string} reportPath Mutation report path.
+ * @param {string} file Target file.
+ * @param {{ readFile: Function }} fsModule Filesystem dependency.
+ * @returns {Promise<{ mutantCount: number, survivingMutants: number }>} Counts.
+ */
+export async function readFileReport(reportPath, file, fsModule) {
+  const report = JSON.parse(await fsModule.readFile(reportPath, 'utf8'));
+  const matchingFiles = Object.entries(report.files ?? {})
+    .filter(([key]) => key === file || key.endsWith(`/${file}`))
+    .map(([, value]) => value);
+  if (matchingFiles.length !== 1) {
+    throw new Error(`Mutation report did not uniquely identify ${file}`);
+  }
+  const mutants = Object.values(matchingFiles[0].mutants ?? {});
+  return {
+    mutantCount: mutants.length,
+    survivingMutants: mutants.filter(mutant => mutant.status === 'Survived')
+      .length,
+  };
 }
 
-function run(file) {
+/**
+ * Run a child command with a process-group wall-clock limit.
+ * @param {{ command: string, args: string[], cwd: string, timeoutMs: number, env?: object, spawnImpl?: Function }} options Run options.
+ * @returns {Promise<{ code: number | null, timedOut: boolean, signal: string | null }>} Result.
+ */
+export function runBoundedCommand({
+  command,
+  args,
+  cwd,
+  timeoutMs,
+  env,
+  spawnImpl = spawn,
+}) {
   return new Promise(resolve => {
-    const child = spawn(
-      'timeout',
-      [
-        '--foreground',
-        '--signal=INT',
-        '--kill-after=5s',
-        `${Math.ceil(perFileTimeoutMs / 1000)}s`,
-        'npm',
-        'run',
-        'mutant:worktree',
-        '--',
-        file,
-      ],
-      {
-      cwd: root,
+    const child = spawnImpl(command, args, {
+      cwd,
       stdio: 'inherit',
-      env: { ...process.env, BEADS_NO_DAEMON: '1' },
+      detached: true,
+      env,
+    });
+    let settled = false;
+    const finish = result => {
+      if (!settled) {
+        settled = true;
+        resolve(result);
       }
-    );
-    child.once('error', error => resolve({ code: null, error: error.message }));
-    child.once('exit', code => {
-      resolve({
-        code,
-        error:
-          code === 124 || code === 137
-            ? `Timed out after ${perFileTimeoutMs}ms`
-            : null,
-      });
+    };
+    const timer = setTimeout(() => {
+      try {
+        process.kill(-child.pid, 'SIGTERM');
+        setTimeout(() => {
+          try {
+            process.kill(-child.pid, 'SIGKILL');
+          } catch {}
+        }, 5000).unref();
+      } catch {}
+      finish({ code: null, timedOut: true, signal: 'SIGTERM' });
+    }, timeoutMs);
+    child.once('error', error => {
+      clearTimeout(timer);
+      finish({ code: null, timedOut: false, signal: error.message });
+    });
+    child.once('exit', (code, signal) => {
+      clearTimeout(timer);
+      finish({ code, timedOut: false, signal });
     });
   });
 }
 
-async function survivors() {
-  try {
-    const report = JSON.parse(await readFile(mutationReportPath, 'utf8'));
-    const mutants = Object.values(report.files ?? {}).flatMap(file =>
-      Object.values(file.mutants ?? {})
-    );
-    return mutants.filter(mutant => mutant.status === 'Survived').length;
-  } catch {
-    return null;
-  }
+async function appendRecord(statePath, record, fsModule) {
+  await fsModule.appendFile(statePath, `${JSON.stringify(record)}\n`);
 }
 
-await mkdir(path.dirname(statePath), { recursive: true });
-const state = await latestResults();
-const files = await filesUnder(path.join(root, 'src/core'));
-console.log(`Scanning ${files.length} JavaScript files under src/core`);
-
-for (const absoluteFile of files) {
-  const file = path.relative(root, absoluteFile);
-  if (state.get(file)?.status) continue;
-  await record({ type: 'start', file, at: new Date().toISOString() });
-  const result = await run(file);
-  const survivorCount = result.code === 0 ? await survivors() : null;
-  const finalRecord = {
-    type: 'result',
-    file,
-    status: result.code === 0 ? 'success' : 'failed',
-    exitCode: result.code,
-    error: result.error,
-    survivingMutants: survivorCount,
-    at: new Date().toISOString(),
-  };
-  await record(finalRecord);
-  state.set(file, finalRecord);
-  await writeFile(
+async function writeSurvivorList(state, survivorListPath, fsModule) {
+  const survivors = [...state.values()]
+    .filter(
+      record =>
+        record.status === 'success' &&
+        Number.isInteger(record.survivingMutants) &&
+        record.survivingMutants > 0
+    )
+    .map(record => ({
+      file: record.file,
+      survivingMutants: record.survivingMutants,
+    }));
+  await fsModule.writeFile(
     survivorListPath,
+    `${JSON.stringify(survivors, null, 2)}\n`
+  );
+}
+
+async function writeSummary(state, files, summaryPath, fsModule) {
+  const terminal = [...state.values()].filter(record => record.status);
+  await fsModule.writeFile(
+    summaryPath,
     `${JSON.stringify(
-      [...state.values()]
-        .filter(
-          value =>
-            value.status === 'success' &&
-            Number.isInteger(value.survivingMutants) &&
-            value.survivingMutants > 0
-        )
-        .map(value => ({ file: value.file, survivingMutants: value.survivingMutants })),
+      {
+        total: files.length,
+        completed: terminal.length,
+        pending: files.length - terminal.length,
+        failed: terminal.filter(record => record.status === 'failed').length,
+        timedOut: terminal.filter(record => record.status === 'timed_out')
+          .length,
+        survivors: terminal.filter(record => record.survivingMutants > 0)
+          .length,
+      },
       null,
       2
     )}\n`
   );
-  if (result.code !== 0) console.error(`Mutation run failed for ${file}`);
 }
 
-console.log(`Finished. Results persisted in ${path.relative(root, statePath)}`);
+/**
+ * Run the resumable scan.
+ * @param {{ rootDir?: string, timeoutMs?: number, fsModule?: object, spawnImpl?: Function, runCommand?: Function }} options Scan options.
+ * @returns {Promise<object>} Scan summary.
+ */
+export async function scanCoreMutants(options = {}) {
+  const rootDir = options.rootDir || ROOT;
+  const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
+  const fsModule = options.fsModule || {
+    appendFile,
+    mkdir,
+    readFile,
+    writeFile,
+    readdir: (directory, options) =>
+      import('node:fs/promises').then(fs => fs.readdir(directory, options)),
+  };
+  const run =
+    options.runCommand ||
+    (args => runBoundedCommand({ ...args, spawnImpl: options.spawnImpl }));
+  const reportRoot = path.join(rootDir, 'reports', 'mutation');
+  const worktreePath = path.join(rootDir, '.worktrees', 'core-mutant-scan');
+  const statePath = path.join(reportRoot, 'core-file-scan.jsonl');
+  const summaryPath = path.join(reportRoot, 'core-file-scan-summary.json');
+  const survivorListPath = path.join(
+    reportRoot,
+    'core-files-with-surviving-mutants.json'
+  );
+  await fsModule.mkdir(reportRoot, { recursive: true });
+  await fsModule.mkdir(path.dirname(worktreePath), { recursive: true });
+  const state = await readLatestState(statePath, fsModule);
+  const files = await enumerateMutationTargets(
+    path.join(rootDir, 'src', 'core'),
+    fsModule
+  );
+  const baseEnv = { ...process.env, BEADS_NO_DAEMON: '1' };
+  await run({
+    command: 'git',
+    args: ['worktree', 'remove', '--force', worktreePath],
+    cwd: rootDir,
+    timeoutMs,
+    env: baseEnv,
+  });
+  const prepared = await run({
+    command: 'git',
+    args: ['worktree', 'add', '--detach', worktreePath],
+    cwd: rootDir,
+    timeoutMs,
+    env: baseEnv,
+  });
+  if (prepared.code !== 0)
+    throw new Error('Unable to prepare mutation worktree');
+  const installed = await run({
+    command: 'npm',
+    args: ['install'],
+    cwd: worktreePath,
+    timeoutMs,
+    env: baseEnv,
+  });
+  if (installed.code !== 0)
+    throw new Error('Unable to install mutation worktree dependencies');
+  try {
+    for (const absolutePath of files) {
+      const file = path.relative(rootDir, absolutePath);
+      if (state.get(file)?.status === 'success') continue;
+      const startedAt = new Date().toISOString();
+      const startedAtMs = Date.now();
+      await appendRecord(
+        statePath,
+        { type: 'start', phase: 'mutation', file, startedAt },
+        fsModule
+      );
+      const result = await run({
+        command: 'npm',
+        args: ['run', 'mutant:worktree', '--', file],
+        cwd: rootDir,
+        timeoutMs,
+        env: { ...baseEnv, STRYKER_REUSE_WORKTREE_PATH: worktreePath },
+      });
+      const record = {
+        type: 'result',
+        phase: result.timedOut ? 'mutation' : 'complete',
+        file,
+        status: result.timedOut
+          ? 'timed_out'
+          : result.code === 0
+            ? 'success'
+            : 'failed',
+        exitCode: result.code,
+        signal: result.signal,
+        error: result.timedOut ? `Timed out after ${timeoutMs}ms` : null,
+        durationMs: Date.now() - startedAtMs,
+        finishedAt: new Date().toISOString(),
+      };
+      if (record.status === 'success') {
+        const reportPath = path.join(
+          reportRoot,
+          `${file.replaceAll('/', '__')}.json`
+        );
+        try {
+          const currentReportPath = path.join(reportRoot, 'mutation.json');
+          const counts = await readFileReport(
+            currentReportPath,
+            file,
+            fsModule
+          );
+          await fsModule.writeFile(
+            reportPath,
+            await fsModule.readFile(currentReportPath, 'utf8')
+          );
+          Object.assign(record, counts, { reportPath });
+        } catch (error) {
+          record.status = 'failed';
+          record.error = error.message;
+        }
+      }
+      await appendRecord(statePath, record, fsModule);
+      state.set(file, record);
+      await writeSurvivorList(state, survivorListPath, fsModule);
+      await writeSummary(state, files, summaryPath, fsModule);
+    }
+  } finally {
+    await run({
+      command: 'git',
+      args: ['worktree', 'remove', '--force', worktreePath],
+      cwd: rootDir,
+      timeoutMs,
+      env: baseEnv,
+    });
+  }
+  await writeSummary(state, files, summaryPath, fsModule);
+  return JSON.parse(await fsModule.readFile(summaryPath, 'utf8'));
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const timeoutMs = Number(
+    process.env.CORE_MUTANT_TIMEOUT_MS || DEFAULT_TIMEOUT_MS
+  );
+  const summary = await scanCoreMutants({ timeoutMs });
+  console.log(`Mutation scan summary: ${JSON.stringify(summary)}`);
+}
