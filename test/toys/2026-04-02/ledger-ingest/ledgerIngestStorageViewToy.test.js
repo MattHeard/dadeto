@@ -43,6 +43,8 @@ describe('ledgerIngestStorageViewToy', () => {
     expect(result.fixture).toBe('LEDG3');
     expect(result.inputMode).toBe('storage');
     expect(result.canonicalTransactions).toEqual([transaction]);
+    expect(result.duplicateReports).toEqual([]);
+    expect(result.errorReports).toEqual([]);
     expect(result.summary).toEqual({
       rawRecords: 1,
       canonicalTransactions: 1,
