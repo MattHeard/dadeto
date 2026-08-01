@@ -1,9 +1,12 @@
 /* eslint-disable complexity, jsdoc/check-param-names, jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns, no-ternary */
 import path from 'node:path';
 
+/** @typedef {Record<string, any>} AstNode */
+/** @typedef {(node: AstNode, parent: AstNode | null) => void} AstVisitor */
+
 /**
  *
- * @param node
+ * @param {AstNode} node
  */
 function isFunction(node) {
   return [
@@ -17,9 +20,9 @@ function isFunction(node) {
 
 /**
  *
- * @param node
- * @param visit
- * @param parent
+ * @param {AstNode | null | undefined} node
+ * @param {AstVisitor} visit
+ * @param {AstNode | null} [parent]
  */
 function walk(node, visit, parent = null) {
   if (!node || typeof node !== 'object') return;
@@ -39,9 +42,9 @@ function walk(node, visit, parent = null) {
 
 /**
  *
- * @param node
- * @param parent
- * @param index
+ * @param {AstNode} node
+ * @param {AstNode | null} parent
+ * @param {number} index
  */
 function functionName(node, parent, index) {
   if (node.id?.name) return node.id.name;
@@ -54,7 +57,7 @@ function functionName(node, parent, index) {
 
 /**
  *
- * @param node
+ * @param {AstNode} node
  */
 function bindingName(node) {
   return node?.type === 'Identifier' ? node.name : null;
@@ -62,8 +65,8 @@ function bindingName(node) {
 
 /**
  *
- * @param imports
- * @param name
+ * @param {Map<string, { source: string, imported: string }>} imports
+ * @param {string} name
  */
 function importTarget(imports, name) {
   const binding = imports.get(name);
@@ -72,10 +75,9 @@ function importTarget(imports, name) {
 
 /**
  * Build a conservative, function-level direct dependency graph from Babel ASTs.
- * @param root0
- * @param root0.files
- * @param root0.parse
- * @param root0.rootDir
+ * @param {object} options Graph inputs.
+ * @param {Array<{ path: string, source: string }>} options.files
+ * @param {(source: string, options: object) => AstNode} options.parse
  */
 export function buildFunctionDependencyGraph({ files, parse }) {
   const parsed = new Map();
@@ -132,8 +134,11 @@ export function buildFunctionDependencyGraph({ files, parse }) {
     fn.exported = exportNames.size > 0;
   }
 
+  /** @type {Array<{ source: string, target: string, kind: string }>} */
   const edges = [];
+  /** @type {Array<{ caller: string, callee: string, reason: string }>} */
   const ignoredCalls = [];
+  /** @param {any} caller @param {string} name */
   const resolveTarget = (caller, name) => {
     const local = byFileAndName.get(`${caller.file}#${name}`);
     if (local) return local;
@@ -155,7 +160,7 @@ export function buildFunctionDependencyGraph({ files, parse }) {
   for (const caller of functions.values()) {
     const params = new Set(
       (caller.node.params ?? []).map(
-        param => bindingName(param) ?? param.left?.name
+        /** @param {any} param */ param => bindingName(param) ?? param.left?.name
       )
     );
     walk(caller.node.body, node => {

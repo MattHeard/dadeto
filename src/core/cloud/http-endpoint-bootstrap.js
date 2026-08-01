@@ -5,13 +5,13 @@
  * responsibility; this helper only performs the repeated Express/Functions
  * wiring.
  * @param {{
- *   express: () => { use: (middleware: unknown) => void } & Record<string, (path: string, handler: unknown) => void>,
+ *   express: () => any,
  *   middleware: unknown[],
- *   route: { method: string, path: string, handler: unknown },
- *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
+ *   route: { method: string, path: string, handler: any },
+ *   functions: any,
  *   region?: string,
  * }} options Endpoint wiring supplied by the owning endpoint.
- * @returns {{ app: unknown, handle: unknown }} The Express app and registered Cloud Function.
+ * @returns {{ app: any, handle: any }} The Express app and registered Cloud Function.
  */
 export function createCloudHttpEndpoint({
   express,

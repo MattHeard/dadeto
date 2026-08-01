@@ -27,10 +27,10 @@ import { whenOrNull } from '../../commonCore.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').getEnvironmentVariables,
  *   getAllowedOrigins: typeof import('../../../../src/cloud/submit-new-story/cors-config.js').getAllowedOrigins,
  * }} deps Dependencies for wiring the endpoint.
- * @returns {{ submitNewStory: unknown, handleSubmitNewStory: (req: unknown, res: unknown) => Promise<void>, app: unknown }} Wired endpoint exports.
+ * @returns {{ submitNewStory: unknown, handleSubmitNewStory: (req: any, res: any) => Promise<void>, app: unknown }} Wired endpoint exports.
  */
 export function runSubmitNewStory(deps) {
-  const { db, auth } = /** @type {{ db: unknown, auth: unknown }} */ (
+  const { db, auth } = /** @type {{ db: any, auth: any }} */ (
     createFirebaseAppContext(deps, { includeApp: false })
   );
 
@@ -51,26 +51,29 @@ export function runSubmitNewStory(deps) {
 
   const corsOptions = createCorsOptions({ allowedOrigins });
 
-  const submitNewStoryResponder = createSubmitNewStoryResponder({
-    verifyIdToken: token => auth.verifyIdToken(token),
-    saveSubmission: (id, data) =>
+  const submitNewStoryResponder = createSubmitNewStoryResponder(
+    /** @type {any} */ ({
+    verifyIdToken: /** @param {string} token */ token => auth.verifyIdToken(token),
+    saveSubmission: /** @param {string} id @param {any} data */ (id, data) =>
       db.collection('storyFormSubmissions').doc(id).set(data),
     randomUUID: () => deps.crypto.randomUUID(),
     getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
-  });
+    })
+  );
 
   let debuggedSubmitNewStoryResponder = submitNewStoryResponder;
   if (debugEnabled) {
     debuggedSubmitNewStoryResponder = createDebugSubmitNewStoryResponder(
-      submitNewStoryResponder
+      /** @type {any} */ (submitNewStoryResponder)
     );
   }
 
-  const handleSubmitNewStory = createHandleSubmitNewStory(request =>
-    debuggedSubmitNewStoryResponder(request)
+  const handleSubmitNewStory = createHandleSubmitNewStory(
+    /** @param {any} request */ request =>
+      debuggedSubmitNewStoryResponder(/** @type {any} */ (request))
   );
 
-  const endpoint = createCloudHttpEndpoint({
+  const endpointOptions = /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
     express: deps.express,
     middleware: [
       deps.cors(corsOptions),
@@ -81,6 +84,7 @@ export function runSubmitNewStory(deps) {
     route: { method: 'post', path: '/', handler: handleSubmitNewStory },
     functions: deps.functions,
   });
+  const endpoint = createCloudHttpEndpoint(endpointOptions);
 
   return {
     submitNewStory: endpoint.handle,

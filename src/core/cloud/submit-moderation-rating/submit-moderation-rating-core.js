@@ -149,6 +149,7 @@ export { moderationSubmitHandler as createHandleSubmitModerationRating };
 /**
  * Build endpoint-owned middleware for submit-moderation-rating.
  * @param {{
+ *   express: { json: () => unknown },
  *   cors: (options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown,
  *   allowedOrigins: string[],
  * }} deps Dependencies for app wiring.
@@ -172,7 +173,7 @@ function ensureBoolean(value) {
 
 /**
  * Validate decoded UID.
- * @param {{ uid?: unknown }} decoded Decoded token.
+ * @param {{ uid?: unknown } | null | undefined} decoded Decoded token.
  * @returns {string | null} UID or null.
  */
 function validateDecodedUid(decoded) {
@@ -261,7 +262,7 @@ function stripDefaultTokenMessage(error, message) {
  */
 async function verifyAndGetUid(verifyIdToken, token) {
   const decoded = await verifyIdToken(token);
-  const uid = validateDecodedUid(decoded);
+  const uid = validateDecodedUid(decoded ?? null);
   if (uid) {
     return uid;
   }

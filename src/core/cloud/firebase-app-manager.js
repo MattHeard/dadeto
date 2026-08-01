@@ -52,6 +52,7 @@ export function createFirebaseAppContext(deps, { includeApp = true } = {}) {
   ensureFirebaseApp();
   const environmentVariables = deps.getEnvironmentVariables();
 
+  /** @type {{ db: unknown, auth: unknown, app?: unknown }} */
   const context = {
     db: deps.getFirestoreInstance({ environment: environmentVariables }),
     auth: deps.getAuth(),

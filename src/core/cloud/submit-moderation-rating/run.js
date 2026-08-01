@@ -21,23 +21,25 @@ import { createCloudHttpEndpoint } from '../http-endpoint-bootstrap.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/submit-moderation-rating/submit-moderation-rating-gcf.js').getEnvironmentVariables,
  *   initializeApp: typeof import('firebase-admin/app').initializeApp,
  * }} deps Dependencies required to compose the submit-moderation-rating endpoint.
- * @returns {{ submitModerationRating: unknown, handleSubmitModerationRating: (req: unknown, res: unknown) => Promise<void>, app: unknown }} Wired cloud export objects for index.js.
+ * @returns {{ submitModerationRating: unknown, handleSubmitModerationRating: (req: any, res: any) => Promise<void>, app: unknown }} Wired cloud export objects for index.js.
  */
 export function runSubmitModerationRating(deps) {
   deps.createFirebaseAppManager(deps.initializeApp).ensureFirebaseApp();
 
   const handleSubmitModerationRating = createHandleSubmitModerationRating(
-    createSubmitModerationRatingResponder(
+    /** @type {any} */ (createSubmitModerationRatingResponder(
+      /** @type {any} */ (
       createModerationRatingDependencies({
         db: deps.getFirestoreInstance(),
         auth: deps.getAuth(),
         FieldValue: deps.FieldValue,
         crypto: deps.crypto,
       })
-    )
+      )
+    ))
   );
 
-  const { app, handle: submitModerationRating } = createCloudHttpEndpoint({
+  const endpointOptions = /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
     express: deps.express,
     middleware: createSubmitModerationRatingMiddleware({
       express: deps.express,
@@ -51,6 +53,8 @@ export function runSubmitModerationRating(deps) {
     },
     functions: deps.functions,
   });
+  const { app, handle: submitModerationRating } =
+    createCloudHttpEndpoint(endpointOptions);
 
   return { submitModerationRating, handleSubmitModerationRating, app };
 }
