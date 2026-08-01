@@ -67,7 +67,7 @@ function bindingName(node) {
  */
 function importTarget(imports, name) {
   const binding = imports.get(name);
-  return binding?.target ?? null;
+  return binding ?? null;
 }
 
 /**
