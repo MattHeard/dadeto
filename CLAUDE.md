@@ -41,6 +41,11 @@ When reducing complexity warnings, focus on patterns that WORK:
 **Key Insight**: Complexity violations are legitimate. Not all can/should be "fixed"—some are hard-wired into the domain logic. Accept constraints and focus extraction on functions where the pattern genuinely simplifies structure.
 
 
+## GitHub push authentication
+
+- For authenticated pushes, use the machine-local GitHub App private key at `/home/matt_mattheard_net/vaelith-dadeto.2026-07-30.private-key.pem` according to `notes/agents/github-app.md`.
+- Never print, paste, commit, or store the PEM or resulting short-lived installation token.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
 ## Beads Issue Tracker
 
