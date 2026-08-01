@@ -99,7 +99,10 @@ export function createFakeFirestore({ onCommit } = /** @type {any} */ ({})) {
     __getCollectionGroupDocuments(/** @type {any} */ collectionId) {
       return collectDocuments(state, path => {
         const segments = splitPath(path);
-        return segments.length % 2 === 0 && containsCollectionId(segments, collectionId);
+        return (
+          segments.length % 2 === 0 &&
+          containsCollectionId(segments, collectionId)
+        );
       });
     }
 
@@ -194,6 +197,11 @@ function collectDocuments(state, matchesPath) {
   return docs;
 }
 
+/**
+ *
+ * @param db
+ * @param docs
+ */
 function buildQuerySnapshot(db, docs) {
   return new FakeQuerySnapshot(
     docs.map(({ path, data }) => buildDocumentSnapshot(db, path, data))
@@ -268,7 +276,10 @@ class FakeCollectionReference {
   }
 
   async get() {
-    return buildQuerySnapshot(this.db, this.db.__getCollectionDocuments(this.collectionSegments));
+    return buildQuerySnapshot(
+      this.db,
+      this.db.__getCollectionDocuments(this.collectionSegments)
+    );
   }
 
   count() {
@@ -280,11 +291,18 @@ class FakeCollectionReference {
     /** @type {any} */ op,
     /** @type {any} */ value
   ) {
-    return createCollectionQuery(this.db, this.collectionSegments).where(field, op, value);
+    return createCollectionQuery(this.db, this.collectionSegments).where(
+      field,
+      op,
+      value
+    );
   }
 
   orderBy(/** @type {any} */ field, /** @type {any} */ direction) {
-    return createCollectionQuery(this.db, this.collectionSegments).orderBy(field, direction);
+    return createCollectionQuery(this.db, this.collectionSegments).orderBy(
+      field,
+      direction
+    );
   }
 }
 
@@ -322,6 +340,11 @@ class FakeDocumentReference {
   }
 }
 
+/**
+ *
+ * @param db
+ * @param collectionSegments
+ */
 function createCollectionQuery(db, collectionSegments) {
   return new FakeQuery(db, { kind: 'collection', collectionSegments });
 }
@@ -565,6 +588,7 @@ function resolveFieldValue(current, value) {
 /**
  * Normalize a written value into a clonable object tree.
  * @param {unknown} value - Value to normalize.
+ * @param current
  * @returns {unknown} Normalized value.
  */
 function normalizeWrittenValue(value, current) {
@@ -830,6 +854,11 @@ function cloneDocument(value) {
   return mapObjectValues(value, cloneDocument);
 }
 
+/**
+ *
+ * @param value
+ * @param mapper
+ */
 function mapObjectValues(value, mapper) {
   const output = {};
   for (const [key, nested] of Object.entries(value)) {

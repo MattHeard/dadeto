@@ -9,6 +9,7 @@ import {
   readHeaderFromGetter,
 } from '../submit-shared.js';
 import { createFirebaseAppContext } from '../firebase-app-manager.js';
+import { createCloudHttpEndpoint } from '../http-endpoint-bootstrap.js';
 import { whenOrNull } from '../../commonCore.js';
 
 /**
@@ -26,11 +27,11 @@ import { whenOrNull } from '../../commonCore.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/submit-new-story/submit-new-story-gcf.js').getEnvironmentVariables,
  *   getAllowedOrigins: typeof import('../../../../src/cloud/submit-new-story/cors-config.js').getAllowedOrigins,
  * }} deps Dependencies for wiring the endpoint.
- * @returns {{ submitNewStory: unknown, handleSubmitNewStory: Function, app: unknown }} Wired endpoint exports.
+ * @returns {{ submitNewStory: unknown, handleSubmitNewStory: (req: unknown, res: unknown) => Promise<void>, app: unknown }} Wired endpoint exports.
  */
 export function runSubmitNewStory(deps) {
-  const { db, auth, app } = /** @type {{ db: any, auth: any, app: any }} */ (
-    createFirebaseAppContext(deps)
+  const { db, auth } = /** @type {{ db: unknown, auth: unknown }} */ (
+    createFirebaseAppContext(deps, { includeApp: false })
   );
 
   const environmentVariables = deps.getEnvironmentVariables();
@@ -50,11 +51,6 @@ export function runSubmitNewStory(deps) {
 
   const corsOptions = createCorsOptions({ allowedOrigins });
 
-  app.use(deps.cors(corsOptions));
-  app.use(createCorsErrorHandler());
-  app.use(deps.express.json({ limit: '20kb' }));
-  app.use(deps.express.urlencoded({ extended: false, limit: '20kb' }));
-
   const submitNewStoryResponder = createSubmitNewStoryResponder({
     verifyIdToken: token => auth.verifyIdToken(token),
     saveSubmission: (id, data) =>
@@ -66,25 +62,31 @@ export function runSubmitNewStory(deps) {
   let debuggedSubmitNewStoryResponder = submitNewStoryResponder;
   if (debugEnabled) {
     debuggedSubmitNewStoryResponder = createDebugSubmitNewStoryResponder(
-      /** @type {any} */ (submitNewStoryResponder)
+      submitNewStoryResponder
     );
   }
 
-  const handleSubmitNewStory = /** @type {any} */ (
-    createHandleSubmitNewStory(
-      /** @type {any} */ (
-        (/** @type {any} */ request) => debuggedSubmitNewStoryResponder(request)
-      )
-    )
+  const handleSubmitNewStory = createHandleSubmitNewStory(request =>
+    debuggedSubmitNewStoryResponder(request)
   );
 
-  app.post('/', handleSubmitNewStory);
+  const endpoint = createCloudHttpEndpoint({
+    express: deps.express,
+    middleware: [
+      deps.cors(corsOptions),
+      createCorsErrorHandler(),
+      deps.express.json({ limit: '20kb' }),
+      deps.express.urlencoded({ extended: false, limit: '20kb' }),
+    ],
+    route: { method: 'post', path: '/', handler: handleSubmitNewStory },
+    functions: deps.functions,
+  });
 
-  const submitNewStory = /** @type {any} */ (deps.functions)
-    .region('europe-west1')
-    .https.onRequest(app);
-
-  return { submitNewStory, handleSubmitNewStory, app };
+  return {
+    submitNewStory: endpoint.handle,
+    handleSubmitNewStory,
+    app: endpoint.app,
+  };
 }
 
 /**
@@ -198,7 +200,10 @@ function serializeError(error) {
  */
 function createDebugSubmitNewStoryResponder(responder) {
   return async function debuggedSubmitNewStoryResponder(request) {
-    const typedRequest = /** @type {any} */ (request);
+    const typedRequest =
+      /** @type {{ method?: unknown, headers?: Record<string, unknown> | null | undefined, body?: Record<string, unknown> | null | undefined }} */ (
+        request
+      );
     const requestBody = getRequestSummary(typedRequest);
 
     console.info(

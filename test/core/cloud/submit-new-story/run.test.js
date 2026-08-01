@@ -92,6 +92,7 @@ describe('runSubmitNewStory', () => {
         SITE_URL: 'https://example.com',
       },
     });
+    expect(express).toHaveBeenCalledTimes(1);
     expect(expressUse).toHaveBeenCalledWith('cors-middleware');
     expect(expressUse).toHaveBeenCalledWith(expect.any(Function));
     expect(expressUse).toHaveBeenCalledWith('json-middleware');

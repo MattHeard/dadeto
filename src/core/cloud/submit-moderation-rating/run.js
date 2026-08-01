@@ -1,10 +1,11 @@
 import { getAllowedOrigins } from '../cors-config.js';
 import {
   createHandleSubmitModerationRating,
-  createSubmitModerationRatingApp,
+  createSubmitModerationRatingMiddleware,
   createSubmitModerationRatingResponder,
 } from './submit-moderation-rating-core.js';
 import { createModerationRatingDependencies } from './dependencies.js';
+import { createCloudHttpEndpoint } from '../http-endpoint-bootstrap.js';
 
 /**
  * Wire and return submit-moderation-rating cloud exports.
@@ -20,36 +21,36 @@ import { createModerationRatingDependencies } from './dependencies.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/submit-moderation-rating/submit-moderation-rating-gcf.js').getEnvironmentVariables,
  *   initializeApp: typeof import('firebase-admin/app').initializeApp,
  * }} deps Dependencies required to compose the submit-moderation-rating endpoint.
- * @returns {{ submitModerationRating: unknown, handleSubmitModerationRating: Function, app: unknown }} Wired cloud export objects for index.js.
+ * @returns {{ submitModerationRating: unknown, handleSubmitModerationRating: (req: unknown, res: unknown) => Promise<void>, app: unknown }} Wired cloud export objects for index.js.
  */
 export function runSubmitModerationRating(deps) {
   deps.createFirebaseAppManager(deps.initializeApp).ensureFirebaseApp();
 
-  const handleSubmitModerationRating = /** @type {any} */ (
-    createHandleSubmitModerationRating(
-      /** @type {any} */ (
-        createSubmitModerationRatingResponder(
-          createModerationRatingDependencies({
-            db: deps.getFirestoreInstance(),
-            auth: deps.getAuth(),
-            FieldValue: deps.FieldValue,
-            crypto: deps.crypto,
-          })
-        )
-      )
+  const handleSubmitModerationRating = createHandleSubmitModerationRating(
+    createSubmitModerationRatingResponder(
+      createModerationRatingDependencies({
+        db: deps.getFirestoreInstance(),
+        auth: deps.getAuth(),
+        FieldValue: deps.FieldValue,
+        crypto: deps.crypto,
+      })
     )
   );
 
-  const app = createSubmitModerationRatingApp({
+  const { app, handle: submitModerationRating } = createCloudHttpEndpoint({
     express: deps.express,
-    cors: deps.cors,
-    allowedOrigins: getAllowedOrigins(deps.getEnvironmentVariables()),
-    handleSubmit: handleSubmitModerationRating,
+    middleware: createSubmitModerationRatingMiddleware({
+      express: deps.express,
+      cors: deps.cors,
+      allowedOrigins: getAllowedOrigins(deps.getEnvironmentVariables()),
+    }),
+    route: {
+      method: 'post',
+      path: '/',
+      handler: handleSubmitModerationRating,
+    },
+    functions: deps.functions,
   });
-
-  const submitModerationRating = /** @type {any} */ (deps.functions)
-    .region('europe-west1')
-    .https.onRequest(app);
 
   return { submitModerationRating, handleSubmitModerationRating, app };
 }

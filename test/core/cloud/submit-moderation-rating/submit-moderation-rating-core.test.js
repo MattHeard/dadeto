@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import {
   createCorsOptions,
   createHandleSubmitModerationRating,
-  createSubmitModerationRatingApp,
+  createSubmitModerationRatingMiddleware,
   createSubmitModerationRatingResponder,
 } from '../../../../src/core/cloud/submit-moderation-rating/submit-moderation-rating-core.js';
 
@@ -43,30 +43,22 @@ describe('createCorsOptions', () => {
   });
 });
 
-describe('createSubmitModerationRatingApp', () => {
-  it('wires cors/json middleware and POST handler', () => {
-    const use = jest.fn();
-    const post = jest.fn();
-    const app = { use, post };
-    const express = jest.fn(() => app);
+describe('createSubmitModerationRatingMiddleware', () => {
+  it('creates the endpoint-specific CORS and JSON middleware', () => {
+    const express = jest.fn();
     express.json = jest.fn(() => 'json-mw');
     const cors = jest.fn(() => 'cors-mw');
-    const handleSubmit = jest.fn();
 
-    const result = createSubmitModerationRatingApp({
+    const result = createSubmitModerationRatingMiddleware({
       express,
       cors,
       allowedOrigins: ['https://allowed'],
-      handleSubmit,
     });
 
-    expect(result).toBe(app);
+    expect(result).toEqual(['cors-mw', 'json-mw']);
     expect(cors).toHaveBeenCalledWith(
       expect.objectContaining({ methods: ['POST'] })
     );
-    expect(use).toHaveBeenCalledWith('cors-mw');
-    expect(use).toHaveBeenCalledWith('json-mw');
-    expect(post).toHaveBeenCalledWith('/', handleSubmit);
   });
 });
 

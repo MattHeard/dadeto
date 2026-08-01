@@ -147,23 +147,18 @@ const moderationSubmitHandler = createCloudSubmitHandler;
 export { moderationSubmitHandler as createHandleSubmitModerationRating };
 
 /**
- * Build the submit-moderation-rating Express app.
+ * Build endpoint-owned middleware for submit-moderation-rating.
  * @param {{
- *   express: Function,
- *   cors: Function,
+ *   cors: (options: { origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => void, methods: string[] }) => unknown,
  *   allowedOrigins: string[],
- *   handleSubmit: Function,
  * }} deps Dependencies for app wiring.
- * @returns {{ use: Function, post: Function }} Wired Express app.
+ * @returns {unknown[]} Middleware in the required execution order.
  */
-export function createSubmitModerationRatingApp(deps) {
-  const app = deps.express();
-  app.use(
-    deps.cors(createCorsOptions({ allowedOrigins: deps.allowedOrigins }))
-  );
-  app.use(/** @type {any} */ (deps.express).json());
-  app.post('/', deps.handleSubmit);
-  return app;
+export function createSubmitModerationRatingMiddleware(deps) {
+  return [
+    deps.cors(createCorsOptions({ allowedOrigins: deps.allowedOrigins })),
+    deps.express.json(),
+  ];
 }
 
 /**
@@ -260,7 +255,7 @@ function stripDefaultTokenMessage(error, message) {
 
 /**
  * Verify token and get UID.
- * @param {Function} verifyIdToken Verifier.
+ * @param {(token: string) => Promise<{ uid?: unknown } | null | undefined>} verifyIdToken Verifier.
  * @param {string} token Token.
  * @returns {Promise<string>} UID.
  */

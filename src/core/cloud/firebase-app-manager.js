@@ -41,9 +41,10 @@ export function createFirebaseAppManager(initializer) {
  *   getAuth: () => unknown,
  *   express: () => unknown,
  * }} deps Cloud wiring dependencies.
- * @returns {{ db: unknown, auth: unknown, app: unknown }} Initialized cloud app parts.
+ * @param {{ includeApp?: boolean }} [options] Whether to construct an Express app.
+ * @returns {{ db: unknown, auth: unknown, app?: unknown }} Initialized cloud app parts.
  */
-export function createFirebaseAppContext(deps) {
+export function createFirebaseAppContext(deps, { includeApp = true } = {}) {
   const { ensureFirebaseApp } = deps.createFirebaseAppManager(
     deps.initializeApp
   );
@@ -51,11 +52,16 @@ export function createFirebaseAppContext(deps) {
   ensureFirebaseApp();
   const environmentVariables = deps.getEnvironmentVariables();
 
-  return {
+  const context = {
     db: deps.getFirestoreInstance({ environment: environmentVariables }),
     auth: deps.getAuth(),
-    app: deps.express(),
   };
+
+  if (includeApp) {
+    context.app = deps.express();
+  }
+
+  return context;
 }
 
 /**

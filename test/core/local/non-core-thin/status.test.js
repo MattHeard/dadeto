@@ -152,7 +152,11 @@ describe('non-core thin status', () => {
                 'export { handle };',
               ].join('\n'),
         readdirSync: () => [
-          { name: 'node_modules', isDirectory: () => true, isFile: () => false },
+          {
+            name: 'node_modules',
+            isDirectory: () => true,
+            isFile: () => false,
+          },
           { name: 'app.js', isDirectory: () => false, isFile: () => true },
         ],
       },
