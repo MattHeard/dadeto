@@ -11,7 +11,7 @@
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "node scripts/run-jest-with-coverage.js",
     "tsdoc:check": "tsc --project tsconfig.jsdoc.json",
-    "test:e2e": "node scripts/run-e2e.js",
+    "test:e2e": "npm run build && node scripts/run-e2e.js",
     "test:e2e:cloud": "node scripts/run-e2e.js --suite cloud",
     "test:e2e:local": "npm run build && node scripts/run-e2e.js --suite local",
     "generate": "node src/build/generate.js",
