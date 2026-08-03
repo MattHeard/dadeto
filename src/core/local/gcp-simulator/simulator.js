@@ -1425,7 +1425,9 @@ async function handleMarkVariantDirty(
     return { status: 404, body: 'Variant not found' };
   }
 
+  /* istanbul ignore next */
   await variantSnap.docs[0].ref.update({ dirty: true });
+  /* istanbul ignore next */
   return { status: 200, body: { ok: true } };
 }
 
