@@ -1512,13 +1512,13 @@ function createAuthResult(
  */
 async function loadModerationOptions(/** @type {any} */ variantRef) {
   const optionsSnap = await variantRef.collection('options').get();
+  /* istanbul ignore next */
+  const getOptionPosition = option => option.data().position ?? 0;
   return optionsSnap.docs
     .slice()
-    /* istanbul ignore next */
     .sort(
       (left, right) =>
-        /* istanbul ignore next */
-        (left.data().position ?? 0) - (right.data().position ?? 0)
+        getOptionPosition(left) - getOptionPosition(right)
     )
     .map(doc => ({
       content: doc.data().content,
