@@ -2,19 +2,21 @@ import { describe, expect, it } from '@jest/globals';
 
 describe('core wrapper exports', () => {
   it('re-exports the cloud implementations', async () => {
-    const [
-      generateStatsWrapper,
-      processNewPageWrapper,
-      submitNewStoryWrapper,
-      renderVariantWrapper,
-      paymentWebhookWrapper,
-    ] = await Promise.all([
-      import('../../src/core/generate-stats-core.js'),
-      import('../../src/core/process-new-page-core.js'),
-      import('../../src/core/submit-new-story-core.js'),
-      import('../../src/core/render-variant-core.js'),
-      import('../../src/core/payment-webhook-core.js'),
-    ]);
+    const generateStatsWrapper = await import(
+      '../../src/core/generate-stats-core.js'
+    );
+    const processNewPageWrapper = await import(
+      '../../src/core/process-new-page-core.js'
+    );
+    const submitNewStoryWrapper = await import(
+      '../../src/core/submit-new-story-core.js'
+    );
+    const renderVariantWrapper = await import(
+      '../../src/core/render-variant-core.js'
+    );
+    const paymentWebhookWrapper = await import(
+      '../../src/core/payment-webhook-core.js'
+    );
 
     expect(generateStatsWrapper).toHaveProperty('createGenerateStatsCore');
     expect(processNewPageWrapper).toHaveProperty('createProcessNewPageHandler');
