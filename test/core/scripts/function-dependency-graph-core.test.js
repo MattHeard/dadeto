@@ -86,4 +86,40 @@ const computed = { ['ignored']() {} };`,
       ])
     );
   });
+
+  test('walks sparse AST nodes and preserves anonymous fallback names', () => {
+    const graph = buildFunctionDependencyGraph({
+      files: [{ path: 'sparse.js', source: 'ignored' }],
+      parse: () => ({
+        type: 'Program',
+        loc: null,
+        leadingComments: [],
+        trailingComments: [],
+        body: [
+          null,
+          1,
+          { type: 'ObjectProperty', key: { name: 'propertyFn' }, value: {
+            type: 'FunctionExpression',
+            id: null,
+            params: [],
+            body: { type: 'BlockStatement', body: [] },
+          } },
+          { type: 'ObjectProperty', key: {}, value: {
+            type: 'FunctionExpression',
+            id: null,
+            params: null,
+            body: { type: 'BlockStatement', body: [] },
+          } },
+        ],
+        metadata: { type: 'Metadata', child: null },
+      }),
+    });
+
+    expect(graph.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 'sparse.js#propertyFn',
+        line: null,
+      }),
+    ]));
+  });
 });
