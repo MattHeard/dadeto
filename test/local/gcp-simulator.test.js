@@ -248,6 +248,40 @@ describe('local gcp simulator', () => {
     });
   });
 
+  it('handles moderation ratings with explicit boolean values and sparse totals', async () => {
+    return withScenarioSimulator(4322, async localSimulator => {
+      const variantRef = localSimulator.db
+        .collection('stories')
+        .doc('rating-story')
+        .collection('pages')
+        .doc('1')
+        .collection('variants')
+        .doc('a');
+      localSimulator.db.__setPathData(variantRef.path, { dirty: false });
+      await localSimulator.db.collection('moderators').doc(ADMIN_UID).set({
+        variant: variantRef.path,
+        createdAt: new Date(),
+      });
+      await expect(
+        localSimulator.routes.submitModerationRating({
+          body: { isApproved: 'false' },
+          headers: { authorization: 'Bearer local-admin-token' },
+        })
+      ).resolves.toEqual({ status: 200, body: { ok: true } });
+
+      await localSimulator.db.collection('moderators').doc(ADMIN_UID).set({
+        variant: variantRef.path,
+        createdAt: new Date(),
+      });
+      await expect(
+        localSimulator.routes.submitModerationRating({
+          body: { isApproved: 'true' },
+          headers: { authorization: 'Bearer local-admin-token' },
+        })
+      ).resolves.toEqual({ status: 200, body: { ok: true } });
+    });
+  });
+
   /* Legacy oversized scenario replaced by focused tests above.
   it.skip('covers simulator moderation and lookup failures', async () => {
     return withScenarioSimulator(4322, async simulator => {
