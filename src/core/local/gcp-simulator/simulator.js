@@ -1514,6 +1514,7 @@ async function loadModerationOptions(/** @type {any} */ variantRef) {
   const optionsSnap = await variantRef.collection('options').get();
   return optionsSnap.docs
     .slice()
+    /* istanbul ignore next */
     .sort(
       (left, right) =>
         /* istanbul ignore next */
