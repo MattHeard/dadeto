@@ -1018,10 +1018,9 @@ describe('local gcp simulator', () => {
         .doc(ADMIN_UID)
         .get();
       const variantPath = moderator.data().variant;
-      localSimulator.db.__setPathData(
-        `${variantPath}/options/unordered`,
-        { content: 'Unordered option' }
-      );
+      localSimulator.db.__setPathData(`${variantPath}/options/unordered`, {
+        content: 'Unordered option',
+      });
       await expect(
         localSimulator.routes.getModerationVariant({
           headers: { authorization: 'Bearer local-admin-token' },

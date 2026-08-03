@@ -16,6 +16,14 @@ import { regenerateDirtyTreeWeightVariants } from './tree-visibility-regeneratio
  * @returns {{scheduled: unknown, http: unknown}} Registered entrypoints.
  */
 /* istanbul ignore next -- default handlers are cloud-run wiring fallbacks. */
+/**
+ *
+ * @param root0
+ * @param root0.functions
+ * @param root0.getFirestoreInstance
+ * @param root0.render
+ * @param root0.consoleError
+ */
 export function createTreeVisibilityRegenerationHandles({
   functions,
   getFirestoreInstance,

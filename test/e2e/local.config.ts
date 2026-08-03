@@ -7,6 +7,17 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      use: {
+        channel: 'chromium',
+        launchOptions: {
+          args: [
+            '--headless=new',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--use-gl=swiftshader',
+          ],
+        },
+      },
     },
   ],
   use: {

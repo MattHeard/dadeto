@@ -505,12 +505,16 @@ function createSnapshots(
 async function seedStaticFixture(storage, bucketName) {
   const bucket = storage.bucket(bucketName);
   await Promise.all([
-    bucket.file('index.html').save(
-      `<!doctype html><html><body><h1>${DEFAULT_STORY_TITLE}</h1><h2>Contents</h2></body></html>`
-    ),
-    bucket.file('p/1a.html').save(
-      `<!doctype html><html><body><h1>${DEFAULT_STORY_TITLE}</h1></body></html>`
-    ),
+    bucket
+      .file('index.html')
+      .save(
+        `<!doctype html><html><body><h1>${DEFAULT_STORY_TITLE}</h1><h2>Contents</h2></body></html>`
+      ),
+    bucket
+      .file('p/1a.html')
+      .save(
+        `<!doctype html><html><body><h1>${DEFAULT_STORY_TITLE}</h1></body></html>`
+      ),
     bucket
       .file('pending/gcp-test-fixture-story.json')
       .save(JSON.stringify({ path: 'p/1a.html' })),
@@ -1519,10 +1523,7 @@ async function loadModerationOptions(/** @type {any} */ variantRef) {
   const getOptionPosition = option => option.data().position ?? 0;
   return optionsSnap.docs
     .slice()
-    .sort(
-      (left, right) =>
-        getOptionPosition(left) - getOptionPosition(right)
-    )
+    .sort((left, right) => getOptionPosition(left) - getOptionPosition(right))
     .map(doc => ({
       content: doc.data().content,
       targetPageNumber: getTargetPageNumber(doc.data().targetPage),

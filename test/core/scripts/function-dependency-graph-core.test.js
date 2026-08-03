@@ -98,28 +98,38 @@ const computed = { ['ignored']() {} };`,
         body: [
           null,
           1,
-          { type: 'ObjectProperty', key: { name: 'propertyFn' }, value: {
-            type: 'FunctionExpression',
-            id: null,
-            params: [],
-            body: { type: 'BlockStatement', body: [] },
-          } },
-          { type: 'ObjectProperty', key: {}, value: {
-            type: 'FunctionExpression',
-            id: null,
-            params: null,
-            body: { type: 'BlockStatement', body: [] },
-          } },
+          {
+            type: 'ObjectProperty',
+            key: { name: 'propertyFn' },
+            value: {
+              type: 'FunctionExpression',
+              id: null,
+              params: [],
+              body: { type: 'BlockStatement', body: [] },
+            },
+          },
+          {
+            type: 'ObjectProperty',
+            key: {},
+            value: {
+              type: 'FunctionExpression',
+              id: null,
+              params: null,
+              body: { type: 'BlockStatement', body: [] },
+            },
+          },
         ],
         metadata: { type: 'Metadata', child: null },
       }),
     });
 
-    expect(graph.nodes).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        id: 'sparse.js#propertyFn',
-        line: null,
-      }),
-    ]));
+    expect(graph.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'sparse.js#propertyFn',
+          line: null,
+        }),
+      ])
+    );
   });
 });

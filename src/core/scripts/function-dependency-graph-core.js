@@ -187,7 +187,7 @@ export function buildFunctionDependencyGraph({ files, parse }) {
             target: target.id,
             kind: 'direct-call',
           });
-      /* istanbul ignore next -- computed injected members are runtime-only. */
+        /* istanbul ignore next -- computed injected members are runtime-only. */
       } else if (
         callee.type === 'MemberExpression' &&
         callee.object.type === 'Identifier' &&
