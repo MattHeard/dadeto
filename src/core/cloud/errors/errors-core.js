@@ -1,4 +1,8 @@
-import { assertFunction, isNonNullObject } from '../../commonCore.js';
+import {
+  assertFunction,
+  isNonNullObject,
+  trimmedStringOrEmpty,
+} from '../../commonCore.js';
 import { sanitizeUrl } from '../../error-reporting.js';
 
 /**
@@ -32,10 +36,10 @@ export function buildReportedErrorEvent(
   getServerTimestamp,
   buildVersion = ''
 ) {
-  const message = normalizeText(payload.message);
-  const stack = normalizeText(payload.stack);
-  const url = sanitizeUrl(normalizeText(payload.url));
-  const source = normalizeText(payload.source);
+  const message = trimmedStringOrEmpty(payload.message);
+  const stack = trimmedStringOrEmpty(payload.stack);
+  const url = sanitizeUrl(trimmedStringOrEmpty(payload.url));
+  const source = trimmedStringOrEmpty(payload.source);
   const service = buildServiceName(environment);
   const timestamp = getServerTimestamp();
   const reportMessage = [message, stack].filter(Boolean).join('\n');
@@ -95,7 +99,7 @@ function createReportLocation(payload, url, source) {
  * @returns {{ service: string, version?: string }} Error Reporting service context.
  */
 function createServiceContext(service, buildVersion) {
-  const version = normalizeText(buildVersion);
+  const version = trimmedStringOrEmpty(buildVersion);
   /** @type {{ service: string, version?: string }} */
   const serviceContext = { service };
   if (version) {
@@ -110,7 +114,7 @@ function createServiceContext(service, buildVersion) {
  * @returns {string} Environment-scoped client-js service name.
  */
 function buildServiceName(environmentSource) {
-  const environment = normalizeText(environmentSource) || 'prod';
+  const environment = trimmedStringOrEmpty(environmentSource) || 'prod';
   return `${environment}-client-js`;
 }
 
@@ -133,14 +137,6 @@ function normalizePositiveInteger(value) {
  * @param {unknown} value Candidate value.
  * @returns {string} Trimmed string or empty string.
  */
-function normalizeText(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  return value.trim();
-}
-
 /**
  * Create a request handler that forwards browser error beacons to Error Reporting.
  * @param {{

@@ -21,38 +21,41 @@ import { createCloudHttpEndpoint } from '../http-endpoint-bootstrap.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/submit-moderation-rating/submit-moderation-rating-gcf.js').getEnvironmentVariables,
  *   initializeApp: typeof import('firebase-admin/app').initializeApp,
  * }} deps Dependencies required to compose the submit-moderation-rating endpoint.
- * @returns {{ submitModerationRating: unknown, handleSubmitModerationRating: (req: any, res: any) => Promise<void>, app: unknown }} Wired cloud export objects for index.js.
+ * @returns {{ submitModerationRating: unknown, handleSubmitModerationRating: (req: import('../../../../types/native-http').NativeHttpRequest, res: import('../../../../types/native-http').NativeHttpResponse) => Promise<void>, app: unknown }} Wired cloud export objects for index.js.
  */
 export function runSubmitModerationRating(deps) {
   deps.createFirebaseAppManager(deps.initializeApp).ensureFirebaseApp();
 
+  const dependencies = createModerationRatingDependencies({
+    db: deps.getFirestoreInstance(),
+    auth: deps.getAuth(),
+    FieldValue: deps.FieldValue,
+    crypto: deps.crypto,
+  });
   const handleSubmitModerationRating = createHandleSubmitModerationRating(
-    /** @type {any} */ (createSubmitModerationRatingResponder(
-      /** @type {any} */ (
-      createModerationRatingDependencies({
-        db: deps.getFirestoreInstance(),
-        auth: deps.getAuth(),
-        FieldValue: deps.FieldValue,
-        crypto: deps.crypto,
-      })
+    /** @type {(request: unknown) => Promise<{ status: number, body?: unknown }>} */ (
+      /** @type {unknown} */ (
+        createSubmitModerationRatingResponder(dependencies)
       )
-    ))
+    )
   );
 
-  const endpointOptions = /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
-    express: deps.express,
-    middleware: createSubmitModerationRatingMiddleware({
+  const moderationRoute = {
+    method: 'post',
+    path: '/',
+    handler: handleSubmitModerationRating,
+  };
+  const endpointOptions =
+    /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
       express: deps.express,
-      cors: deps.cors,
-      allowedOrigins: getAllowedOrigins(deps.getEnvironmentVariables()),
-    }),
-    route: {
-      method: 'post',
-      path: '/',
-      handler: handleSubmitModerationRating,
-    },
-    functions: deps.functions,
-  });
+      middleware: createSubmitModerationRatingMiddleware({
+        express: deps.express,
+        cors: deps.cors,
+        allowedOrigins: getAllowedOrigins(deps.getEnvironmentVariables()),
+      }),
+      route: moderationRoute,
+      functions: deps.functions,
+    });
   const { app, handle: submitModerationRating } =
     createCloudHttpEndpoint(endpointOptions);
 

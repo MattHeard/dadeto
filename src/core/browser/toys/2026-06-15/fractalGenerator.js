@@ -1,3 +1,5 @@
+import { objectOrEmpty } from '../../../commonCore.js';
+
 const DEFAULT_WIDTH = 360;
 const DEFAULT_HEIGHT = 240;
 const DEFAULT_DEPTH = 5;
@@ -12,7 +14,7 @@ function parseConfig(input) {
     return {};
   }
 
-  return toConfigRecord(parseJsonOrNull(input));
+  return objectOrEmpty(parseJsonOrNull(input));
 }
 
 /**
@@ -31,21 +33,6 @@ function parseJsonOrNull(input) {
   }
 
   return parsed;
-}
-
-/**
- * Keep only object-shaped parsed config values.
- * @param {unknown} value Parsed JSON value.
- * @returns {Record<string, unknown>} Parsed config object or empty config.
- */
-function toConfigRecord(value) {
-  const objectLike = typeof value === 'object' && value !== null;
-  const recordLike = objectLike && !Array.isArray(value);
-  if (!recordLike) {
-    return {};
-  }
-
-  return /** @type {Record<string, unknown>} */ (value);
 }
 
 /**

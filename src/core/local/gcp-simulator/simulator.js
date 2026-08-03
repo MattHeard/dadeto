@@ -155,7 +155,12 @@ function createSeedManifest(bucketName) {
  */
 function createClear(storageRoot) {
   return async () => {
-    await rm(storageRoot, { recursive: true, force: true });
+    await rm(storageRoot, {
+      recursive: true,
+      force: true,
+      maxRetries: 3,
+      retryDelay: 50,
+    });
   };
 }
 
@@ -409,6 +414,9 @@ async function buildSimulatorState(/** @type {any} */ config) {
     authVerifiers,
   });
 
+  await seedStaticFixture(storage, bucketName);
+  await createSeedFixture(db)();
+
   registerTriggerRegistrationsByEvent(
     triggerRegistry,
     createTriggerRegistrationsByEvent({
@@ -419,9 +427,6 @@ async function buildSimulatorState(/** @type {any} */ config) {
       handleVariantWrite,
     })
   );
-
-  await createSeedFixture(db)();
-
   return buildSimulatorApi({
     baseUrl,
     bucketName,
@@ -489,6 +494,27 @@ function createSnapshots(
     before: createSnapshot(dbContext, pathValue, before),
     after: createSnapshot(dbContext, pathValue, after),
   };
+}
+
+/**
+ * Seed the static contents page without invoking Firestore render triggers.
+ * @param {FakeStorage} storage Simulator storage.
+ * @param {string} bucketName Static bucket name.
+ * @returns {Promise<void>} Nothing.
+ */
+async function seedStaticFixture(storage, bucketName) {
+  const bucket = storage.bucket(bucketName);
+  await Promise.all([
+    bucket.file('index.html').save(
+      `<!doctype html><html><body><h1>${DEFAULT_STORY_TITLE}</h1><h2>Contents</h2></body></html>`
+    ),
+    bucket.file('p/1a.html').save(
+      `<!doctype html><html><body><h1>${DEFAULT_STORY_TITLE}</h1></body></html>`
+    ),
+    bucket
+      .file('pending/gcp-test-fixture-story.json')
+      .save(JSON.stringify({ path: 'p/1a.html' })),
+  ]);
 }
 
 /**

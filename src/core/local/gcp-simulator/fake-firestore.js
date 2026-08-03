@@ -287,14 +287,14 @@ class FakeCollectionReference {
   }
 
   where(
-    /** @type {any} */ field,
-    /** @type {any} */ op,
-    /** @type {any} */ value
+    /** @type {any} */ fieldPath,
+    /** @type {any} */ operator,
+    /** @type {any} */ expectedValue
   ) {
     return createCollectionQuery(this.db, this.collectionSegments).where(
-      field,
-      op,
-      value
+      fieldPath,
+      operator,
+      expectedValue
     );
   }
 
@@ -735,7 +735,7 @@ function buildSnapshotData(value) {
  * @returns {Array<unknown>} Normalized array.
  */
 function normalizeWrittenArray(value) {
-  return value.map(item => normalizeWrittenValue(item));
+  return mapArrayValues(value, normalizeWrittenValue);
 }
 
 /**
@@ -844,14 +844,14 @@ function cloneDocument(value) {
   }
 
   if (Array.isArray(value)) {
-    return value.map(item => cloneDocument(item));
+    return mapArrayValues(value, cloneDocument);
   }
 
-  if (!isPlainObject(value)) {
-    return value;
+  if (isPlainObject(value)) {
+    return mapObjectValues(value, cloneDocument);
   }
 
-  return mapObjectValues(value, cloneDocument);
+  return value;
 }
 
 /**
@@ -868,12 +868,27 @@ function mapObjectValues(value, mapper) {
 }
 
 /**
+ * Map each item in an array with a value transformer.
+ * @param {unknown[]} value Array to transform.
+ * @param {(value: unknown) => unknown} mapper Value transformer.
+ * @returns {unknown[]} Transformed array.
+ */
+function mapArrayValues(value, mapper) {
+  return value.map(mapper);
+}
+
+/**
  * Test whether a value is a plain object.
  * @param {unknown} value - Value to inspect.
  * @returns {boolean} True when value is a plain object.
  */
 function isPlainObject(value) {
-  return Boolean(value) && Object.getPrototypeOf(value) === Object.prototype;
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.getPrototypeOf(value) === Object.prototype
+  );
 }
 
 /**

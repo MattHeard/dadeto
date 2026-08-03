@@ -6,7 +6,7 @@ import { safeJsonParse, deepMerge, deepClone } from './browser-core.js';
  * @typedef {{ ok: false; message: string }} ParseFailure
  * @typedef {ParseSuccess | ParseFailure} ParseResult
  * @typedef {Record<string, unknown>} SectionData
- * @typedef {Map<string, Function>} SectionSetterEnv
+ * @typedef {Map<string, (...args: never[]) => unknown>} SectionSetterEnv
  */
 
 /**
@@ -29,7 +29,7 @@ function formatParseFailure(result) {
 /**
  * Creates a function that merges JSON input into a section of the data object.
  * @param {string} section - The property name to merge into.
- * @returns {(input: string, env: Map<string, Function>) => string} Setter function that validates and merges payloads.
+ * @returns {(input: string, env: SectionSetterEnv) => string} Setter function that validates and merges payloads.
  */
 export function createSectionSetter(section) {
   return function setSection(input, env) {
@@ -56,14 +56,14 @@ function parseJsonObject(input) {
 
 /**
  * Ensure a value is a plain object.
- * @param {*} value - Parsed JSON value.
+ * @param {unknown} value - Parsed JSON value.
  * @returns {ParseResult} Validation result.
  */
 function ensurePlainObject(value) {
   if (!isObject(value)) {
     return { ok: false, message: 'Error: Input JSON must be a plain object.' };
   }
-  return { ok: true, data: value };
+  return { ok: true, data: /** @type {SectionData} */ (value) };
 }
 
 /**
@@ -147,7 +147,7 @@ function extractErrorDetail(error) {
 
 /**
  * Retrieve a callable from the environment or fall back to the provided default.
- * @template {Function} T
+ * @template {(...args: never[]) => unknown} T
  * @param {SectionSetterEnv} env - Environment map containing helpers.
  * @param {string} key - Key to lookup on the env map.
  * @param {T} fallback - Callable used when the env entry is missing.
@@ -156,7 +156,7 @@ function extractErrorDetail(error) {
 function getEnvFunction(env, key, fallback) {
   const candidate = env.get(key);
   if (typeof candidate === 'function') {
-    return /** @type {T} */ (candidate);
+    return /** @type {T} */ (/** @type {unknown} */ (candidate));
   }
   return fallback;
 }

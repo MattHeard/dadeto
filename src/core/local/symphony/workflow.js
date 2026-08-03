@@ -1,4 +1,5 @@
 import { resolveLocalConfigLoader } from '../config-utils.js';
+import { isMissingFileError } from '../../commonCore.js';
 
 const PROMPT_TEMPLATE_KEY = 'prompt_template';
 
@@ -196,14 +197,6 @@ export function summarizeWorkflow(content) {
  * @param {unknown} error Read error candidate.
  * @returns {boolean} True when the workflow file is missing.
  */
-function isMissingWorkflowError(error) {
-  return Boolean(
-    error &&
-      typeof error === 'object' &&
-      /** @type {{ code?: unknown }} */ (error).code === 'ENOENT'
-  );
-}
-
 /**
  * Build the fallback response for a missing workflow file.
  * @param {string} workflowPath Resolved workflow file path.
@@ -258,7 +251,7 @@ export async function loadSymphonyWorkflow(options = {}) {
       ...summarizeWorkflow(content),
     };
   } catch (error) {
-    if (isMissingWorkflowError(error)) {
+    if (isMissingFileError(error)) {
       return createMissingWorkflowResult(workflowPath);
     }
 

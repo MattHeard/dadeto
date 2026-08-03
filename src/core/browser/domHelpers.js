@@ -2,13 +2,13 @@
 /** @typedef {(entries: IntersectionObserverEntry[], observer: IntersectionObserver) => void} IntersectionObserverCallback */
 /**
  * @callback ModuleSuccessHandler
- * @param {*} module - Loaded module.
+ * @param {unknown} module - Loaded module.
  * @returns {void}
  */
 
 /**
  * @callback ModuleErrorHandler
- * @param {*} error - Error from dynamic import.
+ * @param {unknown} error - Error from dynamic import.
  * @returns {void}
  */
 

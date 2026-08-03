@@ -5,7 +5,7 @@ import {
 
 /**
  * @typedef {{ randomUUID: unknown; getServerTimestamp: unknown } & Record<string, unknown>} DependencyMap
- * @typedef {(dependencies: DependencyMap) => Function} HandlerFactory
+ * @typedef {(dependencies: DependencyMap) => (...args: never[]) => unknown} HandlerFactory
  */
 
 /**
@@ -14,7 +14,7 @@ import {
  * @param {DependencyMap} params.dependencies Injectable services consumed by the handler.
  * @param {string[]} params.requiredFunctionNames Names of dependencies that must be functions.
  * @param {HandlerFactory} params.handlerFactory Builds the handler once validation passes.
- * @returns {Function} Initialized responder function.
+ * @returns {(...args: never[]) => unknown} Initialized responder function.
  */
 export function createResponder({
   dependencies,

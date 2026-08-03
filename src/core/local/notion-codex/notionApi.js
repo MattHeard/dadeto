@@ -1,4 +1,5 @@
 import { normalizeStringArray } from './valueHelpers.js';
+import { requireString } from '../config-utils.js';
 const DEFAULT_NOTION_VERSION = '2026-03-11';
 const DEFAULT_TOKEN_ENV_NAMES = ['NOTION_API_KEY', 'NOTION_TOKEN'];
 const NOTION_API_BASE_URL = 'https://api.notion.com/v1';
@@ -16,10 +17,10 @@ const RICH_TEXT_CHUNK_SIZE = 1800;
  * @returns {Promise<unknown>} Notion API response payload.
  */
 export async function appendNotionCodexReply(options) {
-  const pageId = normalizeRequiredString(options.pageId, 'pageId');
-  const runId = normalizeRequiredString(options.runId, 'runId');
-  const message = normalizeRequiredString(options.message, 'message');
-  const token = normalizeRequiredString(options.token, 'token');
+  const pageId = requireString(options.pageId, 'pageId');
+  const runId = requireString(options.runId, 'runId');
+  const message = requireString(options.message, 'message');
+  const token = requireString(options.token, 'token');
   if (typeof options.fetchImpl !== 'function') {
     throw new Error(
       'A fetch implementation is required to call the Notion API.'
@@ -88,14 +89,6 @@ export function buildReplyRichText(options) {
  * @param {string} name Parameter name.
  * @returns {string} Trimmed string value.
  */
-function normalizeRequiredString(value, name) {
-  if (typeof value !== 'string' || !value.trim()) {
-    throw new Error(`${name} is required.`);
-  }
-
-  return value.trim();
-}
-
 /**
  * Normalize the configured Notion token environment names.
  * @param {unknown} value Candidate token environment names.

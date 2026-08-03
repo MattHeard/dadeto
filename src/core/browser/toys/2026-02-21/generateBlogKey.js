@@ -40,8 +40,11 @@ function findUniqueKey(prefix, keySet) {
  * @returns {boolean} Whether parsed is a valid input object.
  */
 function isValidParsed(parsed) {
-  return (
-    Boolean(parsed) && typeof (/** @type {any} */ (parsed).title) === 'string'
+  return Boolean(
+    parsed &&
+      typeof parsed === 'object' &&
+      'title' in parsed &&
+      typeof parsed.title === 'string'
   );
 }
 
@@ -69,7 +72,9 @@ function buildKeyFromParsed(parsed) {
   if (!isValidParsed(parsed)) {
     return EMPTY_RESULT;
   }
-  const obj = /** @type {any} */ (parsed);
+  const obj = /** @type {{ title: string, existingKeys?: unknown[] }} */ (
+    parsed
+  );
   return buildKeyFromPrefix(
     extractLetterPrefix(obj.title, 4),
     parseExistingKeys(obj)

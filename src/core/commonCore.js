@@ -22,6 +22,29 @@ export function isNullish(value) {
 }
 
 /**
+ * Determine whether an error represents a missing filesystem entry.
+ * @param {unknown} error Error candidate.
+ * @returns {boolean} True for an ENOENT error.
+ */
+export function isMissingFileError(error) {
+  return Boolean(
+    error &&
+      typeof error === 'object' &&
+      /** @type {{ code?: unknown }} */ (error).code === 'ENOENT'
+  );
+}
+
+/**
+ * Return a dependency with its injected callable type preserved.
+ * @template T
+ * @param {T | undefined} dependency Dependency to return.
+ * @returns {T} Callable dependency.
+ */
+export function resolveCallable(dependency) {
+  return /** @type {T} */ (dependency);
+}
+
+/**
  * Return the array candidate when available; otherwise return an empty array.
  * @param {unknown} value Candidate value.
  * @returns {unknown[]} Array candidate or empty array.

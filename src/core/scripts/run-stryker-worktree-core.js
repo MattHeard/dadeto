@@ -229,12 +229,7 @@ ${mutateLine}  // Keep mutation runs resource-bounded in the worktree.
 async function runLoggedCommandStep(context, step) {
   const { fsModule, machineLogPath, spawnImpl, baseEnv, extraEnv } = context;
   const { command, args, cwd } = step;
-  await writeMachineLog(fsModule, machineLogPath, {
-    type: 'command-start',
-    command,
-    args,
-    cwd,
-  });
+  await writeCommandLog(fsModule, machineLogPath, 'command-start', step);
   await runCommand({
     spawnImpl,
     command,
@@ -242,11 +237,23 @@ async function runLoggedCommandStep(context, step) {
     cwd,
     env: buildChildEnv(baseEnv, extraEnv),
   });
-  await writeMachineLog(fsModule, machineLogPath, {
-    type: 'command-success',
-    command,
-    args,
-    cwd,
+  await writeCommandLog(fsModule, machineLogPath, 'command-success', step);
+}
+
+/**
+ * Record a command lifecycle event.
+ * @param {{ appendFile: typeof appendFile, mkdir: typeof mkdir }} fsModule Filesystem dependencies.
+ * @param {string} machineLogPath Machine log path.
+ * @param {string} type Lifecycle event type.
+ * @param {{ command: string, args: string[], cwd: string }} step Command step.
+ * @returns {Promise<void>} Nothing.
+ */
+function writeCommandLog(fsModule, machineLogPath, type, step) {
+  return writeMachineLog(fsModule, machineLogPath, {
+    type,
+    command: step.command,
+    args: step.args,
+    cwd: step.cwd,
   });
 }
 
@@ -262,14 +269,12 @@ async function runLoggedCommandStep(context, step) {
  * @returns {Promise<void>} Resolves when the command exits successfully.
  */
 async function runCommand(options) {
-  const {
-    spawnImpl,
-    command,
-    args,
-    cwd,
-    allowFailure = false,
-    env = process.env,
-  } = options;
+  const spawnImpl = options.spawnImpl;
+  const command = options.command;
+  const args = options.args;
+  const cwd = options.cwd;
+  const allowFailure = options.allowFailure ?? false;
+  const env = options.env ?? process.env;
   await new Promise(
     /**
      * @param {(value?: unknown) => void} resolve Promise resolver.

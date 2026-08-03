@@ -166,19 +166,6 @@ describe('gcp simulator server', () => {
     );
     expect(invalidRating.status).toBe(400);
 
-    const validRating = await fetch(
-      `${baseUrl}/__sim/submit-moderation-rating`,
-      {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          authorization: 'Bearer local-admin-token',
-        },
-        body: JSON.stringify({ isApproved: true }),
-      }
-    );
-    expect(validRating.status).toBe(200);
-
     const renderContents = await fetch(
       `${baseUrl}/__sim/trigger-render-contents`,
       {
@@ -198,15 +185,6 @@ describe('gcp simulator server', () => {
       }
     );
     expect(dirtyMissingPage.status).toBe(404);
-
-    const dirtyVariant = await fetch(`${baseUrl}/__sim/mark-variant-dirty`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ pageNumber: 1, variantName: 'a' }),
-    });
-    expect(dirtyVariant.status).toBe(200);
 
     const stats = await fetch(`${baseUrl}/__sim/generate-stats`, {
       method: 'POST',

@@ -6,6 +6,7 @@ import {
   isDraftId,
   normalizeWorkflow,
 } from './workflow.js';
+import { isMissingFileError } from '../commonCore.js';
 
 /**
  * Create a document store using injected filesystem and workflow dependencies.
@@ -134,7 +135,15 @@ export function getDefaultLegacyDocumentPath(deps) {
  *   documentDir: string,
  *   legacyDocumentPath: string,
  *   now: () => Date,
- *   deps: any,
+ *   deps: {
+ *     mkdir: (path: string, options: { recursive: boolean }) => Promise<void>,
+ *     readFile: (path: string, encoding: string) => Promise<string>,
+ *     rm: (path: string, options: { force: boolean }) => Promise<void>,
+ *     writeFile: (path: string, data: string, encoding: string) => Promise<void>,
+ *     path: { dirname: (input: string) => string, join: (...parts: string[]) => string },
+ *     cwd: () => string,
+ *     now?: () => Date,
+ *   },
  * }} Store state derived from the injected dependencies and options.
  */
 function createDocumentStoreState(deps, options) {
@@ -203,10 +212,6 @@ async function readText(deps, filePath) {
  * @param {unknown} error Error to inspect.
  * @returns {boolean} True when the file is missing.
  */
-function isMissingFileError(error) {
-  return Boolean(error && /** @type {any} */ (error).code === 'ENOENT');
-}
-
 /**
  * Write the normalized workflow to disk.
  * @param {ReturnType<typeof createDocumentStoreState>} state Store state.

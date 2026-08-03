@@ -22,7 +22,7 @@ export { isDuplicateAppError };
 
 /** @typedef {Record<string, string | undefined>} EnvironmentMap */
 /** @typedef {{ randomUUID: () => string }} StatsCryptoModule */
-/** @typedef {{ error: (message: string, ...args: any[]) => void }} StatsLogger */
+/** @typedef {{ error: (message: string, ...args: unknown[]) => void }} StatsLogger */
 /** @typedef {import('firebase-admin/auth').DecodedIdToken} DecodedIdToken */
 
 const STATS_PAGE_HEAD = `<!doctype html>
@@ -1046,7 +1046,9 @@ function isErrorWithMessage(err) {
     return false;
   }
 
-  return typeof (/** @type {any} */ (err).message) === 'string';
+  return (
+    typeof (/** @type {{ message?: unknown }} */ (err).message) === 'string'
+  );
 }
 
 /**

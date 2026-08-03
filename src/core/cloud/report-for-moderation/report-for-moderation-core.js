@@ -31,26 +31,22 @@ function resolveVariant(body) {
 
 /**
  * Build an HTTP handler that accepts moderation report submissions.
- * @param {object} root0 Dependencies required to process requests.
- * @param {(report: ModerationReportRecord) => Promise<void> | void} root0.addModerationReport Function used to persist new reports.
- * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} [root0.hasModerationReport] Function used to detect duplicates.
- * @param {() => unknown} root0.getServerTimestamp Retrieve the timestamp for stored reports.
+ * @param {object} dependencies Dependencies required to process requests.
+ * @param {(report: ModerationReportRecord) => Promise<void> | void} dependencies.addModerationReport Function used to persist new reports.
+ * @param {((reporterIdentity: string, variant: string) => Promise<boolean> | boolean) | undefined} [dependencies.hasModerationReport] Function used to detect duplicates.
+ * @param {() => unknown} dependencies.getServerTimestamp Retrieve the timestamp for stored reports.
  * @returns {(request?: { method?: string, body?: ReportRequestBody | null }) => Promise<{ status: number, body: string | Record<string, unknown> }>} Request handler that returns status and body details.
  */
-export function createReportForModerationHandler({
-  addModerationReport,
-  hasModerationReport,
-  getServerTimestamp,
-}) {
-  assertFunction(addModerationReport, 'addModerationReport');
-  assertFunction(getServerTimestamp, 'getServerTimestamp');
+export function createReportForModerationHandler(dependencies) {
+  assertFunction(dependencies.addModerationReport, 'addModerationReport');
+  assertFunction(dependencies.getServerTimestamp, 'getServerTimestamp');
 
   return function reportForModerationHandler(request = {}) {
     return processReportSubmission({
       request,
-      addModerationReport,
-      hasModerationReport,
-      getServerTimestamp,
+      addModerationReport: dependencies.addModerationReport,
+      hasModerationReport: dependencies.hasModerationReport,
+      getServerTimestamp: dependencies.getServerTimestamp,
     });
   };
 }

@@ -4,6 +4,7 @@ import {
   ensureString,
   functionOrFallback,
   isNonNullObject,
+  resolveCallable,
   whenOrNull,
   whenString,
 } from '../../commonCore.js';
@@ -318,10 +319,6 @@ function resolveV2HandlerDependencies(deps = {}) {
  * @param {T | undefined} dependency Dependency to wrap.
  * @returns {T} Callable dependency.
  */
-function resolveCallable(dependency) {
-  return /** @type {T} */ (dependency);
-}
-
 /**
  * Ensure a fetchCredit dependency is provided.
  * @param {unknown} fetchCredit Candidate dependency.
@@ -709,7 +706,15 @@ export function createFetchCreditEvents(db) {
  * @returns {(uuid: string, event: CreditEventInput) => Promise<CreditApiResponse>} Function to apply a credit event.
  */
 export function createApplyCreditEvent(db) {
-  return async function applyCreditEvent(uuid, event) {
+  /**
+   *
+   * @param uuid
+   * @param event
+   */
+  async function applyCreditEvent(
+    /** @type {string} */ uuid,
+    /** @type {CreditEventInput} */ event
+  ) {
     return db.runTransaction(async transaction => {
       const eventRef = getApiKeyCreditEventDocument(db, uuid, event.eventId);
       const eventSnap = await transaction.get(eventRef);
@@ -720,15 +725,18 @@ export function createApplyCreditEvent(db) {
       const creditRef = getApiKeyCreditDocument(db, uuid);
       const creditSnap = await transaction.get(creditRef);
 
-      return applyCreditEventTransaction({
+      const transactionInput = {
         transaction,
         creditRef,
         creditSnap,
         eventRef,
         event,
-      });
+      };
+      return applyCreditEventTransaction(transactionInput);
     });
-  };
+  }
+
+  return applyCreditEvent;
 }
 
 /**
