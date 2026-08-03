@@ -43,3 +43,14 @@ test('migration calculates sums bottom-up and is rerunnable', async () => {
     [root, { treeVisibilitySum: 1.3, targetTreeWeightsDirty: true }],
   ]);
 });
+
+test('migration defaults visibility when a variant has no data', async () => {
+  const writes = [];
+  await migrateTreeVisibilitySums({
+    stories: [{ id: 'story' }],
+    readChildren: async node => (node.id === 'story' ? [{ data: null }] : []),
+    writeVariant: async (variant, data) => writes.push([variant, data]),
+  });
+
+  expect(writes).toEqual([[{ data: null }, { treeVisibilitySum: 1 }]]);
+});

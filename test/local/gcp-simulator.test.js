@@ -1010,4 +1010,34 @@ describe('local gcp simulator', () => {
       await authorSimulator.clear();
     }
   });
+
+  it('reports a missing moderator assignment for ratings', async () => {
+    await withScenarioSimulator(4327, async localSimulator => {
+      const moderator = await localSimulator.db
+        .collection('moderators')
+        .doc(ADMIN_UID)
+        .get();
+      const variantPath = moderator.data().variant;
+      localSimulator.db.__setPathData(
+        `${variantPath}/options/unordered`,
+        { content: 'Unordered option' }
+      );
+      await expect(
+        localSimulator.routes.getModerationVariant({
+          headers: { authorization: 'Bearer local-admin-token' },
+        })
+      ).resolves.toMatchObject({ status: 200 });
+
+      await localSimulator.db.collection('moderators').doc(ADMIN_UID).update({
+        variant: localSimulator.fieldValue.delete(),
+      });
+
+      await expect(
+        localSimulator.routes.submitModerationRating({
+          body: { isApproved: true },
+          headers: { authorization: 'Bearer local-admin-token' },
+        })
+      ).resolves.toEqual({ status: 404, body: 'Variant not found' });
+    });
+  });
 });
