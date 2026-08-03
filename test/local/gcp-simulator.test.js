@@ -210,6 +210,70 @@ describe('local gcp simulator', () => {
     });
   });
 
+  it('rejects missing incoming options and variants', async () => {
+    return withScenarioSimulator(4322, async localSimulator => {
+      await expect(
+        localSimulator.routes.submitNewPage({
+          body: {
+            incoming_option: '1-a-99',
+            content: 'Body',
+            author: 'Playwright',
+          },
+          headers: { authorization: 'Bearer local-admin-token' },
+        })
+      ).resolves.toEqual({
+        status: 400,
+        body: { error: 'incoming option not found' },
+      });
+      await expect(
+        localSimulator.routes.submitNewPage({
+          body: {
+            incoming_option: '1-z-0',
+            content: 'Body',
+            author: 'Playwright',
+          },
+          headers: { authorization: 'Bearer local-admin-token' },
+        })
+      ).resolves.toEqual({
+        status: 400,
+        body: { error: 'incoming option not found' },
+      });
+    });
+  });
+
+  it('reports missing moderation jobs and dirty targets', async () => {
+    return withScenarioSimulator(4322, async localSimulator => {
+      for (const variantPath of [
+        'stories/gcp-test-fixture-story/pages/1/variants/a',
+        'stories/gcp-test-fixture-story/pages/2/variants/a',
+      ]) {
+        const variant = await localSimulator.db.doc(variantPath).get();
+        localSimulator.db.__setPathData(variantPath, {
+          ...variant.data(),
+          moderatorReputationSum: 1,
+        });
+      }
+      await expect(
+        localSimulator.routes.assignModerationJob({
+          body: {},
+          headers: { authorization: 'Bearer local-admin-token' },
+        })
+      ).resolves.toEqual({ status: 404, body: 'Variant not found' });
+      await expect(
+        localSimulator.routes.markVariantDirty({
+          body: { pageNumber: 9999, variantName: 'a' },
+          headers: {},
+        })
+      ).resolves.toEqual({ status: 404, body: 'Page not found' });
+      await expect(
+        localSimulator.routes.markVariantDirty({
+          body: { pageNumber: 1, variantName: 'missing' },
+          headers: {},
+        })
+      ).resolves.toEqual({ status: 404, body: 'Variant not found' });
+    });
+  });
+
   it('rejects unauthenticated and malformed moderation ratings', async () => {
     return withScenarioSimulator(4322, async simulator => {
       await expect(simulator.verifyIdToken('')).resolves.toEqual({ uid: null });
