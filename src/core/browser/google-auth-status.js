@@ -37,20 +37,18 @@ export function createGoogleAuthStatusHandle({
       Array.from(documentObj.querySelectorAll('.admin-link'))
     );
 
-    const showSignedIn = createShowSignedIn({
+    const displayElements = {
       signInButtons,
       signOutWraps,
       profileLinks,
       adminLinks,
+    };
+    const showSignedIn = createShowSignedIn({
+      ...displayElements,
       getAuthorUuidFn,
       isAdminFn,
     });
-    const showSignedOut = createShowSignedOut({
-      signInButtons,
-      signOutWraps,
-      profileLinks,
-      adminLinks,
-    });
+    const showSignedOut = createShowSignedOut(displayElements);
 
     initGoogleSignInFn({ onSignIn: showSignedIn });
     signOutLinks.forEach(link => {
@@ -109,17 +107,12 @@ function createShowSignedIn({
  * }} deps Display dependencies.
  * @returns {() => void} Signed-out display action.
  */
-function createShowSignedOut({
-  signInButtons,
-  signOutWraps,
-  profileLinks,
-  adminLinks,
-}) {
+function createShowSignedOut(deps) {
   return function showSignedOut() {
-    setElementsDisplay(signInButtons, '');
-    setElementsDisplay(signOutWraps, 'none');
-    setProfileLinks(profileLinks, null);
-    setElementsDisplay(adminLinks, 'none');
+    setElementsDisplay(deps.signInButtons, '');
+    setElementsDisplay(deps.signOutWraps, 'none');
+    setProfileLinks(deps.profileLinks, null);
+    setElementsDisplay(deps.adminLinks, 'none');
   };
 }
 

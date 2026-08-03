@@ -489,7 +489,7 @@ function callOptionalEnvHelper(env, helperName) {
  * Get an optional environment helper.
  * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
  * @param {string} helperName Helper name.
- * @returns {Function | null} Helper function or null.
+ * @returns {((...args: unknown[]) => unknown) | null} Helper function or null.
  */
 function getOptionalEnvHelper(env, helperName) {
   const helper = env.get(helperName);
@@ -504,7 +504,7 @@ function getOptionalEnvHelper(env, helperName) {
  * Get a required environment helper.
  * @param {import('../browserToysCore.js').ToyEnv} env Environment helpers.
  * @param {string} helperName Helper name.
- * @returns {Function} Helper function.
+ * @returns {(...args: unknown[]) => unknown} Helper function.
  */
 function getRequiredEnvHelper(env, helperName) {
   const helper = getOptionalEnvHelper(env, helperName);

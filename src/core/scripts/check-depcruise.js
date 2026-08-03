@@ -57,6 +57,10 @@ const DEFAULT_SCOPE_ANALYSIS_DEPS = {
 const MATH_RANDOM_NEEDLE = ['Math', 'random'].join('.');
 const CORE_GLOBALS = ['localStorage', 'window', 'document'];
 
+/** @typedef {{ filePath: string, occurrences: number }} MathRandomViolation */
+/** @typedef {{ filePath: string, globals: string[] }} BrowserGlobalViolation */
+/** @typedef {MathRandomViolation | BrowserGlobalViolation} Violation */
+
 /**
  * Create the command handler that runs dependency-cruiser and enforces the
  * core injected-random policy.
@@ -396,10 +400,10 @@ function listJsFiles(dirPath, readdirSync, pathModule) {
  *     relative: (from: string, to: string) => string,
  *     sep: string,
  *   },
- *   scanSource: (source: string) => any,
- *   createViolation: (filePath: string, scanResult: any) => any,
+ *   scanSource: (source: string) => number,
+ *   createViolation: (filePath: string, scanResult: number) => MathRandomViolation,
  * }} deps Scan dependencies.
- * @returns {any[]} Violations discovered in source files.
+ * @returns {MathRandomViolation[]} Violations discovered in source files.
  */
 function collectJsViolations({
   readFileSync,
@@ -477,9 +481,9 @@ function collectCoreBrowserGlobalViolations(deps) {
  *     sep: string,
  *   },
  * }} deps Core scan dependencies.
- * @param {(source: string) => any} scanSource Source scanner.
- * @param {(filePath: string, scanResult: any) => any} createViolation Violation builder.
- * @returns {any[]} Violations discovered in source files.
+ * @param {(source: string) => number} scanSource Source scanner.
+ * @param {(filePath: string, scanResult: number) => MathRandomViolation} createViolation Violation builder.
+ * @returns {MathRandomViolation[]} Violations discovered in source files.
  */
 function findCoreViolationsWithScanner(deps, scanSource, createViolation) {
   return collectJsViolations({
@@ -502,11 +506,12 @@ function scanQuotedString(source, index, delimiter, nextState) {
 }
 
 /**
+ * @template {Violation} T
  * @param {{
  *   stderr: { write: (text: string) => void },
- *   violations: Array<unknown>,
+ *   violations: T[],
  *   countLabel: string,
- *   describeViolation: (violation: any) => string,
+ *   describeViolation: (violation: T) => string,
  * }} options Violation report options.
  */
 function reportViolations({

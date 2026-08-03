@@ -20,16 +20,16 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  *   functions: {
  *     region: (region: string) => {
  *       firestore: {
- *         document: (path: string) => { onCreate: (handler: Function) => unknown },
+ *         document: (path: string) => { onCreate: (handler: (snapshot: unknown, context: unknown) => unknown) => unknown },
  *       },
- *       https: { onRequest: (handler: Function) => unknown },
+ *       https: { onRequest: (handler: unknown) => unknown },
  *     },
  *   },
- *   express: Function & { urlencoded: (options: { extended: boolean }) => unknown },
- *   cors: (options: unknown) => unknown,
+ *   express: typeof import('express'),
+ *   cors: (options: unknown) => import('express').RequestHandler,
  *   initializeApp: () => unknown,
  *   getAuth: () => unknown,
- *   getFirestore: Function,
+ *   getFirestore: typeof import('firebase-admin/firestore').getFirestore,
  *   getEnvironmentVariables: () => Record<string, unknown>,
  *   now: () => number,
  *   random: () => number,
@@ -48,7 +48,7 @@ import { resolveAllowedOrigins, isDuplicateAppError } from '../cloud-core.js';
  * }} Cloud entrypoint exports and test hooks.
  */
 export function createAssignModerationJobEntrypoint(deps) {
-  const typedDeps = /** @type {any} */ (deps);
+  const typedDeps = deps;
   const firebaseInitialization = createFirebaseInitialization();
   const firebaseInitializationHandlers = {
     reset: () => {
@@ -169,7 +169,12 @@ export function createAssignModerationJobEntrypoint(deps) {
   app.use(typedDeps.cors(corsOptions));
   configureUrlencodedBodyParser(app, typedDeps.express);
 
-  const firebaseResources = /** @type {any} */ ({ db, auth, app });
+  const firebaseResources =
+    /** @type {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: import('../../../../types/native-http').NativeExpressApp }} */ ({
+      db,
+      auth,
+      app,
+    });
 
   setupAssignModerationJobRoute(
     firebaseResources,

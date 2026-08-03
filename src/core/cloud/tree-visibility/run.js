@@ -2,7 +2,17 @@ import { regenerateDirtyTreeWeightVariants } from './tree-visibility-regeneratio
 
 /**
  * Build scheduled and HTTP regeneration entrypoints.
- * @param {{functions: any, getFirestoreInstance: Function, render: Function, consoleError?: Function}} options Runtime dependencies.
+ * @param {{
+ *   functions: {
+ *     region: (name: string) => {
+ *       pubsub: { schedule: (cron: string) => { onRun: (handler: () => Promise<null>) => unknown } },
+ *       https: { onRequest: (handler: (request: import('express').Request, response: import('express').Response) => Promise<void>) => unknown },
+ *     },
+ *   },
+ *   getFirestoreInstance: () => import('firebase-admin/firestore').Firestore,
+ *   render: (snapshot: unknown) => Promise<unknown>,
+ *   consoleError?: (message: string, ...args: unknown[]) => void,
+ * }} options Runtime dependencies.
  * @returns {{scheduled: unknown, http: unknown}} Registered entrypoints.
  */
 export function createTreeVisibilityRegenerationHandles({
@@ -14,7 +24,7 @@ export function createTreeVisibilityRegenerationHandles({
   const run = async () => {
     const result = await regenerateDirtyTreeWeightVariants({
       db: getFirestoreInstance(),
-      renderVariant: /** @type {(snap: any) => Promise<unknown>} */ (render),
+      renderVariant: render,
       consoleError,
     });
     return result;
@@ -27,8 +37,8 @@ export function createTreeVisibilityRegenerationHandles({
       return null;
     });
   /**
-   * @param {any} _request HTTP request.
-   * @param {any} response HTTP response.
+   * @param {import('express').Request} _request HTTP request.
+   * @param {import('express').Response} response HTTP response.
    * @returns {Promise<void>} Response completion.
    */
   const handleHttp = async (_request, response) => {

@@ -4,11 +4,14 @@ import { PARSER_OPTIONS } from './parser-options.js';
  * @typedef {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number }} ComplexityMethod
  * @typedef {{ name: string, lineStart: number, lineEnd: number, cyclomatic: number, excess: number }} MethodProfile
  * @typedef {{ start: number, end: number } | null} NormalizedLineRange
+ * @typedef {{ methods: ComplexityMethod[] }} ComplexityReport
+ * @typedef {{ threshold: number, lineRange: NormalizedLineRange, methods: MethodProfile[], summary: Record<string, number> }} ComplexityProfile
+ * @typedef {(source: string, options?: { threshold?: number, lineRange?: { start?: string, end?: string } | null }) => ComplexityProfile} BuildComplexityProfile
  */
 
 /**
  * Normalize an optional CLI line range.
- * @param {{ start: string, end: string } | null | undefined} lineRange Candidate line range.
+ * @param {{ start?: string, end?: string } | null | undefined} lineRange Candidate line range.
  * @returns {NormalizedLineRange} Parsed line range, or null when omitted.
  */
 function normalizeLineRange(lineRange) {
@@ -16,8 +19,8 @@ function normalizeLineRange(lineRange) {
     return null;
   }
 
-  const start = Number.parseInt(lineRange.start, 10);
-  const end = Number.parseInt(lineRange.end, 10);
+  const start = Number.parseInt(String(lineRange.start ?? ''), 10);
+  const end = Number.parseInt(String(lineRange.end ?? ''), 10);
 
   if (
     !Number.isInteger(start) ||
@@ -65,8 +68,8 @@ function toMethodProfile(method, threshold) {
 
 /**
  * Create the complexity profile builder with an injected analyzer.
- * @param {{ analyzeModule: Function }} analyzer Complexity analyzer dependency.
- * @returns {(source: string, options?: { threshold?: number, lineRange?: { start: string, end: string } | null }) => object} Profile builder.
+ * @param {{ analyzeModule: (source: string, options: object, parserOptions: object) => ComplexityReport }} analyzer Complexity analyzer dependency.
+ * @returns {BuildComplexityProfile} Profile builder.
  */
 function createBuildComplexityProfile(analyzer) {
   return function buildComplexityProfile(source, options = {}) {
@@ -185,20 +188,24 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
 
-    if (arg === '--threshold') {
-      options.threshold = Number.parseInt(argv[index + 1], 10);
-      index += 1;
-      continue;
+    switch (arg) {
+      case '--threshold': {
+        const thresholdValue = argv[index + 1];
+        options.threshold = Number.parseInt(thresholdValue, 10);
+        index += 1;
+        break;
+      }
+      case '--lines': {
+        const lineArgument = argv[index + 1];
+        const [start, end] = String(lineArgument ?? '').split(':');
+        options.lineRange = { start, end };
+        index += 1;
+        break;
+      }
+      default:
+        positional.push(arg);
+        break;
     }
-
-    if (arg === '--lines') {
-      const [start, end] = String(argv[index + 1] ?? '').split(':');
-      options.lineRange = { start, end };
-      index += 1;
-      continue;
-    }
-
-    positional.push(arg);
   }
 
   if (positional.length !== 2) {
@@ -221,7 +228,7 @@ function parseArgs(argv) {
 /**
  * Create the CLI runner.
  * @param {object} root0 Runtime dependencies.
- * @param {Function} root0.buildComplexityProfile Profile builder.
+ * @param {BuildComplexityProfile} root0.buildComplexityProfile Profile builder.
  * @param {(filePath: string) => string} root0.readSource Source reader.
  * @param {{ write: (output: string) => void }} root0.stdout Output stream.
  * @param {string[]} root0.argv Process arguments.
@@ -271,13 +278,13 @@ function createRunFromCli({
 /**
  * Build the complexity-profile adapter handle.
  * @param {{
- *   analyzer: { analyzeModule: Function },
+ *   analyzer: { analyzeModule: (source: string, options: object, parserOptions: object) => ComplexityReport },
  *   readSource: (filePath: string) => string,
  *   stdout: { write: (output: string) => void },
  *   argv: string[],
  * }} deps Runtime dependencies.
  * @returns {{
- *   buildComplexityProfile: (source: string, options?: object) => object,
+ *   buildComplexityProfile: BuildComplexityProfile,
  *   compareComplexityProfiles: typeof compareComplexityProfiles,
  *   runFromCli: () => void,
  * }} Complexity-profile handle.

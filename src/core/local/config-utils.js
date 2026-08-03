@@ -2,8 +2,9 @@ import { requirePathModule } from '../commonCore.js';
 
 /**
  * @param {unknown} value Candidate string.
- * @param {string} fallback Fallback string.
- * @returns {string} Normalized string.
+ * @template T
+ * @param {T} fallback Fallback value.
+ * @returns {string | T} Normalized string or fallback.
  */
 export function normalizeString(value, fallback) {
   if (typeof value !== 'string' || !value.trim()) {
@@ -11,6 +12,30 @@ export function normalizeString(value, fallback) {
   }
 
   return value.trim();
+}
+
+/**
+ * Normalize an optional string value.
+ * @param {unknown} value Candidate string.
+ * @returns {string | null} Trimmed string or null.
+ */
+export function normalizeOptionalString(value) {
+  return normalizeString(value, null);
+}
+
+/**
+ * Require a non-empty string value.
+ * @param {unknown} value Candidate string.
+ * @param {string} name Value name.
+ * @returns {string} Trimmed string.
+ */
+export function requireString(value, name) {
+  const normalized = normalizeOptionalString(value);
+  if (!normalized) {
+    throw new Error(`${name} is required.`);
+  }
+
+  return normalized;
 }
 
 /**
@@ -174,12 +199,12 @@ export function buildNormalizedLocalConfig(options) {
   return normalizeConfigWithResolvedPaths(
     /**
      * @type {{
-     *   config: any,
+     *   config: TConfig,
      *   repoRoot: string,
      *   configPath: string,
      *   pathModule: { resolve: (first: string, ...parts: string[]) => string },
      *   pathFields: Record<string, { value: unknown, fallback: string, suffix?: string }>,
-     *   build: (resolvedPaths: Record<string, string>, config: any, configPath: string) => TResult,
+     *   build: (resolvedPaths: Record<string, string>, config: TConfig, configPath: string) => TResult,
       }} */ ({
       config: options.config ?? options.rawConfig,
       repoRoot: options.repoRoot,

@@ -465,7 +465,7 @@ export function normalizeMethod(method) {
 /**
  * Determine whether the provided value is callable.
  * @param {unknown} value Candidate value.
- * @returns {value is Function} True when callable.
+ * @returns {value is (...args: never[]) => unknown} True when callable.
  */
 export function isFunction(value) {
   return typeof value === 'function';
@@ -482,7 +482,7 @@ export function normalizeHeaderValue(value) {
 
 /**
  * Retrieve and normalize a header via the provided getter.
- * @param {Function} getter Header getter function.
+ * @param {(name: string) => unknown} getter Header getter function.
  * @param {string} name Header key name.
  * @returns {string | null} Normalized header string or null.
  */

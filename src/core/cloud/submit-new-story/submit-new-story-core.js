@@ -82,7 +82,7 @@ export const submitNewStoryCoreTestUtils = {
 function validateDecodedToken(decoded) {
   return /** @type {string | null} */ (
     whenNotNullish(decoded, value =>
-      trimmedStringOrNull(/** @type {any} */ (value).uid)
+      trimmedStringOrNull(/** @type {{ uid?: unknown }} */ (value).uid)
     )
   );
 }

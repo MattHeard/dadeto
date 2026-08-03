@@ -5,6 +5,8 @@ import {
 } from './report-for-moderation-core.js';
 import { getAllowedOrigins } from '../cors-config.js';
 
+/** @typedef {import('firebase-admin/firestore').CollectionReference & { add: (report: Record<string, unknown>) => Promise<unknown> }} ModerationReportsCollection */
+
 /**
  * Wire the report-for-moderation cloud function.
  * @param {{
@@ -24,13 +26,17 @@ export function runReportForModeration(deps) {
   firebaseAppManager.ensureFirebaseApp();
 
   const db = deps.getFirestoreInstance();
-  const moderationReportsCollection = /** @type {any} */ (
-    db.collection('moderationReports')
-  );
-  /** @type {(report: { variant: string, reporterIdentity: string, createdAt: unknown }) => Promise<void>} */
-  const addModerationReport = /** @type {any} */ (
-    moderationReportsCollection.add.bind(moderationReportsCollection)
-  );
+  const moderationReportsCollection =
+    /** @type {ModerationReportsCollection} */ (
+      db.collection('moderationReports')
+    );
+  /**
+   * Persist a moderation report.
+   * @param {{ variant: string, reporterIdentity: string, createdAt: unknown }} report Report to persist.
+   * @returns {Promise<void>} Completion of the write.
+   */
+  const addModerationReport = report =>
+    moderationReportsCollection.add(report).then(() => undefined);
   const reportForModerationHandler = createReportForModerationHandler({
     addModerationReport,
     hasModerationReport: async (reporterIdentity, variant) => {

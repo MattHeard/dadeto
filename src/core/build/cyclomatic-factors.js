@@ -293,7 +293,7 @@ function recordCyclomaticFactor(node, currentFunction, state) {
 
 /**
  * Traverse a child value from an AST node.
- * @param {*} child Child value.
+ * @param {unknown} child Child value.
  * @param {AstNode} node Parent AST node.
  * @param {TraversalState} state Traversal state.
  * @returns {void}
@@ -304,8 +304,13 @@ function traverseChild(child, node, state) {
     return;
   }
 
-  if (child && typeof child.type === 'string') {
-    traverseNode(child, node, state);
+  if (
+    child &&
+    typeof child === 'object' &&
+    'type' in child &&
+    typeof child.type === 'string'
+  ) {
+    traverseNode(/** @type {AstNode} */ (child), node, state);
   }
 }
 
@@ -383,11 +388,17 @@ function createDescribeCyclomaticFactors(parser) {
  * @returns {() => Promise<void>} CLI runner.
  */
 function createRunFromCli({ describeCyclomaticFactors, readInput, stdout }) {
-  return async function runFromCli() {
+  /**
+   *
+   */
+  async function runFromCli() {
     const source = await readInput();
     const output = describeCyclomaticFactors(source);
-    stdout.write(`${JSON.stringify(output, null, 2)}\n`);
-  };
+    const serializedOutput = JSON.stringify(output, null, 2);
+    stdout.write(`${serializedOutput}\n`);
+  }
+
+  return runFromCli;
 }
 
 /**

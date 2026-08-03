@@ -1,4 +1,8 @@
-import { ensureString, isNonNullObject } from './commonCore.js';
+import {
+  ensureString,
+  isNonNullObject,
+  resolveCallable,
+} from './commonCore.js';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
@@ -120,9 +124,9 @@ function resolvePaymentWebhookDependencies(deps) {
   requireWebhookDependency(resolveApiKeyUuid, 'resolveApiKeyUuid');
 
   return {
-    fetchCredit: toCallable(fetchCredit),
-    applyCreditEvent: toCallable(applyCreditEvent),
-    resolveApiKeyUuid: async event => toCallable(resolveApiKeyUuid)(event),
+    fetchCredit: resolveCallable(fetchCredit),
+    applyCreditEvent: resolveCallable(applyCreditEvent),
+    resolveApiKeyUuid: async event => resolveCallable(resolveApiKeyUuid)(event),
     isDuplicateEvent: async eventId =>
       Boolean(
         await /** @type {(eventId: string) => Promise<boolean> | boolean} */ (
@@ -146,10 +150,6 @@ function resolvePaymentWebhookDependencies(deps) {
  * @param {T | undefined} dependency Dependency to wrap.
  * @returns {T} Callable dependency.
  */
-function toCallable(dependency) {
-  return /** @type {T} */ (dependency);
-}
-
 /**
  * Derive the credit event type from the payment event.
  * @param {PaymentEvent} event Payment event payload.

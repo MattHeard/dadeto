@@ -324,7 +324,7 @@ function analyzeSourceFile(deps, filePath) {
 
     if (node.type === 'ExportDefaultDeclaration') {
       collectExportedFunctionsFromDefault(
-        /** @type {any} */ (node.declaration),
+        /** @type {import('estree').Node} */ (node.declaration),
         exports
       );
     }
@@ -576,7 +576,7 @@ function isNamespaceCall(callee) {
 
 /**
  * Collect exported functions from a default export declaration.
- * @param {any} declaration Default export declaration.
+ * @param {import('estree').Node} declaration Default export declaration.
  * @param {Array<{ exportName: string, line: number, column: number }>} exports Export accumulator.
  * @returns {void}
  */

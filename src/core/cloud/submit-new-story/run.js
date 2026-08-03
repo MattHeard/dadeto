@@ -53,11 +53,14 @@ export function runSubmitNewStory(deps) {
 
   const submitNewStoryResponder = createSubmitNewStoryResponder(
     /** @type {any} */ ({
-    verifyIdToken: /** @param {string} token */ token => auth.verifyIdToken(token),
-    saveSubmission: /** @param {string} id @param {any} data */ (id, data) =>
-      db.collection('storyFormSubmissions').doc(id).set(data),
-    randomUUID: () => deps.crypto.randomUUID(),
-    getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
+      verifyIdToken: /** @param {string} token */ token =>
+        auth.verifyIdToken(token),
+      saveSubmission: /**
+       * @param {string} id @param {any} data
+       * @param data
+       */ (id, data) => db.collection('storyFormSubmissions').doc(id).set(data),
+      randomUUID: () => deps.crypto.randomUUID(),
+      getServerTimestamp: () => deps.FieldValue.serverTimestamp(),
     })
   );
 
@@ -73,17 +76,18 @@ export function runSubmitNewStory(deps) {
       debuggedSubmitNewStoryResponder(/** @type {any} */ (request))
   );
 
-  const endpointOptions = /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
-    express: deps.express,
-    middleware: [
-      deps.cors(corsOptions),
-      createCorsErrorHandler(),
-      deps.express.json({ limit: '20kb' }),
-      deps.express.urlencoded({ extended: false, limit: '20kb' }),
-    ],
-    route: { method: 'post', path: '/', handler: handleSubmitNewStory },
-    functions: deps.functions,
-  });
+  const endpointOptions =
+    /** @type {Parameters<typeof createCloudHttpEndpoint>[0]} */ ({
+      express: deps.express,
+      middleware: [
+        deps.cors(corsOptions),
+        createCorsErrorHandler(),
+        deps.express.json({ limit: '20kb' }),
+        deps.express.urlencoded({ extended: false, limit: '20kb' }),
+      ],
+      route: { method: 'post', path: '/', handler: handleSubmitNewStory },
+      functions: deps.functions,
+    });
   const endpoint = createCloudHttpEndpoint(endpointOptions);
 
   return {

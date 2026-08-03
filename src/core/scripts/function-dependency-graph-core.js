@@ -1,4 +1,4 @@
-/* eslint-disable complexity, jsdoc/check-param-names, jsdoc/require-param-description, jsdoc/require-param-type, jsdoc/require-returns, no-ternary */
+/* eslint-disable complexity, jsdoc/require-param-description, jsdoc/require-returns, no-ternary */
 import path from 'node:path';
 
 /** @typedef {Record<string, any>} AstNode */
@@ -138,7 +138,10 @@ export function buildFunctionDependencyGraph({ files, parse }) {
   const edges = [];
   /** @type {Array<{ caller: string, callee: string, reason: string }>} */
   const ignoredCalls = [];
-  /** @param {any} caller @param {string} name */
+  /**
+   * @param {AstNode} caller
+   * @param {string} name
+   */
   const resolveTarget = (caller, name) => {
     const local = byFileAndName.get(`${caller.file}#${name}`);
     if (local) return local;
@@ -160,7 +163,8 @@ export function buildFunctionDependencyGraph({ files, parse }) {
   for (const caller of functions.values()) {
     const params = new Set(
       (caller.node.params ?? []).map(
-        /** @param {any} param */ param => bindingName(param) ?? param.left?.name
+        /** @param {AstNode} param */ param =>
+          bindingName(param) ?? param.left?.name
       )
     );
     walk(caller.node.body, node => {

@@ -351,11 +351,8 @@ function getValidVariantUpdatePayload(data) {
     return null;
   }
 
-  return buildVariantUpdatePayload(
-    data.moderatorId,
-    data.variantId,
-    data.isApproved
-  );
+  const approval = data.isApproved;
+  return buildVariantUpdatePayload(data.moderatorId, data.variantId, approval);
 }
 
 /**

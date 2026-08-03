@@ -24,7 +24,7 @@ import {
  * }} Firestore helpers for the cloud wrappers.
  */
 export function createFirestoreModule(deps) {
-  const typedDeps = /** @type {any} */ (deps);
+  const typedDeps = deps;
   const { ensureFirebaseApp, resetFirebaseInitializationState } =
     typedDeps.createFirebaseAppManager(typedDeps.initializeApp);
 

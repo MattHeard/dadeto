@@ -19,8 +19,10 @@ const TEXTAREA_CLASS = 'toy-textarea';
  * @returns {string} Title string or empty string.
  */
 function parseTitle(parsed) {
-  if (typeof (/** @type {any} */ (parsed).title) === 'string') {
-    return /** @type {any} */ (parsed).title;
+  if (typeof (/** @type {{ title?: unknown }} */ (parsed).title) === 'string') {
+    return /** @type {string} */ (
+      /** @type {{ title: string }} */ (parsed).title
+    );
   }
   return '';
 }

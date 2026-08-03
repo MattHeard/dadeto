@@ -4,6 +4,7 @@ import {
   applyRunnerOutcome,
 } from '../symphony.js';
 import { getDefinedStrings, getRecordOrNull } from '../../commonCore.js';
+import { normalizeOptionalString } from '../config-utils.js';
 import {
   createCodexRalphLauncher,
   DEFAULT_CODEX_RALPH_ARGS,
@@ -90,9 +91,11 @@ export async function launchSelectedRunnerLoop(options) {
 function buildLaunchContext(options) {
   const now = options.now ?? (() => new Date());
   const status = options.status;
-  const requestedBeadId = getOptionalString(status.currentBeadId);
-  const currentBeadTitle = getOptionalString(status.currentBeadTitle);
-  const currentBeadPriority = getOptionalString(status.currentBeadPriority);
+  const requestedBeadId = normalizeOptionalString(status.currentBeadId);
+  const currentBeadTitle = normalizeOptionalString(status.currentBeadTitle);
+  const currentBeadPriority = normalizeOptionalString(
+    status.currentBeadPriority
+  );
   const startedAt = now().toISOString();
   const failureBeadId = requestedBeadId ?? 'unknown-bead';
   const failureLaunchRequest = formatLaunchRequestForBead(requestedBeadId);
@@ -241,7 +244,7 @@ function createLaunchMetadata(context, beadId, launchRequest) {
 
 /**
  * Persist an early Symphony launch failure before a run id exists.
- * @param {{ statusStore: any }} options Launch options.
+ * @param {{ statusStore: { writeStatus: (status: Record<string, unknown>) => Promise<void> } }} options Launch options.
  * @param {object} failure Failure payload.
  * @returns {Promise<Record<string, unknown>>} Persisted failure status.
  */
@@ -264,9 +267,9 @@ function buildLaunchLifecycleRecommendation(status) {
   const beadId = getRequiredString(status.currentBeadId, 'currentBeadId');
   const operatorArtifacts = getRecordOrNull(status.operatorArtifacts);
   const activeRun = getRecordOrNull(status.activeRun);
-  const statusPath = getOptionalString(operatorArtifacts?.statusPath);
-  const stdoutPath = getOptionalString(activeRun?.stdoutPath);
-  const stderrPath = getOptionalString(activeRun?.stderrPath);
+  const statusPath = normalizeOptionalString(operatorArtifacts?.statusPath);
+  const stdoutPath = normalizeOptionalString(activeRun?.stdoutPath);
+  const stderrPath = normalizeOptionalString(activeRun?.stderrPath);
   const persistedArtifacts = getDefinedStrings(
     statusPath,
     stdoutPath,
@@ -288,14 +291,6 @@ function buildLaunchLifecycleRecommendation(status) {
  * @param {unknown} value Candidate string value.
  * @returns {string | null} Trimmed string or null.
  */
-function getOptionalString(value) {
-  if (typeof value !== 'string' || !value.trim()) {
-    return null;
-  }
-
-  return value.trim();
-}
-
 /**
  * @param {unknown} error Error-like value.
  * @returns {Error} Normalized error instance.
@@ -314,7 +309,7 @@ function normalizeError(error) {
  * @returns {string} Trimmed required string.
  */
 function getRequiredString(value, fieldName) {
-  const normalized = getOptionalString(value);
+  const normalized = normalizeOptionalString(value);
   if (!normalized) {
     throw new Error(`Cannot launch runner loop without ${fieldName}.`);
   }
