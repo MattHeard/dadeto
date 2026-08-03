@@ -1,9 +1,6 @@
 import { spawn as defaultSpawn } from 'node:child_process';
-import {
-  createRunCheckHandle,
-  createRunCheckSuite,
-  resolveRunCheckOptions,
-} from '../core/commonCore.js';
+import { createRunCheckHandle, createRunCheckSuite, resolveRunCheckOptions } from '../core/commonCore.js';
+import { runResourceAwareCheckSuite } from './run-check-resource-aware.js';
 
 const runCheckSuite = createRunCheckSuite({
   defaultSpawn,
@@ -14,7 +11,7 @@ const runCheckSuite = createRunCheckSuite({
 
 const handle = createRunCheckHandle({
   argv: process.argv,
-  runSuite: runCheckSuite,
+  runSuite: options => runResourceAwareCheckSuite({ ...options, runSuite: runCheckSuite }),
   setExitCode: exitCode => {
     process.exitCode = exitCode;
   },
@@ -22,7 +19,7 @@ const handle = createRunCheckHandle({
 
 await handle();
 
-export { createRunCheckHandle, runCheckSuite };
+export { createRunCheckHandle, runCheckSuite, runResourceAwareCheckSuite };
 
 export const runCheckSuiteTestOnly = {
   resolveRunCheckOptions: options =>
