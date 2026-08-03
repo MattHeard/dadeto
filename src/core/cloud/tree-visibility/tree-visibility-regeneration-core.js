@@ -50,8 +50,7 @@ export async function migrateTreeVisibilitySums({
       descendantSums.push(await visitVariant(child));
     }
     const sum =
-      /* istanbul ignore next -- malformed migration input is cloud-only. */
-      /* istanbul ignore next -- malformed migration input is cloud-only. */
+      /* istanbul ignore next */
       /** @type {number} */ (variant.data?.visibility ?? 1) +
       descendantSums.reduce((total, childSum) => total + childSum, 0);
     const update = /** @type {Record<string, unknown>} */ ({

@@ -1146,7 +1146,7 @@ async function handleGetModerationVariant(
   /* istanbul ignore next -- missing moderator documents are cloud-only input. */
   const variantPath = moderatorSnap.data()?.variant;
   /* istanbul ignore next -- missing moderator assignments are cloud-only input. */
-  /* istanbul ignore next -- missing moderator assignments are cloud-only input. */
+  /* istanbul ignore next */
   if (typeof variantPath !== 'string' || !variantPath) {
     return { status: 404, body: 'Variant not found' };
   }
@@ -1516,7 +1516,7 @@ async function loadModerationOptions(/** @type {any} */ variantRef) {
     .slice()
     .sort(
       (left, right) =>
-        /* istanbul ignore next -- legacy options may omit position. */
+        /* istanbul ignore next */
         (left.data().position ?? 0) - (right.data().position ?? 0)
     )
     .map(doc => ({
