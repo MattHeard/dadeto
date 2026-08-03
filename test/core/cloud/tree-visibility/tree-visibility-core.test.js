@@ -21,6 +21,12 @@ describe('tree visibility', () => {
   test('calculates visibility deltas with defaults', () => {
     expect(getVisibilityDelta({}, { visibility: 0.4 })).toBe(-0.6);
     expect(addTreeVisibilityDelta({ treeVisibilitySum: 2 }, 0.5)).toBe(2.5);
+    expect(resolveVariantVisibility({ visibility: null })).toBe(1);
+    expect(calculateTreeVisibilitySum(0.4, [null, undefined])).toBe(0.4);
+    expect(getVisibilityDelta({ visibility: null }, { visibility: null })).toBe(
+      0
+    );
+    expect(addTreeVisibilityDelta({}, 0.5)).toBe(1.5);
   });
 
   test('uses the exact five percent threshold', () => {
