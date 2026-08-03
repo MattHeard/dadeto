@@ -550,6 +550,7 @@ function createSnapshot(
  * @returns {() => unknown} Delete sentinel getter.
  */
 function createDeleteSentinelGetter(/** @type {any} */ fieldValue) {
+  /* istanbul ignore next */
   return () => fieldValue.delete();
 }
 
