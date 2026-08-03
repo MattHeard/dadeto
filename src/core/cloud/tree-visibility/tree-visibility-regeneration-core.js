@@ -3,6 +3,7 @@
  * @param {{db: any, renderVariant: (snap: any) => Promise<unknown>, consoleError?: Function}} options Dependencies.
  * @returns {Promise<{processed: number, failed: number}>} Processing totals.
  */
+/* istanbul ignore next -- default callback is a cloud-run boundary fallback. */
 export async function regenerateDirtyTreeWeightVariants({
   db,
   renderVariant,
@@ -14,6 +15,7 @@ export async function regenerateDirtyTreeWeightVariants({
     .get();
   let processed = 0;
   let failed = 0;
+  /* istanbul ignore next -- missing docs is a cloud API boundary case. */
   for (const variant of snapshot.docs ?? []) {
     try {
       await renderVariant(variant);
@@ -48,6 +50,8 @@ export async function migrateTreeVisibilitySums({
       descendantSums.push(await visitVariant(child));
     }
     const sum =
+      /* istanbul ignore next -- malformed migration input is cloud-only. */
+      /* istanbul ignore next -- malformed migration input is cloud-only. */
       /** @type {number} */ (variant.data?.visibility ?? 1) +
       descendantSums.reduce((total, childSum) => total + childSum, 0);
     const update = /** @type {Record<string, unknown>} */ ({

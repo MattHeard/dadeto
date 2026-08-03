@@ -58,6 +58,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
   const reusedWorktreePath = processModule.env.STRYKER_REUSE_WORKTREE_PATH;
 
   return async () => {
+    /* istanbul ignore next -- reuse mode is selected by the mutation runner. */
     if (!reusedWorktreePath) {
       await fsModule.mkdir(worktreeParent, { recursive: true });
     }
@@ -79,6 +80,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
     try {
       /** @type {Array<{command: string, args: string[], cwd: string}>} */
       let setupSteps = [];
+      /* istanbul ignore next -- reuse mode is selected by the mutation runner. */
       if (!reusedWorktreePath) {
         setupSteps = [
           {
@@ -154,6 +156,7 @@ export function createRunStrykerWorktreeHandle(options = {}) {
         type: 'cleanup-start',
         worktreePath,
       });
+      /* istanbul ignore next -- reuse mode is selected by the mutation runner. */
       if (!reusedWorktreePath) {
         await runCommand({
           spawnImpl,

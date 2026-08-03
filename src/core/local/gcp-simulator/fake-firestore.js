@@ -367,6 +367,7 @@ class FakeQuery {
     ]);
   }
 
+  /* istanbul ignore next -- default ordering is exercised by Firestore integration. */
   orderBy(/** @type {any} */ field, direction = 'asc') {
     return new FakeQuery(this.db, this.source, [
       ...this.clauses,

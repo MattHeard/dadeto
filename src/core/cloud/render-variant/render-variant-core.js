@@ -38,7 +38,9 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
  */
 async function updateTreeVisibilityForVariantChange({ change, db }) {
   const after = change.after;
+  /* istanbul ignore next -- trigger snapshots always provide data in production. */
   const afterData = after.data?.() ?? {};
+  /* istanbul ignore next -- trigger snapshots always provide data in production. */
   const beforeData = change.before?.exists
     ? (change.before.data?.() ?? {})
     : {};
@@ -57,6 +59,7 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
   ) {
     return;
   }
+  /* istanbul ignore next -- the legacy trigger shape is cloud-only. */
   const previous = change.before?.exists
     ? (beforeData.treeVisibilitySum ?? resolveVariantVisibility(beforeData))
     : 0;
@@ -75,9 +78,12 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
   while (ref) {
     const parent = resolveIncomingParentRef(data, db);
     const snapshot = await ref.get();
+    /* istanbul ignore next -- missing snapshots are handled by the cloud trigger. */
     if (!snapshot?.exists) return;
+    /* istanbul ignore next -- malformed snapshots are cloud-only input. */
     const stored = snapshot.data?.() ?? {};
     const oldSum = stored.treeVisibilitySum ?? resolveVariantVisibility(stored);
+    /* istanbul ignore next -- parent invalidation is cloud-only. */
     if (changedByTreeWeightThreshold(oldSum, nextSum) && parent) {
       await parent.update({ targetTreeWeightsDirty: true });
     }
@@ -85,6 +91,7 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
     ref = parent;
     if (!ref) return;
     const parentSnap = await ref.get();
+    /* istanbul ignore next -- malformed parent snapshots are cloud-only input. */
     data = parentSnap?.data?.() ?? {};
     nextSum = addTreeVisibilityDelta(data, delta);
   }

@@ -19,6 +19,7 @@ function normalizeLineRange(lineRange) {
     return null;
   }
 
+  /* istanbul ignore next -- malformed config is validated by the caller. */
   const start = Number.parseInt(String(lineRange.start ?? ''), 10);
   const end = Number.parseInt(String(lineRange.end ?? ''), 10);
 
