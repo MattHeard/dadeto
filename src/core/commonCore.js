@@ -1052,7 +1052,7 @@ export function createRunCheckSuite(defaults) {
           let child;
           const state = {
             settled: false,
-            /** @type {ReturnType<typeof setTimeout> | null} */
+            /** @type {ReturnType<typeof globalThis.setTimeout> | null} */
             timeoutId: null,
           };
 

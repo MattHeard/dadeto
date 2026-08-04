@@ -26,7 +26,7 @@ const DEFAULT_ALLOWED_EVENT_TYPES = new Set([
 
 /**
  * @typedef {{
- *   rawBody?: string | Buffer,
+ *   rawBody?: string | import('node:buffer').Buffer,
  *   body?: unknown,
  *   headers?: Record<string, string | string[] | undefined>,
  * }} PaymentWebhookRequest

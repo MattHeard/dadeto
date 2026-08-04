@@ -12,7 +12,7 @@ const RICH_TEXT_CHUNK_SIZE = 1800;
  *   message: string,
  *   token: string,
  *   notionVersion?: string,
- *   fetchImpl: typeof fetch
+ *   fetchImpl: typeof globalThis.fetch
  * }} options Comment options.
  * @returns {Promise<unknown>} Notion API response payload.
  */
@@ -115,7 +115,7 @@ function splitRichText(value) {
 
 /**
  * Read a JSON response body while tolerating empty and non-JSON payloads.
- * @param {Response} response Fetch response.
+ * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Fetch response.
  * @returns {Promise<unknown>} Parsed body or raw text.
  */
 async function readJsonResponse(response) {

@@ -320,7 +320,7 @@ function waitForPortAnnouncement(child, pattern, label) {
     const settleOnce = createOnceSettler(cleanup);
 
     /**
-     * @param {Buffer} chunk Output chunk.
+     * @param {import('node:buffer').Buffer} chunk Output chunk.
      */
     const onStdout = chunk => {
       process.stdout.write(chunk);
@@ -335,7 +335,7 @@ function waitForPortAnnouncement(child, pattern, label) {
     };
 
     /**
-     * @param {Buffer} chunk Error chunk.
+     * @param {import('node:buffer').Buffer} chunk Error chunk.
      */
     const onStderr = chunk => {
       process.stderr.write(chunk);

@@ -50,7 +50,7 @@ class FakeFile {
   }
 
   /**
-   * @param {string | Buffer | Uint8Array} content File contents.
+   * @param {string | import('node:buffer').Buffer | Uint8Array} content File contents.
    */
   async save(content) {
     await mkdir(path.dirname(this.absolutePath), { recursive: true });
@@ -82,8 +82,8 @@ function normalizeFilePath(filePath) {
 
 /**
  * Convert supported content values to a Buffer.
- * @param {string | Buffer | Uint8Array} content Content value.
- * @returns {Buffer} Buffer payload.
+ * @param {string | import('node:buffer').Buffer | Uint8Array} content Content value.
+ * @returns {import('node:buffer').Buffer} Buffer payload.
  */
 function toBuffer(content) {
   if (Buffer.isBuffer(content)) {
