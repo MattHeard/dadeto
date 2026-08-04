@@ -3,8 +3,8 @@ import { createRenderAuthorHandler } from './render-author-core.js';
 
 /**
  * Wire the author renderer Cloud Function.
- * @param {{ functions: any, Storage: any, FieldValue: any, getFirestoreInstance: Function }} deps Runtime dependencies.
- * @returns {{ renderAuthor: any }} Cloud Function exports.
+ * @param {{ functions: unknown, Storage: { new (): { bucket: (name?: string) => unknown } }, FieldValue: { delete: () => unknown }, getFirestoreInstance: () => unknown }} deps Runtime dependencies.
+ * @returns {{ renderAuthor: unknown }} Cloud Function exports.
  */
 export function runRenderAuthor(deps) {
   const { functions, Storage, FieldValue, getFirestoreInstance } = deps;

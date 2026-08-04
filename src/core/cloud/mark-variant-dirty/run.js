@@ -30,7 +30,7 @@ import { createFirebaseAppContext } from '../firebase-app-manager.js';
  *   getEnvironmentVariables: typeof import('../../../../src/cloud/mark-variant-dirty/mark-variant-dirty-gcf.js').getEnvironmentVariables,
  *   ADMIN_UID: string,
  * }} deps Dependencies required to compose the mark-variant-dirty endpoint.
- * @returns {{ markVariantDirty: unknown, handleRequest: Function, app: unknown }} Wired cloud export objects for index.js.
+ * @returns {{ markVariantDirty: unknown, handleRequest: (...args: never[]) => unknown, app: unknown }} Wired cloud export objects for index.js.
  */
 export function runMarkVariantDirty(deps) {
   const { auth, db, app } = /**
