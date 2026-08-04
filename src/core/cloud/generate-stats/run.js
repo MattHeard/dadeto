@@ -53,7 +53,7 @@ let cachedDb = null;
  * Determine whether the generate-stats Firestore call can reuse the cached instance.
  * @param {{
  *   ensureAppFn: () => void,
- *   getFirestoreFn: Function,
+ *   getFirestoreFn: typeof getAdminFirestore,
  *   environment: Record<string, unknown>,
  * }} options Firestore resolution inputs.
  * @returns {boolean} True when the cached instance is safe to reuse.
@@ -129,7 +129,7 @@ export const getFirestoreInstance = (options = {}) => {
  * }} Cloud entrypoint and core helpers.
  */
 export function runGenerateStats(deps) {
-  const typedDeps = /** @type {any} */ (deps);
+  const typedDeps = deps;
   const {
     db,
     auth,
@@ -143,17 +143,15 @@ export function runGenerateStats(deps) {
     cors,
   } = typedDeps;
 
-  const generateStatsCore = /** @type {any} */ (
-    createGenerateStatsCore({
-      db,
-      auth,
-      storage,
-      fetchFn,
-      env,
-      cryptoModule,
-      console: consoleLike,
-    })
-  );
+  const generateStatsCore = createGenerateStatsCore({
+    db,
+    auth,
+    storage,
+    fetchFn,
+    env,
+    cryptoModule,
+    console: consoleLike,
+  });
   const handleRequest = generateStatsCore.handleRequest;
 
   const allowedOrigins = getAllowedOrigins(env);
@@ -169,32 +167,28 @@ export function runGenerateStats(deps) {
     urlencoded: appDeps.urlencoded,
   });
   app.use(
-    /** @type {any} */ (
-      cors({
-        origin: /** @type {(origin: any, cb: any) => void} */ (
-          (origin, cb) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-              cb(null, true);
-            } else {
-              cb(new Error('CORS'));
-            }
-          }
-        ),
-        methods: ['POST'],
-      })
-    )
+    cors({
+      origin: (origin, cb) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          cb(null, true);
+        } else {
+          cb(new Error('CORS'));
+        }
+      },
+      methods: ['POST'],
+    })
   );
 
   const generateStats = createRegionOnRequest(functions, app);
   app.post('/', handleRequest);
 
-  return /** @type {any} */ ({ generateStats, ...generateStatsCore });
+  return { generateStats, ...generateStatsCore };
 }
 
 /**
  * Bind an app to the europe-west1 HTTPS region.
- * @param {{ region: (name: string) => { https: { onRequest: (app: any) => unknown } } }} functions Cloud Functions dependency.
- * @param {any} app Express app.
+ * @param {{ region: (name: string) => { https: { onRequest: (app: unknown) => unknown } } }} functions Cloud Functions dependency.
+ * @param {unknown} app Express app.
  * @returns {unknown} Cloud function wrapper.
  */
 function createRegionOnRequest(functions, app) {
@@ -209,7 +203,7 @@ function createRegionOnRequest(functions, app) {
  *   express: () => { use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void },
  *   functions: { region: (region: string) => { https: { onRequest: (app: unknown) => unknown } } },
  *   getAuth: () => unknown,
- *   getFirestore: any,
+ *   getFirestore: typeof getAdminFirestore,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   initializeApp: () => void,
  *   fetchFn: typeof fetch,
@@ -233,7 +227,7 @@ export function createGenerateStatsHandle({
   const environment = getEnvironmentVariables();
   const db = getFirestoreInstance({
     ensureAppFn: ensureFirebaseApp,
-    getFirestoreFn: /** @type {any} */ (getFirestore),
+    getFirestoreFn: getFirestore,
     environment,
   });
 
