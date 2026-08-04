@@ -90,7 +90,9 @@ export function requirePathModule(pathModule) {
     throw new Error('pathModule is required.');
   }
 
-  return /** @type {{ join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string }} */ (pathModule);
+  return /** @type {{ join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string }} */ (
+    pathModule
+  );
 }
 
 /**
@@ -582,7 +584,11 @@ export function whenArray(value, fn) {
  * @template T
  */
 export function whenTruthy(value, fn) {
-  return when(Boolean(value), () => fn(value), () => null);
+  return when(
+    Boolean(value),
+    () => fn(value),
+    () => null
+  );
 }
 
 /**
@@ -802,12 +808,8 @@ export function createPathHandle(deps) {
     getCurrentDirectory: moduleUrl =>
       getCurrentDirectory(moduleUrl, deps.fileURLToPathFn, deps.dirnameFn),
     resolveProjectDirectories: moduleDirectory =>
-      resolveProjectDirectories(
-        moduleDirectory,
-        deps.pathModule.resolve
-      ),
-    createPathAdapters: () =>
-      createPathAdapters(deps.pathModule),
+      resolveProjectDirectories(moduleDirectory, deps.pathModule.resolve),
+    createPathAdapters: () => createPathAdapters(deps.pathModule),
   };
 }
 
@@ -1084,13 +1086,9 @@ export function createRunCheckSuite(defaults) {
           };
 
           try {
-            child = /** @type {any} */ (spawnImpl)(
-              command.command,
-              command.args,
-              {
-                stdio: ['ignore', 'pipe', 'pipe'],
-              }
-            );
+            child = spawnImpl(command.command, command.args, {
+              stdio: ['ignore', 'pipe', 'pipe'],
+            });
           } catch (error) {
             const failure = buildSpawnFailure(command, startedAt, error, now);
             failures.push(failure);
@@ -1142,7 +1140,7 @@ export function createRunCheckSuite(defaults) {
 
           child.on(
             'error',
-            /** @param {any} error Error raised by the child process. */ error => {
+            /** @param {unknown} error Error raised by the child process. */ error => {
               if (state.settled || (aborted && failFast)) {
                 return;
               }
@@ -1155,8 +1153,8 @@ export function createRunCheckSuite(defaults) {
           child.on(
             'close',
             /**
-             * @param {any} exitCode Exit code reported by the child process.
-             * @param {any} signal Process signal reported by the child process.
+             * @param {number | null} exitCode Exit code reported by the child process.
+             * @param {string | null} signal Process signal reported by the child process.
              */ (exitCode, signal) => {
               handleChildClose({
                 activeChildren,
@@ -1268,7 +1266,7 @@ function resolveFailFast(options) {
 
 /**
  * Handle a child process close event without inflating the listener complexity.
- * @param {any} input Close event input.
+ * @param {Record<string, unknown>} input Close event input.
  * @returns {void} Nothing.
  */
 function handleChildClose({
