@@ -286,8 +286,8 @@ export function whenOrDefault(condition, transform, fallback) {
 /**
  * Return the provided function candidate when available, otherwise use the fallback.
  * @param {unknown} candidate Candidate value.
- * @param {() => Function} fallback Factory returning the fallback function.
- * @returns {Function} Callable derived from the candidate or fallback.
+ * @param {() => unknown} fallback Factory returning the fallback function.
+ * @returns {unknown} Callable derived from the candidate or fallback.
  */
 export function functionOrFallback(candidate, fallback) {
   if (typeof candidate === 'function') {
@@ -607,7 +607,7 @@ export function whenOrNull(condition, fn) {
  * @template T
  * @param {unknown} value Candidate value.
  * @param {(value: unknown) => boolean} isRejected Predicate that identifies values to skip.
- * @param {(value: any) => T} fn Callback invoked when the value passes the predicate.
+ * @param {(value: unknown) => T} fn Callback invoked when the value passes the predicate.
  * @returns {T | null} Callback result or `null` when the predicate rejects the value.
  */
 function whenValueMatches(value, isRejected, fn) {
@@ -781,7 +781,7 @@ export function resolveProjectDirectories(moduleDirectory, resolveFn) {
  *   resolve: (input: string, ...segments: string[]) => string,
  *   extname: (input: string) => string,
  * }} pathModule Path dependency bundle.
- * @returns {any} Adapter exposing required path helpers.
+ * @returns {object} Adapter exposing required path helpers.
  */
 export function createPathAdapters(pathModule) {
   const typedPathModule = /** @type {any} */ (pathModule);
