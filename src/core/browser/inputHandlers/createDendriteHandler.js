@@ -4,6 +4,7 @@ import * as browserCore from '../browser-core.js';
 /** @typedef {import('../domHelpers.js').DOMHelpers} DOMHelpers */
 /** @typedef {Record<string, string>} DendriteData */
 /** @typedef {() => void} Disposer */
+/** @typedef {(container: HTMLElement, dom: DOMHelpers) => void} Remover */
 
 /**
  * Call a node's _dispose method when available.
@@ -177,7 +178,7 @@ export function buildManagedForm(options, buildFormContent) {
  * Create a helper to execute sync functions with the shared args.
  * @param {HTMLInputElement} textInput - Hidden JSON input.
  * @param {string} serialised - Serialized data payload.
- * @returns {(fn: Function) => void} Executor for sync functions.
+ * @returns {(fn: (textInput: HTMLInputElement, serialised: string) => void) => void} Executor for sync functions.
  */
 function createExecuteSyncFn(textInput, serialised) {
   return fn => fn(textInput, serialised);
@@ -445,7 +446,7 @@ function getSharedFormArgs({ data, textInput, disposers }) {
 
 /**
  * Invoke a remover helper with the shared container/dom args.
- * @param {Function} fn - Remover function to execute.
+ * @param {Remover} fn - Remover function to execute.
  * @param {HTMLElement} container - Container element to clean up.
  * @param {DOMHelpers} dom - DOM helpers.
  * @returns {void}
@@ -458,7 +459,7 @@ function runRemover(fn, container, dom) {
  * Run a remover helper bound to a specific container and DOM utilities.
  * @param {HTMLElement} container - Container element.
  * @param {DOMHelpers} dom - DOM helpers.
- * @param {Function} remover - Remover helper to invoke.
+ * @param {Remover} remover - Remover helper to invoke.
  * @returns {void}
  */
 function runRemoverForContainer(container, dom, remover) {
@@ -469,7 +470,7 @@ function runRemoverForContainer(container, dom, remover) {
  * Run a list of remover helpers against the current container.
  * @param {HTMLElement} container - Container element to clean up.
  * @param {DOMHelpers} dom - DOM helpers.
- * @param {Function[]} removers - Cleanup helpers to execute.
+ * @param {Remover[]} removers - Cleanup helpers to execute.
  * @returns {void}
  */
 export function runContainerRemovers(container, dom, removers) {
@@ -541,7 +542,7 @@ function createBuildForm(fields) {
 
 /**
  * Create and insert a dendrite form for editing data.
- * @param {{buildForm: Function, dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} options - Form creation inputs.
+ * @param {{buildForm: (dom: DOMHelpers, options: { container: HTMLElement, textInput: HTMLInputElement, data: DendriteData, disposers: Disposer[] }) => HTMLElement, dom: DOMHelpers, container: HTMLElement, textInput: HTMLInputElement}} options - Form creation inputs.
  * @returns {HTMLElement} Newly created form.
  */
 function createDendriteForm({ buildForm, dom, container, textInput }) {
