@@ -4,13 +4,6 @@
  * @returns {Promise<{processed: number, failed: number}>} Processing totals.
  */
 /* istanbul ignore next -- default callback is a cloud-run boundary fallback. */
-/**
- *
- * @param root0
- * @param root0.db
- * @param root0.renderVariant
- * @param root0.consoleError
- */
 export async function regenerateDirtyTreeWeightVariants({
   db,
   renderVariant,

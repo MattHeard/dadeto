@@ -73,6 +73,12 @@ export default [
       indent: ['warn', 2],
       'jsdoc/require-jsdoc': 'warn',
       'jsdoc/check-tag-names': 'warn',
+      // The repository's existing JSDoc uses intentional structural escape
+      // hatches while the JavaScript-to-TypeScript migration is incomplete.
+      // Keep ESLint 10 and the current jsdoc plugin, but do not treat these
+      // newly recommended migration rules as zero-warning gates yet.
+      'jsdoc/reject-any-type': 'off',
+      'jsdoc/reject-function-type': 'off',
       camelcase: ['warn', { properties: 'always' }],
       'prefer-template': 'warn',
       'consistent-return': 'warn',
