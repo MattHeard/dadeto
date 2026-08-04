@@ -51,7 +51,7 @@ function getPreContent(inputString) {
 /**
  * Create a <pre> element with the provided text.
  * @param {string} inputString - The raw input text or list string.
- * @param {{createElement: Function, setTextContent: Function}} dom - DOM utilities.
+ * @param {{createElement: (tagName: string) => HTMLElement, setTextContent: (element: HTMLElement, text: string) => void}} dom - DOM utilities.
  * @returns {HTMLElement} The <pre> element populated with content.
  */
 export function createPreElement(inputString, dom) {
