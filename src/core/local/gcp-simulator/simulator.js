@@ -1627,7 +1627,9 @@ async function dispatchTrigger(
  * @param {{ ref: { parent: { parent: { get: () => Promise<{ data: () => { title?: string }, id: string }> } }, collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }, data: () => { authorName?: string, author?: string, content?: string } }} variantSnap Variant snapshot.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function buildModerationVariantResponse(/** @type {unknown} */ variantSnap) {
+async function buildModerationVariantResponse(
+  /** @type {unknown} */ variantSnap
+) {
   const variantData = variantSnap.data();
   const pageRef = variantSnap.ref.parent.parent;
   const pageSnap = await pageRef.get();
