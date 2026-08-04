@@ -1370,7 +1370,8 @@ function extractMessageProperty(error) {
  */
 function hasStringMessage(error) {
   return (
-    isObject(error) && typeof (/** @type {{ message?: unknown }} */ (error).message) === 'string'
+    isObject(error) &&
+    typeof (/** @type {{ message?: unknown }} */ (error).message) === 'string'
   );
 }
 
@@ -1634,7 +1635,9 @@ async function loadOptions({ snap, db, visibilityThreshold, consoleError }) {
      * @param {import('firebase-admin/firestore').DocumentData} b - Second option data.
      * @returns {number} Sorting weight.
      */
-    (a, b) => /** @type {{ position: number }} */ (a).position - /** @type {{ position: number }} */ (b).position
+    (a, b) =>
+      /** @type {{ position: number }} */ (a).position -
+      /** @type {{ position: number }} */ (b).position
   );
 
   const safeConsoleError = consoleError ?? DEFAULT_CONSOLE_ERROR;
@@ -2882,7 +2885,8 @@ function buildRenderOutput(data) {
   });
   const filePath = `p/${page.number}${variant.name}.html`;
   const openVariant = options.some(
-    (/** @type {OptionMetadata} */ option) => option.targetPageNumber === undefined
+    (/** @type {OptionMetadata} */ option) =>
+      option.targetPageNumber === undefined
   );
   const reverseLinks = buildReverseLinkRecords({
     page,
@@ -2937,7 +2941,9 @@ export function didHideLastVisibleVariant(change, data, visibilityThreshold) {
     return false;
   }
 
-  const beforeVisibility = /** @type {Record<string, unknown>} */ (change.before).data().visibility;
+  const beforeVisibility = /** @type {Record<string, unknown>} */ (
+    change.before
+  ).data().visibility;
   const afterVisibility = data.visibility;
 
   return (
@@ -3385,8 +3391,9 @@ export function createHandleVariantWrite({
       return true;
     }
 
-    const beforeVisibility = /** @type {Record<string, unknown>} */ (change.before).data()
-      .visibility;
+    const beforeVisibility = /** @type {Record<string, unknown>} */ (
+      change.before
+    ).data().visibility;
     const afterVisibility = data.visibility;
 
     return didCrossVisibilityThreshold(
@@ -3435,7 +3442,11 @@ export function createHandleVariantWrite({
  * @returns {Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }>} Variant snapshot collection.
  */
 async function getVariantsSnapshot(pageRef) {
-  return /** @type {{ collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }> } }} */ (pageRef).collection('variants').get();
+  return /** @type {{ collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }> } }} */ (
+    pageRef
+  )
+    .collection('variants')
+    .get();
 }
 
 /**
@@ -3480,7 +3491,10 @@ async function republishInboundVariants(db, renderVariantFn, pageNumber) {
  * @returns {Promise<number>} Page number.
  */
 async function getPageNumber(pageRef) {
-  const pageSnap = await /** @type {{ get: () => Promise<{ data: () => { number: number } }> }} */ (pageRef).get();
+  const pageSnap =
+    await /** @type {{ get: () => Promise<{ data: () => { number: number } }> }} */ (
+      pageRef
+    ).get();
   return pageSnap.data().number;
 }
 
@@ -3502,7 +3516,8 @@ async function getInboundSourceFilePaths(db, pageNumber) {
  * @returns {string | undefined} Source file path.
  */
 function mapSourceFilePath(doc) {
-  return /** @type {{ sourceFilePath?: unknown }} */ (doc.data()).sourceFilePath;
+  return /** @type {{ sourceFilePath?: unknown }} */ (doc.data())
+    .sourceFilePath;
 }
 
 /**
