@@ -40,12 +40,12 @@ const DEFAULT_PAGE_SIZE = 100;
 
 /**
  * @typedef {object} DbInstance
- * @property {Function} collection Firestore collection accessor.
+ * @property {(...args: unknown[]) => unknown} collection Firestore collection accessor.
  */
 
 /**
  * @typedef {object} StorageInstance
- * @property {Function} bucket Cloud storage bucket accessor.
+ * @property {(...args: unknown[]) => unknown} bucket Cloud storage bucket accessor.
  */
 
 /**
@@ -1014,7 +1014,7 @@ function createRenderContentsHandler(config) {
  *   factory: (db: { collection: Function }) => Function,
  *   db?: { collection: Function }
  * }} options Fetcher resolution inputs.
- * @returns {Function} Fetch implementation to use.
+ * @returns {(...args: unknown[]) => unknown} Fetch implementation to use.
  */
 function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
   if (typeof provided === 'function') {
@@ -1032,7 +1032,7 @@ function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
  *   factory: (db: { collection: Function }) => Function,
  *   setCache: (fn: any) => void
  * }} options Fetcher lookup inputs.
- * @returns {Function} Fetch implementation.
+ * @returns {(...args: unknown[]) => unknown} Fetch implementation.
  */
 function getOrCreateFetcher({ cache, database, factory, setCache }) {
   if (cache) {
@@ -1135,7 +1135,7 @@ function buildPageSaveOptions(pageNumber, maxPages) {
  * @param {DbInstance | undefined} database Firestore-like instance used by the factory.
  * @param {(db: DbInstance) => Function} factory Factory that produces the fetcher.
  * @param {(fn: Function) => void} setCache Setter for caching the created fetcher.
- * @returns {Function} Newly created fetch implementation.
+ * @returns {(...args: unknown[]) => unknown} Newly created fetch implementation.
  */
 function createFetcherFromDatabase(database, factory, setCache) {
   assertDb(/** @type {DbInstance} */ (database));
@@ -1203,7 +1203,7 @@ function chooseAllowedOrigins(parsedOrigins) {
 /**
  * @typedef {object} NativeHttpResponseWithSet
  * @property {(name: string, value: string) => void} set Set response header.
- * @property {Function} [status] Set response status.
+ * @property {(...args: unknown[]) => unknown} [status] Set response status.
  */
 
 /**

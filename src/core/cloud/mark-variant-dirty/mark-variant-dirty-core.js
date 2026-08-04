@@ -164,7 +164,7 @@ function extractDocReference(doc) {
 
   // doc is guaranteed to be non-null and have a .ref property after hasDocReference check
   // We assert the existence of .ref since TypeScript's type guard doesn't capture this
-  return /** @type {any} */ (doc).ref;
+  return /** @type {unknown} */ (doc).ref;
 }
 
 /**
@@ -178,7 +178,7 @@ function hasDocReference(doc) {
   }
 
   // We access .ref through any to avoid TypeScript ref property issue
-  return Boolean(/** @type {any} */ (doc).ref);
+  return Boolean(/** @type {unknown} */ (doc).ref);
 }
 
 /**
@@ -319,7 +319,7 @@ export async function markAuthorDirtyImpl(authorId, deps) {
     .get();
   const author = snapshot.docs[0];
   if (!author) return false;
-  const authorRef = /** @type {any} */ (author).ref;
+  const authorRef = /** @type {unknown} */ (author).ref;
   await authorRef.update({ dirty: false });
   await authorRef.update({ dirty: true });
   return true;
@@ -586,7 +586,7 @@ export const markVariantDirtyTestUtils = {
 
 /**
  * Cast function to admin verifier type.
- * @param {any} fn - Function to cast.
+ * @param {unknown} fn - Function to cast.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<boolean>} Typed verifier function.
  */
 function castVerifyAdminFn(fn) {
@@ -597,7 +597,7 @@ function castVerifyAdminFn(fn) {
 
 /**
  * Cast function to mark-variant-dirty type.
- * @param {any} fn - Function to cast.
+ * @param {unknown} fn - Function to cast.
  * @returns {(pageNumber: number, variantName: string, deps?: MarkVariantDirtyDeps) => Promise<boolean>} Typed handler function.
  */
 function castMarkVariantDirtyFn(fn) {
@@ -617,8 +617,8 @@ function extractCoreHandlers(optionsTyped) {
 
 /**
  * Cast and combine core functions.
- * @param {any} verifyAdmin - Admin verification function.
- * @param {any} markVariantDirty - Dirty marking function.
+ * @param {unknown} verifyAdmin - Admin verification function.
+ * @param {unknown} markVariantDirty - Dirty marking function.
  * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty - Author marking function.
  * @returns {{verifyAdmin: Function, markVariantDirty: Function, markAuthorDirty?: Function}} Cast functions.
  */
@@ -637,7 +637,7 @@ function castCoreFunctions(
 /**
  * Resolve the request body parser.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
- * @returns {Function} The request parser.
+ * @returns {(...args: unknown[]) => unknown} The request parser.
  */
 function resolveRequestParser(optionsTyped) {
   if (!optionsTyped) {
@@ -674,8 +674,8 @@ function resolveParserAndMethod(optionsTyped) {
 
 /**
  * Resolve and cast all handler functions.
- * @param {any} verifyAdmin - Admin verification function.
- * @param {any} markVariantDirty - Dirty marking function.
+ * @param {unknown} verifyAdmin - Admin verification function.
+ * @param {unknown} markVariantDirty - Dirty marking function.
  * @param {((id: string) => Promise<boolean>) | undefined} markAuthorDirty Author marking function.
  * @param {HandleRequestOptions | undefined} optionsTyped - Configuration object.
  * @returns {{verifyAdmin: Function, markVariantDirty: Function, parseRequestBody: Function, allowedMethod: string}} Resolved handler config.
@@ -852,7 +852,7 @@ function enforceMethodOrThrow(req, res, allowedMethod) {
 
 /**
  * Ensure authorization or throw sentinel.
- * @param {Function} verifyAdminFn Verify fn.
+ * @param {(...args: unknown[]) => unknown} verifyAdminFn Verify fn.
  * @param {NativeHttpRequest} req Req.
  * @param {NativeHttpResponse} res Res.
  * @returns {Promise<void>} Promise.
@@ -876,8 +876,8 @@ function parseRequestOrThrow(req, res, parseRequestBody) {
 
 /**
  * Return the value when truthy or throw the request-handled sentinel.
- * @param {*} value Candidate value.
- * @returns {*} The input value when truthy.
+ * @param {unknown} value Candidate value.
+ * @returns {unknown} The input value when truthy.
  */
 function throwRequestHandledIfFalsy(value) {
   if (!value) {
