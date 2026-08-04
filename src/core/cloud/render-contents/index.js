@@ -31,7 +31,7 @@ import {
  * }} Cloud entrypoint exports and test hooks.
  */
 export function createRenderContentsEntrypoint(deps) {
-  const typedDeps = /** @type {any} */ (deps);
+  const typedDeps = deps;
   const {
     initializeApp,
     functions,
@@ -48,7 +48,7 @@ export function createRenderContentsEntrypoint(deps) {
     db,
     environmentVariables,
     render: resolveRender,
-  } = /** @type {any} */ (createRenderContentsEntrypointState());
+  } = createRenderContentsEntrypointState();
   const auth = getAuth();
 
   const resolveFetchTopStoryIds = createMemoizedLoader(() =>
@@ -62,29 +62,21 @@ export function createRenderContentsEntrypoint(deps) {
   const applyCorsHeaders = createApplyCorsHeaders({ allowedOrigins });
   const validateRequest = createValidateRequest({ applyCorsHeaders });
 
-  const handleRenderRequest = /** @type {any} */ (buildHandleRenderRequest)({
+  const handleRenderRequest = buildHandleRenderRequest({
     validateRequest,
-    verifyIdToken: /** @type {(token: any) => any} */ (
-      token => auth.verifyIdToken(token)
-    ),
+    verifyIdToken: token => auth.verifyIdToken(token),
     adminUid: ADMIN_UID,
     render: () => render(),
   });
 
-  const handle = /** @type {any} */ (
-    functions
-      .region('europe-west1')
-      .firestore.document('stories/{storyId}')
-      .onCreate(
-        /** @type {(snap: any, context: any) => any} */ (
-          (snap, context) => render(snap, context)
-        )
-      )
-  );
+  const handle = functions
+    .region('europe-west1')
+    .firestore.document('stories/{storyId}')
+    .onCreate((snap, context) => render(snap, context));
 
-  const handleTrigger = /** @type {any} */ (
-    functions.region('europe-west1').https.onRequest(handleRenderRequest)
-  );
+  const handleTrigger = functions
+    .region('europe-west1')
+    .https.onRequest(handleRenderRequest);
 
   /**
    * Forward render calls to the memoized render implementation.
@@ -134,7 +126,7 @@ export function createRenderContentsEntrypoint(deps) {
    * @returns {unknown} Shared render state consumed by the cloud wrapper.
    */
   function createRenderContentsEntrypointState() {
-    const renderStateOptions = /** @type {any} */ ({
+    const renderStateOptions = {
       initializeApp,
       createFirebaseAppManager,
       getFirestoreInstance,
@@ -145,19 +137,13 @@ export function createRenderContentsEntrypoint(deps) {
       resolveObjectPrefix: resolveStaticObjectPrefix,
       entrypointKind: 'contents',
       defaultBucketName: DEFAULT_BUCKET_NAME,
+    };
+    renderStateOptions.buildRender = createCloudRenderInstanceBuilder({
+      createRenderer: createRenderContents,
+      crypto,
+      consoleError: (...args) => console.error(...args),
     });
-    renderStateOptions.buildRender = /** @type {any} */ (
-      /** @type {any} */ (createCloudRenderInstanceBuilder)({
-        createRenderer: createRenderContents,
-        crypto,
-        consoleError: /** @type {(...args: any[]) => void} */ (
-          (...args) => console.error(...args)
-        ),
-      })
-    );
     renderStateOptions.entrypointKind = 'contents';
-    return /** @type {any} */ (
-      /** @type {any} */ (createCloudRenderEntrypointState)(renderStateOptions)
-    );
+    return createCloudRenderEntrypointState(renderStateOptions);
   }
 }
