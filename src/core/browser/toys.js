@@ -33,18 +33,20 @@ import {
   KV_CONTAINER_SELECTOR,
 } from './browser-core.js';
 
+/** @typedef {(...args: never[]) => unknown} ToyCallback */
+
 /**
  * Determines whether a value is a key/value pair object.
  * @param {object} pair - Value to check.
- * @returns {boolean} True if pair has a {@code key} property.
+ * @returns {boolean} True if pair has a `key` property.
  */
 function isKeyValuePair(pair) {
   return 'key' in Object(pair);
 }
 
 /**
- * Converts an array of {@code {key, value}} objects to a plain object.
- * @param {Array<{key: string, value: any}>} array - Array to convert.
+ * Converts an array of `{key, value}` objects to a plain object.
+ * @param {Array<{key: string, value: unknown}>} array - Array to convert.
  * @returns {object} Object with keys mapped to values.
  */
 export const convertArrayToKeyValueObject = array => {
@@ -76,8 +78,8 @@ function normalizeExisting(existing) {
 }
 
 /**
- * Checks if a value is empty or {@code undefined}.
- * @param {*} value - Value to check.
+ * Checks if a value is empty or `undefined`.
+ * @param {unknown} value - Value to check.
  * @returns {boolean} True if value is blank.
  */
 function isBlank(value) {
@@ -112,8 +114,8 @@ function getDomValue(dom, inputElement) {
 
 /**
  * Selects the first candidate value that is not blank.
- * @param {...*} candidates - Values to inspect.
- * @returns {*|undefined} The first non-blank candidate.
+ * @param {...unknown} candidates - Values to inspect.
+ * @returns {unknown|undefined} The first non-blank candidate.
  */
 function pickFirstNonBlank(...candidates) {
   return candidates.find(candidate => !isBlank(candidate));
@@ -148,7 +150,7 @@ export const parseExistingRows = (dom, inputElement) => {
 
 /**
  * Clears all disposer functions and empties the array.
- * @param {Array<Function>} disposersArray - Array of disposer functions.
+ * @param {Array<ToyCallback>} disposersArray - Array of disposer functions.
  * @returns {void}
  */
 export const clearDisposers = disposersArray => {
@@ -159,11 +161,11 @@ export const clearDisposers = disposersArray => {
 /**
  * Factory for creating a dispose function.
  * @param {object} config - Configuration object.
- * @param {Array<Function>} config.disposers - Disposer callbacks.
+ * @param {Array<ToyCallback>} config.disposers - Disposer callbacks.
  * @param {object} config.dom - DOM utilities object.
  * @param {HTMLElement} config.container - Container element to clear.
  * @param {Array} config.rows - Rows array to reset.
- * @returns {Function} Cleanup function.
+ * @returns {ToyCallback} Cleanup function.
  */
 export const createDispose = config => {
   const { disposers, dom, container, rowData, rows } = config;
@@ -192,9 +194,9 @@ import { createRealtimeVoicePrototypeElement } from './presenters/realtimeVoiceP
 
 /**
  * Creates a handler for input dropdown changes
- * @param {Function} onChange - The change handler function
+ * @param {ToyCallback} onChange - The change handler function
  * @param {object} dom - The DOM utilities object
- * @returns {Function} The event handler function for input dropdown changes
+ * @returns {ToyCallback} The event handler function for input dropdown changes
  */
 export const createAddDropdownListener = (onChange, dom) => dropdown => {
   dom.addEventListener(dropdown, 'change', onChange);
@@ -314,10 +316,10 @@ const wrapSelectControl = ({ dom, selectEl }) => {
 
 /**
  * Creates a component initializer function for setting up intersection observers.
- * @param {Function} getElement - Function to get an element by ID
- * @param {Function} logWarning - Function to log warnings
- * @param {Function} createIntersectionObserver - Function to create an intersection observer
- * @returns {Function} A function that initializes a component with an intersection observer
+ * @param {ToyCallback} getElement - ToyCallback to get an element by ID
+ * @param {ToyCallback} logWarning - ToyCallback to log warnings
+ * @param {ToyCallback} createIntersectionObserver - ToyCallback to create an intersection observer
+ * @returns {ToyCallback} A function that initializes a component with an intersection observer
  */
 export function getComponentInitializer(
   getElement,
@@ -363,7 +365,7 @@ function getDropdownPostId(dropdown) {
 /**
  * Updates output based on dropdown selection.
  * @param {HTMLSelectElement} dropdown - Dropdown element.
- * @param {Function} getData - Function returning application data.
+ * @param {ToyCallback} getData - ToyCallback returning application data.
  * @param {object} dom - DOM utilities.
  */
 export function handleDropdownChange(dropdown, getData, dom) {
@@ -435,10 +437,10 @@ function outputForPostId(output, postId) {
 
 /**
  * Creates a handler function for output dropdown changes.
- * @param {Function} handleDropdownChange - The function to handle dropdown changes
- * @param {Function} getData - Function to retrieve data
+ * @param {ToyCallback} handleDropdownChange - The function to handle dropdown changes
+ * @param {ToyCallback} getData - ToyCallback to retrieve data
  * @param {object} dom - The DOM utilities object
- * @returns {Function} An event handler function for dropdown changes
+ * @returns {ToyCallback} An event handler function for dropdown changes
  */
 export const createOutputDropdownHandler =
   (handleDropdownChange, getData, dom) => event =>
@@ -477,8 +479,8 @@ function setTextContent(output, dom, parent) {
 /**
  * Creates an error handler for module loading errors.
  * @param {string} modulePath - Path to the module that failed to load.
- * @param {Function} logError - Error logging function.
- * @returns {Function} Error handler function.
+ * @param {ToyCallback} logError - Error logging function.
+ * @returns {ToyCallback} Error handler function.
  */
 export function handleModuleError(modulePath, logError) {
   return e => {
@@ -491,7 +493,7 @@ export function handleModuleError(modulePath, logError) {
  * @param {HTMLElement} article - The article element containing the toy.
  * @param {string} functionName - The name of the exported function to use from the module.
  * @param {object} config - Environment and DOM helpers for initialization.
- * @returns {Function} Function that takes a module and initializes the interactive component.
+ * @returns {ToyCallback} ToyCallback that takes a module and initializes the interactive component.
  */
 export function getModuleInitializer(article, functionName, config) {
   const getProcessing = makeProcessingFunction(functionName);
@@ -502,7 +504,7 @@ export function getModuleInitializer(article, functionName, config) {
 /**
  * Creates a function that extracts a named export from a module.
  * @param {string} functionName - Name of the export.
- * @returns {Function} Function that gets the export from a module.
+ * @returns {ToyCallback} ToyCallback that gets the export from a module.
  */
 function makeProcessingFunction(functionName) {
   return function (module) {
@@ -514,7 +516,7 @@ function makeProcessingFunction(functionName) {
  * Generates a function that initializes a component with a processing function.
  * @param {HTMLElement} article - Article element hosting the component.
  * @param {object} config - Module configuration.
- * @returns {Function} Initializer function.
+ * @returns {ToyCallback} Initializer function.
  */
 function makeInteractiveInitializer(article, config) {
   return function (processingFunction) {
@@ -525,8 +527,8 @@ function makeInteractiveInitializer(article, config) {
 /**
  * Runs the initializer using the processing function from the module.
  * @param {object} module - Loaded module object.
- * @param {Function} getProcessing - Function to get processing function.
- * @param {Function} initialize - Initializer callback.
+ * @param {ToyCallback} getProcessing - ToyCallback to get processing function.
+ * @param {ToyCallback} initialize - Initializer callback.
  */
 function runModuleInitializer(module, getProcessing, initialize) {
   const processingFunction = getProcessing(module);
@@ -579,7 +581,7 @@ function handleIntersectingEntry(observer, moduleInfo, moduleConfig) {
  * @param {{article: HTMLElement, modulePath: string, functionName: string}} moduleInfo -
  *   Module information.
  * @param {object} moduleConfig - Configuration with DOM helpers and loggers.
- * @returns {Function} Entry handler factory.
+ * @returns {ToyCallback} Entry handler factory.
  */
 function getEntryHandler(moduleInfo, moduleConfig) {
   const { dom } = moduleConfig;
@@ -637,7 +639,7 @@ export function makeObserverCallback(moduleInfo, env, dom) {
  * Returns a function that creates an IntersectionObserver for an article
  * @param {object} dom - DOM helpers
  * @param {object} env - Environment
- * @returns {Function} Function to create an IntersectionObserver
+ * @returns {ToyCallback} ToyCallback to create an IntersectionObserver
  */
 export function makeCreateIntersectionObserver(dom, env) {
   return (article, modulePath, functionName) => {
@@ -678,7 +680,7 @@ export function getText(response) {
  * @param {object} dom - DOM helper object.
  * @param {HTMLElement} parent - Parent element to render into.
  * @param {string} presenterKey - Presenter key for rendering output.
- * @returns {Function} Display callback accepting body text.
+ * @returns {ToyCallback} Display callback accepting body text.
  */
 export function makeDisplayBody(dom, parent, presenterKey) {
   return body => {
@@ -691,7 +693,7 @@ export function makeDisplayBody(dom, parent, presenterKey) {
  * @param {object} env - Environment object with dom and errorFn.
  * @param {HTMLElement} parent - Element to display the error in.
  * @param {string} presenterKey - Presenter key for rendering output.
- * @returns {Function} Error handler callback.
+ * @returns {ToyCallback} Error handler callback.
  */
 export function getFetchErrorHandler(env, parent, presenterKey) {
   const { dom, errorFn } = env;
@@ -726,7 +728,7 @@ import { isObject } from './common.js';
 /**
  * Creates a number input element with the specified value and change handler
  * @param {string} value - The initial value for the input
- * @param {Function} onChange - The callback to execute when the input value changes
+ * @param {ToyCallback} onChange - The callback to execute when the input value changes
  * @param {object} dom - The DOM utilities object
  * @returns {HTMLInputElement} The created number input element
  */
@@ -789,8 +791,8 @@ function migrateRowIfValid({ prevKey, newKey, rowData, keyEl, dom }) {
  * @param {HTMLElement} options.keyEl - Input for the key.
  * @param {HTMLInputElement} options.textInput - Hidden JSON field.
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {Function} options.syncHiddenField - Syncs the hidden field.
- * @returns {Function} Event handler for key input.
+ * @param {ToyCallback} options.syncHiddenField - Syncs the hidden field.
+ * @returns {ToyCallback} Event handler for key input.
  */
 export function createKeyInputHandler(options) {
   const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
@@ -822,8 +824,8 @@ export function createKeyInputHandler(options) {
  * @param {HTMLElement} options.keyEl - Key input element.
  * @param {HTMLInputElement} options.textInput - Hidden JSON input.
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {Function} options.syncHiddenField - Updates the hidden field.
- * @returns {Function} The event handler.
+ * @param {ToyCallback} options.syncHiddenField - Updates the hidden field.
+ * @returns {ToyCallback} The event handler.
  */
 export function createValueInputHandler(options) {
   const { dom, keyEl, textInput, rowData, syncHiddenField } = options;
@@ -836,13 +838,13 @@ export function createValueInputHandler(options) {
 
 /**
  * Creates a key input element with event listeners
- * @param {object} options - Function options
+ * @param {object} options - ToyCallback options
  * @param {object} options.dom - The DOM utilities object
  * @param {string} options.key - The initial key value
  * @param {HTMLElement} options.textInput - The hidden text input element
  * @param {object} options.rowData - The rows object containing key-value pairs
- * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
- * @param {Array<Function>} options.disposers - Array to store cleanup functions
+ * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field with current state
+ * @param {Array<ToyCallback>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created key input element
  */
 export const createKeyElement = ({
@@ -881,14 +883,14 @@ export const createKeyElement = ({
 
 /**
  * Creates a value input element with event listeners
- * @param {object} options - Function options
+ * @param {object} options - ToyCallback options
  * @param {object} options.dom - The DOM utilities object
  * @param {string} options.value - The initial value
  * @param {HTMLElement} options.keyEl - The corresponding key input element
  * @param {HTMLElement} options.textInput - The hidden text input element
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {Function} options.syncHiddenField - Function to sync the hidden field with current state
- * @param {Array<Function>} options.disposers - Array to store cleanup functions
+ * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field with current state
+ * @param {Array<ToyCallback>} options.disposers - Array to store cleanup functions
  * @returns {HTMLInputElement} The created value input element
  */
 export const createValueElement = ({
@@ -931,7 +933,7 @@ const TYPE_OPTIONS = ['string', 'number', 'boolean', 'json'];
  * @param {object} options - Configuration options.
  * @param {object} options.dom - DOM helper utilities.
  * @param {HTMLElement} options.typeSelectEl - The type select element to toggle.
- * @param {Array<Function>} options.disposers - Array to register cleanup functions.
+ * @param {Array<ToyCallback>} options.disposers - Array to register cleanup functions.
  * @returns {HTMLElement} The toggle button element.
  */
 export const createTypeToggleButton = ({ dom, typeSelectEl, disposers }) => {
@@ -973,8 +975,8 @@ export const createTypeToggleButton = ({ dom, typeSelectEl, disposers }) => {
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
  * @param {HTMLElement} options.textInput - Hidden input element for syncHiddenField.
  * @param {HTMLElement} options.keyEl - Key input element (to read current key).
- * @param {Function} options.syncHiddenField - Function to sync the hidden field.
- * @param {Array<Function>} options.disposers - Array to register cleanup functions.
+ * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field.
+ * @param {Array<ToyCallback>} options.disposers - Array to register cleanup functions.
  * @returns {HTMLElement} The type select element.
  */
 export const createTypeElement = ({
@@ -1020,8 +1022,8 @@ export const createTypeElement = ({
 /**
  * Creates an add button click handler for key-value rows
  * @param {object} rowData - The rows object containing key-value pairs.
- * @param {Function} render - Function to re-render the key-value editor
- * @returns {Function} The click event handler function
+ * @param {ToyCallback} render - ToyCallback to re-render the key-value editor
+ * @returns {ToyCallback} The click event handler function
  */
 export const createOnAddHandler = (rowData, render) => {
   return () => {
@@ -1039,9 +1041,9 @@ export const createOnAddHandler = (rowData, render) => {
  * @param {object} rowData - Row data object containing rows and rowTypes.
  * @param {object} rowData.rows - The rows object containing key-value pairs
  * @param {object} rowData.rowTypes - Per-key type map; entry for key is deleted on remove.
- * @param {Function} render - The render function to update the UI
+ * @param {ToyCallback} render - The render function to update the UI
  * @param {string} key - The key to remove
- * @returns {Function} The event handler function
+ * @returns {ToyCallback} The event handler function
  */
 export const createOnRemove = (rowData, render, key) => e => {
   e.preventDefault();
@@ -1056,8 +1058,8 @@ export const createOnRemove = (rowData, render, key) => e => {
  * @param {object} options.dom - DOM utilities.
  * @param {HTMLElement} options.button - Button to set up.
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {Function} options.render - Re-render function.
- * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @param {ToyCallback} options.render - Re-render function.
+ * @param {Array<ToyCallback>} options.disposers - Collects cleanup callbacks.
  * @returns {void}
  */
 export const setupAddButton = ({ dom, button, rowData, render, disposers }) => {
@@ -1082,9 +1084,9 @@ export const setupAddButton = ({ dom, button, rowData, render, disposers }) => {
  * @param {object} options.dom - DOM utilities.
  * @param {HTMLElement} options.button - Button to set up.
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {Function} options.render - Re-render function.
+ * @param {ToyCallback} options.render - Re-render function.
  * @param {string} options.key - Key of the row to remove.
- * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
+ * @param {Array<ToyCallback>} options.disposers - Collects cleanup callbacks.
  * @returns {void}
  */
 export const setupRemoveButton = ({
@@ -1118,9 +1120,9 @@ export const setupRemoveButton = ({
  * @param {Array} options.entries - All [key, value] pairs.
  * @param {HTMLInputElement} options.textInput - Hidden JSON input.
  * @param {object} options.rowData - Row data object containing rows and rowTypes.
- * @param {Function} options.syncHiddenField - Updates the hidden field.
- * @param {Array<Function>} options.disposers - Collects cleanup callbacks.
- * @param {Function} options.render - Re-render function.
+ * @param {ToyCallback} options.syncHiddenField - Updates the hidden field.
+ * @param {Array<ToyCallback>} options.disposers - Collects cleanup callbacks.
+ * @param {ToyCallback} options.render - Re-render function.
  * @param {HTMLElement} options.container - Container to append to.
  * @returns {(entry: [string, string], idx: number) => void} Row builder.
  */
@@ -1256,15 +1258,15 @@ export function parseJSONResult(result) {
  * @param {HTMLInputElement} inputElement - The input field.
  * @param {HTMLElement} outputParent - The parent element of the output element.
  * @param {object} globalState - The shared application state.
- * @param {Function} processingFunction - The toy's core logic function.
- * @param {Function} stopDefault - Function to prevent default event action.
- * @param {Function} createEnv - Function to create the environment map for the toy.
- * @param {Function} error - Function for logging errors.
- * @param {Function} addWarningFn - Function to add a warning style to the output.
- * @param {Function} fetchFn - Function to fetch data from a URL.
- * @param {Function} createElement - Function to create an element.
- * @param {Function} setTextContent - Function to set the text content of an element.
- * @returns {Function} An event handler function.
+ * @param {ToyCallback} processingFunction - The toy's core logic function.
+ * @param {ToyCallback} stopDefault - ToyCallback to prevent default event action.
+ * @param {ToyCallback} createEnv - ToyCallback to create the environment map for the toy.
+ * @param {ToyCallback} error - ToyCallback for logging errors.
+ * @param {ToyCallback} addWarningFn - ToyCallback to add a warning style to the output.
+ * @param {ToyCallback} fetchFn - ToyCallback to fetch data from a URL.
+ * @param {ToyCallback} createElement - ToyCallback to create an element.
+ * @param {ToyCallback} setTextContent - ToyCallback to set the text content of an element.
+ * @returns {ToyCallback} An event handler function.
  */
 
 import { setOutput } from './setOutput.js';
@@ -1274,7 +1276,7 @@ import { setOutput } from './setOutput.js';
  * Creates an error handler for input processing failures.
  * @param {object} env - Environment containing dom and errorFn.
  * @param {HTMLElement} parent - Element to display the error in.
- * @returns {Function} Error handler callback.
+ * @returns {ToyCallback} Error handler callback.
  */
 function createHandleInputError(env, parent) {
   const logError = env.errorFn;
@@ -1294,7 +1296,7 @@ function createHandleInputError(env, parent) {
 /**
  * Processes the input value and updates the output element.
  * @param {object} elements - DOM elements used by the toy.
- * @param {Function} processingFunction - Function to process the input.
+ * @param {ToyCallback} processingFunction - ToyCallback to process the input.
  * @param {object} env - Environment providing DOM helpers and state.
  * @returns {void}
  */
@@ -1321,7 +1323,7 @@ export function processInputAndSetOutput(elements, processingFunction, env) {
 /**
  * Wraps processing with error handling.
  * @param {object} elements - DOM elements used by the toy.
- * @param {Function} processingFunction - Function to process the input.
+ * @param {ToyCallback} processingFunction - ToyCallback to process the input.
  * @param {object} env - Environment providing DOM helpers and state.
  * @returns {void}
  */
@@ -1355,7 +1357,7 @@ function readLiveInputValue(dom, inputElement) {
 /**
  * Requests the next auto-submit frame using the available DOM scheduler.
  * @param {object} dom - DOM helper object.
- * @param {Function} callback - Frame callback.
+ * @param {ToyCallback} callback - Frame callback.
  * @returns {number} Frame identifier.
  */
 function requestAutoSubmitFrame(dom, callback) {
@@ -1392,7 +1394,7 @@ function cancelAutoSubmitFrame(dom, frameId) {
  * Registers a polling loop that watches an input element for changes.
  * @param {object} options - Polling options.
  * @param {object} options.elements - Interactive component elements.
- * @param {Function} options.processingFunction - Component processor.
+ * @param {ToyCallback} options.processingFunction - Component processor.
  * @param {object} options.env - Environment helpers.
  * @param {HTMLInputElement} options.inputElement - Live input element.
  * @param {{frameId: number|null, lastValue: string|null}} options.autoSubmitState
@@ -1457,7 +1459,7 @@ function hasMissingElement(elements) {
  * Retrieves the input and submit elements for a toy article.
  * @param {object} dom - DOM helper object.
  * @param {HTMLElement} article - Article containing the toy.
- * @param {Function} logWarning - Logger for missing elements.
+ * @param {ToyCallback} logWarning - Logger for missing elements.
  * @returns {{inputElement: HTMLInputElement, submitButton: HTMLButtonElement}|null}
  *   Object with elements or null if missing.
  */
@@ -1478,7 +1480,7 @@ function getInteractiveElements(dom, article, logWarning) {
  * Initializes the interactive elements (input, button, output) within a toy's article element.
  * Sets up event listeners and initial state.
  * @param {HTMLElement} article - The article element containing the toy.
- * @param {Function} processingFunction - The toy's core logic function.
+ * @param {ToyCallback} processingFunction - The toy's core logic function.
  * @param {object} config - An object containing globalState, createEnvFn, errorFn, fetchFn, dom, getUuid, and loggers.
  * @returns {void}
  */
@@ -1603,8 +1605,8 @@ export function initializeInteractiveComponent(
 
 /**
  * Returns a keypress event handler that triggers submit on Enter key.
- * @param {Function} handleSubmit - The submit handler function to call on Enter key.
- * @returns {Function} Keypress event handler.
+ * @param {ToyCallback} handleSubmit - The submit handler function to call on Enter key.
+ * @returns {ToyCallback} Keypress event handler.
  */
 function createHandleKeyPress(handleSubmit) {
   return event => {
@@ -1619,7 +1621,7 @@ function createHandleKeyPress(handleSubmit) {
  * IntersectionObservers (via the provided creator function) to lazy-load
  * and initialize them when they enter the viewport.
  * @param {object} env - An object containing win, logInfo, logWarning, and getElement.
- * @param {Function} createIntersectionObserver - Function that creates an IntersectionObserver for a given article, module path, and function name.
+ * @param {ToyCallback} createIntersectionObserver - ToyCallback that creates an IntersectionObserver for a given article, module path, and function name.
  */
 export function initializeVisibleComponents(env, createIntersectionObserver) {
   const { win, logInfo, logWarning, getElement } = env;
@@ -1716,8 +1718,8 @@ export const syncHiddenField = (textInput, rowData, dom) => {
  * @param {object} options.rows - The rows object containing key-value pairs
  * @param {object} options.rowTypes - Per-key type map for value coercion.
  * @param {HTMLInputElement} options.textInput - The hidden input element
- * @param {Function} options.syncHiddenField - Function to sync the hidden field
- * @returns {Function} The render function
+ * @param {ToyCallback} options.syncHiddenField - ToyCallback to sync the hidden field
+ * @returns {ToyCallback} The render function
  */
 export const createRenderer = options => {
   const {
@@ -1769,10 +1771,10 @@ export const createRenderer = options => {
 
 /**
  * Creates a function that initializes dropdown event listeners
- * @param {Function} onOutputChange - Handler for output dropdown changes
- * @param {Function} onInputChange - Handler for input dropdown changes
+ * @param {ToyCallback} onOutputChange - Handler for output dropdown changes
+ * @param {ToyCallback} onInputChange - Handler for input dropdown changes
  * @param {object} dom - The DOM utilities object
- * @returns {Function} A function that initializes dropdown event listeners
+ * @returns {ToyCallback} A function that initializes dropdown event listeners
  */
 export const createDropdownInitializer = (
   onOutputChange,
@@ -1802,13 +1804,13 @@ export const createDropdownInitializer = (
 /**
  * Create a deep cloned copy of the provided global state.
  * @param {object} globalState - State object to clone.
- * @returns {object} A deep copy of {@code globalState}.
+ * @returns {object} A deep copy of `globalState`.
  */
 export const getDeepStateCopy = globalState => deepClone(globalState);
 
 /**
  * Create the browser toys wrapper handle.
- * @returns {Record<string, Function>} Toy orchestration exports.
+ * @returns {Record<string, ToyCallback>} Toy orchestration exports.
  */
 export function createToysHandle() {
   return {
