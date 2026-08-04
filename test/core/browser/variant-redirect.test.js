@@ -23,7 +23,7 @@ function createLink(attrs) {
  * Create a document stub for variant redirect tests.
  * @param {Array<unknown>} links Links returned by querySelectorAll.
  * @param {string} readyState Document ready state.
- * @returns {{readyState: string, listeners: Record<string, Function>, querySelectorAll: jest.Mock, addEventListener: jest.Mock}} Document stub.
+ * @returns {{readyState: string, listeners: Record<string, (...args: never[]) => unknown>, querySelectorAll: jest.Mock, addEventListener: jest.Mock}} Document stub.
  */
 function createDocument(links, readyState = 'complete') {
   const listeners = {};

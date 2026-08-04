@@ -72,7 +72,7 @@ describe('createProcessNewStoryHandle', () => {
  * Build a fake Firestore database for story handler tests.
  * @param {{authorExists?: boolean}} root0 Configuration for author existence.
  * @param {boolean} [root0.authorExists] Controls whether author docs are marked as existing.
- * @returns {{db: {doc: Function, batch: Function}, getDoc: Function}} Test DB helpers.
+ * @returns {{db: {doc: (...args: never[]) => unknown, batch: (...args: never[]) => unknown}, getDoc: (...args: never[]) => unknown}} Test DB helpers.
  */
 function createFakeDb({ authorExists = true } = {}) {
   const cache = new Map();

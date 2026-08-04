@@ -99,7 +99,7 @@ function createBatch() {
  * @param {{existingName: string|null, variantDoc: object}} root0 Arguments for the collection mock.
  * @param {string|null} root0.existingName Upgrade target name, if any.
  * @param {object} root0.variantDoc Variant document to expose.
- * @returns {{parent: null, orderBy: Function, doc: Function}} Mock collection API.
+ * @returns {{parent: null, orderBy: (...args: never[]) => unknown, doc: (...args: never[]) => unknown}} Mock collection API.
  */
 function createVariantCollection({ existingName = null, variantDoc }) {
   return {
@@ -128,7 +128,7 @@ function createVariantCollection({ existingName = null, variantDoc }) {
  * Build a variant document that tracks option fixtures.
  * @param {{optionDocs: object[]}} root0 Argument bundle for option doc tracking.
  * @param {object[]} root0.optionDocs Array that receives created option docs.
- * @returns {{id: string, path: string, parent: object|null, collection: Function}} Variant doc.
+ * @returns {{id: string, path: string, parent: object|null, collection: (...args: never[]) => unknown}} Variant doc.
  */
 function createVariantDoc({ optionDocs }) {
   const variantDoc = {

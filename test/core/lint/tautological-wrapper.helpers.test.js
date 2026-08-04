@@ -308,7 +308,7 @@ describe('tautological-wrapper helper coverage', () => {
     ).toBe(false);
     expect(
       helpers.hasDocumentedExemption(
-        /** @type {any} */ (createNode({ loc: null })),
+        /** @type {unknown} */ (createNode({ loc: null })),
         createSourceCode([comment])
       )
     ).toBe(false);

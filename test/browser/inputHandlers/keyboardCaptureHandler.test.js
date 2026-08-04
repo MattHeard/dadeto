@@ -4,7 +4,7 @@ import { readStoredOrElementValue } from '../../../src/core/browser/inputValueSt
 
 /**
  * Create mock global listener bindings.
- * @returns {{ listeners: Record<string, Function>, addEventListener: ReturnType<typeof jest.fn>, removeEventListener: ReturnType<typeof jest.fn> }} Listener registry.
+ * @returns {{ listeners: Record<string, (...args: never[]) => unknown>, addEventListener: ReturnType<typeof jest.fn>, removeEventListener: ReturnType<typeof jest.fn> }} Listener registry.
  */
 function createGlobalListenerRegistry() {
   const listeners = {};

@@ -3,7 +3,7 @@ import { createGoogleAuthStatusHandle } from '../../../src/core/browser/google-a
 
 /**
  * Create an element-like stub with style and event support.
- * @returns {{style: Record<string, string>, addEventListener: jest.Mock, listeners: Record<string, Function>}} Element stub.
+ * @returns {{style: Record<string, string>, addEventListener: jest.Mock, listeners: Record<string, (...args: never[]) => unknown>}} Element stub.
  */
 function createElement() {
   const listeners = {};

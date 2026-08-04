@@ -10,7 +10,7 @@ const ACCESS_TOKEN_KEY = 'access_token';
 
 /**
  * Load the cloud render entrypoint under tenant environment variables.
- * @returns {Promise<Function>} Render function.
+ * @returns {Promise<(...args: never[]) => unknown>} Render function.
  */
 async function loadRender() {
   const originalEnv = {
