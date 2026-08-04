@@ -120,7 +120,9 @@ function readDisableAutoSelect(globalScope) {
  * @returns {unknown} Candidate disable helper or undefined when absent.
  */
 function getDisableAutoSelectCandidate(globalScope) {
-  const scope = /** @type {any} */ (globalScope);
+  const scope = /** @type {Record<string, unknown>} */ (
+    /** @type {unknown} */ (globalScope)
+  );
   return getNestedProperty(
     scope,
     'google',
@@ -139,7 +141,7 @@ function getDisableAutoSelectCandidate(globalScope) {
 function getNestedProperty(source, ...keys) {
   return keys.reduce(
     (cursor, key) => resolveNestedProperty(cursor, key),
-    /** @type {any} */ (source)
+    /** @type {unknown} */ (source)
   );
 }
 
@@ -188,9 +190,11 @@ export function createSignOut(authInstance, globalScope) {
 
   return createGoogleSignOut({
     authSignOut,
-    storage: createSessionStorageHandler(/** @type {any} */ (globalScope)),
+    storage: createSessionStorageHandler(
+      /** @type {Window & typeof globalThis} */ (globalScope)
+    ),
     disableAutoSelect: createDisableAutoSelect(
-      /** @type {any} */ (globalScope)
+      /** @type {Window & typeof globalThis} */ (globalScope)
     ),
   });
 }
@@ -294,7 +298,7 @@ export function createGoogleAuthModule(deps) {
     signInWithCredentialFn: buildSignInCredential(credentialFactory),
   });
 
-  const initGoogleSignIn = (/** @type {any} */ options) =>
+  const initGoogleSignIn = (/** @type {GoogleSignInOptions} */ options) =>
     getInitGoogleSignInHandler()(options);
 
   const getSignOutHandler = createSignOutHandlerFactory(getAuthFn, globalScope);
@@ -317,7 +321,14 @@ export function createGoogleAuthModule(deps) {
     return storage.getItem('id_token') || '';
   };
 
-  return { initGoogleSignIn, signOut, getIdToken };
+  return {
+    initGoogleSignIn:
+      /** @type {(options?: GoogleSignInOptions) => void | Promise<void>} */ (
+        initGoogleSignIn
+      ),
+    signOut,
+    getIdToken,
+  };
 }
 
 /**
@@ -365,7 +376,7 @@ export function resolveAdminEndpoint(config, key) {
     return '';
   }
 
-  return /** @type {any} */ (sourceWithKey)[key];
+  return String(/** @type {Record<string, unknown>} */ (sourceWithKey)[key]);
 }
 
 /**
@@ -727,16 +738,17 @@ export function createTriggerRender({
     fetchFn,
     showMessage,
     missingTokenMessage: 'Render failed: missing ID token',
-    action: (
-      /** @type {any} */ {
-        token,
-        getAdminEndpoints,
-        fetchFn: fetch,
-        showMessage: report,
-      }
-    ) =>
+    action: ({
+      token,
+      getAdminEndpoints,
+      fetchFn: fetch,
+      showMessage: report,
+    }) =>
       executeTriggerRender({
-        getAdminEndpoints,
+        getAdminEndpoints:
+          /** @type {() => Promise<{ triggerRenderContentsUrl: string }>} */ (
+            getAdminEndpoints
+          ),
         fetchFn: fetch,
         token,
         showMessage: report,
@@ -759,7 +771,7 @@ function requireCondition(condition, message) {
 
 /**
  * Ensure the value is a callable function.
- * @param {*} value - Value that should be a function.
+ * @param {unknown} value - Value that should be a function.
  * @param {string} name - Error message target when validation fails.
  * @returns {void}
  */
@@ -769,7 +781,7 @@ function requireFunction(value, name) {
 
 /**
  * Ensure the value acts like a Document for DOM lookups.
- * @param {*} value - Candidate document-like object.
+ * @param {unknown} value - Candidate document-like object.
  * @param {string} [name] - Identifier used inside the error message.
  * @returns {void}
  */
@@ -782,11 +794,16 @@ function requireDocumentLike(value, name = 'doc') {
 
 /**
  * Detect whether a value can perform document lookups.
- * @param {*} value - Candidate object evaluated for DOM parity.
+ * @param {unknown} value - Candidate object evaluated for DOM parity.
  * @returns {boolean} True when the value exposes `getElementById`.
  */
 function isDocumentLike(value) {
-  return Boolean(value && typeof value.getElementById === 'function');
+  return Boolean(
+    value &&
+      typeof (
+        /** @type {{ getElementById?: unknown }} */ (value).getElementById
+      ) === 'function'
+  );
 }
 
 /**
@@ -818,7 +835,7 @@ function hasQuerySelectorAll(doc) {
 
 /**
  * Determine whether a value behaves like a plain object.
- * @param {*} value - Candidate value.
+ * @param {unknown} value - Candidate value.
  * @returns {boolean} True when the value is a non-null object.
  */
 function isObject(value) {
@@ -1021,7 +1038,7 @@ function assertFunction(value, message) {
 
 /**
  * Ensure the provided value is a non-null object.
- * @param {*} value - Candidate value that should behave like an object.
+ * @param {unknown} value - Candidate value that should behave like an object.
  * @param {string} message - Message used for the thrown error when validation fails.
  * @returns {void}
  */
@@ -1121,7 +1138,11 @@ function validateGoogleSignInDeps({
 function normalizeGoogleSignInDeps(deps) {
   const normalizedDeps = summarizeGoogleSignInDeps(deps);
 
-  validateGoogleSignInDeps(/** @type {any} */ (normalizedDeps));
+  validateGoogleSignInDeps(
+    /** @type {Parameters<typeof validateGoogleSignInDeps>[0]} */ (
+      normalizedDeps
+    )
+  );
 
   return /** @type {NormalizedGoogleSignInDeps} */ (normalizedDeps);
 }
@@ -1545,7 +1566,7 @@ function initializeGoogleSignIn(accountsId, options) {
   accountsId.initialize({
     ['client_id']:
       '848377461162-rv51umkquokgoq0hsnp1g0nbmmrv7kl0.apps.googleusercontent.com',
-    callback: (/** @type {any} */ cred) => {
+    callback: (/** @type {{ credential: string }} */ cred) => {
       return handleCredentialSignIn(cred, options).catch(error => {
         options.reportError?.(error);
         console.error('Google sign-in failed', error);
@@ -1657,7 +1678,7 @@ function ensureGoogleAuth(googleAuth) {
 
 /**
  * Check if auth is valid.
- * @param {any} googleAuth Auth.
+ * @param {{ getIdToken?: () => Promise<string> | string | null | undefined } | null | undefined} googleAuth Auth.
  * @returns {boolean} True if valid.
  */
 function isValidAuth(googleAuth) {
@@ -2677,7 +2698,9 @@ export function buildGoogleSignInDeps({
  * @returns {(options?: GoogleSignInOptions) => Promise<void> | void} Initialized sign-in function.
  */
 export function createGoogleSignInInit(deps) {
-  const googleSignInDeps = buildGoogleSignInDeps(/** @type {any} */ (deps));
+  const googleSignInDeps = buildGoogleSignInDeps(
+    /** @type {Parameters<typeof buildGoogleSignInDeps>[0]} */ (deps)
+  );
   return createInitGoogleSignIn(googleSignInDeps);
 }
 
