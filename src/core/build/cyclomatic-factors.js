@@ -1,8 +1,9 @@
 import { PARSER_OPTIONS } from './parser-options.js';
 
 /**
- * @typedef {Record<string, any>} AstNode
- * @typedef {{ name: string, label: string, loc: any }} FunctionFrame
+ * @typedef {{ start?: { line?: number }, end?: { line?: number } }} SourceLocation
+ * @typedef {{ type?: string, test?: unknown, operator?: string, name?: string, value?: unknown, object?: AstNode, property?: AstNode, computed?: boolean, id?: AstNode, key?: AstNode, left?: AstNode, right?: AstNode, loc?: SourceLocation, start?: number, end?: number, [key: string]: unknown }} AstNode
+ * @typedef {{ name: string, label: string, loc: SourceLocation }} FunctionFrame
  * @typedef {{ index: number, description: string }} FactorEntry
  * @typedef {{ functionStack: FunctionFrame[], factors: FactorEntry[], source: string }} TraversalState
  */
@@ -354,7 +355,7 @@ function traverseNode(node, parent, state) {
 
 /**
  * Create the cyclomatic factor analyzer.
- * @param {{ parse: Function }} parser Parser dependency.
+ * @param {{ parse: (code: string, options: object) => AstNode }} parser Parser dependency.
  * @returns {(code: string) => string[]} Analyzer function.
  */
 function createDescribeCyclomaticFactors(parser) {
@@ -404,7 +405,7 @@ function createRunFromCli({ describeCyclomaticFactors, readInput, stdout }) {
 /**
  * Build the cyclomatic factor adapter handle.
  * @param {{
- *   parser: { parse: Function },
+ *   parser: { parse: (code: string, options: object) => AstNode },
  *   readInput: () => Promise<string>,
  *   stdout: { write: (output: string) => void },
  * }} deps Runtime dependencies.
