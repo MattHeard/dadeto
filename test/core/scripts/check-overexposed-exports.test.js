@@ -10,7 +10,7 @@ import {
 /**
  * Create a fake file system for the script tests.
  * @param {Record<string, string>} files File contents keyed by path.
- * @returns {{ parse: Function, readFileSync: Function, readdirSync: Function, pathModule: typeof path, rootDir: string, sourceRoot: string, configPath: string }} Fake file-system adapter.
+ * @returns {{ parse: (...args: never[]) => unknown, readFileSync: (...args: never[]) => unknown, readdirSync: (...args: never[]) => unknown, pathModule: typeof path, rootDir: string, sourceRoot: string, configPath: string }} Fake file-system adapter.
  */
 function createFileSystem(files) {
   return {

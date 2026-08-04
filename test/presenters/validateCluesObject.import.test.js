@@ -5,7 +5,7 @@ import { it /*, describe, expect */ } from '@jest/globals';
 
 /**
  * Dynamically loads the `validateCluesObject` function from the source module.
- * @returns {Promise<Function>} resolves with the `validateCluesObject` function
+ * @returns {Promise<(...args: never[]) => unknown>} resolves with the `validateCluesObject` function
  */
 export async function loadValidateCluesObject() {
   const srcPath = path.join(

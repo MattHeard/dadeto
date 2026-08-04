@@ -65,7 +65,7 @@ describe('local workflow core', () => {
       normalizeWorkflow({
         steps: [],
         activeIndex: undefined,
-        heading: /** @type {any} */ (null),
+        heading: /** @type {unknown} */ (null),
       })
     ).toEqual({
       steps: DEFAULT_SEQUENCE,
