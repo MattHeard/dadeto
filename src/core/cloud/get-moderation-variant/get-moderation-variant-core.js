@@ -254,7 +254,8 @@ function extractBearerToken(value) {
  */
 function hasValidGetMethod(request) {
   return (
-    Boolean(request) && typeof (/** @type {any} */ (request).get) === 'function'
+    Boolean(request) &&
+    typeof (/** @type {{ get?: unknown }} */ (request).get) === 'function'
   );
 }
 
@@ -288,7 +289,9 @@ function getAuthorizationHeader(request) {
     /** @type {(name: string) => string | null | undefined} */ (
       name =>
         /** @type {(name: string) => string | null | undefined} */ (
-          /** @type {any} */ (request).get
+          /** @type {{ get: (name: string) => string | null | undefined }} */ (
+            request
+          ).get
         ).call(request, name)
     );
   return findAuthHeader(headerGetter);
@@ -762,7 +765,7 @@ function getErrorMessage(error) {
   if (!isErrorObject(error)) {
     return null;
   }
-  return /** @type {any} */ (error).message;
+  return /** @type {{ message?: unknown }} */ (error).message;
 }
 
 /**
