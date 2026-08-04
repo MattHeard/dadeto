@@ -6,9 +6,9 @@ import { createMemoryStorageLens } from './memoryStorageLens.js';
 
 /**
  * Returns a Base64 encoding function using the provided helpers.
- * @param {Function} btoa - Platform `btoa`.
- * @param {Function} encodeURIComponentFn - Platform `encodeURIComponent`.
- * @returns {Function} encodeBase64 - Encodes a string to Base64.
+ * @param {(value: string) => string} btoa - Platform `btoa`.
+ * @param {(value: string) => string} encodeURIComponentFn - Platform `encodeURIComponent`.
+ * @returns {(value: string) => string} encodeBase64 - Encodes a string to Base64.
  */
 export function getEncodeBase64(btoa, encodeURIComponentFn) {
   /**
@@ -303,7 +303,7 @@ function isInvalidState(value) {
 /**
  * Validates incoming state before applying it to the global state.
  * @param {object} incomingState - Candidate state object.
- * @param {Function} errorFn - Error logger.
+ * @param {(message: string, ...args: unknown[]) => void} errorFn - Error logger.
  * @returns {void}
  */
 function validateIncomingState(incomingState, errorFn) {
@@ -330,7 +330,7 @@ function isInvalidPermanentState(value) {
 /**
  * Validates incoming permanent state before applying it.
  * @param {object} incomingState - Candidate state object.
- * @param {Function} errorFn - Error logger.
+ * @param {(message: string, ...args: unknown[]) => void} errorFn - Error logger.
  * @returns {void}
  */
 function validateIncomingPermanentState(incomingState, errorFn) {
@@ -610,7 +610,7 @@ function createLensFromStorage(storage, logError) {
 
 /**
  * Ensure the dependency bundle is an object.
- * @param {*} bundle - Candidate dependency bundle.
+ * @param {unknown} bundle - Candidate dependency bundle.
  * @returns {void}
  */
 function ensureBundleObject(bundle) {
@@ -623,7 +623,7 @@ function ensureBundleObject(bundle) {
 
 /**
  * Ensure the fetch implementation is defined as a function.
- * @param {*} fetchImpl - Candidate fetch implementation.
+ * @param {unknown} fetchImpl - Candidate fetch implementation.
  * @returns {void}
  */
 function ensureFetchFunction(fetchImpl) {
@@ -636,7 +636,7 @@ function ensureFetchFunction(fetchImpl) {
 
 /**
  * Ensure loggers are supplied as an object.
- * @param {*} loggers - Candidate logger bundle.
+ * @param {unknown} loggers - Candidate logger bundle.
  * @returns {void}
  */
 function ensureLoggersObject(loggers) {
@@ -685,19 +685,24 @@ function createDependencyAccessor(createDependencies) {
 /**
  * Invoke a controller method with lazily resolved dependencies.
  * @param {() => NormalizedBlogDataDependencies} getDependencies Dependency accessor.
- * @param {(...args: any[]) => any} invoke Method body.
- * @param {...any[]} args Additional method arguments.
- * @returns {any} Method return value.
+ * @template Result
+ * @param {(...args: never[]) => Result} invoke Method body.
+ * @param {...unknown} args Additional method arguments.
+ * @returns {Result} Method return value.
  */
 function callWithDependencies(getDependencies, invoke, ...args) {
-  return invoke(...args, getDependencies());
+  return invoke(
+    .../** @type {never[]} */ (args),
+    /** @type {never} */ (getDependencies())
+  );
 }
 
 /**
  * Create a method wrapper that always resolves dependencies before invoking.
  * @param {() => NormalizedBlogDataDependencies} getDependencies Dependency accessor.
- * @param {(...args: any[]) => any} invoke Method implementation that expects dependencies as the last argument.
- * @returns {(...args: any[]) => any} Wrapped method.
+ * @template Result
+ * @param {(...args: never[]) => Result} invoke Method implementation that expects dependencies as the last argument.
+ * @returns {(...args: never[]) => Result} Wrapped method.
  */
 function createDependencyMethod(getDependencies, invoke) {
   return (...args) => callWithDependencies(getDependencies, invoke, ...args);
@@ -717,9 +722,8 @@ export function createBlogDataController(createDependencies) {
      * @returns {Promise<unknown>} Resolves once the fetch and cache operations complete.
      */
     fetchAndCacheBlogData(state) {
-      return createDependencyMethod(
-        getDependencies,
-        fetchAndCacheBlogData
+      return /** @type {(state: BlogStateRecord) => Promise<unknown>} */ (
+        createDependencyMethod(getDependencies, fetchAndCacheBlogData)
       )(state);
     },
     /**
@@ -727,16 +731,17 @@ export function createBlogDataController(createDependencies) {
      * @returns {Record<string, unknown>} Sanitized copy of the current state.
      */
     getData(state) {
-      return createDependencyMethod(getDependencies, getData)(state);
+      return /** @type {(state: BlogStateRecord) => Record<string, unknown>} */ (
+        createDependencyMethod(getDependencies, getData)
+      )(state);
     },
     /**
      * @param {TemporaryStateBundle} state - Incoming temporary payload and the target state.
      * @returns {void} No value is returned; the state is modified in place.
      */
     setLocalTemporaryData(state) {
-      return createDependencyMethod(
-        getDependencies,
-        setLocalTemporaryData
+      return /** @type {(state: TemporaryStateBundle) => void} */ (
+        createDependencyMethod(getDependencies, setLocalTemporaryData)
       )(state);
     },
     /**
@@ -744,19 +749,31 @@ export function createBlogDataController(createDependencies) {
      * @returns {object} Merged permanent state after persistence.
      */
     setLocalPermanentData(desired) {
-      return createDependencyMethod(
-        getDependencies,
-        (nextDesired, dependencies) =>
-          setLocalPermanentDataCore(
+      return /** @type {(desired: Record<string, unknown>) => object} */ (
+        createDependencyMethod(
+          getDependencies,
+          (
             nextDesired,
-            dependencies.loggers,
-            dependencies.permanentLens
-          )
+            /** @type {NormalizedBlogDataDependencies} */ dependencies
+          ) =>
+            setLocalPermanentDataCore(
+              nextDesired,
+              dependencies.loggers,
+              dependencies.permanentLens
+            )
+        )
       )(desired);
     },
     getLocalPermanentData() {
-      return createDependencyMethod(getDependencies, dependencies =>
-        readLocalPermanentData(dependencies.permanentLens)
+      return /** @type {() => object} */ (
+        createDependencyMethod(
+          getDependencies,
+          /**
+           * @param {NormalizedBlogDataDependencies} dependencies Dependencies.
+           * @returns {object} Current permanent state.
+           */
+          dependencies => readLocalPermanentData(dependencies.permanentLens)
+        )
       )();
     },
   };
