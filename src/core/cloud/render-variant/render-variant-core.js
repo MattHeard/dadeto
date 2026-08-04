@@ -33,7 +33,7 @@ export function resolveVisibilityThreshold(visibilityThreshold) {
 
 /**
  * Update the changed variant and its incoming-option ancestors without rendering them.
- * @param {{change: any, db: FirestoreLike}} options Change and tenant database.
+ * @param {{change: unknown, db: FirestoreLike}} options Change and tenant database.
  * @returns {Promise<void>} Promise.
  */
 async function updateTreeVisibilityForVariantChange({ change, db }) {
@@ -99,9 +99,9 @@ async function updateTreeVisibilityForVariantChange({ change, db }) {
 
 /**
  * Resolve the incoming-option parent variant reference.
- * @param {Record<string, any>} data Variant data.
+ * @param {Record<string, unknown>} data Variant data.
  * @param {FirestoreLike} db Firestore client.
- * @returns {any|null} Parent variant reference.
+ * @returns {unknown|null} Parent variant reference.
  */
 function resolveIncomingParentRef(data, db) {
   if (!data.incomingOption || !db?.doc) return null;
@@ -113,11 +113,11 @@ function resolveIncomingParentRef(data, db) {
  * @typedef {(message?: unknown, ...optionalParams: unknown[]) => void} ConsoleError
  * @typedef {import('firebase-admin/firestore').DocumentReference<import('firebase-admin/firestore').DocumentData> & { parent?: DocumentReferenceData | null, set?: (data: unknown) => Promise<unknown> }} DocumentReferenceData
  * @typedef {import('firebase-admin/firestore').DocumentSnapshot<import('firebase-admin/firestore').DocumentData>} DocumentSnapshotData
- * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => import('firebase-admin/firestore').CollectionReference, collectionGroup: (path: string) => { where: Function, get: Function } }} FirestoreLike
+ * @typedef {{ doc: (path: string) => DocumentReferenceData, collection: (path: string) => import('firebase-admin/firestore').CollectionReference, collectionGroup: (path: string) => { where: (...args: unknown[]) => unknown, get: (...args: unknown[]) => unknown } }} FirestoreLike
  * @typedef {{ exists: () => Promise<[boolean]>, save: (content: string, options: object) => Promise<unknown> }} StorageFileLike
  * @typedef {{ file: (path: string) => StorageFileLike }} StorageBucketLike
  * @typedef {object} AncestorReference
- * @property {Function} get Function to resolve the referenced ancestor.
+ * @property {(...args: unknown[]) => unknown} get Function to resolve the referenced ancestor.
  * @property {AncestorReference | null | undefined} [parent] Optional parent reference in the ancestor chain.
  * @typedef {AncestorReference | null | undefined} OptionalAncestorReference
  * @typedef {{
@@ -206,7 +206,7 @@ function resolveIncomingParentRef(data, db) {
  *   consoleError?: ConsoleError;
  * }} StoryMetadataDeps
  * @typedef {{ pageSnap: PageSnapshot; page: PageDocument; db: FirestoreLike; consoleError?: ConsoleError }} StoryMetadataLookupDeps
- * @typedef {{ exists: boolean; data: () => Record<string, any> }} DocumentLike
+ * @typedef {{ exists: boolean; data: () => Record<string, unknown> }} DocumentLike
  * @typedef {{ get: () => Promise<DocumentLike> }} DocumentRefLike
  * @typedef {{ parentVariantRef: DocumentRefLike; parentPageRef: DocumentRefLike }} ParentReferencePair
  * @typedef {{ parentVariantSnap: DocumentLike; parentPageSnap: DocumentLike }} ParentSnapshotPair
@@ -951,7 +951,7 @@ export function getVisibleVariants(docs) {
 
 /**
  * Map document to variant object.
- * @param {{ data: Function }} doc Document.
+ * @param {{ data: (...args: unknown[]) => unknown }} doc Document.
  * @returns {{ name: string, content: string }} Variant object.
  */
 function mapDocToVariant(doc) {
@@ -990,7 +990,7 @@ function buildVariantObject(data) {
 
 /**
  * Ensure a Firestore-like database instance exposes the required helpers.
- * @param {{doc: Function}} db - Database instance that should provide a `doc` helper.
+ * @param {{doc: (...args: unknown[]) => unknown}} db - Database instance that should provide a `doc` helper.
  * @throws {TypeError} When the provided database does not expose a `doc` function.
  */
 function assertDb(db) {
@@ -1002,7 +1002,7 @@ function assertDb(db) {
 
 /**
  * Check if db has doc helper.
- * @param {{ doc: Function }} db Database.
+ * @param {{ doc: (...args: unknown[]) => unknown }} db Database.
  */
 function checkDbDocHelper(db) {
   if (typeof db.doc !== 'function') {
@@ -1012,7 +1012,7 @@ function checkDbDocHelper(db) {
 
 /**
  * Confirm the storage dependency can create bucket handles.
- * @param {{bucket: Function}} storage - Storage implementation expected to expose a `bucket` helper.
+ * @param {{bucket: (...args: unknown[]) => unknown}} storage - Storage implementation expected to expose a `bucket` helper.
  * @throws {TypeError} When the provided storage does not expose a `bucket` function.
  */
 function assertStorage(storage) {
@@ -1024,7 +1024,7 @@ function assertStorage(storage) {
 
 /**
  * Check if storage has bucket helper.
- * @param {{ bucket: Function }} storage Storage.
+ * @param {{ bucket: (...args: unknown[]) => unknown }} storage Storage.
  */
 function checkStorageBucketHelper(storage) {
   if (typeof storage.bucket !== 'function') {
