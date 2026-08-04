@@ -1231,7 +1231,7 @@ async function getAccessToken(fetchFn) {
 
 /**
  * Ensure the fetch response is successful.
- * @param {Response} response Response returned by the metadata endpoint.
+ * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Response returned by the metadata endpoint.
  * @param {string} label Context label used for errors.
  * @returns {void}
  */
@@ -1243,7 +1243,7 @@ function ensureResponseOk(response, label) {
 
 /**
  * Extract the metadata access token from the response body.
- * @param {Response} response Metadata response containing `access_token`.
+ * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Metadata response containing `access_token`.
  * @returns {Promise<string>} Parsed token string.
  */
 async function extractAccessToken(response) {
@@ -1292,7 +1292,7 @@ async function invalidatePathItem({
 
 /**
  * Log invalidation failures when the response is not OK.
- * @param {Response} response Fetch response for the invalidation call.
+ * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Fetch response for the invalidation call.
  * @param {string} path CDN path that was requested.
  * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
  * @returns {void}
@@ -1307,7 +1307,7 @@ function logInvalidateResponse(response, path, consoleError) {
 
 /**
  * Determine if the invalidation response should be logged.
- * @param {Response} response Fetch response for the invalidation call.
+ * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Fetch response for the invalidation call.
  * @param {(message: string, ...optionalParams: unknown[]) => void} [consoleError] Optional logger.
  * @returns {boolean} True when the response is not OK and a logger is provided.
  */

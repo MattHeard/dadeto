@@ -18,7 +18,7 @@ import { createErrorBeaconHandler } from './errors-core.js';
  *   cors: (options: object) => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   console?: ErrorBeaconConsole,
- *   fetchFn: typeof fetch,
+ *   fetchFn: typeof globalThis.fetch,
  * }} deps Runtime dependencies.
  * @returns {{ handle: import('express').Express }} Cloud Function handle wrapper.
  */
@@ -153,7 +153,7 @@ function resolveBuildVersion(environmentVariables) {
 
 /**
  * Fetch an ADC access token from metadata.
- * @param {typeof fetch} fetchFn Fetch implementation.
+ * @param {typeof globalThis.fetch} fetchFn Fetch implementation.
  * @returns {Promise<string>} Access token string.
  */
 async function fetchAccessToken(fetchFn) {

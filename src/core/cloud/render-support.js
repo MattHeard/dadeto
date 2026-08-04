@@ -1,7 +1,7 @@
 /**
  * Create a fetch wrapper that uses the injected fetch implementation.
- * @param {typeof fetch} fetchFn Fallback fetch implementation.
- * @returns {(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>} Fetch wrapper.
+ * @param {typeof globalThis.fetch} fetchFn Fallback fetch implementation.
+ * @returns {(...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>} Fetch wrapper.
  */
 export function createDynamicFetch(fetchFn) {
   return (...args) => {
@@ -30,9 +30,9 @@ export function createMemoizedLoader(factory) {
 
 /**
  * Create a shared render runtime with dynamic fetch and a memoized renderer.
- * @param {typeof fetch} fetchFn Fallback fetch implementation.
- * @param {(dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>) => unknown} buildInstance Renderer factory.
- * @returns {{ dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>, resolveInstance: () => unknown }} Render runtime helpers.
+ * @param {typeof globalThis.fetch} fetchFn Fallback fetch implementation.
+ * @param {(dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>) => unknown} buildInstance Renderer factory.
+ * @returns {{ dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>, resolveInstance: () => unknown }} Render runtime helpers.
  */
 export function createRenderRuntime(fetchFn, buildInstance) {
   const dynamicFetch = createDynamicFetch(fetchFn);
@@ -98,7 +98,7 @@ export function createCloudRenderContext(options) {
  * @param {{
  *   db: unknown,
  *   storage: unknown,
- *   dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>,
+ *   dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   crypto: { randomUUID: () => string },
  *   projectId: string | undefined,
  *   urlMapName: string | undefined,
@@ -110,7 +110,7 @@ export function createCloudRenderContext(options) {
  * @returns {{
  *   db: unknown,
  *   storage: unknown,
- *   fetchFn: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>,
+ *   fetchFn: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   randomUUID: () => string,
  *   projectId: string | undefined,
  *   urlMapName: string | undefined,
@@ -138,7 +138,7 @@ export function createCloudRenderInstanceDeps(options) {
  * @returns {(state: {
  *   db: unknown,
  *   storage: unknown,
- *   dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>,
+ *   dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   projectId: string | undefined,
  *   urlMapName: string | undefined,
  *   cdnHost: string | undefined,
@@ -173,7 +173,7 @@ export function createCloudRenderInstanceBuilder(options) {
  *   getFirestoreInstance: (options: { environment: Record<string, string | undefined> }) => unknown,
  *   Storage: new () => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   fetchFn: typeof fetch,
+ *   fetchFn: typeof globalThis.fetch,
  *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
  *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
  *   defaultBucketName: string,
@@ -181,7 +181,7 @@ export function createCloudRenderInstanceBuilder(options) {
  *   buildRender: (state: {
  *     db: unknown,
  *     storage: unknown,
- *     dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>,
+ *     dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *     environmentVariables: Record<string, string | undefined>,
  *     bucketName: string,
  *     objectPrefix: string,
@@ -201,14 +201,14 @@ export function createCloudRenderInstanceBuilder(options) {
  *   getFirestoreInstance: () => unknown,
  *   Storage: new () => unknown,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
- *   fetchFn: typeof fetch,
+ *   fetchFn: typeof globalThis.fetch,
  *   resolveBucketName: (environmentVariables: Record<string, string | undefined>, defaultBucketName: string) => string,
  *   resolveObjectPrefix: (environmentVariables: Record<string, string | undefined>) => string,
  *   defaultBucketName: string,
  *   buildRender: (state: {
  *     db: unknown,
  *     storage: unknown,
- *     dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>,
+ *     dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *     environmentVariables: Record<string, string | undefined>,
  *     bucketName: string,
  *     objectPrefix: string,
@@ -226,7 +226,7 @@ export function createCloudRenderInstanceBuilder(options) {
  *   projectId: string | undefined,
  *   urlMapName: string | undefined,
  *   cdnHost: string | undefined,
- *   dynamicFetch: (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>,
+ *   dynamicFetch: (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>,
  *   render: () => unknown,
  * }} Full entrypoint state.
  */

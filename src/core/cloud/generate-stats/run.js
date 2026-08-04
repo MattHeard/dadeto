@@ -110,7 +110,7 @@ export const getFirestoreInstance = (options = {}) => {
  *   db: unknown,
  *   auth: unknown,
  *   storage: unknown,
- *   fetchFn: typeof fetch,
+ *   fetchFn: typeof globalThis.fetch,
  *   env?: Record<string, string | undefined>,
  *   cryptoModule: { randomUUID: () => string },
  *   console?: { error: (...args: unknown[]) => void },
@@ -206,7 +206,7 @@ function createRegionOnRequest(functions, app) {
  *   getFirestore: typeof getAdminFirestore,
  *   getEnvironmentVariables: () => Record<string, string | undefined>,
  *   initializeApp: () => void,
- *   fetchFn: typeof fetch,
+ *   fetchFn: typeof globalThis.fetch,
  *   crypto: { randomUUID: () => string },
  * }} deps Runtime dependencies supplied by the cloud wrapper.
  * @returns {unknown} Generate-stats Cloud Function handle.

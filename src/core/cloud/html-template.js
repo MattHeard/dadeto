@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 
 /**
  * Load and interpolate a checked-in HTML template.
- * @param {URL} templateUrl URL of the template file.
+ * @param {globalThis.URL} templateUrl URL of the template file.
  * @param {Record<string, string>} values Template values.
  * @returns {string} Interpolated HTML.
  */

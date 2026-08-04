@@ -318,7 +318,7 @@ function selectCdnHost(candidate) {
  *   db: import('firebase-admin/firestore').Firestore,
  *   auth: import('firebase-admin/auth').Auth,
  *   storage: import('@google-cloud/storage').Storage,
- *   fetchFn: typeof fetch,
+ *   fetchFn: typeof globalThis.fetch,
  *   env?: EnvironmentMap | Record<string, string | undefined>,
  *   urlMap?: string,
  *   cryptoModule: StatsCryptoModule,
@@ -869,7 +869,7 @@ function mapVariantRequestsFromPageSnap(pageSnap) {
 
 /**
  * Ensure the metadata response succeeded.
- * @param {Response} response Metadata server response.
+ * @param {Awaited<ReturnType<typeof globalThis.fetch>>} response Metadata server response.
  * @returns {void}
  */
 function assertMetadataResponseOk(response) {
@@ -910,18 +910,18 @@ function resolveCdnHost(envRef) {
 
 /**
  * Resolve the fetch implementation required for HTTP requests.
- * @param {typeof fetch} fetchFn Fetch implementation.
- * @returns {typeof fetch} Fetch implementation.
+ * @param {typeof globalThis.fetch} fetchFn Fetch implementation.
+ * @returns {typeof globalThis.fetch} Fetch implementation.
  */
 function resolveFetchImpl(fetchFn) {
-  return /** @type {typeof fetch} */ (fetchFn);
+  return /** @type {typeof globalThis.fetch} */ (fetchFn);
 }
 
 /**
  * Invalidate a single CDN path.
  * @param {object} deps Deps.
  * @param {string} deps.path Path.
- * @param {typeof fetch} deps.fetchImpl Fetch.
+ * @param {typeof globalThis.fetch} deps.fetchImpl Fetch.
  * @param {string | undefined} deps.project Project.
  * @param {string} deps.resolvedUrlMap Url map.
  * @param {string} deps.resolvedCdnHost Host.
@@ -955,7 +955,7 @@ function handleInvalidateResult(requestPromise, path, logger) {
 /**
  * Send invalidate request.
  * @param {object} deps Deps.
- * @param {typeof fetch} deps.fetchImpl HTTP client.
+ * @param {typeof globalThis.fetch} deps.fetchImpl HTTP client.
  * @param {string | undefined} deps.project Google Cloud project name.
  * @param {string} deps.resolvedUrlMap CDN URL map.
  * @param {string} deps.resolvedCdnHost CDN host header.
