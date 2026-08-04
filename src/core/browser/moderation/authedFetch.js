@@ -1,7 +1,7 @@
 import { ensureFunction } from '../browser-core.js';
 
 /**
- * @typedef {{ ok: boolean, status?: number, json?: () => any }} AuthedResponse
+ * @typedef {{ ok: boolean, status?: number, json?: () => unknown }} AuthedResponse
  */
 
 /**
@@ -10,15 +10,15 @@ import { ensureFunction } from '../browser-core.js';
 
 /**
  * @typedef {{
- *   headers?: Headers | ReturnType<Headers['entries']> | Record<string, any> | null,
- *   [key: string]: any,
+ *   headers?: Headers | ReturnType<Headers['entries']> | Record<string, unknown> | null,
+ *   [key: string]: unknown,
  * }} FetchOptions
  */
 
 /**
  * Normalize header-like inputs into an object for fetch.
- * @param {Headers|ReturnType<Headers['entries']>|Record<string, any>|null|undefined} originalHeaders Header-like data.
- * @returns {Record<string, any>} Normalized headers map.
+ * @param {Headers|ReturnType<Headers['entries']>|Record<string, unknown>|null|undefined} originalHeaders Header-like data.
+ * @returns {Record<string, unknown>} Normalized headers map.
  */
 function normalizeHeaders(originalHeaders) {
   const entries = getHeaderEntries(originalHeaders);
@@ -57,8 +57,8 @@ function getHeaderEntries(value) {
 
 /**
  * Clone non-`Headers` inputs into a plain object.
- * @param {FetchOptions['headers']|Record<string, any>|null|undefined} originalHeaders Header-like data.
- * @returns {Record<string, any>} Shallow copy of the provided headers.
+ * @param {FetchOptions['headers']|Record<string, unknown>|null|undefined} originalHeaders Header-like data.
+ * @returns {Record<string, unknown>} Shallow copy of the provided headers.
  */
 function buildHeaderFallback(originalHeaders) {
   return { ...(originalHeaders || {}) };
@@ -67,7 +67,7 @@ function buildHeaderFallback(originalHeaders) {
 /**
  * Normalize successful responses and throw on HTTP errors.
  * @param {AuthedResponse|unknown} response - Raw fetch response or failure object.
- * @returns {*} Parsed JSON payload or the original response.
+ * @returns {unknown} Parsed JSON payload or the original response.
  */
 function handleAuthedResponse(response) {
   if (!shouldProcessAuthedResponse(response)) {
@@ -101,7 +101,7 @@ function isObjectLike(value) {
 /**
  * Parse an authenticated response, throwing on HTTP failures.
  * @param {AuthedResponse} response - Validated fetch response.
- * @returns {*} Parsed JSON payload or the original response when no parser is available.
+ * @returns {unknown} Parsed JSON payload or the original response when no parser is available.
  */
 function parseAuthedResponse(response) {
   ensureResponseOk(response);
@@ -126,7 +126,7 @@ function ensureResponseOk(response) {
 /**
  * Resolve the body payload for a successful response.
  * @param {AuthedResponse} response - Response providing an optional JSON parser.
- * @returns {*} Parsed JSON payload or the original response when parsing is unavailable.
+ * @returns {unknown} Parsed JSON payload or the original response when parsing is unavailable.
  */
 function getResponseBody(response) {
   if (typeof response.json === 'function') {
@@ -140,9 +140,9 @@ function getResponseBody(response) {
  * Create an authenticated fetch helper that injects the current ID token.
  * @param {{
  *   getIdToken: () => (string|Promise<string|null>|null),
- *   fetchJson: (url: string, init: FetchOptions) => Promise<AuthedResponse|any>,
+ *   fetchJson: (url: string, init: FetchOptions) => Promise<AuthedResponse|unknown>,
  * }} deps Dependencies for token lookup and network access.
- * @returns {(url: string, init?: FetchOptions) => Promise<any>} Fetch helper adding an Authorization header.
+ * @returns {(url: string, init?: FetchOptions) => Promise<unknown>} Fetch helper adding an Authorization header.
  */
 export const createAuthedFetch = ({ getIdToken, fetchJson }) => {
   validateAuthedFetchDeps(getIdToken, fetchJson);
@@ -183,7 +183,7 @@ async function requireToken(getIdToken) {
 
 /**
  * Compose headers for authenticated requests, injecting the ID token.
- * @param {FetchOptions|Record<string, any>|null|undefined} originalHeaders - Headers from the caller.
+ * @param {FetchOptions['headers']|Record<string, unknown>|null|undefined} originalHeaders - Headers from the caller.
  * @param {string} token - Valid ID token.
  * @returns {Record<string, string>} Headers map used for the authenticated fetch.
  */

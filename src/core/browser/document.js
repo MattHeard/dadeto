@@ -338,7 +338,7 @@ export const removeNextSibling = link => link.nextElementSibling?.remove();
  * Removes an event listener from an element
  * @param {EventTarget} target - The target element to remove the listener from
  * @param {string} event - The event type to remove
- * @param {Function} handler - The event handler function to remove
+ * @param {(event: Event) => void} handler - The event handler function to remove
  * @returns {void}
  */
 export const removeEventListener = (target, event, handler) => {
@@ -396,7 +396,7 @@ export const setTextContent = (element, content) => {
 
 /**
  * Wrapper for the `IntersectionObserver` constructor.
- * @param {Function} callback - IntersectionObserver callback.
+ * @param {(entries: IntersectionObserverEntry[], observer: IntersectionObserver) => void} callback - IntersectionObserver callback.
  * @returns {IntersectionObserver} New observer instance.
  */
 export const makeIntersectionObserver = callback =>
@@ -414,8 +414,8 @@ export const isIntersecting = entry => entry.isIntersecting;
 /**
  * Dynamically imports a module
  * @param {string} modulePath - Path to the module to import
- * @param {Function} onSuccess - Function to call when import succeeds
- * @param {Function} onError - Function to call when import fails
+ * @param {function(object): void} onSuccess - Function to call when import succeeds
+ * @param {function(unknown): void} onError - Function to call when import fails
  */
 const importModule = (modulePath, onSuccess, onError) => {
   import(modulePath).then(onSuccess).catch(onError);
@@ -523,7 +523,7 @@ export const getInteractiveComponents = win => {
 /**
  * Create the browser document facade handle.
  * @param {DocumentEnvironment} deps Browser globals.
- * @returns {DOMHelpers & Record<string, Function>} Browser document helpers.
+ * @returns {DOMHelpers & Record<string, unknown>} Browser document helpers.
  */
 export function createDocumentHandle(deps) {
   setDocumentEnvironment(deps);
