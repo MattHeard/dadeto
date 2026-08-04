@@ -377,7 +377,7 @@ function getTimeContext(getCurrentTime) {
 
 /**
  * Ensure an environment function is available and typed as a number supplier.
- * @param {{get: (name: string) => any}} env - Environment accessor provided by the toy harness.
+ * @param {{get: (name: string) => unknown}} env - Environment accessor provided by the toy harness.
  * @param {string} name - Name of the dependency to load from the environment.
  * @returns {() => number} The requested function cast to a numeric supplier.
  */
@@ -392,7 +392,7 @@ function requireNumericEnvFunction(env, name) {
 /**
  * Main entry point for the fishing mini game.
  * @param {string} input - Raw player input representing bait choice.
- * @param {{get: (name: string) => any}} env - Environment accessor used to get
+ * @param {{get: (name: string) => unknown}} env - Environment accessor used to get
  *   utilities like random number generation.
  * @returns {string} Message describing the outcome of the cast.
  */
