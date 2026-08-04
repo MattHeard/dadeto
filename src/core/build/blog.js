@@ -361,7 +361,7 @@ function copyDirRecursive(directories, context) {
  * @param {string} options.projectRoot - Project root directory.
  * @param {string} options.publicDir - Public output directory.
  * @param {string} options.srcDir - Source directory.
- * @returns {Record<string, Function>} Copy helper functions.
+ * @returns {Record<string, (...args: never[]) => unknown>} Copy helper functions.
  */
 export function createCopyCore({
   console: defaultConsole,
@@ -709,7 +709,7 @@ export function createCopyCore({
     });
   }
 
-  return /** @type {Record<string, Function>} */ (
+  return /** @type {Record<string, (...args: never[]) => unknown>} */ (
     Object.fromEntries([
       ['runCopyWorkflow', runCopyWorkflow],
       ['copyBrowserTrees', copyBrowserTrees],

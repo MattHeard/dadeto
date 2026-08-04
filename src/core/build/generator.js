@@ -960,7 +960,7 @@ function generateRelatedLinksSection(post) {
 /**
  * Return true if every predicate returns truthy for the provided object.
  * @param {object} obj - Value to test.
- * @param {Function[]} fns - Predicate functions.
+ * @param {((value: string) => boolean)[]} fns - Predicate functions.
  * @returns {boolean} Whether all predicates returned truthy.
  */
 function allTruthy(obj, fns) {
@@ -1266,7 +1266,7 @@ function assembleBlogHTML(header, blog, footer) {
 /**
  * Generate the complete blog HTML.
  * @param {{blog: object, header: string, footer: string}} parts - Blog pieces.
- * @param {Function} wrapHtml - Wrapper function for the final HTML.
+ * @param {(content: string) => string} wrapHtml - Wrapper function for the final HTML.
  * @returns {string} Full blog HTML.
  */
 export function generateBlog(parts, wrapHtml) {

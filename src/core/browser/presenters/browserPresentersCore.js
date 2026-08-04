@@ -3,7 +3,7 @@ import { parseJsonObject } from '../jsonValueHelpers.js';
 /**
  * Create a preformatted element for provided text content.
  * @param {string} content - Text that should appear inside the <pre>.
- * @param {{createElement: Function, setTextContent: Function}} dom - DOM helpers.
+ * @param {{createElement: (tagName: string) => HTMLElement, setTextContent: (element: HTMLElement, text: string) => void}} dom - DOM helpers.
  * @returns {HTMLElement} `<pre>` populated with the supplied content.
  */
 export function createPreFromContent(content, dom) {
@@ -15,7 +15,7 @@ export function createPreFromContent(content, dom) {
 /**
  * Create a paragraph element containing the provided text.
  * @param {string} inputString - Raw text for the paragraph.
- * @param {{createElement: Function, setTextContent: Function}} dom - DOM helpers.
+ * @param {{createElement: (tagName: string) => HTMLElement, setTextContent: (element: HTMLElement, text: string) => void}} dom - DOM helpers.
  * @returns {HTMLElement} `<p>` populated with the supplied string.
  */
 export function createParagraphElement(inputString, dom) {
@@ -26,7 +26,7 @@ export function createParagraphElement(inputString, dom) {
 
 /**
  * Create a div element with the supplied class name for presenter roots.
- * @param {{createElement: Function, setClassName: Function}} dom - DOM helpers.
+ * @param {{createElement: (tagName: string) => HTMLElement, setClassName: (element: HTMLElement, className: string) => void}} dom - DOM helpers.
  * @param {string} className - Class name to apply to the root element.
  * @returns {HTMLElement} `<div>` root element for a presenter.
  */
@@ -38,7 +38,7 @@ export function createPresenterRoot(dom, className) {
 
 /**
  * Create a section element with a title heading.
- * @param {{ createElement: Function, setClassName: Function, appendChild: Function, setTextContent: Function }} dom DOM helpers.
+ * @param {{ createElement: (tagName: string) => HTMLElement, setClassName: (element: HTMLElement, className: string) => void, appendChild: (parent: HTMLElement, child: HTMLElement) => void, setTextContent: (element: HTMLElement, text: string) => void }} dom DOM helpers.
  * @param {string} className Section class name.
  * @param {string} title Section title text.
  * @returns {HTMLElement} Section root element.
@@ -56,7 +56,7 @@ export function createSectionWithHeading(dom, className, title) {
 /**
  * Create a section element with a heading and appended content.
  * @param {{
- *   dom: { createElement: Function, setClassName: Function, appendChild: Function, setTextContent: Function },
+ *   dom: { createElement: (tagName: string) => HTMLElement, setClassName: (element: HTMLElement, className: string) => void, appendChild: (parent: HTMLElement, child: HTMLElement) => void, setTextContent: (element: HTMLElement, text: string) => void },
  *   className: string,
  *   title: string,
  *   content: HTMLElement,

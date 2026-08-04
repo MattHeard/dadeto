@@ -248,7 +248,7 @@ export function wrapHtml(content) {
 
 /**
  * Bundle the HTML helpers for the non-core adapter.
- * @returns {Record<string, Function>} HTML helper handle.
+ * @returns {Record<string, (...args: never[]) => unknown>} HTML helper handle.
  */
 export function createHtmlHandle() {
   return {
