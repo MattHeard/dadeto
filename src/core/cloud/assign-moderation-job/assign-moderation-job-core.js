@@ -47,8 +47,8 @@ export function resolveFirestoreEnvironment(
 
 /**
  * Check if ensure function is custom.
- * @param {Function | undefined} ensureAppFn Ensure function.
- * @param {Function} defaultEnsureFn Default.
+ * @param {((...args: unknown[]) => unknown) | undefined} ensureAppFn Ensure function.
+ * @param {(...args: unknown[]) => unknown} defaultEnsureFn Default.
  * @returns {boolean} True if custom.
  */
 function isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) {
@@ -57,8 +57,8 @@ function isCustomEnsureFunction(ensureAppFn, defaultEnsureFn) {
 
 /**
  * Check if get firestore function is custom.
- * @param {Function | undefined} getFirestoreFn Get function.
- * @param {Function} defaultGetFirestoreFn Default.
+ * @param {((...args: unknown[]) => unknown) | undefined} getFirestoreFn Get function.
+ * @param {(...args: unknown[]) => unknown} defaultGetFirestoreFn Default.
  * @returns {boolean} True if custom.
  */
 function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
@@ -68,9 +68,9 @@ function isCustomGetFirestoreFunction(getFirestoreFn, defaultGetFirestoreFn) {
 /**
  * Detect whether any Firebase dependency overrides have been provided.
  * @param {{
- *   options?: { ensureAppFn?: Function, getFirestoreFn?: Function },
- *   defaultEnsureFn: Function,
- *   defaultGetFirestoreFn: Function,
+ *   options?: { ensureAppFn?: (...args: unknown[]) => unknown, getFirestoreFn?: (...args: unknown[]) => unknown },
+ *   defaultEnsureFn: (...args: unknown[]) => unknown,
+ *   defaultGetFirestoreFn: (...args: unknown[]) => unknown,
  * }} deps Dependency bag containing overrides.
  * @returns {boolean} True when a dependency override exists.
  */
@@ -101,9 +101,9 @@ function hasProvidedEnvironment({ providedEnvironment }) {
 /**
  * Determine whether custom Firebase dependencies or a provided environment should be honored.
  * @param {{
- *   options?: { ensureAppFn?: Function, getFirestoreFn?: Function },
- *   defaultEnsureFn: Function,
- *   defaultGetFirestoreFn: Function,
+ *   options?: { ensureAppFn?: (...args: unknown[]) => unknown, getFirestoreFn?: (...args: unknown[]) => unknown },
+ *   defaultEnsureFn: (...args: unknown[]) => unknown,
+ *   defaultGetFirestoreFn: (...args: unknown[]) => unknown,
  *   providedEnvironment?: unknown,
  * }} deps Dependency bag containing overrides and helpers.
  * @returns {boolean} True when custom dependencies or provided environment supersede defaults.
@@ -271,7 +271,7 @@ function hasTokenMessage(err) {
     return false;
   }
 
-  const obj = /** @type {any} */ (err);
+  const obj = /** @type {{ code?: unknown, message?: unknown }} */ (err);
   return typeof obj.message === 'string';
 }
 
@@ -773,7 +773,7 @@ export function createReputationScopedVariantsQuery(database, reputation) {
 /**
  * Create a query runner that fetches all moderation candidates for a moderator.
  * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
- * @returns {any} Query runner bound to the provided database.
+ * @returns {(...args: unknown[]) => unknown} Query runner bound to the provided database.
  */
 export function createRunVariantQuery(database) {
   const collectionGroup = database?.collectionGroup?.('variants');
@@ -806,7 +806,9 @@ export function createRunVariantQuery(database) {
     return resolveSnapshotDocs(variantSnap)
       .filter(
         variantDoc =>
-          !alreadyModerated.has(/** @type {any} */ (variantDoc).ref.path)
+          !alreadyModerated.has(
+            /** @type {{ ref: { path: string } }} */ (variantDoc).ref.path
+          )
       )
       .map(variantDoc => ({ variantDoc }));
   };
@@ -814,15 +816,15 @@ export function createRunVariantQuery(database) {
 
 /**
  * Build a factory that produces Firestore-backed moderation candidate fetchers.
- * @param {any} createRunVariantQueryFn Adapter factory that accepts a database instance and returns a query executor.
- * @returns {Function} Factory producing candidate fetchers bound to a Firestore database.
+ * @param {unknown} createRunVariantQueryFn Adapter factory that accepts a database instance and returns a query executor.
+ * @returns {(...args: unknown[]) => unknown} Factory producing candidate fetchers bound to a Firestore database.
  */
 export function createFetchVariantSnapshotFromDbFactory(
   createRunVariantQueryFn
 ) {
   /**
    * @param {import('firebase-admin/firestore').Firestore} database Firestore database instance.
-   * @returns {any} Query executor bound to the database.
+   * @returns {(...args: unknown[]) => unknown} Query executor bound to the database.
    */
   return function createFetchVariantSnapshotFromDb(database) {
     const runVariantQuery = createRunVariantQueryFn(database);
@@ -864,8 +866,8 @@ export function buildVariantQueryPlan(randomValue) {
 
 /**
  * Create a Firestore-agnostic variant snapshot fetcher.
- * @param {{ runQuery: any }} deps Adapter that executes a single query descriptor.
- * @returns {Function} Function resolving with the first snapshot containing results.
+ * @param {{ runQuery: (...args: unknown[]) => unknown }} deps Adapter that executes a single query descriptor.
+ * @returns {(...args: unknown[]) => unknown} Function resolving with the first snapshot containing results.
  */
 export function createVariantSnapshotFetcher({ runQuery }) {
   /**
@@ -1041,9 +1043,9 @@ export function createHandleAssignModerationJobCore(assignModerationWorkflow) {
 /**
  * @typedef {object} AssignModerationWorkflowDeps
  * @property {(context: { req: NativeHttpRequest }) => Promise<{ error?: GuardError, context?: GuardContext }>} runGuards - Guard runner that validates the incoming request.
- * @property {any} [fetchVariantSnapshots] - Resolver that fetches moderation candidates for the caller.
+ * @property {(...args: unknown[]) => unknown} [fetchVariantSnapshots] - Resolver that fetches moderation candidates for the caller.
  * @property {(randomValue: number) => Promise<VariantSnapshot>} [fetchVariantSnapshot] - Legacy resolver that fetches a single snapshot.
- * @property {any} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
+ * @property {(...args: unknown[]) => unknown} selectVariantDoc - Selector that extracts the chosen variant document from a snapshot.
  * @property {(uid: string) => import('firebase-admin/firestore').DocumentReference} createModeratorRef - Factory that returns the moderator document reference for persisting assignments.
  * @property {() => unknown} now - Clock function that returns the timestamp persisted with the assignment.
  * @property {() => number} random - RNG used to seed variant selection.
@@ -1103,7 +1105,7 @@ export function createAssignModerationWorkflow({
  * Resolve a single snapshot using the legacy selection path.
  * @param {{
  *   fetchVariantSnapshot?: (randomValue: number) => Promise<VariantSnapshot>,
- *   selectVariantDoc: any,
+ *   selectVariantDoc: (...args: unknown[]) => unknown,
  *   random: () => number,
  * }} deps Legacy resolver dependencies.
  * @returns {Promise<VariantDocSnapshot>} Selected variant document.
@@ -1263,8 +1265,8 @@ function resolveUserRecord(context) {
 
 /**
  * @typedef {object} ResolveVariantDocDeps
- * @property {any} fetchVariantSnapshots Function that loads moderation candidates for the caller.
- * @property {any} selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
+ * @property {(...args: unknown[]) => unknown} fetchVariantSnapshots Function that loads moderation candidates for the caller.
+ * @property {(...args: unknown[]) => unknown} selectVariantDoc Selector that extracts the variant document or an error message from the snapshot.
  * @property {string} uid Moderator UID.
  * @property {() => number} random Random number generator used to pick a variant candidate.
  */
@@ -1373,7 +1375,10 @@ function getNumericCandidateValue(value) {
  * @returns {string} Document path or an empty string.
  */
 function getVariantDocPath(snapshot) {
-  return String(/** @type {any} */ (snapshot)?.variantDoc?.ref?.path ?? '');
+  return String(
+    /** @type {{ variantDoc?: { ref?: { path?: string } } }} */ (snapshot)
+      ?.variantDoc?.ref?.path ?? ''
+  );
 }
 
 /**
@@ -1436,9 +1441,11 @@ async function persistAssignment(deps, data) {
   const { userRecord, variantDoc } = data;
   const moderatorRef = createModeratorRef(userRecord.uid);
   const createdAt = now();
-  await /** @type {any} */ (moderatorRef).set(
+  await /** @type {{ set: (data: object) => Promise<unknown> }} */ (
+    moderatorRef
+  ).set(
     {
-      variant: /** @type {any} */ (variantDoc).ref,
+      variant: /** @type {{ ref: unknown }} */ (variantDoc).ref,
       createdAt,
     },
     { merge: true }
@@ -1463,14 +1470,14 @@ function isResponse(value) {
   if (!isValidObject(value)) {
     return false;
   }
-  const obj = /** @type {any} */ (value);
+  const obj = /** @type {{ message?: unknown }} */ (value);
   return typeof obj.status === 'number';
 }
 
 /**
  * Create the Express handler that assigns moderation jobs using Firestore.
  * @param {{
- *   createRunVariantQuery: any,
+ *   createRunVariantQuery: (...args: unknown[]) => unknown,
  *   auth: import('firebase-admin/auth').Auth,
  *   db: import('firebase-admin/firestore').Firestore,
  *   now: () => unknown,
@@ -1499,7 +1506,7 @@ export function createHandleAssignModerationJob({
 /**
  * Register the assign moderation job route on the provided Express app.
  * @param {{ db: import('firebase-admin/firestore').Firestore, auth: import('firebase-admin/auth').Auth, app: NativeExpressApp }} firebaseResources - Firebase resources used to serve the moderation endpoint.
- * @param {any} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
+ * @param {unknown} createRunVariantQuery - Factory that produces query executors bound to a Firestore database.
  * @param {() => unknown} now - Timestamp provider for persisted assignments.
  * @param {() => number} random Random number generator.
  * @returns {(req: NativeHttpRequest, res: NativeHttpResponse) => Promise<void>} Registered moderation handler.
