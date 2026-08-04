@@ -405,7 +405,7 @@ export function createUpdateVariantVisibilityHandler({ db, renderContents }) {
 
 /**
  * Compose the public update-variant-visibility Cloud Function handle.
- * @param {{ region: (region: string) => { firestore: { document: (path: string) => { onCreate: Function } } } }} functions Firebase Functions runtime.
+ * @param {{ region: (region: string) => { firestore: { document: (path: string) => { onCreate: (handler: unknown) => unknown } } } }} functions Firebase Functions runtime.
  * @param {() => import('firebase-admin/firestore').Firestore} getFirestoreInstance Firestore instance factory.
  * @returns {unknown} Registered Cloud Function handle.
  */
@@ -456,7 +456,7 @@ async function applyVariantUpdate(db, payload, renderContents) {
     payload.moderatorId
   );
   const variantData = getValidVariantSnapshotData(variantSnap);
-  const pageRef = getPageRefFromVariantRef(/** @type {any} */ (variantRef));
+  const pageRef = getPageRefFromVariantRef(variantRef);
   const rootPageRef = await getRootPageRef(pageRef);
   const wasVisible = hasVisibleState(variantData, 0.5);
   await processVariantUpdate(
@@ -633,19 +633,19 @@ async function republishContentsIfNeeded(deps) {
 }
 
 /**
- * @param {any} variantRef Variant reference.
- * @returns {any} Page reference or null.
+ * @param {import('firebase-admin/firestore').DocumentReference} variantRef Variant reference.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Page reference or null.
  */
 function getPageRefFromVariantRef(variantRef) {
   return variantRef?.parent?.parent ?? null;
 }
 
 /**
- * @param {any} pageRef Page reference.
- * @returns {any} Story reference or null.
+ * @param {import('firebase-admin/firestore').DocumentReference} pageRef Page reference.
+ * @returns {import('firebase-admin/firestore').DocumentReference | null} Story reference or null.
  */
 function getStoryRefFromPageRef(pageRef) {
-  return /** @type {any} */ (pageRef?.parent?.parent ?? null);
+  return pageRef?.parent?.parent ?? null;
 }
 
 /**
