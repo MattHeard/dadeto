@@ -14,7 +14,7 @@ const LEGACY_TOY_KEY = 'LIST1';
 /**
  * Append input text to a persistent newline-delimited list stored in localStorage.
  * @param {string} input - Text appended to the list.
- * @param {Map<string, Function>} env - Environment with storage helpers.
+ * @param {Map<string, (...args: never[]) => unknown>} env - Environment with storage helpers.
  * @returns {string} The full accumulated list after appending the new input.
  */
 export function textAppendList(input, env) {

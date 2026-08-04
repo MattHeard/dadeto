@@ -170,7 +170,7 @@ function persistStoryResult(env, result) {
 /**
  * Adds a new dendrite story entry to the application's data store.
  * @param {string} input - JSON string containing story data.
- * @param {Map<string, Function>} env - Environment with data accessors.
+ * @param {Map<string, (...args: never[]) => unknown>} env - Environment with data accessors.
  * @returns {string} The serialized newly added story or empty object on error.
  */
 /**
