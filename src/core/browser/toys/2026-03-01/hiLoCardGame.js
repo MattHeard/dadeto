@@ -105,9 +105,7 @@ function hasInputPayload(input) {
 export function normalizeParsedEvent(parsed) {
   const candidate = toRecordOrNull(
     parsed,
-    /** @type {(value: unknown) => value is Record<string, unknown>} */ (
-      isNonNullObject
-    )
+    /** @type {(value: unknown) => boolean} */ (isNonNullObject)
   );
   if (!candidate) {
     return null;
@@ -503,7 +501,7 @@ export function renderHiLoState(gameState) {
 /**
  * Run the hi-lo card game toy.
  * @param {string} input - Serialized keyboard event payload.
- * @param {Map<string, Function | import('../../storageLens.js').StorageLens<unknown>>} env - Toy environment.
+ * @param {Map<string, ((...args: unknown[]) => unknown) | import('../../storageLens.js').StorageLens<unknown>>} env - Toy environment.
  * @returns {string} Rendered game state.
  */
 export function hiLoCardGameToy(input, env) {
