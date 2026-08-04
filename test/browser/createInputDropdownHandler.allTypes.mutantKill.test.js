@@ -33,9 +33,9 @@ describe('createInputDropdownHandler all types', () => {
 
     /**
      * Looks up a query handler for the provided selector.
-     * @param {*} _ - unused element reference
+     * @param {unknown} _ - unused element reference
      * @param {string} selector - selector to look up
-     * @returns {*} the result of the handler or null
+     * @returns {unknown} the result of the handler or null
      */
     function mockQuerySelector(_, selector) {
       const handler = queryHandlers[selector];
