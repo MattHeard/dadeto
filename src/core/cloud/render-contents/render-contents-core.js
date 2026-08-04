@@ -35,17 +35,17 @@ const DEFAULT_PAGE_SIZE = 100;
  * @typedef {object} FetchResponse
  * @property {boolean} ok Whether the response was successful.
  * @property {number} status HTTP status code.
- * @property {() => Promise<any>} json Parse response body as JSON.
+ * @property {() => Promise<unknown>} json Parse response body as JSON.
  */
 
 /**
  * @typedef {object} DbInstance
- * @property {Function} collection Firestore collection accessor.
+ * @property {(...args: unknown[]) => unknown} collection Firestore collection accessor.
  */
 
 /**
  * @typedef {object} StorageInstance
- * @property {Function} bucket Cloud storage bucket accessor.
+ * @property {(...args: unknown[]) => unknown} bucket Cloud storage bucket accessor.
  */
 
 /**
@@ -65,7 +65,7 @@ const DEFAULT_PAGE_SIZE = 100;
 
 /**
  * Ensure the provided Firestore-like instance exposes the expected helpers.
- * @param {{ collection: Function }} db Firestore-like instance to validate.
+ * @param {{ collection: (...args: unknown[]) => unknown }} db Firestore-like instance to validate.
  * @returns {void}
  */
 function assertDb(db) {
@@ -86,7 +86,7 @@ function ensureDbValue(db) {
 
 /**
  * Assert the provided database exposes a collection helper.
- * @param {{ collection?: Function }} db Firestore-like instance to inspect.
+ * @param {{ collection?: (...args: unknown[]) => unknown }} db Firestore-like instance to inspect.
  * @returns {void}
  */
 function ensureCollectionHelper(db) {
@@ -97,7 +97,7 @@ function ensureCollectionHelper(db) {
 
 /**
  * Ensure the provided Storage-like instance exposes the expected helpers.
- * @param {{ bucket: Function }} storage Storage-like instance to validate.
+ * @param {{ bucket: (...args: unknown[]) => unknown }} storage Storage-like instance to validate.
  * @returns {void}
  */
 function assertStorage(storage) {
@@ -118,7 +118,7 @@ function ensureStorageValue(storage) {
 
 /**
  * Assert the provided storage exposes a bucket helper.
- * @param {{ bucket?: Function }} storage Storage-like instance to inspect.
+ * @param {{ bucket?: (...args: unknown[]) => unknown }} storage Storage-like instance to inspect.
  * @returns {void}
  */
 function ensureBucketHelper(storage) {
@@ -269,7 +269,7 @@ export function buildHtml(items) {
 
 /**
  * Create a helper that retrieves the most popular story ids.
- * @param {{ collection: Function }} db Firestore-like instance.
+ * @param {{ collection: (...args: unknown[]) => unknown }} db Firestore-like instance.
  * @returns {() => Promise<string[]>} Function that loads the top story ids.
  */
 export function createFetchTopStoryIds(db) {
@@ -295,7 +295,7 @@ export function createFetchTopStoryIds(db) {
 
 /**
  * Create a helper that resolves story metadata for rendering.
- * @param {{ collection: Function }} db Firestore-like instance.
+ * @param {{ collection: (...args: unknown[]) => unknown }} db Firestore-like instance.
  * @returns {(storyId: string) => Promise<{title: string, pageNumber: number|null}|null>} Story loader.
  */
 export function createFetchStoryInfo(db) {
@@ -309,7 +309,7 @@ export function createFetchStoryInfo(db) {
 
 /**
  * Build summary metadata from a story snapshot when it exists.
- * @param {{ exists?: boolean, data: () => Record<string, any> }} storySnap Story document snapshot.
+ * @param {{ exists?: boolean, data: () => Record<string, unknown> }} storySnap Story document snapshot.
  * @returns {Promise<StoryInfo | null>} Story info with title and page number or null when missing.
  */
 async function buildStoryInfoFromSnap(storySnap) {
@@ -322,7 +322,7 @@ async function buildStoryInfoFromSnap(storySnap) {
 
 /**
  * Resolve a story's metadata once the document is present.
- * @param {Record<string, any>} story Firestore story document data.
+ * @param {Record<string, unknown>} story Firestore story document data.
  * @returns {Promise<StoryInfo | null>} Story metadata or null if the root page reference is missing.
  */
 async function resolveStoryInfoFromStory(story) {
@@ -336,8 +336,8 @@ async function resolveStoryInfoFromStory(story) {
 
 /**
  * Resolve story information once the root page return value arrives.
- * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }>, collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} rootRef Document reference for the root page.
- * @param {Record<string, any>} story Firestore story document data.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, unknown> }>, collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }> } }} rootRef Document reference for the root page.
+ * @param {Record<string, unknown>} story Firestore story document data.
  * @returns {Promise<StoryInfo | null>} Story metadata or null when the page snapshot is missing.
  */
 async function resolveStoryInfoFromRoot(rootRef, story) {
@@ -347,8 +347,8 @@ async function resolveStoryInfoFromRoot(rootRef, story) {
 
 /**
  * Create story info from story and page data.
- * @param {Record<string, any>} story Story document data that owns the page.
- * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
+ * @param {Record<string, unknown>} story Story document data that owns the page.
+ * @param {{ exists?: boolean, data: () => Record<string, unknown> }} pageSnap Page snapshot returned by Firestore.
  * @returns {StoryInfo} Story metadata object.
  */
 function createStoryInfo(story, pageSnap) {
@@ -360,7 +360,7 @@ function createStoryInfo(story, pageSnap) {
 
 /**
  * Check if snapshot exists and has data.
- * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Firestore snapshot.
+ * @param {{ exists?: boolean, data: () => Record<string, unknown> }} pageSnap Firestore snapshot.
  * @returns {boolean} True when snapshot has valid data.
  */
 function isValidSnapshot(pageSnap) {
@@ -369,7 +369,7 @@ function isValidSnapshot(pageSnap) {
 
 /**
  * Check whether the page has visible variants.
- * @param {{ collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} pageRef Page document reference.
+ * @param {{ collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }> } }} pageRef Page document reference.
  * @returns {Promise<boolean>} True when at least one visible variant exists.
  */
 async function hasVisibleVariants(pageRef) {
@@ -385,7 +385,7 @@ async function hasVisibleVariants(pageRef) {
 
 /**
  * Extract the visibility score from variant data.
- * @param {Record<string, any>} data Variant document data.
+ * @param {Record<string, unknown>} data Variant document data.
  * @returns {number} Visibility score.
  */
 function extractVisibility(data) {
@@ -397,9 +397,9 @@ function extractVisibility(data) {
 
 /**
  * Build story metadata once the page snapshot has been fetched.
- * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, any> }>, collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, any> }> }> } }} rootRef Root page reference.
- * @param {{ exists?: boolean, data: () => Record<string, any> }} pageSnap Page snapshot returned by Firestore.
- * @param {Record<string, any>} story Story document data that owns the page.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => Record<string, unknown> }>, collection?: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => Record<string, unknown> }> }> } }} rootRef Root page reference.
+ * @param {{ exists?: boolean, data: () => Record<string, unknown> }} pageSnap Page snapshot returned by Firestore.
+ * @param {Record<string, unknown>} story Story document data that owns the page.
  * @returns {Promise<StoryInfo | null>} Story metadata or null when the page is missing.
  */
 async function buildStoryInfoFromPage(rootRef, pageSnap, story) {
@@ -414,7 +414,7 @@ async function buildStoryInfoFromPage(rootRef, pageSnap, story) {
 
 /**
  * Extract the story title when present.
- * @param {Record<string, any>} story Story document data.
+ * @param {Record<string, unknown>} story Story document data.
  * @returns {string} Title string or empty string when missing.
  */
 function extractStoryTitle(story) {
@@ -427,7 +427,7 @@ function extractStoryTitle(story) {
 
 /**
  * Extract the numeric page number from a page document.
- * @param {Record<string, any>} page Page document data.
+ * @param {Record<string, unknown>} page Page document data.
  * @returns {number | undefined} Numeric page number or undefined when missing.
  */
 function extractPageNumber(page) {
@@ -440,7 +440,7 @@ function extractPageNumber(page) {
 
 /**
  * Determine if story data exposes a root page reference.
- * @param {Record<string, any>} story Story document data.
+ * @param {Record<string, unknown>} story Story document data.
  * @returns {boolean} True when the story includes a root page reference.
  */
 function hasStoryRootPage(story) {
@@ -449,7 +449,7 @@ function hasStoryRootPage(story) {
 
 /**
  * Check whether the story exposes a title string.
- * @param {Record<string, any>} story Story document data.
+ * @param {Record<string, unknown>} story Story document data.
  * @returns {boolean} True when the title is a string.
  */
 function hasTitle(story) {
@@ -458,7 +458,7 @@ function hasTitle(story) {
 
 /**
  * Check whether the page data provides a numeric page number.
- * @param {Record<string, any>} page Page document data.
+ * @param {Record<string, unknown>} page Page document data.
  * @returns {boolean} True when the page number is numeric.
  */
 function hasPageNumber(page) {
@@ -1008,13 +1008,13 @@ function createRenderContentsHandler(config) {
 /**
  * Resolve an asynchronous fetcher from the provided override or cached factory.
  * @param {{
- *   provided?: Function,
- *   cache?: Function,
- *   setCache: (fn: any) => void,
- *   factory: (db: { collection: Function }) => Function,
- *   db?: { collection: Function }
+ *   provided?: (...args: unknown[]) => unknown,
+ *   cache?: (...args: unknown[]) => unknown,
+ *   setCache: (fn: (...args: unknown[]) => unknown) => void,
+ *   factory: (db: { collection: (...args: unknown[]) => unknown }) => (...args: unknown[]) => unknown,
+ *   db?: { collection: (...args: unknown[]) => unknown }
  * }} options Fetcher resolution inputs.
- * @returns {Function} Fetch implementation to use.
+ * @returns {(...args: unknown[]) => unknown} Fetch implementation to use.
  */
 function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
   if (typeof provided === 'function') {
@@ -1027,12 +1027,12 @@ function resolveFetcher({ provided, cache, setCache, factory, db: database }) {
 /**
  * Return the cached fetcher or create a new one via the factory helper.
  * @param {{
- *   cache?: Function,
- *   database?: { collection: Function },
- *   factory: (db: { collection: Function }) => Function,
- *   setCache: (fn: any) => void
+ *   cache?: (...args: unknown[]) => unknown,
+ *   database?: { collection: (...args: unknown[]) => unknown },
+ *   factory: (db: { collection: (...args: unknown[]) => unknown }) => (...args: unknown[]) => unknown,
+ *   setCache: (fn: (...args: unknown[]) => unknown) => void
  * }} options Fetcher lookup inputs.
- * @returns {Function} Fetch implementation.
+ * @returns {(...args: unknown[]) => unknown} Fetch implementation.
  */
 function getOrCreateFetcher({ cache, database, factory, setCache }) {
   if (cache) {
@@ -1133,9 +1133,9 @@ function buildPageSaveOptions(pageNumber, maxPages) {
 /**
  * Create a cached fetcher when none is provided.
  * @param {DbInstance | undefined} database Firestore-like instance used by the factory.
- * @param {(db: DbInstance) => Function} factory Factory that produces the fetcher.
- * @param {(fn: Function) => void} setCache Setter for caching the created fetcher.
- * @returns {Function} Newly created fetch implementation.
+ * @param {(db: DbInstance) => (...args: unknown[]) => unknown} factory Factory that produces the fetcher.
+ * @param {(fn: (...args: unknown[]) => unknown) => void} setCache Setter for caching the created fetcher.
+ * @returns {(...args: unknown[]) => unknown} Newly created fetch implementation.
  */
 function createFetcherFromDatabase(database, factory, setCache) {
   assertDb(/** @type {DbInstance} */ (database));
@@ -1203,7 +1203,7 @@ function chooseAllowedOrigins(parsedOrigins) {
 /**
  * @typedef {object} NativeHttpResponseWithSet
  * @property {(name: string, value: string) => void} set Set response header.
- * @property {Function} [status] Set response status.
+ * @property {(...args: unknown[]) => unknown} [status] Set response status.
  */
 
 /**
@@ -1409,7 +1409,7 @@ function isPostRequest(req) {
 /**
  * Extract the Authorization header via the request getter.
  * @param {NativeHttpRequest} req Incoming request-like object that provides `get`.
- * @returns {unknown} Value returned by {@code req.get('Authorization')} or {@code req.get('authorization')}.
+ * @returns {unknown} Value returned by the Authorization or authorization request getter.
  */
 function getAuthorizationHeaderFromGetter(req) {
   const getter = /** @type {((name: string) => unknown) | undefined} */ (
@@ -1640,7 +1640,7 @@ function hasNonEmptyString(input) {
 /**
  * Build a render-request handler bound to the shared authorization extractor.
  * @param {object} root0 Handler dependencies.
- * @param {(req: { method: string }, res: { status: Function, send: Function }) => boolean} root0.validateRequest Pre-flight validator.
+ * @param {(req: { method: string }, res: { status: (...args: unknown[]) => unknown, send: (...args: unknown[]) => unknown }) => boolean} root0.validateRequest Pre-flight validator.
  * @param {(token: string) => Promise<{ uid?: string }>} root0.verifyIdToken Firebase token verifier.
  * @param {string} root0.adminUid UID allowed to trigger rendering.
  * @param {() => Promise<void>} root0.render Rendering function.
