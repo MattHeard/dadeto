@@ -61,7 +61,12 @@ export function addTreeVisibilityDelta(data, delta) {
 }
 
 /**
- * @param {{variantRef: any, delta: number, getParentVariantRef: Function, updateVariant: Function, markParentDirty: Function}} options Propagation dependencies.
+ * @param {object} options Propagation dependencies.
+ * @param {{ get: () => Promise<{ exists: boolean, data: () => VisibilityData }> }} options.variantRef Starting variant reference.
+ * @param {number} options.delta Aggregate delta.
+ * @param {(ref: { get: () => Promise<unknown> }) => Promise<{ get: () => Promise<{ exists: boolean, data: () => VisibilityData }> } | null>} options.getParentVariantRef Parent reference resolver.
+ * @param {(ref: { get: () => Promise<unknown> }, data: object) => Promise<void>} options.updateVariant Variant update operation.
+ * @param {(ref: { get: () => Promise<unknown> }) => Promise<void>} options.markParentDirty Parent dirty marker.
  * @returns {Promise<void>} Completion promise.
  */
 export async function propagateTreeVisibilityDelta({
