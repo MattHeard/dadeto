@@ -3030,12 +3030,12 @@ async function buildRenderPlan({
 /**
  * Persist rendered variant artefacts and trigger CDN invalidation.
  * @param {object} options - Artefacts and dependencies used for persistence.
- * @param {{exists?: boolean, data: () => Record<string, any>, ref: {parent?: {parent?: any}}}} options.snap - Variant snapshot.
+ * @param {{exists?: boolean, data: () => Record<string, unknown>, ref: {parent?: {parent?: AncestorReference}}}} options.snap - Variant snapshot.
  * @param {object} [options.context] - Invocation context containing request parameters.
- * @param {{bucket: (name: string) => { file: (path: string) => { save: Function } }}} options.bucket - Storage helper.
+ * @param {{bucket: (name: string) => { file: (path: string) => { save: (...args: unknown[]) => unknown } }}} options.bucket - Storage helper.
  * @param {(paths: string[]) => Promise<void>} options.invalidatePaths - Cache invalidation routine.
- * @param {Record<string, any>} options.variant - Variant document data.
- * @param {Record<string, any>} options.page - Parent page document data.
+ * @param {Record<string, unknown>} options.variant - Variant document data.
+ * @param {Record<string, unknown>} options.page - Parent page document data.
  * @param {string | undefined} options.parentUrl - URL of the parent variant, when available.
  * @param {string} options.html - Rendered HTML payload for the variant.
  * @param {string} options.filePath - Storage path for the rendered HTML.
@@ -3260,10 +3260,10 @@ function buildReverseLinkDocId(record) {
 }
 
 /**
- * @typedef {{ before: DocumentLike; after: DocumentLike & { ref: { update: Function } }; }} FirestoreChange
+ * @typedef {{ before: DocumentLike; after: DocumentLike & { ref: { update: (...args: unknown[]) => unknown } }; }} FirestoreChange
  * Build a change handler that renders visible variants and clears dirty markers.
  * @param {object} options - Dependencies for the change handler.
- * @param {(snap: any, context?: object) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
+ * @param {(snap: unknown, context?: object) => Promise<null>} options.renderVariant - Renderer invoked when a variant should be materialized.
  * @param {FirestoreLike} options.db Tenant Firestore client.
  * @param {() => unknown} options.getDeleteSentinel - Function that produces the sentinel used to clear dirty flags.
  * @param {number} [options.visibilityThreshold] - Minimum visibility required before rendering.
@@ -3284,8 +3284,8 @@ export function createHandleVariantWrite({
    * @param {object} root0 Options.
    * @param {FirestoreChange} root0.change Firestore change.
    * @param {RenderContext | undefined} root0.context Event context.
-   * @param {Function} root0.renderVariant Render function.
-   * @param {Function} root0.getDeleteSentinel Sentinel function.
+   * @param {(...args: unknown[]) => unknown} root0.renderVariant Render function.
+   * @param {() => unknown} root0.getDeleteSentinel Sentinel function.
    * @returns {Promise<null>} Null.
    */
   async function handleDirtyVariant({
@@ -3294,8 +3294,8 @@ export function createHandleVariantWrite({
     renderVariant,
     getDeleteSentinel,
   }) {
-    await renderVariant(/** @type {any} */ (change.after), context);
-    const afterRef = /** @type {any} */ (change.after).ref;
+    await renderVariant(/** @type {DocumentLike} */ (change.after), context);
+    const afterRef = /** @type {DocumentLike} */ (change.after).ref;
     let dirtyRef = afterRef;
     if (afterRef && typeof afterRef.path === 'string') {
       dirtyRef = db.doc(afterRef.path);
@@ -3356,12 +3356,12 @@ export function createHandleVariantWrite({
    * Handle the clean variant path when rendering is driven by visibility changes.
    * @param {FirestoreChange} change - Firestore change payload.
    * @param {RenderContext | undefined} context - Cloud Functions context for the trigger.
-   * @param {Record<string, any>} data - Variant data captured from the latest snapshot.
+   * @param {Record<string, unknown>} data - Variant data captured from the latest snapshot.
    * @returns {Promise<null>} Result of attempting to render or `null` when skipped.
    */
   async function handleCleanVariant(change, context, data) {
     if (shouldRenderVariant(change, data, visibilityThreshold)) {
-      return renderVariant(/** @type {any} */ (change.after), context);
+      return renderVariant(/** @type {DocumentLike} */ (change.after), context);
     }
     if (didHideLastVisibleVariant(change, data, visibilityThreshold)) {
       await republishInboundPagesForHiddenOnlyVariant(
@@ -3376,16 +3376,16 @@ export function createHandleVariantWrite({
   /**
    * Decide if a variant should be rendered based on visibility threshold crossings.
    * @param {FirestoreChange} change - Firestore change describing the before/after visibility values.
-   * @param {Record<string, any>} data - New variant data provided by the snapshot.
+   * @param {Record<string, unknown>} data - New variant data provided by the snapshot.
    * @param {number} visibilityThreshold - Visibility threshold that must be exceeded.
    * @returns {boolean} True when the threshold was crossed and rendering is required.
    */
   function shouldRenderVariant(change, data, visibilityThreshold) {
-    if (!(/** @type {any} */ (change.before).exists)) {
+    if (!(/** @type {DocumentLike} */ (change.before).exists)) {
       return true;
     }
 
-    const beforeVisibility = /** @type {any} */ (change.before).data()
+    const beforeVisibility = /** @type {Record<string, unknown>} */ (change.before).data()
       .visibility;
     const afterVisibility = data.visibility;
 
@@ -3407,7 +3407,7 @@ export function createHandleVariantWrite({
    * Republish inbound pages that point at a now-hidden-only page.
    * @param {FirestoreChange['after']} after Variant snapshot after the update.
    * @param {FirestoreLike} db Firestore client.
-   * @param {(snap: any, context?: object) => Promise<null>} renderVariantFn Renderer.
+   * @param {(snap: unknown, context?: object) => Promise<null>} renderVariantFn Renderer.
    * @returns {Promise<void>} Promise.
    */
   async function republishInboundPagesForHiddenOnlyVariant(
