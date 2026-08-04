@@ -1517,7 +1517,7 @@ function createAuthResult(
  * @param {{ collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }} variantRef Variant reference.
  * @returns {Promise<Array<{ content: string | undefined, targetPageNumber: number | undefined }>>} Options.
  */
-async function loadModerationOptions(/** @type {any} */ variantRef) {
+async function loadModerationOptions(/** @type {unknown} */ variantRef) {
   const optionsSnap = await variantRef.collection('options').get();
   /* istanbul ignore next */
   const getOptionPosition = option => option.data().position ?? 0;
@@ -1539,10 +1539,10 @@ async function loadModerationOptions(/** @type {any} */ variantRef) {
  * @returns {boolean} Whether the trigger should run.
  */
 function shouldDispatchTrigger(
-  /** @type {any} */ trigger,
-  /** @type {any} */ pathValue,
-  /** @type {any} */ isCreate,
-  /** @type {any} */ isWrite
+  /** @type {unknown} */ trigger,
+  /** @type {unknown} */ pathValue,
+  /** @type {unknown} */ isCreate,
+  /** @type {unknown} */ isWrite
 ) {
   if (!pathMatchesTrigger(trigger.pathPattern, pathValue)) {
     return false;
@@ -1566,8 +1566,8 @@ function shouldDispatchTrigger(
  * @returns {boolean} Whether the path matches.
  */
 function pathMatchesTrigger(
-  /** @type {any} */ pathPattern,
-  /** @type {any} */ pathValue
+  /** @type {unknown} */ pathPattern,
+  /** @type {unknown} */ pathValue
 ) {
   const patternSegments = String(pathPattern)
     .replace(/^\/+/, '')
@@ -1604,9 +1604,9 @@ function pathMatchesTrigger(
  * @returns {Promise<void>} Nothing.
  */
 async function dispatchTrigger(
-  /** @type {any} */ trigger,
-  /** @type {any} */ snapshots,
-  /** @type {any} */ context
+  /** @type {unknown} */ trigger,
+  /** @type {unknown} */ snapshots,
+  /** @type {unknown} */ context
 ) {
   if (trigger.eventName === 'onCreate') {
     await trigger.handler(snapshots.after, context);
@@ -1627,7 +1627,7 @@ async function dispatchTrigger(
  * @param {{ ref: { parent: { parent: { get: () => Promise<{ data: () => { title?: string }, id: string }> } }, collection: (name: string) => { get: () => Promise<{ docs: Array<{ data: () => { content?: string, position?: number, targetPage?: { path?: string } } }> }> } }, data: () => { authorName?: string, author?: string, content?: string } }} variantSnap Variant snapshot.
  * @returns {Promise<{ status: number, body?: unknown }>} Route response.
  */
-async function buildModerationVariantResponse(/** @type {any} */ variantSnap) {
+async function buildModerationVariantResponse(/** @type {unknown} */ variantSnap) {
   const variantData = variantSnap.data();
   const pageRef = variantSnap.ref.parent.parent;
   const pageSnap = await pageRef.get();
@@ -1652,7 +1652,7 @@ async function buildModerationVariantResponse(/** @type {any} */ variantSnap) {
  * @param {unknown} option Option descriptor.
  * @returns {{ pageNumber: number, variantName: string, optionNumber: number } | null} Parsed option or null.
  */
-function parseOptionLookup(/** @type {any} */ option) {
+function parseOptionLookup(/** @type {unknown} */ option) {
   if (!option || typeof option !== 'object') {
     return null;
   }
@@ -1683,7 +1683,7 @@ function parseOptionLookup(/** @type {any} */ option) {
  * @param {{ isApproved?: unknown } | undefined} body Request body.
  * @returns {boolean | null} Approval flag or null when invalid.
  */
-function parseApprovalFlag(/** @type {any} */ body) {
+function parseApprovalFlag(/** @type {unknown} */ body) {
   const rawApproved = body?.isApproved;
   if (
     rawApproved !== true &&
@@ -1702,7 +1702,7 @@ function parseApprovalFlag(/** @type {any} */ body) {
  * @param {{ moderatorReputationSum?: unknown, moderationRatingCount?: unknown } | undefined} data Variant data.
  * @returns {{ currentScore: number, currentCount: number }} Normalized totals.
  */
-function resolveModerationTotals(/** @type {any} */ data) {
+function resolveModerationTotals(/** @type {unknown} */ data) {
   let currentScore = 0;
   if (typeof data?.moderatorReputationSum === 'number') {
     currentScore = data.moderatorReputationSum;
