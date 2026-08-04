@@ -128,7 +128,7 @@ async function findPageByNumber(db, pageNumber) {
   if (pageSnap.empty) {
     return null;
   }
-  const pageDoc = /** @type {any} */ (pageSnap.docs[0]);
+  const pageDoc = /** @type {DocumentReference} */ (pageSnap.docs[0]);
   return pageDoc.ref;
 }
 
@@ -143,7 +143,7 @@ async function findVariantByName(pageRef, variantName) {
   if (variantSnap.empty) {
     return null;
   }
-  const variantDoc = /** @type {any} */ (variantSnap.docs[0]);
+  const variantDoc = /** @type {DocumentReference} */ (variantSnap.docs[0]);
   return variantDoc.ref;
 }
 
@@ -162,7 +162,7 @@ async function findOptionByPosition(variantRef, optionNumber) {
   if (optionsSnap.empty) {
     return null;
   }
-  const optionDoc = /** @type {any} */ (optionsSnap.docs[0]);
+  const optionDoc = /** @type {DocumentReference} */ (optionsSnap.docs[0]);
   return optionDoc.ref.path;
 }
 
@@ -589,7 +589,7 @@ async function processValidSubmission(deps, context) {
     { target, content, author, options, authHeader },
     authorId
   );
-  const persistedSubmissionData = /** @type {any} */ ({ ...submissionData });
+  const persistedSubmissionData = { ...submissionData };
   Reflect.deleteProperty(persistedSubmissionData, 'authHeader');
 
   await saveNewPage(
@@ -708,12 +708,12 @@ export function createSubmitNewPageRequestHandler(handleSubmitCore) {
 /**
  * Build the submit-new-page Express app.
  * @param {{
- *   express: Function,
- *   cors: Function,
+ *   express: { (): { use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }, json: (options: object) => unknown, urlencoded: (options: object) => unknown },
+ *   cors: (options: object) => unknown,
  *   allowedOrigins: string[],
- *   handleSubmit: Function,
+ *   handleSubmit: (request: unknown, response: unknown) => Promise<void>,
  * }} deps Dependencies for app wiring.
- * @returns {{ use: Function, post: Function }} Wired Express app.
+ * @returns {{ use: (middleware: unknown) => void, post: (path: string, handler: unknown) => void }} Wired Express app.
  */
 export function createSubmitNewPageApp(deps) {
   const app = deps.express();
@@ -728,9 +728,9 @@ export function createSubmitNewPageApp(deps) {
     })
   );
 
-  app.use(/** @type {any} */ (deps.express).json({ limit: '20kb' }));
+  app.use(deps.express.json({ limit: '20kb' }));
   app.use(
-    /** @type {any} */ (deps.express).urlencoded({
+    deps.express.urlencoded({
       extended: false,
       limit: '20kb',
     })
